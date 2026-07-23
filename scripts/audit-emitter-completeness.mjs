@@ -15,9 +15,12 @@
 //                        lowers it. (int/float/i64/bool/record-read/string/money-add)
 //   fail-closed       — valid module · 0 imports · a fail-closed `unreachable` in a flow body: the emitter
 //                        lowers to a module that TRAPS rather than compute (a SAFE partial). (ensure, decimal)
-//   host-import       — valid module that DECLARES >=1 import (needs a host). ** MEASURED EMPTY 2026-07-23 **
-//                        — the emitter emits NO declared imports; effectful/opaque constructs decline or emit
-//                        undefined-calls instead. Kept as a class so the day one appears, it is visible.
+//   host-import       — valid module that DECLARES >=1 host import (needs a host to link; won't instantiate
+//                        with {}). MEASURED NON-EMPTY (rung-2 correction): string concat lowers to
+//                        `(import "host" "__str_concat" (func …))` and a Result `match` to 2 host imports.
+//                        ASYMMETRY worth noting: allocation/ADT helpers get a host import, but an effectful I/O
+//                        flow (io-effect) DECLINES (fail-closed) rather than importing. (My rung-1 "host-import
+//                        EMPTY" claim was an artifact of a 13-construct inventory with no allocating string op.)
 //   emitter-invalid   — reaches the emitter but the module is MALFORMED/UNFAITHFUL (undefined-call, the #141
 //                        minimal-encoder stub, or fails WebAssembly.validate): the GAP class. (money-ratio 077)
 //   gate-refused      — the FRONT-END (checkTypes/verifyGovernance) refuses it; it never reaches the emitter.
@@ -134,6 +137,13 @@ const INVENTORY = [
   { id: "money-ratio",   group: "value-unit", src: `pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }` },
   { id: "type-mismatch", group: "front-end",  src: `pure flow f() -> Int\n${C}\n{ return "not an int" }` },
   { id: "io-effect",     group: "effect",     src: `flow f(s: String) -> Int\ncontract { effects { io } }\n{ return 0 }` },
+  // ── rung-2 growth candidates (real syntax from docs/examples; classes MEASURED before keeping) ──
+  { id: "int-negate",    group: "arithmetic", src: `pure flow f(a: Int) -> Int\n${C}\n{ return -a }` },
+  { id: "string-concat", group: "text",       src: bin("String", "String", "String", "+") },
+  { id: "record-write",  group: "aggregate",  src: `record R { a: Int, b: Int }\npure flow f(r: R, v: Int) -> R\n${C}\n{ return R { a: v, b: r.b } }` },
+  { id: "tensor-id",     group: "tensor",     src: `pure flow f(t: Tensor<Float32, [4]>) -> Tensor<Float32, [4]>\n${C}\n{ return t }` },
+  { id: "duration-ofms", group: "temporal",   src: `pure flow f(ms: Int) -> Duration\n${C}\n{ return Duration.ofMs(ms) }` },
+  { id: "match-result",  group: "control",    src: `pure flow f(r: Result<Int, String>) -> Int\n${C}\n{\n  match r {\n    Ok(x) => return x\n    Err(e) => return 0\n    _ => return 0\n  }\n}` },
 ];
 
 // ── self-test: one exemplar per class must classify as that class; the % must be derived, not constant ──
@@ -150,10 +160,10 @@ async function selfTest() {
   const invHalf = [{ id: "a", src: bin("Int", "Int", "Int", "+") }, { id: "b", src: `pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }` }];
   const p1 = await completeness(invAllValid), p2 = await completeness(invHalf);
   ok(p1.pct === 100 && p2.pct === 50, `derived %: all-valid=100 (${p1.pct}) · half-invalid=50 (${p2.pct}) — % tracks the classification`);
-  // host-import class is (measured) empty across the inventory — assert the finding holds so a silent
-  // appearance of an import is surfaced, and a regression that starts emitting spurious imports is caught.
+  // host-import class is populated (string concat + Result match) — assert the DETECTION fires on a known
+  // host-import so a regression that stopped emitting the import (silently making it look self-contained) is caught.
   const rows = await runInventory();
-  ok(rows.every((r) => r.cls !== "host-import"), "FINDING holds: no construct emits a declared host import (host-import class empty)");
+  ok(rows.filter((r) => r.cls === "host-import").some((r) => r.id === "string-concat"), "host-import detection works: string-concat emits `host.__str_concat` (a host FUNCTION import) → host-import class (won't instantiate with {})");
   // ratchet: prove the enforcing edge — a construct that WAS a higher rank and is NOW lower is a regression.
   const nowInvalid = (await classify(`pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }`, "t-reg")).cls;
   ok(RANK[nowInvalid] < RANK["standalone-valid"], "ratchet FIRES: a construct classified emitter-invalid ranks below a standalone-valid baseline → regression");

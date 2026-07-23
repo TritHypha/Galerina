@@ -399,8 +399,9 @@ run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
 //   classifies a curated construct inventory through the same front-end gate + emitter into the MEASURED
 //   taxonomy {standalone-valid | fail-closed | host-import | emitter-invalid | gate-refused} and derives an
 //   honest completeness % from that ladder (never a hand-typed number). Ratcheted: a construct that DROPS
-//   emitter-completeness rank → exit 1. Measured finding 2026-07-23: host-import is EMPTY (the emitter emits
-//   no declared imports; effectful/opaque constructs decline or emit undefined-calls instead).
+//   emitter-completeness rank → exit 1. Measured 2026-07-23: host-import is NON-empty (string concat →
+//   host.__str_concat; a Result match → 2 imports), while effectful I/O DECLINES (fail-closed) rather than
+//   importing — an asymmetry the matrix surfaces.
 run("emitter-completeness", "node", ["scripts/audit-emitter-completeness.mjs"]);
 // wat-invalid-triage (R&D prototype, vendored 2026-07-19) — ADVISORY root-cause classifier for the
 //   10 baselined INVALID modules. Pairs with wasm-validate: where wasm-validate is the enforcing gate
