@@ -447,6 +447,18 @@ export const CANONICAL_EFFECTS = new Set([
   // rejected at compile time (FUNGI-EFFECT-001). ai.inference remains the coarse alias (§3 CANONICAL_EFFECTS).
   "inference.invoke",
   "inference.load",
+  // Vault effects (owner-ruled 2026-07-23): the vault is the governed channel for saving/fetching
+  // variable values BETWEEN flows — cross-flow state, the sanctioned replacement for globals. It is
+  // per-flow-per-variable permissioned: the vault DECLARATION's entry allow-list gates who may reach
+  // it, and the accessing flow's own contract declares vault.read / vault.write. The governance
+  // verifier (FUNGI-VAULT-003/004) already REQUIRES these names in a vault-accessing flow's effects,
+  // but they were absent here, so validateDeclaredEffectNames 004-rejected them (the pincer). Promoted
+  // to canonical to resolve it. Scope (request/flow/session/service/secure) lives in the vault
+  // declaration, NEVER the effect name — two names only, no vault.session.read minting.
+  // DISTINCT from the legacy secrets sense: the `vault.secret` call-pattern → secret.read
+  // (INFERENCE_PATTERNS above) and the inert lowercase ["vault", "secret.read"] broad-effect row
+  // are unchanged — those INFER secret.read; they are not these declared effect names.
+  "vault.read", "vault.write",
 ]);
 
 // Effects that are RECOGNISED but NEVER grantable — declaring one is an error at

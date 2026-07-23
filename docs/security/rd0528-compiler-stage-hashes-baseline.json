@@ -22,12 +22,12 @@
       "sha256": "845a4483f28897d45f37e1a63b1fa6d44ee35116662a8255608fb491d7afcc45"
     },
     "effect-checker": {
-      "bytes": 6314,
-      "sha256": "edf7f754326e2956fe004e2b78e697a90589d2494272b7dc4b49ff54d4c391a6"
+      "bytes": 6330,
+      "sha256": "a93908b94d416634866e752fe40754e583a71cf9237bb7b6f0d7ac21c1f70a94"
     },
     "governance-verifier": {
       "bytes": 5211,
-      "sha256": "eada93f87a011aeef9e2f04b993d1eed1a2d8c2fe0b0541154944fe5a2aa8e84"
+      "sha256": "746fba48a0b5d0c243209a07a943a2c036c5b391351fb1c1c9c172aa9e0e5d53"
     }
   }
 }

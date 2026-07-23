@@ -74,7 +74,12 @@ contract {
     // payment.charge: a canonical privileged effect (Stage-A recognises it — no FUNGI-EFFECT-004;
     // a plain flow declaring it gets FUNGI-EFFECT-008). Added 2026-07-17 to mirror Stage-A's
     // canonical set verbatim (was a latent per-input 004 divergence the code-set gate can't see).
-    "pii.read", "pii.write", "payment.charge"
+    "pii.read", "pii.write", "payment.charge",
+    // vault.read / vault.write (owner-ruled 2026-07-23): the governed cross-flow state channel
+    // (save/fetch variable values BETWEEN flows; the globals replacement). Mirrors the Stage-A
+    // CANONICAL_EFFECTS entry verbatim so the twins never diverge (the per-input-004 divergence
+    // the code-set gate cannot see).
+    "vault.read", "vault.write"
   ]
 }
 
