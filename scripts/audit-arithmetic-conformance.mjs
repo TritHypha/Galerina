@@ -200,13 +200,19 @@ function runStageA(c) {
   try {
     const p = L.parseProgram(c.src, `${c.id}.fungi`, { requireVersionHeader: false });
     if (p.diagnostics.some((d) => d.severity === "error")) return { k: "GATE-BLOCKED" };
-    const names = [...c.src.matchAll(/\(([^)]*)\)/)][0]?.[1]?.split(",").map((s) => s.trim().split(":")[0].trim()).filter(Boolean) ?? [];
+    // .match, NOT .matchAll: matchAll on a NON-GLOBAL regex THROWS — which silently no-op'd this whole
+    // Stage-A cross-check (runStageA always fell to `catch`→TRAPPED, so value cases passed on Stage-B==want
+    // alone; the "[Stage-B only]" note printed but nothing enforced Stage-A). First `(...)` = the flow params.
+    const names = (c.src.match(/\(([^)]*)\)/)?.[1] ?? "").split(",").map((s) => s.trim().split(":")[0].trim()).filter(Boolean);
     const m = new Map();
     (c.args ?? []).forEach((v, i) => { if (names[i]) m.set(names[i], (c.wrap ?? I)(v)); });
     const r = L.executeFlowSync("f", m, p.ast, p.flows);
     if (r === null || r === undefined) return { k: "DECLINED" };
+    // the interpreter fail-closes with a runtimeError SENTINEL (IntegerOverflow / DivisionByZero / …) — that
+    // is a TRAP, not a value; decode it before comparing (else it string-compares as a false DIVERGE).
+    if (r && typeof r === "object" && r.__tag === "runtimeError") return { k: "TRAPPED" };
     const v = typeof r === "object" && r !== null && "value" in r ? r.value : r;
-    return { k: "VALUE", value: typeof v === "bigint" ? Number(v) : v };
+    return { k: "VALUE", value: v }; // keep BigInt EXACT — the old Number(bigint) was lossy for the i64/u64 pins
   } catch { return { k: "TRAPPED" }; }
 }
 
@@ -264,6 +270,10 @@ if (process.argv.includes("--self-test")) {
     ["a TRUE pin passes (the harness can execute at all)", t.ok && t.verdict === "MATCH"],
     ["a FALSE pin is caught (the checker discriminates)", !f.ok && f.verdict === "DIVERGE"],
     ["a wrong fail-closed expectation is caught", !tp.ok && tp.verdict === "COMPUTED-A-VALUE"],
+    // ★ the Stage-A cross-check must be LIVE — the true pin has to exercise BOTH stages, not fall to the
+    // "[Stage-B only]" note. This is the guard against the matchAll(non-global-regex) silent-skip regressing.
+    ["★ Stage-A cross-check is LIVE for an i32 pin (NOT 'Stage-B only' — guards the matchAll silent-skip)",
+      t.verdict === "MATCH" && !/Stage-B only/.test(t.detail ?? "")],
   ];
   let ok = true;
   for (const [n, pass] of checks) { console.log(`  ${pass ? "PASS" : "FAIL"}  ${n}`); if (!pass) ok = false; }
