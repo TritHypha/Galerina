@@ -94,6 +94,16 @@ const SEED = [
   { id: "u64-div-high-bit", ...bin("UInt64", "/", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 2n] }] }, // 2^64-1 / 2 = 2^63-1 (a signed lowering gives 0)
   { id: "u64-mod-high-bit", ...bin("UInt64", "%", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 10n] }] }, // 2^64-1 % 10 = 5
   { id: "u64-cmp-high-bit", ...bin("Bool", ">", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 1n] }] }, // 2^64-1 > 1 = true (a signed lowering gives false)
+  // ── i64 / u64 OVERFLOW-trap rung (RD-0529 A1): the checked 64-bit helpers ($fungi_checked_{add,sub,mul}_{i64,u64},
+  //    wat-emitter INT64/UINT64_ARITH_WAT) TRAP on 64-bit overflow — extending the i32 fail-closed story to the
+  //    lifted 64-bit widths. MEASURED, refuting a first hypothesis: I expected the interpreter to use UNBOUNDED
+  //    BigInt (⟹ compute 2^63 where the WASM traps ⟹ a wasmEnforcedTrap divergence). It does NOT — the interp
+  //    BOUNDS Int64/UInt64 and raises the IntegerOverflow sentinel, so every 64-bit overflow is a SYMMETRIC three-way
+  //    trap (interp≡V8≡wasmtime all fail-closed), exactly like i32. Each case pins a distinct checked helper.
+  { id: "i64-add-overflow", ...bin("Int64", "+", I)("Int64", "Int64"), trap: true, calls: [{ args: [9223372036854775807n, 1n] }] }, // i64_max + 1 ⟹ checked_add_i64 traps
+  { id: "i64-sub-overflow", ...bin("Int64", "-", I)("Int64", "Int64"), trap: true, calls: [{ args: [-9223372036854775808n, 1n] }] }, // i64_min - 1 ⟹ checked_sub_i64 traps
+  { id: "i64-mul-overflow", ...bin("Int64", "*", I)("Int64", "Int64"), trap: true, calls: [{ args: [9223372036854775807n, 2n] }] }, // i64_max * 2 ⟹ checked_mul_i64 traps
+  { id: "u64-add-overflow", ...bin("UInt64", "+", I)("UInt64", "UInt64"), trap: true, calls: [{ args: [18446744073709551615n, 1n] }] }, // 2^64-1 + 1 ⟹ checked_add_u64 traps (no silent wrap)
   // ── D1 (RD-0529): the `invariant { ensure … }` postcondition is a RUNTIME fail-closed trap in standalone
   //    WASM (MEASURED — not static-only as the parser comment suggests: a violated ensure lowers to a runtime
   //    check + unreachable). This proves the fail-closed contract is engine-consistent for a governance-adjacent
