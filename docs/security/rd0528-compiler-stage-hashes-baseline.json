@@ -1,0 +1,33 @@
+{
+  "note": "RD-0528 evidence item (d) baseline — re-derived + gated by scripts/audit-compiler-stage-hashes.mjs. Emitter drift is legitimate; on a drift FAIL, review then re-run --update-baseline (expected) or investigate a .fungi change (unexpected).",
+  "stages": {
+    "lexer": {
+      "bytes": 5062,
+      "sha256": "be2b2a432489e24b93d00f360007b95bbeb884ef0eb50e99f4d5d55580f2cd52"
+    },
+    "parser": {
+      "bytes": 17854,
+      "sha256": "dc26a9eb4a84ab494660ade81759b51bb15df8722bb47a918a8e76be408f4d58"
+    },
+    "gir-emitter": {
+      "bytes": 4012,
+      "sha256": "c231b556820c9c816c0e6332e72529ed349445307fdbfcfdacc56183470cadd2"
+    },
+    "runtime": {
+      "bytes": 6433,
+      "sha256": "f33fa4789359047dd1a39cab16e6c4bc752e8ef94f915d0b8d078c475183dece"
+    },
+    "type-checker": {
+      "bytes": 10324,
+      "sha256": "da6b12e0f86a68e5954c450427ebc72067a26d7b2c162b6d92014a73afaba7b5"
+    },
+    "effect-checker": {
+      "bytes": 6314,
+      "sha256": "da2bd1c1f6f5626e7a027f840399602a4eb9100e500782e4d9bea2ed5ff92ce7"
+    },
+    "governance-verifier": {
+      "bytes": 5211,
+      "sha256": "44524ae3290d8322531887200c32e9af547a028e6102e3674da655b15687a231"
+    }
+  }
+}

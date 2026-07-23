@@ -480,6 +480,16 @@ run("kernel-fungi-twins", "node", ["scripts/audit-kernel-fungi-twins.mjs"]);
 //   7 differential · 0 authoritative · exit 0.
 run("compiler-stage-twins", "node", ["scripts/audit-compiler-stage-twins.mjs"]);
 
+// compiler-stage-hashes — RD-0528 evidence item (d) DRIFT GATE (bridge 0101/0103, owner-blessed 0104).
+//   The evidence pack's per-stage compiled-WASM sha256 table WAS a static doc snapshot that drifted
+//   silently as the emitter evolved (measured: parser 17062→17854 bytes, no parser.fungi change) while
+//   claiming live "hash-pin" evidence. This re-derives all 7 stage hashes (via gather --json; sha256 =
+//   wasmHash of the WASM bytes, deterministic) and compares to a REVIEWED baseline JSON. Gates the
+//   INVARIANT not the frozen value: emitter drift is legitimate → RED VISIBLE on drift (never silent),
+//   fix = review + --update-baseline (expected emitter evolution) or investigate (unexpected .fungi
+//   change). Self-tested (determinism = 2 live derivations identical + a drift-detection truth table).
+run("compiler-stage-hashes", "node", ["scripts/audit-compiler-stage-hashes.mjs"]);
+
 // wasmtime-presence — RD-0529 A4: the second execution engine (wasmtime) must be REACHABLE, not
 //   silently absent. Closes the wat-phase26:81 fail-open (a `wasmtime --version` probe ending in
 //   `assert.ok(true)` — "0 wasmtime tests ran" reads identical to "all pass"). AVAILABLE = wasmtime CLI

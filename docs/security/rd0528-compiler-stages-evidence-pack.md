@@ -52,21 +52,16 @@ For each stage a deliberately-wrong **value** is planted into the `.fungi`; the 
 
 > Anchoring note: the checker codes are non-unique in-file (each has `if code == "…"` label/severity maps), so the anchors use the colon-form `code: "…"` emission — a bare-code replace would hit a map first and pass vacuously. The gir-emitter anchor is the `op = "load"` *assignment* (the covered path); the separate `op: "load"` *return* literal is exercised by neither `self-hosted` test — a small oracle coverage gap, recorded but not blocking.
 
-### (d) hash-pin + #105 admission — ✅ 7 / 7
+### (d) hash-pin + #105 admission — ✅ 7 / 7, GATED (not a stale snapshot)
 
-`node scripts/gather-compiler-stage-hashes.mjs` builds each stage to WASM (R0), signs it (ephemeral dev key), and admits it through the attestation-first #105 gate (R1). All seven R0-clean + #105-admitted. Pinned sha256 (2026-07-22, current emitter):
+`node scripts/gather-compiler-stage-hashes.mjs` builds each stage to WASM (R0), signs it (ephemeral dev key), and admits it through the attestation-first #105 gate (R1). All seven R0-clean + #105-admitted; the recorded sha256 is `wasmHash` of the **WASM bytes** (not the ephemeral signature) → deterministic.
 
-| Stage | bytes | sha256 |
-|---|---|---|
-| lexer | 5052 | `114defee799d182d2d4e46c405b471e59f1fb5f2bc23f1e2bedaccacf0090ec9` |
-| parser | 17062 | `1563d4d1de5159b429794fcffa0bfd1aaaf77ea07661fe6c7b652d7d631c2fd5` |
-| gir-emitter | 4012 | `f1f6fef37b6924edf1b4805c8acb3c479410c74973915d4deff642b48b99cdce` |
-| runtime | 6434 | `503db02c94c3fd60b48b0464bd624e4a594c9689cf7f2f1ae9ebe76f7601c734` |
-| type-checker | 10325 | `564273b187b9d3921806e2bbb4a0e88bd382ca17a784be596d053b188d10a667` |
-| effect-checker | 6314 | `22655f5c01dddc95345a76a27ee271532ad872ee3f022cf59acd9011ebbc084c` |
-| governance-verifier | 5211 | `b93c53149d8970b13013818cd96a23adc19cc2734e0e3f47b7fb1ec554d34287` |
+**The authoritative baseline is `rd0528-compiler-stage-hashes-baseline.json`, GATED by `scripts/audit-compiler-stage-hashes.mjs`** (wired into `run-phase-close.mjs`; self-tested). A hardcoded table in this doc previously drifted SILENTLY as the emitter evolved (e.g. `parser` grew 17062→17854 bytes across commits with no `parser.fungi` change — legitimate emitter drift) and claimed live "hash-pin" evidence it could not back (bridge 0101/0103, owner-approved 0104). The gate closes that:
 
-> These are the current emitter's deterministic output; a change to a stage or the emitter moves the hash. Re-run the gatherer immediately before any flip and re-pin if they have moved.
+- It re-derives all seven hashes each phase-close and compares them to the reviewed baseline.
+- **Emitter drift is EXPECTED** — compiled bytes legitimately change as the emitter is iterated — so the gate reds VISIBLY on drift (never silent), and the fix is a REVIEW: `--update-baseline` when the drift is expected emitter evolution; **investigate** when the affected stage's `.fungi` source did NOT change (the real thing a hash-pin should catch). This gates the INVARIANT (determinism + reviewed baseline), not a frozen value.
+
+> To see the current pinned values: `node scripts/audit-compiler-stage-hashes.mjs --json`, or read the baseline JSON. Before any flip, the gate must be green (or the baseline re-reviewed) — the hashes are no longer a doc snapshot that can rot.
 
 ## Open prerequisites before ANY flip (HARD, not pre-emptible)
 
