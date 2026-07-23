@@ -79,7 +79,16 @@ async function flowsFrom(source) {
   let toks = lexRes.value ?? lexRes;
   if (toks.__tag === "ok") toks = toks.value;
   const parseRes = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-  return (parseRes.value ?? parseRes).fields.get("flows");
+  const prRec = parseRes.value ?? parseRes;
+  // Driver refusal (R&D 0050 / FUNGI-PARSE fail-closed): refuse to hand flows downstream when the
+  // parser reported errors — an unread error array is the same fail-open one level up.
+  const prErrs = prRec.fields.get("errors");
+  assert.deepEqual(
+    prErrs?.__tag === "list" ? prErrs.items.map((e) => e.value ?? e) : ["<missing errors list>"],
+    [],
+    "self-hosted parser reported errors — flowsFrom driver refuses (FUNGI-PARSE fail-closed)",
+  );
+  return prRec.fields.get("flows");
 }
 
 // buildFlowTable(flows) -> Array<FlowEntry { name, params: Array<String>, body: Array<GIRStmt> }>

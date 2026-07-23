@@ -51,6 +51,14 @@ async function pipeline(source) {
   // 2. parser.fungi: tokens -> ParseResult { flows, errors }
   const parseRes = await executeFlow("parseFlows", new Map([["tokens", tokensVal]]), parser.ast);
   const prRec = parseRes.value ?? parseRes;
+  // Driver refusal (R&D 0050 / FUNGI-PARSE fail-closed): an error array nobody reads is the same
+  // fail-open one level up — refuse to feed downstream stages when the parser reported errors.
+  const prErrs = prRec.fields.get("errors");
+  assert.deepEqual(
+    prErrs?.__tag === "list" ? prErrs.items.map((e) => e.value ?? e) : ["<missing errors list>"],
+    [],
+    "self-hosted parser reported errors — pipeline driver refuses (FUNGI-PARSE fail-closed)",
+  );
   const flowsVal = prRec.fields.get("flows");
 
   // 3. type-checker.fungi: return-expr check (checkFlows) + full body check (checkFlowBodies)

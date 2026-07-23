@@ -61,7 +61,16 @@ async function typecheck(source) {
   let tokensVal = lexRes.value ?? lexRes;
   if (tokensVal.__tag === "ok") tokensVal = tokensVal.value;
   const parseRes = await executeFlow("parseFlows", new Map([["tokens", tokensVal]]), parser.ast);
-  const flowsVal = (parseRes.value ?? parseRes).fields.get("flows");
+  const prRec = parseRes.value ?? parseRes;
+  // Driver refusal (R&D 0050 / FUNGI-PARSE fail-closed): refuse to type-check flows when the
+  // parser reported errors — an unread error array is the same fail-open one level up.
+  const prErrs = prRec.fields.get("errors");
+  assert.deepEqual(
+    prErrs?.__tag === "list" ? prErrs.items.map((e) => e.value ?? e) : ["<missing errors list>"],
+    [],
+    "self-hosted parser reported errors — typecheck driver refuses (FUNGI-PARSE fail-closed)",
+  );
+  const flowsVal = prRec.fields.get("flows");
   const checkRes = await executeFlow("checkFlows", new Map([["flows", flowsVal]]), checker.ast);
   const bodyRes = await executeFlow("checkFlowBodies", new Map([["flows", flowsVal]]), checker.ast);
   return [...readDiags(checkRes), ...readDiags(bodyRes)];

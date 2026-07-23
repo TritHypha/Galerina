@@ -94,11 +94,23 @@ async function stageA(src, flow, argsObj) {
   const r = await executeFlow(flow, new Map(Object.entries(argsObj)), p.ast);
   return normA(r);
 }
+// Driver refusal (R&D 0050 / FUNGI-PARSE fail-closed): refuse to feed downstream stages when the
+// parser reported errors — an unread error array is the same fail-open one level up.
+function refuseParseErrors(prRec, who) {
+  const errs = prRec.fields.get("errors");
+  assert.deepEqual(
+    errs?.__tag === "list" ? errs.items.map((e) => e.value ?? e) : ["<missing errors list>"],
+    [],
+    `self-hosted parser reported errors — ${who} driver refuses (FUNGI-PARSE fail-closed)`,
+  );
+}
 async function stageB(src, flow, rtArgs) {
   const lx = await executeFlow("tokenize", new Map([["source", vStr(src)]]), lexer.ast);
   let toks = lx.value ?? lx; if (toks.__tag === "ok") toks = toks.value;
   const pr = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-  const flows = (pr.value ?? pr).fields.get("flows");
+  const prRec = pr.value ?? pr;
+  refuseParseErrors(prRec, "stageB");
+  const flows = prRec.fields.get("flows");
   const tbl = await executeFlow("buildFlowTable", new Map([["flows", flows]]), gir.ast);
   const res = await executeFlow("runProgram", new Map([["flows", tbl.value ?? tbl], ["entryName", vStr(flow)], ["args", vList(rtArgs)]]), rt.ast);
   // runProgram now returns RunResult { retVal, auditLog } — extract retVal
@@ -180,7 +192,9 @@ describe("Stage B widening — full language coverage (Stage A == Stage B)", () 
     const lx = await executeFlow("tokenize", new Map([["source", vStr(src)]]), lexer.ast);
     let toks = lx.value ?? lx; if (toks.__tag === "ok") toks = toks.value;
     const pr = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-    const flows = (pr.value ?? pr).fields.get("flows");
+    const prRecB = pr.value ?? pr;
+    refuseParseErrors(prRecB, "runB");
+    const flows = prRecB.fields.get("flows");
     const tbl = await executeFlow("buildFlowTable", new Map([["flows", flows]]), gir.ast);
     const res = await executeFlow("runProgram", new Map([["flows", tbl.value ?? tbl], ["entryName", vStr(flow)], ["args", vList(rtArgs)]]), rt.ast);
     const runResult = res.value ?? res;
@@ -191,7 +205,9 @@ describe("Stage B widening — full language coverage (Stage A == Stage B)", () 
     const lx = await executeFlow("tokenize", new Map([["source", vStr(src)]]), lexer.ast);
     let toks = lx.value ?? lx; if (toks.__tag === "ok") toks = toks.value;
     const pr = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-    const flows = (pr.value ?? pr).fields.get("flows");
+    const prRecBF = pr.value ?? pr;
+    refuseParseErrors(prRecBF, "runBFull");
+    const flows = prRecBF.fields.get("flows");
     const tbl = await executeFlow("buildFlowTable", new Map([["flows", flows]]), gir.ast);
     const res = await executeFlow("runProgram", new Map([["flows", tbl.value ?? tbl], ["entryName", vStr(flow)], ["args", vList(rtArgs)]]), rt.ast);
     const runResult = res.value ?? res;
@@ -256,14 +272,18 @@ contract { intent { "Use the imported double flow." } }
         const lx = await executeFlow("tokenize", new Map([["source", vStr(src)]]), lexer.ast);
         let toks = lx.value ?? lx; if (toks.__tag === "ok") toks = toks.value;
         const pr = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-        const flows = (pr.value ?? pr).fields.get("flows");
+        const prRecImp = pr.value ?? pr;
+        refuseParseErrors(prRecImp, "runMultiFile(import)");
+        const flows = prRecImp.fields.get("flows");
         const tbl = await executeFlow("buildFlowTable", new Map([["flows", flows]]), gir.ast);
         allItems = [...allItems, ...(tbl.value ?? tbl).items];
       }
       const lx = await executeFlow("tokenize", new Map([["source", vStr(mainSrc)]]), lexer.ast);
       let toks = lx.value ?? lx; if (toks.__tag === "ok") toks = toks.value;
       const pr = await executeFlow("parseFlows", new Map([["tokens", toks]]), parser.ast);
-      const mainFlows = (pr.value ?? pr).fields.get("flows");
+      const prRecMain = pr.value ?? pr;
+      refuseParseErrors(prRecMain, "runMultiFile(main)");
+      const mainFlows = prRecMain.fields.get("flows");
       const tbl = await executeFlow("buildFlowTable", new Map([["flows", mainFlows]]), gir.ast);
       const merged = vList([...(tbl.value ?? tbl).items, ...allItems]);
       const res = await executeFlow("runProgram", new Map([["flows", merged], ["entryName", vStr(flowName)], ["args", vList(rtArgs)]]), rt.ast);

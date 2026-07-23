@@ -1509,11 +1509,15 @@ contract {
         let itv: String = tokVal(tokens, ipos)
         if itv == "" { foundPath = true }
         if isNewline(tokens, ipos) { foundPath = true }
-        // String literals are the module path
+        // The module path is the token AFTER `from` (grammar-positional, value-based). The old
+        // `tok.kind == StringLiteral` bare-enum compare is ALWAYS-TRUE in the combined unit
+        // (kinds surface as `unresolved`; measured 2026-07-23) — it fired on the FIRST scanned
+        // token, capturing "flow" as the import path and leaving pos mid-statement (masked for
+        // months by the old silent top-level skip; exposed by the FUNGI-PARSE-001 fail-closed check).
         let itok = tokens.get(ipos)
         match itok {
           Some(tok) => {
-            if tok.kind == StringLiteral {
+            if tokVal(tokens, ipos - 1) == "from" {
               importPaths = importPaths.append(tok.value)
               foundPath = true
             }
@@ -1695,6 +1699,25 @@ contract {
       }
       pos = gp
       consumed = true
+    }
+
+    // Version header (`@version N` on LINE 1): the language's own file header — parseProgram (.ts)
+    // blanks line 1 the same way. Consumed silently ONLY when the `@` sits on line 1; a mid-file `@`
+    // stays an unexpected token ("a mid-source header is not grammar" — the same rule as .ts).
+    if consumed == false {
+      if tv == "@" {
+        mut atLine: Int = 0
+        let atOpt = tokens.get(pos)
+        match atOpt {
+          Some(atTok) => { atLine = atTok.line }
+          None => {}
+          _ => {}
+        }
+        if atLine == 1 {
+          while pos < total and isNewline(tokens, pos) == false { pos = pos + 1 }
+          consumed = true
+        }
+      }
     }
 
     // Grammar-gap structural skip (DELIBERATE, silent): record/enum/type declarations are not yet in
