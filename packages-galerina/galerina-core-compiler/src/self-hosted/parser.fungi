@@ -1441,9 +1441,45 @@ contract {
 
 // â”€â”€ Main parser flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+// isTrivia: newline or comment token (top-level trivia the parser ignores).
+// The lexer EMITS comments as tokens (Comment / DocComment / GovComment) — they are trivia at top
+// level, never "unexpected tokens". Used by the FUNGI-PARSE-001 fail-closed check so error reporting
+// flags only genuine garbage (R&D 0050: unconsumed NON-TRIVIA tokens).
+pure flow isTrivia(tokens: Array<Token>, pos: Int) -> Bool
+contract {
+  intent { "True when tokens[pos] is a newline or a comment-kind token (top-level trivia)." }
+}
+{
+  // MEASURED (probe 2026-07-23): token KIND comparisons are unreliable here — kinds surface as
+  // `unresolved` values, where `kind == "Comment"` is always-false and `kind == Comment` (bare
+  // member) is always-true. So trivia is decided from the token VALUE, all-proven idioms:
+  //   Eof sentinel  -> value ""            comments -> value starts "//" or "/*"
+  mut t: Bool = false
+  if isNewline(tokens, pos) { t = true }
+  let v: String = tokVal(tokens, pos)
+  if v == "" { t = true }
+  mut c0s: String = ""
+  mut c1s: String = ""
+  let c0: Option<Char> = v.charAt(0)
+  match c0 {
+    Some(a) => { c0s = a.toString() }
+    None => {}
+    _ => {}
+  }
+  let c1: Option<Char> = v.charAt(1)
+  match c1 {
+    Some(b) => { c1s = b.toString() }
+    None => {}
+    _ => {}
+  }
+  if c0s == "/" and c1s == "/" { t = true }
+  if c0s == "/" and c1s == "*" { t = true }
+  return t
+}
+
 pure flow parseFlows(tokens: Array<Token>) -> ParseResult
 contract {
-  intent { "Parse Galerina flow declarations from a token stream. Milestone 1: flow headers only." }
+  intent { "Parse Galerina flow declarations from a token stream. Milestone 1: flow headers only. Fail-closed: malformed source reports FUNGI-PARSE-00x errors, never a silent skip (R&D 0050)." }
 }
 {
   mut flows: Array<FlowDecl> = Array.empty()
@@ -1456,6 +1492,12 @@ contract {
 
   while pos < total {
     let tv = tokVal(tokens, pos)
+    // FUNGI-PARSE fail-closed (R&D 0050 ruling): `consumed` marks iterations where a recognized
+    // branch (policy / guard / grammar-gap skip / error-recovery) already advanced `pos` — the
+    // branches are SEQUENTIAL ifs (no else-chaining), so after one runs, the stale `tv` falls
+    // through to the qualifier check; without this flag the unexpected-token error below would
+    // false-fire on every successfully parsed policy/guard.
+    mut consumed: Bool = false
 
     // Skip `import` statements: `import flow X from "path"` or `import { X } from "path"`
     // Record the module path in importPaths for the host to resolve and merge.
@@ -1550,6 +1592,7 @@ contract {
         policies = policies.append({ name: polName, permittedEffects: permEffects })
       }
       pos = pp
+      consumed = true
     }
 
 
@@ -1651,6 +1694,40 @@ contract {
         guardDecls = guardDecls.append({ name: guardName, permittedEffects: guardPermEffects, enforcedLimits: guardLimits })
       }
       pos = gp
+      consumed = true
+    }
+
+    // Grammar-gap structural skip (DELIBERATE, silent): record/enum/type declarations are not yet in
+    // this twin's grammar (Milestone-1+ scope; see #93). Consume the WHOLE declaration — a balanced
+    // { } block, or to end-of-line when no brace opens (a one-line alias) — so known-but-unparsed
+    // forms are CONSUMED, never flagged unexpected (R&D 0050: only UNCONSUMED non-trivia tokens are
+    // errors). An unterminated block at EOF IS an error: FUNGI-PARSE-003 (missing close brace).
+    // Remove each keyword from this skip as its parse milestone lands.
+    if consumed == false {
+      if tv == "record" or tv == "enum" or tv == "type" {
+        mut sp: Int = pos + 1
+        mut sDepth: Int = 0
+        mut sawBrace: Bool = false
+        mut sScan: Bool = true
+        while sp < total and sScan {
+          let sv: String = tokVal(tokens, sp)
+          if sv == "{" {
+            sDepth = sDepth + 1
+            sawBrace = true
+          }
+          if sv == "}" {
+            sDepth = sDepth - 1
+            if sDepth == 0 { sScan = false }
+          }
+          if sawBrace == false and isNewline(tokens, sp) { sScan = false }
+          sp = sp + 1
+        }
+        if sDepth > 0 {
+          errs = errs.append("FUNGI-PARSE-003: unterminated '" + tv + "' declaration - missing '}' before end of input")
+        }
+        pos = sp
+        consumed = true
+      }
     }
 
     // Detect qualifier: pure | guarded | secure  (followed by "flow")
@@ -1664,6 +1741,13 @@ contract {
         qualifier = tv
         namePos = pos + 2
       }
+      else {
+        // FUNGI-PARSE-002 (mirrors parser.ts EXPECTED_FLOW_KEYWORD): a flow qualifier not followed
+        // by `flow` is a dangling keyword — error + recover to end of line (anti-cascade).
+        errs = errs.append("FUNGI-PARSE-002: expected 'flow' after '" + tv + "'")
+        while pos < total and isNewline(tokens, pos) == false { pos = pos + 1 }
+        consumed = true
+      }
     }
     if tv == "flow" {
       qualifier = "flow"
@@ -1671,11 +1755,28 @@ contract {
     }
 
     if qualifier == "" {
-      pos = pos + 1
+      // FUNGI-PARSE-001 (R&D 0050; mirrors parser.ts UNEXPECTED_TOKEN): an unconsumed, NON-TRIVIA
+      // token at top level is a parse ERROR, never a silent skip — the fail-open this closes.
+      // Trivia (newlines + comment tokens) advances silently, exactly as before. When `consumed`
+      // is set, a recognized branch already advanced pos this iteration — nothing to do here
+      // (advancing again would EAT the following token, the old off-by-one this also fixes).
+      if consumed == false {
+        if isTrivia(tokens, pos) {
+          pos = pos + 1
+        }
+        else {
+          errs = errs.append("FUNGI-PARSE-001: unexpected token '" + tv + "' at top level")
+          // Anti-cascade (mirrors parser.ts:6177): one bad line = one error — consume to end of line.
+          while pos < total and isNewline(tokens, pos) == false { pos = pos + 1 }
+        }
+      }
     }
     else {
       let flowName: String = tokVal(tokens, namePos)
       if flowName == "" {
+        // FUNGI-PARSE-003: `flow` keyword with no name — a dangling declaration (EOF mid-header
+        // or malformed source). Recorded fail-closed; pos advances past the keyword as before.
+        errs = errs.append("FUNGI-PARSE-003: 'flow' keyword with no flow name (dangling declaration)")
         pos = namePos
       }
       else {
@@ -1827,6 +1928,13 @@ contract {
           let blk: BlockParse = parseBlock(tokens, p + 1)
           bodyStmts = blk.stmts
           p = blk.nextPos
+        }
+        else {
+          // FUNGI-PARSE-004 (R&D 0050 class): a flow HEADER parsed but no `{` body block follows.
+          // The flow record is still appended (shape-compatible with downstream stages); the error
+          // is what makes it un-consumable — drivers refuse on non-empty errors, so a bodiless
+          // flow can no longer be silently accepted.
+          errs = errs.append("FUNGI-PARSE-004: flow '" + flowName + "' has no body block ('{' expected)")
         }
 
         flows = flows.append({
