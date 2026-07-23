@@ -73,6 +73,17 @@ const SEED = [
   { id: "int-overflow-trap", ...bin("Int", "+", I)("Int", "Int"), trap: true, calls: [{ args: [2147483647, 1] }] },
   { id: "int-divzero-trap", ...bin("Int", "/", I)("Int", "Int"), trap: true, calls: [{ args: [7, 0] }] },
   { id: "int-modzero-trap", ...bin("Int", "%", I)("Int", "Int"), trap: true, calls: [{ args: [7, 0] }] },
+  // ── float determinism (RD-0529 A2) ───────────────────────────────────────────────────────────────────
+  // Galerina traps any NON-FINITE float result ($fungi_assert_finite_f64: (v-v)≠0 ⟹ unreachable), so a
+  // NaN or ±Inf can NEVER reach the boundary — A2's "cross-engine NaN-payload" question is MOOT by design.
+  // What A2 proves here instead: (a) that fail-closed non-finite TRAP is ENGINE-CONSISTENT (interp≡V8≡
+  // wasmtime all trap on a would-be NaN/+Inf/-Inf), and (b) finite + SUBNORMAL floats are BIT-identical
+  // across the three engines (no flush-to-zero divergence). The tricky f64 values are passed as runtime
+  // ARGS, never source literals, so they dodge the neg-float-literal + int()-cast emitter gaps (reported
+  // to R&D separately).
+  { id: "float-nonfinite-trap", ...bin("Float", "/", F)("Float", "Float"), trap: true, calls: [{ args: [0.0, 0.0] }, { args: [1.0, 0.0] }, { args: [-1.0, 0.0] }] }, // NaN · +Inf · -Inf ⟹ all fail-closed
+  { id: "float-precision-bits", ...bin("Float", "+", F)("Float", "Float"), calls: [{ args: [0.1, 0.2] }, { args: [1000000000000000.0, 1.0] }, { args: [1e-300, 1e-300] }] }, // 0.1+0.2 = 0x3fd3333333333334 exactly
+  { id: "float-subnormal-bits", ...bin("Float", "*", F)("Float", "Float"), calls: [{ args: [5e-324, 2.0] }, { args: [1e-320, 4.0] }] }, // smallest subnormals — preserved, not flushed
 ];
 
 // ── compile one program's source to WASM bytes (front-end gated, #141 stub-rejected) ──
@@ -130,6 +141,9 @@ function interp(src, flow, args, wrap) {
 // fully unwrap a boxed runtime value ({__tag,value} possibly nested) to a primitive, then canonicalise.
 const unwrap = (x) => (x && typeof x === "object" && "value" in x ? unwrap(x.value) : x);
 const canon = (v) => { const u = unwrap(v); return typeof u === "boolean" ? (u ? "1" : "0") : String(u); };
+// f64 bit pattern (hex) of a value coerced to double — the BIT-exact key the wasmtime leg compares floats by
+// (== would treat -0.0 as 0.0 and can't express A2's "bit-identical" claim; a bit key is unambiguous).
+const f64bits = (v) => "0x" + new BigUint64Array(new Float64Array([Number(unwrap(v))]).buffer)[0].toString(16).padStart(16, "0");
 
 // ── run + assert interp ≡ V8 (values AND traps), collect the fixture ─────────────────────────────────────
 // MODEL (measured): the interpreter is a faithful oracle for BOTH — a value call must equal V8, and a trap
@@ -157,7 +171,7 @@ for (const prog of SEED) {
       valueCalls++;
       if (v8.k !== "VALUE" || a.k !== "VALUE") divergences.push(`${prog.id}(${call.args}): expected a value, got interp=${a.k}${a.why ? `(${a.why})` : ""} v8=${v8.k}`);
       else if (canon(v8.value) !== canon(a.value)) divergences.push(`${prog.id}(${call.args}): interp≠V8 — interp=${canon(a.value)} v8=${canon(v8.value)}`);
-      rec.calls.push({ args: call.args, expect: { trap: false, value: v8.k === "VALUE" ? canon(v8.value) : null } });
+      rec.calls.push({ args: call.args, expect: { trap: false, value: v8.k === "VALUE" ? canon(v8.value) : null, f64bits: v8.k === "VALUE" ? f64bits(v8.value) : null } });
     }
   }
   writeFileSync(join(OUT, rec.wasm_file), Buffer.from(u8));

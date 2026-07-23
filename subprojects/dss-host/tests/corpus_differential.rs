@@ -96,21 +96,28 @@ fn corpus_equals_interp_and_v8_through_wasmtime() -> anyhow::Result<()> {
                 (Ok(()), false) => {
                     let want = call["expect"]["value"].as_str().unwrap_or("");
                     let ok = match results.first() {
-                        // f64: compare AS f64 (parse the fixture's canonical string) — never string-format, which
-                        // would diverge from JS's Number->string. NaN never appears in this seed.
-                        Some(ValType::F64) => out[0].f64().map(|g| g == want.parse::<f64>().unwrap_or(f64::NAN)).unwrap_or(false),
+                        // f64: BIT-exact (RD-0529 A2) — compare the raw bit pattern to the fixture's f64bits key.
+                        // A string or `==` compare would hide a -0.0 / flush-to-zero / subnormal divergence; bits can't.
+                        Some(ValType::F64) => {
+                            let want_bits = call["expect"]["f64bits"].as_str()
+                                .and_then(|s| u64::from_str_radix(s.trim_start_matches("0x"), 16).ok());
+                            matches!((out[0].f64(), want_bits), (Some(g), Some(wb)) if g.to_bits() == wb)
+                        }
                         // i32 (incl. Bool, lowered to 0/1) and i64: exact integer string match.
                         Some(ValType::I32) => out[0].i32().map(|g| (g as i64).to_string() == want).unwrap_or(false),
                         Some(ValType::I64) => out[0].i64().map(|g| g.to_string() == want).unwrap_or(false),
                         other => { mismatches.push(format!("{id}: unsupported result type {other:?}")); false }
                     };
                     if !ok {
-                        let got = match results.first() {
-                            Some(ValType::F64) => out[0].f64().map(|g| g.to_string()).unwrap_or_default(),
-                            Some(ValType::I64) => out[0].i64().map(|g| g.to_string()).unwrap_or_default(),
-                            _ => out[0].i32().map(|g| g.to_string()).unwrap_or_default(),
+                        let (got, want_show) = match results.first() {
+                            Some(ValType::F64) => (
+                                out[0].f64().map(|g| format!("{g} (0x{:016x})", g.to_bits())).unwrap_or_default(),
+                                call["expect"]["f64bits"].as_str().unwrap_or(want).to_string(),
+                            ),
+                            Some(ValType::I64) => (out[0].i64().map(|g| g.to_string()).unwrap_or_default(), want.to_string()),
+                            _ => (out[0].i32().map(|g| g.to_string()).unwrap_or_default(), want.to_string()),
                         };
-                        mismatches.push(format!("{id}({args_json:?}): wasmtime={got} != expected={want}"));
+                        mismatches.push(format!("{id}({args_json:?}): wasmtime={got} != expected={want_show}"));
                     }
                 }
             }
