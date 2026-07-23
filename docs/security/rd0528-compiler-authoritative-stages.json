@@ -1,6 +1,21 @@
 {
   "$schema-note": "RD-0528 COMPILER SELF-HOSTING AUTHORITY LEDGER. A compiler stage listed here is AUTHORITATIVE: its .fungi/WASM is the decider of record for that stage, and the co-located .ts is demoted to a differential SHADOW (kept + its parity test keeps asserting .fungi-WASM === .ts for a bake window; deleted only post-bake — I-3 oracle-before-deletion). A stage is added here ONLY on the OWNER's condition-form nod over its evidence pack (R3 byte-parity + mutation-kill + hash-pin + #105 admission — RD-0528 I-1/I-4). scripts/audit-compiler-stage-twins.mjs reads this ledger and ENFORCES, fail-closed, that every authoritative stage stays `galerina check`-clean AND still differential (a wat-p9-*-parity / self-hosted-* test references it + calls admitAndInstantiate). An authoritative stage that regresses to shadow, or fails check, is RED — the trust-root fail-open this ledger exists to prevent. A malformed ledger is itself RED (deny-by-default); an empty `twins` array means nothing is flipped yet. SEPARATE from the kernel sentinel ledger (rd0361-authoritative-twins.json): flipping a kernel sentinel retires ZERO lines of the .ts compiler — the compiler stages are their own track (RD-0528 §2).",
   "protocol": "RD-0528 Phase I compiler self-hosting closure · shadow-bake (keep the .ts one bake window before deleting)",
-  "prerequisites": "HARD, NOT pre-emptible: I-2 bootstrap-seed (pin a trusted stage0 .fungi->WASM compiler so .fungi compiles .fungi with no .ts) + I-3 oracle-before-.ts-deletion. This gate is the standing enforcement; each flip is owner-gated (I-4: nod -> ledger entry -> shadow-bake window -> post-bake .ts delete). Evidence per stage: (a) R3 byte-parity [wat-p9-*-parity] · (c) mutation-kill non-vacuity · (d) hash-pin + #105 admission [scripts/gather-compiler-stage-hashes.mjs].",
-  "twins": []
+  "prerequisites": "TWO-TIER (owner-ruled 2026-07-22 in self-hosted-i3-functional-corpus.test.mjs:7-27, where I-3 is FUNCTIONAL correctness — NOT byte-identity with .ts — and the self-hosted backend is DEFERRED). TIER 1 = AUTHORITY-FLIP (a `twins` entry): the stage's .fungi becomes the authoritative SPEC of record and the co-located .ts is RETAINED as a running differential SHADOW the gate holds === (nothing deleted; the .ts still executes). Stands on: (a) R3 byte-parity [wat-p9-*-parity] + (c) mutation-kill non-vacuity [scripts/audit-mutation.mjs] + (d) hash-pin + #105 admission [scripts/gather-compiler-stage-hashes.mjs] + the I-3 FUNCTIONAL oracle [self-hosted-i3-functional-corpus]. Does NOT require I-2: a flip declares the SPEC of record, not a running self-hosted backend. Each flip is owner-gated (I-4: condition-form nod over the evidence pack -> ledger entry). TIER 2 = FULL RETIREMENT (deleting the .ts): HARD, NOT pre-emptible — I-2 bootstrap-seed (a trusted stage0 .fungi->WASM compiler so .fungi compiles .fungi with no .ts) + I-3 oracle-before-.ts-deletion + a shadow-bake window. DEFERRED: the self-hosted backend is absent, so NO .ts is deleted and every tier-1 flip keeps its running .ts.",
+  "twins": [
+    {
+      "dir": "packages-galerina/galerina-core-compiler/src/self-hosted",
+      "file": "type-checker.fungi",
+      "tier": "authority-flip (tier 1): type-checker.fungi is the authoritative SPEC of record; the co-located type-checker.ts is RETAINED as a running differential shadow the gate holds ===. No .ts deleted (tier-2 retirement deferred — self-hosted backend absent).",
+      "flipped": "2026-07-23",
+      "nod": "owner 'yes unlocked' 2026-07-23 over the type-checker evidence pack (per-stage I-4 nod; the first RD-0528 compiler-stage authority flip)",
+      "evidence": {
+        "r3-byte-parity": "wat-p9-typechecker-parity.test.mjs — 13/13 (Stage-A interpreter === Stage-B WASM + non-vacuity), re-verified 2026-07-23",
+        "mutation-kill": "SEC-002 RD0528_COMPILER (scripts/audit-mutation.mjs) — type-checker anchor (colon-form code) killed",
+        "hash-pin-105": "scripts/gather-compiler-stage-hashes.mjs — deterministic sha256, #105-admitted",
+        "i3-functional-oracle": "self-hosted-i3-functional-corpus.test.mjs — TYPE-001/008 MUST-PASS/FAIL, exit 0",
+        "pack": "docs/security/rd0528-compiler-stages-evidence-pack.md (fca7b44e)"
+      }
+    }
+  ]
 }
