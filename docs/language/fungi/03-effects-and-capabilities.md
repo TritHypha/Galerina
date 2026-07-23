@@ -8,7 +8,7 @@
 > `examples/foundations/hardened-border-plugin.fungi`, `examples/ai-inference/classifyMessage.fungi`.
 >
 > `docs/AI/CANONICAL_SYNTAX.md`'s effect table and the KB clause-reference's effect table both
-> contain names that are **not** in `CANONICAL_EFFECTS` (e.g. `network.egress`, `vault.read`,
+> contain names that are **not** in `CANONICAL_EFFECTS` (e.g. `network.egress`,
 > `queue.publish`, `db.write`, `ai.call`, `state.mutate`). Where they disagree with
 > `effect-checker.ts`, the checker wins. This page lists the real set.
 
@@ -57,6 +57,16 @@ This is the complete set the production effect checker accepts. Grouped for lear
 | `state.read` | Read shared application state |
 | `state.write` | Write shared application state |
 | `ledger.mutate` | Financial/ledger mutation (the `storage.write`+`audit.write` composite) |
+
+### Vault / cross-flow state
+| Effect | Meaning |
+|---|---|
+| `vault.read` | Read a value from the governed **vault** — the sanctioned cross-flow state channel (fetch what another flow saved, via `secure.<name>`). **Required by `FUNGI-VAULT-003`** when a flow reads vault state. |
+| `vault.write` | Write a value to the governed vault (save via `mut secure.<name>`). **Required by `FUNGI-VAULT-004`** when a flow mutates vault state. |
+
+> `vault.read` / `vault.write` are the governed **cross-flow state** effects (owner-ruled canonical 2026-07-23)
+> and are **NOT** interchangeable with `secret.read` — that is a *credential* read (the `vault.secret`
+> call-pattern). The `vault {}` declaration block is covered in [06 — Governance constructs](06-governance-constructs.md).
 
 ### Network & messaging
 | Effect | Meaning |
@@ -193,7 +203,6 @@ Do **not** write these — they are not in `CANONICAL_EFFECTS` and not registere
 | Doc-only name | Use instead |
 |---|---|
 | `network.egress` (CANONICAL_SYNTAX table) | `network.outbound` |
-| `vault.read` (CANONICAL_SYNTAX table) | `secret.read` |
 | `queue.publish` / `queue.subscribe` | `message.publish` (and there is no canonical subscribe effect) |
 | `db.read` / `db.write` (KB clause table) | `database.read` / `database.write` |
 | `state.mutate` (KB clause table) | `state.write` |
@@ -203,22 +212,18 @@ Do **not** write these — they are not in `CANONICAL_EFFECTS` and not registere
 (The KB and CANONICAL doc tables were written before the effect vocabulary was reconciled into a
 single source. Trust `effect-checker.ts`.)
 
-## Capabilities: `uses`, `access { grant }`, and how they relate to effects
+## Capabilities: `access { grant }` and how it relates to effects
 
-Effects say *what the body does*. **Capabilities** are the runtime authority to do it. Two source
-forms grant/negotiate capability:
+Effects say *what the body does*. **Capabilities** are the runtime authority to do it, negotiated by
+the `access { grant … }` boundary (below).
 
-### `uses cap.name` — inline capability declaration (Core style)
+### ⚠ `uses cap.name` on a flow header does NOT parse
 
-```fungi
-flow load_secret(user_id: Id) -> Secret
-  uses vault.secrets.read
-{
-  return GlobalVault.secrets.get(user_id)
-}
-```
-
-Parsed at `parser.ts:4722`. Less common than `effects {}` in the corpus, but real.
+> `secure flow f() uses vault.secrets.read { … }` → **`FUNGI-PARSE-001: Expected "{", got "uses"`** (verified).
+> `uses` is not an active keyword and there is no flow-header `uses` handler — the only `uses` construct lives
+> inside `model { }` blocks. **Declare capability exclusively through `contract { effects { … } }`** plus the
+> `access { grant … }` boundary below. This subsection is kept only as a warning so a converter does not emit
+> the non-compiling form.
 
 ### `access { grant ... }` — Default-Deny capability boundary
 
@@ -277,7 +282,7 @@ Drop any one of those three declarations and the effect checker fails the build.
 |---|---|---|
 | `effects { network.egress }` | not a real effect name | `network.outbound` |
 | `effects { db.write }` | `db.*` isn't canonical | `database.write` |
-| `effects { vault.read }` | not canonical | `secret.read` |
+| `effects { vault.read }` used as a *secret* read | `vault.read` is the cross-flow **state** effect, not a credential read | use `secret.read` for a credential; keep `vault.read` for `secure.*` vault access |
 | declaring `secret.access` | broad alias, warns | `secret.read` / `secret.write` |
 | calling `AuditLog.write(...)` with no `audit.write` in `effects` | undeclared effect | add `audit.write` (`FUNGI-EFFECT-001`) |
 | any effect in a `pure flow` | pure = zero effects | make it `guarded`/`secure`, or remove the effect (`FUNGI-EFFECT-003`) |
