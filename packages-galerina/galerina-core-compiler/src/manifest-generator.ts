@@ -37,11 +37,48 @@
 // =============================================================================
 
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import type { GovernanceVerifyResult } from "./governance-verifier.js";
 import type { FlowMeta } from "./parser.js";
 import { resolveCompositeBitmask } from "./capability-types.js";
 
 export const MANIFEST_SCHEMA_VERSION = "fungi.manifest.v1";
+
+// ---------------------------------------------------------------------------
+// U2 — compiler-version provenance (admission floor)
+// ---------------------------------------------------------------------------
+
+/**
+ * U2 (compiler-version floor): every manifest carries the version of the compiler that
+ * produced it, INSIDE the signed body. Rationale: artifacts built before the #140/#163
+ * fidelity fixes can be placeholder-bodied yet validate cleanly — and a signature proves
+ * provenance, never fidelity. The floor lets admission refuse pre-floor artifacts once
+ * enforcement flips (report-only until the owner's U2 re-sign ceremony completes).
+ *
+ * Resolved ONCE from this package's own package.json (works from src/ and dist/ — both
+ * sit one level below the package root). Failure to resolve is a HARD error, not a
+ * silent omission: minting an unstamped manifest would re-open the exact gap the floor
+ * exists to close (fail-closed).
+ */
+let cachedCompilerVersion: string | undefined;
+export function resolveCompilerVersion(): string {
+  if (cachedCompilerVersion !== undefined) return cachedCompilerVersion;
+  try {
+    const raw = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8");
+    const version: unknown = (JSON.parse(raw) as Record<string, unknown>)["version"];
+    if (typeof version !== "string" || version.length === 0) {
+      throw new Error("package.json carries no non-empty 'version'");
+    }
+    cachedCompilerVersion = version;
+    return version;
+  } catch (err) {
+    throw new Error(
+      `FUNGI-MANIFEST-VERSION-UNAVAILABLE: cannot resolve the compiler version for manifest provenance (${(err as Error).message}) — refusing to mint an unstamped manifest (U2 floor, fail-closed)`,
+    );
+  }
+}
 
 export interface PolicyResolutionDag {
   readonly allowedEffects:  number;  // uint32 bitmask — effects permitted across all flows
@@ -72,6 +109,10 @@ export interface LManifest {
   readonly sourceHash: string;
   readonly sourceFile: string;
   readonly flowCount: number;
+  /** U2 admission floor — version of the compiler that produced this artifact. Signed
+   *  (member of the manifest body). Absent on pre-floor manifests; once U2 enforcement
+   *  flips, absent ⇒ refuse. */
+  readonly compilerVersion: string;
   readonly policyResolutionDag?: PolicyResolutionDag;    // CBOR Tag 416 — Topological Graph Engine (#79)
   readonly behavioralFingerprint?: string;               // CBOR Tag 417 — CFG path hash (#80)
   readonly derivedConstraints: readonly string[];
@@ -668,6 +709,7 @@ export function generateManifest(
     sourceHash,
     sourceFile: sourceFile.replace(/\\/g, "/"),
     flowCount: flows.length,
+    compilerVersion: resolveCompilerVersion(),   // U2 floor — signed provenance, never optional at mint time
     policyResolutionDag,
     behavioralFingerprint,
     derivedConstraints: [...derivedConstraints].sort(),

@@ -9,6 +9,12 @@ declare const Buffer: {
   concat(arrays: readonly Uint8Array[], totalLength?: number): Uint8Array & { toString(encoding: string): string };
 };
 
+// `import.meta.url` — the expression exists under module NodeNext, but the base lib's
+// ImportMeta interface is empty; the property is declared here (same role as the module shims).
+interface ImportMeta {
+  readonly url: string;
+}
+
 declare const process: {
   readonly argv: readonly string[];
   readonly env: Readonly<Record<string, string | undefined>>;

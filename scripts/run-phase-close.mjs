@@ -490,6 +490,16 @@ run("compiler-stage-twins", "node", ["scripts/audit-compiler-stage-twins.mjs"]);
 //   CI vs absent⟹skip under dev is the discriminator proving it enforces, not always-passes).
 run("wasmtime-presence", "node", ["scripts/audit-wasmtime-presence.mjs"]);
 
+// u2-version-floor — U2 admission provenance: every SIGNED package manifest must carry the
+//   compilerVersion of the compiler that built it (generateManifest stamps it inside the SIGNED body;
+//   a signature proves provenance, never fidelity — the floor is what recalls pre-#140/#163
+//   placeholder-bodied artifacts). REPORT-ONLY here until the owner's U2 re-sign ceremony completes
+//   (runbook step 4.8 flips this to --enforce: absent field ⟹ refuse). Report mode never reds the
+//   phase-close but names every PRE-FLOOR row loudly — a report-only gate whose output reads like a
+//   pass would be the signal-conflation class. Self-tested truth table incl. the no-op alarm
+//   (zero measurable rows under --enforce ⟹ exit 1: cannot-attest is not a pass).
+run("u2-version-floor", "node", ["scripts/audit-u2-version-floor.mjs"]);
+
 // ── Doc-freshness gates: previously unwired (Bob review 2026-07) ────────────────────────────────────
 // Documentation drift in a language specification is a security issue: a stale spec that disagrees with
 // the compiler is a source of developer confusion that can lead to incorrect assumptions about guarantees.
