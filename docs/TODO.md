@@ -4,7 +4,44 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-23 (RD-0528 compiler self-hosting — I-1 authority track + I-3 functional corpus; DSS.wasm at ceiling)
+## 📍 CURRENT STATE — 2026-07-23 (U2 ceremony COMPLETE + floor ENFORCED · parser fail-closed · token-kind arc ACTIVE)
+
+**Forward view:** `roadmap-2026-07-23.md` (generated status block + the ladder). Compiler pkg last evidenced
+**4,930/4,930 · 0 fail**; drift gate green; gate-selftests 69 gates · 56 guarded · 0 violations.
+
+### Session deliverables — 2026-07-23 (the U2 ceremony day)
+
+- **U2 admission provenance COMPLETE + ENFORCED.** `generateManifest` stamps `compilerVersion` inside the
+  SIGNED manifest body (`4726e301`; Ed25519 verifies WITH the field, strip-control fails — the stamp is under
+  the signature). Owner ceremony re-signed `greeting` under the operational key `942d6b2726b0a991`
+  (`596bae4e`, pushed) — the root/operational split is complete, the root key never entered the ceremony.
+  Floor gate `scripts/audit-u2-version-floor.mjs` (self-test 11/11, CG-7 shared discovery, no-op alarm)
+  flipped to `--enforce` in phase-close (`3961346a`): absent field on a signed package manifest ⟹ refuse,
+  permanently. Ceremony determinism datum: the rebuilt `greeting.wasm` was byte-identical to HEAD.
+  Runbook hardened live during the ceremony: 4.5 requires `--force` (CG-7 writer guard's documented
+  pre-re-sign override) · 4.7 stages BOTH drifted files (`.fuse.json` moves with the manifest).
+- **Self-hosted parser FAIL-CLOSED** (`07699ca4` FUNGI-PARSE-001..004 mirroring the `.ts` reject points;
+  anti-cascade = one bad line one error) + **driver refusal at all 8 sites** (`001ff8cf`). The guards paid
+  immediately: exposed the line-1 `@version` over-closure and a months-old always-true kind compare that
+  corrupted every import path. Zero parity-hash movement; suites green.
+- **A7 interp preconditions** (`2a348d1b`): non-`result` `invariant { ensure … }` enforced at flow ENTRY
+  (`FUNGI-INV-001`), fast tiers excluded for such flows (anti-bypass). Corpus 31 programs / 63 calls
+  interp ≡ V8 ≡ wasmtime (49 value · 14 symmetric-trap).
+- **Token-kind arc GROUND TRUTH measured (the active primary):** enum comparison is broken in EVERY form —
+  `Color.Red == Color.Green` is `true`, `== "Red"` always false, bare members always true, checkTypes silent
+  on all of it; `policy` decls are dropped by the twin parser (now LOUDLY — driver refusal catches them);
+  `permitted_effects` lexes as 3 tokens (`scanIdent` lacks underscore — `.ts` measured: ONE token, so the
+  twin lexer is the bug). Build order (R&D-coordinated): (a1) interp enum values + real equality →
+  (a2) FUNGI-TYPE enum-vs-string + FUNGI-NAME bare-member statics → (b) underscore lexer fix →
+  (c) policy-branch migration. Acceptance: probe table → true/false/error/error/error · `policies count : 1`
+  · R3 re-proof per commit. The parser authority flip (I-4) is HARD-blocked on (c).
+- **Board hygiene:** #100/#138/#140 CLOSED (stale labels — work had landed and was re-proven functionally);
+  #137 re-scoped tractable (wire the existing ScaledDecimal i32-handle); #103 parked; #66 deprioritized.
+- Bridge: myco field report (index freshness verified OK; two minor UX items) · underscore ruling ·
+  PLUGIN-001/FUEL-001 traced + handed over · ceremony settled-values handover. R&D lands its KB batch
+  (register settle-up + canonical registrations) as one push post-ceremony.
+
+## 📍 PREVIOUS STATE — 2026-07-23 earlier (RD-0528 compiler self-hosting — I-1 authority track + I-3 functional corpus; DSS.wasm at ceiling)
 
 **Suite green.** Full workspace last totalled 95/95 pkgs · 7,672 · 0 fail (2026-07-22); this session ADDED tests, all pass — full re-total pending. Evidenced this session: compiler pkg **4926/4926**, SEC-002 **59/59 killed**, I-3 corpus **11/11**, all 6 graphs green, audit 0 errors.
 
