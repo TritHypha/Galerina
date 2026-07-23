@@ -91,7 +91,7 @@ contract {
         done = true
       }
       Some(nc) => {
-        if nc.isLetter() or nc.isDigit() {
+        if nc.isLetter() or nc.isDigit() or nc.toString() == "_" {
           word = word + nc.toString()
           i = i + 1
         }
