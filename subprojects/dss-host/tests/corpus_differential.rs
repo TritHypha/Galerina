@@ -29,6 +29,17 @@ fn read_json(name: &str) -> anyhow::Result<serde_json::Value> {
     Ok(serde_json::from_slice(&bytes)?)
 }
 
+// An i64 arg arrives as a JSON number (i32/small cases) or a STRING (i64/u64 values past JSON's safe-integer
+// range). For a u64 value > i64::MAX (e.g. 2^64-1) parse as u64 then reinterpret the bits as i64 — the wasmtime
+// i64 param carries the bit pattern, which the module's unsigned ops (i64.div_u/rem_u/gt_u) read correctly.
+fn arg_i64(a: &serde_json::Value) -> i64 {
+    if let Some(n) = a.as_i64() {
+        return n;
+    }
+    let s = a.as_str().expect("i64 arg is a JSON number or string");
+    s.parse::<i64>().unwrap_or_else(|_| s.parse::<u64>().expect("i64/u64 arg") as i64)
+}
+
 #[test]
 fn corpus_equals_interp_and_v8_through_wasmtime() -> anyhow::Result<()> {
     let manifest = read_json("corpus-differential.json")?;
@@ -76,7 +87,7 @@ fn corpus_equals_interp_and_v8_through_wasmtime() -> anyhow::Result<()> {
                 let a = &args_json[i];
                 let v = match pt {
                     ValType::I32 => Val::I32(a.as_i64().expect("i32 arg") as i32),
-                    ValType::I64 => Val::I64(a.as_i64().expect("i64 arg")),
+                    ValType::I64 => Val::I64(arg_i64(a)),
                     ValType::F64 => Val::F64(a.as_f64().expect("f64 arg").to_bits()),
                     ValType::F32 => Val::F32((a.as_f64().expect("f32 arg") as f32).to_bits()),
                     other => { mismatches.push(format!("{id}: unsupported param type {other:?}")); unsupported = true; break; }

@@ -84,6 +84,16 @@ const SEED = [
   { id: "float-nonfinite-trap", ...bin("Float", "/", F)("Float", "Float"), trap: true, calls: [{ args: [0.0, 0.0] }, { args: [1.0, 0.0] }, { args: [-1.0, 0.0] }] }, // NaN · +Inf · -Inf ⟹ all fail-closed
   { id: "float-precision-bits", ...bin("Float", "+", F)("Float", "Float"), calls: [{ args: [0.1, 0.2] }, { args: [1000000000000000.0, 1.0] }, { args: [1e-300, 1e-300] }] }, // 0.1+0.2 = 0x3fd3333333333334 exactly
   { id: "float-subnormal-bits", ...bin("Float", "*", F)("Float", "Float"), calls: [{ args: [5e-324, 2.0] }, { args: [1e-320, 4.0] }] }, // smallest subnormals — preserved, not flushed
+  // ── i64 / u64 (RD-0529 A1 later rung): BigInt-exact args, via the ASYNC executeFlow interp path (the sync
+  //    fast-path returns null for i64). The u64 cases pass 2^64-1 (all bits set) as an arg — a SIGNED lowering
+  //    reads it as -1 and gets the wrong quotient/remainder/compare; i64.div_u/rem_u/gt_u are what they pin.
+  //    Results are chosen < 2^63 so there is no result-side signedness ambiguity in this rung.
+  { id: "i64-add-beyond-2p53", ...bin("Int64", "+", I)("Int64", "Int64"), calls: [{ args: [9007199254740993n, 2n] }, { args: [-9007199254740993n, -2n] }] }, // exact past the JS-double limit
+  { id: "i64-div-trunc", ...bin("Int64", "/", I)("Int64", "Int64"), calls: [{ args: [1000000000007n, 3n] }, { args: [-7n, 2n] }] },
+  { id: "i64-mod", ...bin("Int64", "%", I)("Int64", "Int64"), calls: [{ args: [1000000000007n, 3n] }] },
+  { id: "u64-div-high-bit", ...bin("UInt64", "/", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 2n] }] }, // 2^64-1 / 2 = 2^63-1 (a signed lowering gives 0)
+  { id: "u64-mod-high-bit", ...bin("UInt64", "%", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 10n] }] }, // 2^64-1 % 10 = 5
+  { id: "u64-cmp-high-bit", ...bin("Bool", ">", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 1n] }] }, // 2^64-1 > 1 = true (a signed lowering gives false)
 ];
 
 // ── compile one program's source to WASM bytes (front-end gated, #141 stub-rejected) ──
@@ -121,20 +131,26 @@ function v8run(u8, flow, args) {
   catch { return { k: "TRAP", why: "runtime" }; }
 }
 
-// ── interpreter (Stage-A) via executeFlowSync. { k:"VALUE",value } | { k:"TRAP" } ──
-function interp(src, flow, args, wrap) {
+// ── interpreter (Stage-A) via ASYNC executeFlow. { k:"VALUE",value } | { k:"TRAP" } ──
+// executeFlow, NOT executeFlowSync: the sync fast-path returns null for i64/u64 (interpreter.ts doc: "if the
+// sync interpreter cannot handle it, returns null"), so it can't surface an i64 flow return — but the async
+// path CAN ({__tag:"int64"|"uint64", value:bigint}), which keeps the i64 rung three-way. executeFlow returns
+// a richer envelope { value:<boxed>, audit:{result}, … }; the boxed result is at r.value.
+async function interp(src, flow, args, wrap) {
   try {
     const p = L.parseProgram(src, "x.fungi", { requireVersionHeader: false });
     // .match (not .matchAll): matchAll throws on a non-global regex. First `(...)` = the flow params.
     const names = (src.match(/\(([^)]*)\)/)?.[1] ?? "").split(",").map((s) => s.trim().split(":")[0].trim()).filter(Boolean);
     const m = new Map();
     args.forEach((v, i) => { if (names[i]) m.set(names[i], wrap(v)); });
-    const r = L.executeFlowSync(flow, m, p.ast, p.flows);
-    if (r === null || r === undefined) return { k: "TRAP", why: "declined" };
-    // the interpreter fail-closes with a runtimeError SENTINEL (IntegerOverflow / DivisionByZero / …) — it is a
-    // trap, NOT a value. Decoding it is what makes the interpreter a faithful trap oracle alongside the WASM.
-    if (r && typeof r === "object" && r.__tag === "runtimeError") return { k: "TRAP", why: r.message || "runtimeError" };
-    return { k: "VALUE", value: r }; // raw; canon()/unwrap() fully reduce {__tag,value} nesting
+    const r = await L.executeFlow(flow, m, p.ast, p.flows);
+    if (r == null) return { k: "TRAP", why: "declined" };
+    // fail-closed: the runtimeError sentinel is NESTED at r.value (IntegerOverflow / DivisionByZero / …), and
+    // the audit envelope marks result:"error". Either signals a TRAP, not a value.
+    if (r.audit?.result === "error" || (r.value && typeof r.value === "object" && r.value.__tag === "runtimeError")) {
+      return { k: "TRAP", why: r.value?.message || "runtimeError" };
+    }
+    return { k: "VALUE", value: r.value }; // r.value is the boxed {__tag,value}; canon()/unwrap() reduce it
   } catch { return { k: "TRAP", why: "interp" }; }
 }
 
@@ -161,17 +177,19 @@ for (const prog of SEED) {
   for (const call of prog.calls) {
     calls++;
     const v8 = v8run(u8, "f", call.args);
-    const a = interp(prog.src, "f", call.args, prog.wrap);
+    const a = await interp(prog.src, "f", call.args, prog.wrap);
+    // BigInt args (i64/u64) can't be JSON'd — store them as strings; the Rust leg parses per the module's param type.
+    const argsJson = call.args.map((x) => (typeof x === "bigint" ? x.toString() : x));
     if (prog.trap) {
       trapCalls++;
       if (v8.k !== "TRAP") divergences.push(`${prog.id}(${call.args}): WASM did NOT fail-closed — V8 returned ${v8.k}${v8.k === "VALUE" ? `(${canon(v8.value)})` : ""}`);
       if (a.k !== "TRAP") divergences.push(`${prog.id}(${call.args}): interpreter did NOT fail-closed — computed ${canon(a.value)} where the WASM traps`);
-      rec.calls.push({ args: call.args, expect: { trap: true } });
+      rec.calls.push({ args: argsJson, expect: { trap: true } });
     } else {
       valueCalls++;
       if (v8.k !== "VALUE" || a.k !== "VALUE") divergences.push(`${prog.id}(${call.args}): expected a value, got interp=${a.k}${a.why ? `(${a.why})` : ""} v8=${v8.k}`);
       else if (canon(v8.value) !== canon(a.value)) divergences.push(`${prog.id}(${call.args}): interp≠V8 — interp=${canon(a.value)} v8=${canon(v8.value)}`);
-      rec.calls.push({ args: call.args, expect: { trap: false, value: v8.k === "VALUE" ? canon(v8.value) : null, f64bits: v8.k === "VALUE" ? f64bits(v8.value) : null } });
+      rec.calls.push({ args: argsJson, expect: { trap: false, value: v8.k === "VALUE" ? canon(v8.value) : null, f64bits: v8.k === "VALUE" ? f64bits(v8.value) : null } });
     }
   }
   writeFileSync(join(OUT, rec.wasm_file), Buffer.from(u8));
