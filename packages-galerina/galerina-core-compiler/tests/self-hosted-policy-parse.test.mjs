@@ -44,14 +44,19 @@ async function parse(source) {
   const prRec = (await executeFlow("parseFlows", new Map([["tokens", tokensVal]]), parser.ast)).value;
   const get = (k) => prRec.fields.get(k);
   const pols = get("policies")?.items ?? [];
+  const flowsArr = get("flows")?.items ?? [];
   return {
-    flows: get("flows")?.items?.length ?? 0,
+    flows: flowsArr.length,
     policies: pols.length,
     errors: (get("errors")?.items ?? []).map((e) => e.value ?? e),
     policy0: pols[0]?.fields
       ? { name: pols[0].fields.get("name")?.value,
           effects: (pols[0].fields.get("permittedEffects")?.items ?? []).map((e) => e.value ?? e) }
       : null,
+    // (c-sibling, bridge 0107): guard-decl names + [conforms_to: X] were also silently dropped by
+    // the always-false Token.kind == "Identifier" read; both migrated value-based like the policy name.
+    guards: (get("guardDecls")?.items ?? []).map((g) => g.fields?.get("name")?.value),
+    flowConformsTo: flowsArr.map((f) => f.fields?.get("conformsTo")?.value),
   };
 }
 
@@ -87,5 +92,25 @@ describe("self-hosted parser: `policy` declarations parse (rung-4 acceptance)", 
     const r = await parse(`pure flow f() -> Int { return 1 }`);
     assert.equal(r.policies, 0);
     assert.equal(r.flows, 1);
+  });
+});
+
+describe("self-hosted parser: guard-decl + conforms_to names parse (rung-c sibling, bridge 0107)", () => {
+  it("★ a `guard` declaration captures its NAME (was silently dropped by kind==\"Identifier\")", async () => {
+    const r = await parse(`guard NetLimit { permitted_effects { network.outbound } }`);
+    assert.deepEqual(r.errors, []);
+    assert.deepEqual(r.guards, ["NetLimit"], "the guard name must be captured");
+  });
+
+  it("★ a `[conforms_to: X]` contract attribute captures X (was silently dropped)", async () => {
+    const r = await parse(`pure flow f() -> Int contract [conforms_to: NetGuard] { intent { "x" } } { return 1 }`);
+    assert.deepEqual(r.errors, []);
+    assert.deepEqual(r.flowConformsTo, ["NetGuard"], "the conforms_to policy name must be captured");
+  });
+
+  it("non-vacuity: a plain guard-less / conforms_to-less source captures neither", async () => {
+    const r = await parse(`pure flow f() -> Int { return 1 }`);
+    assert.deepEqual(r.guards, []);
+    assert.deepEqual(r.flowConformsTo, [""]);
   });
 });

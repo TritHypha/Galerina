@@ -1621,7 +1621,12 @@ contract {
       mut guardName: String = ""
       match guardNameOpt {
         Some(gnTok) => {
-          if gnTok.kind == "Identifier" { guardName = gnTok.value  gp = gp + 1 }
+          // (c, sibling) 2026-07-23: VALUE-BASED / positional — the guard name is the token after
+          // `guard`. The old `gnTok.kind == "Identifier"` was the always-false TokenKind-vs-string
+          // compare (bridge 0086/0107) → guardName stayed "" → guard declaration names silently
+          // dropped. A real name is any non-empty token that is not the body-opening brace.
+          let gnv: String = gnTok.value
+          if gnv != "" and gnv != "{" { guardName = gnv  gp = gp + 1 }
         }
         None => {}
         _ => {}
@@ -1883,7 +1888,12 @@ contract {
                 let pnOpt = tokens.get(p)
                 match pnOpt {
                   Some(pnTok) => {
-                    if pnTok.kind == "Identifier" { ctConformsTo = pnTok.value }
+                    // (c, sibling) 2026-07-23: VALUE-BASED — the conforms_to policy name is the token
+                    // after `:` (positional; the block is bounded by `]`). The old `pnTok.kind ==
+                    // "Identifier"` was the always-false TokenKind-vs-string compare (bridge 0086/0107)
+                    // → ctConformsTo stayed unset → the `[conforms_to: X]` name silently dropped.
+                    let pnv: String = pnTok.value
+                    if pnv != "" and pnv != "]" { ctConformsTo = pnv }
                     p = p + 1
                   }
                   None => {}
