@@ -27,6 +27,7 @@ compile time and recorded in a signed manifest.
 A minimal, real flow (from `examples/foundations/validation-utils.fungi`):
 
 ```fungi
+@version 1
 pure flow validateAge(age: Int) -> Bool
 contract {
   intent "Check age is within acceptable range"
@@ -47,6 +48,10 @@ Read that top to bottom and you already see the shape of the language: a **quali
 the keyword `flow`, a signature with a `->` return type, an anonymous `contract { ... }` block that
 declares intent/effects/invariants, and then a `{ body }` where `trap` clauses reject bad input
 before anything else happens.
+
+> **File header (required):** every `.fungi` file's **first line** must be `@version <integer>` (e.g.
+> `@version 1`) — a versionless file is rejected *before* parsing (`FUNGI-SYNTAX-015`). It is the literal
+> first line of the example above, and of every file you convert.
 
 ---
 
@@ -69,8 +74,10 @@ appear in the older material**. You will meet both, so learn to tell them apart:
 
 * The **app-framework style is the implemented one.** `secure`/`guarded`/`pure flow` + `contract {}`
   are exactly what the parser parses and what all ~52 example files use.
-* The **`uses cap.name`** form *is also parsed* (`parser.ts:4722`) — it is a real, if less common,
-  way to declare a capability on a flow. So `uses` is not fictional.
+* The **`uses cap.name`** flow-header form is **aspirational Core-style — it does NOT parse at the flow
+  header** (`secure flow f() uses …` → `FUNGI-PARSE-001: Expected "{", got "uses"`, verified). `uses` is a
+  keyword only *inside* `model { }` blocks. Declare capability through `contract { effects { … } }` and
+  `access { grant … }` instead.
 * But `each`, `attempt`, `none`, `task`, `wait`, `run worker`, and lambda arrows (`x -> expr`,
   `x => expr`) are **NOT keywords** and are **not in the parser**. They are aspirational. The real
   loop keywords are `for` and `while`; the real error type is `Result`; multi-way branching is
@@ -146,8 +153,8 @@ These are not style preferences — they are how Galerina code is expected to be
 | A DB read | `guarded flow ... contract { effects { database.read } }` | 01, 03 |
 | A write + audit | `secure flow ... contract { effects { database.write audit.write } }` | 01, 03 |
 | Declare a result type | `type FooResult = Result<Foo, FooError>` (top level) | 04 |
-| A record | `type T = record { a: String  b: Int }` or `record T { ... }` | 04 |
-| An enum | `type E = enum { A B C }` | 04 |
+| A record | `record T { a: String  b: Int }` (strict-clean; `type T = record {…}` warns under `--strict-types`) | 04 |
+| An enum | `enum E { A B C }` (strict-clean; `type E = enum {…}` warns under `--strict-types`) | 04 |
 | Bind validated input | `let x = validate.foo(raw)?` | 05 |
 | Bind raw input | `unsafe let raw = request.body` | 05 |
 | Protect a field | `let id: protected PatientId = ...` then `redact(id)` before audit | 05 |
