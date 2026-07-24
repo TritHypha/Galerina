@@ -42,6 +42,13 @@ export type AstNodeKind =
   | "effectsDecl"
   | "effectRef"
   | "ensureDecl"    // invariant { ensure expr; } — DRCM Phase 2 (#36)
+  // Flagship (0119 item 2): three-valued parameter admission `name: T where <k3-expr>`. Parsed on the
+  // param but hoisted to a flow-level sibling clause (carry B′) so paramDecl is untouched. The interpreter
+  // enforces a Verdict-ALLOW-only entry gate; a parse-only `where` would be FAIL-OPEN, so parse+gate+test
+  // land as one unit. paramAdmissionDecl = { children: [admissionEntry...] }; admissionEntry =
+  // { value: <paramName>, children: [predicateExpr] }.
+  | "paramAdmissionDecl"
+  | "admissionEntry"
   | "block"
   // Statements
   | "letDecl"
@@ -400,6 +407,11 @@ class Parser {
   private exprDepth = 0;
   private readonly diagnostics: ParseDiagnostic[] = [];
   private readonly flows: FlowMeta[] = [];
+  /** Flagship (0119 item 2): `where <k3-expr>` three-valued admission predicates parsed on parameters
+   *  are stashed here by parseParam and DRAINED by the enclosing parseParamList caller into a flow-level
+   *  `paramAdmissionDecl` sibling clause (carry B′), so `paramDecl` stays byte-identical for its many
+   *  consumers. Reset at the start of every parseParamList, so no admission leaks between declarations. */
+  private pendingParamAdmissions: { name: string; predicate: AstNode }[] = [];
 
   constructor(
     private readonly tokens: readonly Token[],
@@ -660,6 +672,15 @@ class Parser {
     // Parameters
     this.expect("symbol", "(");
     const params = this.parseParamList();
+    // Flagship (0119 item 2): drain any `where` param admissions into a flow-level sibling clause
+    // (carry B′) — hoisted off the params so paramDecl stays byte-identical for its consumers.
+    const admissionEntries: AstNode[] = this.pendingParamAdmissions.map((a) => ({
+      kind: "admissionEntry" as AstNodeKind,
+      value: a.name,
+      location: loc,
+      children: [a.predicate],
+    }));
+    this.pendingParamAdmissions = [];
     this.expect("symbol", ")");
 
     // Return type — dual syntax (v1-current supports both):
@@ -743,6 +764,13 @@ class Parser {
 
     // Optional governance/runtime clauses before the body.
     const flowClauses: AstNode[] = [];
+    // Flagship: the drained param admissions become one sibling clause (peer of contractDecl). The
+    // interpreter enforces each entry's predicate as a Verdict-ALLOW-only entry gate; a flow carrying
+    // admissions is excluded from the fast execution tiers (like invariant-bearing flows) so the gate
+    // is never bypassed.
+    if (admissionEntries.length > 0) {
+      flowClauses.push({ kind: "paramAdmissionDecl" as AstNodeKind, location: loc, children: admissionEntries });
+    }
     while (true) {
       this.skipNewlines();
       if (this.currentIs("keyword", "intent")) {
@@ -1032,6 +1060,9 @@ class Parser {
 
   private parseParamList(): AstNode[] {
     const params: AstNode[] = [];
+    // Flagship: start each param-list clean so a `where` admission never leaks to a sibling declaration.
+    // The enclosing parseFlowDecl / parseFnDecl DRAINS this.pendingParamAdmissions immediately after.
+    this.pendingParamAdmissions = [];
 
     while (!this.currentIs("symbol", ")") && !this.isEof()) {
       this.skipNewlines();
@@ -1128,6 +1159,17 @@ class Parser {
       if (origin !== "") {
         sourceFromSuffix = ` source_from ${origin}`;
       }
+    }
+
+    // Flagship (0119 item 2): optional `where <k3-expr>` three-valued admission predicate. Parsed here
+    // (lexically on the param) but NOT attached to paramDecl — stashed and hoisted to a flow-level
+    // paramAdmissionDecl clause by the parseParamList caller (carry B′), keeping paramDecl byte-identical.
+    // The predicate is a Verdict (or Bool, auto-lifted) expression; the interpreter enforces a
+    // Verdict-ALLOW-only gate at flow entry. `where` is a keyword (lexer V1_ACTIVE_KEYWORDS).
+    if (this.currentIs("keyword", "where")) {
+      this.advance(); // consume where
+      const predicate = this.parseExpression();
+      this.pendingParamAdmissions.push({ name: nameTok.value, predicate });
     }
 
     const paramText = `${prefix}${nameTok.value}: ${typeRef.value ?? ""}${sourceFromSuffix}`;
@@ -4131,6 +4173,20 @@ class Parser {
 
     this.expect("symbol", "(");
     const params = this.parseParamList();
+    // Flagship (0119 item 2): `where` admission is only valid on FLOW parameters — an fn helper is not a
+    // governed entry point (no runFlow entry gate runs for it), so a `where` here would be silently
+    // unenforced (fail-open). Refuse it, and drain so nothing leaks to a later declaration. FUNGI-ADMIT-003.
+    if (this.pendingParamAdmissions.length > 0) {
+      this.emit(
+        "FUNGI-ADMIT-003",
+        "ADMISSION_ON_FN_PARAM",
+        `Parameter admission ('where') is only valid on flow parameters, not fn helper '${name}' — ` +
+          `an fn is not a governed entry point, so the admission gate would never run (fail-closed).`,
+        loc,
+        "Move the `where` predicate to the calling flow's parameter, or gate inside the fn body.",
+      );
+      this.pendingParamAdmissions = [];
+    }
     this.expect("symbol", ")");
 
     // Optional return type

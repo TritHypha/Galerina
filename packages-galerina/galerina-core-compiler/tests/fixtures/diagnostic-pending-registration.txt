@@ -5,3 +5,11 @@
 #
 # 2026-06-16: baseline was 65; ALL reconciled into compiler-diagnostics.md. Allowlist now EMPTY.
 # Every emitted FUNGI-* code is documented. Keep it that way — register new codes, don't grow this list.
+#
+# 2026-07-24: flagship three-valued parameter admission (0119 item 2, COMMIT 1). These are emitted by
+# MAIN (parser.ts / interpreter.ts) but the registry doc (compiler-diagnostics.md) is R&D-push-only
+# ("R&D holds KB push for this registry"). So they sit here PENDING R&D KB registration; R&D registers
+# each in compiler-diagnostics.md and SHRINKS this list (bridge handoff 0154). Not a permanent entry.
+FUNGI-ADMIT-001
+FUNGI-ADMIT-002
+FUNGI-ADMIT-003

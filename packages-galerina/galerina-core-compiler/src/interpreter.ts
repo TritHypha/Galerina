@@ -1314,6 +1314,19 @@ class Interpreter {
       }
     }
 
+    // Flagship (0119 item 2): three-valued PARAMETER ADMISSION gate at flow ENTRY, fail-closed. Runs after
+    // the A7 pre-condition gate and before ANY body work; a denied (or non-evaluable) admission means the
+    // body NEVER runs. Verdict-ALLOW-only — the K3 entry predicate. Admission-bearing flows are excluded
+    // from the fast tiers (flowHasEnforcedInvariants) so this gate is never bypassed.
+    {
+      const denial = await this.checkParameterAdmission(flowNode, flowName, args);
+      if (denial !== undefined) {
+        this.diagnostics.push({ code: denial.code, message: denial.message });
+        const value: GalerinaValue = { __tag: "runtimeError", message: denial.message };
+        return this.buildResult(flowName, qualifier, startedAt, value, denial.message);
+      }
+    }
+
     // R6A: If a verified RuntimeManifest is provided, use its allowedEffects as the
     // pre-approved capability list and skip re-running the full contract check.
     // This is the fast-path for production execution.
@@ -1528,6 +1541,56 @@ class Interpreter {
           (val.__tag === "int" && val.value !== 0);
         if (!holds) {
           return `[Flow '${flowName}'] violated pre-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (FUNGI-INV-001).`;
+        }
+      }
+      return undefined;
+    } finally {
+      this.popScope();
+    }
+  }
+
+  /**
+   * Flagship (0119 item 2): enforce three-valued PARAMETER ADMISSION (`name: T where <k3-expr>`) at flow
+   * ENTRY, before the body runs. A SIBLING of checkInputPreconditions, deliberately STRICTER: admission
+   * requires a Verdict of ALLOW (+1). DENY(-1) and UNKNOWN(0) both REFUSE — fail-closed K3, so an empty
+   * `all{}` (⇒ UNKNOWN) or `where alwaysDeny()` refuses, never admits. A Bool predicate AUTO-LIFTS
+   * (true⇒admit, false⇒deny); int-truthiness is NOT accepted (unlike A7, which does) — this mirrors the
+   * WAT/entry-gate Verdict-ALLOW-only predicate. A non-evaluable predicate FAILS CLOSED (FUNGI-ADMIT-002).
+   * Returns { code, message } on refusal, undefined when every admission holds.
+   */
+  private async checkParameterAdmission(
+    flowNode: AstNode,
+    flowName: string,
+    args: ReadonlyMap<string, GalerinaValue>,
+  ): Promise<{ code: string; message: string } | undefined> {
+    const admissions = extractParamAdmissions(flowNode);
+    if (admissions.length === 0) return undefined;
+    this.pushScope();
+    try {
+      for (const [name, val] of args) this.declare(name, val, false);
+      for (const { name, predicate } of admissions) {
+        let val: GalerinaValue;
+        try {
+          val = await this.evalExpr(predicate);
+        } catch {
+          return {
+            code: "FUNGI-ADMIT-002",
+            message: `[Flow '${flowName}'] admission predicate for parameter '${name}' could not be evaluated — fail-closed (FUNGI-ADMIT-002).`,
+          };
+        }
+        // Verdict-ALLOW-only. Bool auto-lifts (true ⇒ ALLOW). NO int-truthiness. Anything else REFUSES.
+        const admits =
+          (val.__tag === "verdict" && val.value === 1) ||
+          (val.__tag === "bool" && val.value === true);
+        if (!admits) {
+          const shown =
+            val.__tag === "verdict" ? (val.value === 0 ? "Verdict.Unknown" : "Verdict.Deny")
+            : val.__tag === "bool" ? "false"
+            : val.__tag;
+          return {
+            code: "FUNGI-ADMIT-001",
+            message: `[Flow '${flowName}'] parameter '${name}' DENIED admission — predicate resolved to ${shown}, not Verdict.Allow — fail-closed (FUNGI-ADMIT-001).`,
+          };
         }
       }
       return undefined;
@@ -3361,6 +3424,25 @@ function extractInputPreconditions(flowNode: AstNode): AstNode[] {
 }
 
 /**
+ * Flagship (0119 item 2): extract the parameter-admission predicates from a flow's `paramAdmissionDecl`
+ * sibling clause (carry B′ — a peer of contractDecl, NOT a child of paramDecl). Each entry is
+ * { name: <paramName>, predicate: <expr> }; empty when the flow declares no `where` admission. The
+ * flow-level analogue of extractInputPreconditions — the interpreter enforces each predicate as a
+ * Verdict-ALLOW-only entry gate.
+ */
+function extractParamAdmissions(flowNode: AstNode): { name: string; predicate: AstNode }[] {
+  const clause = (flowNode.children ?? []).find((c) => c.kind === "paramAdmissionDecl");
+  if (clause === undefined) return [];
+  const out: { name: string; predicate: AstNode }[] = [];
+  for (const entry of clause.children ?? []) {
+    if (entry.kind !== "admissionEntry") continue;
+    const predicate = entry.children?.[0];
+    if (entry.value !== undefined && predicate !== undefined) out.push({ name: entry.value, predicate });
+  }
+  return out;
+}
+
+/**
  * 0040/#70 + A7: true if the named flow declares ANY enforced invariant — an OUTPUT post-condition
  * (`invariant { ensure result … }`) OR an INPUT pre-condition (a non-`result` ensure). Such flows MUST
  * run through the governed runFlow path where the entry pre-condition gate and the single-exit
@@ -3376,7 +3458,8 @@ function flowHasEnforcedInvariants(ast: AstNode, flowName: string): boolean {
     if (
       FLOW_KINDS.has(node.kind) &&
       node.value === flowName &&
-      (extractOutputPostconditions(node).length > 0 || extractInputPreconditions(node).length > 0)
+      (extractOutputPostconditions(node).length > 0 || extractInputPreconditions(node).length > 0 ||
+        extractParamAdmissions(node).length > 0)
     ) {
       found = true;
       return;
