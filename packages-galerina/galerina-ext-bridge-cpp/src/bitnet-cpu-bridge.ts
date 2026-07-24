@@ -47,8 +47,10 @@ export class BitNetCpuBridge implements InferenceBridge {
   private readonly reference: StubTernaryBridge; // simulator reference (determinism oracle)
   private readonly governance: GovernanceEnforcer;
   private initialized = false;
-  /** Cross-check native vs simulator on the first N calls (determinism hook). */
-  private determinismChecksRemaining = 8;
+  /** Always cross-check native vs simulator (determinism hook — always-on, zero-trust). The old
+   *  first-N-calls countdown was removed (a server past N inference calls had no enforcement,
+   *  silently); this field is the always-on replacement referenced at the check site below. */
+  private readonly alwaysCheckDeterminism = true;
 
   constructor(logger?: AuditLogger, governance?: GovernanceEnforcer) {
     const load = loadNativeAddon();
