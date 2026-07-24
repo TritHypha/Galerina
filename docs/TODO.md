@@ -4,7 +4,87 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-23 (compiler self-hosting RD-0528 + crypto-agility 0099 part 1 + parameter-enhancements commission · pre-flip battery run)
+## 📍 CURRENT STATE — 2026-07-24 (three-valued-stance corrections + path-forward plan · owner ruling: tick-bounding suspended for the parser arc)
+
+**Forward view:** `roadmap-2026-07-24.md`. Source of truth for this plan is the R&D corrections & path-forward
+plan (relayed via bridge `0150`/`0151`, owner-directed 2026-07-24); the rows below mirror it onto this board
+with local `#NNN` handles. Shared cross-session labels (`C#` corrections · `U#` updates · `R#` re-working ·
+`S#` sync-items) are kept as the canonical vocabulary. **Owner ruling (2026-07-24):** both parked latitudes
+GRANTED — **tick-bounding SUSPENDED** for the flagship COMMIT 1 and the traced `parseParams` fix (each is a
+single indivisible verified unit; tick-slicing is the worse fail-open). **Order: C4+C5 (traced fix) → COMMIT 1
+(R2) → COMMIT 2 (R3).** Each lands complete with its own differential; no half-states.
+
+### QC check-off — EVERY landing checks ALL boxes before "done" (owner-directed, on the board)
+
+```
+[ ] mechanism TRACED at source before the edit (no fix built from a guess)
+[ ] finder tooling named in the report: myco + codebase-memory graph (what was searched, what found)
+[ ] checking tool MANUFACTURED or extended for this change, with a self-test that goes RED and GREEN
+[ ] new tests added (not only existing suites green)
+[ ] audit added/updated if the change closes an enforcement gap (advisory→error, new gate)
+[ ] acceptance probe run and cited: which battery rows / probe rows flipped, with exit codes
+[ ] parser.fungi touched? → R3 parity re-proved + hashes regathered + evidence pack refreshed, own commit + differential
+[ ] docs truth-in-docs: no advisory called an error; enforcement strength stated as measured
+[ ] no half-states: the unit landed complete or not at all
+[ ] bridge report sent; R&D re-verification requested where agreed (C4 five-row table, battery fixtures)
+```
+
+### A · Corrections (defects measured, fixes settled)
+
+| Board | Label | What is wrong | Fix | Acceptance |
+|---|---|---|---|---|
+| #144 | C1/S1 | `if`-condition typing does not exist — `if <Verdict>`/`if <Int>` compile + build clean (battery F1; MAIN independently confirmed `if <Int>` → 0 diags even `--strict-types`) | new counted FUNGI-TYPE code; `if`/`while`/`check` conditions must type as `Bool` | battery s1+s8 flip RED; 460-file corpus stays green (28/28 bare-ident ifs are Bool → pure prevention) |
+| #145 | C2/S2 | FUNGI-GOV-3VL-004 demoted to uncounted advisory; builds proceed (F2) | promote to counted error + build refusal | battery s2 flips RED |
+| #146 | C3/S3 | A9 mixed Verdict/Bool rules (`and`,`==`) advisory-only (F3) | promote to counted errors (incl. `return 2` as Verdict) | battery s3/s4/s9 flip RED |
+| #147 | C4+C5 | Twin `parseParams` discards qualifiers; `readonly tainted` → `isReadonly:false` — silent safety-property loss (traced bridge 0147: missing qualifier loop + 2nd capture site hardcoding `false`); FlowParam metadata gap is a parser-flip precondition | `parser.fungi:453-487` — qualifier loop (any order), ONE capture path, `source_from` suffix, `FlowParam`+`isTainted`+`sourceFrom` | R&D 5-row probe green, rows 3–5 carry modifiers; R&D re-probes on landing |
+| #151 | C6 | Docs overstate enforcement ("compile error" where product demotes to advisory) | truth-in-docs sweep; wording tracks S2/S3 promotion status | no doc calls an advisory an error |
+| #152 | C7/S5 | "identical to BitNet I2_S" reads as vendor dependency (`tpl-simulator.ts:60`) | "coincides with … (informative)" | wording landed |
+
+### B · Updates (bring docs/components to the settled stance)
+
+| Board | Label | Item |
+|---|---|---|
+| #153 | U1/S6 | "Kleene K3" first-use sweep + docs lint (first `K3` in any doc = "Kleene K3") |
+| #154 | U2/S7 | W5a rationale + FREEZE: document `and`/`or` Verdict overload (K3 min/max) + mixed-reject; no new type-overloaded operators; `==` returns Bool universally |
+| #155 | U3 | Hardware-stance wording: vendor-neutral (differentiator = hardware-independent typed indeterminacy; ternary HW = optional backend) |
+| — | U4 | Operator ruling: words now, symbols later ONLY via opt-in edition (owner 2026-07-24); `===`/`!==` unlexed forever. Propagate to Galerina docs when touched |
+| #156 | U5/S11 | Battery → regression fixtures (12 files w/ `@version 1`), after S1–S3 |
+
+### C · Re-working (structural)
+
+| Board | Label | Item | Gate |
+|---|---|---|---|
+| #150 | R1/S4 | Verdict-match wildcard-polarity audit (`_` arm on Verdict must not reach allow-outcome; corpus clean today) | 🟢 ready — MAIN lands, R&D self-test shapes exist |
+| #148 | R2 | **Flagship COMMIT 1** (`where` admission, `parser.ts`) — 7-element single unit: parse → (B′) sibling flow-clause → Verdict-ALLOW-only gate → Bool\|Verdict auto-lift → **fast-tier exclusion (4 sites: `:1337`/`:3532`/`:3653`/`:3844`)** → test → FUNGI-ADMIT-001/002/003 | ⏳ after C4+C5 (owner-ordered) |
+| #149 | R3 | COMMIT 2 (twin parity for R2) — twin carries `whereExpr` as flow-clause keyed by param name | ⏳ after R2 + C4 |
+| — | R4 | Spec layering L0–L4 "Semantic Constitution" | 🔴 owner |
+| — | R5/S10 | Collapse surface + unforgeable PermitToken evaluation | 🔴 owner (R&D drafts comparison paper first) |
+| — | R6/S9 | Conformance additions (non-laws, 21-vector tables, illegal-4th-state trap tests, collapse-barrier tests) | MAIN; RD-0529 family |
+| — | R7 | Parser-stage authority flip (RD-0528 I-4) — needs C4/C5 + finding-d + rung-4 policy + R3 re-prove | 🔴 owner per-stage nod |
+| — | R8 | Mass `.fungi` conversion — behind doc blockers + S1–S3 + R1 | 🔴 owner GO after Phase 1+2 |
+
+### D · Additions (owner-directed, plan §G)
+
+| Board | Label | Item |
+|---|---|---|
+| #157 | S13 | **Advisory-tier systemic audit** — enumerate EVERY diagnostic family demoted to "not counted in plain check"; per-family counted-vs-advisory ruling. A security-grade rule silently advisory is the class the battery caught |
+| #158 | S14 | **Tooling mandate** — every arc uses myco + codebase-memory graph AND manufactures its checking tools (battery→standing gate, FlowParam probe→fidelity tool, admission fixtures, R1 audit) + new tests/audits per arc; state tooling in bridge reports ("hand-checked" ≠ tooling) |
+| #159 | S15 | **myco re-vendor** — fold upstream fixes (EPIPE `f930c53` + file-path/stderr `830e120`) from `subprojects/myco` into `@galerina/tools-myco` WITH regression tests (0032 lesson) |
+| #160 | S16 | S1 scope: acceptance covers `while` + `check` too; enumerate the FUNGI-TYPE code each current advisory carries |
+| #161 | S17 | S2/S3 acceptance includes BUILD refusal (battery s3/s4/s9 never run through build), not just check-counting |
+| — | S18 | Housekeeping (owner): push queues · archive oversized session-bridge memory · retire superseded KB `coordination/` channel |
+
+### Phased path (plan §D)
+1. **Prevention gates** (corpus clean = cheapest): S1→S2→S3 (one arc, same files) + R1 audit + U5 fixtures.
+2. **Parser fidelity arc** (owner-ordered, tick-bounding suspended): **C4+C5 → R2 (COMMIT 1) → R3 (COMMIT 2)**.
+3. **Wording/docs** (parallel-safe): C6, C7, U1–U4.
+4. **Owner-gated structure:** R4 · R5 · R7 preconditions.
+5. **Conversion GO:** R8 once Phases 1–2 land + doc blockers clear.
+
+> Phase-1-vs-Phase-2 ordering was the owner's call; the ruling fixed **Phase 2's internal order** (C4+C5 first).
+> S1–S3 ride as the next arc or as tick-sized side-work.
+
+## 📍 2026-07-23 (superseded by the 2026-07-24 head above) — compiler self-hosting RD-0528 + crypto-agility 0099 part 1 + parameter-enhancements commission · pre-flip battery run
 
 **Forward view:** `roadmap-2026-07-23.md`. This head supersedes the U2-ceremony block below — U2 is DONE + enforced, and the token-kind arc is LIVE-COMPLETE (not "active"). Owner unlocked the I-2/I-4/crypto/DSS gates; key bytes stay the owner's.
 
