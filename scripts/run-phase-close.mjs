@@ -490,6 +490,15 @@ run("compiler-stage-twins", "node", ["scripts/audit-compiler-stage-twins.mjs"]);
 //   change). Self-tested (determinism = 2 live derivations identical + a drift-detection truth table).
 run("compiler-stage-hashes", "node", ["scripts/audit-compiler-stage-hashes.mjs"]);
 
+// flowparam-fidelity — C4 (bridge 0145/0147, plan row C4): the Stage-B twin's parseParams used to
+//   hardcode isReadonly:false in its generic capture branch, so `readonly tainted a: Int` silently
+//   LOST the readonly guarantee (probe rows 3-5, zero errors). Fixed with one qualifier loop + ONE
+//   capture path; this gate pins the 5-row R&D probe table (+ a maximal 6th row: order-swapped
+//   qualifiers, generic type, dotted source_from) through the REAL self-hosted pipeline (twin-probe
+//   rule: tokenize→parseFlows, never parseProgram). Self-tested (--self-test: RED on a wrong
+//   expectation, GREEN on the table).
+run("flowparam-fidelity", "node", ["scripts/audit-flowparam-fidelity.mjs"]);
+
 // wasmtime-presence — RD-0529 A4: the second execution engine (wasmtime) must be REACHABLE, not
 //   silently absent. Closes the wat-phase26:81 fail-open (a `wasmtime --version` probe ending in
 //   `assert.ok(true)` — "0 wasmtime tests ran" reads identical to "all pass"). AVAILABLE = wasmtime CLI

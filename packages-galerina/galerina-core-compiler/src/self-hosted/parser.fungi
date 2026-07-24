@@ -28,6 +28,8 @@ record FlowParam {
   name: String
   typeName: String
   isReadonly: Bool
+  isTainted: Bool     // C4 (bridge 0145/0147): carried, no longer silently dropped
+  sourceFrom: String  // C4: `source_from Origin` suffix; "" = none
 }
 
 // â”€â”€ Expression AST (folded from body-parser.fungi, Milestone M-A) â”€â”€
@@ -461,24 +463,47 @@ contract { intent { "Parse a parenthesised parameter list. Caller must advance p
     if pv == ")" { scanning = false }
     if pv == "" { scanning = false }
     if pv == "," { p = p + 1 }
-    if pv == "readonly" {
-      let pname = tokVal(tokens, p + 1)
-      let colon  = tokVal(tokens, p + 2)
-      let ptype  = readTypeName(tokens, p + 3)
-      if colon == ":" {
-        params = params.append({ name: pname, typeName: ptype, isReadonly: true })
-        p = typeEndPos(tokens, p + 3)
+    let isBoundary: Bool = pv == ")" or pv == "" or pv == ","
+    if isBoundary == false {
+      // C4 (bridge 0147): qualifier LOOP accumulating readonly/tainted in ANY order — mirrors the
+      // TS parseParam for(;;) (parser.ts:1085-1089). The old shape (a readonly-only special case
+      // plus a generic branch hardcoding isReadonly: false) silently DISCARDED `readonly` whenever
+      // another qualifier followed it: the special branch misread the next qualifier as the param
+      // name, bailed without appending, and the param was later re-captured by the generic branch
+      // with isReadonly: false — a silent loss of an immutability guarantee (probe rows 3-5).
+      mut isRo: Bool = false
+      mut isTa: Bool = false
+      mut quals: Bool = true
+      while quals {
+        let qv = tokVal(tokens, p)
+        if qv == "readonly" { isRo = true  p = p + 1 }
+        if qv == "tainted" { isTa = true  p = p + 1 }
+        let isQual: Bool = qv == "readonly" or qv == "tainted"
+        if isQual == false { quals = false }
       }
-      if colon != ":" { p = p + 1 }
-    }
-    // Generic identifier param (name: Type)
-    let isSpecial: Bool = pv == ")" or pv == "" or pv == "," or pv == "readonly"
-    if isSpecial == false {
+      // ONE capture path — the ONLY place a FlowParam is constructed. A second capture site with a
+      // hardcoded flag literal is exactly what let a safety property be silently asserted false.
+      let pname = tokVal(tokens, p)
       let colon = tokVal(tokens, p + 1)
       let ptype = readTypeName(tokens, p + 2)
       if colon == ":" {
-        params = params.append({ name: pv, typeName: ptype, isReadonly: false })
-        p = typeEndPos(tokens, p + 2)
+        mut endP: Int = typeEndPos(tokens, p + 2)
+        // Optional `source_from Origin` suffix after the type (TS parser.ts:1116-1131). Origin may
+        // be dotted (Network.ClientSocket): accumulate tokens up to the parameter boundary,
+        // matching the TS identifier/dot run within a param list.
+        mut srcFrom: String = ""
+        if tokVal(tokens, endP) == "source_from" {
+          endP = endP + 1
+          mut srcScan: Bool = true
+          while srcScan {
+            let sv = tokVal(tokens, endP)
+            let srcEnd: Bool = sv == "" or sv == "," or sv == ")"
+            if srcEnd { srcScan = false }
+            if srcEnd == false { srcFrom = srcFrom + sv  endP = endP + 1 }
+          }
+        }
+        params = params.append({ name: pname, typeName: ptype, isReadonly: isRo, isTainted: isTa, sourceFrom: srcFrom })
+        p = endP
       }
       if colon != ":" { p = p + 1 }
     }

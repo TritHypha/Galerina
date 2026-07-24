@@ -6,28 +6,28 @@
       "sha256": "be2b2a432489e24b93d00f360007b95bbeb884ef0eb50e99f4d5d55580f2cd52"
     },
     "parser": {
-      "bytes": 17956,
-      "sha256": "fb0db9ab8ac4684b7c36af06ad3861a06102b45ab18e089104bd1bc0d6f6b0dc"
+      "bytes": 18091,
+      "sha256": "9d90b9353961078edd0ec89d0f32714cc0015c202de04b206f9e9afb2ee7f3cd"
     },
     "gir-emitter": {
       "bytes": 4012,
-      "sha256": "5db7071bff21fb15e26b418ef7cf260bc120d1388499465ef6ad00bc1edf55c3"
+      "sha256": "9ab4a7a2527040f765d378a55350b7ef4bf1d64db5588c21960a31b8461cf415"
     },
     "runtime": {
       "bytes": 6433,
-      "sha256": "5b3504d6f7f36032eb6972774fd32bdc73e91dd3fe7355dc5f1ac528235ce8ca"
+      "sha256": "0f796c4ecdaa55a6a720ff528a7a485b29e94801ab1e8fd68901a6da24ee84a1"
     },
     "type-checker": {
       "bytes": 10324,
-      "sha256": "845a4483f28897d45f37e1a63b1fa6d44ee35116662a8255608fb491d7afcc45"
+      "sha256": "90436aa33d3462b529e737a00eefc20dd89a93ccca41a2c96ba479a316692023"
     },
     "effect-checker": {
       "bytes": 6330,
-      "sha256": "a93908b94d416634866e752fe40754e583a71cf9237bb7b6f0d7ac21c1f70a94"
+      "sha256": "84537124029523553322cdd20716d324d9db4fef6f897c144dac3c1bfd548d52"
     },
     "governance-verifier": {
       "bytes": 5211,
-      "sha256": "746fba48a0b5d0c243209a07a943a2c036c5b391351fb1c1c9c172aa9e0e5d53"
+      "sha256": "4b29ade52695de824a52437a6faac48d6722601045ce08fd10fe2eba26dabc84"
     }
   }
 }
