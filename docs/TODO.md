@@ -60,7 +60,8 @@ single indivisible verified unit; tick-slicing is the worse fail-open). **Order:
 | — | R4 | Spec layering L0–L4 "Semantic Constitution" | 🔴 owner |
 | — | R5/S10 | Collapse surface + unforgeable PermitToken evaluation | 🔴 owner (R&D drafts comparison paper first) |
 | — | R6/S9 | Conformance additions (non-laws, 21-vector tables, illegal-4th-state trap tests, collapse-barrier tests) | MAIN; RD-0529 family |
-| — | R7 | Parser-stage authority flip (RD-0528 I-4) — needs C4/C5 + finding-d + rung-4 policy + R3 re-prove | 🔴 owner per-stage nod |
+| — | R7 | Parser-stage authority flip (RD-0528 I-4) — needs C4/C5 + finding-d + rung-4 policy + R3 re-prove + #163 | 🔴 owner per-stage nod |
+| #163 | R7-pre | **Per-stage intern-table isolation** — the gather's shared cross-stage intern table couples per-stage evidence hashes: a single `parser.fungi` edit moved all 7 stage hashes though only parser's source changed (measured C4/C5 `40c056a2`; R&D-confirmed 0154). Per-stage evidence cannot be independently pinned until compilation is intern-isolated. A **parser-flip precondition** (finding-d 2nd drift finding). | ⏳ before R7; MAIN |
 | — | R8 | Mass `.fungi` conversion — behind doc blockers + S1–S3 + R1 | 🔴 owner GO after Phase 1+2 |
 
 ### D · Additions (owner-directed, plan §G)
