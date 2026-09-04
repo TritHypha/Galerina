@@ -73,12 +73,12 @@ function plainRecord() {
 }
 
 function defineData(target, key, value) {
-  safeObjectDefineProperty(target, key, {
-    configurable: true,
-    enumerable: true,
-    value,
-    writable: true,
-  });
+  const descriptor = safeObjectCreate(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  safeObjectDefineProperty(target, key, descriptor);
 }
 
 function append(values, value) {
@@ -141,11 +141,15 @@ function mapSet(values, key, value) {
 }
 
 function regexTest(pattern, value) {
-  safeObjectDefineProperty(pattern, 'lastIndex', { value: 0 });
+  const firstDescriptor = safeObjectCreate(null);
+  firstDescriptor.value = 0;
+  safeObjectDefineProperty(pattern, 'lastIndex', firstDescriptor);
   try {
     return callIntrinsic(safeRegExpExec, pattern, [value]) !== null;
   } finally {
-    safeObjectDefineProperty(pattern, 'lastIndex', { value: 0 });
+    const finalDescriptor = safeObjectCreate(null);
+    finalDescriptor.value = 0;
+    safeObjectDefineProperty(pattern, 'lastIndex', finalDescriptor);
   }
 }
 
@@ -601,6 +605,12 @@ function artifactArray(bodyBytes) {
     }
     append(records, safeObjectFreeze({ id, bytes }));
   }
+  const thenDescriptor = safeObjectCreate(null);
+  thenDescriptor.configurable = false;
+  thenDescriptor.enumerable = false;
+  thenDescriptor.value = undefined;
+  thenDescriptor.writable = false;
+  safeObjectDefineProperty(records, 'then', thenDescriptor);
   return safeObjectFreeze(records);
 }
 

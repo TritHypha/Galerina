@@ -68,7 +68,12 @@ const MAP_ITERATOR_NEXT = OBJECT_GET_OWN_PROPERTY_DESCRIPTOR(
 ).value;
 
 function defineData(target, key, value) {
-  OBJECT_DEFINE_PROPERTY(target, key, { configurable: true, enumerable: true, value, writable: true });
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  OBJECT_DEFINE_PROPERTY(target, key, descriptor);
 }
 
 function frozenNullRecord(values) {
@@ -115,7 +120,18 @@ function stringNormalize(value) { return REFLECT_APPLY(STRING_NORMALIZE, value, 
 function stringSlice(value, start, end) { return REFLECT_APPLY(STRING_SLICE, value, end === undefined ? [start] : [start, end]); }
 function stringSplit(value, separator) { return REFLECT_APPLY(STRING_SPLIT, value, [separator]); }
 function stringToLowerCase(value) { return REFLECT_APPLY(STRING_TO_LOWER_CASE, value, []); }
-function regexpTest(pattern, value) { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); try { return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null; } finally { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); } }
+function regexpTest(pattern, value) {
+  const firstDescriptor = OBJECT_CREATE(null);
+  firstDescriptor.value = 0;
+  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', firstDescriptor);
+  try {
+    return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null;
+  } finally {
+    const finalDescriptor = OBJECT_CREATE(null);
+    finalDescriptor.value = 0;
+    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', finalDescriptor);
+  }
+}
 function setAdd(values, value) { REFLECT_APPLY(SET_ADD, values, [value]); }
 function setHas(values, value) { return REFLECT_APPLY(SET_HAS, values, [value]); }
 function setSize(values) { return REFLECT_APPLY(SET_SIZE, values, []); }
@@ -127,7 +143,28 @@ function mapEntriesArray(values) { const output = []; const iterator = REFLECT_A
 function mapFromArray(values, key, project = (value) => value) { const output = new SAFE_MAP(); for (let index = 0; index < values.length; index += 1) mapSet(output, key(values[index], index), project(values[index], index)); return output; }
 function uniqueArray(values) { const seen = new SAFE_SET(); const output = []; for (let index = 0; index < values.length; index += 1) if (!setHas(seen, values[index])) { setAdd(seen, values[index]); append(output, values[index]); } return output; }
 function setFromArray(values, project = (value) => value) { const output = new SAFE_SET(); for (let index = 0; index < values.length; index += 1) setAdd(output, project(values[index], index)); return output; }
-function regexpMatches(pattern, value) { const output = []; OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); try { while (true) { const match = REFLECT_APPLY(REGEXP_EXEC, pattern, [value]); if (match === null) return output; append(output, match); if (match[0] === '') OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: pattern.lastIndex + 1 }); } } finally { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); } }
+function regexpMatches(pattern, value) {
+  const output = [];
+  const firstDescriptor = OBJECT_CREATE(null);
+  firstDescriptor.value = 0;
+  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', firstDescriptor);
+  try {
+    while (true) {
+      const match = REFLECT_APPLY(REGEXP_EXEC, pattern, [value]);
+      if (match === null) return output;
+      append(output, match);
+      if (match[0] === '') {
+        const nextDescriptor = OBJECT_CREATE(null);
+        nextDescriptor.value = pattern.lastIndex + 1;
+        OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', nextDescriptor);
+      }
+    }
+  } finally {
+    const finalDescriptor = OBJECT_CREATE(null);
+    finalDescriptor.value = 0;
+    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', finalDescriptor);
+  }
+}
 
 const OPTION_KEYS = OBJECT_FREEZE([
   'owners', 'ownerBlobs', 'sourceManifest', 'sourceBlobs', 'resolutionInputs',

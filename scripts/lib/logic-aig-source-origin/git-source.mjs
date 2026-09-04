@@ -226,18 +226,18 @@ const SYSTEM_ROOT = process.env.SystemRoot;
 class SourceOriginCaptureRefusal extends Error {
   constructor(code) {
     super(code);
-    OBJECT_DEFINE_PROPERTY(this, 'name', {
-      configurable: true,
-      enumerable: true,
-      value: 'SourceOriginCaptureRefusal',
-      writable: true,
-    });
-    OBJECT_DEFINE_PROPERTY(this, 'code', {
-      configurable: true,
-      enumerable: true,
-      value: code,
-      writable: true,
-    });
+    const nameDescriptor = OBJECT_CREATE(null);
+    nameDescriptor.configurable = true;
+    nameDescriptor.enumerable = true;
+    nameDescriptor.value = 'SourceOriginCaptureRefusal';
+    nameDescriptor.writable = true;
+    OBJECT_DEFINE_PROPERTY(this, 'name', nameDescriptor);
+    const codeDescriptor = OBJECT_CREATE(null);
+    codeDescriptor.configurable = true;
+    codeDescriptor.enumerable = true;
+    codeDescriptor.value = code;
+    codeDescriptor.writable = true;
+    OBJECT_DEFINE_PROPERTY(this, 'code', codeDescriptor);
     REFLECT_APPLY(WEAK_SET_ADD, CAPTURE_REFUSALS, [this]);
   }
 }
@@ -318,21 +318,25 @@ function regexpExec(pattern, value) {
 }
 
 function regexpTest(pattern, value) {
-  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 });
+  const firstDescriptor = OBJECT_CREATE(null);
+  firstDescriptor.value = 0;
+  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', firstDescriptor);
   try {
     return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null;
   } finally {
-    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 });
+    const finalDescriptor = OBJECT_CREATE(null);
+    finalDescriptor.value = 0;
+    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', finalDescriptor);
   }
 }
 
 function safeArrayAppend(values, value) {
-  OBJECT_DEFINE_PROPERTY(values, values.length, {
-    configurable: true,
-    enumerable: true,
-    value,
-    writable: true,
-  });
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  OBJECT_DEFINE_PROPERTY(values, values.length, descriptor);
 }
 
 function safeArrayMap(values, transform) {
@@ -498,12 +502,12 @@ function statIsKind(value, expected) {
 }
 
 function setDynamicData(target, property, value) {
-  OBJECT_DEFINE_PROPERTY(target, property, {
-    configurable: true,
-    enumerable: true,
-    value,
-    writable: true,
-  });
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  OBJECT_DEFINE_PROPERTY(target, property, descriptor);
 }
 
 function joinPathArguments(values) {
@@ -1529,12 +1533,12 @@ function capturedMapEntries(value) {
 }
 
 function defineFrozenData(target, property, value, enumerable = false) {
-  OBJECT_DEFINE_PROPERTY(target, property, {
-    configurable: false,
-    enumerable,
-    value,
-    writable: false,
-  });
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = false;
+  descriptor.enumerable = enumerable;
+  descriptor.value = value;
+  descriptor.writable = false;
+  OBJECT_DEFINE_PROPERTY(target, property, descriptor);
 }
 
 function closeCallable(value) {
@@ -1667,12 +1671,12 @@ function createBlobCapability(entries, code = 'SOURCE_ORIGIN_GIT_BLOB_SET') {
   defineFrozenData(capability, 'entries', BLOB_CAPABILITY_ENTRIES);
   defineFrozenData(capability, 'keys', BLOB_CAPABILITY_KEYS);
   defineFrozenData(capability, 'values', BLOB_CAPABILITY_VALUES);
-  OBJECT_DEFINE_PROPERTY(capability, 'size', {
-    configurable: false,
-    enumerable: false,
-    get: BLOB_CAPABILITY_SIZE,
-    set: undefined,
-  });
+  const sizeDescriptor = OBJECT_CREATE(null);
+  sizeDescriptor.configurable = false;
+  sizeDescriptor.enumerable = false;
+  sizeDescriptor.get = BLOB_CAPABILITY_SIZE;
+  sizeDescriptor.set = undefined;
+  OBJECT_DEFINE_PROPERTY(capability, 'size', sizeDescriptor);
   defineFrozenData(capability, SYMBOL_ITERATOR, BLOB_CAPABILITY_ENTRIES);
   return OBJECT_FREEZE(capability);
 }
@@ -2190,7 +2194,9 @@ function makeRunner({ executable, environment, policy, deadline }) {
     }));
     return asyncEnvelope(selected.stdoutRule === 'ONE_UTF8_LINE' ? decodeGitLine(bytes) : bytes);
   };
-  OBJECT_DEFINE_PROPERTY(runCommand, 'trace', { value: trace });
+  const traceDescriptor = OBJECT_CREATE(null);
+  traceDescriptor.value = trace;
+  OBJECT_DEFINE_PROPERTY(runCommand, 'trace', traceDescriptor);
   return runCommand;
 }
 

@@ -462,6 +462,59 @@ function requireTask6BContractApi() {
   assert.equal(Object.hasOwn(contractApi, "canonicalTask6BJsonText"), false);
 }
 
+function task6BNullDescriptor(values) {
+  const descriptor = Object.create(null);
+  for (const [key, value] of Object.entries(values)) descriptor[key] = value;
+  return descriptor;
+}
+
+function installTask6BInheritedDescriptorFieldPoison() {
+  const safeDefineProperty = Object.defineProperty;
+  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const safeDeleteProperty = Reflect.deleteProperty;
+  const originals = {
+    get: safeGetOwnPropertyDescriptor(Object.prototype, "get"),
+    set: safeGetOwnPropertyDescriptor(Object.prototype, "set"),
+  };
+  let traps = 0;
+  for (const field of ["get", "set"]) {
+    safeDefineProperty(Object.prototype, field, task6BNullDescriptor({
+      configurable: true,
+      enumerable: false,
+      get() {
+        traps += 1;
+        throw new Error(`ATTACKER_DESCRIPTOR_${field.toUpperCase()}`);
+      },
+    }));
+  }
+  return {
+    get traps() { return traps; },
+    restore() {
+      for (const field of ["get", "set"]) {
+        const descriptor = originals[field];
+        if (descriptor === undefined) safeDeleteProperty(Object.prototype, field);
+        else safeDefineProperty(Object.prototype, field, descriptor);
+      }
+    },
+  };
+}
+
+function task6BRefusalCode(operation) {
+  try {
+    operation();
+    return undefined;
+  } catch (error) {
+    return error?.code ?? error?.message;
+  }
+}
+
+function task6BMalformedFixedElement() {
+  const value = {};
+  for (let index = 0; index < 64; index += 1) value[`unique${index}`] = index;
+  value.zzCycle = value;
+  return value;
+}
+
 function task6BCanonicalText(value) {
   if (value === null || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return JSON.stringify(value);
@@ -2402,6 +2455,111 @@ test("Task 6B hostile capacity inputs execute zero traps", () => {
   });
   assert.throws(() => contractApi.serializeCompleteExportSidecarV1(wrappedOverSidecar));
   assert.equal(traps, 0);
+});
+
+test("Task 6B COMPLETE sidecar binds Git observation to embedded toolchain", () => {
+  requireTask6BContractApi();
+  const mutations = [
+    (body) => { body.gitObservation.after.gitVersion = "git version 0.0.0-attacker"; },
+    (body) => { body.gitObservation.after.gitExecutableRawSha256 = "0".repeat(64); },
+    (body) => { body.gitObservation.before.gitExecutableByteLength += 1; },
+    (body) => {
+      for (const edge of [body.gitObservation.before, body.gitObservation.after]) {
+        edge.gitVersion = "git version 0.0.0-attacker";
+        edge.gitExecutableRawSha256 = "0".repeat(64);
+        edge.gitExecutableByteLength = 1;
+      }
+    },
+  ];
+  const codes = mutations.map((mutate) => {
+    const body = task6BSidecarBody([task6BUnresolvedRow()]);
+    mutate(body);
+    return task6BRefusalCode(() => contractApi.serializeCompleteExportSidecarV1(body));
+  });
+  assert.deepEqual(codes, mutations.map(() => "SOURCE_ORIGIN_POLICY"));
+});
+
+test("Task 6B fixed nested arrays refuse before recursive canonical work", () => {
+  requireTask6BContractApi();
+  const selectArrays = [
+    (body) => body.toolchain.sourceOriginParser.sourceEntry.exportNames,
+    (body) => body.toolchain.sourceOriginParser.project.files,
+    (body) => body.toolchain.sourceOriginParser.project.include,
+    (body) => body.toolchain.sourceOriginParser.project.compilerOptions.types,
+    (body) => body.toolchain.sourceOriginParser.exportNames,
+    (body) => body.toolchain.sourceOriginParser.sourceEdgeRows,
+    (body) => body.toolchain.sourceOriginParser.emittedEdgeRows,
+    (body) => body.discoveryCrossChecks,
+  ];
+  const codes = selectArrays.map((selectArray) => {
+    const body = task6BSidecarBody([task6BUnresolvedRow()]);
+    const values = selectArray(body);
+    values[0] = task6BMalformedFixedElement();
+    return task6BRefusalCode(() => contractApi.serializeCompleteExportSidecarV1(body));
+  });
+  assert.deepEqual(codes, selectArrays.map(() => "SOURCE_ORIGIN_SCHEMA"));
+});
+
+test("Task 6B capture work is conserved and non-selectable", { timeout: 180_000 }, () => {
+  requireTask6BContractApi();
+  const ceiling = 2_101_248;
+  const rowCount = SOURCE_ORIGIN_LIMITS.unresolvedRows;
+  const directCost = 1 + 8 * rowCount;
+  const sidecarCost = 8 * rowCount + 294;
+  assert.equal(directCost, 2_097_153);
+  assert.equal(sidecarCost, 2_097_446);
+  assert.equal(ceiling - directCost, 4_095);
+  assert.equal(ceiling - sidecarCost, 3_802);
+  assert.equal(Object.hasOwn(contractApi, "TASK_6B_CAPTURE_WORK_LIMIT"), false);
+
+  const rows = new Array(rowCount);
+  for (let index = 0; index < rows.length; index += 1) {
+    rows[index] = task6BUnresolvedRow({
+      sourceNodeId: `ga1:${index.toString(16).padStart(64, "0")}`,
+    });
+  }
+  const finalRow = rows.at(-1);
+  for (let index = 0; index < 3_802; index += 1) finalRow[`surplus${index}`] = index;
+  const counts = task6BUnresolvedCounts(rows);
+  const sidecar = task6BSidecarBodyFromUnresolved({
+    rows,
+    rowCount,
+    rowsDigest: "0".repeat(64),
+  }, { counts });
+  expectCode("SOURCE_ORIGIN_SCHEMA", () => contractApi.serializeCompleteExportSidecarV1(sidecar));
+  finalRow.surplus3802 = 3_802;
+  expectCode("SOURCE_ORIGIN_LIMIT", () => contractApi.serializeCompleteExportSidecarV1(sidecar));
+
+  for (let index = 3_803; index < 4_095; index += 1) finalRow[`surplus${index}`] = index;
+  expectCode("SOURCE_ORIGIN_SCHEMA", () => contractApi.sha256CompleteUnresolvedRowsV1(rows));
+  finalRow.surplus4095 = 4_095;
+  expectCode("SOURCE_ORIGIN_LIMIT", () => contractApi.sha256CompleteUnresolvedRowsV1(rows));
+});
+
+test("Task 6B fixed-purpose descriptors ignore inherited descriptor fields", () => {
+  requireTask6BContractApi();
+  const validRows = [task6BUnresolvedRow()];
+  const validSidecar = task6BSidecarBody(validRows);
+  const invalidRows = [task6BUnresolvedRow({ sourceNodeId: "invalid" })];
+  const poison = installTask6BInheritedDescriptorFieldPoison();
+  let invalidCode;
+  let rowsDigest;
+  let sidecarBytes;
+  let failure;
+  try {
+    invalidCode = task6BRefusalCode(() => contractApi.sha256CompleteUnresolvedRowsV1(invalidRows));
+    rowsDigest = contractApi.sha256CompleteUnresolvedRowsV1(validRows);
+    sidecarBytes = contractApi.serializeCompleteExportSidecarV1(validSidecar);
+  } catch (error) {
+    failure = error;
+  } finally {
+    poison.restore();
+  }
+  assert.equal(failure, undefined);
+  assert.equal(poison.traps, 0);
+  assert.equal(invalidCode, "SOURCE_ORIGIN_SCHEMA");
+  assert.equal(rowsDigest.length, 64);
+  assert.equal(Buffer.isBuffer(sidecarBytes), true);
 });
 
 test("Task 6B sidecar capture bounds repeated-identity work before recursive copying", () => {

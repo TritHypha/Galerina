@@ -37,7 +37,12 @@ const MAP_GET = Map.prototype.get;
 const MAP_SET = Map.prototype.set;
 
 function defineData(target, key, value) {
-  OBJECT_DEFINE_PROPERTY(target, key, { configurable: true, enumerable: true, value, writable: true });
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  OBJECT_DEFINE_PROPERTY(target, key, descriptor);
 }
 
 function append(values, value) {
@@ -88,9 +93,15 @@ function stringEndsWith(value, part) { return REFLECT_APPLY(STRING_ENDS_WITH, va
 function stringSplit(value, separator) { return REFLECT_APPLY(STRING_SPLIT, value, [separator]); }
 function stringToLowerCase(value) { return REFLECT_APPLY(STRING_TO_LOWER_CASE, value, []); }
 function regexpTest(pattern, value) {
-  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 });
+  const firstDescriptor = OBJECT_CREATE(null);
+  firstDescriptor.value = 0;
+  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', firstDescriptor);
   try { return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null; }
-  finally { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); }
+  finally {
+    const finalDescriptor = OBJECT_CREATE(null);
+    finalDescriptor.value = 0;
+    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', finalDescriptor);
+  }
 }
 function setHas(values, value) { return REFLECT_APPLY(SET_HAS, values, [value]); }
 function setAdd(values, value) { REFLECT_APPLY(SET_ADD, values, [value]); }

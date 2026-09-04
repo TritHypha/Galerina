@@ -116,7 +116,14 @@ function trustedNodeByteHash(bytes) {
   return REFLECT_APPLY(HASH_DIGEST, hash, ['hex']);
 }
 
-function defineData(target, key, value) { OBJECT_DEFINE_PROPERTY(target, key, { configurable: true, enumerable: true, value, writable: true }); }
+function defineData(target, key, value) {
+  const descriptor = OBJECT_CREATE(null);
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+  descriptor.value = value;
+  descriptor.writable = true;
+  OBJECT_DEFINE_PROPERTY(target, key, descriptor);
+}
 
 function frozenNullRecord(values) {
   const record = OBJECT_CREATE(null);
@@ -205,7 +212,18 @@ function stringLastIndexOf(value, part) { return REFLECT_APPLY(STRING_LAST_INDEX
 function stringSlice(value, start, end) { return REFLECT_APPLY(STRING_SLICE, value, end === undefined ? [start] : [start, end]); }
 function stringSplit(value, separator) { return REFLECT_APPLY(STRING_SPLIT, value, [separator]); }
 function stringToLowerCase(value) { return REFLECT_APPLY(STRING_TO_LOWER_CASE, value, []); }
-function regexpTest(pattern, value) { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); try { return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null; } finally { OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', { value: 0 }); } }
+function regexpTest(pattern, value) {
+  const firstDescriptor = OBJECT_CREATE(null);
+  firstDescriptor.value = 0;
+  OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', firstDescriptor);
+  try {
+    return REFLECT_APPLY(REGEXP_EXEC, pattern, [value]) !== null;
+  } finally {
+    const finalDescriptor = OBJECT_CREATE(null);
+    finalDescriptor.value = 0;
+    OBJECT_DEFINE_PROPERTY(pattern, 'lastIndex', finalDescriptor);
+  }
+}
 function setAdd(values, value) { REFLECT_APPLY(SET_ADD, values, [value]); }
 function setHas(values, value) { return REFLECT_APPLY(SET_HAS, values, [value]); }
 function setSize(values) { return REFLECT_APPLY(SET_SIZE, values, []); }

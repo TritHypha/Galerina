@@ -421,6 +421,105 @@ function assertClosedObject(value, keys) {
   assert.deepEqual(Object.keys(value).sort(), [...keys].sort());
 }
 
+function task6BCopyPropertyDescriptor(descriptor) {
+  if (descriptor === undefined) return undefined;
+  const copy = Object.create(null);
+  for (const field of ["configurable", "enumerable", "value", "writable", "get", "set"]) {
+    if (Object.hasOwn(descriptor, field)) copy[field] = descriptor[field];
+  }
+  return copy;
+}
+
+function installTask6BDescriptorFieldPoison() {
+  const safeCreate = Object.create;
+  const safeDefineProperty = Object.defineProperty;
+  const safeDeleteProperty = Reflect.deleteProperty;
+  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const originals = safeCreate(null);
+  originals.get = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  originals.set = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  let getTraps = 0;
+  let setTraps = 0;
+  const getDescriptor = safeCreate(null);
+  getDescriptor.configurable = true;
+  getDescriptor.enumerable = false;
+  getDescriptor.get = function task6BInheritedGet() {
+    getTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "get", getDescriptor);
+  const setDescriptor = safeCreate(null);
+  setDescriptor.configurable = true;
+  setDescriptor.enumerable = false;
+  setDescriptor.get = function task6BInheritedSet() {
+    setTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "set", setDescriptor);
+  const controller = safeCreate(null);
+  controller.counts = () => ({ get: getTraps, set: setTraps });
+  controller.restore = () => {
+    for (const field of ["get", "set"]) {
+      if (originals[field] === undefined) safeDeleteProperty(Object.prototype, field);
+      else safeDefineProperty(Object.prototype, field, originals[field]);
+    }
+  };
+  return controller;
+}
+
+test("Task 6B toolchain snapshot descriptors ignore inherited fields", () => {
+  const selectionInput = selectionOptions("HOST");
+  const semanticRecord = fixtureRecord();
+  const semanticInput = {
+    pins: fixturePins([semanticRecord]),
+    platform: semanticRecord.platform,
+    arch: semanticRecord.arch,
+    nodeIdentity: structuredClone(semanticRecord.nodeIdentity),
+    gitIdentity: structuredClone(semanticRecord.gitIdentity),
+  };
+  const snapshotInput = fixtureOptions();
+  const expectedSelection = toolchainSnapshot.prepareToolchainSelection(selectionInput);
+  const expectedSemantic = toolchainSnapshot.prepareSemanticToolchain(semanticInput);
+  const expectedSnapshot = buildToolchainSnapshot(snapshotInput);
+  let selectionResult;
+  let selectionFailure;
+  let semanticResult;
+  let semanticFailure;
+  let snapshotResult;
+  let snapshotFailure;
+  let selectionRefusal;
+  let semanticRefusal;
+  let snapshotRefusal;
+  let counts;
+  const poison = installTask6BDescriptorFieldPoison();
+  try {
+    try { selectionResult = toolchainSnapshot.prepareToolchainSelection(selectionInput); } catch (error) { selectionFailure = error; }
+    try { semanticResult = toolchainSnapshot.prepareSemanticToolchain(semanticInput); } catch (error) { semanticFailure = error; }
+    try { snapshotResult = buildToolchainSnapshot(snapshotInput); } catch (error) { snapshotFailure = error; }
+    try { toolchainSnapshot.prepareToolchainSelection({}); } catch (error) { selectionRefusal = error; }
+    try { toolchainSnapshot.prepareSemanticToolchain({}); } catch (error) { semanticRefusal = error; }
+    try { buildToolchainSnapshot({}); } catch (error) { snapshotRefusal = error; }
+  } finally {
+    counts = poison.counts();
+    poison.restore();
+  }
+  assert.deepEqual(counts, { get: 0, set: 0 });
+  assert.equal(selectionFailure, undefined);
+  assert.deepEqual(selectionResult, expectedSelection);
+  assert.equal(semanticFailure, undefined);
+  assert.deepEqual(semanticResult, expectedSemantic);
+  assert.equal(snapshotFailure, undefined);
+  assert.deepEqual(snapshotResult, expectedSnapshot);
+  for (const refusal of [selectionRefusal, semanticRefusal, snapshotRefusal]) {
+    assert.equal(refusal?.name, "ToolchainSnapshotRefusal");
+    assert.equal(refusal?.code, "SOURCE_ORIGIN_SCHEMA");
+  }
+});
+
 test("buildToolchainSnapshot emits only the exact closed manifest-v2 body", () => {
   const options = fixtureOptions();
   const record = options.pins.records[0];

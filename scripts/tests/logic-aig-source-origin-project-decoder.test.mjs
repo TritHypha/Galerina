@@ -296,6 +296,80 @@ function expectRefusal(operation, pattern = /^SOURCE_ORIGIN_PROJECT_[A-Z0-9_]+$/
   });
 }
 
+function task6BCopyPropertyDescriptor(descriptor) {
+  if (descriptor === undefined) return undefined;
+  const copy = Object.create(null);
+  for (const field of ["configurable", "enumerable", "value", "writable", "get", "set"]) {
+    if (Object.hasOwn(descriptor, field)) copy[field] = descriptor[field];
+  }
+  return copy;
+}
+
+function installTask6BDescriptorFieldPoison() {
+  const safeCreate = Object.create;
+  const safeDefineProperty = Object.defineProperty;
+  const safeDeleteProperty = Reflect.deleteProperty;
+  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const originals = safeCreate(null);
+  originals.get = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  originals.set = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  let getTraps = 0;
+  let setTraps = 0;
+  const getDescriptor = safeCreate(null);
+  getDescriptor.configurable = true;
+  getDescriptor.enumerable = false;
+  getDescriptor.get = function task6BInheritedGet() {
+    getTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "get", getDescriptor);
+  const setDescriptor = safeCreate(null);
+  setDescriptor.configurable = true;
+  setDescriptor.enumerable = false;
+  setDescriptor.get = function task6BInheritedSet() {
+    setTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "set", setDescriptor);
+  const controller = safeCreate(null);
+  controller.counts = () => ({ get: getTraps, set: setTraps });
+  controller.restore = () => {
+    for (const field of ["get", "set"]) {
+      if (originals[field] === undefined) safeDeleteProperty(Object.prototype, field);
+      else safeDefineProperty(Object.prototype, field, originals[field]);
+    }
+  };
+  return controller;
+}
+
+test("Task 6B project decoder descriptors ignore inherited fields", { timeout: 360_000 }, async () => {
+  const options = await fixtureOptions();
+  const expected = await decodeSourceProject(options);
+  let ordinary;
+  let ordinaryFailure;
+  let refusalResult;
+  let refusalFailure;
+  let counts;
+  const poison = installTask6BDescriptorFieldPoison();
+  try {
+    try { ordinary = await decodeSourceProject(options); } catch (error) { ordinaryFailure = error; }
+    try { refusalResult = await decodeSourceProject({}); } catch (error) { refusalFailure = error; }
+  } finally {
+    counts = poison.counts();
+    poison.restore();
+  }
+  assert.deepEqual(counts, { get: 0, set: 0 });
+  assert.equal(ordinaryFailure, undefined);
+  assert.deepEqual(ordinary, expected);
+  assert.equal(refusalResult, undefined);
+  assert.equal(refusalFailure?.name, "ProjectDecoderRefusal");
+  assert.equal(refusalFailure?.code, "SOURCE_ORIGIN_PROJECT_SCHEMA");
+});
+
 test("eighth-review project boundary preserves owner OID authority under post-import poisoning", async (t) => {
   const safeGetDescriptor = Object.getOwnPropertyDescriptor;
   const safeDefineProperty = Object.defineProperty;

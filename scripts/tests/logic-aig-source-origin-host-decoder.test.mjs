@@ -180,6 +180,95 @@ function expectSemanticRefusal(options) {
   assert.equal(result, undefined);
 }
 
+function task6BCopyPropertyDescriptor(descriptor) {
+  if (descriptor === undefined) return undefined;
+  const copy = Object.create(null);
+  for (const field of ["configurable", "enumerable", "value", "writable", "get", "set"]) {
+    if (Object.hasOwn(descriptor, field)) copy[field] = descriptor[field];
+  }
+  return copy;
+}
+
+function installTask6BDescriptorFieldPoison() {
+  const safeCreate = Object.create;
+  const safeDefineProperty = Object.defineProperty;
+  const safeDeleteProperty = Reflect.deleteProperty;
+  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const originals = safeCreate(null);
+  originals.get = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  originals.set = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  let getTraps = 0;
+  let setTraps = 0;
+  const getDescriptor = safeCreate(null);
+  getDescriptor.configurable = true;
+  getDescriptor.enumerable = false;
+  getDescriptor.get = function task6BInheritedGet() {
+    getTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "get", getDescriptor);
+  const setDescriptor = safeCreate(null);
+  setDescriptor.configurable = true;
+  setDescriptor.enumerable = false;
+  setDescriptor.get = function task6BInheritedSet() {
+    setTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "set", setDescriptor);
+  const controller = safeCreate(null);
+  controller.counts = () => ({ get: getTraps, set: setTraps });
+  controller.restore = () => {
+    for (const field of ["get", "set"]) {
+      if (originals[field] === undefined) safeDeleteProperty(Object.prototype, field);
+      else safeDefineProperty(Object.prototype, field, originals[field]);
+    }
+  };
+  return controller;
+}
+
+test("Task 6B host decoder descriptors ignore inherited fields", { timeout: 180_000 }, async () => {
+  const semanticOptions = await semanticRowOptions();
+  const expectedSemantic = buildSemanticRows(semanticOptions);
+  const hostOptions = await fixtureOptions({
+    "src/task-6b-descriptor.ts": "export const task6BDescriptor = 1;\n",
+  });
+  const expectedHost = await decodeHostProject(hostOptions);
+  let semanticResult;
+  let semanticFailure;
+  let hostResult;
+  let hostFailure;
+  let semanticRefusalResult;
+  let semanticRefusal;
+  let hostRefusalResult;
+  let hostRefusal;
+  let counts;
+  const poison = installTask6BDescriptorFieldPoison();
+  try {
+    try { semanticResult = buildSemanticRows(semanticOptions); } catch (error) { semanticFailure = error; }
+    try { hostResult = await decodeHostProject(hostOptions); } catch (error) { hostFailure = error; }
+    try { semanticRefusalResult = buildSemanticRows({}); } catch (error) { semanticRefusal = error; }
+    try { hostRefusalResult = await decodeHostProject({}); } catch (error) { hostRefusal = error; }
+  } finally {
+    counts = poison.counts();
+    poison.restore();
+  }
+  assert.deepEqual(counts, { get: 0, set: 0 });
+  assert.equal(semanticFailure, undefined);
+  assert.deepEqual(semanticResult, expectedSemantic);
+  assert.equal(hostFailure, undefined);
+  assert.deepEqual(hostResult, expectedHost);
+  assert.equal(semanticRefusalResult, undefined);
+  assert.equal(semanticRefusal?.name, "HostDecoderRefusal");
+  assert.equal(semanticRefusal?.code, "SOURCE_ORIGIN_HOST_SCHEMA");
+  assert.equal(hostRefusalResult, undefined);
+  assert.equal(hostRefusal?.name, "HostDecoderRefusal");
+  assert.equal(hostRefusal?.code, "SOURCE_ORIGIN_HOST_SCHEMA");
+});
+
 test("semantic-row boundary refuses proxy and accessor options before caller effects", async (t) => {
   await t.test("proxy", () => {
     let effects = 0;

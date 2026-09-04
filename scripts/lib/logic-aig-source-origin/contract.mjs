@@ -229,11 +229,15 @@ function stringSlice(value, start, end) { return callIntrinsic(safeStringSlice, 
 function stringLastIndexOf(value, part) { return callIntrinsic(safeStringLastIndexOf, value, [part]); }
 function stringToLowerCase(value) { return callIntrinsic(safeStringToLowerCase, value, []); }
 function regexTest(pattern, value) {
-  safeObjectDefineProperty(pattern, 'lastIndex', { value: 0 });
+  const firstDescriptor = nullRecord();
+  firstDescriptor.value = 0;
+  safeObjectDefineProperty(pattern, 'lastIndex', firstDescriptor);
   try {
     return callIntrinsic(safeRegExpExec, pattern, [value]) !== null;
   } finally {
-    safeObjectDefineProperty(pattern, 'lastIndex', { value: 0 });
+    const finalDescriptor = nullRecord();
+    finalDescriptor.value = 0;
+    safeObjectDefineProperty(pattern, 'lastIndex', finalDescriptor);
   }
 }
 
@@ -359,9 +363,10 @@ function dataObject(value, keys) {
   if (prototype !== safeObjectPrototype && prototype !== null) refuse('SOURCE_ORIGIN_SCHEMA');
   if (safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
   const names = safeObjectGetOwnPropertyNames(value);
+  if (names.length !== keys.length) refuse('SOURCE_ORIGIN_SCHEMA');
   const sortedNames = sortArray(copyArray(names), codeUnitCompare);
   const sortedKeys = sortArray(copyArray(keys), codeUnitCompare);
-  if (names.length !== keys.length || someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
   for (let index = 0; index < names.length; index += 1) {
     const descriptor = safeObjectGetOwnPropertyDescriptor(value, names[index]);
     if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
@@ -1888,21 +1893,41 @@ function task6BValidateSidecarShallow(value) {
   forEachArray(limitKeys, (field) => nonNegativeInteger(value.limits[field]));
 }
 
+function task6BNewCaptureWorkState() {
+  const state = nullRecord();
+  defineData(state, 'remaining', 2101248);
+  defineData(state, 'used', 0);
+  return state;
+}
+
+function task6BConsumeCaptureWork(state, units) {
+  if (state.remaining < units) refuse('SOURCE_ORIGIN_LIMIT');
+  state.remaining -= units;
+  state.used += units;
+}
+
+function task6BAssertCaptureWork(state, expected) {
+  if (state.used !== expected) refuse('SOURCE_ORIGIN_LIMIT');
+}
+
 function task6BClaimIdentity(value, identities) {
-  if (identities === undefined) return;
   if (setHas(identities, value)) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
   setAdd(identities, value);
 }
 
-function task6BCaptureDataObject(value, keys) {
+function task6BCaptureDataObject(value, keys, state, identities) {
   if (value === null || typeof value !== 'object' || safeIsProxy(value) || safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
   const prototype = safeObjectGetPrototypeOf(value);
   if (prototype !== safeObjectPrototype && prototype !== null) refuse('SOURCE_ORIGIN_SCHEMA');
   if (safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+  task6BClaimIdentity(value, identities);
+  task6BConsumeCaptureWork(state, 1);
   const names = safeObjectGetOwnPropertyNames(value);
+  task6BConsumeCaptureWork(state, names.length);
+  if (names.length !== keys.length) refuse('SOURCE_ORIGIN_SCHEMA');
   const sortedNames = sortArray(copyArray(names), codeUnitCompare);
   const sortedKeys = sortArray(copyArray(keys), codeUnitCompare);
-  if (names.length !== keys.length || someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
   const output = plainRecord();
   for (let index = 0; index < keys.length; index += 1) {
     const key = keys[index];
@@ -1913,73 +1938,301 @@ function task6BCaptureDataObject(value, keys) {
   return output;
 }
 
-function task6BCaptureUnresolvedRows(value, identities = undefined) {
+function task6BCaptureArray(value, maximum, exactLength, limitCode, state, identities, captureElement) {
   if (value === null || typeof value !== 'object' || safeIsProxy(value) || !safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
   if (safeObjectGetPrototypeOf(value) !== safeArrayPrototype || safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
   const lengthDescriptor = safeObjectGetOwnPropertyDescriptor(value, 'length');
   if (!lengthDescriptor || !safeObjectHasOwn(lengthDescriptor, 'value') || lengthDescriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
   const length = lengthDescriptor.value;
-  if (!safeNumberIsSafeInteger(length) || length < 0 || length > SOURCE_ORIGIN_LIMITS.unresolvedRows) refuse('SOURCE_ORIGIN_LIMIT');
-  const names = safeObjectGetOwnPropertyNames(value);
-  if (names.length !== length + 1 || !includesArray(names, 'length')) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (!safeNumberIsSafeInteger(length) || length < 0 || length > maximum) refuse(limitCode);
+  if (exactLength !== undefined && length !== exactLength) refuse('SOURCE_ORIGIN_SCHEMA');
   task6BClaimIdentity(value, identities);
+  task6BConsumeCaptureWork(state, 1);
+  const names = safeObjectGetOwnPropertyNames(value);
+  task6BConsumeCaptureWork(state, names.length - 1);
+  if (names.length !== length + 1 || !includesArray(names, 'length')) refuse('SOURCE_ORIGIN_SCHEMA');
   const output = [];
-  const evidenceDigests = new SafeSet();
-  let previous;
   for (let index = 0; index < length; index += 1) {
     const descriptor = safeObjectGetOwnPropertyDescriptor(value, `${index}`);
     if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
-    const row = task6BCaptureDataObject(descriptor.value, TASK_6B_UNRESOLVED_ROW_KEYS);
-    task6BClaimIdentity(descriptor.value, identities);
-    forEachArray(TASK_6B_UNRESOLVED_ROW_KEYS, (field) => nonEmptyString(row[field]));
-    if (!regexTest(TASK_6B_NODE_ID, row.sourceNodeId)) refuse('SOURCE_ORIGIN_SCHEMA');
-    canonicalLocator(row.sourceLocator);
-    digest(row.evidenceOwnerDigest);
-    digest(row.evidenceDigest);
-    const reason = findArray(
-      UNRESOLVED_REASON_ROWS,
-      (candidate) => candidate.relationshipClass === row.relationshipClass && candidate.reasonCode === row.reasonCode,
-    );
-    if (!reason) refuse('SOURCE_ORIGIN_POLICY');
-    if (previous !== undefined) {
-      let compared = 0;
-      for (let fieldIndex = 0; fieldIndex < TASK_6B_UNRESOLVED_ORDER_KEYS.length; fieldIndex += 1) {
-        const field = TASK_6B_UNRESOLVED_ORDER_KEYS[fieldIndex];
-        compared = codeUnitCompare(previous[field], row[field]);
-        if (compared !== 0) break;
-      }
-      if (compared >= 0) refuse('SOURCE_ORIGIN_ORDER');
-    }
-    if (setHas(evidenceDigests, row.evidenceDigest)) refuse('SOURCE_ORIGIN_ORDER');
-    setAdd(evidenceDigests, row.evidenceDigest);
-    append(output, row);
-    previous = row;
+    append(output, captureElement(descriptor.value, index));
   }
   return output;
 }
 
-function task6BCaptureSidecarBody(value) {
+function task6BCaptureExactValues(value, expected, state, identities) {
+  return task6BCaptureArray(
+    value,
+    expected.length,
+    expected.length,
+    'SOURCE_ORIGIN_SCHEMA',
+    state,
+    identities,
+    (entry, index) => {
+      if (entry !== expected[index]) refuse('SOURCE_ORIGIN_SCHEMA');
+      return entry;
+    },
+  );
+}
+
+function task6BCaptureExactRows(value, expected, state, identities) {
+  const rowKeys = ['fromLocator','kind','exportName','specifier','toLocator'];
+  return task6BCaptureArray(
+    value,
+    expected.length,
+    expected.length,
+    'SOURCE_ORIGIN_SCHEMA',
+    state,
+    identities,
+    (entry, index) => {
+      const row = task6BCaptureDataObject(entry, rowKeys, state, identities);
+      for (let fieldIndex = 0; fieldIndex < rowKeys.length; fieldIndex += 1) {
+        const key = rowKeys[fieldIndex];
+        if (row[key] !== expected[index][key]) refuse('SOURCE_ORIGIN_SCHEMA');
+      }
+      return row;
+    },
+  );
+}
+
+function task6BCaptureUnresolvedRows(value, state, identities) {
+  const evidenceDigests = new SafeSet();
+  let previous;
+  return task6BCaptureArray(
+    value,
+    SOURCE_ORIGIN_LIMITS.unresolvedRows,
+    undefined,
+    'SOURCE_ORIGIN_LIMIT',
+    state,
+    identities,
+    (entry) => {
+      const row = task6BCaptureDataObject(entry, TASK_6B_UNRESOLVED_ROW_KEYS, state, identities);
+      forEachArray(TASK_6B_UNRESOLVED_ROW_KEYS, (field) => nonEmptyString(row[field]));
+      if (!regexTest(TASK_6B_NODE_ID, row.sourceNodeId)) refuse('SOURCE_ORIGIN_SCHEMA');
+      canonicalLocator(row.sourceLocator);
+      digest(row.evidenceOwnerDigest);
+      digest(row.evidenceDigest);
+      const reason = findArray(
+        UNRESOLVED_REASON_ROWS,
+        (candidate) => candidate.relationshipClass === row.relationshipClass && candidate.reasonCode === row.reasonCode,
+      );
+      if (!reason) refuse('SOURCE_ORIGIN_POLICY');
+      if (previous !== undefined) {
+        let compared = 0;
+        for (let fieldIndex = 0; fieldIndex < TASK_6B_UNRESOLVED_ORDER_KEYS.length; fieldIndex += 1) {
+          const field = TASK_6B_UNRESOLVED_ORDER_KEYS[fieldIndex];
+          compared = codeUnitCompare(previous[field], row[field]);
+          if (compared !== 0) break;
+        }
+        if (compared >= 0) refuse('SOURCE_ORIGIN_ORDER');
+      }
+      if (setHas(evidenceDigests, row.evidenceDigest)) refuse('SOURCE_ORIGIN_ORDER');
+      setAdd(evidenceDigests, row.evidenceDigest);
+      previous = row;
+      return row;
+    },
+  );
+}
+
+function task6BCaptureChildObject(parent, key, keys, state, identities) {
+  const child = task6BCaptureDataObject(parent[key], keys, state, identities);
+  defineData(parent, key, child);
+  return child;
+}
+
+function task6BCaptureChildExactValues(parent, key, expected, state, identities) {
+  defineData(parent, key, task6BCaptureExactValues(parent[key], expected, state, identities));
+}
+
+function task6BCaptureSidecarBody(value, state) {
   const identities = new SafeSet();
-  const source = task6BCaptureDataObject(value, TASK_6B_SIDECAR_BODY_KEYS);
-  task6BClaimIdentity(value, identities);
+  const source = task6BCaptureDataObject(value, TASK_6B_SIDECAR_BODY_KEYS, state, identities);
   task6BValidateSidecarShallow(source);
-  const unresolvedSource = task6BCaptureDataObject(source.unresolved, ['rows','rowCount','rowsDigest']);
-  task6BClaimIdentity(source.unresolved, identities);
-  const rows = task6BCaptureUnresolvedRows(unresolvedSource.rows, identities);
-  const unresolved = plainRecord();
-  defineData(unresolved, 'rows', rows);
-  defineData(unresolved, 'rowCount', canonicalValue(unresolvedSource.rowCount, new SafeSet()));
-  defineData(unresolved, 'rowsDigest', canonicalValue(unresolvedSource.rowsDigest, new SafeSet()));
-  const output = plainRecord();
-  for (let index = 0; index < TASK_6B_SIDECAR_BODY_KEYS.length; index += 1) {
-    const key = TASK_6B_SIDECAR_BODY_KEYS[index];
-    defineData(
-      output,
-      key,
-      key === 'unresolved' ? unresolved : canonicalValue(source[key], identities, 0, true),
-    );
-  }
-  return output;
+
+  const observation = task6BCaptureChildObject(
+    source,
+    'gitObservation',
+    ['before','after','objectFormat','indexDigest','executionBoundary'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    observation,
+    'before',
+    ['head','tree','indexDigest','gitVersion','gitExecutableRawSha256','gitExecutableByteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    observation,
+    'after',
+    ['head','tree','indexDigest','gitVersion','gitExecutableRawSha256','gitExecutableByteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    source,
+    'sourcePolicy',
+    ['policyDigest','exclusionDigest','excludedPaths','excludedBytes'],
+    state,
+    identities,
+  );
+
+  const counts = task6BCaptureChildObject(
+    source,
+    'counts',
+    [
+      'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
+      'parseOutcomeRows','ownerBindings','representedFileNodes','nodesByKind',
+      'edgesByKind','unresolvedByClass','unresolvedByReason','duplicateIds',
+      'caseShadows','idMapRows',
+    ],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(counts, 'nodesByKind', TASK_6B_NODE_KINDS, state, identities);
+  task6BCaptureChildObject(counts, 'edgesByKind', TASK_6B_RELATIONSHIP_CLASSES, state, identities);
+  task6BCaptureChildObject(counts, 'unresolvedByClass', TASK_6B_RELATIONSHIP_CLASSES, state, identities);
+  task6BCaptureChildObject(counts, 'unresolvedByReason', TASK_6B_REASON_CODES, state, identities);
+
+  const toolchain = task6BCaptureChildObject(
+    source,
+    'toolchain',
+    [
+      'selectedPinRecordId','selectedPinRecordDigest','pinsDigest','toolchainManifestDigest',
+      'nodeIdentity','gitIdentity','typescript','sourceOriginParser','moduleClosureDigest',
+      'actualLoadedSetDigest',
+    ],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    toolchain,
+    'nodeIdentity',
+    ['version','executableRawSha256','executableByteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    toolchain,
+    'gitIdentity',
+    ['version','executableRawSha256','executableByteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    toolchain,
+    'typescript',
+    [
+      'name','version','packageLocator','packageRawSha256','packageByteLength',
+      'entryLocator','entryRawSha256','entryByteLength',
+    ],
+    state,
+    identities,
+  );
+  const parser = task6BCaptureChildObject(
+    toolchain,
+    'sourceOriginParser',
+    [
+      'sourceEntry','project','generatedEntry','generatedPackageManifest','exportNames',
+      'sourceEdgeRows','emittedEdgeRows','generatedClosureDigest',
+    ],
+    state,
+    identities,
+  );
+  const sourceEntry = task6BCaptureChildObject(
+    parser,
+    'sourceEntry',
+    ['rootLocator','locator','gitBlobOid','rawSha256','byteLength','exportNames'],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(
+    sourceEntry,
+    'exportNames',
+    TOOLCHAIN_PARSER_EXPORTS,
+    state,
+    identities,
+  );
+  const project = task6BCaptureChildObject(
+    parser,
+    'project',
+    [
+      'rootLocator','locator','gitBlobOid','rawSha256','byteLength','extendsLocator',
+      'files','include','compilerOptions',
+    ],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(
+    project,
+    'files',
+    ['src/source-origin-parser-entry.ts'],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(project, 'include', [], state, identities);
+  const compilerOptions = task6BCaptureChildObject(
+    project,
+    'compilerOptions',
+    ['types','noEmitOnError','incremental','composite','sourceMap','declarationMap'],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(compilerOptions, 'types', [], state, identities);
+  task6BCaptureChildObject(
+    parser,
+    'generatedEntry',
+    ['rootLocator','locator','rawSha256','byteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    parser,
+    'generatedPackageManifest',
+    ['rootLocator','locator','rawSha256','byteLength'],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(parser, 'exportNames', TOOLCHAIN_PARSER_EXPORTS, state, identities);
+  defineData(
+    parser,
+    'sourceEdgeRows',
+    task6BCaptureExactRows(parser.sourceEdgeRows, TOOLCHAIN_SOURCE_EDGES, state, identities),
+  );
+  defineData(
+    parser,
+    'emittedEdgeRows',
+    task6BCaptureExactRows(parser.emittedEdgeRows, TOOLCHAIN_EMITTED_EDGES, state, identities),
+  );
+
+  task6BCaptureChildObject(
+    source,
+    'executionPolicy',
+    ['argvPolicyDigest','environmentPolicyDigest','timeoutMillis','outputByteLimit','concurrencyLimit'],
+    state,
+    identities,
+  );
+  task6BCaptureChildObject(
+    source,
+    'nativeGraphCrossCheck',
+    ['status','receiptDigest','authorizing'],
+    state,
+    identities,
+  );
+  task6BCaptureChildExactValues(source, 'discoveryCrossChecks', [], state, identities);
+  task6BCaptureChildObject(source, 'limits', safeObjectKeys(SOURCE_ORIGIN_LIMITS), state, identities);
+
+  const unresolved = task6BCaptureChildObject(
+    source,
+    'unresolved',
+    ['rows','rowCount','rowsDigest'],
+    state,
+    identities,
+  );
+  defineData(unresolved, 'rows', task6BCaptureUnresolvedRows(unresolved.rows, state, identities));
+  task6BAssertCaptureWork(state, 8 * unresolved.rows.length + 294);
+  return source;
 }
 
 function task6BDomainTextDigest(domain, text) {
@@ -2038,6 +2291,21 @@ function task6BValidateToolchainBinding(value, manifestDigest) {
   validatePackageIdentity(value.typescript);
   validateSourceOriginParser(value.sourceOriginParser);
   if (value.toolchainManifestDigest !== manifestDigest) refuse('SOURCE_ORIGIN_DIGEST');
+}
+
+function task6BValidateGitObservationBridge(value) {
+  const before = value.gitObservation.before;
+  const after = value.gitObservation.after;
+  const gitIdentity = value.toolchain.gitIdentity;
+  const expectedVersion = `git version ${gitIdentity.version}`;
+  if (
+    before.gitVersion !== after.gitVersion
+    || before.gitExecutableRawSha256 !== after.gitExecutableRawSha256
+    || before.gitExecutableByteLength !== after.gitExecutableByteLength
+    || before.gitVersion !== expectedVersion
+    || before.gitExecutableRawSha256 !== gitIdentity.executableRawSha256
+    || before.gitExecutableByteLength !== gitIdentity.executableByteLength
+  ) refuse('SOURCE_ORIGIN_POLICY');
 }
 
 function task6BValidateSidecarBody(value) {
@@ -2127,6 +2395,7 @@ function task6BValidateSidecarBody(value) {
   }
 
   task6BValidateToolchainBinding(value.toolchain, value.toolchainManifestDigest);
+  task6BValidateGitObservationBridge(value);
   dataObject(value.executionPolicy, [
     'argvPolicyDigest','environmentPolicyDigest','timeoutMillis','outputByteLimit',
     'concurrencyLimit',
@@ -2162,7 +2431,9 @@ function canonicalTask6BJsonText(value) {
 
 export function sha256CompleteUnresolvedRowsV1(unresolvedRows) {
   if (arguments.length !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
-  const rows = task6BCaptureUnresolvedRows(unresolvedRows);
+  const work = task6BNewCaptureWorkState();
+  const rows = task6BCaptureUnresolvedRows(unresolvedRows, work, new SafeSet());
+  task6BAssertCaptureWork(work, 1 + 8 * rows.length);
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
     const evidenceText = canonicalTask6BJsonText(task6BEvidenceBody(row));
@@ -2175,7 +2446,8 @@ export function sha256CompleteUnresolvedRowsV1(unresolvedRows) {
 
 export function serializeCompleteExportSidecarV1(sidecarBody) {
   if (arguments.length !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
-  const body = task6BCaptureSidecarBody(sidecarBody);
+  const work = task6BNewCaptureWorkState();
+  const body = task6BCaptureSidecarBody(sidecarBody, work);
   for (let index = 0; index < body.unresolved.rows.length; index += 1) {
     const row = body.unresolved.rows[index];
     const evidenceText = canonicalTask6BJsonText(task6BEvidenceBody(row));

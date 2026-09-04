@@ -54,6 +54,56 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
+function task6BCopyPropertyDescriptor(descriptor) {
+  if (descriptor === undefined) return undefined;
+  const copy = Object.create(null);
+  for (const field of ["configurable", "enumerable", "value", "writable", "get", "set"]) {
+    if (Object.hasOwn(descriptor, field)) copy[field] = descriptor[field];
+  }
+  return copy;
+}
+
+function installTask6BDescriptorFieldPoison() {
+  const safeCreate = Object.create;
+  const safeDefineProperty = Object.defineProperty;
+  const safeDeleteProperty = Reflect.deleteProperty;
+  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const originals = safeCreate(null);
+  originals.get = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  originals.set = task6BCopyPropertyDescriptor(
+    safeGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  let getTraps = 0;
+  let setTraps = 0;
+  const getDescriptor = safeCreate(null);
+  getDescriptor.configurable = true;
+  getDescriptor.enumerable = false;
+  getDescriptor.get = function task6BInheritedGet() {
+    getTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "get", getDescriptor);
+  const setDescriptor = safeCreate(null);
+  setDescriptor.configurable = true;
+  setDescriptor.enumerable = false;
+  setDescriptor.get = function task6BInheritedSet() {
+    setTraps += 1;
+    return undefined;
+  };
+  safeDefineProperty(Object.prototype, "set", setDescriptor);
+  const controller = safeCreate(null);
+  controller.counts = () => ({ get: getTraps, set: setTraps });
+  controller.restore = () => {
+    for (const field of ["get", "set"]) {
+      if (originals[field] === undefined) safeDeleteProperty(Object.prototype, field);
+      else safeDefineProperty(Object.prototype, field, originals[field]);
+    }
+  };
+  return controller;
+}
+
 async function readPinnedHeadCommit(gitExecutableLocator) {
   const repositoryRoot = await realpath(new URL("../../", import.meta.url));
   const canonicalExecutable = await realpath(gitExecutableLocator);
@@ -1623,6 +1673,41 @@ test("eighth-review Git boundary closes regex, synced hash and decorated Buffer 
     assert.equal(result, undefined);
     assert.equal(failure?.code, "SOURCE_ORIGIN_GIT_BLOB_SET");
   });
+});
+
+test("Task 6B git-source descriptors ignore inherited fields", { timeout: 900_000 }, async () => {
+  const gitExecutableLocator = platform() === "win32"
+    ? fileURLToPath(new URL(
+      "../../.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/toolchains/mingit-2.55.0.5/expanded/cmd/git.exe",
+      import.meta.url,
+    ))
+    : "/usr/bin/git";
+  const commitOid = await readPinnedHeadCommit(gitExecutableLocator);
+  const invalidLine = Buffer.from([0xff]);
+  const poison = installTask6BDescriptorFieldPoison();
+  let refusal;
+  let captured;
+  let failure;
+  try {
+    try {
+      gitSource.decodeGitLine(invalidLine);
+    } catch (error) {
+      refusal = error;
+    }
+    try {
+      captured = await gitSource.captureFrozenSource({ commitOid, gitExecutableLocator });
+    } catch (error) {
+      failure = error;
+    }
+  } finally {
+    poison.restore();
+  }
+  assert.deepEqual(poison.counts(), { get: 0, set: 0 });
+  assert.equal(refusal?.name, "SourceOriginCaptureRefusal");
+  assert.equal(refusal?.code, "SOURCE_ORIGIN_GIT_PROCESS");
+  assert.equal(failure, undefined);
+  assert.equal(captured?.owners.authorizing, false);
+  assert.equal(captured?.sourceManifest.expectedHead, commitOid);
 });
 
 test("twelfth-review frozen capture async boundaries ignore inherited then capabilities", { timeout: 900_000, skip: platform() !== "win32" }, async (t) => {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import test from 'node:test';
+import nodeTest from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   canonicalJsonText,
@@ -10,7 +12,11 @@ import {
 import * as productionExport from '../galerina-source-origin-export.mjs';
 
 const GENUINE_COMMIT = 'f0de2475a7ff6f67849a25855d3c1fb45d535048';
-const IDS = [
+const TASK6B_PLAIN_SENTINEL_ARGUMENT = '--task6b-plain-exporter-sentinel';
+const TASK6B_PLAIN_SENTINEL_MODE = process.argv.length === 3
+  && process.argv[2] === TASK6B_PLAIN_SENTINEL_ARGUMENT;
+const test = TASK6B_PLAIN_SENTINEL_MODE ? () => undefined : nodeTest;
+const IDS = Object.freeze([
   'expected-parse-outcomes',
   'export-sidecar',
   'parse-outcomes-receipt',
@@ -18,10 +24,121 @@ const IDS = [
   'resolution-inputs',
   'source-manifest',
   'toolchain-manifest',
-];
+]);
+const TASK6B_PLAIN_SENTINEL_SUMMARY = Object.freeze({
+  schema: 'galerina.task6b-exporter-poison-sentinel.v1',
+  status: 'PASS',
+  descriptorGetTraps: 0,
+  descriptorSetTraps: 0,
+  inheritedThenCalls: 0,
+  refusalCode: 'SOURCE_ORIGIN_EXPORT_SCHEMA',
+  recordCount: 7,
+  bodyCheckCount: 7,
+  exactCanonicalBodyCount: 7,
+  positiveBodyCount: 7,
+  resultOwnNameCount: 9,
+  totalBytes: 110_300_409,
+  promiseResolveSameResult: true,
+  directAwaitSameResult: true,
+  ids: IDS,
+});
 
 const safeObjectDefineProperty = Object.defineProperty;
 const safeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+const safeObjectGetOwnPropertyNames = Object.getOwnPropertyNames;
+const safeObjectGetOwnPropertySymbols = Object.getOwnPropertySymbols;
+const safeObjectGetPrototypeOf = Object.getPrototypeOf;
+const safeObjectCreate = Object.create;
+const safeObjectEntries = Object.entries;
+const safeObjectFromEntries = Object.fromEntries;
+const safeObjectHasOwn = Object.hasOwn;
+const safeObjectIsFrozen = Object.isFrozen;
+const safeObjectKeys = Object.keys;
+const safeDeleteProperty = Reflect.deleteProperty;
+const safeBufferCompare = Buffer.compare;
+const safeBufferIsBuffer = Buffer.isBuffer;
+
+function nullDescriptor(fields) {
+  const descriptor = safeObjectCreate(null);
+  for (const field of ['configurable', 'enumerable', 'value', 'writable', 'get', 'set']) {
+    if (safeObjectHasOwn(fields, field)) descriptor[field] = fields[field];
+  }
+  return descriptor;
+}
+
+function copyPropertyDescriptor(descriptor) {
+  return descriptor === undefined ? undefined : nullDescriptor(descriptor);
+}
+
+function installInheritedDescriptorFieldPoison() {
+  const originals = safeObjectCreate(null);
+  originals.get = copyPropertyDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Object.prototype, 'get'),
+  );
+  originals.set = copyPropertyDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Object.prototype, 'set'),
+  );
+  let getTraps = 0;
+  let setTraps = 0;
+  safeObjectDefineProperty(Object.prototype, 'get', nullDescriptor({
+    configurable: true,
+    enumerable: false,
+    get() {
+      getTraps += 1;
+      return undefined;
+    },
+  }));
+  safeObjectDefineProperty(Object.prototype, 'set', nullDescriptor({
+    configurable: true,
+    enumerable: false,
+    get() {
+      setTraps += 1;
+      return undefined;
+    },
+  }));
+  const controller = safeObjectCreate(null);
+  controller.counts = () => ({ get: getTraps, set: setTraps });
+  controller.restore = () => {
+    for (const field of ['get', 'set']) {
+      const descriptor = originals[field];
+      if (descriptor === undefined) safeDeleteProperty(Object.prototype, field);
+      else safeObjectDefineProperty(Object.prototype, field, descriptor);
+    }
+  };
+  return controller;
+}
+
+function installInheritedThenPoison() {
+  const original = copyPropertyDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Object.prototype, 'then'),
+  );
+  let traps = 0;
+  safeObjectDefineProperty(Object.prototype, 'then', nullDescriptor({
+    configurable: true,
+    enumerable: false,
+    value(resolve, reject) {
+      try {
+        traps += 1;
+        safeObjectDefineProperty(this, 'then', nullDescriptor({
+          configurable: true,
+          value: undefined,
+        }));
+        resolve(this);
+        safeDeleteProperty(this, 'then');
+      } catch (error) {
+        reject(error);
+      }
+    },
+    writable: true,
+  }));
+  const controller = safeObjectCreate(null);
+  controller.traps = () => traps;
+  controller.restore = () => {
+    if (original === undefined) safeDeleteProperty(Object.prototype, 'then');
+    else safeObjectDefineProperty(Object.prototype, 'then', original);
+  };
+  return controller;
+}
 
 function installPostImportRegExpTestPoison() {
   const descriptor = safeObjectGetOwnPropertyDescriptor(RegExp.prototype, 'test');
@@ -49,6 +166,39 @@ function bodyById(records, id) {
 
 function rawSha256(value) {
   return createHash('sha256').update(value).digest('hex');
+}
+
+function inspectSevenRecordBodyBytes(records) {
+  const rows = [];
+  for (let index = 0; index < records.length; index += 1) {
+    const record = records[index];
+    const parsed = JSON.parse(record.bytes.toString('utf8'));
+    const expectedBytes = record.id === 'export-sidecar'
+      ? serializeCompleteExportSidecarV1(safeObjectFromEntries(
+        safeObjectEntries(parsed).filter(([key]) => key !== 'sidecarDigest'),
+      ))
+      : Buffer.from(canonicalJsonText(parsed), 'utf8');
+    rows[index] = {
+      id: record.id,
+      prototype: safeObjectGetPrototypeOf(record),
+      frozen: safeObjectIsFrozen(record),
+      keys: safeObjectKeys(record),
+      symbols: safeObjectGetOwnPropertySymbols(record),
+      isBuffer: safeBufferIsBuffer(record.bytes),
+      exactCanonicalBytes: safeBufferCompare(record.bytes, expectedBytes) === 0,
+      byteLength: record.bytes.byteLength,
+    };
+  }
+  return rows;
+}
+
+function plainChildEnvironment() {
+  const environment = safeObjectCreate(null);
+  for (const [key, value] of safeObjectEntries(process.env)) {
+    if (key === 'NODE_TEST_CONTEXT' || key === 'NODE_TEST_WORKER_ID') continue;
+    environment[key] = value;
+  }
+  return environment;
 }
 
 test('Task 6B exporter is hardwired to one frozen commit', async () => {
@@ -91,6 +241,149 @@ test('Task 6B exporter argument refusal bypasses post-import RegExp dispatch', a
   assert.equal(Object.isFrozen(Object.getPrototypeOf(failure).constructor), true);
 });
 
+async function executeTask6BExporterPoisonSentinel() {
+  const descriptorPoison = installInheritedDescriptorFieldPoison();
+  const thenPoison = installInheritedThenPoison();
+  let exportPromise;
+  let refusal;
+  let records;
+  let reassimilated;
+  let awaitedAgain;
+  let bodyInspection;
+  let resultInspection;
+  let descriptorCounts;
+  let thenTraps;
+  let failure;
+  try {
+    exportPromise = productionExport.exportSourceOriginProject(GENUINE_COMMIT);
+    try {
+      await productionExport.exportSourceOriginProject('not-a-commit');
+    } catch (error) {
+      refusal = error;
+    }
+    records = await exportPromise;
+    bodyInspection = inspectSevenRecordBodyBytes(records);
+    reassimilated = await Promise.resolve(records);
+    awaitedAgain = await records;
+    resultInspection = {
+      prototype: safeObjectGetPrototypeOf(records),
+      frozen: safeObjectIsFrozen(records),
+      names: safeObjectGetOwnPropertyNames(records),
+      symbols: safeObjectGetOwnPropertySymbols(records),
+      thenDescriptor: safeObjectGetOwnPropertyDescriptor(records, 'then'),
+      ids: records.map((record) => record.id),
+      totalBytes: records.reduce((sum, record) => sum + record.bytes.byteLength, 0),
+    };
+  } catch (error) {
+    failure = error;
+  } finally {
+    descriptorCounts = descriptorPoison.counts();
+    thenTraps = thenPoison.traps();
+    thenPoison.restore();
+    descriptorPoison.restore();
+  }
+
+  return {
+    descriptorCounts,
+    thenTraps,
+    refusal,
+    failure,
+    records,
+    reassimilated,
+    awaitedAgain,
+    bodyInspection,
+    resultInspection,
+  };
+}
+
+function assertTask6BExporterPoisonSentinel(evidence) {
+  assert.deepEqual(evidence.descriptorCounts, { get: 0, set: 0 });
+  assert.equal(evidence.refusal?.name, 'SourceOriginExportRefusal');
+  assert.equal(evidence.refusal?.code, 'SOURCE_ORIGIN_EXPORT_SCHEMA');
+  assert.equal(safeObjectIsFrozen(safeObjectGetPrototypeOf(evidence.refusal)), true);
+  assert.equal(
+    safeObjectIsFrozen(safeObjectGetPrototypeOf(evidence.refusal).constructor),
+    true,
+  );
+  assert.equal(evidence.failure, undefined);
+  assert.equal(evidence.thenTraps, 0);
+  assert.equal(evidence.reassimilated, evidence.records);
+  assert.equal(evidence.awaitedAgain, evidence.records);
+  assert.equal(evidence.resultInspection.prototype, Array.prototype);
+  assert.equal(evidence.resultInspection.frozen, true);
+  assert.deepEqual(evidence.resultInspection.names, [
+    '0', '1', '2', '3', '4', '5', '6', 'length', 'then',
+  ]);
+  assert.deepEqual(evidence.resultInspection.symbols, []);
+  assert.deepEqual(evidence.resultInspection.thenDescriptor, {
+    configurable: false,
+    enumerable: false,
+    value: undefined,
+    writable: false,
+  });
+  assert.deepEqual(evidence.resultInspection.ids, IDS);
+  assert.equal(evidence.resultInspection.totalBytes, 110_300_409);
+  assert.equal(evidence.bodyInspection.length, IDS.length);
+  let exactCanonicalBodyCount = 0;
+  let positiveBodyCount = 0;
+  for (let index = 0; index < IDS.length; index += 1) {
+    const body = evidence.bodyInspection[index];
+    assert.deepEqual(body, {
+      id: IDS[index],
+      prototype: Object.prototype,
+      frozen: true,
+      keys: ['id', 'bytes'],
+      symbols: [],
+      isBuffer: true,
+      exactCanonicalBytes: true,
+      byteLength: body.byteLength,
+    });
+    if (body.exactCanonicalBytes) exactCanonicalBodyCount += 1;
+    if (body.byteLength > 0) positiveBodyCount += 1;
+  }
+
+  const summary = {
+    schema: TASK6B_PLAIN_SENTINEL_SUMMARY.schema,
+    status: 'PASS',
+    descriptorGetTraps: evidence.descriptorCounts.get,
+    descriptorSetTraps: evidence.descriptorCounts.set,
+    inheritedThenCalls: evidence.thenTraps,
+    refusalCode: evidence.refusal.code,
+    recordCount: evidence.records.length,
+    bodyCheckCount: evidence.bodyInspection.length,
+    exactCanonicalBodyCount,
+    positiveBodyCount,
+    resultOwnNameCount: evidence.resultInspection.names.length,
+    totalBytes: evidence.resultInspection.totalBytes,
+    promiseResolveSameResult: evidence.reassimilated === evidence.records,
+    directAwaitSameResult: evidence.awaitedAgain === evidence.records,
+    ids: evidence.resultInspection.ids,
+  };
+  assert.deepEqual(summary, TASK6B_PLAIN_SENTINEL_SUMMARY);
+  return summary;
+}
+
+test('Task 6B exporter result blocks inherited then assimilation', { timeout: 900_000 }, () => {
+  const child = spawnSync(
+    process.execPath,
+    [fileURLToPath(import.meta.url), TASK6B_PLAIN_SENTINEL_ARGUMENT],
+    {
+      encoding: 'utf8',
+      env: plainChildEnvironment(),
+      maxBuffer: 1024 * 1024,
+      timeout: 840_000,
+      windowsHide: true,
+    },
+  );
+  const expectedStdout = `${JSON.stringify(TASK6B_PLAIN_SENTINEL_SUMMARY)}\n`;
+  assert.equal(child.error, undefined);
+  assert.equal(child.signal, null);
+  assert.equal(child.status, 0);
+  assert.equal(child.stderr, '');
+  assert.equal(child.stdout, expectedStdout);
+  assert.deepEqual(JSON.parse(child.stdout), TASK6B_PLAIN_SENTINEL_SUMMARY);
+});
+
 test('Task 6B exporter returns the genuine complete seven-body set', { timeout: 900_000 }, async () => {
   const head = GENUINE_COMMIT;
   const poison = installPostImportRegExpTestPoison();
@@ -110,7 +403,7 @@ test('Task 6B exporter returns the genuine complete seven-body set', { timeout: 
   assert.equal(records.length, IDS.length);
   assert.equal(Object.isFrozen(records), true);
   assert.deepEqual(records.map((record) => record.id), IDS);
-  assert.deepEqual(Object.getOwnPropertyNames(records), ['0', '1', '2', '3', '4', '5', '6', 'length']);
+  assert.deepEqual(Object.getOwnPropertyNames(records), ['0', '1', '2', '3', '4', '5', '6', 'length', 'then']);
   assert.deepEqual(Object.getOwnPropertySymbols(records), []);
   assert.equal(new Set(records).size, records.length);
   assert.equal(new Set(records.map((record) => record.bytes)).size, records.length);
@@ -210,3 +503,9 @@ test('Task 6B exporter returns the genuine complete seven-body set', { timeout: 
     )),
   );
 });
+
+if (TASK6B_PLAIN_SENTINEL_MODE) {
+  const evidence = await executeTask6BExporterPoisonSentinel();
+  const summary = assertTask6BExporterPoisonSentinel(evidence);
+  process.stdout.write(`${JSON.stringify(summary)}\n`);
+}
