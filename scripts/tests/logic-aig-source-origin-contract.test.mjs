@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
+import * as contractApi from "../lib/logic-aig-source-origin/contract.mjs";
 import {
   PARSER_POLICY_BODY,
   RESOLUTION_POLICY_BODY,
@@ -30,8 +35,25 @@ import {
   validateToolchainPins,
 } from "../lib/logic-aig-source-origin/contract.mjs";
 import { buildToolchainSnapshot } from "../lib/logic-aig-source-origin/toolchain-snapshot.mjs";
+import { decodeSourceProject } from "../lib/logic-aig-source-origin/decode-project.mjs";
+import { captureFrozenSource } from "../lib/logic-aig-source-origin/git-source.mjs";
 
 const GOVERNANCE = new URL("../../governance/", import.meta.url);
+const TASK_6B_REPOSITORY_ROOT = fileURLToPath(new URL("../../", import.meta.url));
+const TASK_6B_PINNED_GIT = process.platform === "win32"
+  ? fileURLToPath(new URL(
+    "../../.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/toolchains/mingit-2.55.0.5/expanded/cmd/git.exe",
+    import.meta.url,
+  ))
+  : "/usr/bin/git";
+const TASK_6B_JSON_BYTES = 83_886_080;
+const TASK_6B_NODE_KINDS = Object.freeze([
+  "CLASS", "FILE", "FLOW", "FUNCTION", "GATE", "INTERFACE", "METHOD", "MODULE",
+  "ROUTE", "SYMBOL", "TYPE",
+]);
+const TASK_6B_RELATIONSHIP_KINDS = Object.freeze([
+  "CALLER", "CONTRACT", "GENERATED_CONSUMER", "IMPORT", "TEST",
+]);
 
 const POLICY_FILES = Object.freeze({
   generated: "logic-aig-source-origin-generated-consumers.json",
@@ -430,6 +452,468 @@ function receiptForManifests(fixture, sourceManifest, resolutionInputs) {
 function resealManifest(manifest, digestField) {
   const body = without(manifest, digestField);
   return { ...body, [digestField]: sha256Canonical(body.schema, body) };
+}
+
+function requireTask6BContractApi() {
+  assert.equal(typeof contractApi.sha256CompleteUnresolvedRowsV1, "function");
+  assert.equal(contractApi.sha256CompleteUnresolvedRowsV1.length, 1);
+  assert.equal(typeof contractApi.serializeCompleteExportSidecarV1, "function");
+  assert.equal(contractApi.serializeCompleteExportSidecarV1.length, 1);
+  assert.equal(Object.hasOwn(contractApi, "canonicalTask6BJsonText"), false);
+}
+
+function task6BCanonicalText(value) {
+  if (value === null || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) return `[${value.map(task6BCanonicalText).join(",")}]`;
+  return `{${Object.keys(value).sort().map(
+    (key) => `${JSON.stringify(key)}:${task6BCanonicalText(value[key])}`,
+  ).join(",")}}`;
+}
+
+function task6BDomainTextDigest(domain, text) {
+  return createHash("sha256")
+    .update(domain, "utf8")
+    .update(Buffer.from([0]))
+    .update(text, "utf8")
+    .digest("hex");
+}
+
+function task6BDomainDigest(domain, value) {
+  return task6BDomainTextDigest(domain, task6BCanonicalText(value));
+}
+
+function task6BUnresolvedRow({
+  sourceNodeId = `ga1:${"0".repeat(64)}`,
+  sourceLocator = "a",
+  relationshipClass = "TEST",
+  reasonCode = "MISSING_TARGET",
+  evidenceOwnerDigest = "1".repeat(64),
+} = {}) {
+  const body = {
+    sourceNodeId,
+    sourceLocator,
+    relationshipClass,
+    reasonCode,
+    evidenceOwnerDigest,
+  };
+  return {
+    ...body,
+    evidenceDigest: task6BDomainDigest("galerina.logic-aig-unresolved-evidence.v1", body),
+  };
+}
+
+function task6BTextWithUtf8Bytes(byteLength) {
+  assert(Number.isSafeInteger(byteLength) && byteLength > 0);
+  const threeByteCharacters = Math.floor(byteLength / 3);
+  return `${"€".repeat(threeByteCharacters)}${"x".repeat(byteLength - threeByteCharacters * 3)}`;
+}
+
+function task6BRowsAtCanonicalByteLength(byteLength) {
+  const base = task6BUnresolvedRow();
+  const baseLength = Buffer.byteLength(task6BCanonicalText([base]), "utf8");
+  assert(byteLength >= baseLength);
+  const sourceLocatorBytes = 1 + byteLength - baseLength;
+  const row = task6BUnresolvedRow({ sourceLocator: task6BTextWithUtf8Bytes(sourceLocatorBytes) });
+  const rows = [row];
+  assert.equal(Buffer.byteLength(task6BCanonicalText(rows), "utf8"), byteLength);
+  return rows;
+}
+
+function task6BUnresolvedCounts(rows) {
+  const byClass = Object.fromEntries(TASK_6B_RELATIONSHIP_KINDS.map((key) => [key, 0]));
+  const reasonCodes = [...new Set(EXPECTED_UNRESOLVED_REASON_ROWS.map((row) => row.reasonCode))].sort();
+  const byReason = Object.fromEntries(reasonCodes.map((key) => [key, 0]));
+  for (const row of rows) {
+    byClass[row.relationshipClass] += 1;
+    byReason[row.reasonCode] += 1;
+  }
+  return { byClass, byReason };
+}
+
+function task6BSelectedPin() {
+  const pins = JSON.parse(readFileSync(new URL("logic-aig-source-origin-toolchain-pins.json", GOVERNANCE), "utf8"));
+  const pin = pins.records.find((row) => row.platform === process.platform && row.arch === process.arch);
+  assert(pin);
+  return { pins, pin };
+}
+
+function task6BSidecarBodyFromUnresolved(unresolved, overrides = {}) {
+  const { rows, rowCount, rowsDigest } = unresolved;
+  const { pins, pin } = task6BSelectedPin();
+  const counts = overrides.counts ?? task6BUnresolvedCounts(rows);
+  const nodeCounts = Object.fromEntries(TASK_6B_NODE_KINDS.map((key) => [key, key === "FILE" && rowCount > 0 ? 1 : 0]));
+  const head = "2".repeat(40);
+  const tree = "3".repeat(40);
+  const indexDigest = "4".repeat(64);
+  const observation = {
+    head,
+    tree,
+    indexDigest,
+    gitVersion: `git version ${pin.gitIdentity.version}`,
+    gitExecutableRawSha256: pin.gitIdentity.executableRawSha256,
+    gitExecutableByteLength: pin.gitIdentity.executableByteLength,
+  };
+  return {
+    schema: "galerina.logic-aig-export-receipt.v1",
+    repositoryId: `repository:${"f".repeat(64)}`,
+    expectedHead: head,
+    expectedTree: tree,
+    gitObservation: {
+      before: clone(observation),
+      after: clone(observation),
+      objectFormat: "sha1",
+      indexDigest,
+      executionBoundary: "COOPERATIVE_LOCAL_SAME_USER",
+    },
+    sourcePolicy: {
+      policyDigest: "6".repeat(64),
+      exclusionDigest: "7".repeat(64),
+      excludedPaths: 0,
+      excludedBytes: 0,
+    },
+    sourceManifestDigest: "8".repeat(64),
+    resolutionInputsDigest: "9".repeat(64),
+    toolchainManifestDigest: "a".repeat(64),
+    expectedParseOutcomesDigest: "b".repeat(64),
+    parseOutcomesReceiptDigest: "c".repeat(64),
+    generatedConsumerPolicyDigest: "d".repeat(64),
+    parserPolicyDigest: "e".repeat(64),
+    repositoryIdentityDigest: "f".repeat(64),
+    graphDigest: "0".repeat(64),
+    graphRawSha256: "1".repeat(64),
+    graphByteLength: 1,
+    embeddedReceiptDigest: "2".repeat(64),
+    counts: {
+      sourcePaths: rowCount > 0 ? 1 : 0,
+      sourceBlobs: rowCount > 0 ? 1 : 0,
+      sourceBytes: 0,
+      resolutionRows: 0,
+      resolutionBytes: 0,
+      parseOutcomeRows: 0,
+      ownerBindings: 0,
+      representedFileNodes: rowCount > 0 ? 1 : 0,
+      nodesByKind: nodeCounts,
+      edgesByKind: Object.fromEntries(TASK_6B_RELATIONSHIP_KINDS.map((key) => [key, 0])),
+      unresolvedByClass: counts.byClass,
+      unresolvedByReason: counts.byReason,
+      duplicateIds: 0,
+      caseShadows: 0,
+      idMapRows: rowCount > 0 ? 1 : 0,
+    },
+    unresolved: { rows, rowCount, rowsDigest },
+    idMapDigest: "3".repeat(64),
+    toolchain: {
+      selectedPinRecordId: pin.recordId,
+      selectedPinRecordDigest: pin.recordDigest,
+      pinsDigest: pins.pinsDigest,
+      toolchainManifestDigest: "a".repeat(64),
+      nodeIdentity: clone(pin.nodeIdentity),
+      gitIdentity: clone(pin.gitIdentity),
+      typescript: clone(pin.typescript),
+      sourceOriginParser: clone(pin.sourceOriginParser),
+      moduleClosureDigest: pin.moduleClosureDigest,
+      actualLoadedSetDigest: "4".repeat(64),
+    },
+    executionPolicy: {
+      argvPolicyDigest: "5".repeat(64),
+      environmentPolicyDigest: "6".repeat(64),
+      timeoutMillis: SOURCE_ORIGIN_LIMITS.processMillis,
+      outputByteLimit: SOURCE_ORIGIN_LIMITS.processOutputBytes,
+      concurrencyLimit: 1,
+    },
+    nativeGraphCrossCheck: { status: "UNAVAILABLE", receiptDigest: null, authorizing: false },
+    discoveryCrossChecks: [],
+    limits: clone(SOURCE_ORIGIN_LIMITS),
+    status: "COMPLETE",
+    authorizing: false,
+  };
+}
+
+function task6BSidecarBody(rows) {
+  return task6BSidecarBodyFromUnresolved({
+    rows,
+    rowCount: rows.length,
+    rowsDigest: task6BDomainDigest("galerina.logic-aig-unresolved-rows.v1", rows),
+  });
+}
+
+function task6BCompleteSidecarText(body) {
+  const sidecarDigest = task6BDomainDigest("galerina.logic-aig-export-receipt.v1", body);
+  return task6BCanonicalText({ ...body, sidecarDigest });
+}
+
+function task6BSidecarAtCanonicalByteLength(byteLength) {
+  const baseBody = task6BSidecarBody([task6BUnresolvedRow()]);
+  const baseLength = Buffer.byteLength(task6BCompleteSidecarText(baseBody), "utf8");
+  assert(byteLength >= baseLength);
+  const sourceLocatorBytes = 1 + byteLength - baseLength;
+  const body = task6BSidecarBody([
+    task6BUnresolvedRow({ sourceLocator: task6BTextWithUtf8Bytes(sourceLocatorBytes) }),
+  ]);
+  assert.equal(Buffer.byteLength(task6BCompleteSidecarText(body), "utf8"), byteLength);
+  return body;
+}
+
+function task6BRawSha256(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function task6BCanonicalBytes(value) {
+  return Buffer.from(canonicalJsonText(value), "utf8");
+}
+
+function task6BSameData(left, right) {
+  return canonicalJsonText(left) === canonicalJsonText(right);
+}
+
+function task6BCurrentHead() {
+  return execFileSync(TASK_6B_PINNED_GIT, ["rev-parse", "--verify", "HEAD^{commit}"], {
+    cwd: TASK_6B_REPOSITORY_ROOT,
+    encoding: "utf8",
+    windowsHide: true,
+  }).trim();
+}
+
+function task6BCurrentNodeIdentity() {
+  const bytes = readFileSync(process.execPath);
+  return {
+    version: process.version,
+    executableRawSha256: task6BRawSha256(bytes),
+    executableByteLength: bytes.byteLength,
+  };
+}
+
+function task6BToolchainBlobs(captured, pin) {
+  const host = pin.runtimeLoadSets.find((row) => row.id === "HOST");
+  assert(host);
+  const hostLocator = `${host.entry.rootLocator}/${host.entry.locator}`;
+  const blobs = new Map([[hostLocator, readFileSync(join(TASK_6B_REPOSITORY_ROOT, ...hostLocator.split("/")))]]);
+  const localLocators = new Set([pin.sourceOriginParser.sourceEntry.locator]);
+  for (const edge of pin.sourceOriginParser.sourceEdgeRows) {
+    localLocators.add(edge.fromLocator);
+    localLocators.add(edge.toLocator);
+  }
+  for (const local of [...localLocators].sort()) {
+    const locator = `${pin.sourceOriginParser.sourceEntry.rootLocator}/${local}`;
+    const bytes = captured.sourceBlobs.get(locator);
+    assert(bytes);
+    blobs.set(locator, bytes);
+  }
+  return blobs;
+}
+
+function task6BProjectBody(captured, decoded) {
+  assert.equal(new Set(decoded.nodes.map((row) => row.id)).size, decoded.nodes.length);
+  assert.equal(new Set(decoded.edges.map((row) => row.id)).size, decoded.edges.length);
+  const nodeIds = new Set(decoded.nodes.map((row) => row.id));
+  assert(decoded.nodes.every((row) => TASK_6B_NODE_KINDS.includes(row.kind)));
+  assert(decoded.edges.every(
+    (row) => TASK_6B_RELATIONSHIP_KINDS.includes(row.kind) && nodeIds.has(row.from) && nodeIds.has(row.to),
+  ));
+  assert.equal(decoded.nodes.length, decoded.idMapRows.length);
+  const graphDigest = task6BRawSha256(task6BCanonicalBytes({ nodes: decoded.nodes, edges: decoded.edges }));
+  const exporter = captured.owners.values.exporter;
+  const receipt = {
+    schema: "logic-graph-receipt.v1",
+    profile: "PROJECT",
+    repositoryId: captured.sourceManifest.repositoryId,
+    expectedHead: captured.sourceManifest.expectedHead,
+    indexedHead: captured.sourceManifest.expectedHead,
+    decoder: {
+      id: exporter.decoderId,
+      version: `1.0.0+sha256.${exporter.policyDigest}`,
+      available: true,
+    },
+    graphDigest,
+    coverage: {
+      algorithm: "project-closure.v1",
+      limits: { maxNodes: SOURCE_ORIGIN_LIMITS.nodes, maxEdges: SOURCE_ORIGIN_LIMITS.edges },
+      nodeCount: decoded.nodes.length,
+      edgeCount: decoded.edges.length,
+      complete: true,
+    },
+    scope: {
+      dirtyInventoryDigest: null,
+      locators: [],
+      closureKinds: [],
+      closureComplete: true,
+    },
+    parentProjectDigest: null,
+  };
+  return { schema: "logic-aig-project.v1", receipt, nodes: decoded.nodes, edges: decoded.edges };
+}
+
+function task6BValidatedBodies(captured, decoded, project) {
+  const values = captured.owners.values;
+  const expected = validateExpectedParseOutcomes(values.expectedOutcomes, { parserPolicy: values.parser });
+  const source = validateSourceManifest(captured.sourceManifest, {
+    repositoryIdentity: values.repositoryIdentity,
+    sourcePolicy: values.source,
+  });
+  const resolution = validateResolutionInputs(captured.resolutionInputs, {
+    repositoryIdentity: values.repositoryIdentity,
+    resolutionPolicy: values.resolution,
+  });
+  const toolchain = validateToolchainManifest(decoded.toolchainManifest, { pins: values.pins });
+  const outcomes = validateParseOutcomesReceipt(decoded.parseOutcomesReceipt, {
+    repositoryIdentity: values.repositoryIdentity,
+    sourcePolicy: values.source,
+    resolutionPolicy: values.resolution,
+    parserPolicy: values.parser,
+    pins: values.pins,
+    proposedBaseline: values.proposedBaseline,
+    expectedOutcomes: expected,
+    sourceManifest: source,
+    resolutionInputs: resolution,
+    toolchainManifest: toolchain,
+  });
+  assert.equal(source.repositoryId, resolution.repositoryId);
+  assert.equal(source.repositoryId, outcomes.repositoryId);
+  assert.equal(source.repositoryId, project.receipt.repositoryId);
+  assert.equal(source.expectedHead, resolution.expectedHead);
+  assert.equal(source.expectedHead, outcomes.expectedHead);
+  assert.equal(source.expectedHead, project.receipt.expectedHead);
+  assert.equal(source.expectedTree, resolution.expectedTree);
+  assert.equal(source.expectedTree, outcomes.expectedTree);
+  assert.equal(outcomes.expectedOutcomesDigest, expected.expectedOutcomesDigest);
+  assert.equal(outcomes.sourceManifestDigest, source.manifestDigest);
+  assert.equal(outcomes.resolutionInputsDigest, resolution.resolutionInputsDigest);
+  assert.equal(outcomes.toolchainManifestDigest, toolchain.toolchainManifestDigest);
+  return { expected, outcomes, project, resolution, source, toolchain };
+}
+
+function task6BGenuineCounts(captured, decoded, bodies) {
+  const nodesByKind = Object.fromEntries(TASK_6B_NODE_KINDS.map((key) => [key, 0]));
+  const edgesByKind = Object.fromEntries(TASK_6B_RELATIONSHIP_KINDS.map((key) => [key, 0]));
+  const unresolvedByClass = Object.fromEntries(TASK_6B_RELATIONSHIP_KINDS.map((key) => [key, 0]));
+  const reasonCodes = [...new Set(
+    captured.owners.values.parser.unresolvedReasonRows.map((row) => row.reasonCode),
+  )].sort();
+  const unresolvedByReason = Object.fromEntries(reasonCodes.map((key) => [key, 0]));
+  for (const node of decoded.nodes) nodesByKind[node.kind] += 1;
+  for (const edge of decoded.edges) edgesByKind[edge.kind] += 1;
+  for (const row of decoded.unresolved) {
+    unresolvedByClass[row.relationshipClass] += 1;
+    unresolvedByReason[row.reasonCode] += 1;
+  }
+  return {
+    sourcePaths: bodies.source.counts.paths,
+    sourceBlobs: bodies.source.counts.blobs,
+    sourceBytes: bodies.source.counts.bytes,
+    resolutionRows: bodies.resolution.rows.length,
+    resolutionBytes: bodies.resolution.rows.reduce((sum, row) => sum + row.byteLength, 0),
+    parseOutcomeRows: bodies.outcomes.rows.length,
+    ownerBindings: bodies.outcomes.rows.reduce((sum, row) => sum + row.ownerBindings.length, 0),
+    representedFileNodes: new Set(bodies.outcomes.rows.map((row) => row.representedFileNodeId)).size,
+    nodesByKind,
+    edgesByKind,
+    unresolvedByClass,
+    unresolvedByReason,
+    duplicateIds: 0,
+    caseShadows: 0,
+    idMapRows: decoded.idMapRows.length,
+  };
+}
+
+function task6BToolchainBinding(toolchain) {
+  return {
+    selectedPinRecordId: toolchain.selectedPinRecordId,
+    selectedPinRecordDigest: toolchain.selectedPinRecordDigest,
+    pinsDigest: toolchain.pinsDigest,
+    toolchainManifestDigest: toolchain.toolchainManifestDigest,
+    nodeIdentity: toolchain.nodeIdentity,
+    gitIdentity: toolchain.gitIdentity,
+    typescript: toolchain.typescript,
+    sourceOriginParser: toolchain.sourceOriginParser,
+    moduleClosureDigest: toolchain.moduleClosureDigest,
+    actualLoadedSetDigest: toolchain.actualLoadedSetDigest,
+  };
+}
+
+async function task6BGenuineFixture() {
+  const commitOid = task6BCurrentHead();
+  const captured = await captureFrozenSource({ commitOid, gitExecutableLocator: TASK_6B_PINNED_GIT });
+  const pins = captured.owners.values.pins;
+  const matches = pins.records.filter(
+    (record) => record.platform === process.platform && record.arch === process.arch,
+  );
+  assert.equal(matches.length, 1);
+  const pin = matches[0];
+  const nodeIdentity = task6BCurrentNodeIdentity();
+  assert.deepEqual(nodeIdentity, pin.nodeIdentity);
+  const decoded = await decodeSourceProject({
+    owners: captured.owners,
+    ownerBlobs: captured.ownerBlobs,
+    sourceManifest: captured.sourceManifest,
+    sourceBlobs: captured.sourceBlobs,
+    resolutionInputs: captured.resolutionInputs,
+    resolutionBlobs: captured.resolutionBlobs,
+    toolchainBlobs: task6BToolchainBlobs(captured, pin),
+    platform: process.platform,
+    arch: process.arch,
+    nodeIdentity,
+    gitIdentity: pin.gitIdentity,
+  });
+  const project = task6BProjectBody(captured, decoded);
+  const bodies = task6BValidatedBodies(captured, decoded, project);
+  const bodyBytes = new Map([
+    ["expected-parse-outcomes", task6BCanonicalBytes(bodies.expected)],
+    ["parse-outcomes-receipt", task6BCanonicalBytes(bodies.outcomes)],
+    ["project", task6BCanonicalBytes(bodies.project)],
+    ["resolution-inputs", task6BCanonicalBytes(bodies.resolution)],
+    ["source-manifest", task6BCanonicalBytes(bodies.source)],
+    ["toolchain-manifest", task6BCanonicalBytes(bodies.toolchain)],
+  ]);
+  const rowsDigest = contractApi.sha256CompleteUnresolvedRowsV1(decoded.unresolved);
+  const values = captured.owners.values;
+  const sidecarBody = {
+    schema: "galerina.logic-aig-export-receipt.v1",
+    repositoryId: bodies.source.repositoryId,
+    expectedHead: bodies.source.expectedHead,
+    expectedTree: bodies.source.expectedTree,
+    gitObservation: captured.observation,
+    sourcePolicy: {
+      policyDigest: values.source.policyDigest,
+      exclusionDigest: bodies.source.exclusionDigest,
+      excludedPaths: bodies.source.counts.exclusions,
+      excludedBytes: 0,
+    },
+    sourceManifestDigest: bodies.source.manifestDigest,
+    resolutionInputsDigest: bodies.resolution.resolutionInputsDigest,
+    toolchainManifestDigest: bodies.toolchain.toolchainManifestDigest,
+    expectedParseOutcomesDigest: bodies.expected.expectedOutcomesDigest,
+    parseOutcomesReceiptDigest: bodies.outcomes.receiptDigest,
+    generatedConsumerPolicyDigest: values.generated.policyDigest,
+    parserPolicyDigest: values.parser.policyDigest,
+    repositoryIdentityDigest: values.repositoryIdentity.identityDigest,
+    graphDigest: bodies.project.receipt.graphDigest,
+    graphRawSha256: task6BRawSha256(bodyBytes.get("project")),
+    graphByteLength: bodyBytes.get("project").byteLength,
+    embeddedReceiptDigest: task6BRawSha256(task6BCanonicalBytes(bodies.project.receipt)),
+    counts: task6BGenuineCounts(captured, decoded, bodies),
+    unresolved: {
+      rows: decoded.unresolved,
+      rowCount: decoded.unresolved.length,
+      rowsDigest,
+    },
+    idMapDigest: decoded.idMapDigest,
+    toolchain: task6BToolchainBinding(bodies.toolchain),
+    executionPolicy: {
+      argvPolicyDigest: values.exporter.argvPolicyDigest,
+      environmentPolicyDigest: values.exporter.environmentPolicyDigest,
+      timeoutMillis: values.exporter.limits.processMillis,
+      outputByteLimit: values.exporter.limits.processOutputBytes,
+      concurrencyLimit: 1,
+    },
+    nativeGraphCrossCheck: { status: "UNAVAILABLE", receiptDigest: null, authorizing: false },
+    discoveryCrossChecks: [],
+    limits: values.exporter.limits,
+    status: "COMPLETE",
+    authorizing: false,
+  };
+  return { commitOid, decoded, sidecarBody };
 }
 
 test("exports the sole exact immutable eleven-field limit owner", () => {
@@ -1725,4 +2209,262 @@ test("the empty parse-outcomes receipt is a closed cross-bound non-authorizing a
   badCounts.receiptDigest = sha256Canonical(badCounts.schema, without(badCounts, "receiptDigest"));
   expectCode("SOURCE_ORIGIN_OUTCOMES", () => validateParseOutcomesReceipt(badCounts, options));
   expectCode("SOURCE_ORIGIN_POLICY", () => validateParseOutcomesReceipt({ ...receipt, authorizing: true }, options));
+});
+
+test("Task 6B fixed-purpose contracts preserve generic limits", () => {
+  requireTask6BContractApi();
+  assert.equal(SOURCE_ORIGIN_LIMITS.jsonBytes, 67_108_864);
+  assert.equal(Object.hasOwn(SOURCE_ORIGIN_LIMITS, "task6BJsonBytes"), false);
+  const exactLimitValue = `${"€".repeat(22_369_620)}xx`;
+  const exactText = JSON.stringify(exactLimitValue);
+  assert.equal(Buffer.byteLength(exactText, "utf8"), 67_108_864);
+  assert.equal(canonicalJsonText(exactLimitValue), exactText);
+  expectCode("SOURCE_ORIGIN_JSON_CANONICAL", () => canonicalJsonText(`${exactLimitValue}x`));
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => sha256Canonical("task-6b-generic-control.v1", `${exactLimitValue}x`),
+  );
+});
+
+test("Task 6B fixed-purpose contracts enforce exact capacity boundaries", () => {
+  requireTask6BContractApi();
+  const exactRows = task6BRowsAtCanonicalByteLength(TASK_6B_JSON_BYTES);
+  const exactRowsText = task6BCanonicalText(exactRows);
+  assert.equal(
+    contractApi.sha256CompleteUnresolvedRowsV1(exactRows),
+    task6BDomainTextDigest("galerina.logic-aig-unresolved-rows.v1", exactRowsText),
+  );
+  const overRows = task6BRowsAtCanonicalByteLength(TASK_6B_JSON_BYTES + 1);
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => contractApi.sha256CompleteUnresolvedRowsV1(overRows),
+  );
+
+  const exactSidecarBody = task6BSidecarAtCanonicalByteLength(TASK_6B_JSON_BYTES);
+  const exactSidecarText = task6BCompleteSidecarText(exactSidecarBody);
+  const exactSidecarBytes = contractApi.serializeCompleteExportSidecarV1(exactSidecarBody);
+  assert.equal(exactSidecarBytes.byteLength, TASK_6B_JSON_BYTES);
+  assert.deepEqual(exactSidecarBytes, Buffer.from(exactSidecarText, "utf8"));
+  const overSidecarBody = task6BSidecarAtCanonicalByteLength(TASK_6B_JSON_BYTES + 1);
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => contractApi.serializeCompleteExportSidecarV1(overSidecarBody),
+  );
+});
+
+test("Task 6B row count and byte precedence is orthogonal", () => {
+  requireTask6BContractApi();
+  const rows = new Array(SOURCE_ORIGIN_LIMITS.unresolvedRows);
+  for (let index = 0; index < rows.length; index += 1) {
+    rows[index] = task6BUnresolvedRow({
+      sourceNodeId: `ga1:${index.toString(16).padStart(64, "0")}`,
+    });
+  }
+  assert.equal(Buffer.byteLength(task6BCanonicalText(rows[0]), "utf8"), 337);
+  assert.equal(Buffer.byteLength(task6BCanonicalText(rows.at(-1)), "utf8"), 337);
+  assert.equal(rows.length * 337 + rows.length + 1, 88_604_673);
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => contractApi.sha256CompleteUnresolvedRowsV1(rows),
+  );
+  const rowCounts = task6BUnresolvedCounts(rows);
+  const oversizedSidecar = task6BSidecarBodyFromUnresolved({
+    rows,
+    rowCount: rows.length,
+    rowsDigest: "0".repeat(64),
+  }, { counts: rowCounts });
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => contractApi.serializeCompleteExportSidecarV1(oversizedSidecar),
+  );
+
+  let traps = 0;
+  const hostile = new Proxy({}, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  const tooManyRows = new Array(SOURCE_ORIGIN_LIMITS.unresolvedRows + 1).fill(hostile);
+  Object.defineProperty(tooManyRows, "0", {
+    configurable: true,
+    enumerable: true,
+    get() { traps += 1; throw new Error("must not execute"); },
+  });
+  expectCode(
+    "SOURCE_ORIGIN_LIMIT",
+    () => contractApi.sha256CompleteUnresolvedRowsV1(tooManyRows),
+  );
+  assert.equal(traps, 0);
+  const zeroCounts = task6BUnresolvedCounts([]);
+  const tooManySidecar = task6BSidecarBodyFromUnresolved({
+    rows: tooManyRows,
+    rowCount: tooManyRows.length,
+    rowsDigest: "0".repeat(64),
+  }, { counts: zeroCounts });
+  expectCode(
+    "SOURCE_ORIGIN_LIMIT",
+    () => contractApi.serializeCompleteExportSidecarV1(tooManySidecar),
+  );
+  assert.equal(traps, 0);
+
+  const proxyRows = new Proxy(tooManyRows, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  expectCode(
+    "SOURCE_ORIGIN_SCHEMA",
+    () => contractApi.sha256CompleteUnresolvedRowsV1(proxyRows),
+  );
+  assert.equal(traps, 0);
+  const proxySidecar = task6BSidecarBodyFromUnresolved({
+    rows: proxyRows,
+    rowCount: tooManyRows.length,
+    rowsDigest: "0".repeat(64),
+  }, { counts: zeroCounts });
+  expectCode(
+    "SOURCE_ORIGIN_SCHEMA",
+    () => contractApi.serializeCompleteExportSidecarV1(proxySidecar),
+  );
+  assert.equal(traps, 0);
+});
+
+test("Task 6B hostile capacity inputs execute zero traps", () => {
+  requireTask6BContractApi();
+  const validRows = [task6BUnresolvedRow()];
+  const validSidecar = task6BSidecarBody(validRows);
+  assert.equal(contractApi.sha256CompleteUnresolvedRowsV1(validRows).length, 64);
+  const firstSidecarBytes = contractApi.serializeCompleteExportSidecarV1(validSidecar);
+  const secondSidecarBytes = contractApi.serializeCompleteExportSidecarV1(validSidecar);
+  assert(Buffer.isBuffer(firstSidecarBytes));
+  assert(Buffer.isBuffer(secondSidecarBytes));
+  assert.notEqual(firstSidecarBytes, secondSidecarBytes);
+  assert.deepEqual(firstSidecarBytes, secondSidecarBytes);
+
+  let traps = 0;
+  const hostile = new Proxy({}, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  const hostileArray = new Proxy(validRows, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  const accessorRow = { ...validRows[0] };
+  Object.defineProperty(accessorRow, "sourceLocator", {
+    enumerable: true,
+    get() { traps += 1; throw new Error("must not execute"); },
+  });
+  const sparseRows = [];
+  sparseRows.length = 1;
+  const cyclicRow = { ...validRows[0] };
+  cyclicRow.sourceLocator = cyclicRow;
+  const invalidRows = [hostileArray, [hostile], [accessorRow], sparseRows, [cyclicRow]];
+  const zeroCounts = task6BUnresolvedCounts([]);
+  for (const candidate of invalidRows) {
+    assert.throws(() => contractApi.sha256CompleteUnresolvedRowsV1(candidate));
+    assert.equal(traps, 0);
+    const sidecar = task6BSidecarBodyFromUnresolved({
+      rows: candidate,
+      rowCount: 1,
+      rowsDigest: "0".repeat(64),
+    }, { counts: zeroCounts });
+    assert.throws(() => contractApi.serializeCompleteExportSidecarV1(sidecar));
+    assert.equal(traps, 0);
+  }
+
+  const hostileSidecar = new Proxy(validSidecar, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  assert.throws(() => contractApi.serializeCompleteExportSidecarV1(hostileSidecar));
+  assert.equal(traps, 0);
+
+  assert.throws(() => contractApi.sha256CompleteUnresolvedRowsV1(hostile, hostile));
+  assert.throws(() => contractApi.serializeCompleteExportSidecarV1(hostile, hostile));
+  assert.equal(traps, 0);
+
+  const overRows = task6BRowsAtCanonicalByteLength(TASK_6B_JSON_BYTES + 1);
+  const wrappedOverRows = new Proxy(overRows, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  assert.throws(() => contractApi.sha256CompleteUnresolvedRowsV1(wrappedOverRows));
+  assert.equal(traps, 0);
+  const overSidecar = task6BSidecarAtCanonicalByteLength(TASK_6B_JSON_BYTES + 1);
+  const wrappedOverSidecar = new Proxy(overSidecar, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  assert.throws(() => contractApi.serializeCompleteExportSidecarV1(wrappedOverSidecar));
+  assert.equal(traps, 0);
+});
+
+test("Task 6B replays the genuine 177699-row export", { timeout: 900_000 }, async () => {
+  requireTask6BContractApi();
+  const { decoded, sidecarBody } = await task6BGenuineFixture();
+  assert.equal(decoded.unresolved.length, 177_699);
+  const rowsText = task6BCanonicalText(decoded.unresolved);
+  assert.equal(Buffer.byteLength(rowsText, "utf8"), 74_270_556);
+  const expectedRowsDigest = task6BDomainTextDigest("galerina.logic-aig-unresolved-rows.v1", rowsText);
+  assert.equal(contractApi.sha256CompleteUnresolvedRowsV1(decoded.unresolved), expectedRowsDigest);
+  assert.equal(sidecarBody.unresolved.rowsDigest, expectedRowsDigest);
+
+  const sidecarBodyText = task6BCanonicalText(sidecarBody);
+  const expectedSidecarDigest = task6BDomainTextDigest(
+    "galerina.logic-aig-export-receipt.v1",
+    sidecarBodyText,
+  );
+  const sidecarBytes = contractApi.serializeCompleteExportSidecarV1(sidecarBody);
+  assert.equal(sidecarBytes.byteLength, 74_279_137);
+  const sidecar = JSON.parse(sidecarBytes.toString("utf8"));
+  assert.equal(sidecar.sidecarDigest, expectedSidecarDigest);
+  assert.equal(sidecar.unresolved.rows.length, 177_699);
+
+  const omission = {
+    ...sidecarBody,
+    unresolved: { ...sidecarBody.unresolved, rows: decoded.unresolved.slice(1) },
+  };
+  const truncation = {
+    ...sidecarBody,
+    unresolved: { ...sidecarBody.unresolved, rows: decoded.unresolved.slice(0, 1) },
+  };
+  const reorderedRows = decoded.unresolved.slice();
+  [reorderedRows[0], reorderedRows[1]] = [reorderedRows[1], reorderedRows[0]];
+  const duplicateRows = decoded.unresolved.slice();
+  duplicateRows[1] = duplicateRows[0];
+  const partialRows = decoded.unresolved.slice();
+  partialRows[0] = without(partialRows[0], "reasonCode");
+  const mutations = [
+    omission,
+    truncation,
+    { ...sidecarBody, unresolved: { ...sidecarBody.unresolved, rows: reorderedRows } },
+    { ...sidecarBody, unresolved: { ...sidecarBody.unresolved, rows: duplicateRows } },
+    { ...sidecarBody, unresolved: { ...sidecarBody.unresolved, rows: partialRows } },
+    { ...sidecarBody, unresolved: { rowCount: decoded.unresolved.length } },
+    { ...sidecarBody, unresolved: { rowsDigest: expectedRowsDigest } },
+    {
+      ...sidecarBody,
+      unresolved: {
+        ...sidecarBody.unresolved,
+        rowsDigest: task6BDomainTextDigest("attacker.wrong-domain.v1", rowsText),
+      },
+    },
+    { ...sidecarBody, sidecarDigest: expectedSidecarDigest },
+  ];
+  for (const mutation of mutations) {
+    assert.throws(() => contractApi.serializeCompleteExportSidecarV1(mutation));
+  }
 });

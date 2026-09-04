@@ -50,6 +50,7 @@ const safeMapValues = Map.prototype.values;
 const safeSymbolIterator = Symbol.iterator;
 const safeSetIteratorNext = safeObjectGetPrototypeOf(new SafeSet()[safeSymbolIterator]()).next;
 const safeMapIteratorNext = safeObjectGetPrototypeOf(new SafeMap()[safeSymbolIterator]()).next;
+const safeBufferFrom = NodeBuffer.from;
 const safeBufferPrototype = NodeBuffer.prototype;
 const SafeUint8Array = Uint8Array;
 const safeUint8ArrayPrototype = SafeUint8Array.prototype;
@@ -1620,4 +1621,357 @@ export function validateToolchainPins(value) {
   for (let index = 1; index < value.records.length; index += 1) if (codeUnitCompare(value.records[index - 1].recordId, value.records[index].recordId) >= 0) refuse('SOURCE_ORIGIN_ORDER');
   checkDigest(value, 'pinsDigest');
   return immutableCopy(value);
+}
+
+const TASK_6B_UNRESOLVED_ROW_KEYS = deepFreeze([
+  'sourceNodeId',
+  'sourceLocator',
+  'relationshipClass',
+  'reasonCode',
+  'evidenceOwnerDigest',
+  'evidenceDigest',
+]);
+const TASK_6B_UNRESOLVED_ORDER_KEYS = deepFreeze([
+  'sourceNodeId',
+  'relationshipClass',
+  'reasonCode',
+  'sourceLocator',
+  'evidenceDigest',
+]);
+const TASK_6B_SIDECAR_BODY_KEYS = deepFreeze([
+  'schema',
+  'repositoryId',
+  'expectedHead',
+  'expectedTree',
+  'gitObservation',
+  'sourcePolicy',
+  'sourceManifestDigest',
+  'resolutionInputsDigest',
+  'toolchainManifestDigest',
+  'expectedParseOutcomesDigest',
+  'parseOutcomesReceiptDigest',
+  'generatedConsumerPolicyDigest',
+  'parserPolicyDigest',
+  'repositoryIdentityDigest',
+  'graphDigest',
+  'graphRawSha256',
+  'graphByteLength',
+  'embeddedReceiptDigest',
+  'counts',
+  'unresolved',
+  'idMapDigest',
+  'toolchain',
+  'executionPolicy',
+  'nativeGraphCrossCheck',
+  'discoveryCrossChecks',
+  'limits',
+  'status',
+  'authorizing',
+]);
+const TASK_6B_NODE_KINDS = deepFreeze([
+  'CLASS', 'FILE', 'FLOW', 'FUNCTION', 'GATE', 'INTERFACE', 'METHOD', 'MODULE',
+  'ROUTE', 'SYMBOL', 'TYPE',
+]);
+const TASK_6B_RELATIONSHIP_CLASSES = deepFreeze([
+  'CALLER', 'CONTRACT', 'GENERATED_CONSUMER', 'IMPORT', 'TEST',
+]);
+const TASK_6B_REASON_CODES = deepFreeze(sortArray(
+  setValuesArray(setFromArray(UNRESOLVED_REASON_ROWS, (row) => row.reasonCode)),
+  codeUnitCompare,
+));
+const TASK_6B_REPOSITORY_ID = /^repository:[0-9a-f]{64}$/;
+const TASK_6B_NODE_ID = /^ga1:[0-9a-f]{64}$/;
+
+function task6BCaptureDataObject(value, keys) {
+  if (value === null || typeof value !== 'object' || safeIsProxy(value) || safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
+  const prototype = safeObjectGetPrototypeOf(value);
+  if (prototype !== safeObjectPrototype && prototype !== null) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+  const names = safeObjectGetOwnPropertyNames(value);
+  const sortedNames = sortArray(copyArray(names), codeUnitCompare);
+  const sortedKeys = sortArray(copyArray(keys), codeUnitCompare);
+  if (names.length !== keys.length || someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
+  const output = plainRecord();
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    const descriptor = safeObjectGetOwnPropertyDescriptor(value, key);
+    if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
+    defineData(output, key, descriptor.value);
+  }
+  return output;
+}
+
+function task6BCaptureUnresolvedRows(value) {
+  if (value === null || typeof value !== 'object' || safeIsProxy(value) || !safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (safeObjectGetPrototypeOf(value) !== safeArrayPrototype || safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+  const lengthDescriptor = safeObjectGetOwnPropertyDescriptor(value, 'length');
+  if (!lengthDescriptor || !safeObjectHasOwn(lengthDescriptor, 'value') || lengthDescriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
+  const length = lengthDescriptor.value;
+  if (!safeNumberIsSafeInteger(length) || length < 0 || length > SOURCE_ORIGIN_LIMITS.unresolvedRows) refuse('SOURCE_ORIGIN_LIMIT');
+  const names = safeObjectGetOwnPropertyNames(value);
+  if (names.length !== length + 1 || !includesArray(names, 'length')) refuse('SOURCE_ORIGIN_SCHEMA');
+  const output = [];
+  const evidenceDigests = new SafeSet();
+  let previous;
+  for (let index = 0; index < length; index += 1) {
+    const descriptor = safeObjectGetOwnPropertyDescriptor(value, `${index}`);
+    if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
+    const row = task6BCaptureDataObject(descriptor.value, TASK_6B_UNRESOLVED_ROW_KEYS);
+    forEachArray(TASK_6B_UNRESOLVED_ROW_KEYS, (field) => nonEmptyString(row[field]));
+    if (!regexTest(TASK_6B_NODE_ID, row.sourceNodeId)) refuse('SOURCE_ORIGIN_SCHEMA');
+    canonicalLocator(row.sourceLocator);
+    digest(row.evidenceOwnerDigest);
+    digest(row.evidenceDigest);
+    const reason = findArray(
+      UNRESOLVED_REASON_ROWS,
+      (candidate) => candidate.relationshipClass === row.relationshipClass && candidate.reasonCode === row.reasonCode,
+    );
+    if (!reason) refuse('SOURCE_ORIGIN_POLICY');
+    if (previous !== undefined) {
+      let compared = 0;
+      for (let fieldIndex = 0; fieldIndex < TASK_6B_UNRESOLVED_ORDER_KEYS.length; fieldIndex += 1) {
+        const field = TASK_6B_UNRESOLVED_ORDER_KEYS[fieldIndex];
+        compared = codeUnitCompare(previous[field], row[field]);
+        if (compared !== 0) break;
+      }
+      if (compared >= 0) refuse('SOURCE_ORIGIN_ORDER');
+    }
+    if (setHas(evidenceDigests, row.evidenceDigest)) refuse('SOURCE_ORIGIN_ORDER');
+    setAdd(evidenceDigests, row.evidenceDigest);
+    append(output, row);
+    previous = row;
+  }
+  return output;
+}
+
+function task6BCaptureSidecarBody(value) {
+  const source = task6BCaptureDataObject(value, TASK_6B_SIDECAR_BODY_KEYS);
+  const unresolvedSource = task6BCaptureDataObject(source.unresolved, ['rows','rowCount','rowsDigest']);
+  const rows = task6BCaptureUnresolvedRows(unresolvedSource.rows);
+  const unresolved = plainRecord();
+  defineData(unresolved, 'rows', rows);
+  defineData(unresolved, 'rowCount', canonicalValue(unresolvedSource.rowCount, new SafeSet()));
+  defineData(unresolved, 'rowsDigest', canonicalValue(unresolvedSource.rowsDigest, new SafeSet()));
+  const output = plainRecord();
+  for (let index = 0; index < TASK_6B_SIDECAR_BODY_KEYS.length; index += 1) {
+    const key = TASK_6B_SIDECAR_BODY_KEYS[index];
+    defineData(output, key, key === 'unresolved' ? unresolved : canonicalValue(source[key], new SafeSet()));
+  }
+  return output;
+}
+
+function task6BDomainTextDigest(domain, text) {
+  return hashParts([encodeUtf8(domain), new SafeUint8Array(1), encodeUtf8(text)]);
+}
+
+function task6BEvidenceBody(row) {
+  const body = plainRecord();
+  for (let index = 0; index < TASK_6B_UNRESOLVED_ROW_KEYS.length; index += 1) {
+    const key = TASK_6B_UNRESOLVED_ROW_KEYS[index];
+    if (key !== 'evidenceDigest') defineData(body, key, row[key]);
+  }
+  return body;
+}
+
+function task6BValidateOid(value, objectFormat) {
+  if (typeof value !== 'string' || !regexTest(objectFormat === 'sha1' ? HEX40 : HEX64, value)) refuse('SOURCE_ORIGIN_SCHEMA');
+}
+
+function task6BValidateObservationEdge(value, objectFormat, expectedHead, expectedTree, expectedIndexDigest) {
+  dataObject(value, [
+    'head','tree','indexDigest','gitVersion','gitExecutableRawSha256','gitExecutableByteLength',
+  ]);
+  task6BValidateOid(value.head, objectFormat);
+  task6BValidateOid(value.tree, objectFormat);
+  digest(value.indexDigest);
+  nonEmptyString(value.gitVersion);
+  digest(value.gitExecutableRawSha256);
+  nonNegativeInteger(value.gitExecutableByteLength);
+  if (
+    value.head !== expectedHead
+    || value.tree !== expectedTree
+    || value.indexDigest !== expectedIndexDigest
+    || value.gitExecutableByteLength === 0
+  ) refuse('SOURCE_ORIGIN_POLICY');
+}
+
+function task6BValidateCountMap(value, keys) {
+  dataObject(value, keys);
+  for (let index = 0; index < keys.length; index += 1) nonNegativeInteger(value[keys[index]]);
+}
+
+function task6BValidateToolchainBinding(value, manifestDigest) {
+  dataObject(value, [
+    'selectedPinRecordId','selectedPinRecordDigest','pinsDigest','toolchainManifestDigest',
+    'nodeIdentity','gitIdentity','typescript','sourceOriginParser','moduleClosureDigest',
+    'actualLoadedSetDigest',
+  ]);
+  nonEmptyString(value.selectedPinRecordId);
+  forEachArray([
+    'selectedPinRecordDigest','pinsDigest','toolchainManifestDigest','moduleClosureDigest',
+    'actualLoadedSetDigest',
+  ], (field) => digest(value[field]));
+  validateExecutableIdentity(value.nodeIdentity);
+  validateExecutableIdentity(value.gitIdentity);
+  validatePackageIdentity(value.typescript);
+  validateSourceOriginParser(value.sourceOriginParser);
+  if (value.toolchainManifestDigest !== manifestDigest) refuse('SOURCE_ORIGIN_DIGEST');
+}
+
+function task6BValidateSidecarBody(value) {
+  if (
+    value.schema !== 'galerina.logic-aig-export-receipt.v1'
+    || value.status !== 'COMPLETE'
+    || value.authorizing !== false
+    || !regexTest(TASK_6B_REPOSITORY_ID, value.repositoryId)
+  ) refuse('SOURCE_ORIGIN_POLICY');
+  const objectFormat = value.gitObservation.objectFormat;
+  if (objectFormat !== 'sha1' && objectFormat !== 'sha256') refuse('SOURCE_ORIGIN_SCHEMA');
+  task6BValidateOid(value.expectedHead, objectFormat);
+  task6BValidateOid(value.expectedTree, objectFormat);
+  dataObject(value.gitObservation, ['before','after','objectFormat','indexDigest','executionBoundary']);
+  digest(value.gitObservation.indexDigest);
+  if (value.gitObservation.executionBoundary !== 'COOPERATIVE_LOCAL_SAME_USER') refuse('SOURCE_ORIGIN_POLICY');
+  task6BValidateObservationEdge(
+    value.gitObservation.before,
+    objectFormat,
+    value.expectedHead,
+    value.expectedTree,
+    value.gitObservation.indexDigest,
+  );
+  task6BValidateObservationEdge(
+    value.gitObservation.after,
+    objectFormat,
+    value.expectedHead,
+    value.expectedTree,
+    value.gitObservation.indexDigest,
+  );
+  dataObject(value.sourcePolicy, ['policyDigest','exclusionDigest','excludedPaths','excludedBytes']);
+  digest(value.sourcePolicy.policyDigest);
+  digest(value.sourcePolicy.exclusionDigest);
+  nonNegativeInteger(value.sourcePolicy.excludedPaths);
+  nonNegativeInteger(value.sourcePolicy.excludedBytes);
+  if (value.sourcePolicy.excludedBytes !== 0) refuse('SOURCE_ORIGIN_POLICY');
+  forEachArray([
+    'sourceManifestDigest','resolutionInputsDigest','toolchainManifestDigest',
+    'expectedParseOutcomesDigest','parseOutcomesReceiptDigest',
+    'generatedConsumerPolicyDigest','parserPolicyDigest','repositoryIdentityDigest',
+    'graphDigest','graphRawSha256','embeddedReceiptDigest','idMapDigest',
+  ], (field) => digest(value[field]));
+  if (value.repositoryId !== `repository:${value.repositoryIdentityDigest}`) refuse('SOURCE_ORIGIN_POLICY');
+  nonNegativeInteger(value.graphByteLength);
+
+  dataObject(value.counts, [
+    'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
+    'parseOutcomeRows','ownerBindings','representedFileNodes','nodesByKind',
+    'edgesByKind','unresolvedByClass','unresolvedByReason','duplicateIds',
+    'caseShadows','idMapRows',
+  ]);
+  forEachArray([
+    'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
+    'parseOutcomeRows','ownerBindings','representedFileNodes','duplicateIds',
+    'caseShadows','idMapRows',
+  ], (field) => nonNegativeInteger(value.counts[field]));
+  task6BValidateCountMap(value.counts.nodesByKind, TASK_6B_NODE_KINDS);
+  task6BValidateCountMap(value.counts.edgesByKind, TASK_6B_RELATIONSHIP_CLASSES);
+  task6BValidateCountMap(value.counts.unresolvedByClass, TASK_6B_RELATIONSHIP_CLASSES);
+  task6BValidateCountMap(value.counts.unresolvedByReason, TASK_6B_REASON_CODES);
+  if (
+    value.counts.duplicateIds !== 0
+    || value.counts.caseShadows !== 0
+    || value.counts.idMapRows !== reduceArray(TASK_6B_NODE_KINDS, (sum, key) => sum + value.counts.nodesByKind[key], 0)
+    || value.counts.representedFileNodes > value.counts.nodesByKind.FILE
+  ) refuse('SOURCE_ORIGIN_POLICY');
+
+  nonNegativeInteger(value.unresolved.rowCount);
+  digest(value.unresolved.rowsDigest);
+  if (value.unresolved.rowCount !== value.unresolved.rows.length) refuse('SOURCE_ORIGIN_POLICY');
+  const byClass = nullRecord();
+  const byReason = nullRecord();
+  forEachArray(TASK_6B_RELATIONSHIP_CLASSES, (key) => defineData(byClass, key, 0));
+  forEachArray(TASK_6B_REASON_CODES, (key) => defineData(byReason, key, 0));
+  for (let index = 0; index < value.unresolved.rows.length; index += 1) {
+    const row = value.unresolved.rows[index];
+    byClass[row.relationshipClass] += 1;
+    byReason[row.reasonCode] += 1;
+  }
+  for (let index = 0; index < TASK_6B_RELATIONSHIP_CLASSES.length; index += 1) {
+    const key = TASK_6B_RELATIONSHIP_CLASSES[index];
+    if (value.counts.unresolvedByClass[key] !== byClass[key]) refuse('SOURCE_ORIGIN_POLICY');
+  }
+  for (let index = 0; index < TASK_6B_REASON_CODES.length; index += 1) {
+    const key = TASK_6B_REASON_CODES[index];
+    if (value.counts.unresolvedByReason[key] !== byReason[key]) refuse('SOURCE_ORIGIN_POLICY');
+  }
+
+  task6BValidateToolchainBinding(value.toolchain, value.toolchainManifestDigest);
+  dataObject(value.executionPolicy, [
+    'argvPolicyDigest','environmentPolicyDigest','timeoutMillis','outputByteLimit',
+    'concurrencyLimit',
+  ]);
+  digest(value.executionPolicy.argvPolicyDigest);
+  digest(value.executionPolicy.environmentPolicyDigest);
+  nonNegativeInteger(value.executionPolicy.timeoutMillis);
+  nonNegativeInteger(value.executionPolicy.outputByteLimit);
+  nonNegativeInteger(value.executionPolicy.concurrencyLimit);
+  if (
+    value.executionPolicy.timeoutMillis !== SOURCE_ORIGIN_LIMITS.processMillis
+    || value.executionPolicy.outputByteLimit !== SOURCE_ORIGIN_LIMITS.processOutputBytes
+    || value.executionPolicy.concurrencyLimit !== 1
+  ) refuse('SOURCE_ORIGIN_POLICY');
+  dataObject(value.nativeGraphCrossCheck, ['status','receiptDigest','authorizing']);
+  if (
+    value.nativeGraphCrossCheck.status !== 'UNAVAILABLE'
+    || value.nativeGraphCrossCheck.receiptDigest !== null
+    || value.nativeGraphCrossCheck.authorizing !== false
+  ) refuse('SOURCE_ORIGIN_POLICY');
+  array(value.discoveryCrossChecks);
+  if (value.discoveryCrossChecks.length !== 0) refuse('SOURCE_ORIGIN_POLICY');
+  equalExact(value.limits, SOURCE_ORIGIN_LIMITS);
+}
+
+function canonicalTask6BJsonText(value) {
+  const text = serializeCanonical(canonicalValue(value, new SafeSet()));
+  if (text === undefined) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
+  const bytes = encodeUtf8(text);
+  if (callIntrinsic(safeTypedArrayByteLength, bytes, []) > 83886080) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
+  return text;
+}
+
+export function sha256CompleteUnresolvedRowsV1(unresolvedRows) {
+  if (arguments.length !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
+  const rows = task6BCaptureUnresolvedRows(unresolvedRows);
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+    const evidenceText = canonicalTask6BJsonText(task6BEvidenceBody(row));
+    const expected = task6BDomainTextDigest('galerina.logic-aig-unresolved-evidence.v1', evidenceText);
+    if (row.evidenceDigest !== expected) refuse('SOURCE_ORIGIN_DIGEST');
+  }
+  const rowsText = canonicalTask6BJsonText(rows);
+  return task6BDomainTextDigest('galerina.logic-aig-unresolved-rows.v1', rowsText);
+}
+
+export function serializeCompleteExportSidecarV1(sidecarBody) {
+  if (arguments.length !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
+  const body = task6BCaptureSidecarBody(sidecarBody);
+  for (let index = 0; index < body.unresolved.rows.length; index += 1) {
+    const row = body.unresolved.rows[index];
+    const evidenceText = canonicalTask6BJsonText(task6BEvidenceBody(row));
+    const expected = task6BDomainTextDigest('galerina.logic-aig-unresolved-evidence.v1', evidenceText);
+    if (row.evidenceDigest !== expected) refuse('SOURCE_ORIGIN_DIGEST');
+  }
+  const rowsText = canonicalTask6BJsonText(body.unresolved.rows);
+  const rowsDigest = task6BDomainTextDigest('galerina.logic-aig-unresolved-rows.v1', rowsText);
+  if (body.unresolved.rowsDigest !== rowsDigest) refuse('SOURCE_ORIGIN_DIGEST');
+  task6BValidateSidecarBody(body);
+  const bodyText = canonicalTask6BJsonText(body);
+  const sidecarDigest = task6BDomainTextDigest('galerina.logic-aig-export-receipt.v1', bodyText);
+  const complete = plainRecord();
+  for (let index = 0; index < TASK_6B_SIDECAR_BODY_KEYS.length; index += 1) {
+    const key = TASK_6B_SIDECAR_BODY_KEYS[index];
+    defineData(complete, key, body[key]);
+  }
+  defineData(complete, 'sidecarDigest', sidecarDigest);
+  const completeText = canonicalTask6BJsonText(complete);
+  return callIntrinsic(safeBufferFrom, NodeBuffer, [completeText, 'utf8']);
 }
