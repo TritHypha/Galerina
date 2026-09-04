@@ -1,7 +1,59 @@
 # Galerina beta v1 to SLIDE roadmap
 
-Date: 2026-08-30
-Branch: `codex/rd-0873-native-fungi-bootstrap-implementation`
+Date: 2026-09-04
+Branch: `codex/rd0873-toolchain-pin-observation-fix`
+
+## RD-0873 Task 6B exact-candidate review HOLD - 2026-09-04
+
+Task 6A is complete at Galerina commit
+`88aea6fb8085dbc21b15d4e418f63cdbce98a191`, tree
+`d79662a190bfc37c9960ede8f347f0dc6ee40511`. Its independent semantic and
+security/TCB reviews both returned Critical 0 / Important 0 / Minor 0. The
+deterministic twelve-suite matrix under `--test-isolation=none` completed
+469/469 passed, with three declared platform skips.
+
+Task 6B now has a local, unsigned candidate at Galerina commit
+`44110db97b7041dcc2b72b8b4b58a4a0a17f2afc`, tree
+`b7e605d7ffc1e59651a5e89a8f66ce7cc5c05603`, with parent
+`054af6ff49ad379df574264336a072cf38f9f034`. The candidate changes 14 paths
+within the exact 15-path approved boundary; the declared entry wrapper remains
+byte-identical. No new production dependency, caller-controlled root, loader,
+callback, validator, persistence or Task 6C surface was introduced.
+
+The recorded complete seven-suite working-byte matrix passed 395/395 with live
+`HEAD` at the frozen source fixture commit
+`f0de2475a7ff6f67849a25855d3c1fb45d535048` and the candidate bytes present as
+working changes. That result is useful repair evidence but is not
+exact-candidate-HEAD closure. At the committed Task 6B candidate, the genuine
+contract/exporter/sentinel tests still request the frozen fixture commit while
+the production frozen-source guard correctly requires the requested commit to
+equal live `HEAD`; fresh reproduction therefore refuses with
+`SOURCE_ORIGIN_GIT_HEAD` before the genuine seven-body success path or broad
+zero-`then` assertion runs.
+
+The final semantic review is **HOLD**, Critical 0 / Important 1 / Minor 0. The
+final security/TCB review is **HOLD**, Critical 0 / Important 2 / Minor 1. Both
+reviews identify the non-reproducible exact-commit genuine fixture as an
+Important blocker. Security review also finds that the Task 6B work meter does
+not yet charge repeated primitive-string traversal before the 80 MiB ceiling,
+and that one contract-test poison helper should restore pre-existing prototype
+descriptors through fresh null-prototype descriptor copies.
+
+Task 6B remains open and **HOLD**. The next repair must stay within the approved
+15 paths, add a non-selectable primitive traversal budget without weakening the
+exact structural accounting, harden test cleanup, and establish a non-circular
+reproducible fixture proof for the final candidate identity. Security review
+recommends a test-only current-HEAD fixture repair; the independent
+implementation diagnosis and bounded Grok consultation recommend an exact-byte
+evidence-plan clarification, while semantic review requires a non-circular
+strategy without adjudicating that authority question. The fixture strategy
+must therefore be adjudicated before it changes. After repair, the full
+seven-suite matrix and fresh semantic and security/TCB reviews must return green
+at the resulting exact committed HEAD.
+
+Task 6C has not started. No push, merge, publication, signing, external-key use,
+graph/index regeneration or `.fungi` authoring is authorized or recorded by
+this checkpoint.
 
 ## RD-0873 source-origin admission checkpoint - 2026-08-30
 
