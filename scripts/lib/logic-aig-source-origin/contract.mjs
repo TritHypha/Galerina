@@ -402,7 +402,7 @@ function nfcString(value) {
   return value;
 }
 
-function canonicalValue(value, active, depth = 0) {
+function canonicalValue(value, active, depth = 0, retainIdentities = false) {
   if (depth > 128) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
   if (value === null || typeof value === 'boolean') return value;
   if (typeof value === 'number') {
@@ -419,7 +419,15 @@ function canonicalValue(value, active, depth = 0) {
     if (safeArrayIsArray(value)) {
       checkedArray(value, 'SOURCE_ORIGIN_JSON_CANONICAL');
       const output = [];
-      for (let index = 0; index < value.length; index += 1) append(output, canonicalValue(safeObjectGetOwnPropertyDescriptor(value, `${index}`).value, active, depth + 1));
+      for (let index = 0; index < value.length; index += 1) append(
+        output,
+        canonicalValue(
+          safeObjectGetOwnPropertyDescriptor(value, `${index}`).value,
+          active,
+          depth + 1,
+          retainIdentities,
+        ),
+      );
       return output;
     }
     const prototype = safeObjectGetPrototypeOf(value);
@@ -430,11 +438,15 @@ function canonicalValue(value, active, depth = 0) {
       const key = names[index];
       const descriptor = safeObjectGetOwnPropertyDescriptor(value, key);
       if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
-      defineData(output, nfcString(key), canonicalValue(descriptor.value, active, depth + 1));
+      defineData(
+        output,
+        nfcString(key),
+        canonicalValue(descriptor.value, active, depth + 1, retainIdentities),
+      );
     }
     return output;
   } finally {
-    setDelete(active, value);
+    if (!retainIdentities) setDelete(active, value);
   }
 }
 
@@ -1682,6 +1694,206 @@ const TASK_6B_REASON_CODES = deepFreeze(sortArray(
 const TASK_6B_REPOSITORY_ID = /^repository:[0-9a-f]{64}$/;
 const TASK_6B_NODE_ID = /^ga1:[0-9a-f]{64}$/;
 
+function task6BShallowText(value) {
+  if (typeof value !== 'string') refuse('SOURCE_ORIGIN_SCHEMA');
+}
+
+function task6BShallowArrayHeader(value, maximum, code = 'SOURCE_ORIGIN_SCHEMA') {
+  if (
+    value === null
+    || typeof value !== 'object'
+    || safeIsProxy(value)
+    || !safeArrayIsArray(value)
+    || safeObjectGetPrototypeOf(value) !== safeArrayPrototype
+    || safeObjectGetOwnPropertySymbols(value).length !== 0
+  ) refuse('SOURCE_ORIGIN_SCHEMA');
+  const descriptor = safeObjectGetOwnPropertyDescriptor(value, 'length');
+  if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || descriptor.enumerable) {
+    refuse('SOURCE_ORIGIN_SCHEMA');
+  }
+  if (!safeNumberIsSafeInteger(descriptor.value) || descriptor.value < 0) {
+    refuse('SOURCE_ORIGIN_SCHEMA');
+  }
+  if (descriptor.value > maximum) refuse(code);
+  return descriptor.value;
+}
+
+function task6BShallowExecutableIdentity(value) {
+  dataObject(value, ['version','executableRawSha256','executableByteLength']);
+  task6BShallowText(value.version);
+  task6BShallowText(value.executableRawSha256);
+  nonNegativeInteger(value.executableByteLength);
+}
+
+function task6BShallowPackageIdentity(value) {
+  dataObject(value, [
+    'name','version','packageLocator','packageRawSha256','packageByteLength',
+    'entryLocator','entryRawSha256','entryByteLength',
+  ]);
+  forEachArray([
+    'name','version','packageLocator','packageRawSha256','entryLocator','entryRawSha256',
+  ], (field) => task6BShallowText(value[field]));
+  nonNegativeInteger(value.packageByteLength);
+  nonNegativeInteger(value.entryByteLength);
+}
+
+function task6BShallowRootedIdentity(value) {
+  dataObject(value, ['rootLocator','locator','rawSha256','byteLength']);
+  task6BShallowText(value.rootLocator);
+  task6BShallowText(value.locator);
+  task6BShallowText(value.rawSha256);
+  nonNegativeInteger(value.byteLength);
+}
+
+function task6BValidateSidecarShallow(value) {
+  forEachArray([
+    'schema','repositoryId','expectedHead','expectedTree','sourceManifestDigest',
+    'resolutionInputsDigest','toolchainManifestDigest','expectedParseOutcomesDigest',
+    'parseOutcomesReceiptDigest','generatedConsumerPolicyDigest','parserPolicyDigest',
+    'repositoryIdentityDigest','graphDigest','graphRawSha256','embeddedReceiptDigest',
+    'idMapDigest','status',
+  ], (field) => task6BShallowText(value[field]));
+  nonNegativeInteger(value.graphByteLength);
+  if (typeof value.authorizing !== 'boolean') refuse('SOURCE_ORIGIN_SCHEMA');
+
+  dataObject(value.gitObservation, [
+    'before','after','objectFormat','indexDigest','executionBoundary',
+  ]);
+  task6BShallowText(value.gitObservation.objectFormat);
+  task6BShallowText(value.gitObservation.indexDigest);
+  task6BShallowText(value.gitObservation.executionBoundary);
+  const observationEdges = [value.gitObservation.before, value.gitObservation.after];
+  for (let index = 0; index < observationEdges.length; index += 1) {
+    const edge = observationEdges[index];
+    dataObject(edge, [
+      'head','tree','indexDigest','gitVersion','gitExecutableRawSha256',
+      'gitExecutableByteLength',
+    ]);
+    forEachArray([
+      'head','tree','indexDigest','gitVersion','gitExecutableRawSha256',
+    ], (field) => task6BShallowText(edge[field]));
+    nonNegativeInteger(edge.gitExecutableByteLength);
+  }
+
+  dataObject(value.sourcePolicy, [
+    'policyDigest','exclusionDigest','excludedPaths','excludedBytes',
+  ]);
+  task6BShallowText(value.sourcePolicy.policyDigest);
+  task6BShallowText(value.sourcePolicy.exclusionDigest);
+  nonNegativeInteger(value.sourcePolicy.excludedPaths);
+  nonNegativeInteger(value.sourcePolicy.excludedBytes);
+
+  dataObject(value.counts, [
+    'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
+    'parseOutcomeRows','ownerBindings','representedFileNodes','nodesByKind',
+    'edgesByKind','unresolvedByClass','unresolvedByReason','duplicateIds',
+    'caseShadows','idMapRows',
+  ]);
+  forEachArray([
+    'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
+    'parseOutcomeRows','ownerBindings','representedFileNodes','duplicateIds',
+    'caseShadows','idMapRows',
+  ], (field) => nonNegativeInteger(value.counts[field]));
+  task6BValidateCountMap(value.counts.nodesByKind, TASK_6B_NODE_KINDS);
+  task6BValidateCountMap(value.counts.edgesByKind, TASK_6B_RELATIONSHIP_CLASSES);
+  task6BValidateCountMap(value.counts.unresolvedByClass, TASK_6B_RELATIONSHIP_CLASSES);
+  task6BValidateCountMap(value.counts.unresolvedByReason, TASK_6B_REASON_CODES);
+
+  dataObject(value.unresolved, ['rows','rowCount','rowsDigest']);
+  task6BShallowArrayHeader(
+    value.unresolved.rows,
+    SOURCE_ORIGIN_LIMITS.unresolvedRows,
+    'SOURCE_ORIGIN_LIMIT',
+  );
+  nonNegativeInteger(value.unresolved.rowCount);
+  task6BShallowText(value.unresolved.rowsDigest);
+
+  dataObject(value.toolchain, [
+    'selectedPinRecordId','selectedPinRecordDigest','pinsDigest','toolchainManifestDigest',
+    'nodeIdentity','gitIdentity','typescript','sourceOriginParser','moduleClosureDigest',
+    'actualLoadedSetDigest',
+  ]);
+  forEachArray([
+    'selectedPinRecordId','selectedPinRecordDigest','pinsDigest','toolchainManifestDigest',
+    'moduleClosureDigest','actualLoadedSetDigest',
+  ], (field) => task6BShallowText(value.toolchain[field]));
+  task6BShallowExecutableIdentity(value.toolchain.nodeIdentity);
+  task6BShallowExecutableIdentity(value.toolchain.gitIdentity);
+  task6BShallowPackageIdentity(value.toolchain.typescript);
+
+  const parser = value.toolchain.sourceOriginParser;
+  dataObject(parser, [
+    'sourceEntry','project','generatedEntry','generatedPackageManifest','exportNames',
+    'sourceEdgeRows','emittedEdgeRows','generatedClosureDigest',
+  ]);
+  dataObject(parser.sourceEntry, [
+    'rootLocator','locator','gitBlobOid','rawSha256','byteLength','exportNames',
+  ]);
+  forEachArray([
+    'rootLocator','locator','gitBlobOid','rawSha256',
+  ], (field) => task6BShallowText(parser.sourceEntry[field]));
+  nonNegativeInteger(parser.sourceEntry.byteLength);
+  if (task6BShallowArrayHeader(parser.sourceEntry.exportNames, 3) !== 3) {
+    refuse('SOURCE_ORIGIN_SCHEMA');
+  }
+  dataObject(parser.project, [
+    'rootLocator','locator','gitBlobOid','rawSha256','byteLength','extendsLocator',
+    'files','include','compilerOptions',
+  ]);
+  forEachArray([
+    'rootLocator','locator','gitBlobOid','rawSha256','extendsLocator',
+  ], (field) => task6BShallowText(parser.project[field]));
+  nonNegativeInteger(parser.project.byteLength);
+  if (task6BShallowArrayHeader(parser.project.files, 1) !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (task6BShallowArrayHeader(parser.project.include, 0) !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+  dataObject(parser.project.compilerOptions, [
+    'types','noEmitOnError','incremental','composite','sourceMap','declarationMap',
+  ]);
+  if (task6BShallowArrayHeader(parser.project.compilerOptions.types, 0) !== 0) {
+    refuse('SOURCE_ORIGIN_SCHEMA');
+  }
+  forEachArray([
+    'noEmitOnError','incremental','composite','sourceMap','declarationMap',
+  ], (field) => {
+    if (typeof parser.project.compilerOptions[field] !== 'boolean') refuse('SOURCE_ORIGIN_SCHEMA');
+  });
+  task6BShallowRootedIdentity(parser.generatedEntry);
+  task6BShallowRootedIdentity(parser.generatedPackageManifest);
+  if (task6BShallowArrayHeader(parser.exportNames, 3) !== 3) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (task6BShallowArrayHeader(parser.sourceEdgeRows, TOOLCHAIN_SOURCE_EDGES.length)
+    !== TOOLCHAIN_SOURCE_EDGES.length) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (task6BShallowArrayHeader(parser.emittedEdgeRows, TOOLCHAIN_EMITTED_EDGES.length)
+    !== TOOLCHAIN_EMITTED_EDGES.length) refuse('SOURCE_ORIGIN_SCHEMA');
+  task6BShallowText(parser.generatedClosureDigest);
+
+  dataObject(value.executionPolicy, [
+    'argvPolicyDigest','environmentPolicyDigest','timeoutMillis','outputByteLimit',
+    'concurrencyLimit',
+  ]);
+  task6BShallowText(value.executionPolicy.argvPolicyDigest);
+  task6BShallowText(value.executionPolicy.environmentPolicyDigest);
+  nonNegativeInteger(value.executionPolicy.timeoutMillis);
+  nonNegativeInteger(value.executionPolicy.outputByteLimit);
+  nonNegativeInteger(value.executionPolicy.concurrencyLimit);
+  dataObject(value.nativeGraphCrossCheck, ['status','receiptDigest','authorizing']);
+  task6BShallowText(value.nativeGraphCrossCheck.status);
+  if (value.nativeGraphCrossCheck.receiptDigest !== null
+    && typeof value.nativeGraphCrossCheck.receiptDigest !== 'string') refuse('SOURCE_ORIGIN_SCHEMA');
+  if (typeof value.nativeGraphCrossCheck.authorizing !== 'boolean') refuse('SOURCE_ORIGIN_SCHEMA');
+  if (task6BShallowArrayHeader(value.discoveryCrossChecks, 0) !== 0) {
+    refuse('SOURCE_ORIGIN_SCHEMA');
+  }
+  const limitKeys = safeObjectKeys(SOURCE_ORIGIN_LIMITS);
+  dataObject(value.limits, limitKeys);
+  forEachArray(limitKeys, (field) => nonNegativeInteger(value.limits[field]));
+}
+
+function task6BClaimIdentity(value, identities) {
+  if (identities === undefined) return;
+  if (setHas(identities, value)) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
+  setAdd(identities, value);
+}
+
 function task6BCaptureDataObject(value, keys) {
   if (value === null || typeof value !== 'object' || safeIsProxy(value) || safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
   const prototype = safeObjectGetPrototypeOf(value);
@@ -1701,7 +1913,7 @@ function task6BCaptureDataObject(value, keys) {
   return output;
 }
 
-function task6BCaptureUnresolvedRows(value) {
+function task6BCaptureUnresolvedRows(value, identities = undefined) {
   if (value === null || typeof value !== 'object' || safeIsProxy(value) || !safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
   if (safeObjectGetPrototypeOf(value) !== safeArrayPrototype || safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
   const lengthDescriptor = safeObjectGetOwnPropertyDescriptor(value, 'length');
@@ -1710,6 +1922,7 @@ function task6BCaptureUnresolvedRows(value) {
   if (!safeNumberIsSafeInteger(length) || length < 0 || length > SOURCE_ORIGIN_LIMITS.unresolvedRows) refuse('SOURCE_ORIGIN_LIMIT');
   const names = safeObjectGetOwnPropertyNames(value);
   if (names.length !== length + 1 || !includesArray(names, 'length')) refuse('SOURCE_ORIGIN_SCHEMA');
+  task6BClaimIdentity(value, identities);
   const output = [];
   const evidenceDigests = new SafeSet();
   let previous;
@@ -1717,6 +1930,7 @@ function task6BCaptureUnresolvedRows(value) {
     const descriptor = safeObjectGetOwnPropertyDescriptor(value, `${index}`);
     if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
     const row = task6BCaptureDataObject(descriptor.value, TASK_6B_UNRESOLVED_ROW_KEYS);
+    task6BClaimIdentity(descriptor.value, identities);
     forEachArray(TASK_6B_UNRESOLVED_ROW_KEYS, (field) => nonEmptyString(row[field]));
     if (!regexTest(TASK_6B_NODE_ID, row.sourceNodeId)) refuse('SOURCE_ORIGIN_SCHEMA');
     canonicalLocator(row.sourceLocator);
@@ -1745,9 +1959,13 @@ function task6BCaptureUnresolvedRows(value) {
 }
 
 function task6BCaptureSidecarBody(value) {
+  const identities = new SafeSet();
   const source = task6BCaptureDataObject(value, TASK_6B_SIDECAR_BODY_KEYS);
+  task6BClaimIdentity(value, identities);
+  task6BValidateSidecarShallow(source);
   const unresolvedSource = task6BCaptureDataObject(source.unresolved, ['rows','rowCount','rowsDigest']);
-  const rows = task6BCaptureUnresolvedRows(unresolvedSource.rows);
+  task6BClaimIdentity(source.unresolved, identities);
+  const rows = task6BCaptureUnresolvedRows(unresolvedSource.rows, identities);
   const unresolved = plainRecord();
   defineData(unresolved, 'rows', rows);
   defineData(unresolved, 'rowCount', canonicalValue(unresolvedSource.rowCount, new SafeSet()));
@@ -1755,7 +1973,11 @@ function task6BCaptureSidecarBody(value) {
   const output = plainRecord();
   for (let index = 0; index < TASK_6B_SIDECAR_BODY_KEYS.length; index += 1) {
     const key = TASK_6B_SIDECAR_BODY_KEYS[index];
-    defineData(output, key, key === 'unresolved' ? unresolved : canonicalValue(source[key], new SafeSet()));
+    defineData(
+      output,
+      key,
+      key === 'unresolved' ? unresolved : canonicalValue(source[key], identities, 0, true),
+    );
   }
   return output;
 }

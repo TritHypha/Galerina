@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -40,6 +39,7 @@ import { captureFrozenSource } from "../lib/logic-aig-source-origin/git-source.m
 
 const GOVERNANCE = new URL("../../governance/", import.meta.url);
 const TASK_6B_REPOSITORY_ROOT = fileURLToPath(new URL("../../", import.meta.url));
+const TASK_6B_GENUINE_COMMIT = "f0de2475a7ff6f67849a25855d3c1fb45d535048";
 const TASK_6B_PINNED_GIT = process.platform === "win32"
   ? fileURLToPath(new URL(
     "../../.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/toolchains/mingit-2.55.0.5/expanded/cmd/git.exe",
@@ -668,14 +668,6 @@ function task6BSameData(left, right) {
   return canonicalJsonText(left) === canonicalJsonText(right);
 }
 
-function task6BCurrentHead() {
-  return execFileSync(TASK_6B_PINNED_GIT, ["rev-parse", "--verify", "HEAD^{commit}"], {
-    cwd: TASK_6B_REPOSITORY_ROOT,
-    encoding: "utf8",
-    windowsHide: true,
-  }).trim();
-}
-
 function task6BCurrentNodeIdentity() {
   const bytes = readFileSync(process.execPath);
   return {
@@ -833,7 +825,7 @@ function task6BToolchainBinding(toolchain) {
 }
 
 async function task6BGenuineFixture() {
-  const commitOid = task6BCurrentHead();
+  const commitOid = TASK_6B_GENUINE_COMMIT;
   const captured = await captureFrozenSource({ commitOid, gitExecutableLocator: TASK_6B_PINNED_GIT });
   const pins = captured.owners.values.pins;
   const matches = pins.records.filter(
@@ -2409,6 +2401,33 @@ test("Task 6B hostile capacity inputs execute zero traps", () => {
     ownKeys() { traps += 1; throw new Error("must not execute"); },
   });
   assert.throws(() => contractApi.serializeCompleteExportSidecarV1(wrappedOverSidecar));
+  assert.equal(traps, 0);
+});
+
+test("Task 6B sidecar capture bounds repeated-identity work before recursive copying", () => {
+  requireTask6BContractApi();
+  const aliased = task6BSidecarBody([task6BUnresolvedRow()]);
+  aliased.gitObservation.after = aliased.gitObservation.before;
+  expectCode(
+    "SOURCE_ORIGIN_JSON_CANONICAL",
+    () => contractApi.serializeCompleteExportSidecarV1(aliased),
+  );
+
+  let traps = 0;
+  const hostileLeaf = new Proxy({}, {
+    get() { traps += 1; throw new Error("must not execute"); },
+    getOwnPropertyDescriptor() { traps += 1; throw new Error("must not execute"); },
+    getPrototypeOf() { traps += 1; throw new Error("must not execute"); },
+    ownKeys() { traps += 1; throw new Error("must not execute"); },
+  });
+  let repeated = hostileLeaf;
+  for (let depth = 0; depth < 12; depth += 1) repeated = { left: repeated, right: repeated };
+  const shallowInvalid = task6BSidecarBody([task6BUnresolvedRow()]);
+  shallowInvalid.graphByteLength = repeated;
+  expectCode(
+    "SOURCE_ORIGIN_SCHEMA",
+    () => contractApi.serializeCompleteExportSidecarV1(shallowInvalid),
+  );
   assert.equal(traps, 0);
 });
 

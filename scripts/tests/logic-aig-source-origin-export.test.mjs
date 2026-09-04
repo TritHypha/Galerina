@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
@@ -11,11 +9,7 @@ import {
 } from '../lib/logic-aig-source-origin/contract.mjs';
 import * as productionExport from '../galerina-source-origin-export.mjs';
 
-const REPOSITORY_ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const PINNED_GIT = fileURLToPath(new URL(
-  '../../.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/toolchains/mingit-2.55.0.5/expanded/cmd/git.exe',
-  import.meta.url,
-));
+const GENUINE_COMMIT = 'f0de2475a7ff6f67849a25855d3c1fb45d535048';
 const IDS = [
   'expected-parse-outcomes',
   'export-sidecar',
@@ -26,12 +20,27 @@ const IDS = [
   'toolchain-manifest',
 ];
 
-function currentHead() {
-  return execFileSync(PINNED_GIT, ['rev-parse', '--verify', 'HEAD^{commit}'], {
-    cwd: REPOSITORY_ROOT,
-    encoding: 'utf8',
-    windowsHide: true,
-  }).trim();
+const safeObjectDefineProperty = Object.defineProperty;
+const safeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+function installPostImportRegExpTestPoison() {
+  const descriptor = safeObjectGetOwnPropertyDescriptor(RegExp.prototype, 'test');
+  let traps = 0;
+  safeObjectDefineProperty(RegExp.prototype, 'test', {
+    ...descriptor,
+    configurable: true,
+    value() {
+      traps += 1;
+      throw new Error('ATTACKER_REGEXP_TEST');
+    },
+  });
+
+  return {
+    get traps() { return traps; },
+    restore() {
+      safeObjectDefineProperty(RegExp.prototype, 'test', descriptor);
+    },
+  };
 }
 
 function bodyById(records, id) {
@@ -65,9 +74,37 @@ test('Task 6B exporter is hardwired to one frozen commit', async () => {
   assert.equal(traps, 0);
 });
 
+test('Task 6B exporter argument refusal bypasses post-import RegExp dispatch', async () => {
+  const poison = installPostImportRegExpTestPoison();
+  let failure;
+  try {
+    await productionExport.exportSourceOriginProject('not-a-commit');
+  } catch (error) {
+    failure = error;
+  } finally {
+    poison.restore();
+  }
+  assert.equal(poison.traps, 0);
+  assert.equal(failure?.name, 'SourceOriginExportRefusal');
+  assert.equal(failure?.code, 'SOURCE_ORIGIN_EXPORT_SCHEMA');
+  assert.equal(Object.isFrozen(Object.getPrototypeOf(failure)), true);
+  assert.equal(Object.isFrozen(Object.getPrototypeOf(failure).constructor), true);
+});
+
 test('Task 6B exporter returns the genuine complete seven-body set', { timeout: 900_000 }, async () => {
-  const head = currentHead();
-  const records = await productionExport.exportSourceOriginProject(head);
+  const head = GENUINE_COMMIT;
+  const poison = installPostImportRegExpTestPoison();
+  let records;
+  let failure;
+  try {
+    records = await productionExport.exportSourceOriginProject(head);
+  } catch (error) {
+    failure = error;
+  } finally {
+    poison.restore();
+  }
+  assert.equal(failure, undefined);
+  assert.equal(poison.traps, 0);
 
   assert.equal(Object.getPrototypeOf(records), Array.prototype);
   assert.equal(records.length, IDS.length);
