@@ -24,12 +24,12 @@ import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from '
 import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DOCS = join(ROOT, 'docs');
-const GENERATED = 'INDEX.md';
+export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export const DOCS = join(ROOT, 'docs');
+export const GENERATED = 'INDEX.md';
 const SKIP_DIRS = new Set(['.myco', 'node_modules', '.git', 'generated']);
 
-const toPosix = (p) => p.split(sep).join('/');
+export const toPosix = (p) => p.split(sep).join('/');
 
 /**
  * First heading, or the first non-empty prose line, as the document's description.
@@ -52,7 +52,7 @@ export function titleOf(name) {
   return name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function listDir(dir) {
+export function listDir(dir) {
   const files = [], dirs = [];
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (SKIP_DIRS.has(e.name)) continue;
@@ -90,7 +90,7 @@ export function willIndex(dir) {
   } catch { return false; }
 }
 
-function buildIndex(dir) {
+export function buildIndex(dir) {
   const { files, dirs } = listDir(dir);
   const rel = toPosix(relative(DOCS, dir)) || '.';
   const name = rel === '.' ? 'docs' : rel;
@@ -137,7 +137,7 @@ function buildIndex(dir) {
   return L.join('\n');
 }
 
-function allDirs(dir, out = []) {
+export function allDirs(dir, out = []) {
   out.push(dir);
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.isDirectory() && !SKIP_DIRS.has(e.name)) allDirs(join(dir, e.name), out);
@@ -183,43 +183,48 @@ function selftest() {
   return fail === 0;
 }
 
-const mode = process.argv[2];
-if (mode === '--selftest') process.exit(selftest() ? 0 : 1);
-if (!['--dry-run', '--check', '--apply'].includes(mode)) {
-  console.error('usage: docs-index.mjs <--selftest|--dry-run|--check|--apply>');
-  process.exit(2);
-}
-if (!selftest()) { console.error('KATs failed — refusing to write indexes from an unproven generator.'); process.exit(1); }
-if (!existsSync(DOCS)) { console.error(`no docs/ at ${DOCS}`); process.exit(2); }
+export function main(mode) {
+  if (mode === '--selftest') return selftest() ? 0 : 1;
+  if (!['--dry-run', '--check', '--apply'].includes(mode)) {
+    console.error('usage: docs-index.mjs <--selftest|--dry-run|--check|--apply>');
+    return 2;
+  }
+  if (!selftest()) { console.error('KATs failed — refusing to write indexes from an unproven generator.'); return 1; }
+  if (!existsSync(DOCS)) { console.error(`no docs/ at ${DOCS}`); return 2; }
 
-const dry = mode === '--dry-run';
-const check = mode === '--check';
-let written = 0, linked = 0, drifted = 0;
-for (const d of allDirs(DOCS)) {
-  if (!willIndex(d)) continue;   // same predicate the Sections rows use — see willIndex()
-  const { files } = listDir(d);
-  const text = buildIndex(d);
-  const target = join(d, GENERATED);
-  linked += files.length;
-  if (check) {
-    let current;
-    try { current = readFileSync(target, 'utf8'); } catch { /* missing or unreadable is drift */ }
-    if (current !== text) {
-      console.error(`[check] drift ${toPosix(relative(ROOT, target))}`);
-      drifted++;
+  const dry = mode === '--dry-run';
+  const check = mode === '--check';
+  let written = 0, linked = 0, drifted = 0;
+  for (const d of allDirs(DOCS)) {
+    if (!willIndex(d)) continue;   // same predicate the Sections rows use — see willIndex()
+    const { files } = listDir(d);
+    const text = buildIndex(d);
+    const target = join(d, GENERATED);
+    linked += files.length;
+    if (check) {
+      let current;
+      try { current = readFileSync(target, 'utf8'); } catch { /* missing or unreadable is drift */ }
+      if (current !== text) {
+        console.error(`[check] drift ${toPosix(relative(ROOT, target))}`);
+        drifted++;
+      }
+    } else if (!dry) {
+      writeFileSync(target, text);
     }
-  } else if (!dry) {
-    writeFileSync(target, text);
+    written++;
   }
-  written++;
-}
-if (check) {
-  if (drifted > 0) {
-    console.error(`[check] ${drifted} of ${written} INDEX.md file(s) missing or drifted; wrote 0`);
-    process.exitCode = 1;
-  } else {
+  if (check) {
+    if (drifted > 0) {
+      console.error(`[check] ${drifted} of ${written} INDEX.md file(s) missing or drifted; wrote 0`);
+      return 1;
+    }
     console.log(`[check] ${written} INDEX.md file(s) exact, linking ${linked} documents; wrote 0`);
+  } else {
+    console.log(`${dry ? '[dry-run] would write' : 'wrote'} ${written} INDEX.md file(s), linking ${linked} documents`);
   }
-} else {
-  console.log(`${dry ? '[dry-run] would write' : 'wrote'} ${written} INDEX.md file(s), linking ${linked} documents`);
+  return 0;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+  process.exitCode = main(process.argv[2]);
 }
