@@ -1,0 +1,1502 @@
+{
+  "schema": "galerina.docs-index-write-manifest.v1",
+  "root": "docs",
+  "generatedBy": "scripts/docs-index.mjs",
+  "entries": [
+    {
+      "path": "docs/AI/INDEX.md",
+      "byteLength": 700,
+      "sha256": "258b10457532bb69bb24a656f50086a3b420383c2501d86dd9d624d8408eaf60"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "byteLength": 7413,
+      "sha256": "25f226cdb03bd7e34173eaa08457074dd38de29e7fd8cdaba2471387c314025e"
+    },
+    {
+      "path": "docs/architecture/INDEX.md",
+      "byteLength": 3695,
+      "sha256": "75b3046969760411b258e4212a2c9191932d98ac7380f3469c54dc6daf14561b"
+    },
+    {
+      "path": "docs/contract-registry/INDEX.md",
+      "byteLength": 353,
+      "sha256": "5d25f1ad7d5870286798f805db9754687b437c829d0b45960c4ccb640a8470d8"
+    },
+    {
+      "path": "docs/contracts/INDEX.md",
+      "byteLength": 749,
+      "sha256": "bb34cc8f1c20a65b3a61630271cc32f24c7d7b29ceeb8bf528518156cda188b8"
+    },
+    {
+      "path": "docs/devtools/INDEX.md",
+      "byteLength": 373,
+      "sha256": "69264fd95d159de42adb063a5c39d0a9a5942a9b4182ec8448a099555a25e399"
+    },
+    {
+      "path": "docs/diagrams/INDEX.md",
+      "byteLength": 303,
+      "sha256": "7b4c1108a38a53f36e317d8f99013a5fef89554dfde4a0bd1e5cd30ce3551bdd"
+    },
+    {
+      "path": "docs/examples/INDEX.md",
+      "byteLength": 1563,
+      "sha256": "e6240e2ddd7dddf3b3564a067cf343637bb7da9ede8dcb9630fca8bedb74c4b0"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/001-pure-flow/INDEX.md",
+      "byteLength": 341,
+      "sha256": "ff8c3ea95340bf374e50d6aa9d89f21d5dc341c0056c941e1b2283effc49ccee"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/002-guarded-flow/INDEX.md",
+      "byteLength": 350,
+      "sha256": "0e5fc1b45dd3b0be9de597e541a5974108d1c6f12737c8b07145b29960796886"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/003-secure-flow/INDEX.md",
+      "byteLength": 347,
+      "sha256": "99e90314c0a20a3d0e936828c9943673b0e8b9f9c9bdb7ac60e36b77516aff36"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/004-local-fn-helper/INDEX.md",
+      "byteLength": 359,
+      "sha256": "bf68e5adcf9d9f9bd978fef643f5a955f41ecd663334ebe81ccaa9829ed0abc8"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/005-let-binding/INDEX.md",
+      "byteLength": 424,
+      "sha256": "a7770c770c4aff41c9fec0c75c61ce6099f39ccd58556c966e212ba5f4d23261"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/006-mut-binding/INDEX.md",
+      "byteLength": 429,
+      "sha256": "a171b18dd74732e09f88517c10f38dd10f4afe47d967c67047a66b9961519c84"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/007-readonly-parameter/INDEX.md",
+      "byteLength": 437,
+      "sha256": "b1f7ef7e084b79d3988bfdd915fd3bf1d2ee1e078f18726f463664fe0a7b58e8"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/008-readonly-local-binding/INDEX.md",
+      "byteLength": 421,
+      "sha256": "9fd9c98d0bb799f9afc39beab793c37627f61663d039c6f98d7eaac01061348d"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/009-unsafe-let-boundary/INDEX.md",
+      "byteLength": 448,
+      "sha256": "0e25c037112ee715ff29f5c7a87d6b8716eb9ee09978c224d752f327e5bd0b4f"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/010-result-return/INDEX.md",
+      "byteLength": 450,
+      "sha256": "201246835290687ab76f3c83c6e2f4b0dfcfa5f3f9b6e8c28ea84d8bcb4ccfb1"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/011-option-return/INDEX.md",
+      "byteLength": 441,
+      "sha256": "ebbdf49419c917bcb95c836b89875fef879570b29bcffe898ebbdd1cc7b4ccb4"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/012-match-result/INDEX.md",
+      "byteLength": 420,
+      "sha256": "13d25301c691697d0ab6bab68dbae397976d2266f4a0824765717040661ab739"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/013-match-option/INDEX.md",
+      "byteLength": 421,
+      "sha256": "fa27d66e2e9d5e0ce71fa1602c685ba7c0f022d9314b9f065bd09b0dd04491da"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/014-enum-basic/INDEX.md",
+      "byteLength": 432,
+      "sha256": "cd108b71eec75396511f3485e5713283f628491392a2047d8825d8c3112ab81c"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/015-record-basic/INDEX.md",
+      "byteLength": 442,
+      "sha256": "2e32e67af5d5864a42b2e8110a67fa38a6a3b4f8440e75dbaef6d5d7e2bd13a6"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/016-type-alias/INDEX.md",
+      "byteLength": 446,
+      "sha256": "75f33d76a953148bffa78916efa69891a8fe6f167df913c7e527379356df3d2a"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/017-domain-brand-type/INDEX.md",
+      "byteLength": 450,
+      "sha256": "adcbab55fcb0ba825d5ffe23920d2daa5dd10a12a8baee781de38c76f8bed876"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/018-protected-type-label/INDEX.md",
+      "byteLength": 466,
+      "sha256": "a5a49dd76916e5856828fcae9d7e85ff818633eeda4ba23dadb21ca799f38506"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/019-redacted-type-label/INDEX.md",
+      "byteLength": 464,
+      "sha256": "b79d5d103bed6878b10657f3932b53a44274472915b8bce2aa56f647d928349d"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/020-invalid-fn-top-level/INDEX.md",
+      "byteLength": 466,
+      "sha256": "7ec59db1761c9bff9d4edd7b5d65d735f261e1eb98e9333e4c131bbf2d4b010a"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/021-flow-contract-basic/INDEX.md",
+      "byteLength": 405,
+      "sha256": "54d85afe6537732efd1cbb1a0adc23445dd3aac74a1be45c221cd780ea28a335"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/022-no-toplevel-let/INDEX.md",
+      "byteLength": 456,
+      "sha256": "71aa26f7f00810ab1bce00194755a4a606c0ae87582161c703350b1e61dbffe1"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/023-readable-logic-forms/INDEX.md",
+      "byteLength": 428,
+      "sha256": "0ed05efd62f13af3a3a0e03a3d08ee51a47f504f3d237b6c9a18adef675bf315"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/026-pure-flow-main/INDEX.md",
+      "byteLength": 358,
+      "sha256": "8527e01e5c2bb2c720c1e4893ee0ece5c73d7ac7b4df829db2b3be7f9fb8a27f"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/027-print-hello-world/INDEX.md",
+      "byteLength": 367,
+      "sha256": "5782da4c460caea1b1bdf7e323855fbf25a502000a7b7d40c231b5689123fbd2"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/INDEX.md",
+      "byteLength": 2225,
+      "sha256": "6e256320e2bcf640b11af2ac5e382f59b2ac23240d515f0953e6c9ec65c9358a"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/Proposed-024-vault-global-basic/INDEX.md",
+      "byteLength": 382,
+      "sha256": "2ece8c4793e972c639afe3a4caae0f54d04f0f05fbdcfe8760e662457cbf9d13"
+    },
+    {
+      "path": "docs/examples/Level-1-Basics/Proposed-025-vault-global-secret-invalid/INDEX.md",
+      "byteLength": 409,
+      "sha256": "c0806ff73d0b348200b3e9ceb12ea0884248cc55f3623b680f73f0592874c418"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/051-int-basic/INDEX.md",
+      "byteLength": 340,
+      "sha256": "b656df0592bec16a4ed95030e4b13081b751be5c2908364270464fd87f3ffeae"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/052-decimal-basic/INDEX.md",
+      "byteLength": 352,
+      "sha256": "93aa61fc802417cfcb5715b34e2470c668e22e55c07f2dbce46a1e682f41b5b5"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/053-string-basic/INDEX.md",
+      "byteLength": 349,
+      "sha256": "1783a536055c2c217ab7b6d748caace37ae4536189c8e631af9a10754657c95e"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/054-bool-basic/INDEX.md",
+      "byteLength": 343,
+      "sha256": "8e6a1538da6ea503114f25b3964d86d94d2712edab917e4a6978b2fd7284b214"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/055-byte-basic/INDEX.md",
+      "byteLength": 343,
+      "sha256": "68e559891a3797de71db3070a7894706a9fa72c67072b4b80eb316a28a9b86e6"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/056-char-basic/INDEX.md",
+      "byteLength": 343,
+      "sha256": "30e63498726eb103537c23dbdfa97cc6dc3fe5bf9e996b375736e097137097df"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/057-email-type/INDEX.md",
+      "byteLength": 361,
+      "sha256": "57684a6eae4631a3937ec2c1bbe99e1f3b78f8e811ee3c7ab59ed8d82951084b"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/058-patient-id-type/INDEX.md",
+      "byteLength": 375,
+      "sha256": "7e004e7035f9c56923c2cd6534b79b3f391f6708f28395cd7b11eb7d0c053e4a"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/059-nhs-number-type/INDEX.md",
+      "byteLength": 375,
+      "sha256": "66808f53e4e836d9426c686fb097f580bc29500b1650e5728db552ed4203f786"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/060-invalid-email-assignment/INDEX.md",
+      "byteLength": 411,
+      "sha256": "1e199a9f84717a2fd7c6a56ae5d0573739c0ac95d5f4e455a8297762c3042913"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/061-redacted-email/INDEX.md",
+      "byteLength": 362,
+      "sha256": "145e8e7b4851e995c13076662cdd99f812656fc7c8b2c74a510fa90e31f99169"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/062-invalid-redacted-email/INDEX.md",
+      "byteLength": 419,
+      "sha256": "dfac6d333cbff5dabd89a04409f3152a45524aa722d27f1598ab58278c456e54"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/063-option-some/INDEX.md",
+      "byteLength": 361,
+      "sha256": "b27671bbdfde0a5b5c8fadcdd1fb113335d8bbc8bc0da2beea10e8f1f5545317"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/064-option-none/INDEX.md",
+      "byteLength": 361,
+      "sha256": "b9fc71f8d4e3cea9e0c786f63c1b4588d59de1ec0d782d26fd9faff3491656b8"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/065-option-invalid-arity/INDEX.md",
+      "byteLength": 399,
+      "sha256": "a1c1c9b14436ea2c16bef27245e40c6d235163b2662e95bed5a574d3ba589f54"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/066-result-success/INDEX.md",
+      "byteLength": 369,
+      "sha256": "7dcc8c8feb782a87e5b3f992de0e1fcbe534212bec55ba03594f54b11fcd0fd8"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/067-result-error/INDEX.md",
+      "byteLength": 366,
+      "sha256": "b6b218e155378de66aaf393f6b075792f2e3734ba3e3b2df5410bfe5140a9e17"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/068-result-invalid-arity/INDEX.md",
+      "byteLength": 403,
+      "sha256": "8729cbd963015cab7214346b55076b78a369f8652789d8cd0bc29d74c333c23c"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/069-auto-inference/INDEX.md",
+      "byteLength": 361,
+      "sha256": "b57c5256b1f14faec5486326f9150aca40e4e5e0741cad706c8758f5b4311e4a"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/070-auto-invalid/INDEX.md",
+      "byteLength": 366,
+      "sha256": "6d68d2f96cbccaf25aee8e0136475164f507b8b5aaab2148bd621d144e4ef10e"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/071-money-gbp/INDEX.md",
+      "byteLength": 347,
+      "sha256": "c6c5a835d396c622bfc507ac3221205ca748422ae825f270c56f5c6855ad97ec"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/072-money-add-same-currency/INDEX.md",
+      "byteLength": 398,
+      "sha256": "36cc6d245734673a258193d013e60c1dbb8ccd56509e55bb2ac2e2076bde7784"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/073-money-cross-currency-invalid/INDEX.md",
+      "byteLength": 412,
+      "sha256": "97c26ce71bff1aa0423a8a0765159f4e6932e8a0146d3ac6dcd70456e1953f8e"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/074-money-times-decimal/INDEX.md",
+      "byteLength": 384,
+      "sha256": "20cfce69f75a5f8652546e280df814aea4e167949c5a600faedb30e131824e89"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/075-money-divide-decimal/INDEX.md",
+      "byteLength": 383,
+      "sha256": "1a0c27581ebb05298019751d2f995ddf2c116ca87ab91798c6f0bdd3c925746d"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/076-money-times-money-invalid/INDEX.md",
+      "byteLength": 402,
+      "sha256": "a432bea0eadeef9081966793bd239098f0765f48621cb582dc0f6170ea2c2519"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/077-money-ratio/INDEX.md",
+      "byteLength": 374,
+      "sha256": "14dcdfa1466e7b614d42ace01cc3bc508fff32c19fad766250af4bad2707267b"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/078-money-ratio-cross-currency-invalid/INDEX.md",
+      "byteLength": 421,
+      "sha256": "68beb33d3537854742d48c0f55001d99c9e8aeed82e017e1ca36cee7dad0762b"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/079-tensor-basic/INDEX.md",
+      "byteLength": 376,
+      "sha256": "3a2f08a0679ff93afb86256563ec0580ae2edf3a5ae7333f2d56079ad7c9a257"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/080-tensor-dynamic-shape/INDEX.md",
+      "byteLength": 381,
+      "sha256": "c3c58050a9c213a2a549153d2f3d3d4b0982f2c7182673835ec6f56e69feac2e"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/081-tensor-invalid-arity/INDEX.md",
+      "byteLength": 397,
+      "sha256": "39e6f2b1c8ce16f74fa5d5d40d154bb47b11cf959f7c7572dbad467fb7259644"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/082-readonly-view/INDEX.md",
+      "byteLength": 368,
+      "sha256": "583689b2d137fc1350732e136e9e41958dc1058cc2c79602f3a2e48d53651cac"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/083-readonly-view-invalid/INDEX.md",
+      "byteLength": 404,
+      "sha256": "9a2fc90f866415d36b3f0df41adc1a29d365ff3e4253d8b4357be11e6b9dcf19"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/084-unknown-type/INDEX.md",
+      "byteLength": 379,
+      "sha256": "f9c34424a91068ec2f95b15fbbbb06a816ea842aa9745fa102031c8de818a62b"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/085-type-mismatch/INDEX.md",
+      "byteLength": 377,
+      "sha256": "5eea2be82929806ff37b23745af19b92fe20d756170061853c1d386da6f2d152"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/086-protected-not-redacted/INDEX.md",
+      "byteLength": 421,
+      "sha256": "07f67c712bebaba70a1548e068c65483fffee3f07a296ab8ddb475b502567168"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/087-protected-email-audit/INDEX.md",
+      "byteLength": 399,
+      "sha256": "7a498300a00fa40cb71bdab64f3d0a2ab5327754e1bb49a4c5e340084f27a1a6"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/088-array-range/INDEX.md",
+      "byteLength": 447,
+      "sha256": "1b34b2cf17da9aedd8add4e4015f71548c146bf652366e84e27a2004c26b81e8"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/089-duration-type/INDEX.md",
+      "byteLength": 451,
+      "sha256": "9b73403ff07687d2e0083ed343199065e3120d4d2e9b6b8cc499866d9d19210a"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/090-result-sequence/INDEX.md",
+      "byteLength": 455,
+      "sha256": "9825f4a8d93b89c2d7e13d28abc28227a5354416be13a9ac792af9a003f3db9b"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/091-trust-sensitivity-independent/INDEX.md",
+      "byteLength": 483,
+      "sha256": "8b27752059b7978a7e79fba7b7bd446914d03c6fcd8ee47543f54270cc91fcfb"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/092-boolean-logic/INDEX.md",
+      "byteLength": 352,
+      "sha256": "754d6aecaa01ff2c522b5e1b90f7502890b51fca80d4fbcccd6c3125bee4c382"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/093-time-types/INDEX.md",
+      "byteLength": 343,
+      "sha256": "6aa7197e7f00bb5ff0db2e3853ec2b07f08255eb4b4da636b947ff7b016cb356"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/094-hallmark-declaration/INDEX.md",
+      "byteLength": 383,
+      "sha256": "0b7617847110fe9afdb10d6f17bd0d51e564409b82f61204f253e110bb77878f"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/095-hallmark-ops-deny/INDEX.md",
+      "byteLength": 396,
+      "sha256": "3e2c9f3b361aaf2824c4478fc1f71803f74fa407134a9216a6402433f373e48f"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/096-hallmark-reserved-name/INDEX.md",
+      "byteLength": 397,
+      "sha256": "f35c329a1d1ebe41d932b356e57042ecf27a4d09353f97a224797235b43b1d23"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/097-hallmark-gate-bypass-invalid/INDEX.md",
+      "byteLength": 434,
+      "sha256": "7fdc7640ce0e06131808894a64efae97c6317203ad5268ca9f4f867af02edc9d"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/098-hallmark-taint-transparent/INDEX.md",
+      "byteLength": 407,
+      "sha256": "af895dc0c82f7bbd2bb48cf187fd6ce599094e083b1bd49cd059384267725490"
+    },
+    {
+      "path": "docs/examples/Level-2-Types/INDEX.md",
+      "byteLength": 3651,
+      "sha256": "fe3396de67977ba485641814f103586d248c2ad13478e8d9450a42ba6bd1349e"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/101-pure-no-effects/INDEX.md",
+      "byteLength": 370,
+      "sha256": "1fbca4f50dad1efbf3e989b87f2f1d8c8fe39bdc772ba8cfa8b6b44d88ce9a5f"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/102-guarded-database-write/INDEX.md",
+      "byteLength": 404,
+      "sha256": "e9fd6b61b37e29d82bdaffb56c1c48bb4d7efc4b9029e99363d9e556c95fcda2"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/103-guarded-network-outbound/INDEX.md",
+      "byteLength": 386,
+      "sha256": "70aaba684be8797f5e12a435799c00afda7d32749f18b5583d8ce3eb44601a59"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/104-multiple-effects/INDEX.md",
+      "byteLength": 363,
+      "sha256": "428fedefe8e6139143c1ec320fd9b9998f656be08f16f2d18a576bec8d1b0fd5"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/105-missing-database-effect/INDEX.md",
+      "byteLength": 394,
+      "sha256": "0ac44829c82d1153facf7a726f5f8c585e99fccbcf57ec77bda07b79b0ad8438"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/106-missing-network-effect/INDEX.md",
+      "byteLength": 370,
+      "sha256": "8e63183c2e43569b72ce5fc591f9ed6a9c82c7f64daf143cf17e1fe46a3fb1ae"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/107-pure-flow-calls-effectful-flow/INDEX.md",
+      "byteLength": 415,
+      "sha256": "559e05c09aed0e3a923e4f3549941f815afbb43b20e8235d8e8b848589c3ff72"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/108-guarded-flow-calls-effectful-flow/INDEX.md",
+      "byteLength": 455,
+      "sha256": "f34d0189f58774f55e496d83d68a36811337efda00f62b5207f7b3db0d940687"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/109-local-fn-pure-helper/INDEX.md",
+      "byteLength": 395,
+      "sha256": "b5fa523a0bf877653e2cc1c2fe3550c195c7d0ada1373b195b13a0148d4d9537"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/110-local-fn-uses-parent-effect/INDEX.md",
+      "byteLength": 426,
+      "sha256": "7b237c9903fcec0daa07dff98a504b07e3488a04bd875ad58cc9fc83197b914b"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/111-local-fn-effect-not-covered-by-parent/INDEX.md",
+      "byteLength": 453,
+      "sha256": "3df129adb00f82761af8aff1b863feeea1b7ff82d219711b144ddbe7af74e658"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/112-local-fn-cannot-declare-effects/INDEX.md",
+      "byteLength": 417,
+      "sha256": "85b97b13c6b84d43169ce7d7a038ef049c3cb8a745bccae1f3bd4bbaab36996e"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/113-secure-flow-with-effects/INDEX.md",
+      "byteLength": 401,
+      "sha256": "5dbd8b03a1b02e14f9a9e0af90850d2da33890edbffb1047b32e302cad624aa6"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/114-secure-flow-missing-audit-effect/INDEX.md",
+      "byteLength": 445,
+      "sha256": "c02ffada3efec47cb2255e615cc040cdf55e6638f9d7ff81e8f82686c71cc1b3"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/115-effect-propagation-through-call/INDEX.md",
+      "byteLength": 422,
+      "sha256": "12c53141b204301213c86f90e8dc0b4535906005f7c72b0315dd72cba86980c3"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/116-effect-propagation-missing-parent/INDEX.md",
+      "byteLength": 422,
+      "sha256": "4ae668abb373ced7142f588d60f22a3f8c9b55ce322ccf0312e2be1edafd7d8d"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/117-effectful-operation-in-pure-flow/INDEX.md",
+      "byteLength": 423,
+      "sha256": "fa197a7e611df43ed629a9b912fa42fbb033d4646a7c0c6da78a88b60c13d02f"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/118-filesystem-read-guarded/INDEX.md",
+      "byteLength": 402,
+      "sha256": "bc8c47a103f1fad7abe058cbf1458205894190b40217b677a7c0cdd65a7cd705"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/119-effect-name-invalid/INDEX.md",
+      "byteLength": 391,
+      "sha256": "5b1191a5b3829caf7d433fb790741895c3e55c852d60deedf55406d53f0d15cb"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/120-effect-summary-example/INDEX.md",
+      "byteLength": 410,
+      "sha256": "d7e56c2bc81cb184bb28ef388b0f5a89213c5bfcb5f5f00f201b88c58d7addbc"
+    },
+    {
+      "path": "docs/examples/Level-3-Effects/INDEX.md",
+      "byteLength": 2160,
+      "sha256": "11b74f327d97071e41ec123fda9d12f979b6c623f58a882930ffd49ac713d4d2"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/151-http-request-boundary/INDEX.md",
+      "byteLength": 393,
+      "sha256": "1cc3dc050ed6f8849142385b37145c65f4a044ef228c48601187ddf69e5cd1d5"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/152-file-boundary/INDEX.md",
+      "byteLength": 372,
+      "sha256": "49b6fa998cdc53e568dc84b403760556c7507f89f4abf7a89af13f6f4c5d8cb3"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/153-environment-boundary/INDEX.md",
+      "byteLength": 394,
+      "sha256": "d7cc9818728bb18e896d067cb11e3a916500243a8bbf5d85a7180e9c42c7ba6d"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/154-validate-email/INDEX.md",
+      "byteLength": 387,
+      "sha256": "64195f77b69c8053ec75ffb363d11cbcc77b910ff7466756ab4f7879806f6122"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/155-validate-patient-id/INDEX.md",
+      "byteLength": 405,
+      "sha256": "764d66c46b48c9b9af3ba5acf51177571283e78566da1d5caa8d5ab31e776a10"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/156-validate-nhs-number/INDEX.md",
+      "byteLength": 405,
+      "sha256": "c36148774bfb28c476cd48232c0e1774f82c32090c07140705ac9b6b1bcbef1e"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/157-invalid-email-assignment/INDEX.md",
+      "byteLength": 422,
+      "sha256": "077560f53fc115c38e0c5f5f2726e70aa8feb55bf7705f224d15f86f2a645d1c"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/158-redact-email/INDEX.md",
+      "byteLength": 392,
+      "sha256": "2ff4925dfbef17ac52492473784ee4b3f1a2c258460461785c4eaf557f3c6794"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/159-redact-patient-id/INDEX.md",
+      "byteLength": 410,
+      "sha256": "4927a1eb4c82211a08155a3d33882022bad86f103cda9e882c3ba968ecd1b0e1"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/160-protected-not-redacted/INDEX.md",
+      "byteLength": 424,
+      "sha256": "57f1f85a4d4c5868fc1d78b59bf3c6fbd388f335cafa3cbe11ee35948e716ed9"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/161-safe-audit-log/INDEX.md",
+      "byteLength": 385,
+      "sha256": "69e02176daf253c9b33fce3ed62607f7dc3bd02e63ca49d16b020d3e8e7dced6"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/162-invalid-audit-log/INDEX.md",
+      "byteLength": 406,
+      "sha256": "27828cc23cb8fd1213c9037318c6704e146a5d5923bbd12e2d6c1a752c874161"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/163-unsafe-audit-log/INDEX.md",
+      "byteLength": 383,
+      "sha256": "5d7a07e16ef08aa37d59255d8ae080d34fb8b590d81da26d3179991587cf5a69"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/164-safe-database-write/INDEX.md",
+      "byteLength": 399,
+      "sha256": "055a4e3c809f307840ba282cb0e1de962a0169276a018530b8ce43dd41daba0c"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/165-unsafe-database-write/INDEX.md",
+      "byteLength": 408,
+      "sha256": "cc4c14783e52c9f60d9d0f4207d41ad4e491c299583b8eb7aa02cc595ad074ac"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/166-safe-network-send/INDEX.md",
+      "byteLength": 367,
+      "sha256": "e6a499b6d9743f3dd9af099164b63b5731aa5baa5e9b01acf1db191e83709ac4"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/167-unsafe-network-send/INDEX.md",
+      "byteLength": 405,
+      "sha256": "92c2194295d29ab3098e58837f370c0d6a16697b5030859b348b565c6d517a6a"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/168-redacted-network-send/INDEX.md",
+      "byteLength": 379,
+      "sha256": "cbb1f9ed608ffb0f20489f35cd121eb654b39b576c401ccf25c2ed5ba18a76f4"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/169-secret-comparison/INDEX.md",
+      "byteLength": 401,
+      "sha256": "e4b3e0b179b1557a4a3d84c551d5815bab10428b5c68b38e11e345730cbb0348"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/170-constant-time-comparison/INDEX.md",
+      "byteLength": 410,
+      "sha256": "38e199be17fd51f7a2e19b59a08c3202b18cce18dd0c6ffcda0709560cbebf1f"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/171-protected-console-log/INDEX.md",
+      "byteLength": 408,
+      "sha256": "e724d02b9127710834f7a794b0029f101baadc668006e44cebfc300325b26c9c"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/172-secret-console-log/INDEX.md",
+      "byteLength": 399,
+      "sha256": "5f4bc35b4b8659c1836d99ab3c3e1c4a6f57374933f721dae61dec5d1b7eb928"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/173-validation-chain/INDEX.md",
+      "byteLength": 384,
+      "sha256": "0df602447ae5ead7aa36a78cdc62d8731e566f497f56275d9085485914cdc1ed"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/174-multiple-protected-values/INDEX.md",
+      "byteLength": 428,
+      "sha256": "5f30999dc84cd2be3ea95f082f4e27945953dbb63286b03cf11d22f709157105"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/175-security-summary-example/INDEX.md",
+      "byteLength": 416,
+      "sha256": "7d5cc2d2ff8eab5378fa4bc11acc75e74ab96c39517ef5aba5af2e700ed5448c"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/176-sql-injection-concat/INDEX.md",
+      "byteLength": 406,
+      "sha256": "5c971712d085f0fe07c9e154fc7c93d4990ed461e91d3a7980dbc899f4c47ccb"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/177-secret-serialization/INDEX.md",
+      "byteLength": 399,
+      "sha256": "e416aae85f103f7f964d4ecadfc8806a4cb8b25c2c4d60bf825e227af6703137"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/178-governed-data-query/INDEX.md",
+      "byteLength": 373,
+      "sha256": "686b15449c5217d63524d9d575ab2c2b1b4ac77f7aff2b13b3c92631395b50f2"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/179-hardening-secret-auto/INDEX.md",
+      "byteLength": 401,
+      "sha256": "e349cf85952d285ec0f92879e02cbf1fa1feb61a5557fcd893161f1b3c062826"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/180-hardening-spill-rejected/INDEX.md",
+      "byteLength": 444,
+      "sha256": "881ce49e292fe06c3089b94ae1faea3fa3f6c2e97028a44838c65d75b7533000"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/181-hardening-unlabelled-limit/INDEX.md",
+      "byteLength": 440,
+      "sha256": "899eb1b1bfcbd00654d683d81916491936dc7955e9f743d4130535d0d75a60d2"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/182-hardening-spill-effect-denied/INDEX.md",
+      "byteLength": 453,
+      "sha256": "fa4fc6924953ee067a1654c6e7800d04f414c361d34e305310a13761ee2c1caf"
+    },
+    {
+      "path": "docs/examples/Level-4-Security/INDEX.md",
+      "byteLength": 2798,
+      "sha256": "c203cdb3279e07abe6b9bcef3c5158287e2109b9805d73f2923976b047a74d0e"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/201-intent-basic/INDEX.md",
+      "byteLength": 379,
+      "sha256": "c1565964adb27245e58ae57d0f790172f245a1810ce13449422bdf193610e96b"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/202-secure-intent-boundary/INDEX.md",
+      "byteLength": 403,
+      "sha256": "c0a57c3e2ebb1af9794812c27a1b1e97b1298eb2f3a291549115fb1547fd7075"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/203-intent-mismatch-invalid/INDEX.md",
+      "byteLength": 428,
+      "sha256": "18dd744535d4abbdc2b986e076b0e7c68d1fa171c85b6fd784cb5133cd169fea"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/204-remote-execution-denied/INDEX.md",
+      "byteLength": 408,
+      "sha256": "43ebc71c6ab274baff339471da14787638bb7cbe45cd2deff66018d078138062"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/205-remote-execution-violation/INDEX.md",
+      "byteLength": 419,
+      "sha256": "d9b75c0f265cc0721e8704c02fbd89679c710ce67c84732d6379aaf7a799fb23"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/206-protected-data-sharing-authority/INDEX.md",
+      "byteLength": 436,
+      "sha256": "b41306ffffea607da8481d0baab7b494828c358cfd79dff1d602dd81dd53234e"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/207-protected-data-sharing-missing-authority/INDEX.md",
+      "byteLength": 456,
+      "sha256": "41a2d06cc607af107630185dd77acb2313b970815c8da9e5874eb0eee2aff8d7"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/208-audit-proof-required/INDEX.md",
+      "byteLength": 395,
+      "sha256": "d6f23943d1ceff9ba15c98f2df057f4199bb88927acdbdc091d0ae2622f8cb8f"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/209-audit-proof-missing/INDEX.md",
+      "byteLength": 407,
+      "sha256": "2e85e77f01e2d7605adfb1f28dcb7071cd2b56debf0b8c6cd2e24471ac8d0034"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/210-governed-execution-plan/INDEX.md",
+      "byteLength": 418,
+      "sha256": "2ab66c1c440c00737008550033d076ed646ed1212ff3cd60357a1a1aa39fbecd"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/211-policy-block-allows-purpose/INDEX.md",
+      "byteLength": 428,
+      "sha256": "967119d232a9c9d6105c6000dc364f8e82a37ec16dcf0fb0e418bd3ebbc72e71"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/212-policy-purpose-mismatch/INDEX.md",
+      "byteLength": 418,
+      "sha256": "d2ae11210939277f13b41f841ad8da4c1abb3edd9147d7ecc3380423a54071eb"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/213-governance-summary-example/INDEX.md",
+      "byteLength": 424,
+      "sha256": "a83d24a779d0c69fd5dd0d5d91cb3c8a44199e51c08d161e4819022f5564dffb"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/214-contract-secure-flow/INDEX.md",
+      "byteLength": 395,
+      "sha256": "701d4b85b08e3a36e7560f7323fcc3bf882658397930de0e59f65bc7de0d29a2"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/215-contract-set/INDEX.md",
+      "byteLength": 454,
+      "sha256": "d253de6ece09489c75e1304b40b6992b9a4cafd2e44398619a5b42a8342cffcb"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/216-event-declaration/INDEX.md",
+      "byteLength": 442,
+      "sha256": "4a2b782179a10ab1d4fc2a5d974ba62638ce65f817ae3ba6b69c2575817d62fb"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/217-contract-set-validation/INDEX.md",
+      "byteLength": 438,
+      "sha256": "6aebd4d946ae0d0435b946e1767aa4ea984387271839c9268dd603537edf84fa"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/218-errors-contract/INDEX.md",
+      "byteLength": 369,
+      "sha256": "b6eb25480b5ea10669beca46fcd35618f836bc27fb8350b27540945ec9139260"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/219-response-denies/INDEX.md",
+      "byteLength": 379,
+      "sha256": "879256fffb89207ba004d440d5b993f5a6df3ac1cedc4257e5c405c1e4c5d5b0"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/220-context-required/INDEX.md",
+      "byteLength": 373,
+      "sha256": "2d3b8b5a9b84b8c3dc41a8c1619f777fcf2cc3bbe3776da9ef839abfd9245802"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/221-timeouts-retries/INDEX.md",
+      "byteLength": 370,
+      "sha256": "bca0035c5162655cd905d0f0e07f9a7af78ea81c941da2d5e41e6934f73d8fe6"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/222-limits-privacy/INDEX.md",
+      "byteLength": 364,
+      "sha256": "fac6b4dea237a8904e9d089842211af8addd371498562f6f9c890a0b62bc62d1"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/223-observability/INDEX.md",
+      "byteLength": 357,
+      "sha256": "f9d5e9f008bfba70e2132e6e98a5c8f6ed23bc037af5b1d7aa99c63a9f91bc8e"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/224-contract-best-practices/INDEX.md",
+      "byteLength": 403,
+      "sha256": "ef58cc26cfdad44e54d30f7e779307bd8be05a72d04f71666e39dc73d9f2e957"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/225-context-missing/INDEX.md",
+      "byteLength": 383,
+      "sha256": "61965eed289e44e66e1f64c1058a5775d0ab6e0bd8529327cfdb84502f024dbd"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/226-full-16-section-minimal/INDEX.md",
+      "byteLength": 396,
+      "sha256": "5eba14a616ea8e59cc88900db4438f5d65216e066d56bf96459ed6acb583b436"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/227-global-vault-declaration/INDEX.md",
+      "byteLength": 386,
+      "sha256": "0118cdf7043ae62ea09cc07cef03d9bfdbb155c421ef4ee313dc7cd46729d640"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/228-global-vault-mut-write/INDEX.md",
+      "byteLength": 380,
+      "sha256": "e2c7ddf5f9aad269db5cc41d8815334231098fd3d99bf403e34acf3141475b38"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/230-vault-access-denied-invalid/INDEX.md",
+      "byteLength": 395,
+      "sha256": "fa4bfea0c3f76483976ac75c401bbf52ded1ec666178127fa90a9682d951fe54"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/INDEX.md",
+      "byteLength": 2789,
+      "sha256": "e65b278de93d59c7ddb8f7a2be3447dae662306814e008faf042e1b566dbfd92"
+    },
+    {
+      "path": "docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/INDEX.md",
+      "byteLength": 425,
+      "sha256": "67c21f71db9403c9ccdfaa24e8fad98b782dfd7c5a2ddf9106b520c06e316f06"
+    },
+    {
+      "path": "docs/examples/Level-5-Security/227-process-spawn-governance/INDEX.md",
+      "byteLength": 418,
+      "sha256": "8a1a191296548fba744474def5b6073f463ffb5bcd29ae249e933b3260d8eda2"
+    },
+    {
+      "path": "docs/examples/Level-5-Security/INDEX.md",
+      "byteLength": 380,
+      "sha256": "b7a7162b91e904b2fce2980860ea4602601bccc145413ae96c212b2f1f3a7a9f"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/301-compute-target-best/INDEX.md",
+      "byteLength": 415,
+      "sha256": "fe5e0cf1a8c6288ca522d5a8a69f926d36ec8869a3bb08b4e403808aca3df542"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/302-compute-deny-remote/INDEX.md",
+      "byteLength": 410,
+      "sha256": "c57317612ddd593d704490f0fe7e83e75fd9ac11672c74472837f935044a06b4"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/303-compute-gpu-explicit/INDEX.md",
+      "byteLength": 396,
+      "sha256": "7ab72ad06d6f632bd9d95381551da61244380e858ae8e1e424457d38ac703fde"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/304-tensor-basic/INDEX.md",
+      "byteLength": 382,
+      "sha256": "913c97be16eafe39411df94ee731cef4102e526aa9df8a600ca913cead54c935"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/305-tensor-dynamic-shape/INDEX.md",
+      "byteLength": 406,
+      "sha256": "065a79835362412ebfb7406974526e3dcac6e4091c4bc9fbbb2f8f78ed6c6050"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/306-tensor-arity-invalid/INDEX.md",
+      "byteLength": 423,
+      "sha256": "93c6e182def8e7aa69568817a71e5910831adff4daad4075087d3f73f36cc95f"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/307-vector-type/INDEX.md",
+      "byteLength": 377,
+      "sha256": "60bb53d8b0864dc912737046fbb7970bdb6cb3cb686d046dd7248d93ab41dd3a"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/308-matrix-type/INDEX.md",
+      "byteLength": 368,
+      "sha256": "a71e144d79207d769e0e27b504c0ad924293c8896f532c807e240abe68e57b84"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/309-compute-photonic/INDEX.md",
+      "byteLength": 401,
+      "sha256": "32a7755a9f70cda35461ae7d29176ec44f9f3b17a2f5786640533a191f49ce2d"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/310-compute-fallback-required/INDEX.md",
+      "byteLength": 422,
+      "sha256": "67e7540f2cbe7891be80fc364c054b70dbf8d67686e46616efd3a938555c9ae3"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/311-money-vat-calculation/INDEX.md",
+      "byteLength": 393,
+      "sha256": "f62b453d14e5b271dbd3907e04c26186ac9f975b811e080f7566d320ece30ee2"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/312-money-invalid-cross-currency/INDEX.md",
+      "byteLength": 431,
+      "sha256": "590f3be59af38672adc197c88ce1cfaab2451ae90e46d388d4a53ec91d6656aa"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/313-decimal-precision/INDEX.md",
+      "byteLength": 405,
+      "sha256": "b968961a2f42aab41c644ea91842a57100a08da44a6463593e04b31aff2a141d"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/314-compute-npu-ai-inference/INDEX.md",
+      "byteLength": 430,
+      "sha256": "358162c9e8570e79909b51671705c46c7c394e6a5cc5e3489ef7d91be8822756"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/315-compute-summary/INDEX.md",
+      "byteLength": 429,
+      "sha256": "dff9a4bcd57293da9a29a3487e008c4e5c823046eab649fba510d06d8cd78008"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/316-invalid-tensor-add/INDEX.md",
+      "byteLength": 369,
+      "sha256": "7e82cd723dd387701dbbc8c3bc1266ae4da9afdda2692f2b366bf1e9d4f125ed"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/317-money-cross-currency-compute/INDEX.md",
+      "byteLength": 399,
+      "sha256": "468752ec486e1ad4371d6a092e4f48b27485b2405b1162d44cf71c88f853c503"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/318-compute-hint-missing/INDEX.md",
+      "byteLength": 420,
+      "sha256": "8534b103b351e29a360ba5c463b6d7006f309e4a2b4bbbaff70d16f7527eb3e9"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/319-money-times-decimal/INDEX.md",
+      "byteLength": 465,
+      "sha256": "16a908844dbcd15ed8723391e88eeb4c5922930b4a2bd1b643a0b432254a6118"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/320-statistics-stdlib/INDEX.md",
+      "byteLength": 371,
+      "sha256": "9add812ad044a4dc837d737b0526f7b4e408f6dc73ab897d06c5eca2c1847265"
+    },
+    {
+      "path": "docs/examples/Level-6-Compute/INDEX.md",
+      "byteLength": 1882,
+      "sha256": "cfba5346f07c2d8c7847ed0dc33ce66ecb9029d910cf590a5206c21ace7b8052"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/351-embedding-flow/INDEX.md",
+      "byteLength": 387,
+      "sha256": "67fb430c0a983dacc229f523d69d8b845ae2f31b2ab5bca1701f97df5a8ff92a"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/352-ai-inference-effect/INDEX.md",
+      "byteLength": 419,
+      "sha256": "d6d6bee6f85113710051dc73aa16ec00f183bbc72bf7c3af407f79cb487cc3f1"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/353-protected-ai-input/INDEX.md",
+      "byteLength": 426,
+      "sha256": "39218142055d8916602933798d2f799fca4d2b82bc0c7ba35015a3fb85718972"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/354-ai-batch-inference/INDEX.md",
+      "byteLength": 389,
+      "sha256": "d9354b1eebfd08c9e899b6635bdceccc21795f7bb4ff6f2992d0bcf15ce6af86"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/355-ai-governance-denied-remote/INDEX.md",
+      "byteLength": 434,
+      "sha256": "c1d703c5fea09e25761bd1a2899de22e9ed60afcbaa9cd1c9eb45c82fad80fd3"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/356-ai-missing-audit/INDEX.md",
+      "byteLength": 417,
+      "sha256": "a53c6f06b3e5b4bf19008fb7a46e11037b890615f1f3ea8855c83beba96fc278"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/357-tensor-model-input-output/INDEX.md",
+      "byteLength": 427,
+      "sha256": "61b58720334700266a1519aa0d0a65bc844c733d22206c1f9fcc503be3f624f8"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/358-ai-secure-string-in-ai/INDEX.md",
+      "byteLength": 419,
+      "sha256": "e868c9b98afde5bc057b2cc3a527de41f3524d5c0c2492264ab6b6a2d2f980c2"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/359-embedding-with-fallback/INDEX.md",
+      "byteLength": 412,
+      "sha256": "0db19d0afddfa97d972ea7ca0fe2bd6fcbfc01da96791234083f2e13c82e32f5"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/360-ai-audit-redacted/INDEX.md",
+      "byteLength": 398,
+      "sha256": "7045e83fdca5aead2e7a3835397320102d41d99021c0e50a183de0f462fb9349"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/361-ai-any-tensor/INDEX.md",
+      "byteLength": 395,
+      "sha256": "0c95a6fd26c80e9f185622446463f00da7e85d03312fcd02753f0fa29d839a34"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/INDEX.md",
+      "byteLength": 418,
+      "sha256": "253320970b1e855eff22e404621738bc812efa75221524723532df274b38910a"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/363-local-model-only/INDEX.md",
+      "byteLength": 422,
+      "sha256": "ce54cf53f421d22e07843e9ae0c4ee1841690bf75a096927320a0bbdef008c3b"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/364-ai-effect-propagation/INDEX.md",
+      "byteLength": 434,
+      "sha256": "795df2f8cf4f187ef237013e438ac0f608eac5d54b0491d8fd5810cfd3ff74d4"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/365-ai-summary-flow/INDEX.md",
+      "byteLength": 439,
+      "sha256": "c7224663a12b917972972f53319378cc3eccec03e2a42e8c693ee8861aa6decf"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/366-ai-unsafe-input-to-model/INDEX.md",
+      "byteLength": 382,
+      "sha256": "f6954eb618b2f24f0faf0a5be1847919a5894b175c40881d0bc8b12076b63bca"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/367-ai-inference-without-effect/INDEX.md",
+      "byteLength": 391,
+      "sha256": "122988a209c9ae009d5593875e4a3323b9f42a54fbf73f167ae094491ae4dc23"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/368-contract-ai-flow/INDEX.md",
+      "byteLength": 394,
+      "sha256": "ea47c7bcf0fbf59246ce6a3c18b07e68838ea77081cc3640daec3fd808a0fc38"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/368-signed-attestation/INDEX.md",
+      "byteLength": 414,
+      "sha256": "94ac2518dd88c516b945bad374c6bd0a722742b0486f3f0fc76beac5cd6fd29a"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/369-ai-classification-flow/INDEX.md",
+      "byteLength": 391,
+      "sha256": "9f28dc7549b112a7404ce8e8f9902dde2a0ce1e3df05675d4a24ea0cf575f322"
+    },
+    {
+      "path": "docs/examples/Level-7-AI/INDEX.md",
+      "byteLength": 1915,
+      "sha256": "8b58e5eea8879eec8040e79713f3231c90a2e07c63869f98aeb3bdb4a3aae805"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/401-target-cpu/INDEX.md",
+      "byteLength": 363,
+      "sha256": "453164bf8b473350b29e265d4cf06a26587c728372d5ffe0e2a3140f84bc0130"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/402-target-gpu/INDEX.md",
+      "byteLength": 381,
+      "sha256": "6205b129f77a5c84780260b53138ef1cb2b7e46abcf9b9d4f28763d524586c86"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/403-target-npu/INDEX.md",
+      "byteLength": 381,
+      "sha256": "9a7addf506294bffb5cdaa1fc8fc45e87d99d718d2b9685de0da9ebf3f2acaf9"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/404-target-wasm/INDEX.md",
+      "byteLength": 399,
+      "sha256": "25be1bfa4138a4767459c36e0d6f5abace0294d45c1bc90e031004aa99809fc2"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/405-target-photonic/INDEX.md",
+      "byteLength": 397,
+      "sha256": "023ab901e765e5052d35d5e57a28d8e8d78940045fc5077e836574480c61691a"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/406-target-quantum/INDEX.md",
+      "byteLength": 394,
+      "sha256": "e5fd18cb92f08d76bd02c744b54428a01cb36b455a9439b4c3ca2b8dd6bedec9"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/407-target-best-prefer/INDEX.md",
+      "byteLength": 413,
+      "sha256": "f7d6e1b1bb1063d69db9daea2098a8c7267ee7a39b8aa83358414035eb8cd3e2"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/408-target-deny-remote/INDEX.md",
+      "byteLength": 395,
+      "sha256": "af3141dd190759d5082be3b7370d7478fbd176969dc3d3ce1accc361c8b0c3f5"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/409-target-deny-list/INDEX.md",
+      "byteLength": 405,
+      "sha256": "0dcf736cb65a4091543aeb5e85be2d568d57b6085ce915658c8c59052f636566"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/410-adaptive-runtime/INDEX.md",
+      "byteLength": 428,
+      "sha256": "4f4f179a0f687035393ef48b03b9739a863ea6d94c4ac3acdb3863d507dcf9fa"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/411-deterministic-runtime/INDEX.md",
+      "byteLength": 445,
+      "sha256": "7af1dd4290467c8d9f58173b5faadef59362d012d68396cdd3268ceb6c4b6b23"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/412-target-photonic-with-fallback/INDEX.md",
+      "byteLength": 428,
+      "sha256": "eea914dae41f063a8b2da9596b35a0096b815a3181f29c0f7e20ed834c395471"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/413-target-quantum-simulation/INDEX.md",
+      "byteLength": 421,
+      "sha256": "55724c148ff5b8c4840341f63f06a339ef19c49a4fac150a03d4619d61db4cc4"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/414-target-no-fallback-invalid/INDEX.md",
+      "byteLength": 438,
+      "sha256": "a561edba6bcbe9c57ae1f120e1d2ac8c113e228c93d73cf4565454191d2288c1"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/415-target-summary/INDEX.md",
+      "byteLength": 434,
+      "sha256": "6d8353e7e1e70d081ed1255f124dff673002891d6d848a5227b864b76110189f"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/416-target-fallback-missing/INDEX.md",
+      "byteLength": 384,
+      "sha256": "96bd542da10cf6cf49368366aef1a96f9ae05c58f2587fb32fd43d6933ec0a4b"
+    },
+    {
+      "path": "docs/examples/Level-8-Targets/INDEX.md",
+      "byteLength": 1544,
+      "sha256": "81705399bcf29c46727ff3fe76b906d54d15050bb9a62bab3e2766fa4bf6c11e"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/451-healthcare-patient-create/INDEX.md",
+      "byteLength": 472,
+      "sha256": "d360e256409142f14a78f905ee4960d13164cbd6ae11e9ba81c26881a9be5e41"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/452-healthcare-invalid-pii-log/INDEX.md",
+      "byteLength": 441,
+      "sha256": "7152a82f89f390be955c47fbde9064d084653cf4d57ca9e4e70bc955d49e97a4"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/453-financial-payment-charge/INDEX.md",
+      "byteLength": 436,
+      "sha256": "42943d88ab7db768b94bf5e84bce6676d7db20cc86c16a23ab038d5d627fceca"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/454-financial-cross-currency-invalid/INDEX.md",
+      "byteLength": 459,
+      "sha256": "4678c814f0f00c4a01e6e1e0b13f17c59f1c8a68e900aeba3df5284aa2583da8"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/455-financial-money-calculation/INDEX.md",
+      "byteLength": 422,
+      "sha256": "62fa8d561becb0b58c418cbf58ecb974f9039ac32cbe1e540461b5f1d6bacafb"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/456-compliance-pii-effect/INDEX.md",
+      "byteLength": 412,
+      "sha256": "0f2d94e0d538d2f0c7f17fa24a601d1f158498dddd51a3384f18c75d43b9b850"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/457-compliance-phi-effect/INDEX.md",
+      "byteLength": 417,
+      "sha256": "6c2643f8f7d9faca505bb0e8fe729345034752a7540c469e858ef7dcbca0320c"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/458-compliance-audit-required/INDEX.md",
+      "byteLength": 437,
+      "sha256": "a8d921ca3f8893fe267dfe56af4374dfbf5c0f0867422c351a393cefa7ba8261"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/459-multi-protected-values/INDEX.md",
+      "byteLength": 450,
+      "sha256": "b15bad2280ac2c6a06987d7f8d76536d49be4456c1e74ab0ad8cacec3b404251"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/460-authority-data-sharing/INDEX.md",
+      "byteLength": 444,
+      "sha256": "49d5f884353752c7cc28ec9155b8fd78ee5dde338fb03b4c5f26e1c3c013c42e"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/461-authority-missing/INDEX.md",
+      "byteLength": 426,
+      "sha256": "6195a9d33e2f6a9f08665a7d43646b4132e6eda0c22a4dca1d7973f0c3963f10"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/462-policy-purpose/INDEX.md",
+      "byteLength": 427,
+      "sha256": "384b0d89526c63847cc378297eb5dfce40fd34d8b4961e6522ac622128614bc3"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/463-policy-mismatch/INDEX.md",
+      "byteLength": 415,
+      "sha256": "9c255d900077f52c600f5def6597e8bf60640a5b96275e57a59e45a98841a9ae"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/465-enterprise-summary/INDEX.md",
+      "byteLength": 468,
+      "sha256": "89de1e985d6c7cb27b2615080ba24e933dbf3af9ec0773a57872a18d12fb2414"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/466-pii-without-pii-effect/INDEX.md",
+      "byteLength": 389,
+      "sha256": "c7166fe93887c273428284f692cdc470bbbaf4b2265d08e10e6ee67fa1a02080"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/467-protected-response-body/INDEX.md",
+      "byteLength": 396,
+      "sha256": "9ca79b50079ebeeba966fc020c1f3a5338a38c64ba975334242fbf927eeda3b5"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/468-full-contract-model/INDEX.md",
+      "byteLength": 411,
+      "sha256": "acd5bcfb4a693aeab3cd91025e5d985fd6137edb0ff9ac5e93d0fbaea7ea41b5"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/469-contract-financial-payment/INDEX.md",
+      "byteLength": 431,
+      "sha256": "f01c76856ddc02c2bfda52647d94012c6ac20954d90c378208211ddcd9af0dab"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/470-contract-healthcare-search/INDEX.md",
+      "byteLength": 433,
+      "sha256": "cbf8d620152bc3605a5ce8550fd2293bff538f6fbfe88938d9dc7efe43020b04"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/471-medical-medication-check/INDEX.md",
+      "byteLength": 390,
+      "sha256": "2faad966586d16b6236395461e203c64624770cf7ed0d8679b0612bad7d1f8e0"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/472-physics-simulation/INDEX.md",
+      "byteLength": 372,
+      "sha256": "8f1bd6840936bb7afb5944ce382698f399a8eb9b61b471df183563624bb7f64b"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/INDEX.md",
+      "byteLength": 2436,
+      "sha256": "571d5404c79f24ca55ecabdffe610c6d654325443d7c7d9b4eafbf24950307b0"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/Proposed-464-enterprise-supply-chain/INDEX.md",
+      "byteLength": 414,
+      "sha256": "33010b6a5edf92befff3e36337ef340a69e73887ebdb064c73f74f03914a0ebd"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/Proposed-473-scoped-vault-request/INDEX.md",
+      "byteLength": 392,
+      "sha256": "e009e87193254e4263c2de37dbc86a28c7d2d5c86863dc4239ec509460f32a04"
+    },
+    {
+      "path": "docs/examples/Level-9-Enterprise/Proposed-474-vault-session-session-pattern/INDEX.md",
+      "byteLength": 419,
+      "sha256": "a9f087f59959b7ea4d139653b637558d5d8df2bea0e7a140f1fdb3a43e5ac726"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/010-readable-equality/INDEX.md",
+      "byteLength": 419,
+      "sha256": "0d4dceaf2f202ad6739d1811dcfb5435ab6ab41b36186ecede181be756453046"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/011-readable-comparison/INDEX.md",
+      "byteLength": 418,
+      "sha256": "3305b383d410be3feb81ccc6031dd7d6433c2e8d9dc64648763606c554e97fef"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/020-readable-boolean/INDEX.md",
+      "byteLength": 376,
+      "sha256": "9e3f93c0f3a7c476ca56197551f701850baa09d94ba65b23ea7046f425841441"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/030-readable-unless/INDEX.md",
+      "byteLength": 415,
+      "sha256": "825470751c024a5e3459ef8ba07998dbff8840d70c8313fc2cb98b0f6d5dd994"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/040-governance-readable/INDEX.md",
+      "byteLength": 417,
+      "sha256": "695d35cbc0f821807896c432d889dac3c0cb3f25e668e5f54993f3473ca13ec6"
+    },
+    {
+      "path": "docs/examples/Proposed-Readable-Logic-Forms/INDEX.md",
+      "byteLength": 929,
+      "sha256": "245dc07dc53e38198768031a332501f31a34acc3a7138e37b1cce30afc7e687c"
+    },
+    {
+      "path": "docs/examples/gate/INDEX.md",
+      "byteLength": 950,
+      "sha256": "857b0c1bd655c93d37871d376c767942eb7dc7139af46f7a9f238bf82fb5b5ea"
+    },
+    {
+      "path": "docs/examples/gir/INDEX.md",
+      "byteLength": 360,
+      "sha256": "a24b965866cce1afa1619697d01f82c5004f3accfd1b7aa709aa74909daa1399"
+    },
+    {
+      "path": "docs/examples/golden/INDEX.md",
+      "byteLength": 322,
+      "sha256": "df6195c19423958c2ad0056cc0a6d10c92ee090abcf14c94e86a967724d511b9"
+    },
+    {
+      "path": "docs/examples/hypha/INDEX.md",
+      "byteLength": 487,
+      "sha256": "d36cfeb7a0934fdc355145149153379c9949cf007c6b7022d99b95bdea192e12"
+    },
+    {
+      "path": "docs/framework/INDEX.md",
+      "byteLength": 2608,
+      "sha256": "75173fecddb774538d1a2a91d7e3b0af19fab9f029f48aa0955dbfc8084371ee"
+    },
+    {
+      "path": "docs/handover/INDEX.md",
+      "byteLength": 746,
+      "sha256": "0f9029b4605c9d22476d0da6f512b49dd2481c65eab69abdf60fa39e8db3246a"
+    },
+    {
+      "path": "docs/independent-audits/INDEX.md",
+      "byteLength": 1713,
+      "sha256": "bc41b40c4c7d818a782b68e2aad75b697b60dd305913e3584a61f0633c9de8ab"
+    },
+    {
+      "path": "docs/language/INDEX.md",
+      "byteLength": 342,
+      "sha256": "82d3119fe14c866939c92ea34c4a61d20827627bdde72cb7a122a98b9b48396d"
+    },
+    {
+      "path": "docs/language/fungi/INDEX.md",
+      "byteLength": 1427,
+      "sha256": "0cb1a43599cc6e6963f3e9f4f4ee5b13911813bfdb4484887d7af4e8446e841b"
+    },
+    {
+      "path": "docs/language/gate/INDEX.md",
+      "byteLength": 962,
+      "sha256": "a85267cd3adefcf907e690b55aba9ca773b26154cf1c12c81cce66b72f6fe2b1"
+    },
+    {
+      "path": "docs/paper/INDEX.md",
+      "byteLength": 491,
+      "sha256": "51319a366c425d3c225502fc83362b115ee8dfee313129a787e1ef6551423259"
+    },
+    {
+      "path": "docs/paper/defensive-papers/INDEX.md",
+      "byteLength": 12872,
+      "sha256": "e8c463fdd116e48602c41828dff45be08fd091cbdd3b101563bc97dbc3acc214"
+    },
+    {
+      "path": "docs/paper/scientific-papers/INDEX.md",
+      "byteLength": 2559,
+      "sha256": "c0c80ab1b584d4b1c7ed83dfc69193c5799a4eebd54e07b22b07b9922e7cb65f"
+    },
+    {
+      "path": "docs/patterns/INDEX.md",
+      "byteLength": 366,
+      "sha256": "b3e02230c27fc739ec17128eb16072f8be6c8e6cd01647b2dd56f26bec0b076c"
+    },
+    {
+      "path": "docs/patterns/applications/INDEX.md",
+      "byteLength": 1615,
+      "sha256": "9e6c3cfe1c421b2713e1d8998ed1cdab42dcf83519828f905a311a83c82a302c"
+    },
+    {
+      "path": "docs/patterns/contracts/INDEX.md",
+      "byteLength": 1266,
+      "sha256": "26b9759ac6d97cb1aa06474b2f0cc66170cf36b6f70972726b7604c414aece13"
+    },
+    {
+      "path": "docs/platform-handover/INDEX.md",
+      "byteLength": 491,
+      "sha256": "6af3ac07993d9f60f2f8c24bdbaffbac86499bcc335f903d65f5ffee865a9119"
+    },
+    {
+      "path": "docs/platform-handover/durability-recovery/INDEX.md",
+      "byteLength": 455,
+      "sha256": "162cd7c6876d225d14891484cb62affe6ae8051988600dcb4d796bae08027321"
+    },
+    {
+      "path": "docs/platform-handover/ubuntu-desktop/INDEX.md",
+      "byteLength": 1008,
+      "sha256": "17102fd8a3ecbad856cf5427ff9f901fb5debc2e465a7184b13be44b156b1bcf"
+    },
+    {
+      "path": "docs/platform-handover/ubuntu-desktop/reports/INDEX.md",
+      "byteLength": 860,
+      "sha256": "e33da55b8f62d411fea3970952eb1ea40665aa076cb33604531e37decf785c64"
+    },
+    {
+      "path": "docs/platform-handover/windows-static-host-toolchain/INDEX.md",
+      "byteLength": 389,
+      "sha256": "214c0cad5338e04dd7d55139195a77510aaeda85c7f8a38b95c394a4a73daf89"
+    },
+    {
+      "path": "docs/reference/INDEX.md",
+      "byteLength": 1329,
+      "sha256": "d0e6fd5560349b819e6a29e9cd3868ffae7f29632613510efb445495f6fdcfa7"
+    },
+    {
+      "path": "docs/reference/examples/INDEX.md",
+      "byteLength": 360,
+      "sha256": "05bcc6fd4795e3c9abd63b34b5dd9729d110500966c78cc1d31aaa083fd7823e"
+    },
+    {
+      "path": "docs/reports/INDEX.md",
+      "byteLength": 209118,
+      "sha256": "6a36c15f1a86261494863c9dc444f5cf45117d2eabdb2a353bc5630d26e497e3"
+    },
+    {
+      "path": "docs/reports/evidence/INDEX.md",
+      "byteLength": 511,
+      "sha256": "b9b9f02d107c7a8644fc88386d53f0504eba0eaffb3db09be0040875c3f4fa2e"
+    },
+    {
+      "path": "docs/research-prompts/INDEX.md",
+      "byteLength": 1679,
+      "sha256": "8b3e5adfb383f8eb419710aba615206e0859d0b0ca0452e7ad118b8a858ccbb2"
+    },
+    {
+      "path": "docs/research-prompts/sidecar-and-wasmtime/INDEX.md",
+      "byteLength": 1739,
+      "sha256": "d69b0b5f584c96480cb2997ecbee633bd539cdad5634036f53ed6486f1c1ef1b"
+    },
+    {
+      "path": "docs/research/INDEX.md",
+      "byteLength": 446,
+      "sha256": "998375538e60b75dc832e4e6eeb3822a7edc1aceed2f5b1f28501fdb1090ac8a"
+    },
+    {
+      "path": "docs/rules/INDEX.md",
+      "byteLength": 1345,
+      "sha256": "485be35f95bfece465c2fcf127b9e54da890dc1f680e21a22a8fe15eb77d97e2"
+    },
+    {
+      "path": "docs/security/INDEX.md",
+      "byteLength": 3864,
+      "sha256": "f38525f44039121794023782aed799bc76e20c333ac6a39b2162de92a19e532b"
+    },
+    {
+      "path": "docs/superpowers/INDEX.md",
+      "byteLength": 473,
+      "sha256": "ee30d8d485f142a0140a10dffef5188e09a0342842dca77063416a6188935dfd"
+    },
+    {
+      "path": "docs/superpowers/consultations/2026-08-10-assurance-chapter-1-plan/INDEX.md",
+      "byteLength": 1493,
+      "sha256": "c4f49400b9fabaad5f545c2c24aca180ecf4233bbb8451a46f6d4a46c5a390c0"
+    },
+    {
+      "path": "docs/superpowers/consultations/2026-08-10-assurance-state/INDEX.md",
+      "byteLength": 2239,
+      "sha256": "2250ececc1ec0b2e198ce3a386f22177b1da7a095225b472d87fba708ed5cc0a"
+    },
+    {
+      "path": "docs/superpowers/consultations/2026-08-26-product-family-package-architecture/INDEX.md",
+      "byteLength": 967,
+      "sha256": "e775de91b2a82f3ee50a02b8c4d4bc350091bf04522532d885023598590b0cdb"
+    },
+    {
+      "path": "docs/superpowers/consultations/INDEX.md",
+      "byteLength": 588,
+      "sha256": "746ac6c891d3a342ae579b88834f08ba45bc72d6a176721b81c1b08f2479de3e"
+    },
+    {
+      "path": "docs/superpowers/plans/INDEX.md",
+      "byteLength": 28623,
+      "sha256": "7b4ae8c68d918ca47600b2cd17fcf5e919040380e959649a7c3d6f24e0f36fc2"
+    },
+    {
+      "path": "docs/superpowers/specs/INDEX.md",
+      "byteLength": 22723,
+      "sha256": "4d61aabc0cc94a31bade052d316b8de37c5064ac3861669d791493fec75f9a4f"
+    }
+  ]
+}
