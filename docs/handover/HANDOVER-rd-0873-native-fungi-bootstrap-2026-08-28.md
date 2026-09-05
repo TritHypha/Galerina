@@ -1,5 +1,58 @@
 # RD-0873 native Fungi bootstrap handover
 
+## Current restart addendum - 2026-09-05
+
+This addendum supersedes the older clean-route instructions in this handover
+only for the current Task 6C restart. Preserve the remainder as historical and
+architectural context.
+
+**Current status:** Task 6B is saved locally at
+`1795ee2f5679d47ecdc2da30a501f321cc5248b3`. Task 6C is `HOLD`, not GREEN, on
+`codex/rd0873-task6c-frozen-frame-candidate` at frozen HEAD
+`f0de2475a7ff6f67849a25855d3c1fb45d535048`. Its intentional unstaged state is
+15 Task 6B overlay paths plus four Task 6C paths, with no staged paths. Do not
+clean, restore, stash, switch, merge or broadly stage that worktree.
+
+On restart:
+
+1. Read `AGENTS.md` completely and rediscover the installed bespoke skills.
+2. Open the first section of `docs/TODO.md` and `docs/ROADMAP.md`, then
+   `.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/progress.md`,
+   `task-6C-report.md`, and `task6c-byte-authority-adjudication.md` in the active
+   worktree.
+3. Recheck the exact branch, HEAD, index and 19-path working-state accounting
+   before touching any file. Treat any mismatch as concurrent custody and
+   stop the affected action.
+4. Treat the AGENTS amendment at
+   `0af3aba081367a93007bf523547b16cbc9f9f471`, tree
+   `f83dbd08632d8296e9a38fe6e55b49aa3b72e18c`, as `PROPOSED` only. Its plan
+   SHA-256 is
+   `489ff683fac1a72db749aceb0eb81aef587cfea3325f6919c9216bf787cd39e2`
+   and its design SHA-256 is
+   `feb55fb4323a3ed023026de2f083939d264a7925eedbd17fd9234d8363aba1a5`.
+   Both immutable reviews passed, but owner exact-byte approval and the
+   append-only receipt are still absent.
+5. After that receipt only, repair and independently review the two-path Task
+   6B retained-`Map` boundary before resuming the four Task 6C paths. Preserve
+   test-first evidence and stop again before hosted observation or Task 7.
+
+The protected `build/graph/Galerina_GRAPH_REPORT.md` remains pathname-only: do
+not inspect, hash, diff, edit, restore, stage, regenerate or commit it. The
+older compact instruction to regenerate indexes is suspended for this
+checkpoint; graph/index regeneration remains explicitly unauthorized.
+
+Memory preflight currently has findings: its Galerina working-set locator is
+stale and two generated top-level memory files are misclassified. Daily
+housekeeping returned exact state `HOUSEKEEPING REFUSED`, exit 2, because the
+live task log changed during its own read. Neither result authorizes cleanup.
+After restart, rerun both checks from the canonical AGENTS source; a live task
+may continue to prevent a complete housekeeping inventory.
+
+No push, merge, publication, signing, external-key use, hosted run, graph/index
+refresh, Task 7 or `.fungi` authoring is authorized by this addendum. Derive the
+current handover commit with Git after restart rather than embedding a future
+self-reference here.
+
 **Status:** pre-selection foundation complete through Task 5; exact owner
 approval of the repaired source-origin design candidate is recorded; Tasks 2-8
 of its plan remain to be committed, independently reviewed and reproduced at

@@ -1,7 +1,43 @@
 # Galerina beta v1 to SLIDE roadmap
 
-Date: 2026-08-30
-Branch: `codex/rd-0873-native-fungi-bootstrap-implementation`
+Date: 2026-09-05
+Current implementation route: `codex/rd0873-task6c-frozen-frame-candidate`
+
+## RD-0873 Task 6C frozen-f0 restart checkpoint - 2026-09-05
+
+Task 6B has a clean local save point at
+`1795ee2f5679d47ecdc2da30a501f321cc5248b3`. Task 6C is deliberately paused
+at frozen HEAD `f0de2475a7ff6f67849a25855d3c1fb45d535048` with an intentional
+15-path Task 6B overlay and four additional Task 6C paths, all unstaged. Its
+partial RED and incremental checks do not establish GREEN, and no Task 6D
+cumulative commit exists.
+
+The smallest byte-authority correction is proposed in the exact local AGENTS
+commit `0af3aba081367a93007bf523547b16cbc9f9f471`, tree
+`f83dbd08632d8296e9a38fe6e55b49aa3b72e18c`. The 200,858-byte plan has
+SHA-256 `489ff683fac1a72db749aceb0eb81aef587cfea3325f6919c9216bf787cd39e2`;
+the 159,211-byte design has SHA-256
+`feb55fb4323a3ed023026de2f083939d264a7925eedbd17fd9234d8363aba1a5`.
+Independent semantic review passed 0/0/0 and immutable custody review passed,
+but neither result is authority. Task 6C remains `HOLD` until the owner
+approves those exact bytes and the append-only AGENTS receipt binds them.
+
+After that receipt, the ordered route is: test-first two-path Task 6B
+retained-`Map` correction; fresh independent 0/0/0 review; completion and
+verification of the four-path Task 6C frame; fresh independent semantic and
+security review; then the bounded Task 6D exact-union audit and local
+cumulative commit. Hosted platform observation remains a later separately
+authorized lane.
+
+Task 7 is not next merely because the computer restarts. It stays closed until
+all Task 6 selection, review, continuity and exact-byte owner-approval gates
+are satisfied. This checkpoint authorizes no `.fungi`, graph/index refresh,
+signing, external-key use, merge, push or publication.
+
+The pre-restart memory check retains findings and the live-session housekeeping
+run is `HOUSEKEEPING REFUSED`; both are coverage/custody signals, not cleanup
+authority. Restart from the current handover addendum and the ignored SDD
+ledger, rechecking Git state before any edit.
 
 ## RD-0873 source-origin admission checkpoint - 2026-08-30
 

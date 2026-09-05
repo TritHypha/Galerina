@@ -4,6 +4,53 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### RD-0873 Task 6C frozen-f0 restart HOLD - 2026-09-05
+
+- [x] Preserve the Task 6B implementation as the clean local save point on
+  `codex/rd0873-task6b-split-evidence-candidate` at
+  `1795ee2f5679d47ecdc2da30a501f321cc5248b3`. Its accepted independent
+  semantic and security reviews remain the Task 6B closure evidence; reopen
+  their exact owners before relying on the result after restart.
+- [!] Preserve the active Task 6C execution worktree on
+  `codex/rd0873-task6c-frozen-frame-candidate` at frozen HEAD
+  `f0de2475a7ff6f67849a25855d3c1fb45d535048`. Its unstaged working state is
+  intentional: 15 Task 6B overlay paths plus four Task 6C paths, with zero
+  staged paths. Do not clean, restore, stash, switch, merge or broadly stage
+  that worktree.
+- [x] Record the partial Task 6C RED and incremental evidence in
+  `.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/`.
+  Task 6C is not GREEN. Its partial implementation remains uncommitted and the
+  earlier failed inherited-`then` run is not accepted settlement evidence.
+- [x] Commit the exact proposed byte-authority amendment locally in AGENTS at
+  `0af3aba081367a93007bf523547b16cbc9f9f471`, tree
+  `f83dbd08632d8296e9a38fe6e55b49aa3b72e18c`. The amended plan is 200,858
+  bytes with SHA-256
+  `489ff683fac1a72db749aceb0eb81aef587cfea3325f6919c9216bf787cd39e2`;
+  the amended design is 159,211 bytes with SHA-256
+  `feb55fb4323a3ed023026de2f083939d264a7925eedbd17fd9234d8363aba1a5`.
+  Immutable semantic review passed 0/0/0 and immutable custody review passed,
+  but the proposal is non-authorizing and remains local-only.
+- [ ] Obtain owner approval of those exact amendment bytes, then create the
+  append-only AGENTS receipt at
+  `docs/approvals/2026-09-05-rd0873-task6c-byte-authority-amendment.json`.
+  A generic continuation approval does not substitute for that exact-byte
+  binding.
+- [ ] After the receipt exists, repair the two-path Task 6B retained-`Map`
+  intrinsic boundary test-first and obtain a fresh independent 0/0/0 review.
+  Only then resume, finish and independently review the existing four-path
+  Task 6C implementation and perform its Task 6D exact-union audit.
+- [!] Task 7 remains closed. No `.fungi` authoring, hosted observation, graph
+  or index regeneration, fixture creation, workflow edit, signing,
+  external-key use, merge, push or publication is authorized by this
+  checkpoint.
+- [!] Pre-restart memory preflight remains findings/exit 1: the Galerina
+  working-set locator has HEAD/TODO digest drift, while generated
+  `memory_summary.md` and `raw_memories.md` are misclassified as governed
+  top-level memory nodes. Do not index those generated files merely to silence
+  the gate. Daily housekeeping is `HOUSEKEEPING REFUSED`, exit 2, because the
+  live task JSONL changed during its own read; no cleanup or complete-coverage
+  claim follows.
+
 ### RD-0873 pre-selection foundation and source-origin HOLD - 2026-08-30
 
 - [x] Commit and publish the bounded RD-0873 implementation foundation through
