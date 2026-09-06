@@ -4,6 +4,52 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### RD-0873 access and restart follow-up - 2026-09-06
+
+This section supersedes the access, worktree and next-action statements in the
+earlier checkpoint below. Its implementation identities remain unchanged.
+
+- [x] Verify the documentation checkpoint at `66ccea62cee68f04808df75d10340dac6968df98`.
+  Its three commits after Task 6D contain only `.gitignore`, the compact handoff
+  and `docs/TODO.md`. The worktree was clean and the staged set empty on entry.
+  No DLL, EXE or toolchain file was added by those commits. The narrow
+  `**/.superpowers/**/toolchains/` rule is committed and excludes the local
+  third-party toolchain unpacking; no tracked toolchain paths were found.
+- [x] Verify the existing GitHub login as `TritHypha`, including access and push
+  permission to private `TritHypha/AGENTS-SKILLS-AND-TOOLS`. The earlier missing
+  worker-login prerequisite is resolved through the host execution context.
+- [!] Task 6F remains `HOLD` for remote preparation: authenticated queries find
+  neither Task 6D `077c1cb136aca17ca335ff96aba326a7cbf20926` nor Task 6E
+  `bc22960337f20fb3e0c17863432f6ba823af1608` on their respective remotes (422).
+  `platform-smoke.yml` exists in the exact local Task 6D commit but is absent
+  from the hosted workflow listing. Existing Git authorization is retained;
+  credentials do not prove that commits or protected workflow prerequisites
+  have been published or configured.
+- [ ] Resume with publication and protected-workflow preparation under the
+  existing owner authorization, after checking the reviewed commit identities,
+  intended refs, outgoing paths and environment configuration. Preserve Task
+  6F's evidence-only candidate rule: its sole parent must be Task 6D, not the
+  newer documentation commit. Then collect and independently review both
+  platform observations before advancing the plan.
+- [!] Fresh session housekeeping is `REVIEW`: 710 repository execution-boundary
+  findings; documentation inventory covered 2,909 files with 0 findings.
+  Archive coverage was outside this session pass. Keep the execution findings
+  as follow-up debt; this documentation update does not repair them. Nothing
+  was deleted or cleaned automatically.
+- [!] Fresh memory preflight has findings. With the Galerina owner root supplied,
+  the working set is `STALE` (repository-head and document-digest mismatches),
+  rather than a missing owner. The two top-level memory files remain unindexed
+  and lack the tool's expected frontmatter. Add a locator update note; do not
+  rewrite the managed memory files or claim their format was repaired.
+- [ ] Before future commits, run the shared staged-file check and review the
+  origin, staged bytes and retention reason of DLL, EXE and toolchain findings.
+  Existing benchmark binaries require review when changed; prior tracking is
+  not an automatic exception.
+- [!] Task 7's first native slice remains unauthored. Its execution gates still
+  apply despite the owner's standing authoring permission. Both bespoke Fungi
+  skills are required when the plan reaches that step. Graph/index freshness
+  has not been re-established by this restart documentation update.
+
 ### RD-0873 restart checkpoint after Task 6A/6C - 2026-09-06
 
 - [x] Preserve the cumulative Galerina Task 6D implementation at commit

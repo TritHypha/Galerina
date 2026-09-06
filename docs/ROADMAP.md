@@ -1,7 +1,42 @@
 # Galerina beta v1 to SLIDE roadmap
 
-Date: 2026-08-30
-Branch: `codex/rd-0873-native-fungi-bootstrap-implementation`
+Date: 2026-09-06
+Branch: `codex/rd0873-task6d-cumulative`
+
+## RD-0873 restart and hosted-evidence checkpoint - 2026-09-06
+
+The implementation queue is at Task 6F, before the first native Task 7 slice.
+The reviewed source identities remain Galerina Task 6D
+`077c1cb136aca17ca335ff96aba326a7cbf20926` and AGENTS Task 6E
+`bc22960337f20fb3e0c17863432f6ba823af1608`. Later commits on this Galerina
+branch save documentation and the narrow ignore rule; they do not replace
+Task 6D as the required parent of Task 6F's two-file evidence candidate.
+
+GitHub login and access to the private AGENTS repository have been verified.
+Both implementation commits are still absent from their remotes. The required
+`platform-smoke.yml` exists in the local Task 6D tree but is absent from the
+hosted workflow listing. Next comes review of outgoing Git paths and protected
+workflow preparation under the owner's existing authorization, followed by the
+actual Windows/Linux observation and evidence-approval cycle. Task 6F cannot
+be called complete until that cycle passes.
+
+The first native slice remains unauthored. The outer RD-0873 Task 7 requires
+the completed admission and selection gates and both bespoke Fungi skills;
+the portable-admission subplan has its own separately numbered tasks. Source
+authoring permission does not replace the missing platform evidence.
+
+The third-party toolchain unpacking is ignored. No DLL/EXE/toolchain files were
+included in the three restart commits after Task 6D. Future commits must review
+staged binary/toolchain findings against their provenance and retention policy,
+including changes to existing benchmark binaries.
+
+Housekeeping remains `REVIEW`; memory checks report stale working-set locators
+and two top-level files outside the tool's expected index/frontmatter format.
+The documentation index and graph freshness are not established by this update.
+Use the first section of `docs/TODO.md` and the compact handoff at
+`.superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/COMPACT-HANDOFF-pre-restart-2026-09-06.md`.
+The dated checkpoint below is retained as history and is superseded by this
+section for the current queue, authority and access state.
 
 ## RD-0873 source-origin admission checkpoint - 2026-08-30
 
