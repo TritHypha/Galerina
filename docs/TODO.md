@@ -4,6 +4,45 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### RD-0873 restart checkpoint after Task 6A/6C - 2026-09-06
+
+- [x] Preserve the cumulative Galerina Task 6D implementation at commit
+  `077c1cb136aca17ca335ff96aba326a7cbf20926`, tree
+  `ace861c7d007712ffb567910656ed7cdbc7250a5`, parent
+  `20f303edc13c3c43194dff9567b06e88cf2c4acd`, in
+  `.worktrees/rd0873-task6d-cumulative`. Its only visible dirt is the existing
+  untracked `.superpowers/` diagnostic payload; no tracked paths are changed.
+- [x] Preserve the independently reviewed AGENTS Task 6E implementation at
+  commit `bc22960337f20fb3e0c17863432f6ba823af1608`, tree
+  `95d5937ada1117b8f99ea7b11cfe60a5188b8f80`, parent
+  `b2ff05b599a8408a02747c4b4cc733464ae1491a`, in
+  `.worktrees/rd0873-task6e-pinned-capacity`; its worktree is clean.
+- [!] Keep Task 6F `HOLD`: the approved plan requires the owner to make both
+  exact commits reachable to the protected workflow before observation. The
+  public Galerina check reports Task 6D absent (HTTP 422), the private AGENTS
+  check needs valid GitHub credentials, and the expected
+  `.github/workflows/platform-smoke.yml` is unavailable (HTTP 404). Do not
+  dispatch hosted runs, create evidence fixtures, push, merge or publish.
+- [x] Re-run bounded local controls: Galerina frame self-test and 11 Task 6C
+  controls pass; AGENTS artifact-admission, bounded-execution and path-leak
+  self-tests pass. These local results do not substitute for hosted evidence.
+- [!] Housekeeping remains `REVIEW`: the read-only run found 710 bounded-
+  execution findings, inventory found 0 findings, and archive coverage was
+  skipped because explicit live/archive/bundle roots were not supplied. No
+  cleanup or deletion occurred.
+- [!] Memory preflight remains `HOLD`: `memory_summary.md` and
+  `raw_memories.md` are unindexed and lack frontmatter, and the locator-only
+  working set reports missing owner `Galerina`. Stale volatile-fact count is 0;
+  case-drift is advisory only.
+- [!] The historical roadmap and lower TODO sections retain older RD-0873
+  navigation; this entry supersedes their current Task 6/Task 7 status without
+  rewriting the evidence ledger. Reconcile the roadmap only in a separately
+  reviewed documentation change.
+- [ ] After restart, re-authenticate GitHub in the Codex worker if publication
+  is separately authorized, re-verify both exact commits and the protected
+  workflow, then resume Task 6F. Task 7 and the target `.fungi` slice remain
+  closed and not authored.
+
 ### RD-0873 pre-selection foundation and source-origin HOLD - 2026-08-30
 
 - [x] Commit and publish the bounded RD-0873 implementation foundation through
