@@ -16,7 +16,11 @@ import test from 'node:test';
 
 import {
   canonicalJsonText,
+  parseCanonicalJsonBytes,
   sha256Canonical,
+  validateLocalInventoryPolicy,
+  validateLocalSourceSnapshot,
+  validateRepositoryIdentity,
 } from '../lib/logic-aig-source-origin/contract.mjs';
 import {
   buildLocalHostObservation,
@@ -79,11 +83,12 @@ function inventoryPolicyBytes({
   entries = DEFAULT_ENTRIES,
   exclusions = ['.git', 'tmp'],
   limits = DEFAULT_LIMITS,
+  profile = 'FIXTURE_ONLY',
   extraBody = {},
 } = {}) {
   const body = {
     schema: POLICY_SCHEMA,
-    profile: 'FIXTURE_ONLY',
+    profile,
     entries,
     exclusions,
     limits,
@@ -160,6 +165,40 @@ test('fixture capture emits the closed local schema and independent digest KAT',
     assert.equal(snapshot.hostileWriterResistance, false);
     assert.equal(snapshot.fixtureOnly, true);
     assert.equal(Object.hasOwn(snapshot, 'gitOid'), false);
+  });
+});
+
+test('production-profile capture emits a non-fixture snapshot without authority', async () => {
+  await withOwnedFixture(async ({ rootPath }) => {
+    await populateFixture(rootPath);
+    const policyBytes = inventoryPolicyBytes({ profile: 'LOCAL_PRODUCTION_V1' });
+    const capability = await api('captureLocalSourceSnapshot')({
+      rootPath,
+      repositoryIdentityBytes: repositoryIdentityBytes(),
+      inventoryPolicyBytes: policyBytes,
+    });
+    const snapshot = api('getLocalSourceSnapshot')(capability);
+    assert.equal(snapshot.fixtureOnly, false);
+    assert.equal(snapshot.authorizing, false);
+    assert.equal(snapshot.authentication, 'NONE');
+    assert.equal(snapshot.atomicSnapshot, false);
+    assert.equal(snapshot.hostileWriterResistance, false);
+    const repository = validateRepositoryIdentity(
+      parseCanonicalJsonBytes(repositoryIdentityBytes(), { label: 'LOCAL_REPOSITORY_IDENTITY' }),
+    );
+    const policy = validateLocalInventoryPolicy(
+      parseCanonicalJsonBytes(policyBytes, { label: 'LOCAL_INVENTORY_POLICY' }),
+    );
+    assert.equal(policy.profile, 'LOCAL_PRODUCTION_V1');
+    assert.equal(
+      api('verifyRetainedLocalSourceBytes')(capability),
+      true,
+    );
+    assert.doesNotThrow(() => validateLocalSourceSnapshot(snapshot, {
+      allowFixtureOnly: false,
+      repositoryIdentity: repository,
+      inventoryPolicy: policy,
+    }));
   });
 });
 

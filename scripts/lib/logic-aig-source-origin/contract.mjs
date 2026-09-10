@@ -375,8 +375,8 @@ function localLimit(value, maximum) {
 function validateLocalPolicyOptions(options) {
   const value = localOption(options, ['allowFixtureOnly']);
   if (value === null) return false;
-  if (value.allowFixtureOnly !== true) refuse('SOURCE_ORIGIN_FIXTURE');
-  return true;
+  if (typeof value.allowFixtureOnly !== 'boolean') refuse('SOURCE_ORIGIN_FIXTURE');
+  return value.allowFixtureOnly;
 }
 
 export function validateLocalInventoryPolicy(value, options) {
@@ -444,7 +444,7 @@ function validateLocalSnapshotOptions(options) {
     const descriptor = safeObjectGetOwnPropertyDescriptor(options, name);
     if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
   });
-  if (!safeObjectHasOwn(options, 'allowFixtureOnly') || options.allowFixtureOnly !== true) refuse('SOURCE_ORIGIN_FIXTURE');
+  if (!safeObjectHasOwn(options, 'allowFixtureOnly') || typeof options.allowFixtureOnly !== 'boolean') refuse('SOURCE_ORIGIN_FIXTURE');
   const hasRepository = safeObjectHasOwn(options, 'repositoryIdentity');
   const hasPolicy = safeObjectHasOwn(options, 'inventoryPolicy');
   if (hasRepository !== hasPolicy) refuse('SOURCE_ORIGIN_SCHEMA');
@@ -453,7 +453,7 @@ function validateLocalSnapshotOptions(options) {
     refuse('SOURCE_ORIGIN_SCHEMA');
   }
   return {
-    allowFixtureOnly: true,
+    allowFixtureOnly: options.allowFixtureOnly,
     repositoryIdentity: hasRepository ? options.repositoryIdentity : null,
     inventoryPolicy: hasPolicy ? options.inventoryPolicy : null,
   };

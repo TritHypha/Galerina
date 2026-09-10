@@ -212,8 +212,9 @@ function isStructuralDirectory(path, policy) {
 
 function validatePolicy(value) {
   exactRecord(value, POLICY_KEYS, 'LOCAL_SOURCE_POLICY');
+  const profile = recordValue(value, 'profile');
   if (recordValue(value, 'schema') !== LOCAL_INVENTORY_POLICY_SCHEMA
-    || recordValue(value, 'profile') !== 'FIXTURE_ONLY'
+    || (profile !== 'FIXTURE_ONLY' && profile !== 'LOCAL_PRODUCTION_V1')
     || recordValue(value, 'authorizing') !== false) refuse('LOCAL_SOURCE_POLICY');
 
   const entriesValue = exactArray(recordValue(value, 'entries'), 'LOCAL_SOURCE_POLICY');
@@ -271,7 +272,7 @@ function validatePolicy(value) {
 
   const normalized = objectFreeze({
     schema: LOCAL_INVENTORY_POLICY_SCHEMA,
-    profile: 'FIXTURE_ONLY',
+    profile,
     entries: objectFreeze(entries),
     exclusions: objectFreeze(exclusions),
     limits: objectFreeze(limits),
@@ -279,7 +280,10 @@ function validatePolicy(value) {
     policyDigest,
   });
   try {
-    validateLocalInventoryPolicy(normalized, { allowFixtureOnly: true });
+    validateLocalInventoryPolicy(
+      normalized,
+      profile === 'FIXTURE_ONLY' ? { allowFixtureOnly: true } : undefined,
+    );
   } catch {
     refuse('LOCAL_SOURCE_POLICY');
   }
@@ -544,12 +548,12 @@ function buildSnapshot(repositoryIdentity, policy, capture) {
     executionBoundary: EXECUTION_BOUNDARY,
     atomicSnapshot: false,
     hostileWriterResistance: false,
-    fixtureOnly: true,
+    fixtureOnly: policy.profile === 'FIXTURE_ONLY',
   });
   const snapshot = objectFreeze({ ...body, snapshotDigest: sha256Canonical(LOCAL_SOURCE_SNAPSHOT_SCHEMA, body) });
   try {
     validateLocalSourceSnapshot(snapshot, {
-      allowFixtureOnly: true,
+      allowFixtureOnly: snapshot.fixtureOnly,
       repositoryIdentity,
       inventoryPolicy: policy,
     });
