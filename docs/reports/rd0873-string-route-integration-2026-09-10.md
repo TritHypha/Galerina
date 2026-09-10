@@ -9,7 +9,7 @@ passed 2,720-file corpus assurance was not rerun.
 
 | Input | Recorded value |
 | --- | --- |
-| Galerina worktree | `codex/rd0873-local-integration` at `c39ad1fc01128a5936e5444ae3fae6a0ef27b418` |
+| Galerina worktree | `codex/rd0873-local-integration` at repaired head `3e5110dd3` |
 | SLIDE checkout | owner-supplied external checkout at `2e8e41b` (parent `962f880`) |
 | Lyth/Weaver checkout | owner-supplied external checkout at `a68eeb5ced8a522b3ab140422c1e7ce84ec887fa` |
 | Galerina route | String checked snapshot/GIR v1, `authorityReleased: false` |
@@ -17,7 +17,7 @@ passed 2,720-file corpus assurance was not rerun.
 
 ## Fresh bounded runs
 
-1. From the Galerina worktree, with `GALERINA_SLIDE_REPO` set to the explicit
+1. From the repaired Galerina head, with `GALERINA_SLIDE_REPO` set to the explicit
    SLIDE checkout, `scripts/tests/five-scalar-classifiers-fungi-slide.integration.test.mjs`
    passed **10/10**, with zero skips. The run covered the flat String boundary,
    `isEnvironmentMode`, `isTerminalScope`, `isTaskEffect`,
@@ -30,6 +30,17 @@ passed 2,720-file corpus assurance was not rerun.
 The earlier Galerina route checks remain exact: compiler String route **4/4**,
 checked-snapshot harness **2/2**, local source-origin suite **32/32**, and the
 `environment-mode.fungi` differential **1/1** at `8f0539a5e`.
+
+## Review and repair
+
+The independent review exercised a source-substitution case: a parse result for
+one literal set was paired with different source bytes. Before the repair the
+seal accepted that pair, leaving the source digest and extracted arms
+inconsistent. Commit `3e5110dd3` now re-parses the exact canonical source bytes,
+compares the supplied and rebound String-match routes, and refuses
+`PARSE_SOURCE_MISMATCH`. The focused compiler suite passes **5/5** after the
+repair, including the regression case, and the physical SLIDE/VOK lane was
+rerun at this repaired head with **10/10** passes and zero skips.
 
 ## Gate disposition
 

@@ -13,10 +13,13 @@ previously passed 2,720-file corpus assurance was not repeated.
 
 The owner-supplied Lyth/Weaver checkout at `a68eeb5ced8a522b3ab140422c1e7ce84ec887fa`
 also passed its laboratory KAT runner (**14 suites / 633 checks**) and typecheck.
-Both lanes remain non-authorizing evidence. The independent review, continuity
-and owner-bound queue receipts required for admission are still absent, so Task
-6 remains `HOLD`, Task 7 and bulk `.fungi` authoring remain closed, and
-TypeScript remains the active reference. See
+An independent source-binding review found and closed a parse-result/source-byte
+substitution gap at Galerina commit `3e5110dd3`; the compiler regression is
+**5/5**, and the SLIDE/VOK lane was rerun at that repaired head (**10/10**, zero
+skips). Both lanes remain non-authorizing evidence. The independent review,
+continuity and owner-bound queue receipts required for admission are still
+absent, so Task 6 remains `HOLD`, Task 7 and bulk `.fungi` authoring remain
+closed, and TypeScript remains the active reference. See
 [the exact integration checkpoint](docs/reports/rd0873-string-route-integration-2026-09-10.md).
 
 ## RD-0873 String route pilot update - 2026-09-10

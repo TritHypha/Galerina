@@ -13,6 +13,11 @@ counts or open items that a newer section explicitly supersedes.
 - [x] Run the Lyth/Weaver laboratory KATs at `a68eeb5`: **14 suites / 633
   checks**, zero failures, with a passing typecheck. The Lyth adapter remains a
   non-authorizing evidence producer.
+- [x] Close the source/parse substitution gap found by independent review at
+  commit `3e5110dd3`: the seal re-parses the exact source bytes and refuses a
+  mismatched supplied parse route. The compiler route is **5/5** after the fix,
+  and the physical SLIDE/VOK lane was rerun at that repaired head (**10/10**,
+  zero skips).
 - [x] Record the exact inputs and gate disposition in
   [the integration checkpoint](reports/rd0873-string-route-integration-2026-09-10.md).
 - [ ] Obtain the missing independent review, exact continuity receipt and
