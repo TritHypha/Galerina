@@ -4,6 +4,21 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### RD-0873 bounded String route integration refresh - 2026-09-10
+
+- [x] Run the focused physical SLIDE/VOK integration against the explicit
+  checkout at `2e8e41b` (parent `962f880`): **10/10**, zero skips. This is fresh
+  bounded evidence for the String route and its expected refusals; it does not
+  release authority or reopen Task 6/Task 7.
+- [x] Run the Lyth/Weaver laboratory KATs at `a68eeb5`: **14 suites / 633
+  checks**, zero failures, with a passing typecheck. The Lyth adapter remains a
+  non-authorizing evidence producer.
+- [x] Record the exact inputs and gate disposition in
+  [the integration checkpoint](reports/rd0873-string-route-integration-2026-09-10.md).
+- [ ] Obtain the missing independent review, exact continuity receipt and
+  owner-bound queue decision before changing the held admission state. Do not
+  rerun the already passed 2,720-file corpus assurance for this checkpoint.
+
 ### RD-0873 reviewed local source-origin route - 2026-09-08
 
 - [x] Independently review the local source-origin amendment in AGENTS at

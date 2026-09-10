@@ -3,6 +3,22 @@
 Date: 2026-08-30
 Branch: `codex/rd-0873-native-fungi-bootstrap-implementation`
 
+## RD-0873 bounded String route integration refresh - 2026-09-10
+
+The explicit SLIDE checkout at `2e8e41b` (parent `962f880`) was available for
+the focused integration run. With `GALERINA_SLIDE_REPO` bound to that checkout,
+`five-scalar-classifiers-fungi-slide.integration.test.mjs` passed **10/10** with
+zero skips. The run is bounded to the String route and its refusal cases; the
+previously passed 2,720-file corpus assurance was not repeated.
+
+The owner-supplied Lyth/Weaver checkout at `a68eeb5ced8a522b3ab140422c1e7ce84ec887fa`
+also passed its laboratory KAT runner (**14 suites / 633 checks**) and typecheck.
+Both lanes remain non-authorizing evidence. The independent review, continuity
+and owner-bound queue receipts required for admission are still absent, so Task
+6 remains `HOLD`, Task 7 and bulk `.fungi` authoring remain closed, and
+TypeScript remains the active reference. See
+[the exact integration checkpoint](docs/reports/rd0873-string-route-integration-2026-09-10.md).
+
 ## RD-0873 String route pilot update - 2026-09-10
 
 The bounded compiler route now includes a versioned String checked-module
