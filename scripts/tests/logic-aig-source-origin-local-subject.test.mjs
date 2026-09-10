@@ -101,6 +101,44 @@ function makeEvidence() {
   return { host, myco, hypha };
 }
 
+function makeProductionEvidence() {
+  const productionPolicyBody = { ...policyBody, profile: 'LOCAL_PRODUCTION_V1' };
+  const productionPolicy = {
+    ...productionPolicyBody,
+    policyDigest: sha256Canonical(LOCAL_INVENTORY_POLICY_SCHEMA, productionPolicyBody),
+  };
+  const productionSnapshotBody = {
+    ...snapshotBody,
+    inventoryPolicyDigest: productionPolicy.policyDigest,
+    fixtureOnly: false,
+  };
+  const productionSnapshot = {
+    ...productionSnapshotBody,
+    snapshotDigest: sha256Canonical(LOCAL_SOURCE_SNAPSHOT_SCHEMA, productionSnapshotBody),
+  };
+  const host = buildLocalHostObservation({
+    platform: 'win32',
+    arch: 'x64',
+    runtime: 'node-v24.18.0',
+    snapshotDigest: productionSnapshot.snapshotDigest,
+    inventoryPolicyDigest: productionPolicy.policyDigest,
+    fixtureOnly: false,
+  });
+  const myco = buildVerifiedLocalDiscoveryReceipt({
+    kind: 'MYCO',
+    snapshotDigest: productionSnapshot.snapshotDigest,
+    inventoryPolicyDigest: productionPolicy.policyDigest,
+    fixtureOnly: false,
+  });
+  const hypha = buildVerifiedLocalDiscoveryReceipt({
+    kind: 'HYPHA',
+    snapshotDigest: productionSnapshot.snapshotDigest,
+    inventoryPolicyDigest: productionPolicy.policyDigest,
+    fixtureOnly: false,
+  });
+  return { policy: productionPolicy, snapshot: productionSnapshot, host, myco, hypha };
+}
+
 test('local subject binds repository, policy, snapshot, host and discovery receipts', () => {
   const evidence = makeEvidence();
   const subject = buildLocalSourceOriginSubject({ allowFixtureOnly: true, repository, policy, snapshot, ...evidence });
@@ -119,6 +157,33 @@ test('local subject binds repository, policy, snapshot, host and discovery recei
   )));
   assert.deepEqual(
     validateLocalSourceOriginSubject(subject, { allowFixtureOnly: true, repository, policy, snapshot, ...evidence }),
+    subject,
+  );
+});
+
+test('production-profile local subject remains non-authorizing without fixture admission', () => {
+  const evidence = makeProductionEvidence();
+  const subject = buildLocalSourceOriginSubject({
+    repository,
+    policy: evidence.policy,
+    snapshot: evidence.snapshot,
+    host: evidence.host,
+    myco: evidence.myco,
+    hypha: evidence.hypha,
+  });
+  assert.equal(subject.authorizing, false);
+  assert.equal(subject.authentication, 'NONE');
+  assert.equal(subject.executionBoundary, 'COOPERATIVE_LOCAL_SAME_USER');
+  assert.equal(subject.fixtureOnly, false);
+  assert.deepEqual(
+    validateLocalSourceOriginSubject(subject, {
+      repository,
+      policy: evidence.policy,
+      snapshot: evidence.snapshot,
+      host: evidence.host,
+      myco: evidence.myco,
+      hypha: evidence.hypha,
+    }),
     subject,
   );
 });
