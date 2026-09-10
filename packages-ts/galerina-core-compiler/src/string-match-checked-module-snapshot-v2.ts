@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { copyArtifactBytes, digestArtifactBytes, type Sha256Digest } from "./artifact-reference.js";
+import { parseProgram } from "./parser.js";
 import type { AstNode, FlowMeta, ParseResult } from "./parser.js";
 import type { CheckedModuleEvidenceV1 } from "./seal-checked-module-snapshot.js";
 import type { SnapshotCompilerIdentityV1 } from "./checked-module-snapshot.js";
@@ -173,14 +174,80 @@ function nodeSpan(node: AstNode, sourceText: string): StringMatchArmSpanV2 { con
 function stageIdentities(value: CheckedModuleEvidenceV1): readonly StringMatchCheckerIdentityV2[] { const root = ownDataRecord(value, "EVIDENCE"); exactFields(root, ["schema", "stages"], "EVIDENCE"); if (root.schema !== "galerina.checked-module-evidence.v1") refuse("EVIDENCE_SCHEMA"); const stageValues = array(root.stages, "EVIDENCE_STAGES", REQUIRED_STAGES.length).map((item) => ownDataRecord(item, "EVIDENCE_STAGE")); if (stageValues.length !== REQUIRED_STAGES.length) refuse("EVIDENCE_COUNT"); return Object.freeze(stageValues.map((record, index) => { const name = REQUIRED_STAGES[index]; if (name === undefined) refuse("EVIDENCE_STAGE_ORDER"); exactFields(record, ["id", "name", "digest", "outcome"], "EVIDENCE_STAGE"); if (record.id !== index + 1 || record.name !== name || record.outcome !== "passed") refuse("EVIDENCE_STAGE_ORDER"); return Object.freeze({ id: index + 1, name, digest: digest(record.digest, "EVIDENCE_STAGE") }); })); }
 function returnLiteral(node: AstNode): boolean { const body = node.kind === "block" ? nodeChildren(node) : [node]; if (body.length !== 1 || body[0]?.kind !== "returnStmt") refuse("ARM_RETURN_SHAPE"); const expression = nodeChildren(body[0])[0]; if (expression?.kind !== "boolLiteral" || (expression.value !== "true" && expression.value !== "false")) refuse("ARM_RETURN_TYPE"); return expression.value === "true"; }
 
+interface StringMatchRouteExtractionV2 {
+  readonly flowName: string;
+  readonly parameterName: string;
+  readonly arms: readonly StringMatchArmV2[];
+}
+
+function extractStringMatchRoute(parseResult: ParseResult, sourceText: string, sourceFile: string): StringMatchRouteExtractionV2 {
+  if (parseResult === null || typeof parseResult !== "object" || !Array.isArray(parseResult.diagnostics)) refuse("PARSE_RESULT");
+  for (const diagnostic of parseResult.diagnostics) {
+    const record = ownDataRecord(diagnostic, "PARSE_DIAGNOSTIC");
+    if (record.severity === "error" || record.severity === "warning") refuse("PARSE_DIAGNOSTICS");
+  }
+  if (!Array.isArray(parseResult.flows) || parseResult.flows.length !== 1) refuse("FLOW_COUNT");
+  const flow = parseResult.flows[0] as FlowMeta | undefined;
+  if (flow === undefined || flow.qualifier !== "pure" || !Array.isArray(flow.declaredEffects)
+      || flow.declaredEffects.length !== 0 || flow.returnType !== "Bool" || !Array.isArray(flow.params)
+      || flow.params.length !== 1) refuse("FLOW_ADMISSION");
+  const parameter = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*String$/u.exec(flow.params[0] ?? "");
+  if (parameter === null || parameter[1] === undefined) refuse("PARAMETER");
+  if (sourceFile.length === 0 || sourceFile.normalize("NFC") !== sourceFile) refuse("SOURCE_FILE");
+  if (parseResult.ast === null || typeof parseResult.ast !== "object") refuse("AST");
+  const flowNode = (parseResult.ast.children ?? []).find((node) => node.kind === "pureFlowDecl" && node.value === flow.name);
+  if (flowNode === undefined) refuse("FLOW_NODE");
+  if (flowNode.location?.file !== sourceFile) refuse("SOURCE_FILE_MISMATCH");
+  const flowChildren = nodeChildren(flowNode);
+  const body = flowChildren.find((node) => node.kind === "block");
+  if (body === undefined || nodeChildren(body).length !== 1 || nodeChildren(body)[0]?.kind !== "matchExpr") refuse("MATCH_SHAPE");
+  const match = nodeChildren(body)[0] as AstNode;
+  const matchChildren = nodeChildren(match);
+  const subject = matchChildren[0];
+  if (subject?.kind !== "identifier" || subject.value !== parameter[1]) refuse("MATCH_SUBJECT");
+  const armNodes = matchChildren.slice(1);
+  if (armNodes.length < 2 || armNodes.length > STRING_MATCH_ARM_MAX_COUNT) refuse("ARMS_COUNT");
+  const arms: StringMatchArmV2[] = [];
+  const seen = new Set<string>();
+  for (const [index, arm] of armNodes.entries()) {
+    if (arm.kind !== "matchArm" || arm.value === undefined) refuse("ARM_SHAPE");
+    const raw = arm.value;
+    const literal = raw === "_" ? null : (() => {
+      if (raw.length < 2 || raw[0] !== '"' || raw[raw.length - 1] !== '"') refuse("ARM_PATTERN");
+      let decoded: unknown;
+      try { decoded = JSON.parse(raw); } catch { refuse("ARM_LITERAL_ENCODING"); }
+      if (typeof decoded !== "string") refuse("ARM_LITERAL_TYPE");
+      return decoded;
+    })();
+    if (literal === null && index !== armNodes.length - 1) refuse("ARMS_WILDCARD_ORDER");
+    if (literal !== null) {
+      if (seen.has(literal)) refuse("ARMS_DUPLICATE");
+      seen.add(literal);
+    }
+    arms.push(Object.freeze({
+      id: index + 1,
+      literal,
+      result: returnLiteral(nodeChildren(arm)[0] ?? refuse("ARM_RETURN")),
+      span: nodeSpan(arm, sourceText),
+    }));
+  }
+  if (arms.filter((arm) => arm.literal === null).length !== 1) refuse("ARMS_WILDCARD");
+  return Object.freeze({
+    flowName: checkedString(flow.name, "FLOW_NAME", 256),
+    parameterName: checkedString(parameter[1], "PARAMETER_NAME", 256),
+    arms: Object.freeze(arms),
+  });
+}
+
 export function sealStringMatchCheckedModuleSnapshot(input: StringMatchSnapshotSealInputV2): StringMatchSnapshotSealResultV2 {
   const sourceBytes = copyArtifactBytes(input.sourceBytes, "SOURCE"); const sourceText = new TextDecoder("utf-8", { fatal: true }).decode(sourceBytes); const canonicalSource = sourceText.normalize("NFC").replace(/\r\n?/gu, "\n"); if (canonicalSource.startsWith("\ufeff") || canonicalSource !== sourceText || new TextEncoder().encode(canonicalSource).byteLength !== sourceBytes.byteLength) refuse("SOURCE_CANONICALIZATION");
   const sourceDigest = digestArtifactBytes(sourceBytes); const checkers = stageIdentities(input.checkerEvidence); const compilerRecord = ownDataRecord(input.compilerIdentity, "COMPILER"); exactFields(compilerRecord, ["packageId", "version", "commitDigest"], "COMPILER"); const compilerIdentity = Object.freeze({ packageId: checkedString(compilerRecord.packageId, "COMPILER_PACKAGE"), version: checkedString(compilerRecord.version, "COMPILER_VERSION"), commitDigest: digest(compilerRecord.commitDigest, "COMPILER") });
-  const parseResult = input.parseResult; if (parseResult === null || typeof parseResult !== "object" || !Array.isArray(parseResult.diagnostics)) refuse("PARSE_RESULT"); for (const diagnostic of parseResult.diagnostics) { const record = ownDataRecord(diagnostic, "PARSE_DIAGNOSTIC"); if (record.severity === "error" || record.severity === "warning") refuse("PARSE_DIAGNOSTICS"); }
-  if (!Array.isArray(parseResult.flows) || parseResult.flows.length !== 1) refuse("FLOW_COUNT"); const flow = parseResult.flows[0] as FlowMeta | undefined; if (flow === undefined || flow.qualifier !== "pure" || flow.declaredEffects.length !== 0 || flow.returnType !== "Bool") refuse("FLOW_ADMISSION"); if (flow.params.length !== 1) refuse("PARAMETER_COUNT"); const parameter = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*String$/u.exec(flow.params[0] ?? ""); if (parameter === null || parameter[1] === undefined) refuse("PARAMETER");
-  if (input.sourceFile.length === 0 || input.sourceFile.normalize("NFC") !== input.sourceFile) refuse("SOURCE_FILE"); const flowNode = (parseResult.ast.children ?? []).find((node) => node.kind === "pureFlowDecl" && node.value === flow.name); if (flowNode === undefined) refuse("FLOW_NODE"); if (flowNode.location?.file !== input.sourceFile) refuse("SOURCE_FILE_MISMATCH"); const flowChildren = nodeChildren(flowNode); const body = flowChildren.find((node) => node.kind === "block"); if (body === undefined || nodeChildren(body).length !== 1 || nodeChildren(body)[0]?.kind !== "matchExpr") refuse("MATCH_SHAPE"); const match = nodeChildren(body)[0] as AstNode; const matchChildren = nodeChildren(match); const subject = matchChildren[0]; if (subject?.kind !== "identifier" || subject.value !== parameter[1]) refuse("MATCH_SUBJECT");
-  const armNodes = matchChildren.slice(1); if (armNodes.length < 2 || armNodes.length > STRING_MATCH_ARM_MAX_COUNT) refuse("ARMS_COUNT"); const arms: StringMatchArmV2[] = []; const seen = new Set<string>(); for (const [index, arm] of armNodes.entries()) { if (arm.kind !== "matchArm" || arm.value === undefined) refuse("ARM_SHAPE"); const raw = arm.value; const literal = raw === "_" ? null : (() => { if (raw.length < 2 || raw[0] !== '"' || raw[raw.length - 1] !== '"') refuse("ARM_PATTERN"); let decoded: unknown; try { decoded = JSON.parse(raw); } catch { refuse("ARM_LITERAL_ENCODING"); } if (typeof decoded !== "string") refuse("ARM_LITERAL_TYPE"); return decoded; })(); if (literal === null && index !== armNodes.length - 1) refuse("ARMS_WILDCARD_ORDER"); if (literal !== null) { if (seen.has(literal)) refuse("ARMS_DUPLICATE"); seen.add(literal); } arms.push(Object.freeze({ id: index + 1, literal, result: returnLiteral(nodeChildren(arm)[0] ?? refuse("ARM_RETURN")), span: nodeSpan(arm, sourceText) })); }
-  if (arms.filter((arm) => arm.literal === null).length !== 1) refuse("ARMS_WILDCARD");
-  const snapshot: StringMatchCheckedModuleSnapshotV2 = { schema: STRING_MATCH_SNAPSHOT_SCHEMA, edition: STRING_MATCH_SNAPSHOT_EDITION, sourceIdentity: { sourceDigest, sourceCanonicalization: "UTF8_NO_BOM_LF_NFC_V1", byteLength: sourceBytes.byteLength }, compilerIdentity, checkerIdentities: checkers, flowName: checkedString(flow.name, "FLOW_NAME", 256), parameterName: checkedString(parameter[1], "PARAMETER_NAME", 256), parameterType: "String", returnType: "Bool", arms, limits: { maxFunctions: 3, maxBlocks: 8, maxInstructions: 32, maxCallDepth: 2, maxWork: 96 }, diagnostics: [] };
+  const suppliedRoute = extractStringMatchRoute(input.parseResult, sourceText, input.sourceFile);
+  const reboundParseResult = parseProgram(sourceText, input.sourceFile, { requireVersionHeader: true });
+  if (reboundParseResult.diagnostics.length !== 0) refuse("SOURCE_REPARSE");
+  const reboundRoute = extractStringMatchRoute(reboundParseResult, sourceText, input.sourceFile);
+  if (JSON.stringify(suppliedRoute) !== JSON.stringify(reboundRoute)) refuse("PARSE_SOURCE_MISMATCH");
+  const { flowName, parameterName, arms } = reboundRoute;
+  const snapshot: StringMatchCheckedModuleSnapshotV2 = { schema: STRING_MATCH_SNAPSHOT_SCHEMA, edition: STRING_MATCH_SNAPSHOT_EDITION, sourceIdentity: { sourceDigest, sourceCanonicalization: "UTF8_NO_BOM_LF_NFC_V1", byteLength: sourceBytes.byteLength }, compilerIdentity, checkerIdentities: checkers, flowName, parameterName, parameterType: "String", returnType: "Bool", arms, limits: { maxFunctions: 3, maxBlocks: 8, maxInstructions: 32, maxCallDepth: 2, maxWork: 96 }, diagnostics: [] };
   const snapshotBytes = encodeStringMatchCheckedModuleSnapshot(snapshot); const snapshotDigest = digestArtifactBytes(snapshotBytes); const normalizedSnapshot = decodeStringMatchCheckedModuleSnapshot(snapshotBytes); const runIdentity = computeStringMatchSnapshotRunIdentity(snapshotBytes); return Object.freeze({ snapshot: normalizedSnapshot, snapshotBytes: new Uint8Array(snapshotBytes), sourceDigest, snapshotDigest, runIdentity, stageReceiptDigests: Object.freeze(checkers.map((checker) => checker.digest)), authorityReleased: false });
 }

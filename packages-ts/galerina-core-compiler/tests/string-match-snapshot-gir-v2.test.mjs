@@ -101,4 +101,21 @@ describe("versioned String-match checked snapshot and GIR", () => {
     Object.setPrototypeOf(alteredPrototypeCheckers, Object.prototype);
     assert.throws(() => L.encodeStringMatchCheckedModuleSnapshot({ ...result.snapshot, checkerIdentities: alteredPrototypeCheckers }), /CHECKERS_PROTOTYPE/u);
   });
+
+  it("refuses a parse result whose source bytes are replaced", () => {
+    const parsed = L.parseProgram(source, "environment-mode.fungi", { requireVersionHeader: true });
+    const replacedSource = source.replace('"development"', '"preview"');
+    const sourceBytes = new TextEncoder().encode(replacedSource);
+    assert.throws(() => L.sealStringMatchCheckedModuleSnapshot({
+      sourceBytes,
+      sourceFile: "environment-mode.fungi",
+      parseResult: parsed,
+      checkerEvidence: evidence,
+      compilerIdentity: {
+        packageId: "@galerina/core-compiler",
+        version: "1.0.0-beta.2",
+        commitDigest: digest("f"),
+      },
+    }), /PARSE_SOURCE_MISMATCH/u);
+  });
 });
