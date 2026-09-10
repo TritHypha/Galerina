@@ -79,6 +79,14 @@ export {
   type ProductArtifactContext,
 } from "./product-artifact-identity.js";
 
+// Detached artifact and checked-snapshot route. These values are non-authorizing
+// until a separately reviewed admission chain binds their exact bytes.
+export * from "./artifact-reference.js";
+export * from "./checked-module-snapshot.js";
+export * from "./seal-checked-module-snapshot.js";
+export * from "./string-match-checked-module-snapshot-v2.js";
+export * from "./string-match-gir-emitter-v1.js";
+
 export {
   CHECKED_FLOW_ARTIFACT_MAX_BYTES,
   CHECKED_FLOW_ARTIFACT_MAX_DEPTH,
