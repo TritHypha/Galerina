@@ -32,6 +32,16 @@ counts or open items that a newer section explicitly supersedes.
   local subject/contract/source suite passes 30/30 on Windows and Ubuntu WSL.
   See
   [the bounded subject review](reports/rd-0873-local-subject-review.md).
+- [x] Add the versioned String checked-module snapshot and canonical GIR route
+  at commit `4cd7d158f`; its authority remains explicitly unreleased. Compiler
+  typecheck, the String route hardening suite (4/4), the checked-snapshot
+  harness (2/2), and the local source-origin suite (31/31) pass at the exact
+  parent head.
+- [x] Bind the package-owned `environment-mode.fungi` asset to that route and
+  compare its interpreter result with the live TypeScript `isEnvironmentMode`
+  predicate over nine canonical and hostile values. The focused differential
+  passes 1/1 at commit `8f0539a5e`; the test is non-authorizing and keeps the
+  TypeScript implementation as the executing reference.
 - [ ] Continue the amendment's production policy, contracts and consumers.
   Fixture receipts cannot admit a PROJECT or selection. A real capture in this
   dirty checkout remains closed because the protected compiler manifest is a

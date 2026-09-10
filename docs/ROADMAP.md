@@ -3,6 +3,23 @@
 Date: 2026-08-30
 Branch: `codex/rd-0873-native-fungi-bootstrap-implementation`
 
+## RD-0873 String route pilot update - 2026-09-10
+
+The bounded compiler route now includes a versioned String checked-module
+snapshot and canonical GIR emitter at commit `4cd7d158f`. The route binds
+source bytes, checker-stage identities, fixed scalar limits and artifact
+references, and keeps `authorityReleased: false`.
+
+The existing package-owned
+`packages-ts/galerina-core-config/src/self-hosted/environment-mode.fungi`
+asset is exercised through that route and compared with the live TypeScript
+`isEnvironmentMode` predicate over nine canonical and hostile values. The
+focused differential is 1/1 at commit `8f0539a5e`; the TypeScript implementation
+remains the executing reference. The physical SLIDE/VOK lane is not claimed:
+`GALERINA_SLIDE_REPO` is unavailable in this checkout, and the owner handoff
+still keeps Task 6 and Task 7 admission closed pending the fresh PROJECT,
+gateway, selection, continuity and review chain.
+
 ## RD-0873 source-origin admission checkpoint - 2026-08-30
 
 The pre-selection corpus, bounded execution, audit-control and conversion-queue
