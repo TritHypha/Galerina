@@ -118,11 +118,12 @@ Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-20
   native `.fungi` packages and `packages/gate/` for non-authorizing laboratory
   `.gate` packages; neither directory exists and neither is a discovery or
   readiness signal. Unknown product, family or profile values refuse.
-- [x] Preserve one widthless semantic Trit in `{−1, 0, +1}`. Physical profiles
-  remain scalar `1`, preferred packed `64`, and admitted high-throughput `256`;
-  `32` is compatibility fallback, while `128`, `512` and adaptive widths are
-  measurement-only. Every fallback is admission-time replanning with a new
-  identity and receipt, never silent runtime substitution.
+- [x] Preserve one widthless semantic Trit in `{−1, 0, +1}`. Physical profile
+  `1` is the only current admission; packed `64` and high-throughput `256` are
+  registered future profiles. `32` is compatibility fallback only, while `128`,
+  `512` and adaptive widths are measurement-only. Every fallback is
+  admission-time replanning with a new identity and receipt, never silent
+  runtime substitution.
 - [x] Prove the moved host estate sequentially: product controls 10/10,
   topology 7/7, root-lock 7/7, economics 15/15, security 17/17, graph
   algorithms 97/97, generator contracts 19/19, and compiler 6,717/6,721 with

@@ -95,11 +95,13 @@ policy product while reusing admitted shared substrate; removing governance is
 not permission to bypass admission, target evidence, bounded execution or
 receipt identity.
 
-One Trit remains a widthless semantic value in `{−1, 0, +1}`. The implementation
-order is scalar `1`, then `64`, then `256`; `32` is compatibility fallback.
-Profiles `128`, `512` and adaptive widths remain measurement-only. Profile
-selection is deterministic, pre-admitted and receipt-bound, and every fallback
-creates a new identity before execution.
+One Trit remains a widthless semantic value in `{−1, 0, +1}`. The governing
+implementation order is scalar `1`, then `64`, then `256`; `32` is compatibility
+fallback only. At this head, only scalar `1` is admitted; packed `64` and
+high-throughput `256` remain registered future profiles, and `32` is not a
+runtime fallback. Profiles `128`, `512` and adaptive widths remain
+measurement-only. Profile selection is deterministic, pre-admitted and
+receipt-bound, and every fallback creates a new identity before execution.
 
 Tasks 1–6, 8 and 9 are closed. Task 7's locator and governing-record work is
 locally complete, while its remote KB publication gate remains held. Task 8's
