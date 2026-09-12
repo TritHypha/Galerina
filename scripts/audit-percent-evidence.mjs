@@ -64,7 +64,9 @@ const ASSERTED_BASELINE = Object.freeze([
   "Stage-B self-hosting — interpreter parity",
   // "Type checker / Effect checker" LEFT the baseline 2026-07-18 (#122): it now derives its pct from
   // a real twin diagnostic-code-parity ladder. Per the ratchet, it can never return here.
-  "WAT emitter",
+  // "WAT emitter" LEFT the asserted baseline 2026-09-12: component-health now
+  // derives its percentage from the live RD-0529 construct matrix and carries
+  // a word when that audit cannot run.
   "Runtime interpreter",
   "Application-framework layer",
   "Post-Quantum & Hardware Security",

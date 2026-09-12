@@ -129,6 +129,59 @@ describe("type-checker.fungi — FUNGI-TYPE-001 UnknownType", () => {
   });
 });
 
+describe("type-checker.fungi — governance qualifier and Authority parity rungs", () => {
+  it("rejects a protected value assigned directly to a redacted binding", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({
+        name: "launder",
+        params: [param("email", "protected String")],
+        body: [stmt({
+          kind: "let",
+          name: "auditEmail",
+          typeName: "redacted String",
+          expr: [expr("name", "email")],
+        })],
+      }),
+    ]);
+    assert.deepEqual(codesFor(diags, "launder"), ["FUNGI-TYPE-034"]);
+  });
+
+  it("accepts the explicit redact conversion and preserves same-label assignments", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({
+        name: "redactOk",
+        params: [param("email", "protected String")],
+        body: [
+          stmt({
+            kind: "let",
+            name: "auditEmail",
+            typeName: "redacted String",
+            expr: [expr("call", "redact", "", [expr("name", "email")])],
+          }),
+          stmt({
+            kind: "let",
+            name: "again",
+            typeName: "redacted String",
+            expr: [expr("name", "auditEmail")],
+          }),
+        ],
+      }),
+    ]);
+    assert.deepEqual(codesFor(diags, "redactOk"), []);
+  });
+
+  it("rejects an empty or non-ASCII inline Authority tag", async () => {
+    const empty = await check([
+      flow({ name: "emptyAuthority", returnType: "Int", params: [param("a", 'Authority<"">')], returnExpr: retExpr("literal", "Int") }),
+    ]);
+    assert.deepEqual(codesFor(empty.diags, "emptyAuthority"), ["FUNGI-TYPE-035"]);
+    const unicode = await check([
+      flow({ name: "unicodeAuthority", returnType: "Int", params: [param("a", 'Authority<"slide.vok.léase.v1">')], returnExpr: retExpr("literal", "Int") }),
+    ]);
+    assert.deepEqual(codesFor(unicode.diags, "unicodeAuthority"), ["FUNGI-TYPE-035"]);
+  });
+});
+
 describe("type-checker.fungi — FUNGI-TYPE-008 InvalidReturnType (return-type mismatch; Stage-A canonical)", () => {
   it("declared Int but Bool literal returned → FUNGI-TYPE-008", async () => {
     const { diags } = await check([

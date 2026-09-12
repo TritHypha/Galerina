@@ -20,9 +20,13 @@
 //                     JS manages capabilities and audit
 //                     WASM handles pure computation (tensors, math, validation)
 //
-// Phase 19: type skeleton + placeholder stubs only.
-//           Full implementation: emit WAT for pure flows first.
-// Phase 22: complete effectful flows + WASI import table.
+// Phase 19 established the typed module/diagnostic contract. The current
+// emitter has real lowering for the measured pure subset (arithmetic,
+// records, control flow, strings and selected collections) plus explicit
+// host bridges and fail-closed refusals. Effectful/admission-bearing flows,
+// exact Decimal arithmetic, higher-order collection operations and the
+// legacy hash-only entry point remain separate gates; they must never be
+// represented as a silent placeholder.
 // =============================================================================
 
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
@@ -613,15 +617,18 @@ function recordTypeOfBinding(raw: string, initNode: AstNode | undefined): string
 /**
  * Renders a WATModule to WebAssembly Text Format string.
  *
- * Produces a valid .wat skeleton that wat2wasm can compile.
- * Function bodies use (unreachable) as stubs until Phase 22 emission.
+ * Produces a valid .wat module that wat2wasm can compile. Unsupported or
+ * unsafe constructs are represented by explicit fail-closed traps; the
+ * measured completeness matrix (RD-0529 B2) distinguishes those from fully
+ * lowered and host-imported constructs.
  *
  * WAT identifier rules applied:
  *   - "." in import names → "_" in $identifier references
  *   - all string literals use double-quotes as required by WAT spec
  *
- * Phase 19: correct structure + stub bodies.
- * Phase 22: full instruction emission from PassiveExecutionPlan steps.
+ * The legacy `emitWAT` hash-only shim below is intentionally not used by this
+ * path. Production callers must provide the checked AST/GIR through
+ * `buildWATModuleFromGIR` so admission and semantic gates cannot be bypassed.
  */
 export function renderWAT(module: WATModule): string {
   // ── Usage scan ──────────────────────────────────────────────────────────────
@@ -3919,9 +3926,12 @@ export function getWATImportsForEffects(effects: readonly string[]): WATImport[]
  *   - Effectful flows → imports derived from declaredEffects, resolved through
  *     STDLIB_CAPABILITY_MAP.wasmImport entries.
  *   - entryPoints → WATExport entries pointing at the matching function.
- *   - All flows → WATFunction stubs (isPure flag set from qualifier).
+ *   - All flows → WATFunction entries; lowered bodies are selected by the
+ *     checked AST/GIR path and unsupported paths remain explicit traps.
  *
- * Phase 19: all function bodies are stubs. Full lowering in Phase 22.
+ * The AST/GIR path is the authoritative emitter. It lowers the supported
+ * pure/guarded subset and preserves a fail-closed trap for effectful,
+ * admission-bearing or otherwise unsupported flows.
  */
 
 /**
@@ -4473,8 +4483,9 @@ export function astHasParamAdmission(node: AstNode | undefined | null): boolean 
  *   - entryPoints from GIRProgram.entryPoints
  *   - girHash and sourceHash from GIRProgram
  *
- * Pure flows with no effects and a PassiveExecutionPlan get real WAT bodies.
- * Non-pure flows get unreachable stub bodies.
+ * Pure flows with no effects and a checked AST get real WAT bodies. Non-pure
+ * flows remain fail-closed until effect lowering has its own admission and
+ * host-custody evidence.
  *
  * @param gir           - Full GIRProgram from emitGIR.
  * @param capabilityMap - STDLIB_CAPABILITY_MAP for resolving effectful imports.
@@ -4580,7 +4591,7 @@ export function buildWATModuleFromGIR(
 }
 
 // ---------------------------------------------------------------------------
-// Stub emitter entry point
+// Legacy hash-only emitter entry point
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -4641,13 +4652,13 @@ export function extractPostConditionEnsures(
 }
 
 /**
- * Phase 19 stub: validates GIR structure and produces a skeleton WATModule.
+ * Compatibility shim for callers that only have hashes and flow metadata.
+ * It intentionally emits a diagnostic and fail-closed bodies because hashes
+ * alone do not carry the checked AST/GIR needed for faithful lowering. New
+ * callers must use `buildWATModuleFromGIR`; this shim is not a completion path.
  *
- * Full implementation (Phase 22):
- *   - Emit instructions from PassiveExecutionPlan steps
- *   - Lower Tensor<Float32, [n]> to Float32Array memory layout
- *   - Emit WASM SIMD for pure math flows
- *   - Populate import table from allowedEffectsMask
+ * The implementation remains deliberately non-authorizing: it cannot infer
+ * imports, entry points, or semantics from hashes alone.
  */
 export function emitWAT(
   _girHash: string,
@@ -4655,14 +4666,15 @@ export function emitWAT(
   _flows: readonly { name: string; qualifier: string; declaredEffects: readonly string[] }[],
   target: "wasm-standalone" | "wasm-hybrid",
 ): WATEmitResult {
-  // Phase 19: build a minimal WATModule — no capability map available at this
-  // level, so imports are empty. Full population in Phase 22.
+  // No capability map or checked AST is available at this compatibility
+  // boundary, so imports/exports stay empty and every body traps. This is a
+  // loud refusal rather than a partial executable module.
   const module: WATModule = {
     schemaVersion: "fungi.wat.v1",
     sourceHash: _sourceHash,
     girHash: _girHash,
-    imports: [],   // Phase 22: populated via buildWATModule + STDLIB_CAPABILITY_MAP
-    exports: [],   // Phase 22: populated from GIR.entryPoints
+    imports: [],   // Hash-only compatibility boundary: no checked capability map is available.
+    exports: [],   // Hash-only compatibility boundary: no entry-point set is available.
     functions: _flows.map((f) => ({
       name: f.name,
       isPure: f.qualifier === "pure",

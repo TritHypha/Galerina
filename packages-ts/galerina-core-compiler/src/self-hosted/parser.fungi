@@ -550,6 +550,33 @@ contract { intent { "Read a base type name plus an optional balanced generic arg
   return name
 }
 
+// Governance qualifiers are part of a type section, not an independent type.  Keep the
+// qualifier attached to the complete type text so the Stage-B checker can perform the same
+// protected/redacted boundary check as Stage-A.  The old parser consumed only the first token
+// (`protected`), which turned a valid qualified type into FUNGI-TYPE-001 and dropped the
+// information needed for FUNGI-TYPE-034.
+pure flow readQualifiedTypeName(tokens: Array<Token>, pos: Int) -> String
+contract { intent { "Read protected/redacted plus the complete following type, or a normal type unchanged." } }
+{
+  let first: String = tokVal(tokens, pos)
+  if first == "protected" or first == "redacted" {
+    let base: String = readTypeName(tokens, pos + 1)
+    if base == "" { return first }
+    return first + " " + base
+  }
+  return readTypeName(tokens, pos)
+}
+
+pure flow qualifiedTypeEndPos(tokens: Array<Token>, pos: Int) -> Int
+contract { intent { "Return the cursor just past a qualified or normal type." } }
+{
+  let first: String = tokVal(tokens, pos)
+  if first == "protected" or first == "redacted" {
+    return typeEndPos(tokens, pos + 1)
+  }
+  return typeEndPos(tokens, pos)
+}
+
 // P9 brick 1: the token position just past a (possibly generic) type that starts at pos — the base name
 // plus any balanced < ... > argument list. Mirrors readTypeName's scan so the two never disagree on where a
 // type ends. For a non-generic type this is pos + 1 (identical to the old fixed advance).
@@ -604,9 +631,9 @@ contract { intent { "Parse a parenthesised parameter list. Caller must advance p
       // hardcoded flag literal is exactly what let a safety property be silently asserted false.
       let pname = tokVal(tokens, p)
       let colon = tokVal(tokens, p + 1)
-      let ptype = readTypeName(tokens, p + 2)
+      let ptype = readQualifiedTypeName(tokens, p + 2)
       if colon == ":" {
-        mut endP: Int = typeEndPos(tokens, p + 2)
+        mut endP: Int = qualifiedTypeEndPos(tokens, p + 2)
         // Optional `source_from Origin` suffix after the type (TS parser.ts:1116-1131). Origin may
         // be dotted (Network.ClientSocket): accumulate tokens up to the parameter boundary,
         // matching the TS identifier/dot run within a param list.
@@ -1453,44 +1480,8 @@ contract { intent { "Parse one statement; dispatch on the leading token kind/val
     mut typeName: String = ""
     mut p: Int = pos + 2
     if isOpSym(tokens, p, ":") {
-      typeName = tokVal(tokens, p + 1)
-      p = p + 2
-      // Skip a generic type parameter < T > so `Array<Int>` doesn't leave `<` `Int` `>` tokens
-      // floating and confusing the `=` lookahead. This is a simple single-level skip.
-      if eTokVal(tokens, p) == "<" {
-        p = p + 1                        // advance past `<`; p is a mut in the outer scope
-        mut genericDepth: Int = 1
-
-        while genericDepth > 0 and p < tokens.count() {
-          let tokenValue: String = eTokVal(tokens, p)
-
-          if tokenValue == "<" {
-            genericDepth = genericDepth + 1
-          }
-          if tokenValue == ">" {
-            genericDepth = genericDepth - 1
-          }
-          if tokenValue == ">>" {
-            // Nested generics like Map<K,V>> close two levels at once
-            genericDepth = genericDepth - 2
-          }
-          if tokenValue == ">=" {
-            // The lexer fuses `>` + `=` into a single `>=` token when a generic type
-            // is immediately followed by `=`, e.g. `Array<Int>=value`.
-            // Treat as closing `>` â€” back up after the loop so the `=` is re-read.
-            genericDepth = genericDepth - 1
-          }
-
-          p = p + 1
-        }
-
-        // genericDepth > 0 means an unclosed generic â€” source is malformed.
-        // Continue silently; downstream parseExpr will surface the error.
-
-        // Restore position if the closing token was `>=` (fused `> =`) so the
-        // assignment `=` is seen by the next check outside this block.
-        if eTokVal(tokens, p - 1) == ">=" { p = p - 1 }
-      }
+      typeName = readQualifiedTypeName(tokens, p + 1)
+      p = qualifiedTypeEndPos(tokens, p + 1)
     }
 
     // The `=` assignment may be fused with the preceding `>` as `>=` when the type
@@ -1922,8 +1913,8 @@ contract { intent { "Preserve one ordered record/type declaration as checked fro
         }
         else {
           let typePos: Int = skipNewlines(tokens, colonPos + 1)
-          let typeName: String = readTypeName(tokens, typePos)
-          let afterType: Int = typeEndPos(tokens, typePos)
+          let typeName: String = readQualifiedTypeName(tokens, typePos)
+          let afterType: Int = qualifiedTypeEndPos(tokens, typePos)
           if typeName == "" or afterType <= typePos {
             error = "record/type field requires a complete type"
             scanning = false
@@ -2454,8 +2445,8 @@ contract {
           p = p + 1
           // Preserve the complete generic return type. The old base-only value
           // made Result<Int,String> indistinguishable from every other Result.
-          returnType = readTypeName(tokens, p)
-          p = typeEndPos(tokens, p)
+          returnType = readQualifiedTypeName(tokens, p)
+          p = qualifiedTypeEndPos(tokens, p)
         }
 
         // Effects and domain guard: extract from contract block.

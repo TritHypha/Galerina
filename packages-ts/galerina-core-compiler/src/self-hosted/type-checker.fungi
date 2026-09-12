@@ -40,15 +40,111 @@ record TypeCheckResult {
 // ── Helpers ───────────────────────────────────────────────────
 
 // True when t names a type the Stage B checker knows (Int/Bool/String/Array).
+pure flow stripGovernanceQualifier(t: String) -> String
+contract { intent { "Strip the additive protected/redacted label before checking the underlying type name." } }
+{
+  let raw: String = t.trim()
+  if raw.startsWith("protected ") { return raw.slice(10, raw.length()) }
+  if raw.startsWith("redacted ") { return raw.slice(9, raw.length()) }
+  return raw
+}
+
+pure flow governanceQualifier(t: String) -> String
+contract { intent { "Return the governance qualifier carried by a type section, or empty when unlabeled." } }
+{
+  let raw: String = t.trim()
+  if raw.startsWith("protected ") { return "protected" }
+  if raw.startsWith("redacted ") { return "redacted" }
+  return ""
+}
+
+// True when a type section is an Authority generic.  The Stage-B subset does not retain
+// declaration aliases, but it does retain inline generic type text in parameters/returns.
+pure flow isAuthorityType(t: String) -> Bool
+contract { intent { "Recognise an inline Authority<...> type without erasing its tag." } }
+{
+  let raw: String = stripGovernanceQualifier(t)
+  return raw.startsWith("Authority<")
+}
+
+pure flow authorityTag(typeName: String) -> String
+contract { intent { "Extract and unquote the single Authority tag; empty means malformed or empty." } }
+{
+  let raw: String = stripGovernanceQualifier(typeName)
+  if raw.startsWith("Authority<") == false { return "" }
+  if raw.endsWith(">") == false { return "" }
+  let inner: String = raw.slice(10, raw.length() - 1).trim()
+  if inner.length() >= 2 {
+    let q0 = inner.charAt(0)
+    let qn = inner.charAt(inner.length() - 1)
+    match q0 {
+      Some(a) => {
+        match qn {
+          Some(b) => {
+            let aText: String = a.toString()
+            let bText: String = b.toString()
+            if (aText == "\"" and bText == "\"") or (aText == "'" and bText == "'") {
+              return inner.slice(1, inner.length() - 1)
+            }
+          }
+          None => {}
+          _ => {}
+        }
+      }
+      None => {}
+      _ => {}
+    }
+  }
+  return inner
+}
+
+pure flow authorityTagCharAllowed(c: Char, first: Bool) -> Bool
+contract { intent { "Accept only ASCII letters/digits, with dot/underscore/colon/hyphen after the first character." } }
+{
+  let cp: Int = c.codePoint()
+  let asciiLetter: Bool = (cp >= 65 and cp <= 90) or (cp >= 97 and cp <= 122)
+  let asciiDigit: Bool = cp >= 48 and cp <= 57
+  if asciiLetter or asciiDigit { return true }
+  if first { return false }
+  let text: String = c.toString()
+  if text == "." or text == "_" or text == ":" or text == "-" { return true }
+  return false
+}
+
+pure flow authorityTagValid(typeName: String) -> Bool
+contract { intent { "Validate an Authority tag as a bounded ASCII runtime identity." } }
+{
+  let tag: String = authorityTag(typeName)
+  if tag.length() < 1 or tag.length() > 128 { return false }
+  mut i: Int = 0
+  while i < tag.length() {
+    let opt: Option<Char> = tag.charAt(i)
+    match opt {
+      Some(c) => {
+        if authorityTagCharAllowed(c, i == 0) == false { return false }
+      }
+      None => { return false }
+      _ => { return false }
+    }
+    i = i + 1
+  }
+  return true
+}
+
+// True when t names a type the Stage B checker knows. Governance labels are additive;
+// Authority remains known only in its generic spelling so tag checks can run separately.
 pure flow isKnownType(t: String) -> Bool
 contract {
-  intent { "True when t names a type the Stage B checker knows (Int/Bool/String/Array)." }
+  intent { "True when t names a type the Stage B checker knows (including qualified String and Authority)." }
 }
 {
-  if t == "Int" { return true }
-  if t == "Bool" { return true }
-  if t == "String" { return true }
-  if t == "Array" { return true }
+  let raw: String = stripGovernanceQualifier(t)
+  if raw == "Int" { return true }
+  if raw == "Bool" { return true }
+  if raw == "String" { return true }
+  if raw == "Array" { return true }
+  if raw == "Authority" { return true }
+  if raw.startsWith("Authority<") { return true }
   return false
 }
 
@@ -306,6 +402,8 @@ contract { intent { "The canonical Stage-A diagnostic name for a code the twin e
   if code == "FUNGI-TYPE-030" { return "TENSOR_ELEMENT_TYPE_MISMATCH" }
   if code == "FUNGI-TYPE-032" { return "INVALID_CURRENCY_TAG" }
   if code == "FUNGI-TYPE-033" { return "CONDITION_NOT_BOOL" }
+  if code == "FUNGI-TYPE-034" { return "GOVERNANCE_QUALIFIER_MISMATCH" }
+  if code == "FUNGI-TYPE-035" { return "INVALID_AUTHORITY_TAG" }
   if code == "FUNGI-NAME-002" { return "DUPLICATE_NAME" }
   if code == "FUNGI-BINDING-005" { return "IMMUTABLE_BINDING_REASSIGNED" }
   return ""
@@ -342,6 +440,8 @@ contract { intent { "The canonical Stage-A severity for a code the twin emits (e
   if code == "FUNGI-TYPE-030" { return "error" }
   if code == "FUNGI-TYPE-032" { return "error" }
   if code == "FUNGI-TYPE-033" { return "error" }
+  if code == "FUNGI-TYPE-034" { return "error" }
+  if code == "FUNGI-TYPE-035" { return "error" }
   if code == "FUNGI-NAME-002" { return "error" }
   if code == "FUNGI-BINDING-005" { return "error" }
   return "error"
@@ -390,6 +490,15 @@ contract {
           let msg: String = "unknown type '" + p.typeName + "' on parameter '" + p.name + "' of flow '" + flowName + "' (FUNGI-TYPE-001)"
           diags = diags.append({ code: "FUNGI-TYPE-001", message: msg, flowName: flowName })
         }
+        // FUNGI-TYPE-035: Authority tags are closed identities.  Keep this check
+        // beside the parameter type gate so an invalid tag cannot enter the Stage-B
+        // signature table while still allowing the generic itself through isKnownType.
+        if isAuthorityType(p.typeName) {
+          if authorityTagValid(p.typeName) == false {
+            let msg35: String = "Authority tags must be 1..128 ASCII characters using letters, digits, dot, underscore, colon or hyphen (FUNGI-TYPE-035)"
+            diags = diags.append({ code: "FUNGI-TYPE-035", message: msg35, flowName: flowName })
+          }
+        }
       }
       None => {}
       _ => {}
@@ -436,6 +545,16 @@ contract {
           if retKnown == false {
             let msg1: String = "unknown return type '" + retType + "' on flow '" + name + "' (FUNGI-TYPE-001)"
             flowDiags = flowDiags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: name })
+          }
+        }
+
+        // FUNGI-TYPE-035 also applies to an inline Authority return type.  A malformed
+        // tag is refused before the return signature can be consumed by a downstream
+        // emitter; the alias-declaration lane remains outside this Stage-B snapshot.
+        if isAuthorityType(retType) {
+          if authorityTagValid(retType) == false {
+            let msg35r: String = "Authority tags must be 1..128 ASCII characters using letters, digits, dot, underscore, colon or hyphen (FUNGI-TYPE-035)"
+            flowDiags = flowDiags.append({ code: "FUNGI-TYPE-035", message: msg35r, flowName: name })
           }
         }
 
@@ -553,6 +672,122 @@ contract {
     }
   }
   return diags
+}
+
+// Resolve a qualified type carried by a previously declared parameter or binding.
+// This side table is intentionally separate from the name-only scope used by the older
+// binding checks: it adds only the evidence needed for the governance-label boundary and
+// cannot change the existing unknown-symbol decisions.
+pure flow lookupQualifiedType(scope: Array<Auto>, name: String) -> String
+contract { intent { "Return the full qualified type for a visible name, or empty when it has no governance label." } }
+{
+  mut i: Int = 0
+  while i < scope.count() {
+    let opt = scope.get(i)
+    match opt {
+      Some(entry) => {
+        if entry.name == name { return entry.typeName }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return ""
+}
+
+pure flow qualifierForExpr(expr: Expr, scope: Array<Auto>) -> String
+contract { intent { "Infer only the protected/redacted qualifier needed by FUNGI-TYPE-034." } }
+{
+  if expr.kind == "name" {
+    return governanceQualifier(lookupQualifiedType(scope, expr.value))
+  }
+  // redact() is the explicit irreversible conversion accepted by Stage-A.  Its
+  // argument is deliberately not treated as a free cast; only the redacted result
+  // is carried forward.
+  if expr.kind == "call" and expr.value == "redact" {
+    return "redacted"
+  }
+  return ""
+}
+
+pure flow checkQualifierBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
+contract { intent { "FUNGI-TYPE-034: reject a direct protected/redacted qualifier change without redact()." } }
+{
+  mut diags: Array<Auto> = Array.empty()
+  let declared: String = governanceQualifier(stmt.typeName)
+  if declared == "" { return diags }
+  let rhsOpt = firstExpr(stmt)
+  match rhsOpt {
+    Some(rhs) => {
+      let inferred: String = qualifierForExpr(rhs, scope)
+      if inferred != "" and inferred != declared {
+        let inferredType: String = lookupQualifiedType(scope, rhs.value)
+        mut shown: String = inferredType
+        if shown == "" { shown = inferred + " " + stripGovernanceQualifier(stmt.typeName) }
+        let msg34: String = "Cannot assign '" + shown + "' to '" + stmt.typeName + "'. Governance qualifiers require an explicit conversion. (FUNGI-TYPE-034)"
+        diags = diags.append({ code: "FUNGI-TYPE-034", message: msg34, flowName: flowName })
+      }
+    }
+    None => {}
+    _ => {}
+  }
+  return diags
+}
+
+pure flow qualifierStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>
+contract { intent { "Walk bindings and nested blocks while retaining qualified value types for label checks." } }
+{
+  mut diags: Array<Auto> = Array.empty()
+  mut localScope: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => {
+        let currentScope: Array<Auto> = appendAll(outerScope, localScope)
+        if s.kind == "let" or s.kind == "mut" {
+          diags = appendAll(diags, checkQualifierBinding(flowName, s, currentScope))
+        }
+        if s.kind == "if" {
+          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
+          diags = appendAll(diags, qualifierStmtList(flowName, s.elseBody, currentScope))
+        }
+        if s.kind == "while" {
+          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
+        }
+        if s.kind == "match" {
+          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
+        }
+        if s.kind == "let" or s.kind == "mut" {
+          if s.typeName != "" {
+            localScope = localScope.append({ name: s.name, typeName: s.typeName })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<Auto>
+contract { intent { "Build the qualified-name side table from flow parameters." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < params.count() {
+    let pOpt = params.get(i)
+    match pOpt {
+      Some(p) => { out = out.append({ name: p.name, typeName: p.typeName }) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
@@ -1568,6 +1803,8 @@ contract {
         let name: String = fd.name
         let scope0: Array<Auto> = paramNames(fd.params)
         allDiags = appendAll(allDiags, checkStmtList(name, fd.body, scope0))
+        let qualifierScope0: Array<Auto> = qualifierParamScope(fd.params)
+        allDiags = appendAll(allDiags, qualifierStmtList(name, fd.body, qualifierScope0))
         // FUNGI-TYPE-014: the joint effect/type pass — every callee's declared effects must be
         // declared by this flow. Needs the whole `flows` set (cross-flow callee lookup).
         allDiags = appendAll(allDiags, checkCallEffects(name, fd, flows))

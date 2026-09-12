@@ -331,6 +331,37 @@ summary.todos = todos;
 // tool's "never throws" contract while honouring RULING-1's "no evidence ⇒ no number".
 let TCE;
 try { TCE = twinParityLadder(); } catch { TCE = undefined; }
+// WAT emitter coverage is derived from the standalone-emitter construct matrix.
+// Keep this separate from the type/effect ladder: WAT has three legitimate
+// non-green classes (host-import, fail-closed and emitter-invalid), and its
+// denominator excludes front-end-refused/parse-skipped probes. If the audit
+// cannot run, publish a word instead of carrying the old hand-entered 89%.
+let WAT;
+try {
+  const raw = execFileSync(
+    process.execPath,
+    [join(ROOT, "scripts", "audit-emitter-completeness.mjs"), "--json"],
+    { cwd: ROOT, encoding: "utf8", windowsHide: true, maxBuffer: 32 * 1024 * 1024 },
+  );
+  const parsed = JSON.parse(raw);
+  const counts = parsed?.counts;
+  const reach = parsed?.reach;
+  const valid = parsed?.valid;
+  if (
+    Number.isInteger(parsed?.completeness_pct)
+    && Number.isInteger(reach) && reach > 0
+    && Number.isInteger(valid) && valid >= 0 && valid <= reach
+    && counts !== null && typeof counts === "object"
+    && Array.isArray(parsed?.matrix)
+    && parsed.matrix.length > 0
+    && Array.isArray(parsed?.regressions)
+    && parsed.regressions.length === 0
+  ) {
+    WAT = parsed;
+  }
+} catch {
+  WAT = undefined;
+}
 const compilerRecordedCount = rows.find((row) => row.dir === "galerina-core-compiler")?.recordedCount;
 const compilerStatus = Number.isInteger(compilerRecordedCount) && compilerRecordedCount > 0
   ? `✅ shipped — complete compiler ${fmt(compilerRecordedCount)}/${fmt(compilerRecordedCount)}; all 7 self-hosted stages are authoritative and byte-pinned`
@@ -362,7 +393,9 @@ const BUILD_PROGRESS = [
   TCE
     ? { layer: "Type checker / Effect checker", pct: TCE.pct }
     : { layer: "Type checker / Effect checker", status: "twin-parity ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
-  { layer: "WAT emitter", pct: 89 },
+  WAT
+    ? { layer: "WAT emitter", pct: WAT.completeness_pct }
+    : { layer: "WAT emitter", status: "standalone-emitter audit unavailable — carrying a word (fail-closed: no number without evidence)" },
   { layer: "Runtime interpreter", pct: 87 },
   { layer: "Application-framework layer", pct: 72 },
   { layer: "Post-Quantum & Hardware Security", pct: 40 },
@@ -512,7 +545,9 @@ const EVIDENCE = {
   // the TYPE-* ∪ EFFECT-* charter mirrored today; the 1 open rung is FUNGI-TYPE-032). When the ladder
   // can't be computed the row above carries a WORD, so no `asserted` fallback number is ever published.
   "Type checker / Effect checker": TCE ? { ladder: TCE.ladder } : { asserted: "twin-parity ladder temporarily unavailable — carrying a word, not a stale number" },
-  "WAT emitter": { asserted: "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung" },
+  "WAT emitter": WAT
+    ? { live: "scripts/audit-emitter-completeness.mjs --json (RD-0529 B2 construct matrix)" }
+    : { asserted: "standalone-emitter audit unavailable — carrying a word, not a stale number" },
   "Runtime interpreter": { asserted: "no countable ladder defined" },
   "Application-framework layer": { asserted: "candidate ladder = servable api-server · example-app · signed registry index" },
   "Post-Quantum & Hardware Security": { asserted: "NO ladder — custody ladder + HW signer are post-v1/hardware. Fail-closed reading: this should become a WORD" },
@@ -571,7 +606,7 @@ const extraSections = () => {
     lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${has ? evTag(l.layer) : ""}${extra}`);
   }
   lines.push("    note: [asserted] = HAND-TYPED, not measured — a declared debt, ratcheted by audit-percent-evidence.mjs.");
-  lines.push("          [live] = computed from version.json. [derived] = computed from a checkable rung ladder.");
+  lines.push("          [live] = computed from the named live source (version.json or a tool audit). [derived] = computed from a checkable rung ladder.");
   lines.push("          A row with no checkable ladder should carry a WORD, not a number (P9 and B8 already do).");
   lines.push("");
   lines.push(`  TRACKING REGISTRY — substantial items outside the two tables above (§5; mirrors README "Tracking registry")`);
