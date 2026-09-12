@@ -35,6 +35,10 @@ test("rejects missing, malformed, or status-inconsistent receipts", () => {
     clean.replace("== subject ==", ""),
     clean.replace("    external          0.00 KB/iter        0.0 KB       4.00 KB/iter   within band\n", ""),
     clean.replace("    -> no leak detected on the measured channels", "    -> maybe"),
+    clean.replace("1.00 KB/iter", "garbage KB/iter"),
+    clean.replace("1.00 KB/iter", "NaN KB/iter"),
+    clean.replace("within band", "corroboration only"),
+    clean.replace("4.10 ms/iter", "Infinity ms/iter"),
     { status: 0, stdout: leak },
     { status: 1, stdout: clean },
   ];

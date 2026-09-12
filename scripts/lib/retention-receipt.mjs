@@ -2,7 +2,14 @@
 // evidence only when the child completed with a recognized status and emitted
 // every measured channel plus one status-consistent verdict.
 
-const CHANNELS = ["heapUsed", "external", "arrayBuffers", "rss", "durationUs"];
+const NUMBER = "[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)";
+const CHANNELS = {
+  heapUsed: { unit: "KB/iter", growthUnit: "KB", ceilingUnit: "KB/iter", tags: ["within band", "★ OVER BAND"] },
+  external: { unit: "KB/iter", growthUnit: "KB", ceilingUnit: "KB/iter", tags: ["within band", "★ OVER BAND"] },
+  arrayBuffers: { unit: "KB/iter", growthUnit: "KB", ceilingUnit: "KB/iter", tags: ["within band", "★ OVER BAND"] },
+  rss: { unit: "KB/iter", growthUnit: "KB", ceilingUnit: "KB/iter", tags: ["corroboration only"] },
+  durationUs: { unit: "ms/iter", growthUnit: "ms/iter", ceilingUnit: "ms/iter", tags: ["symptom only"] },
+};
 
 export function parseRetentionReceipt({ status, stdout = "", stderr = "" }) {
   const output = String(stdout) + String(stderr);
@@ -24,8 +31,13 @@ export function parseRetentionReceipt({ status, stdout = "", stderr = "" }) {
   }
 
   const channelLines = [];
-  for (const channel of CHANNELS) {
-    const matches = [...subject.matchAll(new RegExp(`^\\s{4}${channel}\\s+[^\\r\\n]+$`, "gm"))];
+  for (const [channel, format] of Object.entries(CHANNELS)) {
+    const tags = format.tags.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    const linePattern = new RegExp(
+      `^\\s{4}${channel}\\s+${NUMBER}\\s+${format.unit}\\s+${NUMBER}\\s+${format.growthUnit}\\s+${NUMBER}\\s+${format.ceilingUnit}\\s+(?:${tags})$`,
+      "gm",
+    );
+    const matches = [...subject.matchAll(linePattern)];
     if (matches.length !== 1) {
       return { ok: false, reason: `expected one ${channel} measurement, found ${matches.length}` };
     }
