@@ -4,6 +4,33 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
+
+- [x] Have GPT-6 Astra independently review all five R&D records against the
+  current Galerina head and check the newer private KB handovers.
+- [x] Refresh the bounded RD-0361 twin audit at the current head: 104/104
+  check-clean, with 74 shadow, 1 differential, and 29 authoritative entries.
+- [x] Correct RD-0349 I2 runtime precision to use the generated minor-unit
+  registry, including valid zero-decimal currencies, with focused 25/25
+  evidence.
+- [x] Close RD-0363's presence-only signature fail-open: an unverified
+  `planSignature` now remains INDETERMINATE until a downstream cryptographic
+  verifier supplies proof.
+- [!] RD-0361 remains open for owner authority/deletion and SLIDE/VOK gates;
+  the bounded audit count is not production admission.
+- [!] RD-0363 remains open for authenticated signature verification,
+  complete canonical binding, replay-time enforcement, and receipts.
+- [!] RD-0364 remains open for real provider/weight identity, egress and
+  budget proof, and authorizing receipts.
+- [!] RD-0365 remains open for evidence-backed vault/TPM/hardware custody and
+  host attestation.
+- [!] RD-0349 is broader than I2; Commodity/Crypto/Rate/Percent and their
+  sourced scale policies remain open.
+- [ ] Keep the reconciliation report as the durable index; do not turn these
+  dispositions into a bulk `.fungi` authoring scope.
+
+Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
+
 ### Myco and Hypha source-owner synchronization closure - 2026-08-28
 
 - [x] Fast-forward public Myco hardening into public `main`, rerun its build

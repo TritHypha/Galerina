@@ -3,6 +3,19 @@
 Date: 2026-08-28
 Branch: `codex/rd-0873-native-fungi-bootstrap-plan`
 
+## Current R&D reconciliation — 2026-09-12
+
+RD-0361, RD-0363, RD-0364, RD-0365, and RD-0349 were independently reviewed
+by GPT-6 Astra against the current Galerina head and checked against the newer
+private KB handovers. RD-0349 I2 runtime precision is now corrected and
+focused-tested; the broader five tracks remain partial/open where owner,
+cryptographic, provider, custody, SLIDE/VOK, or production evidence is still
+missing. The bounded RD-0361 audit is 104/104 (74 shadow, 1 differential, 29
+authoritative). This note is an index to the detailed reconciliation report;
+it does not alter the generated percentages or grant production authority.
+
+See `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
+
 ## RD-0873 native Fungi bootstrap and conversion admission - 2026-08-28
 
 The completed scalar-oracle package is now the fixed semantic control for the
