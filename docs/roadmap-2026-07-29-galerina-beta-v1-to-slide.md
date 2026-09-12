@@ -51,6 +51,8 @@ native identity**. Older 497/38 counts in dated evidence are superseded.
 
 Policy: zero trust, verify rather than assume, fail closed
 
+Roadmap refresh (2026-09-12): the bounded native VOK W^X floor was rechecked in this branch's `packages-galerina/galerina-core-runtime/native/vok-authority` checkout. `cargo test --locked --offline` passed 30 native unit tests and 14 compile-fail doctests; the native nine-gate fold test covered all 19,683 vectors. `cargo fmt --check` passed. The bounded Windows x86-64 live receipt returned `PASS`, `result: 42`, `executableAtCall: true`, `writableAtCall: false` and `authorityReleased: false`. The recorded native/`.fungi` 19,683-vector parity remains the existing bound; this recheck did not rerun that full parity harness. The floor remains linked and non-authorizing; opaque VM transfer, hostile-memory isolation, physical erasure, general VEO lowering and independent live Linux/macOS evidence remain open.
+
 Roadmap refresh: code discovery was re-indexed at the Contract 65 checkpoint.
 SLIDE `675a610` now records **8,118 nodes / 19,755 edges** with its persistent
 artifact. Galerina `a512ff23` records **22,995 / 56,811** under the fast
