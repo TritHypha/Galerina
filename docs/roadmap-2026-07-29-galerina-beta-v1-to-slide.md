@@ -53,6 +53,22 @@ Policy: zero trust, verify rather than assume, fail closed
 
 Roadmap refresh (2026-09-12): the bounded native VOK W^X floor was rechecked in this branch's `packages-galerina/galerina-core-runtime/native/vok-authority` checkout. `cargo test --locked --offline` passed 30 native unit tests and 14 compile-fail doctests; the native nine-gate fold test covered all 19,683 vectors. `cargo fmt --check` passed. The bounded Windows x86-64 live receipt returned `PASS`, `result: 42`, `executableAtCall: true`, `writableAtCall: false` and `authorityReleased: false`. The recorded native/`.fungi` 19,683-vector parity remains the existing bound; this recheck did not rerun that full parity harness. The floor remains linked and non-authorizing; opaque VM transfer, hostile-memory isolation, physical erasure, general VEO lowering and independent live Linux/macOS evidence remain open.
 
+Roadmap refresh (2026-09-12): the SLIDE evidence/anchor row is now split into
+four explicit gates. The exact local three-checkout reproduction used SLIDE
+`2e8e41bffce69aca2f7e01b9208cf9711e4f0944`, the pinned Galerina producer
+`0dea7935b1d03494dddf36ef5af451f89fcd234c`, Lyth/Weaver
+`a68eeb5ced8a522b3ab140422c1e7ce84ec887fa` and Node `24.18.0`. The producer
+build completed and the complete SLIDE suite passed **1,043/1,043**; contract
+integrity, recorded benchmark integrity, path-leak (14/14 self-tests and 803
+targets) and security closure also passed. The hosted workflow now checks out
+the pinned Lyth/Weaver adapter at `lyth-weaver`, closing the prior checkout
+layout gap. These are local/internal-consistency results only. Evidence
+authentication remains `DEFINED_NOT_ACTIVATED`; atlas minimum-anchor custody
+is still caller-provided and lacks an embedding-authority owner; the public
+object factory still returns `AUTHORITY_PROVISIONING_REQUIRED`; and no hosted
+Ubuntu/Windows/macOS run or offline signing/production authority is claimed.
+See the bounded SLIDE record `docs/reports/slide-evidence-anchor-activation-2026-09-12.md`.
+
 Roadmap refresh: code discovery was re-indexed at the Contract 65 checkpoint.
 SLIDE `675a610` now records **8,118 nodes / 19,755 edges** with its persistent
 artifact. Galerina `a512ff23` records **22,995 / 56,811** under the fast
@@ -1379,7 +1395,7 @@ flowchart TB
     AG["🟩 RD-0625-0631 baseline matrix<br/>7 lanes · maths · Tri-1 · ZT"]
     AH["🟩 NSE-Micro E11 complete<br/>99 paired · 41,580 exact · speed negative"]
     DCTP["🟩 DCTP reference measured<br/>1,188 outputs · 108 refusals<br/>correctness pass · performance point negative"]
-    AE["🟦 SLIDE evidence + anchor activation<br/>local CI candidate green<br/>hosted run · offline authority pending"]
+    AE["🟦 SLIDE evidence + anchor custody<br/>local exact-layout CI 1,043/1,043<br/>hosted run · offline authority pending"]
     AF["🟦 Patent counsel FTO gate<br/>UK · US · EPO/UPC scope fixed<br/>counsel review pending"]
     Z["🟩 Governed-memory/index floor<br/>8 pillars · read-only beta index"]
 
@@ -1556,7 +1572,7 @@ table is navigation, not authority.
 | NSE-Micro E11 profile | 🟩 completed negative experiment | The complete 14-lane Node reference is recorded from clean source `d0f3a5e`: 42 cold/warm/polluted rows, 99 paired samples and 41,580 exact checks. Warm B0 is 155,830 ns/op, tree 621,590 and int8 759,810; exact paired analysis finds tree slower than B0 and int8 slower than tree, while predecoded Tri-1 versus int8 is indeterminate. N3/B0 records 1,485 stops, 1,485 completions and D1 skipped 0. Base evidence is `sha256:a4a0…52fd`; nine-comparison evidence is `sha256:44da…1bd`; both are self-hash-only K3 `0`. Green means the bounded experiment is finished, not that the speed or residency hypothesis passed. A successor must tile the complete admitted path and measure effective cache, counters, migration and thermals before any production or L1/L2-resident claim |
 | B1/B2/N3 paper-review handovers | 🟩 | Six prompts exist: a repository-aware local-Claude and self-contained online-AI version for each lane. They require independent maths, separate Tri-1/K3 analysis, zero-trust score, primary-source research, null controls, alternatives and an honest paper-tier verdict |
 | SEC-06 evidence-verdict correction | 🟨 | Self-hash-only benchmark evidence now returns K3 `0` (`INDETERMINATE`) rather than `+1`; internal generation/rendering uses a complete separate internal-consistency record. Digest-consistent forged commit/platform labels cannot obtain an authority-positive verdict. Full SLIDE is 228/228; the local review is recorded, while the app-backed standard scan still awaits its bounded Start-scan setup action |
-| SLIDE evidence and atlas owner authorities | 🟦 | Owner approved a separate authenticated SLIDE research-evidence authority and external production atlas-anchor custody. No private evidence key is generated on this host; no Galerina key reuse is inferred. Engineering must still implement the offline ceremony, embedding-authority-owned anchor contract and Windows/Linux/macOS durability/rollback/crash evidence before either claim activates |
+| SLIDE evidence and atlas owner authorities | 🟦 | The exact local three-checkout candidate is reproducible: SLIDE `2e8e41bffce69aca2f7e01b9208cf9711e4f0944`, Galerina producer `0dea7935b1d03494dddf36ef5af451f89fcd234c`, Lyth/Weaver `a68eeb5ced8a522b3ab140422c1e7ce84ec887fa`, Node `24.18.0`; producer build and the complete SLIDE suite pass 1,043/1,043, with contract, benchmark, path-leak and security-closure gates green. The workflow now checks out the pinned Lyth/Weaver adapter. This remains local/internal-consistency evidence only: the separate authenticated evidence authority is still `DEFINED_NOT_ACTIVATED`, the atlas anchor is still caller-provided rather than embedding-authority-owned, the public object factory still requires deployment provisioning, and no hosted matrix or offline signing/production authority is claimed. No private evidence key is generated on this host and no Galerina key reuse is inferred |
 | Implicit corpus failures | 🟩 | Zero implicit failures; intentional negatives have explicit ownership |
 | `.fungi` source-quality gate | 🟩 | Zero findings at the last full checkpoint |
 | Retirement verifier implementation | 🟩 | Complete and hardened: fresh self-test **12/12 top-level adversarial tests** passes. The earlier 16/16 focused checkpoint remains historical evidence. Schema v3 separates non-authorizing candidates from hybrid-signed production lanes, requires bounded canonical UTF-8 JSON and refuses text claimed as production execution; the verifier also refuses tracked TypeScript, unexecuted or stale-ledger Fungi, unowned host boundaries, nested package identities, package-local dependency trees and substituted evidence |
