@@ -11,6 +11,18 @@ implementation lanes end to end. Lyth/Weaver, `.gate`, experimental provider
 packs and external conversion staging remain preserved secondary lanes; they
 must not displace the critical path below or grant production authority.
 
+### Five-RD knowledge-gap housekeeping — 2026-09-12
+
+- [x] Complete one bounded fresh Grok advisory round for RD-0349, RD-0363,
+  RD-0361, RD-0364 and RD-0365, using separate semantic and authority vectors.
+- [x] Record the result as `REVIEW_OUTCOME: HOLD`; the existing focused counts
+  and owner dispositions remain unchanged. The round supplies minimum next
+  evidence shapes only and does not authorize implementation, production,
+  consumer switching, bulk `.fungi` translation, commits, pushes or merges.
+- [!] Keep the five R&D tracks open until same-head owner-bound packets,
+  receipts, differential/deletion proof, provider identity, hardware custody
+  and attestation evidence are independently produced.
+
 - [x] Re-index both current repositories at exact heads: Galerina
   `9b454a35` produced 45,198 nodes and 119,314 edges; SLIDE `211b641`
   produced 8,022 nodes and 19,459 edges. Both persistent graph artifacts were
