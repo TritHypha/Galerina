@@ -349,8 +349,8 @@ const ZERO_TRUST = [
   { boundary: "Memory", pct: 62, status: "◑ native VOK W^X/K3 floor is linked and verified at 19,683/19,683; general memory, hostile-memory execution and production VOK authority remain open" },
   { boundary: "TLSTP — zero-middleware", pct: 56, status: "◑ channel denial now constrains every route and the governed transport decisions are proven; raw-byte/ECH plumbing, live recovering-FSM wiring and independent in-sandbox execution remain open" },
 ];
-const SLIDE_STATUS = "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK is 984/984 across 97 suites. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. General collections/Result families, multiple/cross-package effects, authenticated platform durability and production authority remain open";
-const PRECONVERSION_STATUS = "Galerina G1-G4 and SLIDE S1-S2 are closed with negative tests. SLIDE passes 984/984 across 97 suites, has a zero forbidden-state count across its 91-file executable tool surface, and sealed scan 7263c63e reports no finding across six reviewed critical surfaces with honestly partial coverage. Galerina pins the remediated tool and current context; deployment authentication remains K3 0. Current Galerina custody passes normal phase-close, 100/100 packages with 9,500/9,500 tests, and exhaustive phase-close. A fresh four-repository security recheck remains required before mechanical conversion";
+const SLIDE_STATUS = "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK now records 12 named groups in the current-head scope manifest. Focused feature evidence is 142/142 and the independent selected matrix is 112/112; the complete SLIDE command is 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. Arbitrary loops, general collections/Result families, multiple/cross-package effects, executable provider identity, authenticated platform durability and production authority remain open";
+const PRECONVERSION_STATUS = "Galerina G1-G4 and SLIDE S1-S2 are closed with negative tests. SLIDE's current bounded scope manifest records 12 named groups; focused evidence is 142/142, the independent selected matrix is 112/112, and the complete command reports 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. The 98-file executable tool surface has zero forbidden-state tokens, while deployment authentication remains K3 0. Current Galerina custody passes normal phase-close, 100/100 packages with 9,500/9,500 tests, and exhaustive phase-close. A fresh four-repository security recheck remains required before mechanical conversion";
 
 const BUILD_PROGRESS = [
   { layer: "Specification / KB", pct: 100 },
@@ -771,13 +771,13 @@ if (SELF_TEST) {
     ?.rows.find((row) => row.label === "Independent SLIDE general executable backend");
   const slideRegistry = reg.find((row) => row.item === "Independent SLIDE backend");
   ok(
-    slideBuild?.status?.includes("984/984 across 97 suites")
+    slideBuild?.status?.includes("Focused feature evidence is 142/142")
       && slideBuild.status.includes("Contract 86 remains 5/5 over all 19,683 K3 vectors")
       && slideBuild.status.includes("caller-owned authentication refuses"),
     "SLIDE build-progress status records bounded transitive work and VOK candidate evidence",
   );
   ok(
-    slideRegistry?.detail?.includes("984/984 across 97 suites")
+    slideRegistry?.detail?.includes("Focused feature evidence is 142/142")
       && slideRegistry.detail.includes("Contract 86 remains 5/5 over all 19,683 K3 vectors")
       && slideRegistry.detail.includes("caller-owned authentication refuses"),
     "SLIDE tracking-registry status records bounded transitive work and VOK candidate evidence",

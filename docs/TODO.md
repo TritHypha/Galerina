@@ -31,6 +31,30 @@ counts or open items that a newer section explicitly supersedes.
 
 Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
 
+### Independent SLIDE bounded backend current-head reconciliation — 2026-09-12
+
+- [x] Replace the stale `716/716` label with the current SLIDE scope
+  manifest. The bounded backend now records 12 named groups covering scalar
+  and grouping operations, Bool `not`/`and`/`or`, exact immutable String and
+  Bytes, text prefix/suffix/substring, internal Array/Option, immutable
+  `Array<Int>` membership, bounded folds, records, zero-argument calls,
+  four-to-128 functions, nine-to-16 block control flow, certified loop bodies
+  and one audited effect family.
+- [x] Record fresh evidence from SLIDE: focused feature matrix **142/142**;
+  independent selected matrix **112/112**; V2 contract integrity **96
+  files** and catalog integrity **101 files**; security closure K3 `0` with
+  `authorityReleased=false`.
+- [!] The complete SLIDE command reports **1,053 pass / 0 fail / 9
+  cancelled**. The cancelled checks require two absent Galerina producer
+  inputs, so they are an external integration-input hold rather than a SLIDE
+  feature failure. Rerun them after the owning build restores those inputs.
+- [!] Keep arbitrary loops, recursion/callbacks, general collections,
+  multiple or cross-package effects, executable provider identity,
+  authenticated platform durability and production authority open. The
+  bounded reference backend remains non-authorizing.
+
+Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-09-12.md`.
+
 ### Myco and Hypha source-owner synchronization closure - 2026-08-28
 
 - [x] Fast-forward public Myco hardening into public `main`, rerun its build
