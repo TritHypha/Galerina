@@ -1,7 +1,13 @@
 # Ubuntu Desktop round-two evidence - action needed now
 
-Status: **the 2026-08-02 attempt stopped correctly; no Linux evidence was
+Status: **WSL2 round-two portability is complete; no native Linux evidence was
 admitted**.
+
+The 2026-09-12 report is
+`reports/wsl-linux-adapter-round-two-2026-09-12-cdfebd5b77bb.md`. Galerina's
+static and functional lanes, the SLIDE contract/catalog and full 1060-test
+suite passed at the named exact heads. The ignored native Linux suites refused
+at the WSL2 host-identity boundary, so this run is portability evidence only.
 
 The returned report for Galerina commit `134da79df318...` contains no receipt.
 It stopped before host observation because the required independent sibling
@@ -19,11 +25,13 @@ SLIDE-current.bundle
 CURRENT-BUNDLE-MANIFEST.txt
 ```
 
-Create them on the Windows computer only after both worktrees are clean by
-following `TRANSFER-LOCAL-COMMITS.md`. Copy all three files and the two
-independently recorded SHA-256 values to Ubuntu. Verify the manifest and both
-Git bundles before cloning. Private signing files are neither needed nor
-permitted.
+The WSL2 rerun already has a fresh set at
+`transfer/wsl-round2-2026-09-12-cdfebd5b77bb/`. For the real Ubuntu Desktop
+run, create or copy the three files on the Windows computer only after both
+worktrees are clean by following `TRANSFER-LOCAL-COMMITS.md`. Copy all three
+files and the two independently recorded SHA-256 values to Ubuntu. Verify the
+manifest and both Git bundles before cloning. Private signing files are
+neither needed nor permitted.
 
 ## On Ubuntu
 

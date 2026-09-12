@@ -1,0 +1,22 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running tests/linux_process_kill.rs (target/debug/deps/linux_process_kill-3733457dd552f8e9)
+
+running 1 test
+test terminating_each_linux_boundary_never_exposes_partial_authority ... FAILED
+
+failures:
+
+---- terminating_each_linux_boundary_never_exposes_partial_authority stdout ----
+
+thread 'terminating_each_linux_boundary_never_exposes_partial_authority' (13710) panicked at tests/linux_process_kill.rs:42:9:
+assertion failed: matches!(publish_linux_generation_candidate(&root, &prior_id, prior_bytes),
+    LinuxGenerationPublicationVerdict::Candidate { .. })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    terminating_each_linux_boundary_never_exposes_partial_authority
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test linux_process_kill`

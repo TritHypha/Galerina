@@ -10,8 +10,8 @@
 
 | Section | Documents |
 |---|---|
-| [`reports/`](reports/INDEX.md) | 4 |
-| [`transfer/`](transfer/) | — (no documents; browse the directory) |
+| [`reports/`](reports/INDEX.md) | 5 |
+| [`transfer/`](transfer/INDEX.md) | — (no documents; browse the directory) |
 
 ---
 

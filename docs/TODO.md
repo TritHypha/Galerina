@@ -6679,10 +6679,10 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   as one two-bundle transfer set with a generated machine-checkable manifest.
   The `134da79...` attempt correctly stopped before host observation because
   the sibling SLIDE checkout was absent, so it supplies no Linux execution
-  evidence. Round two must return five files: the four
-  durability/report artifacts plus one functional Ubuntu receipt. Those current
-  files have not returned; no remote clone, old `2ceaf479...` result or renamed
-  distribution receipt may substitute.
+  evidence. The 2026-09-12 WSL2 round-two portability report now records the
+  current exact heads, successful static/functional/SLIDE lanes and the
+  fail-closed native refusals; it is explicitly `VIRTUAL_NON_AUTHORIZING` and
+  does not substitute for a separately booted Ubuntu Desktop run.
 - **Fresh local fixed point:** the first aggregate correctly exposed the
   provenance-preserved zero-byte AI-16 artifact as an unmodelled KB-graph test
   case. The test now admits only that exact known ID while every future empty
@@ -7595,12 +7595,12 @@ guessing.
   an external loader are checked; a hostile `.node` decoy cannot affect the
   result. The receipt remains explicitly non-authorizing until the host is
   signed and the platform crash/reboot/power-loss matrices are complete.
-- **Current native execution task:** run the second-round Linux candidate and
-  SLIDE observer on the real Ubuntu Desktop host, fix only evidence-backed
-  portability defects, then address the remaining named platforms. Docker and
-  virtual-machine results are useful portability evidence but cannot be
-  relabelled as bare-host durability. No owner decision or key action is
-  currently required.
+- **Current native execution task:** use the fresh WSL2 transfer set for
+  portability only, then run the second-round Linux candidate and SLIDE observer
+  on a real Ubuntu Desktop host. Fix only evidence-backed portability defects,
+  then address the remaining named platforms. Docker and virtual-machine
+  results are useful portability evidence but cannot be relabelled as bare-host
+  durability. No owner decision or key action is currently required.
 - **Linux adapter second-round checkpoint (2026-08-01):** the platform-neutral
   facts gate, bounded complete `mountinfo` parser/deepest-mount selector,
   device-number decoder, sysfs classification and exact filesystem/device

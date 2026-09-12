@@ -1,0 +1,72 @@
+{
+  "schema": "galerina.platform.functional-evidence.v2",
+  "evidenceClass": "FUNCTIONAL_PORTABILITY",
+  "verdict": 0,
+  "status": "PASS",
+  "repositoryCommit": "cdfebd5b77bbda5dc6c4290422a61c383c413298",
+  "operatingSystem": "ubuntu",
+  "runnerClass": "local-unclassified",
+  "platform": {
+    "os": "linux",
+    "architecture": "x64",
+    "distribution": {
+      "id": "ubuntu",
+      "version": "26.04"
+    },
+    "nodeVersion": "v24.18.0"
+  },
+  "cleanWorkingTree": true,
+  "criticalWarnings": [],
+  "evidence": [
+    {
+      "name": "npm-binary",
+      "status": "passed",
+      "durationMs": 125.087,
+      "details": {
+        "version": "11.16.0"
+      }
+    },
+    {
+      "name": "workspace-discovery",
+      "status": "passed",
+      "durationMs": 27.773,
+      "details": {
+        "packageCount": 100
+      }
+    },
+    {
+      "name": "portable-path-contract",
+      "status": "passed",
+      "durationMs": 0.065,
+      "details": {
+        "fixture": "examples/wasm-hello-world/greet.fungi",
+        "compiler": "packages-ts/galerina-core-compiler"
+      }
+    },
+    {
+      "name": "compiler-build",
+      "status": "passed",
+      "durationMs": 4534.932
+    },
+    {
+      "name": "strict-fungi-check",
+      "status": "passed",
+      "durationMs": 181.471,
+      "details": {
+        "fixture": "examples/wasm-hello-world/greet.fungi"
+      }
+    },
+    {
+      "name": "wasm-execution",
+      "status": "passed",
+      "durationMs": 138.288,
+      "details": {
+        "result": 42,
+        "binaryBytes": 91
+      }
+    }
+  ],
+  "authenticated": false,
+  "authorityReleased": false,
+  "productionAuthorizing": false
+}

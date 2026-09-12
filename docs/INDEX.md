@@ -23,9 +23,9 @@
 | [`language/`](language/INDEX.md) | 21 |
 | [`paper/`](paper/INDEX.md) | 54 |
 | [`patterns/`](patterns/INDEX.md) | 21 |
-| [`platform-handover/`](platform-handover/INDEX.md) | 13 |
+| [`platform-handover/`](platform-handover/INDEX.md) | 14 |
 | [`reference/`](reference/INDEX.md) | 10 |
-| [`reports/`](reports/INDEX.md) | 1115 |
+| [`reports/`](reports/INDEX.md) | 1117 |
 | [`research/`](research/INDEX.md) | 1 |
 | [`research-prompts/`](research-prompts/INDEX.md) | 15 |
 | [`rules/`](rules/INDEX.md) | 11 |
