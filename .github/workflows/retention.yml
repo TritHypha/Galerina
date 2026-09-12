@@ -1,0 +1,95 @@
+# Memory retention and bounded-cache assurance.
+#
+# The per-commit lane builds the compiler first, then runs the fail-closed
+# static/bounded-cache gate.  The dynamic lane is deliberately separate: it is
+# expensive and platform-sensitive, so it runs on the nightly scheduler and on
+# published releases across the supported hosted runners.
+name: retention
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 2 * * *" # nightly, UTC
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retention-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  per-commit:
+    name: per-commit retention gate
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: packages-ts/galerina-core-compiler/package-lock.json
+
+      - name: Install the pinned compiler floor
+        run: npm ci --prefix packages-ts/galerina-core-compiler
+
+      - name: Build the compiler before retention checks
+        working-directory: packages-ts/galerina-core-compiler
+        run: npm run build
+
+      - name: Run the fail-closed per-commit retention gate
+        run: npm run audit:retention
+
+  cross-platform-dynamic:
+    name: dynamic retention (${{ matrix.platform }})
+    if: github.event_name == 'schedule' || github.event_name == 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-24.04
+            runner: ubuntu-24.04
+          - platform: windows-2022
+            runner: windows-2022
+          - platform: macos-14
+            runner: macos-14
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: packages-ts/galerina-core-compiler/package-lock.json
+
+      - name: Install the pinned compiler floor
+        run: npm ci --prefix packages-ts/galerina-core-compiler
+
+      - name: Build the compiler before dynamic measurements
+        working-directory: packages-ts/galerina-core-compiler
+        run: npm run build
+
+      - name: Run platform-specific dynamic retention measurements
+        run: node scripts/audit-retention-nightly.mjs > retention-${{ matrix.platform }}.log
+
+      - name: Upload the bounded retention receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2 (SHA-pinned)
+        with:
+          name: retention-${{ matrix.platform }}
+          path: retention-${{ matrix.platform }}.log
+          if-no-files-found: error

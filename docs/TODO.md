@@ -4300,7 +4300,7 @@ approval and a genuinely clean-room verifier require owner or independent
 hands; they are not needed for the next general-backend increment and will be
 raised only when reached.
 
-### Memory-retention programme: bounded caches shipped, workflow host pending - 2026-08-08
+### Memory-retention programme: bounded caches shipped, workflow wired, hosted receipts pending - 2026-09-12
 
 Owner rulings Q2 (tools live in `scripts/`, no new package) and Q3 (staged CI)
 are implemented up to one open decision. The detailed audit is retained in the
@@ -4328,12 +4328,19 @@ outside this repository.
   evictions**, weight 6,144/65,536, item weight ~3.0. **`maxEntries` is the
   binding ceiling; `maxWeight` is never the constraint at this item weight** and
   must not be cited as an enforced limit.
-- [ ] **Engineering action selected under the resumed ownership:** add a
-  dedicated `retention.yml` that builds first and then runs the per-commit
-  retention gate. Do not make the deliberately build-free
-  `.github/workflows/conventions.yml` install or build dependencies.
-- [ ] The nightly/release dynamic stage exists and is wired as an npm script but
-  no scheduler invokes it.
+- [x] **Engineering action selected under the resumed ownership:** add the
+  dedicated `.github/workflows/retention.yml`; it builds the pinned compiler
+  first and then runs the per-commit retention gate. The deliberately
+  build-free `.github/workflows/conventions.yml` remains unchanged.
+- [x] The nightly/release dynamic stage is now scheduled by the same workflow
+  on Ubuntu, Windows and macOS, and runs for published releases as well as the
+  nightly schedule. Hosted receipts remain platform-scoped evidence and must
+  not be read as proof that no other allocator can retain memory.
+- [x] Run the dynamic stage locally on Windows: both compiler subjects and the
+  production cache invariant passed; the receipt is recorded in
+  `docs/reports/memory-retention-boundary-catches-2026-09-12.md`.
+- [ ] Collect and review the first hosted per-commit and cross-platform
+  receipts; a missing, timed-out or malformed receipt remains a failure.
 
 ### Passive capability-map devtool verified against its spec - 2026-08-08
 

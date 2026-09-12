@@ -3,9 +3,9 @@
   "provenance": {
     "available": true,
     "branch": "codex/rd-0858-unit4-process-root",
-    "sha": "7530528e5",
+    "sha": "5d0c0a461",
     "detached": false,
-    "dirty": false
+    "dirty": true
   },
   "shipReadinessPct": 100,
   "ztAvg": 78,
@@ -366,7 +366,7 @@
         {
           "item": "Memory retention audit and bounded caches",
           "state": "building",
-          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented; the dedicated per-commit workflow and scheduled cross-platform nightly/release measurements remain open"
+          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented; .github/workflows/retention.yml now builds before the per-commit gate and schedules the dynamic stage on Ubuntu, Windows and macOS; the first hosted receipts remain evidence to collect"
         },
         {
           "item": "General Fungi-to-SLIDE control-flow corpus",

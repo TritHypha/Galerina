@@ -16,6 +16,18 @@ it does not alter the generated percentages or grant production authority.
 
 See `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
 
+## Memory retention and boundary catches — 2026-09-12
+
+The bounded cache primitive, static detector, positive bound KAT and dynamic
+retention runner are already implemented. The dedicated
+`.github/workflows/retention.yml` now installs and builds the pinned compiler
+before the per-commit fail-closed gate, and schedules platform-specific
+dynamic measurements on Ubuntu, Windows and macOS for nightly runs and
+published releases. The first hosted receipts are still pending; absence of a
+receipt or a detector failure remains a visible failure, not a clean result.
+The local Windows run is recorded in
+`docs/reports/memory-retention-boundary-catches-2026-09-12.md`.
+
 ## RD-0873 native Fungi bootstrap and conversion admission - 2026-08-28
 
 The completed scalar-oracle package is now the fixed semantic control for the
