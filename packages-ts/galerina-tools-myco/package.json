@@ -68,10 +68,11 @@
     "snapshotStatus": {
       "kind": "PARTIAL_FORK",
       "upstreamFileCount": 16,
-      "exactFileCount": 14,
+      "exactFileCount": 13,
       "divergentPaths": [
         "src/cli.ts",
-        "src/query/path-filter.ts"
+        "src/query/path-filter.ts",
+        "src/query/regex-guard.ts"
       ],
       "missingPaths": [],
       "localOnlyPaths": [
@@ -81,6 +82,7 @@
     "divergenceReasons": {
       "src/cli.ts": "Galerina retains the local Markdown-link command and imports the local-only links module.",
       "src/query/path-filter.ts": "Comments use the active Galerina packages-ts root; executable behavior remains source-owner compatible.",
+      "src/query/regex-guard.ts": "Owner-requested 120-second total search budget, synchronized with the public source owner's local working copy. The pinned upstream snapshot still has five seconds; advance the snapshot only after the upstream change is committed. The 250 ms regex-operation deadline is unchanged.",
       "src/query/links.ts": "Galerina-only Markdown-link classification and repair extension."
     },
     "rule": "The public Myco repository owns shared code. Galerina divergence must remain explicit, tested and reproduced by audit; never overwrite either owner while claiming byte identity."
