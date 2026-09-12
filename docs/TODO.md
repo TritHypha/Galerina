@@ -4339,6 +4339,11 @@ outside this repository.
 - [x] Run the dynamic stage locally on Windows: both compiler subjects and the
   production cache invariant passed; the receipt is recorded in
   `docs/reports/memory-retention-boundary-catches-2026-09-12.md`.
+- [x] Harden the dynamic receipt boundary after independent Astra review:
+  finite numeric fields, exact units, channel classifications, and an exact
+  match between `OVER BAND` channels and the leak verdict are required;
+  controlled malformed, `NaN`, overflow, contradiction, timeout, and status
+  mismatch cases are red.
 - [ ] Collect and review the first hosted per-commit and cross-platform
   receipts; a missing, timed-out or malformed receipt remains a failure.
 

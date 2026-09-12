@@ -19,14 +19,18 @@ host can prove the absence of retention everywhere.
 
 ## Fresh local evidence
 
-The implementation was checked from the Galerina checkout at the prior exact
-head `5d0c0a461654ea94cd16b5bcd492bb041620cb27`, with the workflow and
-documentation changes present in the working tree.
+The implementation and receipt hardening were checked from the Galerina
+checkout at source head `3f046f672e198cc02ac9fe9696d6d7649a5597ed`; the
+generated roadmap provenance was then refreshed in `a00d8b4bd36fd1fc0e8cd99ff06335257da5b56e`.
 
 - `npm run audit:retention` — **PASS**. Detector and bound self-tests passed;
   the production execution-graph cache bound at `maxEntries (2048)` under
   pressure; 129 source files were scanned with 0 unowned findings.
 - `node --test scripts/tests/retention-workflow.test.mjs` — **1/1 PASS**.
+- `node --test scripts/tests/audit-retention-nightly.test.mjs scripts/tests/retention-workflow.test.mjs` — **4/4 PASS**.
+  The receipt parser rejects timeouts and unknown exits, missing or duplicate
+  markers, missing measurements, non-finite or malformed numbers, wrong units,
+  contradictory channel classifications, and verdict/channel-set mismatches.
 - `npm run audit:retention:nightly` — **PASS** on `win32/x64`, Node `v24.18.0`.
   Both identical-input and unique-input compiler subjects reported no leak on
   heap, external, or ArrayBuffer channels; the production cache invariant also
