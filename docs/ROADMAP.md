@@ -1,7 +1,8 @@
 # Galerina beta v1 to SLIDE roadmap
 
-Date: 2026-08-28
-Branch: `codex/rd-0873-native-fungi-bootstrap-plan`
+Date: 2026-08-28 (roadmap origin)
+Current review: 2026-09-12
+Evidence checkout: `codex/rd-0858-unit4-process-root`
 
 ## Current R&D reconciliation — 2026-09-12
 
@@ -15,6 +16,17 @@ authoritative). This note is an index to the detailed reconciliation report;
 it does not alter the generated percentages or grant production authority.
 
 See `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
+
+One bounded fresh Grok session then challenged each record with separate
+semantic and authority vectors. It returned `REVIEW_OUTCOME: HOLD` and did
+not change the focused counts or owner dispositions. The smallest next
+evidence is now explicit: same-head value-unit packets for RD-0349;
+fail-closed signature, canonical-binding and replay fixtures plus receipt
+binding for RD-0363; one reversible twin with deletion/authority proof for
+RD-0361; provider-weight, egress, spend and receipt evidence for RD-0364; and
+attestation, TPM/hardware and rollback-safe custody evidence for RD-0365.
+Grok remains advisory, and no production, consumer-switching or bulk
+`.fungi` authority follows from this round.
 
 ## Memory retention and boundary catches — 2026-09-12
 

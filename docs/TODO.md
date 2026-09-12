@@ -31,6 +31,23 @@ counts or open items that a newer section explicitly supersedes.
 
 Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
 
+### Grok knowledge-gap round for the five R&D records — 2026-09-12
+
+- [x] Run one bounded fresh Grok advisory session with separate semantic and
+  authority vectors for RD-0349, RD-0363, RD-0361, RD-0364 and RD-0365.
+- [x] Preserve the result as `REVIEW_OUTCOME: HOLD`; the focused counts and
+  owner dispositions are unchanged. The round identifies the smallest next
+  evidence shapes without authorizing implementation, production, consumer
+  switching, bulk `.fungi` translation, commits, pushes or merges.
+- [!] Keep the five tracks partial/open until their owner-bound packets,
+  receipts, differential/deletion proof, provider identity, hardware custody
+  and attestation evidence are independently produced at one exact head.
+- [x] Keep the reconciliation report as the durable index; the advisory
+  response remains a separately retained, non-authorizing review artifact.
+
+Advisory evidence is summarized in the reconciliation report above; the full
+prompt and response are retained in the private restart workspace.
+
 ### Independent SLIDE bounded backend current-head reconciliation — 2026-09-12
 
 - [x] Replace the stale `716/716` label with the current SLIDE scope
