@@ -1,5 +1,6 @@
 #![cfg(feature = "fault-injection")]
 
+#[cfg(not(target_os = "linux"))]
 use std::path::Path;
 
 use galerina_registry_durability_native::{

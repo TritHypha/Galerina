@@ -1,11 +1,14 @@
 use galerina_registry_durability_native::{
     admit_measured_linux_host, classify_linux_sysfs_observation, correlate_linux_host_observation,
     decode_linux_device_number, parse_linux_mountinfo, parse_linux_mountinfo_line,
-    probe_linux_host, publish_linux_generation_candidate, select_linux_mount_for_target,
-    LinuxGenerationPublicationVerdict, LinuxHostObservation, LinuxHostProbeVerdict,
-    LinuxStorageKind, LinuxSysfsObservation, MeasuredLinuxHost, BTRFS_SUPER_MAGIC,
-    EXT4_SUPER_MAGIC, XFS_SUPER_MAGIC,
+    select_linux_mount_for_target, LinuxHostObservation, LinuxHostProbeVerdict, LinuxStorageKind,
+    LinuxSysfsObservation, MeasuredLinuxHost, BTRFS_SUPER_MAGIC, EXT4_SUPER_MAGIC, XFS_SUPER_MAGIC,
 };
+#[cfg(not(target_os = "linux"))]
+use galerina_registry_durability_native::{
+    probe_linux_host, publish_linux_generation_candidate, LinuxGenerationPublicationVerdict,
+};
+#[cfg(not(target_os = "linux"))]
 use std::path::Path;
 
 fn direct(filesystem: &str) -> MeasuredLinuxHost {
