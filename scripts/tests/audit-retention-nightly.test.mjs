@@ -14,6 +14,9 @@ const clean = [
 ].join("\n");
 
 const leak = clean.replace(
+  "within band",
+  "★ OVER BAND",
+).replace(
   "    -> no leak detected on the measured channels",
   "    -> LEAK: heapUsed",
 );
@@ -37,7 +40,9 @@ test("rejects missing, malformed, or status-inconsistent receipts", () => {
     clean.replace("    -> no leak detected on the measured channels", "    -> maybe"),
     clean.replace("1.00 KB/iter", "garbage KB/iter"),
     clean.replace("1.00 KB/iter", "NaN KB/iter"),
+    clean.replace("1.00 KB/iter", `${"9".repeat(400)} KB/iter`),
     clean.replace("within band", "corroboration only"),
+    clean.replace("within band", "★ OVER BAND"),
     clean.replace("4.10 ms/iter", "Infinity ms/iter"),
     { status: 0, stdout: leak },
     { status: 1, stdout: clean },

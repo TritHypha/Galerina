@@ -31,16 +31,21 @@ export function parseRetentionReceipt({ status, stdout = "", stderr = "" }) {
   }
 
   const channelLines = [];
+  const overBand = [];
   for (const [channel, format] of Object.entries(CHANNELS)) {
     const tags = format.tags.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
     const linePattern = new RegExp(
-      `^\\s{4}${channel}\\s+${NUMBER}\\s+${format.unit}\\s+${NUMBER}\\s+${format.growthUnit}\\s+${NUMBER}\\s+${format.ceilingUnit}\\s+(?:${tags})$`,
+      `^\\s{4}${channel}\\s+(${NUMBER})\\s+${format.unit}\\s+(${NUMBER})\\s+${format.growthUnit}\\s+(${NUMBER})\\s+${format.ceilingUnit}\\s+(${tags})$`,
       "gm",
     );
     const matches = [...subject.matchAll(linePattern)];
     if (matches.length !== 1) {
       return { ok: false, reason: `expected one ${channel} measurement, found ${matches.length}` };
     }
+    if (!matches[0].slice(1, 4).every((value) => Number.isFinite(Number(value)))) {
+      return { ok: false, reason: `${channel} measurement is not finite` };
+    }
+    if (matches[0][4] === "★ OVER BAND") overBand.push(channel);
     channelLines.push(matches[0][0]);
   }
 
@@ -53,6 +58,18 @@ export function parseRetentionReceipt({ status, stdout = "", stderr = "" }) {
   const clean = verdict === "no leak detected on the measured channels";
   if (!leak && !clean) {
     return { ok: false, reason: `unrecognized subject verdict: ${verdict}` };
+  }
+  if (clean && overBand.length > 0) {
+    return { ok: false, reason: `clean verdict contradicts OVER BAND channel(s): ${overBand.join(", ")}` };
+  }
+  if (leak) {
+    const flagged = verdict.slice("LEAK: ".length).split(",").map((channel) => channel.trim());
+    const expected = [...overBand].sort();
+    const actual = [...flagged].sort();
+    if (flagged.some((channel) => !Object.hasOwn(CHANNELS, channel)) || flagged.length !== new Set(flagged).size
+      || actual.length !== expected.length || actual.some((channel, index) => channel !== expected[index])) {
+      return { ok: false, reason: `verdict channels do not match OVER BAND channels: ${verdict}` };
+    }
   }
   if ((status === 0 && !clean) || (status === 1 && !leak)) {
     return { ok: false, reason: `child status ${status} disagrees with verdict ${verdict}` };
