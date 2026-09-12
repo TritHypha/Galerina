@@ -29,6 +29,7 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import process from "node:process";
+import { parseRetentionReceipt } from "./lib/retention-receipt.mjs";
 
 function findGalerina() {
   const here = dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
@@ -81,33 +82,22 @@ for (const s of SUBJECTS) {
     [SCRIPTS + "/audit-memory-leak.mjs", "--run", SCRIPTS + "/" + s.file, "--iters", "40", "--warmup", "10"],
     { encoding: "utf8", timeout: 1800000, env: { ...process.env, ...s.env } });
   const out = (r.stdout || "") + (r.stderr || "");
-  // A subject that never ran must not read as a clean subject.
-  if (r.status === 2 || /harness error|cannot load subject/i.test(out)) {
-    console.error("  ❌ harness error — this subject measured NOTHING, which is not the same as clean.");
+  const receipt = parseRetentionReceipt({ status: r.status, stdout: r.stdout, stderr: r.stderr });
+  if (!receipt.ok) {
+    console.error("  ❌ incomplete or invalid subject receipt — refusing to summarise as clean.");
+    console.error("     " + receipt.reason);
     console.error(out.split(/\r?\n/).slice(-12).join("\n"));
     process.exit(2);
   }
   ran++;
-  // ★ SCOPE THE REPORT TO THE SUBJECT. Every `--run` executes the detector's own
-  // self-test first, which deliberately includes a KNOWN LEAKER. A naive scrape of
-  // every channel line reports that fixture's `LEAK: heapUsed` as though it were the
-  // subject's — the first version of this script did exactly that, and a reader would
-  // have concluded the compiler leaks. The exit code was right the whole time, which
-  // is what makes it dangerous: a correct verdict beside a wrong explanation is
-  // trusted for the wrong reason.
-  const marker = out.lastIndexOf("== subject ==");
-  if (marker === -1) {
-    console.error("  ❌ no '== subject ==' section in the tool output — the report format changed and");
-    console.error("     this parser is now reading the wrong lines. Refusing to summarise.");
-    process.exit(2);
+  // The parser scopes output to the final subject section and requires all
+  // channels plus a status-consistent verdict. Fixture output can therefore
+  // never be mistaken for the subject's result.
+  receipt.channelLines.forEach((line) => P("  " + line.trim()));
+  P("  -> " + receipt.verdict);
+  if (receipt.leak) {
+    failures++;
   }
-  const subjectOut = out.slice(marker);
-  const verdict = (subjectOut.match(/-> (LEAK: .*|no leak detected.*)$/m) ?? [])[1] ?? "(no verdict line)";
-  subjectOut.split(/\r?\n/)
-    .filter((l) => /^\s{4}(heapUsed|external|arrayBuffers|rss|durationUs)/.test(l))
-    .forEach((l) => P("  " + l.trim()));
-  P("  -> " + verdict);
-  if (r.status === 1) { failures++; }
 }
 
 // ---------------------------------------------------------------------------
