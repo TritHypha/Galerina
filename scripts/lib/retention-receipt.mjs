@@ -34,19 +34,31 @@ export function parseRetentionReceipt({ status, stdout = "", stderr = "" }) {
   const overBand = [];
   for (const [channel, format] of Object.entries(CHANNELS)) {
     const tags = format.tags.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    const labelledLines = [...subject.matchAll(new RegExp(`^\\s{4}${channel}\\b[^\\r\\n]*$`, "gm"))];
+    if (labelledLines.length !== 1) {
+      return { ok: false, reason: `expected one ${channel} measurement, found ${labelledLines.length}` };
+    }
     const linePattern = new RegExp(
       `^\\s{4}${channel}\\s+(${NUMBER})\\s+${format.unit}\\s+(${NUMBER})\\s+${format.growthUnit}\\s+(${NUMBER})\\s+${format.ceilingUnit}\\s+(${tags})$`,
-      "gm",
     );
-    const matches = [...subject.matchAll(linePattern)];
-    if (matches.length !== 1) {
-      return { ok: false, reason: `expected one ${channel} measurement, found ${matches.length}` };
+    const match = linePattern.exec(labelledLines[0][0]);
+    if (!match) {
+      return { ok: false, reason: `${channel} measurement has invalid syntax, units, or classification` };
     }
-    if (!matches[0].slice(1, 4).every((value) => Number.isFinite(Number(value)))) {
+    const values = match.slice(1, 4).map(Number);
+    if (!values.every(Number.isFinite)) {
       return { ok: false, reason: `${channel} measurement is not finite` };
     }
-    if (matches[0][4] === "★ OVER BAND") overBand.push(channel);
-    channelLines.push(matches[0][0]);
+    if (channel === "heapUsed" || channel === "external" || channel === "arrayBuffers") {
+      if (values[0] > values[2] && match[4] !== "★ OVER BAND") {
+        return { ok: false, reason: `${channel} slope exceeds ceiling but is not marked OVER BAND` };
+      }
+      if (values[0] < values[2] && match[4] === "★ OVER BAND") {
+        return { ok: false, reason: `${channel} is marked OVER BAND below its ceiling` };
+      }
+    }
+    if (match[4] === "★ OVER BAND") overBand.push(channel);
+    channelLines.push(match[0]);
   }
 
   const verdictLines = [...subject.matchAll(/^\s{4}->[^\r\n]*$/gm)];
