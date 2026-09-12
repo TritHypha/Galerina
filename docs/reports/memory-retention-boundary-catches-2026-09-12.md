@@ -20,8 +20,9 @@ host can prove the absence of retention everywhere.
 ## Fresh local evidence
 
 The implementation and receipt hardening were checked from the Galerina
-checkout at source head `3f046f672e198cc02ac9fe9696d6d7649a5597ed`; the
-generated roadmap provenance was then refreshed in `a00d8b4bd36fd1fc0e8cd99ff06335257da5b56e`.
+checkout at source head `3f046f672e198cc02ac9fe9696d6d7649a5597ed`. The
+roadmap generator was rerun after the source and documentation updates; its
+provenance is kept with the tracked roadmap outputs.
 
 - `npm run audit:retention` — **PASS**. Detector and bound self-tests passed;
   the production execution-graph cache bound at `maxEntries (2048)` under
