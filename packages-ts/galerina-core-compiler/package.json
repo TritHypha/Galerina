@@ -15,6 +15,7 @@
       "src/governance-mode.ts",
       "src/plugin-schema.ts",
       "src/rd0858-scalar-compiler-entry.ts",
+      "src/source-origin-parser-entry.ts",
       "src/runtime/index.ts"
     ],
     "loadedAssets": [
