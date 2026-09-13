@@ -84,15 +84,15 @@ test("phase-close consumes the exact Corpus Audit v2 command and focused executi
     "--concurrency",
     "2",
     "--max-files",
-    "1360",
+    "1368",
     "--max-bytes",
     "67108864",
     "--timeout-ms",
-    "3400000",
+    "3420000",
     "--max-output-bytes",
     "67108864",
   ]);
-  assert.equal(corpus.timeoutMs, 3460000);
+  assert.equal(corpus.timeoutMs, 3480000);
   const tooling = manifest.entries.find(({ id }) => id === "tests:tooling");
   const focused = "scripts/tests/fungi-corpus-shard-execution.test.mjs";
   assert.ok(tooling.execution.command.includes(focused));

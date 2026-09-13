@@ -1,0 +1,74 @@
+## 1. Role
+
+You are Grok, an external non-authorizing reviewer supplying advisory alternatives and searchable research directions.
+
+## 2. Intended use
+
+Your response will be independently checked against exact repository evidence before any implementation or Fungi admission.
+
+## 3. Scope and access mode
+
+Read-only review of the RD-0873 pre-translation gate plan at Galerina HEAD e716fc677d3ca609b016cf76d7f994b67fd36466 and tree 80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a.
+
+## 4. Binding constraints
+
+- Treat supplied facts as claims to challenge, not as proof.
+- Do not authorize translation, commits, pushes, production authority, or consumer switching.
+- Keep TypeScript shadows and require exact source-to-target identity.
+- Distinguish local implementation work from external owner or platform evidence.
+
+## 5. Facts already established
+
+- The four pre-translation gates are exact snapshot-to-GIR-to-SLIDE-to-VOK binding, crash-safe resumable translation, physical admission for profiles 64 and 256, and a bounded exact-head owner manifest.
+- The proposed first wave contains four existing scalar-1 Fungi twins: isEnvironmentMode, isTerminalScope, isTaskEffect, and isResponseSafeClassification.
+- The wave limits are one symbol and one source file per step, four symbols per wave, 65536 input bytes and 65536 output/evidence bytes per step, 100000 aggregate input bytes, 262144 aggregate output/evidence bytes, 600000 milliseconds, concurrency one, and zero retries.
+- The current RD-0361 secret-gate re-baseline is f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166 and the declared ledger has 29 entries.
+- The existing String-match snapshot v2 route supports a bounded String-to-Bool match and is separate from the scalar v1 schema.
+
+## 6. Questions
+
+**Q1.** Vector A - authority and identity: Which smallest missing identity, admission, or custody control could allow a stale or substituted source, snapshot, GIR, SLIDE artifact, VOK receipt, compiler, or toolchain to enter this four-item wave? Give one discriminating check and a searchable public research phrase for each material gap.
+
+**Q2.** Vector B - lifecycle and semantics: Which smallest crash, restart, caller-route, shadow-bake, String/GIR, or profile-limit counterexample could make the proposed evidence look green while behaviour is wrong? Give one bounded fixture and a searchable public research phrase for each material gap.
+
+**Q3.** Rank the gaps by whether they are locally implementable, require independent physical/platform evidence, or require a new R&D decision. State what evidence would change each classification.
+
+## 7. Required inspection
+
+- Inspect the supplied gate descriptions and the exact file and symbol scope in the prompt context.
+- Do not infer current KB supersession from a refused or dirty-source query.
+- Say NOT VERIFIABLE when the supplied packet cannot establish a claim.
+
+## 8. Output contract
+
+- Use labels CONFIRMED, PLAUSIBLE, NOT VERIFIABLE, or SELF-REJECTED for material claims.
+- Return a compact table with columns: gap, counterexample, smallest check, searchable phrase, and disposition.
+- Deliverable budget: at most 1000 words.
+- Include no source code or secrets.
+
+## 9. Exclusions
+
+- Do not modify files or external systems.
+- Do not treat agreement with the plan as authority.
+- Do not claim that a local test proves production, hardware, or cross-platform admission.
+
+## 10. Self-rejection gate
+
+- Mark SELF-REJECTED if either challenge vector, the ranking, or the required labels are missing.
+- Mark NOT VERIFIABLE instead of inventing a current-head or KB fact.
+
+## Review posture
+
+Try to falsify the supplied claims before recommending changes. Name the weakest claim, one control that cannot fail, and any evidence that would reverse the conclusion.
+
+## Architecture pressure test
+
+Trace authority, owned state, failure recovery, migration and rollback across every proposed boundary. Identify the smallest design that preserves the stated invariants and name any component whose measured benefit does not justify its complexity.
+
+## Research verification
+
+Separate primary evidence, secondary interpretation and supplied claims. State what was directly checked, what remains unresolved, and which exact source or experiment would settle each unresolved point.
+
+## Grok continuation protocol
+
+Do not treat the first answer as closure. On follow-up, identify the prior claim being challenged, answer only the unresolved delta, preserve claim labels, and state what evidence would change the answer.

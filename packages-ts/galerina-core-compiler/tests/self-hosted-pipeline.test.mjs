@@ -150,6 +150,15 @@ describe("self-hosted pipeline — full body AST + body type-check (M-A fold →
     assert.deepEqual(bodyDiags, [{ code: "FUNGI-TYPE-028", flowName: "f" }]);
   });
 
+  it("unsupported generic bases remain fail-closed after Array metadata is populated", async () => {
+    const unknown = await pipeline(`pure flow f() -> Int { let x: Foo<Int> = []\nreturn 0 }`);
+    const nested = await pipeline(`pure flow f() -> Int { let x: Array<Array<Widget>> = []\nreturn 0 }`);
+    const prefixed = await pipeline(`pure flow f() -> Int { let x: Array<ArrayWidget> = []\nreturn 0 }`);
+    assert.deepEqual(unknown.bodyDiags, [{ code: "FUNGI-TYPE-001", flowName: "f" }]);
+    assert.deepEqual(nested.bodyDiags, [{ code: "FUNGI-TYPE-001", flowName: "f" }]);
+    assert.deepEqual(prefixed.bodyDiags, [{ code: "FUNGI-TYPE-001", flowName: "f" }]);
+  });
+
   it("a null initializer via the REAL parser → 002 + 025 (SILENT_NULL_DENIED)", async () => {
     // `null` parses to an identifier node (value "null"), not a literal. The twin's value-keyed nullish
     // branch must fire on that real representation — this proves it, not just the hand-built differential.

@@ -503,6 +503,7 @@ export {
   deriveAuto,
   reconcileExplicit,
   canHonour,
+  evaluateKeyCustody,
   resolveHost,
   showDerived,
   fingerprint,
@@ -541,6 +542,9 @@ export {
   type ReconcileResult,
   type Rejection,
   type HostResidencyCapability,
+  type KeyCustodyAttestation,
+  type KeyCustodyDecision,
+  type KeyCustodyVerifier,
   type SpillOutcome,
   // RD-0365: KeyCustody type export so callers can reference the ladder rungs.
   type KeyCustody,

@@ -1,0 +1,45 @@
+{
+  "schema": "galerina.rd0365.key-custody-seam.v1",
+  "date": "2026-09-13",
+  "authorizing": false,
+  "status": "BOUNDED_ENFORCEMENT_HOLD",
+  "purpose": "Record the fail-closed compiler seam for hardware custody claims. This is not a TPM/PCR attestation and does not release production authority.",
+  "buildIdentity": {
+    "repository": "Galerina",
+    "branch": "main",
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "workingTree": "DIRTY_SCOPED_AND_UNRELATED_PATHS_PRESERVED"
+  },
+  "implementation": {
+    "source": "packages-ts/galerina-core-compiler/src/hardening-residency.ts",
+    "export": "evaluateKeyCustody",
+    "behavior": [
+      "env-spore is admitted only for a declared registry profile and is reported as unenforced baseline custody",
+      "os-keystore, tpm-sealed and hardware-signer require an exact versioned attestation, matching host and rung, current validity window, quote digest, admission-challenge digest and injected native verifier",
+      "undeclared or copied host profiles, mutable host sentinels, missing/stale/malformed/mismatched evidence and verifier failure refuse closed"
+    ],
+    "nativeBoundary": "The compiler validates the envelope and delegates cryptographic quote/PCR verification to a native provider; it stores no private key, quote bytes or TPM handle."
+  },
+  "verification": {
+    "command": "npm --prefix packages-ts/galerina-core-compiler run typecheck; npm --prefix packages-ts/galerina-core-compiler run build; node --test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs packages-ts/galerina-core-compiler/tests/hardening-residency.test.mjs packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs",
+    "tests": 42,
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0
+  },
+  "remainingEvidence": [
+    "TPM 2.0 quote verification and PCR policy binding",
+    "measured-boot and key-sealing receipt",
+    "native provider identity and revocation",
+    "Windows/Linux/macOS physical custody and rollback evidence",
+    "owner-authorized production admission"
+  ],
+  "custody": {
+    "fungiSourceCreated": false,
+    "productionAuthorityReleased": false,
+    "typescriptRetired": false,
+    "commitCreated": false,
+    "remotePublication": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "galerina.rd0873.toolchain-reproduction.v1",
+  "authorizing": false,
+  "status": "HOLD_TOOLCHAIN_DRIFT",
+  "subject": {
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "git": {
+      "pathClass": "pinned-local-toolchain",
+      "version": "git version 2.55.0.windows.2",
+      "sha256": "sha256:22fead8244ef3a7225fb800099a4e43eca8bcec0466774917669599c2f19a05a"
+    },
+    "node": "v24.18.0",
+    "npm": "12.0.2",
+    "typescript": "Version 5.9.3",
+    "wat2wasm": "UNAVAILABLE_IN_PATH"
+  },
+  "rd0361": {
+    "declaredEntries": 29,
+    "expectedSecretGateSha256": "sha256:f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166",
+    "committedLedgerSecretGateSha256": "sha256:ce662c325ef9ba682688a4b18097f5020fe54235ce522773f20e13d0cfda3c36",
+    "workingLedgerSecretGateSha256": "sha256:f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166",
+    "workingTreeVerifier": "29/29 allClean=true",
+    "immutableReproduction": "NOT_RUN_BECAUSE_COMMITTED_LEDGER_CONTRADICTS_WORKING_PIN"
+  },
+  "disposition": "The dirty ledger cannot be used as immutable evidence. Freeze a reviewed implementation revision, then rebuild and verify all 29 entries without changing a pin merely to restore green status."
+}

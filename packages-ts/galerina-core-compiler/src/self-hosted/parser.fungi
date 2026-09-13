@@ -596,6 +596,130 @@ contract { intent { "Return the token position just past a (possibly generic) ty
   return p
 }
 
+// Decompose the flat type text carried by Stmt into the structured generic fields
+// consumed by the self-hosted type-checker. The parser deliberately keeps the
+// original typeName for diagnostics, while typeBase/typeArgs mirror the Stage-A
+// parseTypeString result. Commas inside nested generic or tensor-shape brackets
+// stay inside one argument; malformed or non-generic text remains fail-closed as
+// a scalar type with no arguments.
+record GenericTypeParts { base: String  args: Array<String>  valid: Bool }
+
+pure flow splitGenericType(raw: String) -> GenericTypeParts
+contract { intent { "Split a declared type into its generic base and top-level arguments, preserving scalar text." } }
+{
+  mut input: String = raw.trim()
+  if input.startsWith("protected ") { input = input.slice(10, input.length()) }
+  if input.startsWith("redacted ") { input = input.slice(9, input.length()) }
+
+  mut lt: Int = 0 - 1
+  mut i: Int = 0
+  let total: Int = input.length()
+  mut searching: Bool = true
+  while i < total and searching {
+    let chOpt: Option<Char> = input.charAt(i)
+    match chOpt {
+      Some(ch) => {
+        if ch.toString() == "<" {
+          lt = i
+          searching = false
+        }
+      }
+      None => { searching = false }
+      _ => { searching = false }
+    }
+    if searching { i = i + 1 }
+  }
+
+  if lt < 0 {
+    return { base: input, args: Array.empty(), valid: true }
+  }
+
+  let base: String = input.slice(0, lt).trim()
+  mut args: Array<String> = Array.empty()
+  mut valid: Bool = base != ""
+  mut argStart: Int = lt + 1
+  mut depth: Int = 0
+  mut scanning: Bool = true
+  i = lt + 1
+  while i < total and scanning {
+    let chOpt: Option<Char> = input.charAt(i)
+    match chOpt {
+      Some(ch) => {
+        let cv: String = ch.toString()
+        if cv == "<" or cv == "[" { depth = depth + 1 }
+        if cv == ">" {
+          if depth == 0 {
+            let lastArg: String = input.slice(argStart, i).trim()
+            if lastArg != "" { args = args.append(lastArg) }
+            if lastArg == "" { valid = false }
+            scanning = false
+          }
+          if depth > 0 { depth = depth - 1 }
+        }
+        if cv == "]" and depth > 0 { depth = depth - 1 }
+        if cv == "," and depth == 0 {
+          let arg: String = input.slice(argStart, i).trim()
+          if arg != "" { args = args.append(arg) }
+          if arg == "" { valid = false }
+          argStart = i + 1
+        }
+      }
+      None => { scanning = false }
+      _ => { scanning = false }
+    }
+    if scanning { i = i + 1 }
+  }
+  if scanning { valid = false }
+  return { base: base, args: args, valid: valid }
+}
+
+// The executing Stage-B checker currently has a deliberately small generic
+// surface: Array<T> with a flat T. Keep richer generic syntax in typeName for
+// diagnostics, but do not route it into a checker path that cannot yet validate
+// nested, shaped, or other-base arguments. Unsupported forms therefore retain
+// the scalar unknown-type refusal rather than becoming silently accepted.
+pure flow isFlatArrayArgument(raw: String) -> Bool
+contract { intent { "Return true when a generic argument is a non-empty flat type token with no nested delimiters." } }
+{
+  let value: String = raw.trim()
+  if value == "" { return false }
+  mut i: Int = 0
+  mut ok: Bool = true
+  while i < value.length() {
+    let chOpt: Option<Char> = value.charAt(i)
+    match chOpt {
+      Some(ch) => {
+        let cv: String = ch.toString()
+        if cv == "<" or cv == ">" or cv == "[" or cv == "]" or cv == "," { ok = false }
+      }
+      None => { ok = false }
+      _ => { ok = false }
+    }
+    i = i + 1
+  }
+  return ok
+}
+
+pure flow areFlatArrayArguments(args: Array<String>) -> Bool
+contract { intent { "Return true when every generic argument is flat and at least one argument is present." } }
+{
+  if args.count() < 1 { return false }
+  mut i: Int = 0
+  mut ok: Bool = true
+  while i < args.count() {
+    let argOpt = args.get(i)
+    match argOpt {
+      Some(arg) => {
+        if isFlatArrayArgument(arg) == false { ok = false }
+      }
+      None => { ok = false }
+      _ => { ok = false }
+    }
+    i = i + 1
+  }
+  return ok
+}
+
 // Parse "(" paramName: TypeName, ... ")" starting at pos.
 // Returns [params, newPos] encoded as a record { params, pos }.
 pure flow parseParams(tokens: Array<Token>, startPos: Int) -> Array<FlowParam>
@@ -1478,9 +1602,19 @@ contract { intent { "Parse one statement; dispatch on the leading token kind/val
     let name: String = tokVal(tokens, pos + 1)
 
     mut typeName: String = ""
+    mut typeBase: String = ""
+    mut typeArgs: Array<String> = Array.empty()
     mut p: Int = pos + 2
     if isOpSym(tokens, p, ":") {
       typeName = readQualifiedTypeName(tokens, p + 1)
+      let parts: GenericTypeParts = splitGenericType(typeName)
+      // Only expose the generic metadata that the current Stage-B checker can
+      // validate. Richer syntax remains in typeName and fails closed through
+      // the scalar unknown-type path until its checker contract is implemented.
+      if parts.valid and parts.base == "Array" and areFlatArrayArguments(parts.args) {
+        typeBase = parts.base
+        typeArgs = parts.args
+      }
       p = qualifiedTypeEndPos(tokens, p + 1)
     }
 
@@ -1500,7 +1634,9 @@ contract { intent { "Parse one statement; dispatch on the leading token kind/val
       typeName: typeName,
       expr: [rhs.expr],
       body: Array.empty(),
-      elseBody: Array.empty()
+      elseBody: Array.empty(),
+      typeBase: typeBase,
+      typeArgs: typeArgs
     }
     return { stmt: stmt, nextPos: rhs.nextPos }
   }

@@ -1,0 +1,71 @@
+{
+  "schema": "galerina.rd0873.astra-pretranslation-gate-review.v1",
+  "provider": "GPT-6 Astra",
+  "authorizing": false,
+  "reviewOutcome": "HOLD",
+  "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+  "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+  "reviewedPlanSha256": "sha256:090bee491c8e2e94e47fab0582d98e0f9d1850746e5059b0f73477081db02b0b",
+  "correctedPlanSha256": "sha256:a67d30d954d131a35244cd5470ca2b786e4f443ab05fe132c0cf088876937651",
+  "gates": [
+    {
+      "gate": "immutable toolchain and 29/29 admission",
+      "status": "HOLD",
+      "missing": "committed ledger pins ce662 while dirty ledger pins f062; freeze a reviewed revision and reproduce all 29",
+      "classification": "local implementation plus independent adjudication"
+    },
+    {
+      "gate": "source to snapshot to GIR to SLIDE to VOK identity",
+      "status": "HOLD",
+      "missing": "acyclic subject-envelope then receipt then terminal bundle; bind consumed bytes and separate TS identity from Fungi sealer input",
+      "classification": "local implementation plus physical evidence"
+    },
+    {
+      "gate": "crash-safe resume and RD-0361 caller/shadow bake",
+      "status": "HOLD",
+      "missing": "process-crash and restart reconciliation, stale-lock policy, publication reconciliation, caller mismatch and bake exit evidence",
+      "classification": "local implementation plus platform durability evidence"
+    },
+    {
+      "gate": "exact owner manifest and limits",
+      "status": "HOLD",
+      "missing": "detached owner admission over immutable bytes; clarify four existing targets as revalidation and do not mutate a signed manifest",
+      "classification": "local validator plus owner authorization"
+    }
+  ],
+  "rAndDKeywords": [
+    "immutable build-point succession",
+    "transitive input custody",
+    "acyclic execution attestation",
+    "crash reconciliation and stale-lock ownership",
+    "caller-route mismatch rejection",
+    "bounded shadow-bake criteria",
+    "detached owner admission",
+    "semantic-versus-physical profile binding"
+  ],
+  "evidence": "Read-only plan and exact-head/dirty-ledger inspection; no tests or source edits by Astra.",
+  "followUp": {
+    "reviewedCorrectedPlanSha256": "sha256:a67d30d954d131a35244cd5470ca2b786e4f443ab05fe132c0cf088876937651",
+    "outcome": "HOLD",
+    "authorizing": false,
+    "adequateCorrections": [
+      "committed-versus-dirty ledger drift control",
+      "separate TypeScript identity from Fungi sealer input",
+      "acyclic subject-envelope to receipt to terminal-bundle",
+      "immutable manifest plus detached admission"
+    ],
+    "remaining": [
+      "pin transitive compiler/SLIDE/VOK bytes and create a new implementation-freeze revision",
+      "execute from captured owned input bytes and prove dependency closure",
+      "add schema-route refusal and per-profile semantic coverage",
+      "add injected caller mismatch, shadow-bake exit criteria, and restart reconciliation",
+      "adapt or version the existing slice-auditor contract",
+      "obtain owner admission and independent physical durability evidence"
+    ],
+    "rAndD": [
+      "unsupported semantics or profiles 64/256",
+      "owner decision to authorize a wave or couple RD-0361"
+    ],
+    "evidence": "Astra follow-up response at same claimed HEAD/tree; advisory only, no tests or edits by Astra"
+  }
+}

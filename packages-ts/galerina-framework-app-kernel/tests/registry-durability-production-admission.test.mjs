@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 
 import {
   admitRegistryDurabilityProfile,
+  activateRegistryDurabilityProfile,
+  isReleasedRegistryDurabilityProfile,
   isProductionRegistryDurabilityProfile,
   registryDurabilityProfileMatchesRotation,
   verifyRegistryDurabilityEvidence,
@@ -105,6 +107,23 @@ function authority(overrides = {}) {
   };
 }
 
+function releaseAuthorization(overrides = {}) {
+  return {
+    schema: "galerina.registry.durability.production-release.v1",
+    releaseId: "galerina-beta-v1-release-1",
+    ownerKeyId: "owner-release-key",
+    targetEvidenceId: DIGEST("1"),
+    targetGenerationId: "b".repeat(64),
+    issuedAt: "2026-08-01T18:30:00.000Z",
+    notBefore: "2026-08-01T18:30:00.000Z",
+    notAfter: "2026-08-01T20:00:00.000Z",
+    signature: "owner-release-test",
+    canon: "jcs",
+    context: "galerina.registry.durability.production.release.v1",
+    ...overrides,
+  };
+}
+
 describe("production registry durability composition", () => {
   it("issues one private, frozen profile only after both root components verify", () => {
     const profile = admitRegistryDurabilityProfile(
@@ -123,6 +142,52 @@ describe("production registry durability composition", () => {
     assert.equal(profile.authorityReleased, false);
     assert.equal(profile.authenticated, true);
     assert.equal(isProductionRegistryDurabilityProfile({ ...profile }), false);
+  });
+
+  it("releases authority only through a separate owner-signed exact-profile authorization", () => {
+    const candidate = admitRegistryDurabilityProfile(manifest(), evidence(), authority());
+    const released = activateRegistryDurabilityProfile(
+      candidate,
+      releaseAuthorization(),
+      (message, signature, keyId) =>
+        message.length > 0
+        && signature === "owner-release-test"
+        && keyId === "owner-release-key",
+      Date.parse("2026-08-01T19:30:00.000Z"),
+    );
+    assert.equal(isReleasedRegistryDurabilityProfile(released), true);
+    assert.equal(Object.isFrozen(released), true);
+    assert.equal(released.authorityReleased, true);
+    assert.equal(released.productionAuthorizing, true);
+    assert.equal(released.releaseId, "galerina-beta-v1-release-1");
+    assert.equal(released.ownerKeyId, "owner-release-key");
+    assert.equal(released.releasedAt, "2026-08-01T19:30:00.000Z");
+  });
+
+  it("refuses copied candidates, mismatched targets, stale windows and failed owner verifiers", () => {
+    const candidate = admitRegistryDurabilityProfile(manifest(), evidence(), authority());
+    const now = Date.parse("2026-08-01T19:30:00.000Z");
+    const verifier = () => true;
+    assert.throws(
+      () => activateRegistryDurabilityProfile({ ...candidate }, releaseAuthorization(), verifier, now),
+      /REGISTRY_DURABILITY_PRODUCTION_/u,
+    );
+    for (const changed of [
+      { targetEvidenceId: DIGEST("9") },
+      { targetGenerationId: "c".repeat(64) },
+      { notAfter: "2026-08-01T19:00:00.000Z" },
+      { notAfter: "2026-08-03T00:00:00.000Z" },
+      { ownerKeyId: candidate.operationalKeyId },
+    ]) {
+      assert.throws(
+        () => activateRegistryDurabilityProfile(candidate, releaseAuthorization(changed), verifier, now),
+        /REGISTRY_DURABILITY_PRODUCTION_/u,
+      );
+    }
+    assert.throws(
+      () => activateRegistryDurabilityProfile(candidate, releaseAuthorization(), () => false, now),
+      /REGISTRY_DURABILITY_PRODUCTION_/u,
+    );
   });
 
   it("refuses copied evidence, stale authority, revocation, and either missing signature verifier", () => {

@@ -4,6 +4,108 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### RD-0361 secret-gate Option-ABI re-baseline attempt - 2026-09-13
+
+- [x] Reproduce the exact-head observation: the committed authority-hash
+  check was **28/29** with only `secret-gate.fungi` mismatching its historical
+  digest (`ce662c...a3c36` recorded versus `f06221...c9166` derived).
+- [x] Identify the demonstrated cause: commit `ca2bc2fb5` changed the Option
+  ABI from sentinel payloads to explicit registry handles.
+- [x] Re-run bounded semantic and mutation evidence: secret-gate differential
+  **1/1**, Option ABI/wildcard regressions **22/22**, hash-tool self-test
+  **4/4**, and the targeted mutation probe **1/1**.
+- [!] Do not repin the committed ledger from the dirty working tree. The
+  working verifier's **29/29** is recorded as `HOLD_TOOLCHAIN_DRIFT` until the
+  same result is reproduced from an immutable implementation-freeze closure.
+- [!] Keep RD-0361 **HOLD** for caller-route/shadow-bake proof, independent
+  executable SLIDE integration and production authority. No consumer switch,
+  TypeScript retirement, production authority, corpus rerun or `.fungi`
+  authoring follows from this observation.
+
+### Registry durability production release seam - 2026-09-13
+
+- [x] Keep `admitRegistryDurabilityProfile` as a frozen, non-authorizing
+  candidate constructor and add the separate
+  `activateRegistryDurabilityProfile` promotion seam. The release path binds
+  an exact process-local candidate to an owner authorization covering its
+  evidence and generation, checks owner-key separation and validity windows,
+  and requires a native verifier that returns exactly `true`.
+- [x] Refuse copied candidates, target substitution, stale or over-broad
+  release windows, owner-key reuse and verifier failure. The released profile
+  is a distinct immutable process-local type with both authority flags true.
+- [!] Keep production authority closed until a real owner authorization,
+  platform durability receipts and live native-provider evidence are supplied.
+  The bounded app-kernel suite passes **233/233**; no production profile has
+  been promoted on this host.
+
+### I/O – OS kernel status refresh - 2026-09-13
+
+- [x] Reopen the exact implementation point: `main` at
+  `e716fc677d3ca609b016cf76d7f994b67fd36466`; tracked files are unchanged and
+  the pre-existing untracked `gate-selftests-local.json` remains preserved.
+- [x] Obtain the independent GPT-6 Astra review and run the bounded current-head
+  checks. Kernel admission, host-floor, auth/fuse/secret, egress and durability
+  suites pass `152/152` across 17 suites with zero failures, cancellations or
+  skips. The current registry records 29 authoritative twins; the older July
+  handover count of 28 is historical.
+- [x] Confirm the bounded controls: fail-closed channel admission,
+  least-authority host-import classification, checked egress resolution and
+  candidate/production durability separation. These are evidence controls, not
+  a general native I/O implementation or a production receipt.
+- [x] Re-run the focused app-kernel seams after the current-head review:
+  production durability/boot posture **12/12** and fuse-loader/composition
+  **37/37**. These checks confirm the refusal boundaries; they do not turn the
+  placeholder general network adapters into a production I/O implementation.
+- [!] Keep the I/O – OS kernel boundary at `72% asserted`. General inbound and
+  outbound operations in `packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts`
+  still refuse with `-1`; the durability production allow-list remains empty,
+  and admitted candidate profiles retain `authorityReleased: false` and
+  `productionAuthorizing: false`.
+- [!] Keep open: operational general I/O adapters with checked address use,
+  hostile-code containment and complete resource controls, authenticated
+  crash/termination receipts, named-platform restart/power-loss durability,
+  independent native execution evidence, and production authority.
+- [!] Mark the linked-host executable and bounded Windows checks as progress
+  only. The native durability README's older “custom Node host not built” text
+  is superseded for that bounded fact by the later linked-host checkpoint, but
+  production evidence remains `K3 0`.
+- [ ] Next safe step: implement or explicitly scope the missing general I/O and
+  platform-durability contracts, then obtain fresh exact-head independent
+  receipts before changing the percentage or production ledger arrays. No
+  consumer switch, TypeScript retirement, corpus rerun or `.gate` work follows
+  from this refresh.
+
+### RD-0361 authority hash and shadow-bake housekeeping - 2026-09-13
+
+This earlier check remains the committed 28/29 observation; no re-baseline was
+committed because the working-tree pin differs from the committed ledger.
+
+- [x] Reopen RD-0361 at `main` HEAD
+  `e716fc677d3ca609b016cf76d7f994b67fd36466` / tree
+  `80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a`, preserving the unrelated dirty
+  working-tree paths and `gate-selftests-local.json`.
+- [x] Re-run the bounded RD-0361 checks: execution **26/26** across 25 test
+  files, twin syntax/presence **103/103**, and the live #143 R4 classifier with
+  29 declared authoritative entries.
+- [!] Keep RD-0361 **HOLD**. The enforcing authority-hash check exits 1 at
+  **28/29**. `secret-gate.fungi` derives
+  `f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166` while
+  its recorded pin is
+  `ce662c325ef9ba682688a4b18097f5020fe54235ce522773f20e13d0cfda3c36`.
+  Do not repin solely to make the gate green.
+- [!] Treat the older 29/29 hash-integrity wording as historical until the
+  mismatch is reproduced from an immutable compiler/toolchain closure and the
+  cause is independently reviewed. Ledger declarations and presence checks do
+  not prove live caller routing or TypeScript-shadow retirement.
+- [x] Record the exact disposition in
+  `docs/reports/rd0361-housekeeping-2026-09-13.md` and the compact handoff
+  `docs/handover/COMPACT-HANDOFF-rd0361-housekeeping-2026-09-13.md`.
+- [ ] Next safe step: reproduce and explain the `secret-gate` drift, repair the
+  demonstrated cause, rerun exact hash/admission plus differential and
+  mutation checks, then verify each twin's caller route and mismatch refusal.
+  No consumer switch, TypeScript retirement, production authority or corpus
+  rerun follows from this housekeeping entry.
+
 ### RD-0873 triNot preauthoring evidence check - 2026-09-12
 
 - [!] The owner reports this checkpoint is superseded by `RD-1003`. The checked KB record `ZTF-Knowledge-Bases/private/research/rd/RD-1003-interval-witness-defensive-admission-PRIVATE.md` is a separate private interval-witness research construction and explicitly contains no Galerina, SLIDE, `.fungi`, physical experiment, signing, hosted run or push. The relationship is therefore unconfirmed: retain this triNot receipt as historical `HOLD_NON_AUTHORING`, do not substitute RD-1003 for a Galerina exact-head admission, and do not resume this authoring lane until the owner names a Galerina-related superseding record or confirms the hold is still needed.

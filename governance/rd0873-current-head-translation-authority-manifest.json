@@ -1,0 +1,63 @@
+{
+  "schema": "galerina.rd0873.translation-authority-manifest.v1",
+  "status": "PROPOSAL_NON_AUTHORIZING",
+  "authorizing": false,
+  "wholeFileReplacement": false,
+  "consumerSwitch": false,
+  "typescriptRetirement": false,
+  "productionAuthorityReleased": false,
+  "subject": {
+    "repository": "Galerina",
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "profile": "scalar-1",
+    "compilerToolchain": "HOLD_TOOLCHAIN_DRIFT"
+  },
+  "limits": {
+    "perStepInputBytes": 65536,
+    "perStepOutputEvidenceBytes": 65536,
+    "aggregateInputBytes": 100000,
+    "aggregateOutputEvidenceBytes": 262144,
+    "timeoutMs": 600000,
+    "concurrency": 1,
+    "retries": 0,
+    "chapterAggregate": "after-four-items"
+  },
+  "entries": [
+    {
+      "source": {"file":"packages-ts/galerina-core-config/src/index.ts","symbol":"isEnvironmentMode","sha256":"sha256:80b4b0b8b1a8a31cff824d71ef85dba17ffcc69ef2aca1e90ba3f0a1c339864b"},
+      "target": {"file":"packages/fungi/products/galerina/rd0873-core-config/environment-mode.fungi","sha256":"sha256:52025e4c248afd31cb8659d2eed85e78ef03d1e8e49eb02f15bbb8c90e03a1ba"},
+      "scope":"SYMBOL",
+      "profile":"scalar-1",
+      "oneSourceFilePerStep":true
+    },
+    {
+      "source": {"file":"packages-ts/galerina-core-runtime/src/structured-await.ts","symbol":"isTerminalScope","sha256":"sha256:a2b082356579371567b404ae9c034ca20eda57fafe2b294981a43b57d2ce0ac9"},
+      "target": {"file":"packages/fungi/products/galerina/rd0873-core-runtime/terminal-scope.fungi","sha256":"sha256:3798a6ec392e80f0567767807bc6f341f034d7381a576496e5bb9d367e052d8e"},
+      "scope":"SYMBOL",
+      "profile":"scalar-1",
+      "oneSourceFilePerStep":true
+    },
+    {
+      "source": {"file":"packages-ts/galerina-core-tasks/src/load-tasks.ts","symbol":"isTaskEffect","sha256":"sha256:f40a970d695937c0546aaafaa6a4ce36c03fdc405ca5465fbaec3442c2e0856d"},
+      "target": {"file":"packages/fungi/products/galerina/rd0873-core-tasks/task-effect.fungi","sha256":"sha256:517fb7c9c029ec88f3efe5b98bfa26062961300cbc628f79949f01f764ca7b8b"},
+      "scope":"SYMBOL",
+      "profile":"scalar-1",
+      "oneSourceFilePerStep":true
+    },
+    {
+      "source": {"file":"packages-ts/galerina-data-model/src/index.ts","symbol":"isResponseSafeClassification","sha256":"sha256:cfdd5bee797fbc15bb556cb12a87c715d20f9f5965ab2d734c5f3d13d008832e"},
+      "target": {"file":"packages/fungi/products/galerina/rd0873-data-model/response-safe-classification.fungi","sha256":"sha256:b5cfec5a48c9e4bd0f36a7104fa85191aab184c089312d3dc761bd95d361aca8"},
+      "scope":"SYMBOL",
+      "profile":"scalar-1",
+      "oneSourceFilePerStep":true
+    }
+  ],
+  "heldOut": [
+    {"symbol":"isOmniUncertain","reason":"state and Option semantic packet required"},
+    {"symbol":"isBuiltin","reason":"tooling and physical-profile evidence required"},
+    {"symbol":"validateTransition","reason":"caller-route and physical-profile evidence required"}
+  ],
+  "signature": null,
+  "admissionReceipt": null
+}

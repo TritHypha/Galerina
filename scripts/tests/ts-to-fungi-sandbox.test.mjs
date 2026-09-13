@@ -81,6 +81,24 @@ test("3 journal canonicalizes keys and refuses overwriting an outcome", async ()
   await assert.rejects(() => appendOutcomeRecord(path, record));
 }));
 
+test("3a journal refuses a torn final line with a distinct fail-closed code", async () => withTemp("ts-fungi-journal-torn-", async (dir) => {
+  const path = join(dir, "journal.jsonl");
+  await writeFile(path, '{"outcome":"BLOCKED"}\n{"outcome":"PARTIAL"', { flag: "wx" });
+  await assert.rejects(
+    () => appendOutcomeRecord(path, { outcome: "CONVERTED" }),
+    (error) => error?.code === "JOURNAL_TORN_TAIL",
+  );
+}));
+
+test("3b journal refuses an active writer lock before reading or appending", async () => withTemp("ts-fungi-journal-lock-", async (dir) => {
+  const path = join(dir, "journal.jsonl");
+  await writeFile(`${path}.lock`, "owner", { flag: "wx" });
+  await assert.rejects(
+    () => appendOutcomeRecord(path, { outcome: "BLOCKED" }),
+    (error) => error?.code === "JOURNAL_LOCKED",
+  );
+}));
+
 test("4 classifier admits primitive literals and inventories exact source ranges", () => {
   for (const source of [
     'export const READY = true;\n',

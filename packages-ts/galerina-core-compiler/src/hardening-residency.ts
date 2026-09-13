@@ -331,7 +331,7 @@ function pickTwoValued<T extends string>(
  *    os-keystore — OS keystore wraps the KEK (Windows DPAPI / macOS keychain); L2.
  *    tpm-sealed  — TPM 2.0 PCR-sealed KEK; key is bound to machine + measured boot; L3.
  *    hardware-signer — key never leaves TPM/HSM/YubiKey; signing happens inside device; L4.
- *  A host claiming a rung it cannot prove is resolved to UNKNOWN_HOST → fail-closed (H-5/H-6). */
+ *  A host claiming a rung it cannot prove is refused at custody admission (H-5/H-6). */
 export type KeyCustody = "env-spore" | "os-keystore" | "tpm-sealed" | "hardware-signer";
 
 export interface HostResidencyCapability {
@@ -340,29 +340,30 @@ export interface HostResidencyCapability {
   readonly canNoDramSpill: boolean; // on-package SRAM pinning, no DRAM
   readonly canNoSwap: boolean;      // mlock / MADV_DONTDUMP — never swap
   readonly canNoDisk: boolean;      // never persist to disk
-  /** RD-0365 key custody level. A RESERVED slot — the H-5 seam acknowledges the rung,
-   *  but enforcement (PCR quote into #105 admission) is post-v1. Defaults to "env-spore"
-   *  (the current shipped baseline) so existing profiles are unaffected. */
+  /** RD-0365 key custody level. This is a profile claim, never proof by itself: the
+   *  `evaluateKeyCustody` admission seam requires a current native attestation for
+   *  os-keystore, tpm-sealed and hardware-signer. Defaults to "env-spore" (the
+   *  current shipped baseline) so existing profiles remain explicitly unenforced. */
   readonly keyCustody: KeyCustody;
 }
 
 /** Fail-closed default (H-6): no declared seam ⇒ NOTHING is guaranteed ⇒ any ceiling is unhonourable. */
-export const UNKNOWN_HOST: HostResidencyCapability = {
+export const UNKNOWN_HOST: HostResidencyCapability = Object.freeze({
   name: "<undeclared>", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false,
   keyCustody: "env-spore",
-};
+});
 
 /**
  * Declared host seams (H-5). The names a `hardening { host <name> }` directive may reference.
  * These are the CONTRACT (design-stage); the actual syscalls live behind the framework-app-kernel
  * 9-primitive floor seam (a platform without the primitive resolves to UNKNOWN_HOST → fail-closed).
  *
- * keyCustody (RD-0365): a RESERVED slot indicating the rung of the custody ladder this host profile
- * claims. Post-v1, a PCR-quote TPM attestation can be folded into the #105 admission gate so that
- * custody becomes part of the trust chain. For v1, the field is informational — it documents the
- * claim without enforcing the proof, which is the correct starting line for any honest trust ladder.
+ * keyCustody (RD-0365): the rung a host profile requests. The label is never evidence by itself:
+ * `evaluateKeyCustody` below requires a current attestation and an injected verifier before any
+ * rung above the env-spore baseline is admitted. This compiler module deliberately does not speak
+ * TPM protocols or create quotes; that remains a native/platform responsibility behind the seam.
  */
-export const HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = new Map([
+const HOST_PROFILE_MAP = new Map<string, HostResidencyCapability>([
   // POSIX mlock: guarantees no-swap + no-disk; cannot pin to registers or forbid DRAM.
   ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: true, canNoDisk: true, keyCustody: "env-spore" }],
   // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
@@ -377,10 +378,116 @@ export const HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = new M
   ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
 ]);
 
+// Host capability records are registry-owned identities. Freeze each record so callers cannot
+// mutate a profile after it has been resolved; evaluateKeyCustody also requires this exact object.
+for (const profile of HOST_PROFILE_MAP.values()) Object.freeze(profile);
+const CANONICAL_HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = HOST_PROFILE_MAP;
+// Expose a compatibility snapshot for diagnostics/tests. Admission never trusts this mutable view;
+// it compares against the private canonical registry above.
+export const HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = new Map(CANONICAL_HOST_PROFILES);
+
 /** Resolve a declared host name to its capability, fail-closed to UNKNOWN_HOST for an unknown/undeclared name. */
 export function resolveHost(name: string | undefined): HostResidencyCapability {
   if (name === undefined) return UNKNOWN_HOST;
-  return HOST_PROFILES.get(name) ?? UNKNOWN_HOST;
+  return CANONICAL_HOST_PROFILES.get(name) ?? UNKNOWN_HOST;
+}
+
+/**
+ * Versioned evidence envelope supplied by a native custody provider. The quote itself is opaque to
+ * the compiler; `quoteDigest` identifies the exact quote bytes and `challengeDigest` binds that
+ * quote to the admission challenge that the injected verifier checks. `hostName` prevents an
+ * otherwise-valid quote from being replayed for a different declared profile. No private key,
+ * quote bytes or TPM handle are stored in this module.
+ */
+export interface KeyCustodyAttestation {
+  readonly schema: "galerina.key-custody-attestation.v1";
+  readonly hostName: string;
+  readonly keyCustody: Exclude<KeyCustody, "env-spore">;
+  readonly pcrProfile: string;
+  readonly quoteDigest: string;
+  readonly challengeDigest: string;
+  readonly issuedAtMs: number;
+  readonly expiresAtMs: number;
+}
+
+/** Native/platform verifier contract. A verifier must independently validate the quote and PCRs. */
+export type KeyCustodyVerifier = (attestation: KeyCustodyAttestation, host: HostResidencyCapability) => boolean;
+
+export interface KeyCustodyDecision {
+  readonly admitted: boolean;
+  readonly enforced: boolean;
+  readonly reason: string;
+}
+
+const ELEVATED_CUSTODY: ReadonlySet<string> = new Set(["os-keystore", "tpm-sealed", "hardware-signer"]);
+const ATTESTATION_KEYS = ["challengeDigest", "expiresAtMs", "hostName", "issuedAtMs", "keyCustody", "pcrProfile", "quoteDigest", "schema"] as const;
+
+function validKeyCustodyAttestation(value: unknown): value is KeyCustodyAttestation {
+  try {
+    if (value === null || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) return false;
+    const candidate = value as Record<string, unknown>;
+    const keys = Object.keys(candidate).sort();
+    if (keys.length !== ATTESTATION_KEYS.length || keys.some((key, index) => key !== ATTESTATION_KEYS[index])) return false;
+    if (candidate.schema !== "galerina.key-custody-attestation.v1" || typeof candidate.hostName !== "string" || candidate.hostName.length < 1 || candidate.hostName.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.hostName)) return false;
+    if (typeof candidate.keyCustody !== "string" || !ELEVATED_CUSTODY.has(candidate.keyCustody)) return false;
+    if (typeof candidate.pcrProfile !== "string" || candidate.pcrProfile.length < 1 || candidate.pcrProfile.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.pcrProfile)) return false;
+    if (typeof candidate.quoteDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.quoteDigest)) return false;
+    if (typeof candidate.challengeDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.challengeDigest)) return false;
+    if (typeof candidate.issuedAtMs !== "number" || !Number.isSafeInteger(candidate.issuedAtMs) || candidate.issuedAtMs < 0) return false;
+    if (typeof candidate.expiresAtMs !== "number" || !Number.isSafeInteger(candidate.expiresAtMs) || candidate.expiresAtMs <= candidate.issuedAtMs) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Evaluate the custody claim at an admission boundary.
+ *
+ * The v1 env-spore baseline is admitted for a declared host with `enforced:false`; it makes no
+ * hardware claim. Every elevated rung is denied unless the envelope is exact, current, matched to
+ * the host and accepted by the injected native verifier. Missing, stale, malformed, mismatched or
+ * verifier-failed evidence is always denied. This is an enforcement seam, not TPM evidence itself.
+ */
+export function evaluateKeyCustody(
+  host: HostResidencyCapability,
+  attestation?: KeyCustodyAttestation,
+  verifier?: KeyCustodyVerifier,
+  nowMs: number = Date.now(),
+): KeyCustodyDecision {
+  if (host === undefined || host === null || typeof host !== "object" || host.name === UNKNOWN_HOST.name) {
+    return { admitted: false, enforced: false, reason: "host identity is undeclared" };
+  }
+  if (CANONICAL_HOST_PROFILES.get(host.name) !== host) {
+    return { admitted: false, enforced: false, reason: "host capability is not a declared profile" };
+  }
+  if (host.keyCustody === "env-spore") {
+    return { admitted: true, enforced: false, reason: "env-spore baseline does not claim hardware custody" };
+  }
+  if (!ELEVATED_CUSTODY.has(host.keyCustody)) {
+    return { admitted: false, enforced: false, reason: "host declares an unknown custody rung" };
+  }
+  if (!validKeyCustodyAttestation(attestation)) {
+    return { admitted: false, enforced: false, reason: "elevated custody requires a valid attestation" };
+  }
+  if (attestation.hostName !== host.name) {
+    return { admitted: false, enforced: false, reason: "attestation host does not match declared profile" };
+  }
+  if (attestation.keyCustody !== host.keyCustody) {
+    return { admitted: false, enforced: false, reason: "attestation custody rung does not match host" };
+  }
+  if (!Number.isSafeInteger(nowMs) || nowMs < attestation.issuedAtMs || nowMs >= attestation.expiresAtMs) {
+    return { admitted: false, enforced: false, reason: "custody attestation is stale or not yet valid" };
+  }
+  if (typeof verifier !== "function") {
+    return { admitted: false, enforced: false, reason: "elevated custody has no native verifier" };
+  }
+  try {
+    if (verifier(attestation, host) !== true) return { admitted: false, enforced: false, reason: "native custody verifier refused attestation" };
+  } catch {
+    return { admitted: false, enforced: false, reason: "native custody verifier failed" };
+  }
+  return { admitted: true, enforced: true, reason: "attested custody verified" };
 }
 
 /**

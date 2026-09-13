@@ -10822,7 +10822,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 250,
+      "tests": 253,
       "docs": 24
     },
     {
@@ -10890,8 +10890,8 @@
         "error"
       ],
       "defs": 0,
-      "emits": 1,
-      "tests": 26,
+      "emits": 4,
+      "tests": 37,
       "docs": 5
     },
     {
@@ -10918,8 +10918,8 @@
         "error"
       ],
       "defs": 0,
-      "emits": 1,
-      "tests": 13,
+      "emits": 2,
+      "tests": 15,
       "docs": 2
     },
     {
@@ -10935,7 +10935,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 38,
+      "tests": 39,
       "docs": 1
     },
     {
@@ -11330,8 +11330,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 7,
-      "docs": 3
+      "tests": 8,
+      "docs": 5
     },
     {
       "code": "FUNGI-TYPE-035",
@@ -11346,7 +11346,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 2,
+      "tests": 4,
       "docs": 2
     },
     {

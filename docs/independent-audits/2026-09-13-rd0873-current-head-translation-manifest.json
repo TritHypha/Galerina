@@ -1,0 +1,21 @@
+{
+  "schema": "galerina.rd0873.translation-manifest-audit.v1",
+  "authorizing": false,
+  "manifestPath": "governance/rd0873-current-head-translation-authority-manifest.json",
+  "manifestStatus": "PROPOSAL_NON_AUTHORIZING",
+  "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+  "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+  "scopeCount": 4,
+  "scopeType": "SYMBOLS",
+  "profile": "scalar-1",
+  "wholeFileReplacement": false,
+  "limits": {"perStepInputBytes":65536,"perStepOutputEvidenceBytes":65536,"aggregateInputBytes":100000,"aggregateOutputEvidenceBytes":262144,"timeoutMs":600000,"concurrency":1,"retries":0},
+  "entries": [
+    "packages-ts/galerina-core-config/src/index.ts#isEnvironmentMode -> packages/fungi/products/galerina/rd0873-core-config/environment-mode.fungi",
+    "packages-ts/galerina-core-runtime/src/structured-await.ts#isTerminalScope -> packages/fungi/products/galerina/rd0873-core-runtime/terminal-scope.fungi",
+    "packages-ts/galerina-core-tasks/src/load-tasks.ts#isTaskEffect -> packages/fungi/products/galerina/rd0873-core-tasks/task-effect.fungi",
+    "packages-ts/galerina-data-model/src/index.ts#isResponseSafeClassification -> packages/fungi/products/galerina/rd0873-data-model/response-safe-classification.fungi"
+  ],
+  "validation": "PROPOSAL_ONLY; exact-head validator and owner admission are pending",
+  "translation": "PAUSED"
+}

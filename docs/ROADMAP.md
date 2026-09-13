@@ -3,6 +3,77 @@
 Date: 2026-08-30
 Branch: `main`
 
+## Registry durability production release seam - 2026-09-13
+
+`admitRegistryDurabilityProfile` remains intentionally non-authorizing: it
+returns a frozen candidate with `authorityReleased: false` and
+`productionAuthorizing: false`. A separate `activateRegistryDurabilityProfile`
+path now exists for the missing promotion step. It accepts only a process-local
+candidate plus an exact owner-signed release authorization bound to the
+candidate's evidence and generation, with a bounded validity window and a
+separate owner verifier. Copied candidates, target substitutions, key-role
+reuse, stale windows and verifier failures refuse closed.
+
+The new path is covered by the full app-kernel suite (**233/233**). It is an
+implementation seam, not a production release: no owner authorization,
+platform durability receipts or live native provider evidence has been issued
+on this host, so no current candidate has been promoted and the production
+authority gate remains **HOLD**.
+
+## I/O – OS kernel status refresh - 2026-09-13
+
+The current implementation point is `main` at
+`e716fc677d3ca609b016cf76d7f994b67fd36466`; this is a documentation-only
+refresh and preserves the existing untracked `gate-selftests-local.json`.
+GPT-6 Astra independently reviewed the exact source and current evidence. The
+bounded kernel/auth/fuse/secret, host-floor, egress, inbound and durability
+checks pass `152/152` across 17 suites. The execution registry now reflects 29
+authoritative twins; the July handover's 28-twin count is historical.
+
+The roadmap row remains **72% asserted**, correctly. The bounded controls prove
+fail-closed channel admission, least-authority host-import classification,
+checked egress resolution and candidate-versus-production durability separation.
+They do not provide general native I/O. The app-kernel fuse loader still refuses
+general inbound/outbound operations with `-1`; the durability production
+allow-list is empty; and admitted candidate profiles retain
+`authorityReleased: false` and `productionAuthorizing: false`.
+
+Completion therefore remains on hold pending operational I/O adapters with
+checked address use, hostile-code containment and complete resource limits,
+authenticated crash/termination receipts, named-platform restart/power-loss
+durability and production authority. The bounded linked-host executable and
+Windows checks are useful progress but remain non-authorizing. No percentage
+change, consumer switch, TypeScript retirement, corpus rerun or `.gate` work is
+claimed.
+
+The latest KB material was checked directly. RD-0606 keeps platform/filesystem
+production proof open; RD-0670 separates linked-host identity from external
+signed-host activation; RD-0768 treats durable-log ordering as a necessary
+obligation; and RD-0835 keeps returned-value verification separate from hostile
+execution containment. The governed RD-0768 lookup was refused because tracked
+KB sources are dirty, so these records are not an exhaustive fresh KB verdict.
+
+## RD-0361 authority hash and shadow-bake re-baseline attempt - 2026-09-13
+
+A re-baseline was investigated at Galerina `main` HEAD
+`e716fc677d3ca609b016cf76d7f994b67fd36466` / tree
+`80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a`, but it is **not admitted**. The
+working tree derives `secret-gate.fungi` as
+`f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166`, while
+the committed ledger still pins
+`ce662c325ef9ba682688a4b18097f5020fe54235ce522773f20e13d0cfda3c36`.
+
+The working-tree verifier reports 29/29, but the committed-versus-dirty
+contradiction is `HOLD_TOOLCHAIN_DRIFT`; the dirty value must not be repinned
+merely to restore green status. The bounded semantic and mutation checks are
+useful evidence only. RD-0361 remains **HOLD** pending an immutable
+implementation-freeze reproduction, independent adjudication, caller-route and
+shadow-bake proof, and fresh exact-head admission. No consumer switch,
+TypeScript retirement, production authority or Fungi translation follows.
+
+The earlier 28/29 result and historical 278-byte digest remain retained as
+pre-repair observations.
+
 ## RD-0873 triNot preauthoring evidence check - 2026-09-12
 
 - [!] The owner reports this checkpoint is superseded by `RD-1003`. The checked KB record `ZTF-Knowledge-Bases/private/research/rd/RD-1003-interval-witness-defensive-admission-PRIVATE.md` is a separate private interval-witness research construction and explicitly contains no Galerina, SLIDE, `.fungi`, physical experiment, signing, hosted run or push. The relationship is therefore unconfirmed: retain this triNot receipt as historical `HOLD_NON_AUTHORING`, do not substitute RD-1003 for a Galerina exact-head admission, and do not resume this authoring lane until the owner names a Galerina-related superseding record or confirms the hold is still needed.

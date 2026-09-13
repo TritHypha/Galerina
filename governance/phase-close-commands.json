@@ -359,11 +359,11 @@
           "--concurrency",
           "2",
           "--max-files",
-          "1360",
+          "1368",
           "--max-bytes",
           "67108864",
           "--timeout-ms",
-          "3400000",
+          "3420000",
           "--max-output-bytes",
           "67108864"
         ]
@@ -391,7 +391,7 @@
         ],
         "expectedCount": 1
       },
-      "timeoutMs": 3460000,
+      "timeoutMs": 3480000,
       "maxOutputBytes": 67108864,
       "generatedOutputs": [],
       "nestedTools": [],

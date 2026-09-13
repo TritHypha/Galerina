@@ -1003,7 +1003,10 @@ contract {
             diags = diags.append({ code: "FUNGI-TYPE-032", message: msg32, flowName: flowName })
           }
         } else {
-          if arg.startsWith("Array") == false {
+          // Nested parameterized arrays are outside this bounded checker lane;
+          // skip only the actual `Array<...>` spelling. A flat unknown such as
+          // `ArrayWidget` must still be refused as FUNGI-TYPE-001.
+          if arg.startsWith("Array<") == false {
             if isKnownType(arg) == false {
               let msg1: String = "unknown type argument '" + arg + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
               diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: flowName })

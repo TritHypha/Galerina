@@ -1,0 +1,50 @@
+{
+  "schema": "galerina.rd0361.registry-durability-production-release-seam.v1",
+  "date": "2026-09-13",
+  "authorizing": false,
+  "status": "RELEASE_SEAM_IMPLEMENTED_NON_AUTHORITATIVE",
+  "purpose": "Record the separate owner-gated promotion path for registry durability candidates without claiming that production authority has been released.",
+  "buildIdentity": {
+    "repository": "Galerina",
+    "branch": "main",
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "workingTree": "DIRTY_SCOPED_AND_UNRELATED_PATHS_PRESERVED"
+  },
+  "implementation": {
+    "source": "packages-ts/galerina-framework-app-kernel/src/registry-durability-production-admission.ts",
+    "candidateFunction": "admitRegistryDurabilityProfile",
+    "releaseFunction": "activateRegistryDurabilityProfile",
+    "behavior": [
+      "candidate admission remains frozen, process-local and non-authorizing",
+      "promotion requires an exact owner release authorization bound to evidenceId and generationId",
+      "promotion requires a separate owner verifier, owner-key separation, canonical signed preimage and active release window",
+      "copied candidates, target substitutions, stale or over-broad windows, verifier failures and malformed authorizations refuse closed",
+      "promoted profiles are a distinct immutable process-local type with authorityReleased and productionAuthorizing set true"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "npm --prefix packages-ts/galerina-framework-app-kernel run typecheck",
+      "npm --prefix packages-ts/galerina-framework-app-kernel run build",
+      "npm --prefix packages-ts/galerina-framework-app-kernel test"
+    ],
+    "tests": 233,
+    "passed": 233,
+    "failed": 0,
+    "skipped": 0
+  },
+  "remainingAuthority": [
+    "real owner release authorization and key custody",
+    "live native provider identity and revocation",
+    "named-platform durability and controlled recovery receipts",
+    "production allow-list admission and consumer activation"
+  ],
+  "custody": {
+    "candidateAuthorityFlagsFalse": true,
+    "productionProfilePromotedOnHost": false,
+    "fungiSourceCreated": false,
+    "commitCreated": false,
+    "remotePublication": false
+  }
+}

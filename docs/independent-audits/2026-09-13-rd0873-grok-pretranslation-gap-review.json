@@ -1,0 +1,107 @@
+{
+  "schema": "galerina.rd0873.grok-pretranslation-gap-review.v1",
+  "provider": "Grok",
+  "authorizing": false,
+  "reviewOutcome": "HOLD",
+  "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+  "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+  "promptManifest": "docs/independent-audits/2026-09-13-rd0873-pretranslation-grok.manifest.json",
+  "promptArtifact": "docs/independent-audits/2026-09-13-rd0873-pretranslation-grok.prompt.md",
+  "replyLocation": "Grok chat response 55d45d76-4b86-4c84-a9dd-12a9ce46f572",
+  "findings": [
+    {
+      "vector": "authority and identity",
+      "status": "HOLD",
+      "gaps": [
+        "exact-head bind across Galerina/compiler/SLIDE/VOK/toolchain",
+        "snapshot-to-GIR-to-VOK preimage",
+        "source or twin substitution",
+        "String v2 versus scalar v1 route confusion",
+        "owner manifest custody",
+        "RD-0361 ledger substitution",
+        "compiler/toolchain swap"
+      ],
+      "checks": [
+        "one owner manifest with commit/tree/tool hashes",
+        "re-derive GIR from sealed snapshot and refuse drift",
+        "per-step source/twin/path/symbol digest comparison",
+        "force scalar through v2 and require refusal",
+        "rehash 29 entries against frozen baseline",
+        "pin compiler identity and rebuild"
+      ]
+    },
+    {
+      "vector": "lifecycle and semantics",
+      "status": "HOLD",
+      "gaps": [
+        "crash/restart before seal",
+        "caller-route/shadow bake",
+        "profile 64 versus 256 label confusion",
+        "output/evidence truncation",
+        "timer expiry with partial output",
+        "semantic twin drift"
+      ],
+      "checks": [
+        "kill after write before seal and reconcile",
+        "shadow/twin disagreement fixture",
+        "run claimed profile id and refuse cross-label",
+        "over-cap must refuse",
+        "expiry must not publish a complete receipt",
+        "metamorphic TS/twin oracle"
+      ]
+    }
+  ],
+  "disposition": {
+    "local": [
+      "schema-route refusal",
+      "per-step digest comparison",
+      "over-cap refusal",
+      "crash-before-seal fixture",
+      "shadow/twin differential"
+    ],
+    "external": [
+      "snapshot-to-VOK preimage at named heads",
+      "profiles 64 and 256",
+      "compiler/toolchain provenance",
+      "RD-0361 rehash",
+      "independent completion audit"
+    ],
+    "newRAndD": [
+      "whether profile 256 is in scope",
+      "secret-gate versus translation-gate coupling",
+      "any authorizing flip or consumer switch"
+    ]
+  },
+  "capturedReply": "REVIEW_OUTCOME: HOLD. Local PASS is not admission. The packet supplies four gates, four scalar-1 symbols and limits but does not supply an authorizing admission, independent audit, or measured snapshot-to-GIR-to-SLIDE-to-VOK chain at this head. Require a single exact-head owner manifest, source/twin digests, refusal vectors, profile identities, and an explicit authorizing bit before any wave. Keep TypeScript shadows and the 2720-file corpus assurance closed.",
+  "followUp": {
+    "replyLocation": "Grok chat response e6607711-8eeb-4eca-8c89-05ba52184f37",
+    "promptArtifact": "docs/independent-audits/2026-09-13-rd0873-grok-pretranslation-followup.prompt.md",
+    "outcome": "HOLD",
+    "authorizing": false,
+    "adequateCorrections": [
+      "HOLD_TOOLCHAIN_DRIFT as local control statement",
+      "separate TypeScript and Fungi identities",
+      "acyclic evidence DAG",
+      "immutable authorizing=false manifest with detached admission"
+    ],
+    "remainingLocal": [
+      "enforce refusal on HOLD_TOOLCHAIN_DRIFT",
+      "wrong-schema refusal for scalar-1 versus String v2",
+      "digest equality over the DAG",
+      "over-cap and partial-journal refusal",
+      "stale-lock refusal"
+    ],
+    "remainingExternal": [
+      "independent completion audit",
+      "SLIDE/VOK and profile 64/256 receipts",
+      "compiler pin and RD-0361 rehash",
+      "signature verification over exact manifest bytes"
+    ],
+    "newRAndD": [
+      "whether detached admission may flip authorizing",
+      "whether String-match sealer belongs on scalar-1 wave",
+      "whether translation gates couple to RD-0361"
+    ],
+    "capturedReply": "REVIEW_OUTCOME: HOLD. Corrections improve controls but do not prove toolchain provenance, physical preimage, route separation, or owner admission. Search phrases: detached signature payload binding; TOCTOU committed versus working tree; schema confusion two-parser; content-addressed provenance chain; write-ahead log commit visibility; distributed lock fencing token; SLSA provenance builder identity"
+  }
+}

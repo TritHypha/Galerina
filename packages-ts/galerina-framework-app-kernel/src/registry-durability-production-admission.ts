@@ -13,6 +13,9 @@ import type {
 export const REGISTRY_DURABILITY_PRODUCTION_SIGNATURE_CONTEXT =
   "galerina.registry.durability.production.sig.v1" as const;
 
+export const REGISTRY_DURABILITY_PRODUCTION_RELEASE_CONTEXT =
+  "galerina.registry.durability.production.release.v1" as const;
+
 export interface RegistryDurabilityProductionSignature {
   readonly algorithm: "Ed25519+ML-DSA-65";
   readonly keyId: string;
@@ -92,6 +95,37 @@ export interface ProductionRegistryDurabilityProfile {
   readonly productionAuthorizing: false;
 }
 
+/** Separate owner authorization that can promote one exact candidate profile. */
+export interface RegistryDurabilityProductionReleaseAuthorization {
+  readonly schema: "galerina.registry.durability.production-release.v1";
+  readonly releaseId: string;
+  readonly ownerKeyId: string;
+  readonly targetEvidenceId: string;
+  readonly targetGenerationId: string;
+  readonly issuedAt: string;
+  readonly notBefore: string;
+  readonly notAfter: string;
+  readonly signature: string;
+  readonly canon: "jcs";
+  readonly context: typeof REGISTRY_DURABILITY_PRODUCTION_RELEASE_CONTEXT;
+}
+
+export type RegistryDurabilityProductionReleaseVerifier = (
+  message: Uint8Array,
+  signature: string,
+  ownerKeyId: string,
+) => boolean | "no-key";
+
+/** An activated profile is distinct from the non-authorizing candidate and is process-local. */
+export interface ReleasedRegistryDurabilityProfile
+  extends Omit<ProductionRegistryDurabilityProfile, "authorityReleased" | "productionAuthorizing"> {
+  readonly releaseId: string;
+  readonly ownerKeyId: string;
+  readonly releasedAt: string;
+  readonly authorityReleased: true;
+  readonly productionAuthorizing: true;
+}
+
 export class RegistryDurabilityProductionError extends TypeError {
   readonly code: string;
 
@@ -105,6 +139,7 @@ export class RegistryDurabilityProductionError extends TypeError {
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
 const COMMIT = /^[0-9a-f]{40}$/;
 const GENERATION = /^[0-9a-f]{64}$/;
+const RELEASE_ID = /^[0-9A-Za-z][0-9A-Za-z._-]{2,127}$/;
 const ADAPTER_ID =
   /^galerina\.registry\.durability\.(windows|linux|macos)\.v[1-9][0-9]*$/;
 const KEY_ID = /^[0-9A-Za-z][0-9A-Za-z._-]{2,127}$/;
@@ -150,7 +185,21 @@ const AUTHORITY_KEYS = Object.freeze([
   "verifyRootEd25519",
   "verifyRootMlDsa65",
 ]);
+const RELEASE_AUTHORIZATION_KEYS = Object.freeze([
+  "canon",
+  "context",
+  "issuedAt",
+  "notAfter",
+  "notBefore",
+  "ownerKeyId",
+  "releaseId",
+  "schema",
+  "signature",
+  "targetEvidenceId",
+  "targetGenerationId",
+]);
 const productionProfiles = new WeakSet<object>();
+const releasedProfiles = new WeakSet<object>();
 
 function refuse(code: string): never {
   throw new RegistryDurabilityProductionError(code);
@@ -249,10 +298,55 @@ function authorityShapeIsValid(
     && typeof authority.verifyRootMlDsa65 === "function";
 }
 
+function releaseAuthorizationShapeIsValid(
+  value: unknown,
+): value is RegistryDurabilityProductionReleaseAuthorization {
+  if (
+    typeof value !== "object"
+    || value === null
+    || !hasExactDataShape(value, RELEASE_AUTHORIZATION_KEYS)
+  ) {
+    return false;
+  }
+  const authorization = value as RegistryDurabilityProductionReleaseAuthorization;
+  const issuedAt = canonicalInstant(authorization.issuedAt);
+  const notBefore = canonicalInstant(authorization.notBefore);
+  const notAfter = canonicalInstant(authorization.notAfter);
+  return authorization.schema
+    === "galerina.registry.durability.production-release.v1"
+    && RELEASE_ID.test(authorization.releaseId)
+    && KEY_ID.test(authorization.ownerKeyId)
+    && DIGEST.test(authorization.targetEvidenceId)
+    && GENERATION.test(authorization.targetGenerationId)
+    && issuedAt !== null
+    && notBefore !== null
+    && notAfter !== null
+    && notBefore <= issuedAt
+    && issuedAt <= notAfter
+    && typeof authorization.signature === "string"
+    && authorization.signature.length > 0
+    && authorization.signature.length <= 65_536
+    && authorization.canon === "jcs"
+    && authorization.context === REGISTRY_DURABILITY_PRODUCTION_RELEASE_CONTEXT;
+}
+
 function preimage(manifest: RegistryDurabilityProductionManifest): Uint8Array {
   const { rootSignature: _signature, ...unsigned } = manifest;
   return new TextEncoder().encode(
     `${REGISTRY_DURABILITY_PRODUCTION_SIGNATURE_CONTEXT}\0Ed25519+ML-DSA-65\0${manifest.rootSignature.keyId}\0jcs\0${canonicalJson(unsigned)}`,
+  );
+}
+
+function releasePreimage(
+  profile: ProductionRegistryDurabilityProfile,
+  authorization: RegistryDurabilityProductionReleaseAuthorization,
+): Uint8Array {
+  const { signature: _signature, ...unsignedAuthorization } = authorization;
+  return new TextEncoder().encode(
+    `${REGISTRY_DURABILITY_PRODUCTION_RELEASE_CONTEXT}\0jcs\0${canonicalJson({
+      authorization: unsignedAuthorization,
+      profile,
+    })}`,
   );
 }
 
@@ -376,12 +470,91 @@ export function admitRegistryDurabilityProfile(
   }
 }
 
+/**
+ * Promote one process-local candidate only after a separate owner signature authorizes its exact
+ * evidence and generation. This is the sole production-authority release path; malformed,
+ * copied, stale, cross-key or verifier-failed inputs remain refused.
+ */
+export function activateRegistryDurabilityProfile(
+  profileValue: unknown,
+  authorizationValue: unknown,
+  verifier: RegistryDurabilityProductionReleaseVerifier,
+  nowMs: number = Date.now(),
+): ReleasedRegistryDurabilityProfile {
+  try {
+    if (!isProductionRegistryDurabilityProfile(profileValue)) {
+      refuse("REGISTRY_DURABILITY_PRODUCTION_PROFILE_REFUSED");
+    }
+    if (!releaseAuthorizationShapeIsValid(authorizationValue)) {
+      refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
+    }
+    if (typeof verifier !== "function") {
+      refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
+    }
+    const profile = profileValue;
+    const authorization = authorizationValue;
+    const issuedAt = canonicalInstant(authorization.issuedAt) as number;
+    const notBefore = canonicalInstant(authorization.notBefore) as number;
+    const notAfter = canonicalInstant(authorization.notAfter) as number;
+    const profileNotBefore = canonicalInstant(profile.notBefore);
+    const profileNotAfter = canonicalInstant(profile.notAfter);
+    const profileIssuedAt = canonicalInstant(profile.indexIssuedAt);
+    if (
+      profileNotBefore === null
+      || profileNotAfter === null
+      || profileIssuedAt === null
+      || !Number.isSafeInteger(nowMs)
+      || nowMs < notBefore
+      || nowMs >= notAfter
+      || nowMs < profileNotBefore
+      || nowMs >= profileNotAfter
+      || notBefore < profileNotBefore
+      || notAfter > profileNotAfter
+      || issuedAt < profileIssuedAt
+      || authorization.targetEvidenceId !== profile.evidenceId
+      || authorization.targetGenerationId !== profile.generationId
+      || authorization.ownerKeyId === profile.rootKeyId
+      || authorization.ownerKeyId === profile.operationalKeyId
+      || issuedAt > nowMs
+    ) {
+      refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
+    }
+    verifyComponent(
+      verifier,
+      releasePreimage(profile, authorization),
+      authorization.signature,
+      authorization.ownerKeyId,
+    );
+    const released = Object.freeze({
+      ...profile,
+      releaseId: authorization.releaseId,
+      ownerKeyId: authorization.ownerKeyId,
+      releasedAt: new Date(nowMs).toISOString(),
+      authorityReleased: true as const,
+      productionAuthorizing: true as const,
+    });
+    releasedProfiles.add(released);
+    return released;
+  } catch (error) {
+    if (error instanceof RegistryDurabilityProductionError) throw error;
+    refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
+  }
+}
+
 export function isProductionRegistryDurabilityProfile(
   value: unknown,
 ): value is ProductionRegistryDurabilityProfile {
   return typeof value === "object"
     && value !== null
     && productionProfiles.has(value);
+}
+
+export function isReleasedRegistryDurabilityProfile(
+  value: unknown,
+): value is ReleasedRegistryDurabilityProfile {
+  return typeof value === "object"
+    && value !== null
+    && releasedProfiles.has(value);
 }
 
 export interface RegistryDurabilityRotationIdentity {

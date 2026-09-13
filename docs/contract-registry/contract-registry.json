@@ -1,9 +1,9 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "generatedAt": "2026-09-12T05:48:42.000Z",
-  "sha": "72d5eed4b",
-  "contracts": 3973,
-  "parsed": 2991,
+  "generatedAt": "2026-09-12T23:58:47.000Z",
+  "sha": "e716fc677",
+  "contracts": 3991,
+  "parsed": 2992,
   "rows": [
     {
       "file": "docs/examples/CHECKED-MILLION-ITERATION-LOOP.fungi",
@@ -5279,11 +5279,51 @@
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "readQualifiedTypeName",
+      "qualifier": "pure",
+      "signature": "pure flow readQualifiedTypeName(tokens: Array<Token>, pos: Int) -> String",
+      "effects": [],
+      "intent": "Read protected/redacted plus the complete following type, or a normal type unchanged."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "qualifiedTypeEndPos",
+      "qualifier": "pure",
+      "signature": "pure flow qualifiedTypeEndPos(tokens: Array<Token>, pos: Int) -> Int",
+      "effects": [],
+      "intent": "Return the cursor just past a qualified or normal type."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
       "name": "typeEndPos",
       "qualifier": "pure",
       "signature": "pure flow typeEndPos(tokens: Array<Token>, pos: Int) -> Int",
       "effects": [],
       "intent": "Return the token position just past a (possibly generic) type starting at pos."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "splitGenericType",
+      "qualifier": "pure",
+      "signature": "pure flow splitGenericType(raw: String) -> GenericTypeParts",
+      "effects": [],
+      "intent": "Split a declared type into its generic base and top-level arguments, preserving scalar text."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "isFlatArrayArgument",
+      "qualifier": "pure",
+      "signature": "pure flow isFlatArrayArgument(raw: String) -> Bool",
+      "effects": [],
+      "intent": "Return true when a generic argument is a non-empty flat type token with no nested delimiters."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "areFlatArrayArguments",
+      "qualifier": "pure",
+      "signature": "pure flow areFlatArrayArguments(args: Array<String>) -> Bool",
+      "effects": [],
+      "intent": "Return true when every generic argument is flat and at least one argument is present."
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
@@ -9671,11 +9711,59 @@
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "stripGovernanceQualifier",
+      "qualifier": "pure",
+      "signature": "pure flow stripGovernanceQualifier(t: String) -> String",
+      "effects": [],
+      "intent": "Strip the additive protected/redacted label before checking the underlying type name."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "governanceQualifier",
+      "qualifier": "pure",
+      "signature": "pure flow governanceQualifier(t: String) -> String",
+      "effects": [],
+      "intent": "Return the governance qualifier carried by a type section, or empty when unlabeled."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "isAuthorityType",
+      "qualifier": "pure",
+      "signature": "pure flow isAuthorityType(t: String) -> Bool",
+      "effects": [],
+      "intent": "Recognise an inline Authority<...> type without erasing its tag."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "authorityTag",
+      "qualifier": "pure",
+      "signature": "pure flow authorityTag(typeName: String) -> String",
+      "effects": [],
+      "intent": "Extract and unquote the single Authority tag; empty means malformed or empty."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "authorityTagCharAllowed",
+      "qualifier": "pure",
+      "signature": "pure flow authorityTagCharAllowed(c: Char, first: Bool) -> Bool",
+      "effects": [],
+      "intent": "Accept only ASCII letters/digits, with dot/underscore/colon/hyphen after the first character."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "authorityTagValid",
+      "qualifier": "pure",
+      "signature": "pure flow authorityTagValid(typeName: String) -> Bool",
+      "effects": [],
+      "intent": "Validate an Authority tag as a bounded ASCII runtime identity."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "isKnownType",
       "qualifier": "pure",
       "signature": "pure flow isKnownType(t: String) -> Bool",
       "effects": [],
-      "intent": "True when t names a type the Stage B checker knows (Int/Bool/String/Array)."
+      "intent": "True when t names a type the Stage B checker knows (including qualified String and Authority)."
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -9764,6 +9852,46 @@
       "signature": "pure flow checkCondNotBool(flowName: String, kw: String, cond: Expr) -> Array<Auto>",
       "effects": [],
       "intent": "Emit FUNGI-TYPE-033 when an if/while condition has a KNOWN non-Bool type; silent when Bool or uninferable."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "lookupQualifiedType",
+      "qualifier": "pure",
+      "signature": "pure flow lookupQualifiedType(scope: Array<Auto>, name: String) -> String",
+      "effects": [],
+      "intent": "Return the full qualified type for a visible name, or empty when it has no governance label."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "qualifierForExpr",
+      "qualifier": "pure",
+      "signature": "pure flow qualifierForExpr(expr: Expr, scope: Array<Auto>) -> String",
+      "effects": [],
+      "intent": "Infer only the protected/redacted qualifier needed by FUNGI-TYPE-034."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkQualifierBinding",
+      "qualifier": "pure",
+      "signature": "pure flow checkQualifierBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-TYPE-034: reject a direct protected/redacted qualifier change without redact()."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "qualifierStmtList",
+      "qualifier": "pure",
+      "signature": "pure flow qualifierStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Walk bindings and nested blocks while retaining qualified value types for label checks."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "qualifierParamScope",
+      "qualifier": "pure",
+      "signature": "pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Build the qualified-name side table from flow parameters."
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -12374,14 +12502,6 @@
       "intent": ""
     },
     {
-      "file": "packages-ts/galerina-devtools-context/src/self-hosted/builtin-name.fungi",
-      "name": "isBuiltin",
-      "qualifier": "pure",
-      "signature": "pure flow isBuiltin(name: String) -> Bool",
-      "effects": [],
-      "intent": "Recognize only an exact context-receipt builtin name."
-    },
-    {
       "file": "packages-ts/galerina-devtools-context/src/self-hosted/devtools-context-version.fungi",
       "name": "devtoolsContextVersion",
       "qualifier": "pure",
@@ -12476,14 +12596,6 @@
       "signature": "pure flow complianceLedgerFile() -> String",
       "effects": [],
       "intent": ""
-    },
-    {
-      "file": "packages-ts/galerina-devtools-project-graph/src/self-hosted/resource-transition.fungi",
-      "name": "validateTransition",
-      "qualifier": "pure",
-      "signature": "pure flow validateTransition(from: String, to: String) -> Bool",
-      "effects": [],
-      "intent": "Admit only a declared resource lifecycle transition."
     },
     {
       "file": "packages-ts/galerina-devtools-security/src/self-hosted/max-pattern-length.fungi",
@@ -31527,11 +31639,19 @@
     },
     {
       "file": "packages/fungi/products/galerina/rd0873-ai-agent/validate-agent-limits.fungi",
+      "name": "validateAgentLimitsAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateAgentLimitsAtPath(limits: AgentLimits, path_: String) -> Array<AgentDiagnostic>",
+      "effects": [],
+      "intent": "Require every present agent resource limit to be positive and return ordered typed diagnostics at the caller-selected path."
+    },
+    {
+      "file": "packages/fungi/products/galerina/rd0873-ai-agent/validate-agent-limits.fungi",
       "name": "validateAgentLimits",
       "qualifier": "pure",
       "signature": "pure flow validateAgentLimits(limits: AgentLimits) -> Array<AgentDiagnostic>",
       "effects": [],
-      "intent": "Require every present agent resource limit to be positive and return ordered typed diagnostics."
+      "intent": "Validate agent resource limits using the source default diagnostic path."
     },
     {
       "file": "packages/fungi/products/galerina/rd0873-ai-agent/validate-agent-task-group-plan.fungi",
@@ -31556,6 +31676,14 @@
       "signature": "pure flow isEnvironmentMode(value: String) -> Bool",
       "effects": [],
       "intent": "Recognize only a canonical Galerina environment mode."
+    },
+    {
+      "file": "packages/fungi/products/galerina/rd0873-core-logic/is-tri.fungi",
+      "name": "isTri",
+      "qualifier": "pure",
+      "signature": "pure flow isTri(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Classify an already admitted numeric value as -1, 0 or 1 without coercion."
     },
     {
       "file": "packages/fungi/products/galerina/rd0873-core-logic/omni-uncertain.fungi",
@@ -31780,6 +31908,22 @@
       "signature": "pure flow isResponseSafeClassification(classification: String) -> Bool",
       "effects": [],
       "intent": "Admit only the public model-field classification for responses."
+    },
+    {
+      "file": "packages/fungi/products/galerina/rd0873-devtools-context/builtin-name.fungi",
+      "name": "isBuiltin",
+      "qualifier": "pure",
+      "signature": "pure flow isBuiltin(name: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize only an exact context-receipt builtin name."
+    },
+    {
+      "file": "packages/fungi/products/galerina/rd0873-devtools-project-graph/resource-transition.fungi",
+      "name": "validateTransition",
+      "qualifier": "pure",
+      "signature": "pure flow validateTransition(from: String, to: String) -> Bool",
+      "effects": [],
+      "intent": "Admit only a declared resource lifecycle transition."
     },
     {
       "file": "packages/fungi/products/galerina/rd0873-first-native-slice/slice.fungi",

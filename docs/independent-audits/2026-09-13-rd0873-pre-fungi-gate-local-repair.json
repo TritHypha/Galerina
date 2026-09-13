@@ -1,0 +1,97 @@
+{
+  "schema": "galerina.rd0873.pre-fungi-gate.local-repair.v1",
+  "date": "2026-09-13",
+  "authorizing": false,
+  "status": "HOLD_NON_AUTHORIZING",
+  "purpose": "Record bounded local repairs and the remaining pre-Fungi translation gates at the exact current head. This record does not admit source authoring, switch a consumer, release production authority, or retire TypeScript.",
+  "buildIdentity": {
+    "repository": "Galerina",
+    "branch": "main",
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "graph": {
+      "status": "ready",
+      "stale": false,
+      "indexedHeadSha": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+      "nodes": 79352,
+      "edges": 204854,
+      "indexedMode": "full"
+    },
+    "workingTree": "DIRTY_UNRELATED_PATHS_PRESERVED"
+  },
+  "localRepair": {
+    "scope": [
+      "governance/phase-close-commands.json",
+      "scripts/tests/fungi-corpus-ownership.test.mjs",
+      "scripts/lib/ts-to-fungi-sandbox/journal.mjs",
+      "scripts/tests/ts-to-fungi-sandbox.test.mjs"
+    ],
+    "changes": [
+      "Aligned the bounded PROJECT shard capacity with the 2736 admitted files: two shards of 1368, 3420000ms per shard, 3480000ms outer budget.",
+      "Changed the outcome journal to exclusive-lock, append-only publication with file sync and explicit refusal of an incomplete final JSONL record."
+    ],
+    "authority": "non-authorizing"
+  },
+  "gates": [
+    {
+      "id": "PF1",
+      "name": "snapshot to GIR to SLIDE to VOK exact binding",
+      "status": "HOLD_IMPLEMENTABLE",
+      "boundedEvidence": "Snapshot/GIR focused checks pass; the sandbox records separate GIR and SLIDE identities but does not yet prove one consumed-byte compiler/toolchain closure through the physical artifact and VOK receipt.",
+      "nextLocalAction": "Add a closed identity envelope binding source bytes, checked snapshot, canonical GIR, profile/context, consumed compiler/toolchain closure, physical artifact and terminal receipt; exercise substitution refusals.",
+      "keywords": ["consumed-byte compiler closure", "snapshot/GIR identity conservation", "independent SLIDE re-derivation", "exact-subject VOK receipt", "TOCTOU and ABA toolchain substitution"]
+    },
+    {
+      "id": "PF2",
+      "name": "crash-safe and resumable translation",
+      "status": "HOLD_IMPLEMENTABLE",
+      "boundedEvidence": "Journal publication now has an exclusive lock, append-only write and file sync; batch staging and final rename remain normal-completion behavior only. No controlled interruption, torn-tail recovery or restart reconciliation evidence exists.",
+      "nextLocalAction": "Specify an immutable checkpoint state machine keyed by admission digest and source identity, then add interruption and idempotent-restart fixtures before invoking the lowerer.",
+      "keywords": ["translation checkpoint algebra", "interrupted publication reconciliation", "authenticated restart provenance", "platform fsync and rename guarantees", "controlled power-loss recovery"]
+    },
+    {
+      "id": "PF3",
+      "name": "physical admission and production authority for profiles 64 and 256",
+      "status": "HOLD_EXTERNAL_AUTHORITY",
+      "boundedEvidence": "Current governance keeps profiles 64 and 256 closed; local compiler, WSL, Grok or Astra output cannot establish native representation, authenticated physical execution, deployment custody or owner production authority.",
+      "nextLocalAction": "Keep explicit unsupported-profile refusal and prepare separate obligation matrices; require owner-bound native and platform receipts before changing admission.",
+      "keywords": ["profile-64 and profile-256 representation contract", "ABI range and alignment semantics", "native target lowering", "exact-platform differential parity", "authenticated physical admission", "owner production admission"]
+    },
+    {
+      "id": "PF4",
+      "name": "bounded exact-head admission manifest",
+      "status": "HOLD_NON_AUTHORIZING",
+      "boundedEvidence": "The current sandbox manifest is limited to schema plus file/symbol requests. Historical approvals and proposals bind older heads and cannot authorize e716fc677d…; no fresh owner-bound manifest with hashes, profile, toolchain closure and caps is present.",
+      "nextLocalAction": "Define and validate a closed singleton manifest schema and produce a fresh proposal only after exact source/tree/profile/toolchain tuples and per-wave caps are named."
+    }
+  ],
+  "verification": {
+    "corpusOwnershipReceiptShardTests": { "passed": 44, "failed": 0, "skipped": 0 },
+    "journalRegressionTests": { "passed": 3, "failed": 0, "skipped": 0 },
+    "sandboxSuite": {
+      "passed": 50,
+      "failed": 1,
+      "skipped": 0,
+      "failure": "scripts/tests/ts-to-fungi-sandbox.test.mjs test 12 expects a PHYSICAL_STRING_PARAMETER discovery skip that is absent from the current first ten selected scopes; no implementation change was made to hide this drift"
+    },
+    "fullCorpusRun": false,
+    "physicalProfile64Or256": false,
+    "productionAuthority": false
+  },
+  "kb": {
+    "gold": "12/12",
+    "topicQuery": "REFUSED",
+    "reason": "tracked RD source paths are dirty; refresh is refused",
+    "currentSupersession": "NOT_VERIFIABLE"
+  },
+  "custody": {
+    "fungiSourceCreated": false,
+    "buildOutputCreated": false,
+    "queuePromoted": false,
+    "consumerSwitched": false,
+    "typescriptRetired": false,
+    "productionAuthorityReleased": false,
+    "commitCreated": false,
+    "remotePublication": false
+  }
+}

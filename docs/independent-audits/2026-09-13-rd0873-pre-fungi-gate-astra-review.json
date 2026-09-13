@@ -1,0 +1,147 @@
+{
+  "schema": "galerina.rd0873.pre-fungi-gate-astra-review.v1",
+  "date": "2026-09-13",
+  "reviewer": "GPT-6 Astra",
+  "status": "HOLD_NON_AUTHORIZING",
+  "authorizing": false,
+  "purpose": "Persist the completed independent read-only review of four pre-Fungi gates as a handover receipt. This record neither authorizes repairs nor admits translation or production execution.",
+  "reviewedBuildIdentity": {
+    "repository": "Galerina",
+    "head": "e716fc677d3ca609b016cf76d7f994b67fd36466",
+    "tree": "80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a",
+    "workingTree": "DIRTY_UNRELATED_PATHS_PRESERVED",
+    "documentReferenceBasis": "Committed docs/TODO.md and docs/ROADMAP.md were read through git show HEAD; source references identify the reviewed working-tree files.",
+    "persistenceCaveat": "HEAD and tree were rechecked before persistence. governance/phase-close-commands.json and scripts/tests/fungi-corpus-ownership.test.mjs were additionally dirty at persistence and were not reviewed or changed. The focused test results below belong to the completed review, not a new run at persistence."
+  },
+  "scope": [
+    "snapshot-to-GIR-to-SLIDE-to-VOK exact binding",
+    "crash-safe and resumable translation",
+    "physical admission and production authority for profiles 64 and 256",
+    "bounded exact-head admission manifest"
+  ],
+  "classificationMeaning": {
+    "CONFIRMED": "Only the explicitly bounded existing behavior is supported by the stated evidence.",
+    "IMPLEMENTABLE": "A bounded local engineering repair or nonauthorizing proposal can be specified; this is not implementation permission or a completed gate.",
+    "HOLD": "Required evidence or admission is absent, stale, outside the reviewed scope, or unavailable; no acceptance follows."
+  },
+  "gates": [
+    {
+      "id": "PF1",
+      "name": "Snapshot to GIR to SLIDE to VOK exact binding",
+      "status": "IMPLEMENTABLE",
+      "acceptanceStatus": "HOLD",
+      "boundedFoundation": "CONFIRMED: snapshot reference, length and digest validation; deterministic scalar and String snapshot-to-GIR lowering; typed canonicalization and source-substitution refusal.",
+      "finding": "The general sandbox records Galerina GIR hashes and separately recompiles candidate source through SLIDE. It does not establish one current immutable consumed-byte chain linking its recorded checked snapshot and GIR to physical artifact and VOK receipt. Compiler entrypoint hashing and five named SLIDE module hashes do not establish the transitive executable closure.",
+      "evidence": [
+        { "path": "packages-ts/galerina-core-compiler/src/checked-snapshot-gir-emitter.ts", "lines": [219, 234] },
+        { "path": "packages-ts/galerina-core-compiler/src/string-match-checked-module-snapshot-v2.ts", "lines": [260, 270] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/evidence.mjs", "lines": [139, 198] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/evidence.mjs", "lines": [224, 290] },
+        { "path": "docs/reports/rd0873-string-gir-route-pilot-2026-09-10.md", "lines": [103, 111], "role": "historical bounded observation, not current admission" }
+      ],
+      "smallestLocalAction": "Specify and, only under separate implementation scope, add a bounded identity-envelope validator binding owned source bytes, checked snapshot, canonical GIR, profile/context, consumed compiler and toolchain closure, physical artifact and terminal receipt. Reuse existing snapshot/GIR APIs and initially exercise retained subjects and one-field substitution refusals without creating a new Fungi candidate.",
+      "externalEvidenceKeywords": ["consumed-byte compiler closure", "snapshot/GIR identity conservation", "independent SLIDE re-derivation", "exact-subject VOK receipt", "TOCTOU and ABA toolchain substitution"]
+    },
+    {
+      "id": "PF2",
+      "name": "Crash-safe and resumable translation",
+      "status": "IMPLEMENTABLE",
+      "acceptanceStatus": "HOLD",
+      "boundedFoundation": "CONFIRMED: canonical outcome encoding, duplicate refusal, batch staging and final rename on normal completion.",
+      "finding": "The journal reads existing content and rewrites it with flag w. Candidate, receipt and journal publication are separate operations. The controller refuses final-output or staging collisions and removes unpublished staging on normal failure; it does not establish a durable restart-reconciliation protocol, locking, fsync or torn-tail recovery.",
+      "evidence": [
+        { "path": "scripts/lib/ts-to-fungi-sandbox/journal.mjs", "lines": [27, 47] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/controller.mjs", "lines": [96, 126] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/controller.mjs", "lines": [227, 254] }
+      ],
+      "smallestLocalAction": "Specify a data-only immutable checkpoint state machine keyed by admission digest and source identity, with serialized ownership, exact transitions, idempotent restart reconciliation and refusal for partial or conflicting records. A future implementation should begin with JSON fixture interruption tests at each transition, without invoking the lowerer or producing Fungi source.",
+      "externalEvidenceKeywords": ["translation checkpoint algebra", "interrupted publication reconciliation", "authenticated restart provenance", "platform fsync and rename guarantees", "controlled power-loss recovery"]
+    },
+    {
+      "id": "PF3",
+      "name": "Physical admission and production authority for profiles 64 and 256",
+      "status": "HOLD",
+      "acceptanceStatus": "HOLD",
+      "finding": "The governing chapter remains profile 1. Committed TODO explicitly leaves profiles 64 and 256, broader conversion, SLIDE/VOK admission and production selection closed. Sandbox reference context and locally supplied positive gates are nonauthorizing; successful reference evidence explicitly requires authorityReleased to remain false.",
+      "evidence": [
+        { "path": "docs/TODO.md", "lines": [268, 275], "basis": "HEAD" },
+        { "path": "docs/TODO.md", "lines": [2102, 2104], "basis": "HEAD" },
+        { "path": "docs/superpowers/plans/2026-08-28-rd-0873-native-fungi-bootstrap.md", "lines": [80, 87] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/evidence.mjs", "lines": [28, 36] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/evidence.mjs", "lines": [224, 235] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/evidence.mjs", "lines": [279, 283] }
+      ],
+      "smallestLocalAction": "Retain explicit unsupported-profile refusal and prepare separate profile-specific obligation matrices. Local compiler/WASM success or a profile-number change cannot supply authenticated physical execution or production authority.",
+      "externalEvidenceKeywords": ["profile-64 and profile-256 representation contract", "ABI range and alignment semantics", "native target lowering", "exact-platform differential parity", "authenticated physical admission", "owner production admission"]
+    },
+    {
+      "id": "PF4",
+      "name": "Bounded exact-head admission manifest",
+      "status": "IMPLEMENTABLE",
+      "acceptanceStatus": "HOLD",
+      "boundedFoundation": "CONFIRMED: canonical path validation, closed request fields, duplicate-scope refusal and a 1-to-10 request bound.",
+      "finding": "The sandbox manifest accepts schema and requests, with each request containing file and symbol. It does not bind an admitted HEAD/tree, expected source or target hashes, profile, consumed toolchain closure, or per-wave byte/time/evidence limits. Reviewed singleton and triNot records are proposals or nonauthoring selections at older heads; historical four-symbol authorization permits bounded revalidation only. No requested HEAD/tree match was found within reviewed docs/independent-audits/*rd0873* records; this is a bounded repository observation, not a claim about unseen owner instructions.",
+      "evidence": [
+        { "path": "scripts/lib/ts-to-fungi-sandbox/controller.mjs", "lines": [45, 83] },
+        { "path": "scripts/lib/ts-to-fungi-sandbox/identity.mjs", "lines": [58, 109] },
+        { "path": "docs/independent-audits/2026-09-12-rd0873-current-head-single-symbol-admission-v1.json", "lines": [5, 14] },
+        { "path": "docs/independent-audits/2026-09-12-rd0873-current-head-single-symbol-admission-v1.json", "lines": [47, 88] },
+        { "path": "docs/independent-audits/2026-09-12-rd0873-next-translation-scope-v1.json", "lines": [3, 9] },
+        { "path": "docs/independent-audits/2026-09-12-rd0873-next-translation-scope-v1.json", "lines": [43, 49] },
+        { "path": "docs/independent-audits/2026-09-11-rd0873-current-head-admission-owner-authorization-v2.json", "lines": [5, 16] }
+      ],
+      "smallestLocalAction": "Define and validate a closed admission schema, then assemble a fresh singleton proposal with exact inputs, outputs, profile, executable closure identities and caps. Missing, stale, empty, overflowing or mismatched tuples must refuse before processing. Proposal preparation must not mint authorization or carry historical authority into a different scope.",
+      "externalEvidenceKeywords": ["owner-bound singleton admission", "source tree profile toolchain tuple", "per-step evidence caps", "stale-admission refusal", "production-authority separation"]
+    }
+  ],
+  "freshVerification": {
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "runs": [
+      {
+        "command": "node --test packages-ts/galerina-core-compiler/tests/checked-snapshot-gir-emitter.test.mjs packages-ts/galerina-core-compiler/tests/checked-module-snapshot-v1.test.mjs packages-ts/galerina-core-compiler/tests/string-match-snapshot-gir-v2.test.mjs",
+        "tests": 15,
+        "passed": 15,
+        "suites": 3
+      },
+      {
+        "command": "node --test --test-name-pattern '^1 contracts accept' scripts/tests/ts-to-fungi-sandbox.test.mjs",
+        "tests": 1,
+        "passed": 1,
+        "scope": "canonical path contract only"
+      }
+    ],
+    "compilerEmissionComparison": {
+      "method": "Read-only in-memory TypeScript emission compared to existing compiler JavaScript; no output files written.",
+      "javascriptFiles": 138,
+      "mismatches": 0,
+      "emitSkipped": false,
+      "limit": "Output equivalence is not an authenticated transitive consumed-byte closure receipt."
+    },
+    "notRun": ["full corpus", "physical SLIDE publication", "crash injection", "native parity", "profile-64 execution", "profile-256 execution"]
+  },
+  "kbCurrentness": {
+    "query": "RD-0858..RD-0873",
+    "status": "REFUSED",
+    "reason": "tracked RD source paths are dirty; refresh is refused",
+    "currentSupersession": "NOT_VERIFIABLE",
+    "privateBodiesCopied": false
+  },
+  "custody": {
+    "receiptPersistenceOnly": true,
+    "implementationChanged": false,
+    "governanceConfigurationChanged": false,
+    "todoOrRoadmapChanged": false,
+    "fungiSourceCreated": false,
+    "buildOutputCreated": false,
+    "fullCorpusRun": false,
+    "queuePromoted": false,
+    "consumerSwitched": false,
+    "typescriptRetired": false,
+    "productionAuthorityReleased": false,
+    "commitCreated": false,
+    "remotePublication": false
+  }
+}
