@@ -462,23 +462,51 @@ function requireTask6BContractApi() {
   assert.equal(Object.hasOwn(contractApi, "canonicalTask6BJsonText"), false);
 }
 
+const task6BSafeObjectCreate = Object.create;
+const task6BSafeObjectDefineProperty = Object.defineProperty;
+const task6BSafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+const task6BSafeObjectHasOwn = Object.hasOwn;
+const task6BSafeReflectDeleteProperty = Reflect.deleteProperty;
+
 function task6BNullDescriptor(values) {
-  const descriptor = Object.create(null);
-  for (const [key, value] of Object.entries(values)) descriptor[key] = value;
+  const descriptor = task6BSafeObjectCreate(null);
+  if (task6BSafeObjectHasOwn(values, "value")) descriptor.value = values.value;
+  if (task6BSafeObjectHasOwn(values, "writable")) descriptor.writable = values.writable;
+  if (task6BSafeObjectHasOwn(values, "get")) descriptor.get = values.get;
+  if (task6BSafeObjectHasOwn(values, "set")) descriptor.set = values.set;
+  if (task6BSafeObjectHasOwn(values, "enumerable")) descriptor.enumerable = values.enumerable;
+  if (task6BSafeObjectHasOwn(values, "configurable")) descriptor.configurable = values.configurable;
   return descriptor;
 }
 
+function task6BCopyDescriptor(descriptor) {
+  return descriptor === undefined ? undefined : task6BNullDescriptor(descriptor);
+}
+
+function task6BRestorePrototypeField(target, field, descriptor) {
+  if (descriptor === undefined) {
+    task6BSafeReflectDeleteProperty(target, field);
+    return undefined;
+  }
+  const restoredDescriptor = task6BCopyDescriptor(descriptor);
+  task6BSafeObjectDefineProperty(target, field, restoredDescriptor);
+  return restoredDescriptor;
+}
+
 function installTask6BInheritedDescriptorFieldPoison() {
-  const safeDefineProperty = Object.defineProperty;
-  const safeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-  const safeDeleteProperty = Reflect.deleteProperty;
-  const originals = {
-    get: safeGetOwnPropertyDescriptor(Object.prototype, "get"),
-    set: safeGetOwnPropertyDescriptor(Object.prototype, "set"),
-  };
+  const originals = task6BSafeObjectCreate(null);
+  originals.get = task6BCopyDescriptor(
+    task6BSafeObjectGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  originals.set = task6BCopyDescriptor(
+    task6BSafeObjectGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  const restoredDescriptors = task6BSafeObjectCreate(null);
+  let freshRestoreCount = 0;
+  let freshRestoreDescriptorsDistinct = true;
   let traps = 0;
   for (const field of ["get", "set"]) {
-    safeDefineProperty(Object.prototype, field, task6BNullDescriptor({
+    task6BSafeObjectDefineProperty(Object.prototype, field, task6BNullDescriptor({
       configurable: true,
       enumerable: false,
       get() {
@@ -489,11 +517,26 @@ function installTask6BInheritedDescriptorFieldPoison() {
   }
   return {
     get traps() { return traps; },
+    get freshRestoreCount() { return freshRestoreCount; },
+    get freshRestoreDescriptorsDistinct() { return freshRestoreDescriptorsDistinct; },
     restore() {
       for (const field of ["get", "set"]) {
-        const descriptor = originals[field];
-        if (descriptor === undefined) safeDeleteProperty(Object.prototype, field);
-        else safeDefineProperty(Object.prototype, field, descriptor);
+        const savedDescriptor = originals[field];
+        const restoredDescriptor = task6BRestorePrototypeField(
+          Object.prototype,
+          field,
+          savedDescriptor,
+        );
+        if (savedDescriptor !== undefined) {
+          if (restoredDescriptor === savedDescriptor) freshRestoreDescriptorsDistinct = false;
+          for (let index = 0; index < freshRestoreCount; index += 1) {
+            if (restoredDescriptor === restoredDescriptors[index]) {
+              freshRestoreDescriptorsDistinct = false;
+            }
+          }
+          restoredDescriptors[freshRestoreCount] = restoredDescriptor;
+          freshRestoreCount += 1;
+        }
       }
     },
   };
@@ -2536,6 +2579,55 @@ test("Task 6B capture work is conserved and non-selectable", { timeout: 180_000 
   expectCode("SOURCE_ORIGIN_LIMIT", () => contractApi.sha256CompleteUnresolvedRowsV1(rows));
 });
 
+test("Task 6B cumulative primitive traversal refuses before digest work", { timeout: 180_000 }, () => {
+  requireTask6BContractApi();
+  const sharedLocator = "a".repeat(32 * 1024);
+  const rowCount = 2_561;
+  const invalidDigest = "0".repeat(64);
+  assert.equal(sharedLocator.length, 32_768);
+  assert.equal(sharedLocator.length * rowCount, 83_918_848);
+  assert(sharedLocator.length * rowCount > TASK_6B_JSON_BYTES);
+
+  const makeRow = (index) => ({
+    sourceNodeId: `ga1:${index.toString(16).padStart(64, "0")}`,
+    sourceLocator: sharedLocator,
+    relationshipClass: "TEST",
+    reasonCode: "MISSING_TARGET",
+    evidenceOwnerDigest: "1".repeat(64),
+    evidenceDigest: index.toString(16).padStart(64, "0"),
+  });
+  const underRows = [makeRow(0)];
+  const underCounts = task6BUnresolvedCounts(underRows);
+  const underSidecar = task6BSidecarBodyFromUnresolved({
+    rows: underRows,
+    rowCount: underRows.length,
+    rowsDigest: invalidDigest,
+  }, { counts: underCounts });
+  assert.deepEqual({
+    direct: task6BRefusalCode(() => contractApi.sha256CompleteUnresolvedRowsV1(underRows)),
+    sidecar: task6BRefusalCode(() => contractApi.serializeCompleteExportSidecarV1(underSidecar)),
+  }, {
+    direct: "SOURCE_ORIGIN_DIGEST",
+    sidecar: "SOURCE_ORIGIN_DIGEST",
+  });
+
+  const overRows = new Array(rowCount);
+  for (let index = 0; index < overRows.length; index += 1) overRows[index] = makeRow(index);
+  const overCounts = task6BUnresolvedCounts(overRows);
+  const overSidecar = task6BSidecarBodyFromUnresolved({
+    rows: overRows,
+    rowCount: overRows.length,
+    rowsDigest: invalidDigest,
+  }, { counts: overCounts });
+  assert.deepEqual({
+    direct: task6BRefusalCode(() => contractApi.sha256CompleteUnresolvedRowsV1(overRows)),
+    sidecar: task6BRefusalCode(() => contractApi.serializeCompleteExportSidecarV1(overSidecar)),
+  }, {
+    direct: "SOURCE_ORIGIN_JSON_CANONICAL",
+    sidecar: "SOURCE_ORIGIN_JSON_CANONICAL",
+  });
+});
+
 test("Task 6B fixed-purpose descriptors ignore inherited descriptor fields", () => {
   requireTask6BContractApi();
   const validRows = [task6BUnresolvedRow()];
@@ -2560,6 +2652,191 @@ test("Task 6B fixed-purpose descriptors ignore inherited descriptor fields", () 
   assert.equal(invalidCode, "SOURCE_ORIGIN_SCHEMA");
   assert.equal(rowsDigest.length, 64);
   assert.equal(Buffer.isBuffer(sidecarBytes), true);
+});
+
+test("Task 6B descriptor poison restores pre-existing data descriptors without traps", () => {
+  const safeObjectCreate = Object.create;
+  const safeObjectDefineProperty = Object.defineProperty;
+  const safeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const safeObjectHasOwn = Object.hasOwn;
+  const safeReflectDeleteProperty = Reflect.deleteProperty;
+  const freshDescriptor = (descriptor) => {
+    if (descriptor === undefined) return undefined;
+    const copy = safeObjectCreate(null);
+    if (safeObjectHasOwn(descriptor, "value")) copy.value = descriptor.value;
+    if (safeObjectHasOwn(descriptor, "writable")) copy.writable = descriptor.writable;
+    if (safeObjectHasOwn(descriptor, "get")) copy.get = descriptor.get;
+    if (safeObjectHasOwn(descriptor, "set")) copy.set = descriptor.set;
+    if (safeObjectHasOwn(descriptor, "enumerable")) copy.enumerable = descriptor.enumerable;
+    if (safeObjectHasOwn(descriptor, "configurable")) copy.configurable = descriptor.configurable;
+    return copy;
+  };
+  const restoreField = (target, field, descriptor) => {
+    if (descriptor === undefined) safeReflectDeleteProperty(target, field);
+    else safeObjectDefineProperty(target, field, freshDescriptor(descriptor));
+  };
+  const originalGet = freshDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Object.prototype, "get"),
+  );
+  const originalSet = freshDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Object.prototype, "set"),
+  );
+  const ambientFields = [
+    [Object, "create"],
+    [Object, "defineProperty"],
+    [Object, "entries"],
+    [Object, "getOwnPropertyDescriptor"],
+    [Object, "hasOwn"],
+    [Reflect, "deleteProperty"],
+  ];
+  const ambientOriginals = new Array(ambientFields.length);
+  for (let index = 0; index < ambientFields.length; index += 1) {
+    const [target, field] = ambientFields[index];
+    ambientOriginals[index] = freshDescriptor(
+      safeObjectGetOwnPropertyDescriptor(target, field),
+    );
+  }
+  const priorGetValue = Object.freeze({ field: "get" });
+  const priorSetValue = Object.freeze({ field: "set" });
+  let ambientTraps = 0;
+  let replacementTraps = 0;
+  let poison;
+  let failure;
+  let firstRestoreCount;
+  let secondRestoreCount;
+  let restoreDescriptorsDistinct;
+  let restoredGet;
+  let restoredSet;
+  try {
+    safeObjectDefineProperty(Object.prototype, "get", freshDescriptor({
+      configurable: true,
+      enumerable: false,
+      value: priorGetValue,
+      writable: false,
+    }));
+    safeObjectDefineProperty(Object.prototype, "set", freshDescriptor({
+      configurable: true,
+      enumerable: false,
+      value: priorSetValue,
+      writable: true,
+    }));
+    for (let index = 0; index < ambientFields.length; index += 1) {
+      const [target, field] = ambientFields[index];
+      safeObjectDefineProperty(target, field, freshDescriptor({
+        configurable: true,
+        enumerable: false,
+        value() {
+          ambientTraps += 1;
+          throw new Error(`ATTACKER_AMBIENT_${field.toUpperCase()}`);
+        },
+        writable: true,
+      }));
+    }
+    try {
+      poison = installTask6BInheritedDescriptorFieldPoison();
+      poison.restore();
+      firstRestoreCount = poison.freshRestoreCount;
+      for (const field of ["get", "set"]) {
+        safeObjectDefineProperty(Object.prototype, field, freshDescriptor({
+          configurable: true,
+          enumerable: false,
+          get() {
+            replacementTraps += 1;
+            throw new Error(`ATTACKER_REPLACEMENT_${field.toUpperCase()}`);
+          },
+        }));
+      }
+      poison.restore();
+      secondRestoreCount = poison.freshRestoreCount;
+      restoreDescriptorsDistinct = poison.freshRestoreDescriptorsDistinct;
+      restoredGet = safeObjectGetOwnPropertyDescriptor(Object.prototype, "get");
+      restoredSet = safeObjectGetOwnPropertyDescriptor(Object.prototype, "set");
+    } catch (error) {
+      failure = error;
+    }
+  } finally {
+    for (let index = 0; index < ambientFields.length; index += 1) {
+      const [target, field] = ambientFields[index];
+      restoreField(target, field, ambientOriginals[index]);
+    }
+    restoreField(Object.prototype, "get", originalGet);
+    restoreField(Object.prototype, "set", originalSet);
+  }
+  assert.equal(failure, undefined);
+  assert.equal(ambientTraps, 0);
+  assert.equal(replacementTraps, 0);
+  assert.equal(poison?.traps, 0);
+  assert.equal(firstRestoreCount, 2);
+  assert.equal(secondRestoreCount, 4);
+  assert.equal(restoreDescriptorsDistinct, true);
+  assert.deepEqual(restoredGet, {
+    configurable: true,
+    enumerable: false,
+    value: priorGetValue,
+    writable: false,
+  });
+  assert.deepEqual(restoredSet, {
+    configurable: true,
+    enumerable: false,
+    value: priorSetValue,
+    writable: true,
+  });
+});
+
+test("Task 6B exact-count large wrong names refuse without sorting attacker text", { timeout: 10_000 }, async () => {
+  requireTask6BContractApi();
+  const body = task6BSidecarBody([task6BUnresolvedRow()]);
+  const parser = body.toolchain.sourceOriginParser;
+  const wrongName = `generatedClosureDigest${"x".repeat(1024 * 1024)}`;
+  const displacedValue = parser.generatedClosureDigest;
+  assert.equal(Reflect.deleteProperty(parser, "generatedClosureDigest"), true);
+  parser[wrongName] = displacedValue;
+  assert.equal(Object.getOwnPropertyNames(parser).length, 8);
+  assert.equal(Object.hasOwn(parser, "generatedClosureDigest"), false);
+  assert.equal(Object.hasOwn(parser, wrongName), true);
+
+  const safeObjectDefineProperty = Object.defineProperty;
+  const safeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  const safeReflectApply = Reflect.apply;
+  const sortDescriptor = task6BCopyDescriptor(
+    safeObjectGetOwnPropertyDescriptor(Array.prototype, "sort"),
+  );
+  let sortTraps = 0;
+  let refusalCode;
+  let elapsedMillis;
+  let failure;
+  try {
+    const hostileSortDescriptor = task6BCopyDescriptor(sortDescriptor);
+    hostileSortDescriptor.value = function task6BLargeNameSortDetector(compare) {
+      for (let index = 0; index < this.length; index += 1) {
+        const entry = this[index];
+        if (typeof entry === "string" && entry.length === wrongName.length) {
+          sortTraps += 1;
+          throw new Error("ATTACKER_TASK_6B_NAME_SORT");
+        }
+      }
+      return safeReflectApply(sortDescriptor.value, this, [compare]);
+    };
+    safeObjectDefineProperty(Array.prototype, "sort", hostileSortDescriptor);
+    const freshModuleUrl = new URL(
+      "../lib/logic-aig-source-origin/contract.mjs?task6b-large-wrong-name-probe",
+      import.meta.url,
+    );
+    const freshContractApi = await import(freshModuleUrl.href);
+    const started = process.hrtime.bigint();
+    refusalCode = task6BRefusalCode(
+      () => freshContractApi.serializeCompleteExportSidecarV1(body),
+    );
+    elapsedMillis = Number(process.hrtime.bigint() - started) / 1_000_000;
+  } catch (error) {
+    failure = error;
+  } finally {
+    safeObjectDefineProperty(Array.prototype, "sort", task6BCopyDescriptor(sortDescriptor));
+  }
+  assert.equal(failure, undefined);
+  assert.equal(refusalCode, "SOURCE_ORIGIN_SCHEMA");
+  assert.equal(sortTraps, 0);
+  assert(elapsedMillis < 2_000, `refusal took ${elapsedMillis}ms`);
 });
 
 test("Task 6B sidecar capture bounds repeated-identity work before recursive copying", () => {

@@ -1703,6 +1703,36 @@ function task6BShallowText(value) {
   if (typeof value !== 'string') refuse('SOURCE_ORIGIN_SCHEMA');
 }
 
+function task6BAssertDataObjectHeader(value) {
+  if (
+    value === null
+    || typeof value !== 'object'
+    || safeIsProxy(value)
+    || safeArrayIsArray(value)
+  ) refuse('SOURCE_ORIGIN_SCHEMA');
+  const prototype = safeObjectGetPrototypeOf(value);
+  if (prototype !== safeObjectPrototype && prototype !== null) refuse('SOURCE_ORIGIN_SCHEMA');
+  if (safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+}
+
+function task6BExactDataDescriptors(value, keys, names) {
+  if (names.length !== keys.length) refuse('SOURCE_ORIGIN_SCHEMA');
+  const descriptors = [];
+  for (let index = 0; index < keys.length; index += 1) {
+    const descriptor = safeObjectGetOwnPropertyDescriptor(value, keys[index]);
+    if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) {
+      refuse('SOURCE_ORIGIN_SCHEMA');
+    }
+    append(descriptors, descriptor);
+  }
+  return descriptors;
+}
+
+function task6BShallowDataObject(value, keys) {
+  task6BAssertDataObjectHeader(value);
+  task6BExactDataDescriptors(value, keys, safeObjectGetOwnPropertyNames(value));
+}
+
 function task6BShallowArrayHeader(value, maximum, code = 'SOURCE_ORIGIN_SCHEMA') {
   if (
     value === null
@@ -1724,14 +1754,14 @@ function task6BShallowArrayHeader(value, maximum, code = 'SOURCE_ORIGIN_SCHEMA')
 }
 
 function task6BShallowExecutableIdentity(value) {
-  dataObject(value, ['version','executableRawSha256','executableByteLength']);
+  task6BShallowDataObject(value, ['version','executableRawSha256','executableByteLength']);
   task6BShallowText(value.version);
   task6BShallowText(value.executableRawSha256);
   nonNegativeInteger(value.executableByteLength);
 }
 
 function task6BShallowPackageIdentity(value) {
-  dataObject(value, [
+  task6BShallowDataObject(value, [
     'name','version','packageLocator','packageRawSha256','packageByteLength',
     'entryLocator','entryRawSha256','entryByteLength',
   ]);
@@ -1743,7 +1773,7 @@ function task6BShallowPackageIdentity(value) {
 }
 
 function task6BShallowRootedIdentity(value) {
-  dataObject(value, ['rootLocator','locator','rawSha256','byteLength']);
+  task6BShallowDataObject(value, ['rootLocator','locator','rawSha256','byteLength']);
   task6BShallowText(value.rootLocator);
   task6BShallowText(value.locator);
   task6BShallowText(value.rawSha256);
@@ -1761,7 +1791,7 @@ function task6BValidateSidecarShallow(value) {
   nonNegativeInteger(value.graphByteLength);
   if (typeof value.authorizing !== 'boolean') refuse('SOURCE_ORIGIN_SCHEMA');
 
-  dataObject(value.gitObservation, [
+  task6BShallowDataObject(value.gitObservation, [
     'before','after','objectFormat','indexDigest','executionBoundary',
   ]);
   task6BShallowText(value.gitObservation.objectFormat);
@@ -1770,7 +1800,7 @@ function task6BValidateSidecarShallow(value) {
   const observationEdges = [value.gitObservation.before, value.gitObservation.after];
   for (let index = 0; index < observationEdges.length; index += 1) {
     const edge = observationEdges[index];
-    dataObject(edge, [
+    task6BShallowDataObject(edge, [
       'head','tree','indexDigest','gitVersion','gitExecutableRawSha256',
       'gitExecutableByteLength',
     ]);
@@ -1780,7 +1810,7 @@ function task6BValidateSidecarShallow(value) {
     nonNegativeInteger(edge.gitExecutableByteLength);
   }
 
-  dataObject(value.sourcePolicy, [
+  task6BShallowDataObject(value.sourcePolicy, [
     'policyDigest','exclusionDigest','excludedPaths','excludedBytes',
   ]);
   task6BShallowText(value.sourcePolicy.policyDigest);
@@ -1788,7 +1818,7 @@ function task6BValidateSidecarShallow(value) {
   nonNegativeInteger(value.sourcePolicy.excludedPaths);
   nonNegativeInteger(value.sourcePolicy.excludedBytes);
 
-  dataObject(value.counts, [
+  task6BShallowDataObject(value.counts, [
     'sourcePaths','sourceBlobs','sourceBytes','resolutionRows','resolutionBytes',
     'parseOutcomeRows','ownerBindings','representedFileNodes','nodesByKind',
     'edgesByKind','unresolvedByClass','unresolvedByReason','duplicateIds',
@@ -1804,7 +1834,7 @@ function task6BValidateSidecarShallow(value) {
   task6BValidateCountMap(value.counts.unresolvedByClass, TASK_6B_RELATIONSHIP_CLASSES);
   task6BValidateCountMap(value.counts.unresolvedByReason, TASK_6B_REASON_CODES);
 
-  dataObject(value.unresolved, ['rows','rowCount','rowsDigest']);
+  task6BShallowDataObject(value.unresolved, ['rows','rowCount','rowsDigest']);
   task6BShallowArrayHeader(
     value.unresolved.rows,
     SOURCE_ORIGIN_LIMITS.unresolvedRows,
@@ -1813,7 +1843,7 @@ function task6BValidateSidecarShallow(value) {
   nonNegativeInteger(value.unresolved.rowCount);
   task6BShallowText(value.unresolved.rowsDigest);
 
-  dataObject(value.toolchain, [
+  task6BShallowDataObject(value.toolchain, [
     'selectedPinRecordId','selectedPinRecordDigest','pinsDigest','toolchainManifestDigest',
     'nodeIdentity','gitIdentity','typescript','sourceOriginParser','moduleClosureDigest',
     'actualLoadedSetDigest',
@@ -1827,11 +1857,11 @@ function task6BValidateSidecarShallow(value) {
   task6BShallowPackageIdentity(value.toolchain.typescript);
 
   const parser = value.toolchain.sourceOriginParser;
-  dataObject(parser, [
+  task6BShallowDataObject(parser, [
     'sourceEntry','project','generatedEntry','generatedPackageManifest','exportNames',
     'sourceEdgeRows','emittedEdgeRows','generatedClosureDigest',
   ]);
-  dataObject(parser.sourceEntry, [
+  task6BShallowDataObject(parser.sourceEntry, [
     'rootLocator','locator','gitBlobOid','rawSha256','byteLength','exportNames',
   ]);
   forEachArray([
@@ -1841,7 +1871,7 @@ function task6BValidateSidecarShallow(value) {
   if (task6BShallowArrayHeader(parser.sourceEntry.exportNames, 3) !== 3) {
     refuse('SOURCE_ORIGIN_SCHEMA');
   }
-  dataObject(parser.project, [
+  task6BShallowDataObject(parser.project, [
     'rootLocator','locator','gitBlobOid','rawSha256','byteLength','extendsLocator',
     'files','include','compilerOptions',
   ]);
@@ -1851,7 +1881,7 @@ function task6BValidateSidecarShallow(value) {
   nonNegativeInteger(parser.project.byteLength);
   if (task6BShallowArrayHeader(parser.project.files, 1) !== 1) refuse('SOURCE_ORIGIN_SCHEMA');
   if (task6BShallowArrayHeader(parser.project.include, 0) !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
-  dataObject(parser.project.compilerOptions, [
+  task6BShallowDataObject(parser.project.compilerOptions, [
     'types','noEmitOnError','incremental','composite','sourceMap','declarationMap',
   ]);
   if (task6BShallowArrayHeader(parser.project.compilerOptions.types, 0) !== 0) {
@@ -1871,7 +1901,7 @@ function task6BValidateSidecarShallow(value) {
     !== TOOLCHAIN_EMITTED_EDGES.length) refuse('SOURCE_ORIGIN_SCHEMA');
   task6BShallowText(parser.generatedClosureDigest);
 
-  dataObject(value.executionPolicy, [
+  task6BShallowDataObject(value.executionPolicy, [
     'argvPolicyDigest','environmentPolicyDigest','timeoutMillis','outputByteLimit',
     'concurrencyLimit',
   ]);
@@ -1880,7 +1910,7 @@ function task6BValidateSidecarShallow(value) {
   nonNegativeInteger(value.executionPolicy.timeoutMillis);
   nonNegativeInteger(value.executionPolicy.outputByteLimit);
   nonNegativeInteger(value.executionPolicy.concurrencyLimit);
-  dataObject(value.nativeGraphCrossCheck, ['status','receiptDigest','authorizing']);
+  task6BShallowDataObject(value.nativeGraphCrossCheck, ['status','receiptDigest','authorizing']);
   task6BShallowText(value.nativeGraphCrossCheck.status);
   if (value.nativeGraphCrossCheck.receiptDigest !== null
     && typeof value.nativeGraphCrossCheck.receiptDigest !== 'string') refuse('SOURCE_ORIGIN_SCHEMA');
@@ -1889,7 +1919,7 @@ function task6BValidateSidecarShallow(value) {
     refuse('SOURCE_ORIGIN_SCHEMA');
   }
   const limitKeys = safeObjectKeys(SOURCE_ORIGIN_LIMITS);
-  dataObject(value.limits, limitKeys);
+  task6BShallowDataObject(value.limits, limitKeys);
   forEachArray(limitKeys, (field) => nonNegativeInteger(value.limits[field]));
 }
 
@@ -1897,6 +1927,7 @@ function task6BNewCaptureWorkState() {
   const state = nullRecord();
   defineData(state, 'remaining', 2101248);
   defineData(state, 'used', 0);
+  defineData(state, 'primitiveStringCodeUnitsRemaining', 83886080);
   return state;
 }
 
@@ -1910,29 +1941,34 @@ function task6BAssertCaptureWork(state, expected) {
   if (state.used !== expected) refuse('SOURCE_ORIGIN_LIMIT');
 }
 
+function task6BConsumePrimitiveStringWork(state, value) {
+  const units = value.length;
+  if (state.primitiveStringCodeUnitsRemaining < units) {
+    refuse('SOURCE_ORIGIN_JSON_CANONICAL');
+  }
+  state.primitiveStringCodeUnitsRemaining -= units;
+}
+
 function task6BClaimIdentity(value, identities) {
   if (setHas(identities, value)) refuse('SOURCE_ORIGIN_JSON_CANONICAL');
   setAdd(identities, value);
 }
 
 function task6BCaptureDataObject(value, keys, state, identities) {
-  if (value === null || typeof value !== 'object' || safeIsProxy(value) || safeArrayIsArray(value)) refuse('SOURCE_ORIGIN_SCHEMA');
-  const prototype = safeObjectGetPrototypeOf(value);
-  if (prototype !== safeObjectPrototype && prototype !== null) refuse('SOURCE_ORIGIN_SCHEMA');
-  if (safeObjectGetOwnPropertySymbols(value).length !== 0) refuse('SOURCE_ORIGIN_SCHEMA');
+  task6BAssertDataObjectHeader(value);
   task6BClaimIdentity(value, identities);
   task6BConsumeCaptureWork(state, 1);
   const names = safeObjectGetOwnPropertyNames(value);
   task6BConsumeCaptureWork(state, names.length);
-  if (names.length !== keys.length) refuse('SOURCE_ORIGIN_SCHEMA');
-  const sortedNames = sortArray(copyArray(names), codeUnitCompare);
-  const sortedKeys = sortArray(copyArray(keys), codeUnitCompare);
-  if (someArray(sortedNames, (name, index) => name !== sortedKeys[index])) refuse('SOURCE_ORIGIN_SCHEMA');
+  const descriptors = task6BExactDataDescriptors(value, keys, names);
   const output = plainRecord();
   for (let index = 0; index < keys.length; index += 1) {
     const key = keys[index];
-    const descriptor = safeObjectGetOwnPropertyDescriptor(value, key);
-    if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
+    const descriptor = descriptors[index];
+    task6BConsumePrimitiveStringWork(state, key);
+    if (typeof descriptor.value === 'string') {
+      task6BConsumePrimitiveStringWork(state, descriptor.value);
+    }
     defineData(output, key, descriptor.value);
   }
   return output;
@@ -1955,6 +1991,9 @@ function task6BCaptureArray(value, maximum, exactLength, limitCode, state, ident
   for (let index = 0; index < length; index += 1) {
     const descriptor = safeObjectGetOwnPropertyDescriptor(value, `${index}`);
     if (!descriptor || !safeObjectHasOwn(descriptor, 'value') || !descriptor.enumerable) refuse('SOURCE_ORIGIN_SCHEMA');
+    if (typeof descriptor.value === 'string') {
+      task6BConsumePrimitiveStringWork(state, descriptor.value);
+    }
     append(output, captureElement(descriptor.value, index));
   }
   return output;
@@ -2271,7 +2310,7 @@ function task6BValidateObservationEdge(value, objectFormat, expectedHead, expect
 }
 
 function task6BValidateCountMap(value, keys) {
-  dataObject(value, keys);
+  task6BShallowDataObject(value, keys);
   for (let index = 0; index < keys.length; index += 1) nonNegativeInteger(value[keys[index]]);
 }
 
