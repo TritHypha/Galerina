@@ -82,6 +82,200 @@ jobs:
         run: |
           node -e "const m=process.env.MODE,p=process.env.PRODUCER,a=process.env.AGENTS,e=process.env.EVIDENCE;if(!['observe','verify'].includes(m)||!/^[0-9a-f]{40}$/.test(p)||!/^[0-9a-f]{40}$/.test(a)||(m==='observe'&&e!=='')||(m==='verify'&&!/^[0-9a-f]{40}$/.test(e)))process.exit(2)"
 
+  # These jobs run only through the protected dispatch entry. The matrix values
+  # are closed workflow literals; no runner, ref, path, limit or artifact name
+  # comes from a caller input.
+  rd0873-evidence-producer:
+    name: RD-0873 native evidence (${{ matrix.artifact_suffix }})
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: protected-dispatch-inputs
+    environment: rd0873-task6-evidence
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            artifact_suffix: windows-x64
+            receipt_platform: win32
+            payload_artifact: rd0873-task6-full-frame-windows-x64
+            receipt_artifact: rd0873-task6-receipt-windows-x64
+          - runner: ubuntu-24.04
+            artifact_suffix: linux-x64
+            receipt_platform: linux
+            payload_artifact: rd0873-task6-full-frame-linux-x64
+            receipt_artifact: rd0873-task6-receipt-linux-x64
+    runs-on: ${{ matrix.runner }}
+    env:
+      RD0873_PRODUCER_COMMIT: ${{ inputs.producerCommit }}
+      RD0873_AGENTS_COMMIT: ${{ inputs.agentsCommit }}
+      RD0873_AGENTS_TOKEN: ${{ secrets.RD0873_AGENTS_READ_TOKEN }}
+      RD0873_RECEIPT_PLATFORM: ${{ matrix.receipt_platform }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Require the protected AGENTS read credential
+        run: >-
+          node -e 'if(typeof process.env.RD0873_AGENTS_TOKEN!=="string"||process.env.RD0873_AGENTS_TOKEN.length<20)process.exit(2)'
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.producerCommit }}
+          path: producer
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: TritHypha/AGENTS-SKILLS-AND-TOOLS
+          ref: ${{ inputs.agentsCommit }}
+          token: ${{ secrets.RD0873_AGENTS_READ_TOKEN }}
+          path: agents
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+      - name: Bind both authenticated checkouts to the dispatch and workflow SHA
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+          RD0873_AGENTS_ROOT: ${{ github.workspace }}/agents
+        run: >-
+          node --input-type=module -e 'import{spawnSync}from"node:child_process";const git=(cwd,args)=>{const r=spawnSync("git",args,{cwd,encoding:"utf8",windowsHide:true,maxBuffer:1048576});if(r.error||r.status!==0)throw 0;return r.stdout.trim()};try{const p=process.env.RD0873_PRODUCER_ROOT,a=process.env.RD0873_AGENTS_ROOT,pc=process.env.RD0873_PRODUCER_COMMIT,ac=process.env.RD0873_AGENTS_COMMIT;if(process.env.GITHUB_SHA!==pc||git(p,["rev-parse","HEAD"])!==pc||git(a,["rev-parse","HEAD"])!==ac||git(p,["status","--porcelain=v1"])!==""||git(a,["status","--porcelain=v1"])!=="")throw 0;git(p,["cat-file","-e",`${pc}^{commit}`]);git(a,["cat-file","-e",`${ac}^{commit}`])}catch{process.exit(2)}'
+      - name: Stage the exact canonical profile without evaluating producer code
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+        run: >-
+          node --input-type=module -e 'import{createHash}from"node:crypto";import{appendFileSync,lstatSync,mkdtempSync,readFileSync,realpathSync,writeFileSync}from"node:fs";import{tmpdir}from"node:os";import{join}from"node:path";try{const root=mkdtempSync(join(tmpdir(),"rd0873-task6-"));const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync.native(root)!==root)throw 0;const text=readFileSync(join(process.env.RD0873_PRODUCER_ROOT,"scripts","galerina-source-origin-frame.mjs"),"utf8");const hits=[...text.matchAll(/^const PINNED_PROFILE_JSON = '\''([^'\\\\\r\n]*)'\'';$/gmu)];if(hits.length!==1)throw 0;const bytes=Buffer.from(hits[0][1],"utf8");if(bytes.length!==1131||bytes.includes(10)||createHash("sha256").update(bytes).digest("hex")!=="8b89fa23a5e84d2c16f885ce8946bf1b7e4547a8f06bf63c66b9e3db60479f0e")throw 0;const profile=join(root,"profile.json"),frame=join(root,"frame.gaaf"),receipt=join(root,"receipt.json");writeFileSync(profile,bytes,{flag:"wx",mode:384});appendFileSync(process.env.GITHUB_ENV,`RD0873_EVIDENCE_ROOT=${root}\nRD0873_PROFILE_PATH=${profile}\nRD0873_FRAME_PATH=${frame}\nRD0873_RECEIPT_PATH=${receipt}\n`,"utf8")}catch{process.exit(2)}'
+      - name: Capture native producer and dedicated verifier evidence
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+          RD0873_AGENTS_ROOT: ${{ github.workspace }}/agents
+        run: >-
+          node --input-type=module -e 'import{runFrozenGitResourceHarness}from"./producer/scripts/lib/logic-aig-source-origin/process-tree-resource.mjs";try{await runFrozenGitResourceHarness({commitOid:process.env.RD0873_PRODUCER_COMMIT,profilePath:process.env.RD0873_PROFILE_PATH,framePath:process.env.RD0873_FRAME_PATH,agentsRoot:process.env.RD0873_AGENTS_ROOT,receiptPath:process.env.RD0873_RECEIPT_PATH})}catch{process.exit(2)}'
+      - name: Check exact private upload inputs before artifact service access
+        run: >-
+          node --input-type=module -e 'import{createHash}from"node:crypto";import{lstatSync,readdirSync,readFileSync}from"node:fs";import{join}from"node:path";try{const root=process.env.RD0873_EVIDENCE_ROOT,names=readdirSync(root).sort();if(names.join("\0")!==["frame.gaaf","profile.json","receipt.json"].join("\0"))throw 0;const file=(name,limit)=>{const p=join(root,name),s=lstatSync(p);if(!s.isFile()||s.isSymbolicLink()||s.size<0||s.size>limit)throw 0;return p};const frame=file("frame.gaaf",134217728),profile=file("profile.json",1048576),receipt=file("receipt.json",1048576);const profileBytes=readFileSync(profile),receiptBytes=readFileSync(receipt);if(profileBytes.length!==1131||profileBytes.includes(10)||createHash("sha256").update(profileBytes).digest("hex")!=="8b89fa23a5e84d2c16f885ce8946bf1b7e4547a8f06bf63c66b9e3db60479f0e"||receiptBytes.length===0||receiptBytes.includes(10)||receiptBytes.includes(13)||lstatSync(frame).size===0)throw 0}catch{process.exit(2)}'
+      - id: upload-payload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ matrix.payload_artifact }}
+          path: |
+            ${{ env.RD0873_FRAME_PATH }}
+            ${{ env.RD0873_PROFILE_PATH }}
+          retention-days: 1
+          if-no-files-found: error
+          compression-level: 0
+      - id: upload-receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ matrix.receipt_artifact }}
+          path: ${{ env.RD0873_RECEIPT_PATH }}
+          retention-days: 1
+          if-no-files-found: error
+          compression-level: 0
+      - name: Require artifact service digests
+        env:
+          PAYLOAD_DIGEST: ${{ steps.upload-payload.outputs.artifact-digest }}
+          RECEIPT_DIGEST: ${{ steps.upload-receipt.outputs.artifact-digest }}
+        run: >-
+          node -e 'if(!/^[0-9a-f]{64}$/.test(process.env.PAYLOAD_DIGEST||"")||!/^[0-9a-f]{64}$/.test(process.env.RECEIPT_DIGEST||""))process.exit(2)'
+      - name: Delete private producer evidence inputs
+        if: ${{ always() }}
+        run: >-
+          node --input-type=module -e 'import{existsSync,lstatSync,realpathSync,rmSync}from"node:fs";try{const root=process.env.RD0873_EVIDENCE_ROOT;if(!root||!existsSync(root))process.exit(0);const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync.native(root)!==root)throw 0;rmSync(root,{recursive:true,force:false});if(existsSync(root))throw 0}catch{process.exit(2)}'
+
+  rd0873-cross-verify:
+    name: RD-0873 reciprocal verifier (${{ matrix.consumer_suffix }})
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: [protected-dispatch-inputs, rd0873-evidence-producer]
+    environment: rd0873-task6-evidence
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            consumer_suffix: windows-x64
+            payload_artifact: rd0873-task6-full-frame-linux-x64
+            receipt_artifact: rd0873-task6-receipt-linux-x64
+            receipt_platform: linux
+          - runner: ubuntu-24.04
+            consumer_suffix: linux-x64
+            payload_artifact: rd0873-task6-full-frame-windows-x64
+            receipt_artifact: rd0873-task6-receipt-windows-x64
+            receipt_platform: win32
+    runs-on: ${{ matrix.runner }}
+    env:
+      RD0873_MODE: ${{ inputs.mode }}
+      RD0873_PRODUCER_COMMIT: ${{ inputs.producerCommit }}
+      RD0873_AGENTS_COMMIT: ${{ inputs.agentsCommit }}
+      RD0873_EVIDENCE_COMMIT: ${{ inputs.evidenceCommit }}
+      RD0873_AGENTS_TOKEN: ${{ secrets.RD0873_AGENTS_READ_TOKEN }}
+      RD0873_RECEIPT_PLATFORM: ${{ matrix.receipt_platform }}
+      RD0873_PAYLOAD_ROOT: ${{ runner.temp }}/rd0873-${{ matrix.consumer_suffix }}-payload
+      RD0873_RECEIPT_ROOT: ${{ runner.temp }}/rd0873-${{ matrix.consumer_suffix }}-receipt
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Require the protected AGENTS read credential
+        run: >-
+          node -e 'if(typeof process.env.RD0873_AGENTS_TOKEN!=="string"||process.env.RD0873_AGENTS_TOKEN.length<20)process.exit(2)'
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.producerCommit }}
+          path: producer
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: TritHypha/AGENTS-SKILLS-AND-TOOLS
+          ref: ${{ inputs.agentsCommit }}
+          token: ${{ secrets.RD0873_AGENTS_READ_TOKEN }}
+          path: agents
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: ${{ inputs.mode == 'verify' }}
+        with:
+          ref: ${{ inputs.evidenceCommit }}
+          path: evidence
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+      - name: Bind reciprocal checkouts to the dispatch and workflow SHA
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+          RD0873_AGENTS_ROOT: ${{ github.workspace }}/agents
+        run: >-
+          node --input-type=module -e 'import{spawnSync}from"node:child_process";const git=(cwd,args)=>{const r=spawnSync("git",args,{cwd,encoding:"utf8",windowsHide:true,maxBuffer:1048576});if(r.error||r.status!==0)throw 0;return r.stdout.trim()};try{const p=process.env.RD0873_PRODUCER_ROOT,a=process.env.RD0873_AGENTS_ROOT,pc=process.env.RD0873_PRODUCER_COMMIT,ac=process.env.RD0873_AGENTS_COMMIT;if(process.env.GITHUB_SHA!==pc||git(p,["rev-parse","HEAD"])!==pc||git(a,["rev-parse","HEAD"])!==ac||git(p,["status","--porcelain=v1"])!==""||git(a,["status","--porcelain=v1"])!=="")throw 0;git(p,["cat-file","-e",`${pc}^{commit}`]);git(a,["cat-file","-e",`${ac}^{commit}`])}catch{process.exit(2)}'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ matrix.payload_artifact }}
+          path: ${{ env.RD0873_PAYLOAD_ROOT }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ matrix.receipt_artifact }}
+          path: ${{ env.RD0873_RECEIPT_ROOT }}
+      - name: Verify closed receipt, raw bytes and dedicated two-argument frame admission
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+          RD0873_AGENTS_ROOT: ${{ github.workspace }}/agents
+          RD0873_EVIDENCE_ROOT: ${{ github.workspace }}/evidence
+        run: >-
+          node --input-type=module -e 'import{createHash}from"node:crypto";import{lstatSync,readdirSync,readFileSync}from"node:fs";import{join}from"node:path";import{spawnSync}from"node:child_process";import{canonicalJsonText}from"./producer/scripts/lib/logic-aig-source-origin/contract.mjs";import{gradeCompleteProcessTreeResourceReceipt}from"./producer/scripts/lib/logic-aig-source-origin/process-tree-resource.mjs";import{verifyPinnedCapacityArtifactAdmissionFrame}from"./agents/tools/artifact-admission.mjs";const hash=(b)=>createHash("sha256").update(b).digest("hex");const git=(cwd,args)=>{const r=spawnSync("git",args,{cwd,encoding:"buffer",windowsHide:true,maxBuffer:1048576});if(r.error||r.status!==0)throw 0;return r.stdout};try{const only=(root,names)=>{const got=readdirSync(root).sort();if(got.join("\0")!==names.join("\0"))throw 0};const regular=(root,name,limit)=>{const p=join(root,name),s=lstatSync(p);if(!s.isFile()||s.isSymbolicLink()||s.size<0||s.size>limit)throw 0;return p};only(process.env.RD0873_PAYLOAD_ROOT,["frame.gaaf","profile.json"]);only(process.env.RD0873_RECEIPT_ROOT,["receipt.json"]);const framePath=regular(process.env.RD0873_PAYLOAD_ROOT,"frame.gaaf",134217728),profilePath=regular(process.env.RD0873_PAYLOAD_ROOT,"profile.json",1048576),receiptPath=regular(process.env.RD0873_RECEIPT_ROOT,"receipt.json",1048576);const receiptBytes=readFileSync(receiptPath);if(receiptBytes.length===0||receiptBytes.includes(10)||receiptBytes.includes(13))throw 0;const receiptText=receiptBytes.toString("utf8");if(!Buffer.from(receiptText,"utf8").equals(receiptBytes))throw 0;const receipt=JSON.parse(receiptText);if(canonicalJsonText(receipt)!==receiptText||receipt.producerCommit!==process.env.RD0873_PRODUCER_COMMIT||receipt.agentsCommit!==process.env.RD0873_AGENTS_COMMIT||receipt.platform!==process.env.RD0873_RECEIPT_PLATFORM||receipt.arch!=="x64"||gradeCompleteProcessTreeResourceReceipt(receipt).status!=="PASS")throw 0;const frameBytes=readFileSync(framePath),profileBytes=readFileSync(profilePath);if(frameBytes.length!==receipt.frameByteLength||profileBytes.length!==receipt.profileByteLength||hash(frameBytes)!==receipt.frameSha256||hash(profileBytes)!==receipt.profileSha256)throw 0;verifyPinnedCapacityArtifactAdmissionFrame(frameBytes,profileBytes);if(process.env.RD0873_MODE==="verify"){const e=process.env.RD0873_EVIDENCE_ROOT,commit=process.env.RD0873_EVIDENCE_COMMIT,parents=git(e,["rev-list","--parents","-n","1","HEAD"]).toString("utf8").trim().split(" "),head=git(e,["rev-parse","HEAD"]).toString("utf8").trim(),paths=git(e,["diff-tree","--no-commit-id","--name-only","-r","HEAD"]).toString("utf8").trim().split("\n").filter(Boolean).sort(),workflow=git(e,["show","HEAD:.github/workflows/platform-smoke.yml"]);if(head!==commit||parents.length!==2||parents[1]!==process.env.RD0873_PRODUCER_COMMIT||paths.join("\0")!==["scripts/tests/fixtures/rd0873-task6-producer-linux-x64.v1.json","scripts/tests/fixtures/rd0873-task6-producer-windows-x64.v1.json"].join("\0")||!workflow.equals(readFileSync(join(process.env.RD0873_PRODUCER_ROOT,".github","workflows","platform-smoke.yml"))))throw 0}}catch{process.exit(2)}'
+      - name: Verify evidence-commit fixture bytes in verify mode
+        if: ${{ inputs.mode == 'verify' }}
+        env:
+          RD0873_PRODUCER_ROOT: ${{ github.workspace }}/producer
+          RD0873_EVIDENCE_ROOT: ${{ github.workspace }}/evidence
+        run: >-
+          node --input-type=module -e 'import{lstatSync,readFileSync}from"node:fs";import{join}from"node:path";import{spawnSync}from"node:child_process";const git=(cwd,args)=>{const r=spawnSync("git",args,{cwd,encoding:"buffer",windowsHide:true,maxBuffer:1048576});if(r.error||r.status!==0)throw 0;return r.stdout};try{const e=process.env.RD0873_EVIDENCE_ROOT,commit=process.env.RD0873_EVIDENCE_COMMIT,receiptPath=join(process.env.RD0873_RECEIPT_ROOT,"receipt.json"),gitText=(args)=>git(e,args).toString("utf8").trim(),head=gitText(["rev-parse","HEAD"]),parents=gitText(["rev-list","--parents","-n","1","HEAD"]).split(" "),paths=gitText(["diff-tree","--no-commit-id","--name-only","-r","HEAD"]).split("\n").filter(Boolean).sort(),workflow=git(e,["show","HEAD:.github/workflows/platform-smoke.yml"]);if(head!==commit||parents.length!==2||parents[1]!==process.env.RD0873_PRODUCER_COMMIT||gitText(["status","--porcelain=v1"])!==""||paths.join("\0")!==["scripts/tests/fixtures/rd0873-task6-producer-linux-x64.v1.json","scripts/tests/fixtures/rd0873-task6-producer-windows-x64.v1.json"].join("\0")||!workflow.equals(readFileSync(join(process.env.RD0873_PRODUCER_ROOT,".github","workflows","platform-smoke.yml"))))throw 0;const receiptStat=lstatSync(receiptPath);if(!receiptStat.isFile()||receiptStat.isSymbolicLink()||receiptStat.size<1||receiptStat.size>1048576)throw 0;const receiptBytes=readFileSync(receiptPath),fixtureName=process.env.RD0873_RECEIPT_PLATFORM==="win32"?"rd0873-task6-producer-windows-x64.v1.json":process.env.RD0873_RECEIPT_PLATFORM==="linux"?"rd0873-task6-producer-linux-x64.v1.json":"",fixturePath=join(e,"scripts","tests","fixtures",fixtureName),fixtureStat=lstatSync(fixturePath);if(!fixtureName||!fixtureStat.isFile()||fixtureStat.isSymbolicLink()||fixtureStat.size<1||fixtureStat.size>1048576)throw 0;const fixtureBytes=readFileSync(fixturePath);if(!fixtureBytes.equals(receiptBytes))throw 0}catch{process.exit(2)}'
+      - name: Delete private reciprocal download inputs
+        if: ${{ always() }}
+        run: >-
+          node --input-type=module -e 'import{existsSync,lstatSync,realpathSync,rmSync}from"node:fs";try{for(const root of [process.env.RD0873_PAYLOAD_ROOT,process.env.RD0873_RECEIPT_ROOT]){if(!root||!existsSync(root))continue;const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync.native(root)!==root)throw 0;rmSync(root,{recursive:true,force:false});if(existsSync(root))throw 0}}catch{process.exit(2)}'
+
   hosted-platforms:
     name: ${{ matrix.name }}
     strategy:

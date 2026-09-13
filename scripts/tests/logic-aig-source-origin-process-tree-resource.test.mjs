@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -13,6 +13,34 @@ import {
 import { canonicalJsonText } from '../lib/logic-aig-source-origin/contract.mjs';
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
+
+test('Task 6C-R pins the protected cross-platform evidence workflow', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/platform-smoke.yml', import.meta.url), 'utf8');
+  const producer = readFileSync(new URL('../galerina-source-origin-frame.mjs', import.meta.url), 'utf8');
+  const literalMatches = [...producer.matchAll(/^const PINNED_PROFILE_JSON = '([^'\\\r\n]*)';$/gmu)];
+  assert.equal(literalMatches.length, 1);
+  const profile = Buffer.from(literalMatches[0][1], 'utf8');
+  assert.equal(profile.length, 1131);
+  assert.equal(sha256(profile.toString('utf8')), '8b89fa23a5e84d2c16f885ce8946bf1b7e4547a8f06bf63c66b9e3db60479f0e');
+  assert.equal(profile.includes(0x0a), false);
+  assert.match(workflow, /rd0873-evidence-producer:/u);
+  assert.match(workflow, /rd0873-cross-verify:/u);
+  assert.match(workflow, /secrets\.RD0873_AGENTS_READ_TOKEN/u);
+  assert.match(workflow, /process\.env\.GITHUB_SHA/u);
+  assert.match(workflow, /PINNED_PROFILE_JSON/u);
+  assert.match(workflow, /8b89fa23a5e84d2c16f885ce8946bf1b7e4547a8f06bf63c66b9e3db60479f0e/u);
+  for (const artifact of [
+    'rd0873-task6-full-frame-windows-x64',
+    'rd0873-task6-full-frame-linux-x64',
+    'rd0873-task6-receipt-windows-x64',
+    'rd0873-task6-receipt-linux-x64',
+  ]) assert.match(workflow, new RegExp(artifact, 'u'));
+  assert.match(workflow, /retention-days: 1/u);
+  assert.match(workflow, /compression-level: 0/u);
+  assert.match(workflow, /scripts\/tests\/fixtures\/rd0873-task6-producer-windows-x64\.v1\.json/u);
+  assert.match(workflow, /scripts\/tests\/fixtures\/rd0873-task6-producer-linux-x64\.v1\.json/u);
+  assert.match(workflow, /fixtureBytes\.equals\(receiptBytes\)/u);
+});
 
 function processRow({ stage, processKey, parentProcessKey, pid, parentPid, startTick, endTick, peakRssKiB, terminationKind = 'exit', terminationCode = 0 }) {
   return { stage, processKey, parentProcessKey, pid, parentPid, startTick, endTick, peakRssKiB, terminationKind, terminationCode };
