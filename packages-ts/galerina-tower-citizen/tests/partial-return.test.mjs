@@ -20,7 +20,7 @@ const { ALLOW, INDETERMINATE, DENY } = Verdict;
 test("maskByVerdict: ALLOW keeps (null); DENY and INDETERMINATE withhold", () => {
   assert.equal(maskByVerdict(ALLOW), null, "ALLOW → keep the value");
   const d = maskByVerdict(DENY);
-  assert.ok(isMasked(d) && d.reason === "denied" && d.verdict === DENY && d.diagnostic === null);
+  assert.ok(isMasked(d) && d.reason === "denied" && d.verdict === DENY && d.diagnostic.kind === "NONE");
   const i = maskByVerdict(INDETERMINATE);
   assert.ok(isMasked(i) && i.reason === "indeterminate" && i.verdict === INDETERMINATE);
   assert.equal(i.diagnostic?.code, "FUNGI-GOV-3VL-001", "INDETERMINATE carries the audit diagnostic");

@@ -1,72 +1,58 @@
-// tri-pipe.test.mjs — the capstone: hardware() → tier → one governed engine, end-to-end.
+// tri-pipe.test.mjs — proposal-only candidate route (P6 / C3). No engine, no dispatch.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createTriPipeEngine } from "../dist/index.js";
+import { createTriPipeEngine, dispatchTriPipeEngine } from "../dist/index.js";
 import { resolveHardware } from "../../galerina-hardware-tier/dist/index.js";
 
-const big = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
-
-// RD-0236 #2/#4 (owner decision 2026-07-02): the underlying hybrid engine now fail-secures
-// unattested bridges (#2) and the silent host-native fallback (#4) by default. These tier-routing
-// tests exercise HARDWARE-TIER SELECTION, not attestation, and use dev stub/emulator registries with
-// no signed manifest — so they opt into the permissive behaviour for both. The fail-secure DEFAULTS
-// are RED-benched in @galerina/tower-citizen (rd0236-runtime-hardening + bridge-attestation).
-const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
-
-async function run(opts) {
-  const tp = createTriPipeEngine({ auditInMemory: true, kernelFor: big, governance: OPTIN, ...opts });
-  const r = await tp.engine.infer({ prompt: "hi", correlationId: "t" });
-  await tp.engine.shutdown();
-  return { tp, r };
-}
-
-test("binary tier (cpu, attested) → no photonic offload; digital stub runs", async () => {
-  const { tp, r } = await run({ targetId: "cpu", attestationVerified: true });
+test("binary tier (cpu, attested) → proposal with no photonic offload and no engine", () => {
+  const tp = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
+  assert.equal(tp.kind, "PROPOSAL");
   assert.equal(tp.tier, "binary");
   assert.equal(tp.photonicEnabled, false);
-  assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);
+  assert.equal(tp.routeSafety, "SAFE");
+  assert.equal(tp.authorityReleased, false);
+  assert.equal(Object.hasOwn(tp, "engine"), false);
 });
 
-test("photonic tier (photonic, attested, fully eligible) → photonic backend runs the net-win kernel", async () => {
-  const { tp, r } = await run({ targetId: "photonic", attestationVerified: true, componentFullyEligible: true });
+test("photonic tier (photonic, attested, fully eligible) → proposal wires photonic, still no engine", () => {
+  const tp = createTriPipeEngine({ targetId: "photonic", attestationVerified: true, componentFullyEligible: true });
+  assert.equal(tp.kind, "PROPOSAL");
   assert.equal(tp.tier, "photonic");
   assert.equal(tp.photonicEnabled, true);
-  assert.deepEqual(r.bridgesUsed, ["photonic:photonic-emulator"]); // provenance namespaced (anti-spoof)
+  assert.equal(Object.hasOwn(tp, "engine"), false);
 });
 
-test("hybrid tier (gpu, whole component) → photonic offload enabled for the eligible kernel", async () => {
-  const { tp, r } = await run({ targetId: "gpu", attestationVerified: true });
+test("hybrid tier (gpu, whole component) → proposal enables photonic offload flag, no dispatch", () => {
+  const tp = createTriPipeEngine({ targetId: "gpu", attestationVerified: true });
   assert.equal(tp.tier, "hybrid");
   assert.equal(tp.photonicEnabled, true);
-  assert.deepEqual(r.bridgesUsed, ["photonic:photonic-emulator"]); // provenance namespaced (anti-spoof)
+  assert.equal(dispatchTriPipeEngine(tp).code, "ROUTE_DISPATCH_FORBIDDEN");
 });
 
-test("fail-closed: UNATTESTED photonic hardware → binary tier, no offload", async () => {
-  const { tp, r } = await run({ targetId: "photonic", attestationVerified: false, componentFullyEligible: true });
-  assert.equal(tp.tier, "binary");
-  assert.equal(tp.photonicEnabled, false);
-  assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);
-});
-
-test("fail-closed: UNKNOWN target → binary tier, no offload", async () => {
-  const { tp } = await run({ targetId: "frobnicator-9000", attestationVerified: true });
+test("fail-closed: UNATTESTED photonic hardware → binary proposal, no offload", () => {
+  const tp = createTriPipeEngine({ targetId: "photonic", attestationVerified: false, componentFullyEligible: true });
   assert.equal(tp.tier, "binary");
   assert.equal(tp.photonicEnabled, false);
 });
 
-test("the resolved tier matches the hardware() directive exactly", () => {
+test("fail-closed: UNKNOWN target → binary proposal, no offload", () => {
+  const tp = createTriPipeEngine({ targetId: "frobnicator-9000", attestationVerified: true });
+  assert.equal(tp.tier, "binary");
+  assert.equal(tp.photonicEnabled, false);
+});
+
+test("the proposed tier matches the hardware() directive exactly", () => {
   for (const [targetId, attested, elig] of [["cpu", true, true], ["gpu", true, false], ["photonic", true, true], ["photonic", true, false], ["photonic", false, true]]) {
-    const tp = createTriPipeEngine({ auditInMemory: true, targetId, attestationVerified: attested, componentFullyEligible: elig });
+    const tp = createTriPipeEngine({ targetId, attestationVerified: attested, componentFullyEligible: elig });
     assert.equal(tp.tier, resolveHardware({ targetId, attestationVerified: attested, componentFullyEligible: elig }));
   }
 });
 
-test("photonic offload still gated per-kernel: a sub-crossover kernel (default n=16) stays digital even on a photonic tier", async () => {
-  // No kernelFor → default n = op.count (16, below the crossover) → the router declines → digital.
-  const tp = createTriPipeEngine({ auditInMemory: true, targetId: "photonic", attestationVerified: true, componentFullyEligible: true, governance: OPTIN });
-  const r = await tp.engine.infer({ prompt: "hi", correlationId: "small" });
-  assert.equal(tp.photonicEnabled, true);             // the port IS wired (hybrid/photonic tier)
-  assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);  // …but the per-kernel net-win router declined
-  await tp.engine.shutdown();
+test("candidate digest binds target/attestation/eligibility; dispatch remains refused", () => {
+  const a = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
+  const b = createTriPipeEngine({ targetId: "gpu", attestationVerified: true });
+  assert.notEqual(a.candidateRouteDigest, b.candidateRouteDigest);
+  assert.match(a.candidateRouteDigest, /^sha256:[0-9a-f]{64}$/u);
+  assert.equal(dispatchTriPipeEngine(a).refused, true);
 });

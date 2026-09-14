@@ -6,8 +6,8 @@
 // kernel; fail-closed to binary. Worst case == binary == today.
 
 export {
-  type TriPipeOptions, type TriPipeEngine, type Tier,
-  createTriPipeEngine,
+  type TriPipeOptions, type TriPipeProposal, type Tier,
+  createTriPipeEngine, dispatchTriPipeEngine,
 } from "./tri-pipe.js";
 
 // The Galerina Execution Router — one decision across all routing axes (tier × precision × offload).

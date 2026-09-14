@@ -26,7 +26,7 @@ test(">= M distinct approvals → ALLOW + authorized, no diagnostic", () => {
   assert.equal(d.decision, "allow");
   assert.equal(d.authorized, true);
   assert.equal(d.reason, null);
-  assert.equal(d.diagnostic, null);
+  assert.equal(d.diagnostic.kind, "NONE");
   assert.equal(d.threshold, 2);
   assert.equal(d.distinctApprovals, 3);
   assert.equal(meetsQuorum([vote("a"), vote("b"), vote("c")], 2), true);
@@ -45,7 +45,7 @@ test("clean shortfall (well-formed, < M approvals) → DENY, NOT a diagnostic", 
   assert.equal(d.decision, "deny");
   assert.equal(d.authorized, false);
   assert.equal(d.reason, "insufficient_quorum");
-  assert.equal(d.diagnostic, null, "a clean shortfall is an ordinary DENY, not FUNGI-GOV-3VL-001");
+  assert.equal(d.diagnostic.kind, "NONE", "a clean shortfall is an ordinary DENY, not FUNGI-GOV-3VL-001");
   assert.equal(d.distinctApprovals, 1);
   assert.equal(meetsQuorum([vote("a")], 2), false);
 });
@@ -108,7 +108,7 @@ test("empty vote set with M>=1 → DENY (well-formed, zero approvals — not a d
   const d = checkQuorum([], 1);
   assert.equal(d.verdict, DENY);
   assert.equal(d.reason, "insufficient_quorum");
-  assert.equal(d.diagnostic, null);
+  assert.equal(d.diagnostic.kind, "NONE");
   assert.equal(d.distinctApprovals, 0);
 });
 

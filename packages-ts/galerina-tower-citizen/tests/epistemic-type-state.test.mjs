@@ -130,7 +130,7 @@ describe("requireTrusted — the fail-closed boundary", () => {
     const r = requireTrusted(trustedRoot("secret-data", "root"));
     assert.equal(r.authorized, true);
     assert.equal(r.value, "secret-data");
-    assert.equal(r.diagnostic, null);
+    assert.equal(r.diagnostic.kind, "NONE");
   });
   it("UNKNOWN → deny, value withheld (null), audited FUNGI-GOV-3VL-001", () => {
     let captured = null;
@@ -144,7 +144,7 @@ describe("requireTrusted — the fail-closed boundary", () => {
     const r = requireTrusted(refute("bad", "x"));
     assert.equal(r.authorized, false);
     assert.equal(r.value, null);
-    assert.equal(r.diagnostic, null);
+    assert.equal(r.diagnostic.kind, "NONE");
   });
   it("trustOf reports the trit", () => {
     assert.equal(trustOf(unverified(1)), Trust.UNKNOWN);
@@ -302,7 +302,7 @@ describe("ZERO-TRUST INVARIANTS I1–I4 (owner-ratified 2026-07-10)", () => {
   });
 
   it("I3b: 'denied by policy' (DENY, no diagnostic) is distinguishable from 'check could not run' (ABSTAIN, diagnostic)", () => {
-    assert.equal(evaluateContract(0, () => Verdict.DENY, "enforce").diagnostic, null);
+    assert.equal(evaluateContract(0, () => Verdict.DENY, "enforce").diagnostic.kind, "NONE");
     assert.equal(evaluateContract(0, abstain, "enforce").diagnostic?.code, GOV_3VL_DIAGNOSTIC);
   });
 
