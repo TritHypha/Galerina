@@ -1,0 +1,127 @@
+# Missing R&D TODO
+
+**Status:** active working queue; non-authorizing
+
+**Purpose:** record only the questions that cannot be completed from the current
+source, tests, existing R&D, or ordinary engineering deduction. A missing item is
+not a stop signal: complete the bounded implementation around it, record the
+smallest unresolved question here, and continue.
+
+## Current scope
+
+This queue excludes the following records from the present review:
+
+- `RD-0822`, `RD-0832`, `RD-0836`, `RD-0837`, `RD-0840`, `RD-0855`,
+  `RD-0858`, `RD-0873`
+- `RD-1231`
+
+It also does not authorize a corpus compile, conversion-queue regeneration,
+`.fungi` build, signing or custody action, platform/durability work, or final
+assurance. Those remain later gates after the component work is complete.
+
+## Open questions to resolve, not implementation blockers
+
+### M-RD-001 — SLIDE general-backend profile
+
+- **Locator:** `SLIDE/TODO.md:1267-1272` and
+  `SLIDE/src/v2c-general-backend-scope.mjs:114-122`
+- **Missing decision:** choose the first bounded profile for loop-carried state,
+  data-dependent loops, recursion/callbacks, or cross-package effects; define its
+  limits and refusal cases.
+- **What can proceed now:** preserve the existing bounded backend and prepare a
+  narrow registry/test seam. Do not invent a broad general backend.
+- **Bridge question:** which single profile gives useful progress without
+  changing the existing authority boundary?
+
+### M-RD-002 — SLIDE native-provider descriptor boundary
+
+- **Locator:** `SLIDE/TODO.md:1520-1545`
+- **Missing decision:** the exact provider descriptor, admission/refusal vectors,
+  and dependency on the selected general-backend profile.
+- **What can proceed now:** document and test the boundary shape only; defer
+  provider implementation until M-RD-001 is settled.
+- **Bridge question:** what is the smallest closed descriptor that can be admitted
+  without making provider identity or capability claims on behalf of an owner?
+
+### M-RD-003 — Galerina boundary semantics that are not yet source-defined
+
+- **Locators:** `Galerina/docs/TODO.md:1114-1120`, `1185-1220`,
+  `1401-1409`, `1432-1439`, `1464-1505`, and `1594-1617`
+- **Missing decision:** none has been proven yet as a new research problem. These
+  rows are implementation candidates first: exact own-data decoding, immutable
+  snapshots, typed refusal, bounded traversal, and alias-safe reports.
+- **What can proceed now:** implement each as a small source/test slice using
+  existing fail-closed rules. Promote an item here only if implementation and
+  existing R&D leave a specific semantic question unresolved.
+- **Bridge question:** identify only the cases where ordinary typed-boundary
+  reasoning is insufficient, and state the smallest experiment needed.
+
+**Current Astra disposition:** no new R&D is required for the selected JS report
+slice. Exact own-data decoding, bounded arrays, immutable snapshots, and explicit
+refusal are ordinary engineering deductions already required by the existing
+TODO and R&D. The delivered slice is recorded at `Galerina/docs/TODO.md:1432`
+and `Galerina/docs/TODO.md:1473`; the exact source is
+`packages-ts/galerina-target-js/src/index.ts:123-695`, with focused regressions
+at `packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:104-220`.
+
+The same disposition applies to the CPU eligibility slice at
+`Galerina/docs/TODO.md:1466` and `Galerina/docs/TODO.md:1511`. Its exact source
+boundary is `packages-ts/galerina-target-cpu/src/index.ts:78-534`, with focused
+regressions at `packages-ts/galerina-target-cpu/tests/cpu-target-contracts.test.mjs:56-158`.
+The required result is ordinary fail-closed admission: malformed or unknown
+capability evidence yields no selected plan; unknown memory cannot satisfy a
+declared limit; and returned capability/plan data is copied and immutable.
+
+### M-RD-004 — JS import-set closure
+
+- **Locator:** `packages-ts/galerina-target-js/src/index.ts:642-648`
+- **Current behavior:** every module import must appear in the admitted plan
+  import set; this closes the observed module-to-plan leak.
+- **Unresolved contract:** whether the reverse direction must also hold—whether
+  every plan import must be represented by a module metadata entry. The current
+  source and tests do not establish that equality, so adding it would be a
+  semantic change rather than a mechanical hardening.
+- **Smallest next action:** ask the bridge for the owner contract or existing R&D
+  evidence. Until then, retain the one-way fail-closed check and do not widen the
+  report claim.
+
+## Bridge preparation
+
+Grok is temporarily unavailable. When the bridge returns, ask the three questions
+above with the exact locators and request a decision, counterexample, or refusal
+case—not general commentary. Astra is being used now to compute the same gaps from
+the live source.
+
+The R&D metadata query remains refused because tracked private RD sources are
+dirty. That limits an exhaustive current-coverage claim, but it does not block
+source-supported implementation slices. The code graph was refreshed at the
+current Galerina head before the JS slice was selected.
+
+If Astra or the bridge produces a genuinely new technical result, create a new
+KB-owned `RD-*` record for that issue before relying on it. The record must contain
+the question, source/head, evidence or counterexample, decision, and the exact
+implementation consequence. Do not create an RD record for a gap already covered
+by existing R&D or ordinary engineering deduction.
+
+## Deferred, not forgotten
+
+The following remain visible elsewhere and are intentionally not treated as
+missing R&D in this pass:
+
+- Lyth’s five external/non-authorizing handoff holds.
+- VOK’s current reference-only component boundary.
+- signing, private-key custody, platform/durability, production authority, and
+  final assurance gates.
+- corpus compilation, conversion queue regeneration, and bulk `.fungi` work.
+
+## Exit rule
+
+For each item, either:
+
+1. implement and focused-test it from existing evidence;
+2. record the smallest unresolved question here and continue with independent
+   work; or
+3. create a new RD record when genuinely new research is required.
+
+No item is marked complete from an unverified claim, a skipped check, or an
+unavailable bridge response.

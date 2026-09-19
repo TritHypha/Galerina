@@ -1429,10 +1429,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [x] Repair the slice-close audit so `UNKNOWN` is a valid fail-closed
   threadability result and erased declarations can truthfully record `N/A`;
   focused audit tests pass **6/6** and existing receipts remain green.
-- [ ] **Priority JS fail-closed repair:** validate one exact immutable plan,
+- [x] **Priority JS fail-closed repair:** validate one exact immutable plan,
   module and adapter snapshot; positively prove every named check executed;
   cover bare builtin subpaths, module-import evidence, repeated getters,
-  sparse/wrong-class arrays and copied receipt-bound report output.
+  sparse/wrong-class arrays and copied receipt-bound report output. Delivered in
+  `packages-ts/galerina-target-js/src/index.ts` with **16/16** focused contract
+  tests at the current working head; compiler wiring remains separate.
 - [ ] **Priority native border repair:** exact-decode target, artifact and
   bridge records; capture once; bound arrays/text; define canonical path and
   containment policy; bind selected ABI/profile to the exact artifact, target,
@@ -1461,14 +1463,18 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [x] Update private skills at translation `8355bf7` and authoring `82df925`:
   PASS/Allow requires positive evidence that its prerequisite check executed on
   the same immutable snapshot. Both are verified, private and unpushed.
-- [ ] Close CPU exact record/numeric/array ingress; reject string/sparse SIMD,
+- [x] Close CPU exact record/numeric/array ingress; reject string/sparse SIMD,
   NaN/infinite cores/memory, unknown memory, rogue workload and aliased reports.
+  `packages-ts/galerina-target-cpu/src/index.ts` now admits bounded immutable
+  snapshots and the focused contract suite passes **10/10**.
 - [ ] Close GPU hostile record/array/text ingress, bound P×C traversal, validate
   every operation, return a deep snapshot, and migrate four legacy GPU codes to
   governed `FUNGI-CATEGORY-NNN` registry ownership.
-- [ ] Fix JS plan/report fail-open behavior: invalid prerequisite domains must
+- [x] Fix JS plan/report fail-open behavior: invalid prerequisite domains must
   never render passed checks; cover builtin subpaths such as `fs/promises`,
   reconcile module imports with plan imports, and bind immutable typed receipts.
+  The report now refuses invalid prerequisites and returns copied frozen
+  snapshots; focused contract tests pass **16/16**.
 - [ ] Give adjacent package test `.mjs` files a governed harness classification
   or exclusion before literal all-TS/MJS closure can be claimed.
 - [x] Complete the individual Slice 322 owner matrix: queue 1,486/1,486;
@@ -1502,9 +1508,10 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [ ] Add hostile accelerator vectors for getters/proxies, repeated-read A/B,
   mutable exported profiles, report alias mutation, sparse/oversized arrays,
   every vocabulary, non-finite/unsafe dimensions and firing work limits.
-- [ ] Add closed CPU ingress for architecture, SIMD, workload, threading,
+- [x] Add closed CPU ingress for architecture, SIMD, workload, threading,
   capability, plan, report and probe records before later executable CPU
-  scopes can claim these erased declarations as physical types.
+  scopes can claim these erased declarations as physical types. Selection now
+  refuses malformed evidence and returns no selected plan.
 - [ ] **Queue-accounting fix:** give adjacent package test `.mjs` files an
   explicit governed test-harness classification or exclusion. They are literal
   entries in the all-TS/MJS queue and cannot be silently counted as converted
