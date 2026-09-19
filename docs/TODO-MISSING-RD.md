@@ -140,6 +140,41 @@ architecture gates, not reasons to invent a research record.
   canonical owner; source-origin approval, exact graph refresh and receiving
   task installation evidence remain outstanding. `AGENTS/docs/TODO.md:108-112`
   separately holds the clean-candidate graph and integration gate.
+- **Galerina typed-content validation:**
+  `Galerina/packages-ts/galerina-core-compiler/src/index.ts:2555-2573` is
+  still a raw-text stub for `validateTypedContentBlock()`; the function accepts
+  only `blockType`, `marker`, `content`, `file`, and `startLine`, so it has no
+  interpolation AST or binding/type environment from which to prove that a
+  `ProtectedSecret` is emitted. The canonical contract explicitly records the
+  dependency at
+  `ZTF-Knowledge-Bases/reference/galerina/galerina-core-syntax-typed-content-blocks.md:233-250`
+  and marks `FUNGI-BLOCK-004` blocked on interpolation AST at `:266-272`.
+  Do not replace this with a name-matching regex; the smallest exit is an
+  AST/type-environment seam plus a negative test before implementation.
+- **Galerina expression type coverage:**
+  `Galerina/packages-ts/galerina-core-compiler/TODO.md:38-44` remains open.
+  The live checker has partial assignment/call checks at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1655-1680` and
+  `:1859-1884`, but its own deferred-work contract at `:28-35` still requires
+  complete expression-level inference before claiming TYPE-002/005-007 done.
+  Do not mark the rows complete from the existing literal/known-type cases.
+- **Galerina pipeline checker:**
+  `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
+  `checkMethodChain()` seam. Its input carries only a receiver name, method
+  names, and a location; it lacks the type, effect, Result-handling, and
+  readonly environments required by PIPELINE-001..005. The existing test
+  records the stub at `tests/compiler-safety-contracts.test.mjs:298-300`.
+- **Galerina residual WAT lowering:**
+  `packages-ts/galerina-core-compiler/TODO.md:54-61` remains open. The emitter
+  intentionally fails closed at `src/wat-emitter.ts:2028-2031` for Decimal and
+  higher-order collection operations because exact bignum and closure/HOF
+  semantics are not supplied; the Phase-19 fallback is explicitly marked at
+  `src/wat-emitter.ts:4528-4534`. Do not turn these into successful output by
+  deleting the trap or by treating a stub module as a real implementation.
+- **Galerina compiler architecture items:**
+  The remaining Stage-B parity, governed JSON codec, and crypto-provider move
+  are tracked at `packages-ts/galerina-core-compiler/TODO.md:58-70`; they need
+  cross-package contracts and are not bounded edits in the current pass.
 
 No VOK-specific unchecked logic item was found separate from the SLIDE
 reference-only and owner-gated boundaries above.

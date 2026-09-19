@@ -43,9 +43,13 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     Depends on expression-level type inference (same root as TYPE-002).
 
-[ ] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode
-    Currently silent in dev; error only in production. Should be warning in dev/check
-    so developers discover violations before CI. (30-minute change.)
+[x] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode
+    Implemented and focused-tested: boundary-input violations and under-declared
+    flow tiers are warnings in development/check mode and errors in production.
+    Source: src/value-state-checker.ts:2181-2193 and 2613-2617;
+    tier implementation: src/effect-checker.ts:1384-1404; tests:
+    tests/rd-0120-governed-flow-valuestate.test.mjs and
+    tests/tier-floor-fungi-tier-001.test.mjs.
 
 [ ] WAT emitter — remaining ~11% unlowered stdlib constructors
     Money currency constructors, Decimal bignum, collection ops (range, map, filter,
