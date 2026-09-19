@@ -350,7 +350,22 @@
         "kind": "process",
         "command": [
           "node",
-          "scripts/audit-fungi-corpus-check.mjs"
+          "scripts/audit-fungi-corpus-check.mjs",
+          "--corpus-v2",
+          "--profile",
+          "PROJECT",
+          "--shard-count",
+          "2",
+          "--concurrency",
+          "2",
+          "--max-files",
+          "1360",
+          "--max-bytes",
+          "67108864",
+          "--timeout-ms",
+          "540000",
+          "--max-output-bytes",
+          "67108864"
         ]
       },
       "acceptedExitCodes": [
@@ -5268,6 +5283,7 @@
           "scripts/tests/flat-package-root-lock.test.mjs",
           "scripts/tests/full-fungi-retirement-gate.test.mjs",
           "scripts/tests/fungi-corpus-ownership.test.mjs",
+          "scripts/tests/fungi-corpus-shard-execution.test.mjs",
           "scripts/tests/fungi-golden-probe.test.mjs",
           "scripts/tests/fungi-source-capability-inventory.test.mjs",
           "scripts/tests/fuse-cli-refusals.test.mjs",
@@ -5423,6 +5439,7 @@
           "scripts/tests/flat-package-root-lock.test.mjs",
           "scripts/tests/full-fungi-retirement-gate.test.mjs",
           "scripts/tests/fungi-corpus-ownership.test.mjs",
+          "scripts/tests/fungi-corpus-shard-execution.test.mjs",
           "scripts/tests/fungi-golden-probe.test.mjs",
           "scripts/tests/fungi-source-capability-inventory.test.mjs",
           "scripts/tests/fuse-cli-refusals.test.mjs",
@@ -5509,7 +5526,7 @@
           "scripts/tests/wasmtime-oracle-layout.test.mjs",
           "scripts/tests/web-stub-guard.test.mjs"
         ],
-        "expectedCount": 134
+        "expectedCount": 135
       },
       "timeoutMs": 600000,
       "maxOutputBytes": 67108864,
