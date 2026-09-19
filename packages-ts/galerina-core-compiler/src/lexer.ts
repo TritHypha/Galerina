@@ -33,7 +33,8 @@ export type TokenKind =
   | "govComment"   // ;; governance/system annotation — scanned by verifier + included in manifest
   | "genComment"   // //fungi: CLI/compiler-GENERATED metadata (USES/USEDBY/COMPLEXITY/VOLATILITY/WARN) — tooling-owned, overwritable
   | "newline"
-  | "eof";
+  | "eof"
+  | "contentBlock";
 
 /**
  * Numeric token kind IDs for fast internal comparison.
@@ -61,6 +62,7 @@ export const TokenKindId = {
   Newline:    11,
   Eof:        12,
   GenComment: 13,  // //fungi: CLI/compiler-generated metadata (appended to preserve Newline=11/Eof=12 IDs)
+  ContentBlock: 14,
 } as const;
 export type TokenKindIdValue = typeof TokenKindId[keyof typeof TokenKindId];
 
@@ -79,7 +81,17 @@ const TOKEN_KIND_ID_MAP: Readonly<Record<TokenKind, TokenKindIdValue>> = {
   genComment: TokenKindId.GenComment,
   newline:    TokenKindId.Newline,
   eof:        TokenKindId.Eof,
+  contentBlock: TokenKindId.ContentBlock,
 };
+
+export type ContentBlockType = "html" | "dom" | "script" | "css";
+
+export interface ContentBlockToken {
+  readonly blockType: ContentBlockType;
+  readonly marker: string;
+  readonly content: string;
+  readonly closed: boolean;
+}
 
 export interface Token {
   readonly kind: TokenKind;
@@ -102,6 +114,8 @@ export interface Token {
    * Use `source.slice(token.start, token.end)` to recover the raw source text.
    */
   readonly end: number;
+  /** Source-preserving payload for a typed content block token. */
+  readonly contentBlock?: ContentBlockToken;
 }
 
 export interface LexerDiagnostic {
@@ -341,8 +355,68 @@ export function lex(source: string, file: string): LexResult {
     return ch;
   }
 
-  function tok(kind: TokenKind, value: string, startPos: number, startLine: number, startCol: number): Token {
-    return { kind, kindId: TOKEN_KIND_ID_MAP[kind], value, line: startLine, column: startCol, endLine: line, endColumn: col, start: startPos, end: pos };
+  function tok(
+    kind: TokenKind,
+    value: string,
+    startPos: number,
+    startLine: number,
+    startCol: number,
+    contentBlock?: ContentBlockToken,
+  ): Token {
+    return {
+      kind,
+      kindId: TOKEN_KIND_ID_MAP[kind],
+      value,
+      line: startLine,
+      column: startCol,
+      endLine: line,
+      endColumn: col,
+      start: startPos,
+      end: pos,
+      ...(contentBlock === undefined ? {} : { contentBlock }),
+    };
+  }
+
+  function scanContentBlock(startPos: number, startLine: number, startCol: number): Token | undefined {
+    // Only recognise a block opener at the first non-whitespace position of a
+    // line. This keeps ordinary shift/comparison operators and embedded text
+    // outside a block unchanged.
+    if (!/^\s*$/.test(source.slice(lineStartPos, startPos))) return undefined;
+
+    const opener = /^(?:print[ \t]+)?(html|dom|script|css)[ \t]+<<([A-Z_][A-Z0-9_]*)[ \t]*(?:\r?\n|$)/.exec(source.slice(startPos));
+    if (opener === null || opener[1] === undefined || opener[2] === undefined) return undefined;
+
+    const blockType = opener[1] as ContentBlockType;
+    const marker = opener[2];
+    const contentStart = startPos + opener[0].length;
+    const escapedMarker = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const closer = new RegExp(`^[ \\t]*${escapedMarker}[ \\t]*(?:\\r?\\n|$)`, "m").exec(source.slice(contentStart));
+    const closeStart = closer === null ? source.length : contentStart + closer.index;
+    const end = closer === null ? source.length : closeStart + closer[0].length;
+    const content = source.slice(contentStart, closeStart);
+
+    while (pos < end) advance();
+
+    const closed = closer !== null;
+    if (!closed) {
+      diag(
+        "FUNGI-BLOCK-002",
+        "UNCLOSED_CONTENT_BLOCK",
+        `Typed content block '${blockType}' opened with marker ${marker} is never closed.`,
+        startLine,
+        startCol,
+        `Close the block with ${marker} alone at the start of a line.`,
+      );
+    }
+
+    return tok(
+      "contentBlock",
+      source.slice(startPos, end),
+      startPos,
+      startLine,
+      startCol,
+      { blockType, marker, content, closed },
+    );
   }
 
   function diag(
@@ -389,6 +463,12 @@ export function lex(source: string, file: string): LexResult {
     // ── Whitespace (space, tab, carriage return) ───────────────────────────
     if (ch === " " || ch === "\t" || ch === "\r") {
       advance();
+      continue;
+    }
+
+    const contentBlockToken = scanContentBlock(startPos, startLine, startCol);
+    if (contentBlockToken !== undefined) {
+      tokens.push(contentBlockToken);
       continue;
     }
 

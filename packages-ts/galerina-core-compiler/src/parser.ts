@@ -105,6 +105,7 @@ export type AstNodeKind =
   // Literal expression nodes
   | "charLiteral"
   | "listLiteral"
+  | "typedContentBlockExpr"
   // Hardware hints (Phase 18) — parser preserves, backend decides
   | "preferHint"
   // Feature-gate attribute (task #51) — first-class AST node for @experimental_profile(...)
@@ -233,6 +234,10 @@ export interface AstNode {
    * Must match a ProofObligation entry in the referenced flow's .lmanifest.
    */
   readonly claim?: string;
+  /** Source-preserving typed content block payload. */
+  readonly blockType?: "html" | "dom" | "script" | "css";
+  readonly marker?: string;
+  readonly content?: string;
   /**
    * Structural bitmask set by the parser on flow/fn declaration nodes.
    * Encodes: HasContract, HasEffects, HasCompute, TensorCandidate, ReadonlyInputs.
@@ -1432,6 +1437,10 @@ class Parser {
     this.skipNewlines();
     const tok = this.current();
 
+    if (tok.kind === "contentBlock") {
+      return this.parseTypedContentBlock();
+    }
+
     // @attribute_name(key: "val", ...) { ... } — feature-gate directive (task #51)
     // First-class AST node; grammar validated; verification/emission skipped in --release.
     if (tok.kind === "symbol" && tok.value === "@") {
@@ -1602,6 +1611,35 @@ class Parser {
     this.emitUnexpected(`Unexpected token "${tok.value}" in statement position.`);
     this.advance();
     return undefined;
+  }
+
+  private parseTypedContentBlock(): AstNode {
+    const loc = this.loc();
+    const tok = this.current();
+    this.advance();
+    const block = tok.contentBlock;
+    if (block === undefined) {
+      // This is an internal lexer/parser contract violation. Keep the AST
+      // non-authorizing and surface a normal parser diagnostic instead of
+      // fabricating content or throwing through the compiler boundary.
+      this.emit(
+        "FUNGI-PARSE-001",
+        "CONTENT_BLOCK_TOKEN_INVALID",
+        "Typed content block token is missing its source-preserving payload.",
+        loc,
+        "Re-lex the source with the current compiler before parsing it.",
+      );
+      return { kind: "identifier", value: "<invalid-content-block>", location: loc };
+    }
+
+    return {
+      kind: "typedContentBlockExpr",
+      value: block.blockType,
+      blockType: block.blockType,
+      marker: block.marker,
+      content: block.content,
+      location: loc,
+    };
   }
 
   private parseLetDecl(safetyPrefix?: "unsafe" | "safe"): AstNode {
@@ -2722,6 +2760,10 @@ class Parser {
   private parsePrimary(): AstNode {
     const loc = this.loc();
     const tok = this.current();
+
+    if (tok.kind === "contentBlock") {
+      return this.parseTypedContentBlock();
+    }
 
     if (tok.kind === "keyword" && tok.value === "requirement") {
       return this.parseRequirementExpr();

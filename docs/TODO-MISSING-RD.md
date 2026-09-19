@@ -148,20 +148,21 @@ architecture gates, not reasons to invent a research record.
   route can be admitted. Do not rewrite line endings solely to obtain a green
   self-test.
 - **Galerina typed-content validation:**
-  `Galerina/packages-ts/galerina-core-compiler/src/index.ts:2555-2573` is
+  `Galerina/packages-ts/galerina-core-compiler/src/index.ts:2555-2575` is
   still a raw-text stub for `validateTypedContentBlock()`; the function accepts
   only `blockType`, `marker`, `content`, `file`, and `startLine`, so it has no
-  interpolation AST or binding/type environment from which to prove that a
-  `ProtectedSecret` is emitted. The parser-side prerequisite is also absent:
-  `packages-ts/galerina-core-compiler/src/parser.ts:29-120` has no
-  `typedContentBlockExpr` kind, `src/lexer.ts:22-36` has no content-block token,
-  and `src/parser.ts:6995-7010` passes only ordinary lexer tokens into the
-  parser. The canonical contract explicitly records the dependency at
+  binding/type environment from which to prove that a `ProtectedSecret` is
+  emitted. The source-preserving parser seam is now implemented at
+  `packages-ts/galerina-core-compiler/src/lexer.ts:22-37` and `:358-420`,
+  `src/parser.ts:100-108`, `:1616-1643`, and `:2760-2768`, with regressions at
+  `tests/typed-content-block-ast.test.mjs:14-49`. The remaining blocker is the
+  AST/type-environment validation layer, not raw content capture. The canonical
+  contract explicitly records the dependency at
   `ZTF-Knowledge-Bases/reference/galerina/galerina-core-syntax-typed-content-blocks.md:233-250`
-  and marks `FUNGI-BLOCK-004` blocked on interpolation AST at `:266-272`.
-  Do not replace this with a name-matching regex; the smallest exit is a
-  source-preserving content-block AST/token seam, then an AST/type-environment
-  seam and a negative test before validation implementation.
+  and its implementation-status table at `:266-272` still needs an owner-side
+  refresh for the new seam. Do not replace the remaining validation with a
+  name-matching regex; the smallest exit is a binding/type-environment seam
+  and a negative secret-interpolation test before implementation.
 - **Galerina expression type coverage:**
   `Galerina/packages-ts/galerina-core-compiler/TODO.md:38-44` remains open.
   The live checker now has verified bounded assignment/call checks at
