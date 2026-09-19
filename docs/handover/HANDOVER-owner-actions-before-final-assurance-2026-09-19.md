@@ -59,6 +59,9 @@ root `21415420b447e219` must delegate it only after the final unsigned
 durability/repository evidence and package bytes are fixed. Keep its private
 environment in encrypted offline custody; this packet records no private path
 or private value.
+The previously observed staging directory is now absent on the current host
+check; that is not proof of secure custody, deletion or two verified copies.
+Return an owner custody receipt before the key is admitted or used.
 
 - RD-0349: owner policy for the broader Commodity/Crypto/Rate/Percent surface
   and sourced scale/rounding rules.
