@@ -4,9 +4,24 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### Post-commit cross-repository exact-head receipt — 2026-09-19
+
+- [x] Current heads are Galerina `e42b69dbb18011a8b1dc6d7e5e2c964b3bbd1eb5`,
+  SLIDE `6f1fea266aa8291e93bd6b54f9206a76bb40ead0`, Lyth-Weaver
+  `3b3125b1cbe68c04e00f859c8c1efd099151bb7c`, and KB
+  `5143f0a9cd42ac493e08d7a310284be6816966a6`. Existing unrelated dirty and
+  private work remains preserved; Galerina `README.md` is still dirty.
+- [x] SLIDE and Lyth source evidence is now explicitly separated from their
+  later documentation-only receipt commits. No stale documentation head is
+  being used as source-test evidence.
+- [!] The requested KB path `AI\\_INDEX.md` does not exist. The live KB exposes
+  `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and `research/RD-TODO-MAP.md` as
+  existing index routes. No duplicate warehouse/index was invented; the
+  canonical path decision remains owner-visible.
+
 ### Public-only release-admission recheck — 2026-09-19
 
-- [x] At Galerina HEAD `cb4ee0bd5`, the bounded beta-v1 release-admission
+- [x] At Galerina HEAD `e42b69dbb`, the bounded beta-v1 release-admission
   verifier tests pass **8/8** using synthetic public evidence, including
   missing-evidence, stale/digest-mismatch, dirty-checkout, signature-downgrade
   and path-leak refusals.
