@@ -2,6 +2,15 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseStrictJsonBytes } from "./lib/assurance-fabric/strict-json.mjs";
+import { validateBoundedClosureReceipt } from "./lib/bounded-closure-receipt.mjs";
+
+const REQUIRED_GATES = ["project-corpus", "differential", "strict-fungi", "physical-slide-vok"];
+const REQUIRED_EXCLUSIONS = [
+  { name: "full-tooling", authority: "task-5-plan" },
+  { name: "graph-all", authority: "task-5-plan" },
+  { name: "normal-phase-close", authority: "task-5-plan" },
+];
 
 function parseArgs(argv) {
   let root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -49,6 +58,7 @@ for (const name of files) {
   const threadability = [...receipt.matchAll(/^Threadability: (.+)$/gmu)].map((match) => match[1]);
   const classification = [...receipt.matchAll(/^Source classification: (.+)$/gmu)].map((match) => match[1]);
   const closure = [...receipt.matchAll(/^Bounded closure: (.+)$/gmu)].map((match) => match[1]);
+  const conversionReceipts = [...receipt.matchAll(/^Conversion receipt: (\{.+\})$/gmu)].map((match) => match[1]);
   const sliceNumber = Number(/^slice-(\d+)-/u.exec(name)?.[1] ?? 0);
   if (skill.length !== 1
       || !(/^(?:SKILL_UPDATE [0-9a-f]{40}|NO_SKILL_UPDATE: .+)$/u.test(skill[0] ?? ""))) {
@@ -64,6 +74,29 @@ for (const name of files) {
   }
   if (closure.length !== 1 || closure[0] !== "COMPLETE") {
     violations.push(`${name}: bounded closure is not complete`);
+  }
+  if (conversionReceipts.length !== 1) {
+    violations.push(`${name}: missing exact conversion receipt v2`);
+  } else {
+    try {
+      const candidate = parseStrictJsonBytes(Buffer.from(conversionReceipts[0], "utf8"), {
+        label: `${name} conversion receipt`,
+        maxBytes: 262_144,
+      });
+      const result = validateBoundedClosureReceipt(candidate, {
+        requiredGates: REQUIRED_GATES,
+        requiredExclusions: REQUIRED_EXCLUSIONS,
+        expectedProduct: candidate?.product,
+        expectedScope: candidate?.scope,
+        expectedSource: candidate?.source,
+        expectedTarget: candidate?.target,
+        expectedGovernance: candidate?.governance,
+        expectedProjectCorpusReceiptDigest: candidate?.projectCorpusReceiptDigest,
+      });
+      if (result.kind !== "accepted") violations.push(`${name}: ${result.code}`);
+    } catch {
+      violations.push(`${name}: invalid conversion receipt JSON`);
+    }
   }
   if (sliceNumber >= 323) {
     const authoring = [...receipt.matchAll(/^Authoring skill disposition: (.+)$/gmu)].map((match) => match[1]);

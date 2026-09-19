@@ -22,6 +22,38 @@ function run(root) {
   return spawnSync(process.execPath, [AUDIT, "--root", root], { encoding: "utf8" });
 }
 
+const digest = (character) => `sha256:${character.repeat(64)}`;
+const gates = ["project-corpus", "differential", "strict-fungi", "physical-slide-vok"];
+const exclusions = [
+  { name: "full-tooling", authority: "task-5-plan" },
+  { name: "graph-all", authority: "task-5-plan" },
+  { name: "normal-phase-close", authority: "task-5-plan" },
+];
+
+function conversionReceipt() {
+  return {
+    schema: "galerina.conversion-slice-receipt.v2",
+    authorizing: false,
+    status: "PASS",
+    product: "galerina",
+    scope: { package: "example", file: "packages-ts/example/src/index.ts", symbol: "Candidate" },
+    source: { head: "a".repeat(40), tree: "b".repeat(40), contentDigest: digest("c") },
+    target: {
+      locator: "packages/fungi/products/galerina/example/slice.fungi#Candidate",
+      candidateDigest: digest("d"),
+    },
+    governance: { rdDigest: digest("e"), planDigest: digest("f") },
+    physicalProfile: 1,
+    projectCorpusReceiptDigest: digest("1"),
+    gates: gates.map((name, index) => ({
+      name, status: "PASS", evidenceDigest: digest(["2", "3", "4", "5"][index]),
+    })),
+    exclusions: exclusions.map((entry) => ({ ...entry })),
+  };
+}
+
+const receiptLine = () => `Conversion receipt: ${JSON.stringify(conversionReceipt())}\n`;
+
 const base = `# Candidate Fungi Conversion Report
 
 ## Slice-close receipt
@@ -30,6 +62,7 @@ Skill disposition: SKILL_UPDATE aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 Threadability: PARALLEL_PURE
 Source classification: CANDIDATE
 Bounded closure: COMPLETE
+${receiptLine()}
 `;
 
 const forward = `# Slice 323 Candidate Fungi conversion adjudication
@@ -46,6 +79,7 @@ Authoring skill disposition: NO_SKILL_UPDATE: no Fungi candidate was authorized
 Threadability: UNKNOWN
 Source classification: BLOCKED
 Bounded closure: COMPLETE
+${receiptLine()}
 `;
 
 const qualifiedScript = forward
@@ -57,6 +91,23 @@ const qualifiedScript = forward
 test("complete exact slice-close receipt passes", () => {
   const result = run(fixture(base));
   assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test("historical scope-less receipts cannot replay unless frozen in the baseline", () => {
+  assert.equal(run(fixture(base.replace(/^Conversion receipt:.*\n/mu, ""))).status, 1);
+});
+
+test("source scope, candidate scope, required gate and exclusion mutations refuse", () => {
+  const mutations = [
+    (receipt) => ({ ...receipt, scope: { ...receipt.scope, file: "packages-ts/other/src/index.ts" } }),
+    (receipt) => ({ ...receipt, target: { ...receipt.target, locator: "packages/fungi/products/trametes/example/slice.fungi#Candidate" } }),
+    (receipt) => ({ ...receipt, gates: receipt.gates.slice(1) }),
+    (receipt) => ({ ...receipt, exclusions: receipt.exclusions.slice(1) }),
+  ];
+  for (const mutate of mutations) {
+    const body = base.replace(/^Conversion receipt:.*$/mu, `Conversion receipt: ${JSON.stringify(mutate(conversionReceipt()))}`);
+    assert.equal(run(fixture(body)).status, 1);
+  }
 });
 
 test("missing, duplicate and vague skill dispositions refuse", () => {
