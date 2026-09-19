@@ -1,0 +1,47 @@
+{
+  "schema": "bounded-tool-batch-policy.v1",
+  "defaultConcurrency": 2,
+  "maximumConcurrency": 4,
+  "tools": [
+    {
+      "path": "tools/rd0873-corpus-packages-fungi.mjs",
+      "lane": "parallel-read",
+      "maximumTimeoutMs": 120000,
+      "maximumOutputBytes": 1048576,
+      "temporaryState": "none",
+      "argumentMode": "none"
+    },
+    {
+      "path": "tools/rd0873-corpus-self-hosted.mjs",
+      "lane": "parallel-read",
+      "maximumTimeoutMs": 120000,
+      "maximumOutputBytes": 1048576,
+      "temporaryState": "none",
+      "argumentMode": "none"
+    },
+    {
+      "path": "tools/rd0873-static-snippets.mjs",
+      "lane": "snapshot-read",
+      "maximumTimeoutMs": 120000,
+      "maximumOutputBytes": 1048576,
+      "temporaryState": "none",
+      "argumentMode": "none"
+    },
+    {
+      "path": "tools/rd0873-generated-state.mjs",
+      "lane": "exclusive",
+      "maximumTimeoutMs": 120000,
+      "maximumOutputBytes": 1048576,
+      "temporaryState": "none",
+      "argumentMode": "none"
+    },
+    {
+      "path": "tools/rd0873-final-check.mjs",
+      "lane": "exclusive",
+      "maximumTimeoutMs": 120000,
+      "maximumOutputBytes": 1048576,
+      "temporaryState": "none",
+      "argumentMode": "none"
+    }
+  ]
+}

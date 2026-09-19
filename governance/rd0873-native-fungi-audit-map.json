@@ -1,0 +1,76 @@
+{
+  "schema": "audit-map.v1",
+  "subject": {
+    "id": "rd-0873-native-fungi-audit-base",
+    "owner": "galerina",
+    "locator": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b"
+  },
+  "approval": {
+    "status": "APPROVED",
+    "planDigest": "e0f755398e00b9768accf7d2918022355b19e90e9faba4dd5c38a9e3e38207d2",
+    "authority": "authority://galerina/rd-0873-native-fungi-audit",
+    "evidence": "receipt://galerina/rd-0873-native-fungi-audit-approval.json"
+  },
+  "audits": [
+    {
+      "id": "corpus-packages-fungi",
+      "owner": "galerina",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
+      "cwd": "repo://galerina",
+      "argv": ["node", "tools/rd0873-corpus-packages-fungi.mjs"],
+      "dependsOn": [],
+      "timeoutMs": 120000,
+      "maxOutputBytes": 1048576,
+      "exit": { "pass": [0], "finding": [1], "refused": [2] },
+      "evidence": "receipt://galerina/rd-0873/corpus-packages-fungi.json"
+    },
+    {
+      "id": "corpus-self-hosted",
+      "owner": "galerina",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
+      "cwd": "repo://galerina",
+      "argv": ["node", "tools/rd0873-corpus-self-hosted.mjs"],
+      "dependsOn": [],
+      "timeoutMs": 120000,
+      "maxOutputBytes": 1048576,
+      "exit": { "pass": [0], "finding": [1], "refused": [2] },
+      "evidence": "receipt://galerina/rd-0873/corpus-self-hosted.json"
+    },
+    {
+      "id": "static-snippets",
+      "owner": "galerina",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
+      "cwd": "repo://galerina",
+      "argv": ["node", "tools/rd0873-static-snippets.mjs"],
+      "dependsOn": ["corpus-packages-fungi", "corpus-self-hosted"],
+      "timeoutMs": 120000,
+      "maxOutputBytes": 1048576,
+      "exit": { "pass": [0], "finding": [1], "refused": [2] },
+      "evidence": "receipt://galerina/rd-0873/static-snippets.json"
+    },
+    {
+      "id": "generated-state",
+      "owner": "galerina",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
+      "cwd": "repo://galerina",
+      "argv": ["node", "tools/rd0873-generated-state.mjs"],
+      "dependsOn": ["static-snippets"],
+      "timeoutMs": 120000,
+      "maxOutputBytes": 1048576,
+      "exit": { "pass": [0], "finding": [1], "refused": [2] },
+      "evidence": "receipt://galerina/rd-0873/generated-state.json"
+    },
+    {
+      "id": "final-check",
+      "owner": "galerina",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
+      "cwd": "repo://galerina",
+      "argv": ["node", "tools/rd0873-final-check.mjs"],
+      "dependsOn": ["generated-state"],
+      "timeoutMs": 120000,
+      "maxOutputBytes": 1048576,
+      "exit": { "pass": [0], "finding": [1], "refused": [2] },
+      "evidence": "receipt://galerina/rd-0873/final-check.json"
+    }
+  ]
+}
