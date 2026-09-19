@@ -10,6 +10,16 @@
   admission remain outstanding. Keep the private environment in encrypted
   offline custody and do not copy it into the repository.
 
+### Live cross-repository head refresh — 2026-09-19
+
+- [x] Current locator heads are Galerina `abebd0a727d418bbc4eb102f59f88f94a902472b`,
+  SLIDE `9b3b411b2b7c0f03087397387fadc5be0d278d48`, Lyth-Weaver
+  `7f661360d0ea5f1eea5a0ca991e6015f01621ba0`, and KB
+  `1590b55f50628fe68fe297488bfd4825991c7be4`.
+- [!] Galerina `README.md`, Lyth's private handover and the two KB private RD
+  files remain pre-existing dirty/private work; they are preserved and do not
+  constitute clean exact-head assurance.
+
 The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
