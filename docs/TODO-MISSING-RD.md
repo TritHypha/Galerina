@@ -174,15 +174,15 @@ architecture gates, not reasons to invent a research record.
   readonly environments required by PIPELINE-001..005. The existing test
   records the stub at `tests/compiler-safety-contracts.test.mjs:298-300`.
 - **Galerina residual WAT lowering:**
-  `packages-ts/galerina-core-compiler/TODO.md:54-61` remains open. The emitter
-  intentionally fails closed at `src/wat-emitter.ts:2028-2031` for Decimal and
+  `packages-ts/galerina-core-compiler/TODO.md:63-65` remains open. The emitter
+  intentionally fails closed at `src/wat-emitter.ts:2035-2045` for Decimal and
   higher-order collection operations because exact bignum and closure/HOF
   semantics are not supplied; the Phase-19 fallback is explicitly marked at
   `src/wat-emitter.ts:4528-4534`. Do not turn these into successful output by
   deleting the trap or by treating a stub module as a real implementation.
 - **Galerina compiler architecture items:**
   The remaining Stage-B parity, governed JSON codec, and crypto-provider move
-  are tracked at `packages-ts/galerina-core-compiler/TODO.md:58-70`; they need
+  are tracked at `packages-ts/galerina-core-compiler/TODO.md:67-79`; they need
   cross-package contracts and are not bounded edits in the current pass.
 
 No VOK-specific unchecked logic item was found separate from the SLIDE
