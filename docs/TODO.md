@@ -16,6 +16,9 @@
   AGENTS audit-map controls pass **7/7** at the current checkout. The test
   launched no corpus DAG and grants no graph, queue, conversion or authority
   release.
+- [x] The RD-0858 scalar audit-map generator also passes **8/8**, binding one
+  stable implementation build to the exact committed plan, canonical LF/CRLF
+  projection and caller-path/build refusal controls.
 
 ### Live cross-repository head refresh — 2026-09-19
 
