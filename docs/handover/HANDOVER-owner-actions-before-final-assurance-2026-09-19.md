@@ -1,0 +1,89 @@
+# Owner actions before final assurance — 2026-09-19
+
+Status: OWNER ACTION REQUIRED / NON-AUTHORIZING
+
+This packet is a checklist for the remaining owner-controlled gates. It does
+not request private key material in chat, in a repository, in memory, in a
+graph, or in a test log.
+
+## Current evidence boundary
+
+The non-key laboratory work is current and bounded:
+
+- Lyth: 23 suites / 786 checks, typecheck, forbidden-state, capability and
+  doc-drift gates pass; Lyth remains non-authorizing and P7 remains downstream
+  Fungi assurance.
+- SLIDE/VOK: current focused suites pass 53/53; reference-only state remains
+  `authorityReleased=false`; the nine Galerina producer-input checks remain
+  cancelled rather than passed.
+- AGENTS: explicit `AGENTS_ROOT` and `RD0873_GIT_PATH` route the audit-map
+  controls to 7/7 pass; the corpus checker self-test passes but is not a
+  corpus compile/build.
+- WSL2: bounded Linux-under-WSL tests pass where runnable, while live host and
+  fault publication are refused at the VMBUS-backed virtual-storage boundary.
+  WSL2 is not physical durability evidence.
+
+The observed source heads before this documentation commit are Galerina
+`3169bdb4fc157893df56cc551cf0fd67656f3a8a`, SLIDE
+`6f1fea266aa8291e93bd6b54f9206a76bb40ead0`, Lyth
+`3b3125b1cbe68c04e00f859c8c1efd099151bb7c`, and KB
+`5143f0a9cd42ac493e08d7a310284be6816966a6`. Documentation commits change
+heads; all later receipts must bind the exact heads they actually inspect.
+
+## Owner action lanes
+
+### 1. Galerina governance and R&D
+
+Resolve each item with a current exact-source receipt; the R&D records remain
+partial/open until then:
+
+- RD-0349: owner policy for the broader Commodity/Crypto/Rate/Percent surface
+  and sourced scale/rounding rules.
+- RD-0361: authority/deletion proof and the SLIDE/VOK cross-repository gates;
+  the bounded twin count is not production admission.
+- RD-0363: authenticated signatures, complete canonical binding, replay-time
+  enforcement and receipt binding.
+- RD-0364: provider and weight identity, egress and budget proof, and
+  authorizing receipts.
+- RD-0365: vault/TPM/hardware custody evidence, host attestation and
+  rollback-safe custody handling.
+
+### 2. Separate SLIDE evidence/atlas authority
+
+Perform the offline owner ceremony for the separate SLIDE evidence and atlas
+authority, using the owner-controlled hybrid Ed25519 + ML-DSA-65 key domain.
+Supply public anchors and lifecycle records for creation, rotation, revocation,
+recovery and release. Provide publish-bound hosted evidence and named
+Windows/Linux/macOS restart, rollback, writer, crash and power-loss receipts.
+
+The Galerina governance key must remain out of this lane. No private key is to
+be generated, copied or committed by the repository or online process.
+
+### 3. Galerina producer → detached GIR → SLIDE/VOK
+
+Provide the exact Galerina producer/GIR inputs at one shared build point, then
+allow SLIDE to independently re-import and re-derive them. Re-run the nine
+cancelled cross-repository checks and produce the scalar VOK profile receipt
+chain with its registered consumer evidence. Keep profiles 64 and 256
+`INACTIVE` until packed consumer and execution evidence exists; do not activate
+them by changing labels.
+
+### 4. Exact PROJECT and final assurance sequence
+
+First obtain a valid exact-head PROJECT receipt over the clean, source-bound
+materialization. The EOL policy is byte-level: uniform LF/CRLF only where the
+owning format permits it; mixed EOL, lone CR, invalid UTF-8, prohibited BOM or
+replacement characters refuse the PROJECT gate. No bulk EOL rewrite is
+authorized.
+
+Only after PROJECT evidence and all preceding owner lanes are valid:
+
+1. regenerate the conversion queue;
+2. run final corpus assurance once, at the end;
+3. review the final receipts and exact heads;
+4. generate `.fungi` as the remaining operation.
+
+Until then, no queue regeneration, full corpus compile/build, profile
+activation, TypeScript retirement, production authority or `.fungi` generation
+is admitted. Any stale, dirty, missing, ignored or cancelled receipt remains a
+hold, not a pass.
