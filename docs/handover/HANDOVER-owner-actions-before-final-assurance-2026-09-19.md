@@ -23,12 +23,18 @@ The non-key laboratory work is current and bounded:
   fault publication are refused at the VMBUS-backed virtual-storage boundary.
   WSL2 is not physical durability evidence.
 
-The observed source heads before this documentation commit are Galerina
-`3169bdb4fc157893df56cc551cf0fd67656f3a8a`, SLIDE
-`6f1fea266aa8291e93bd6b54f9206a76bb40ead0`, Lyth
-`3b3125b1cbe68c04e00f859c8c1efd099151bb7c`, and KB
-`5143f0a9cd42ac493e08d7a310284be6816966a6`. Documentation commits change
-heads; all later receipts must bind the exact heads they actually inspect.
+The latest receipt heads are Galerina
+`a1cad4e894b067b18e39a9929bb4dc6198d6d73e`, SLIDE
+`9b3b411b2b7c0f03087397387fadc5be0d278d48`, Lyth
+`7f661360d0ea5f1eea5a0ca991e6015f01621ba0`, and KB
+`1590b55f50628fe68fe297488bfd4825991c7be4`. The bounded source checks were
+run at their explicitly named tested source heads; later documentation commits
+do not promote those receipts into authority.
+
+The owner-requested escaped `AI\_INDEX.md` route is the existing canonical
+root `AI_INDEX.md`; no separate `ai/_INDEX.md` was created. The required RD
+locator query remains `REFUSED` while the two tracked private RD sources are
+dirty, so no current R&D decision or absence claim is inferred.
 
 ## Owner action lanes
 
