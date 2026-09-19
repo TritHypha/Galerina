@@ -114,6 +114,31 @@ missing R&D in this pass:
   final assurance gates.
 - corpus compilation, conversion queue regeneration, and bulk `.fungi` work.
 
+## Exact blocker ledger
+
+These are recorded separately from missing R&D: they are current owner or
+architecture gates, not reasons to invent a research record.
+
+- **SLIDE general-backend boundary:** `SLIDE/TODO.md:1267-1279` and
+  `SLIDE/src/v2c-general-backend-scope.mjs:114-126`. The open families are
+  general loop bodies and general effects; the bounded contracts already
+  implemented were independently checked and are not to be rebuilt.
+- **SLIDE native-provider boundary:** `SLIDE/TODO.md:1520-1557` and
+  `SLIDE/docs/DEMAND-ADMITTED-NATIVE-PROVIDERS.md:292-330`. The descriptor,
+  semantic/target schema and admission contract are intentionally unbuilt
+  until the general-backend dependency is frozen.
+- **SLIDE owner evidence and activation:** `SLIDE/TODO.md:289-292`,
+  `SLIDE/TODO.md:307-311`, and `SLIDE/TODO.md:1447-1454`. These require owner
+  ceremony/receipt evidence, profile ordering, production authority and exact
+  per-file package parity; they are not implementation TODOs for this pass.
+- **Lyth-Weaver handoff:** `lyth-weaver/TODO.md:89-91`, `107-109`, and
+  `133-145`. These are cross-repository process-root, conversion and
+  re-admission gates. Lyth's owned rows are DONE, REFUSED or HOLD at
+  `lyth-weaver/TODO.md:14-18`; no qualifying component TODO is open.
+
+No VOK-specific unchecked logic item was found separate from the SLIDE
+reference-only and owner-gated boundaries above.
+
 ## Exit rule
 
 For each item, either:
