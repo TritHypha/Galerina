@@ -30,6 +30,13 @@ counts or open items that a newer section explicitly supersedes.
   PROJECT evidence remains a fail-closed refusal; no conversion, profile
   activation, VOK authority, TypeScript retirement or `.fungi` build follows
   from the focused checks.
+- [x] Rechecked the bounded corpus-receipt, queue, ownership and shard
+  contracts at this checkpoint: **49/49 pass**. The audit-map CLI ordering
+  test now uses injected PASS task results, so it verifies receipt algebra
+  without launching the real corpus audit entries.
+- [!] The real audit-map DAG remains withheld. Its current bounded self-test
+  refuses this checkout because mixed tracked-file EOL evidence is not
+  admitted, and the required exact-head PROJECT receipt is still absent.
 
 ### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
 
