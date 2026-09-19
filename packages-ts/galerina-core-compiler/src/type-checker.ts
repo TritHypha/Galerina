@@ -26,9 +26,10 @@
 //   FUNGI-BINDING-005  ImmutableBindingReassigned — let/param reassignment rejected (Phase 11A.2)
 //
 // Deferred (require full expression type inference or call graph):
-//   FUNGI-TYPE-002  TypeMismatch               — assignment compatibility (partial Phase 8A)
+//   FUNGI-TYPE-002  TypeMismatch               — remaining unsupported expression forms (bounded
+//                                              literal, known-expression, record and generic checks live)
 //   FUNGI-TYPE-034  GovernanceQualifierMismatch — protected/redacted label laundering
-//   FUNGI-TYPE-005..007  Operator / call / return type checking
+//   FUNGI-TYPE-005..007  Operator / call / return type checking (call arguments/count are partial)
 //   FUNGI-TYPE-010  UnsatisfiedGenericConstraint — generic constraint checks
 //   FUNGI-TYPE-012..016  ResultType, SecretOp, MissingEffect, GovernedSink, TensorShape
 //   FUNGI-TYPE-018  InvalidRuntimeTargetType
@@ -443,6 +444,27 @@ const ORDERABLE_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Compare generic arguments without erasing their payload or nominal tag.
+ *
+ * A bare generic type (for example `Option`) remains a wildcard for the
+ * compatibility checks that predate expression-level inference. Once both
+ * sides carry arguments, however, every corresponding argument must be
+ * compatible, including nested generic arguments and numeric widening.
+ */
+function genericArgumentsCompatible(
+  declared: readonly string[],
+  inferred: readonly string[],
+): boolean {
+  if (declared.length === 0 || inferred.length === 0) return true;
+  if (declared.length !== inferred.length) return false;
+
+  return declared.every((declaredArg, index) => {
+    const inferredArg = inferred[index];
+    return inferredArg !== undefined && isAssignmentCompatible(declaredArg, inferredArg);
+  });
+}
+
+/**
  * Returns true when a value of `inferred` type can be used where `declared`
  * type is expected. Phase 8A: covers literals, numeric widening, and
  * algebraic wrappers.
@@ -490,10 +512,17 @@ function isAssignmentCompatible(declared: string, inferred: string): boolean {
     return false;
   }
 
-  // Strip generic args for comparison
-  const declaredBase = declared.split("<")[0]?.trim() ?? declared;
-  const inferredBase = nInferred.split("<")[0]?.trim() ?? nInferred;
-  if (declaredBase === inferredBase) return true;
+  // Compare generic arguments when both sides provide them. Older call sites
+  // may still infer a bare wrapper (`Option`, `Result`, `Money`), which remains
+  // wildcard-compatible until expression-level inference supplies its payload.
+  const declaredRef = parseTypeString(declared);
+  const inferredRef = parseTypeString(nInferred);
+  if (declaredRef.base === inferredRef.base) {
+    return genericArgumentsCompatible(declaredRef.args, inferredRef.args);
+  }
+
+  const declaredBase = declaredRef.base;
+  const inferredBase = inferredRef.base;
 
   // Numeric widening: Int literal is compatible with all numeric types
   if (nInferred === "Int"     && NUMERIC_TYPES.has(declared)) return true;
@@ -867,14 +896,14 @@ class TypeChecker {
       // Extract return type from the first typeRef child (the return type annotation)
       const retTypeNode = children.find((c) => c.kind === "typeRef");
       if (retTypeNode?.value) {
-        this.flowReturnTypes.set(flowDeclName, parseTypeString(retTypeNode.value).base);
+        this.flowReturnTypes.set(flowDeclName, retTypeNode.value.trim());
       }
       // Extract parameter types
       const paramTypes = children
         .filter((c) => c.kind === "paramDecl")
         .map((c) => {
           const typeRef = c.children?.find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
-          return typeRef?.value ? parseTypeString(typeRef.value).base : "";
+          return typeRef?.value ? typeRef.value.trim() : "";
         });
       this.flowParamTypes.set(flowDeclName, paramTypes);
 
@@ -1538,7 +1567,7 @@ class TypeChecker {
               (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some");
             const declaredBase = this.currentReturnType.split("<")[0]?.trim() ?? this.currentReturnType;
             const isHttpResponseRecord = declaredBase === "Response" && inferredType === "Record";
-            if (!isOkErrReturn && !isHttpResponseRecord && !isAssignmentCompatible(declaredBase, inferredType)) {
+            if (!isOkErrReturn && !isHttpResponseRecord && !isAssignmentCompatible(this.currentReturnType, inferredType)) {
               // K3-005 (S3/A9, R&D bridge 0174) — a NON-Verdict value returned where Verdict is declared.
               // `return 2` (or any non-Verdict) as a Verdict smuggles an out-of-K3-domain value into a
               // governance result (fail-open). Fires BEFORE the generic TYPE-008 so the author gets the K3
@@ -1866,7 +1895,7 @@ class TypeChecker {
         const initNode = node.children?.[0];
         if (!hasGovernanceQualifier && !isViewType && initNode !== undefined) {
           const inferredType = this.inferType(initNode);
-          if (inferredType !== undefined && !isAssignmentCompatible(declaredBase, inferredType)) {
+          if (inferredType !== undefined && !isAssignmentCompatible(registeredType, inferredType)) {
             // `let x: SomeRecord = { … }` — same structural adoption as the return position
             // (finding ii): a matching literal IS the declared record; a mismatch gets the
             // precise field diagnostic from the helper instead of the generic one below.
@@ -1879,9 +1908,9 @@ class TypeChecker {
               this.diagnostics.push(makeTCDiag(
                 "FUNGI-TYPE-002",
                 "TYPE_MISMATCH",
-                `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
+                `Cannot assign '${inferredType}' to '${registeredType}'. The declared type and the value type are incompatible.`,
                 node.location,
-                `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
+                `Change the value to a '${registeredType}' expression, or update the type annotation.`,
                 inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
                   ? undefined  // numeric widening — no code suggestion needed
                   : undefined,

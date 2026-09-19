@@ -160,11 +160,13 @@ architecture gates, not reasons to invent a research record.
   AST/type-environment seam plus a negative test before implementation.
 - **Galerina expression type coverage:**
   `Galerina/packages-ts/galerina-core-compiler/TODO.md:38-44` remains open.
-  The live checker has partial assignment/call checks at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1655-1680` and
-  `:1859-1884`, but its own deferred-work contract at `:28-35` still requires
-  complete expression-level inference before claiming TYPE-002/005-007 done.
-  Do not mark the rows complete from the existing literal/known-type cases.
+  The live checker now has verified bounded assignment/call checks at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:447-531`,
+  `:895-907`, `:1562-1618`, `:1667-1718`, and `:1861-1919`, including
+  recursive generic payload checks and full generic signature retention.
+  Its deferred-work contract at `:28-35` still requires complete
+  expression-level inference before claiming TYPE-002/005-007 done. Do not
+  mark the rows complete from the bounded literal/known-type cases alone.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method

@@ -36,12 +36,21 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 
 ```text
 [ ] FUNGI-TYPE-002  TypeMismatch — assignment compatibility checking
-    The most common type-system property. A literal "hello" assigned to an Int binding
-    should be a compile error. Requires full expression-level type inference. Tracked as
-    the highest-priority type checker gap.
+    Bounded coverage is implemented for literals, known expressions, record adoption,
+    numeric widening, and recursive generic arguments. The remaining gap is full
+    expression-level inference for unsupported or unknown forms. Source:
+    src/type-checker.ts:447-531 and :1861-1919. Regressions:
+    tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
+    tests/type-checker-record-adoption.test.mjs, and
+    tests/type-checker-generic-assignment.test.mjs.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
-    Depends on expression-level type inference (same root as TYPE-002).
+    FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
+    is implemented for argument count. Remaining work is complete operator and
+    return-type coverage across unsupported expression forms; it still depends on
+    the unresolved inference cases above. Source: src/type-checker.ts:1667-1718
+    and :1562-1618. Regressions: tests/type-checker-phase11-wave2.test.mjs and
+    tests/type-checker-generic-assignment.test.mjs.
 
 [x] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode
     Implemented and focused-tested: boundary-input violations and under-declared
