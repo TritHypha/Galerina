@@ -135,6 +135,11 @@ architecture gates, not reasons to invent a research record.
   `133-145`. These are cross-repository process-root, conversion and
   re-admission gates. Lyth's owned rows are DONE, REFUSED or HOLD at
   `lyth-weaver/TODO.md:14-18`; no qualifying component TODO is open.
+- **AGENTS capability route:** `AGENTS/docs/TODO.md:16-20`, `39-47`, and
+  `88-89`. The tracked Myco index is stale and may only be refreshed by its
+  canonical owner; source-origin approval, exact graph refresh and receiving
+  task installation evidence remain outstanding. `AGENTS/docs/TODO.md:108-112`
+  separately holds the clean-candidate graph and integration gate.
 
 No VOK-specific unchecked logic item was found separate from the SLIDE
 reference-only and owner-gated boundaries above.
