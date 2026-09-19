@@ -4,6 +4,21 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### Dependency order and corpus-assurance hold — 2026-09-19
+
+- [x] Reconcile the live dependency order: complete independent Lyth-Weaver
+  laboratory work, then the SLIDE capability work, then VOK preparation, then
+  the bounded Galerina producer/evidence work. The final assurance bundle is
+  deferred until those changes are settled and the owner authorizes it.
+- [!] Hold the full tracked `.fungi` corpus compile/build and conversion-queue
+  regeneration. Obtain explicit owner permission before the bulk rebuild; a
+  single `.fungi` file may be built only for a named bounded source change. No
+  such Lyth source change is currently present.
+- [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
+  PROJECT evidence remains a fail-closed refusal; no conversion, profile
+  activation, VOK authority, or TypeScript retirement follows from the focused
+  checks.
+
 ### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
 
 - [x] Have GPT-6 Astra independently review all five R&D records against the
