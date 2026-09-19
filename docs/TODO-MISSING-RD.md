@@ -152,12 +152,16 @@ architecture gates, not reasons to invent a research record.
   still a raw-text stub for `validateTypedContentBlock()`; the function accepts
   only `blockType`, `marker`, `content`, `file`, and `startLine`, so it has no
   interpolation AST or binding/type environment from which to prove that a
-  `ProtectedSecret` is emitted. The canonical contract explicitly records the
-  dependency at
+  `ProtectedSecret` is emitted. The parser-side prerequisite is also absent:
+  `packages-ts/galerina-core-compiler/src/parser.ts:29-120` has no
+  `typedContentBlockExpr` kind, `src/lexer.ts:22-36` has no content-block token,
+  and `src/parser.ts:6995-7010` passes only ordinary lexer tokens into the
+  parser. The canonical contract explicitly records the dependency at
   `ZTF-Knowledge-Bases/reference/galerina/galerina-core-syntax-typed-content-blocks.md:233-250`
   and marks `FUNGI-BLOCK-004` blocked on interpolation AST at `:266-272`.
-  Do not replace this with a name-matching regex; the smallest exit is an
-  AST/type-environment seam plus a negative test before implementation.
+  Do not replace this with a name-matching regex; the smallest exit is a
+  source-preserving content-block AST/token seam, then an AST/type-environment
+  seam and a negative test before validation implementation.
 - **Galerina expression type coverage:**
   `Galerina/packages-ts/galerina-core-compiler/TODO.md:38-44` remains open.
   The live checker now has verified bounded assignment/call checks at
