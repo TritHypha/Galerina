@@ -23,6 +23,10 @@ counts or open items that a newer section explicitly supersedes.
   `REFUSED — tracked RD source paths are dirty; refresh is refused`. This is
   preserved as a refusal, not converted into a current RD decision or absence
   claim.
+- [x] With explicit `AGENTS_ROOT` and `RD0873_GIT_PATH` routes at Galerina
+  HEAD `bd5930a53`, the AGENTS audit-map controls pass **7/7** and the corpus
+  detector self-test passes. Myco remains degraded (`exit 2`, no JSON); the
+  real corpus DAG was not launched.
 
 ### Public-only release-admission recheck — 2026-09-19
 
