@@ -4,6 +4,20 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### Exact-head non-corpus receipt refresh — 2026-09-19
+
+- [x] Rechecked the current documentation heads before this TODO update:
+  Galerina `234eb2c0c`, SLIDE `6f1fea2`, Lyth-Weaver `3b3125b`, and local KB
+  `5143f0a9`. Existing unrelated dirty/private work remains preserved.
+- [x] Fresh bounded evidence is recorded: Lyth **23 suites / 786 checks / 0
+  failures** plus typecheck, forbidden-state, capability and doc-drift gates;
+  SLIDE/VOK focused suites **53/53 pass**; AGENTS RD-0873 audit-map controls
+  **7/7 pass**; corpus-checker self-test **PASS**.
+- [!] These are non-corpus, non-authorizing checks. They do not supply PROJECT
+  evidence, Galerina producer/GIR inputs, VOK authority, owner key ceremonies,
+  physical durability evidence or queue eligibility. No `.fungi` build or
+  conversion-queue regeneration follows from them.
+
 ### Dependency order and corpus-assurance hold — 2026-09-19
 
 - [x] Reconcile the live dependency order: complete independent Lyth-Weaver
