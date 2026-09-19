@@ -1,8 +1,22 @@
 # Galerina beta v1 to SLIDE roadmap
 
 Date: 2026-08-28 (roadmap origin)
-Current review: 2026-09-12
+Current review: 2026-09-19
 Evidence checkout: `codex/rd-0858-unit4-process-root`
+
+## Upstream readiness checkpoint — 2026-09-19
+
+Lyth's bounded local implementation rows are DONE/REFUSED/HOLD at
+implementation HEAD `54a135f748c579da00f266de1a658aa634cc68c3`; its removal
+receipt was refreshed and rerun at 9/9 PASS. SLIDE's current implementation
+checkpoint is `bc16a5ed1f7555ab1ac21830e2da6991eaa38a39`: the checked-Fungi
+membership successors and focused package/VOK custody checks are green, but
+the complete command remains 1,062 pass / 0 fail / 9 cancelled because
+Galerina producer inputs are absent. Scalar canonical-GIR/VOK admission is
+reference-only; 64/256 representation profiles remain INACTIVE because no
+packed consumer or execution evidence exists. VOK, producer/GIR handoff,
+owner lifecycle and physical durability therefore remain HOLD. This checkpoint
+does not authorize queue regeneration or a corpus `.fungi` build.
 
 ## Current R&D reconciliation — 2026-09-12
 

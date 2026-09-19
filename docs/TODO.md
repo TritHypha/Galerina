@@ -16,9 +16,14 @@ counts or open items that a newer section explicitly supersedes.
   such Lyth source change is currently present.
 - [!] Do not treat this Galerina lane as ready for bounded `.fungi` generation
   until every current actionable Lyth, SLIDE, and VOK TODO is complete and the
-  three lanes name one shared exact build point. This includes the unresolved
-  SLIDE slices 37/65, the exact Galerina producer/GIR handoff, and the VOK
-  profile, lease, receipt, mutation, replay, and isolation evidence.
+  three lanes name one shared exact build point. Lyth's local implementation
+  rows are now DONE/REFUSED/HOLD at implementation HEAD
+  `54a135f748c579da00f266de1a658aa634cc68c3`; SLIDE's bounded membership
+  successors are implemented, but scalar canonical-GIR/VOK admission remains
+  reference-only and profiles 64/256 remain explicitly INACTIVE because no
+  packed consumer or execution evidence exists. The exact Galerina
+  producer/GIR inputs are still absent, so VOK profile parity and the nine
+  cross-repository checks remain HOLD.
 - [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
   PROJECT evidence remains a fail-closed refusal; no conversion, profile
   activation, VOK authority, or TypeScript retirement follows from the focused
