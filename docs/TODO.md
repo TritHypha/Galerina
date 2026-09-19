@@ -14,6 +14,11 @@ counts or open items that a newer section explicitly supersedes.
   regeneration. Obtain explicit owner permission before the bulk rebuild; a
   single `.fungi` file may be built only for a named bounded source change. No
   such Lyth source change is currently present.
+- [!] Do not treat this Galerina lane as ready for bounded `.fungi` generation
+  until every current actionable Lyth, SLIDE, and VOK TODO is complete and the
+  three lanes name one shared exact build point. This includes the unresolved
+  SLIDE slices 37/65, the exact Galerina producer/GIR handoff, and the VOK
+  profile, lease, receipt, mutation, replay, and isolation evidence.
 - [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
   PROJECT evidence remains a fail-closed refusal; no conversion, profile
   activation, VOK authority, or TypeScript retirement follows from the focused
