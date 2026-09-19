@@ -6,7 +6,7 @@ counts or open items that a newer section explicitly supersedes.
 
 ### Post-commit cross-repository exact-head receipt — 2026-09-19
 
-- [x] Current heads are Galerina `6c51cb25cbea1eda1b83cd56c6b1b99051161292`,
+- [x] Receipt inputs were Galerina `6c51cb25cbea1eda1b83cd56c6b1b99051161292`,
   SLIDE `19f7bbe11b4ab7254d9ef5031662c0a0903af606`, Lyth-Weaver
   `5e1c34289c254c52e7cee50beddcc43538a11656`, and KB
   `5143f0a9cd42ac493e08d7a310284be6816966a6`. Existing unrelated dirty and
