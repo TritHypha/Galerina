@@ -37,6 +37,15 @@ heads; all later receipts must bind the exact heads they actually inspect.
 Resolve each item with a current exact-source receipt; the R&D records remain
 partial/open until then:
 
+The public register already records the hybrid trust-anchor root
+`21415420b447e219` and hybrid operational signer `f3172a48372bfb23`. Their
+private halves remain owner/offline custody and must not be regenerated merely
+to clear a gate. The prior signed artifact is historical because the hardened
+package bytes changed; the owner must perform a new authorized signing act for
+the current candidate using the authoritative
+[`OFFLINE-KEY-SIGNING-WALKTHROUGH.md`](../security/OFFLINE-KEY-SIGNING-WALKTHROUGH.md),
+then return public-only artifacts, public hashes and the ceremony receipt.
+
 - RD-0349: owner policy for the broader Commodity/Crypto/Rate/Percent surface
   and sourced scale/rounding rules.
 - RD-0361: authority/deletion proof and the SLIDE/VOK cross-repository gates;
@@ -50,10 +59,11 @@ partial/open until then:
 
 ### 2. Separate SLIDE evidence/atlas authority
 
-Perform the offline owner ceremony for the separate SLIDE evidence and atlas
-authority, using the owner-controlled hybrid Ed25519 + ML-DSA-65 key domain.
-Supply public anchors and lifecycle records for creation, rotation, revocation,
-recovery and release. Provide publish-bound hosted evidence and named
+Verify and supply the offline owner ceremony receipt for the separate SLIDE
+evidence and atlas authority, using the existing owner-controlled hybrid
+Ed25519 + ML-DSA-65 key domain. Do not generate a replacement key merely to
+make the gate green. Supply public anchors and lifecycle records for creation,
+rotation, revocation, recovery and release. Provide publish-bound hosted evidence and named
 Windows/Linux/macOS restart, rollback, writer, crash and power-loss receipts.
 
 The Galerina governance key must remain out of this lane. No private key is to
@@ -71,7 +81,9 @@ them by changing labels.
 ### 4. Exact PROJECT and final assurance sequence
 
 First obtain a valid exact-head PROJECT receipt over the clean, source-bound
-materialization. The EOL policy is byte-level: uniform LF/CRLF only where the
+materialization. Use the existing
+[`REPORT-TEMPLATE.md`](../platform-handover/durability-recovery/REPORT-TEMPLATE.md)
+for each external durability experiment. The EOL policy is byte-level: uniform LF/CRLF only where the
 owning format permits it; mixed EOL, lone CR, invalid UTF-8, prohibited BOM or
 replacement characters refuse the PROJECT gate. No bulk EOL rewrite is
 authorized.
