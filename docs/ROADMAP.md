@@ -16,7 +16,10 @@ Galerina producer inputs are absent. Scalar canonical-GIR/VOK admission is
 reference-only; 64/256 representation profiles remain INACTIVE because no
 packed consumer or execution evidence exists. VOK, producer/GIR handoff,
 owner lifecycle and physical durability therefore remain HOLD. This checkpoint
-does not authorize queue regeneration or a corpus `.fungi` build.
+does not authorize queue regeneration or any `.fungi` build. All current
+actionable TODOs in Lyth, SLIDE, VOK and Galerina must first be closed or
+explicitly owner-resolved; only then may final corpus assurance run, followed
+by `.fungi` generation as the remaining operation.
 
 ## Current R&D reconciliation — 2026-09-12
 

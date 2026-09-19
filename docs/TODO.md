@@ -11,12 +11,14 @@ counts or open items that a newer section explicitly supersedes.
   the bounded Galerina producer/evidence work. The final assurance bundle is
   deferred until those changes are settled and the owner authorizes it.
 - [!] Hold the full tracked `.fungi` corpus compile/build and conversion-queue
-  regeneration. Obtain explicit owner permission before the bulk rebuild; a
-  single `.fungi` file may be built only for a named bounded source change. No
-  such Lyth source change is currently present.
+  regeneration. No `.fungi` build of any size is authorized yet. First close
+  or explicitly owner-resolve every current actionable TODO in Lyth, SLIDE,
+  VOK and Galerina, leaving `.fungi` generation as the only remaining work;
+  then run final corpus assurance and only afterward generate `.fungi`.
 - [!] Do not treat this Galerina lane as ready for bounded `.fungi` generation
-  until every current actionable Lyth, SLIDE, and VOK TODO is complete and the
-  three lanes name one shared exact build point. Lyth's local implementation
+  until every current actionable Lyth, SLIDE, VOK and Galerina TODO is complete
+  or explicitly owner-resolved and the four lanes name one shared exact build
+  point. Lyth's local implementation
   rows are now DONE/REFUSED/HOLD at implementation HEAD
   `54a135f748c579da00f266de1a658aa634cc68c3`; SLIDE's bounded membership
   successors are implemented, but scalar canonical-GIR/VOK admission remains
@@ -26,8 +28,8 @@ counts or open items that a newer section explicitly supersedes.
   cross-repository checks remain HOLD.
 - [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
   PROJECT evidence remains a fail-closed refusal; no conversion, profile
-  activation, VOK authority, or TypeScript retirement follows from the focused
-  checks.
+  activation, VOK authority, TypeScript retirement or `.fungi` build follows
+  from the focused checks.
 
 ### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
 
