@@ -119,6 +119,13 @@ missing R&D in this pass:
 These are recorded separately from missing R&D: they are current owner or
 architecture gates, not reasons to invent a research record.
 
+**Locator rule (2026-09-20):** every open blocker below must identify the
+repository-relative file, the current 1-based line range, the relevant symbol
+or contract, the fail-closed condition, and the evidence that would clear it.
+After any source change, recheck the exact head and refresh the line range
+before treating the entry as current. A TODO description without a source
+locator is not sufficient evidence of a blocker or of completion.
+
 - **SLIDE general-backend boundary:** `SLIDE/TODO.md:1267-1279` and
   `SLIDE/src/v2c-general-backend-scope.mjs:114-126`. The open families are
   general loop bodies and general effects; the bounded contracts already
