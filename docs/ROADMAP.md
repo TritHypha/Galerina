@@ -21,6 +21,15 @@ actionable TODOs in Lyth, SLIDE, VOK and Galerina must first be closed or
 explicitly owner-resolved; only then may final corpus assurance run, followed
 by `.fungi` generation as the remaining operation.
 
+Fresh bounded evidence at the current checkouts is **43/43** for the SLIDE/VOK
+route, with contract integrity **96 V2 files / 101 catalog files**, forbidden
+state **0 executable `null`/`NaN`**, path-leak **0/825**, and
+`authorityReleased=false`. Galerina's receipt, queue, ownership and shard
+foundation is **49/49** focused checks; its approved audit-map structure and
+corpus-checker self-tests pass, but the real DAG remains withheld because the
+current worktree has mixed tracked-file EOL evidence and no valid PROJECT
+receipt exists. These are bounded/reference controls, not corpus assurance.
+
 ## Current R&D reconciliation — 2026-09-12
 
 RD-0361, RD-0363, RD-0364, RD-0365, and RD-0349 were independently reviewed
