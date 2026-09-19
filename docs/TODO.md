@@ -18,6 +18,11 @@ counts or open items that a newer section explicitly supersedes.
   `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and `research/RD-TODO-MAP.md` as
   existing index routes. No duplicate warehouse/index was invented; the
   canonical path decision remains owner-visible.
+- [!] The required R&D locator gold control passes **12/12**, but the bounded
+  `RD-0349..RD-0365` query returns
+  `REFUSED — tracked RD source paths are dirty; refresh is refused`. This is
+  preserved as a refusal, not converted into a current RD decision or absence
+  claim.
 
 ### Public-only release-admission recheck — 2026-09-19
 
