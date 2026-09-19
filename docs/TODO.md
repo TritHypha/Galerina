@@ -14,10 +14,11 @@ counts or open items that a newer section explicitly supersedes.
 - [x] SLIDE and Lyth source evidence is now explicitly separated from their
   later documentation-only receipt commits. No stale documentation head is
   being used as source-test evidence.
-- [!] The requested KB path `AI\\_INDEX.md` does not exist. The live KB exposes
-  `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and `research/RD-TODO-MAP.md` as
-  existing index routes. No duplicate warehouse/index was invented; the
-  canonical path decision remains owner-visible.
+- [x] The owner-requested escaped path `AI\\_INDEX.md` resolves to the existing
+  root `AI_INDEX.md`; the backslash escapes the Markdown underscore and is not
+  a directory separator. `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and the
+  locator-only `research/RD-TODO-MAP.md` are the canonical KB routes. No
+  duplicate `ai/_INDEX.md` warehouse was created.
 - [!] The required R&D locator gold control passes **12/12**, but the bounded
   `RD-0349..RD-0365` query returns
   `REFUSED — tracked RD source paths are dirty; refresh is refused`. This is
