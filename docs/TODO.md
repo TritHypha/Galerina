@@ -1,5 +1,15 @@
 # TODO
 
+### Beta-v1 operational-key preflight — 2026-09-19
+
+- [x] The owner generated dedicated hybrid Ed25519 + ML-DSA-65 operational
+  key `0da09262513e2a8d`; the release-evidence CLI accepted its canonical
+  five-field environment without exposing private values.
+- [!] No signing or authority activation occurred. Root delegation, final
+  unsigned durability/repository evidence, custody receipts and public-bundle
+  admission remain outstanding. Keep the private environment in encrypted
+  offline custody and do not copy it into the repository.
+
 The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
