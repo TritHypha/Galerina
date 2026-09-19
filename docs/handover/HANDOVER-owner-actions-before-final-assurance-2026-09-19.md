@@ -52,6 +52,14 @@ the current candidate using the authoritative
 [`OFFLINE-KEY-SIGNING-WALKTHROUGH.md`](../security/OFFLINE-KEY-SIGNING-WALKTHROUGH.md),
 then return public-only artifacts, public hashes and the ceremony receipt.
 
+For the separate beta-v1 release-evidence role, the owner has generated
+dedicated hybrid operational key `0da09262513e2a8d`; its canonical five-field
+environment passed the structure-only check. It is not admitted or used. The
+root `21415420b447e219` must delegate it only after the final unsigned
+durability/repository evidence and package bytes are fixed. Keep its private
+environment in encrypted offline custody; this packet records no private path
+or private value.
+
 - RD-0349: owner policy for the broader Commodity/Crypto/Rate/Percent surface
   and sourced scale/rounding rules.
 - RD-0361: authority/deletion proof and the SLIDE/VOK cross-repository gates;
