@@ -173,13 +173,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   receipt scope and the monolithic corpus child without a terminal receipt
   inside 600 seconds. Older `93/96` and `94/96` receipts remain historical
   evidence, not current closure.
-- [ ] Implement Corpus Audit v2 with exact content/toolchain identities,
+- [x] Implement Corpus Audit v2 with exact content/toolchain identities,
   deterministic shards, WORKSET and PROJECT profiles, bounded per-shard
   terminal receipts, resumable exact-build aggregation and sequential/parallel
-  semantic parity.
-- [ ] Implement conversion-slice receipt v2 and queue v3. Bind exact product,
+  semantic parity. The focused implementation contracts are **49/49 pass**;
+  final corpus assurance remains held by the current checkpoint above.
+- [x] Implement conversion-slice receipt v2 and queue v3. Bind exact product,
   package, file, symbol, source, candidate, RD, plan, gate and exclusion scope;
-  do not upgrade historical scope-less receipts.
+  do not upgrade historical scope-less receipts. Focused receipt/queue checks
+  pass; queue execution remains refused until valid PROJECT evidence exists.
 - [ ] Select one post-oracle native slice through codebase-memory, Myco, Hypha,
   Code Logic Workbench and independent review. Keep source bodies out of graph,
   memory and selection reports.
