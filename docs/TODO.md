@@ -127,7 +127,7 @@ counts or open items that a newer section explicitly supersedes.
   host attestation.
 - [!] RD-0349 is broader than I2; Commodity/Crypto/Rate/Percent and their
   sourced scale policies remain open.
-- [ ] Keep the reconciliation report as the durable index; do not turn these
+- [x] Keep the reconciliation report as the durable index; do not turn these
   dispositions into a bulk `.fungi` authoring scope.
 
 Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
