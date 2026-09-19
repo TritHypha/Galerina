@@ -140,6 +140,13 @@ architecture gates, not reasons to invent a research record.
   canonical owner; source-origin approval, exact graph refresh and receiving
   task installation evidence remain outstanding. `AGENTS/docs/TODO.md:108-112`
   separately holds the clean-candidate graph and integration gate.
+- **AGENTS mixed-EOL admission:** `AGENTS/tools/bounded-tool-batch.mjs:1264`
+  rejects the live worktree's mixed tracked-file EOL evidence, reached through
+  `observeWorktreeAggregate` at `:1452` and the self-test snapshot at `:1789`.
+  This is a deliberate `REPOSITORY_REFUSED` result, not a test to bypass: the
+  owner must decide the mixed-EOL policy and provide exact evidence before this
+  route can be admitted. Do not rewrite line endings solely to obtain a green
+  self-test.
 - **Galerina typed-content validation:**
   `Galerina/packages-ts/galerina-core-compiler/src/index.ts:2555-2573` is
   still a raw-text stub for `validateTypedContentBlock()`; the function accepts
