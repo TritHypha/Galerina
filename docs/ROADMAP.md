@@ -29,6 +29,9 @@ foundation is **49/49** focused checks; its approved audit-map structure and
 corpus-checker self-tests pass, but the real DAG remains withheld because the
 current worktree has mixed tracked-file EOL evidence and no valid PROJECT
 receipt exists. These are bounded/reference controls, not corpus assurance.
+The narrower SLIDE S2/publication and filesystem-identity set is additionally
+**46/46 pass**; its publication remains reference-only with
+`powerLossDurability=0` and `authorityReleased=false`.
 
 ## Current R&D reconciliation — 2026-09-12
 
