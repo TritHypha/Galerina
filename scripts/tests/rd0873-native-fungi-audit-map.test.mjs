@@ -199,7 +199,19 @@ test("canonical normal and sequential CLI runs preserve ordered outcomes and out
     const argv = ["run", manifestPath, "--format", "json", ...(sequential ? ["--sequential"] : [])];
     const exit = await batch.runCli(argv, {
       repoRoot: repositoryRoot,
+      // This test verifies CLI ordering and receipt algebra; do not launch the
+      // real corpus audit entries from a unit test.
+      skipSelfTest: true,
       captureSnapshot: async () => stableSnapshot,
+      runTask: async () => ({
+        kind: "EXITED",
+        exitCode: 0,
+        durationMs: 0,
+        stdoutBytes: 0,
+        stderrBytes: 0,
+        stdoutDigest: EMPTY_DIGEST,
+        stderrDigest: EMPTY_DIGEST,
+      }),
       writeStdout: (text) => stdout.push(text),
       writeStderr: (text) => stderr.push(text),
     });
