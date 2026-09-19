@@ -34,6 +34,11 @@ counts or open items that a newer section explicitly supersedes.
   contracts at this checkpoint: **49/49 pass**. The audit-map CLI ordering
   test now uses injected PASS task results, so it verifies receipt algebra
   without launching the real corpus audit entries.
+- [x] The approved audit-map structure and its five-fixture self-test pass at
+  digest `e0f755398e00b9768accf7d2918022355b19e90e9faba4dd5c38a9e3e38207d2`,
+  and the corpus-checker self-test passes its finder/detector controls. These
+  are structural controls only; they do not create PROJECT evidence or permit
+  the real audit DAG to run.
 - [!] The real audit-map DAG remains withheld. Its current bounded self-test
   refuses this checkout because mixed tracked-file EOL evidence is not
   admitted, and the required exact-head PROJECT receipt is still absent.
