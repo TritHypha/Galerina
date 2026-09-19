@@ -37,6 +37,12 @@ counts or open items that a newer section explicitly supersedes.
 - [!] The real audit-map DAG remains withheld. Its current bounded self-test
   refuses this checkout because mixed tracked-file EOL evidence is not
   admitted, and the required exact-head PROJECT receipt is still absent.
+- [!] Current discovery is also non-authorizing: the fast graph refresh
+  reported indexed head `238b73e367370e9a891e93b71ec4904b0535086c`, not the
+  live head `e68e4470c6767607d6ea6cae9164820c0c6aae99`. Myco therefore remains
+  `REFUSED` with `INDEX_FRESHNESS_REFUSED` on the dirty worktree, and Hypha's
+  filename-mode request is refused. Treat this as stale/refused evidence, not
+  a MISS or absence claim.
 
 ### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
 
