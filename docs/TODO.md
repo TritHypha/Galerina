@@ -4,6 +4,20 @@ The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
+### Public-only release-admission recheck — 2026-09-19
+
+- [x] At Galerina HEAD `cb4ee0bd5`, the bounded beta-v1 release-admission
+  verifier tests pass **8/8** using synthetic public evidence, including
+  missing-evidence, stale/digest-mismatch, dirty-checkout, signature-downgrade
+  and path-leak refusals.
+- [!] The live verifier correctly refuses with
+  `BETA_RELEASE_POLICY_DIRTY`; the checkout contains pre-existing unrelated
+  `README.md` work and no release authority may be inferred from a dirty tree.
+- [!] No private key was opened, generated, mounted or used. The 2026-07-30
+  registry ceremony is recorded as historical; the owner-controlled current
+  ceremony remains deferred until the final unsigned evidence and package
+  bytes are fixed.
+
 ### Exact-head non-corpus receipt refresh — 2026-09-19
 
 - [x] Rechecked the current documentation heads before this TODO update:
@@ -3520,18 +3534,22 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   the immutable historical generation as historical evidence. No signature or
   live-package authority was fabricated or copied forward.
 - [x] Keep the public registry empty and non-authorizing until a new offline
-  Ed25519 + ML-DSA-65 generation ceremony signs the hardened candidate. The
-  registry package passes **35/35**, including exact candidate identity and
-  refusal of fully-authorized public publication while the live index is
-  absent.
+  Ed25519 + ML-DSA-65 generation ceremony signs the current hardened
+  candidate. The 2026-07-30 signed registry artifact is historical because
+  later security hardening changed the package bytes; it is not current live
+  authority. The registry package passes **35/35**, including exact candidate
+  identity and refusal of fully-authorized public publication while the live
+  index is absent.
 - [x] Reconcile the production consumer with that denied live state. App Kernel
   now proves exact bootstrap refusal, prevents caller freshness/revocation
   scalars from reviving an absent index, and retains positive admission only
   through the authenticated immutable-generation path (**229/229**). The full
   repository lane passes **100/100 packages and 9,554 tests** in **299.9s**.
-- [ ] Perform the offline hybrid-signing ceremony and independently verify the
-  resulting generation before restoring any live auth package. Until then,
-  distribution, release and production authority remain denied.
+- [ ] After the final unsigned evidence set and current package bytes are
+  fixed, the owner performs the offline hybrid-signing ceremony and returns
+  public-only artifacts for independent verification. Until then,
+  distribution, release and production authority remain denied. Do not repeat
+  the historical 2026-07-30 ceremony merely to satisfy this row.
 
 ### VOK assurance fabric Chapter 3 integration - 2026-08-10
 

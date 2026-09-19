@@ -1,9 +1,11 @@
-# Galerina offline registry signing — COMPLETE
+# Galerina offline registry signing — historical ceremony receipt
 
-**Current state: PRODUCTION REGISTRY SIGNING COMPLETE — NO OWNER SIGNING ACTION.**
+**Current state: THE 2026-07-30 ARTIFACT IS COMPLETE — NO OWNER SIGNING ACTION FOR THAT HISTORICAL ARTIFACT.**
 
-This live page contains no runnable signing command. Do not repeat the root,
-package-manifest or registry-index ceremony for the current release artifact.
+This live page contains no runnable signing command. It records the exact
+2026-07-30 root, package-manifest and registry-index ceremony only. Later
+security hardening changed the package bytes, so its signed outputs are not
+the current candidate and must not be treated as live authority.
 
 ## Completion chart
 
@@ -26,10 +28,12 @@ The verified public index is tracked at:
 packages-ts/galerina-registry/registry-index-v2.json
 ```
 
-Production registry signing is green. This does not independently authorize
-the Galerina beta-v1 release: automatic operational-key rotation integration
-and the remaining release gates are tracked separately in `docs/TODO.md` and
-the live roadmap.
+The historical production registry signing act is green for its exact
+2026-07-30 bytes. It does not independently authorize the current Galerina
+beta-v1 candidate: the key register requires a new owner-controlled offline
+hybrid ceremony after the final unsigned evidence set and package bytes are
+fixed. Automatic operational-key rotation integration and the remaining
+release gates are tracked separately in `docs/TODO.md` and the live roadmap.
 
 The engineering history and reusable procedure remain in
 `OFFLINE-KEY-SIGNING-CEREMONY-REFERENCE.md`. That file is a locked reference,

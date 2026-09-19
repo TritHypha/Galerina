@@ -7,7 +7,15 @@ authoritative owner action is published in
 `OFFLINE-KEY-SIGNING-WALKTHROUGH.md`. A command appearing here is not
 permission or readiness to run it.
 
-**Status on 2026-07-30: CEREMONY COMPLETE — NO CURRENT SIGNING ACTION.**
+**Status on 2026-07-30: CEREMONY COMPLETE FOR THAT HISTORICAL ARTIFACT — NO
+CURRENT SIGNING ACTION FROM THIS LOCKED REFERENCE.**
+
+The completion facts below are bound to the exact 2026-07-30 package bytes and
+signed outputs. Later security hardening changed those bytes; the key register
+therefore treats this receipt as historical and requires a new owner-controlled
+offline ceremony for the final current candidate. This file never authorizes
+that ceremony; the owner-facing current boundary is the beta-v1 release-
+evidence walkthrough.
 
 The root-to-operational delegation, deterministic artifact hasher, strict
 manifest reader and disposable-key dry run are green. The false live auth and
