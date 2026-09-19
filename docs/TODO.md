@@ -10,6 +10,13 @@
   admission remain outstanding. Keep the private environment in encrypted
   offline custody and do not copy it into the repository.
 
+### AGENTS capability-route recheck — 2026-09-19
+
+- [x] With explicit `AGENTS_ROOT` and `RD0873_GIT_PATH` routes, the bounded
+  AGENTS audit-map controls pass **7/7** at the current checkout. The test
+  launched no corpus DAG and grants no graph, queue, conversion or authority
+  release.
+
 ### Live cross-repository head refresh — 2026-09-19
 
 - [x] Source locator heads immediately before this receipt-only documentation
