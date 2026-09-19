@@ -269,6 +269,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   package, file, symbol, source, candidate, RD, plan, gate and exclusion scope;
   do not upgrade historical scope-less receipts. Focused receipt/queue checks
   pass; queue execution remains refused until valid PROJECT evidence exists.
+- [ ] Reconcile the incomplete bounded conversion scope recorded by private
+  `RD-1231` with the current Galerina exact head before selecting further native
+  logic/components. Its last recorded direct-tree snapshot reports **91/100**
+  package roots and **9** remaining, with TypeScript/MJS shadows retained; the
+  owner reports **100+ RD-* transcript records** still require processing, so
+  this is far from overall R&D readiness. The exact transcript coverage needs a
+  fresh KB-owned index; neither metric is current-head evidence or production
+  authority. Preserve the existing holds on consumer switching and TypeScript
+  retirement.
 - [ ] Select one post-oracle native slice through codebase-memory, Myco, Hypha,
   Code Logic Workbench and independent review. Keep source bodies out of graph,
   memory and selection reports.
