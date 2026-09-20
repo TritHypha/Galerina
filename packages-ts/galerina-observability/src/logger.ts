@@ -103,7 +103,7 @@ export class Logger {
 
   constructor(opts: LoggerOptions = {}) {
     this.#sink = opts.sink ?? new MemoryLogSink();
-    this.#minLevel = LEVEL_ORDER[opts.minLevel ?? "info"];
+    this.#minLevel = levelOrder(opts.minLevel);
     this.#name = opts.name;
     this.#baseFields = opts.baseFields ?? {};
     this.#redact = new Set((opts.redactKeys ?? DEFAULT_REDACT_KEYS).map((k) => k.toLowerCase()));
@@ -180,6 +180,16 @@ export class Logger {
       out[key] = this.#redact.has(key.toLowerCase()) ? REDACTED : fields[key];
     }
     return out;
+  }
+}
+
+function levelOrder(level: unknown): number {
+  switch (level) {
+    case "debug": return LEVEL_ORDER.debug;
+    case "info": return LEVEL_ORDER.info;
+    case "warn": return LEVEL_ORDER.warn;
+    case "error": return LEVEL_ORDER.error;
+    default: return LEVEL_ORDER.info;
   }
 }
 

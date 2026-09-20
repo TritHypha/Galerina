@@ -61,6 +61,14 @@ test("minLevel filters lower-severity records", () => {
   assert.deepEqual(sink.records().map((r) => r.level), ["warn", "error"]);
 });
 
+test("an invalid runtime minLevel conservatively defaults to info", () => {
+  const sink = new MemoryLogSink();
+  const log = createLogger({ sink, minLevel: "verbose" });
+  log.debug("d");
+  log.info("i");
+  assert.deepEqual(sink.records().map((r) => r.level), ["info"]);
+});
+
 test("sensitive field keys are redacted before reaching the sink", () => {
   const sink = new MemoryLogSink();
   const log = createLogger({ sink });

@@ -1618,9 +1618,13 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   throwing writer despite the `LogSink.write MUST NOT throw` contract. Choose
   and test one exact typed failure/isolation contract rather than relying on
   `Logger.#emit` to hide the mismatch.
-- [ ] Priority logger fail-closed fix: an invalid runtime `minLevel` indexes to
-  `undefined`, so debug records pass the filter. Validate the complete runtime
-  options boundary and refuse or select a named conservative default.
+- [x] Priority logger fail-closed fix: `packages-ts/galerina-observability/src/logger.ts:106`
+  now validates runtime `minLevel` values through the closed `levelOrder` switch
+  at `packages-ts/galerina-observability/src/logger.ts:186-193`, selecting named
+  default `"info"` for invalid values. The hostile-runtime regression at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:64-70` proves
+  `"verbose"` drops debug and retains info; focused package typecheck, build and
+  logger tests pass (11/11, zero failures).
 - [ ] Snapshot or explicitly govern retained `baseFields`; post-construction
   caller mutation currently changes later log output.
 - [ ] Replace shallow exact-key redaction with a bounded, cycle-safe policy for
