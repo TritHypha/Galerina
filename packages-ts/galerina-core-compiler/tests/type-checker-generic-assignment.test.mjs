@@ -443,3 +443,53 @@ pure flow badBinding() -> Void {
     );
   });
 });
+
+describe("RD-1248 unwrapOr fallback characterization", () => {
+  it("keeps the matching Option<Int> fallback baseline clean", () => {
+    const errors = typeErrors(`
+pure flow optionFallback() -> Int {
+  let value: Option<Int> = Some(1)
+  return value.unwrapOr(0)
+}
+`);
+
+    assert.deepEqual(errors, [], `matching Option fallback must remain clean: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("records the current Option fallback gap without adding a method-argument diagnostic", () => {
+    const errors = typeErrors(`
+pure flow optionFallbackGap() -> Int {
+  let value: Option<Int> = Some(1)
+  return value.unwrapOr("wrong")
+}
+`);
+
+    // Known RD-1248 gap: method-call argument validation is intentionally still skipped.
+    // An owner-approved checker must flip this characterization to FUNGI-TYPE-005 or its
+    // separately owned method-specific diagnostic.
+    assert.deepEqual(errors, [], `wrong Option fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("records the current Result fallback gap without adding a method-argument diagnostic", () => {
+    const errors = typeErrors(`
+pure flow resultFallbackGap() -> Int {
+  let value: Result<Int, String> = Ok(1)
+  return value.unwrapOr("wrong")
+}
+`);
+
+    // Known RD-1248 gap: the inferred return payload is Int, but the fallback child is not checked.
+    assert.deepEqual(errors, [], `wrong Result fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("records the current nested fallback gap without changing generic return inference", () => {
+    const errors = typeErrors(`
+pure flow nestedFallbackGap() -> Array<Int> {
+  let value: Option<Array<Int>> = Some([1])
+  return value.unwrapOr(["wrong"])
+}
+`);
+
+    assert.deepEqual(errors, [], `nested wrong fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+  });
+});

@@ -270,6 +270,19 @@
   test-only characterization of the existing `inferType` branch; it does not
   widen inference or clear the RD-1232/RD-1247 owner contract.
 
+- [!] `RD-1248` confirms the `unwrapOr` fallback-argument gap under RD-1232:
+  payload return inference exists at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`, but all
+  method argument validation is skipped at `:1873-1880`. A wrong concrete
+  fallback can therefore be returned on `None`/`Err`; the runtime returns
+  `FUNGI_VOID` when the fallback is missing. The owner must freeze a
+  method-specific guard, concrete payload/fallback relation, numeric widening,
+  nested/`Auto` deferral, arity and diagnostic ownership before any checker
+  change. Characterization KATs at
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:447-495`
+  pass **31/31** and intentionally record the current gap. State remains
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; no source semantics changed.
+
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
   `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
