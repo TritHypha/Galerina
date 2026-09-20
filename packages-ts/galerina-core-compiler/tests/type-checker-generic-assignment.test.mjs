@@ -196,4 +196,38 @@ pure flow badListMethods() -> Array<Int> {
       `each list-method payload mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("retains Map<K,V> through bounded map methods", () => {
+    const errors = typeErrors(`
+pure flow mapMethods() -> Map<String, Int> {
+  let values: Map<String, Int> = Map.empty()
+  let keys: Array<String> = values.keys()
+  let entries: Array<Int> = values.values()
+  let updated: Map<String, Int> = values.set("one", 1)
+  let removed: Map<String, Int> = updated.remove("one")
+  return removed
+}
+`);
+
+    assert.deepEqual(errors, [], `bounded map-method returns must retain their key/value types: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Map<K,V> method returns", () => {
+    const errors = typeErrors(`
+pure flow badMapMethods() -> Map<String, Int> {
+  let values: Map<String, Int> = Map.empty()
+  let keys: Array<Int> = values.keys()
+  let entries: Array<String> = values.values()
+  let updated: Map<String, String> = values.set("one", 1)
+  let removed: Array<Int> = updated.remove("one")
+  return values
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      4,
+      `each map-method return mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

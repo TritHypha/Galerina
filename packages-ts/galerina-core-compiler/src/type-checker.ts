@@ -1201,6 +1201,12 @@ class TypeChecker {
         const receiverNode = node.children?.[0];
         const receiverType = receiverNode !== undefined ? this.inferType(receiverNode) : undefined;
 
+        // Map.empty() is a bare collection constructor; its key/value payloads
+        // are supplied by the receiving annotation or later operations.
+        if (method === "empty" && receiverNode?.kind === "identifier" && receiverNode.value === "Map") {
+          return "Map";
+        }
+
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
 
@@ -1262,7 +1268,7 @@ class TypeChecker {
 
         // Map methods
         if (receiverType?.startsWith("Map<") || receiverType === "Map") {
-          if (method === "size") return "Int";
+          if (method === "size" || method === "length") return "Int";
           if (method === "has") return "Bool";
           if (method === "isEmpty") return "Bool";
           if (method === "get") {
@@ -1270,6 +1276,15 @@ class TypeChecker {
             const match = receiverType?.match(/^Map<[^,]+,\s*([^>]+)>/);
             if (match?.[1] !== undefined) return `Option<${match[1].trim()}>`;
             return "Option";
+          }
+          const mapType = parseTypeString(receiverType);
+          const keyType = mapType.args[0]?.trim();
+          const valueType = mapType.args[1]?.trim();
+          if (method === "keys") return keyType === undefined ? "Array" : `Array<${keyType}>`;
+          if (method === "values") return valueType === undefined ? "Array" : `Array<${valueType}>`;
+          if (method === "entries") return "Array<Auto>";
+          if (method === "set" || method === "delete" || method === "remove" || method === "merge") {
+            return receiverType;
           }
         }
 
