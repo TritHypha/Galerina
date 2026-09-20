@@ -306,8 +306,8 @@
    populated-map false admission and corrected the direct-vs-`first()` and
    `TYPE-026` distinctions. Keep this at
    `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization KATs
-  only until the owner freezes entry payload/key/member/diagnostic semantics
-  and an authorized named or structural-record path. See
+   only until the owner freezes entry payload/key/member/diagnostic semantics
+   and an authorized named or structural-record path. See
   `private/research/rd/RD-1250-map-entries-anonymous-record-adjudication-PRIVATE.md`.
 
 - [!] `RD-1251` confirms that mixed or unknown `Array.of(...)` arguments are
