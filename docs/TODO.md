@@ -1625,8 +1625,14 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-observability/tests/logger.test.mjs:64-70` proves
   `"verbose"` drops debug and retains info; focused package typecheck, build and
   logger tests pass (11/11, zero failures).
-- [ ] Snapshot or explicitly govern retained `baseFields`; post-construction
-  caller mutation currently changes later log output.
+- [x] Snapshot retained `baseFields` with a shallow frozen copy at
+  `packages-ts/galerina-observability/src/logger.ts:108`; the focused regression
+  at `packages-ts/galerina-observability/tests/logger.test.mjs:96-106` mutates the
+  caller-owned alias after construction and verifies later output remains unchanged.
+  Focused package typecheck, build and tests pass **41/41** (`npm test`, zero
+  failures, zero skips). Redaction, child logger, sink behavior, and the existing
+  runtime `minLevel` fix remain covered; `JsonLineSink` failure behavior and other
+  TODOs were not changed.
 - [ ] Replace shallow exact-key redaction with a bounded, cycle-safe policy for
   nested records/arrays, or explicitly refuse nested protected values. Current
   nested `{ credentials: { password: ... } }` reaches the sink unchanged.

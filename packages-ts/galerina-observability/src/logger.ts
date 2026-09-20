@@ -105,7 +105,7 @@ export class Logger {
     this.#sink = opts.sink ?? new MemoryLogSink();
     this.#minLevel = levelOrder(opts.minLevel);
     this.#name = opts.name;
-    this.#baseFields = opts.baseFields ?? {};
+    this.#baseFields = Object.freeze({ ...(opts.baseFields ?? {}) });
     this.#redact = new Set((opts.redactKeys ?? DEFAULT_REDACT_KEYS).map((k) => k.toLowerCase()));
     this.#clock = opts.clock ?? (() => Date.now());
   }

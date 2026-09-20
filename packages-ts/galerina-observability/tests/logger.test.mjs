@@ -93,6 +93,19 @@ test("child loggers extend name and base fields and share the sink", () => {
   assert.equal(rec.fields.n, 1);
 });
 
+test("a logger snapshots base fields against caller mutation", () => {
+  const sink = new MemoryLogSink();
+  const baseFields = { svc: "orders", version: 1 };
+  const log = createLogger({ sink, baseFields });
+
+  baseFields.svc = "payments";
+  baseFields.version = 2;
+  log.info("tick");
+
+  const [rec] = sink.records();
+  assert.deepEqual(rec.fields, { svc: "orders", version: 1 });
+});
+
 test("a throwing sink is isolated: logging never propagates, failures are counted", () => {
   const log = createLogger({
     sink: { write() { throw new Error("disk full"); } },
