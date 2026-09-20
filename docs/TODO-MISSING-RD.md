@@ -418,15 +418,15 @@ locator is not sufficient evidence of a blocker or of completion.
   clearance requires a separately authenticated route contract, an explicit
   redaction vocabulary, and negative vectors proving public responses cannot
   carry component detail. Do not reopen the public body to satisfy diagnostics.
-- **Galerina WASM-target admission:** the current API is compile-time typed at
-  `Galerina/packages-ts/galerina-target-wasm/src/index.ts:47`, while
-  `createWasmTargetReport()` accepts typed caller-owned input at `:84` and
-  aliases the artefact array into its report at `:91-95`. A runtime decoder,
-  immutable snapshot, module containment/bytes-digest/import-export authority,
-  diagnostic migration, and cross-package schema owner are not defined by the
-  current contract. The unresolved ledger is
-  `Galerina/docs/TODO.md:1369-1371`; do not invent a decoder or call this slice
-  complete without that contract.
+- **Galerina WASM-target admission:** the bounded runtime decoder and detached
+  report snapshot are present at
+  `Galerina/packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`,
+  with current package evidence **5/5**. The remaining admission blocker is
+  contract-level: `WasmArtefact` still has no module bytes/digest,
+  import/export identity, sandbox/effect evidence or cross-package schema
+  owner, and legacy `Galerina_WASM_*` diagnostics are not registry-migrated.
+  Do not claim execution or physical-target authority until those exact fields,
+  refusal rules and owner evidence exist.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method

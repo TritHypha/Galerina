@@ -3,8 +3,14 @@
 ## Coverage Reconciliation
 
 ```text
-[ ] Map API-server ReplayStore.exists/save adapter names to galerina-core-network has/put or adopt network names
-[ ] Align webhook/idempotency implementation docs with galerina-core-network-webhook.md
+[!] Map API-server ReplayStore.exists/save adapter names to
+    galerina-core-network has/put or adopt the canonical names. The live source
+    is transport/TLS handling only at `src/index.ts:1-40,527-562,624-761`;
+    no replay/idempotency implementation exists to reconcile yet.
+[!] Align webhook/idempotency implementation docs with
+    `galerina-core-network-webhook.md` before implementing the scaffold. The
+    canonical contracts are recorded at `galerina-core-network/README.md:360-382`;
+    do not invent adapter semantics or claim API-server readiness.
 ```
 
 ## Architecture Depth (v0.2) — Completed
