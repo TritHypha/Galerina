@@ -174,7 +174,7 @@ locator is not sufficient evidence of a blocker or of completion.
   `Galerina/packages-ts/galerina-core-compiler/TODO.md:38-44` remains open.
   The live checker now has verified bounded assignment/call checks at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:447-531`,
-  `:895-907`, `:1230-1241`, `:1562-1618`, `:1667-1718`, and `:1861-1919`,
+  `:895-907`, `:1230-1241`, `:1565-1630`, `:1676-1724`, and `:1865-1925`,
   including `Option<T>.unwrapOr()` generic payload retention, recursive
   generic payload checks and full generic signature retention.
   Its deferred-work contract at `:28-35` still requires complete

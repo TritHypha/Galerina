@@ -39,7 +39,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     Bounded coverage is implemented for literals, known expressions, record adoption,
     numeric widening, recursive generic arguments, and Option<T>.unwrapOr(). The
     remaining gap is full expression-level inference for unsupported or unknown
-    forms. Source: src/type-checker.ts:447-531, :1230-1241, and :1861-1919.
+    forms. Source: src/type-checker.ts:447-531, :1230-1241, and :1865-1925.
     Regressions:
     tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
     tests/type-checker-record-adoption.test.mjs, and
