@@ -235,7 +235,8 @@
   (`TypeChecker.inferType`), with the return consumer at `:1746-1828`, call
   consumer at `:1874-1954`, and binding consumer at `:2064-2297`;
   unsupported AST forms return unknown and therefore leave portions of
-  FUNGI-TYPE-002/005-007 deferred. Clearance requires a complete
+  `FUNGI-TYPE-002/005/008` type checks deferred (`FUNGI-TYPE-007` is the
+  separate argument-count check). Clearance requires a complete
   expression-kind matrix with both valid and invalid cases, while preserving
   refusal for genuinely unknown forms. No corpus, queue, signing, or
   `.fungi` assurance action follows.
@@ -246,6 +247,20 @@
   generic record payload erasure still need an owner-frozen deferred-inference
   contract plus hostile consumer tests. See
   `private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
+
+- [!] `RD-1247` narrows the field-name portion of RD-1232. At
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1091-1111`, declared
+  record schemas take precedence and `Auto` defers; the remaining field-name
+  heuristics at `:1113-1139` also apply to eligible built-in receivers. Astra
+  confirms that deleting them now could remove reachable `FUNGI-TYPE-002`,
+  `FUNGI-TYPE-005` and `FUNGI-TYPE-008` diagnostics by turning guesses into
+  skipped type checks at the return/call/binding consumers (`:1746-1828,
+  :1874-1954, :2064-2297`). Keep the behavior unchanged as
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232` until the owner chooses
+  deferred unknown fields or explicitly contracts the name-list sugar,
+  including chained access and deferred-consumer reporting. Existing Request
+  tests at `tests/type-checker.test.mjs:921-1088` do not distinguish concrete
+  `String` from deferred `undefined`. No source change follows from RD-1247.
 
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
