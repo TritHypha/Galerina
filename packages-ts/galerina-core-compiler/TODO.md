@@ -1,6 +1,6 @@
 # Galerina Compiler TODO
 
-This file tracks open work for the compiler package. Updated 2026-07 to reflect
+This file tracks open work for the compiler package. Updated 2026-09-20 to reflect
 the actual shipped state. Items marked `[x]` are implemented and tested.
 
 ## Shipped (Stage A — complete)
@@ -39,10 +39,11 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     Bounded coverage is implemented for literals, known expressions, record adoption,
     numeric widening, recursive generic arguments, Option<T>.unwrapOr(), and the
     declared-record result of a single-spread record update. The remaining gap is
-    full expression-level inference for unsupported or unknown forms. Source:
-    `src/type-checker.ts:472-541` (`isAssignmentCompatible`),
-    `src/type-checker.ts:1142-1155` (`TypeChecker.inferType`, `#record-update`),
-    `src/type-checker.ts:1867-1925` (`TypeChecker.checkAndRegisterBindingType`).
+    full expression-level inference for unsupported or unknown forms. Current
+    blocker boundary:
+    `src/type-checker.ts:1054-1459` (`TypeChecker.inferType`), with the
+    assignment relation at `:472-541`, record-update admission at `:1179-1188`,
+    and binding consumer at `:1967-2045`.
     The record-update slice is intentionally refused when the update has zero or
     multiple `#spread` children, when the spread base cannot be inferred, or when
     the inferred base is not a declared record schema; those cases return unknown
@@ -94,8 +95,12 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
     is implemented for argument count. Remaining work is complete operator and
     return-type coverage across unsupported expression forms; it still depends on
-    the unresolved inference cases above. Source: src/type-checker.ts:1676-1727
-    and :1565-1625. Regressions: tests/type-checker-phase11-wave2.test.mjs and
+    the unresolved inference cases above. Source:
+    `src/type-checker.ts:1649-1815` (return/call consumers) and
+    `:1054-1459` (inference boundary). Unsupported expression forms remain
+    unknown and are intentionally refused/deferred. Clearance requires the
+    expression-kind matrix plus positive and negative tests at one exact head.
+    Regressions: tests/type-checker-phase11-wave2.test.mjs and
     tests/type-checker-generic-assignment.test.mjs.
 
 [x] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode

@@ -29,13 +29,14 @@
   `packages-ts/galerina-core-compiler/tests/fixtures/null-ratchet-baseline.json`
   (**256** occurrences, down from **262**); the standalone ratchet is **6/6**.
 - [!] The remaining compiler blocker is broad expression-level inference, not
-  the closed slices above. The fail-closed boundary is
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1035-1425`
-  (`TypeChecker.inferType`) and its consumers at `:1627-1767`; unsupported AST
-  forms return unknown and therefore leave portions of FUNGI-TYPE-002/005-007
-  deferred. Clearance requires a complete expression-kind matrix with both
-  valid and invalid cases, while preserving refusal for genuinely unknown
-  forms. No corpus, queue, signing, or `.fungi` assurance action follows.
+  the closed slices above. The live fail-closed boundary is
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1459`
+  (`TypeChecker.inferType`), with return/call consumers at `:1649-1815` and
+  binding consumers at `:1967-2045`; unsupported AST forms return unknown and
+  therefore leave portions of FUNGI-TYPE-002/005-007 deferred. Clearance
+  requires a complete expression-kind matrix with both valid and invalid
+  cases, while preserving refusal for genuinely unknown forms. No corpus,
+  queue, signing, or `.fungi` assurance action follows.
 
 ### Current bounded component receipts — 2026-09-20
 

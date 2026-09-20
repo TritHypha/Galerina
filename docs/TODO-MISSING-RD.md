@@ -318,13 +318,14 @@ locator is not sufficient evidence of a blocker or of completion.
   its focused route is **32/32**, and the full compiler package is
   **6,780/6,780**. Full unsupported expression
   inference remains open at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1035-1425`, with
-  call/return consumers at `:1627-1767`. A bounded constructor slice is now
-  closed at `packages-ts/galerina-core-compiler/src/type-checker.ts:1137-1149`
-  and `:1627-1634`; `Some`, `Ok`, and `Err` retain inferable payloads and
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1459`
+  (`TypeChecker.inferType`), with return/call consumers at `:1649-1815` and
+  binding consumers at `:1967-2045`. A bounded constructor slice is now
+  closed at `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`
+  and `:1649-1713`; `Some`, `Ok`, and `Err` retain inferable payloads and
   concrete mismatches are refused. Coverage is
-  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-125`
-  (**30/30** focused tests). Do not mark TYPE-002/005-007 complete from
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
+  (**32/32** focused tests). Do not mark TYPE-002/005-007 complete from
   these bounded slices.
 - **Galerina core-config v0.2 contract:**
   `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
