@@ -109,6 +109,9 @@ describe("fresh-process detached scalar constellation", () => {
         revocationEpoch: "rev:0418",
         currentPublicKeyEpoch: "epoch:2026-09",
         currentRevocationEpoch: "rev:0418",
+        currentPolicyIdentity: slide.manifest.executionPolicyDigest,
+        currentTargetIdentity: `target:${slide.manifest.targetId}`,
+        currentPlatformProfileIdentity: "platform:slide-js-reference",
         effectClosureIdentity: digest("6"),
       });
       assert.equal(lyth.schema, "slide.lyth-detached-scalar-evidence.v1");
@@ -210,6 +213,9 @@ describe("fresh-process detached scalar constellation", () => {
         revocationEpoch: "rev:0418",
         currentPublicKeyEpoch: "epoch:2026-09",
         currentRevocationEpoch: "rev:0418",
+        currentPolicyIdentity: slide.manifest.executionPolicyDigest,
+        currentTargetIdentity: `target:${slide.manifest.targetId}`,
+        currentPlatformProfileIdentity: "platform:slide-js-reference",
         effectClosureIdentity: digest("6"),
       };
       expectRefusal(lythChild, { ...lythRequest, physicalReference: { ...slide.physicalReference, digest: digest("1") } });

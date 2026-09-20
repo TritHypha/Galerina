@@ -35,7 +35,8 @@ async function main() {
       "schema", "adapterPath", "slideRoot", "physicalReference", "manifest",
       "proofRuleIdentity", "registryClosureIdentity", "platformProfileIdentity",
       "cryptoSuiteIdentity", "publicKeyEpoch", "revocationEpoch",
-      "currentPublicKeyEpoch", "currentRevocationEpoch", "effectClosureIdentity",
+      "currentPublicKeyEpoch", "currentRevocationEpoch", "currentPolicyIdentity",
+      "currentTargetIdentity", "currentPlatformProfileIdentity", "effectClosureIdentity",
     ],
   );
   if (request.schema !== REQUEST_SCHEMA || typeof request.adapterPath !== "string" || typeof request.slideRoot !== "string") {
@@ -67,6 +68,9 @@ async function main() {
     revocationEpoch: request.revocationEpoch,
     currentPublicKeyEpoch: request.currentPublicKeyEpoch,
     currentRevocationEpoch: request.currentRevocationEpoch,
+    currentPolicyIdentity: request.currentPolicyIdentity,
+    currentTargetIdentity: request.currentTargetIdentity,
+    currentPlatformProfileIdentity: request.currentPlatformProfileIdentity,
     effectClosureIdentity: request.effectClosureIdentity,
     reuseEvidence: Object.freeze({ kind: "ABSENT_PRODUCTION_DFE" }),
   });
