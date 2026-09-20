@@ -172,8 +172,7 @@ pure flow listMethods() -> Array<Int> {
   let first: Option<Int> = values.first()
   let last: Option<Int> = values.last()
   let appended: Array<Int> = values.append(3)
-  let pushed: Array<Int> = values.push(4)
-  return pushed
+  return appended
 }
 `);
 
@@ -187,14 +186,13 @@ pure flow badListMethods() -> Array<Int> {
   let first: Option<String> = values.first()
   let last: Option<String> = values.last()
   let appended: Array<String> = values.append(3)
-  let pushed: Array<String> = values.push(4)
   return values
 }
 `);
 
     assert.equal(
       errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
-      4,
+      3,
       `each list-method payload mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });

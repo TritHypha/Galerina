@@ -317,10 +317,10 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-core-compiler/src/type-checker.ts:680-697,1156-1168,1197,1326-1344,1655-1719`;
   its focused route is **32/32**, and the full compiler package is
   **6,782/6,782**. A bounded Array list-method slice now closes
-  `first`/`last` → `Option<T>` and `append`/`push` → `Array<T>` at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1246-1253`, with
+  `first`/`last` → `Option<T>` and `append` → `Array<T>` at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1246-1251`, with
   positive/negative coverage at
-  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-200`
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-198`
   (**11/11** in-file; **34/34** focused combined route). Full unsupported expression
   inference remains open at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1465`

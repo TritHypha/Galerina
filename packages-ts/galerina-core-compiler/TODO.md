@@ -93,10 +93,10 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     is **32/32**. Unknown constructor payloads still defer conservatively.
 
 [x] Bounded Array list-method return inference
-    `first`/`last` now retain `Option<T>`, while `append`/`push` retain the
-    receiver `Array<T>` at `src/type-checker.ts:1246-1253`. Positive and
+    `first`/`last` now retain `Option<T>`, while `append` retains the receiver
+    `Array<T>` at `src/type-checker.ts:1246-1251`. Positive and
     negative assignment coverage is
-    `tests/type-checker-generic-assignment.test.mjs:168-200` (11/11 in the
+    `tests/type-checker-generic-assignment.test.mjs:168-198` (11/11 in the
     file); the focused combined route is **34/34**, and the full package
     verification is **6,782/6,782**. `map`/`reduce`/`filter` remain deferred:
     callback/closure typing is not admitted by this bounded inference lane.

@@ -1248,7 +1248,7 @@ class TypeChecker {
             if (m?.[1] !== undefined) return `Option<${m[1].trim()}>`;
             return "Option";
           }
-          if (method === "append" || method === "push") return receiverType ?? "Array";
+          if (method === "append") return receiverType ?? "Array";
           if (method === "get") {
             // Array<T>.get(i) → Option<T> — the bounds-safe accessor returns Option at runtime (callers
             // `match { Some(x) => … None => … }`), so the type must too. Mirrors Map<K,V>.get() → Option<V>,

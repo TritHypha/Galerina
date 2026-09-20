@@ -23,10 +23,10 @@
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
   (**32/32** focused tests); the full package suite is **6,782/6,782**.
 - [x] Bounded Array list-method return inference is closed at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1246-1253`:
-  `first`/`last` retain `Option<T>` and `append`/`push` retain `Array<T>`.
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1246-1251`:
+  `first`/`last` retain `Option<T>` and `append` retains `Array<T>`.
   Positive and negative coverage is
-  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-200`
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-198`
   (**11/11** in-file, **34/34** focused combined route); full package
   verification is **6,782/6,782**. Higher-order `map`/`reduce`/`filter`
   remain explicitly deferred because callback/closure typing is not admitted
