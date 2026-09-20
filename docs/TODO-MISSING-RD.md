@@ -313,6 +313,23 @@ locator is not sufficient evidence of a blocker or of completion.
   loop cap at `:119-150` does not cap the copied closed form, and the required
   emulator differential/negative drift vectors are not yet present at
   `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:116-119`.
+- **Galerina AI-accelerator selection ingress (partial):** the runtime decoder
+  at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`
+  exact-decodes model/tensor/capability/preference records, rejects
+  proxy/accessor/surplus/sparse collections and rogue vocabularies, and copies
+  bounded tensor dimensions. Compatibility at `:719-752` now treats missing
+  model-format/operator/dynamic-shape evidence, insufficient on-device policy,
+  memory overflow and adapter mismatch as incompatible. The focused package is
+  **6/6** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-143`
+  with clean typecheck/build. **Remaining blockers:** fallback selection still
+  reports `safe` from a declared fallback without an admitted fallback
+  capability record at `src/index.ts:646-684`; report construction directly
+  aliases caller-owned profiles/plans/selections and preserves unvalidated
+  diagnostics at `src/index.ts:690-710`; and no owner-approved deep report
+  snapshot/decision-binding contract exists. Exact clearance requires that
+  report schema, fallback capability authority, alias-mutation vectors and
+  diagnostic-severity refusal be defined and tested.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink

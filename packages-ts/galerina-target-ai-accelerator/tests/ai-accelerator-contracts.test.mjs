@@ -106,6 +106,44 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
     );
   });
 
+  it("refuses malformed nested records, hostile collections, and absent evidence", () => {
+    const malformed = selectAiAcceleratorTarget({
+      model: { ...model, precision: "ROGUE" },
+      preference: {
+        prefer: "npu",
+        fallback: ["gpu"],
+        requireOnDevice: true,
+        allowNetwork: false,
+        allowSilentFallback: false,
+        reportFallback: true,
+      },
+      capabilities: [],
+    });
+    assert.equal(malformed.selectedTarget, "reject");
+    assert.equal(malformed.safe, false);
+    const proxy = new Proxy({ ...model }, {});
+    assert.equal(validateAiAcceleratorModel(proxy)[0]?.severity, "error");
+    const absentEvidence = selectAiAcceleratorTarget({
+      model,
+      preference: {
+        prefer: "npu",
+        fallback: ["gpu"],
+        requireOnDevice: true,
+        allowNetwork: false,
+        allowSilentFallback: false,
+        reportFallback: true,
+      },
+      capabilities: [{
+        name: "Unbound NPU",
+        kind: "npu",
+        supportedPrecisions: ["INT8"],
+        features: [],
+      }],
+    });
+    assert.equal(absentEvidence.selectedTarget, "gpu");
+    assert.equal(absentEvidence.safe, true);
+  });
+
   it("loads the NPU target selection example", async () => {
     const example = JSON.parse(
       await readFile(
