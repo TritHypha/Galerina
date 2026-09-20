@@ -152,6 +152,22 @@
   coverage, not proven silent deletion. Keep the traps. See
   `private/research/rd/RD-1233-wat-lowering-adjudication-PRIVATE.md`.
 
+- [!] `RD-1234` records one complete non-authorizing Grok attempt and an
+  independent Astra review of the empty pipeline-checker seam. The result is
+  `HOLD — OWNER CONTRACT REQUIRED`. The exact blocker is
+  `packages-ts/galerina-core-compiler/src/index.ts:3081-3100`, where
+  `checkMethodChain()` receives only a receiver name, method names, and one
+  location before returning `[]`; the five diagnostic contracts are at
+  `:1920-1969`. Astra confirms the signature cannot selectively evaluate
+  `FUNGI-PIPELINE-001..005` without typed receiver/method, Result, effect,
+  binding/readonly, argument, and per-stage location context. Preserve
+  `push`/`append` as persistent transforms covered by `FUNGI-TYPE-028`, not
+  readonly mutation, and keep unknown or insufficient context refused. The
+  stub test at
+  `packages-ts/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:298-306`
+  is only an empty-result control and cannot clear the detector. See
+  `private/research/rd/RD-1234-pipeline-checker-adjudication-PRIVATE.md`.
+
 ### Current bounded component receipts — 2026-09-20
 
 - [x] Galerina implementation checkpoint is

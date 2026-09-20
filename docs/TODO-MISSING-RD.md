@@ -565,6 +565,23 @@ locator is not sufficient evidence of a blocker or of completion.
   names, and a location; it lacks the type, effect, Result-handling, and
   readonly environments required by PIPELINE-001..005. The existing test
   records the stub at `tests/compiler-safety-contracts.test.mjs:298-300`.
+- **RD-1234 pipeline-checker adjudication:** the governed Grok attempt
+  completed non-authoritatively and Astra returned `HOLD — OWNER CONTRACT
+  REQUIRED`. The exact signature blocker is
+  `packages-ts/galerina-core-compiler/src/index.ts:3095-3100`, with the five
+  diagnostic declarations at `:1920-1969`; it cannot distinguish receiver
+  type, method arguments, Result consumption, effect/alias/shadow context,
+  binding kind, readonly mutation, or per-stage locations. The parser still
+  retains usable nested method-call structure at
+  `packages-ts/galerina-core-compiler/src/parser.ts:2732-2751`, so this is not
+  a new parallel type-system problem. Clearance requires an owner-frozen
+  context contract, real `callExpr` integration, positive/negative controls
+  for all five vectors, and a replacement for the empty-result detector test
+  at `tests/compiler-safety-contracts.test.mjs:298-306`. Keep built-in
+  `push`/`append` in the persistent-transform/`FUNGI-TYPE-028` lane; do not
+  classify them as readonly receiver mutation without a receiver contract.
+  Exact record:
+  `private/research/rd/RD-1234-pipeline-checker-adjudication-PRIVATE.md`.
 - **Galerina residual WAT lowering:**
   `packages-ts/galerina-core-compiler/TODO.md:63-65` remains open. The emitter
   intentionally fails closed at `src/wat-emitter.ts:2035-2045` for Decimal and
