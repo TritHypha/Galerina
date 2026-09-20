@@ -1656,7 +1656,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   each ordinary own-data field once, reject coercion/accessors/proxies/non-finite
   values, and use fixed typed failure codes rather than coercing rejected values
   while formatting errors. Add exact-bit, negative-zero, envelope and mutation
-  KATs plus the Tower-Citizen/emulator drift gates.
+  KATs plus the Tower-Citizen/emulator drift gates. The shared math and
+  Tower-Citizen call-site slice is now bounded at
+  `packages-ts/galerina-substrate-math/src/index.ts:22-121` and
+  `packages-ts/galerina-tower-citizen/src/substrate-model.ts:33-113,177-189`,
+  with hostile ingress coverage at
+  `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`;
+  the item remains open because the copied emulator contract and its
+  differential/negative drift gates are unresolved at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200` and
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:116-119`.
 - [ ] **Priority accelerator ingress fix:** validate all model, capability,
   preference, plan and adapter records at runtime. A fresh vector supplied rogue
   kind, format, precision, adapter, workload and framework strings; selection

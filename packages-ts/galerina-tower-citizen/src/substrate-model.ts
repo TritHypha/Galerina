@@ -31,6 +31,7 @@ import { dispatchDeadZone, type OnIndeterminate } from "./deadzone-dispatcher.js
 // substrate-inference). This module keeps the SubstrateParamError-throwing validation
 // wrappers below; the math itself lives in @galerina/substrate-math.
 import {
+  type SubstrateNoiseParams,
   flipProbability as mathFlipProbability,
   singleLaneErrorProbability as mathSingleLaneErrorProbability,
   nmrFailureProbability as mathNmrFailureProbability,
@@ -87,6 +88,14 @@ function assertOddPositive(N: number): void {
     );
   }
 }
+function toMathParams(p: SubstrateParameters): SubstrateNoiseParams {
+  return {
+    phaseDriftSigma: p.phaseDriftSigma,
+    crosstalkCoeff: p.crosstalkCoeff,
+    laneFailureProb: p.laneFailureProb,
+    readoutSigma: p.readoutSigma,
+  };
+}
 function assertTritValue(t: number): asserts t is -1 | 0 | 1 {
   if (t !== -1 && t !== 0 && t !== 1) throw new SubstrateParamError(`trit must be -1, 0, or 1, got ${t}`);
 }
@@ -98,7 +107,7 @@ function assertTritValue(t: number): asserts t is -1 | 0 | 1 {
  */
 export function singleLaneErrorProbability(p: SubstrateParameters): number {
   validateParams(p);
-  return mathSingleLaneErrorProbability(p);
+  return mathSingleLaneErrorProbability(toMathParams(p));
 }
 
 // ── Seeded PRNG (Mulberry32) — deterministic, integer-safe, no wall clock ──────
@@ -174,7 +183,7 @@ export class NoisyLane {
     if (rng() < this.params.laneFailureProb) {
       return { value: 0, indeterminate: true, noiseMargin: 0 };
     }
-    const pFlip = mathFlipProbability(this.params);
+    const pFlip = mathFlipProbability(toMathParams(this.params));
     if (rng() < pFlip) {
       let v: -1 | 0 | 1;
       if (t === 0) {

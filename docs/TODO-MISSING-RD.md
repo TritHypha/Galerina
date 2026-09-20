@@ -300,9 +300,19 @@ locator is not sufficient evidence of a blocker or of completion.
   envelope only. The independently owned photonic-emulator mirror remains
   unresolved at `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200`;
   its `N_MAX_VOTES` at `:119-150` bounds only the vote loop, not its copied
-  closed form. The separate hostile-object/accessor/proxy ingress contract also
-  remains open at the shared `flipProbability` surface (`:60-62`) and is not
-  silently claimed complete.
+  closed form. The shared `flipProbability` ingress is now fail-closed at
+  `packages-ts/galerina-substrate-math/src/index.ts:22-121`: exact plain
+  own-data fields are captured once, accessors/surplus fields/proxies and
+  non-finite values refuse with typed codes, and Tower-Citizen projects its
+  seeded record into that exact math shape at
+  `packages-ts/galerina-tower-citizen/src/substrate-model.ts:76-113,177-189`.
+  Hostile coverage is `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`.
+  The broader host-ingress TODO remains open because the independently owned
+  emulator mirror still has unguarded `flipProbability`/NMR paths at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200`; its
+  loop cap at `:119-150` does not cap the copied closed form, and the required
+  emulator differential/negative drift vectors are not yet present at
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:116-119`.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink
