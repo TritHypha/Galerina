@@ -277,14 +277,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   package, file, symbol, source, candidate, RD, plan, gate and exclusion scope;
   do not upgrade historical scope-less receipts. Focused receipt/queue checks
   pass; queue execution remains refused until valid PROJECT evidence exists.
-- [!] The current SLIDE full recheck still cancels nine producer/GIR checks at
-  source checkpoint `bc9d4e342e6195a8e4380d0f3f9ffab8edc45664`: SLIDE test
-  `../SLIDE/tests/v2c-galerina-conformance.test.mjs:94-160` cannot import
-  `packages-galerina/galerina-core-compiler/dist/index.js`, and
-  `../SLIDE/tests/v2d-reference-validator.test.mjs:107-220` cannot open
-  `packages-galerina/galerina-core-compiler/src/self-hosted/slide-v2a-logical-model.fungi`.
-  These absent producer/GIR inputs are the exact cross-repository blocker;
-  the nine cancellations remain neither PASS nor FAIL.
+- [x] Reconcile the former SLIDE producer/GIR locator cancellation. SLIDE commit
+  `eb02c604f19136534c3e2214b4a1af34bf6c7558` binds the conformance tests to the
+  live `Galerina/packages-ts/galerina-core-compiler` root at
+  `SLIDE/tests/v2c-galerina-conformance.test.mjs:11-20` and
+  `SLIDE/tests/v2d-reference-validator.test.mjs:10-22`; the focused V2-C/V2-D
+  route is **9/9 pass, 0 fail, 0 cancelled** at the current SLIDE checkout.
+  The former `packages-galerina` paths were stale locators, not absent
+  producer/GIR inputs. This closes only that locator cancellation; it does not
+  authorize corpus, queue, `.fungi`, VOK or production-admission work.
 - [ ] Reconcile the incomplete bounded conversion scope recorded by private
   `RD-1231` with the current Galerina exact head before selecting further native
   logic/components. Its last recorded direct-tree snapshot reports **91/100**
