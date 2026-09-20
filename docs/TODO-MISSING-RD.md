@@ -239,6 +239,19 @@ locator is not sufficient evidence of a blocker or of completion.
   Its deferred-work contract at `:28-35` still requires complete
   expression-level inference before claiming TYPE-002/005-007 done. Do not
   mark the rows complete from the bounded literal/known-type cases alone.
+- **Galerina core-config v0.2 contract:**
+  `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
+  blocked because the source `src/index.ts:97-101` still exposes the v0.1
+  `EnvironmentConfig`, while `README.md:209-218` requires a v0.2 schema and
+  policy shape. The source secret contract at `src/index.ts:1142-1179`
+  conflicts with the README source/category contract at `README.md:221-243`,
+  and the loader diagnostics at `README.md:246-260` collide with the existing
+  `resolveEnvironmentMode` ownership at `src/index.ts:218-255`. **Fail closed:**
+  do not add implementation or split internal directories until the owner/KB
+  publishes one schema version, one source/category vocabulary and disjoint
+  diagnostic ownership. The live package currently passes typecheck and
+  **54/54** tests, but that evidence covers only the existing v0.1/config-vault
+  surface.
 - **Galerina native-target residual admission:** the bounded decoder and
   immutable snapshot are implemented at
   `Galerina/packages-ts/galerina-target-native/src/index.ts:85-165`,
