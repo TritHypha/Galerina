@@ -1721,9 +1721,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   **337/337** governed receipts, graph integrity **9,847 nodes / 9,985 edges /
   0 violations**, canonical **9,612** tests, Golden **11/11**, roadmap **5/5**
   and both leak audits green. The excluded aggregate lanes were not substituted.
-- [ ] Make parsed test summaries canonical and unique; refuse duplicate/spoofed
-  lines, unsafe integers, excessively long digits and non-finite counts before
-  any parsed value can affect SLIDE or other check success.
+- [x] Make parsed test summaries canonical and unique; the root parser at
+  `scripts/run-all-tests.cjs:388-414` now accepts only one exact TAP/spec
+  summary line per field, refuses duplicate/spoofed lines, unsafe integers,
+  excessively long digits and non-finite values, and exports the parser for a
+  real-root regression at
+  `packages-ts/galerina-test/tests/foundation.test.mjs:76-82`. The focused
+  foundation route is **11/11 pass**. The wider package route remains
+  separately **218/221 pass, 2 fail, 1 Windows signal skip** because two
+  unrelated conversion-overlay/source-literal checks still fail; that red
+  evidence is not used to claim full harness closure.
 - [ ] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
   `--timeout` data; add exact argv, stream-routing, JSON and exit-code tests.
 - [!] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind

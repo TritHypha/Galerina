@@ -9,6 +9,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,6 +23,8 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, "..", "..", ".."); // packages-ts/galerina-test/tests → repo root
+const require = createRequire(import.meta.url);
+const rootTestRunner = require(resolve(ROOT, "scripts", "run-all-tests.cjs"));
 
 // ── parseCounts (lifted, behaviour-preserving) ───────────────────────────────
 
@@ -68,6 +71,15 @@ test("parseAggregateTotal: reads run-all-tests.cjs's '<N> tests total' line", ()
 test("parseAggregateTotal: duplicate or unsafe totals refuse", () => {
   assert.equal(parseAggregateTotal("1 tests total\n2 tests total"), null);
   assert.equal(parseAggregateTotal("9007199254740992 tests total"), null);
+});
+
+test("root run-all-tests parser refuses duplicate and unsafe summaries", () => {
+  assert.deepEqual(rootTestRunner.parseCounts("# tests 7\n# tests 7\n# pass 7\n# fail 0"), {
+    tests: null,
+    pass: 7,
+    fail: 0,
+  });
+  assert.equal(rootTestRunner.parseCounts("# tests 9007199254740992").tests, null);
 });
 
 // ── resolveRoot / resolveTarget (fail-closed) ────────────────────────────────
