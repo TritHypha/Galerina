@@ -201,6 +201,15 @@ locator is not sufficient evidence of a blocker or of completion.
   The remaining entries are exact implementation/design blockers; do not close
   them by silently swallowing writer errors or by claiming shallow redaction is
   complete.
+- **Galerina WASM-target admission:** the current API is compile-time typed at
+  `Galerina/packages-ts/galerina-target-wasm/src/index.ts:47`, while
+  `createWasmTargetReport()` accepts typed caller-owned input at `:84` and
+  aliases the artefact array into its report at `:91-95`. A runtime decoder,
+  immutable snapshot, module containment/bytes-digest/import-export authority,
+  diagnostic migration, and cross-package schema owner are not defined by the
+  current contract. The unresolved ledger is
+  `Galerina/docs/TODO.md:1353`; do not invent a decoder or call this slice
+  complete without that contract.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method
