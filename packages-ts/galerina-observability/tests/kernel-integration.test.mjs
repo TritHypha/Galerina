@@ -102,6 +102,19 @@ test("health fail-safe uses the tagged status-only public schema", async () => {
   assert.deepEqual(response.body, { status: "DOWN" });
 });
 
+test("health timer cleanup failure remains a typed 503 through the kernel", async () => {
+  const registry = new HealthRegistry({
+    setTimer: () => 0,
+    clearTimer: () => { throw new Error("timer cleanup failed"); },
+  });
+  registry.registerReadiness("db", () => true);
+  const surface = observabilityRoutes({ registry, metrics: new MetricsCollector() });
+  const kernel = createAppKernel({ routes: surface.routes, dispatch: surface.dispatch });
+  const response = await kernel.handle(req({ method: "GET", path: "/health/ready" }));
+  assert.equal(response.status, 503);
+  assert.deepEqual(bodyJson(response), { status: "DOWN" });
+});
+
 test("/metrics is secure-by-default (required auth ⇒ 401 without a verdict)", async () => {
   const surface = observabilityRoutes({ registry: new HealthRegistry(), metrics: new MetricsCollector() });
   const kernel = createAppKernel({ routes: surface.routes, dispatch: surface.dispatch });

@@ -1954,11 +1954,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   dual-map mutation, ordered snapshots, open component records, typed
   completion, timeout/cancellation, losing-work policy, exactly-once timer
   cleanup and registry identity before reopening Slices 193-197.
-- [ ] Priority health-contract defect: reconcile the file-level “evaluation
-  never throws” claim with injected `clearTimer` failure. Add a hostile cleanup
-  test, choose an explicit typed cleanup-failure outcome, preserve route-level
-  503 behavior, and prevent cleanup from silently overriding an already
-  derived health result.
+- [x] Close the priority health-contract defect at
+  `packages-ts/galerina-observability/src/health.ts:138-165`. Injected timer
+  cleanup failure now becomes the explicit typed `{ status: "DOWN", detail:
+  "timer cleanup failed" }` result when the check otherwise derived `UP`; an
+  already-derived `DOWN` result is preserved. Hostile cleanup coverage is at
+  `packages-ts/galerina-observability/tests/health.test.mjs:64-78`, and the
+  kernel route remains a status-only **503** at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:105-115`.
+  The focused package route is **53/53** with clean typecheck/build.
 - [ ] Retain TypeScript and every route/consumer. Focused evidence grants no
   whole-file retirement, production, release or push authority.
 - [x] Run retirement/queue, graph, inventory, index, component-health, status,

@@ -147,11 +147,22 @@ export class HealthRegistry {
         .then(() => check())
         .then((r) => coerce(r))
         .catch(() => ({ status: "DOWN" as const, detail: "check threw" }));
-      return await Promise.race([evaluated, timeout]);
+      let result: ComponentHealth;
+      try {
+        result = await Promise.race([evaluated, timeout]);
+      } catch {
+        result = { status: "DOWN", detail: "check threw" };
+      }
+      try {
+        this.#clearTimer(handle);
+      } catch {
+        // Cleanup failure is itself unhealthy, but it must not erase a more specific
+        // already-derived failure from the check or timeout path.
+        if (result.status === "UP") return { status: "DOWN", detail: "timer cleanup failed" };
+      }
+      return result;
     } catch {
       return { status: "DOWN", detail: "check threw" };
-    } finally {
-      this.#clearTimer(handle);
     }
   }
 }

@@ -61,6 +61,22 @@ test("a hung check times out to DOWN (deterministic via injected timer)", async 
   assert.equal(r.components.hang.detail, "timeout");
 });
 
+test("timer cleanup failure is typed DOWN and preserves an existing failure result", async () => {
+  const cleanupFails = () => { throw new Error("timer cleanup failed"); };
+
+  const healthy = new HealthRegistry({ setTimer: () => 0, clearTimer: cleanupFails });
+  healthy.registerReadiness("db", () => true);
+  const healthyReport = await healthy.readiness();
+  assert.equal(healthyReport.status, "DOWN");
+  assert.deepEqual(healthyReport.components.db, { status: "DOWN", detail: "timer cleanup failed" });
+
+  const failing = new HealthRegistry({ setTimer: () => 0, clearTimer: cleanupFails });
+  failing.registerReadiness("db", () => { throw new Error("dependency failed"); });
+  const failingReport = await failing.readiness();
+  assert.equal(failingReport.status, "DOWN");
+  assert.deepEqual(failingReport.components.db, { status: "DOWN", detail: "check threw" });
+});
+
 test("a malformed (garbage) result is treated as DOWN", async () => {
   const h = new HealthRegistry();
   h.registerReadiness("weird", () => ({ notAStatus: true }));
