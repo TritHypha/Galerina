@@ -1306,7 +1306,7 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-test/src/spawn.ts:11-120` and
   `packages-ts/galerina-test/src/runners.ts:159-170`; duplicate/malformed/
   unsafe count summaries now refuse at `packages-ts/galerina-test/src/parse.ts:14-43`
-  with **10/10** foundation tests plus **35/35** runner/spawn tests (one
+  with **10/10** foundation tests plus **36/36** runner/spawn tests (one
   Windows signal skip). The typed canonical argv slice is now closed:
   `packages-ts/galerina-test/src/types.ts:35-39` defines `SpawnInvocation`,
   `packages-ts/galerina-test/src/spawn.ts:54-60` captures the exact executable,
