@@ -190,6 +190,15 @@ locator is not sufficient evidence of a blocker or of completion.
   of selected ABI/profile to the exact artifact, target, digest and VOK
   evidence are not source-defined. This remains an owner/architecture gate,
   not a reason to invent an R&D result or promote native validation.
+- **Galerina observability residuals:** direct writer failure still escapes
+  `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
+  while the outer logger catch is only `:144-166`; the exact direct-sink
+  failure/isolation contract is unresolved. Nested redaction remains shallow at
+  `:177-181`, failure classes and clock policy are combined at `:144-175`,
+  prototype-safe copying is not established at `:177-181`, and the declared
+  `string` result of `safeStringify` remains unresolved at `:204-225`. These
+  are exact implementation/design blockers; do not close them by silently
+  swallowing writer errors or by claiming shallow redaction is complete.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method

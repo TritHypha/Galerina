@@ -1614,10 +1614,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `clear()` isolation are covered at
   `packages-ts/galerina-observability/tests/logger.test.mjs:18-52`.
   Focused package typecheck/build/tests pass **39/39**.
-- [ ] Priority logger contract fix: direct `JsonLineSink.write()` propagates a
-  throwing writer despite the `LogSink.write MUST NOT throw` contract. Choose
-  and test one exact typed failure/isolation contract rather than relying on
-  `Logger.#emit` to hide the mismatch.
+- [!] Priority logger contract blocker: direct `JsonLineSink.write()` at
+  `packages-ts/galerina-observability/src/logger.ts:56-63` propagates a throwing
+  writer despite the `LogSink.write MUST NOT throw` contract. The exact typed
+  failure/isolation contract and its direct regression are not yet defined;
+  `Logger.#emit` at `:144-166` only catches the outer call and does not clear
+  the direct-sink contract.
 - [x] Priority logger fail-closed fix: `packages-ts/galerina-observability/src/logger.ts:106`
   now validates runtime `minLevel` values through the closed `levelOrder` switch
   at `packages-ts/galerina-observability/src/logger.ts:186-193`, selecting named
@@ -1633,20 +1635,25 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   failures, zero skips). Redaction, child logger, sink behavior, and the existing
   runtime `minLevel` fix remain covered; `JsonLineSink` failure behavior and other
   TODOs were not changed.
-- [ ] Replace shallow exact-key redaction with a bounded, cycle-safe policy for
-  nested records/arrays, or explicitly refuse nested protected values. Current
-  nested `{ credentials: { password: ... } }` reaches the sink unchanged.
-- [ ] Separate sink-write failures from record-construction/redaction failures;
-  the current `sinkFailures()` counter increments for both. Define clock policy
-  for negative, fractional and signed-zero timestamps and add direct vectors.
-- [ ] Make logger redaction and handler-dispatch construction prototype-safe.
-  Own enumerable `__proto__` input can change a plain `{}` output prototype and
-  disappear as an own field. Refuse hostile descriptors/proxies and add the
-  discriminating negative vectors now required by the private skills.
-- [ ] Fix `safeStringify`'s declared `string` contract: top-level `undefined`
-  and `toJSON() => undefined` return JavaScript `undefined` without entering
-  its catch fallback. Define an inert bounded JSON algebra and canonical wire,
-  or expose a truthful typed serialization result.
+- [!] Logger redaction blocker: `#redactFields` at
+  `packages-ts/galerina-observability/src/logger.ts:177-181` is shallow, so
+  nested protected values such as `{ credentials: { password: ... } }` reach the
+  sink. A bounded cycle-safe policy or explicit nested-value refusal remains
+  undefined; no completion claim is made.
+- [!] Logger failure-accounting blocker: `#emit` and `#safeNow` at
+  `packages-ts/galerina-observability/src/logger.ts:144-175` currently merge
+  sink-write, record-construction/redaction and clock failures into one counter.
+  The separation and negative/fractional/signed-zero clock contract need an
+  exact decision and direct vectors.
+- [!] Logger prototype-safety blocker: the shallow redaction construction at
+  `packages-ts/galerina-observability/src/logger.ts:177-181` uses a plain output
+  record; hostile own `__proto__`, descriptors or proxies need an explicit
+  refusal/copy contract and discriminating tests.
+- [!] Logger serialization blocker: `safeStringify` at
+  `packages-ts/galerina-observability/src/logger.ts:204-225` declares `string`
+  but its runtime JSON path does not establish a truthful result for hostile
+  top-level/`toJSON() => undefined` inputs. Define an inert bounded JSON algebra
+  and canonical wire, or expose a typed serialization result before closing it.
 - [ ] Security boundary: do not use lossy `metricsAuditSink` as the kernel's
   mandatory evidence sink. It can reserve/commit successfully while discarding
   requestId, errorCode, defaults, relaxations, timestamp and posture. Introduce
