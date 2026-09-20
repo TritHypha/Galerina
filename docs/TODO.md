@@ -107,9 +107,16 @@ counts or open items that a newer section explicitly supersedes.
   `54a135f748c579da00f266de1a658aa634cc68c3`; SLIDE's bounded membership
   successors are implemented, but scalar canonical-GIR/VOK admission remains
   reference-only and profiles 64/256 remain explicitly INACTIVE because no
-  packed consumer or execution evidence exists. The exact Galerina
-  producer/GIR inputs are still absent, so VOK profile parity and the nine
-  cross-repository checks remain HOLD.
+  packed consumer or execution evidence exists. The prior nine SLIDE
+  cross-repository cancellations were stale `packages-galerina` test locators,
+  not absent producer/GIR inputs; the live paths are
+  `SLIDE/tests/v2c-galerina-conformance.test.mjs:13-20` and
+  `SLIDE/tests/v2d-reference-validator.test.mjs:15-22`, both now targeting
+  `Galerina/packages-ts/galerina-core-compiler`. The corrected focused suites
+  pass **9/9**, and the full bounded SLIDE suite passes **1,071/1,071 across
+  111 suites, 0 fail, 0 cancelled**, at SLIDE exact head
+  `eb02c604f19136534c3e2214b4a1af34bf6c7558`. VOK profile parity and authority
+  remain HOLD for their separate lifecycle and admission evidence.
 - [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
   PROJECT evidence remains a fail-closed refusal; no conversion, profile
   activation, VOK authority, TypeScript retirement or `.fungi` build follows
