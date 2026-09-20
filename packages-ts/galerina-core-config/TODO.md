@@ -37,3 +37,35 @@
 [x] Define SecretRedactionPolicy with DEFAULT_SECRET_REDACTION_POLICY (2026-05-26)
 [ ] Create internal dir structure: environment/, secrets/, loaders/, types/
 ```
+
+## v0.2 admission blocker (2026-09-20)
+
+`[BLOCKED]` No remaining v0.2 item is currently source-defined enough to enter a
+TDD red/green cycle. Refuse new tests and production code until the owner/KB
+contract resolves all of the following exact conflicts:
+
+- `EnvironmentConfig` is still the v0.1 shape at
+  `packages-ts/galerina-core-config/src/index.ts:97-101` (symbol
+  `EnvironmentConfig`), while the TODO requires schema version
+  `galerina.config.environment.v1` at `TODO.md:23` and the README requires
+  `galerina.config.environment.v2` plus `SecretEnvironmentReference[]` and
+  `policy` at `README.md:209-218`.
+- The README's `SecretConfigSource` contract at `README.md:221-243` requires
+  `file`, `secretStore`, and `runtimeInjected` variants plus underscore category
+  values, but the source-defined `SecretConfigSource` at
+  `packages-ts/galerina-core-config/src/index.ts:1142-1148` is `env|vault|kms|runtime`
+  and `SecretCategory` at `src/index.ts:1170-1179` uses a different hyphenated
+  closed set. `SecretEnvironmentReference` has no source symbol to extend.
+- The loader contract at `README.md:246-260` and TODO item `TODO.md:27-28`
+  assign `FUNGI-CONFIG-001`/`FUNGI-CONFIG-002` to missing variables/secrets,
+  while the existing `resolveEnvironmentMode` symbol at
+  `packages-ts/galerina-core-config/src/index.ts:218-255` already owns those
+  codes for invalid/missing environment mode diagnostics.
+
+Refusal condition: do not add a red test, implementation, or internal directory
+split for TODO items 23-28 until an owner/KB decision publishes one schema
+version, one secret-reference/source/category contract, and non-overlapping
+diagnostic-code ownership. Evidence: `npm run typecheck` passed and the package
+`npm test` command passed 54/54 tests on 2026-09-20; those tests cover the live
+v0.1/config-vault surface only and do not authorize either conflicting v0.2
+contract.
