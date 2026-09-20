@@ -44,6 +44,23 @@ test("foldStaticVerdict: anything runtime-dependent is 0 (unknown → keep the g
   assert.equal(foldStaticVerdict(bin("&&", bool("true"), id("x"))), 0); // a conjunction is not itself a constant
 });
 
+test("foldStaticVerdict: conjunction false is decisive despite an unknown operand", () => {
+  const values = [
+    [bool("false"), -1],
+    [bool("true"), 1],
+    [id("x"), 0],
+  ];
+  for (const [left, leftVerdict] of values) {
+    for (const [right, rightVerdict] of values) {
+      const expected = leftVerdict === -1 || rightVerdict === -1
+        ? -1
+        : leftVerdict === 1 && rightVerdict === 1 ? 1 : 0;
+      assert.equal(foldStaticVerdict(bin("&&", left, right)), expected);
+      assert.equal(foldStaticVerdict(bin("and", left, right)), expected);
+    }
+  }
+});
+
 test("flattenGovernanceConjunction: left-assoc && chain → ordered operands; non-conjunction → singleton", () => {
   const chain = bin("&&", bin("&&", bool("true"), id("x")), bin(">", id("y"), num(0)));
   const ops = flattenGovernanceConjunction(chain);

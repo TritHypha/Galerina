@@ -44,6 +44,21 @@ export function flattenGovernanceConjunction(expr: AstNode): AstNode[] {
  *  comparison · negation of a bool literal) — the union of what both sides proved, so neither
  *  consumer loses a case and both now agree on every case. */
 export function foldStaticVerdict(expr: AstNode): StaticVerdict {
+  // Strong-Kleene conjunction is false when any operand is false, even when
+  // another operand is runtime-dependent.  Resolve that annihilator here so
+  // the verifier reports FUNGI-INV-001 for `false && x` exactly as the emitter
+  // removes the same dead gate.  A conjunction with no false operand remains
+  // unknown unless every operand is statically true.
+  if (expr.kind === "binaryExpr" && (expr.value === "&&" || expr.value === "and") && expr.children?.length === 2) {
+    const operands = flattenGovernanceConjunction(expr);
+    let allAllow = true;
+    for (const operand of operands) {
+      const verdict = foldStaticVerdict(operand);
+      if (verdict === -1) return -1;
+      if (verdict !== 1) allAllow = false;
+    }
+    return allAllow ? 1 : 0;
+  }
   // ensure true / ensure false
   if (expr.kind === "boolLiteral") return expr.value === "true" ? 1 : -1;
   // ensure <numLit> <cmp> <numLit>   (5 > 0, 0 == 0, …)

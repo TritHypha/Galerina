@@ -1559,6 +1559,18 @@ contract {
     assert.ok(hasDiag(result, "FUNGI-INV-001"), "Expected FUNGI-INV-001 for ensure false");
   });
 
+  it("ensure false && runtime value: shared oracle keeps verifier fail-closed", () => {
+    const result = parseAndVerify(`
+pure flow brokenWhenFalse(n: Int) -> Int
+contract {
+  intent { "False conjunction." }
+  invariant { ensure false && n > 0; }
+}
+{ return n }
+`);
+    assert.ok(hasDiag(result, "FUNGI-INV-001"), "Expected FUNGI-INV-001 for false && runtime value");
+  });
+
   it("ensure 1 > 5: FUNGI-INV-001 (statically proved false — literal comparison)", () => {
     const result = parseAndVerify(`
 pure flow impossible(x: Int) -> Int
