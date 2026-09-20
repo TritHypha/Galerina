@@ -38,6 +38,21 @@
   assurance, queue regeneration, signing, and `.fungi` generation remain
   held by the exact blockers below.
 
+### Current exact-head accelerator report consistency slice — 2026-09-20
+
+- [x] Repaired the RD-1240 report-view consistency defect at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:715-719`:
+  warnings are now projected from the same detached diagnostic snapshot as
+  `targetSelections`, rather than rereading caller-owned selections.
+- [x] Added a getter-mutation regression at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:147-177`.
+  It proves snapshot diagnostics and warnings remain aligned and that the
+  input diagnostic getter is read only during snapshotting. The package route
+  is now **8/8 pass**, with typecheck and build clean.
+- [!] RD-1240 remains **COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD**:
+  report decoding, same-ingress selection binding, closed diagnostic schema,
+  owner authority and all queue/corpus/`.fungi` gates remain open.
+
 ### Cross-project detached-GIR producer evidence — RD-1246 — 2026-09-20
 
 - [x] The current cross-project heads were rechecked before recording this
