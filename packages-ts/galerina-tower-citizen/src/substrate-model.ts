@@ -34,6 +34,7 @@ import {
   flipProbability as mathFlipProbability,
   singleLaneErrorProbability as mathSingleLaneErrorProbability,
   nmrFailureProbability as mathNmrFailureProbability,
+  MAX_NMR_N,
 } from "@galerina/substrate-math";
 
 // ── Errors ────────────────────────────────────────────────────────────────────
@@ -80,8 +81,10 @@ function validateParams(p: SubstrateParameters): void {
   assertProb("readoutSigma", p.readoutSigma);
 }
 function assertOddPositive(N: number): void {
-  if (!Number.isInteger(N) || N < 1 || N % 2 === 0) {
-    throw new SubstrateParamError(`redundancy N must be a positive odd integer, got ${N}`);
+  if (!Number.isInteger(N) || N < 1 || N % 2 === 0 || N > MAX_NMR_N) {
+    throw new SubstrateParamError(
+      `redundancy N must be a positive odd integer <= ${MAX_NMR_N}, got ${N}`,
+    );
   }
 }
 function assertTritValue(t: number): asserts t is -1 | 0 | 1 {

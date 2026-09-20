@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   SubstrateMathError,
+  MAX_NMR_N,
   flipProbability, singleLaneErrorProbability, nmrFailureProbability,
 } from "../dist/index.js";
 
@@ -55,5 +56,11 @@ describe("validation throws SubstrateMathError", () => {
     assert.throws(() => nmrFailureProbability(0.5, 2), SubstrateMathError);
     assert.throws(() => nmrFailureProbability(0.5, 0), SubstrateMathError);
     assert.throws(() => nmrFailureProbability(1.5, 3), SubstrateMathError);
+  });
+  it("bounds the binary64 closed form before its overflow/underflow envelope", () => {
+    const result = nmrFailureProbability(0.25, MAX_NMR_N);
+    assert.ok(Number.isFinite(result) && result >= 0 && result <= 1);
+    assert.throws(() => nmrFailureProbability(0.25, 1021), SubstrateMathError);
+    assert.throws(() => nmrFailureProbability(0.25, 1023), SubstrateMathError);
   });
 });

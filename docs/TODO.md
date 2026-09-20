@@ -1638,10 +1638,20 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   returns an ad-hoc `{ status: "DOWN", detail: ... }` body rather than the
   normal HealthReport shape; add owner-approved schema and fault-vector tests
   before changing the response contract.
-- [ ] **Priority substrate numerical/termination fix:** cap accepted odd `N`
-  or replace the current recurrence with an independently verified stable
-  algorithm. Current accepted inputs include `nmr(0.25,1021) == 1` and
-  `nmr(0.25,1023) == NaN`, and larger values admit unbounded CPU work.
+- [x] **Priority substrate numerical/termination fix:** the current binary64
+  recurrence now admits only odd `N <= MAX_NMR_N` (`1019`) at
+  `packages-ts/galerina-substrate-math/src/index.ts:45,63-69`, rejects any
+  non-finite accumulated result at `:100-113`, and exports the bound through
+  the compiler shim at `packages-ts/galerina-core-compiler/src/substrate-math.ts:12-16`.
+  The Tower-Citizen wrapper preserves its typed `SubstrateParamError` contract
+  at `packages-ts/galerina-tower-citizen/src/substrate-model.ts:83-89`.
+  Focused evidence is substrate math **7/7** at
+  `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:52-66`
+  and Tower-Citizen substrate **21/21** at
+  `packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:238-245`,
+  with clean package typecheck/build. The cap is the smallest bounded change
+  supported by RD-0839; a log-domain large-`N` replacement remains future
+  owner-reviewed work.
 - [ ] Close substrate host ingress: validate exported `flipProbability`, capture
   each ordinary own-data field once, reject coercion/accessors/proxies/non-finite
   values, and use fixed typed failure codes rather than coercing rejected values

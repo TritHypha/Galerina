@@ -284,6 +284,25 @@ locator is not sufficient evidence of a blocker or of completion.
   the package evidence is **46/46** with clean typecheck/build. This closes
   the authority replacement blocker; the following health/logger items remain
   separate.
+- **Galerina substrate NMR numerical/termination bound (closed):** the shared
+  recurrence now exports `MAX_NMR_N = 1019` at
+  `packages-ts/galerina-substrate-math/src/index.ts:45`, rejects larger/even/
+  non-positive values at `:63-69`, and refuses any non-finite accumulated result
+  at `:100-113`. The compiler re-export is
+  `packages-ts/galerina-core-compiler/src/substrate-math.ts:12-16`; the
+  Tower-Citizen wrapper preserves `SubstrateParamError` at
+  `packages-ts/galerina-tower-citizen/src/substrate-model.ts:83-89`.
+  Boundary vectors, including `N=1021` and `N=1023`, are covered by
+  `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:52-66`
+  and `packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:238-245`;
+  bounded evidence is substrate math **7/7** and Tower-Citizen substrate
+  **21/21** with clean typecheck/build. This closes the shipped closed-form
+  envelope only. The independently owned photonic-emulator mirror remains
+  unresolved at `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200`;
+  its `N_MAX_VOTES` at `:119-150` bounds only the vote loop, not its copied
+  closed form. The separate hostile-object/accessor/proxy ingress contract also
+  remains open at the shared `flipProbability` surface (`:60-62`) and is not
+  silently claimed complete.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink

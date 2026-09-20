@@ -34,6 +34,16 @@ export interface SubstrateNoiseParams {
   readonly readoutSigma: number;
 }
 
+/**
+ * Largest odd N admitted by the binary64 closed-form implementation.
+ *
+ * RD-0839 found the first incorrect result at N=1021 and NaN at N=1023
+ * because the direct binomial terms overflow before the powers underflow.
+ * Keep this explicit admission bound until an independently verified
+ * log-domain implementation replaces the recurrence.
+ */
+export const MAX_NMR_N = 1019;
+
 // Calibration gains — documented placeholder knobs (no silicon to calibrate against;
 // conservative defaults, retunable). Map physical parameters to a per-lane flip probability.
 const PHASE_GAIN = 1.0;
@@ -51,8 +61,10 @@ function assertProb(name: string, v: number): void {
 }
 
 function assertOddPositive(N: number): void {
-  if (!Number.isInteger(N) || N < 1 || N % 2 === 0) {
-    throw new SubstrateMathError(`redundancy N must be a positive odd integer, got ${N}`);
+  if (!Number.isInteger(N) || N < 1 || N % 2 === 0 || N > MAX_NMR_N) {
+    throw new SubstrateMathError(
+      `redundancy N must be a positive odd integer <= ${MAX_NMR_N}, got ${N}`,
+    );
   }
 }
 
@@ -94,6 +106,9 @@ export function nmrFailureProbability(pBad: number, N: number): number {
   let p = 0;
   for (let k = need; k <= N; k++) {
     p += binom(N, k) * Math.pow(pBad, k) * Math.pow(1 - pBad, N - k);
+  }
+  if (!Number.isFinite(p)) {
+    throw new SubstrateMathError(`NMR result must be finite for pBad=${pBad}, N=${N}`);
   }
   return clamp01(p);
 }
