@@ -137,6 +137,21 @@
   contract plus hostile consumer tests. See
   `private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
 
+- [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
+  Astra review of the residual WAT-lowering blocker. The result is
+  `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
+  boundary remains `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2035-2045`,
+  with Decimal's f64 mapping at `:218-243`, `FLOAT_WAT_TYPES` at `:953`, and
+  the result path at `:4234`; the separate callback/closure boundary is
+  `:2020-2045`, with Phase-19 fallback at `:4503-4534`. Astra confirms that
+  Decimal needs an owner-frozen exact ABI and that `map`/`reduce`/`filter`
+  need an explicitly bounded callback/closure contract, hostile tests, and
+  interpreter/WAT parity. Method calls enter a plain-call fallback at
+  `:1996-1998` before the named refusal set, while undefined callees are
+  rejected at `wat-assembler.ts:145-157`; this is inconsistent refusal
+  coverage, not proven silent deletion. Keep the traps. See
+  `private/research/rd/RD-1233-wat-lowering-adjudication-PRIVATE.md`.
+
 ### Current bounded component receipts — 2026-09-20
 
 - [x] Galerina implementation checkpoint is

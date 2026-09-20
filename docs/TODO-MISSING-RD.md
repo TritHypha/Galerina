@@ -572,6 +572,24 @@ locator is not sufficient evidence of a blocker or of completion.
   semantics are not supplied; the Phase-19 fallback is explicitly marked at
   `src/wat-emitter.ts:4528-4534`. Do not turn these into successful output by
   deleting the trap or by treating a stub module as a real implementation.
+- **RD-1233 residual WAT-lowering adjudication:** the single governed Grok
+  attempt is preserved as `REFUSED` with `Max turns reached`, and Astra's
+  independent ruling is `HOLD`. The exact Decimal seams are
+  `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2035-2045`,
+  with f64 mapping at `:218-243`, `FLOAT_WAT_TYPES` at `:953`, and the f64
+  result path at `:4234`; the exact callback/closure refusal is `:2020-2045`
+  and the Phase-19 fallback is `:4503-4534`. The current focused decline
+  control is `tests/wat-decimal-decline.test.mjs:21-42` (**4/4**), but it
+  inspects emitted text and does not execute WAT or test construction.
+  Clearance requires an owner-frozen Decimal representation/ABI, rounding and
+  resource contract, plus a bounded capture-free/effect-free callback ABI for
+  `map`/`reduce`/`filter`, hostile and exhaustion tests, and exact-head
+  interpreter/WAT parity. Method calls enter the plain-call fallback at
+  `wat-emitter.ts:1996-1998` before the named refusal set, while
+  `wat-assembler.ts:145-157` rejects undefined callees; treat this as
+  inconsistent refusal coverage, not proven silent deletion. Keep the
+  fail-closed traps. Exact record:
+  `private/research/rd/RD-1233-wat-lowering-adjudication-PRIVATE.md`.
 - **Galerina test-package conversion-overlay drift:** the bounded TypeScript
   harness work is green, but its package-wide Fungi overlay checks still expose
   two stale source/asset bindings. The primitive check at
