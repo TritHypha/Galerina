@@ -22,6 +22,24 @@ describe("DEFAULT_BENCHMARK_CONFIG — privacy-preserving, bounded defaults", ()
     assert.ok(DEFAULT_BENCHMARK_CONFIG.maxSingleTestSeconds <= DEFAULT_BENCHMARK_CONFIG.maxDurationSeconds);
     assert.deepEqual(codes(validateBenchmarkConfig(DEFAULT_BENCHMARK_CONFIG)), []);
   });
+
+  it("freezes nested defaults and isolates caller-owned clones", () => {
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG), true);
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG.targets), true);
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG.privacy), true);
+    assert.throws(() => { DEFAULT_BENCHMARK_CONFIG.targets.logic = false; }, TypeError);
+    assert.throws(() => { DEFAULT_BENCHMARK_CONFIG.privacy.allowSubmit = true; }, TypeError);
+
+    const clone = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      targets: { ...DEFAULT_BENCHMARK_CONFIG.targets },
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy },
+    };
+    clone.targets.logic = false;
+    clone.privacy.allowSubmit = true;
+    assert.equal(DEFAULT_BENCHMARK_CONFIG.targets.logic, true);
+    assert.equal(DEFAULT_BENCHMARK_CONFIG.privacy.allowSubmit, false);
+  });
 });
 
 describe("validateBenchmarkConfig — bounded, PII-free, non-empty (fail-closed)", () => {

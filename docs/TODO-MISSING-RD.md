@@ -307,6 +307,27 @@ locator is not sufficient evidence of a blocker or of completion.
   semantics are not supplied; the Phase-19 fallback is explicitly marked at
   `src/wat-emitter.ts:4528-4534`. Do not turn these into successful output by
   deleting the trap or by treating a stub module as a real implementation.
+- **Galerina test-package conversion-overlay drift:** the bounded TypeScript
+  harness work is green, but its package-wide Fungi overlay checks still expose
+  two stale source/asset bindings. The primitive check at
+  `packages-ts/galerina-test/tests/conversion-overlay-primitives-fungi.test.mjs:30`
+  requires `SEARCH_TIME_BUDGET_MS = 5_000`, while the current owner source
+  `packages-ts/galerina-tools-myco/src/query/regex-guard.ts:32-35` exports
+  `120_000`; the existing overlay still returns `5000` at
+  `packages-ts/galerina-test/src/self-hosted/conversion-overlays/myco-search-time-budget-ms.fungi:7-9`.
+  Separately, the runner-constant check expects current `packages-ts` paths at
+  `packages-ts/galerina-test/tests/runner-constants-fungi-conversion.test.mjs:32-35`,
+  while the package-owned Fungi asset still returns the retired
+  `packages-galerina` paths at
+  `packages-ts/galerina-test/src/self-hosted/runner-constants.fungi:24-45`;
+  the live TypeScript constants are `packages-ts/galerina-test/src/runners.ts:38-45`.
+  **Fail closed:** do not rebuild or rewrite these `.fungi` assets now. The
+  owner must first settle the current threshold/path contract; clearance is a
+  later bounded asset regeneration with exact source/asset/interpretation
+  receipts after the non-`.fungi` TODOs are complete. The wave-40 formatting
+  anchor was repaired separately at
+  `packages-ts/galerina-test/tests/conversion-overlay-source-decisions-wave-40-fungi.test.mjs:11`
+  and its focused check is **3/3**.
 - **Galerina API-server/network contract:**
   `packages-ts/galerina-framework-api-server/TODO.md:3-8` is open because the
   API-server adapter still documents `ReplayStore.exists/save`, while the

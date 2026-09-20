@@ -211,6 +211,11 @@ test("runE2e: --build uses the build verb", async () => {
 test("DEFAULT_E2E_EXAMPLES is a non-empty, frozen-ish corpus", () => {
   assert.ok(Array.isArray(DEFAULT_E2E_EXAMPLES));
   assert.ok(DEFAULT_E2E_EXAMPLES.length >= 1);
+  assert.equal(Object.isFrozen(DEFAULT_E2E_EXAMPLES), true);
+  assert.throws(() => DEFAULT_E2E_EXAMPLES.push("mutated.fungi"), TypeError);
+  const copy = [...DEFAULT_E2E_EXAMPLES];
+  copy.push("caller-owned.fungi");
+  assert.equal(DEFAULT_E2E_EXAMPLES.includes("caller-owned.fungi"), false);
 });
 
 // ── conformance ──────────────────────────────────────────────────────────────

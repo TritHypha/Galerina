@@ -136,12 +136,12 @@ function compilerFreshnessFailure(
  * `galerina check` (probed 2026-06-23). Override via E2eOptions.examples to point
  * the harness at your own app's entry flows.
  */
-export const DEFAULT_E2E_EXAMPLES: readonly string[] = [
+export const DEFAULT_E2E_EXAMPLES: readonly string[] = Object.freeze([
   "examples/wasm-hello-world/greet.fungi",
   "examples/healthcare/getPatient.fungi",
   "examples/deployment/health-check.fungi",
   "examples/aerospace/updateFlightPath.fungi",
-];
+]);
 
 // ── Result helpers ───────────────────────────────────────────────────────────
 

@@ -1290,9 +1290,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `SKILL_UPDATE` commit exists in the named private skill repository (or in one
   independently pinned skill-head receipt). Three reviews caught and corrected
   invented full hashes that the current structural audit accepted.
-- [ ] Repair exported mutable defaults: decide deep-freeze/copy/factory versus
-  shared-state compatibility for `DEFAULT_E2E_EXAMPLES` and
-  `DEFAULT_BENCHMARK_CONFIG`; add exact mutation/identity vectors.
+- [x] Repair exported mutable defaults: the immutable-singleton policy is now
+  explicit. `packages-ts/galerina-test/src/runners.ts:139-144` freezes
+  `DEFAULT_E2E_EXAMPLES`; `packages-ts/galerina-tools-benchmark/src/index.ts:113-143`
+  recursively freezes `DEFAULT_BENCHMARK_CONFIG`. Mutation refusal and
+  caller-owned clone isolation are covered at
+  `packages-ts/galerina-test/tests/runners.test.mjs:211-218` and
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:26-41`.
+  The focused routes pass **35/35** (one host-specific signal skip) and **10/10**;
+  callers must clone nested config objects before customization.
 - [ ] Repair runner evidence: canonical argv, exact corpus/content provenance,
   exhaustive process causes, output/backpressure/callback failures, bounded
   Boolean-while aggregation, monotonic timing and typed results/counts.

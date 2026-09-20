@@ -110,7 +110,20 @@ export interface BenchmarkSubmitPayload {
   }[];
 }
 
-export const DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = {
+function deepFreeze<T extends object>(value: T): Readonly<T> {
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !("value" in descriptor)) continue;
+    const child = descriptor.value;
+    if (child !== null && typeof child === "object" && !Object.isFrozen(child)) {
+      deepFreeze(child);
+    }
+  }
+  return Object.freeze(value);
+}
+
+/** Immutable process-wide defaults; clone before applying caller-specific changes. */
+export const DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = deepFreeze({
   defaultMode: "light",
   maxDurationSeconds: 180,
   maxSingleTestSeconds: 20,
@@ -134,7 +147,7 @@ export const DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = {
     anonymiseCpuModel: true,
     allowSubmit: false,
   },
-};
+});
 
 // ── runtime contract helpers ──────────────────────────────────────────────────
 // The interfaces above are the type contract; the helpers below enforce it at
