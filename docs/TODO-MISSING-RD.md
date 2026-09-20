@@ -199,14 +199,16 @@ locator is not sufficient evidence of a blocker or of completion.
   re-admission gates. Lyth's owned rows are DONE, REFUSED or HOLD at
   `lyth-weaver/TODO.md:14-18`; no qualifying component TODO is open.
 - **AGENTS capability route:** `AGENTS/docs/TODO.md:32-37` records the
-  canonical Myco refresh as current at the bounded ledger commit. The
-  independent fast graph now matches AGENTS HEAD
+  canonical Myco refresh as current at the bounded ledger commit. The last
+  fresh graph receipt was at AGENTS head
   `677a0b122993318cf4dd8f6ca9e7ae59d73f1853` with **3,582/3,582 nodes**,
-  **6,939/6,939 edges** and zero skipped files; the receipt is recorded at
-  `AGENTS/docs/TODO.md:62-69`. It excludes `docs`, `tools` and several skill
-  trees and has no shareable artifact, so it is navigation evidence only.
-  Source-origin approval and receiving-task installation remain separate owner
-  gates.
+  **6,939/6,939 edges** and zero skipped files. After the AGENTS ledger moved
+  to local head `c68276eb54cefb0a37260b60225734841603093d`, both the canonical fast and moderate refresh
+  attempts still returned `indexed_head_sha=677a...`; this is an external
+  freshness refusal, not current graph evidence. The route also excludes
+  `docs`, `tools` and several skill trees and has no shareable artifact.
+  Refuse current absence/closure claims; source-origin approval and
+  receiving-task installation remain separate owner gates.
 - **AGENTS mixed-EOL admission:** `AGENTS/tools/bounded-tool-batch.mjs:1264`
   rejects the live worktree's mixed tracked-file EOL evidence, reached through
   `observeWorktreeAggregate` at `:1452` and the self-test snapshot at `:1789`.
