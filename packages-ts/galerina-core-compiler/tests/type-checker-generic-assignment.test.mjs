@@ -67,4 +67,23 @@ pure flow caller(a: Array<Int>) -> Void {
       `Expected FUNGI-TYPE-005, got: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("defers an inferred Auto payload at a concrete generic call boundary", () => {
+    const errors = typeErrors(`
+pure flow accept(value: Array<String>) -> Void {
+  return
+}
+
+pure flow caller(value: Array<Auto>) -> Void {
+  accept(value)
+  return
+}
+`);
+
+    assert.deepEqual(
+      errors,
+      [],
+      `Array<Auto> is a deferred payload, not a concrete Array<String> mismatch: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

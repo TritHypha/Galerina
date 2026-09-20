@@ -472,6 +472,12 @@ function genericArgumentsCompatible(
 function isAssignmentCompatible(declared: string, inferred: string): boolean {
   if (declared === inferred) return true;
   if (declared === "Auto" || declared === "" || inferred === "") return true;
+  // An inferred Auto is an intentional erasure/defer marker.  It must not
+  // become a false concrete mismatch when it appears inside a generic payload
+  // such as Array<Auto>; the eventual concrete contract is checked by the
+  // stage that supplies the payload.  This preserves the existing Array<Auto>
+  // corpus-safety rule without weakening known concrete-vs-concrete checks.
+  if (inferred === "Auto") return true;
 
   // TypeId fast-path: if both types are known in the TypeId registry and they differ,
   // they are incompatible (no widening). This avoids string allocation for core types.
@@ -1374,7 +1380,15 @@ class TypeChecker {
           // The body expression of an arm is typically its last child
           const body = arm.children?.[arm.children.length - 1];
           if (body === undefined) return undefined;
-          const bodyType = this.inferType(body);
+          // One-line expression arms are parser-owned `(expr)` blocks.  Unwrap
+          // them only here; globally treating every expression-statement block
+          // as a typed value would turn previously deferred call arguments into
+          // new diagnostics in unrelated source bodies.
+          const bodyExpression = body.kind === "block" && body.value === "(expr)"
+            ? body.children?.[0]
+            : body;
+          if (bodyExpression === undefined) return undefined;
+          const bodyType = this.inferType(bodyExpression);
           if (bodyType === undefined) return undefined;
           armTypes.push(bodyType);
         }
@@ -1406,15 +1420,6 @@ class TypeChecker {
         // Different non-numeric arm types still require a real inference rule;
         // preserve the existing fail-closed deferral until that contract exists.
         return undefined;
-      }
-
-      case "block": {
-        // One-line match arms and expression statements are represented as a
-        // `(expr)` block by the parser.  Preserve the contained expression's
-        // type instead of turning a valid arm into an unknown result.
-        if (node.value !== "(expr)") return undefined;
-        const expression = node.children?.[0];
-        return expression === undefined ? undefined : this.inferType(expression);
       }
 
       default:

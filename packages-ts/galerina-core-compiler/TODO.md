@@ -63,12 +63,21 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     retain their inner type, and numerically compatible arm results join through
     the existing assignment relation (`Int`/`Float` → `Float`). Incompatible
     results remain fail-closed and reach the enclosing mismatch diagnostic.
-    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1366-1418`.
+    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1372-1422`.
     Focused evidence: `tests/type-checker-phase11-wave2.test.mjs:197-263`
     plus parser/domain/interpreter regressions; the combined bounded compiler
     route is **104/104**, parser/domain route **138/138**, and
     interpreter/match route **61/61**. Full unsupported expression inference
     remains open under FUNGI-TYPE-002/005..007.
+
+[x] Bounded inferred-`Auto` generic call compatibility
+    `isAssignmentCompatible` now treats inferred `Auto` as a deferred payload,
+    including nested `Array<Auto>`, at `src/type-checker.ts:472-483`.
+    This closes the false `FUNGI-TYPE-005` diagnostics in the SLIDE G4 adapter
+    (`src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`) without
+    weakening concrete-vs-concrete generic mismatches. Regression coverage is
+    `tests/type-checker-generic-assignment.test.mjs:71-85`; the focused route
+    is **40/40**. Broader unsupported expression inference remains open.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007

@@ -1,5 +1,31 @@
 # TODO
 
+### Exact blocker ledger refresh — 2026-09-20
+
+- [x] The SLIDE G4 false-positive call-site blocker is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:472-483`:
+  inferred `Auto` is now treated as a deferred payload, including nested
+  `Array<Auto>`, instead of being rejected as a concrete generic mismatch.
+  The regression test is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:71-85`;
+  the affected adapter contracts are
+  `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`.
+  Typecheck/build pass; the focused route is **40/40**.
+- [x] The unrelated source-hygiene ratchet baseline was tightened through its
+  explicit regeneration path at
+  `packages-ts/galerina-core-compiler/tests/source-hygiene-null-ratchet.test.mjs:165-187`.
+  The receipt is
+  `packages-ts/galerina-core-compiler/tests/fixtures/null-ratchet-baseline.json`
+  (**256** occurrences, down from **262**); the standalone ratchet is **6/6**.
+- [!] The remaining compiler blocker is broad expression-level inference, not
+  the closed slices above. The fail-closed boundary is
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1035-1425`
+  (`TypeChecker.inferType`) and its consumers at `:1615-1767`; unsupported AST
+  forms return unknown and therefore leave portions of FUNGI-TYPE-002/005-007
+  deferred. Clearance requires a complete expression-kind matrix with both
+  valid and invalid cases, while preserving refusal for genuinely unknown
+  forms. No corpus, queue, signing, or `.fungi` assurance action follows.
+
 ### Current bounded component receipts — 2026-09-20
 
 - [x] Galerina implementation checkpoint is
@@ -52,7 +78,7 @@
   expression position at
   `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778`, unwraps
   expression-arm blocks and joins only assignment-compatible numeric results
-  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1366-1418`.
+  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1422`.
 - [x] Regression evidence is **104/104** for the bounded compiler set,
   **138/138** for parser/domain regressions, and **61/61** for
   interpreter/match/governance regressions. The focused test additions are at
