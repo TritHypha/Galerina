@@ -325,6 +325,20 @@
   precede any choice of refusal, deferral, or diagnostic ownership. See
   `private/research/rd/RD-1251-array-of-heterogeneous-element-adjudication-PRIVATE.md`.
 
+- [!] `RD-1252` confirms that list-literal inference is order-dependent false
+  admission. `packages-ts/galerina-core-compiler/src/type-checker.ts:1147-1154`
+  uses only the first child, so `[1, "nope"]` can pass return and plain-call
+  consumers expecting `Array<Int>`, while `["nope", 1]` takes a different
+  path and is refused. The separate `FUNGI-TYPE-011` loop at
+  `type-checker.ts:2187-2207` covers annotated bindings only and skips unknown
+  element types; it does not cover return/call literals. Astra confirmed the
+  false admission, directional numeric-compatibility issue, and that returning
+  `undefined` would still skip consumers rather than constitute refusal. Keep
+  this at `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization
+  KATs before choosing all-elements inference, unknown/empty policy, or
+  diagnostic precedence. See
+  `private/research/rd/RD-1252-list-literal-first-element-adjudication-PRIVATE.md`.
+
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
   `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
