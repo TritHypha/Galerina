@@ -43,12 +43,31 @@ test("parseCounts: a missing line yields null (never throws, never guesses)", ()
   });
 });
 
+test("parseCounts: duplicate, malformed and unsafe summaries refuse", () => {
+  assert.deepEqual(parseCounts("# tests 7\n# tests 7\n# pass 7\n# fail 0"), {
+    tests: null,
+    pass: 7,
+    fail: 0,
+  });
+  assert.deepEqual(parseCounts("# tests 7 spoofed\n# pass NaN\n# fail 0"), {
+    tests: null,
+    pass: null,
+    fail: 0,
+  });
+  assert.equal(parseCounts("# tests 9007199254740992").tests, null);
+});
+
 test("parseAggregateTotal: reads run-all-tests.cjs's '<N> tests total' line", () => {
   assert.equal(
     parseAggregateTotal("1/1 packages passed · 4993 tests total\n"),
     4993,
   );
   assert.equal(parseAggregateTotal("no total here"), null);
+});
+
+test("parseAggregateTotal: duplicate or unsafe totals refuse", () => {
+  assert.equal(parseAggregateTotal("1 tests total\n2 tests total"), null);
+  assert.equal(parseAggregateTotal("9007199254740992 tests total"), null);
 });
 
 // ── resolveRoot / resolveTarget (fail-closed) ────────────────────────────────

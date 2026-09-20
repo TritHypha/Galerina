@@ -1301,7 +1301,14 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   callers must clone nested config objects before customization.
 - [ ] Repair runner evidence: canonical argv, exact corpus/content provenance,
   exhaustive process causes, output/backpressure/callback failures, bounded
-  Boolean-while aggregation, monotonic timing and typed results/counts.
+  Boolean-while aggregation, monotonic timing and typed results/counts. The
+  spawn-cause and callback slice is closed at
+  `packages-ts/galerina-test/src/spawn.ts:11-120` and
+  `packages-ts/galerina-test/src/runners.ts:159-170`; duplicate/malformed/
+  unsafe count summaries now refuse at `packages-ts/galerina-test/src/parse.ts:14-43`
+  with **10/10** foundation tests plus **35/35** runner/spawn tests (one
+  Windows signal skip). Canonical argv/provenance, complete freshness framing,
+  and the remaining aggregation contract are still open.
 - [ ] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must

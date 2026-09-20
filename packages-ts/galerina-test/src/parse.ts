@@ -13,11 +13,17 @@ import type { TestCounts } from "./types.js";
  */
 export function parseCounts(output: string): TestCounts {
   const grab = (label: string): number | null => {
-    // `ℹ` is the spec-reporter's ℹ marker; `#` is the TAP marker.
-    const m = output.match(
-      new RegExp(`(?:^|\\n)\\s*(?:#|\\u2139)\\s*${label}\\s+(\\d+)`),
-    );
-    return m ? Number(m[1]) : null;
+    // `ℹ` is the spec-reporter's ℹ marker; `#` is the TAP marker. Require a
+    // complete summary line and one unique value; progress/spoofed duplicates
+    // must not become evidence by first-match accident.
+    const matches = [...output.matchAll(
+      new RegExp(`^\\s*(?:#|\\u2139)\\s*${label}\\s+([0-9]{1,16})\\s*$`, "gmu"),
+    )];
+    if (matches.length !== 1) return null;
+    const raw = matches[0]?.[1];
+    if (raw === undefined) return null;
+    const value = Number(raw);
+    return Number.isSafeInteger(value) ? value : null;
   };
   return { tests: grab("tests"), pass: grab("pass"), fail: grab("fail") };
 }
@@ -28,6 +34,10 @@ export function parseCounts(output: string): TestCounts {
  * parseCounts alone returns null for a unit run). Returns null when absent.
  */
 export function parseAggregateTotal(output: string): number | null {
-  const m = output.match(/(\d+)\s+tests total/);
-  return m ? Number(m[1]) : null;
+  const matches = [...output.matchAll(/^[^\r\n]*?([0-9]{1,16})\s+tests total\s*$/gmu)];
+  if (matches.length !== 1) return null;
+  const raw = matches[0]?.[1];
+  if (raw === undefined) return null;
+  const value = Number(raw);
+  return Number.isSafeInteger(value) ? value : null;
 }
