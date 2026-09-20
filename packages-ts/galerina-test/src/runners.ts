@@ -16,6 +16,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import { join, relative } from "node:path";
 import { resolveRoot, resolveTarget } from "./paths.js";
 import { runNode } from "./spawn.js";
@@ -235,7 +236,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
   }
 
   const verb = opts.build ? "build" : "check";
-  const t0 = Date.now();
+  const t0 = performance.now();
   let failures = 0;
   const invocations: SpawnInvocation[] = [];
   for (const entry of entries) {
@@ -249,7 +250,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
     invocations.push(r.invocation);
     if (r.exitCode !== 0) failures++;
   }
-  const durationMs = Date.now() - t0;
+  const durationMs = performance.now() - t0;
   const ok = failures === 0;
   return {
     kind: "e2e",
@@ -478,14 +479,14 @@ export async function runAll(opts: AllOptions = {}): Promise<CheckResult> {
     runFidelity,
     runSlide,
   ];
-  const t0 = Date.now();
+  const t0 = performance.now();
   const children: CheckResult[] = [];
   for (const run of order) {
     const res = await run(opts);
     children.push(res);
     if (!res.ok && opts.bailScope) break;
   }
-  const durationMs = Date.now() - t0;
+  const durationMs = performance.now() - t0;
   const failed = children.filter((c) => !c.ok).map((c) => c.kind);
   const ok = failed.length === 0;
   return {

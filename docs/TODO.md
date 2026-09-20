@@ -1635,7 +1635,13 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `tests/spawn-outcomes.test.mjs:54-63` verifies the boundary. The focused
   harness route is **36/36** with one host-specific signal skip. Exact
   corpus/content provenance, complete freshness framing, and the remaining
-  aggregation contract are still open.
+  aggregation contract are still open. The monotonic-duration sub-slice is now
+  closed: `packages-ts/galerina-test/src/spawn.ts:54,86` and
+  `packages-ts/galerina-test/src/runners.ts:239,253,482,489` use
+  `performance.now()`; wall-clock rollback regressions at
+  `packages-ts/galerina-test/tests/spawn-outcomes.test.mjs:66-77` and
+  `packages-ts/galerina-test/tests/runners.test.mjs:184-198` pass. This closes
+  timing only; it does not close provenance, freshness or aggregate semantics.
 - [!] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must

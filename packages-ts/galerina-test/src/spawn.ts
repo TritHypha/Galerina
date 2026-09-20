@@ -6,6 +6,7 @@
 // fail-closed exit-code handling live here, in one auditable spot.
 
 import { spawnSync } from "node:child_process";
+import { performance } from "node:perf_hooks";
 import type { HarnessOptions, SpawnInvocation } from "./types.js";
 
 export interface SpawnOutcome {
@@ -50,7 +51,7 @@ export function runNode(
   opts: HarnessOptions = {},
 ): SpawnOutcome {
   const live = opts.inheritStdio === true;
-  const t0 = Date.now();
+  const t0 = performance.now();
   const invocation: SpawnInvocation = Object.freeze({
     executable: process.execPath,
     argv: Object.freeze([...args]),
@@ -82,7 +83,7 @@ export function runNode(
     maxBuffer: requestedOutputLimit,
     stdio: live ? ["ignore", "inherit", "inherit"] : ["ignore", "pipe", "pipe"],
   });
-  const durationMs = Date.now() - t0;
+  const durationMs = performance.now() - t0;
   const stdout = live ? "" : r.stdout ?? "";
   const stderr = live ? "" : r.stderr ?? "";
   const output = `${stdout}\n${stderr}`;

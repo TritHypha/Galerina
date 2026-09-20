@@ -181,6 +181,21 @@ test("runE2e: passes when every example compiles clean", async () => {
   assert.match(res.detail, /1\/1 examples checked clean/);
 });
 
+test("runE2e duration does not become negative when the wall clock moves backwards", async () => {
+  const root = fullWorkspace();
+  const originalNow = Date.now;
+  let calls = 0;
+  Date.now = () => (calls++ === 0 ? 1000 : 0);
+  try {
+    const res = await runE2e({ rootDir: root, examples: ["examples/good.fungi"] });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.equal(Number.isFinite(res.durationMs), true);
+    assert.ok(res.durationMs >= 0, `duration must be non-negative: ${res.durationMs}`);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test("runE2e: one failing example fails the whole check", async () => {
   const root = fullWorkspace();
   const res = await runE2e({

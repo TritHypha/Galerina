@@ -63,6 +63,19 @@ test("retains the exact executable, argv vector and cwd separately from display 
   assert.ok(Object.isFrozen(result.invocation.argv));
 });
 
+test("runNode duration does not become negative when the wall clock moves backwards", () => {
+  const originalNow = Date.now;
+  let calls = 0;
+  Date.now = () => (calls++ === 0 ? 1000 : 0);
+  try {
+    const result = runNode(["-e", "process.stdout.write(\"ok\")"], PACKAGE_ROOT);
+    assert.equal(Number.isFinite(result.durationMs), true);
+    assert.ok(result.durationMs >= 0, `duration must be non-negative: ${result.durationMs}`);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test("child execution removes the parent node:test context marker", () => {
   const result = runNode(
     ["-e", "process.stdout.write(process.env.NODE_TEST_CONTEXT === undefined ? \"unset\" : \"present\")"],
