@@ -164,4 +164,38 @@ pure flow process() -> Processed {
 
     assert.deepEqual(errors, [], `error propagation must expose the aliased Ok payload: ${errors.map((error) => error.code).join(", ")}`);
   });
+
+  it("retains Array<T> and Option<T> through bounded list methods", () => {
+    const errors = typeErrors(`
+pure flow listMethods() -> Array<Int> {
+  let values: Array<Int> = [1, 2]
+  let first: Option<Int> = values.first()
+  let last: Option<Int> = values.last()
+  let appended: Array<Int> = values.append(3)
+  let pushed: Array<Int> = values.push(4)
+  return pushed
+}
+`);
+
+    assert.deepEqual(errors, [], `bounded list-method returns must retain their element type: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Array<T> and Option<T> list-method payloads", () => {
+    const errors = typeErrors(`
+pure flow badListMethods() -> Array<Int> {
+  let values: Array<Int> = [1, 2]
+  let first: Option<String> = values.first()
+  let last: Option<String> = values.last()
+  let appended: Array<String> = values.append(3)
+  let pushed: Array<String> = values.push(4)
+  return values
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      4,
+      `each list-method payload mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

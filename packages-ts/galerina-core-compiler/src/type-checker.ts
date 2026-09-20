@@ -1243,6 +1243,12 @@ class TypeChecker {
         if (receiverType?.startsWith("Array") || receiverType === "Array") {
           if (method === "length" || method === "count") return "Int";
           if (method === "isEmpty") return "Bool";
+          if (method === "first" || method === "last") {
+            const m = receiverType.match(/^Array<(.+)>$/);
+            if (m?.[1] !== undefined) return `Option<${m[1].trim()}>`;
+            return "Option";
+          }
+          if (method === "append" || method === "push") return receiverType ?? "Array";
           if (method === "get") {
             // Array<T>.get(i) → Option<T> — the bounds-safe accessor returns Option at runtime (callers
             // `match { Some(x) => … None => … }`), so the type must too. Mirrors Map<K,V>.get() → Option<V>,
