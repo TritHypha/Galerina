@@ -395,7 +395,8 @@ locator is not sufficient evidence of a blocker or of completion.
   attempt completed with `COMPLETE_NON_AUTHORITATIVE`, and an independent Astra
   review returned `HOLD`. The exact record is
   `ZTF-Knowledge-Bases/private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
-  The current head is `6afcf74ef0ff1c577ef5cf675b2589acca975786`; the fresh
+  The current compiler source head is `6afcf74ef0ff1c577ef5cf675b2589acca975786`;
+  the fresh
   focused route is **139/139**, but that does not clear the blocker. The exact
   unresolved source boundary remains
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`

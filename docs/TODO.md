@@ -2,7 +2,7 @@
 
 ### Current exact-head compiler batch — 2026-09-20
 
-- [x] The live Galerina head is
+- [x] The live Galerina compiler source head is
   `6afcf74ef0ff1c577ef5cf675b2589acca975786`. The bounded compiler source
   batch is represented by commits `0863e73f6`, `20bf92b4b`, and `d4dd8e120`;
   the current head adds the exact blocker receipt and the current R&D linkage.
