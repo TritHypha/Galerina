@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   DEFAULT_BENCHMARK_CONFIG,
+  captureBenchmarkReport,
   validateBenchmarkConfig,
   validateBenchmarkReport,
   isBenchmarkReportShareable,
@@ -160,6 +161,23 @@ describe("isBenchmarkReportShareable — default-deny", () => {
     };
     const notShareable = { ...cleanReport, privacy: { ...cleanReport.privacy, shareable: false } };
     assert.equal(isBenchmarkReportShareable(notShareable, optIn), false);
+  });
+
+  it("captures a detached immutable report snapshot", () => {
+    const captured = captureBenchmarkReport(cleanReport);
+    assert.deepEqual(captured.diagnostics, []);
+    assert.ok(captured.report);
+    cleanReport.system.cpuCoresBucket = "mutated";
+    cleanReport.summary.logic = "failed";
+    cleanReport.scores.overall = 0;
+    assert.equal(captured.report.system.cpuCoresBucket, "8-16");
+    assert.equal(captured.report.summary.logic, "passed");
+    assert.equal(captured.report.scores.overall, 42);
+    assert.equal(Object.isFrozen(captured.report), true);
+    assert.equal(Object.isFrozen(captured.report.system), true);
+    assert.equal(Object.isFrozen(captured.report.summary), true);
+    assert.equal(Object.isFrozen(captured.report.scores), true);
+    assert.equal(Object.isFrozen(captured.report.tests), true);
   });
 
   it("refuses null opticalIo, non-finite scores, surplus fields and hostile rows", () => {

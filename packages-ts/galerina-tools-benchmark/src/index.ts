@@ -428,6 +428,69 @@ export function validateBenchmarkReport(
   return diagnostics;
 }
 
+export interface BenchmarkReportCapture {
+  readonly report?: BenchmarkReport;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+/** Validate once, then return a detached immutable report for downstream decisions/receipts. */
+export function captureBenchmarkReport(report: unknown, path = "report"): BenchmarkReportCapture {
+  const diagnostics = validateBenchmarkReport(report, path);
+  if (diagnostics.some((diagnostic) => diagnostic.severity === "error") || !isRecord(report)) {
+    return { diagnostics: Object.freeze([...diagnostics]) };
+  }
+
+  const systemSource = reportRead(report, "system") as UnknownRecord;
+  const system: Record<string, string> = {};
+  for (const key of BENCHMARK_SYSTEM_KEYS) {
+    if (hasOwn(systemSource, key)) system[key] = reportRead(systemSource, key) as string;
+  }
+
+  const summarySource = reportRead(report, "summary") as UnknownRecord;
+  const summary: Record<string, BenchmarkStatus> = {};
+  for (const key of BENCHMARK_SUMMARY_KEYS) summary[key] = reportRead(summarySource, key) as BenchmarkStatus;
+
+  const scoresSource = reportRead(report, "scores") as UnknownRecord;
+  const scores: Record<string, number> = {};
+  for (const key of BENCHMARK_SCORE_KEYS) {
+    if (hasOwn(scoresSource, key)) scores[key] = reportRead(scoresSource, key) as number;
+  }
+
+  const testsSource = reportRead(report, "tests") as readonly UnknownRecord[];
+  const tests = testsSource.map((test) => {
+    const copy: Record<string, unknown> = {};
+    for (const key of BENCHMARK_TEST_KEYS) {
+      if (hasOwn(test, key)) copy[key] = reportRead(test, key);
+    }
+    return Object.freeze(copy) as unknown as BenchmarkTestResult;
+  });
+
+  const privacySource = reportRead(report, "privacy") as UnknownRecord;
+  const privacy = Object.freeze({
+    shareable: reportRead(privacySource, "shareable") as boolean,
+    containsPersonalData: reportRead(privacySource, "containsPersonalData") as false,
+    machineId: reportRead(privacySource, "machineId") as "not_included",
+    hostname: reportRead(privacySource, "hostname") as "not_included",
+    username: reportRead(privacySource, "username") as "not_included",
+    projectPath: reportRead(privacySource, "projectPath") as "not_included",
+  });
+
+  const snapshot: BenchmarkReport = Object.freeze({
+    schema: reportRead(report, "schema") as "Galerina.benchmark.report.v1",
+    benchmarkId: reportRead(report, "benchmarkId") as string,
+    mode: reportRead(report, "mode") as BenchmarkMode,
+    trigger: reportRead(report, "trigger") as BenchmarkTrigger,
+    loVersion: reportRead(report, "loVersion") as string,
+    system: Object.freeze(system) as unknown as BenchmarkSystemInfo,
+    durationMs: reportRead(report, "durationMs") as number,
+    summary: Object.freeze(summary) as Readonly<Record<BenchmarkTarget, BenchmarkStatus>>,
+    scores: Object.freeze(scores) as unknown as BenchmarkScores,
+    tests: Object.freeze(tests),
+    privacy,
+  });
+  return { report: snapshot, diagnostics: Object.freeze([]) };
+}
+
 // A benchmark budget must be positive and internally consistent (a single test
 // cannot be allowed to outlast the whole run), telemetry must be PII-free, and at
 // least one target must be enabled or the run does nothing.
@@ -594,9 +657,9 @@ export function isBenchmarkReportShareable(
   config: BenchmarkConfig,
 ): boolean {
   if (!isRecord(config) || !isRecord(config.privacy) || config.privacy.allowSubmit !== true) return false;
-  if (validateBenchmarkReport(report).some((diagnostic) => diagnostic.severity === "error")) return false;
-  if (!isRecord(report) || !isRecord(report.privacy)) return false;
-  const p = report.privacy;
+  const captured = captureBenchmarkReport(report);
+  if (captured.report === undefined) return false;
+  const p = captured.report.privacy;
   return (
     p.shareable === true &&
     p.containsPersonalData === false &&

@@ -470,18 +470,17 @@ locator is not sufficient evidence of a blocker or of completion.
   non-finite numbers, sparse/oversized test arrays, invalid target/privacy
   literals and explicit `null` scores at
   `packages-ts/galerina-tools-benchmark/src/index.ts:72-431`; the example no
-  longer emits `opticalIo:null`. The focused package route is **13/13** at
-  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-169`.
+  longer emits `opticalIo:null`. `captureBenchmarkReport` now returns a
+  detached immutable snapshot at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:436-491`, and the
+  shareability gate binds its decision to that snapshot at `:655-672`. The
+  focused package route is **14/14** at
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-188`.
   Absence of optional `scores.opticalIo` remains valid; explicit `null` is
-  refused. `privacy.shareable === true` is still required by the gate at
-  `packages-ts/galerina-tools-benchmark/src/index.ts:592-608`. **Residual
-  blocker:** no detached immutable report snapshot is exposed to downstream
-  consumers; the current validator/gate only proves the caller-owned report
-  shape at the decision point. **Fail closed:** do not treat a caller-owned
-  mutable report as a durable receipt; clearance requires an owner-approved
-  snapshot/ownership contract, a detached/frozen return surface, and mutation
-  regression vectors proving the admitted result cannot change through input
-  aliases.
+  refused. `privacy.shareable === true` remains required. **Closed for this
+  boundary:** downstream consumers now have an explicit capture result and
+  must use its detached snapshot rather than retain caller-owned input. This
+  does not authorize platform/durability or submission work.
 - **Galerina API-server/network contract:**
   `packages-ts/galerina-framework-api-server/TODO.md:3-8` is open because the
   API-server adapter still documents `ReplayStore.exists/save`, while the

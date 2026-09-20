@@ -1323,12 +1323,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   malformed/accessor/proxy records, surplus/missing keys, non-finite numbers,
   invalid target/privacy literals, sparse/oversized test arrays and explicit
   `null` scores at `packages-ts/galerina-tools-benchmark/src/index.ts:72-431`;
-  `shareable:false` is binding at `src/index.ts:592-608`. The focused package
-  route is **13/13** at
-  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-169`.
+  `shareable:false` is binding at `src/index.ts:655-672`. The focused package
+  route is **14/14** at
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-188`.
   Absence of optional `opticalIo` remains valid; explicit `null` is refused and
-  the example no longer emits it. Residual: the public report type and gate do
-  not yet expose a detached immutable report snapshot for downstream consumers.
+  the example no longer emits it. `captureBenchmarkReport` at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:436-491` returns a
+  detached immutable snapshot and `isBenchmarkReportShareable` binds its
+  decision to that snapshot. The focused route is now **14/14**; downstream
+  consumers must use the capture result rather than retain caller-owned input.
 - [x] Publish all registered owners individually and pass the complete 19-check
   matrix: **1,488/1,488** executable-family paths, **149** source Fungi files,
   graph **9,900 nodes / 10,039 edges / 0 violations**, semantic **3/3** with
