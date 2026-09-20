@@ -140,8 +140,11 @@ not clear any blocker or mint a new R&D record.
 
 The R&D metadata query remains refused because tracked private RD sources are
 dirty. That limits an exhaustive current-coverage claim, but it does not block
-source-supported implementation slices. The code graph was refreshed at the
-current Galerina head before the JS slice was selected.
+source-supported implementation slices. The code graph receipt is indexed at
+source head `345a6d2ac459315441432b5d7fbeb01afa734e36`. The later Galerina
+commits `7543a8a68` and `ec92e4e06` are documentation-only and the index
+explicitly excludes `docs`, so the source graph remains aligned; refresh it
+again after the next source-code commit.
 
 If Astra or the bridge produces a genuinely new technical result, create a new
 KB-owned `RD-*` record for that issue before relying on it. The record must contain
