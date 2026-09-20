@@ -70,7 +70,7 @@ test("component health counts the benchmark package's governed test/ surface", (
     (row) => row.item === "Independent SLIDE backend",
   );
   assert.ok(slide);
-  assert.match(slide.detail, /984\/984 across 97 suites/);
+  assert.match(slide.detail, /1,053 pass \/ 0 fail \/ 9 cancelled/);
   assert.match(slide.detail, /caller-owned authentication refuses/);
   assert.doesNotMatch(slide.detail, /authenticated authorizing candidate/);
 
