@@ -2769,6 +2769,14 @@ class Parser {
       return this.parseRequirementExpr();
     }
 
+    // `match` is also a value-producing expression (for example, on the RHS
+    // of a binding or directly after `return`).  The statement dispatcher
+    // already handles standalone matches; admitting it here keeps the AST
+    // shape shared by statement and expression consumers.
+    if (tok.kind === "keyword" && tok.value === "match") {
+      return this.parseMatchExpr();
+    }
+
     // Grouped expression
     if (tok.kind === "symbol" && tok.value === "(") {
       this.advance();

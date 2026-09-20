@@ -230,6 +230,36 @@ flow classify(x: Result<String, String>) -> Int {
       `Unexpected FUNGI-TYPE-002 for match with all-Int arms`,
     );
   });
+
+  it("widens numerically compatible match arms to Float", () => {
+    const result = parseAndCheck(`
+flow classify(x: Result<String, String>) -> Float {
+  return match x {
+    Ok(v) => 0
+    Err(e) => 1.5
+  }
+}
+`);
+    assert.ok(
+      !hasDiag(result, "FUNGI-TYPE-008"),
+      `Numeric match arms should widen to Float, got: ${result.diagnostics.map((d) => d.code + ": " + d.message).join("; ")}`,
+    );
+  });
+
+  it("does not defer an incompatible numeric match result", () => {
+    const result = parseAndCheck(`
+flow classify(x: Result<String, String>) -> String {
+  return match x {
+    Ok(v) => 0
+    Err(e) => 1.5
+  }
+}
+`);
+    assert.ok(
+      hasDiag(result, "FUNGI-TYPE-008"),
+      `Expected FUNGI-TYPE-008 for Float match result returned as String, got: ${result.diagnostics.map((d) => d.code + ": " + d.message).join("; ")}`,
+    );
+  });
 });
 
 // ── Task 4: FUNGI-TYPE-002 — protected Email assigned to protected Email ────────

@@ -1382,7 +1382,39 @@ class TypeChecker {
         if (armTypes.length === 0) return undefined;
         const firstType = armTypes[0]!;
         const allSame = armTypes.every((t) => t === firstType);
-        return allSame ? firstType : undefined;
+        if (allSame) return firstType;
+
+        // A match is an expression, so compatible numeric arms need the same
+        // common-type widening as an assignment or binary expression.  Without
+        // this bounded join, `Int` and `Float` arms become `undefined` and the
+        // enclosing return/binding check silently defers instead of validating
+        // the actual result.  Keep the join conservative: only admit a common
+        // numeric type that the existing assignment relation already accepts.
+        if (armTypes.every((type) => NUMERIC_TYPES.has(type))) {
+          const candidate = armTypes.includes("Decimal")
+            ? "Decimal"
+            : armTypes.includes("Float")
+              ? "Float"
+              : armTypes.includes("Int64")
+                ? "Int64"
+                : "Int";
+          if (armTypes.every((type) => isAssignmentCompatible(candidate, type))) {
+            return candidate;
+          }
+        }
+
+        // Different non-numeric arm types still require a real inference rule;
+        // preserve the existing fail-closed deferral until that contract exists.
+        return undefined;
+      }
+
+      case "block": {
+        // One-line match arms and expression statements are represented as a
+        // `(expr)` block by the parser.  Preserve the contained expression's
+        // type instead of turning a valid arm into an unknown result.
+        if (node.value !== "(expr)") return undefined;
+        const expression = node.children?.[0];
+        return expression === undefined ? undefined : this.inferType(expression);
       }
 
       default:
