@@ -1435,10 +1435,20 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   sparse/wrong-class arrays and copied receipt-bound report output. Delivered in
   `packages-ts/galerina-target-js/src/index.ts` with **16/16** focused contract
   tests at the current working head; compiler wiring remains separate.
-- [ ] **Priority native border repair:** exact-decode target, artifact and
-  bridge records; capture once; bound arrays/text; define canonical path and
-  containment policy; bind selected ABI/profile to the exact artifact, target,
-  digest and VOK evidence; return one immutable report snapshot.
+- [x] **Priority native border repair — bounded decoder slice:** exact-decode
+  target, artifact, bridge and array records, capture own data once, reject
+  inherited/accessor/proxy/custom/sparse/surplus inputs, bound arrays, and
+  return one detached immutable report snapshot. Source locators are
+  `packages-ts/galerina-target-native/src/index.ts:85-165`, `:173-277`,
+  `:369-443`, `:445-484`; hostile and retained-alias regressions are at
+  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:42-67`,
+  `:102-157`. Independent package verification passes **12/12**.
+- [ ] **Remaining native admission blocker:** the decoded artifact path is only
+  required to be non-empty at
+  `packages-ts/galerina-target-native/src/index.ts:340-367`; canonical path
+  containment and binding of selected ABI/profile to exact artifact, target,
+  digest and VOK evidence are not source-defined or implemented. Do not mark
+  native validation promotable until those contracts and owner evidence exist.
 - [ ] Replace the five legacy `Galerina_NATIVE_*` diagnostic codes with owned
   live `FUNGI-CATEGORY-NNN` registry entries before native validation can be
   promoted beyond planning evidence.

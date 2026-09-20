@@ -11,5 +11,9 @@
 [ ] Define native artifact report format
 [ ] Define machine profile bridge handoff rules
 [ ] Add examples
-[ ] Add tests
+[x] Add tests
+[x] Add the bounded fail-closed runtime own-data decoder and detached immutable
+    report snapshot; hostile records, arrays and retained-alias controls pass
+    in `src/index.ts:85-165`, `:173-277`, `:369-443`, `:445-484` and
+    `tests/native-contracts.test.mjs:42-67`, `:102-157`.
 ```
