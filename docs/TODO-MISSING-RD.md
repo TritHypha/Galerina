@@ -300,6 +300,24 @@ locator is not sufficient evidence of a blocker or of completion.
   semantics are not supplied; the Phase-19 fallback is explicitly marked at
   `src/wat-emitter.ts:4528-4534`. Do not turn these into successful output by
   deleting the trap or by treating a stub module as a real implementation.
+- **Galerina API-server/network contract:**
+  `packages-ts/galerina-framework-api-server/TODO.md:3-8` is open because the
+  API-server adapter still documents `ReplayStore.exists/save`, while the
+  canonical network contract is `ReplayStore.has/put` at
+  `packages-ts/galerina-core-network/README.md:360-367`. The same mismatch is
+  stated in the API-server README at `README.md:18-31` and repeated by its
+  scaffold contract at `README.md:1528-1537`. **Fail closed:** do not implement
+  or mark the adapter complete until the owner chooses the canonical names or
+  publishes an explicit adapter mapping, then supplies matching source and
+  tests for replay expiry and idempotency behavior.
+- **Galerina docs contract-type expansion:**
+  `packages-ts/galerina-docs/TODO.md:12-18` leaves request/response component
+  schemas as placeholders because the generator's `contractTypePlaceholder()`
+  at `packages-ts/galerina-docs/src/openapi.ts:91-99` has no governed
+  `types {}` export to consume. **Fail closed:** do not infer schemas from type
+  names or hand-author a route model; clear this only when the compiler/app
+  kernel publishes an owned contract-type export and the docs package adds
+  source-backed schema and negative validation tests.
 - **Galerina compiler architecture items:**
   The remaining Stage-B parity, governed JSON codec, and crypto-provider move
   are tracked at `packages-ts/galerina-core-compiler/TODO.md:67-79`; they need
