@@ -99,6 +99,34 @@ test("includePrometheus exposes app-ops text at /metrics/prometheus", async () =
   assert.match(dec.decode(res.body), /app_requests_total/);
 });
 
+test("basePath emits one canonical prefix and rejects ambiguous or hostile paths", () => {
+  const clean = observabilityRoutes({
+    registry: new HealthRegistry(),
+    metrics: new MetricsCollector(),
+    basePath: "actuator/",
+  });
+  assert.equal(clean.routes[0].path, "/actuator/health/live");
+
+  const invalid = [
+    "//actuator//",
+    "///",
+    "/actuator/../admin",
+    "/actuator?token=secret",
+    "/actuator#fragment",
+    "/actuator\\admin",
+    "/actuátor",
+    `/a${"x".repeat(200)}`,
+    "/actuator/\u0000",
+  ];
+  for (const basePath of invalid) {
+    assert.throws(
+      () => observabilityRoutes({ registry: new HealthRegistry(), metrics: new MetricsCollector(), basePath }),
+      /basePath/,
+      basePath,
+    );
+  }
+});
+
 test("instrumentDispatch records counts AND latency for handled requests", async () => {
   const metrics = new MetricsCollector();
   const dispatch = instrumentDispatch(

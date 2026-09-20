@@ -263,8 +263,26 @@ async function failSafe(fn: () => Promise<HandlerResult>): Promise<HandlerResult
 /** Normalise a base path: "" stays "", otherwise ensure a single leading slash and no trailing slash. */
 function normaliseBase(base: string | undefined): string {
   if (base === undefined || base === "" || base === "/") return "";
-  let b = base.trim();
+  if (typeof base !== "string") {
+    throw new TypeError("basePath must be a String");
+  }
+  if (base !== base.trim()) {
+    throw new TypeError("basePath must not have surrounding whitespace");
+  }
+  let b = base;
   if (!b.startsWith("/")) b = `/${b}`;
+  if (b.length > 200) {
+    throw new RangeError("basePath exceeds the 200-character limit");
+  }
+  if (/[\u0000-\u001F\u007F]/u.test(b) || /[?#\\]/u.test(b) || /[^\x00-\x7F]/u.test(b)) {
+    throw new TypeError("basePath contains a control, query, fragment, backslash or non-ASCII character");
+  }
+  if (b.includes("//")) {
+    throw new TypeError("basePath contains an ambiguous repeated slash");
+  }
   if (b.endsWith("/")) b = b.slice(0, -1);
+  if (b.slice(1).split("/").some((segment) => segment === "." || segment === "..")) {
+    throw new TypeError("basePath contains a dot segment");
+  }
   return b;
 }

@@ -1609,10 +1609,13 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   routes are public and return arbitrary component `detail` verbatim. Publish a
   closed status-only schema; retain diagnostic detail behind authenticated,
   redacted access.
-- [ ] Refuse ambiguous observability base paths. `//actuator//` and `///`
-  currently produce repeated-slash routes despite the single-leading and
-  no-trailing contract. Cover dot segments, controls, query/fragment, backslash,
-  Unicode and physical text limits.
+- [x] Refuse ambiguous observability base paths. `packages-ts/galerina-observability/src/kernel-integration.ts:264-287`
+  now rejects repeated slashes, dot segments, controls, query/fragment,
+  backslash, non-ASCII text, surrounding whitespace and prefixes over 200
+  characters while preserving one canonical leading/trailing form. Direct
+  route-surface vectors at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:102-127`
+  pass; the focused kernel/logger route is **25/25** with clean typecheck/build.
 - [ ] Enforce the documented mutual exclusion between `auditSink` and
   `instrument`; the current active bundle exposes both and can double-count.
   Stabilize `failSafe` to one tagged public response schema.
