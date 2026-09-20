@@ -1,5 +1,20 @@
 # TODO
 
+### Current exact-head compiler batch — 2026-09-20
+
+- [x] The live Galerina head is
+  `55be426b0229bfdafe6c886c4920194857c7cfd1`. The bounded compiler source
+  batch is represented by commits `0863e73f6`, `20bf92b4b`, and `d4dd8e120`;
+  the current head adds only the exact blocker receipt in `55be426b0`.
+- [x] `npm run build` passes. The explicit type-checker, record, option,
+  generic, and phase-11 route passes **139/139**; the combined collection,
+  interpreter, and generic route passes **138/138**. The AGENTS anti-drift
+  document check and `git diff --check` also pass.
+- [!] This is bounded source/compiler evidence only. Broad expression
+  inference, WAT lowering, SLIDE/VOK authority, Lyth admission, corpus
+  assurance, queue regeneration, signing, and `.fungi` generation remain
+  held by the exact blockers below.
+
 ### Exact blocker ledger refresh — 2026-09-20
 
 - [x] The SLIDE G4 false-positive call-site blocker is closed at
