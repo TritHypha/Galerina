@@ -171,6 +171,39 @@ assurance. Those remain later gates after the component work is complete.
   `_CORPUS-20260912-RESULTS-TABLE-PRIVATE.md` as the pending 126-record R&D
   inventory, not as completed semantic or authority evidence.
 
+### M-RD-011 — Galerina native artifact admission — RD-1241
+
+- **Exact blocker:** `packages-ts/galerina-target-native/src/index.ts:340-367`
+  checks only that the artifact path has non-zero trimmed length. The package
+  does not define canonical root containment, file identity, replacement/race
+  behavior, digest binding, VOK evidence binding, or physical/native authority.
+  `NativeArtifact` has only path, target and format at `src/index.ts:3-25,209-235`;
+  bridge fields are separately decoded at `:237-277` without per-artifact
+  binding.
+- **Fresh evidence:** the bounded package route is **12/12 pass** with clean
+  typecheck/build. Tests at
+  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:20-157`
+  cover exact planning decode, hostile records/arrays, warnings and frozen
+  snapshots, but not containment, replacement races, ABI/profile binding,
+  digest/VOK identity or the 1,024-entry boundary.
+- **Decision:** `RD-1241` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The owner must
+  freeze the allowed root/path model, artifact identity, target/ABI/profile
+  relationship, digest/VOK evidence and refusal representation. Absolute-path,
+  dot-segment and alternate-separator rejection remain policy choices until
+  the owner selects them. Ordinary bounded implementation follows that
+  decision; this RD does not authorize native execution or evidence authority.
+- **Correction:** source emits six legacy `Galerina_NATIVE_*` codes at
+  `src/index.ts:65,301,311,320,349,358`, while the TODO previously said five.
+  Correct that documentation count separately from governed registry migration.
+- **Evidence:** private record
+  `private/research/rd/RD-1241-native-artifact-admission-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T103049Z-rd-1241-native-artifact-admission-private/`.
+- **Safe continuation:** keep this admission TODO open and continue with the
+  next concrete component TODO. Do not infer native, VOK, digest, physical,
+  queue, signing, corpus or `.fungi` assurance from the 12/12 route.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile

@@ -1837,15 +1837,19 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `:369-443`, `:445-484`; hostile and retained-alias regressions are at
   `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:42-67`,
   `:102-157`. Independent package verification passes **12/12**.
-- [ ] **Remaining native admission blocker:** the decoded artifact path is only
-  required to be non-empty at
+- [!] **Remaining native admission blocker — RD-1241:** the decoded artifact
+  path is only required to be non-empty at
   `packages-ts/galerina-target-native/src/index.ts:340-367`; canonical path
-  containment and binding of selected ABI/profile to exact artifact, target,
-  digest and VOK evidence are not source-defined or implemented. Do not mark
-  native validation promotable until those contracts and owner evidence exist.
-- [ ] Replace the five legacy `Galerina_NATIVE_*` diagnostic codes with owned
+  containment and binding of selected ABI/profile to the exact artifact,
+  target, digest and VOK evidence are not source-defined or implemented.
+  The bounded package route is freshly **12/12 pass** with clean
+  typecheck/build, but those tests prove planning decode and snapshots only.
+  Keep native validation non-promotable until the owner freezes the path/root,
+  artifact identity, ABI/profile, digest/VOK and refusal contracts.
+- [ ] Replace the six legacy `Galerina_NATIVE_*` diagnostic codes with owned
   live `FUNGI-CATEGORY-NNN` registry entries before native validation can be
-  promoted beyond planning evidence.
+  be promoted beyond planning evidence. RD-1241 verified source emissions at
+  `src/index.ts:65,301,311,320,349,358`; the previous “five” count was stale.
 - [x] Add a runtime decoder for `PhotonicActualTarget` before any execution
   plan treats its six-label TypeScript alias as admitted target evidence.
   `decodePhotonicActualTarget` now returns a typed success/refusal union at
