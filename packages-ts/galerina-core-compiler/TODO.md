@@ -37,9 +37,21 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 ```text
 [ ] FUNGI-TYPE-002  TypeMismatch — assignment compatibility checking
     Bounded coverage is implemented for literals, known expressions, record adoption,
-    numeric widening, recursive generic arguments, and Option<T>.unwrapOr(). The
-    remaining gap is full expression-level inference for unsupported or unknown
-    forms. Source: src/type-checker.ts:447-531, :1230-1241, and :1865-1925.
+    numeric widening, recursive generic arguments, Option<T>.unwrapOr(), and the
+    declared-record result of a single-spread record update. The remaining gap is
+    full expression-level inference for unsupported or unknown forms. Source:
+    `src/type-checker.ts:472-541` (`isAssignmentCompatible`),
+    `src/type-checker.ts:1142-1155` (`TypeChecker.inferType`, `#record-update`),
+    `src/type-checker.ts:1867-1925` (`TypeChecker.checkAndRegisterBindingType`).
+    The record-update slice is intentionally refused when the update has zero or
+    multiple `#spread` children, when the spread base cannot be inferred, or when
+    the inferred base is not a declared record schema; those cases return unknown
+    and do not invent assignment compatibility. Evidence:
+    `tests/type-checker-record-update.test.mjs:11-51` (incompatible and compatible
+    declared bases plus unknown-base refusal), `npm run typecheck` (exit 0), and
+    `node --test tests/type-checker-record-update.test.mjs` (3/3 pass). The package
+    build's evidence writer refused the untracked test input; no build-evidence
+    policy or generated artifact was changed.
     Regressions:
     tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
     tests/type-checker-record-adoption.test.mjs, and
@@ -50,8 +62,8 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
     is implemented for argument count. Remaining work is complete operator and
     return-type coverage across unsupported expression forms; it still depends on
-    the unresolved inference cases above. Source: src/type-checker.ts:1667-1718
-    and :1562-1618. Regressions: tests/type-checker-phase11-wave2.test.mjs and
+    the unresolved inference cases above. Source: src/type-checker.ts:1676-1727
+    and :1565-1625. Regressions: tests/type-checker-phase11-wave2.test.mjs and
     tests/type-checker-generic-assignment.test.mjs.
 
 [x] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode

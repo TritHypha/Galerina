@@ -1139,6 +1139,21 @@ class TypeChecker {
         // Record literal { field: value }
         if (method === "#record") return "Record";
 
+        // A record update preserves the declared record type of its single spread base.
+        // Do not infer anonymous, non-record, or multi-spread updates: their resulting
+        // schema is not available at this boundary, so later checks must remain deferred.
+        if (method === "#record-update") {
+          const spreads = (node.children ?? []).filter(
+            (child) => child.kind === "identifier" && child.value === "#spread",
+          );
+          if (spreads.length !== 1) return undefined;
+          const base = spreads[0]?.children?.[0];
+          const baseType = base === undefined ? undefined : this.inferType(base);
+          return baseType !== undefined && this.recordFieldTypes.has(baseType)
+            ? baseType
+            : undefined;
+        }
+
         // Use flowReturnTypes only for plain calls (not method calls).
         // A method call (receiver.method) may share a name with a user-defined flow,
         // but its return type is determined by the library, not the flow declaration.
