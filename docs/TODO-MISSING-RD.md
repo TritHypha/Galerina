@@ -286,17 +286,21 @@ assurance. Those remain later gates after the component work is complete.
   producer/verifier snapshot. These cannot be inferred from the current tests.
 - **Decision:** `RD-1244` is
   `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. A pre-parse
-  duplicate-key refusal gate is the only bounded sub-slice currently clearable
-  without an owner contract. A framing repair requires a new schema/version;
-  do not silently dual-accept or mark the broad TODO complete.
+  duplicate-key refusal gate, including literal and escaped spellings, is now
+  implemented and focused-tested at
+  `packages-ts/galerina-test/src/runners.ts:49-153,219-239` and
+  `packages-ts/galerina-test/tests/runners.test.mjs:337-382`. A framing repair
+  requires a new schema/version; do not silently dual-accept or mark the broad
+  TODO complete.
 - **Evidence:** private record
   `private/research/rd/RD-1244-compiler-freshness-canonical-evidence-and-adversarial-controls-PRIVATE.md`;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T115807Z-rd-1244-compiler-freshness-canonical-evidence-private/`.
-- **Safe continuation:** implement only the duplicate-key slice with
-  test-first literal and escaped-duplicate KATs if it remains within the
-  current owner scope. Keep the four KAT family open and do not run a corpus,
-  `.fungi` build, queue regeneration, signing or final assurance.
+- **Safe continuation:** keep the duplicate-key slice bounded and preserve its
+  33/33 focused runner result inside the 59-test combined route (58 pass, one
+  Windows signal skip). The remaining KAT family and owner-coupled evidence
+  gates stay open; do not run a corpus, `.fungi` build, queue regeneration,
+  signing or final assurance.
 
 ## Open questions to resolve, not implementation blockers
 

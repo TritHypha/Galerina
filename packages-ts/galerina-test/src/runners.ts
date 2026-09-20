@@ -46,6 +46,136 @@ const COMPILER_PACKAGE = "packages-ts/galerina-core-compiler";
 const GALERINA_CLI = "galerina.mjs";
 const COMPILER_EVIDENCE_SCHEMA = "galerina.compiler-build-evidence.v1";
 
+class DuplicateJsonKeyError extends Error {
+  constructor(key: string) {
+    super(`duplicate JSON object key: ${JSON.stringify(key)}`);
+    this.name = "DuplicateJsonKeyError";
+  }
+}
+
+/**
+ * Detect duplicate object keys before JSON.parse erases their identity.
+ * JSON.parse remains the syntax/type authority; this scanner only walks JSON
+ * structure and decodes member-name strings so literal and escaped spellings
+ * of the same key cannot be silently collapsed.
+ */
+function assertNoDuplicateJsonKeys(json: string): void {
+  let index = 0;
+
+  const failSyntax = (): never => {
+    throw new SyntaxError("invalid JSON");
+  };
+
+  const skipWhitespace = (): void => {
+    while (index < json.length && /[\u0009\u000a\u000d\u0020]/.test(json[index] ?? "")) {
+      index += 1;
+    }
+  };
+
+  const readString = (): string => {
+    const start = index;
+    if (json[index] !== '"') failSyntax();
+    index += 1;
+    while (index < json.length) {
+      const char = json[index];
+      if (char === "\\") {
+        index += 2;
+        continue;
+      }
+      if (char === '"') {
+        index += 1;
+        const decoded: unknown = JSON.parse(json.slice(start, index));
+        if (typeof decoded !== "string") failSyntax();
+        return decoded as string;
+      }
+      if (char !== undefined && char < " ") failSyntax();
+      index += 1;
+    }
+    return failSyntax();
+  };
+
+  const readPrimitive = (): void => {
+    const start = index;
+    while (
+      index < json.length &&
+      !/[\u0009\u000a\u000d\u0020,\]}]/.test(json[index] ?? "")
+    ) {
+      index += 1;
+    }
+    if (index === start) failSyntax();
+  };
+
+  const readValue = (): void => {
+    skipWhitespace();
+    const char = json[index];
+    if (char === "{") {
+      readObject();
+      return;
+    }
+    if (char === "[") {
+      readArray();
+      return;
+    }
+    if (char === '"') {
+      readString();
+      return;
+    }
+    readPrimitive();
+  };
+
+  const readObject = (): void => {
+    index += 1;
+    skipWhitespace();
+    const keys = new Set<string>();
+    if (json[index] === "}") {
+      index += 1;
+      return;
+    }
+    while (index < json.length) {
+      skipWhitespace();
+      const key = readString();
+      if (keys.has(key)) throw new DuplicateJsonKeyError(key);
+      keys.add(key);
+      skipWhitespace();
+      if (json[index] !== ":") failSyntax();
+      index += 1;
+      readValue();
+      skipWhitespace();
+      if (json[index] === "}") {
+        index += 1;
+        return;
+      }
+      if (json[index] !== ",") failSyntax();
+      index += 1;
+    }
+    failSyntax();
+  };
+
+  const readArray = (): void => {
+    index += 1;
+    skipWhitespace();
+    if (json[index] === "]") {
+      index += 1;
+      return;
+    }
+    while (index < json.length) {
+      readValue();
+      skipWhitespace();
+      if (json[index] === "]") {
+        index += 1;
+        return;
+      }
+      if (json[index] !== ",") failSyntax();
+      index += 1;
+    }
+    failSyntax();
+  };
+
+  readValue();
+  skipWhitespace();
+  if (index !== json.length) failSyntax();
+}
+
 function compilerFreshnessFailure(
   root: string,
   compilerPackage: string,
@@ -89,11 +219,22 @@ function compilerFreshnessFailure(
   }
 
   const evidencePath = resolveTarget(root, COMPILER_BUILD_EVIDENCE);
-  let evidence: unknown;
+  let rawEvidence: string;
   try {
-    evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    rawEvidence = readFileSync(evidencePath, "utf8");
   } catch {
     return `fidelity build evidence is missing or unreadable: ${COMPILER_BUILD_EVIDENCE} (build the compiler first)`;
+  }
+
+  let evidence: unknown;
+  try {
+    assertNoDuplicateJsonKeys(rawEvidence);
+    evidence = JSON.parse(rawEvidence);
+  } catch (error) {
+    if (error instanceof DuplicateJsonKeyError) {
+      return `fidelity build evidence contains ${error.message}`;
+    }
+    return "fidelity build evidence is malformed (build the compiler first)";
   }
   if (typeof evidence !== "object" || evidence === null || Array.isArray(evidence)) {
     return "fidelity build evidence is malformed (build the compiler first)";

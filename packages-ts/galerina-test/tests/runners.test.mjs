@@ -334,6 +334,52 @@ test("runFidelity: refuses malformed deterministic build evidence", async () => 
   assert.match(res.detail, /build evidence.*malformed/i);
 });
 
+test("runFidelity: refuses duplicate evidence keys before JSON parsing", async () => {
+  const root = fullWorkspace();
+  const evidencePath = join(
+    root,
+    "packages-ts/galerina-core-compiler/dist/build-evidence.json",
+  );
+  const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
+  const body = [
+    `  "schema": "rejected-first",`,
+    `  "schema": ${JSON.stringify(valid.schema)},`,
+    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
+    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
+    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
+  ].join("\n");
+  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+
+  const res = await runFidelity({ rootDir: root });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.exitCode, 1);
+  assert.match(res.detail, /duplicate.*key/i);
+});
+
+test("runFidelity: refuses escaped duplicate evidence keys before parsing", async () => {
+  const root = fullWorkspace();
+  const evidencePath = join(
+    root,
+    "packages-ts/galerina-core-compiler/dist/build-evidence.json",
+  );
+  const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
+  const body = [
+    `  "schema": "rejected-first",`,
+    `  "\\u0073chema": ${JSON.stringify(valid.schema)},`,
+    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
+    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
+    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
+  ].join("\n");
+  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+
+  const res = await runFidelity({ rootDir: root });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.exitCode, 1);
+  assert.match(res.detail, /duplicate.*key/i);
+});
+
 test("runFidelity: refuses untracked compiler source/test inputs", async () => {
   const root = fullWorkspace();
   w(

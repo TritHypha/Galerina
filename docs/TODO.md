@@ -1702,18 +1702,17 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [!] **Compiler freshness evidence — RD-1244:** the current producer and
   verifier at `packages-ts/galerina-core-compiler/scripts/
   write-build-evidence.mjs:37-48` and
-  `packages-ts/galerina-test/src/runners.ts:94-133` use post-parse JSON key
-  checks and NUL-delimited path/content framing. A local byte probe reproduces
-  an equal digest for distinct same-path file contents containing NUL bytes;
-  duplicate JSON keys are erased by `JSON.parse` before the four-key check.
-  Grok and Astra agree the broad TODO remains **HOLD**. The only currently
-  clearable sub-slice is a test-first pre-parse duplicate-key refusal gate,
-  including escaped duplicates; it does not close framing, compile-affecting
-  input/config/toolchain coverage, ignored-file policy, consumed-output
-  digest, canonical containment or one immutable snapshot. Required KATs for
-  ignored input, tampered `dist`, duplicate JSON keys and NUL framing remain
-  open at `docs/TODO.md:1702-1707`. No `.fungi`, corpus or assurance action
-  follows from this record.
+  `packages-ts/galerina-test/src/runners.ts:49-153,219-239` now reject
+  duplicate JSON object keys before parsing, including escaped duplicates;
+  focused KATs are at `packages-ts/galerina-test/tests/runners.test.mjs:337-382`.
+  A local byte probe still reproduces an equal digest for distinct same-path
+  file contents containing NUL bytes. Grok and Astra agree the broad TODO
+  remains **HOLD**: the implemented sub-slice does not close framing,
+  compile-affecting input/config/toolchain coverage, ignored-file policy,
+  consumed-output digest, canonical containment or one immutable snapshot.
+  Required KATs for ignored input, tampered `dist` and NUL framing remain open
+  at `docs/TODO.md:1702-1707`. No `.fungi`, corpus or assurance action follows
+  from this record.
 - [ ] Preserve public declaration consumers through retained/versioned `.d.ts`
   artifacts or a governed binding/schema generator; `NO_RUNTIME_BEHAVIOR` is
   not source-deletion authority and `TestCounts` null-to-Option is a versioned
