@@ -117,6 +117,19 @@ declared limit; and returned capability/plan data is copied and immutable.
   owner defines runtime schema/refusal, immutable ownership, path containment,
   trusted bytes-digest binding, import/export authority, diagnostic ownership,
   and migration/rollback evidence.
+- **Exact unresolved Photonic ingress blockers:**
+  `packages-ts/galerina-target-photonic/src/index.ts:216-255`,
+  `validateOpticalChannelLayout`, accepts a typed record and directly reads
+  fields; malformed JavaScript records can still reach foreign property/type
+  errors. `:261-303`, `validatePhotonicLoweringPlan`, directly calls
+  `includes`, `forEach`, and `trim` on typed nested values with the same
+  ingress gap. The owning TODO is `Galerina/docs/TODO.md:1401-1412` and the
+  current tests are only the typed happy/invalid cases at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:11-82`.
+  **Fail closed:** do not claim Photonic admission until exact own-data
+  decoders, getter/proxy/inherited/surplus/sparse/wrong-type refusal tests,
+  and an owner-approved diagnostic registry are present. A bounded implementer
+  attempt on 2026-09-20 returned no patch and changed no files.
 
 ## Bridge preparation
 
