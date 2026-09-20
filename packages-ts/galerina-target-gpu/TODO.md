@@ -18,4 +18,10 @@ part of the active v1 build surface.
 [ ] Define fallback report format
 [ ] Add examples
 [ ] Add tests
+[x] Implement the bounded runtime capability/plan decoder and detached report
+    snapshot; `src/index.ts:71-217,219-315` and
+    `tests/gpu-contracts.test.mjs:10-74` pass **6/6** with typecheck/build.
+[!] Keep the broader `galerina-core-compute` schema owner, physical GPU
+    capability/admission evidence and legacy diagnostic registry migration open;
+    this bounded plan-only package does not release GPU authority.
 ```

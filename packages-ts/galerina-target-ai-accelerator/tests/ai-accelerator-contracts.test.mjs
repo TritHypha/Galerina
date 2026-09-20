@@ -94,8 +94,54 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
     assert.equal(selection.selectedTarget, "gpu");
     assert.equal(selection.fallbackUsed, true);
     assert.equal(selection.fallbackDeclared, true);
-    assert.equal(selection.safe, true);
+    assert.equal(selection.safe, false);
+    assert.equal(selection.diagnostics.some((diagnostic) => diagnostic.code === "Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED"), true);
     assert.equal(report.targetSelections[0]?.selectedTarget, "gpu");
+  });
+
+  it("detaches and freezes report collections", () => {
+    const capability = {
+      name: "Local NPU",
+      kind: "npu",
+      supportedPrecisions: ["INT8"],
+      supportedModelFormats: ["onnx"],
+      supportedOperators: ["Conv"],
+      supportsOnDeviceOnly: true,
+      supportsDynamicShapes: false,
+      features: ["execution-provider"],
+    };
+    const plan = {
+      flow: "room-detection",
+      model: "RoomObjectDetector",
+      accelerator: "ai_accelerator",
+      operations: ["Conv"],
+      fallback: "reject",
+    };
+    const selection = selectAiAcceleratorTarget({
+      model,
+      adapter: "onnxruntime",
+      preference: {
+        prefer: "npu",
+        fallback: ["gpu"],
+        requireOnDevice: true,
+        allowNetwork: false,
+        allowSilentFallback: false,
+        reportFallback: true,
+      },
+      capabilities: [capability],
+    });
+    const report = createAiAcceleratorTargetReport({ capabilities: [capability], plans: [plan], selections: [selection] });
+
+    capability.features.push("caller-mutation");
+    plan.operations.push("caller-mutation");
+    selection.reasons.push("caller-mutation");
+
+    assert.equal(report.capabilities[0].features.includes("caller-mutation"), false);
+    assert.equal(report.plans[0].operations.includes("caller-mutation"), false);
+    assert.equal(report.targetSelections[0].reasons.includes("caller-mutation"), false);
+    assert.equal(Object.isFrozen(report), true);
+    assert.equal(Object.isFrozen(report.capabilities[0].features), true);
+    assert.equal(Object.isFrozen(report.targetSelections[0].diagnostics), true);
   });
 
   it("validates external ONNX model profiles", () => {
@@ -104,6 +150,45 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
         ?.code,
       "Galerina_AI_ACCELERATOR_ONNX_EXTENSION_REQUIRED",
     );
+  });
+
+  it("refuses malformed nested records, hostile collections, and absent evidence", () => {
+    const malformed = selectAiAcceleratorTarget({
+      model: { ...model, precision: "ROGUE" },
+      preference: {
+        prefer: "npu",
+        fallback: ["gpu"],
+        requireOnDevice: true,
+        allowNetwork: false,
+        allowSilentFallback: false,
+        reportFallback: true,
+      },
+      capabilities: [],
+    });
+    assert.equal(malformed.selectedTarget, "reject");
+    assert.equal(malformed.safe, false);
+    const proxy = new Proxy({ ...model }, {});
+    assert.equal(validateAiAcceleratorModel(proxy)[0]?.severity, "error");
+    const absentEvidence = selectAiAcceleratorTarget({
+      model,
+      preference: {
+        prefer: "npu",
+        fallback: ["gpu"],
+        requireOnDevice: true,
+        allowNetwork: false,
+        allowSilentFallback: false,
+        reportFallback: true,
+      },
+      capabilities: [{
+        name: "Unbound NPU",
+        kind: "npu",
+        supportedPrecisions: ["INT8"],
+        features: [],
+      }],
+    });
+    assert.equal(absentEvidence.selectedTarget, "gpu");
+    assert.equal(absentEvidence.safe, false);
+    assert.equal(absentEvidence.diagnostics.some((diagnostic) => diagnostic.code === "Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED"), true);
   });
 
   it("loads the NPU target selection example", async () => {

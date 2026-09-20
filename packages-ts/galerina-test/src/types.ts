@@ -31,6 +31,13 @@ export interface TestCounts {
   readonly fail: number | null;
 }
 
+/** Exact child-process provenance. `command` below is display-only text. */
+export interface SpawnInvocation {
+  readonly executable: string;
+  readonly argv: readonly string[];
+  readonly cwd: string;
+}
+
 /** The verdict of one check (or the `all` aggregate). */
 export interface CheckResult {
   readonly kind: CheckResultKind;
@@ -41,8 +48,10 @@ export interface CheckResult {
   readonly durationMs: number;
   /** One-line human-readable status or failure reason. */
   readonly detail: string;
-  /** The underlying command that produced this verdict (provenance). */
+  /** Human-readable command summary; never use this as canonical provenance. */
   readonly command?: string;
+  /** Exact child invocations that produced this verdict. */
+  readonly invocations?: readonly SpawnInvocation[];
   /** node:test summary, when the runner emitted one. */
   readonly counts?: TestCounts;
   /** Sub-results, for the `all` aggregate. */
@@ -59,6 +68,8 @@ export interface HarnessOptions {
   readonly rootDir?: string;
   /** Per-target spawn timeout in ms. Default 600_000 (10 min). */
   readonly timeoutMs?: number;
+  /** Maximum captured stdout/stderr bytes. Default 8 MiB; overflow is a typed refusal. */
+  readonly outputLimitBytes?: number;
   /** Pipe the child's stdout/stderr straight to the parent as it runs. Default false. */
   readonly inheritStdio?: boolean;
   /** Receive the child's combined output (only in capture mode, i.e. not inheritStdio). */

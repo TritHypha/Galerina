@@ -1,0 +1,29 @@
+{
+  "schema": "slide.reference-platform-report.v1",
+  "status": "MATCH",
+  "failureId": "NONE",
+  "evidenceKind": "LOCAL_SELF_OBSERVATION",
+  "authenticated": false,
+  "executionEvidence": "UNVERIFIED",
+  "authorityReleased": false,
+  "productionAuthorizing": false,
+  "observation": {
+    "schema": "slide.reference-platform-observation.v1",
+    "platform": "linux",
+    "architecture": "x64",
+    "distributionId": "ubuntu",
+    "osRelease": "6.18.33.2-microsoft-standard-WSL2",
+    "runtimeKind": "node-bootstrap",
+    "runtimeVersion": "24.18.0"
+  },
+  "decision": {
+    "schema": "slide.reference-platform-decision.v1",
+    "compatibilityVerdict": 1,
+    "status": "MATCH",
+    "failureId": "NONE",
+    "profileId": "slide.reference.ubuntu-x64.v1",
+    "executionEvidence": "UNVERIFIED",
+    "authorityReleased": false,
+    "productionAuthorizing": false
+  }
+}

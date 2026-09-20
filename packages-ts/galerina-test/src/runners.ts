@@ -16,9 +16,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import { join, relative } from "node:path";
 import { resolveRoot, resolveTarget } from "./paths.js";
 import { runNode } from "./spawn.js";
+import type { SpawnOutcome } from "./spawn.js";
 import { parseCounts, parseAggregateTotal } from "./parse.js";
 import type {
   AllOptions,
@@ -28,6 +30,7 @@ import type {
   E2eOptions,
   FidelityOptions,
   SlideOptions,
+  SpawnInvocation,
   UnitOptions,
 } from "./types.js";
 
@@ -42,6 +45,136 @@ const COMPILER_BUILD_EVIDENCE =
 const COMPILER_PACKAGE = "packages-ts/galerina-core-compiler";
 const GALERINA_CLI = "galerina.mjs";
 const COMPILER_EVIDENCE_SCHEMA = "galerina.compiler-build-evidence.v1";
+
+class DuplicateJsonKeyError extends Error {
+  constructor(key: string) {
+    super(`duplicate JSON object key: ${JSON.stringify(key)}`);
+    this.name = "DuplicateJsonKeyError";
+  }
+}
+
+/**
+ * Detect duplicate object keys before JSON.parse erases their identity.
+ * JSON.parse remains the syntax/type authority; this scanner only walks JSON
+ * structure and decodes member-name strings so literal and escaped spellings
+ * of the same key cannot be silently collapsed.
+ */
+function assertNoDuplicateJsonKeys(json: string): void {
+  let index = 0;
+
+  const failSyntax = (): never => {
+    throw new SyntaxError("invalid JSON");
+  };
+
+  const skipWhitespace = (): void => {
+    while (index < json.length && /[\u0009\u000a\u000d\u0020]/.test(json[index] ?? "")) {
+      index += 1;
+    }
+  };
+
+  const readString = (): string => {
+    const start = index;
+    if (json[index] !== '"') failSyntax();
+    index += 1;
+    while (index < json.length) {
+      const char = json[index];
+      if (char === "\\") {
+        index += 2;
+        continue;
+      }
+      if (char === '"') {
+        index += 1;
+        const decoded: unknown = JSON.parse(json.slice(start, index));
+        if (typeof decoded !== "string") failSyntax();
+        return decoded as string;
+      }
+      if (char !== undefined && char < " ") failSyntax();
+      index += 1;
+    }
+    return failSyntax();
+  };
+
+  const readPrimitive = (): void => {
+    const start = index;
+    while (
+      index < json.length &&
+      !/[\u0009\u000a\u000d\u0020,\]}]/.test(json[index] ?? "")
+    ) {
+      index += 1;
+    }
+    if (index === start) failSyntax();
+  };
+
+  const readValue = (): void => {
+    skipWhitespace();
+    const char = json[index];
+    if (char === "{") {
+      readObject();
+      return;
+    }
+    if (char === "[") {
+      readArray();
+      return;
+    }
+    if (char === '"') {
+      readString();
+      return;
+    }
+    readPrimitive();
+  };
+
+  const readObject = (): void => {
+    index += 1;
+    skipWhitespace();
+    const keys = new Set<string>();
+    if (json[index] === "}") {
+      index += 1;
+      return;
+    }
+    while (index < json.length) {
+      skipWhitespace();
+      const key = readString();
+      if (keys.has(key)) throw new DuplicateJsonKeyError(key);
+      keys.add(key);
+      skipWhitespace();
+      if (json[index] !== ":") failSyntax();
+      index += 1;
+      readValue();
+      skipWhitespace();
+      if (json[index] === "}") {
+        index += 1;
+        return;
+      }
+      if (json[index] !== ",") failSyntax();
+      index += 1;
+    }
+    failSyntax();
+  };
+
+  const readArray = (): void => {
+    index += 1;
+    skipWhitespace();
+    if (json[index] === "]") {
+      index += 1;
+      return;
+    }
+    while (index < json.length) {
+      readValue();
+      skipWhitespace();
+      if (json[index] === "]") {
+        index += 1;
+        return;
+      }
+      if (json[index] !== ",") failSyntax();
+      index += 1;
+    }
+    failSyntax();
+  };
+
+  readValue();
+  skipWhitespace();
+  if (index !== json.length) failSyntax();
+}
 
 function compilerFreshnessFailure(
   root: string,
@@ -86,11 +219,22 @@ function compilerFreshnessFailure(
   }
 
   const evidencePath = resolveTarget(root, COMPILER_BUILD_EVIDENCE);
-  let evidence: unknown;
+  let rawEvidence: string;
   try {
-    evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    rawEvidence = readFileSync(evidencePath, "utf8");
   } catch {
     return `fidelity build evidence is missing or unreadable: ${COMPILER_BUILD_EVIDENCE} (build the compiler first)`;
+  }
+
+  let evidence: unknown;
+  try {
+    assertNoDuplicateJsonKeys(rawEvidence);
+    evidence = JSON.parse(rawEvidence);
+  } catch (error) {
+    if (error instanceof DuplicateJsonKeyError) {
+      return `fidelity build evidence contains ${error.message}`;
+    }
+    return "fidelity build evidence is malformed (build the compiler first)";
   }
   if (typeof evidence !== "object" || evidence === null || Array.isArray(evidence)) {
     return "fidelity build evidence is malformed (build the compiler first)";
@@ -135,12 +279,12 @@ function compilerFreshnessFailure(
  * `galerina check` (probed 2026-06-23). Override via E2eOptions.examples to point
  * the harness at your own app's entry flows.
  */
-export const DEFAULT_E2E_EXAMPLES: readonly string[] = [
+export const DEFAULT_E2E_EXAMPLES: readonly string[] = Object.freeze([
   "examples/wasm-hello-world/greet.fungi",
   "examples/healthcare/getPatient.fungi",
   "examples/deployment/health-check.fungi",
   "examples/aerospace/updateFlightPath.fungi",
-];
+]);
 
 // ── Result helpers ───────────────────────────────────────────────────────────
 
@@ -153,6 +297,21 @@ function targetMissing(kind: CheckResultKind, target: string): CheckResult {
     durationMs: 0,
     detail: `target not found: ${target}`,
   };
+}
+
+function spawnFailureDetail(prefix: string, result: SpawnOutcome): string {
+  switch (result.failureKind) {
+    case "timeout":
+      return `${prefix} timed out`;
+    case "signal":
+      return `${prefix} terminated by ${result.signal ?? "signal"}`;
+    case "output-limit":
+      return `${prefix} output limit exceeded`;
+    case "spawn-error":
+      return `${prefix} spawn failed${result.errorCode ? ` (${result.errorCode})` : ""}`;
+    case "none":
+      return `${prefix} failed (exit ${result.exitCode})`;
+  }
 }
 
 // ── unit ─────────────────────────────────────────────────────────────────────
@@ -180,9 +339,7 @@ export async function runUnit(opts: UnitOptions = {}): Promise<CheckResult> {
   const ok = r.exitCode === 0;
   const detail = ok
     ? `unit suites passed${total != null ? ` (${total} tests)` : ""}`
-    : r.timedOut
-      ? "unit run timed out"
-      : `unit suites failed (exit ${r.exitCode})`;
+    : spawnFailureDetail("unit run", r);
   return {
     kind: "unit",
     ok,
@@ -190,6 +347,7 @@ export async function runUnit(opts: UnitOptions = {}): Promise<CheckResult> {
     durationMs: r.durationMs,
     detail,
     command: `node ${UNIT_RUNNER}${args.length > 1 ? " " + args.slice(1).join(" ") : ""}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -219,8 +377,9 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
   }
 
   const verb = opts.build ? "build" : "check";
-  const t0 = Date.now();
+  const t0 = performance.now();
   let failures = 0;
+  const invocations: SpawnInvocation[] = [];
   for (const entry of entries) {
     const abs = resolveTarget(root, entry);
     if (!existsSync(abs)) { // perf-allow: loop-sync-io — one-shot e2e corpus existence scan; distinct example path per iteration
@@ -229,9 +388,10 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
       continue;
     }
     const r = runNode([cli, verb, entry], root, opts);
+    invocations.push(r.invocation);
     if (r.exitCode !== 0) failures++;
   }
-  const durationMs = Date.now() - t0;
+  const durationMs = performance.now() - t0;
   const ok = failures === 0;
   return {
     kind: "e2e",
@@ -242,6 +402,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
       ? `e2e: ${entries.length}/${entries.length} examples ${verb}ed clean`
       : `e2e: ${failures}/${entries.length} examples failed (${verb})`,
     command: `node ${GALERINA_CLI} ${verb} <${entries.length} example(s)>`,
+    invocations: Object.freeze(invocations),
   };
 }
 
@@ -269,10 +430,9 @@ export async function runConformance(
     durationMs: r.durationMs,
     detail: ok
       ? `conformance (R6) passed${counts.tests != null ? ` (${counts.tests} assertions)` : ""}`
-      : r.timedOut
-        ? "conformance (R6) timed out"
-        : `conformance (R6) failed (exit ${r.exitCode})`,
+      : spawnFailureDetail("conformance (R6)", r),
     command: `node --test ${opts.corpus ?? R6_PARITY}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -332,10 +492,9 @@ export async function runFidelity(
     durationMs: r.durationMs,
     detail: ok
       ? `fidelity (0014) passed${counts.tests != null ? ` (${counts.tests} checks)` : ""}`
-      : r.timedOut
-        ? "fidelity (0014) timed out"
-        : `fidelity (0014) failed (exit ${r.exitCode})`,
+      : spawnFailureDetail("fidelity (0014)", r),
     command: `node --test ${opts.target ?? FIDELITY_DIFFERENTIAL}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -381,12 +540,13 @@ function runExactNodeCorpus(
     durationMs: r.durationMs,
     detail: ok
       ? `${kind} passed (${counts.tests} tests from ${tests.length} files)`
-      : r.timedOut
-        ? `${kind} timed out`
+      : r.failureKind !== "none"
+        ? spawnFailureDetail(kind, r)
         : r.exitCode !== 0
           ? `${kind} failed (exit ${r.exitCode})`
           : `${kind} refused uncountable or zero-test success`,
     command: `node --test <${tests.length} exact test files>`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -460,14 +620,14 @@ export async function runAll(opts: AllOptions = {}): Promise<CheckResult> {
     runFidelity,
     runSlide,
   ];
-  const t0 = Date.now();
+  const t0 = performance.now();
   const children: CheckResult[] = [];
   for (const run of order) {
     const res = await run(opts);
     children.push(res);
     if (!res.ok && opts.bailScope) break;
   }
-  const durationMs = Date.now() - t0;
+  const durationMs = performance.now() - t0;
   const failed = children.filter((c) => !c.ok).map((c) => c.kind);
   const ok = failed.length === 0;
   return {
@@ -478,6 +638,7 @@ export async function runAll(opts: AllOptions = {}): Promise<CheckResult> {
     detail: ok
       ? `all ${children.length} checks passed`
       : `failed: ${failed.join(", ")}`,
+    invocations: Object.freeze(children.flatMap((child) => child.invocations ?? [])),
     children,
   };
 }

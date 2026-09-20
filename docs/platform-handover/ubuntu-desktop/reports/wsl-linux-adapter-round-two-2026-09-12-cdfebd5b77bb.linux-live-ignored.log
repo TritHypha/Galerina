@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running tests/linux_live_host.rs (target/debug/deps/linux_live_host-12884e901b51ab0d)
+
+running 4 tests
+test live_host_observation_admits_only_the_named_direct_local_directory ... FAILED
+test retained_anchor_refuses_namespace_substitution_after_directory_barrier ... FAILED
+test retained_handle_publication_is_exact_idempotent_and_no_replace ... FAILED
+test retained_handle_publication_refuses_symlink_and_hard_link_collisions ... ok
+
+failures:
+
+---- live_host_observation_admits_only_the_named_direct_local_directory stdout ----
+
+thread 'live_host_observation_admits_only_the_named_direct_local_directory' (12396) panicked at tests/linux_live_host.rs:24:5:
+assertion failed: matches!(probe_linux_host(&evidence_root()),
+    LinuxHostProbeVerdict::Candidate(_))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- retained_anchor_refuses_namespace_substitution_after_directory_barrier stdout ----
+
+thread 'retained_anchor_refuses_namespace_substitution_after_directory_barrier' (12397) panicked at tests/linux_live_host.rs:114:5:
+assertion failed: matches!(verdict, LinuxGenerationPublicationVerdict::Deny(error) if
+    error.code() == "LINUX_PUBLICATION_HOST_RECHECK_REFUSED")
+
+---- retained_handle_publication_is_exact_idempotent_and_no_replace stdout ----
+
+thread 'retained_handle_publication_is_exact_idempotent_and_no_replace' (12398) panicked at tests/linux_live_host.rs:39:5:
+assertion failed: matches!(publish_linux_generation_candidate(&root, &generation_id, expected),
+    LinuxGenerationPublicationVerdict::Candidate { byte_length } if
+    byte_length == expected.len())
+
+
+failures:
+    live_host_observation_admits_only_the_named_direct_local_directory
+    retained_anchor_refuses_namespace_substitution_after_directory_barrier
+    retained_handle_publication_is_exact_idempotent_and_no_replace
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test linux_live_host`

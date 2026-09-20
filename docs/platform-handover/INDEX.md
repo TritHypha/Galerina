@@ -11,7 +11,7 @@
 | Section | Documents |
 |---|---|
 | [`durability-recovery/`](durability-recovery/INDEX.md) | 2 |
-| [`ubuntu-desktop/`](ubuntu-desktop/INDEX.md) | 10 |
+| [`ubuntu-desktop/`](ubuntu-desktop/INDEX.md) | 11 |
 | [`windows-static-host-toolchain/`](windows-static-host-toolchain/INDEX.md) | 1 |
 
 ---

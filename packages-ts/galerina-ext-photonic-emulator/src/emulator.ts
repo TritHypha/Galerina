@@ -26,6 +26,8 @@
 // No measured speedup is asserted. EMULATED — every BridgeResult reports
 // executedNatively=false, deterministic=false.
 
+import { isProxy as isNodeProxy } from "node:util/types";
+
 /** A device-knob noise profile for a photonic lane. */
 export interface PhysParams {
   /** MZI phase-encoding drift → per-active-element multiplicative gain error. */
@@ -172,16 +174,84 @@ export function applyWdm(W: Float64Array[], powIn: Float64Array): Float64Array {
 const PHASE_GAIN = 1.0, XTALK_GAIN = 0.5, READOUT_GAIN = 0.5;  // index.ts:39-41 (placeholder gains)
 const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
+export type PhotonicEmulatorMathErrorCode =
+  | "INVALID_RECORD"
+  | "INVALID_PROBABILITY"
+  | "INVALID_REDUNDANCY"
+  | "NON_FINITE_RESULT";
+
+export class PhotonicEmulatorMathError extends Error {
+  readonly code: PhotonicEmulatorMathErrorCode;
+
+  constructor(code: PhotonicEmulatorMathErrorCode) {
+    super(`[PHOTONIC_EMULATOR_MATH:${code}]`);
+    this.name = "PhotonicEmulatorMathError";
+    this.code = code;
+  }
+}
+
+/** The binary64 closed-form envelope; larger N can overflow before powers underflow. */
+export const MAX_NMR_N = 1019;
+
+const FLIP_NOISE_KEYS = Object.freeze(["phaseDriftSigma", "crosstalkCoeff", "readoutSigma"] as const);
+const LANE_NOISE_KEYS = Object.freeze(["phaseDriftSigma", "crosstalkCoeff", "laneFailureProb", "readoutSigma"] as const);
+
+function refuse(code: PhotonicEmulatorMathErrorCode): never {
+  throw new PhotonicEmulatorMathError(code);
+}
+
+function assertProbability(value: unknown): asserts value is number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
+    refuse("INVALID_PROBABILITY");
+  }
+}
+
+function assertOddPositive(N: unknown): asserts N is number {
+  if (typeof N !== "number" || !Number.isSafeInteger(N) || N < 1 || N % 2 === 0 || N > MAX_NMR_N) {
+    refuse("INVALID_REDUNDANCY");
+  }
+}
+
+function captureNoiseRecord(value: unknown, keys: readonly string[]): Record<string, number> {
+  try {
+    if (typeof value !== "object" || value === null || Array.isArray(value) || isNodeProxy(value)) {
+      refuse("INVALID_RECORD");
+    }
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) refuse("INVALID_RECORD");
+    const ownKeys = Reflect.ownKeys(value);
+    if (
+      ownKeys.length !== keys.length
+      || ownKeys.some((key) => typeof key !== "string" || !keys.includes(key))
+    ) {
+      refuse("INVALID_RECORD");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const captured: Record<string, number> = {};
+    for (const key of keys) {
+      const descriptor = descriptors[key];
+      if (!descriptor || !("value" in descriptor) || !descriptor.enumerable) refuse("INVALID_RECORD");
+      assertProbability(descriptor.value);
+      captured[key] = descriptor.value;
+    }
+    return captured;
+  } catch (error) {
+    if (error instanceof PhotonicEmulatorMathError) throw error;
+    refuse("INVALID_RECORD");
+  }
+}
+
 /** Per-element flip probability from the device knobs (substrate-math index.ts:60-62). */
-export function flipProbability(p: { phaseDriftSigma: number; crosstalkCoeff: number; readoutSigma: number }): number {
-  return clamp01(p.phaseDriftSigma * PHASE_GAIN + p.crosstalkCoeff * XTALK_GAIN + p.readoutSigma * READOUT_GAIN);
+export function flipProbability(p: unknown): number {
+  const captured = captureNoiseRecord(p, FLIP_NOISE_KEYS);
+  return clamp01(captured.phaseDriftSigma * PHASE_GAIN + captured.crosstalkCoeff * XTALK_GAIN + captured.readoutSigma * READOUT_GAIN);
 }
 
 /** Single-lane error probability incl. lane-failure (substrate-math index.ts:68-75). */
-export function singleLaneErrorProbability(
-  p: { phaseDriftSigma: number; crosstalkCoeff: number; readoutSigma: number; laneFailureProb: number },
-): number {
-  return clamp01(p.laneFailureProb + (1 - p.laneFailureProb) * flipProbability(p));
+export function singleLaneErrorProbability(p: unknown): number {
+  const captured = captureNoiseRecord(p, LANE_NOISE_KEYS);
+  const pFlip = clamp01(captured.phaseDriftSigma * PHASE_GAIN + captured.crosstalkCoeff * XTALK_GAIN + captured.readoutSigma * READOUT_GAIN);
+  return clamp01(captured.laneFailureProb + (1 - captured.laneFailureProb) * pFlip);
 }
 
 /** Binomial coefficient (substrate-math index.ts:77-83). */
@@ -194,9 +264,12 @@ export function binom(n: number, k: number): number {
 }
 
 /** N-modular-redundancy failure probability (majority wrong) — substrate-math index.ts:90-99. */
-export function nmrFailureProbability(pBad: number, N: number): number {
+export function nmrFailureProbability(pBad: unknown, N: unknown): number {
+  assertProbability(pBad);
+  assertOddPositive(N);
   const need = (N + 1) / 2;
   let p = 0;
   for (let k = need; k <= N; k++) p += binom(N, k) * Math.pow(pBad, k) * Math.pow(1 - pBad, N - k);
+  if (!Number.isFinite(p)) refuse("NON_FINITE_RESULT");
   return clamp01(p);
 }

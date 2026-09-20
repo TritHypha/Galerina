@@ -1,9 +1,14 @@
+#[cfg(windows)]
+use galerina_registry_durability_native::production_host_generation_id;
 use galerina_registry_durability_native::{
-    galerina_registry_publish_generation_v1, production_host_generation_id,
-    GalerinaProductionHostResultV1, PRODUCTION_HOST_ABI_VERSION,
+    galerina_registry_publish_generation_v1, GalerinaProductionHostResultV1,
+    PRODUCTION_HOST_ABI_VERSION,
 };
+#[cfg(windows)]
 use std::fs::{create_dir, read, remove_dir_all};
+#[cfg(windows)]
 use std::path::PathBuf;
+#[cfg(windows)]
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn text(field: &[u8]) -> &str {
@@ -14,6 +19,7 @@ fn text(field: &[u8]) -> &str {
     std::str::from_utf8(&field[..end]).expect("result field is UTF-8")
 }
 
+#[cfg(windows)]
 fn fixture_directory() -> PathBuf {
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)

@@ -1016,12 +1016,16 @@ function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaVa
 }
 
 /**
- * Per-currency minor-unit decimals (RD-0349 I2). moneyMethod threads this so NO literal `2` remains. Until the
- * I1 UNIT_REGISTRY lands (owner-gated on the pinned, dated ISO snapshot the R&D hub is sourcing) every currency
- * uses the 2dp default; when the registry arrives ONLY this function changes (JPY→0, BHD→3, BTC-sats→8, wei→18).
+ * Per-currency minor-unit decimals (RD-0349 I2).
+ *
+ * The generated registry is the only scale authority.  There is deliberately
+ * no two-decimal fallback: an admitted currency with a missing scale is a
+ * registry-integrity failure and must be refused by the caller.  In particular,
+ * zero is a valid scale (JPY/CLP), so callers must test for `undefined` rather
+ * than truthiness.
  */
-function moneyDecimals(_currency: string): number {
-  return 2; // TODO(RD-0349 I1): registry-driven per-currency decimals — pending the pinned ISO snapshot
+function moneyDecimals(currency: string): number | undefined {
+  return MONEY_MINOR_UNITS.get(currency);
 }
 
 /** Scale for a Money<C> / Money<C> ratio (a Decimal, not Money): crypto-grade precision, exact (I3), never float. */
@@ -1031,7 +1035,13 @@ function moneyMethod(receiver: GalerinaValue, method: string, args: readonly Gal
   if (!isMoney(receiver)) return undefined;
   const amountStr = moneyAmountStr(receiver);
   const currency = moneyCurrency(receiver);
-  const dp = moneyDecimals(currency); // RD-0349 I2: threaded per-currency decimals (no literal 2)
+  const dp = moneyDecimals(currency); // RD-0349 I2: registry-driven scale, including valid zero
+  if (dp === undefined) {
+    return {
+      __tag: "runtimeError",
+      message: `Money.${method}: currency '${currency}' has no admitted minor-unit scale — refused (RD-0349 I2)`,
+    };
+  }
   switch (method) {
     case "amount":
       return { __tag: "decimal", value: bigIntDecimalRound(amountStr, dp) };
@@ -1066,6 +1076,10 @@ function moneyMethod(receiver: GalerinaValue, method: string, args: readonly Gal
       if (rhs === undefined) return err("Division by zero");
       if (isMoney(rhs)) {
         // Money<C> / Money<C> → EXACT Decimal ratio (RD-0349 I3: no float division).
+        const rhsCurrency = moneyCurrency(rhs);
+        if (moneyDecimals(rhsCurrency) === undefined) {
+          return err(`Money.divideBy: currency '${rhsCurrency}' has no admitted minor-unit scale — refused (RD-0349 I2)`);
+        }
         if (decimalToBigInt(moneyAmountStr(rhs)).n === BigInt(0)) return err("Division by zero");
         return { __tag: "decimal", value: bigIntDecimalDiv(amountStr, moneyAmountStr(rhs), MONEY_RATIO_DECIMALS) };
       }

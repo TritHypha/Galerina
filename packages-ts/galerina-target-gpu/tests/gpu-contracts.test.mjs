@@ -55,4 +55,21 @@ describe("createGpuTargetReport", () => {
     assert.equal(report.plans.length, 2);
     assert.ok(diagnostics.some((d) => d.code === "Galerina_GPU_PLAN_BACKEND_UNAVAILABLE"));
   });
+
+  it("refuses hostile input and returns a detached report snapshot", () => {
+    const input = { capabilities, plans: [{ flow: "a", backend: "cuda", operations: ["gemm"] }] };
+    const { report, diagnostics } = createGpuTargetReport(input);
+    assert.deepEqual(diagnostics, []);
+    input.capabilities.push({ name: "rogue", backend: "vulkan", features: [] });
+    input.plans[0].operations.push("rogue");
+    assert.equal(report.capabilities.length, 2);
+    assert.deepEqual(report.plans[0].operations, ["gemm"]);
+    const proxyRefused = createGpuTargetReport({ capabilities: [new Proxy(capabilities[0], {})], plans: [] });
+    assert.equal(proxyRefused.diagnostics[0]?.code, "Galerina_GPU_INPUT_REFUSED");
+    const sparse = [];
+    sparse.length = 1;
+    const refused = createGpuTargetReport({ capabilities, plans: sparse });
+    assert.equal(refused.report.plans.length, 0);
+    assert.equal(refused.diagnostics[0]?.code, "Galerina_GPU_INPUT_REFUSED");
+  });
 });

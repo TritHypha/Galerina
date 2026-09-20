@@ -126,13 +126,18 @@ export interface GovernanceDiagnostic {
   readonly message: string;
 }
 
+/** Closed tagged diagnostic: NONE or PRESENT. Never null/undefined. */
+export type BoundaryDiagnostic =
+  | { readonly kind: "NONE" }
+  | ({ readonly kind: "PRESENT" } & GovernanceDiagnostic);
+
 /** Result of resolving a verdict at the trust boundary. */
 export interface BoundaryDecision {
   readonly verdict: Verdict;
   readonly decision: "allow" | "deny";
   readonly authorized: boolean;
-  /** Non-null IFF an INDETERMINATE verdict was collapsed to deny (FUNGI-GOV-3VL-001). */
-  readonly diagnostic: GovernanceDiagnostic | null;
+  /** PRESENT IFF an INDETERMINATE verdict was collapsed to deny (FUNGI-GOV-3VL-001). */
+  readonly diagnostic: BoundaryDiagnostic;
 }
 
 function indeterminateDiagnostic(): GovernanceDiagnostic {
@@ -159,8 +164,17 @@ export function decideAtBoundary(
   v: Verdict,
   onDiagnostic?: (d: GovernanceDiagnostic) => void,
 ): BoundaryDecision {
-  const diagnostic = v === Verdict.INDETERMINATE ? indeterminateDiagnostic() : null;
-  if (diagnostic && onDiagnostic) onDiagnostic(diagnostic);
+  const diagnostic: BoundaryDiagnostic = v === Verdict.INDETERMINATE
+    ? { kind: "PRESENT", ...indeterminateDiagnostic() }
+    : { kind: "NONE" };
+  if (diagnostic.kind === "PRESENT" && onDiagnostic) {
+    onDiagnostic({
+      code: diagnostic.code,
+      name: diagnostic.name,
+      severity: diagnostic.severity,
+      message: diagnostic.message,
+    });
+  }
   return {
     verdict: v,
     decision: collapse(v),

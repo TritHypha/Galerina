@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   SubstrateMathError,
+  MAX_NMR_N,
   flipProbability, singleLaneErrorProbability, nmrFailureProbability,
 } from "../dist/index.js";
 
@@ -47,6 +48,20 @@ describe("singleLaneErrorProbability — pBad = laneFailure OR (survive AND flip
   it("flipProbability folds the gains (phase 1.0 / crosstalk 0.5 / readout 0.5)", () => {
     assert.ok(approx(flipProbability({ phaseDriftSigma: 0.1, crosstalkCoeff: 0.2, laneFailureProb: 0, readoutSigma: 0.4 }), 0.1 + 0.1 + 0.2));
   });
+  it("rejects non-data, surplus, accessor, proxy and non-finite ingress", () => {
+    const clean = { phaseDriftSigma: 0, crosstalkCoeff: 0, laneFailureProb: 0, readoutSigma: 0 };
+    const accessor = {};
+    Object.defineProperties(accessor, {
+      phaseDriftSigma: { enumerable: true, get: () => 0 },
+      crosstalkCoeff: { enumerable: true, value: 0 },
+      laneFailureProb: { enumerable: true, value: 0 },
+      readoutSigma: { enumerable: true, value: 0 },
+    });
+    assert.throws(() => flipProbability({ ...clean, extra: 0 }), SubstrateMathError);
+    assert.throws(() => flipProbability(accessor), SubstrateMathError);
+    assert.throws(() => flipProbability(new Proxy(clean, {})), SubstrateMathError);
+    assert.throws(() => flipProbability({ ...clean, phaseDriftSigma: NaN }), SubstrateMathError);
+  });
 });
 
 describe("validation throws SubstrateMathError", () => {
@@ -55,5 +70,11 @@ describe("validation throws SubstrateMathError", () => {
     assert.throws(() => nmrFailureProbability(0.5, 2), SubstrateMathError);
     assert.throws(() => nmrFailureProbability(0.5, 0), SubstrateMathError);
     assert.throws(() => nmrFailureProbability(1.5, 3), SubstrateMathError);
+  });
+  it("bounds the binary64 closed form before its overflow/underflow envelope", () => {
+    const result = nmrFailureProbability(0.25, MAX_NMR_N);
+    assert.ok(Number.isFinite(result) && result >= 0 && result <= 1);
+    assert.throws(() => nmrFailureProbability(0.25, 1021), SubstrateMathError);
+    assert.throws(() => nmrFailureProbability(0.25, 1023), SubstrateMathError);
   });
 });

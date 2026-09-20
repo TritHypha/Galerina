@@ -36,7 +36,6 @@ import {
   constants as fsConstants,
   existsSync,
   fstatSync,
-  fsyncSync,
   lstatSync,
   mkdirSync,
   openSync,
@@ -44,16 +43,13 @@ import {
   readdirSync,
   readSync,
   realpathSync,
-  renameSync,
   statSync,
-  unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { types as utilTypes } from "node:util";
-import { deflateRawSync } from "node:zlib";
 import { compilerContentFingerprint } from "./lib/compiler-content-fingerprint.mjs";
 import ownedProcessTree from "./lib/owned-process-tree.cjs";
 import {
@@ -70,7 +66,6 @@ const BASELINE = join(ROOT, "scripts", "baselines", "fungi-corpus-check.json");
 const CACHE_DIR = join(ROOT, "build", "fungi-corpus-check");
 const CACHE = join(CACHE_DIR, "cache.json");
 const MYCO = resolve(ROOT, "packages-ts", "galerina-tools-myco", "dist", "cli.js");
-const MYCO_MAX_BUFFER = 16 * 1024 * 1024;
 // node/git are real executables — spawn them directly. `shell:true` would be needed only for .cmd
 // shims (npm) and triggers Node's DEP0190 arg-concatenation warning; no shell = no concat hazard.
 const SPAWN = { encoding: "utf8", shell: false };
@@ -81,7 +76,7 @@ const IS_MAIN = process.argv[1] !== undefined && resolve(process.argv[1]) === MO
 function mycoFungi() {
   if (!existsSync(MYCO)) return { list: null, note: "myco dist not built (packages-ts/galerina-tools-myco — run `npm run build` there)" };
   const r = spawnSync("node", [MYCO, "-f", "fungi", ROOT, "--json", "--no-color", "-n", "9000"],
-    { ...SPAWN, timeout: 180000, maxBuffer: MYCO_MAX_BUFFER });
+    { ...SPAWN, timeout: 180000 });
   const stdout = r.stdout ?? "";
   const jsonStart = stdout.indexOf("{"); // an index-refresh banner may precede the JSON — skip to it
   if (jsonStart < 0) return { list: null, note: `myco returned no JSON (exit ${r.status})` };
@@ -114,19 +109,8 @@ function findFungi() {
 const ownedElsewhere = (rel) =>
   rel.startsWith("docs/examples/") // audit-example-diagnostics.mjs owns that corpus
   || rel.startsWith("build/");     // generated tree — no authored .fungi belongs there (incl. the self-test plants)
-const DIAGNOSTIC_CODE_BODY = String.raw`FUNGI-(?:[A-Z][A-Z0-9]*-)+\d+[A-Za-z]?`;
-const DIAGNOSTIC_CODE = new RegExp(`^${DIAGNOSTIC_CODE_BODY}$`, "u");
-const DIAGNOSTIC_CODE_IN_OUTPUT = new RegExp(
-  `(?:^|[^A-Za-z0-9_-])(${DIAGNOSTIC_CODE_BODY})(?![A-Za-z0-9_-])`,
-  "gu",
-);
+const DIAGNOSTIC_CODE = /^FUNGI-[A-Z][A-Z0-9]*-\d+[A-Za-z]?$/;
 const EXACT_SIDECAR_SUFFIX = ".fungi.expected.diagnostics.txt";
-
-// Extract only standalone canonical codes; identifier-embedded lookalikes cannot own diagnostics.
-function extractDiagnosticCodes(output) {
-  return [...new Set([...output.matchAll(DIAGNOSTIC_CODE_IN_OUTPUT)].map((match) => match[1]))]
-    .sort(lexicalCompare);
-}
 
 function parseExpectedCodes(text, label) {
   const values = String(text)
@@ -228,7 +212,7 @@ function orphanSidecars(sidecars, fungiFiles) {
 }
 
 // ── ADJUDICATE (real CLI) + cache by (size, mtime) ───────────────────────────────────────────
-export function checkFile(rel, strictTypes = false) {
+function checkFile(rel, strictTypes = false) {
   const args = [join(ROOT, "galerina.mjs"), "check", rel];
   if (strictTypes) args.push("--strict-types");
   const r = spawnSync("node", args,
@@ -236,7 +220,7 @@ export function checkFile(rel, strictTypes = false) {
   const out = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   // A real code ends in a numeric segment (FUNGI-SYNTAX-011); the CLI's "+N FUNGI-TYPE-* advisory"
   // footer must not pollute the baseline's code lists.
-  return { ok: r.status === 0, codes: extractDiagnosticCodes(out) };
+  return { ok: r.status === 0, codes: [...new Set([...out.matchAll(/(FUNGI-[A-Z][A-Z0-9]*-\d+[A-Za-z]?)/g)].map((m) => m[1]))].sort() };
 }
 const loadJson = (p, fallback) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; } };
 
@@ -246,44 +230,6 @@ const CORPUS_HASH = /^[0-9a-f]{40}$/u;
 const CORPUS_CLEAN_MARKER = /(?:0 errors, 0 governance warnings|parsed OK, but found NO flows or declarations)/u;
 const CORPUS_EXECUTION_KEYS = Object.freeze(["repositoryRoot"]);
 const CORPUS_AGGREGATE_EXECUTION_KEYS = Object.freeze(["repositoryRoot", "concurrency", "priorReceipts"]);
-const CORPUS_GIT_SCRUBBED = new Set([
-  "GIT_DIR",
-  "GIT_WORK_TREE",
-  "GIT_INDEX_FILE",
-  "GIT_OBJECT_DIRECTORY",
-  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-  "GIT_COMMON_DIR",
-  "GIT_ASKPASS",
-  "GIT_CONFIG",
-  "GIT_CONFIG_COUNT",
-  "GIT_CONFIG_GLOBAL",
-  "GIT_CONFIG_NOSYSTEM",
-  "GIT_CONFIG_SYSTEM",
-  "GIT_SSH",
-  "GIT_SSH_COMMAND",
-]);
-const ABORT_SIGNAL_PROTOTYPE = typeof AbortSignal === "function" ? AbortSignal.prototype : null;
-const ABORT_SIGNAL_ABORTED_GETTER = ABORT_SIGNAL_PROTOTYPE === null
-  ? null
-  : Object.getOwnPropertyDescriptor(ABORT_SIGNAL_PROTOTYPE, "aborted")?.get ?? null;
-const ABORT_SIGNAL_OWN_SHAPE = (() => {
-  try {
-    if (typeof AbortController !== "function") return null;
-    const descriptors = Object.getOwnPropertyDescriptors(new AbortController().signal);
-    return Reflect.ownKeys(descriptors).map((key) => {
-      const descriptor = descriptors[key];
-      return Object.freeze({
-        key,
-        configurable: descriptor.configurable,
-        enumerable: descriptor.enumerable,
-        writable: descriptor.writable,
-        data: Object.hasOwn(descriptor, "value"),
-      });
-    });
-  } catch {
-    return null;
-  }
-})();
 
 function corpusDigest(value) {
   return `sha256:${createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex")}`;
@@ -384,52 +330,9 @@ function closedCorpusEquivalent(value, expected) {
   }
 }
 
-function admitAbortSignal(value) {
-  if (value === undefined) return { signal: null, aborted: false };
-  try {
-    if (
-      ABORT_SIGNAL_PROTOTYPE === null
-      || typeof ABORT_SIGNAL_ABORTED_GETTER !== "function"
-      || ABORT_SIGNAL_OWN_SHAPE === null
-      || value === null
-      || typeof value !== "object"
-      || utilTypes.isProxy(value)
-      || Object.getPrototypeOf(value) !== ABORT_SIGNAL_PROTOTYPE
-    ) return null;
-    const descriptors = Object.getOwnPropertyDescriptors(value);
-    const keys = Reflect.ownKeys(descriptors);
-    if (
-      keys.length !== ABORT_SIGNAL_OWN_SHAPE.length
-      || ABORT_SIGNAL_OWN_SHAPE.some((expected) => {
-        const descriptor = descriptors[expected.key];
-        return descriptor === undefined
-          || descriptor.configurable !== expected.configurable
-          || descriptor.enumerable !== expected.enumerable
-          || descriptor.writable !== expected.writable
-          || Object.hasOwn(descriptor, "value") !== expected.data
-          || descriptor.get !== undefined
-          || descriptor.set !== undefined;
-      })
-    ) return null;
-    const aborted = Reflect.apply(ABORT_SIGNAL_ABORTED_GETTER, value, []);
-    return typeof aborted === "boolean" ? { signal: value, aborted } : null;
-  } catch {
-    return null;
-  }
-}
-
-function abortSignalSnapshot(admitted) {
-  if (admitted.signal === null) return false;
-  try {
-    const aborted = Reflect.apply(ABORT_SIGNAL_ABORTED_GETTER, admitted.signal, []);
-    return typeof aborted === "boolean" ? aborted : true;
-  } catch {
-    return true;
-  }
-}
-
-function corpusPlatformAdmitted() {
-  return process.platform === "win32" && process.arch === "x64";
+function validAbortSignal(value) {
+  return value === undefined
+    || (typeof AbortSignal === "function" && !utilTypes.isProxy(value) && value instanceof AbortSignal);
 }
 
 function canonicalRepositoryRoot(value) {
@@ -452,28 +355,9 @@ function confinedCorpusPath(root, rel) {
   return absolute;
 }
 
-function corpusGitEnvironment() {
-  const env = {};
-  for (const [name, value] of Object.entries(process.env)) {
-    const normalizedName = name.toUpperCase();
-    if (
-      CORPUS_GIT_SCRUBBED.has(normalizedName)
-      || normalizedName.startsWith("GIT_CONFIG_KEY_")
-      || normalizedName.startsWith("GIT_CONFIG_VALUE_")
-    ) continue;
-    env[name] = value;
-  }
-  env.GIT_TERMINAL_PROMPT = "0";
-  env.GIT_OPTIONAL_LOCKS = "0";
-  env.GIT_NO_LAZY_FETCH = "1";
-  env.GIT_NO_REPLACE_OBJECTS = "1";
-  return env;
-}
-
 function gitCorpus(root, args, maxBuffer = 64 * 1024) {
-  return spawnSync("git", ["-c", `safe.directory=${root}`, ...args], {
+  return spawnSync("git", args, {
     cwd: root,
-    env: corpusGitEnvironment(),
     encoding: null,
     shell: false,
     windowsHide: true,
@@ -501,15 +385,6 @@ function sameRepositoryIdentity(identity, request) {
 function trackedCorpusFile(root, rel) {
   const result = gitCorpus(root, ["ls-files", "-z", "--error-unmatch", "--", rel]);
   return result.status === 0 && result.stdout.equals(Buffer.from(`${rel}\0`, "utf8"));
-}
-
-function gitCorpusFungi(root) {
-  const result = gitCorpus(root, ["ls-files", "*.fungi"], 16 * 1024 * 1024);
-  if (result.status !== 0) return null;
-  return result.stdout.toString("utf8")
-    .split(/\r?\n/u)
-    .map((value) => value.trim().replace(/\\/gu, "/"))
-    .filter((value) => value.endsWith(".fungi"));
 }
 
 function sameHeldStat(left, right) {
@@ -605,347 +480,39 @@ function lexicalCompare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-const CORPUS_LOCAL_PACKAGE_NAME = /^@galerina\/([a-z0-9]+(?:-[a-z0-9]+)*)$/u;
-const CORPUS_PACKAGE_NAME = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/u;
-const CORPUS_RUNTIME_PATH = /^[A-Za-z0-9@._/-]+$/u;
-const CORPUS_RUNTIME_FILE = /\.(?:cjs|js|json|mjs|node|wasm)$/u;
-const CORPUS_MAX_RUNTIME_PACKAGES = 128;
-const CORPUS_MAX_COMPILER_FILES = 8191;
-const CORPUS_MAX_PACKAGE_MANIFEST_BYTES = 1024 * 1024;
-const CORPUS_MAX_RUNTIME_AUTHORITY_CHARS = 24 * 1024;
-const CORPUS_RUNTIME_AUTHORITY_SCHEMA = "galerina.fungi-corpus-runtime-authority.v1";
-const CORPUS_RUNTIME_AUTHORITY_ENV = "GALERINA_CORPUS_RUNTIME_AUTHORITY";
-const CORPUS_RUNTIME_BOOTSTRAPS = Object.freeze([
-  "scripts/lib/fungi-corpus-runtime-authority.cjs",
-  "scripts/lib/fungi-corpus-cjs-preload.cjs",
-  "scripts/lib/fungi-corpus-esm-loader.mjs",
-  "scripts/lib/fungi-corpus-runtime-entry.mjs",
-]);
-
-function directCanonicalDirectory(absolute) {
-  try {
-    const state = lstatSync(absolute);
-    return !state.isSymbolicLink()
-      && state.isDirectory()
-      && realpathSync(absolute) === absolute;
-  } catch {
-    return false;
-  }
-}
-
-function runtimeRelativePath(value) {
-  if (
-    typeof value !== "string"
-    || value.length === 0
-    || value !== value.normalize("NFC")
-    || value.includes("\\")
-    || value.includes("\0")
-  ) return null;
-  const normalized = value.startsWith("./") ? value.slice(2) : value;
-  const segments = normalized.split("/");
-  if (
-    !CORPUS_RUNTIME_PATH.test(normalized)
-    || segments.some((segment) => segment === "" || segment === "." || segment === "..")
-  ) return null;
-  return normalized;
-}
-
-function manifestValue(manifest, key) {
-  const descriptor = Object.getOwnPropertyDescriptor(manifest, key);
-  return descriptor === undefined ? undefined : descriptor.value;
-}
-
-function runtimePackageEntry(manifest) {
-  const candidates = [];
-  const main = manifestValue(manifest, "main");
-  if (main !== undefined) candidates.push(main);
-  const exportsValue = manifestValue(manifest, "exports");
-  if (typeof exportsValue === "string") {
-    candidates.push(exportsValue);
-  } else if (exportsValue !== undefined) {
-    if (
-      exportsValue === null
-      || Array.isArray(exportsValue)
-      || Object.getPrototypeOf(exportsValue) !== Object.prototype
-    ) return null;
-    const dot = manifestValue(exportsValue, ".");
-    if (typeof dot === "string") {
-      candidates.push(dot);
-    } else if (dot !== undefined) {
-      if (dot === null || Array.isArray(dot) || Object.getPrototypeOf(dot) !== Object.prototype) return null;
-      const imported = manifestValue(dot, "import");
-      const fallback = manifestValue(dot, "default");
-      if (imported !== undefined) candidates.push(imported);
-      if (fallback !== undefined) candidates.push(fallback);
-    } else {
-      return null;
-    }
-  }
-  const normalized = candidates.map(runtimeRelativePath);
-  if (
-    normalized.length === 0
-    || normalized.some((entry) => entry === null || !entry.startsWith("dist/") || !/\.(?:c?js)$/u.test(entry))
-    || new Set(normalized).size !== 1
-  ) return null;
-  return normalized[0];
-}
-
-function runtimeDependencies(manifest) {
-  const found = new Map();
-  for (const sectionName of ["dependencies", "optionalDependencies", "peerDependencies"]) {
-    const section = manifestValue(manifest, sectionName);
-    if (section === undefined) continue;
-    if (section === null || Array.isArray(section) || Object.getPrototypeOf(section) !== Object.prototype) return null;
-    for (const name of Object.keys(section).sort(lexicalCompare)) {
-      const folded = name.toLowerCase();
-      const match = CORPUS_LOCAL_PACKAGE_NAME.exec(name);
-      const specifier = manifestValue(section, name);
-      if (
-        !CORPUS_PACKAGE_NAME.test(name)
-        || folded !== name
-        || typeof specifier !== "string"
-        || specifier.length === 0
-        || specifier !== specifier.normalize("NFC")
-        || specifier.includes("\0")
-        || found.has(folded)
-      ) return null;
-      if (folded.startsWith("@galerina/") && match === null) return null;
-      if (match === null) {
-        found.set(folded, { name, directory: null });
-      } else {
-        const directory = `galerina-${match[1]}`;
-        if (specifier !== `file:../${directory}`) return null;
-        found.set(folded, { name, directory });
-      }
-    }
-  }
-  return [...found.values()];
-}
-
-function installedRuntimeManifest(root, fromManifest, name) {
-  try {
-    let directory = dirname(fromManifest);
-    while (true) {
-      if (basename(directory).toLowerCase() !== "node_modules") {
-        const candidate = join(directory, "node_modules", ...name.split("/"), "package.json");
-        const candidatePath = relative(root, candidate).split(sep).join("/");
-        if (runtimeRelativePath(candidatePath) !== candidatePath) return null;
-        let state;
-        try {
-          state = lstatSync(candidate);
-        } catch (error) {
-          if (error?.code !== "ENOENT") return null;
-        }
-        if (state !== undefined) {
-          try {
-            if (
-              state.isSymbolicLink()
-              || !state.isFile()
-              || realpathSync(candidate) !== candidate
-              || !directCanonicalDirectory(dirname(candidate))
-            ) return null;
-            return candidate;
-          } catch {
-            return null;
-          }
-        }
-      }
-      if (directory === root) break;
-      const parent = dirname(directory);
-      if (parent === directory || relative(root, parent).startsWith("..")) break;
-      directory = parent;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function corpusRuntimeAuthority(root, entries, files) {
-  const input = {
-    schema: CORPUS_RUNTIME_AUTHORITY_SCHEMA,
-    root,
-    files: files.map(({ path }) => path),
-    entries: entries.map(({ name, absolute }) => ({
-      name,
-      path: relative(root, absolute).split(sep).join("/"),
-    })),
-  };
-  const payload = { ...input, digest: corpusDigest(input) };
-  const encoded = deflateRawSync(Buffer.from(JSON.stringify(payload), "utf8")).toString("base64");
-  return encoded.length <= CORPUS_MAX_RUNTIME_AUTHORITY_CHARS ? encoded : null;
-}
-
 function corpusCompilerIdentity(root) {
-  const heldFiles = new Map();
   try {
-    const paths = ["galerina.mjs", ...CORPUS_RUNTIME_BOOTSTRAPS];
-    const pathKeys = new Set(paths);
-    const pathAliases = new Set(paths.map((path) => path.toLowerCase()));
-    const localPackageNames = new Map();
-    const localPackageDirectories = new Map();
-    const packageManifests = new Map();
-    const runtimeEntries = [];
-    const pending = [{
-      name: "@galerina/core-compiler",
-      directory: "galerina-core-compiler",
-      manifestPath: "packages-ts/galerina-core-compiler/package.json",
-    }];
-    const addPath = (path) => {
-      if (
-        runtimeRelativePath(path) !== path
-        || pathKeys.has(path)
-        || pathAliases.has(path.toLowerCase())
-      ) throw new Error("compiler path refused");
-      pathKeys.add(path);
-      pathAliases.add(path.toLowerCase());
-      paths.push(path);
-      if (paths.length > CORPUS_MAX_COMPILER_FILES) throw new Error("compiler file limit refused");
-    };
-    const visit = (directory, skipNodeModules = false) => {
-      if (!directCanonicalDirectory(directory)) throw new Error("compiler directory refused");
+    const paths = ["galerina.mjs"];
+    const dist = join(root, "packages-ts", "galerina-core-compiler", "dist");
+    const visit = (directory) => {
       const entries = readdirSync(directory, { withFileTypes: true }).sort((left, right) => lexicalCompare(left.name, right.name));
       for (const entry of entries) {
-        if (skipNodeModules && entry.name === "node_modules" && entry.isDirectory()) continue;
         const absolute = join(directory, entry.name);
-        if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) throw new Error("compiler entry refused");
-        if (entry.isDirectory()) visit(absolute, skipNodeModules);
-        else if (entry.isFile() && CORPUS_RUNTIME_FILE.test(entry.name)) {
-          const path = relative(root, absolute).split(sep).join("/");
-          if (!pathKeys.has(path)) addPath(path);
+        if (entry.isSymbolicLink()) throw new Error("compiler symlink refused");
+        if (entry.isDirectory()) visit(absolute);
+        else if (entry.isFile() && /\.(?:c?js)$/u.test(entry.name)) {
+          paths.push(relative(root, absolute).split(sep).join("/"));
         }
       }
     };
-
-    while (pending.length > 0) {
-      pending.sort((left, right) => lexicalCompare(left.manifestPath, right.manifestPath));
-      const next = pending.shift();
-      const manifestKey = next.manifestPath.toLowerCase();
-      const priorManifest = packageManifests.get(manifestKey);
-      if (priorManifest !== undefined) {
-        if (priorManifest.path !== next.manifestPath || priorManifest.name !== next.name) {
-          throw new Error("compiler package alias refused");
-        }
-        continue;
-      }
-      if (packageManifests.size >= CORPUS_MAX_RUNTIME_PACKAGES) throw new Error("compiler package limit refused");
-      packageManifests.set(manifestKey, { path: next.manifestPath, name: next.name });
-
-      if (next.directory !== null) {
-        const nameKey = next.name.toLowerCase();
-        const directoryKey = next.directory.toLowerCase();
-        const priorDirectory = localPackageNames.get(nameKey);
-        const priorName = localPackageDirectories.get(directoryKey);
-        if (priorDirectory !== undefined || priorName !== undefined) {
-          if (priorDirectory !== next.directory || priorName !== next.name) throw new Error("compiler package alias refused");
-        } else {
-          localPackageNames.set(nameKey, next.directory);
-          localPackageDirectories.set(directoryKey, next.name);
-        }
-      }
-
-      const manifestAbsolute = confinedCorpusPath(root, next.manifestPath);
-      if (manifestAbsolute === null || realpathSync(manifestAbsolute) !== manifestAbsolute) throw new Error("compiler manifest path refused");
-      const packageRoot = dirname(manifestAbsolute);
-      if (!directCanonicalDirectory(packageRoot)) throw new Error("compiler package root refused");
-      const heldManifest = readHeldFile(manifestAbsolute, CORPUS_MAX_PACKAGE_MANIFEST_BYTES);
-      if (!heldManifest.ok || heldManifest.overflow) {
-        closeHeldFile(heldManifest);
-        throw new Error("compiler manifest refused");
-      }
-      heldFiles.set(next.manifestPath, heldManifest);
-      addPath(next.manifestPath);
-      const decoded = decodeUtf8(heldManifest.bytes);
-      if (!decoded.ok) throw new Error("compiler manifest encoding refused");
-      const manifest = JSON.parse(decoded.value);
-      if (manifest === null || Array.isArray(manifest) || Object.getPrototypeOf(manifest) !== Object.prototype) {
-        throw new Error("compiler manifest shape refused");
-      }
-      if (manifestValue(manifest, "name") !== next.name) throw new Error("compiler package name refused");
-      if (next.directory !== null) {
-        const entry = runtimePackageEntry(manifest);
-        if (entry === null) throw new Error("compiler package entry refused");
-        const entryPath = `packages-ts/${next.directory}/${entry}`;
-        const entryAbsolute = confinedCorpusPath(root, entryPath);
-        if (entryAbsolute === null || realpathSync(entryAbsolute) !== entryAbsolute) throw new Error("compiler package entry path refused");
-        runtimeEntries.push({ name: next.name, absolute: entryAbsolute });
-        visit(join(packageRoot, "dist"));
-        if (!pathKeys.has(entryPath)) throw new Error("compiler package entry missing");
-      } else {
-        visit(packageRoot, true);
-      }
-      const dependencies = runtimeDependencies(manifest);
-      if (dependencies === null) throw new Error("compiler dependencies refused");
-      for (const dependency of dependencies) {
-        if (dependency.directory !== null) {
-          pending.push({
-            ...dependency,
-            manifestPath: `packages-ts/${dependency.directory}/package.json`,
-          });
-          continue;
-        }
-        const foundAbsolute = installedRuntimeManifest(root, manifestAbsolute, dependency.name);
-        if (foundAbsolute === null) throw new Error("compiler dependency missing");
-        const foundPath = relative(root, foundAbsolute).split(sep).join("/");
-        if (
-          runtimeRelativePath(foundPath) !== foundPath
-          || confinedCorpusPath(root, foundPath) !== foundAbsolute
-        ) throw new Error("compiler dependency escaped");
-        pending.push({ name: dependency.name, directory: null, manifestPath: foundPath });
-      }
-    }
-
+    visit(dist);
     paths.sort(lexicalCompare);
     const files = [];
     for (const path of paths) {
       const absolute = confinedCorpusPath(root, path);
-      if (absolute === null || realpathSync(absolute) !== absolute) return { ok: false };
-      const held = heldFiles.get(path) ?? readHeldFile(absolute);
+      if (absolute === null) return { ok: false };
+      const held = readHeldFile(absolute);
       if (!held.ok) return { ok: false };
       const digest = rawDigest(held.bytes);
       const stable = verifyHeldFile(held, digest);
       closeHeldFile(held);
-      heldFiles.delete(path);
       if (!stable) return { ok: false };
       files.push({ path, digest });
     }
     const input = { schema: "galerina.fungi-corpus-compiler-input.v2", files };
-    runtimeEntries.sort((left, right) => lexicalCompare(left.name, right.name));
-    const authority = corpusRuntimeAuthority(root, runtimeEntries, files);
-    if (authority === null) return { ok: false };
-    return {
-      ok: true,
-      digest: corpusDigest(input),
-      files: Object.freeze(files.map((file) => Object.freeze({ ...file }))),
-      authority,
-    };
+    return { ok: true, digest: corpusDigest(input) };
   } catch {
     return { ok: false };
-  } finally {
-    for (const held of heldFiles.values()) closeHeldFile(held);
-  }
-}
-
-function protectedCorpusFileSet(root, compiler, file) {
-  try {
-    if (!compiler.ok || !Array.isArray(compiler.files)) return null;
-    const rows = [...compiler.files, { path: file.path, digest: file.digest }]
-      .sort((left, right) => lexicalCompare(left.path, right.path));
-    for (let index = 0; index < rows.length; index += 1) {
-      const row = rows[index];
-      if (
-        typeof row.path !== "string"
-        || !CORPUS_DIGEST.test(row.digest)
-        || (index > 0 && rows[index - 1].path === row.path)
-      ) return null;
-    }
-    return {
-      schema: "galerina.protected-file-set.v1",
-      root,
-      files: rows.map((row) => ({ path: row.path, sha256: row.digest.slice("sha256:".length) })),
-    };
-  } catch {
-    return null;
   }
 }
 
@@ -1153,8 +720,7 @@ async function terminalCorpusReceipt(root, request, shard, completed, terminatio
 
 export async function runCorpusShard(value, shardValue, executionValue, signal) {
   try {
-    const admittedSignal = admitAbortSignal(signal);
-    if (admittedSignal === null) return corpusRefused("CORPUS_SHARD_SIGNAL_INVALID");
+    if (!validAbortSignal(signal)) return corpusRefused("CORPUS_SHARD_SIGNAL_INVALID");
     const requestResult = validateCorpusRequest(value);
     if (requestResult.kind !== "accepted") return corpusRefused("CORPUS_SHARD_REQUEST_INVALID");
     const request = requestResult.value;
@@ -1163,7 +729,6 @@ export async function runCorpusShard(value, shardValue, executionValue, signal) 
     if (shard === null) return corpusRefused("CORPUS_SHARD_INVALID");
     const execution = exactCorpusRecord(executionValue, CORPUS_EXECUTION_KEYS);
     if (execution === null) return corpusRefused("CORPUS_SHARD_EXECUTION_INVALID");
-    if (!corpusPlatformAdmitted()) return corpusRefused("CORPUS_SHARD_PLATFORM_REFUSED");
     const root = canonicalRepositoryRoot(execution.repositoryRoot);
     if (root === null) return corpusRefused("CORPUS_SHARD_ROOT_INVALID");
 
@@ -1186,20 +751,12 @@ export async function runCorpusShard(value, shardValue, executionValue, signal) 
     let stderrBytes = 0;
     for (const file of shard.files) {
       if (Date.now() >= deadline) return terminalCorpusReceipt(root, request, shard, completed, "TIMEOUT");
-      if (abortSignalSnapshot(admittedSignal)) {
-        return terminalCorpusReceipt(root, request, shard, completed, "CANCELLED");
-      }
-      const remainingStdout = shard.limits.maxOutputBytes - stdoutBytes;
-      const remainingStderr = shard.limits.maxOutputBytes - stderrBytes;
-      if (remainingStdout < 1 || remainingStderr < 1) {
-        return terminalCorpusReceipt(root, request, shard, completed, "OUTPUT_OVERFLOW");
-      }
       const admitted = inspectCorpusFile(root, file, Math.max(0, shard.limits.maxBytes - admittedBytes));
       if (!admitted.ok) {
         return terminalCorpusReceipt(root, request, shard, completed, admitted.reason);
       }
       admittedBytes += admitted.bytesUsed;
-      if (abortSignalSnapshot(admittedSignal)) {
+      if (signal?.aborted) {
         closeHeldFile(admitted.source);
         return terminalCorpusReceipt(root, request, shard, completed, "CANCELLED");
       }
@@ -1208,46 +765,23 @@ export async function runCorpusShard(value, shardValue, executionValue, signal) 
         closeHeldFile(admitted.source);
         return terminalCorpusReceipt(root, request, shard, completed, "TIMEOUT");
       }
-      const protectedFileSet = protectedCorpusFileSet(root, initialCompiler, file);
-      if (protectedFileSet === null) {
-        closeHeldFile(admitted.source);
-        return corpusRefused("CORPUS_PROTECTED_FILE_SET_REFUSED");
-      }
+      const remainingStdout = Math.max(0, shard.limits.maxOutputBytes - stdoutBytes);
+      const remainingStderr = Math.max(0, shard.limits.maxOutputBytes - stderrBytes);
       const child = await runOwnedProcess({
         command: process.execPath,
-        args: [
-          "--no-warnings",
-          "--require",
-          join(root, ...CORPUS_RUNTIME_BOOTSTRAPS[1].split("/")),
-          "--experimental-loader",
-          pathToFileURL(join(root, ...CORPUS_RUNTIME_BOOTSTRAPS[2].split("/"))).href,
-          join(root, ...CORPUS_RUNTIME_BOOTSTRAPS[3].split("/")),
-          join(root, "galerina.mjs"),
-          "check",
-          file.path,
-          ...(file.mode === "strict" ? ["--strict-types"] : []),
-        ],
+        args: [join(root, "galerina.mjs"), "check", file.path, ...(file.mode === "strict" ? ["--strict-types"] : [])],
         cwd: root,
-        env: { [CORPUS_RUNTIME_AUTHORITY_ENV]: initialCompiler.authority },
+        env: {},
         timeoutMs: remainingMs,
-        maxOutputBytes: shard.limits.maxOutputBytes,
-        maxStdoutBytes: remainingStdout,
-        maxStderrBytes: remainingStderr,
+        maxOutputBytes: Math.max(1, remainingStdout, remainingStderr),
         windowsHide: true,
-        protectedFileSet,
       });
       const stable = verifyHeldFile(admitted.source, file.digest);
       closeHeldFile(admitted.source);
       if (!stable) return terminalCorpusReceipt(root, request, shard, completed, "REPOSITORY_CHANGED");
 
-      if (
-        !Number.isSafeInteger(child.stdoutBytes)
-        || child.stdoutBytes < 0
-        || !Number.isSafeInteger(child.stderrBytes)
-        || child.stderrBytes < 0
-      ) return terminalCorpusReceipt(root, request, shard, completed, "CRASH");
-      stdoutBytes += child.stdoutBytes;
-      stderrBytes += child.stderrBytes;
+      stdoutBytes += Buffer.byteLength(child.stdout, "utf8");
+      stderrBytes += Buffer.byteLength(child.stderr, "utf8");
       if (
         child.outputLimitExceeded
         || stdoutBytes > shard.limits.maxOutputBytes
@@ -1264,7 +798,11 @@ export async function runCorpusShard(value, shardValue, executionValue, signal) 
       ) return terminalCorpusReceipt(root, request, shard, completed, "CRASH");
 
       const output = `${child.stdout}${child.stderr}`;
-      const codes = extractDiagnosticCodes(output);
+      const codes = [...new Set([...output.matchAll(/(FUNGI-[A-Z][A-Z0-9]*-\d+[A-Za-z]?)/gu)].map((match) => match[1]))]
+        .sort(lexicalCompare);
+      if (child.status >= 128 && codes.length === 0) {
+        return terminalCorpusReceipt(root, request, shard, completed, "CRASH");
+      }
       const classifiable = child.status === 0
         ? codes.length > 0 || CORPUS_CLEAN_MARKER.test(output)
         : codes.length > 0;
@@ -1322,7 +860,7 @@ function localShardMatches(root, request, shard) {
 
 export async function runCorpusAggregate(value, limitValue, executionValue, signal) {
   try {
-    if (admitAbortSignal(signal) === null) return corpusRefused("CORPUS_RUN_SIGNAL_INVALID");
+    if (!validAbortSignal(signal)) return corpusRefused("CORPUS_RUN_SIGNAL_INVALID");
     const requestResult = validateCorpusRequest(value);
     if (requestResult.kind !== "accepted") return corpusRefused("CORPUS_RUN_REQUEST_INVALID");
     const request = requestResult.value;
@@ -1337,7 +875,6 @@ export async function runCorpusAggregate(value, limitValue, executionValue, sign
       || execution.concurrency < 1
       || execution.concurrency > 4
     ) return corpusRefused("CORPUS_RUN_EXECUTION_INVALID");
-    if (!corpusPlatformAdmitted()) return corpusRefused("CORPUS_RUN_PLATFORM_REFUSED");
     const priorReceipts = exactCorpusArray(execution.priorReceipts);
     if (priorReceipts === null) return corpusRefused("CORPUS_RUN_PRIOR_INVALID");
     const root = canonicalRepositoryRoot(execution.repositoryRoot);
@@ -1408,21 +945,11 @@ export async function runCorpusAggregate(value, limitValue, executionValue, sign
   }
 }
 
-function buildLocalCorpusRequest(root, profile, shardCount, selectedPaths = null) {
+function buildLocalCorpusRequest(root, profile, shardCount) {
   const repository = repositoryIdentity(root);
-  if (!repository.ok) return null;
-  const tracked = gitCorpusFungi(root);
-  if (tracked === null) return null;
-  let paths;
-  if (selectedPaths === null) {
-    paths = tracked.filter((path) => !ownedElsewhere(path)).sort(lexicalCompare);
-  } else {
-    const trackedPaths = new Set(tracked);
-    if (selectedPaths.some((path) => !trackedPaths.has(path) || ownedElsewhere(path))) return null;
-    paths = [...selectedPaths];
-  }
   const compiler = corpusCompilerIdentity(root);
-  if (!compiler.ok) return null;
+  if (!repository.ok || !compiler.ok) return null;
+  const paths = gitFungi().filter((path) => !ownedElsewhere(path)).sort(lexicalCompare);
   const files = [];
   for (const path of paths) {
     const absolute = confinedCorpusPath(root, path);
@@ -1457,287 +984,20 @@ function buildLocalCorpusRequest(root, profile, shardCount, selectedPaths = null
   return validateCorpusRequest(request).kind === "accepted" ? request : null;
 }
 
-function corpusCliFilePath(value) {
-  if (
-    typeof value !== "string"
-    || value.length === 0
-    || value.normalize("NFC") !== value
-    || value.includes("\\")
-    || value.includes(":")
-    || isAbsolute(value)
-    || value.startsWith("/")
-    || !value.endsWith(".fungi")
-    || /[\u0000-\u001f\u007f]/u.test(value)
-    || Buffer.byteLength(value, "utf8") > 4096
-  ) return false;
-  const segments = value.split("/");
-  return segments.every((segment) => segment.length > 0 && segment !== "." && segment !== "..");
-}
-
-function asciiCaseKey(value) {
-  return value.replace(/[A-Z]/gu, (character) => character.toLowerCase());
-}
-
-const CORPUS_EVIDENCE_PREFIX = "build/fungi-corpus-check/evidence/";
-const CORPUS_EVIDENCE_KEYS = Object.freeze(["digest", "limits", "request", "run", "schema"]);
-const CORPUS_EVIDENCE_LIMIT_KEYS = Object.freeze(["maxBytes", "maxFiles", "maxOutputBytes", "timeoutMs"]);
-const CORPUS_EVIDENCE_RUN_KEYS = Object.freeze(["aggregate", "receipts", "schema"]);
-const CORPUS_EVIDENCE_MAX_BYTES = 8 * 1024 * 1024;
-
-function evidenceOutputPath(value) {
-  return typeof value === "string"
-    && value === value.normalize("NFC")
-    && value.startsWith(CORPUS_EVIDENCE_PREFIX)
-    && /^[a-z0-9][a-z0-9.-]*\.json$/u.test(value.slice(CORPUS_EVIDENCE_PREFIX.length))
-    && !isAbsolute(value)
-    && !value.includes("\\")
-    && !value.includes("\0")
-    && value.split("/").every((segment) => segment.length > 0 && segment !== "." && segment !== "..");
-}
-
-function exactEvidenceDirectory(root, create = true) {
-  try {
-    const canonicalRoot = realpathSync(root);
-    if (canonicalRoot !== resolve(root)) return null;
-    let current = canonicalRoot;
-    for (const segment of ["build", "fungi-corpus-check", "evidence"]) {
-      const entries = readdirSync(current, { withFileTypes: true });
-      const matches = entries.filter((entry) => entry.name.toLowerCase() === segment.toLowerCase());
-      if (matches.length > 1 || (matches.length === 1 && matches[0].name !== segment)) return null;
-      const next = join(current, segment);
-      if (matches.length === 0) {
-        if (!create) return null;
-        mkdirSync(next);
-      }
-      const state = lstatSync(next);
-      if (state.isSymbolicLink() || !state.isDirectory() || realpathSync(next) !== next) return null;
-      current = next;
-    }
-    return current;
-  } catch {
-    return null;
-  }
-}
-
-function exactEvidenceEntry(directory, name, mustExist) {
-  try {
-    const entries = readdirSync(directory, { withFileTypes: true });
-    const matches = entries.filter((entry) => asciiCaseKey(entry.name) === asciiCaseKey(name));
-    if (mustExist) {
-      if (matches.length !== 1 || matches[0].name !== name) return null;
-      const target = join(directory, name);
-      const state = lstatSync(target, { bigint: true });
-      if (state.isSymbolicLink() || !state.isFile() || state.nlink !== 1n || realpathSync(target) !== target) return null;
-      return target;
-    }
-    return matches.length === 0 ? join(directory, name) : null;
-  } catch {
-    return null;
-  }
-}
-
-function canonicalCorpusEvidenceRun(request, limits, runValue) {
-  const run = exactCorpusRecord(runValue, CORPUS_EVIDENCE_RUN_KEYS);
-  if (run === null || run.schema !== "galerina.fungi-corpus-run.v2") return null;
-  const shards = deriveCorpusShards(request, limits);
-  const candidates = exactCorpusArray(run.receipts);
-  if (shards.kind !== "accepted" || candidates === null || candidates.length !== shards.value.length) return null;
-  const receipts = [];
-  for (let index = 0; index < candidates.length; index += 1) {
-    const receipt = validateShardReceipt(candidates[index], shards.value[index]);
-    if (receipt.kind !== "accepted") return null;
-    receipts.push(receipt.value);
-  }
-  const aggregate = aggregateCorpusReceipts(request, shards.value, receipts);
-  if (aggregate.kind !== "accepted" || !closedCorpusEquivalent(run.aggregate, aggregate.value)) return null;
-  return {
-    shards: shards.value,
-    run: {
-      aggregate: aggregate.value,
-      receipts,
-      schema: run.schema,
-    },
-  };
-}
-
-export function readCorpusResumeEvidence(rootValue, resumePath, outputPath, requestValue, limitValue) {
-  let held = null;
-  try {
-    if (
-      !evidenceOutputPath(resumePath)
-      || !evidenceOutputPath(outputPath)
-      || asciiCaseKey(resumePath) === asciiCaseKey(outputPath)
-    ) return corpusRefused("CORPUS_RESUME_PATH_REFUSED");
-    const root = canonicalRepositoryRoot(rootValue);
-    const requestResult = validateCorpusRequest(requestValue);
-    const limits = exactCorpusRecord(limitValue, CORPUS_EVIDENCE_LIMIT_KEYS);
-    if (
-      root === null
-      || requestResult.kind !== "accepted"
-      || limits === null
-      || Object.values(limits).some((entry) => !Number.isSafeInteger(entry) || entry < 1)
-      || !requestFileSetMatches(requestResult.value)
-    ) return corpusRefused("CORPUS_RESUME_VALUE_REFUSED");
-    const request = requestResult.value;
-    const initialRepository = repositoryIdentity(root);
-    const initialCompiler = corpusCompilerIdentity(root);
-    if (
-      !sameRepositoryIdentity(initialRepository, request)
-      || !initialCompiler.ok
-      || initialCompiler.digest !== request.compilerDigest
-    ) return corpusRefused("CORPUS_RESUME_IDENTITY_REFUSED");
-
-    const directory = exactEvidenceDirectory(root, false);
-    if (directory === null) return corpusRefused("CORPUS_RESUME_DIRECTORY_REFUSED");
-    const resumeName = resumePath.slice(CORPUS_EVIDENCE_PREFIX.length);
-    const outputName = outputPath.slice(CORPUS_EVIDENCE_PREFIX.length);
-    const target = exactEvidenceEntry(directory, resumeName, true);
-    if (target === null || exactEvidenceEntry(directory, outputName, false) === null) {
-      return corpusRefused("CORPUS_RESUME_TARGET_REFUSED");
-    }
-    held = readHeldFile(target, CORPUS_EVIDENCE_MAX_BYTES);
-    if (!held.ok || held.overflow || held.stat.nlink !== 1n) {
-      return corpusRefused(held?.overflow ? "CORPUS_RESUME_SIZE_REFUSED" : "CORPUS_RESUME_READ_REFUSED");
-    }
-    if (held.bytes.length >= 3 && held.bytes[0] === 0xef && held.bytes[1] === 0xbb && held.bytes[2] === 0xbf) {
-      return corpusRefused("CORPUS_RESUME_ENCODING_REFUSED");
-    }
-    let envelope;
-    try {
-      const text = new TextDecoder("utf-8", { fatal: true }).decode(held.bytes);
-      envelope = JSON.parse(text);
-    } catch {
-      return corpusRefused("CORPUS_RESUME_PARSE_REFUSED");
-    }
-    const record = exactCorpusRecord(envelope, CORPUS_EVIDENCE_KEYS);
-    if (record === null || record.schema !== "galerina.fungi-corpus-evidence.v1" || !CORPUS_DIGEST.test(record.digest)) {
-      return corpusRefused("CORPUS_RESUME_ENVELOPE_REFUSED");
-    }
-    const embeddedRequest = validateCorpusRequest(record.request);
-    const embeddedLimits = exactCorpusRecord(record.limits, CORPUS_EVIDENCE_LIMIT_KEYS);
-    if (
-      embeddedRequest.kind !== "accepted"
-      || embeddedLimits === null
-      || !closedCorpusEquivalent(embeddedRequest.value, request)
-      || !closedCorpusEquivalent(embeddedLimits, limits)
-    ) return corpusRefused("CORPUS_RESUME_BINDING_REFUSED");
-    const canonical = canonicalCorpusEvidenceRun(request, limits, record.run);
-    if (canonical === null) return corpusRefused("CORPUS_RESUME_RUN_REFUSED");
-    const base = {
-      schema: record.schema,
-      request: embeddedRequest.value,
-      limits: embeddedLimits,
-      run: canonical.run,
-    };
-    if (
-      record.digest !== corpusDigest(base)
-      || !held.bytes.equals(Buffer.from(`${JSON.stringify({ ...base, digest: record.digest })}\n`, "utf8"))
-    ) return corpusRefused("CORPUS_RESUME_DIGEST_REFUSED");
-    if (
-      canonical.shards.some((shard) => !localShardMatches(root, request, shard))
-    ) return corpusRefused("CORPUS_RESUME_AGGREGATE_REFUSED");
-    const finalRepository = repositoryIdentity(root);
-    const finalCompiler = corpusCompilerIdentity(root);
-    if (
-      !sameRepositoryIdentity(finalRepository, request)
-      || !finalCompiler.ok
-      || finalCompiler.digest !== request.compilerDigest
-      || exactEvidenceEntry(directory, outputName, false) === null
-      || !verifyHeldFile(held, rawDigest(held.bytes))
-    ) return corpusRefused("CORPUS_RESUME_NOT_CURRENT");
-    return corpusAccepted({ receipts: canonical.run.receipts });
-  } catch {
-    return corpusRefused("CORPUS_RESUME_EVIDENCE_REFUSED");
-  } finally {
-    if (held !== null) closeHeldFile(held);
-  }
-}
-
-export function writeCorpusEvidenceEnvelope(root, outputPath, requestValue, limitValue, runValue) {
-  let temporary = null;
-  try {
-    if (!evidenceOutputPath(outputPath)) return corpusRefused("CORPUS_EVIDENCE_PATH_REFUSED");
-    const requestResult = validateCorpusRequest(requestValue);
-    const limits = exactCorpusRecord(limitValue, CORPUS_EVIDENCE_LIMIT_KEYS);
-    if (requestResult.kind !== "accepted"
-        || limits === null
-        || Object.values(limits).some((entry) => !Number.isSafeInteger(entry) || entry < 1)) {
-      return corpusRefused("CORPUS_EVIDENCE_VALUE_REFUSED");
-    }
-    const canonical = canonicalCorpusEvidenceRun(requestResult.value, limits, runValue);
-    if (canonical === null) {
-      return corpusRefused("CORPUS_EVIDENCE_COVERAGE_REFUSED");
-    }
-    const base = {
-      schema: "galerina.fungi-corpus-evidence.v1",
-      request: requestResult.value,
-      limits,
-      run: canonical.run,
-    };
-    const envelope = { ...base, digest: corpusDigest(base) };
-    if (!exactCorpusRecord(envelope, CORPUS_EVIDENCE_KEYS)) return corpusRefused("CORPUS_EVIDENCE_SHAPE_REFUSED");
-    const bytes = Buffer.from(`${JSON.stringify(envelope)}\n`, "utf8");
-    if (bytes.length > CORPUS_EVIDENCE_MAX_BYTES) return corpusRefused("CORPUS_EVIDENCE_SIZE_REFUSED");
-    const directory = exactEvidenceDirectory(root);
-    if (directory === null) return corpusRefused("CORPUS_EVIDENCE_DIRECTORY_REFUSED");
-    const name = outputPath.slice(CORPUS_EVIDENCE_PREFIX.length);
-    const target = join(directory, name);
-    try { lstatSync(target); return corpusRefused("CORPUS_EVIDENCE_TARGET_EXISTS"); }
-    catch (error) { if (error?.code !== "ENOENT") return corpusRefused("CORPUS_EVIDENCE_TARGET_REFUSED"); }
-    temporary = join(directory, `.${name}.${process.pid}.tmp`);
-    const fd = openSync(temporary, fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_EXCL, 0o600);
-    try {
-      writeFileSync(fd, bytes);
-      fsyncSync(fd);
-    } finally {
-      closeSync(fd);
-    }
-    renameSync(temporary, target);
-    temporary = null;
-    const state = lstatSync(target);
-    if (state.isSymbolicLink() || !state.isFile() || realpathSync(target) !== target) {
-      return corpusRefused("CORPUS_EVIDENCE_PUBLICATION_REFUSED");
-    }
-    return corpusAccepted({ path: outputPath, digest: envelope.digest });
-  } catch {
-    return corpusRefused("CORPUS_EVIDENCE_WRITE_REFUSED");
-  } finally {
-    if (temporary !== null) { try { unlinkSync(temporary); } catch { /* owned unpublished temp only */ } }
-  }
-}
-
 function parseCorpusV2Cli(args) {
-  if (args[0] !== "--corpus-v2" || args.length < 15 || args.length % 2 === 0) return null;
+  if (args[0] !== "--corpus-v2" || args.length !== 15) return null;
   const allowed = new Set([
-    "--profile", "--file", "--shard-count", "--concurrency", "--max-files", "--max-bytes", "--timeout-ms", "--max-output-bytes", "--evidence-output", "--resume-evidence",
+    "--profile", "--shard-count", "--concurrency", "--max-files", "--max-bytes", "--timeout-ms", "--max-output-bytes",
   ]);
   const values = new Map();
-  const files = [];
   for (let index = 1; index < args.length; index += 2) {
     const flag = args[index];
     const value = args[index + 1];
-    if (!allowed.has(flag) || value === undefined) return null;
-    if (flag === "--file") files.push(value);
-    else {
-      if (values.has(flag)) return null;
-      values.set(flag, value);
-    }
+    if (!allowed.has(flag) || values.has(flag) || value === undefined) return null;
+    values.set(flag, value);
   }
   const profile = values.get("--profile");
   if (profile !== "WORKSET" && profile !== "PROJECT") return null;
-  if (profile === "PROJECT" && files.length > 0) return null;
-  const aliases = new Set();
-  let previousFile = null;
-  for (const file of files) {
-    const alias = asciiCaseKey(file);
-    if (
-      !corpusCliFilePath(file)
-      || (previousFile !== null && previousFile >= file)
-      || aliases.has(alias)
-    ) return null;
-    aliases.add(alias);
-    previousFile = file;
-  }
   const integer = (flag) => {
     const value = values.get(flag);
     return typeof value === "string" && /^(?:0|[1-9]\d*)$/u.test(value) ? Number(value) : NaN;
@@ -1755,18 +1015,7 @@ function parseCorpusV2Cli(args) {
     || !Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 4
     || Object.values(limits).some((value) => !Number.isSafeInteger(value) || value < 1)
   ) return null;
-  const evidenceOutput = values.get("--evidence-output") ?? null;
-  if (evidenceOutput !== null && !evidenceOutputPath(evidenceOutput)) return null;
-  const resumeEvidence = values.get("--resume-evidence") ?? null;
-  if (
-    resumeEvidence !== null
-    && (
-      !evidenceOutputPath(resumeEvidence)
-      || evidenceOutput === null
-      || asciiCaseKey(resumeEvidence) === asciiCaseKey(evidenceOutput)
-    )
-  ) return null;
-  return { profile, files: files.length === 0 ? null : files, shardCount, concurrency, limits, evidenceOutput, resumeEvidence };
+  return { profile, shardCount, concurrency, limits };
 }
 
 async function runCorpusV2Cli(args) {
@@ -1777,41 +1026,19 @@ async function runCorpusV2Cli(args) {
   }
   let root;
   try { root = realpathSync(ROOT); } catch { return 2; }
-  const request = buildLocalCorpusRequest(root, parsed.profile, parsed.shardCount, parsed.files);
+  const request = buildLocalCorpusRequest(root, parsed.profile, parsed.shardCount);
   if (request === null) {
     console.error("CORPUS_V2_LOCAL_IDENTITY_REFUSED");
     return 2;
   }
-  let priorReceipts = [];
-  if (parsed.resumeEvidence !== null) {
-    const loaded = readCorpusResumeEvidence(
-      root,
-      parsed.resumeEvidence,
-      parsed.evidenceOutput,
-      request,
-      parsed.limits,
-    );
-    if (loaded.kind !== "accepted") {
-      console.error(loaded.code);
-      return 2;
-    }
-    priorReceipts = loaded.value.receipts;
-  }
   const result = await runCorpusAggregate(request, parsed.limits, {
     repositoryRoot: root,
     concurrency: parsed.concurrency,
-    priorReceipts,
+    priorReceipts: [],
   });
   if (result.kind !== "accepted") {
     console.error(result.code);
     return 2;
-  }
-  if (parsed.evidenceOutput !== null) {
-    const written = writeCorpusEvidenceEnvelope(root, parsed.evidenceOutput, request, parsed.limits, result.value);
-    if (written.kind !== "accepted") {
-      console.error(written.code);
-      return 2;
-    }
   }
   console.log(`FUNGI_CORPUS_V2 ${JSON.stringify(result.value)}`);
   return result.value.aggregate.status === "PASS" ? 0 : 1;

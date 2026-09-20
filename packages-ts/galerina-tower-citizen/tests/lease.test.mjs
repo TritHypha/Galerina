@@ -25,7 +25,7 @@ test("within window → ALLOW + authorized, no diagnostic", () => {
   assert.equal(d.decision, "allow");
   assert.equal(d.authorized, true);
   assert.equal(d.reason, null);
-  assert.equal(d.diagnostic, null);
+  assert.equal(d.diagnostic.kind, "NONE");
   assert.equal(d.lease.capability, "net.fetch");
   assert.equal(isLeaseValid(lease(), 99), true);
 });
@@ -36,7 +36,7 @@ test("AT notAfter → DENY (half-open window, hard expiry)", () => {
   assert.equal(d.decision, "deny");
   assert.equal(d.authorized, false);
   assert.equal(d.reason, "expired");
-  assert.equal(d.diagnostic, null, "expiry is an ordinary DENY, not FUNGI-GOV-3VL-001");
+  assert.equal(d.diagnostic.kind, "NONE", "expiry is an ordinary DENY, not FUNGI-GOV-3VL-001");
   assert.equal(isLeaseValid(lease(), 100), false);
 });
 

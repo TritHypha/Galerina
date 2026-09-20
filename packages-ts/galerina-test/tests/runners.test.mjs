@@ -134,6 +134,10 @@ test("runUnit: passes and parses the node:test counts from the child", async () 
   assert.equal(res.ok, true);
   assert.equal(res.exitCode, 0);
   assert.equal(res.counts?.tests, 5);
+  assert.equal(res.invocations?.length, 1);
+  assert.equal(res.invocations?.[0].executable, process.execPath);
+  assert.deepEqual(res.invocations?.[0].argv, [join(root, "scripts/run-all-tests.cjs")]);
+  assert.equal(res.invocations?.[0].cwd, root);
   assert.match(res.detail, /5 tests/);
 });
 
@@ -177,6 +181,21 @@ test("runE2e: passes when every example compiles clean", async () => {
   assert.match(res.detail, /1\/1 examples checked clean/);
 });
 
+test("runE2e duration does not become negative when the wall clock moves backwards", async () => {
+  const root = fullWorkspace();
+  const originalNow = Date.now;
+  let calls = 0;
+  Date.now = () => (calls++ === 0 ? 1000 : 0);
+  try {
+    const res = await runE2e({ rootDir: root, examples: ["examples/good.fungi"] });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.equal(Number.isFinite(res.durationMs), true);
+    assert.ok(res.durationMs >= 0, `duration must be non-negative: ${res.durationMs}`);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test("runE2e: one failing example fails the whole check", async () => {
   const root = fullWorkspace();
   const res = await runE2e({
@@ -211,6 +230,11 @@ test("runE2e: --build uses the build verb", async () => {
 test("DEFAULT_E2E_EXAMPLES is a non-empty, frozen-ish corpus", () => {
   assert.ok(Array.isArray(DEFAULT_E2E_EXAMPLES));
   assert.ok(DEFAULT_E2E_EXAMPLES.length >= 1);
+  assert.equal(Object.isFrozen(DEFAULT_E2E_EXAMPLES), true);
+  assert.throws(() => DEFAULT_E2E_EXAMPLES.push("mutated.fungi"), TypeError);
+  const copy = [...DEFAULT_E2E_EXAMPLES];
+  copy.push("caller-owned.fungi");
+  assert.equal(DEFAULT_E2E_EXAMPLES.includes("caller-owned.fungi"), false);
 });
 
 // ── conformance ──────────────────────────────────────────────────────────────
@@ -308,6 +332,52 @@ test("runFidelity: refuses malformed deterministic build evidence", async () => 
 
   assert.equal(res.ok, false);
   assert.match(res.detail, /build evidence.*malformed/i);
+});
+
+test("runFidelity: refuses duplicate evidence keys before JSON parsing", async () => {
+  const root = fullWorkspace();
+  const evidencePath = join(
+    root,
+    "packages-ts/galerina-core-compiler/dist/build-evidence.json",
+  );
+  const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
+  const body = [
+    `  "schema": "rejected-first",`,
+    `  "schema": ${JSON.stringify(valid.schema)},`,
+    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
+    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
+    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
+  ].join("\n");
+  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+
+  const res = await runFidelity({ rootDir: root });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.exitCode, 1);
+  assert.match(res.detail, /duplicate.*key/i);
+});
+
+test("runFidelity: refuses escaped duplicate evidence keys before parsing", async () => {
+  const root = fullWorkspace();
+  const evidencePath = join(
+    root,
+    "packages-ts/galerina-core-compiler/dist/build-evidence.json",
+  );
+  const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
+  const body = [
+    `  "schema": "rejected-first",`,
+    `  "\\u0073chema": ${JSON.stringify(valid.schema)},`,
+    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
+    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
+    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
+  ].join("\n");
+  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+
+  const res = await runFidelity({ rootDir: root });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.exitCode, 1);
+  assert.match(res.detail, /duplicate.*key/i);
 });
 
 test("runFidelity: refuses untracked compiler source/test inputs", async () => {

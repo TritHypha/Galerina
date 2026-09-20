@@ -405,7 +405,12 @@ export function verifyPlanAdmission(
     return { admitted: false, reason: "planAdmission: no planSignature — unsigned plan is INDETERMINATE (not a bearer token)", verdict: 0 };
   }
 
-  return { admitted: true, verdict: 1 };
+  // A signature's presence is not proof.  This compiler-side helper has no key
+  // material and therefore cannot authenticate Ed25519/ML-DSA; a downstream
+  // verifier must supply the cryptographic verdict before the plan can become
+  // ALLOW.  Keeping this at INDETERMINATE closes the former presence-only
+  // fail-open path (RD-0363).
+  return { admitted: false, reason: "planAdmission: planSignature is present but has not been cryptographically verified — INDETERMINATE", verdict: 0 };
 }
 
 // ---------------------------------------------------------------------------

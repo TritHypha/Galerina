@@ -54,7 +54,7 @@ export {
   vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence,
 } from "./three-valued-governance.js";
 export type { ConfidenceVerdict } from "./three-valued-governance.js";
-export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
+export type { GovernanceDiagnostic, BoundaryDecision, BoundaryDiagnostic } from "./three-valued-governance.js";
 
 // ── Epistemic type-state — the trust trit lifted from verdict to value (RD-0337) ──
 // The four tri-native safety primitives + the 3-axis type, all a thin proven lift over

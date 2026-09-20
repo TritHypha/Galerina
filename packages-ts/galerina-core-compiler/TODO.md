@@ -1,6 +1,6 @@
 # Galerina Compiler TODO
 
-This file tracks open work for the compiler package. Updated 2026-07 to reflect
+This file tracks open work for the compiler package. Updated 2026-09-20 to reflect
 the actual shipped state. Items marked `[x]` are implemented and tested.
 
 ## Shipped (Stage A — complete)
@@ -36,20 +36,173 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 
 ```text
 [ ] FUNGI-TYPE-002  TypeMismatch — assignment compatibility checking
-    The most common type-system property. A literal "hello" assigned to an Int binding
-    should be a compile error. Requires full expression-level type inference. Tracked as
-    the highest-priority type checker gap.
+    Bounded coverage is implemented for literals, known expressions, record adoption,
+    numeric widening, recursive generic arguments, Option<T>.unwrapOr(), and the
+    declared-record result of a single-spread record update. The remaining gap is
+    full expression-level inference for unsupported or unknown forms. Current
+    blocker boundary:
+    `src/type-checker.ts:1054-1556` (`TypeChecker.inferType`), with the
+    assignment relation at `:472-541`, record-update admission at `:1179-1188`,
+    return consumer at `:1746-1828`, call consumer at `:1874-1954`, and
+    binding consumer at `:2064-2297`.
+    The record-update slice is intentionally refused when the update has zero or
+    multiple `#spread` children, when the spread base cannot be inferred, or when
+    the inferred base is not a declared record schema; those cases return unknown
+    and do not invent assignment compatibility. Evidence:
+    `tests/type-checker-record-update.test.mjs:11-51` (incompatible and compatible
+    declared bases plus unknown-base refusal), `npm run typecheck` (exit 0), and
+    `node --test tests/type-checker-record-update.test.mjs` (3/3 pass). The package
+    build's evidence writer refused the untracked test input; no build-evidence
+    policy or generated artifact was changed.
+    Regressions:
+    tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
+    tests/type-checker-record-adoption.test.mjs, and
+    tests/type-checker-generic-assignment.test.mjs,
+    tests/type-checker-option-unwrap.test.mjs.
+
+[x] Bounded match-expression inference slice
+    `match` is admitted in expression position, one-line expression-arm blocks
+    retain their inner type, and numerically compatible arm results join through
+    the existing assignment relation (`Int`/`Float` → `Float`). Incompatible
+    results remain fail-closed and reach the enclosing mismatch diagnostic.
+    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1500-1551`.
+    Focused evidence: `tests/type-checker-phase11-wave2.test.mjs:197-263`
+    plus parser/domain/interpreter regressions; the combined bounded compiler
+    route is **104/104**, parser/domain route **138/138**, and
+    interpreter/match route **61/61**. Full unsupported expression inference
+    remains open under FUNGI-TYPE-002/005..007.
+
+[x] Bounded inferred-`Auto` generic call compatibility
+    `isAssignmentCompatible` now treats inferred `Auto` as a deferred payload,
+    including nested `Array<Auto>`, at `src/type-checker.ts:472-483`.
+    This closes the false `FUNGI-TYPE-005` diagnostics in the SLIDE G4 adapter
+    (`src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`) without
+    weakening concrete-vs-concrete generic mismatches. Regression coverage is
+    `tests/type-checker-generic-assignment.test.mjs:71-85`; the focused route
+    is **40/40**. Broader unsupported expression inference remains open.
+
+[x] Bounded algebraic-constructor payload inference
+    Implementation commit: `b7e93978377240fd2e697224019fb67dad7a17ed`.
+    `Some`, `Ok`, and `Err` now retain an inferable payload at
+    `src/type-checker.ts:1156-1168` as `Option<T>`, `Result<T, Auto>`, or
+    `Result<Auto, E>`. Named aliases are resolved at `:680-697`, flow-call
+    results at `:1197`, and `?` propagation at `:1417-1435`; constructor return
+    checking and record-payload adoption are at `:1746-1768,1787-1806`. Positive and
+    negative coverage is at
+    `tests/type-checker-generic-assignment.test.mjs:90-165`; the focused route
+    is **32/32**. Unknown constructor payloads still defer conservatively.
+
+[x] Bounded Array list-method return inference
+    `first`/`last` now retain `Option<T>`, while `append` retains the receiver
+    `Array<T>` at `src/type-checker.ts:1310-1316`. Positive and
+    negative assignment coverage is
+    `tests/type-checker-generic-assignment.test.mjs:168-198` (11/11 in the
+    file); the focused combined route is **34/34**. The last full package run
+    before the Set slice was **6,784/6,784** at
+    `e67db0ce0`; `map`/`reduce`/`filter` remain deferred:
+    callback/closure typing is not admitted by this bounded inference lane.
+    Unknown receiver or element types remain conservative rather than being
+    invented.
+
+[x] Bounded Map method return inference
+    `Map.empty()` returns a bare `Map`, `keys()` returns `Array<K>`,
+    `values()` returns `Array<V>`, and persistent `set`/`delete`/`remove`/
+    `merge` retain `Map<K,V>` at `src/type-checker.ts:1204-1207,1327-1347`.
+    Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:200-232` (13/13 in the
+    file); the focused combined route is **36/36**. The interpreter-backed
+    collection route is **115/115**. `entries()` remains `Array<Auto>` because
+    its anonymous `{key,value}` record has no admitted named schema here.
+
+[x] Bounded Set method return inference
+    `Set.empty()`/`Set.from()` retain a bare `Set`, type-preserving
+    `add`/`remove`/`union`/`intersection`/`difference` retain `Set<T>`, and
+    `toList`/`toArray` return `Array<T>` at
+    `src/type-checker.ts:1209-1211,1349-1361`. Positive and negative coverage
+    is `tests/type-checker-generic-assignment.test.mjs:234-266` (**15/15** in
+    file); the combined bounded collection route is **132/132**. Callback
+    transforms `map`/`filter` remain deferred because their element type is not
+    admitted by this lane. The last full package run before this slice was
+    **6,784/6,784** at `e67db0ce0`; final assurance remains deferred.
+
+[x] Bounded Array static constructor return inference
+    `Array.empty()` retains a bare `Array`, homogeneous `Array.of(...)` retains
+    `Array<T>`, and `Array.range(...)` returns `Array<Int>` at
+    `src/type-checker.ts:1212-1224`. Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:268-295` (**17/17** in
+    file); the combined bounded collection route is **132/132**. Mixed or
+    unknown `Array.of` element types remain `Array<Auto>` and therefore defer.
+    The last full package run before this slice was **6,784/6,784** at
+    `e67db0ce0`; final assurance remains deferred.
+
+[x] Bounded Option/Result sequence-constructor return inference
+    `Option.sequence(Array<Option<T>>)` retains `Option<Array<T>>`, and
+    `Result.sequence(Array<Result<T,E>>)` retains `Result<Array<T>,E>` at
+    `src/type-checker.ts:1226-1246`, matching the typed runtime combinators at
+    `src/stdlib.ts:2567-2601`. Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:297-327`; the combined
+    bounded route is **134/134** and the focused type-checker file is **19/19**.
+    Malformed or untyped inputs remain bare `Option`/`Result` and defer rather
+    than inventing payloads. Full package and corpus assurance remain deferred.
+
+[x] Bounded Option/Result from-nullable constructor return inference
+    `Option.fromNullable(T)` retains `Option<T>`, and
+    `Result.fromNullable(T,E)` retains `Result<T,E>` at
+    `src/type-checker.ts:1248-1266`, matching the runtime combinators at
+    `src/stdlib.ts:314-367,2581-2589,2595-2611`. Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:329-355`; the combined
+    bounded route is **136/136** and the focused type-checker file is **21/21**.
+    Unknown value/error types remain bare `Option`/`Result` and defer. Full
+    package and corpus assurance remain deferred.
+
+[x] Bounded Result alias and unwrap return inference
+    `Result.all(Array<Result<T,E>>)` retains `Result<Array<T>,E>` and
+    `Result<T,E>.unwrapOr(...)` retains `T` at `src/type-checker.ts:1231-1246,1385-1391`,
+    matching the runtime alias/method contracts at `src/stdlib.ts:342-367,2568-2590`.
+    Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:357-387`; the combined
+    bounded route is **138/138** and the focused type-checker file is **23/23**.
+    Callback transforms remain deferred; unknown payloads are not invented.
+    `Option.zip` remains intentionally deferred at the static inference boundary
+    `src/type-checker.ts:1200-1266`: its runtime contract at
+    `src/stdlib.ts:2613-2621` returns an anonymous `{first, second}` record,
+    but no admitted named record schema exists here. Clearance requires an
+    owner-approved schema/typing contract plus positive and negative tests.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
-    Depends on expression-level type inference (same root as TYPE-002).
+    FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
+    is implemented for argument count. Remaining work is complete operator and
+    return-type coverage across unsupported expression forms; it still depends on
+    the unresolved inference cases above. Source:
+    `src/type-checker.ts:1746-1828` (return consumer) and
+    `:1874-1954` (call consumer), with `:1054-1556` as the inference boundary.
+    Unsupported expression forms remain
+    unknown and are intentionally refused/deferred. Clearance requires the
+    expression-kind matrix plus positive and negative tests at one exact head.
+    Regressions: tests/type-checker-phase11-wave2.test.mjs and
+    tests/type-checker-generic-assignment.test.mjs.
 
-[ ] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode
-    Currently silent in dev; error only in production. Should be warning in dev/check
-    so developers discover violations before CI. (30-minute change.)
+[x] FUNGI-VALUESTATE-008 / FUNGI-TIER-001 — warn in dev/check mode
+    Implemented and focused-tested: boundary-input violations and under-declared
+    flow tiers are warnings in development/check mode and errors in production.
+    Source: src/value-state-checker.ts:2181-2193 and 2613-2617;
+    tier implementation: src/effect-checker.ts:1384-1404; tests:
+    tests/rd-0120-governed-flow-valuestate.test.mjs and
+    tests/tier-floor-fungi-tier-001.test.mjs.
 
-[ ] WAT emitter — remaining ~11% unlowered stdlib constructors
-    Money currency constructors, Decimal bignum, collection ops (range, map, filter,
-    reduce), redact. Each needs a WASM host import stub.
+[ ] WAT emitter — remaining exact unlowered stdlib surfaces
+    Money currency constructors, `print`/`println`, `redact`, and `range` are
+    already lowered or host-backed at `src/wat-emitter.ts:1198-1258`, with
+    host coverage at
+    `tests/wat-host-stdlib-stubs-oracle.test.mjs:22-123` and completeness
+    coverage at `tests/wat-host-runtime-completeness.test.mjs:27-42`.
+    The live blocker is the fail-closed set at `src/wat-emitter.ts:2028-2045`:
+    exact Decimal lowering needs a non-f64 representation, while
+    `map`/`reduce`/`filter` need a governed closure/callback ABI. Current
+    refusal evidence is `tests/wat-decimal-decline.test.mjs:21-40`; do not
+    replace these `(unreachable)` refusals with lossy or silent lowering.
+    Clearance requires an explicit host/closure contract, interpreter/WAT
+    parity, positive and negative tests, and exact-head receipts.
 
 [ ] Stage-B self-hosting WASM byte-parity
     Lexer tokenize + full parser ladder: proven (R3). GIR emitter: proven (R2).

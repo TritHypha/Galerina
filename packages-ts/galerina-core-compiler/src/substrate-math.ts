@@ -10,4 +10,9 @@
 // =============================================================================
 
 export type { SubstrateNoiseParams } from "@galerina/substrate-math";
-export { singleLaneErrorProbability, nmrFailureProbability, flipProbability } from "@galerina/substrate-math";
+export {
+  MAX_NMR_N,
+  singleLaneErrorProbability,
+  nmrFailureProbability,
+  flipProbability,
+} from "@galerina/substrate-math";

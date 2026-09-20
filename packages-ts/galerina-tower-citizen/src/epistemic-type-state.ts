@@ -76,6 +76,7 @@ import {
   decideAtBoundary,
   type GovernanceDiagnostic,
   type BoundaryDecision,
+  type BoundaryDiagnostic,
 } from "./three-valued-governance.js";
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -227,7 +228,7 @@ export interface TrustBoundaryResult<T> {
   readonly decision: "allow" | "deny";
   readonly trust: Trust;
   /** Non-null IFF an UNKNOWN trit was collapsed to deny (FUNGI-GOV-3VL-001) — never silent. */
-  readonly diagnostic: GovernanceDiagnostic | null;
+  readonly diagnostic: BoundaryDiagnostic;
   readonly provenance: readonly string[];
 }
 
@@ -326,7 +327,7 @@ export interface ContractOutcome {
   readonly proceed: boolean;
   /** Was the contract not-ALLOW (DENY or ABSTAIN)? Surfaced even under observe/ignore — never silent. */
   readonly violated: boolean;
-  readonly diagnostic: GovernanceDiagnostic | null;
+  readonly diagnostic: BoundaryDiagnostic;
 }
 
 /**
@@ -383,7 +384,7 @@ export interface TriSchemaResult<R> {
   readonly verdict: Verdict;
   /** ONLY the PROVEN fields — safe to operate on while the unknown/refuted parts stay deny-collapsed. */
   readonly known: Partial<R>;
-  readonly diagnostic: GovernanceDiagnostic | null;
+  readonly diagnostic: BoundaryDiagnostic;
 }
 
 /**
@@ -554,7 +555,7 @@ export interface ReleaseResult<T> {
   /** ALLOW iff value.classification ≤ sinkClearance (safe to reduce, illegal to expand). */
   readonly classVerdict: Verdict;
   readonly proven: Trust;
-  readonly diagnostic: GovernanceDiagnostic | null;
+  readonly diagnostic: BoundaryDiagnostic;
   readonly provenance: readonly string[];
 }
 

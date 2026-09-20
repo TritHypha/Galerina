@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 
 import {
   DEFAULT_BENCHMARK_CONFIG,
+  captureBenchmarkReport,
   validateBenchmarkConfig,
+  validateBenchmarkReport,
   isBenchmarkReportShareable,
 } from "../dist/index.js";
 
@@ -21,6 +23,24 @@ describe("DEFAULT_BENCHMARK_CONFIG — privacy-preserving, bounded defaults", ()
   it("is internally consistent and self-validates clean", () => {
     assert.ok(DEFAULT_BENCHMARK_CONFIG.maxSingleTestSeconds <= DEFAULT_BENCHMARK_CONFIG.maxDurationSeconds);
     assert.deepEqual(codes(validateBenchmarkConfig(DEFAULT_BENCHMARK_CONFIG)), []);
+  });
+
+  it("freezes nested defaults and isolates caller-owned clones", () => {
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG), true);
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG.targets), true);
+    assert.equal(Object.isFrozen(DEFAULT_BENCHMARK_CONFIG.privacy), true);
+    assert.throws(() => { DEFAULT_BENCHMARK_CONFIG.targets.logic = false; }, TypeError);
+    assert.throws(() => { DEFAULT_BENCHMARK_CONFIG.privacy.allowSubmit = true; }, TypeError);
+
+    const clone = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      targets: { ...DEFAULT_BENCHMARK_CONFIG.targets },
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy },
+    };
+    clone.targets.logic = false;
+    clone.privacy.allowSubmit = true;
+    assert.equal(DEFAULT_BENCHMARK_CONFIG.targets.logic, true);
+    assert.equal(DEFAULT_BENCHMARK_CONFIG.privacy.allowSubmit, false);
   });
 });
 
@@ -60,6 +80,29 @@ describe("validateBenchmarkConfig — bounded, PII-free, non-empty (fail-closed)
     const diags = validateBenchmarkConfig({ ...DEFAULT_BENCHMARK_CONFIG, targets: noTargets });
     assert.deepEqual(codes(diags), ["Galerina_BENCHMARK_NO_TARGETS"]);
   });
+
+  it("rejects malformed records, missing/surplus keys and non-finite budgets", () => {
+    assert.ok(codes(validateBenchmarkConfig(null)).includes("Galerina_BENCHMARK_CONFIG_RECORD_REQUIRED"));
+
+    const malformed = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      maxDurationSeconds: Infinity,
+      defaultMode: "unknown",
+      runOnMajorUpdate: "yes",
+      extra: true,
+      targets: { ...DEFAULT_BENCHMARK_CONFIG.targets, logic: null, mystery: true },
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy, anonymiseCpuModel: "yes", extra: false },
+    };
+    delete malformed.maxSingleTestSeconds;
+    const malformedCodes = codes(validateBenchmarkConfig(malformed));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_FIELD_REQUIRED"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_FIELD_UNKNOWN"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_MAX_DURATION_REQUIRED"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_MODE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_RUN_ON_MAJOR_UPDATE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_TARGET_VALUE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_PRIVACY_BOOLEAN_INVALID"));
+  });
 });
 
 describe("isBenchmarkReportShareable — default-deny", () => {
@@ -74,7 +117,10 @@ describe("isBenchmarkReportShareable — default-deny", () => {
       memoryBucket: "16-32", gpuBackend: "none", lowBitBackend: "none",
     },
     durationMs: 1000,
-    summary: {},
+    summary: {
+      logic: "passed", cpu: "passed", json: "passed", vector: "passed", gpu: "skipped",
+      ai_accelerator: "skipped", low_bit_ai: "skipped", optical_io: "skipped", recovery: "skipped", compare: "skipped",
+    },
     scores: { overall: 42 },
     tests: [],
     privacy: {
@@ -106,5 +152,39 @@ describe("isBenchmarkReportShareable — default-deny", () => {
     };
     const leaky = { ...cleanReport, privacy: { ...cleanReport.privacy, containsPersonalData: true } };
     assert.equal(isBenchmarkReportShareable(leaky, optIn), false);
+  });
+
+  it("stays deny when the report itself does not claim shareable", () => {
+    const optIn = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy, allowSubmit: true },
+    };
+    const notShareable = { ...cleanReport, privacy: { ...cleanReport.privacy, shareable: false } };
+    assert.equal(isBenchmarkReportShareable(notShareable, optIn), false);
+  });
+
+  it("captures a detached immutable report snapshot", () => {
+    const captured = captureBenchmarkReport(cleanReport);
+    assert.deepEqual(captured.diagnostics, []);
+    assert.ok(captured.report);
+    cleanReport.system.cpuCoresBucket = "mutated";
+    cleanReport.summary.logic = "failed";
+    cleanReport.scores.overall = 0;
+    assert.equal(captured.report.system.cpuCoresBucket, "8-16");
+    assert.equal(captured.report.summary.logic, "passed");
+    assert.equal(captured.report.scores.overall, 42);
+    assert.equal(Object.isFrozen(captured.report), true);
+    assert.equal(Object.isFrozen(captured.report.system), true);
+    assert.equal(Object.isFrozen(captured.report.summary), true);
+    assert.equal(Object.isFrozen(captured.report.scores), true);
+    assert.equal(Object.isFrozen(captured.report.tests), true);
+  });
+
+  it("refuses null opticalIo, non-finite scores, surplus fields and hostile rows", () => {
+    assert.ok(validateBenchmarkReport({ ...cleanReport, scores: { overall: 42, opticalIo: null } }).some((d) => d.code === "Galerina_BENCHMARK_REPORT_NUMBER_INVALID"));
+    assert.ok(validateBenchmarkReport({ ...cleanReport, scores: { overall: Infinity } }).some((d) => d.code === "Galerina_BENCHMARK_REPORT_NUMBER_INVALID"));
+    assert.ok(validateBenchmarkReport({ ...cleanReport, extra: true }).some((d) => d.code === "Galerina_BENCHMARK_FIELD_UNKNOWN"));
+    const hostile = { ...cleanReport, tests: [new Proxy({ id: "x", target: "logic", status: "passed" }, {})] };
+    assert.ok(validateBenchmarkReport(hostile).some((d) => d.code === "Galerina_BENCHMARK_REPORT_TEST_REQUIRED"));
   });
 });

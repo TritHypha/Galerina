@@ -1,2292 +1,661 @@
 # TODO
 
+### Current exact-head compiler batch — 2026-09-20
+
+- [x] The live Galerina compiler source head is
+  `6afcf74ef0ff1c577ef5cf675b2589acca975786`. The bounded compiler source
+  batch is represented by commits `0863e73f6`, `20bf92b4b`, and `d4dd8e120`;
+  the current head adds the exact blocker receipt and the current R&D linkage.
+- [x] `npm run build` passes. The explicit type-checker, record, option,
+  generic, and phase-11 route passes **139/139**; the combined collection,
+  interpreter, and generic route passes **138/138**. The AGENTS anti-drift
+  document check and `git diff --check` also pass.
+- [!] This is bounded source/compiler evidence only. Broad expression
+  inference, WAT lowering, SLIDE/VOK authority, Lyth admission, corpus
+  assurance, queue regeneration, signing, and `.fungi` generation remain
+  held by the exact blockers below.
+
+### Cross-project detached-GIR producer evidence — RD-1246 — 2026-09-20
+
+- [x] The current cross-project heads were rechecked before recording this
+  receipt: Galerina `997d1bcdae49e07e1c53bff318403dee550f1c2b` and Lyth-Weaver
+  `8e1a67070467ab5707fc5816319bb4e4a89b7bf0`. Lyth's RD-1246 review was
+  independently checked by Astra and remains
+  `COMPLETE_NON_AUTHORIZING; CROSS-PACKAGE EVIDENCE REQUIRED; HOLD`.
+- [!] Lyth rechecks extracted GIR bytes and work at
+  `lyth-weaver/tools/adapter/adapter.ts:441-457`, but returns
+  `UNAUTHENTICATED-RESEARCH-EVIDENCE` with both authority flags false at
+  `:537-544`. Its removal KAT remains `slide-reference` only at
+  `lyth-weaver/tools/removal/kat-removal.ts:1-3,21-28,46-57,77-83`; it does
+  not establish an authenticated checked-Fungi producer.
+- [!] Galerina Task 6 Step 1 and Tasks 6-8 remain locked at
+  `docs/TODO.md:1079-1098`: the next bounded evidence slice is one
+  owner-selected fixed scalar flow with retained source, complete toolchain
+  closure, canonical GIR and producer authentication, followed by independent
+  SLIDE re-derivation and authenticated VOK current-context evidence. No
+  `.fungi`, corpus, queue or admission action follows from RD-1246.
+
+### WASM target admission adjudication — RD-1236 — 2026-09-20
+
+- [x] Record `RD-1236` as `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`.
+  The pinned source head is
+  `0134c19b440707d605ebf2c99d944fa87e82cc44` on repository head
+  `68d3935d8730af8b343782eb631df222d1fae4cb`; the bounded package route is
+  **5/5** at
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:14-59`.
+- [!] The package decoder/report path is now source-defined at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`, but the
+  admission contract remains open. `WasmArtefact` at `:8-18` has no module
+  bytes/digest/attestation, section-bound import/export identity,
+  sandbox/effect/limit evidence, physical-file binding, or named
+  cross-package schema owner. Invalid runtime artefacts can remain in the
+  report snapshot beside an error at `:219,259`; error text is also repeated
+  in warning presentation at `:243-254`.
+- [!] Clearance requires an owner-approved versioned schema, refusal and
+  report-consumption rules, diagnostic-family ownership, exact-revision
+  implementation, and negative tests for missing/forged/mismatched,
+  duplicate, malformed, and refused evidence. RD-1236 and its exact Grok
+  response/Astra cross-check are retained in the private KB. No execution,
+  physical-target authority, queue regeneration, corpus run, or `.fungi`
+  generation is authorized by this record.
+
+### Direct logger sink failure adjudication — RD-1237 — 2026-09-20
+
+- [x] Record `RD-1237` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The bounded
+  observability package route is currently **53/53** with clean typecheck and
+  build. A direct runtime probe confirms that a throwing writer escapes from
+  `JsonLineSink.write()` while the same sink through `Logger` is isolated and
+  counted.
+- [!] The exact defect remains at
+  `packages-ts/galerina-observability/src/logger.ts:56-63`: the injected
+  writer is called without a local catch despite the `LogSink.write MUST NOT
+  throw` contract at `:31-34`. `Logger.#emit` catches only the mediated path
+  at `:195-217`; its counter also covers record-construction failures at
+  `:213-217`. `#safeNow` returns `0` without counting clock exceptions at
+  `:219-227`.
+- [!] Clearance needs an owner-frozen direct-sink failure contract, a direct
+  throwing-writer regression that cannot be satisfied by wrapping only
+  `Logger.#emit`, and single/repeated-failure controls. Do not redefine
+  `sinkFailures()` or close the separate failure-accounting/clock TODO from
+  this record. RD-1237 is advisory only; no production, conversion, queue,
+  corpus or `.fungi` authority follows.
+
+### Logger failure-accounting and clock adjudication — RD-1238 — 2026-09-20
+
+- [x] Record `RD-1238` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The current source
+  behavior is verified at
+  `packages-ts/galerina-observability/src/logger.ts:190-227`: `#emit` counts
+  sink-write and escaping record-construction exceptions, while `#safeNow`
+  maps throwing/non-finite/non-number clocks to positive `0` without counting.
+- [!] The owner contract remains open. Every finite primitive timestamp,
+  including negative, fractional and `-0`, passes through; fallback `0`
+  collides with genuine epoch/injected zero, and no provenance field exists.
+  Nested hostile redaction traps can become `[redacted]` without incrementing;
+  only exceptions escaping local guards reach the outer counter.
+- [!] Clearance requires an owner freeze for aggregate counter meaning versus
+  cause-specific counters, fallback/provenance semantics, and the complete
+  fixture matrix: finite/non-finite/signed-zero clocks, throwing getters and
+  messages, nested redaction, sink side-effect-then-throw, repeated and
+  combined failures, parent/child counters, filtered emissions and the planted
+  clock-as-sink-failure wrong-result control. RD-1237 remains HOLD; no
+  authenticated health, durability, conversion, queue, corpus or `.fungi`
+  authority follows.
+
+### Metrics-audit authority boundary adjudication — RD-1239 — 2026-09-20
+
+- [x] Record `RD-1239` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The current
+  bounded controls pass **16/16** for observability integration and **9/9**
+  for app-kernel audit behavior; they verify counts and affine/503 controls,
+  not receipt preservation.
+- [!] `metricsAuditSink` at
+  `packages-ts/galerina-observability/src/kernel-integration.ts:38-80` always
+  returns a token and records only method/path/status. It drops requestId,
+  errorCode, appliedDefaults, relaxations, timestamp and posture; exact status
+  becomes a class count and routes can truncate or overflow-fold. A mandatory
+  `runtimeReport` route can therefore return `200` without a full receipt.
+- [!] The kernel's full-event contract remains at
+  `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`:
+  reserve before effects, synchronous commit, and 503 on required refusal or
+  commit failure. Clearance requires an owner-selected public composition:
+  demote the metrics adapter or place it as a non-authorizing observer/tee
+  behind a receipt-preserving sink, then add full-field, capacity, affine,
+  observer-failure and receipt-loss controls. No durability or production
+  authority follows this record.
+
+### Exact blocker ledger refresh — 2026-09-20
+
+- [x] The SLIDE G4 false-positive call-site blocker is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:472-483`:
+  inferred `Auto` is now treated as a deferred payload, including nested
+  `Array<Auto>`, instead of being rejected as a concrete generic mismatch.
+  The regression test is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:71-85`;
+  the affected adapter contracts are
+  `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`.
+  Typecheck/build pass; the focused route is **40/40**.
+- [x] Algebraic constructor payload inference is closed at
+  implementation commit `b7e93978377240fd2e697224019fb67dad7a17ed`, with
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`:
+  `Some` retains `Option<T>`, `Ok` retains `Result<T, Auto>`, and `Err`
+  retains `Result<Auto, E>`. Alias resolution at `:680-697`, flow-call and
+  `?` propagation at `:1197` and `:1417-1435`, and the return checker at
+  `:1742-1768,1787-1806` now validate those payloads, including structural record
+  adoption, instead of bypassing `FUNGI-TYPE-008`. Positive/negative
+  coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
+  (**32/32** focused tests); the last full package run before the Set slice was
+  **6,784/6,784** at `e67db0ce0`.
+- [x] Bounded Array list-method return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1310-1316`:
+  `first`/`last` retain `Option<T>` and `append` retains `Array<T>`.
+  Positive and negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-198`
+  (**11/11** in-file, **34/34** focused combined route); the last full package
+  run before the Set slice was **6,784/6,784** at `e67db0ce0`. Higher-order
+  `map`/`reduce`/`filter`
+  remain explicitly deferred because callback/closure typing is not admitted
+  by this bounded inference lane.
+- [x] Bounded Map method return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1204-1207,1327-1347`:
+  `Map.empty()` retains a bare `Map`, `keys()` returns `Array<K>`, `values()`
+  returns `Array<V>`, and persistent `set`/`delete`/`remove`/`merge` retain
+  `Map<K,V>`. Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:200-232`
+  (**13/13** in-file, **36/36** focused combined route); the interpreter-backed
+  collection route is **115/115**. `entries()` remains `Array<Auto>` because
+  its anonymous `{key,value}` record has no admitted named schema here.
+- [x] Bounded Set method return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1209-1211,1349-1361`:
+  `Set.empty()`/`Set.from()` retain a bare `Set`, type-preserving
+  `add`/`remove`/`union`/`intersection`/`difference` retain `Set<T>`, and
+  `toList`/`toArray` return `Array<T>`. Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:234-266`
+  (**15/15** in-file, **132/132** combined bounded collection route).
+  Callback transforms `map`/`filter` remain explicitly deferred because their
+  element type is not admitted by this lane. The last full package run before
+  this slice was **6,784/6,784** at `e67db0ce0`; final assurance remains
+  deferred.
+- [x] Bounded Array static constructor return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1212-1224`:
+  `Array.empty()` retains a bare `Array`, homogeneous `Array.of(...)` retains
+  `Array<T>`, and `Array.range(...)` returns `Array<Int>`. Positive/negative
+  coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:268-295`
+  (**17/17** in-file, **132/132** combined bounded collection route). Mixed or
+  unknown `Array.of` element types remain `Array<Auto>` and defer. The last
+  full package run before this slice was **6,784/6,784** at `e67db0ce0`; final
+  assurance remains deferred.
+- [x] Bounded Option/Result from-nullable constructor return inference is closed
+  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1248-1266`:
+  `Option.fromNullable(T)` retains `Option<T>`, while
+  `Result.fromNullable(T,E)` retains `Result<T,E>`, matching the runtime
+  combinators at `packages-ts/galerina-core-compiler/src/stdlib.ts:314-367,2581-2589,2595-2611`.
+  Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:329-355`;
+  the combined bounded route is **136/136** and the focused type-checker file
+  is **21/21**. Unknown value/error types remain bare algebraic types and defer.
+  Full package and corpus assurance remain deferred.
+- [x] Bounded Result alias and unwrap return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1231-1246,1385-1391`:
+  `Result.all(Array<Result<T,E>>)` retains `Result<Array<T>,E>`, and
+  `Result<T,E>.unwrapOr(...)` retains `T`, matching the runtime contracts at
+  `packages-ts/galerina-core-compiler/src/stdlib.ts:342-367,2568-2590`.
+  Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:357-387`;
+  the combined bounded route is **138/138** and the focused type-checker file
+  is **23/23**. Callback transforms and unknown payloads remain deferred.
+  `Option.zip` remains intentionally deferred at the static inference boundary
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1200-1266`: its
+  runtime contract at `packages-ts/galerina-core-compiler/src/stdlib.ts:2613-2621`
+  returns an anonymous `{first, second}` record, but no admitted named record
+  schema exists here. Clearance requires an owner-approved schema/typing
+  contract plus positive and negative tests. RD-1249 confirms this remains an
+  owner-contract hold: the checker falls through to `undefined` at
+  `type-checker.ts:1414`, method arguments bypass the general checks at
+  `:1874-1880`, and unknown results bypass return/binding compatibility at
+  `:1749` and `:2100`. The runtime shape does not establish compiler schema
+  authority. Astra independently confirmed the hold and corrected the matrix:
+  explicit annotations can supply member types without validating the zip
+  initializer, bare `Option` annotations can raise `FUNGI-TYPE-009`, and
+  `Auto` does not produce `FUNGI-TYPE-026` for unknown zip inference. The RD
+  is `private/research/rd/RD-1249-option-zip-anonymous-record-adjudication-PRIVATE.md`;
+  only characterization KATs are justified until the owner freezes the
+  anonymous-structure, payload, annotation, member-access, and diagnostic
+  contract.
+- [x] Bounded Option/Result sequence-constructor return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1226-1246`:
+  `Option.sequence(Array<Option<T>>)` retains `Option<Array<T>>`, while
+  `Result.sequence(Array<Result<T,E>>)` retains `Result<Array<T>,E>`, matching
+  the runtime combinators at `packages-ts/galerina-core-compiler/src/stdlib.ts:2567-2601`.
+  Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:297-327`;
+  the combined bounded route is **134/134** and the focused type-checker file
+  is **19/19**. Malformed or untyped inputs remain bare algebraic types and
+  defer. Full package and corpus assurance remain deferred.
+- [x] The unrelated source-hygiene ratchet baseline was tightened through its
+  explicit regeneration path at
+  `packages-ts/galerina-core-compiler/tests/source-hygiene-null-ratchet.test.mjs:165-187`.
+  The receipt is
+  `packages-ts/galerina-core-compiler/tests/fixtures/null-ratchet-baseline.json`
+  (**256** occurrences, down from **262**); the standalone ratchet is **6/6**.
+- [!] The remaining compiler blocker is broad expression-level inference, not
+  the closed slices above. The live fail-closed boundary is
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`
+  (`TypeChecker.inferType`), with the return consumer at `:1746-1828`, call
+  consumer at `:1874-1954`, and binding consumer at `:2064-2297`;
+  unsupported AST forms return unknown and therefore leave portions of
+  `FUNGI-TYPE-002/005/008` type checks deferred (`FUNGI-TYPE-007` is the
+  separate argument-count check). Clearance requires a complete
+  expression-kind matrix with both valid and invalid cases, while preserving
+  refusal for genuinely unknown forms. No corpus, queue, signing, or
+  `.fungi` assurance action follows.
+- [!] `RD-1232` records a complete Grok attempt and independent Astra review of
+  this blocker. The result is `PARTIAL`/`HOLD`: the current focused route remains
+  **139/139**, but live field-name heuristics, bare generic fallbacks, nested
+  generic extraction, `unwrapOr` fallback arguments, heterogeneous lists, and
+  generic record payload erasure still need an owner-frozen deferred-inference
+  contract plus hostile consumer tests. See
+  `private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
+
+- [!] `RD-1247` narrows the field-name portion of RD-1232. At
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1091-1111`, declared
+  record schemas take precedence and `Auto` defers; the remaining field-name
+  heuristics at `:1113-1139` also apply to eligible built-in receivers. Astra
+  confirms that deleting them now could remove reachable `FUNGI-TYPE-002`,
+  `FUNGI-TYPE-005` and `FUNGI-TYPE-008` diagnostics by turning guesses into
+  skipped type checks at the return/call/binding consumers (`:1746-1828,
+  :1874-1954, :2064-2297`). Keep the behavior unchanged as
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232` until the owner chooses
+  deferred unknown fields or explicitly contracts the name-list sugar,
+  including chained access and deferred-consumer reporting. Existing Request
+  tests at `tests/type-checker.test.mjs:921-1088` do not distinguish concrete
+  `String` from deferred `undefined`. No source change follows from RD-1247.
+
+- [x] Added the bounded, source-defined numeric `binaryExpr` consumer KATs at
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:390-445`:
+  matching return acceptance plus return/call/binding mismatches for
+  `FUNGI-TYPE-008`, `FUNGI-TYPE-005` and `FUNGI-TYPE-002`. The focused
+  type-checker route is **27/27 pass** after clean typecheck/build. This is
+  test-only characterization of the existing `inferType` branch; it does not
+  widen inference or clear the RD-1232/RD-1247 owner contract.
+
+- [!] `RD-1248` confirms the `unwrapOr` fallback-argument gap under RD-1232:
+  payload return inference exists at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`, but all
+  method argument validation is skipped at `:1873-1880`. A wrong concrete
+  fallback can therefore be returned on `None`/`Err`; the runtime returns
+  `FUNGI_VOID` when the fallback is missing. The owner must freeze a
+  method-specific guard, concrete payload/fallback relation, numeric widening,
+  nested/`Auto` deferral, arity and diagnostic ownership before any checker
+  change. Characterization KATs at
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:447-495`
+  pass **31/31** and intentionally record the current gap. State remains
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; no source semantics changed.
+
+- [!] `RD-1250` confirms that `Map.entries()` is not a safe deferred boundary:
+   `packages-ts/galerina-core-compiler/src/type-checker.ts:1327-1346` returns
+   defined `Array<Auto>`, and inferred `Auto` is wildcard-compatible at
+   `:454-480`, so incompatible return/call/binding consumers can be silently
+   admitted at `:1746-1828,1874-1954,2064-2297`. The runtime instead emits
+   anonymous `{key, value}` records at
+   `packages-ts/galerina-core-compiler/src/stdlib.ts:890-896`; no declared
+   record authority applies to a method result. Astra reproduced the
+   populated-map false admission and corrected the direct-vs-`first()` and
+   `TYPE-026` distinctions. Keep this at
+   `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization KATs
+   only until the owner freezes entry payload/key/member/diagnostic semantics
+   and an authorized named or structural-record path. See
+  `private/research/rd/RD-1250-map-entries-anonymous-record-adjudication-PRIVATE.md`.
+
+- [!] `RD-1251` confirms that mixed or unknown `Array.of(...)` arguments are
+  false admission through inferred `Auto`, not safe deferral. At
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1212-1224`, unequal
+  or undefined child types become defined `Array<Auto>`; the wildcard rule at
+  `:454-480` then allows incompatible return/call/binding consumers at
+  `:1746-1828,1874-1954,2064-2297`. Homogeneous construction and existing
+  numeric widening remain bounded and valid. Astra confirmed the stronger
+  `Array.of(1, "nope") -> Array<Int>` counterexample and corrected that the
+  runtime path is `packages-ts/galerina-core-compiler/src/stdlib.ts:1943-1953`,
+  while `FUNGI-TYPE-011` currently covers list literals only at
+  `type-checker.ts:2187-2207`. Keep this at
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; characterization KATs must
+  precede any choice of refusal, deferral, or diagnostic ownership. See
+  `private/research/rd/RD-1251-array-of-heterogeneous-element-adjudication-PRIVATE.md`.
+
+- [!] `RD-1252` confirms that list-literal inference is order-dependent false
+  admission. `packages-ts/galerina-core-compiler/src/type-checker.ts:1147-1154`
+  uses only the first child, so `[1, "nope"]` can pass return and plain-call
+  consumers expecting `Array<Int>`, while `["nope", 1]` takes a different
+  path and is refused. The separate `FUNGI-TYPE-011` loop at
+  `type-checker.ts:2187-2207` covers annotated bindings only and skips unknown
+  element types; it does not cover return/call literals. Astra confirmed the
+  false admission, directional numeric-compatibility issue, and that returning
+  `undefined` would still skip consumers rather than constitute refusal. Keep
+  this at `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization
+  KATs before choosing all-elements inference, unknown/empty policy, or
+  diagnostic precedence. See
+  `private/research/rd/RD-1252-list-literal-first-element-adjudication-PRIVATE.md`.
+
+- [!] `RD-1253` confirms that `Option.map`, `Result.map`, and `Result.mapErr`
+  erase callback result payloads: `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`
+  returns defined bare wrappers, which wildcard-match incompatible generic
+  consumers at `:454-463,521-528,1746-1828,1897-1923,2098-2123`. Method
+  callback arguments and arity are skipped at `:1191-1202,1874-1880`, while
+  the runtime transforms and rewraps values at
+  `packages-ts/galerina-core-compiler/src/stdlib.ts:328-333,356-361`. Astra
+  corrected the parser-valid callback fixture, `applyFn` arity behavior, and
+  missing-callback/runtime-error distinctions. Keep this at
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; characterization KATs must
+  precede any wrapper-payload reconstruction or method-argument diagnostic
+  rule. RD-1233 remains the separate WAT callback/closure hold. See
+  `private/research/rd/RD-1253-algebraic-map-callback-adjudication-PRIVATE.md`.
+
+- [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
+  Astra review of the residual WAT-lowering blocker. The result is
+  `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
+  boundary remains `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2035-2045`,
+  with Decimal's f64 mapping at `:218-243`, `FLOAT_WAT_TYPES` at `:953`, and
+  the result path at `:4234`; the separate callback/closure boundary is
+  `:2020-2045`, with Phase-19 fallback at `:4503-4534`. Astra confirms that
+  Decimal needs an owner-frozen exact ABI and that `map`/`reduce`/`filter`
+  need an explicitly bounded callback/closure contract, hostile tests, and
+  interpreter/WAT parity. Method calls enter a plain-call fallback at
+  `:1996-1998` before the named refusal set, while undefined callees are
+  rejected at `wat-assembler.ts:145-157`; this is inconsistent refusal
+  coverage, not proven silent deletion. Keep the traps. See
+  `private/research/rd/RD-1233-wat-lowering-adjudication-PRIVATE.md`.
+
+- [!] `RD-1234` records one complete non-authorizing Grok attempt and an
+  independent Astra review of the empty pipeline-checker seam. The result is
+  `HOLD — OWNER CONTRACT REQUIRED`. The exact blocker is
+  `packages-ts/galerina-core-compiler/src/index.ts:3081-3100`, where
+  `checkMethodChain()` receives only a receiver name, method names, and one
+  location before returning `[]`; the five diagnostic contracts are at
+  `:1920-1969`. Astra confirms the signature cannot selectively evaluate
+  `FUNGI-PIPELINE-001..005` without typed receiver/method, Result, effect,
+  binding/readonly, argument, and per-stage location context. Preserve
+  `push`/`append` as persistent transforms covered by `FUNGI-TYPE-028`, not
+  readonly mutation, and keep unknown or insufficient context refused. The
+  stub test at
+  `packages-ts/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:298-306`
+  is only an empty-result control and cannot clear the detector. See
+  `private/research/rd/RD-1234-pipeline-checker-adjudication-PRIVATE.md`.
+
+### Current bounded component receipts — 2026-09-20
+
+- [x] Galerina implementation checkpoint is
+  `94855fe6a` (the current `1c6c0c952` checkpoint records later bounded
+  target-gate receipts only).
+  The photonic-emulator substrate-math ingress is bounded at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267` with
+  hostile/envelope coverage at
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
+  package build/typecheck/tests pass **61/61**. AI accelerator selection
+  ingress remains **7/7**; report admission is separately held at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764`.
+- [x] SLIDE source HEAD is
+  `c22e855bba5be2ca6f6c51ee2841922c88b97df8`. Its bounded parent-swap
+  rollback residual is closed at
+  `SLIDE/src/checked-fungi-package-file.mjs:159-178,307-312`, with the
+  refusal/no-residual assertion at
+  `SLIDE/tests/checked-fungi-package-file.test.mjs:163-178`; the focused
+  publication/identity route is **41/41 pass**. Production descriptor-relative
+  authority remains held.
+- [x] Lyth-Weaver source HEAD is
+  `7f661360d0ea5f1eea5a0ca991e6015f01621ba0`; no Lyth implementation change
+  was made in this checkpoint. Its remaining rows remain named
+  DONE/REFUSED/HOLD and generation-dependent.
+- [!] These are bounded component receipts only. No corpus compile, conversion
+  queue regeneration, signing, profile activation, VOK authority or `.fungi`
+  build follows. The pre-existing dirty Galerina `README.md` remains
+  untouched.
+
+### AGENTS bounded capability-route refresh — 2026-09-20
+
+- [x] At AGENTS HEAD `c68276eb54cefb0a37260b60225734841603093d`,
+  `tools/audit-map.mjs --self-test` passes **5/5 fixtures** and
+  `tools/audit-map.test.mjs` passes **9/9** with no skips or TODOs.
+- [x] The paired passive routing controls also pass: `context-route` is
+  **30/30** focused tests plus self-test; `context-retrieve` is **12/12**
+  focused tests plus self-test. `adaptive-effort-governor` and
+  `adaptive-agent-resource-governor` self-tests both return **OK**.
+- [!] These controls are read-only, body-free and non-authorizing. The real
+  AGENTS batch route remains refused by the mixed-EOL gate at
+  `AGENTS/tools/bounded-tool-batch.mjs:1264` (`validateEolEvidence`), called
+  by `observeWorktreeAggregate` at `:1452`; clearance requires the owner's
+  exact mixed-EOL policy and matching current evidence. No line-ending rewrite
+  was performed and no corpus DAG was launched.
+
+### Core compiler bounded match-inference receipt — 2026-09-20
+
+- [x] At implementation commit
+  `1b10d5e32c6f1362dfb2df6232fb39d08570c85c`, the compiler admits `match` in
+  expression position at
+  `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778`, unwraps
+  expression-arm blocks and joins only assignment-compatible numeric results
+   at `packages-ts/galerina-core-compiler/src/type-checker.ts:1496-1547`.
+- [x] Regression evidence is **104/104** for the bounded compiler set,
+  **138/138** for parser/domain regressions, and **61/61** for
+  interpreter/match/governance regressions. The focused test additions are at
+  `packages-ts/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:197-263`.
+- [!] This closes only the bounded numeric match-expression slice. Unsupported
+  expression-level inference under FUNGI-TYPE-002/005..007 remains open; no
+  `.fungi`, corpus or conversion action follows from this receipt.
+
+### Beta-v1 operational-key preflight — 2026-09-19
+
+- [x] The owner generated dedicated hybrid Ed25519 + ML-DSA-65 operational
+  key `0da09262513e2a8d`; the release-evidence CLI accepted its canonical
+  five-field environment without exposing private values.
+- [!] No signing or authority activation occurred. Root delegation, final
+  unsigned durability/repository evidence, custody receipts and public-bundle
+  admission remain outstanding. Keep the private environment in encrypted
+  offline custody and do not copy it into the repository.
+
+### AGENTS capability-route recheck — 2026-09-19
+
+- [x] With explicit `AGENTS_ROOT` and `RD0873_GIT_PATH` routes, the bounded
+  AGENTS audit-map controls pass **7/7** at the current checkout. The test
+  launched no corpus DAG and grants no graph, queue, conversion or authority
+  release.
+- [x] The RD-0858 scalar audit-map generator also passes **8/8**, binding one
+  stable implementation build to the exact committed plan, canonical LF/CRLF
+  projection and caller-path/build refusal controls.
+
+### Live cross-repository head refresh — 2026-09-19
+
+- [x] Source locator heads immediately before this receipt-only documentation
+  commit were Galerina `abebd0a727d418bbc4eb102f59f88f94a902472b`, SLIDE
+  `9b3b411b2b7c0f03087397387fadc5be0d278d48`, Lyth-Weaver
+  `7f661360d0ea5f1eea5a0ca991e6015f01621ba0`, and KB
+  `1590b55f50628fe68fe297488bfd4825991c7be4`.
+- [!] Galerina `README.md`, Lyth's private handover and the two KB private RD
+  files remain pre-existing dirty/private work; they are preserved and do not
+  constitute clean exact-head assurance.
+
 The first dated sections are the current checkpoint and next queue. Lower
 dated sections are retained as a chronological evidence ledger and may contain
 counts or open items that a newer section explicitly supersedes.
 
-### RD-0873 conversion and benchmark close housekeeping - 2026-09-13
+### Post-commit cross-repository exact-head receipt — 2026-09-19
 
-- [x] Confirm all 100 package roots are dispositioned: 94 roots have 95
-  direct buildable Fungi leaves, two are manual host/native boundaries and
-  four have no eligible TypeScript/JavaScript source.
-- [x] Confirm the local build used 95 Fungi inputs and zero TypeScript inputs,
-  producing 475 artifacts and 820,572 bytes; the `Array.includes` WAT repair
-  passed on repeat.
-- [x] Confirm the benchmark publisher measured 30 groups, 18 comparable
-  groups, and passed its noise, truth and guard stages.
-- [x] Record the exact receipts and handover in
-  `docs/handover/HANDOVER-rd0873-conversion-benchmark-housekeeping-2026-09-13.md`.
-- [ ] Keep production SLIDE/VOK authority disabled; these are development
-  observations and do not establish production admission or full self-hosting.
-- [ ] Reverify exact heads and owner custody before new conversion, merge,
-  branch cleanup or VOK work.
+- [x] Receipt inputs were Galerina `6c51cb25cbea1eda1b83cd56c6b1b99051161292`,
+  SLIDE `19f7bbe11b4ab7254d9ef5031662c0a0903af606`, Lyth-Weaver
+  `5e1c34289c254c52e7cee50beddcc43538a11656`, and KB
+  `5143f0a9cd42ac493e08d7a310284be6816966a6`. Existing unrelated dirty and
+  private work remains preserved; Galerina `README.md` is still dirty.
+- [x] SLIDE and Lyth source evidence is now explicitly separated from their
+  later documentation-only receipt commits. No stale documentation head is
+  being used as source-test evidence.
+- [x] The owner-requested escaped path `AI\\_INDEX.md` resolves to the existing
+  root `AI_INDEX.md`; the backslash escapes the Markdown underscore and is not
+  a directory separator. `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and the
+  locator-only `research/RD-TODO-MAP.md` are the canonical KB routes. No
+  duplicate `ai/_INDEX.md` warehouse was created.
+- [!] The required R&D locator gold control passes **12/12**, but the bounded
+  `RD-0349..RD-0365` query returns
+  `REFUSED — tracked RD source paths are dirty; refresh is refused`. This is
+  preserved as a refusal, not converted into a current RD decision or absence
+  claim.
+- [x] With explicit `AGENTS_ROOT` and `RD0873_GIT_PATH` routes at Galerina
+  HEAD `bd5930a53`, the AGENTS audit-map controls pass **7/7** and the corpus
+  detector self-test passes. Myco remains degraded (`exit 2`, no JSON); the
+  real corpus DAG was not launched.
 
-### RD-0873 full package conversion start - 2026-09-13
+### Public-only release-admission recheck — 2026-09-19
 
-- [x] Set the canonical target layout to
-  `packages/fungi/products/<package-name>`. The owner-authorized plan covers
-  all 100 packages and all eligible `.ts`, `.mts`, `.cts`, `.mjs` and `.js`
-  source under `packages-ts/*/src`.
-- [x] Record the cheapest local execution policy: Git is storage only; no CI,
-  hosted build or repository automation is part of this run. Original
-  TypeScript/JavaScript remains as a differential shadow, and Rust/C/C++ and
-  other native boundaries receive explicit manual treatment.
-- [x] Start wave 3 with the exact direct targets
-  `packages/fungi/products/galerina-core-config/environment-mode.fungi` and
-  `packages/fungi/products/galerina-core-runtime/terminal-scope.fungi`.
-  Strict checks are **2/2** and focused cases **13/13** with zero failures or
-  skips.
-- [x] Record the direct-tree receipt in
-  `docs/independent-audits/2026-09-13-rd0873-fungi-wave3-direct-package-tree.json`
-  and the companion report.
-- [!] Keep the legacy pilot tree under
-  `packages/fungi/products/galerina/` until compatibility receipts and tests
-  are deliberately migrated; do not delete or silently move it.
-- [ ] Continue bounded chapters using the manifest limits: at most 2 packages,
-  4 source files, 16,384 output bytes and 12 focused tests per wave. Run a
-  package review only after its chapter, and a corpus review only after all
-  package chapters.
-- [ ] For each source file, either produce a buildable direct Fungi target or
-  record a manual host/compiler/build/test boundary with a reason and retained
-  shadow. Do not label a package complete from a copied pilot asset alone.
-- [ ] After each chapter, compile the produced Fungi locally and run the
-  smallest relevant benchmark/test set; record successes, issues and
-  improvements before advancing.
+- [x] At Galerina HEAD `e42b69dbb`, the bounded beta-v1 release-admission
+  verifier tests pass **8/8** using synthetic public evidence, including
+  missing-evidence, stale/digest-mismatch, dirty-checkout, signature-downgrade
+  and path-leak refusals.
+- [!] The live verifier correctly refuses with
+  `BETA_RELEASE_POLICY_DIRTY`; the checkout contains pre-existing unrelated
+  `README.md` work and no release authority may be inferred from a dirty tree.
+- [!] No private key was opened, generated, mounted or used. The 2026-07-30
+  registry ceremony is recorded as historical; the owner-controlled current
+  ceremony remains deferred until the final unsigned evidence and package
+  bytes are fixed.
 
-### RD-0873 direct package waves 4-6 - 2026-09-13
+### Exact-head non-corpus receipt refresh — 2026-09-19
 
-- [x] `galerina-core-compute`: translate `validateComputePlan` to
-  `packages/fungi/products/galerina-core-compute/validate-compute-plan.fungi`.
-  Strict check/build passed; package contracts **5/5**.
-- [x] `galerina-core-economics`: translate `selectVectorTier` to
-  `packages/fungi/products/galerina-core-economics/select-vector-tier.fungi`.
-  Strict check/build passed; scalar vectors **3/3** and existing package suite
-  **15/15**.
-- [x] `galerina-core-reports`: translate `selectReportStatus` to
-  `packages/fungi/products/galerina-core-reports/report-status.fungi`.
-  Strict check/build passed; worker differential **27/27** and package/report
-  suites **22/22**.
-- [x] Retain all three TypeScript shadows and record exact source/target
-  digests, limits and boundaries in the three per-wave receipts and the
-  combined report.
-- [!] These are bounded pure leaves; they do not complete their containing
-  packages. Structured-record ingress, hardware probing, object validation,
-  serialization and other host/compiler boundaries remain queued.
+- [x] Rechecked the current documentation heads before this TODO update:
+  Galerina `234eb2c0c`, SLIDE `6f1fea2`, Lyth-Weaver `3b3125b`, and local KB
+  `5143f0a9`. Existing unrelated dirty/private work remains preserved.
+- [x] Fresh bounded evidence is recorded: Lyth **23 suites / 786 checks / 0
+  failures** plus typecheck, forbidden-state, capability and doc-drift gates;
+  SLIDE/VOK focused suites **53/53 pass**; AGENTS RD-0873 audit-map controls
+  **7/7 pass**; corpus-checker self-test **PASS**.
+- [!] These are non-corpus, non-authorizing checks. They do not supply PROJECT
+  evidence, VOK authority, owner key ceremonies, physical durability evidence
+  or queue eligibility. The later corrected-path SLIDE receipt closes the
+  former producer/GIR locator issue, but no `.fungi` build or conversion-queue
+  regeneration follows from these checks.
 
-### RD-0873 direct package waves 7-9 - 2026-09-13
+### Dependency order and corpus-assurance hold — 2026-09-19
 
-- [x] `galerina-core-security`: translate `isSensitiveHeaderName` to
-  `packages/fungi/products/galerina-core-security/is-sensitive-header-name.fungi`.
-  Strict check/build passed; governed cases passed.
-- [x] `galerina-core-vector`: translate `validateMatrixType` to
-  `packages/fungi/products/galerina-core-vector/validate-matrix-type.fungi`.
-  Strict check/build and package vector suite **5/5** passed.
-- [x] `galerina-data-model`: translate `isResponseSafeClassification` to
-  `packages/fungi/products/galerina-data-model/response-safe-classification.fungi`.
-  Strict check/build and interpreter/Wasm differential **10/10** passed.
-- [x] Retain all three TypeScript shadows and record per-item digests,
-  boundaries and Luna - High limits in the manifest and receipts.
-- [!] These leaves do not complete their containing packages. Unicode case
-  mapping, hostile object/array ingress, full record ABIs, model validation,
-  response allowlists and hardware/provider behavior remain queued.
+- [x] Reconcile the live dependency order: complete independent Lyth-Weaver
+  laboratory work, then the SLIDE capability work, then VOK preparation, then
+  the bounded Galerina producer/evidence work. The final assurance bundle is
+  deferred until those changes are settled and the owner authorizes it.
+- [!] Hold the full tracked `.fungi` corpus compile/build and conversion-queue
+  regeneration. No `.fungi` build of any size is authorized yet. First close
+  or explicitly owner-resolve every current actionable TODO in Lyth, SLIDE,
+  VOK and Galerina, leaving `.fungi` generation as the only remaining work;
+  then run final corpus assurance and only afterward generate `.fungi`.
+- [!] Do not treat this Galerina lane as ready for bounded `.fungi` generation
+  until every current actionable Lyth, SLIDE, VOK and Galerina TODO is complete
+  or explicitly owner-resolved and the four lanes name one shared exact build
+  point. Lyth's local implementation
+  rows are now DONE/REFUSED/HOLD at implementation HEAD
+  `54a135f748c579da00f266de1a658aa634cc68c3`; SLIDE's bounded membership
+  successors are implemented, but scalar canonical-GIR/VOK admission remains
+  reference-only and profiles 64/256 remain explicitly INACTIVE because no
+  packed consumer or execution evidence exists. The prior nine SLIDE
+  cross-repository cancellations were stale `packages-galerina` test locators,
+  not absent producer/GIR inputs; the live paths are
+  `SLIDE/tests/v2c-galerina-conformance.test.mjs:13-20` and
+  `SLIDE/tests/v2d-reference-validator.test.mjs:15-22`, both now targeting
+  `Galerina/packages-ts/galerina-core-compiler`. The corrected focused suites
+  pass **9/9**, and the full bounded SLIDE suite passes **1,071/1,071 across
+  111 suites, 0 fail, 0 cancelled**, at SLIDE exact head
+  `eb02c604f19136534c3e2214b4a1af34bf6c7558`. VOK profile parity and authority
+  remain HOLD for their separate lifecycle and admission evidence.
+- [!] This hold is not evidence of a clean corpus or queue. Missing exact-head
+  PROJECT evidence remains a fail-closed refusal; no conversion, profile
+  activation, VOK authority, TypeScript retirement or `.fungi` build follows
+  from the focused checks.
+- [x] Rechecked the bounded corpus-receipt, queue, ownership and shard
+  contracts at this checkpoint: **49/49 pass**. The audit-map CLI ordering
+  test now uses injected PASS task results, so it verifies receipt algebra
+  without launching the real corpus audit entries.
+- [x] The approved audit-map structure and its five-fixture self-test pass at
+  digest `e0f755398e00b9768accf7d2918022355b19e90e9faba4dd5c38a9e3e38207d2`,
+  and the corpus-checker self-test passes its finder/detector controls. These
+  are structural controls only; they do not create PROJECT evidence or permit
+  the real audit DAG to run.
+- [!] The real audit-map DAG remains withheld. Its current bounded self-test
+  refuses this checkout because mixed tracked-file EOL evidence is not
+  admitted (**244 tracked worktree files report `w/mixed`**), and the required
+  exact-head PROJECT receipt is still absent. Bulk EOL normalization is not a
+  narrow TODO fix and is not authorized by this checkpoint.
+- [!] Current discovery is also non-authorizing: the fast graph refresh
+  reported indexed head `238b73e367370e9a891e93b71ec4904b0535086c`, not the
+  source checkpoint `4f0653a9b585657b4bde728e2c8883746a0454b0`. The last
+  current-worktree Myco snapshot at that checkpoint is `REFUSED` with
+  `INDEX_FRESHNESS_REFUSED` on the dirty worktree, and Hypha's filename-mode
+  request is refused. Treat this as stale/refused evidence, not a MISS or
+  absence claim; the following TODO update is documentation-only.
 
-### RD-0873 direct package waves 10-11 - 2026-09-13
+### Current-head R&D reconciliation — RD-0361 / RD-0363 / RD-0364 / RD-0365 / RD-0349 — 2026-09-12
 
-- [x] `galerina-core-tasks`: promote the owner-approved `isTaskEffect` twin
-  into `packages/fungi/products/galerina-core-tasks/task-effect.fungi`;
-  strict check/build and parity **2/2** passed.
-- [x] `galerina-core-sentinel-state`: translate the exact
-  `RESTORE_VERDICT_EXPORT_NAME` constant into
-  `packages/fungi/products/galerina-core-sentinel-state/restore-verdict-export-name.fungi`;
-  strict check/build and constant interpreter/Wasm checks passed.
-- [x] Retain both TypeScript shadows and record their exact digests, limits and
-  boundaries in the per-wave receipts and combined report.
-- [!] Task host marshalling and sentinel-state cold-boot,
-  persistence/cryptography and key-provider behavior remain queued; these
-  leaves do not complete their containing packages.
-
-### RD-0873 direct package wave 12 - 2026-09-13
-
-- [x] `galerina-core-sentinel-time`: translate
-  `SynchronizationGate.enforceDrift` to
-  `packages/fungi/products/galerina-core-sentinel-time/synchronization-gate.fungi`.
-  Strict check/build, differential **10/10** and retained package suite
-  **14/14** passed.
-- [x] Retain the TypeScript shadow and record the exact source/target digests,
-  limits and host-owned boundaries in the receipt.
-- [!] Synchronized-state calculation, physical-time acquisition, mutable state
-  and error-class projection remain host-owned; the leaf does not complete its
-  package.
-
-- [ ] Current run ledger: **14/100** package roots have a direct buildable
-  leaf (**14** leaves, **13,172** bytes); **86** package roots remain. Keep
-  advancing with Luna - High workers and record every leaf before selecting
-  the next package.
-
-### RD-0873 direct package waves 13-15 - 2026-09-13
-
-- [x] `galerina-core-network`: promote the bounded `telemetryToSideSignal`
-  twin to `packages/fungi/products/galerina-core-network/admission-feedback.fungi`;
-  strict check/build and RD-0361 differential **1/1** passed.
-- [x] `galerina-core-sentinel-io`: translate the
-  `IntegrityMonitor.verifyBlock` decision to
-  `packages/fungi/products/galerina-core-sentinel-io/integrity-verdict.fungi`;
-  strict check/build and retained package suite **25/25** passed.
-- [x] `galerina-core-sentinel-memory`: translate the `ALIGN_BYTES` constant
-  to `packages/fungi/products/galerina-core-sentinel-memory/align-bytes.fungi`;
-  strict check/build and interpreter/Wasm constant checks passed.
-- [x] Retain all three TypeScript shadows and record exact digests, limits and
-  host-owned boundaries in the receipts and report.
-- [!] Network decoding/admission, cryptographic computation and memory
-  bounds/native effects remain boundary work; these leaves do not complete
-  their packages.
-
-### RD-0873 direct package waves 16-18 - 2026-09-13
-
-- [x] `galerina-ai`: translate `defineAiSafetyPolicy` to
-  `packages/fungi/products/galerina-ai/define-ai-safety-policy.fungi`;
-  strict check/build and parity **2/2** passed.
-- [x] `galerina-ai-agent`: translate `validateAgentLimits` to
-  `packages/fungi/products/galerina-ai-agent/validate-agent-limits.fungi`;
-  strict check/build and parity **6/6** passed.
-- [x] `galerina-data-archive`: translate `validateChecksumRef` to
-  `packages/fungi/products/galerina-data-archive/validate-checksum-ref.fungi`;
-  strict check/build and parity **4/4** passed after a lexer-safe quote repair.
-- [x] Record fresh hashes, limits, benchmark baselines and boundaries in the
-  three receipts and combined report; retain all TypeScript shadows.
-- [!] Provider/model loading, host marshalling, archive I/O and production
-  authority remain outside these bounded leaves.
-
-- [ ] Current run ledger: **17/100** package roots have a direct buildable
-  leaf (**17** leaves, **21,439** bytes); **83** package roots remain. Continue
-  with Luna - High workers under the manifest limits.
-
-### RD-0873 direct package waves 19-21 - 2026-09-13
-
-- [x] `galerina-ai-neural`: translate `isSameTensorShape` to
-  `packages/fungi/products/galerina-ai-neural/is-same-tensor-shape.fungi`;
-  strict check/build and parity **5/5** passed.
-- [x] `galerina-data-db`: translate `validateDbBoundaryRequirements` to
-  `packages/fungi/products/galerina-data-db/validate-db-boundary-requirements.fungi`;
-  strict check/build and parity **8/8** passed.
-- [x] `galerina-data-json`: translate `validateJsonMemoryPolicy` to
-  `packages/fungi/products/galerina-data-json/validate-json-memory-policy.fungi`;
-  strict check/build and interpreter/signed-Wasm parity **8/8** passed over
-  the same bounded vectors.
-- [x] Record exact digests, limits, local benchmark baselines and boundaries;
-  retain all three TypeScript shadows.
-- [!] Sparse/hostile object ingress, host decoding/marshalling, stream
-  allocation, provider behavior and production authority remain queued.
-
-- [ ] Current run ledger: **20/100** package roots have a direct buildable
-  leaf (**20** leaves, **27,604** bytes); **80** package roots remain. Continue
-  with Luna - High workers under the manifest limits.
-
-### RD-0873 direct package waves 22-24 - 2026-09-13
-
-- [x] `galerina-core-photonic`: translate `validateOpticalSignal` to
-  `packages/fungi/products/galerina-core-photonic/validate-optical-signal.fungi`;
-  strict check/build and parity **5/5** passed.
-- [x] `galerina-cpu-kernels`: translate `requiresLowBitKernel` to
-  `packages/fungi/products/galerina-cpu-kernels/requires-low-bit-kernel.fungi`;
-  strict check/build and bounded parity **12/12** passed.
-- [x] `galerina-data`: translate `validateDataMemoryLimits` to
-  `packages/fungi/products/galerina-data/validate-data-memory-limits.fungi`;
-  strict check/build and interpreter/signed-Wasm parity **9/9** passed.
-- [x] Record exact digests, limits, local benchmark baselines and boundaries;
-  retain all three TypeScript shadows.
-- [!] Host defaults, hostile object ingress, native kernels, parsing,
-  allocation, streams and production authority remain queued.
-
-- [ ] Current run ledger: **23/100** package roots have a direct buildable
-  leaf (**23** leaves, **32,484** bytes); **77** package roots remain. Continue
-  with Luna - High workers under the manifest limits.
-
-### RD-0873 direct package waves 25-27 - 2026-09-13
-
-- [x] `galerina-core`: translate `hasErrors` to
-  `packages/fungi/products/galerina-core/has-errors.fungi`; strict
-  check/build and parity **6/6** passed.
-- [x] `galerina-data-database`: translate `validateDatabaseChecksum` to
-  `packages/fungi/products/galerina-data-database/validate-database-checksum.fungi`;
-  strict check/build, focused parity **3/3** and package suite **22/22** passed.
-- [x] `galerina-core-runtime-wasm`: translate `WAT_HEAP_BASE` to
-  `packages/fungi/products/galerina-core-runtime-wasm/wat-heap-base.fungi`;
-  strict check/build and bounded constant parity **12/12** passed.
-- [x] Record exact digests, limits, local benchmark baselines and boundaries;
-  retain all three TypeScript shadows.
-- [!] Sparse/hostile objects, database/native effects, allocation/layout and
-  compiler integration remain queued.
-
-- [ ] Current run ledger: **26/100** package roots have a direct buildable
-  leaf (**26** leaves, **36,476** bytes); **74** package roots remain. Continue
-  with Luna - High workers under the manifest limits.
-
-### RD-0873 direct package waves 28-30 - 2026-09-13
-
-- [x] `galerina-core-logic`: translate `validateBoolBoundary` to
-  `packages/fungi/products/galerina-core-logic/validate-bool-boundary.fungi`;
-  strict check/build and parity **7/7** passed.
-- [x] `galerina-data-pipeline`: translate `validateBackpressurePolicy` to
-  `packages/fungi/products/galerina-data-pipeline/validate-backpressure-policy.fungi`;
-  strict check/build and parity **12/12** passed.
-- [x] `galerina-ai-lowbit`: translate `validateLowBitAiModel` to
-  `packages/fungi/products/galerina-ai-lowbit/validate-low-bit-ai-model.fungi`;
-  strict check/build, finite interpreter **9/9** and finite signed-Wasm **9/9**
-  passed.
-- [x] Repair the two Truth/Falsy governance warnings with explicit boolean
-  equality and recheck both targets with zero warnings.
-- [x] Record the low-bit `NaN`/`Infinity` host/manual boundary because the
-  current WAT emitter traps nonfinite `Float64` before TypeScript `<= 0`
-  semantics can be compared.
-- [x] Record exact hashes, limits, benchmark baselines and retained shadows in
-  the three receipts, report and manifest.
-- [!] These bounded leaves do not complete their containing packages or grant
-  production authority; host marshalling, provider/runtime effects and the
-  nonfinite numeric boundary remain queued.
-- [ ] Current run ledger: **29/100** package roots have a direct buildable leaf
-  (**29** leaves, **47,202** bytes); **71** package roots remain. Continue with
-  the three Fungi workers under the Luna - High ceiling.
-### RD-0873 direct package waves 31-33 - 2026-09-13
-
-- [x] `galerina-ai-neuromorphic`: translate `validateSpikeTrain` to
-  `packages/fungi/products/galerina-ai-neuromorphic/validate-spike-train.fungi`;
-  strict check/build and parity **8/8** passed.
-- [x] `galerina-data-html`: translate `validateHtmlParsePlan` to
-  `packages/fungi/products/galerina-data-html/validate-html-parse-plan.fungi`;
-  strict check/build and parity **12/12** passed.
-- [x] `galerina-core-sentinel-power`: translate `validateEnvelope` to
-  `packages/fungi/products/galerina-core-sentinel-power/validate-envelope.fungi`;
-  strict check/build, finite interpreter **10/10** and finite signed-Wasm
-  **10/10** passed.
-- [x] Repair the sentinel-power Truth/Falsy warning with explicit boolean equality and recheck with zero warnings.
-- [x] Run ten fresh local strict-check iterations per target (**30/30**), with means **257.3 ms**, **250.8 ms** and **246.4 ms**; the CLI benchmark subcommand remains unimplemented.`r`n- [x] Repair response-mapping quote construction with `Char.fromCode(34)` and explicit Bool comparisons; root strict recheck passes with zero warnings.`r`n- [x] Run the retained package suites (**37/37**) and ten local strict-check iterations per target (**30/30**), averaging **248.7 ms**, **243.1 ms** and **247.6 ms**; the CLI benchmark subcommand remains unimplemented.`r`n- [x] Record exact hashes, limits, retained shadows and manual boundaries in
-  the receipts, combined report and manifest.
-- [!] JavaScript default/undefined/null and sparse-array normalization,
-  browser/parser effects, optional-field marshalling and nonfinite thermal
-  behavior remain host/manual boundaries; no production authority changed.
-- [ ] Current run ledger: **32/100** package roots have a direct buildable leaf
-  (**32** leaves, **55,129** bytes); **68** package roots remain. Continue with
-  the three Fungi workers under the Luna - High ceiling.
-### RD-0873 direct package waves 34-36 - 2026-09-13
-
-- [x] `galerina-auth`: translate `composeAuthVerdict` to
-  `packages/fungi/products/galerina-auth/compose-auth-verdict.fungi`;
-  strict check/build and parity **8/8** passed.
-- [x] `galerina-data-reports`: translate `deriveDataReportStatus` to
-  `packages/fungi/products/galerina-data-reports/derive-data-report-status.fungi`;
-  strict check/build and parity **12/12** passed.
-- [x] `galerina-data-response`: translate `validateResponseMapping` to
-  `packages/fungi/products/galerina-data-response/validate-response-mapping.fungi`;
-  strict check/build, interpreter **10/10** and signed-Wasm **10/10** passed.
-- [x] Repair response-mapping quote construction with `Char.fromCode(34)` and explicit Bool comparisons; root strict recheck passes with zero warnings.`r`n- [x] Run the retained package suites (**37/37**) and ten local strict-check iterations per target (**30/30**), averaging **248.7 ms**, **243.1 ms** and **247.6 ms**; the CLI benchmark subcommand remains unimplemented.`r`n- [x] Record exact hashes, limits, retained shadows and manual boundaries in
-  the receipts, combined report and manifest.
-- [!] Credential/provider effects, report persistence, response projection,
-  transport/egress and source-object admission remain host/manual boundaries;
-  no production authority changed.
-- [ ] Current run ledger: **35/100** package roots have a direct buildable leaf
-  (**35** leaves, **64,000** bytes); **65** package roots remain. Continue with
-  the three Fungi workers under the Luna - High ceiling.
-### RD-0873 direct package waves 37-39 - 2026-09-13
-
-- [x] `galerina-data-query`: translate `isSome` to
-  `packages/fungi/products/galerina-data-query/is-some.fungi` and `optionSome`
-  to `packages/fungi/products/galerina-data-query/option-some.fungi`; strict
-  check/build and parity **12/12** for each leaf passed.
-- [x] `galerina-data-search`: translate `validateSearchQuery` to
-  `packages/fungi/products/galerina-data-search/validate-search-query.fungi`;
-  strict check/build and interpreter/signed-Wasm parity **10/10** passed.
-- [x] Repair the search leaf's unsupported Char literal and implicit Bool checks
-  with `Char.fromCode(34)` and explicit comparisons; root recheck is warning-free.
-- [x] Record exact hashes, limits, retained shadows and ten-run local timing
-  baselines in the receipts, combined report and manifest.
-- [!] Generic payload types, malformed object shapes, parser/index lookup,
-  provider/transport/egress and host search effects remain manual boundaries;
-  no production authority changed.
-- [ ] Current run ledger: **37/100** package roots have direct buildable leaves
-  (**38** leaves, **69,674** bytes); **63** package roots remain. Continue with
-  the three Fungi workers under the Luna - High ceiling.
-### RD-1231 bounded Fungi pilot conversion - 2026-09-13
-
-- [x] Record the owner's authorization for a bounded symbol-scoped conversion
-  run while keeping the TypeScript shadows active.
-- [x] Revalidate the four selected product-tree twins at Galerina HEAD
-  `675e1048304b11e109b1de4f68af97ebc64f5949` / tree
-  `b20138180928ed9d787d157d1faedbe86050be64` under profile `scalar-1`.
-- [x] Run four strict type/governance checks and the four retained package
-  conversion suites: **8/8** differential assertions passed, with zero
-  failures and zero skips.
-- [x] Record source/target bytes, digests, per-step limits, successes, issues
-  and improvements in
-  `docs/independent-audits/2026-09-13-rd0873-fungi-pilot-conversion.json`
-  and its companion report.
-- [!] The four product-tree targets pre-existed this run; no identical bytes
-  were rewritten. This is a current-head pilot execution and evidence record,
-  not a claim that a general TypeScript-to-Fungi generator exists.
-- [!] Keep snapshot/GIR/SLIDE/VOK current-head receipts, independent review,
-  consumer switching, production authority and TypeScript retirement closed.
-- [ ] Before the next wave, create a fresh manifest naming its exact source
-  symbols, targets, profile and limits; do not extend this receipt or reuse the
-  stale earlier manifest.
-
-### RD-0361 secret-gate Option-ABI re-baseline attempt - 2026-09-13
-
-- [x] Reproduce the exact-head observation: the committed authority-hash
-  check was **28/29** with only `secret-gate.fungi` mismatching its historical
-  digest (`ce662c...a3c36` recorded versus `f06221...c9166` derived).
-- [x] Identify the demonstrated cause: commit `ca2bc2fb5` changed the Option
-  ABI from sentinel payloads to explicit registry handles.
-- [x] Re-run bounded semantic and mutation evidence: secret-gate differential
-  **1/1**, Option ABI/wildcard regressions **22/22**, hash-tool self-test
-  **4/4**, and the targeted mutation probe **1/1**.
-- [x] Add and run the bounded caller-route/shadow differential fixture
-  `scripts/tests/rd0873-caller-route-shadow-bake.test.mjs`. It exercises the
-  retained TypeScript `createSecretGate().admit()` shadow, the real
-  `createAppKernel().handle()` gate-9.5 caller route, and the admitted Fungi
-  twin over eight fail-closed cases, with one audit receipt per case.
-- [!] Do not repin the committed ledger from the dirty working tree. The
-  working verifier's **29/29** is recorded as `HOLD_TOOLCHAIN_DRIFT` until the
-  same result is reproduced from an immutable implementation-freeze closure.
-- [!] Keep RD-0361 **HOLD** for caller-route/shadow-bake proof, independent
-  executable SLIDE integration and production authority. No consumer switch,
-  TypeScript retirement, production authority, corpus rerun or `.fungi`
-  authoring follows from this observation.
-
-### Registry durability production release seam - 2026-09-13
-
-- [x] Keep `admitRegistryDurabilityProfile` as a frozen, non-authorizing
-  candidate constructor and add the separate
-  `activateRegistryDurabilityProfile` promotion seam. The release path binds
-  an exact process-local candidate to an owner authorization covering its
-  evidence and generation, checks owner-key separation and validity windows,
-  and requires a native verifier that returns exactly `true`.
-- [x] Refuse copied candidates, target substitution, stale or over-broad
-  release windows, owner-key reuse and verifier failure. The released profile
-  is a distinct immutable process-local type with both authority flags true.
-- [!] Keep production authority closed until a real owner authorization,
-  platform durability receipts and live native-provider evidence are supplied.
-  The bounded app-kernel suite passes **233/233**; no production profile has
-  been promoted on this host.
-
-### I/O – OS kernel status refresh - 2026-09-13
-
-- [x] Reopen the exact implementation point: `main` at
-  `e716fc677d3ca609b016cf76d7f994b67fd36466`; tracked files are unchanged and
-  the pre-existing untracked `gate-selftests-local.json` remains preserved.
-- [x] Obtain the independent GPT-6 Astra review and run the bounded current-head
-  checks. Kernel admission, host-floor, auth/fuse/secret, egress and durability
-  suites pass `152/152` across 17 suites with zero failures, cancellations or
-  skips. The current registry records 29 authoritative twins; the older July
-  handover count of 28 is historical.
-- [x] Confirm the bounded controls: fail-closed channel admission,
-  least-authority host-import classification, checked egress resolution and
-  candidate/production durability separation. These are evidence controls, not
-  a general native I/O implementation or a production receipt.
-- [x] Re-run the focused app-kernel seams after the current-head review:
-  production durability/boot posture **12/12** and fuse-loader/composition
-  **37/37**. These checks confirm the refusal boundaries; they do not turn the
-  placeholder general network adapters into a production I/O implementation.
-- [!] Keep the I/O – OS kernel boundary at `72% asserted`. General inbound and
-  outbound operations in `packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts`
-  still refuse with `-1`; the durability production allow-list remains empty,
-  and admitted candidate profiles retain `authorityReleased: false` and
-  `productionAuthorizing: false`.
-- [!] Keep open: operational general I/O adapters with checked address use,
-  hostile-code containment and complete resource controls, authenticated
-  crash/termination receipts, named-platform restart/power-loss durability,
-  independent native execution evidence, and production authority.
-- [!] Mark the linked-host executable and bounded Windows checks as progress
-  only. The native durability README's older “custom Node host not built” text
-  is superseded for that bounded fact by the later linked-host checkpoint, but
-  production evidence remains `K3 0`.
-- [ ] Next safe step: implement or explicitly scope the missing general I/O and
-  platform-durability contracts, then obtain fresh exact-head independent
-  receipts before changing the percentage or production ledger arrays. No
-  consumer switch, TypeScript retirement, corpus rerun or `.gate` work follows
-  from this refresh.
-
-### RD-0361 authority hash and shadow-bake housekeeping - 2026-09-13
-
-This earlier check remains the committed 28/29 observation; no re-baseline was
-committed because the working-tree pin differs from the committed ledger.
-
-- [x] Reopen RD-0361 at `main` HEAD
-  `e716fc677d3ca609b016cf76d7f994b67fd36466` / tree
-  `80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a`, preserving the unrelated dirty
-  working-tree paths and `gate-selftests-local.json`.
-- [x] Re-run the bounded RD-0361 checks: execution **26/26** across 25 test
-  files, twin syntax/presence **103/103**, and the live #143 R4 classifier with
-  29 declared authoritative entries.
-- [!] Keep RD-0361 **HOLD**. The enforcing authority-hash check exits 1 at
-  **28/29**. `secret-gate.fungi` derives
-  `f062217154df66e3a72bc6adc82e47e72392c5a8d56bc8d40442090a8c8c9166` while
-  its recorded pin is
-  `ce662c325ef9ba682688a4b18097f5020fe54235ce522773f20e13d0cfda3c36`.
-  Do not repin solely to make the gate green.
-- [!] Treat the older 29/29 hash-integrity wording as historical until the
-  mismatch is reproduced from an immutable compiler/toolchain closure and the
-  cause is independently reviewed. Ledger declarations and presence checks do
-  not prove live caller routing or TypeScript-shadow retirement.
-- [x] Record the exact disposition in
-  `docs/reports/rd0361-housekeeping-2026-09-13.md` and the compact handoff
-  `docs/handover/COMPACT-HANDOFF-rd0361-housekeeping-2026-09-13.md`.
-- [x] Add the bounded caller-route and TypeScript-shadow differential fixture
-  `scripts/tests/rd0873-caller-route-shadow-bake.test.mjs`. It covers the
-  secret-gate caller route through `createAppKernel().handle()` and the
-  retained `createSecretGate().admit()` shadow against the admitted Fungi twin;
-  all eight cases pass with one route receipt per case. This does not claim
-  that every RD-0361 twin has a production caller route or independent SLIDE
+- [x] Have GPT-6 Astra independently review all five R&D records against the
+  current Galerina head and check the newer private KB handovers.
+- [x] Refresh the bounded RD-0361 twin audit at the current head: 104/104
+  check-clean, with 74 shadow, 1 differential, and 29 authoritative entries.
+- [x] Correct RD-0349 I2 runtime precision to use the generated minor-unit
+  registry, including valid zero-decimal currencies, with focused 25/25
   evidence.
-- [ ] Next safe step: reproduce and explain the `secret-gate` drift, repair the
-  demonstrated cause, rerun exact hash/admission plus differential and
-  mutation checks, then verify each twin's caller route and mismatch refusal.
-  No consumer switch, TypeScript retirement, production authority or corpus
-  rerun follows from this housekeeping entry.
-
-### RD-0873 triNot preauthoring evidence check - 2026-09-12
-
-- [!] The owner reports this checkpoint is superseded by `RD-1003`. The checked KB record `ZTF-Knowledge-Bases/private/research/rd/RD-1003-interval-witness-defensive-admission-PRIVATE.md` is a separate private interval-witness research construction and explicitly contains no Galerina, SLIDE, `.fungi`, physical experiment, signing, hosted run or push. The relationship is therefore unconfirmed: retain this triNot receipt as historical `HOLD_NON_AUTHORING`, do not substitute RD-1003 for a Galerina exact-head admission, and do not resume this authoring lane until the owner names a Galerina-related superseding record or confirms the hold is still needed.
-
-- [x] Rebound the exact source snapshot to the pre-documentation `main` HEAD
-  `cd01e2f1300cbeb5a9d1f60f00a7a3b6a0058c78` / tree
-  `69aae5442b03a4aaeb7f83fd16590e3235f1df97`; later changes in this checkpoint
-  are documentation-only. The `triNot` source file and
-  lines 83-85 span hashes match the reviewed scope. The bounded evidence is
-  `docs/independent-audits/2026-09-12-rd0873-trinot-preauthoring-evidence-v1.json`.
-- [x] Run the existing `galerina-core-logic` typecheck, build and package suite:
-  65/65 tests passed. The product target and additive focused test were not
-  created, and the existing four-operation suite remains unchanged.
-- [x] Record the available SLIDE scalar contract, compiler and tool-manifest
-  identities at their own exact head/tree. These are profile-owner references,
-  not an executed closure receipt or physical admission.
-- [!] Keep authoring `HOLD_NON_AUTHORING`: no named host adapter is present in
-  the scoped package. The only nearby `hostBoundary` helper is test-only and is
-  insufficient for triNot because it forwards NaN, infinities and fractions; the
-  local source dependency closure has no module imports, and its local references
-  plus the unbound host `TypeError` constructor are listed in the receipt. The
-  compiler build input set is measured at 846 tracked inputs, with 64/64
-  focused cross-stage checks passing, but the authoritative
-  checker/emitter/assembler closure and profile owner receipt are still missing.
-  Primary source input is 13,409 bytes within the 16,384 cap; the 2,990-byte
-  existing suite is separate ancillary evidence, while a runner that aggregates
-  them to 16,399 bytes must hold. The 68,510-byte raw compiler build-evidence
-  file exceeds the 65,536 evidence cap and remains an out-of-band digest-only
-  observation. A 5,483-byte compact closure reference is now recorded at
-  `docs/independent-audits/2026-09-12-rd0873-trinot-compiler-closure-reference-v1.json`,
-  but it does not close the authoritative toolchain gate.
-- [ ] If the owner confirms this lane remains needed, next bounded step: name the exact host boundary or an owner-approved
-  boundary exclusion, bind the complete compiler/profile closure in bounded
-  evidence, and obtain a fresh non-empty owner admission naming `triNot`, its
-  target and limits. No
-  queue read, corpus rerun, consumer switch or TypeScript retirement is part of
-  this step.
-
-
-### RD-0873 exact next translation scope - 2026-09-12 (review revision)
-
-- [x] Rebind the next singleton product-runtime scope to the reviewed source
-  snapshot at `main` HEAD `30c5c8be8d94db3b47bade0f7024371f8b9588c6` / tree
-  `d222695b9505206530ce9da3a70196ce774c79e5`; later commits in this checkpoint
-  are documentation-only. The symbol is `triNot` in
-  `packages-ts/galerina-core-logic/src/index.ts` (lines 83-85).
-- [x] Name the product target
-  `packages/fungi/products/galerina/rd0873-core-logic/tri-not.fungi`, a new
-  additive `tri-not-fungi-conversion.test.mjs` harness (preserving the existing
-  four-operation suite), compiler
-  `@galerina/core-compiler@1.0.0-beta.2`, profile
-  `slide.pure-scalar.v1` / `scalar-1`, and the singleton limits in
-  `docs/reports/2026-09-12-rd0873-next-translation-scope.md` and
-  `docs/independent-audits/2026-09-12-rd0873-next-translation-scope-v1.json`.
-- [x] Review the scope with Grok for advisory alternatives/knowledge gaps and
-  GPT-6 Astra for independent architecture and semantics. Both returned
-  `REVISE-SCOPE`; the required corrections are recorded in the scope report
-  and Astra receipt. No `.fungi` source was authored.
-- [!] This is a reviewed scope selection only. The target does not yet exist;
-  authoring and creation of the additive focused test remain the next bounded
-  execution step. Before authoring, record the host validation boundary,
-  profile owner and executed compiler closure, and confirm the runner's input
-  accounting. If source plus ancillary test bytes count toward the 16,384-byte
-  cap, the step is HOLD.
-  `assertTri`, `triAnd`, `triOr`, `triNor`, the held symbols, all compiler and
-  tooling code, TypeScript shadows, and native/VOK paths remain outside scope.
-
-### RD-0873 role inventory completion - 2026-09-12
-
-- [x] Finish the package-role inventory at exact `main` HEAD
-  `19195609b3fcf72c835eca7c5ebb48e401870144` / tree
-  `a2f29d30a38d7e9ab98d46a58c39358e956b8a4b`. All 100 `packages-ts` manifests
-  are assigned exactly once across product/runtime Fungi candidates (20),
-  compiler/bootstrap retained TypeScript (11), development/build/test/CI
-  retained TypeScript (20), mixed symbol/path scope (14), and host,
-  extension, research or compatibility retained (35).
-- [x] Record the non-authorizing role map and native boundary inventory in
-  [`docs/reports/2026-09-12-selective-conversion-role-inventory.md`](reports/2026-09-12-selective-conversion-role-inventory.md)
-  with the machine-readable receipt
-  `docs/independent-audits/2026-09-12-rd0873-role-inventory-v1.json`.
-- [!] Treat package labels as routing defaults only. Mixed packages require
-  named file/symbol scope; TypeScript shadows, compiler/tooling/CI code and
-  Rust/VOK/native owners remain retained. This step did not read the queue,
-  rerun PROJECT assurance, author `.fungi`, switch consumers or grant
-  SLIDE/VOK authority.
-
-### RD-0873 housekeeping owner disposition - 2026-09-12
-
-- [x] Resolve the missing owner-decision prerequisite for the prior
-  `HOUSEKEEPING REFUSED` result. The owner disposition retains all 716
-  bounded-execution findings for manual review and defers cleanup.
-- [x] Retain the hard-linked executable at
-  `build/rd0858-requirement-launcher/bad-ready-target/release/deps/galerina_requirement_launcher.exe`
-  and its second observed hard-link name in place for manual review. Its
-  measured 318,464 bytes and SHA-256 are recorded in the owner-disposition
-  report; it was not executed or changed.
-- [x] Record the detailed disposition in
-  `docs/reports/rd0873-housekeeping-owner-disposition-2026-09-12.md`.
-- [!] The earlier instrument result remains exactly `HOUSEKEEPING REFUSED` /
-  exit 2 and is not relabeled clean. Memory preflight remains a separate
-  owner-visible hold. Any deletion, quarantine, replacement or deduplication
-  still requires a new exact owner-authorized operation.
-
-### RD-0873 isBuiltin and validateTransition canonical classifiers - 2026-09-12
-
-- [x] Replace the devtools-context `isBuiltin` Set lookup with exact literal
-  equality for all 18 builtins. The existing Fungi twin is now stored at
-  `packages/fungi/products/galerina/rd0873-devtools-context/builtin-name.fungi`,
-  while its TypeScript shadow remains under `packages-ts`.
-- [x] Replace the project-graph `validateTransition` Map/Set lookup with
-  ordered literal branches for the 11 permitted transitions across the seven
-  lifecycle states. Its existing Fungi twin is now stored at
-  `packages/fungi/products/galerina/rd0873-devtools-project-graph/resource-transition.fungi`.
-- [x] Verify exact parity without a corpus rerun: the focused proofs pass 3/3
-  and 2/2; package suites pass 38/38 and 92/92 with typecheck and build green.
-  The builtin public-behavior fixture is parser-clean, routes all 18 names
-  through call expressions, and emits only `customHelper`; the transition
-  matrix covers 121 TypeScript/interpreter/signed-Wasm input pairs. GPT-6 Astra
-  independently reviewed the final head and found no material defect.
-- [!] The exact-head non-authorizing receipt is
-  `docs/independent-audits/2026-09-12-rd0873-is-builtin-validate-transition-v1.json`.
-  Product Fungi placement and semantic parity are recorded; SLIDE/VOK physical
-  admission, consumer switching, TypeScript retirement and production authority
-  remain separate holds. No queue read, queue promotion or PROJECT assurance
-  rerun was performed.
-
-### RD-0873 pre-translation retention gate hardening - 2026-09-12
-
-- [x] Implement the single Astra-reviewed pre-translation improvement: a
-  dedicated `.github/workflows/retention.yml` builds the governed compiler
-  dependency closure with `scripts/build-core-chain.mjs --gate-subjects`, then
-  runs the enforcing per-commit retention gate. The existing build-free
-  `conventions.yml` remains unchanged.
-- [x] Make retention child probes fail closed on spawn errors, timeouts,
-  signals, missing exit status and unaccepted exit codes. A pass-looking output
-  cannot override a failed process.
-- [x] Give `audit-leak-static.mjs --json` a complete machine-readable result
-  with explicit `complete`, `truncated`, `scanned`, `findings` and `exitCode`
-  fields. The gate validates the schema, every finding identity and agreement
-  between the declared and observed exit code; it no longer parses the
-  60-finding human display cap.
-- [x] Add focused contract coverage for child-result rejection, complete
-  scanner output beyond 60 findings, malformed identities and workflow order.
-  Retention contract tests pass 5/5 and component-health readiness tests pass
-  2/2; the real retention gate passes with 19/19
-  bounded-cache regressions, the production 2,048-entry ceiling enforced and
-  138 source files scanned with zero new findings. The governed closure build
-  completes for 15 packages. Hosted GitHub Actions run
-  `34688917949` also passes for implementation commit
-  `7b4006db8ce77af39e7a9840a9e184699233b868`.
-- [!] The dynamic nightly/release measurements remain separate and unscheduled;
-  this change does not start translation, rerun PROJECT assurance, switch a
-  consumer, retire TypeScript or alter `.gate`.
-
-### RD-0873 exact-head one-symbol admission packet - 2026-09-12
-
-- [x] Record the smallest defensible scope before any further Fungi work:
-  `galerina-data-model` symbol `isResponseSafeClassification` in
-  `packages-ts/galerina-data-model/src/index.ts`, paired with the existing
-  product twin at `packages/fungi/products/galerina/rd0873-data-model/`.
-  The packet is bound to `main` HEAD `a636ab44c020c5b5718d4d87b9d467765fcd7b2b`
-  and tree `d32873777de832a730543c053a996cfa584e1922`.
-- [x] Set conservative singleton limits: profile 1, one symbol and source
-  file, 16,384 input bytes, 32,768 evidence bytes, 600,000 ms, concurrency 1,
-  and zero automatic retries. The packet and its measured 2,474-byte semantic
-  revalidation receipt are
-  `docs/independent-audits/2026-09-12-rd0873-current-head-single-symbol-admission-v1.json`
-  and
-  `docs/independent-audits/2026-09-12-rd0873-current-head-single-symbol-revalidation-receipt-v1.json`.
-- [x] Re-run the focused data-model proof: 2/2 tests passed with the TypeScript
-  shadow and product twin unchanged. No new Fungi source, twin rewrite or queue
-  promotion occurred.
-- [!] The packet remains `PROPOSAL_NON_AUTHORIZING` for new source work. The
-  physical SLIDE/VOK stage is a separate HOLD, and the existing housekeeping
-  refusal plus stale memory working-set still need owner-visible disposition.
-  The former prospective `isTri` item is now handled by its own bounded
-  numeric-leaf packet below; it does not inherit this existing-twin scope.
-
-### RD-0873 isTri numeric leaf and retained unknown boundary - 2026-09-12
-
-- [x] Resolve the open `isTri(value: unknown)` item without consulting the
-  conversion queue. The public TypeScript predicate remains the authoritative
-  synchronous boundary; the tested adapter contract returns false for every
-  non-number before invoking the product leaf
-  `packages/fungi/products/galerina/rd0873-core-logic/is-tri.fungi`.
-- [x] Add the smallest Fungi leaf, `isTri(value: Float64) -> Bool`, with exact
-  comparisons for `-1`, `0` and `1`. The leaf preserves signed-zero equality
-  and returns false for fractions, subnormal/large values and non-finite
-  numeric inputs without coercion or property reads. The TypeScript shadow is
-  retained and no consumer is switched.
-- [x] Run the focused interpreter, Wasm and composed-adapter proof: 5/5 tests
-  pass, including hostile proxies, boxed numbers, BigInt, Symbol, functions,
-  non-number false paths, one-call numeric dispatch, signed-zero preservation,
-  and the explicit Float64-to-Bool ABI. Astra reviewed the split and found it
-  semantically sound.
-- [!] Physical admission remains a stage-specific HOLD. The current SLIDE
-  pure-scalar profile refuses the Float64 ABI before producing a bundle, so
-  VOK re-derivation cannot run. The bounded packet and receipt are
-  `docs/independent-audits/2026-09-12-rd0873-is-tri-admission-v1.json` and
-  `docs/independent-audits/2026-09-12-rd0873-is-tri-receipt-v1.json`.
-
-### RD-0873 canonical Omni uncertainty membership - 2026-09-12
-
-- [x] Resolve the `isOmniUncertain` semantic HOLD with the approved canonical
-  membership contract. The TypeScript classifier now compares the six
-  documented uncertain states directly; it no longer consults the mutable
-  exported `OMNI_UNCERTAIN_STATES` collection or any replaceable array method.
-- [x] Retain `OMNI_UNCERTAIN_STATES` as a deprecated enumeration-only
-  compatibility export. Mutating or overriding its `add`, `delete`, `clear` or
-  `has` behavior cannot change classification or downstream review reason text.
-- [x] Extend the Fungi proof to compare every vector with the live TypeScript
-  predicate and add mutation, method-override, downstream-reason and mutant
-  controls. The focused proof passes `5/5`; the complete core-logic package
-  suite passes `65/65` with typecheck and build green. Astra's independent
-  review passes after the direct-equality and live-oracle fixes.
-- [!] Physical SLIDE/VOK admission remains a separate HOLD. This semantic
-  repair creates no new Fungi source, does not promote the queue, switch a
-  consumer or retire the TypeScript shadow, and does not rerun PROJECT corpus
-  assurance. Receipt:
-  `docs/independent-audits/2026-09-12-rd0873-omni-uncertain-canonical-membership-v1.json`.
-
-### RD-0873 housekeeping and compact checkpoint - 2026-09-12
-
-- [x] Record the implementation point used for this checkpoint: local and
-  remote `main` were `f4b4b24d9be5ef1522423eff43286fe800ef66b5` (tree
-  `5c99fd20ba78e21b607b860eab60ca5d14ec7721`) before this advisory
-  documentation update. Re-read live Git before any later source action.
-- [x] Record the NASM 3.02 prerequisite check. The executable matches the
-  pinned static-host recipe and the Windows probe returns `CANDIDATE`;
-  this is host-toolchain evidence, not Fungi or production admission.
-- [!] Run the bounded session housekeeping pass. It returned
-  `HOUSEKEEPING REFUSED`/HOLD: the bounded-execution audit reported 716
-  existing findings and inventory refused a hard-linked release executable at
-  `build/rd0858-requirement-launcher/bad-ready-target/release/deps/galerina_requirement_launcher.exe`.
-  No cleanup, quarantine or source change was attempted.
-- [!] Memory preflight self-tests passed, but the store remains non-green:
-  `memory_summary.md` and `raw_memories.md` are unindexed/missing the
-  memory-graph frontmatter contract, four notes have mixed line endings, the
-  Galerina working-set owner is missing, and case drift is report-only.
-  Stale volatile facts were zero. The top-level `MEMORY.md` remains an index,
-  not a body warehouse; the current result is recorded in the ad-hoc locator
-  note.
-- [ ] Keep translation paused until the refusal and memory-owner findings have
-  an owner-visible disposition. On resume, continue the remaining runtime
-  inventory under the standing approval with fixed manifests and focused
-  per-change checks; do not rerun the full corpus for an individual file.
-
-### RD-0873 GPT-6 Astra architecture review and R&D cross-check - 2026-09-12
-
-- [x] Obtain a bounded, read-only GPT-6 Astra architecture review at the exact
-  current `main` head `f4b4b24d9be5ef1522423eff43286fe800ef66b5` / tree
-  `5c99fd20ba78e21b607b860eab60ca5d14ec7721`. Record:
-  `docs/independent-audits/2026-09-12-rd0873-astra-pretranslation-architecture-review.md`.
-- [x] Run the KB R&D adapter gold control (`12/12`). The requested
-  `RD-0858..RD-0873` range query was refused because tracked RD source paths
-  in the KB checkout are dirty. Preserve that refusal; do not upgrade the
-  private metadata index into a current decision.
-- [x] Confirm the KB metadata locators: RD-0858 remains private and
-  `SOURCE-CHECKED`/`HOLD` for compiler implementation and language admission;
-  RD-0873 remains private and `SOURCE-CHECKED`/`HOLD` until corpus,
-  conversion-receipt and queue foundations are green.
-- [x] Adopt the review's pre-translation order: role and deployment
-  reconciliation; immutable manifest and checkpoint binding; hostile
-  snapshot/GIR/SLIDE/VOK refusal checks; profile-1 semantic/host parity;
-  durable ready/checking/repair/accepted processing; then independently
-  justified profiles 64 and 256. Profile 32 remains compatibility-only.
-- [!] Keep this review advisory. It does not start `.fungi` authoring, promote
-  the queue, reopen PROJECT assurance, switch a consumer, retire TypeScript or
-  grant production authority.
-- [ ] Before the first new source item, complete the owner-visible disposition
-  of the housekeeping/memory holds, bind a non-empty exact-head manifest with
-  per-wave limits, and close the missing semantic/physical evidence. Do not
-  run a full corpus check for an individual translation.
-
-### RD-0873 active selective-conversion work - 2026-09-12
-
-- [x] Reconcile the standing owner direction with the selective-conversion
-  policy: authorized candidate authoring, manual repairs and focused checks
-  continue. Historical exact-head proposals and HOLD records describe proof
-  limits; they do not require another approval for already authorized repairs.
-- [x] Confirm the unary Float64 negation repair is already present in the
-  compiler source on `main`; do not implement or re-integrate it again.
-- [x] Repair non-finite dimensions in the six affected vector/tensor product
-  candidates. Focused parity checks pass 78/78, or 89/89 including the unchanged
-  vector-definition regression. Astra accepted the scoped repair after 144
-  additional independent comparisons; its test-annotation finding is fixed.
-- [x] Verify the installed NASM 3.02 executable against the recorded recipe
-  hash and rerun the Windows static-host prerequisite probe (`CANDIDATE`).
-- [x] Implement the agent-limits candidate's caller-supplied diagnostic path;
-  27 focused checks pass and Astra accepted the scoped repair. Evidence:
-  `docs/reports/rd0873-vector-and-agent-path-repairs-2026-09-12.md`.
-- [x] Resolve the typed agent-limit numeric gap with the explicit
-  `Float64.isPositive` classifier and tested Float/Double aliases. Both agent
-  candidates preserve NaN/infinity behavior; generic guards remain unchanged.
-  Final classifier/agent checks pass 147/147, the full package build passes,
-  and Golden Pack is current at 11 checks plus 11 execution vectors. Astra
-  closed its two namespace-shadowing findings through focused delta reviews.
-- [ ] Continue the remaining runtime inventory through candidate, checking,
-  repair and accepted work. Keep unresolved host/alias/sparse-input semantics
-  visible; retained tooling and TS shadows are separate dispositions.
-
-The following older sections are historical checkpoints. Their test receipts
-remain limited to their recorded subjects. Production admission, consumer
-switching, TypeScript retirement and release authority remain separate and
-unproved; no queue or production receipt is promoted by this clarification.
-
-### RD-0873 generated graph/index refresh - 2026-09-12
-
-- [x] Refresh the repository-owned graph, semantic-assurance graph, KB graph,
-  dev-tool index, retirement graph, package provenance and roadmap outputs at
-  the committed `main` head `8bc1d9d9d0c4915d116caf0d422fe5256a845cec` /
-  tree `883bb31c0c95cfc50e8ca2de8f2886a9ddbaf74e`.
-- [x] Confirm the orchestrator check passes 9/9 and the focused graph/index
-  tests pass 34/34. The external navigation index is fresh at this head with
-  78,326 nodes and 203,562 edges; it remains navigation-only.
-- [x] Confirm the generated contract registry is current at 3,973 contracts
-  across 2,991 parsed `.fungi` files, with product assets recorded under
-  `packages/fungi/products/galerina`.
-- [!] Keep the selective translation gate closed: the queue remains 1,605
-  rows with `CANDIDATE: 0`, `BLOCKED: 921` and `BOOTSTRAP_FLOOR: 684`.
-  Existing authorizing evidence is tied to an older head and review-only
-  revalidation; no new source, queue promotion, consumer switch, TypeScript
-  retirement, production authority or corpus rerun is claimed.
-
-### RD-0873 current-head role reconciliation refresh - 2026-09-12
-
-- [x] Rebind the role-routing record to committed `main` head `f61312b9f919d2e7e8ad3be1f57310ce5b0910a4` / tree `19a64592445eb8ffa9f21dc6a15c1da11eda5e46`; runtime, compiler/bootstrap, development-tooling and native/host distinctions remain unchanged.
-- [x] Confirm 20 product `.fungi` assets, 100 project-graph packages and 11,612 relationships, plus a fresh external navigation index at 78,124 nodes and 203,363 edges.
-- [x] Confirm the conserved queue remains 1,605 rows with `CANDIDATE: 0`, `BLOCKED: 921` and `BOOTSTRAP_FLOOR: 684`; Waves 3-4 and `isBuiltin`/`validateTransition` remain held.
-- [!] This receipt is non-authorizing. A fresh exact-head owner admission naming a non-empty new source scope and limits is still required before authoring. Receipt: `docs/independent-audits/2026-09-12-rd0873-current-head-role-reconciliation-v1.json`.
-- [!] The owner-ready exact-head request is `docs/independent-audits/2026-09-12-rd0873-current-head-authoring-release-request-v2.json`; it remains non-authorizing until explicitly admitted.
-
-### RD-0873 exact-head packet successor - 2026-09-12
-
-- [x] Rebind the five-symbol request to committed `main` head
-  `0510aed4f4cb8a72c6820b28ee976d7bd4288404` / tree
-  `b747b04baa6b3a86257a5a9cc45f7fd6fae68060` after the graph-only successor.
-- [x] Confirm the external navigation index is fresh at that exact head:
-  78,251 nodes and 203,590 edges. This remains navigation evidence only.
-- [!] Keep the packet non-authorizing until the owner explicitly admits this
-  exact five-symbol scope and its one-symbol sequential limits; keep
-  `isBuiltin` and `validateTransition` excluded. Packet:
-  `docs/independent-audits/2026-09-12-rd0873-current-head-authoring-release-request-v3.json`.
-
-### Selective conversion: Float64 Option ABI repair - 2026-09-12
-
-- [x] Repair the bounded Float/Float64/Double Option lane in the compiler and
-  WASM host. Versioned f64 bridges preserve finite payloads, signed zero and
-  explicit None handles; the i32 and f64 readers reject wrong-kind and
-  malformed handles, and non-finite payloads/defaults refuse fail-closed.
-- [x] Wire typed `Some`, `unwrapOr`, statement `match` and valid Option-returning
-  `?` propagation to the f64 payload lane while retaining the i32 handle ABI.
-  Decimal remains excluded from this binary-float path.
-- [x] Verify the repair with 26/26 focused Float64/host-oracle checks, 72/72
-  adjacent compiler regressions, 27/27 runtime tests, the full compiler package
-  suite (6997/6997), compiler/runtime typechecks and a clean compiler build.
-  Astra's independent scoped review
-  returned PASS against the pre-repair source head; the exact committed repair
-  receipt is recorded under `docs/independent-audits/` after integration.
-- [x] Refresh the navigation graph at current `main` HEAD
-  `7643445af8ead91dc70323c04a8c96d416e159f6`: full mode reports
-  77,737/77,737 nodes and 203,041/203,041 edges, and resolves the new
-  `__option_some_f64_v2` bridge. The graph remains navigation-only; its
-  truncated exclusion list does not authorize Fungi admission or corpus claims.
-- [x] Recheck the current product candidate set at exact `main` HEAD
-  `a0445091b7756c0933515db256119f0469b6fce2`: all 15 product `.fungi` files
-  pass strict governance, the retained differential set passes 117/117, and
-  the AI-agent and core-vector package suites pass 22/22 and 5/5. The
-  non-authorizing receipt is
-  `docs/independent-audits/2026-09-12-rd0873-current-head-product-proof.json`.
-- [x] Refresh the role routing record at the current `main` head: all 13
-  AI-agent/core-vector runtime exports already have candidate twins; the
-  first-chapter table no longer labels those existing vector candidates as
-  future manual implementation. Host marshalling, sparse/hostile behavior,
-  physical admission and the retained tooling boundary remain open.
-- [ ] Keep wider Option work open: Float64 array producers, contextual numeric
-  widening, expression-position match typing, Int64, nested, String, record,
-  active-object/alias, hostile or sparse container semantics and production
-  admission. This bounded repair does not close the generic Option ABI or
-  authorize a consumer switch.
-- [ ] Repair proposal prepared for the existing `validateAgentLimits` candidate:
-  add a path-taking helper plus the default-path wrapper, preserving all five
-  ordered diagnostics and optional-value behavior. It remains non-authorizing
-  pending a fresh exact-head admission; see
-  `docs/independent-audits/2026-09-12-rd0873-agent-limits-custom-path-proposal.json`.
-- [x] Validate the proposed `validateAgentLimits` helper/wrapper shape with a
-  disposable strict-governance compiler probe: 0 errors and 0 warnings. The
-  probe changed no repository source and created no admission authority.
-- [x] Reconfirm the four existing Wave 1-4 source/twin pairs at current `main`:
-  all recorded hashes match and focused differential checks pass 8/8. The
-  non-authorizing exact-head receipt is
-  `docs/independent-audits/2026-09-12-rd0873-four-symbol-current-head-freshness-v2.json`.
-- [x] Recheck the retained `galerina-test` overlay stream at this exact `main`
-  point: typecheck and build pass, all 53 wave checks pass, and the package
-  suite is 211/211 across 58 suites. The bounded, non-authorizing receipt is
-  `docs/independent-audits/2026-09-12-rd0873-overlay-harness-package-proof-v1.json`.
-- [x] Recheck the five Wave 1-4 runtime package chapters at this exact `main`
-  point: typecheck/build pass and the focused suites pass 192/192 across 20
-  suites. The bounded, non-authorizing receipt is
-  `docs/independent-audits/2026-09-12-rd0873-wave1-4-package-proof-v1.json`.
-- [x] Reconcile retained overlay coverage: all 2,200 assets are bound by the
-  55 overlay decision tests, while 1,690 cases execute directly and 510 are
-  covered by binding plus duplicate/template checks. The coverage receipt is
-  `docs/independent-audits/2026-09-12-rd0873-overlay-coverage-v1.json`.
-- [x] Distinguish test overlays from product twins: the
-  `vectorTierSelectionCore` overlay intentionally adds profile admission and
-  unknown-tier fallback, so it is not an exact twin of
-  `selectVectorTier`. Keep it test-only pending typed profile lowering and
-  explicit admission; see
-  `docs/independent-audits/2026-09-12-rd0873-overlay-role-audit-v1.json`.
-
-### Selective conversion: first chapter repairs - 2026-09-12
-
-- [x] Classify the six AI-agent and seven core-vector exports as runtime targets;
-  retain declarations and development tooling separately. See the
-  [first chapter inventory](reports/2026-09-12-selective-fungi-first-chapters.md).
-- [x] Repair nested WAT record access and bare Option absence. Preserve unknown
-  field refusal, wide field types and single receiver evaluation.
-- [x] Repair the two agent-limit twins' optional numeric representation; focused
-  WASM comparisons now cover absent, negative and fractional values with exact
-  ordered diagnostics. These are bounded checks, not a physical admission claim.
-- [ ] Complete the remaining Wave 01 behavior/border coverage, reconcile other
-  Wave 02 package roles, and manually implement the Wave 03 runtime cores.
-- [x] Repair the generic scalar `Option<Int>` ABI for the i32 lane. Legacy raw
-  helpers remain stable, while new compiler output uses distinct `_v2` imports
-  with receipt-backed presence/value handles. Negative payloads, `None`,
-  malformed handles, producers, matching, `?` and raw loop access are covered;
-  the exact-head Astra review is
-  `docs/independent-audits/2026-09-12-rd0873-option-abi-repair-v2-review.json`.
-- [ ] Retain wider Option obligations as explicit remaining work: Float64,
-  Int64, nested payloads, active-object/alias semantics, hostile or sparse
-  containers and the custom limits path. No chapter or full conversion
-  completion is claimed.
-- [x] Repair negative Float64 literal and parameter lowering; executable checks
-  preserve signed zero and finite-value guards, retain Decimal refusal, and
-  cover the separate expression defect beyond the validator parameter probes.
-- [x] Add a focused retained-oracle check for `validateAgentLimits` custom path
-  prefixes (22/22 package tests). The existing Fungi twin remains deliberately
-  default-path-only; the non-authorizing review and exact-head receipt are in
-  `docs/independent-audits/2026-09-12-rd0873-agent-limits-custom-path-review.json`.
-- [x] Translate `applyAgentMergePolicy` as a bounded Fungi policy core; six
-  WASM differential vectors cover evidence precedence, confidence actions,
-  warning text and result order. Add no production consumer switch yet.
-- [x] Translate `createAgentReport` as a bounded Fungi report core. Four WASM
-  differential vectors cover optional defaults, run-status warning order,
-  unsafe-tool warnings, Float64 metrics and high-impact review routing. Keep
-  the TypeScript adapter and active-object/alias obligations explicit; add no
-  production consumer switch yet.
-- [x] Promote `validateAgentTaskGroupPlan` into the native product tree. Six
-  WASM differential vectors preserve the named, positive-timeout and non-empty
-  member checks and their source order; the TypeScript package remains the
-  compatibility oracle.
-- [x] Translate `validateMatrixType` as a bounded native product core. Seven
-  WASM differential vectors cover valid, zero, negative, fractional and safe
-  integer-boundary dimensions; the TypeScript validator remains the oracle.
-- [x] Translate `validateTensorType` as a bounded native product core. Six WASM
-  differential vectors cover empty, valid, invalid, fractional and safe integer
-  dimensions; typed dimension records preserve Float64 values across the array
-  handle ABI, while sparse or hostile JavaScript arrays remain an explicit ABI
-  item.
-- [x] Translate `validateVectorOperation` as a bounded native product core.
-  Seven WASM differential vectors preserve operand-validation order and the
-  final shape-mismatch diagnostic, including safe-integer boundaries.
-- [x] Translate `validateTensorOperation` as a bounded native product core.
-  Six WASM differential vectors preserve name, dense-input and output
-  diagnostics, including empty, fractional and safe-integer dimensions.
-- [x] Translate `createVectorReport` as a bounded native product core. Six WASM
-  differential vectors preserve explicit optional-list defaults, operation then
-  tensor diagnostic order, and the warning projection.
-- [x] Translate `defineVectorType` as a bounded native product core. Ten WASM
-  differential vectors preserve successful construction, exact joined throw text,
-  diagnostic order, safe-integer boundaries and `±Infinity` lane failures. The
-  typed Result is candidate-only; the retained TypeScript adapter still owns Error
-  projection and public object/alias behavior.
-- [x] Repair the non-finite ingress boundary with a raw `Float64.isFinite`
-  classifier. Interpreter and WASM agree on finite, signed-zero, max-finite, NaN
-  and both infinities; runtime errors propagate and malformed classifier inputs
-  refuse. Astra's scoped receipt records 25 focused, 39 independent and 220
-  constructor checks under `docs/independent-audits/`.
-- [x] Refreshed the full code graph at current `main` HEAD
-  `17a5a6c95d13859322b948f2e4b03a3eb951120a` / tree
-  `c48296efd0d13e96ba9e8b45b7fb6858e2346909`: 77,364/77,364 nodes and
-  195,683/195,683 edges. The exact-scope receipt is
-  `docs/independent-audits/2026-09-12-rd0873-graph-refresh-full.json`.
-- [x] Rebound the full graph after the generated roadmap provenance commit:
-  current `main` HEAD `eb03d044d96e1b4d4bde9c24c8854d682ae69303` / tree
-  `053bbfa1dd2a2305a42b22e30a2cf204cd527c07` indexes 77,512/77,512 nodes and
-  203,115/203,115 edges. The final navigation receipt is
-  `docs/independent-audits/2026-09-12-rd0873-graph-refresh-final.json`.
-- [x] Refreshed the full graph after the receipt commit at current `main` HEAD
-  `e6ec842dfb3eaf91b1e410d95f1575703bd63689` / tree
-  `6415e94c081b60a74fb6e85f3941ed67258316a7`: 77,485/77,485 nodes and
-  200,783/200,783 edges. The current-head navigation receipt is
-  `docs/independent-audits/2026-09-12-rd0873-graph-refresh-current-head.json`; exclusions remain
-  truncated and this does not authorize source creation or corpus assurance.
-- [x] Re-ran the bounded product strict check at current `main` HEAD:
-  all 15 tracked product `.fungi` files passed with 0 errors and 0 governance
-  warnings, alongside 117/117 focused differential checks. The non-authorizing
-  receipt is `docs/independent-audits/2026-09-12-rd0873-product-strict-check.json`.
-- [!] The graph remains navigation-only for admission decisions: moderate mode
-  and full modes exclude selected generated, target, dist and dependency
-  directories, and the tool truncates its exclusion list. It does not prove
-  full Fungi coverage, absence, consumer switching or corpus assurance.
-
-### RD-0873 current-head gate refresh - 2026-09-12
-
-- [x] Rebound the non-authorizing bulk gate to exact `main` HEAD
-  `5b825ca3d38dbfa329c45bd9e4a50301b00f4b8a` / tree
-  `db9e7f95f1dce54df4a99818b5db05199fcc954e` in
-  `docs/independent-audits/2026-09-11-rd0873-current-head-bulk-translation-gate.json`.
-- [x] Kept the four eligible existing scalar twins, three held symbols,
-  singleton limits and concurrency 1 unchanged; this refresh records identity
-  only and does not rerun the corpus or alter the queue.
-- [!] The gate remains `HOLD_NON_AUTHORIZING`: a fresh owner admission must
-  explicitly permit source creation and name a non-empty scope before a new
-  translation wave starts.
-
-### Selective runtime conversion scope - owner clarification 2026-09-11
-
-- [x] Record the [selective conversion policy](plans/2026-09-11-selective-fungi-conversion-scope.md):
-  non-fanatical translation; most product runtime logic targets Fungi;
-  development tools and build
-  orchestration default to retained JS/TS with a documented role.
-- [x] Preserve zero-trust checks on retained tools and their build outputs;
-  implementation language does not confer trust. Incorporate Astra's bounded
-  architecture review of compiler, tooling and bootstrap distinctions.
-- [ ] Reconcile the existing queue by deployment profile and consumer evidence.
-  Split mixed files, distinguish compiler product code from build wrappers, and
-  report intentionally retained tooling separately from blocked runtime work.
-  The current routing record is
-  `docs/reports/2026-09-12-selective-conversion-role-reconciliation.md`.
-- [ ] Apply this classification to Waves 01-04 before widening translation.
-  Continue independent ready work with focused checks and package-level closure.
-  Retained tools are neither failed translations nor completed Fungi conversion.
-
-### RD-0873 housekeeping and translation continuity checkpoint - 2026-09-11
-
-- [x] Rebound the working model to local `main` HEAD
-  `560920cf4ce103722c6d8703f764c203ac8a7945` / tree
-  `e29f2484685dd1f63e1da5265a3b20db6352c2a1`.
-- [x] Wave 01 source work covers the bounded AI-agent validator, policy and
-  report cores under `packages/fungi/products/galerina/rd0873-ai-agent/`;
-  TypeScript and differential tests remain retained under `packages-ts`.
-- [x] Wave 02 verified seven existing twins without creating source or mutating
-  the queue: `isEnvironmentMode`, `isOmniUncertain`, `isTerminalScope`,
-  `isTaskEffect`, `isResponseSafeClassification`, `isBuiltin` and
-  `validateTransition`.
-- [!] Waves 03 and 04 remain `HOLD`: mutable record/array, Map/Set, callback,
-  getter/proxy, sparse-array, alias/mutation, numeric and malformed-object
-  semantics still lack an admitted bounded profile and physical SLIDE/VOK
-  evidence. No source authoring or consumer switch is authorized for these
-  waves.
-- [x] The conserved queue is unchanged at SHA
-  `60e7118a4fede9eb80b0e6008fedad0f86894fc47be04955b676a287a016a784`:
-  1,605 rows, `CANDIDATE: 0`, `BLOCKED: 921`, `BOOTSTRAP_FLOOR: 684`.
-- [!] Bounded housekeeping returned `HOUSEKEEPING REFUSED` and remains HOLD:
-  716 pre-existing bounded-execution findings were reported, and the inventory
-  encountered a hard-linked release executable. No cleanup or quarantine was
-  performed. The historical 2,720/2,722 corpus receipt was not rerun.
-- [ ] For any future wave, use a fixed manifest, one symbol/file scope, one
-  resumable receipt, and a fail-closed checkpoint before the next shard. Astra
-  may challenge the design; it cannot replace owner admission or physical
-  evidence.
-
-### RD-0873 product-source path correction - 2026-09-12
-
-- [x] Move the new `createAgentReport` and `validateVectorType` candidate
-  sources to `packages/fungi/products/galerina/`, under their RD-0873 package
-  folders. These are the native product locations; the retained TypeScript
-  implementations and differential tests remain in `packages-ts`.
-- [x] Update both WASM parity tests to read the native product paths. No
-  runtime consumer import was changed: TypeScript remains the compatibility
-  oracle until host marshalling, checked artifacts and admission evidence are
-  separately complete.
-- [x] Rechecked the canonical product tree at `main` HEAD
-  `1b7c16292b46baaccf404184a395dbdee0a242d2`: all 15 product `.fungi` files
-  pass strict type/governance checks, and the retained AI-agent and core-vector
-  package suites pass 21/21 and 5/5. The non-authorizing path receipt is
-  `docs/independent-audits/2026-09-12-rd0873-product-tree-path-check.json`.
-
-### RD-0873 existing scalar-twin product-path relocation - 2026-09-12
-
-- [x] Move the five existing Wave 1-4 scalar Fungi twins from package
-  `src/self-hosted` directories into `packages/fungi/products/galerina/`,
-  preserving every byte and retaining their TypeScript shadows and tests in
-  `packages-ts`.
-- [x] Update the five package manifests, boundary reports and focused test
-  harness so package tests resolve the product-owned paths. The five package
-  suites pass `192/192`, and the product tree strict check passes `20/20`.
-- [x] Refresh the retirement graph, source-capability inventory and package
-  graph provenance outputs. This is a layout correction only: the queue stays
-  `CANDIDATE: 0`, no new source was authored, and no consumer or authority
-  switch is opened. Receipt:
-  `docs/independent-audits/2026-09-12-rd0873-product-path-relocation-v1.json`.
-
-### RD-0873 current-head translation gate - 2026-09-11
-
-- [x] Rebound the proposed first wave to exact `main` HEAD
-  `65c1b3a5ec7cb10c7662236f984e275b0ce5114e` / tree
-  `3c8635bbd8a2cd9dc1f29f6f905f370995518a82` in
-  `docs/independent-audits/2026-09-11-rd0873-current-head-bulk-translation-gate.json`.
-- [x] Preserve the four eligible existing scalar twins and the three held
-  symbols; retain singleton steps, concurrency 1 and the proposed byte/time
-  ceilings as unexecuted limits.
-- [!] The gate is `HOLD_NON_AUTHORIZING`: the prior exact-head authorization
-  covered revalidation only, and the earlier bulk proposal is stale at this
-  head. A fresh owner admission must explicitly permit source creation and
-  name the non-empty scope before actual translation starts.
-
-### RD-0873 next source dossier checkpoint - galerina-core-cli - 2026-09-11
-
-- [x] Assessed the 15 queued CLI source/declaration and test files from exact
-  main HEAD `4c36cf95d1dbdafe31e724f7835e945a64d7f79a` / tree
-  `b5b9fac64029017ee946a7e7e758ee7039e8cf21`: ten TypeScript/declaration
-  files, five tests, two existing marker/diagnostic Fungi assets and six
-  declared external dependencies.
-- [x] Recorded command parsing, compiler subprocess bridging, graph and task
-  filesystem orchestration, output formatting/redaction, type contracts and
-  exact source/test/build hashes in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-core-cli-source-dossier.json`.
-  Existing Fungi assets remain non-authorizing constants/markers.
-- [x] Existing package checks pass 21/21. The package boundary reports PASS
-  with 11 scanned nodes and 16 internal edges.
-- [x] Astra's same-head advisory records environment/default routing,
-  subprocess buffering and missing limits, task completion/reporting gaps,
-  graph path/freshness/partial-write hazards, redaction replacement defect,
-  detector ordering and marker-only Fungi scope.
-- [!] All 15 package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved
-  queue remains `CANDIDATE: 0`. No Fungi source, queue relabel, consumer
-  switch, TypeScript/CommonJS retirement or corpus assurance rerun occurred.
-- [!] Keep CLI translation closed until a named exact non-empty owner admission
-  and bounded parser, host-effect, redaction, execution and SLIDE/VOK receipt
-  gates authorize a wave. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core - 2026-09-11
-
-- [x] Assessed the 12 queue files for galerina-core at exact main HEAD
-  c24a986f5420fa4e886c4395614227c944cc329c / tree
-  8718b1d753b05a4e8c3b95139612174a23f54b9a: one TypeScript contract source,
-  five compiler JavaScript files, four benchmark examples and two tests.
-- [x] Recorded the three exported runtime helpers, the large auxiliary
-  CommonJS compiler/example surface, type contracts, README/TODO/examples and
-  exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-source-dossier.json.
-  No Fungi twin or consumer authority exists.
-- [x] Typecheck, build and the package checks pass 54/54 (42 prototype
-  assertions plus 12 Node tests). The source boundary reports PASS with one
-  node, no internal edges and no external dependencies.
-- [x] Astra's same-head advisory records the queue-wide compiler scope,
-  contract/runtime asymmetry, regex parser and checker limits, partial secret
-  and capability checks, placeholder target outputs, schema gaps, host file and
-  watcher effects, and restricted evaluator behavior.
-- [!] All 12 package rows remain BLOCKED:DOSSIER_REQUIRED. The conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript/CommonJS retirement or corpus assurance rerun occurred.
-- [!] Keep compiler translation closed until every auxiliary runtime file,
-  parser/checker policy, host effect, placeholder boundary and backend claim is
-  separately admitted with independent differential, physical SLIDE/VOK,
-  execution and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-vector - 2026-09-11
-
-- [x] Assessed the single TypeScript source file under
-  packages-ts/galerina-core-vector/src from exact main HEAD
-  0ec4eb2836a7dec22bf718cf11cdec9ca03c3eaa / tree
-  9f9a9fe2b1f253aecbb6678c74da86473bc8b764 through the package boundary graph,
-  one focused test file, README/TODO/example and no Fungi asset.
-- [x] Recorded the seven exported runtime helpers, type surface and exact
-  source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-vector-source-dossier.json.
-  No Fungi twin or consumer authority exists.
-- [x] Typecheck, build and the package suite pass 5/5. The package boundary
-  reports PASS with one node, no internal edges and no external dependencies.
-- [x] Astra's same-head advisory records safe-integer dimension checks,
-  vector/matrix/tensor validation asymmetry, sparse-array/native-throw behavior,
-  zero-input and tensor-compatibility gaps, report aliasing/staleness and the
-  absence of numerical/backend execution evidence.
-- [!] Both package rows remain BLOCKED:DOSSIER_REQUIRED. The conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep vector translation closed until structural and aggregate resource
-  bounds, tensor compatibility, runtime object guards, backend semantics and a
-  separately admitted implementation are proven under exact owner admission
-  with independent differential and physical SLIDE/VOK gates. Git remains
-  provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-tasks - 2026-09-11
-
-- [x] Assessed the nine queued source/declaration files under
-  packages-ts/galerina-core-tasks/src from exact main HEAD
-  314c032429dc2d42f8f1ee36c4625b6864ced6f1 / tree
-  7992b91144edb50d7cef4d82d14aa301a435df4a through the package boundary graph,
-  two focused test files, README/TODO/examples and one registered Fungi asset.
-- [x] Recorded the nine exported runtime functions, type surface, existing
-  task-effect.fungi membership twin and exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-tasks-source-dossier.json.
-  The existing asset remains non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 9/9. The package boundary
-  reports PASS with nine nodes, 16 internal edges and two allowed dependencies
-  (`node:fs/promises` and `@galerina/devtools-project-graph`).
-- [x] Astra's same-head advisory records the exact eight-effect Fungi
-  membership scope, regex/brace parser behavior, permission ordering and
-  lexical paths, execution placeholder/dry-run boundaries, dependency graph
-  ordering, report reference/error retention and the scoped evidence digest.
-- [!] One package row remains BLOCKED:SCOPED_CANDIDATES_ONLY with its existing
-  evidence digest; the other ten remain BLOCKED:DOSSIER_REQUIRED. The conserved
-  queue remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep task translation closed until parser, permission, dependency, report
-  and host-effect obligations are resolved under a separate exact non-empty
-  owner admission with independent differential, physical SLIDE/VOK, execution
-  and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-time - 2026-09-11
-
-- [x] Assessed the four TypeScript source files under
-  packages-ts/galerina-core-sentinel-time/src from exact main HEAD
-  46fcc914d7ab99fa6b708186460f7acdc05ddfc6 / tree
-  04e7c4a93f56af23a3546ef666c893c484b62e20 through the package boundary
-  graph, four focused test files and one registered Fungi asset.
-- [x] Recorded the exported logical-clock/synchronization classes, type
-  surface, existing synchronization-gate twin and exact source/test/build
-  hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-time-source-dossier.json.
-  The existing asset remains non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 14/14. The package boundary
-  reports PASS with five nodes, six internal edges and no external dependencies.
-- [x] Astra's same-head advisory records Number.isInteger precision/overflow,
-  reset and re-sync lifecycle, mutable envelope state, unchecked fractional,
-  negative and non-finite drift inputs, integer marshalling, limited RD-0361
-  coverage and external RTC/AuditLogger seams.
-- [!] One package row remains BLOCKED:EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY;
-  the other seven remain BLOCKED:DOSSIER_REQUIRED. The conserved queue remains
-  CANDIDATE: 0. No Fungi source, queue relabel, consumer switch, TypeScript
-  retirement or corpus assurance rerun occurred.
-- [!] Keep timing translation closed until numeric precision/domain, lifecycle,
-  host clock provenance, marshalling and exact Fungi parity are resolved under a
-  separate exact non-empty owner admission with independent differential,
-  physical SLIDE/VOK, execution and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-state - 2026-09-11
-
-- [x] Assessed the five TypeScript source files under
-  packages-ts/galerina-core-sentinel-state/src from exact main HEAD
-  c60d10e8f4fdcb75bb0b50d4603c70f1eea4e590 / tree
-  9496ec20b93dd68a0dbfc3961e27fac32af9e6ed through the package boundary
-  graph, nine focused test files and five registered Fungi assets.
-- [x] Recorded the exported serializer/writer/orchestrator classes and
-  constants, type surface, existing restore/version/key identity assets and
-  exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-state-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 26/26. The package boundary
-  reports PASS with ten nodes, ten internal edges and three allowed Node core
-  dependencies.
-- [x] Astra's same-head advisory records exact restore-verdict identity and
-  provider-call obligations, JSON/HMAC/checksum behavior, mutable key custody,
-  epoch/replay limits, path traversal and symlink seams, atomic rename without
-  fsync/locking, scrub durability, stale Fungi oracle prefixes and the limited
-  RD-0361 differential scope.
-- [!] One package row remains BLOCKED:EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY;
-  the other 13 remain BLOCKED:DOSSIER_REQUIRED. The conserved queue remains
-  CANDIDATE: 0. No Fungi source, queue relabel, consumer switch, TypeScript
-  retirement or corpus assurance rerun occurred.
-- [!] Keep state translation closed until authority provenance, crypto/key
-  custody, JSON framing, filesystem containment/durability, scrub semantics and
-  exact Fungi provenance are resolved under a separate exact non-empty owner
-  admission with independent differential, physical SLIDE/VOK, execution and
-  receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-power - 2026-09-11
-
-- [x] Assessed the four TypeScript source files under
-  packages-ts/galerina-core-sentinel-power/src from exact main HEAD
-  73572034f4b59ef9d752c3ea0bd5c675a722a177 / tree
-  1afdc81826ea5dcf1dc7e7a57cb3486c26a1b42d through the package boundary
-  graph, three focused test files and one registered Fungi asset.
-- [x] Recorded the exported governor class/function/constant, type surface,
-  existing power-governor.fungi twin and exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-power-source-dossier.json.
-  The existing asset remains non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 18/18. The package boundary
-  reports PASS with five nodes, six internal edges and no external dependencies.
-- [x] Astra's same-head advisory records NaN/infinity handling, mutable
-  envelope and sensor references, callback exceptions/reentrancy, missing
-  freshness/hysteresis/latch, separate terminal enforcement, deferred hardware
-  switching, Fungi finiteness/domain differences and the limited RD-0361 scope.
-- [!] One package row remains BLOCKED:EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY;
-  the other six remain BLOCKED:DOSSIER_REQUIRED. The conserved queue remains
-  CANDIDATE: 0. No Fungi source, queue relabel, consumer switch, TypeScript
-  retirement or corpus assurance rerun occurred.
-- [!] Keep power translation closed until sensor provenance/calibration,
-  numeric domains, mutable-reference custody, terminal enforcement and exact
-  Fungi parity are resolved under a separate exact non-empty owner admission
-  with independent differential, physical SLIDE/VOK, execution and receipt
-  gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-memory - 2026-09-11
-
-- [x] Assessed the seven TypeScript source files under
-  packages-ts/galerina-core-sentinel-memory/src from exact main HEAD
-  0bf7883af75c36028aee6f44cdfb8deb680b979f / tree
-  bfe1765f5339a54a839deab1eddf24e5135a0b00 through the package boundary graph,
-  12 focused test files and six registered Fungi assets.
-- [x] Recorded the exported runtime classes/constants, type surface, existing
-  memory-validator/pool/segmentation/trit/channel assets and exact
-  source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-memory-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 39/39. The package boundary
-  reports PASS with 13 nodes, 17 internal edges and no external dependencies.
-- [x] Astra's same-head advisory records unbounded pool ratios and dynamic
-  allocator state, unauthenticated block size/segment/ownership, pointer-only
-  segmentation, stale typed-array views, TPL index/partial-mutation behavior,
-  bus whole-pool/negative-offset ranges, and the alignUp/scrubFillByte Fungi
-  fidelity gaps.
-- [!] One package row remains BLOCKED:EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY;
-  the other 18 remain BLOCKED:DOSSIER_REQUIRED. The conserved queue remains
-  CANDIDATE: 0. No Fungi source, queue relabel, consumer switch, TypeScript
-  retirement or corpus assurance rerun occurred.
-- [!] Keep memory translation closed until handle ownership/generation, range
-  and view lifetime, numeric domains, synchronization, channel bounds and
-  exact Fungi parity are resolved under a separate exact non-empty owner
-  admission with independent differential, physical SLIDE/VOK, execution and
-  receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-io - 2026-09-11
-
-- [x] Assessed the six TypeScript source files under
-  packages-ts/galerina-core-sentinel-io/src from exact main HEAD
-  f34df0688f14a2faab348b926f249c5221b671a9 / tree
-  f642913dc738ecc2412cac47b9174cbaae69b256 through the package boundary graph,
-  six focused test files and two registered Fungi assets.
-- [x] Recorded one exported function, eight runtime classes, the type surface,
-  existing hardened-border/manifest-validator assets and exact source/test/build
-  hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-io-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 25/25. The package boundary
-  reports PASS with eight nodes, 11 internal edges and one allowed Node core
-  dependency.
-- [x] Astra's same-head advisory records manifest coverage/hex/version/bounds
-  limits, injected-key and digest-mode custody, integrity-before-copy ordering,
-  mutable shared views, alignment/allocation failures, bus aliasing and the
-  stronger negative/range checks in the Fungi folds.
-- [!] All 12 package rows remain BLOCKED:DOSSIER_REQUIRED; the conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep I/O translation closed until manifest/key custody, immutable-byte or
-  concurrency assumptions, allocation bounds and physical bus boundaries are
-  resolved under a separate exact non-empty owner admission with independent
-  differential, physical SLIDE/VOK, execution and receipt gates. Git remains
-  provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-sentinel-egress - 2026-09-11
-
-- [x] Assessed the four TypeScript source files under
-  packages-ts/galerina-core-sentinel-egress/src from exact main HEAD
-  816786b5c3847a12aedfd777d1213c3fc21f745d / tree
-  1ea15df591ff132f9d9af6fa35543ff0a246c51d through the package boundary graph,
-  six focused test files and two registered Fungi assets.
-- [x] Recorded the exported egress function and four runtime classes, source
-  hashes, existing audit-egress/ledger-file assets and test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-sentinel-egress-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 34/34. The package boundary
-  reports PASS with six nodes, six internal edges and three allowed Node core
-  dependencies.
-- [x] Astra's same-head advisory records the drain-before-append loss path,
-  ambiguous newline MAC framing, restart/completeness behavior, key custody and
-  rotation limits, parsing/error behavior, ring memory bounds and the limited
-  Fungi decision folds.
-- [!] The audit-egress row remains BLOCKED:EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY;
-  the other nine rows remain BLOCKED:DOSSIER_REQUIRED. The conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep egress translation closed until the record-loss/framing/restart
-  findings are resolved and a separate exact non-empty owner admission names a
-  bounded scope with independent differential, physical SLIDE/VOK, execution
-  and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-security - 2026-09-11
-
-- [x] Assessed the single TypeScript source file under
-  packages-ts/galerina-core-security/src from exact main HEAD
-  f1088e9a3f47be33f937e061caf3a186dec346df / tree
-  e58241fd08806b8497b5dd7538c8c7161177dfd0 through the package boundary graph,
-  four focused test files and the registered DSS/Fungi assets.
-- [x] Recorded 12 exported runtime functions, three exported runtime constants,
-  the type surface, all 13 package `.fungi` files (six registered assets), and
-  exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-security-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 28/28. The package boundary
-  reports PASS with 14 nodes, 22 internal edges and no external dependencies.
-- [x] Astra's same-head advisory records secret/reference custody, sequential
-  regex redaction and limits, deny-first permission ordering, validation versus
-  enforcement, cryptographic-policy limits, Date/default report behavior, and
-  the DSS unknown-effect discrepancy.
-- [!] All five package rows remain
-  BOOTSTRAP_FLOOR:FIXPOINT_OR_PLATFORM_EVIDENCE_REQUIRED; the conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep security and DSS translation closed until a separate exact
-  non-empty owner admission names a bounded scope with independent differential,
-  fixpoint/platform, physical SLIDE/VOK, execution and receipt gates. Git
-  remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-runtime - 2026-09-11
-
-- [x] Assessed the two TypeScript source files under
-  packages-ts/galerina-core-runtime/src from exact main HEAD
-  94e04174e664842f52724682d20249dd151561b1 / tree
-  f93167daee309900ce4a3353961d94176d75b02e through the package boundary graph,
-  eleven focused test files and the linked private native VOK companion.
-- [x] Recorded 11 exported runtime functions, 20 exported runtime constants,
-  the type surface, five existing `.fungi` assets, ten tracked native companion
-  files and exact source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-runtime-source-dossier.json.
-  Existing assets and native receipts remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 53/53. The package boundary
-  reports PASS with seven nodes, one internal edge and no external dependencies.
-- [x] Astra's same-head advisory records deny-by-default effect decisions,
-  seam-version and hash ordering, structured-await closed-plan/reducer timing,
-  cancellation and resource semantics, and the private affine VOK authority
-  floor with nonce, context, revocation and W^X obligations.
-- [!] Eleven package rows remain BLOCKED:DOSSIER_REQUIRED and the existing one
-  remains SCOPED_CANDIDATES_ONLY; the conserved queue remains CANDIDATE: 0.
-  No Fungi source, queue relabel, consumer switch, TypeScript retirement or
-  corpus assurance rerun occurred.
-- [!] Keep runtime translation and authority expansion closed until a separate
-  exact non-empty owner admission names a bounded scope with independent
-  differential, physical SLIDE/VOK, execution and receipt gates. Git remains
-  provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-runtime-wasm - 2026-09-11
-
-- [x] Assessed the four TypeScript source files under
-  packages-ts/galerina-core-runtime-wasm/src from exact main HEAD
-  a5e3e089ad7a7d3b883dadbfdc660f592b041e24 / tree
-  a2a94546a8f7556a648bcebf9417c1189f442c05 through the package boundary graph
-  and three focused test files.
-- [x] Recorded 12 exported runtime functions, three exported runtime constants,
-  the type surface, three existing `.fungi` ABI/admission assets and exact
-  source/test/build hashes in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-runtime-wasm-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 27/27. The package boundary
-  reports PASS with seven nodes, five internal edges, and two allowed external
-  dependencies (`node:crypto` and `@galerina/core-runtime`).
-- [x] Astra's same-head advisory records crypto domain/profile binding,
-  verify-before-linking, start-function and memory-binding order, mutable host
-  capabilities, handle and UTF-16/code-point semantics, record staging bounds,
-  seam composition, numeric ABI limits and trap/link classification.
-- [!] The seven package rows remain BLOCKED:DOSSIER_REQUIRED; the conserved
-  queue remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this TCB and seam translation closed until a separate exact
-  non-empty owner admission names a bounded scope with independent differential,
-  physical SLIDE/VOK, execution and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-reports - 2026-09-11
-
-- [x] Assessed the single TypeScript source file under
-  packages-ts/galerina-core-reports/src from exact main HEAD
-  87c0261898051ba10c1698ee381e072363dd3b84 / tree
-  5767f11c7692bd5eb008bc9004184cfff3c44e70 through the package boundary graph
-  and the two focused test files.
-- [x] Recorded 20 exported runtime functions, the report type surface, one
-  existing report-status.fungi bounded twin and exact source/test/build hashes
-  in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-reports-source-dossier.json.
-  The existing Fungi asset remains non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 17/17. The package boundary
-  reports PASS with two nodes, no internal edges and no external dependencies.
-- [x] Astra's same-head advisory records the report-construction, mutable
-  reference, Date/default, severity/status, validation and JSON.stringify
-  obligations. Report constructors describe data; they do not write files,
-  execute recovery/cache actions, sign evidence or grant authority.
-- [!] The three package rows remain BLOCKED:DOSSIER_REQUIRED; the conserved
-  queue remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep reports translation closed until a separate exact non-empty owner
-  admission names a bounded scope with independent differential, physical
-  SLIDE/VOK, execution and receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-photonic - 2026-09-11
-
-- [x] Assessed the single TypeScript source file under
-  packages-ts/galerina-core-photonic/src from exact main HEAD
-  7d032fbf75f837d0cefcc4ef427f4043645ebba4 / tree
-  582fbc00131f1e5aa4fa0e93de46b0356832e105 through the package boundary graph
-  and focused photonic contract suite.
-- [x] Recorded the five exported runtime validators/report helpers and the
-  package example in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-photonic-source-dossier.json.
-  No package-local .fungi twin exists.
-- [x] Typecheck, build and the package suite pass 4/4. The package boundary
-  reports PASS with one source node, no internal edges and no dependencies.
-- [x] The assessment records the unresolved v0.1/v0.2 photonic documentation
-  conflict and the finite-number, bounds, Set/array, mutation, diagnostic and
-  plan-authority obligations for any future translation.
-- [!] Both package rows remain BLOCKED:DOSSIER_REQUIRED; the conserved queue
-  remains CANDIDATE: 0. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep photonic translation closed until the documentation conflict is
-  resolved and a separate exact non-empty owner admission names a bounded
-  scope with independent differential, physical SLIDE/VOK, execution and
-  receipt gates. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-network - 2026-09-11
-
-- [x] Assessed the seven TypeScript source files under
-  packages-ts/galerina-core-network/src from exact main HEAD
-  b0defa3f11d66bcc7fc40d92bfda9592ba641318 / tree
-  776a49344687e68f96ec40c2fda1c2ee91b9cae7 through the package boundary graph,
-  fifteen tests and two proof scripts.
-- [x] Recorded 27 exported runtime functions, the @galerina/tower-citizen
-  boundary, seven loaded Fungi assets and their existing package-owned twin
-  relationships in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-network-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suites pass 192/192. The package
-  boundary reports PASS with 14 nodes, 7 internal edges, one allowed workspace
-  dependency and no third-party dependencies.
-- [x] Astra's same-head advisory records the URL/IP canonicalization, DNS
-  re-check, K3/revocation, callback, CORS, inbound/rate-limit, backend,
-  telemetry and external-module obligations for any future translation.
-- [!] The 24 package rows remain blocked (18 DOSSIER_REQUIRED and six
-  EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY); the conserved queue remains
-  CANDIDATE: 0. No Fungi source, queue relabel, consumer switch, TypeScript
-  retirement or corpus assurance rerun occurred.
-- [!] Keep network translation closed until a separate exact non-empty owner
-  admission names a bounded scope and independent differential, physical
-  SLIDE/VOK, execution and receipt gates pass. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-logic - 2026-09-11
-
-- [x] Assessed the 21 TypeScript source files under
-  packages-ts/galerina-core-logic/src from exact main HEAD
-  4f3932b8ee9ecc9ee8f97c3b12bb9347caa0dec4 / tree
-  cc323f33d2193b228f645450e6669efa9ccae55d through the package boundary graph
-  and four focused test files.
-- [x] Recorded 67 exported runtime functions, the legacy numeric Tri surface,
-  v0.2 TriState/Decision/BoolBoundary/Omni surfaces, 22 loaded Fungi assets,
-  and the two existing Omni/Tri twins in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-logic-source-dossier.json.
-  Existing assets remain non-authorizing evidence.
-- [x] Typecheck, build and the package suite pass 57/57. The package boundary
-  reports PASS with 43 nodes, 43 internal edges and no external dependencies.
-- [x] Astra's same-head advisory records the short-circuit, discriminant,
-  unknown-reason, evidence-aliasing, deny-first, fail-closed, confidence,
-  diagnostic and bounded-truth-table obligations for any future translation.
-- [!] The 27 package rows remain blocked (25 DOSSIER_REQUIRED, one
-  EXISTING_FUNGI_NOT_CONSUMER_AUTHORITY and one SCOPED_CANDIDATES_ONLY); the
-  conserved queue remains CANDIDATE: 0. No Fungi source, queue relabel,
-  consumer switch, TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep broader logic translation closed until a separate exact non-empty
-  owner admission names a bounded scope and independent differential, physical
-  SLIDE/VOK, execution and receipt gates pass. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-economics - 2026-09-11
-
-- [x] Assessed packages-ts/galerina-core-economics/src/index.ts from exact
-  main HEAD aecc83565ee1dc35795af837ea2f6db78a7e3b09 / tree
-  73fd6b80293e91f45e741f2d29aa3e6dc1fc393d through the package graph and its
-  focused economics suite.
-- [x] Recorded the four exported runtime functions (estimateCost,
-  calculateRiskCost, selectRoute, selectVectorTier) plus the exported
-  calibration tables, enum and hardware profiles in
-  docs/independent-audits/2026-09-11-rd0873-galerina-core-economics-source-dossier.json.
-  No package-local .fungi twin exists.
-- [x] Typecheck, build and the package suite pass 15/15. The package boundary
-  reports PASS with no external dependencies. The graph scopes the package to
-  48 nodes and 63 edges.
-- [x] Astra's same-head advisory records the numeric-domain, mutable-table,
-  copied-sort, tie-order, budget-before-escalation, literal-governance and
-  caller-supplied vector-tier obligations for any future translation.
-- [!] Both package rows remain BLOCKED:DOSSIER_REQUIRED; the queue remains
-  CANDIDATE: 0 with 921 BLOCKED and 684 BOOTSTRAP_FLOOR entries. No Fungi
-  source, queue relabel, consumer switch, TypeScript retirement or corpus
-  assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names a bounded economics scope and independent differential, physical
-  SLIDE/VOK, execution and receipt gates pass. Git remains provenance-only.
-
-### RD-0873 next source dossier checkpoint - galerina-core-config - 2026-09-11
-
-- [x] Assessed the three TypeScript source files in
-  `packages-ts/galerina-core-config/src` from exact `main` HEAD
-  `ae097a1c2beb2ea3e5df2d4810205505d6eca5f5` / tree
-  `6b30b9a31cfabfa6c460b973119ffe1ff22c5fb1` through the code graph and the
-  package's six focused test files.
-- [x] Recorded the full exported configuration, governance, posture, egress,
-  vault and report surface plus private parser helpers in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-core-config-package-dossier.json`.
-  Four small constant twins and the `isEnvironmentMode` scalar twin already
-  exist; their prior non-authorizing evidence is retained rather than reopened.
-- [x] Typecheck, build and the package suites pass `54/54`. The package boundary
-  report is PASS with no external dependencies. Six loaded `.fungi` assets are
-  hashed in the dossier, and no new Fungi source was written.
-- [x] The dossier records exact source, test, package, example, boundary, twin,
-  built oracle and retirement hashes, graph closure, Astra's advisory review,
-  and the obligations for mutable policy state, host time, parser ordering,
-  egress/import enforcement, secret diagnostics and reference identity.
-- [!] Governance and posture rows remain `BLOCKED:DOSSIER_REQUIRED`; the index
-  row remains `BLOCKED:SCOPED_CANDIDATES_ONLY` with its existing evidence digest.
-  The conserved queue is unchanged at `CANDIDATE: 0`. No Fungi source, queue
-  relabel, consumer switch, TypeScript retirement or corpus assurance rerun
-  occurred.
-- [!] Keep broader config translation closed until a separate exact non-empty
-  owner admission names a scope and wave limits, and independent differential,
-  consumer-enforcement, physical SLIDE/VOK, bounded execution and receipt gates
-  pass. Existing twins remain non-authorizing.
-
-### RD-0873 next source dossier checkpoint - galerina-core-compute - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-core-compute/src/index.ts` from exact
-  `main` HEAD `a8453f5fcca6970ff28c997a7e043be24195f4de` / tree
-  `587f984b1061721b20f605d1dc3c44dba5e2f8c8` through the code graph and the
-  package's focused tests.
-- [x] Recorded the five exported runtime scopes (`validateComputePlan`,
-  `selectComputeTarget`, `selectPreferredComputeTarget`,
-  `createComputeOffloadReport`, and `createComputeReport`) plus the private
-  `validateComputeOffloadPlan` and `sumDataMovementBytes` dependencies in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-core-compute-source-dossier.json`.
-  The four type aliases and twelve interfaces remain type-contract evidence
-  only.
-- [x] Typecheck, build and the package suite pass `5/5`. The package boundary
-  report is PASS with no external dependencies. The package has one example,
-  no loaded Fungi assets and no existing `.fungi` twin.
-- [x] The dossier records exact source, test, package, example, boundary, built
-  oracle and retirement hashes, graph closure, Astra's advisory review, and the
-  runtime obligations for target selection, fallback reporting, diagnostic
-  order, numeric reductions, aliasing and non-executable metadata.
-- [!] Both package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved queue is
-  unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names the five exported symbol scopes and wave limits, and independent
-  differential, physical SLIDE/VOK, bounded execution and receipt gates pass.
-  Compute target availability and `verifyWithCpuReference` remain advisory
-  metadata; no hardware or backend authority exists.
-
-### RD-0873 next source dossier checkpoint - galerina-ai - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-ai/src/index.ts` from exact `main` HEAD
-  `d3e096ea0e187789462d3c74d21c2c8051a6a32c` / tree
-  `0948ceca92eb4434bbdd4aeff3f8b7598d9be951` through the code graph and the
-  package's focused tests.
-- [x] Recorded the exported `DEFAULT_AI_SAFETY_POLICY` value and six runtime
-  scopes (`defineAiModelRegistry`, `findAiModel`, `defineAiSafetyPolicy`,
-  `selectAiInferenceTarget`, `createAiInferenceReport`, and
-  `validateAiInferenceRequest`) in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-ai-source-dossier.json`.
-  The AI interfaces and aliases remain type-contract evidence only.
-- [x] Typecheck, build and the package suite pass `4/4`. The package boundary
-  report is PASS with no external dependencies, and no existing `.fungi` twin or
-  loaded Fungi asset exists.
-- [x] The dossier records exact source, test, package, example, boundary, built
-  oracle and retirement hashes, graph closure, and the runtime obligations for
-  mutable policy defaults, registry aliasing, exact lookup, capability
-  selection, nullish fields, target/network safety diagnostics and report order.
-- [!] Both package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved queue is
-  unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names the value/symbol scope and wave limits, and independent differential,
-  physical SLIDE/VOK, bounded execution and receipt gates pass. AI policy
-  diagnostics remain advisory until a separate deterministic authority consumes
-  them.
-
-### RD-0873 next source dossier checkpoint - galerina-ai-neuromorphic - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-ai-neuromorphic/src/index.ts` from exact
-  `main` HEAD `e9af8016fc979a630e4d3313b4ade9051700636a` / tree
-  `6e093ae617e076d0d3264065fabc8ba2265d4f0f` through the code graph and the
-  package's focused tests.
-- [x] Recorded the four exported runtime scopes (`validateSpikeTrain`,
-  `validateSpikingModel`, `validateNeuromorphicPlan`, and
-  `createNeuromorphicReport`) plus the private `createNeuromorphicDiagnostic`
-  dependency in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-ai-neuromorphic-source-dossier.json`.
-  Interfaces and aliases remain type-contract evidence only.
-- [x] Typecheck, build and both package suites pass `18/18`. The package boundary
-  report is PASS with no external dependencies. PAT-NEU-01 confirms the surface
-  remains private, post-v1 and non-executable; no existing `.fungi` twin or
-  loaded Fungi asset exists.
-- [x] The dossier records exact source, test, package, boundary, built oracle and
-  retirement hashes, graph closure, and the runtime obligations for finite spike
-  values, safe-integer topology counts, event ceilings, fallback membership,
-  ordered diagnostics, warning lifting and absent path fields.
-- [!] All three package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved
-  queue is unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer
-  switch, TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this private post-v1 package closed until a separate exact non-empty
-  owner admission names the symbol scope and wave limits, and independent
-  differential, physical SLIDE/VOK, bounded execution and receipt gates pass.
-
-### RD-0873 next source dossier checkpoint - galerina-ai-neural - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-ai-neural/src/index.ts` from exact `main`
-  HEAD `8db182b8f3ae2d6d2fe317979594ab9ffbbe3f21` / tree
-  `b5cb8fdaa7167a23e495536f45dff478e0dd6f5c` through the code graph and the
-  package's focused tests.
-- [x] Recorded the five exported runtime scopes (`validateNeuralTensor`,
-  `validateNeuralModel`, `isSameTensorShape`, `createNeuralReport`) plus the
-  private `createNeuralDiagnostic` dependency in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-ai-neural-source-dossier.json`.
-  Interfaces and aliases remain type-contract evidence only.
-- [x] Typecheck, build and the package suite pass `4/4`. The package boundary
-  report is PASS with no external dependencies, and no existing `.fungi` twin or
-  loaded Fungi asset exists.
-- [x] The dossier records exact source, test, package, boundary, built oracle and
-  retirement hashes, graph closure, and the runtime obligations for safe-integer
-  numbers, string trimming, tensor-array traversal, strict shape equality,
-  nullish defaults, warning extraction and deliberate validation omissions.
-- [!] Both package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved queue is
-  unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names the symbol scope and wave limits, and independent differential,
-  physical SLIDE/VOK, bounded execution and receipt gates pass.
-
-### RD-0873 next source dossier checkpoint - galerina-ai-lowbit - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-ai-lowbit/src/index.ts` from exact `main`
-  HEAD `be4ecf3fc8aa7cfbf630241e0f5fd4df6c0c7b71` / tree
-  `c917d4cf310f8a5545ea76c7aa7606ec906ace56` through the code graph and the
-  package's focused tests.
-- [x] Recorded the five local runtime scopes (`createLowBitAiInferencePlan`,
-  `createLowBitAiInferenceReport`, `validateLowBitAiModel`,
-  `validateLowBitAiBackendAdapter`, and `validateLowBitAiInferencePlan`) in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-ai-lowbit-source-dossier.json`.
-  The low-bit interfaces and aliases remain type-contract evidence only.
-- [x] Typecheck, build and the package suite pass `3/3`. The package boundary
-  report is PASS with no external dependencies; its example is recorded as
-  documentation evidence, not backend execution evidence. No existing `.fungi`
-  twin or loaded Fungi asset exists.
-- [x] The dossier records exact source, test, package, example, boundary, built
-  oracle and retirement hashes, graph closure, and the runtime obligations for
-  nullish defaults, model-path string operations, numeric comparisons,
-  capability membership, diagnostic order and object aliasing.
-- [!] Both package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved queue is
-  unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names the symbol scope and wave limits, and independent differential,
-  physical SLIDE/VOK, bounded execution and receipt gates pass. Backend names
-  remain inert metadata; no BitNet, GPU, NPU or remote runtime was executed.
-
-### RD-0873 next source dossier checkpoint - galerina-ai-agent - 2026-09-11
-
-- [x] Assessed `packages-ts/galerina-ai-agent/src/index.ts` from exact `main`
-  HEAD `893d136752647ef15d86d16674307927cb377638` / tree
-  `36489ca68cb3f649f89c1337bcc4c016535f2128` through the code graph and the
-  package's focused tests.
-- [x] Recorded the seven local runtime scopes (`agentDiagnostic`,
-  `validateAgentLimits`, `validateAgentToolPermissions`,
-  `validateAgentDefinition`, `validateAgentTaskGroupPlan`,
-  `applyAgentMergePolicy`, and `createAgentReport`) in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-ai-agent-source-dossier.json`.
-  The interfaces and type aliases are retained as type-contract evidence and
-  are not independent runtime translation units.
-- [x] Typecheck, build and the package suite pass `21/21`. The package boundary
-  report is PASS with no external dependencies, and no existing `.fungi` twin or
-  loaded Fungi asset exists.
-- [x] The dossier records the exact source, test, package, boundary, built
-  oracle and retirement hashes, graph closure, and the runtime obligations for
-  Map/array/string operations, numeric edge cases, aliasing, warning order,
-  nullish defaults and delegated validation.
-- [!] Both package rows remain `BLOCKED:DOSSIER_REQUIRED`; the conserved queue is
-  unchanged at `CANDIDATE: 0`. No Fungi source, queue relabel, consumer switch,
-  TypeScript retirement or corpus assurance rerun occurred.
-- [!] Keep this package closed until a separate exact non-empty owner admission
-  names the symbol scope and wave limits, and independent differential,
-  physical SLIDE/VOK, bounded execution and receipt gates pass. The existing
-  PROJECT assurance remains closed and historical.
-
-### RD-0873 next source dossier checkpoint - 2026-09-11
-
-- [x] Recorded the narrowly scoped `galerina-auth` `scopeVerdict` source dossier
-  at exact `main` HEAD `fa6d77334d6349d6b4edc47054fcaad54da7d471` / tree
-  `080cdb5097deaf0e5f635c9ffeb1426963e280e5`:
-  `docs/independent-audits/2026-09-11-rd0873-scope-verdict-source-dossier.json`.
-- [x] Graph evidence resolves the exported function at lines 37-47, with two
-  test callers and one `Set.has` dependency. Package typecheck, build and the
-  five focused authorization tests pass.
-- [x] The dossier records source/oracle/retirement hashes, runtime-input and
-  operation risks, and the missing differential, physical SLIDE/VOK and owner
-  admission proofs. No Fungi source, consumer switch or TypeScript retirement
-  occurred; the completed PROJECT assurance was not rerun.
-- [!] `scopeVerdict` remains `BLOCKED:DOSSIER_REQUIRED`; it has no existing
-  Fungi twin and the conserved queue remains `CANDIDATE: 0`. Keep bulk source
-  authoring closed until a separate exact-head authorizing admission names a
-  non-empty scope and bounded limits.
-- [x] Added the companion `composeAuthVerdict` dossier at
-  `docs/independent-audits/2026-09-11-rd0873-compose-auth-verdict-source-dossier.json`.
-  Its five direct composition cases pass within the `8/8` compose suite; the
-  imported Tower-Citizen `allOf` dependency and historical Slice 94
-  `Array<Verdict>` ABI blocker are recorded. `previewAdmission` remains
-  excluded as an authority-adjacent boundary wrapper.
-- [!] `composeAuthVerdict` also remains `BLOCKED:DOSSIER_REQUIRED` with no
-  existing Fungi twin. No queue entry was relabeled and no source authoring was
-  started.
-- [x] Added the credential-factor dossier
-  `docs/independent-audits/2026-09-11-rd0873-header-presence-source-dossier.json`.
-  Its focused tests pass `7/7`; the default fail-closed path, explicit legacy
-  fallback, record lookup helper and missing physical/differential proofs are
-  recorded. No Fungi source was created.
-- [!] `headerPresenceVerdict` remains `BLOCKED:DOSSIER_REQUIRED`; its
-  presence-only opt-in requires a separate security review before any
-  authorizing admission.
-- [x] Added the channel-factor dossier
-  `docs/independent-audits/2026-09-11-rd0873-channel-identity-source-dossier.json`.
-  Its wrapper tests pass `10/10`; the existing core-network cert-gate twin and
-  the Slice 94/98 Array and option-record blockers are recorded as dependency
-  evidence only.
-- [!] `channelIdentityVerdict` remains an authority-adjacent
-  `BLOCKED:DOSSIER_REQUIRED` surface. Its callbacks, structured input and
-  delegated boundary decision require a separate exact-head review.
-- [x] Added the bearer-factor dossier
-  `docs/independent-audits/2026-09-11-rd0873-bearer-token-source-dossier.json`.
-  Its native-crypto-focused tests pass `26/26`; the dossier records the
-  algorithm, key-object, timing-safe and JWT claim obligations.
-- [!] `bearerTokenVerdict` remains a host-floor
-  `BLOCKED:DOSSIER_REQUIRED` surface. No cryptographic implementation is to be
-  moved into Fungi; only a separately authorized host-boundary contract could
-  reopen it.
-- [x] Closed the bounded `galerina-auth` chapter assessment in
-  `docs/independent-audits/2026-09-11-rd0873-galerina-auth-chapter-disposition.json`.
-  All five implementation surfaces have review-only dossiers; `verdict.ts` and
-  `index.ts` are re-export-only and contain no local translation bodies.
-- [!] The chapter remains non-authorizing: all source rows are still
-  `BLOCKED:DOSSIER_REQUIRED`, with no queue relabel, Fungi authoring or consumer
-  switch.
-
-### RD-0873 authorized four-symbol wave revalidation - 2026-09-11
-
-- [x] Recorded the owner's fresh exact-head authorization for the four named
-  symbol scopes `isEnvironmentMode`, `isTerminalScope`, `isTaskEffect` and
-  `isResponseSafeClassification`. The authorization is bounded to one
-  sequential singleton wave with one source file per step, `65536` input and
-  output byte ceilings, `600000ms` per-step timeout, concurrency `1`, zero
-  automatic retries, `81694` aggregate input bytes and `262144` aggregate
-  output bytes.
-- [x] Revalidated the four existing Fungi twins at HEAD
-  `357c689a691fa7982730e486dd1035601623457e` / tree
-  `fd8885f4381134db9eaf573efd83c01df0dc34c9`. Source and twin hashes match;
-  no Fungi source was created or rewritten.
-- [x] Ran the four focused package suites: `8/8` tests pass, with interpreter,
-  signed-Wasm and hostile-vector coverage. The isolated signed-Wasm
-  host-substitution probe passes `40/40` vectors after replacing the relevant
-  JavaScript Set/Array host methods.
-- [x] Measured the complete serialized execution receipt, including embedded
-  step records, at `7354` UTF-8 bytes, within the `262144` aggregate cap.
-  The execution record is
-  `docs/independent-audits/2026-09-11-rd0873-four-symbol-wave-execution-receipt.json`.
-- [x] Retained the TypeScript shadows and all non-production boundaries. The
-  completed 2,722-file PROJECT assurance was not rerun.
-- [!] `isOmniUncertain` remains on semantic HOLD because its exported runtime
-  set is mutable. `isBuiltin` and `validateTransition` remain physical-profile
-  holds. Unrestricted bulk authoring, consumer switching, TypeScript
-  retirement, production authority, topology changes and remote publication
-  remain closed.
-- [x] Rechecked the held twins without clearing their holds: the two physical
-  suites pass `4/4`, and signed-Wasm host-substitution checks pass `266/266`.
-  The Omni suite passes its default vectors, while the exported-set mutation
-  probe remains a semantic HOLD. Evidence is
-  `docs/independent-audits/2026-09-11-rd0873-held-symbol-revalidation.json`.
-
-### RD-0873 current bounded-wave verification checkpoint - 2026-09-11
-
-- [x] Rechecked the exact local `main` identity: HEAD
-  `357c689a691fa7982730e486dd1035601623457e`, tree
-  `fd8885f4381134db9eaf573efd83c01df0dc34c9`. The existing PROJECT receipt
-  remains bound to this exact committed identity.
-- [x] Re-ran the queue check with the approved pinned Git executable:
-  `1605/1605` classified, `0` whole-file candidates, `7` scoped dossiers,
-  `921` blocked and `684` bootstrap-floor entries. The scoped list remains
-  review evidence, not bulk authoring authority.
-- [x] Re-ran the admitted scalar wave through local SLIDE/VOK: `10/10` pass,
-  including the five admitted classifiers and the two deliberate physical
-  refusals (`isBuiltin` and `validateTransition`). The native
-  `rd0873-first-native-slice/slice.fungi` identity and mutation tests pass
-  `3/3`.
-- [x] Cross-checked the bounded lane in Ubuntu WSL2: the native VOK crate
-  passes `30` unit tests and `14` doctests, its live W^X evidence returns
-  `PASS`, and the five existing Fungi twin suites pass `10/10`. The durable
-  non-authorizing record is
-  `docs/independent-audits/2026-09-11-rd0873-wsl-vok-translation-crosscheck.json`.
-  This confirms an independent Linux execution lane; it does not admit the
-  five String classifiers to the native Rust path or open bulk authoring.
-- [x] Re-ran the five package-owned Fungi twin suites at the current checkout:
-  `10/10` focused tests pass. This confirms the existing review twins only;
-  it does not clear the Omni mutable-set hold or authorize new source.
-- [x] The bounded package and harness repairs remain focused on stale test
-  expectations and the legacy `?` lexer token; no `.fungi` source diff exists.
-- [!] The current owner admission is still `authorizing: false` with
-  `bulkFungiAuthoring: false`; the five named classifiers are review-only and
-  the two held symbols stay excluded. Do not start a corpus rerun, consumer
-  switch, TypeScript retirement or bulk authoring from this checkpoint.
-- [x] Prepared a non-authorizing wave schedule from the advisory shard review:
-  process one package-owned symbol/file per singleton step, with at most five
-  sequential steps per wave. The `65536` input/output byte ceilings and
-  `600000ms` timeout apply per step: input is the selected TypeScript source
-  file's UTF-8 bytes, and output is the newly written Fungi source plus its
-  checked/GIR/receipt artifacts. The five source files total `84870` bytes;
-  that sum is recorded with proposed aggregate caps of `84870` input bytes and
-  `327680` output bytes; neither cap has been executed and both require owner
-  authorization. Concurrency is `1` and automatic
-  retries are disabled. Each step must carry exact source/compiler/profile
-  identities, retain the TypeScript shadow, and receive its own differential,
-  physical and independent-review receipt. Aggregate only after a package
-  chapter completes; do not run a corpus check for each individual asset.
-  This schedule is a proposal and grants no authoring authority.
-- [x] Persisted Astra's fresh read-only recheck as
-  `docs/independent-audits/2026-09-11-rd0873-current-head-admission-independent-adjudication-v3.json`.
-  It confirms the exact-head bindings and corrected packet semantics while
-  retaining `closureVerdict: HOLD` and all non-authorizing custody gates.
-- [x] Rechecked the corrected proposal, dossiers and pilot packet with Astra;
-  the non-authorizing packet receipt is
-  `docs/independent-audits/2026-09-11-rd0873-current-head-admission-independent-adjudication-v5.json`.
-  It supersedes v4 for the revised proposal, retains the `isOmniUncertain`
-  semantic HOLD, and records that the proposed aggregate caps and output-budget
-  compliance remain unexecuted.
-- [x] Prepared the exact owner-ready first-wave request at
-  `docs/independent-audits/2026-09-11-rd0873-bulk-wave-admission-proposal.json`.
-  It binds the current queue and review digests, names the five review
-  dossiers, retains the two physical holds, and encodes the continuous-wave
-  ceilings. `isOmniUncertain` remains a semantic HOLD because its exported
-  runtime set is mutable. Its status is `PROPOSAL_NON_AUTHORIZING`; it is not
-  a source-writing release.
-- [x] Persisted the five-symbol source dossier at
-  `docs/independent-audits/2026-09-11-rd0873-bulk-wave-source-dossiers.json`.
-  The exact source, body and existing-twin digests recheck successfully at the
-  current head, including the bounded helper shape required by `isTaskEffect`;
-  the `isOmniUncertain` dossier remains semantically held.
-- [ ] Obtain a fresh authorizing, exact non-empty bulk admission with explicit
-  source scope and wave limits before creating any new bulk `.fungi` assets.
-
-### RD-0873 continuation checkpoint after route repair - 2026-09-10
-
-- [x] Closed the two independent-review findings in the versioned String
-  checked-snapshot/GIR route: decoder input must match canonical bytes, and
-  hostile parse-result accessors map to typed refusals.
-- [x] Rebuilt and reran the bounded route: compiler 11/11, four retained twin
-  differentials 8/8, physical SLIDE/VOK 10/10, and Lyth 14 suites / 633 checks
-  with typecheck pass. The fresh independent audit is
-  `docs/independent-audits/2026-09-10-rd0873-string-route-independent-completion-audit-v2.json`;
-  a current-head recheck at `f07803f706934897fe218ff7363e7a266df3be15`
-  is recorded in
-  `docs/independent-audits/2026-09-10-rd0873-string-route-independent-completion-audit-v3.json`.
-- [x] Recorded the owner's current `approved, continue full auto` direction
-  and a current-head continuity readback. Both remain non-authorizing for
-  production and retain all TypeScript shadows.
-- [x] Restored the separately governed pinned Git executable from the existing
-  restart-toolchain custody; its conversion-queue self-test passes 14/14.
-- [!] The live queue check still refuses the available PROJECT receipt because
-  it is bound to head `4828087b2cc8613efdda53c8e08857cd94f38175`, not the
-  current head. The closed 2,720-file corpus assurance is not reopened to
-  manufacture a replacement receipt.
-- [!] Bulk translation remains **HOLD** at the conserved queue boundary:
-  1,588 tracked entries resolve to `CANDIDATE: 0`, `BLOCKED: 921` and
-  `BOOTSTRAP_FLOOR: 667`; the protected queue files were not changed.
-- [ ] Obtain a non-empty, exact source-owner candidate admission before any
-  new `.fungi` authoring. Keep consumer switching, TypeScript retirement,
-  production authority, corpus reruns and topology changes closed until that
-  admission is independently reviewed.
-
-### Owner-signed RD-0873/RD-0858 transition checkpoint - 2026-09-10
-
-- [x] Owner confirms that RD-0873 Tasks 7, 8 and 9 are complete and signed off.
-  The benchmark worker interruption was a crash during execution, not a failed
-  task result. The accepted benchmark and corpus assurance remain closed; do
-  not rerun the 2,720-file corpus or reopen those tasks because of that crash.
-- [x] Owner confirms RD-0858 is complete and has been pushed to `main`. The
-  older readiness-HOLD wording below is retained as history and is superseded
-  for navigation by this checkpoint.
-- [x] Reconcile the navigation records with the signed-off state while keeping
-  the historical ledger and protected queue paths unchanged. The bounded
-  rollout record is `docs/reports/rd0873-post-closure-translation-manifest.md`.
-- [x] Record the existing first bounded scalar wave: five review-only Fungi
-  assets and their twin tests are present, with the physical lane recorded as
-  10/10 PASS. The wave is non-authorizing; TypeScript remains the shadow and
-  no consumer switch or retirement occurred.
-- [x] Implement and exercise the versioned String literal-match checked
-  snapshot and canonical GIR route over the existing `isEnvironmentMode` Fungi
-  twin. Exact-head pilot evidence is in
-  `docs/reports/rd0873-string-gir-route-pilot-2026-09-10.md`; the route remains
-  non-authorizing and retains the TypeScript shadow.
-- [x] Smoke the same route over the other three direct literal-match twins in
-  the already recorded bounded wave. Keep composite `isTaskEffect` held for a
-  separate call-capable edition; do not treat this smoke as a new authoring
-  batch or a consumer switch.
-- [x] Add the dedicated String-match admission lanes at SLIDE `962f880` and
-  Lyth `a68eeb5`. The local constellation passes compiler materialization,
-  independent root-23 structure/work re-derivation, VOK lease execution and
-  receipt inspection; numeric String arguments refuse and every result remains
-  non-authorizing.
-- [!] The existing graph/index receipts predate these cross-repository commits;
-  no broad regeneration is being treated as implicit. Graph-dependent closure
-  remains held until the owning index refresh is explicitly run and bound.
-- [ ] Close the remaining authority boundary: obtain a fresh owner-bound queue
-  decision, exact-subject SLIDE re-derivation and VOK admission, plus an
-  independent review at one current build point. Keep this item on HOLD when
-  any receipt is missing or divergent.
-- [ ] Only after that boundary is green, decide whether to open one reversible
-  pilot consumer path. Bulk `.fungi` authoring, consumer switching, TypeScript
-  retirement and production admission remain closed.
-
-### Graph and index housekeeping checkpoint - 2026-09-10
-
-- [x] Refreshed the local graph/index outputs, then committed the bounded
-  package-graph repair and housekeeping evidence as `9125b2f60a0bd411ad7256f767416ad1268b8e07`.
-  The initial source snapshot was `6325a782c4ac396c5fcfb0e986d0811ed7205c25`;
-  the final graph fixed point is exact at the new head. Package graph (201 outputs / 100
-  packages), code index (996 codes), code registry (996 codes), contract
-  registry (3,944 contracts across 2,978 `.fungi` files), KB index (2,226
-  documents), documentation indexes (299 indexes / 2,035 documents), unit
-  registry (157 currencies), dev-tool index (100 packages / 186 tools / 40
-  proofs), and Fungi source-capability and retirement inventories.
-- [x] The external codebase graph was refreshed at exact committed head
-  `9125b2f60a0bd411ad7256f767416ad1268b8e07`: 71,071
-  nodes and 188,293 edges. The `emitRd0858SlideGIR` symbol probe resolves to
-  one exported entry point in the compiler adapter.
-- [x] Structural and tooling audits pass: graph-all is 10/10, graph integrity
-  (11,597 nodes, 11,494 edges, zero violations), tooling contract (100 packages / 204 tools,
-  zero violations), canonical test counts (5/5), doc drift (zero), path leak,
-  flat-package topology, and 92/93 gate self-tests.
-- [!] The convention lint remains report-only with 2,086 pre-existing Fungi
-  quality findings. One gate proof remains open: `audit-conversion-slice-close`
-  has no passing anti-neutering self-test. These are recorded findings, not a
-  completion claim.
-- [!] The full suite ran 10,192 tests across 100 packages: 97 packages passed;
-  `galerina-core`, `galerina-framework-example-app`, and `galerina-test` remain
-  held by the existing example-signing, fixture, and source/path-drift failures.
-- [!] Phase close remains `REFUSED`: the conversion queue lacks exact PROJECT and
-  pinned Git authority inputs at this head. Historical 2,720-file receipts are
-  not reused and no corpus sweep was started.
-- [!] Memory preflight remains `HOLD`: two top-level memory files are
-  unindexed, the Galerina working-set owner is missing, and seven case-drift
-  terms are report-only. The governed memory note records this checkpoint.
-- [ ] Preserve Task 6 `HOLD`, keep Task 7 and `.fungi` authoring closed, retain
-  the protected conversion-queue dirt, and obtain a fresh exact-head authority
-  receipt before any phase-close or production admission work.
-
-### Current post-RD-0873 bridge checkpoint - 2026-09-10
-
-- [x] The approved six-commit detached-scalar admission branch was fast-forwarded
-  into local `main` at code tip `d3d866f4feda4ec013b6124dd777fc815bc249f2`.
-  The current `main` checkpoint is `037919cd0e2797e67e1aa55e58040082bfb7c353`
-  after a docs-only follow-up. The source branch remains available; no push,
-  cleanup, or worktree retirement was performed. `origin/main` remains at the
-  prior head because Git is storage and audit transport only.
-- [x] The merged change is bounded to compiler artifact-reference/snapshot/GIR
-  contracts, the detached-scalar CLI, and focused tests. It adds only two
-  detached-scalar `.fungi` fixtures; no bulk `.fungi` authoring occurred.
-  Focused mutation and retained-boundary tests pass 4/4, compiler typecheck and
-  build pass, the full suite passes **6,864/6,864**, and the staged-growth gate
-  is clean for the committed paths.
-- [!] The earlier PROJECT **2,720/2,720** receipt and governed **96/96**
-  phase-close remain historical non-authorizing evidence bound to the previous
-  `main` head. They were not relabeled after this merge, and the redundant
-  replacement sweep was stopped at the owner's direction.
-- [!] Local-first translation readiness remains **HOLD**. The last capsule is
-  still non-authorizing and the owner-bound RD-0858 -> SLIDE -> VOK admission
-  chain plus an independent review at this build point are still absent. No
-  consumer switch, TypeScript retirement, or bulk `.fungi` authoring is open.
-- [ ] Obtain the missing owner-bound admission chain and refresh the bounded
-  readiness review when a new exact-head assurance is intentionally requested.
-  Preserve all existing branches, worktrees, protected dirty paths and holds.
-
-### RD-0873 Task-8 assurance checkpoint - 2026-09-09
-
-This section supersedes older RD-0873 queue text below for the current `main`
-checkout. Older dated sections remain the evidence ledger.
-
-- [x] Task 7's first native scalar slice is merged at exact `main` HEAD
-  `5faf6e2653199ae2174ddec30994e757be79c685`. The source, checked artifact and
-  focused test were introduced by `6b9026442` and the checked-artifact line
-  ending is pinned by `5faf6e265`.
-- [x] The local source-origin selection/admission evidence consumed by Task 7
-  is committed. The selection report and its independent selection,
-  continuity and owner-approval receipts remain non-authorizing evidence.
-- [x] Fresh bounded checks at the Task 7 source state: strict Fungi check **0
-  errors / 0 governance warnings**, Task 7 focused tests **3/3**, and local
-  source-origin tests **46/46**.
-- [!] The broader source-origin frame suite remains non-green: the latest run
-  still encounters Git-executable/pinned-toolchain failures, including the
-  missing pinned `git.exe` lane. It is not repaired or normalized into a pass.
-- [!] The AGENTS bounded-execution audit reports **714 findings** over this
-  checkout. This remains negative evidence and does not grant a host gate.
-- [!] Memory preflight is **HOLD** (exit 1): `memory_summary.md` and
-  `raw_memories.md` are unindexed top-level files, the Galerina working-set
-  owner is missing, and the stale-fact axis reports **0** memories older than
-  30 days. No memory repair was performed.
-- [!] Existing broader package, WSL `.git`-pointer, scalar-oracle, and KB
-  publication holds remain separate from the merged scalar slice.
-- [x] The current-head PROJECT receipt is green at committed HEAD
-  `2bccf496460dc7757f2828c2bafda07eea7e4ebd` / tree
-  `62f6cf01e2014a03c231197e9121aa15d1e1912d`: WORKSET **PASS 1/1** and
-  PROJECT **PASS 2,720/2,720** across four complete shards. The PROJECT
-  envelope is `sha256:12637c61de97ac28f12f24ccb125ce997fbb10ac027f92dcb4d5049bcecd8642`.
-- [x] The graph fixed-point route is green **10/10**, the generator-contract
-  cadence is **20/20**, the current-head conversion queue check is green with
-  pinned `mingit-2.55.0.2`, and code-index/registry/coverage outputs were
-  refreshed locally.
-- [!] Task 8 is still **HOLD**: the diagnostic collision gate reports a C1
-  `FUNGI-PARSE-002` reuse; example diagnostics reports one new regression in
-  `368-contract-ai-flow` (declared `none`, emitted
-  `FUNGI-HINT-COMPUTE-001`, `FUNGI-VALUESTATE-008`, `FUNGI-TIER-001`); and
-  the governed phase-close corpus child was stopped after a bounded Windows
-  worker observation without a terminal result. Package-estate, Myco/Hypha,
-  exact-revision, scalar-oracle, source-origin and custody gates remain open.
-- [x] The declared graph/index/roadmap fixed-point route is green: package,
-  project, graph-integrity, KB, dev-tool, Fungi capability, retirement,
-  semantic-assurance and roadmap checks all pass (10/10) with the real sibling
-  KB owner explicitly bound. No external KB bytes were modified.
-- [ ] Keep Task 9 custody/integration review and the RD-0873 completion merge
-  closed until those gates are independently verified. Do not create a branch
-  or worktree, retire existing topology, widen native scope, or begin bulk
-  `.fungi` authoring without a new owner decision and a green readiness gate.
-
-### RD-0873 reviewed local source-origin route - 2026-09-08
-
-- [x] Independently review the local source-origin amendment in AGENTS at
-  `docs/superpowers/plans/2026-09-08-rd0873-local-source-origin-amendment.md`,
-  commit `36c904e14ab6b74e4ad2402e22eda3d0359c4afe`. The final review is
-  Critical 0 / Important 0 for architecture only; no implementation PASS.
-- [x] Record the product decision under the owner's existing delegation in
-  AGENTS `docs/approvals/2026-09-08-rd0873-local-source-origin-delegation.json`,
-  commit `a11ff599e5026901de6add9391805e7b61d6fa86`. This is not a signature
-  or personal owner approval of future bytes. The amendment governs the
-  current local route; historical Git/hosted receipts retain their old scope.
-- [x] Implement the first bounded Git-free capture fixture component. Windows
-  and Ubuntu Node 24.18.0 each pass 18 tests without skips; independent review
-  passed for the fixture-only cooperative contract. See
-  [the exact review](reports/rd-0873-local-capture-fixture-review.md).
-- [x] Add the shared local policy and snapshot validators and bind them to the
-  fixture producer. Windows and Ubuntu WSL each pass 24/24 focused tests,
-  including fixture/production binding, exclusion collisions, and all bound
-  policy byte/file ceilings. See
-  [the independent contract review](reports/rd-0873-local-contract-review.md).
-- [x] Add the local source-origin subject binding for repository identity,
-  policy, snapshot, host, Myco and Hypha receipts, with explicit sealed
-  host/discovery builders and a capture-to-subject entry point that takes the
-  snapshot only from retained capture state. The independently reviewed
-  subject unit passes 5/5, the capture unit passes 20/20, and the combined
-  local subject/contract/source suite passes 31/31 on Windows and Ubuntu WSL.
-  See
-  [the bounded subject review](reports/rd-0873-local-subject-review.md).
-- [x] Add the explicit `LOCAL_PRODUCTION_V1` profile path. Its policy digest
-  and snapshot classification remain bound to retained capture state, and the
-  focused source unit plus the combined subject/contract/source suite pass
-  20/20 and 31/31 on Windows and Ubuntu WSL. This is cooperative synthetic
-  profile plumbing only; it does not admit a dirty checkout or create a
-  PROJECT.
-- [x] Run the approved bounded live local capture against the protected dirty
-  checkout on Windows and Ubuntu WSL. The selected 14-file snapshot validated
-  with `fixtureOnly: false` under independent external 60-second parent
-  deadlines and produced identical digests and byte counts; the protected
-  compiler manifest and generated hallmark were read by pathname and no raw
-  bytes were staged or written to the repository. See
-  [the bounded subject review](reports/rd-0873-local-subject-review.md) for
-  the snapshot, policy and identity digests.
-- [ ] Continue the amendment's production policy, contracts and consumers.
-  Fixture receipts cannot admit a PROJECT or selection. The approved real
-  capture is source-origin evidence only; producer discovery receipts,
-  computed gateway and PROJECT consumers remain required, and the helper's
-  cooperative timer remains paired with an external process limit.
-- [ ] Complete fresh PROJECT, computed gateway/zero-applicable evidence and
-  the separate selection/review/continuity/approval chain before Task 7.
-  The existing AGENTS parser/result/refusal suite is 214/214, but the exact
-  source-origin admission profile, gateway wrapper and producer-generated
-  KAT-C seven-artifact frame are absent. Task 6 remains `HOLD`; no native
-  source is admitted by the design review.
-- [ ] Complete the single admitted Task 7 scalar slice, verify and merge the
-  integration, then stop. Reuse existing authorized slots; no new branch or
-  worktree without explicit permission. Leave existing topology intact for
-  later owner-directed cleanup.
-
-### RD-0873 local verification update - 2026-09-08
-
-- [x] Complete the local TypeScript dependency closure without lifecycle
-  scripts. The eight transitive compiler packages built, and 33 previously
-  missing package dependency trees installed from their existing lockfiles.
-  No package-lock, source, DLL, EXE or toolchain path changed.
-- [x] Rerun the governed full local suite: **97/100 packages passed and
-  10,167 tests were counted**. The process warden and package bootstrap now
-  operate locally without hosted GitHub evidence.
-- [x] Recheck the bounded Task 2-5 contracts: corpus/shard/ownership tests
-  passed **115/115**, and conversion-queue/slice-close tests passed **40/40**
-  when the existing pinned Git executable was selected without moving it.
-  The audit-map test remains `HOLD` because its safety rule requires that
-  executable outside the controlled repository and no such external copy is
-  available.
-- [x] Repair the bounded Myco caller output limit locally at commit
-  `7b9751107247a534b1bbb764e04f90d7a92cce93`: the corpus audit now receives
-  the complete 1.21 MiB JSON response, reports **2,975/2,975** Myco/Git
-  coverage with zero drift, and its ownership suite is **29/29**. The shared
-  finder received the same 16 MiB bound. This does not alter Myco source or
-  regenerate a tracked index.
-- [!] Keep broader integration `HOLD` for three independent repository issues:
-  `galerina-core` has invalid example fixtures, the framework example fixture
-  lacks its declared public signing key and correctly refuses unsigned fusion,
-  and `galerina-test` has three source-binding/path-drift failures. Do not
-  bypass fail-closed signing or rewrite these fixtures under RD-0873 without
-  a scoped admission decision.
-- [!] Fresh Windows read-only host assurance remains `HOLD`: the AGENTS-owned
-  bounded-execution auditor self-test passed, but its scan over this Galerina
-  worktree reports **711 findings** (372 missing output bounds, 299 missing
-  timeouts, 23 missing abort signals, 7 invalid output bounds, 4 invalid
-  timeouts, and 6 unparseable boundaries). This is negative evidence, not a
-  reason to install/copy toolchains or to claim the host gate is green.
-- [!] WSL recheck: the path-leak self-test passed, but the enforcement scan
-  remains `HOLD` because the Windows worktree `.git` pointer is not a valid
-  Linux path; the scanner cannot resolve the repository index from WSL.
-- [ ] Resolve those three local issues or record an explicit scope decision,
-  then repeat the governed full suite before promotion. Task 7 and `.fungi`
-  authoring remain closed until the separate admission gates pass.
-
-### RD-0873 integration checkpoint - 2026-09-07
-
-- [x] Preserve the original five-path working diff locally and reuse the existing
-  worktree on `codex/rd0873-local-integration`; the old branch remains at
-  `43dad8f00858de66053569cdbf6c20555298bbe2`.
-- [x] Correct local manifest validation ordering and byte-length comparison.
-  Fresh Windows/WSL runs each pass 30 local byte-custody tests and six original
-  resource controls. Test labels explicitly distinguish unowned-object refusal
-  from owned-buffer verification. These synthetic controls do not establish
-  frame semantics or a cross-host evidence exchange.
-- [x] Preserve and exclude four uncommitted tests for the superseded hosted
-  workflow. Preserve the existing narrow toolchain ignore rule.
-- [x] Independently review and commit the local checkpoint as `7c0443502`.
-  Reconcile main's existing work in local integration merge `a75ce5dea`; its
-  seven-path resolution passed independent review, and 14 focused integration
-  checks pass on each of Windows and WSL. No new executable, DLL or toolchain
-  content is introduced by these two commits relative to the preserved source.
-- [!] Broader package verification is `HOLD`: the missing Windows process
-  warden was built into ignored output, and web-events passes 25/25. The full
-  suite then stopped at compiler typecheck because built sibling dependencies
-  are absent. Prepare the dependency closure and rerun the suite; do not count
-  unexecuted packages or dependency-bootstrap failures as a PASS.
-- [x] Inventory the 48 existing benchmark EXEs without executing them. No DLLs
-  or paths with a `toolchains` directory component are tracked. All have first-party source counterparts;
-  exact build provenance is incomplete, and four compute-mix binaries predate
-  their current sources. Preserve the existing exception and its narrow ignore
-  rules; require fresh provenance review for any newly staged executable/DLL.
-- [ ] Resolve benchmark source/build provenance gaps and complete full
-  integration validation before promotion to main. Main is unchanged; nothing
-  was pushed.
-- [ ] Keep Task 7 prerequisites open: actual local evidence integration,
-  host-assurance findings and selection/admission remain separate obligations.
-- Branch roles, exact starting commits, exclusions and next actions:
-  [RD-0873 integration checkpoint](handover/RD-0873-INTEGRATION.md).
-
-### RD-0873 local-first execution route - 2026-09-07
-
-- [!] `SUPERSEDED_FOR_EXECUTION`: the proposed private-runner and hosted-artifact
-  route is no longer an RD-0873 execution prerequisite. Its historical `HOLD`
-  receipts remain negative evidence and are not rewritten. The only route being
-  implemented is the closed local Windows/WSL direct-byte route; Git remains a
-  separately authorised post-verification backup and hosted observations remain
-  advisory only. Task 7 and `.fungi` authoring remain closed.
-- [!] **Task 4 host assurance (2026-09-07):** Windows x64 ran the focused local
-  custody/verification/reciprocal controls `28/28` and the path-leak self-test
-  and scan; Ubuntu WSL x64 now independently ran the local controls `28/28`
-  and Task 6C capture/validation scope `31/31`, at Node `v24.18.0` and Rust
-  `1.98.1`. The same candidate source-set digest was observed on both hosts.
-  WSL path-leak self-test passed, but its enforcement scan cannot resolve this
-  Windows worktree's `.git` pointer under Linux; its bounded audit also returned
-  findings. The Windows bounded-execution control reported `713` findings.
-  These negative controls are `HOLD`, not permission to install or copy a
-  toolchain. Git is
-  optional post-verification backup only; hosted artifacts/runners are advisory;
-  Task 7 and `.fungi` remain closed. Body-free local records are retained in the
-  ignored Task 4 SDD ledger.
-- [x] The distinct pre-existing Task 6C capture/validation suite ran on Windows
-  with Git/GitHub variables absent: `Task 6C
-  (captures|validates|platform receipt|proves the platform receipt|rejects
-  receipt)` in `scripts/tests/logic-aig-source-origin-frame.test.mjs` passed
-  `31/31`, with `0` fail/skip/cancelled and exit `0`. This approved scope is
-  separate from the 28-test local-only filter. A broader Task 6C-R custody-suite
-  invocation yielded no test stream or exit status and remains `UNVERIFIED`; it
-  is not substituted for, nor needed to redefine, the completed 31-test scope.
-
-### RD-0873 pre-selection foundation and source-origin HOLD - 2026-08-30
-
-- [x] Commit and publish the bounded RD-0873 implementation foundation through
-  `e77598e4f03b4181d3a26fd258bf682c2becddce`. The protected corpus covered
-  2,719 files in 16/16 terminal shards with zero unprocessed files; queue v3
-  classified 1,581/1,581 executable paths and retained seven scoped candidates.
-- [x] Harden conversion closure evidence, regenerate the governed queue and bind
-  queue authority into phase-close through commits `0f8d3dfde`, `22b22db4b`
-  and `e77598e4f`. Focused phase-close wiring verification passed 119/119 and
-  independent review closed Critical 0 / Important 0.
-- [x] Converge the provisional Task 6 candidate on
-  `packages-ts/galerina-core-config/src/index.ts#isEnvironmentMode`, with future
-  target
-  `packages/fungi/products/galerina/rd0873-first-native-slice/slice.fungi#isEnvironmentMode`.
-  This is a locator and contract candidate only; no Task 7 `.fungi` source has
-  been authored.
-- [x] Record the repaired AGENTS source-origin Logic-AIG design and candidate
-  implementation plan at
-  `<AGENTS_ROOT>/docs/superpowers/specs/2026-08-30-galerina-source-origin-logic-aig-design.md`
-  and
-  `<AGENTS_ROOT>/docs/superpowers/plans/2026-08-30-galerina-source-origin-logic-aig.md`.
-  Approved candidate commit `ab57f8919a66651be809f65a2683d602d5b8ce0e`
-  has tree `eacbfe22dd54ac859f2d481a42bf4f680d6b1998`; its design and plan raw SHA-256
-  values are `0abdef45717f0c20d6e697f6f63db17bad7f25aa1e64ecc3019a1b974f89a058`
-  and `4f5feb8451af8931ed3de79cc27358721443a5e874de9b6a729e7c94edb21477`.
-  Direct native-graph translation remains rejected; discovery/index hits remain
-  non-authorizing, including the observed confidence-0.21 false `has` edge.
-- [x] Record the non-authorizing AGENTS approval receipt at commit
-  `add1bb404af5b6d79e02570f5f977981cdf68663`, path
-  `docs/approvals/2026-08-30-galerina-source-origin-logic-aig.json`, raw SHA-256
-  `647b0476bd0a79ea0de04c2c4b5546b706c43b879a805b290cf96d14e4a5a00c`.
-  The current AGENTS implementation head after its separate baseline test repair
-  is `56aa6e3328b2b417883236132fd33ddf5211da13`; the gateway boundary has exactly
-  11 inputs.
-- [!] The old baseline approval did not approve the repaired candidate, its
-  eleven-input atomic gateway boundary or implementation. The exact owner
-  approval above admits the design candidate only; it does not authorize Task 6
-  selection, `.fungi` authoring, pushing, merging, publishing or use of
-  private/offline keys. Task 6 remains `HOLD` until that approval and Tasks 2-8
-  are committed, independently reviewed and reproduced at one exact HEAD.
-  PROJECT admission must precede WORKSET; graph-only access and non-zero
-  applicable unresolved rows must refuse.
-- [ ] Resume Task 6 only from the exact reviewed Task 2-8 implementation at one
-  HEAD and one immutable PROJECT receipt accepted by the atomic gateway. The
-  byte-final selection report must record `candidateState: NOT_AUTHORED`, the
-  exact gateway-result digest and the exact `ZERO_APPLICABLE` obligation digest,
-  with no future review, continuity, approval or other receipt digest embedded.
-- [ ] Start Task 7 only after separate selection-review, continuity,
-  continuity-review and owner-approval receipts bind those exact report bytes.
-- [!] Preserve documentation navigation as `HOLD`: a fresh docs-index dry-run
-  exits 0 and would write 299 indexes linking 2023 documents; check exits 1
-  because 290 of 299 are missing or drifted and writes 0. Do not run `--apply`;
-  the bounded write set is not proved.
-- [!] The 2026-08-30 Galerina housekeeping run returned
-  `HOUSEKEEPING REFUSED` at a hard-linked executable under
-  `build/target-cache`. No cache content was deleted, moved, truncated or used
-  as cleanup authority.
+- [x] Close RD-0363's presence-only signature fail-open: an unverified
+  `planSignature` now remains INDETERMINATE until a downstream cryptographic
+  verifier supplies proof.
+- [!] RD-0361 remains open for owner authority/deletion and SLIDE/VOK gates;
+  the bounded audit count is not production admission.
+- [!] RD-0363 remains open for authenticated signature verification,
+  complete canonical binding, replay-time enforcement, and receipts.
+- [!] RD-0364 remains open for real provider/weight identity, egress and
+  budget proof, and authorizing receipts.
+- [!] RD-0365 remains open for evidence-backed vault/TPM/hardware custody and
+  host attestation.
+- [!] RD-0349 is broader than I2; Commodity/Crypto/Rate/Percent and their
+  sourced scale policies remain open.
+- [x] Keep the reconciliation report as the durable index; do not turn these
+  dispositions into a bulk `.fungi` authoring scope.
+
+Report: `docs/reports/rd-0361-0363-0364-0365-0349-current-head-reconciliation-2026-09-12.md`.
+
+### Grok knowledge-gap round for the five R&D records — 2026-09-12
+
+- [x] Run one bounded fresh Grok advisory session with separate semantic and
+  authority vectors for RD-0349, RD-0363, RD-0361, RD-0364 and RD-0365.
+- [x] Preserve the result as `REVIEW_OUTCOME: HOLD`; the focused counts and
+  owner dispositions are unchanged. The round identifies the smallest next
+  evidence shapes without authorizing implementation, production, consumer
+  switching, bulk `.fungi` translation, commits, pushes or merges.
+- [!] Keep the five tracks partial/open until their owner-bound packets,
+  receipts, differential/deletion proof, provider identity, hardware custody
+  and attestation evidence are independently produced at one exact head.
+- [x] Keep the reconciliation report as the durable index; the advisory
+  response remains a separately retained, non-authorizing review artifact.
+
+Advisory evidence is summarized in the reconciliation report above; the full
+prompt and response are retained in the private restart workspace.
+
+### Independent SLIDE bounded backend current-head reconciliation — 2026-09-12
+
+- [x] Replace the stale `716/716` label with the current SLIDE scope
+  manifest. The bounded backend now records 12 named groups covering scalar
+  and grouping operations, Bool `not`/`and`/`or`, exact immutable String and
+  Bytes, text prefix/suffix/substring, internal Array/Option, immutable
+  `Array<Int>` membership, bounded folds, records, zero-argument calls,
+  four-to-128 functions, nine-to-16 block control flow, certified loop bodies
+  and one audited effect family.
+- [x] Record fresh evidence from SLIDE: focused feature matrix **142/142**;
+  independent selected matrix **112/112**; V2 contract integrity **96
+  files** and catalog integrity **101 files**; security closure K3 `0` with
+  `authorityReleased=false`.
+- [!] The complete SLIDE command reports **1,053 pass / 0 fail / 9
+  cancelled**. The cancelled checks require two absent Galerina producer
+  inputs, so they are an external integration-input hold rather than a SLIDE
+  feature failure. Rerun them after the owning build restores those inputs.
+- [!] Keep arbitrary loops, recursion/callbacks, general collections,
+  multiple or cross-package effects, executable provider identity,
+  authenticated platform durability and production authority open. The
+  bounded reference backend remains non-authorizing.
+
+Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-09-12.md`.
 
 ### Myco and Hypha source-owner synchronization closure - 2026-08-28
 
@@ -2344,13 +713,33 @@ checkout. Older dated sections remain the evidence ledger.
   receipt scope and the monolithic corpus child without a terminal receipt
   inside 600 seconds. Older `93/96` and `94/96` receipts remain historical
   evidence, not current closure.
-- [ ] Implement Corpus Audit v2 with exact content/toolchain identities,
+- [x] Implement Corpus Audit v2 with exact content/toolchain identities,
   deterministic shards, WORKSET and PROJECT profiles, bounded per-shard
   terminal receipts, resumable exact-build aggregation and sequential/parallel
-  semantic parity.
-- [ ] Implement conversion-slice receipt v2 and queue v3. Bind exact product,
+  semantic parity. The focused implementation contracts are **49/49 pass**;
+  final corpus assurance remains held by the current checkpoint above.
+- [x] Implement conversion-slice receipt v2 and queue v3. Bind exact product,
   package, file, symbol, source, candidate, RD, plan, gate and exclusion scope;
-  do not upgrade historical scope-less receipts.
+  do not upgrade historical scope-less receipts. Focused receipt/queue checks
+  pass; queue execution remains refused until valid PROJECT evidence exists.
+- [x] Reconcile the former SLIDE producer/GIR locator cancellation. SLIDE commit
+  `eb02c604f19136534c3e2214b4a1af34bf6c7558` binds the conformance tests to the
+  live `Galerina/packages-ts/galerina-core-compiler` root at
+  `SLIDE/tests/v2c-galerina-conformance.test.mjs:11-20` and
+  `SLIDE/tests/v2d-reference-validator.test.mjs:10-22`; the focused V2-C/V2-D
+  route is **9/9 pass, 0 fail, 0 cancelled** at the current SLIDE checkout.
+  The former `packages-galerina` paths were stale locators, not absent
+  producer/GIR inputs. This closes only that locator cancellation; it does not
+  authorize corpus, queue, `.fungi`, VOK or production-admission work.
+- [ ] Reconcile the incomplete bounded conversion scope recorded by private
+  `RD-1231` with the current Galerina exact head before selecting further native
+  logic/components. Its last recorded direct-tree snapshot reports **91/100**
+  package roots and **9** remaining, with TypeScript/MJS shadows retained; the
+  owner reports **100+ RD-* transcript records** still require processing, so
+  this is far from overall R&D readiness. The exact transcript coverage needs a
+  fresh KB-owned index; neither metric is current-head evidence or production
+  authority. Preserve the existing holds on consumer switching and TypeScript
+  retirement.
 - [ ] Select one post-oracle native slice through codebase-memory, Myco, Hypha,
   Code Logic Workbench and independent review. Keep source bodies out of graph,
   memory and selection reports.
@@ -2375,11 +764,12 @@ checkout. Older dated sections remain the evidence ledger.
   native `.fungi` packages and `packages/gate/` for non-authorizing laboratory
   `.gate` packages; neither directory exists and neither is a discovery or
   readiness signal. Unknown product, family or profile values refuse.
-- [x] Preserve one widthless semantic Trit in `{−1, 0, +1}`. Physical profiles
-  remain scalar `1`, preferred packed `64`, and admitted high-throughput `256`;
-  `32` is compatibility fallback, while `128`, `512` and adaptive widths are
-  measurement-only. Every fallback is admission-time replanning with a new
-  identity and receipt, never silent runtime substitution.
+- [x] Preserve one widthless semantic Trit in `{−1, 0, +1}`. Physical profile
+  `1` is the only current admission; packed `64` and high-throughput `256` are
+  registered future profiles. `32` is compatibility fallback only, while `128`,
+  `512` and adaptive widths are measurement-only. Every fallback is
+  admission-time replanning with a new identity and receipt, never silent
+  runtime substitution.
 - [x] Prove the moved host estate sequentially: product controls 10/10,
   topology 7/7, root-lock 7/7, economics 15/15, security 17/17, graph
   algorithms 97/97, generator contracts 19/19, and compiler 6,717/6,721 with
@@ -3346,16 +1736,54 @@ checkout. Older dated sections remain the evidence ledger.
   `SKILL_UPDATE` commit exists in the named private skill repository (or in one
   independently pinned skill-head receipt). Three reviews caught and corrected
   invented full hashes that the current structural audit accepted.
-- [ ] Repair exported mutable defaults: decide deep-freeze/copy/factory versus
-  shared-state compatibility for `DEFAULT_E2E_EXAMPLES` and
-  `DEFAULT_BENCHMARK_CONFIG`; add exact mutation/identity vectors.
+- [x] Repair exported mutable defaults: the immutable-singleton policy is now
+  explicit. `packages-ts/galerina-test/src/runners.ts:139-144` freezes
+  `DEFAULT_E2E_EXAMPLES`; `packages-ts/galerina-tools-benchmark/src/index.ts:113-143`
+  recursively freezes `DEFAULT_BENCHMARK_CONFIG`. Mutation refusal and
+  caller-owned clone isolation are covered at
+  `packages-ts/galerina-test/tests/runners.test.mjs:211-218` and
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:26-41`.
+  The focused routes pass **35/35** (one host-specific signal skip) and **10/10**;
+  callers must clone nested config objects before customization.
 - [ ] Repair runner evidence: canonical argv, exact corpus/content provenance,
   exhaustive process causes, output/backpressure/callback failures, bounded
-  Boolean-while aggregation, monotonic timing and typed results/counts.
-- [ ] Harden benchmark config/report borders: reject missing/surplus/hostile
+  Boolean-while aggregation, monotonic timing and typed results/counts. The
+  spawn-cause and callback slice is closed at
+  `packages-ts/galerina-test/src/spawn.ts:11-120` and
+  `packages-ts/galerina-test/src/runners.ts:159-170`; duplicate/malformed/
+  unsafe count summaries now refuse at `packages-ts/galerina-test/src/parse.ts:14-43`
+  with **10/10** foundation tests plus **36/36** runner/spawn tests (one
+  Windows signal skip). The typed canonical argv slice is now closed:
+  `packages-ts/galerina-test/src/types.ts:35-39` defines `SpawnInvocation`,
+  `packages-ts/galerina-test/src/spawn.ts:54-60` captures the exact executable,
+  argv vector and cwd, and `packages-ts/galerina-test/src/runners.ts:208-407`
+  carries it through unit, e2e, conformance, fidelity and exact-corpus results;
+  `tests/spawn-outcomes.test.mjs:54-63` verifies the boundary. The focused
+  harness route is **36/36** with one host-specific signal skip. Exact
+  corpus/content provenance, complete freshness framing, and the remaining
+  aggregation contract are still open. The monotonic-duration sub-slice is now
+  closed: `packages-ts/galerina-test/src/spawn.ts:54,86` and
+  `packages-ts/galerina-test/src/runners.ts:239,253,482,489` use
+  `performance.now()`; wall-clock rollback regressions at
+  `packages-ts/galerina-test/tests/spawn-outcomes.test.mjs:66-77` and
+  `packages-ts/galerina-test/tests/runners.test.mjs:184-198` pass. This closes
+  timing only; it does not close provenance, freshness or aggregate semantics.
+- [!] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must
-  be binding.
+  be binding. The bounded config and full report validators now reject
+  malformed/accessor/proxy records, surplus/missing keys, non-finite numbers,
+  invalid target/privacy literals, sparse/oversized test arrays and explicit
+  `null` scores at `packages-ts/galerina-tools-benchmark/src/index.ts:72-431`;
+  `shareable:false` is binding at `src/index.ts:655-672`. The focused package
+  route is **14/14** at
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-188`.
+  Absence of optional `opticalIo` remains valid; explicit `null` is refused and
+  the example no longer emits it. `captureBenchmarkReport` at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:436-491` returns a
+  detached immutable snapshot and `isBenchmarkReportShareable` binds its
+  decision to that snapshot. The focused route is now **14/14**; downstream
+  consumers must use the capture result rather than retain caller-owned input.
 - [x] Publish all registered owners individually and pass the complete 19-check
   matrix: **1,488/1,488** executable-family paths, **149** source Fungi files,
   graph **9,900 nodes / 10,039 edges / 0 violations**, semantic **3/3** with
@@ -3385,16 +1813,32 @@ checkout. Older dated sections remain the evidence ledger.
   process completion needs distinct exit/signal/deadline/spawn/output-limit/
   callback variants; freshness evidence must be duplicate-rejecting,
   length-prefixed, output-bound and one-snapshot.
-- [ ] Repair `runNode` so null status does not misreport invalid cwd, ENOBUFS or
-  other spawn failures as timeout. Add direct timeout, signal, spawn-error,
-  output-limit, stream ordering, environment and callback tests before any
-  Fungi/SLIDE candidate.
-- [ ] Replace compiler freshness evidence with duplicate-rejecting canonical
-  bytes, domain-separated length-prefix framing, complete compile-affecting
-  input/config/toolchain coverage, governed ignored/untracked policy, exact
-  consumed-output digest, canonical containment and one immutable snapshot
-  through execution. Retain the four firing KATs for ignored input, tampered
-  `dist`, duplicate JSON keys and NUL-framing collision.
+- [x] Repair `runNode` so null status does not misreport invalid cwd, ENOBUFS or
+  other spawn failures as timeout. `packages-ts/galerina-test/src/spawn.ts:11-120`
+  now emits typed `failureKind`, `signal` and `errorCode` evidence, and
+  `packages-ts/galerina-test/src/runners.ts:159-170` preserves the distinction
+  in runner details. Direct
+  coverage at `packages-ts/galerina-test/tests/spawn-outcomes.test.mjs:10-72`
+  proves invalid-cwd/ENOENT, timeout/ETIMEDOUT, output-limit/ENOBUFS, stream
+  ordering, environment-marker removal and callback delivery; the signal case
+  is exercised on signal-capable hosts and explicitly skipped on Windows where
+  the host does not expose a signal status. Focused evidence is **35/35 pass,
+  1 skip, 0 fail** across the runner and spawn suites; no Fungi/SLIDE candidate
+  was built.
+- [!] **Compiler freshness evidence — RD-1244:** the current producer and
+  verifier at `packages-ts/galerina-core-compiler/scripts/
+  write-build-evidence.mjs:37-48` and
+  `packages-ts/galerina-test/src/runners.ts:49-153,219-239` now reject
+  duplicate JSON object keys before parsing, including escaped duplicates;
+  focused KATs are at `packages-ts/galerina-test/tests/runners.test.mjs:337-382`.
+  A local byte probe still reproduces an equal digest for distinct same-path
+  file contents containing NUL bytes. Grok and Astra agree the broad TODO
+  remains **HOLD**: the implemented sub-slice does not close framing,
+  compile-affecting input/config/toolchain coverage, ignored-file policy,
+  consumed-output digest, canonical containment or one immutable snapshot.
+  Required KATs for ignored input, tampered `dist` and NUL framing remain open
+  at `docs/TODO.md:1702-1707`. No `.fungi`, corpus or assurance action follows
+  from this record.
 - [ ] Preserve public declaration consumers through retained/versioned `.d.ts`
   artifacts or a governed binding/schema generator; `NO_RUNTIME_BEHAVIOR` is
   not source-deletion authority and `TestCounts` null-to-Option is a versioned
@@ -3417,17 +1861,48 @@ checkout. Older dated sections remain the evidence ledger.
   **337/337** governed receipts, graph integrity **9,847 nodes / 9,985 edges /
   0 violations**, canonical **9,612** tests, Golden **11/11**, roadmap **5/5**
   and both leak audits green. The excluded aggregate lanes were not substituted.
-- [ ] Make parsed test summaries canonical and unique; refuse duplicate/spoofed
-  lines, unsafe integers, excessively long digits and non-finite counts before
-  any parsed value can affect SLIDE or other check success.
-- [ ] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
-  `--timeout` data; add exact argv, stream-routing, JSON and exit-code tests.
-- [ ] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
+- [x] Make parsed test summaries canonical and unique; the root parser at
+  `scripts/run-all-tests.cjs:388-414` now accepts only one exact TAP/spec
+  summary line per field, refuses duplicate/spoofed lines, unsafe integers,
+  excessively long digits and non-finite values, and exports the parser for a
+  real-root regression at
+  `packages-ts/galerina-test/tests/foundation.test.mjs:76-82`. The focused
+  foundation route is **11/11 pass**. The wider package route remains
+  separately **218/221 pass, 2 fail, 1 Windows signal skip** because two
+  unrelated conversion-overlay/source-literal checks still fail; that red
+  evidence is not used to claim full harness closure.
+- [x] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
+  `--timeout` data. `packages-ts/galerina-test/src/cli.ts:30-116` now refuses
+  dash-prefixed values, requires a positive safe integer timeout, keeps human
+  usage/error output on stderr, and emits a bounded JSON argument-error with
+  exit code 2 when `--json` is present. The black-box checks at
+  `packages-ts/galerina-test/tests/cli-arguments.test.mjs:16-60` cover exact
+  argv refusal, stream routing, JSON payloads and exit codes; the adjacent
+  focused harness route is **51/51 pass, 1 Windows signal skip**. No
+  `.fungi` or corpus build was run.
+- [!] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
   module bytes/digest/imports/exports/sandbox evidence, and migrate legacy
-  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes.
-- [ ] Decide and enforce workspace-root marker attestation and target
-  containment; cover env/explicit-root bypass, file-vs-directory, symlinks,
-  traversal, drives, UNC paths and Error identity.
+  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes. The
+  bounded record/array decoder and detached frozen report snapshot now live at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,243-272`, with focused
+  hostile/alias coverage **5/5** at
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:14-59`.
+  RD-1236 confirms the remaining blocker is owner contract plus cross-package
+  schema authority; invalid-runtime report retention and duplicated error
+  warning text are also exact residual controls at `index.ts:219,243-259`.
+  No WASM execution authority is inferred.
+- [!] **Workspace-root marker and target containment — RD-1243:** current
+  `packages-ts/galerina-test/src/paths.ts:20-27,41-58` accepts explicit/env
+  roots without marker attestation, treats any existing marker object as
+  sufficient, and passes absolute or escaping target paths through. The
+  current tests at `packages-ts/galerina-test/tests/foundation.test.mjs:87-113`
+  do not exercise the detached-root failure, marker type or containment
+  negatives. Grok and Astra both return
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; OWNER CONTRACT REQUIRED;
+  HOLD`. The owner must freeze marker/root reparse semantics, lexical versus
+  physical containment, independent-root admission, supported drive/UNC/device
+  namespaces and exact Error identity before a bounded `paths.ts` patch.
+  No `.fungi`, corpus, queue, signing or conversion authority follows.
 - [x] Prove the immutable `WORKSPACE_MARKER` String independently from its
   filesystem consumers: strict check plus interpretation/signed-Wasm **2/2**;
   TypeScript remains pending a consumer switch and retirement authority.
@@ -3470,17 +1945,36 @@ checkout. Older dated sections remain the evidence ledger.
   runtime scopes. No placeholder Fungi or duplicate authority was created.
 - [x] Prove the package typecheck and focused **8/8** baseline. The package owns
   no exact Fungi, GIR, physical `.slide`, independent re-admission or VOK twin.
-- [ ] Replace the validators' open JavaScript ingress with exact own-data
-  decoders; capture each field once; reject inherited/accessor/proxy/surplus
-  records, wrong classes, sparse/custom arrays and unbounded text/collections.
-- [ ] Repair channel validation so changing getters cannot bypass an invalid
-  wavelength; bind exact finite binary64, `-0`, boundary, Option and UTF-16
-  behavior before any Fungi/SLIDE candidate.
-- [ ] Repair lowering validation so holes cannot silently count as unsupported
-  work, every mapped operation and nested channel is validated, and missing or
-  null records produce typed refusal rather than foreign `TypeError`.
-- [ ] Reconcile same-named `PhotonicExecutionPlan` and `PhotonicDiagnostic`
-  schemas plus the conflicting amplitude-zero rule across photonic packages.
+- [x] Replace the validators' open JavaScript ingress with exact own-data
+  decoders at `packages-ts/galerina-target-photonic/src/index.ts:237-391`;
+  fields are captured from data descriptors once, and inherited/accessor/
+  proxy/surplus records, wrong classes, sparse/custom arrays and overlong text
+  are refused. The focused package suite is **10/10** at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-78`
+  and `:120-149`.
+- [!] Channel validation now prevents changing getters from bypassing the
+  wavelength check at `packages-ts/galerina-target-photonic/src/index.ts:426-471`,
+  including finite positive values and `-0` refusal. RD-1242 separately
+  confirms the remaining cross-package contract for diagnostic fields and
+  amplitude `0`/`-0`; exact binary64 boundary, Option presence and UTF-16
+  rules remain open and are not defined by the current `OpticalChannelLayout`
+  interface at `packages-ts/galerina-target-photonic/src/index.ts:149-154`.
+- [x] Repair lowering validation at
+  `packages-ts/galerina-target-photonic/src/index.ts:314-391` and `:450-518`;
+  dense-array holes, malformed nested mappings/channels and missing records now
+  return typed refusal instead of foreign `TypeError`, and every admitted
+  nested channel is revalidated. The hostile cases are covered by the focused
+  **10/10** suite at `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:120-149`.
+- [!] **Photonic contract reconciliation — RD-1242:** core and target have
+  live incompatible `PhotonicDiagnostic` shapes at
+  `packages-ts/galerina-core-photonic/src/index.ts:40-47` and
+  `packages-ts/galerina-target-photonic/src/index.ts:192-196`, and disagree on
+  amplitude `0`/`-0` at core `:110-120` versus target `:466-472`. The TODO's
+  claim of two live `PhotonicExecutionPlan` interfaces is stale: core exports
+  `PhotonicPlan` at `:49-55`, while target alone exports
+  `PhotonicExecutionPlan` at `:106-114`; core's alternatives are documentation
+  proposals. Keep this open until the owner freezes diagnostic meaning,
+  amplitude/presence/signed-zero rules, versioning and registry ownership.
 - [ ] Replace legacy `Galerina_PHOTONIC_*` codes with owned live
   `FUNGI-CATEGORY-NNN` registry entries before these helpers can be promoted.
 - [x] Complete the individual Slice 372 owner matrix: queue 1,486/1,486;
@@ -3501,19 +1995,50 @@ checkout. Older dated sections remain the evidence ledger.
 - [x] Repair the slice-close audit so `UNKNOWN` is a valid fail-closed
   threadability result and erased declarations can truthfully record `N/A`;
   focused audit tests pass **6/6** and existing receipts remain green.
-- [ ] **Priority JS fail-closed repair:** validate one exact immutable plan,
+- [x] **Priority JS fail-closed repair:** validate one exact immutable plan,
   module and adapter snapshot; positively prove every named check executed;
   cover bare builtin subpaths, module-import evidence, repeated getters,
-  sparse/wrong-class arrays and copied receipt-bound report output.
-- [ ] **Priority native border repair:** exact-decode target, artifact and
-  bridge records; capture once; bound arrays/text; define canonical path and
-  containment policy; bind selected ABI/profile to the exact artifact, target,
-  digest and VOK evidence; return one immutable report snapshot.
-- [ ] Replace the five legacy `Galerina_NATIVE_*` diagnostic codes with owned
+  sparse/wrong-class arrays and copied receipt-bound report output. Delivered in
+  `packages-ts/galerina-target-js/src/index.ts` with **17/17** focused contract
+  tests at the current working head; compiler wiring remains separate.
+- [!] **JS import-set closure — RD-1245:** the live check at
+  `packages-ts/galerina-target-js/src/index.ts:630-650` remains the
+  source-backed module-imports ⊆ plan-import membership rule. The isolated
+  non-server missing-import regression at
+  `packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:188-201`
+  now proves `FUNGI-JS-002` independently; the target-JS route is **17/17**.
+  Reverse equality is still an owner-contract HOLD: choose allowlist, exact
+  set/bag, or a split schema before changing semantics. No SLIDE/VOK, Lyth,
+  `.fungi`, corpus or production authority follows.
+- [x] **Priority native border repair — bounded decoder slice:** exact-decode
+  target, artifact, bridge and array records, capture own data once, reject
+  inherited/accessor/proxy/custom/sparse/surplus inputs, bound arrays, and
+  return one detached immutable report snapshot. Source locators are
+  `packages-ts/galerina-target-native/src/index.ts:85-165`, `:173-277`,
+  `:369-443`, `:445-484`; hostile and retained-alias regressions are at
+  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:42-67`,
+  `:102-157`. Independent package verification passes **12/12**.
+- [!] **Remaining native admission blocker — RD-1241:** the decoded artifact
+  path is only required to be non-empty at
+  `packages-ts/galerina-target-native/src/index.ts:340-367`; canonical path
+  containment and binding of selected ABI/profile to the exact artifact,
+  target, digest and VOK evidence are not source-defined or implemented.
+  The bounded package route is freshly **12/12 pass** with clean
+  typecheck/build, but those tests prove planning decode and snapshots only.
+  Keep native validation non-promotable until the owner freezes the path/root,
+  artifact identity, ABI/profile, digest/VOK and refusal contracts.
+- [ ] Replace the six legacy `Galerina_NATIVE_*` diagnostic codes with owned
   live `FUNGI-CATEGORY-NNN` registry entries before native validation can be
-  promoted beyond planning evidence.
-- [ ] Add a runtime decoder for `PhotonicActualTarget` before any execution
+  be promoted beyond planning evidence. RD-1241 verified source emissions at
+  `src/index.ts:65,301,311,320,349,358`; the previous “five” count was stale.
+- [x] Add a runtime decoder for `PhotonicActualTarget` before any execution
   plan treats its six-label TypeScript alias as admitted target evidence.
+  `decodePhotonicActualTarget` now returns a typed success/refusal union at
+  `packages-ts/galerina-target-photonic/src/index.ts:198,408-425` and refuses
+  unknown, boxed, control and non-string labels. Coverage is at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:12-31`;
+  the package route is **12/12 pass**. This does not release execution or
+  hardware authority.
 - [ ] Give adjacent package test `.mjs` entries a governed harness
   classification or exclusion before literal all-TS/MJS closure can be claimed.
 - [x] Complete the individual Slice 347 owner matrix: queue 1,486/1,486;
@@ -3533,14 +2058,25 @@ checkout. Older dated sections remain the evidence ledger.
 - [x] Update private skills at translation `8355bf7` and authoring `82df925`:
   PASS/Allow requires positive evidence that its prerequisite check executed on
   the same immutable snapshot. Both are verified, private and unpushed.
-- [ ] Close CPU exact record/numeric/array ingress; reject string/sparse SIMD,
+- [x] Close CPU exact record/numeric/array ingress; reject string/sparse SIMD,
   NaN/infinite cores/memory, unknown memory, rogue workload and aliased reports.
-- [ ] Close GPU hostile record/array/text ingress, bound P×C traversal, validate
+  `packages-ts/galerina-target-cpu/src/index.ts` now admits bounded immutable
+  snapshots and the focused contract suite passes **10/10**.
+- [!] Close GPU hostile record/array/text ingress, bound P×C traversal, validate
   every operation, return a deep snapshot, and migrate four legacy GPU codes to
-  governed `FUNGI-CATEGORY-NNN` registry ownership.
-- [ ] Fix JS plan/report fail-open behavior: invalid prerequisite domains must
+  governed `FUNGI-CATEGORY-NNN` registry ownership. The runtime GPU boundary now
+  exact-decodes bounded plain records/arrays and returns frozen detached report
+  snapshots at `packages-ts/galerina-target-gpu/src/index.ts:71-217,271-315`;
+  plan/backend/operation checks remain at `:219-266`, with hostile/sparse,
+  proxy and alias-mutation coverage **6/6** at
+  `packages-ts/galerina-target-gpu/tests/gpu-contracts.test.mjs:46-74`.
+  The remaining blocker is diagnostic migration/registry ownership and any
+  physical GPU admission evidence; no backend authority is inferred.
+- [x] Fix JS plan/report fail-open behavior: invalid prerequisite domains must
   never render passed checks; cover builtin subpaths such as `fs/promises`,
   reconcile module imports with plan imports, and bind immutable typed receipts.
+  The report now refuses invalid prerequisites and returns copied frozen
+  snapshots; focused contract tests pass **16/16**.
 - [ ] Give adjacent package test `.mjs` files a governed harness classification
   or exclusion before literal all-TS/MJS closure can be claimed.
 - [x] Complete the individual Slice 322 owner matrix: queue 1,486/1,486;
@@ -3563,20 +2099,40 @@ checkout. Older dated sections remain the evidence ledger.
   `d58dae2` require mutation/alias vectors for exported `const`/`readonly` and
   bind derived decisions to one immutable evidence snapshot. Both pass 5/5
   release tests/audits and remain private and unpushed.
-- [ ] **Priority accelerator fail-closed repair:** exact-decode every nested
-  record and vocabulary; enforce on-device, fallback/reporting and memory
-  policy; treat absent format/operator/dynamic evidence as incompatible; reject
-  wrong-class collections and rogue diagnostic severities.
-- [ ] **Priority accelerator snapshot repair:** validate both input and output
-  tensor dimensions under explicit bounds, capture host fields once, freeze or
-  copy profiles under an approved semantic contract, and return one deep exact
-  report snapshot whose decision is derived from that same evidence.
-- [ ] Add hostile accelerator vectors for getters/proxies, repeated-read A/B,
-  mutable exported profiles, report alias mutation, sparse/oversized arrays,
-  every vocabulary, non-finite/unsafe dimensions and firing work limits.
-- [ ] Add closed CPU ingress for architecture, SIMD, workload, threading,
+- [!] **Priority accelerator fail-closed repair:** the selection ingress now
+  exact-decodes nested model/tensor/capability/preference records and controlled
+  vocabularies at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`,
+  rejects proxy/accessor/surplus/sparse inputs, enforces on-device, memory,
+  adapter, format, operator and dynamic-shape compatibility at `:601-752`, and
+  refuses malformed input through `selectedTarget: "reject", safe: false`.
+  Declared fallbacks now require an admitted compatible capability at
+  `:673-687`, returning `safe: false` with
+  `Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED` when absent. Evidence
+  is **7/7** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`
+  with clean typecheck/build. This remains partial: the declared fallback path
+  is now fail-closed, but runtime report-input decoding and diagnostic-severity
+  admission remain open.
+- [!] **Priority accelerator snapshot repair:** model input and output tensor
+  dimensions are now bounded and copied once by the decoder at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:392-468`, but the
+  report path at `:703-764` now deep-copies the known profile/capability/
+  plan/selection collections and freezes the report; alias-mutation coverage is
+  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:102-146`.
+  Keep this partial because RD-1240 confirms that the report constructor still
+  accepts typed caller-input without an exact runtime decoder or a
+  decision-binding receipt; warnings reread caller diagnostics at `:715-718`
+  while the diagnostic snapshot is at `:751`.
+- [!] Hostile accelerator coverage now includes malformed nested records,
+  proxies, rogue vocabulary, absent capability evidence and bounded dimensions
+  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
+  Repeated-read A/B, runtime report-input/accessor/proxy refusal, diagnostic
+  severity validation and work-limit vectors remain open at
+  `src/index.ts:703-764` and require the report-input contract first.
+- [x] Add closed CPU ingress for architecture, SIMD, workload, threading,
   capability, plan, report and probe records before later executable CPU
-  scopes can claim these erased declarations as physical types.
+  scopes can claim these erased declarations as physical types. Selection now
+  refuses malformed evidence and returns no selected plan.
 - [ ] **Queue-accounting fix:** give adjacent package test `.mjs` files an
   explicit governed test-harness classification or exclusion. They are literal
   entries in the all-TS/MJS queue and cannot be silently counted as converted
@@ -3604,34 +2160,95 @@ checkout. Older dated sections remain the evidence ledger.
   field validation; authoring commits are `5547295` and `c2ae041`. Both
   repositories remain private and unpushed; independent forward-use probes
   correctly refused both unsafe shapes.
-- [ ] **Priority observability authority fix:** validate `opts.routes` as an
-  exact inert own-data schema and inject trusted `registry`/`metrics` last.
-  Current JavaScript can overwrite those fields after injection, so returned
-  trusted objects differ from the objects retained by route closures.
-- [ ] **Priority public-health confidentiality fix:** liveness/readiness/health
-  routes are public and return arbitrary component `detail` verbatim. Publish a
-  closed status-only schema; retain diagnostic detail behind authenticated,
-  redacted access.
-- [ ] Refuse ambiguous observability base paths. `//actuator//` and `///`
-  currently produce repeated-slash routes despite the single-leading and
-  no-trailing contract. Cover dot segments, controls, query/fragment, backslash,
-  Unicode and physical text limits.
-- [ ] Enforce the documented mutual exclusion between `auditSink` and
-  `instrument`; the current active bundle exposes both and can double-count.
-  Stabilize `failSafe` to one tagged public response schema.
-- [ ] **Priority substrate numerical/termination fix:** cap accepted odd `N`
-  or replace the current recurrence with an independently verified stable
-  algorithm. Current accepted inputs include `nmr(0.25,1021) == 1` and
-  `nmr(0.25,1023) == NaN`, and larger values admit unbounded CPU work.
-- [ ] Close substrate host ingress: validate exported `flipProbability`, capture
+- [x] **Priority observability authority fix:** `createObservability()` now
+  validates `opts.routes` as an exact inert own-data schema and injects trusted
+  `registry`/`metrics` last at
+  `packages-ts/galerina-observability/src/observability.ts:52-95,112-113`.
+  Unknown keys, symbols, accessors, hostile prototypes and invalid scalar
+  values refuse; hostile authority overrides are covered at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-225`.
+  The package route is **46/46** with clean typecheck/build.
+- [!] **Priority public-health confidentiality fix:** liveness/readiness/health
+  routes no longer return arbitrary component `detail`. The public response
+  schemas are now status-only at
+  `packages-ts/galerina-observability/src/kernel-integration.ts:178-194,225-240`,
+  and the fail-safe branch uses the same tagged `{ status }` body at `:273-277`.
+  Focused kernel vectors at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:73-108`
+  prove secret detail is absent and the fault path is **48/48** for the package
+  with clean typecheck/build. Residual: the repository has no owner-approved
+  authenticated/redacted diagnostic-detail route; keep component detail
+  internal until that separate contract is defined.
+- [x] Refuse ambiguous observability base paths. `packages-ts/galerina-observability/src/kernel-integration.ts:264-287`
+  now rejects repeated slashes, dot segments, controls, query/fragment,
+  backslash, non-ASCII text, surrounding whitespace and prefixes over 200
+  characters while preserving one canonical leading/trailing form. Direct
+  route-surface vectors at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:102-127`
+  pass; the current focused kernel/logger route is **27/27** with clean
+  typecheck/build.
+- [x] Enforce the documented mutual exclusion between `auditSink` and
+  `instrument` in the active bundle. `packages-ts/galerina-observability/src/observability.ts:61-105`
+  claims the first used seam and refuses the opposite seam; both orderings are
+  covered at `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-216`.
+  The focused kernel/logger route is **26/26** with clean typecheck/build.
+- [x] Stabilize `failSafe` to one tagged public response schema. Its catch branch
+  at `packages-ts/galerina-observability/src/kernel-integration.ts:273-277`
+  now returns `{ status: "DOWN" }`, matching the public status-only contract;
+  the direct fault vector is at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:92-103`.
+- [x] **Priority substrate numerical/termination fix:** the current binary64
+  recurrence now admits only odd `N <= MAX_NMR_N` (`1019`) at
+  `packages-ts/galerina-substrate-math/src/index.ts:45,63-69`, rejects any
+  non-finite accumulated result at `:100-113`, and exports the bound through
+  the compiler shim at `packages-ts/galerina-core-compiler/src/substrate-math.ts:12-16`.
+  The Tower-Citizen wrapper preserves its typed `SubstrateParamError` contract
+  at `packages-ts/galerina-tower-citizen/src/substrate-model.ts:83-89`.
+  Focused evidence is substrate math **7/7** at
+  `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:52-66`
+  and Tower-Citizen substrate **21/21** at
+  `packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:238-245`,
+  with clean package typecheck/build. The cap is the smallest bounded change
+  supported by RD-0839; a log-domain large-`N` replacement remains future
+  owner-reviewed work.
+- [x] Close substrate host ingress: validate exported `flipProbability`, capture
   each ordinary own-data field once, reject coercion/accessors/proxies/non-finite
   values, and use fixed typed failure codes rather than coercing rejected values
-  while formatting errors. Add exact-bit, negative-zero, envelope and mutation
-  KATs plus the Tower-Citizen/emulator drift gates.
-- [ ] **Priority accelerator ingress fix:** validate all model, capability,
-  preference, plan and adapter records at runtime. A fresh vector supplied rogue
-  kind, format, precision, adapter, workload and framework strings; selection
-  still returned `safe: true` and report construction preserved them.
+  while formatting errors. The shared math,
+  Tower-Citizen call-site slice is now bounded at
+  `packages-ts/galerina-substrate-math/src/index.ts:22-121` and
+  `packages-ts/galerina-tower-citizen/src/substrate-model.ts:33-113,177-189`,
+  with hostile ingress coverage at
+  `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`;
+  the copied emulator now mirrors the same guard at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267`, with
+  negative/envelope coverage at
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
+  its bounded package route is **61/61 pass**. Physical calibration and
+  differential authority remain separate later gates.
+- [x] **Priority accelerator selection-ingress fix:** runtime decoding now
+  validates model, capability, preference and adapter records, including kind,
+  format, precision, workload/framework vocabulary, proxy/accessor/surplus and
+  sparse-array refusal, at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`.
+  The bounded package route is **7/7 pass** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
+- [!] **Remaining accelerator report blocker — RD-1240:**
+  `createAiAcceleratorTargetReport` still accepts caller-owned typed capability,
+  plan, selection and backend-profile records without a matching runtime schema
+  or decision-binding receipt at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764`.
+  Selection ingress is bounded at `:272-613`, but report admission is not.
+  Warnings reread caller diagnostics at `:715-718` while diagnostic snapshots
+  are stored at `:751`; the report can therefore retain unbound or
+  inconsistent-looking content. The seven package tests span
+  `tests/ai-accelerator-contracts.test.mjs:28-205`; the planted unbound
+  selection fixture is `:89-99` and is explicitly `safe:false`, so it is not
+  itself a false-safe refusal control. Keep report admission open until the
+  owner defines the report schema, diagnostic-severity validation,
+  hostile-input refusal and selection-to-report binding. RD-1240 is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`; bounded package
+  evidence is fresh at **7/7** with clean typecheck/build.
 - [ ] Keep substrate TypeScript until an exact physical replacement and
   bootstrap/fixpoint proof exist. The quarantined staging Fungi candidate is
   non-authorizing and bit-different; checker tolerance is not parity.
@@ -3663,40 +2280,74 @@ checkout. Older dated sections remain the evidence ledger.
   record copying, and `JSON.stringify` can return `undefined` without throwing.
   Translation commit `ed2cc43` and authoring commit `dcd99f8` remain private
   and unpushed.
-- [ ] Priority logger integrity fix: `MemoryLogSink.records()` exposes the
-  live backing array and `clear()` mutates every held alias. Return a proved
-  immutable snapshot or define an explicitly governed inspection capability;
-  add hostile injection, deletion and retained-alias tests.
-- [ ] Priority logger contract fix: direct `JsonLineSink.write()` propagates a
-  throwing writer despite the `LogSink.write MUST NOT throw` contract. Choose
-  and test one exact typed failure/isolation contract rather than relying on
-  `Logger.#emit` to hide the mismatch.
-- [ ] Priority logger fail-closed fix: an invalid runtime `minLevel` indexes to
-  `undefined`, so debug records pass the filter. Validate the complete runtime
-  options boundary and refuse or select a named conservative default.
-- [ ] Snapshot or explicitly govern retained `baseFields`; post-construction
-  caller mutation currently changes later log output.
-- [ ] Replace shallow exact-key redaction with a bounded, cycle-safe policy for
-  nested records/arrays, or explicitly refuse nested protected values. Current
-  nested `{ credentials: { password: ... } }` reaches the sink unchanged.
-- [ ] Separate sink-write failures from record-construction/redaction failures;
-  the current `sinkFailures()` counter increments for both. Define clock policy
-  for negative, fractional and signed-zero timestamps and add direct vectors.
-- [ ] Make logger redaction and handler-dispatch construction prototype-safe.
-  Own enumerable `__proto__` input can change a plain `{}` output prototype and
-  disappear as an own field. Refuse hostile descriptors/proxies and add the
-  discriminating negative vectors now required by the private skills.
-- [ ] Fix `safeStringify`'s declared `string` contract: top-level `undefined`
-  and `toJSON() => undefined` return JavaScript `undefined` without entering
-  its catch fallback. Define an inert bounded JSON algebra and canonical wire,
-  or expose a truthful typed serialization result.
-- [ ] Security boundary: do not use lossy `metricsAuditSink` as the kernel's
-  mandatory evidence sink. It can reserve/commit successfully while discarding
-  requestId, errorCode, defaults, relaxations, timestamp and posture. Introduce
-  a non-authorizing metrics observer or tee behind a real receipt-preserving
-  evidence sink; correct the false “off critical path/can never delay” wording
-  because required commit occurs synchronously and can replace the response
-  with 503.
+- [x] Priority logger integrity fix: `MemoryLogSink.records()` no longer exposes
+  the live backing array; `packages-ts/galerina-observability/src/logger.ts:43-44`
+  returns a detached snapshot. Hostile retained-alias injection, deletion and
+  `clear()` isolation are covered at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:18-52`.
+  Focused package typecheck/build/tests pass **39/39**.
+- [!] Priority logger contract blocker: direct `JsonLineSink.write()` at
+  `packages-ts/galerina-observability/src/logger.ts:56-63` propagates a throwing
+  writer despite the `LogSink.write MUST NOT throw` contract. RD-1237 confirms
+  the direct defect and retains the owner contract. The exact direct-sink
+  failure/isolation contract and regression are not yet defined;
+  `Logger.#emit` at `:195-217` only catches the mediated call and does not clear
+  the direct-sink contract. The current bounded package route is **53/53**;
+  this does not close the direct axis.
+- [x] Priority logger fail-closed fix: `packages-ts/galerina-observability/src/logger.ts:106`
+  now validates runtime `minLevel` values through the closed `levelOrder` switch
+  at `packages-ts/galerina-observability/src/logger.ts:186-193`, selecting named
+  default `"info"` for invalid values. The hostile-runtime regression at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:64-70` proves
+  `"verbose"` drops debug and retains info; focused package typecheck, build and
+  logger tests pass (11/11, zero failures).
+- [x] Snapshot retained `baseFields` with a shallow frozen copy at
+  `packages-ts/galerina-observability/src/logger.ts:150-159`; the focused regression
+  at `packages-ts/galerina-observability/tests/logger.test.mjs:128-137` mutates the
+  caller-owned alias after construction and verifies later output remains unchanged.
+  Focused package typecheck, build and tests pass **41/41** (`npm test`, zero
+  failures, zero skips). Redaction, child logger, sink behavior, and the existing
+  runtime `minLevel` fix remain covered; `JsonLineSink` failure behavior and other
+  TODOs were not changed.
+- [x] Logger redaction blocker: `#redactFields` now uses the bounded,
+  cycle-safe descriptor-only clone at
+  `packages-ts/galerina-observability/src/logger.ts:74-126,228-246`; nested
+  protected values, cycles and hostile accessors are replaced fail-closed. The
+  regressions at `packages-ts/galerina-observability/tests/logger.test.mjs:84-115`
+  cover nested secrets and the package route is **50/50** with clean
+  typecheck/build.
+- [!] Logger failure-accounting blocker: `#emit` and `#safeNow` at
+  `packages-ts/galerina-observability/src/logger.ts:195-227` count sink-write
+  and record-construction/redaction failures through `#emit`, while `#safeNow`
+  catches clock exceptions and returns `0` without incrementing that counter.
+  RD-1238 confirms that one public counter is defensible only as an explicitly
+  aggregate per-logger synchronous exception count; it cannot identify cause,
+  delivery, loss, durability or health. The separation and
+  negative/fractional/signed-zero clock contract need an owner decision and
+  the complete direct vectors; RD-1237 remains separate and open.
+- [x] Logger prototype-safety blocker: redaction now defines copied properties
+  explicitly, so an own `__proto__` field cannot mutate the output prototype;
+  hostile descriptors/cycles are refused at
+  `packages-ts/galerina-observability/src/logger.ts:82-126,228-246`. The direct
+  regression is `packages-ts/galerina-observability/tests/logger.test.mjs:98-115`.
+- [x] Logger serialization contract fixed: `safeStringify` at
+  `packages-ts/galerina-observability/src/logger.ts:268-288` preserves successful
+  serialization and the existing circular-field fallback, while coalescing a
+  hostile top-level/`toJSON() => undefined` result to the deterministic canonical
+  JSON marker at `:268` and `:273`. The two runtime-negative regressions at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:149-164` prove both
+  hostile inputs return that exact string. Focused package `npm test` passes
+  **50/50** with zero failures and zero skips; `JsonLineSink` failure handling,
+  failure accounting and the remaining authenticated/physical gates stay open.
+- [!] Security boundary: RD-1239 confirms that lossy `metricsAuditSink` must
+  not be the kernel's mandatory evidence sink. It can reserve/commit
+  successfully while discarding requestId, errorCode, defaults, relaxations,
+  timestamp and posture. Keep the owner API decision open: demote it to a
+  non-authorizing metrics observer or compose it behind a real
+  receipt-preserving evidence sink. Correct the false “off critical path/can
+  never delay” wording because required commit occurs synchronously and can
+  replace a response with 503. The current count tests do not detect receipt
+  loss.
 - [ ] Retain TypeScript and every logger/kernel consumer until each exact active
   ABI and physical SLIDE/VOK proof exists. Focused evidence grants no whole-file
   retirement, production, release or push authority.
@@ -3769,13 +2420,16 @@ checkout. Older dated sections remain the evidence ledger.
 - [x] Review both private Fungi skills. `NO_SKILL_UPDATE` is correct because
   current exact-record, open-input, binary64, no-`try/catch`, collection-order,
   boundedness and mutable-state rules cover all ten scopes.
-- [ ] Priority metrics boundedness defect: `#routeAccumulator` does not impose
-  a global route-series cap when method names vary. An exact probe with
-  `maxRoutes: 1`, one base observation and 100 distinct methods produced
-  **101 route series**, including **100 overflow series**. Add a hostile-method
-  regression, choose a single global overflow identity or a separately bounded
-  method vocabulary, conserve total/error/latency accounting and update the
-  file-level bounded-memory claim only after the fixed invariant is proved.
+- [x] Close the priority metrics boundedness defect at
+  `packages-ts/galerina-observability/src/metrics.ts:25-30,296-307`:
+  `#routeAccumulator` now folds every post-cap method/route pair into one
+  canonical `__overflow__/__overflow__` identity, so caller-controlled method
+  labels cannot grow the map beyond `maxRoutes + 1`. The hostile-method
+  regression at `packages-ts/galerina-observability/tests/metrics.test.mjs:111-127`
+  proves one admitted series plus one overflow series after 100 distinct
+  methods, with total/error/latency accounting conserved. The focused package
+  route is **51/51** with clean typecheck/build; the separate audit-sink
+  authority boundary remains open below.
 - [ ] Define one exact external-label/status-map/binary64/Option/record ABI plus
   an affine metrics capability with ordered multi-object mutation, failure
   containment, snapshot sorting and retained identity before reopening these
@@ -3841,11 +2495,15 @@ checkout. Older dated sections remain the evidence ledger.
   dual-map mutation, ordered snapshots, open component records, typed
   completion, timeout/cancellation, losing-work policy, exactly-once timer
   cleanup and registry identity before reopening Slices 193-197.
-- [ ] Priority health-contract defect: reconcile the file-level “evaluation
-  never throws” claim with injected `clearTimer` failure. Add a hostile cleanup
-  test, choose an explicit typed cleanup-failure outcome, preserve route-level
-  503 behavior, and prevent cleanup from silently overriding an already
-  derived health result.
+- [x] Close the priority health-contract defect at
+  `packages-ts/galerina-observability/src/health.ts:138-165`. Injected timer
+  cleanup failure now becomes the explicit typed `{ status: "DOWN", detail:
+  "timer cleanup failed" }` result when the check otherwise derived `UP`; an
+  already-derived `DOWN` result is preserved. Hostile cleanup coverage is at
+  `packages-ts/galerina-observability/tests/health.test.mjs:64-78`, and the
+  kernel route remains a status-only **503** at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:105-115`.
+  The focused package route is **53/53** with clean typecheck/build.
 - [ ] Retain TypeScript and every route/consumer. Focused evidence grants no
   whole-file retirement, production, release or push authority.
 - [x] Run retirement/queue, graph, inventory, index, component-health, status,
@@ -5671,18 +4329,22 @@ checkout. Older dated sections remain the evidence ledger.
   the immutable historical generation as historical evidence. No signature or
   live-package authority was fabricated or copied forward.
 - [x] Keep the public registry empty and non-authorizing until a new offline
-  Ed25519 + ML-DSA-65 generation ceremony signs the hardened candidate. The
-  registry package passes **35/35**, including exact candidate identity and
-  refusal of fully-authorized public publication while the live index is
-  absent.
+  Ed25519 + ML-DSA-65 generation ceremony signs the current hardened
+  candidate. The 2026-07-30 signed registry artifact is historical because
+  later security hardening changed the package bytes; it is not current live
+  authority. The registry package passes **35/35**, including exact candidate
+  identity and refusal of fully-authorized public publication while the live
+  index is absent.
 - [x] Reconcile the production consumer with that denied live state. App Kernel
   now proves exact bootstrap refusal, prevents caller freshness/revocation
   scalars from reviving an absent index, and retains positive admission only
   through the authenticated immutable-generation path (**229/229**). The full
   repository lane passes **100/100 packages and 9,554 tests** in **299.9s**.
-- [ ] Perform the offline hybrid-signing ceremony and independently verify the
-  resulting generation before restoring any live auth package. Until then,
-  distribution, release and production authority remain denied.
+- [ ] After the final unsigned evidence set and current package bytes are
+  fixed, the owner performs the offline hybrid-signing ceremony and returns
+  public-only artifacts for independent verification. Until then,
+  distribution, release and production authority remain denied. Do not repeat
+  the historical 2026-07-30 ceremony merely to satisfy this row.
 
 ### VOK assurance fabric Chapter 3 integration - 2026-08-10
 
@@ -6557,7 +5219,7 @@ approval and a genuinely clean-room verifier require owner or independent
 hands; they are not needed for the next general-backend increment and will be
 raised only when reached.
 
-### Memory-retention programme: bounded caches shipped, per-commit workflow integrated - 2026-09-12
+### Memory-retention programme: bounded caches shipped, workflow wired, hosted receipts pending - 2026-09-12
 
 Owner rulings Q2 (tools live in `scripts/`, no new package) and Q3 (staged CI)
 are implemented up to one open decision. The detailed audit is retained in the
@@ -6585,13 +5247,24 @@ outside this repository.
   evictions**, weight 6,144/65,536, item weight ~3.0. **`maxEntries` is the
   binding ceiling; `maxWeight` is never the constraint at this item weight** and
   must not be cited as an enforced limit.
-- [x] **Engineering action selected under the resumed ownership:** the
-  dedicated `retention.yml` builds first and then runs the per-commit retention
-  gate. The deliberately build-free `.github/workflows/conventions.yml` was
-  left unchanged. Child-process and complete-result checks are covered by
-  `scripts/tests/retention-gate-contract.test.mjs`.
-- [ ] The nightly/release dynamic stage exists and is wired as an npm script but
-  no scheduler invokes it.
+- [x] **Engineering action selected under the resumed ownership:** add the
+  dedicated `.github/workflows/retention.yml`; it builds the pinned compiler
+  first and then runs the per-commit retention gate. The deliberately
+  build-free `.github/workflows/conventions.yml` remains unchanged.
+- [x] The nightly/release dynamic stage is now scheduled by the same workflow
+  on Ubuntu, Windows and macOS, and runs for published releases as well as the
+  nightly schedule. Hosted receipts remain platform-scoped evidence and must
+  not be read as proof that no other allocator can retain memory.
+- [x] Run the dynamic stage locally on Windows: both compiler subjects and the
+  production cache invariant passed; the receipt is recorded in
+  `docs/reports/memory-retention-boundary-catches-2026-09-12.md`.
+- [x] Harden the dynamic receipt boundary after independent Astra review:
+  finite numeric fields, exact units, channel classifications, and an exact
+  match between `OVER BAND` channels and the leak verdict are required;
+  controlled malformed, `NaN`, overflow, contradiction, timeout, and status
+  mismatch cases are red.
+- [ ] Collect and review the first hosted per-commit and cross-platform
+  receipts; a missing, timed-out or malformed receipt remains a failure.
 
 ### Passive capability-map devtool verified against its spec - 2026-08-08
 
@@ -8924,10 +7597,10 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   as one two-bundle transfer set with a generated machine-checkable manifest.
   The `134da79...` attempt correctly stopped before host observation because
   the sibling SLIDE checkout was absent, so it supplies no Linux execution
-  evidence. Round two must return five files: the four
-  durability/report artifacts plus one functional Ubuntu receipt. Those current
-  files have not returned; no remote clone, old `2ceaf479...` result or renamed
-  distribution receipt may substitute.
+  evidence. The 2026-09-12 WSL2 round-two portability report now records the
+  current exact heads, successful static/functional/SLIDE lanes and the
+  fail-closed native refusals; it is explicitly `VIRTUAL_NON_AUTHORIZING` and
+  does not substitute for a separately booted Ubuntu Desktop run.
 - **Fresh local fixed point:** the first aggregate correctly exposed the
   provenance-preserved zero-byte AI-16 artifact as an unmodelled KB-graph test
   case. The test now admits only that exact known ID while every future empty
@@ -9840,12 +8513,12 @@ guessing.
   an external loader are checked; a hostile `.node` decoy cannot affect the
   result. The receipt remains explicitly non-authorizing until the host is
   signed and the platform crash/reboot/power-loss matrices are complete.
-- **Current native execution task:** run the second-round Linux candidate and
-  SLIDE observer on the real Ubuntu Desktop host, fix only evidence-backed
-  portability defects, then address the remaining named platforms. Docker and
-  virtual-machine results are useful portability evidence but cannot be
-  relabelled as bare-host durability. No owner decision or key action is
-  currently required.
+- **Current native execution task:** use the fresh WSL2 transfer set for
+  portability only, then run the second-round Linux candidate and SLIDE observer
+  on a real Ubuntu Desktop host. Fix only evidence-backed portability defects,
+  then address the remaining named platforms. Docker and virtual-machine
+  results are useful portability evidence but cannot be relabelled as bare-host
+  durability. No owner decision or key action is currently required.
 - **Linux adapter second-round checkpoint (2026-08-01):** the platform-neutral
   facts gate, bounded complete `mountinfo` parser/deepest-mount selector,
   device-number decoder, sysfs classification and exact filesystem/device
@@ -12977,390 +11650,3 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
   environment before assigning a cause or making a performance claim.
 - [ ] Expand Go beyond the single verified-native-operation control and add a
   C++ lane only when an exact recorded compiler is available.
-
-
-### RD-0873 direct package waves 40-45 - 2026-09-13
-
-- [x] Translate the exact bounded symbols for Firestore, MySQL, Postgres,
-  OpenSearch, SQLite and substrate-math into their direct package roots under
-  packages/fungi/products/.
-- [x] Retain every TypeScript shadow and record exact source/target digests,
-  limits, manual boundaries and local timing in the six per-wave receipts.
-- [x] Repair and recheck worker defects: explicit payload Bool comparison,
-  lexer-safe Char.fromCode usage, explicit marker Bool comparison and the
-  Postgres part-stop variable.
-- [x] Run the six retained TypeScript package suites: **126/126** passed.
-- [x] Run the aggregate direct Fungi verification: **44/44** strict checks and
-  **44/44** serial builds passed.
-- [ ] Continue the next bounded chapter with three designated Fungi workers,
-  Luna - High only, at most 2 packages, 4 source files, 16,384 output bytes and
-  12 focused tests per wave. Keep Git as storage and do not invoke CI or push.
-- [!] Credential resolution, secret custody, provider/network effects,
-  nonfinite numeric handling where noted, host marshalling, physical ABI
-  admission and production authority remain host-owned boundaries.
-
-Current run ledger: **43/100** package roots have a direct buildable leaf
-(**44** leaves, **95,841 bytes**); **57** package roots remain.
-
-
-### RD-0873 direct package waves 46-48 - 2026-09-13
-
-- [x] Translate validateWasmArtefact, validateBenchmarkConfig and
-  isServerOnlyImport into direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timing in the three per-wave receipts.
-- [x] Repair benchmark privacy Bool comparisons and recheck strict compilation.
-- [x] Run retained package suites: **38/38** passed.
-- [x] Run the aggregate direct Fungi verification: **44/44** strict checks and
-  **44/44** serial builds passed.
-- [ ] Continue the next bounded chapter with the three designated Fungi
-  workers, Luna - High only, preserving the same per-wave limits and local-only
-  Git storage policy.
-- [!] Wasm loading, browser bundling, telemetry execution, module resolution,
-  capability enforcement, host marshalling and production authority remain
-  host-owned boundaries.
-
-Current run ledger: **46/100** package roots have a direct buildable leaf
-(**47** leaves, **103,449 bytes**); **54** package roots remain.
-
-
-### RD-0873 direct package waves 49-51 - 2026-09-13
-
-- [x] Translate formatCliResult, readEgressLedger and createPackageNode into
-  direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timing in the three receipts.
-- [x] Repair the CLI tripwire Bool comparison and recheck with zero warnings.
-- [x] Run retained package suites: **63/63** passed.
-- [x] Run the aggregate direct Fungi verification: **50/50** strict checks and
-  **50/50** serial builds passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, and the manifest's per-wave limits.
-- [!] Filesystem and JSON parsing, graph scanning/persistence/indexing,
-  publication, authority and CLI credential-redaction effects remain host-owned.
-
-Current run ledger: **49/100** package roots have a direct buildable leaf
-(**50** leaves, **107,772 bytes**); **51** package roots remain.
-
-
-### RD-0873 direct package waves 52-54 - 2026-09-13
-
-- [x] Translate DEVTOOLS_CONTEXT_VERSION, FLOWGRAPH_VERSION and
-  PLANNED_CONSTRUCT_WORDS into direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in the three receipts.
-- [x] Run retained package suites: **99/99** passed.
-- [x] Run the aggregate direct Fungi verification: **53/53** strict checks and
-  **53/53** serial builds passed.
-- [ ] Continue with three designated Fungi workers at Luna - High only under
-  the existing per-wave limits; preserve local-only Git storage.
-- [!] Scanner traversal/reporting and package/version authority remain
-  host/toolchain boundaries; no production authority is claimed.
-
-Current run ledger: **52/100** package roots have a direct buildable leaf
-(**53** leaves, **109,422 bytes**); **48** package roots remain.
-
-
-### RD-0873 direct package waves 55-57 - 2026-09-13
-
-- [x] Translate DEVTOOLS_NAMING_VERSION, DEVTOOLS_PROVENANCE_VERSION and
-  DEVTOOLS_PCI_VERSION into direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in the three receipts.
-- [x] Run retained package suites: **73/73** passed.
-- [x] Run the aggregate direct Fungi verification: **56/56** strict checks and
-  **56/56** serial builds passed.
-- [ ] Continue with three designated Fungi workers at Luna - High only under
-  the existing per-wave limits and local-only Git storage policy.
-- [!] Naming/provenance/PCI audit execution, ledger persistence, external
-  effects and consumer wiring remain host-owned.
-
-Current run ledger: **55/100** package roots have a direct buildable leaf
-(**56** leaves, **110,697 bytes**); **45** package roots remain.
-
-
-### RD-0873 direct package waves 58-60 - 2026-09-13
-
-- [x] Translate supportsCpuFeatures, validateNativeTarget and
-  validateGpuKernelPlan into direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in the three receipts.
-- [x] Repair GPU Char literal handling and recheck strict compilation.
-- [x] Run retained package suites: **15/15** passed.
-- [x] Run the aggregate direct Fungi verification: **59/59** strict checks and
-  **59/59** serial builds passed.
-- [ ] Continue with three designated Fungi workers at Luna - High only under
-  the existing per-wave limits and local-only Git storage policy.
-- [!] SIMD probing, native/GPU execution, provider effects, host marshalling,
-  physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **58/100** package roots have a direct buildable leaf
-(**59** leaves, **118,394 bytes**); **42** package roots remain.
-
-
-### RD-0873 direct package waves 61-63 - 2026-09-13
-
-- [x] Translate `validateJsOutputPlan`, `validatePhotonicLoweringPlan` and
-  `validateAiAcceleratorModel` into direct package roots under
-  `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact source/target digests, limits,
-  boundaries and local timings in per-wave receipts.
-- [x] Repair implicit Bool conditions and recheck strict compilation.
-- [x] Run retained package suites: **26/26** passed.
-- [x] Run the bounded local aggregate: **62/62** strict checks and **62/62**
-  serial builds passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Runtime probing, bundle inspection, model/device execution, host effects,
-  physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **61/100** package roots have a direct buildable leaf
-(**62** leaves, **131,734 bytes**); **39** package roots remain.
-
-
-### RD-0873 direct package waves 64-66 - 2026-09-13
-
-- [x] Translate `validateComponentProps`, `validateEventPayloadField` and
-  `validateRenderableContent` into direct package roots under
-  `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact source/target digests, limits,
-  boundaries and local timings in the per-wave receipts.
-- [x] Run retained package suites: **73/73** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Web rendering, browser/DOM effects, host marshalling, runtime probing,
-  physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **64/100** package roots have a direct buildable leaf
-(**65** leaves, **139,092 bytes**); **36** package roots remain.
-
-
-### RD-0873 direct package waves 67-69 - 2026-09-13
-
-- [x] Translate `validateLinkTarget`, `validateApiToStateConversion` and the
-  narrowed `isDocumentation` helper into direct package roots under
-  `packages/fungi/products/`.
-- [x] Retain TypeScript/MJS shadows and record exact digests, limits, boundaries
-  and local timings in per-wave receipts.
-- [x] Run retained package suites: **65/65** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Browser/API effects, filesystem/Git discovery, hashing, command execution,
-  host marshalling, physical ABI admission and production authority remain
-  host-owned.
-
-Current run ledger: **67/100** package roots have a direct buildable leaf
-(**68** leaves, **148,984 bytes**); **33** package roots remain.
-
-
-### RD-0873 direct package waves 70-72 - 2026-09-13
-
-- [x] Translate `sanitizeSchemaName`, BM25 `K1` and `CIRCUIT_ID` into direct
-  package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **58/58** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Tokenization, cryptographic proving/verification, key custody, host effects,
-  physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **70/100** package roots have a direct buildable leaf
-(**71** leaves, **152,094 bytes**); **30** package roots remain.
-
-
-### RD-0873 direct package waves 73-75 - 2026-09-13
-
-- [x] Translate `W_REP`, `HEADER_SIZE` and `packedLen` into direct package roots
-  under `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **72/72** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Photonic/emulator routing, spore bytes/crypto, socket transport, host
-  marshalling, physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **73/100** package roots have a direct buildable leaf
-(**74** leaves, **153,620 bytes**); **27** package roots remain.
-
-
-### RD-0873 direct package waves 76-78 - 2026-09-13
-
-- [x] Translate `MODALITY_STRUCTURED`, `SECRETS_GATEWAY_WIT` and the narrowed
-  `selectTernaryBridgeTechnique` leaf into direct package roots under
-  `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **102/102** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Secret/vault custody, native addon/provider effects, inference, transport,
-  host marshalling, physical ABI admission and production authority remain
-  host-owned.
-
-Current run ledger: **76/100** package roots have a direct buildable leaf
-(**77** leaves, **155,354 bytes**); **24** package roots remain.
-
-
-### RD-0873 direct package waves 79-81 - 2026-09-13
-
-- [x] Translate `capabilityPreimage`, `isSafeLabel` and `oracleAgrees` into
-  direct package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **47/47** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Hardware/attestation, metrics export/storage, bridge execution, inference
-  providers, cryptographic evidence, host marshalling and production authority
-  remain host-owned.
-
-Current run ledger: **79/100** package roots have a direct buildable leaf
-(**80** leaves, **158,337 bytes**); **21** package roots remain.
-
-### RD-0873 direct package waves 82-84 - 2026-09-13
-
-- [x] Translate `VERSION`, `DEFAULT_MAX_ROUTES` and `DEFAULT_TIMEOUT_MS` into
-  direct package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **281/281** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Regex execution, metrics storage/export, process spawning, host marshalling,
-  physical ABI admission and production authority remain host-owned.
-
-Current run ledger: **82/100** package roots have a direct buildable leaf
-(**83** leaves, **159,692 bytes**); **18** package roots remain.
-
-### RD-0873 direct package waves 85-87 - 2026-09-13
-
-- [x] Translate `ARTIFACT_REFERENCE_SCHEMA`, `EXTREME_SLOWER` and
-  `BINARY_DISPATCH_SIZE` into direct package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript/MJS shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **7,376/7,376** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Compiler orchestration, benchmark execution, graph construction,
-  host marshalling, physical ABI admission and production authority remain
-  host-owned.
-
-Current run ledger: **85/100** package roots have a direct buildable leaf
-(**86** leaves, **161,153 bytes**); **15** package roots remain.
-
-
-### RD-0873 direct package waves 88-90 - 2026-09-13
-
-- [x] Translate `STALE_DAYS`, `GRAPH_DIR` and `DEFAULT_REQUEST_TIMEOUT_MS` into
-  direct package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **85/85** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] KB/package graph discovery, filesystem I/O, HTTP/TLS/socket effects,
-  host marshalling, physical ABI admission and production authority remain
-  host-owned.
-
-Current run ledger: **88/100** package roots have a direct buildable leaf
-(**89** leaves, **162,468 bytes**); **12** package roots remain.
-
-### RD-0873 direct package waves 91-93 - 2026-09-13
-
-- [x] Translate `sig`, `DEVTOOLS_SECURITY_VERSION` and `isTrit` into direct
-  package roots under `packages/fungi/products/`.
-- [x] Retain TypeScript/MJS shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: **618/618** passed.
-- [x] Run strict checks and serial local builds: **3/3** passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Hypha fact extraction, security audit execution, cryptography/providers,
-  key custody, host marshalling, physical ABI admission and production authority
-  remain host-owned.
-
-Current run ledger: **91/100** package roots have a direct buildable leaf
-(**92** leaves, **165,133 bytes**); **9** package roots remain.
-
-### RD-0873 direct package waves 94-96 - 2026-09-13
-
-- [x] Translate DEFAULT_MAX_ITERATIONS, Myco VERSION and maxRateWindows into
-  direct package roots under packages/fungi/products/.
-- [x] Retain TypeScript shadows and record exact digests, limits, boundaries and
-  local timings in per-wave receipts.
-- [x] Run retained package suites: 458/458 passed.
-- [x] Run strict checks and serial local builds: 3/3 passed.
-- [ ] Continue the next bounded chapter with the same three designated Fungi
-  workers, Luna - High only, preserving the manifest limits and local-only Git
-  storage policy.
-- [!] Graph traversal, Myco indexing and CLI effects, request routing/timers,
-  host marshalling, physical ABI admission and production authority remain
-  host-owned.
-
-Current run ledger: 94/100 package roots have a direct buildable leaf
-(95 leaves, 166,487 bytes); 6 package roots remain.
-
-### RD-0873 final package disposition waves 97-99 - 2026-09-13
-
-- [x] Adjudicate `galerina-ext-bridge-bitnet` as a manual native/host boundary;
-  no faithful standalone Fungi leaf exists for its mutable model lifecycle.
-- [x] Adjudicate `galerina-tri-pipe` as a manual hardware/router/capability
-  boundary; no standalone pure leaf exists without changing the API.
-- [x] Confirm four remaining package roots contain no eligible TypeScript or
-  JavaScript source under their declared `src` roots.
-- [x] Record exact source digests, exclusions, limits and non-authorizing
-  receipts for waves 97-99; retain all source shadows.
-- [x] Mark all 100 package roots dispositioned in the conversion manifest.
-- [ ] Run chapter-level integration and final corpus checks at their declared
-  barriers; direct leaves remain locally buildable, while host/native boundaries
-  remain owner-owned.
-- [!] Native model inference, hardware/router composition, Rust/VOK code,
-  existing Fungi sources, host application files and production authority are
-  outside this TypeScript/JavaScript conversion.
-
-Current run ledger: **100/100** package roots dispositioned: 94 direct-buildable
-roots, 2 manual host boundaries and 4 no-eligible-source roots; **95** direct
-leaves totalling **166,487 bytes**. No package roots remain for conversion
-waves. Production authority remains disabled.
-
-### RD-0873 post-conversion build and benchmark - 2026-09-13
-
-- [x] Regenerate the local build from the 95 direct `.fungi` leaves under
-  `packages/fungi/products`, using zero TypeScript inputs.
-- [x] Produce and hash 475 per-leaf artifacts (WASM, WAT, CBOR manifest, JSON
-  manifest and governance-impact record), totalling 820,572 bytes.
-- [x] Repair the `Array.includes` WAT-lowering gap, rebuild the compiler and
-  repeat the affected build successfully.
-- [x] Run the full benchmark publisher: 30 groups measured, 18 comparable,
-  noise gate 0.4%, truth audit pass and benchmark guard pass.
-- [x] Generate the measured CSV sheet, current chart, standalone chart and
-  current-versus-archive HTML comparison.
-- [!] Keep production SLIDE at 0/18 and production authority disabled; the
-  benchmark and development manifests are non-authorizing evidence.
-
-Receipts and outputs:
-`docs/independent-audits/2026-09-13-rd0873-fungi-build-regeneration.json`,
-`docs/reports/2026-09-13-rd0873-fungi-build-and-benchmark.md`, and
-`packages-ts/galerina-devtools-benchmarks/results/benchmark-run-to-graph-latest.json`.

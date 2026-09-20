@@ -1,10 +1,9 @@
 # Ubuntu Desktop platform-evidence handover
 
-Date: 2026-07-31
+Date: 2026-09-12
 
-Status: initial static-link evidence returned; bounded SLIDE observation was
-missing; the live Linux candidate and process-termination harness are ready
-for a second run; reboot/power-loss chapters are not ready
+Status: Linux adapter implementation complete; WSL2 round-two portability
+evidence returned; direct Ubuntu Desktop native evidence remains pending
 
 This folder is the single handover point for running Galerina's Ubuntu Desktop
 evidence on a separately booted Linux host. A fresh Codex session should read
@@ -23,6 +22,13 @@ then exercises exact no-replace publication, hostile link refusal and a
 seven-boundary process-termination matrix. None of these results admits a
 production adapter, proves native SLIDE execution, kernel-crash behavior,
 reboot recovery or physical durability.
+
+The 2026-09-12 WSL2 round-two run is recorded in
+`reports/wsl-linux-adapter-round-two-2026-09-12-cdfebd5b77bb.md`. It passes the
+static, functional, contract, observer and complete SLIDE lanes and preserves
+the native Linux-only refusals caused by WSL's virtual VMBUS host identity.
+The report is explicitly `VIRTUAL_NON_AUTHORIZING`; it does not replace a
+separately booted Ubuntu Desktop run.
 
 The native crate's platform-neutral Linux matrix is now 10/10 on Windows. The
 first Ubuntu return independently reran the earlier 6/6 matrix and proved

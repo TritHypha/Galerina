@@ -1,4 +1,6 @@
 // =============================================================================
+
+import { isProxy as isNodeProxy } from "node:util/types";
 // @galerina/substrate-math — pure substrate-noise math (single source of truth)
 //
 // The closed-form calculus shared by the photonic/ternary governance layer:
@@ -19,10 +21,19 @@
 //       ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md §6.
 // =============================================================================
 
+export type SubstrateMathErrorCode =
+  | "INVALID_RECORD"
+  | "INVALID_PROBABILITY"
+  | "INVALID_REDUNDANCY"
+  | "NON_FINITE_RESULT";
+
 export class SubstrateMathError extends Error {
-  constructor(message: string) {
-    super(`[SUBSTRATE_MATH]: ${message}`);
+  readonly code: SubstrateMathErrorCode;
+
+  constructor(code: SubstrateMathErrorCode) {
+    super(`[SUBSTRATE_MATH:${code}]`);
     this.name = "SubstrateMathError";
+    this.code = code;
   }
 }
 
@@ -34,31 +45,85 @@ export interface SubstrateNoiseParams {
   readonly readoutSigma: number;
 }
 
+/**
+ * Largest odd N admitted by the binary64 closed-form implementation.
+ *
+ * RD-0839 found the first incorrect result at N=1021 and NaN at N=1023
+ * because the direct binomial terms overflow before the powers underflow.
+ * Keep this explicit admission bound until an independently verified
+ * log-domain implementation replaces the recurrence.
+ */
+export const MAX_NMR_N = 1019;
+
 // Calibration gains — documented placeholder knobs (no silicon to calibrate against;
 // conservative defaults, retunable). Map physical parameters to a per-lane flip probability.
 const PHASE_GAIN = 1.0;
 const XTALK_GAIN = 0.5;
 const READOUT_GAIN = 0.5;
+const NOISE_KEYS = Object.freeze([
+  "phaseDriftSigma",
+  "crosstalkCoeff",
+  "laneFailureProb",
+  "readoutSigma",
+] as const);
+type NoiseKey = typeof NOISE_KEYS[number];
+
+function refuse(code: SubstrateMathErrorCode): never {
+  throw new SubstrateMathError(code);
+}
 
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
 }
 
-function assertProb(name: string, v: number): void {
-  if (typeof v !== "number" || Number.isNaN(v) || v < 0 || v > 1) {
-    throw new SubstrateMathError(`${name} must be a number in [0,1], got ${v}`);
+function assertProb(_name: string, v: unknown): asserts v is number {
+  if (typeof v !== "number" || !Number.isFinite(v) || v < 0 || v > 1) {
+    refuse("INVALID_PROBABILITY");
   }
 }
 
 function assertOddPositive(N: number): void {
-  if (!Number.isInteger(N) || N < 1 || N % 2 === 0) {
-    throw new SubstrateMathError(`redundancy N must be a positive odd integer, got ${N}`);
+  if (!Number.isInteger(N) || N < 1 || N % 2 === 0 || N > MAX_NMR_N) {
+    refuse("INVALID_REDUNDANCY");
   }
+}
+
+function captureNoiseParams(value: unknown): SubstrateNoiseParams {
+  try {
+    if (typeof value !== "object" || value === null || Array.isArray(value) || isNodeProxy(value)) {
+      refuse("INVALID_RECORD");
+    }
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) refuse("INVALID_RECORD");
+    const keys = Reflect.ownKeys(value);
+    if (
+      keys.length !== NOISE_KEYS.length
+      || keys.some((key) => typeof key !== "string" || !NOISE_KEYS.includes(key as NoiseKey))
+    ) {
+      refuse("INVALID_RECORD");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const captured = {} as Record<NoiseKey, number>;
+    for (const key of NOISE_KEYS) {
+      const descriptor = descriptors[key];
+      if (!descriptor || !("value" in descriptor) || !descriptor.enumerable) refuse("INVALID_RECORD");
+      assertProb(key, descriptor.value);
+      captured[key] = descriptor.value;
+    }
+    return captured;
+  } catch (error) {
+    if (error instanceof SubstrateMathError) throw error;
+    refuse("INVALID_RECORD");
+  }
+}
+
+function flipProbabilityFromCaptured(p: SubstrateNoiseParams): number {
+  return clamp01(p.phaseDriftSigma * PHASE_GAIN + p.crosstalkCoeff * XTALK_GAIN + p.readoutSigma * READOUT_GAIN);
 }
 
 /** Per-lane probability the lane survives but flips (phase/crosstalk/readout). */
 export function flipProbability(p: SubstrateNoiseParams): number {
-  return clamp01(p.phaseDriftSigma * PHASE_GAIN + p.crosstalkCoeff * XTALK_GAIN + p.readoutSigma * READOUT_GAIN);
+  return flipProbabilityFromCaptured(captureNoiseParams(p));
 }
 
 /**
@@ -66,12 +131,9 @@ export function flipProbability(p: SubstrateNoiseParams): number {
  * Monotone non-decreasing in every parameter; always in [0,1].
  */
 export function singleLaneErrorProbability(p: SubstrateNoiseParams): number {
-  assertProb("phaseDriftSigma", p.phaseDriftSigma);
-  assertProb("crosstalkCoeff", p.crosstalkCoeff);
-  assertProb("laneFailureProb", p.laneFailureProb);
-  assertProb("readoutSigma", p.readoutSigma);
-  const pFlip = flipProbability(p);
-  return clamp01(p.laneFailureProb + (1 - p.laneFailureProb) * pFlip);
+  const noise = captureNoiseParams(p);
+  const pFlip = flipProbabilityFromCaptured(noise);
+  return clamp01(noise.laneFailureProb + (1 - noise.laneFailureProb) * pFlip);
 }
 
 function binom(n: number, k: number): number {
@@ -94,6 +156,9 @@ export function nmrFailureProbability(pBad: number, N: number): number {
   let p = 0;
   for (let k = need; k <= N; k++) {
     p += binom(N, k) * Math.pow(pBad, k) * Math.pow(1 - pBad, N - k);
+  }
+  if (!Number.isFinite(p)) {
+    refuse("NON_FINITE_RESULT");
   }
   return clamp01(p);
 }

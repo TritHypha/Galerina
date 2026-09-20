@@ -25,6 +25,8 @@ export const DEFAULT_MAX_ROUTES = 1000;
 
 /** Sentinel route label used once the cardinality cap is hit (bounded memory, fail-safe). */
 export const OVERFLOW_ROUTE = "__overflow__";
+/** Sentinel method label paired with OVERFLOW_ROUTE for one global overflow series. */
+export const OVERFLOW_METHOD = "__overflow__";
 
 /** Max length of a route label kept verbatim; longer labels are truncated (cardinality/PII guard). */
 const MAX_ROUTE_LEN = 200;
@@ -294,13 +296,13 @@ export class MetricsCollector {
     const existing = this.#routes.get(key);
     if (existing !== undefined) return existing;
     if (this.#routes.size >= this.#maxRoutes) {
-      // Cardinality cap hit: fold new routes into a per-method overflow series. The map can
-      // grow only by one sentinel per HTTP method (a tiny, bounded set) — never unboundedly.
+      // Cardinality cap hit: fold every new series into one global overflow identity.
+      // Method labels are caller-controlled and therefore cannot create more map entries.
       this.#overflowed = true;
-      const overflowKey = `${method} ${OVERFLOW_ROUTE}`;
+      const overflowKey = `${OVERFLOW_METHOD} ${OVERFLOW_ROUTE}`;
       let overflow = this.#routes.get(overflowKey);
       if (overflow === undefined) {
-        overflow = new RouteAccumulator(method, OVERFLOW_ROUTE);
+        overflow = new RouteAccumulator(OVERFLOW_METHOD, OVERFLOW_ROUTE);
         this.#routes.set(overflowKey, overflow);
       }
       return overflow;

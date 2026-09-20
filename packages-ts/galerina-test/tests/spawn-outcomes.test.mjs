@@ -1,0 +1,96 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+import { runNode } from "../dist/index.js";
+
+const PACKAGE_ROOT = fileURLToPath(new URL("..", import.meta.url));
+const MISSING_CWD = "C:\\definitely-not-existing-galerina-cwd-20260920";
+
+test("invalid cwd is a spawn error, not a timeout", () => {
+  const result = runNode(["-e", "process.exit(0)"], MISSING_CWD);
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.timedOut, false);
+  assert.equal(result.failureKind, "spawn-error");
+  assert.equal(result.errorCode, "ENOENT");
+});
+
+test("deadline expiry is classified as a timeout", () => {
+  const result = runNode(["-e", "setTimeout(() => {}, 1000)"], PACKAGE_ROOT, { timeoutMs: 20 });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.timedOut, true);
+  assert.equal(result.failureKind, "timeout");
+  assert.equal(result.errorCode, "ETIMEDOUT");
+});
+
+test("capture-buffer exhaustion is classified as an output-limit failure", () => {
+  const result = runNode(
+    ["-e", "process.stdout.write(\"x\".repeat(4096))"],
+    PACKAGE_ROOT,
+    { outputLimitBytes: 64 },
+  );
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.timedOut, false);
+  assert.equal(result.failureKind, "output-limit");
+  assert.equal(result.errorCode, "ENOBUFS");
+});
+
+test("captured output is delivered once, after canonical stream assembly", () => {
+  const callbacks = [];
+  const result = runNode(
+    ["-e", "process.stdout.write(\"out\"); process.stderr.write(\"err\")"],
+    PACKAGE_ROOT,
+    { onOutput: (chunk) => callbacks.push(chunk) },
+  );
+
+  assert.equal(result.failureKind, "none");
+  assert.equal(result.output, "out\nerr");
+  assert.deepEqual(callbacks, [result.output]);
+});
+
+test("retains the exact executable, argv vector and cwd separately from display text", () => {
+  const args = ["-e", "process.exit(0)"];
+  const result = runNode(args, PACKAGE_ROOT);
+
+  assert.equal(result.failureKind, "none");
+  assert.equal(result.invocation.executable, process.execPath);
+  assert.deepEqual(result.invocation.argv, args);
+  assert.equal(result.invocation.cwd, PACKAGE_ROOT);
+  assert.ok(Object.isFrozen(result.invocation));
+  assert.ok(Object.isFrozen(result.invocation.argv));
+});
+
+test("runNode duration does not become negative when the wall clock moves backwards", () => {
+  const originalNow = Date.now;
+  let calls = 0;
+  Date.now = () => (calls++ === 0 ? 1000 : 0);
+  try {
+    const result = runNode(["-e", "process.stdout.write(\"ok\")"], PACKAGE_ROOT);
+    assert.equal(Number.isFinite(result.durationMs), true);
+    assert.ok(result.durationMs >= 0, `duration must be non-negative: ${result.durationMs}`);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
+test("child execution removes the parent node:test context marker", () => {
+  const result = runNode(
+    ["-e", "process.stdout.write(process.env.NODE_TEST_CONTEXT === undefined ? \"unset\" : \"present\")"],
+    PACKAGE_ROOT,
+  );
+
+  assert.equal(result.failureKind, "none");
+  assert.equal(result.stdout, "unset");
+});
+
+test("signal termination is distinct from timeout on signal-capable hosts", { skip: process.platform === "win32" }, () => {
+  const result = runNode(["-e", "process.kill(process.pid, \"SIGTERM\")"], PACKAGE_ROOT);
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.timedOut, false);
+  assert.equal(result.failureKind, "signal");
+  assert.equal(result.signal, "SIGTERM");
+});

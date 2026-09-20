@@ -69,7 +69,7 @@ pub fn parse_arguments() -> Result<RecoveryArguments, &'static str> {
         return Err("RECOVERY_ARGUMENTS_REFUSED");
     }
     let mut values = BTreeMap::new();
-    for pair in raw.chunks_exact(2) {
+    for pair in raw.as_chunks::<2>().0 {
         if !pair[0].starts_with("--") || values.insert(pair[0].clone(), pair[1].clone()).is_some() {
             return Err("RECOVERY_ARGUMENTS_REFUSED");
         }

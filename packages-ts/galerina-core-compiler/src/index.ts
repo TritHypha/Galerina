@@ -2689,13 +2689,15 @@ const TRI_CASES = ["Positive", "Neutral", "Negative"] as const;
 /**
  * Validates a typed content block at the AST level.
  *
- * Stage 1 status: STUB — returns empty diagnostics.
- * Full implementation (Stage 2) will validate block content based on type:
+ * Stage 1 status: source-preserving AST seam is live; content validation still
+ * returns empty diagnostics until the compiler supplies the binding/type
+ * environment required to validate block content by type:
  *   html/dom — HTML structure validation
  *   script   — JavaScript syntax check; FUNGI-BLOCK-004 secret detection
  *   css      — CSS property/selector validation
  *
- * TODO FUNGI-BLOCK-004: detect ProtectedSecret references interpolated into script blocks.
+ * TODO FUNGI-BLOCK-004: detect ProtectedSecret references interpolated into
+ * script blocks using the binding/type environment, not raw-name matching.
  */
 export function validateTypedContentBlock(_input: {
   readonly blockType: "html" | "dom" | "script" | "css";

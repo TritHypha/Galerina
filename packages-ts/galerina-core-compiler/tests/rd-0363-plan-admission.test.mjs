@@ -90,6 +90,18 @@ test("RD-0363: target-bound plan matches required target → INDETERMINATE (unsi
   assert.equal(result.verdict, 0, "unsigned plan with matching target = INDETERMINATE");
 });
 
+test("RD-0363: a present but unverified signature never authorizes a plan", () => {
+  const plan = buildPlan();
+  assert.ok(plan !== undefined, "GIR must produce an executionPlan");
+  const { verifyPlanAdmission } = L;
+  assert.equal(typeof verifyPlanAdmission, "function", "verifyPlanAdmission must be exported");
+  const signedButUnverified = { ...plan, planSignature: "placeholder" };
+  const result = verifyPlanAdmission(signedButUnverified, { nowMs: Date.now() });
+  assert.equal(result.verdict, 0, "presence alone must remain INDETERMINATE");
+  assert.equal(result.admitted, false, "unverified signature must not authorize");
+  assert.match(result.reason, /cryptographically verified/);
+});
+
 test("RD-0363: PLAN_DEFAULT_MAX_AGE_MS is exported and equals 86400000 ms (24 h)", () => {
   const { PLAN_DEFAULT_MAX_AGE_MS } = L;
   if (PLAN_DEFAULT_MAX_AGE_MS === undefined) return; // may not be re-exported at top level

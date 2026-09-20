@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running tests/linux_fault_refusal.rs (target/debug/deps/linux_fault_refusal-5d5ec48d3b080536)
+
+running 1 test
+test every_injected_fault_denies_without_exposing_partial_generation ... FAILED
+
+failures:
+
+---- every_injected_fault_denies_without_exposing_partial_generation stdout ----
+
+thread 'every_injected_fault_denies_without_exposing_partial_generation' (13055) panicked at tests/linux_fault_refusal.rs:121:9:
+assertion failed: matches!(publish_linux_generation_injected_candidate(&root, &generation_id,
+    expected, fault,), LinuxGenerationPublicationVerdict::Deny(error) if
+    error.code() == linux_publication_fault_code(fault).expect("fault code"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    every_injected_fault_denies_without_exposing_partial_generation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test linux_fault_refusal`

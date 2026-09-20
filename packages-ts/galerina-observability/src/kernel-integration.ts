@@ -30,7 +30,7 @@ import type {
 } from "../../galerina-framework-app-kernel/dist/index.js";
 import { MetricsCollector } from "./metrics.js";
 import { renderMetricsPrometheus } from "./metrics.js";
-import { HealthRegistry, type HealthReport } from "./health.js";
+import { HealthRegistry, type HealthReport, type HealthStatus } from "./health.js";
 
 // ── Metrics ⇐ kernel audit pipe (counts + error rates; NO latency) ────────────
 
@@ -175,8 +175,21 @@ const TEXT_PLAIN: Readonly<Record<string, string>> = Object.freeze({
   "content-type": "text/plain; version=0.0.4; charset=utf-8",
 });
 
+export interface PublicHealthStatus {
+  readonly status: HealthStatus;
+}
+
+export interface PublicHealthAggregate extends PublicHealthStatus {
+  readonly liveness: PublicHealthStatus;
+  readonly readiness: PublicHealthStatus;
+}
+
+function publicStatus(report: HealthReport): PublicHealthStatus {
+  return { status: report.status };
+}
+
 function reportToResult(report: HealthReport): HandlerResult {
-  return { status: report.status === "UP" ? 200 : 503, body: report };
+  return { status: report.status === "UP" ? 200 : 503, body: publicStatus(report) };
 }
 
 /**
@@ -215,7 +228,12 @@ export function observabilityRoutes(opts: ObservabilityRouteOptions): Observabil
       failSafe(async () => {
         const [liveness, readiness] = await Promise.all([registry.liveness(), registry.readiness()]);
         const status = liveness.status === "UP" && readiness.status === "UP" ? "UP" : "DOWN";
-        return { status: status === "UP" ? 200 : 503, body: { status, liveness, readiness } };
+        const body: PublicHealthAggregate = {
+          status,
+          liveness: publicStatus(liveness),
+          readiness: publicStatus(readiness),
+        };
+        return { status: status === "UP" ? 200 : 503, body };
       }),
     [metricsName]: (): HandlerResult => ({ status: 200, body: metrics.snapshot() }),
   };
@@ -256,15 +274,33 @@ async function failSafe(fn: () => Promise<HandlerResult>): Promise<HandlerResult
   try {
     return await fn();
   } catch {
-    return { status: 503, body: { status: "DOWN", detail: "health evaluation failed" } };
+    return { status: 503, body: { status: "DOWN" } satisfies PublicHealthStatus };
   }
 }
 
 /** Normalise a base path: "" stays "", otherwise ensure a single leading slash and no trailing slash. */
 function normaliseBase(base: string | undefined): string {
   if (base === undefined || base === "" || base === "/") return "";
-  let b = base.trim();
+  if (typeof base !== "string") {
+    throw new TypeError("basePath must be a String");
+  }
+  if (base !== base.trim()) {
+    throw new TypeError("basePath must not have surrounding whitespace");
+  }
+  let b = base;
   if (!b.startsWith("/")) b = `/${b}`;
+  if (b.length > 200) {
+    throw new RangeError("basePath exceeds the 200-character limit");
+  }
+  if (/[\u0000-\u001F\u007F]/u.test(b) || /[?#\\]/u.test(b) || /[^\x00-\x7F]/u.test(b)) {
+    throw new TypeError("basePath contains a control, query, fragment, backslash or non-ASCII character");
+  }
+  if (b.includes("//")) {
+    throw new TypeError("basePath contains an ambiguous repeated slash");
+  }
   if (b.endsWith("/")) b = b.slice(0, -1);
+  if (b.slice(1).split("/").some((segment) => segment === "." || segment === "..")) {
+    throw new TypeError("basePath contains a dot segment");
+  }
   return b;
 }

@@ -23,3 +23,8 @@ signing commands containing private paths, or secret material here.
 
 If a run fails before a JSON receipt exists, return the Markdown report with
 the exact failure and do not invent or hand-edit a receipt.
+
+Reports whose name starts with `wsl-` are explicitly virtual portability
+reports. They may retain raw refusal logs and successful portability receipts,
+but they must not be presented as the five-output Ubuntu Desktop candidate or
+as native production evidence.

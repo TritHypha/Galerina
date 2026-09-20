@@ -34,7 +34,6 @@
     "vector": 5440,
     "aiAccelerator": 6200,
     "lowBitAi": 1200,
-    "opticalIo": null,
     "fallbackReliability": 7600,
     "memoryBehaviour": 7000,
     "overall": 5850

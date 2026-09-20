@@ -123,7 +123,7 @@ describe("indeterminate at a trust boundary → deny + FUNGI-GOV-3VL-001 (never 
     const d = decideAtBoundary(Verdict.INDETERMINATE, (diag) => seen.push(diag));
     assert.equal(d.decision, "deny");
     assert.equal(d.authorized, false);
-    assert.ok(d.diagnostic, "diagnostic must be present in the result (structurally non-silent)");
+    assert.equal(d.diagnostic.kind, "PRESENT", "diagnostic must be present in the result (structurally non-silent)");
     assert.equal(d.diagnostic.code, GOV_3VL_DIAGNOSTIC);
     assert.equal(d.diagnostic.code, "FUNGI-GOV-3VL-001");
     assert.equal(d.diagnostic.name, "INDETERMINATE_COLLAPSED_TO_DENY");
@@ -136,7 +136,7 @@ describe("indeterminate at a trust boundary → deny + FUNGI-GOV-3VL-001 (never 
     assert.equal(verdict, Verdict.INDETERMINATE, "one undischarged clause poisons the conjunction");
     const d = decideAtBoundary(verdict);
     assert.equal(d.decision, "deny");
-    assert.ok(d.diagnostic, "audited");
+    assert.equal(d.diagnostic.kind, "PRESENT", "audited");
   });
 
   it("an ordinary DENY at the boundary is NOT a 3VL diagnostic (it is a policy denial)", () => {
@@ -144,7 +144,7 @@ describe("indeterminate at a trust boundary → deny + FUNGI-GOV-3VL-001 (never 
     const d = decideAtBoundary(Verdict.DENY, (diag) => seen.push(diag));
     assert.equal(d.decision, "deny");
     assert.equal(d.authorized, false);
-    assert.equal(d.diagnostic, null, "DENY is definite — no FUNGI-GOV-3VL-001");
+    assert.equal(d.diagnostic.kind, "NONE", "DENY is definite — no FUNGI-GOV-3VL-001");
     assert.equal(seen.length, 0);
   });
 
@@ -152,7 +152,7 @@ describe("indeterminate at a trust boundary → deny + FUNGI-GOV-3VL-001 (never 
     const d = decideAtBoundary(Verdict.ALLOW);
     assert.equal(d.decision, "allow");
     assert.equal(d.authorized, true);
-    assert.equal(d.diagnostic, null);
+    assert.equal(d.diagnostic.kind, "NONE");
   });
 });
 
@@ -270,7 +270,7 @@ describe("differential: two-valued policies behave identically when no 0 arises"
       assert.equal(authorize(v), boolEval(t));
       assert.equal(collapse(v), boolEval(t) ? "allow" : "deny");
       // and the indeterminate diagnostic is NEVER emitted in the two-valued regime
-      assert.equal(decideAtBoundary(v).diagnostic, null, "no 3VL diagnostic without a 0");
+      assert.equal(decideAtBoundary(v).diagnostic.kind, "NONE", "no 3VL diagnostic without a 0");
     }
   });
 });

@@ -18,7 +18,13 @@ module boundaries, imports/exports, browser/edge constraints and reports.
 [ ] Define fallback report format
 [ ] Add examples
 [x] Add initial focused contract tests (4 tests)
-[ ] Add hostile-record, inherited/accessor/proxy, sparse/custom-array and alias-mutation tests
+[x] Add hostile-record, inherited/accessor/proxy, sparse/custom-array and alias-mutation tests
+[x] Implement the bounded runtime decoder and detached immutable report snapshot;
+    `src/index.ts:68-199,201-272` and `tests/wasm-contracts.test.mjs:34-59`
+    pass **5/5** with typecheck/build.
+[!] Keep module bytes/digest, import/export identity, sandbox/effect evidence,
+    diagnostic registry ownership and the cross-package schema owner open;
+    these are required before execution or physical-target authority.
 [ ] Replace legacy `Galerina_WASM_*` diagnostics with owned `FUNGI-CATEGORY-NNN` registry entries
 [ ] Reconcile the WASM runtime vocabulary and schema owner with `galerina-core-compute`
 [ ] Bind artefact identity to admitted module bytes, digest, imports/exports and sandbox/effect evidence

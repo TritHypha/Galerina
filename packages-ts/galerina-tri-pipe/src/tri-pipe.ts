@@ -1,22 +1,12 @@
-// tri-pipe.ts — the Tri-Pipe capstone: hardware() → tier → one governed engine.
+// tri-pipe.ts — proposal-only candidate route (P6 / C3).
 //
-// Composes the three pieces built across the loop session into a single deployment call:
-//   • @galerina/hardware-tier        — the cached, attested hardware() capability directive (AXIS-1)
-//   • @galerina/ext-photonic-emulator — the physics-faithful photonic backend + 0053 router (AXIS-2)
-//   • @galerina/tower-citizen        — the governed HybridInferenceEngine (the digital default)
-//
-// The capability tier selects the digital backend registry AND whether the photonic offload port is
-// enabled; the per-op net-win router still decides each actual offload. binary ⇒ digital only;
-// hybrid/photonic ⇒ digital core + photonic offload for net-win ELIGIBLE kernels. Fail-closed to
-// binary (unknown/unattested ⇒ binary ⇒ no offload ⇒ identical to today).
-//
-// Dependencies imported by relative dist path (the repo convention; resolves offline). This is the
-// composition/application layer — the one package allowed to depend on the Tower runtime.
+// Composes the hardware() capability directive into a digest-bound candidate
+// route and a route-safety operand. It does NOT construct a HybridInferenceEngine,
+// does not dispatch, and does not mint admission. Independent SLIDE/TLL admission
+// is the only later act that may execute a proposed route.
 
-import { createHybridEngine, type HybridInferenceEngine, type PhotonicConfig, type PhotonicKernelCost, type AiGovernance } from "../../galerina-tower-citizen/dist/index.js";
+import { createHash } from "node:crypto";
 import { resolveHardware, type Tier } from "../../galerina-hardware-tier/dist/index.js";
-import { createPhotonicRouterPort } from "../../galerina-ext-photonic-emulator/dist/index.js";
-import type { BridgeRegistry, BridgeOp } from "../../galerina-inference-bridge-contract/dist/index.js";
 
 export type { Tier };
 
@@ -28,54 +18,60 @@ export interface TriPipeOptions {
   /** Component is pure-tensor / fully eligible (no crypto/control). Gates the photonic ceiling
    *  (a whole component converges to hybrid). Default false (the common whole-component case). */
   readonly componentFullyEligible?: boolean;
-  /** Digital backend registry for the hybrid/photonic tiers (e.g. createCppBridgeRegistry()).
-   *  Defaults to the in-package stub registry when omitted. The binary tier always uses the stub. */
-  readonly hybridBridges?: BridgeRegistry;
-  /** Maps a routed op to its kernel cost (a deployment supplies real kernel sizes). */
-  readonly kernelFor?: (op: BridgeOp) => PhotonicKernelCost;
-  /** Use an in-memory audit ledger (ephemeral / benchmark contexts). */
+  /** Retained for caller compatibility. Ignored: this seam is proposal-only. */
+  readonly hybridBridges?: unknown;
+  /** Retained for caller compatibility. Ignored: this seam is proposal-only. */
+  readonly kernelFor?: unknown;
+  /** Retained for caller compatibility. Ignored: this seam is proposal-only. */
   readonly auditInMemory?: boolean;
-  /** `ai {}` governance for the underlying hybrid engine (approved models, budgets, and the RD-0236
-   *  fail-secure opt-in flags). Forwarded verbatim to createHybridEngine; omitted ⇒ the engine's own
-   *  fail-secure defaults apply (unattested bridges and silent host-native fallback are DENIED). */
-  readonly governance?: AiGovernance;
+  /** Retained for caller compatibility. Ignored: this seam is proposal-only. */
+  readonly governance?: unknown;
 }
 
-export interface TriPipeEngine {
+export interface TriPipeProposal {
+  readonly kind: "PROPOSAL";
   /** The resolved capability tier. */
   readonly tier: Tier;
-  /** True iff the photonic offload port is wired (tier ∈ {hybrid, photonic}). */
+  /** True iff the proposed route would wire photonic offload (tier ∈ {hybrid, photonic}). */
   readonly photonicEnabled: boolean;
-  /** The governed engine, configured for the selected tier. */
-  readonly engine: HybridInferenceEngine;
+  readonly candidateRouteDigest: string;
+  readonly routeSafety: "SAFE";
+  readonly authorityReleased: false;
 }
 
 /**
- * Build one governed Tri-Pipe engine. `hardware()` (AXIS-1) picks the tier; the digital registry and
- * the photonic offload port are selected accordingly; the 0053 per-kernel router (AXIS-2) still gates
- * each actual offload. Preference NEVER forces compute onto photonics — worst case == binary == today.
+ * Propose one digest-bound Tri-Pipe route. `hardware()` picks the tier; no engine
+ * is constructed and nothing is dispatched.
  */
-export function createTriPipeEngine(opts: TriPipeOptions): TriPipeEngine {
+export function createTriPipeEngine(opts: TriPipeOptions): TriPipeProposal {
   const tier = resolveHardware({
     targetId: opts.targetId,
     attestationVerified: opts.attestationVerified,
     componentFullyEligible: opts.componentFullyEligible ?? false,
   });
-
-  // Photonic offload is wired for the offload-capable tiers only (binary stays purely digital).
   const photonicEnabled = tier === "hybrid" || tier === "photonic";
-  const photonic: PhotonicConfig | undefined = photonicEnabled
-    ? { router: createPhotonicRouterPort(), ...(opts.kernelFor !== undefined ? { kernelFor: opts.kernelFor } : {}) }
-    : undefined;
-  // Digital registry: binary ⇒ the stub default; hybrid/photonic ⇒ the injected hybrid registry (or stub).
-  const bridges = photonicEnabled ? opts.hybridBridges : undefined;
-
-  const engine = createHybridEngine({
-    ...(opts.auditInMemory !== undefined ? { auditInMemory: opts.auditInMemory } : {}),
-    ...(bridges !== undefined ? { bridges } : {}),
-    ...(photonic !== undefined ? { photonic } : {}),
-    ...(opts.governance !== undefined ? { governance: opts.governance } : {}),
+  const encoded = JSON.stringify({
+    profile: "galerina.tri-pipe.proposal.v1",
+    targetId: opts.targetId,
+    attestationVerified: opts.attestationVerified,
+    componentFullyEligible: opts.componentFullyEligible ?? false,
+    tier,
+    photonicEnabled,
   });
+  return Object.freeze({
+    kind: "PROPOSAL",
+    tier,
+    photonicEnabled,
+    candidateRouteDigest: `sha256:${createHash("sha256").update(encoded).digest("hex")}`,
+    routeSafety: "SAFE",
+    authorityReleased: false,
+  });
+}
 
-  return { tier, photonicEnabled, engine };
+/** Dispatch is structurally refused. Independent SLIDE/TLL admission is the only later act. */
+export function dispatchTriPipeEngine(_proposal: TriPipeProposal): {
+  readonly refused: true;
+  readonly code: "ROUTE_DISPATCH_FORBIDDEN";
+} {
+  return { refused: true, code: "ROUTE_DISPATCH_FORBIDDEN" };
 }

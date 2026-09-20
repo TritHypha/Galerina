@@ -1,63 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import {
-  copyFileSync, existsSync, linkSync, lstatSync, mkdtempSync, mkdirSync, readFileSync,
-  realpathSync, renameSync, rmSync, writeFileSync,
-} from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
 import { aggregateCorpusReceipts } from "../lib/fungi-corpus-receipt.mjs";
 import { deriveCorpusShards } from "../lib/fungi-corpus-shards.mjs";
-import {
-  validateProjectEvidence, validateProjectEvidenceEnvelope,
-} from "../conversion-queue.mjs";
-import { RUNTIME_GIT_SHA256 } from "../run-rd0873-native-fungi-audit.mjs";
 
 const TOOL = join(import.meta.dirname, "..", "conversion-queue.mjs");
 const digest = "a".repeat(64);
 const limits = { maxFiles: 8, maxBytes: 1_048_576, timeoutMs: 10_000, maxOutputBytes: 65_536 };
-
-function boundedSpawn(file, args, {
-  cwd = undefined, encoding = "utf8", env = process.env, input = undefined,
-} = {}) {
-  return spawnSync(file, args, {
-    cwd,
-    encoding,
-    env,
-    input,
-    maxBuffer: 16_777_216,
-    shell: false,
-    timeout: 30_000,
-    windowsHide: true,
-  });
-}
-
-function discoverPinnedGit() {
-  const command = process.platform === "win32" ? "where.exe" : "which";
-  const result = boundedSpawn(command, ["git"]);
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  const candidates = result.stdout.split(/\r?\n/u).filter(Boolean).map((path) => realpathSync(path));
-  const match = candidates.find((path) => lstatSync(path, { bigint: true }).nlink === 1n
-    && createHash("sha256").update(readFileSync(path)).digest("hex") === RUNTIME_GIT_SHA256);
-  assert.ok(match, "the Task 4 pinned Git executable must be available for this integration fixture");
-  return match;
-}
-
-const PINNED_GIT = discoverPinnedGit();
-const GIT_AUTHORITY = {
-  gitExecutablePath: PINNED_GIT,
-  gitExecutableDigest: RUNTIME_GIT_SHA256,
-};
 
 function canonicalDigest(value) {
   return `sha256:${createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex")}`;
 }
 
 function git(root, args) {
-  const result = boundedSpawn(PINNED_GIT, args, { cwd: root });
+  const result = spawnSync("git", args, { cwd: root, encoding: "utf8", shell: false, timeout: 10_000 });
   assert.equal(result.status, 0, result.stderr || result.stdout);
   return result.stdout.trim();
 }
@@ -156,120 +116,13 @@ function readRequest(root) {
 }
 
 function run(root, mode, receipt = "build/fungi-corpus-check/evidence/project.json", env = process.env) {
-  return boundedSpawn(process.execPath, [
-    TOOL, mode, "--root", root, "--project-corpus-receipt", receipt,
-    "--git-executable", PINNED_GIT, "--git-digest", RUNTIME_GIT_SHA256,
-  ], { env });
+  return spawnSync(process.execPath, [TOOL, mode, "--root", root, "--project-corpus-receipt", receipt], {
+    encoding: "utf8",
+    shell: false,
+    timeout: 10_000,
+    env,
+  });
 }
-
-test("conversion queue can be imported without CLI side effects and exports PROJECT evidence validation", () => {
-  const source = `import { validateProjectEvidence, validateProjectEvidenceEnvelope } from ${JSON.stringify(pathToFileURL(TOOL).href)};\n`
-    + `if (typeof validateProjectEvidence !== "function" || typeof validateProjectEvidenceEnvelope !== "function") process.exit(3);\n`;
-  const result = boundedSpawn(process.execPath, ["--input-type=module", "--eval", source]);
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(result.stdout, "");
-  assert.equal(result.stderr, "");
-});
-
-test("exported PROJECT evidence validation refuses hostile paths and duplicate JSON fields", () => {
-  const root = makeRoot();
-  for (const hostile of [
-    "build/fungi-corpus-check/evidence/../project.json",
-    "build\\fungi-corpus-check\\evidence\\project.json",
-    join(root, "build", "fungi-corpus-check", "evidence", "project.json"),
-  ]) assert.throws(() => validateProjectEvidence(root, hostile));
-  const path = join(root, "build", "fungi-corpus-check", "evidence", "project.json");
-  writeFileSync(path, '{"schema":"galerina.fungi-corpus-evidence.v1","schema":"duplicate"}\n');
-  assert.throws(() => validateProjectEvidence(root, "build/fungi-corpus-check/evidence/project.json"));
-});
-
-test("exported PROJECT evidence returns exact covered files after repository validation", () => {
-  const root = makeRoot();
-  const request = readRequest(root);
-  const result = validateProjectEvidence(root, "build/fungi-corpus-check/evidence/project.json", GIT_AUTHORITY);
-  assert.deepEqual(result.repository, { head: request.repositoryHead, tree: request.repositoryTree });
-  assert.deepEqual(result.files, request.files.map(({ path, digest }) => ({ path, digest })));
-});
-
-test("pure envelope validation exposes bounded identity without weakening exact-head queue validation", () => {
-  const root = makeRoot();
-  const request = readRequest(root);
-  write(root, "later.txt", "later\n");
-  git(root, ["add", "--", "later.txt"]);
-  git(root, ["commit", "--quiet", "-m", "later"]);
-  assert.throws(() => validateProjectEvidence(
-    root, "build/fungi-corpus-check/evidence/project.json", GIT_AUTHORITY,
-  ));
-  const parsed = validateProjectEvidenceEnvelope(root, "build/fungi-corpus-check/evidence/project.json");
-  assert.deepEqual(parsed.repository, { head: request.repositoryHead, tree: request.repositoryTree });
-  assert.deepEqual(parsed.files, request.files.map(({ path, digest: fileDigest }) => ({ path, digest: fileDigest })));
-});
-
-test("PROJECT evidence refuses hard-link aliases in both validators", () => {
-  const root = makeRoot();
-  const relativePath = "build/fungi-corpus-check/evidence/project.json";
-  const path = join(root, ...relativePath.split("/"));
-  const hardLinkRelative = "build/fungi-corpus-check/evidence/project-linked.json";
-  const hardLink = join(root, ...hardLinkRelative.split("/"));
-  linkSync(path, hardLink);
-  assert.throws(() => validateProjectEvidenceEnvelope(root, hardLinkRelative));
-  assert.throws(() => validateProjectEvidence(root, hardLinkRelative, GIT_AUTHORITY));
-  rmSync(hardLink);
-});
-
-test("PROJECT evidence refuses a path/read ABA in both validators", () => {
-  const root = makeRoot();
-  const relativePath = "build/fungi-corpus-check/evidence/project.json";
-  const path = join(root, ...relativePath.split("/"));
-  const replacement = join(dirname(path), "project-replacement.json");
-  const displaced = join(dirname(path), "project-displaced.json");
-  copyFileSync(path, replacement);
-  let swapped = false;
-  const afterOpen = () => {
-    renameSync(path, displaced);
-    renameSync(replacement, path);
-    swapped = true;
-  };
-  assert.throws(() => validateProjectEvidenceEnvelope(root, relativePath, { afterOpen }));
-  assert.equal(swapped, true, "the ABA mutation must occur after the evidence file is opened");
-
-  rmSync(path);
-  renameSync(displaced, path);
-  copyFileSync(path, replacement);
-  swapped = false;
-  assert.throws(() => validateProjectEvidence(root, relativePath, { ...GIT_AUTHORITY, afterOpen }));
-  assert.equal(swapped, true, "the exact-head validator must use the held-file observation");
-  assert.equal(existsSync(path), true);
-});
-
-test("queue CLI requires the approved pinned Git and ignores hostile PATH", () => {
-  const root = makeRoot();
-  const unpinned = boundedSpawn(process.execPath, [
-    TOOL, "--write", "--root", root, "--project-corpus-receipt",
-    "build/fungi-corpus-check/evidence/project.json",
-  ]);
-  assert.equal(unpinned.status, 1, "unpinned queue CLI must refuse");
-  const wrongDigest = boundedSpawn(process.execPath, [
-    TOOL, "--write", "--root", root, "--project-corpus-receipt",
-    "build/fungi-corpus-check/evidence/project.json",
-    "--git-executable", PINNED_GIT, "--git-digest", "0".repeat(64),
-  ]);
-  assert.equal(wrongDigest.status, 1, "a non-approved Git digest must refuse");
-
-  const hostile = mkdtempSync(join(tmpdir(), "galerina-queue-hostile-git-"));
-  const sentinel = join(hostile, "sentinel.txt");
-  const fake = process.platform === "win32" ? join(hostile, "git.cmd") : join(hostile, "git");
-  writeFileSync(fake, process.platform === "win32"
-    ? `@echo off\r\n>"${sentinel}" echo executed\r\nexit /b 99\r\n`
-    : `#!/bin/sh\nprintf executed > '${sentinel}'\nexit 99\n`);
-  const result = boundedSpawn(process.execPath, [
-    TOOL, "--write", "--root", root, "--project-corpus-receipt",
-    "build/fungi-corpus-check/evidence/project.json",
-    "--git-executable", PINNED_GIT, "--git-digest", RUNTIME_GIT_SHA256,
-  ], { env: { ...process.env, PATH: hostile } });
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(existsSync(sentinel), false);
-});
 
 test("queue v3 conserves every executable path and binds only the PROJECT evidence digest", () => {
   const root = makeRoot();

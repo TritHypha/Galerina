@@ -6,9 +6,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   Xorshift32, ACT_MAX, ENOB_CEILING, PHOTONIC, NOISY,
+  PhotonicEmulatorMathError, MAX_NMR_N,
   tmacExact, analogVarianceClosedForm, quantStep,
   tmacPhotonic, tmacVoted, wdmCrosstalkMatrix, applyWdm,
-  singleLaneErrorProbability, nmrFailureProbability, freivaldsVerify, freivaldsVerifyCost,
+  flipProbability, singleLaneErrorProbability, nmrFailureProbability, freivaldsVerify, freivaldsVerifyCost,
 } from "../dist/index.js";
 
 const randTernary = (rng, n) => { const w = new Int8Array(n); for (let i = 0; i < n; i++) w[i] = Math.floor(rng.next() * 3) - 1; return w; };
@@ -128,4 +129,25 @@ test("E6c: a confident DENY (-1) never flips OPEN under emulator readout noise (
   let denyToAllow = 0;
   for (let i = 0; i < M; i++) if ((-1 + sigma * rng.gauss()) > thr) denyToAllow++;
   assert.equal(denyToAllow, 0, "confident DENY never crosses the OPEN threshold");
+});
+
+test("E6d: copied substrate math refuses hostile ingress and remains inside the binary64 NMR envelope", () => {
+  const clean = { phaseDriftSigma: 0.02, crosstalkCoeff: 0, laneFailureProb: 0, readoutSigma: 0 };
+  assert.equal(Number.isFinite(nmrFailureProbability(0.25, MAX_NMR_N)), true);
+  assert.throws(() => flipProbability({ phaseDriftSigma: NaN, crosstalkCoeff: 0, readoutSigma: 0 }), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_PROBABILITY");
+  assert.throws(() => singleLaneErrorProbability({ ...clean, extra: 0 }), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_RECORD");
+  const accessor = {};
+  Object.defineProperty(accessor, "phaseDriftSigma", { enumerable: true, get: () => 0.02 });
+  Object.defineProperty(accessor, "crosstalkCoeff", { enumerable: true, value: 0 });
+  Object.defineProperty(accessor, "readoutSigma", { enumerable: true, value: 0 });
+  assert.throws(() => flipProbability(accessor), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_RECORD");
+  assert.throws(() => flipProbability(new Proxy({ phaseDriftSigma: 0.02, crosstalkCoeff: 0, readoutSigma: 0 }, {})), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_RECORD");
+  assert.throws(() => nmrFailureProbability(0.25, MAX_NMR_N + 2), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_REDUNDANCY");
+  assert.throws(() => nmrFailureProbability(NaN, 3), (error) =>
+    error instanceof PhotonicEmulatorMathError && error.code === "INVALID_PROBABILITY");
 });

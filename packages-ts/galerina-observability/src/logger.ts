@@ -41,7 +41,7 @@ export class MemoryLogSink implements LogSink {
     this.#records.push(record);
   }
   records(): readonly LogRecord[] {
-    return this.#records;
+    return [...this.#records];
   }
   clear(): void {
     this.#records.length = 0;
@@ -71,6 +71,57 @@ export const DEFAULT_REDACT_KEYS: readonly string[] = [
 ];
 
 const REDACTED = "[redacted]";
+const MAX_REDACTION_DEPTH = 8;
+const MAX_REDACTION_NODES = 256;
+
+interface RedactionState {
+  readonly seen: WeakSet<object>;
+  nodes: number;
+}
+
+function cloneRedactedValue(
+  value: unknown,
+  key: string | undefined,
+  redact: ReadonlySet<string>,
+  state: RedactionState,
+  depth: number,
+): unknown {
+  if (key !== undefined && redact.has(key.toLowerCase())) return REDACTED;
+  if (value === null || typeof value !== "object") return value;
+  if (depth >= MAX_REDACTION_DEPTH || state.nodes >= MAX_REDACTION_NODES || state.seen.has(value)) return REDACTED;
+  state.nodes += 1;
+  state.seen.add(value);
+  try {
+    if (Array.isArray(value)) {
+      const length = value.length;
+      if (!Number.isSafeInteger(length) || length < 0 || length > MAX_REDACTION_NODES) return REDACTED;
+      const out: unknown[] = [];
+      for (let index = 0; index < length; index += 1) {
+        const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+        if (!descriptor || !("value" in descriptor)) return REDACTED;
+        out.push(cloneRedactedValue(descriptor.value, undefined, redact, state, depth + 1));
+      }
+      return Object.freeze(out);
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) return REDACTED;
+    const out: Record<string, unknown> = {};
+    for (const childKey of Object.keys(value)) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, childKey);
+      if (!descriptor || !("value" in descriptor)) return REDACTED;
+      Object.defineProperty(out, childKey, {
+        configurable: false,
+        enumerable: true,
+        value: cloneRedactedValue(descriptor.value, childKey, redact, state, depth + 1),
+        writable: false,
+      });
+    }
+    return Object.freeze(out);
+  } catch {
+    return REDACTED;
+  }
+}
 
 export interface LoggerOptions {
   /** Destination for records. Default: a fresh in-memory sink (no I/O). */
@@ -103,9 +154,9 @@ export class Logger {
 
   constructor(opts: LoggerOptions = {}) {
     this.#sink = opts.sink ?? new MemoryLogSink();
-    this.#minLevel = LEVEL_ORDER[opts.minLevel ?? "info"];
+    this.#minLevel = levelOrder(opts.minLevel);
     this.#name = opts.name;
-    this.#baseFields = opts.baseFields ?? {};
+    this.#baseFields = Object.freeze({ ...(opts.baseFields ?? {}) });
     this.#redact = new Set((opts.redactKeys ?? DEFAULT_REDACT_KEYS).map((k) => k.toLowerCase()));
     this.#clock = opts.clock ?? (() => Date.now());
   }
@@ -174,12 +225,33 @@ export class Logger {
     }
   }
 
-  #redactFields(fields: Record<string, unknown>): Record<string, unknown> {
+  #redactFields(fields: Record<string, unknown>): Readonly<Record<string, unknown>> {
     const out: Record<string, unknown> = {};
+    const state: RedactionState = { seen: new WeakSet<object>(), nodes: 0 };
     for (const key of Object.keys(fields)) {
-      out[key] = this.#redact.has(key.toLowerCase()) ? REDACTED : fields[key];
+      const descriptor = Object.getOwnPropertyDescriptor(fields, key);
+      if (!descriptor || !("value" in descriptor)) {
+        Object.defineProperty(out, key, { configurable: false, enumerable: true, value: REDACTED, writable: false });
+        continue;
+      }
+      Object.defineProperty(out, key, {
+        configurable: false,
+        enumerable: true,
+        value: cloneRedactedValue(descriptor.value, key, this.#redact, state, 0),
+        writable: false,
+      });
     }
-    return out;
+    return Object.freeze(out);
+  }
+}
+
+function levelOrder(level: unknown): number {
+  switch (level) {
+    case "debug": return LEVEL_ORDER.debug;
+    case "info": return LEVEL_ORDER.info;
+    case "warn": return LEVEL_ORDER.warn;
+    case "error": return LEVEL_ORDER.error;
+    default: return LEVEL_ORDER.info;
   }
 }
 
@@ -190,10 +262,12 @@ function levelName(order: number): LogLevel {
   return "info";
 }
 
+const SAFE_STRINGIFY_FALLBACK = '{"level":"error","msg":"log record not serialisable","at":0}';
+
 /** Serialise a record to JSON, degrading unserialisable content to a safe marker (never throws). */
 export function safeStringify(record: LogRecord): string {
   try {
-    return JSON.stringify(record);
+    return JSON.stringify(record) ?? SAFE_STRINGIFY_FALLBACK;
   } catch {
     // Circular or otherwise unserialisable fields: emit the record without them.
     try {
@@ -206,7 +280,7 @@ export function safeStringify(record: LogRecord): string {
       };
       return JSON.stringify(safe);
     } catch {
-      return '{"level":"error","msg":"log record not serialisable","at":0}';
+      return SAFE_STRINGIFY_FALLBACK;
     }
   }
 }

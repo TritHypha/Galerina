@@ -67,6 +67,52 @@ test("combined /health reflects both surfaces", async () => {
   assert.equal(b.status, "UP");
   assert.equal(b.liveness.status, "UP");
   assert.equal(b.readiness.status, "UP");
+  assert.equal("components" in b, false);
+});
+
+test("public health responses are status-only and do not expose component detail", async () => {
+  const registry = new HealthRegistry();
+  registry.registerReadiness("db", () => ({ status: "DOWN", detail: "credential=secret-value" }));
+  const surface = observabilityRoutes({ registry, metrics: new MetricsCollector() });
+  const kernel = createAppKernel({ routes: surface.routes, dispatch: surface.dispatch });
+
+  const ready = await kernel.handle(req({ method: "GET", path: "/health/ready" }));
+  assert.equal(ready.status, 503);
+  assert.deepEqual(bodyJson(ready), { status: "DOWN" });
+  assert.ok(!new TextDecoder().decode(ready.body).includes("secret-value"));
+
+  const combined = await kernel.handle(req({ method: "GET", path: "/health" }));
+  assert.deepEqual(bodyJson(combined), {
+    status: "DOWN",
+    liveness: { status: "UP" },
+    readiness: { status: "DOWN" },
+  });
+});
+
+test("health fail-safe uses the tagged status-only public schema", async () => {
+  const surface = observabilityRoutes({
+    registry: {
+      async liveness() { throw new Error("private failure"); },
+      async readiness() { return { status: "UP", kind: "readiness", components: {} }; },
+    },
+    metrics: new MetricsCollector(),
+  });
+  const response = await surface.dispatch["observability.live"]({});
+  assert.equal(response.status, 503);
+  assert.deepEqual(response.body, { status: "DOWN" });
+});
+
+test("health timer cleanup failure remains a typed 503 through the kernel", async () => {
+  const registry = new HealthRegistry({
+    setTimer: () => 0,
+    clearTimer: () => { throw new Error("timer cleanup failed"); },
+  });
+  registry.registerReadiness("db", () => true);
+  const surface = observabilityRoutes({ registry, metrics: new MetricsCollector() });
+  const kernel = createAppKernel({ routes: surface.routes, dispatch: surface.dispatch });
+  const response = await kernel.handle(req({ method: "GET", path: "/health/ready" }));
+  assert.equal(response.status, 503);
+  assert.deepEqual(bodyJson(response), { status: "DOWN" });
 });
 
 test("/metrics is secure-by-default (required auth ⇒ 401 without a verdict)", async () => {
@@ -97,6 +143,34 @@ test("includePrometheus exposes app-ops text at /metrics/prometheus", async () =
   assert.equal(res.status, 200);
   assert.match(res.headers["content-type"], /text\/plain/);
   assert.match(dec.decode(res.body), /app_requests_total/);
+});
+
+test("basePath emits one canonical prefix and rejects ambiguous or hostile paths", () => {
+  const clean = observabilityRoutes({
+    registry: new HealthRegistry(),
+    metrics: new MetricsCollector(),
+    basePath: "actuator/",
+  });
+  assert.equal(clean.routes[0].path, "/actuator/health/live");
+
+  const invalid = [
+    "//actuator//",
+    "///",
+    "/actuator/../admin",
+    "/actuator?token=secret",
+    "/actuator#fragment",
+    "/actuator\\admin",
+    "/actuátor",
+    `/a${"x".repeat(200)}`,
+    "/actuator/\u0000",
+  ];
+  for (const basePath of invalid) {
+    assert.throws(
+      () => observabilityRoutes({ registry: new HealthRegistry(), metrics: new MetricsCollector(), basePath }),
+      /basePath/,
+      basePath,
+    );
+  }
 });
 
 test("instrumentDispatch records counts AND latency for handled requests", async () => {
@@ -167,4 +241,49 @@ test("createObservability bundles a ready-to-compose surface", async () => {
   assert.equal(metricsRes.status, 200);
   // The three handled requests were all instrumented into the bundled collector.
   assert.ok(bodyJson(metricsRes).totalRequests >= 2);
+});
+
+test("createObservability rejects route authority overrides and non-data options", () => {
+  assert.throws(
+    () => createObservability({ routes: { registry: new HealthRegistry() } }),
+    /unsupported key 'registry'/,
+  );
+  assert.throws(
+    () => createObservability({ routes: { metrics: new MetricsCollector() } }),
+    /unsupported key 'metrics'/,
+  );
+
+  const accessorRoutes = {};
+  Object.defineProperty(accessorRoutes, "metricsAuth", {
+    configurable: true,
+    enumerable: true,
+    get() { throw new Error("getter must not run"); },
+  });
+  assert.throws(
+    () => createObservability({ routes: accessorRoutes }),
+    /routes\.metricsAuth must be an own data property/,
+  );
+
+  const inheritedRoutes = Object.create({ metricsAuth: "public" });
+  assert.throws(
+    () => createObservability({ routes: inheritedRoutes }),
+    /plain or null prototype/,
+  );
+});
+
+test("createObservability refuses mixing auditSink and instrument metrics seams", () => {
+  const auditFirst = createObservability();
+  const reservation = auditFirst.auditSink.reserve();
+  auditFirst.auditSink.cancel(reservation);
+  assert.throws(
+    () => auditFirst.instrument({}),
+    /mutually exclusive/,
+  );
+
+  const instrumentFirst = createObservability();
+  instrumentFirst.instrument({});
+  assert.throws(
+    () => instrumentFirst.auditSink.reserve(),
+    /mutually exclusive/,
+  );
 });

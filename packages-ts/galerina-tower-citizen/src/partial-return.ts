@@ -26,6 +26,7 @@ import {
   allOf,
   decideAtBoundary,
   type GovernanceDiagnostic,
+  type BoundaryDiagnostic,
 } from "./three-valued-governance.js";
 
 /** The typed sentinel that replaces a field whose K3 verdict withheld it. Never carries a value. */
@@ -34,8 +35,8 @@ export interface Masked {
   /** The collapsed verdict that withheld the field: 0 (INDETERMINATE) or -1 (DENY). Never +1. */
   readonly verdict: Verdict;
   readonly reason: "denied" | "indeterminate";
-  /** FUNGI-GOV-3VL-001 IFF the field was withheld by an INDETERMINATE collapse; else null. */
-  readonly diagnostic: GovernanceDiagnostic | null;
+  /** PRESENT IFF the field was withheld by an INDETERMINATE collapse; else NONE. */
+  readonly diagnostic: BoundaryDiagnostic;
 }
 
 /** Type guard: is this a withheld-field sentinel (NOT real data)? Use before reading a shaped field. */

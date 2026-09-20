@@ -5,8 +5,7 @@ import {
   dirname, isAbsolute, join, relative, resolve, sep,
 } from "node:path";
 import {
-  closeSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync,
-  realpathSync, writeFileSync,
+  lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync,
 } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseStrictJsonBytes } from "./lib/assurance-fabric/strict-json.mjs";
@@ -16,7 +15,6 @@ import {
   validateShardReceipt,
 } from "./lib/fungi-corpus-receipt.mjs";
 import { deriveCorpusShards } from "./lib/fungi-corpus-shards.mjs";
-import { RUNTIME_GIT_SHA256 } from "./run-rd0873-native-fungi-audit.mjs";
 
 const CLASSIFICATIONS = [
   "CANDIDATE", "BLOCKED", "NO_RUNTIME_BEHAVIOR",
@@ -44,8 +42,6 @@ function parseArgs(argv) {
   let root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   let mode = null;
   let projectCorpusReceipt = null;
-  let gitExecutablePath = null;
-  let gitExecutableDigest = null;
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--write" || arg === "--check") {
@@ -56,24 +52,13 @@ function parseArgs(argv) {
     } else if (arg === "--project-corpus-receipt" && index + 1 < argv.length) {
       if (projectCorpusReceipt !== null) throw new Error("duplicate --project-corpus-receipt");
       projectCorpusReceipt = argv[++index];
-    } else if (arg === "--git-executable" && index + 1 < argv.length) {
-      if (gitExecutablePath !== null) throw new Error("duplicate --git-executable");
-      gitExecutablePath = argv[++index];
-    } else if (arg === "--git-digest" && index + 1 < argv.length) {
-      if (gitExecutableDigest !== null) throw new Error("duplicate --git-digest");
-      gitExecutableDigest = argv[++index];
     } else {
       throw new Error(`unknown argument: ${arg}`);
     }
   }
   if (mode === null) throw new Error("choose exactly one of --write or --check");
   if (projectCorpusReceipt === null) throw new Error("--project-corpus-receipt is required");
-  if (gitExecutablePath === null || gitExecutableDigest === null) {
-    throw new Error("--git-executable and --git-digest are required");
-  }
-  return {
-    root, mode, projectCorpusReceipt, gitExecutablePath, gitExecutableDigest,
-  };
+  return { root, mode, projectCorpusReceipt };
 }
 
 function exactRecord(value, fields) {
@@ -133,84 +118,23 @@ function exactExistingPath(root, value) {
     if (realpathSync(current) !== current) throw new Error("project corpus receipt path is indirect");
   }
   const back = relative(canonicalRoot, current);
-  const state = lstatSync(current, { bigint: true });
+  const state = lstatSync(current);
   if (back.startsWith(`..${sep}`) || back === ".." || isAbsolute(back) || !state.isFile() || state.isSymbolicLink()) {
     throw new Error("project corpus receipt is not a direct regular file");
-  }
-  if (state.nlink !== 1n || state.size < 1n || state.size > 8_388_608n) {
-    throw new Error("project corpus receipt is not a bounded single-link file");
   }
   return current;
 }
 
-function sameFileIdentity(left, right) {
-  return left.dev === right.dev
-    && left.ino === right.ino
-    && left.size === right.size
-    && left.mtimeNs === right.mtimeNs
-    && left.ctimeNs === right.ctimeNs
-    && left.nlink === right.nlink;
-}
-
-function readHeldProjectEvidence(root, evidencePath, { afterOpen = null } = {}) {
-  if (afterOpen !== null && typeof afterOpen !== "function") {
-    throw new Error("PROJECT evidence observation hook is invalid");
-  }
-  const path = exactExistingPath(root, evidencePath);
-  const pathBefore = lstatSync(path, { bigint: true });
-  let descriptor;
-  try {
-    descriptor = openSync(path, "r");
-    const opened = fstatSync(descriptor, { bigint: true });
-    if (!opened.isFile() || opened.nlink !== 1n || opened.size < 1n || opened.size > 8_388_608n
-        || !sameFileIdentity(pathBefore, opened)) {
-      throw new Error("PROJECT evidence identity changed before held observation");
-    }
-    if (afterOpen !== null) afterOpen();
-    const bytes = readFileSync(descriptor);
-    const heldAfter = fstatSync(descriptor, { bigint: true });
-    const pathAfter = lstatSync(path, { bigint: true });
-    if (!sameFileIdentity(opened, heldAfter)
-        || !sameFileIdentity(opened, pathAfter)
-        || BigInt(bytes.length) !== opened.size) {
-      throw new Error("PROJECT evidence changed during held observation");
-    }
-    return bytes;
-  } finally {
-    if (descriptor !== undefined) closeSync(descriptor);
-  }
-}
-
-function exactPinnedGit(path, digest) {
-  if (typeof path !== "string" || !isAbsolute(path)
-      || typeof digest !== "string" || digest !== RUNTIME_GIT_SHA256) {
-    throw new Error("pinned Git authority is incomplete");
-  }
-  const absolute = resolve(path);
-  const canonical = realpathSync.native(absolute);
-  const state = lstatSync(absolute, { bigint: true });
-  if (canonical !== absolute || !state.isFile() || state.isSymbolicLink()
-      || state.nlink !== 1n || state.size < 1n || state.size > 67_108_864n) {
-    throw new Error("pinned Git executable identity is indirect or unbounded");
-  }
-  if (sha256(readFileSync(absolute)) !== digest) throw new Error("pinned Git executable digest is wrong");
-  return Object.freeze({ path: absolute, digest });
-}
-
-function gitIdentity(root, authority) {
+function gitIdentity(root) {
   const gitEnv = { ...process.env };
   for (const key of Object.keys(gitEnv)) {
     if (key.toUpperCase().startsWith("GIT_")) delete gitEnv[key];
   }
   gitEnv.GIT_TERMINAL_PROMPT = "0";
   gitEnv.GIT_OPTIONAL_LOCKS = "0";
-  gitEnv.GIT_NO_REPLACE_OBJECTS = "1";
   gitEnv.GCM_INTERACTIVE = "Never";
   const run = (args) => {
-    if (sha256(readFileSync(authority.path)) !== authority.digest) {
-      throw new Error("pinned Git executable changed during observation");
-    }
-    const result = spawnSync(authority.path, ["-c", `safe.directory=${root}`, ...args], {
+    const result = spawnSync("git", ["-c", `safe.directory=${root}`, ...args], {
       cwd: root,
       encoding: "utf8",
       shell: false,
@@ -227,8 +151,9 @@ function gitIdentity(root, authority) {
   return { head, tree };
 }
 
-export function validateProjectEvidenceEnvelope(root, evidencePath, observation = {}) {
-  const bytes = readHeldProjectEvidence(root, evidencePath, observation);
+function validateProjectEvidence(root, evidencePath) {
+  const path = exactExistingPath(root, evidencePath);
+  const bytes = readFileSync(path);
   const evidence = parseStrictJsonBytes(bytes, { label: "PROJECT corpus evidence", maxBytes: 8_388_608 });
   if (!exactRecord(evidence, EVIDENCE_FIELDS)
       || evidence.schema !== "galerina.fungi-corpus-evidence.v1"
@@ -243,9 +168,12 @@ export function validateProjectEvidenceEnvelope(root, evidencePath, observation 
   const requestResult = validateCorpusRequest(evidence.request);
   if (requestResult.kind !== "accepted") throw new Error("invalid PROJECT corpus request");
   const request = requestResult.value;
+  const repository = gitIdentity(root);
   if (request.profile !== "PROJECT"
-      || request.productId !== "galerina") {
-    throw new Error("wrong-profile or product-mismatched PROJECT corpus evidence");
+      || request.productId !== "galerina"
+      || request.repositoryHead !== repository.head
+      || request.repositoryTree !== repository.tree) {
+    throw new Error("stale, wrong-profile or product-mismatched PROJECT corpus evidence");
   }
   if (!exactRecord(evidence.limits, LIMIT_FIELDS)
       || Object.values(evidence.limits).some((value) => !Number.isSafeInteger(value) || value < 1)) {
@@ -277,29 +205,7 @@ export function validateProjectEvidenceEnvelope(root, evidencePath, observation 
       || JSON.stringify(aggregate.value) !== JSON.stringify(evidence.run.aggregate)) {
     throw new Error("invalid or non-PASS PROJECT corpus aggregate");
   }
-  return {
-    digest: evidence.digest,
-    repository: { head: request.repositoryHead, tree: request.repositoryTree },
-    files: request.files.map(({ path: filePath, digest }) => ({ path: filePath, digest })),
-  };
-}
-
-export function validateProjectEvidence(root, evidencePath, {
-  gitExecutablePath = null,
-  gitExecutableDigest = null,
-  afterOpen = null,
-} = {}) {
-  const envelope = validateProjectEvidenceEnvelope(root, evidencePath, { afterOpen });
-  if (gitExecutablePath === null || gitExecutableDigest === null) {
-    throw new Error("PROJECT repository authority is required");
-  }
-  const gitAuthority = exactPinnedGit(gitExecutablePath, gitExecutableDigest);
-  const repository = gitIdentity(root, gitAuthority);
-  if (envelope.repository.head !== repository.head
-      || envelope.repository.tree !== repository.tree) {
-    throw new Error("stale PROJECT corpus evidence");
-  }
-  return envelope;
+  return { digest: evidence.digest, repository };
 }
 
 function loadInputs(root) {
@@ -440,12 +346,8 @@ function renderMarkdown(queue) {
 }
 
 function main() {
-  const {
-    root, mode, projectCorpusReceipt, gitExecutablePath, gitExecutableDigest,
-  } = parseArgs(process.argv.slice(2));
-  const projectEvidence = validateProjectEvidence(root, projectCorpusReceipt, {
-    gitExecutablePath, gitExecutableDigest,
-  });
+  const { root, mode, projectCorpusReceipt } = parseArgs(process.argv.slice(2));
+  const projectEvidence = validateProjectEvidence(root, projectCorpusReceipt);
   const queue = deriveQueue(root, projectEvidence);
   const json = `${JSON.stringify(queue, null, 2)}\n`;
   const markdown = renderMarkdown(queue);
@@ -462,12 +364,9 @@ function main() {
   console.log(`conversion-queue: ${queue.counts.total}/${queue.counts.total} classified; ${queue.counts.CANDIDATE} whole-file candidates; ${queue.scopedCandidateCount} scoped candidates; ${queue.counts.BLOCKED} blocked`);
 }
 
-if (process.argv[1] !== undefined
-    && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
-  try {
-    main();
-  } catch (error) {
-    console.error(`REFUSED: ${error instanceof Error ? error.message : "unknown conversion queue failure"}`);
-    process.exit(1);
-  }
+try {
+  main();
+} catch (error) {
+  console.error(`REFUSED: ${error instanceof Error ? error.message : "unknown conversion queue failure"}`);
+  process.exit(1);
 }

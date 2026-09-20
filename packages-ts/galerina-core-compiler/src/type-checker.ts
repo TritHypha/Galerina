@@ -26,9 +26,10 @@
 //   FUNGI-BINDING-005  ImmutableBindingReassigned — let/param reassignment rejected (Phase 11A.2)
 //
 // Deferred (require full expression type inference or call graph):
-//   FUNGI-TYPE-002  TypeMismatch               — assignment compatibility (partial Phase 8A)
+//   FUNGI-TYPE-002  TypeMismatch               — remaining unsupported expression forms (bounded
+//                                              literal, known-expression, record and generic checks live)
 //   FUNGI-TYPE-034  GovernanceQualifierMismatch — protected/redacted label laundering
-//   FUNGI-TYPE-005..007  Operator / call / return type checking
+//   FUNGI-TYPE-005..007  Operator / call / return type checking (call arguments/count are partial)
 //   FUNGI-TYPE-010  UnsatisfiedGenericConstraint — generic constraint checks
 //   FUNGI-TYPE-012..016  ResultType, SecretOp, MissingEffect, GovernedSink, TensorShape
 //   FUNGI-TYPE-018  InvalidRuntimeTargetType
@@ -454,6 +455,27 @@ const ORDERABLE_TYPES: ReadonlySet<string> = new Set([
 const BINARY_FLOAT_TYPES: ReadonlySet<string> = new Set(["Float", "Float64", "Double"]);
 
 /**
+ * Compare generic arguments without erasing their payload or nominal tag.
+ *
+ * A bare generic type (for example `Option`) remains a wildcard for the
+ * compatibility checks that predate expression-level inference. Once both
+ * sides carry arguments, however, every corresponding argument must be
+ * compatible, including nested generic arguments and numeric widening.
+ */
+function genericArgumentsCompatible(
+  declared: readonly string[],
+  inferred: readonly string[],
+): boolean {
+  if (declared.length === 0 || inferred.length === 0) return true;
+  if (declared.length !== inferred.length) return false;
+
+  return declared.every((declaredArg, index) => {
+    const inferredArg = inferred[index];
+    return inferredArg !== undefined && isAssignmentCompatible(declaredArg, inferredArg);
+  });
+}
+
+/**
  * Returns true when a value of `inferred` type can be used where `declared`
  * type is expected. Phase 8A: covers literals, numeric widening, and
  * algebraic wrappers.
@@ -461,6 +483,12 @@ const BINARY_FLOAT_TYPES: ReadonlySet<string> = new Set(["Float", "Float64", "Do
 function isAssignmentCompatible(declared: string, inferred: string): boolean {
   if (declared === inferred) return true;
   if (declared === "Auto" || declared === "" || inferred === "") return true;
+  // An inferred Auto is an intentional erasure/defer marker.  It must not
+  // become a false concrete mismatch when it appears inside a generic payload
+  // such as Array<Auto>; the eventual concrete contract is checked by the
+  // stage that supplies the payload.  This preserves the existing Array<Auto>
+  // corpus-safety rule without weakening known concrete-vs-concrete checks.
+  if (inferred === "Auto") return true;
 
   // TypeId fast-path: if both types are known in the TypeId registry and they differ,
   // they are incompatible (no widening). This avoids string allocation for core types.
@@ -501,10 +529,17 @@ function isAssignmentCompatible(declared: string, inferred: string): boolean {
     return false;
   }
 
-  // Strip generic args for comparison
-  const declaredBase = declared.split("<")[0]?.trim() ?? declared;
-  const inferredBase = nInferred.split("<")[0]?.trim() ?? nInferred;
-  if (declaredBase === inferredBase) return true;
+  // Compare generic arguments when both sides provide them. Older call sites
+  // may still infer a bare wrapper (`Option`, `Result`, `Money`), which remains
+  // wildcard-compatible until expression-level inference supplies its payload.
+  const declaredRef = parseTypeString(declared);
+  const inferredRef = parseTypeString(nInferred);
+  if (declaredRef.base === inferredRef.base) {
+    return genericArgumentsCompatible(declaredRef.args, inferredRef.args);
+  }
+
+  const declaredBase = declaredRef.base;
+  const inferredBase = inferredRef.base;
 
   // Numeric widening: Int literal is compatible with all numeric types
   if (nInferred === "Int"     && NUMERIC_TYPES.has(declared)) return true;
@@ -599,6 +634,8 @@ class TypeChecker {
   private readonly typeScopes: Array<Map<string, string>> = [];
   /** Flow return type registry, built during collectDeclarations. */
   private readonly flowReturnTypes = new Map<string, string>();
+  /** Simple named type aliases, used to retain the declared generic return shape. */
+  private readonly typeAliases = new Map<string, string>();
   /** Flow parameter type list, built during collectDeclarations. */
   private readonly flowParamTypes = new Map<string, readonly string[]>();
   // Flow names already declared in THIS module. A second occurrence is a duplicate flow declaration:
@@ -686,6 +723,22 @@ class TypeChecker {
       ));
     }
     return true; // handled: adopted silently, or the precise diagnostic above
+  }
+
+  /** Resolve a bounded chain of simple named aliases without guessing through cycles. */
+  private resolveTypeAliases(raw: string): string {
+    let current = raw.trim();
+    const seen = new Set<string>();
+    while (current !== "") {
+      const qualifier = GOVERNANCE_QUALIFIER_PREFIXES.find((prefix) => current.startsWith(prefix));
+      const unqualified = qualifier === undefined ? current : current.slice(qualifier.length).trim();
+      const parsed = parseTypeString(unqualified);
+      const target = this.typeAliases.get(parsed.base);
+      if (target === undefined || seen.has(parsed.base)) return current;
+      seen.add(parsed.base);
+      current = `${qualifier ?? ""}${target.trim()}`;
+    }
+    return current;
   }
 
   check(ast: AstNode): void {
@@ -834,6 +887,7 @@ class TypeChecker {
     if (node.kind === "typeDecl" && node.value) {
       const aliasChild = node.children?.[0];
       if (aliasChild?.kind === "typeRef") {
+        if (aliasChild.value?.trim()) this.typeAliases.set(node.value.trim(), aliasChild.value.trim());
         const parsed = parseTypeString(aliasChild.value ?? "");
         if (parsed.base === "Brand") {
           this.brandedTypes.add(node.value.trim());
@@ -923,14 +977,14 @@ class TypeChecker {
       // Extract return type from the first typeRef child (the return type annotation)
       const retTypeNode = children.find((c) => c.kind === "typeRef");
       if (retTypeNode?.value) {
-        this.flowReturnTypes.set(flowDeclName, parseTypeString(retTypeNode.value).base);
+        this.flowReturnTypes.set(flowDeclName, retTypeNode.value.trim());
       }
       // Extract parameter types
       const paramTypes = children
         .filter((c) => c.kind === "paramDecl")
         .map((c) => {
           const typeRef = c.children?.find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
-          return typeRef?.value ? parseTypeString(typeRef.value).base : "";
+          return typeRef?.value ? typeRef.value.trim() : "";
         });
       this.flowParamTypes.set(flowDeclName, paramTypes);
 
@@ -1165,13 +1219,37 @@ class TypeChecker {
       case "callExpr": {
         const method = node.value ?? "";
         // Algebraic constructors
-        if (method === "Ok" || method === "Err") return "Result";
-        if (method === "Some")                   return "Option";
+        if (method === "Ok" || method === "Err" || method === "Some") {
+          const payload = node.children?.[0];
+          const payloadType = payload === undefined ? undefined : this.inferType(payload);
+          if (method === "Some") {
+            return payloadType === undefined ? "Option" : `Option<${payloadType}>`;
+          }
+          if (payloadType === undefined) return "Result";
+          return method === "Ok"
+            ? `Result<${payloadType}, Auto>`
+            : `Result<Auto, ${payloadType}>`;
+        }
         if (method === "Decimal")                return "Decimal";
         // Money constructors (receiver = Money)
         if (method === "gbp" || method === "usd" || method === "eur" || method === "jpy") return "Money";
         // Record literal { field: value }
         if (method === "#record") return "Record";
+
+        // A record update preserves the declared record type of its single spread base.
+        // Do not infer anonymous, non-record, or multi-spread updates: their resulting
+        // schema is not available at this boundary, so later checks must remain deferred.
+        if (method === "#record-update") {
+          const spreads = (node.children ?? []).filter(
+            (child) => child.kind === "identifier" && child.value === "#spread",
+          );
+          if (spreads.length !== 1) return undefined;
+          const base = spreads[0]?.children?.[0];
+          const baseType = base === undefined ? undefined : this.inferType(base);
+          return baseType !== undefined && this.recordFieldTypes.has(baseType)
+            ? baseType
+            : undefined;
+        }
 
         // Use flowReturnTypes only for plain calls (not method calls).
         // A method call (receiver.method) may share a name with a user-defined flow,
@@ -1179,7 +1257,7 @@ class TypeChecker {
         const isMethod = (node as AstNode & { callStyle?: string }).callStyle === "method";
         if (!isMethod) {
           const knownReturn = this.flowReturnTypes.get(method);
-          if (knownReturn !== undefined) return knownReturn;
+          if (knownReturn !== undefined) return this.resolveTypeAliases(knownReturn);
         }
 
         // Stdlib return type inference
@@ -1189,6 +1267,70 @@ class TypeChecker {
         if (method === "isPositive" && receiverNode?.kind === "identifier" &&
             BINARY_FLOAT_TYPES.has(receiverNode.value ?? "") && !receiverIsLexicallyBound) return "Bool";
         const receiverType = receiverNode !== undefined ? this.inferType(receiverNode) : undefined;
+
+        // Map.empty() is a bare collection constructor; its key/value payloads
+        // are supplied by the receiving annotation or later operations.
+        if (method === "empty" && receiverNode?.kind === "identifier" && receiverNode.value === "Map") {
+          return "Map";
+        }
+        if ((method === "empty" || method === "from") && receiverNode?.kind === "identifier" && receiverNode.value === "Set") {
+          return "Set";
+        }
+        if (receiverNode?.kind === "identifier" && receiverNode.value === "Array") {
+          if (method === "empty") return "Array";
+          if (method === "range") return "Array<Int>";
+          if (method === "of") {
+            const elementTypes = (node.children ?? []).slice(1).map((child) => this.inferType(child));
+            if (elementTypes.length === 0) return "Array";
+            const firstType = elementTypes[0];
+            if (firstType !== undefined && elementTypes.every((type) => type === firstType)) {
+              return `Array<${firstType}>`;
+            }
+            return "Array<Auto>";
+          }
+        }
+
+        // Option.sequence(Array<Option<T>>) -> Option<Array<T>> and
+        // Result.sequence(Array<Result<T, E>>) -> Result<Array<T>, E>.
+        // Keep malformed or untyped inputs at the bare algebraic type: this
+        // boundary must not invent payloads that later checks could mistake
+        // for verified information.
+        if ((method === "sequence" || (method === "all" && receiverNode?.value === "Result")) && receiverNode?.kind === "identifier") {
+          const argumentNode = node.children?.[1];
+          const argumentType = argumentNode === undefined ? undefined : this.inferType(argumentNode);
+          const argumentRef = argumentType === undefined ? undefined : parseTypeString(argumentType);
+          if (argumentRef?.base === "Array" && argumentRef.args.length === 1) {
+            const elementRef = parseTypeString(argumentRef.args[0] ?? "");
+            if (receiverNode.value === "Option" && elementRef.base === "Option" && elementRef.args.length === 1) {
+              return `Option<Array<${elementRef.args[0]}>>`;
+            }
+            if (receiverNode.value === "Result" && elementRef.base === "Result" && elementRef.args.length === 2) {
+              return `Result<Array<${elementRef.args[0]}>, ${elementRef.args[1]}>`;
+            }
+          }
+          if (receiverNode.value === "Option") return "Option";
+          if (receiverNode.value === "Result") return "Result";
+        }
+
+        // Option.fromNullable(T) -> Option<T> and
+        // Result.fromNullable(T, E) -> Result<T, E>.
+        // Result.fromNullable(T) uses the runtime's canonical String error
+        // fallback; unknown value/error types remain unparameterized.
+        if (method === "fromNullable" && receiverNode?.kind === "identifier") {
+          const valueNode = node.children?.[1];
+          const valueType = valueNode === undefined ? undefined : this.inferType(valueNode);
+          if (receiverNode.value === "Option") {
+            return valueType === undefined ? "Option" : `Option<${valueType}>`;
+          }
+          if (receiverNode.value === "Result") {
+            const errorNode = node.children?.[2];
+            const errorType = errorNode === undefined ? "String" : this.inferType(errorNode);
+            if (valueType !== undefined && errorType !== undefined) {
+              return `Result<${valueType}, ${errorType}>`;
+            }
+            return "Result";
+          }
+        }
 
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
@@ -1232,6 +1374,12 @@ class TypeChecker {
         if (receiverType?.startsWith("Array") || receiverType === "Array") {
           if (method === "length" || method === "count") return "Int";
           if (method === "isEmpty") return "Bool";
+          if (method === "first" || method === "last") {
+            const m = receiverType.match(/^Array<(.+)>$/);
+            if (m?.[1] !== undefined) return `Option<${m[1].trim()}>`;
+            return "Option";
+          }
+          if (method === "append") return receiverType ?? "Array";
           if (method === "get") {
             // Array<T>.get(i) → Option<T> — the bounds-safe accessor returns Option at runtime (callers
             // `match { Some(x) => … None => … }`), so the type must too. Mirrors Map<K,V>.get() → Option<V>,
@@ -1245,7 +1393,7 @@ class TypeChecker {
 
         // Map methods
         if (receiverType?.startsWith("Map<") || receiverType === "Map") {
-          if (method === "size") return "Int";
+          if (method === "size" || method === "length") return "Int";
           if (method === "has") return "Bool";
           if (method === "isEmpty") return "Bool";
           if (method === "get") {
@@ -1253,6 +1401,29 @@ class TypeChecker {
             const match = receiverType?.match(/^Map<[^,]+,\s*([^>]+)>/);
             if (match?.[1] !== undefined) return `Option<${match[1].trim()}>`;
             return "Option";
+          }
+          const mapType = parseTypeString(receiverType);
+          const keyType = mapType.args[0]?.trim();
+          const valueType = mapType.args[1]?.trim();
+          if (method === "keys") return keyType === undefined ? "Array" : `Array<${keyType}>`;
+          if (method === "values") return valueType === undefined ? "Array" : `Array<${valueType}>`;
+          if (method === "entries") return "Array<Auto>";
+          if (method === "set" || method === "delete" || method === "remove" || method === "merge") {
+            return receiverType;
+          }
+        }
+
+        // Set methods
+        if (receiverType?.startsWith("Set<") || receiverType === "Set") {
+          if (method === "size" || method === "length") return "Int";
+          if (method === "contains" || method === "isEmpty") return "Bool";
+          const setType = parseTypeString(receiverType);
+          const elementType = setType.args[0]?.trim();
+          if (method === "toList" || method === "toArray") {
+            return elementType === undefined ? "Array" : `Array<${elementType}>`;
+          }
+          if (method === "add" || method === "remove" || method === "union" || method === "intersection" || method === "difference") {
+            return receiverType;
           }
         }
 
@@ -1268,13 +1439,23 @@ class TypeChecker {
         // Option methods
         if (receiverType === "Option" || receiverType?.startsWith("Option<")) {
           if (method === "isSome" || method === "isNone") return "Bool";
-          if (method === "unwrapOr") return undefined; // returns T
+          if (method === "unwrapOr") {
+            // Option<T>.unwrapOr(default) returns the contained T. Preserve the
+            // full generic payload so the caller's return/assignment boundary
+            // can reject a mismatch instead of silently deferring inference.
+            const optionType = parseTypeString(receiverType);
+            return optionType.base === "Option" ? optionType.args[0] : undefined;
+          }
           if (method === "map") return "Option"; // returns Option<mapped>
         }
 
         // Result methods
         if (receiverType === "Result" || receiverType?.startsWith("Result<")) {
           if (method === "isOk" || method === "isErr") return "Bool";
+          if (method === "unwrapOr") {
+            const resultType = parseTypeString(receiverType);
+            return resultType.base === "Result" ? resultType.args[0] : undefined;
+          }
           if (method === "map" || method === "mapErr") return "Result";
         }
 
@@ -1303,7 +1484,10 @@ class TypeChecker {
       case "errorPropagation": {
         const inner = node.children?.[0];
         if (inner === undefined) return undefined;
-        const innerType = this.inferType(inner);
+        const inferredInnerType = this.inferType(inner);
+        const innerType = inferredInnerType === undefined
+          ? undefined
+          : this.resolveTypeAliases(inferredInnerType);
         // ? on Result<T, E> → infers T (the Ok branch)
         if (innerType === "Result" || innerType?.startsWith("Result<")) {
           const match = innerType?.match(/^Result<([^,>]+)/);
@@ -1391,7 +1575,15 @@ class TypeChecker {
           // The body expression of an arm is typically its last child
           const body = arm.children?.[arm.children.length - 1];
           if (body === undefined) return undefined;
-          const bodyType = this.inferType(body);
+          // One-line expression arms are parser-owned `(expr)` blocks.  Unwrap
+          // them only here; globally treating every expression-statement block
+          // as a typed value would turn previously deferred call arguments into
+          // new diagnostics in unrelated source bodies.
+          const bodyExpression = body.kind === "block" && body.value === "(expr)"
+            ? body.children?.[0]
+            : body;
+          if (bodyExpression === undefined) return undefined;
+          const bodyType = this.inferType(bodyExpression);
           if (bodyType === undefined) return undefined;
           armTypes.push(bodyType);
         }
@@ -1399,7 +1591,30 @@ class TypeChecker {
         if (armTypes.length === 0) return undefined;
         const firstType = armTypes[0]!;
         const allSame = armTypes.every((t) => t === firstType);
-        return allSame ? firstType : undefined;
+        if (allSame) return firstType;
+
+        // A match is an expression, so compatible numeric arms need the same
+        // common-type widening as an assignment or binary expression.  Without
+        // this bounded join, `Int` and `Float` arms become `undefined` and the
+        // enclosing return/binding check silently defers instead of validating
+        // the actual result.  Keep the join conservative: only admit a common
+        // numeric type that the existing assignment relation already accepts.
+        if (armTypes.every((type) => NUMERIC_TYPES.has(type))) {
+          const candidate = armTypes.includes("Decimal")
+            ? "Decimal"
+            : armTypes.includes("Float")
+              ? "Float"
+              : armTypes.includes("Int64")
+                ? "Int64"
+                : "Int";
+          if (armTypes.every((type) => isAssignmentCompatible(candidate, type))) {
+            return candidate;
+          }
+        }
+
+        // Different non-numeric arm types still require a real inference rule;
+        // preserve the existing fail-closed deferral until that contract exists.
+        return undefined;
       }
 
       default:
@@ -1600,12 +1815,29 @@ class TypeChecker {
         if (returnExpr !== undefined && this.currentReturnType !== "" && this.currentReturnType !== "Void") {
           const inferredType = this.inferType(returnExpr);
           if (inferredType !== undefined) {
-            // Allow Ok/Err/Some/None for Result/Option return types
-            const isOkErrReturn = returnExpr.kind === "callExpr" &&
-              (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some");
-            const declaredBase = this.currentReturnType.split("<")[0]?.trim() ?? this.currentReturnType;
-            const isHttpResponseRecord = declaredBase === "Response" && inferredType === "Record";
-            if (!isOkErrReturn && !isHttpResponseRecord && !isAssignmentCompatible(declaredBase, inferredType)) {
+            const declaredReturnType = this.resolveTypeAliases(this.currentReturnType);
+            const resolvedInferredType = this.resolveTypeAliases(inferredType);
+            const declaredBase = parseTypeString(declaredReturnType).base;
+            const isHttpResponseRecord = declaredBase === "Response" && resolvedInferredType === "Record";
+            let constructorPayloadHandled = false;
+            if (returnExpr.kind === "callExpr" &&
+                (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some")) {
+              const payloadIndex = returnExpr.value === "Err" ? 1 : 0;
+              const expectedPayload = parseTypeString(declaredReturnType).args[payloadIndex];
+              const payloadNode = returnExpr.children?.[0];
+              if (expectedPayload !== undefined && payloadNode?.kind === "callExpr" && payloadNode.value === "#record") {
+                constructorPayloadHandled = this.tryRecordLiteralAdoption(
+                  this.resolveTypeAliases(expectedPayload).split("<")[0]?.trim() ?? expectedPayload,
+                  payloadNode,
+                  node.location,
+                  "FUNGI-TYPE-008",
+                  "INVALID_RETURN_TYPE",
+                  `declared constructor payload '${expectedPayload}'`,
+                );
+              }
+            }
+            if (!isHttpResponseRecord && !constructorPayloadHandled &&
+                !isAssignmentCompatible(declaredReturnType, resolvedInferredType)) {
               // K3-005 (S3/A9, R&D bridge 0174) — a NON-Verdict value returned where Verdict is declared.
               // `return 2` (or any non-Verdict) as a Verdict smuggles an out-of-K3-domain value into a
               // governance result (fail-open). Fires BEFORE the generic TYPE-008 so the author gets the K3
@@ -1642,7 +1874,7 @@ class TypeChecker {
                 ));
               }
               }
-            } else if (!isOkErrReturn && declaredBase === "Auto") {
+            } else if (!constructorPayloadHandled && declaredBase === "Auto") {
               // Surface the deferral: isAssignmentCompatible() treats an `Auto`-declared
               // target as universally compatible, which silently mutes the return-type
               // check. Emit a visible advisory instead of nothing. Once an inference pass
@@ -1981,7 +2213,7 @@ class TypeChecker {
         const initNode = node.children?.[0];
         if (!hasGovernanceQualifier && !isViewType && initNode !== undefined) {
           const inferredType = this.inferType(initNode);
-          if (inferredType !== undefined && !isAssignmentCompatible(declaredBase, inferredType)) {
+          if (inferredType !== undefined && !isAssignmentCompatible(registeredType, inferredType)) {
             // `let x: SomeRecord = { … }` — same structural adoption as the return position
             // (finding ii): a matching literal IS the declared record; a mismatch gets the
             // precise field diagnostic from the helper instead of the generic one below.
@@ -1994,9 +2226,9 @@ class TypeChecker {
               this.diagnostics.push(makeTCDiag(
                 "FUNGI-TYPE-002",
                 "TYPE_MISMATCH",
-                `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
+                `Cannot assign '${inferredType}' to '${registeredType}'. The declared type and the value type are incompatible.`,
                 node.location,
-                `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
+                `Change the value to a '${registeredType}' expression, or update the type annotation.`,
                 inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
                   ? undefined  // numeric widening — no code suggestion needed
                   : undefined,

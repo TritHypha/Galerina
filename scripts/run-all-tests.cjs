@@ -386,13 +386,18 @@ function parseArguments(argv) {
 }
 
 function parseCounts(output) {
+  if (typeof output !== "string" || Buffer.byteLength(output, "utf8") > 64 * 1024 * 1024) {
+    return { tests: null, pass: null, fail: null };
+  }
   function value(label) {
-    const match = output.match(
-      new RegExp(
-        `(?:^|\\n)\\s*[^A-Za-z0-9\\r\\n]*${label}\\s+(\\d+)\\s*(?:\\r?$|\\n)`,
-      ),
-    );
-    return match ? Number(match[1]) : null;
+    const matches = [...output.matchAll(
+      new RegExp(`^\\s*(?:#|\\u2139)\\s*${label}\\s+([0-9]{1,16})\\s*$`, "gmu"),
+    )];
+    if (matches.length !== 1) return null;
+    const raw = matches[0]?.[1];
+    if (raw === undefined) return null;
+    const parsed = Number(raw);
+    return Number.isSafeInteger(parsed) ? parsed : null;
   }
   return {
     tests: value("tests"),
@@ -1126,4 +1131,5 @@ if (require.main === module) {
 
 module.exports = Object.freeze({
   admitFallbackPlatform,
+  parseCounts,
 });

@@ -3,19 +3,19 @@
   "subject": {
     "id": "rd-0873-native-fungi-audit-base",
     "owner": "galerina",
-    "locator": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d"
+    "locator": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b"
   },
   "approval": {
     "status": "APPROVED",
-    "planDigest": "8cacc113e8e77de44b03e95564a868c07e0910f937d34942155156d27845a09d",
+    "planDigest": "e0f755398e00b9768accf7d2918022355b19e90e9faba4dd5c38a9e3e38207d2",
     "authority": "authority://galerina/rd-0873-native-fungi-audit",
-    "evidence": "receipt://galerina/governance/rd0873-native-fungi-audit-approval.json"
+    "evidence": "receipt://galerina/rd-0873-native-fungi-audit-approval.json"
   },
   "audits": [
     {
       "id": "corpus-packages-fungi",
       "owner": "galerina",
-      "build": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
       "cwd": "repo://galerina",
       "argv": ["node", "tools/rd0873-corpus-packages-fungi.mjs"],
       "dependsOn": [],
@@ -27,7 +27,7 @@
     {
       "id": "corpus-self-hosted",
       "owner": "galerina",
-      "build": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
       "cwd": "repo://galerina",
       "argv": ["node", "tools/rd0873-corpus-self-hosted.mjs"],
       "dependsOn": [],
@@ -39,7 +39,7 @@
     {
       "id": "static-snippets",
       "owner": "galerina",
-      "build": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
       "cwd": "repo://galerina",
       "argv": ["node", "tools/rd0873-static-snippets.mjs"],
       "dependsOn": ["corpus-packages-fungi", "corpus-self-hosted"],
@@ -51,7 +51,7 @@
     {
       "id": "generated-state",
       "owner": "galerina",
-      "build": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
       "cwd": "repo://galerina",
       "argv": ["node", "tools/rd0873-generated-state.mjs"],
       "dependsOn": ["static-snippets"],
@@ -63,7 +63,7 @@
     {
       "id": "final-check",
       "owner": "galerina",
-      "build": "git://galerina/f6261ef362f0583896e24039547da33c5f0d052d",
+      "build": "git://galerina/8b6c9b87fb2e7a96df3308ce6473c8f58d12859b",
       "cwd": "repo://galerina",
       "argv": ["node", "tools/rd0873-final-check.mjs"],
       "dependsOn": ["generated-state"],

@@ -15,6 +15,42 @@ test("emits structured records to the sink with an injected clock", () => {
   assert.deepEqual(rec.fields, { a: 1 });
 });
 
+test("a retained records snapshot cannot inject a record into the sink", () => {
+  const sink = new MemoryLogSink();
+  const original = { level: "info", msg: "original", at: 1 };
+  sink.write(original);
+
+  const retained = sink.records();
+  retained.push({ level: "error", msg: "injected", at: 2 });
+
+  assert.deepEqual(sink.records(), [original]);
+});
+
+test("a retained records snapshot cannot delete a record from the sink", () => {
+  const sink = new MemoryLogSink();
+  const first = { level: "info", msg: "first", at: 1 };
+  const second = { level: "info", msg: "second", at: 2 };
+  sink.write(first);
+  sink.write(second);
+
+  const retained = sink.records();
+  retained.splice(0, 1);
+
+  assert.deepEqual(sink.records(), [first, second]);
+});
+
+test("clear does not mutate a previously retained records snapshot", () => {
+  const sink = new MemoryLogSink();
+  const original = { level: "info", msg: "original", at: 1 };
+  sink.write(original);
+
+  const retained = sink.records();
+  sink.clear();
+
+  assert.deepEqual(sink.records(), []);
+  assert.deepEqual(retained, [original]);
+});
+
 test("minLevel filters lower-severity records", () => {
   const sink = new MemoryLogSink();
   const log = createLogger({ sink, minLevel: "warn" });
@@ -23,6 +59,14 @@ test("minLevel filters lower-severity records", () => {
   log.warn("w");
   log.error("e");
   assert.deepEqual(sink.records().map((r) => r.level), ["warn", "error"]);
+});
+
+test("an invalid runtime minLevel conservatively defaults to info", () => {
+  const sink = new MemoryLogSink();
+  const log = createLogger({ sink, minLevel: "verbose" });
+  log.debug("d");
+  log.info("i");
+  assert.deepEqual(sink.records().map((r) => r.level), ["info"]);
 });
 
 test("sensitive field keys are redacted before reaching the sink", () => {
@@ -37,6 +81,38 @@ test("sensitive field keys are redacted before reaching the sink", () => {
   assert.ok(!JSON.stringify(rec).includes("hunter2"), "secret value must not appear anywhere");
 });
 
+test("nested sensitive values are redacted without leaking cycles", () => {
+  const sink = new MemoryLogSink();
+  const cycle = { credentials: { password: "nested-secret" }, note: "ok" };
+  cycle.self = cycle;
+  const log = createLogger({ sink });
+  log.info("nested", { payload: cycle });
+
+  const [rec] = sink.records();
+  assert.equal(rec.fields.payload.credentials.password, "[redacted]");
+  assert.equal(rec.fields.payload.note, "ok");
+  assert.equal(rec.fields.payload.self, "[redacted]");
+  assert.ok(!JSON.stringify(rec).includes("nested-secret"), "nested secret must not appear anywhere");
+});
+
+test("redaction output is prototype-safe for an own __proto__ field", () => {
+  const sink = new MemoryLogSink();
+  const fields = Object.create(null);
+  Object.defineProperty(fields, "__proto__", {
+    configurable: true,
+    enumerable: true,
+    value: { token: "prototype-secret" },
+    writable: true,
+  });
+  createLogger({ sink }).info("prototype", fields);
+
+  const [rec] = sink.records();
+  assert.equal(Object.getPrototypeOf(rec.fields), Object.prototype);
+  assert.equal(Object.prototype.hasOwnProperty.call(rec.fields, "__proto__"), true);
+  assert.equal(rec.fields.__proto__.token, "[redacted]");
+  assert.ok(!JSON.stringify(rec).includes("prototype-secret"), "prototype-shaped secret must not appear");
+});
+
 test("child loggers extend name and base fields and share the sink", () => {
   const sink = new MemoryLogSink();
   const root = createLogger({ sink, name: "app", baseFields: { svc: "orders" } });
@@ -47,6 +123,19 @@ test("child loggers extend name and base fields and share the sink", () => {
   assert.equal(rec.fields.svc, "orders");
   assert.equal(rec.fields.shard, 3);
   assert.equal(rec.fields.n, 1);
+});
+
+test("a logger snapshots base fields against caller mutation", () => {
+  const sink = new MemoryLogSink();
+  const baseFields = { svc: "orders", version: 1 };
+  const log = createLogger({ sink, baseFields });
+
+  baseFields.svc = "payments";
+  baseFields.version = 2;
+  log.info("tick");
+
+  const [rec] = sink.records();
+  assert.deepEqual(rec.fields, { svc: "orders", version: 1 });
 });
 
 test("a throwing sink is isolated: logging never propagates, failures are counted", () => {
@@ -64,6 +153,15 @@ test("safeStringify degrades unserialisable fields instead of throwing", () => {
   const parsed = JSON.parse(out); // must be valid JSON
   assert.equal(parsed.level, "info");
   assert.match(out, /not serialisable/);
+});
+
+test("safeStringify returns its canonical fallback for hostile top-level undefined", () => {
+  assert.equal(safeStringify(undefined), '{"level":"error","msg":"log record not serialisable","at":0}');
+});
+
+test("safeStringify returns its canonical fallback when toJSON returns undefined", () => {
+  const hostile = { toJSON: () => undefined };
+  assert.equal(safeStringify(hostile), '{"level":"error","msg":"log record not serialisable","at":0}');
 });
 
 test("JsonLineSink writes one JSON line per record to the supplied writer (no ambient I/O)", () => {

@@ -1,6 +1,6 @@
 {
   "note": "type-position `| null` per file; see source-hygiene-null-ratchet.test.mjs",
-  "total": 262,
+  "total": 256,
   "files": {
     "packages-ts/galerina-auth/src/bearer.ts": 1,
     "packages-ts/galerina-core-cli/src/core-command.ts": 1,
@@ -89,16 +89,15 @@
     "packages-ts/galerina-tools-myco/src/query/search.ts": 4,
     "packages-ts/galerina-tower-citizen/src/audit-logger.ts": 4,
     "packages-ts/galerina-tower-citizen/src/compiled-policy.ts": 2,
-    "packages-ts/galerina-tower-citizen/src/epistemic-type-state.ts": 6,
+    "packages-ts/galerina-tower-citizen/src/epistemic-type-state.ts": 2,
     "packages-ts/galerina-tower-citizen/src/governance-enforcer.ts": 1,
     "packages-ts/galerina-tower-citizen/src/hybrid-engine.ts": 10,
     "packages-ts/galerina-tower-citizen/src/key-rotation.ts": 4,
     "packages-ts/galerina-tower-citizen/src/lease.ts": 6,
-    "packages-ts/galerina-tower-citizen/src/partial-return.ts": 2,
+    "packages-ts/galerina-tower-citizen/src/partial-return.ts": 1,
     "packages-ts/galerina-tower-citizen/src/quorum.ts": 2,
     "packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts": 5,
     "packages-ts/galerina-tower-citizen/src/snapshot-key-provider.ts": 8,
-    "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts": 1,
     "packages-ts/galerina-tower-citizen/src/transport-fsm.ts": 3,
     "packages-ts/galerina-tri-regex/src/parser.ts": 1
   }

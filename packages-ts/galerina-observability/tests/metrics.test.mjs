@@ -108,6 +108,26 @@ test("cardinality cap folds excess routes into __overflow__ (bounded memory)", (
   assert.equal(s.totalRequests, 50);
 });
 
+test("cardinality cap is global across hostile method labels", () => {
+  const m = new MetricsCollector({ maxRoutes: 1 });
+  m.record({ method: "GET", route: "/base", status: 200, durationMs: 2 });
+  for (let i = 0; i < 100; i++) {
+    m.record({ method: `METHOD-${i}`, route: "/hostile", status: 500, durationMs: 4 });
+  }
+
+  const s = m.snapshot();
+  assert.equal(s.routesOverflowed, true);
+  assert.equal(s.routes.length, 2, "one admitted series plus one global overflow series");
+  const overflow = s.routes.find((r) => r.method === "__overflow__" && r.route === "__overflow__");
+  assert.ok(overflow, "global overflow identity must be present");
+  assert.equal(overflow.total, 100);
+  assert.equal(overflow.errors, 100);
+  assert.equal(overflow.latency.count, 100);
+  assert.equal(s.totalRequests, 101);
+  assert.equal(s.errors, 100);
+  assert.equal(s.latency.count, 101);
+});
+
 test("renderMetricsPrometheus uses the app_ namespace and exposes histogram + drops", () => {
   const m = new MetricsCollector();
   m.record({ method: "GET", route: "/p", status: 200, durationMs: 5 });

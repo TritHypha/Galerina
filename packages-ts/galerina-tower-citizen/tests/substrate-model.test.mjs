@@ -241,5 +241,6 @@ test("invalid parameters and degrees throw SubstrateParamError", () => {
   assert.throws(() => singleLaneErrorProbability({ ...CLEAN, laneFailureProb: -0.1 }), SubstrateParamError);
   assert.throws(() => nmrFailureProbability(0.5, 2), SubstrateParamError); // even N → no majority
   assert.throws(() => nmrFailureProbability(0.5, 0), SubstrateParamError);
+  assert.throws(() => nmrFailureProbability(0.25, 1021), SubstrateParamError); // binary64 envelope bound
   assert.throws(() => majorityVote([1, 2, 0]), SubstrateParamError);     // 2 is not a trit
 });
