@@ -306,9 +306,24 @@
    populated-map false admission and corrected the direct-vs-`first()` and
    `TYPE-026` distinctions. Keep this at
    `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization KATs
-   only until the owner freezes entry payload/key/member/diagnostic semantics
-   and an authorized named or structural-record path. See
+  only until the owner freezes entry payload/key/member/diagnostic semantics
+  and an authorized named or structural-record path. See
   `private/research/rd/RD-1250-map-entries-anonymous-record-adjudication-PRIVATE.md`.
+
+- [!] `RD-1251` confirms that mixed or unknown `Array.of(...)` arguments are
+  false admission through inferred `Auto`, not safe deferral. At
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1212-1224`, unequal
+  or undefined child types become defined `Array<Auto>`; the wildcard rule at
+  `:454-480` then allows incompatible return/call/binding consumers at
+  `:1746-1828,1874-1954,2064-2297`. Homogeneous construction and existing
+  numeric widening remain bounded and valid. Astra confirmed the stronger
+  `Array.of(1, "nope") -> Array<Int>` counterexample and corrected that the
+  runtime path is `packages-ts/galerina-core-compiler/src/stdlib.ts:1943-1953`,
+  while `FUNGI-TYPE-011` currently covers list literals only at
+  `type-checker.ts:2187-2207`. Keep this at
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; characterization KATs must
+  precede any choice of refusal, deferral, or diagnostic ownership. See
+  `private/research/rd/RD-1251-array-of-heterogeneous-element-adjudication-PRIVATE.md`.
 
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
