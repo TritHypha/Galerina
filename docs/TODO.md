@@ -1751,7 +1751,7 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-observability/src/logger.ts:56-63` propagates a throwing
   writer despite the `LogSink.write MUST NOT throw` contract. The exact typed
   failure/isolation contract and its direct regression are not yet defined;
-  `Logger.#emit` at `:144-166` only catches the outer call and does not clear
+  `Logger.#emit` at `:195-217` only catches the outer call and does not clear
   the direct-sink contract.
 - [x] Priority logger fail-closed fix: `packages-ts/galerina-observability/src/logger.ts:106`
   now validates runtime `minLevel` values through the closed `levelOrder` switch
@@ -1761,36 +1761,39 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `"verbose"` drops debug and retains info; focused package typecheck, build and
   logger tests pass (11/11, zero failures).
 - [x] Snapshot retained `baseFields` with a shallow frozen copy at
-  `packages-ts/galerina-observability/src/logger.ts:108`; the focused regression
-  at `packages-ts/galerina-observability/tests/logger.test.mjs:96-106` mutates the
+  `packages-ts/galerina-observability/src/logger.ts:150-159`; the focused regression
+  at `packages-ts/galerina-observability/tests/logger.test.mjs:128-137` mutates the
   caller-owned alias after construction and verifies later output remains unchanged.
   Focused package typecheck, build and tests pass **41/41** (`npm test`, zero
   failures, zero skips). Redaction, child logger, sink behavior, and the existing
   runtime `minLevel` fix remain covered; `JsonLineSink` failure behavior and other
   TODOs were not changed.
-- [!] Logger redaction blocker: `#redactFields` at
-  `packages-ts/galerina-observability/src/logger.ts:177-181` is shallow, so
-  nested protected values such as `{ credentials: { password: ... } }` reach the
-  sink. A bounded cycle-safe policy or explicit nested-value refusal remains
-  undefined; no completion claim is made.
+- [x] Logger redaction blocker: `#redactFields` now uses the bounded,
+  cycle-safe descriptor-only clone at
+  `packages-ts/galerina-observability/src/logger.ts:74-126,228-246`; nested
+  protected values, cycles and hostile accessors are replaced fail-closed. The
+  regressions at `packages-ts/galerina-observability/tests/logger.test.mjs:84-115`
+  cover nested secrets and the package route is **50/50** with clean
+  typecheck/build.
 - [!] Logger failure-accounting blocker: `#emit` and `#safeNow` at
-  `packages-ts/galerina-observability/src/logger.ts:144-175` currently merge
+  `packages-ts/galerina-observability/src/logger.ts:195-227` currently merge
   sink-write, record-construction/redaction and clock failures into one counter.
   The separation and negative/fractional/signed-zero clock contract need an
   exact decision and direct vectors.
-- [!] Logger prototype-safety blocker: the shallow redaction construction at
-  `packages-ts/galerina-observability/src/logger.ts:177-181` uses a plain output
-  record; hostile own `__proto__`, descriptors or proxies need an explicit
-  refusal/copy contract and discriminating tests.
+- [x] Logger prototype-safety blocker: redaction now defines copied properties
+  explicitly, so an own `__proto__` field cannot mutate the output prototype;
+  hostile descriptors/cycles are refused at
+  `packages-ts/galerina-observability/src/logger.ts:82-126,228-246`. The direct
+  regression is `packages-ts/galerina-observability/tests/logger.test.mjs:98-115`.
 - [x] Logger serialization contract fixed: `safeStringify` at
-  `packages-ts/galerina-observability/src/logger.ts:203-223` preserves successful
+  `packages-ts/galerina-observability/src/logger.ts:268-288` preserves successful
   serialization and the existing circular-field fallback, while coalescing a
   hostile top-level/`toJSON() => undefined` result to the deterministic canonical
-  JSON marker at `:203` and `:208`. The two runtime-negative regressions at
-  `packages-ts/galerina-observability/tests/logger.test.mjs:126-133` prove both
+  JSON marker at `:268` and `:273`. The two runtime-negative regressions at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:149-164` prove both
   hostile inputs return that exact string. Focused package `npm test` passes
-  **43/43** with zero failures and zero skips; `JsonLineSink`, redaction and the
-  other logger TODOs were not changed.
+  **50/50** with zero failures and zero skips; `JsonLineSink` failure handling,
+  failure accounting and the remaining authenticated/physical gates stay open.
 - [ ] Security boundary: do not use lossy `metricsAuditSink` as the kernel's
   mandatory evidence sink. It can reserve/commit successfully while discarding
   requestId, errorCode, defaults, relaxations, timestamp and posture. Introduce

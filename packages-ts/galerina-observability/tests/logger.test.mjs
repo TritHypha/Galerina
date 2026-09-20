@@ -81,6 +81,38 @@ test("sensitive field keys are redacted before reaching the sink", () => {
   assert.ok(!JSON.stringify(rec).includes("hunter2"), "secret value must not appear anywhere");
 });
 
+test("nested sensitive values are redacted without leaking cycles", () => {
+  const sink = new MemoryLogSink();
+  const cycle = { credentials: { password: "nested-secret" }, note: "ok" };
+  cycle.self = cycle;
+  const log = createLogger({ sink });
+  log.info("nested", { payload: cycle });
+
+  const [rec] = sink.records();
+  assert.equal(rec.fields.payload.credentials.password, "[redacted]");
+  assert.equal(rec.fields.payload.note, "ok");
+  assert.equal(rec.fields.payload.self, "[redacted]");
+  assert.ok(!JSON.stringify(rec).includes("nested-secret"), "nested secret must not appear anywhere");
+});
+
+test("redaction output is prototype-safe for an own __proto__ field", () => {
+  const sink = new MemoryLogSink();
+  const fields = Object.create(null);
+  Object.defineProperty(fields, "__proto__", {
+    configurable: true,
+    enumerable: true,
+    value: { token: "prototype-secret" },
+    writable: true,
+  });
+  createLogger({ sink }).info("prototype", fields);
+
+  const [rec] = sink.records();
+  assert.equal(Object.getPrototypeOf(rec.fields), Object.prototype);
+  assert.equal(Object.prototype.hasOwnProperty.call(rec.fields, "__proto__"), true);
+  assert.equal(rec.fields.__proto__.token, "[redacted]");
+  assert.ok(!JSON.stringify(rec).includes("prototype-secret"), "prototype-shaped secret must not appear");
+});
+
 test("child loggers extend name and base fields and share the sink", () => {
   const sink = new MemoryLogSink();
   const root = createLogger({ sink, name: "app", baseFields: { svc: "orders" } });

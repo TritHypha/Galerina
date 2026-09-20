@@ -381,17 +381,17 @@ locator is not sufficient evidence of a blocker or of completion.
   schema owner; legacy `Galerina_WASM_*` diagnostics are also not registry
   migrated. Clearance requires those source-defined contracts and tests before
   any execution or physical-target authority claim.
-- **Galerina observability residuals:** direct writer failure still escapes
+- **Galerina observability logger residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
-  while the outer logger catch is only `:144-166`; the exact direct-sink
-  failure/isolation contract is unresolved. Nested redaction remains shallow at
-  `:177-181`, failure classes and clock policy are combined at `:144-175`,
-  and prototype-safe copying is not established at `:177-181`. The former
-  `safeStringify` totality gap is closed at `:203-223` with focused negative
-  coverage at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:126-133`.
-  The remaining entries are exact implementation/design blockers; do not close
-  them by silently swallowing writer errors or by claiming shallow redaction is
-  complete.
+  while the outer logger catch is only `:195-217`; the exact direct-sink
+  failure/isolation and separate failure-accounting contract remains unresolved
+  at `:195-227`. Nested redaction and prototype-safe copying are now closed by
+  the bounded descriptor-only clone at `:74-126,228-246`, with negative vectors
+  at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:84-115`.
+  The former `safeStringify` totality gap is closed at `:268-288` with focused
+  negative coverage at `:149-164`. **Fail closed:** do not close the remaining
+  sink/accounting blocker by silently swallowing writer errors; it requires an
+  owner-approved typed failure signal and direct counter-separation vectors.
 - **Galerina observability public-health boundary:** public liveness/readiness/
   health handlers now project only `{ status: "UP" | "DOWN" }` (combined health
   includes status-only liveness/readiness children) at
