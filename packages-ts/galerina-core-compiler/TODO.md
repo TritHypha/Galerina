@@ -163,6 +163,11 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     `tests/type-checker-generic-assignment.test.mjs:357-387`; the combined
     bounded route is **138/138** and the focused type-checker file is **23/23**.
     Callback transforms remain deferred; unknown payloads are not invented.
+    `Option.zip` remains intentionally deferred at the static inference boundary
+    `src/type-checker.ts:1200-1266`: its runtime contract at
+    `src/stdlib.ts:2613-2621` returns an anonymous `{first, second}` record,
+    but no admitted named record schema exists here. Clearance requires an
+    owner-approved schema/typing contract plus positive and negative tests.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007

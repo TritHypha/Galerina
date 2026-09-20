@@ -377,7 +377,13 @@ locator is not sufficient evidence of a blocker or of completion.
   Coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:357-387`
   (**23/23** focused and **138/138** combined). Callback transforms and
-  unknown payloads remain deferred. A bounded
+  unknown payloads remain deferred. `Option.zip` remains intentionally
+  deferred at the static inference boundary
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1200-1266`: its
+  runtime contract at `packages-ts/galerina-core-compiler/src/stdlib.ts:2613-2621`
+  returns an anonymous `{first, second}` record, but no admitted named record
+  schema exists here. Clearance requires an owner-approved schema/typing
+  contract plus positive and negative tests. A bounded
   constructor slice is now
   closed at `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`
   and `:1746-1768,1787-1806`; `Some`, `Ok`, and `Err` retain inferable payloads and
