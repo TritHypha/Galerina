@@ -493,3 +493,71 @@ pure flow nestedFallbackGap() -> Array<Int> {
     assert.deepEqual(errors, [], `nested wrong fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
   });
 });
+
+describe("RD-1250 Map.entries characterization", () => {
+  it("records anonymous entry payload erasure as the current gap", () => {
+    const errors = typeErrors(`
+pure flow entriesGap() -> Array<String> {
+  let values: Map<String, Int> = Map.empty()
+  return values.entries()
+}
+`);
+
+    // Known RD-1250 gap: entries() returns anonymous {key,value} records, but
+    // the checker currently exposes Array<Auto> without a named schema.
+    assert.deepEqual(errors, [], `Map.entries() gap changed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+});
+
+describe("RD-1251 mixed Array.of characterization", () => {
+  it("records mixed constructor arguments as the current gap", () => {
+    const errors = typeErrors(`
+pure flow mixedArrayOfGap() -> Array<Int> {
+  return Array.of(1, "nope")
+}
+`);
+
+    // Known RD-1251 gap: mixed child types become wildcard-compatible Auto.
+    assert.deepEqual(errors, [], `mixed Array.of gap changed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+});
+
+describe("RD-1252 list-literal characterization", () => {
+  it("records first-element order dependence as the current gap", () => {
+    const errors = typeErrors(`
+pure flow mixedListGap() -> Array<Int> {
+  return [1, "nope"]
+}
+`);
+
+    // Known RD-1252 gap: return/call literals currently infer from the first child.
+    assert.deepEqual(errors, [], `mixed list gap changed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+});
+
+describe("RD-1253 algebraic-map characterization", () => {
+  it("records Option.map payload erasure as the current gap", () => {
+    const errors = typeErrors(`
+flow Double(arg: Int) -> Int { return arg * 2 }
+pure flow optionMapGap() -> Option<String> {
+  let value: Option<Int> = Some(1)
+  return value.map(Double)
+}
+`);
+
+    // Known RD-1253 gap: callback result payloads are not reconstructed yet.
+    assert.deepEqual(errors, [], `Option.map gap changed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("records Result.mapErr error-payload erasure as the current gap", () => {
+    const errors = typeErrors(`
+flow ToInt(arg: String) -> Int { return 1 }
+pure flow resultMapErrGap() -> Result<Int, Int> {
+  let value: Result<Int, String> = Err("x")
+  return value.mapErr(ToInt)
+}
+`);
+
+    assert.deepEqual(errors, [], `Result.mapErr gap changed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+});
