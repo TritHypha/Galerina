@@ -235,10 +235,15 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-core-compiler/src/type-checker.ts:447-531`,
   `:895-907`, `:1230-1241`, `:1565-1630`, `:1676-1724`, and `:1865-1925`,
   including `Option<T>.unwrapOr()` generic payload retention, recursive
-  generic payload checks and full generic signature retention.
-  Its deferred-work contract at `:28-35` still requires complete
-  expression-level inference before claiming TYPE-002/005-007 done. Do not
-  mark the rows complete from the bounded literal/known-type cases alone.
+  generic payload checks and full generic signature retention. The bounded
+  single-spread record-update slice is implemented at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1142-1155`, with
+  hostile/unknown-base coverage at
+  `packages-ts/galerina-core-compiler/tests/type-checker-record-update.test.mjs:11-51`;
+  the focused and adjacent type-checker evidence is **118/118** at source
+  commit `489ef192494d30b32d6efa57df1be88229e80f6c`. Its deferred-work contract
+  still requires complete expression-level inference before claiming
+  TYPE-002/005-007 done. Do not mark the rows complete from this bounded slice.
 - **Galerina core-config v0.2 contract:**
   `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
   blocked because the source `src/index.ts:97-101` still exposes the v0.1
