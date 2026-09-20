@@ -1398,15 +1398,25 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   runtime scopes. No placeholder Fungi or duplicate authority was created.
 - [x] Prove the package typecheck and focused **8/8** baseline. The package owns
   no exact Fungi, GIR, physical `.slide`, independent re-admission or VOK twin.
-- [ ] Replace the validators' open JavaScript ingress with exact own-data
-  decoders; capture each field once; reject inherited/accessor/proxy/surplus
-  records, wrong classes, sparse/custom arrays and unbounded text/collections.
-- [ ] Repair channel validation so changing getters cannot bypass an invalid
-  wavelength; bind exact finite binary64, `-0`, boundary, Option and UTF-16
-  behavior before any Fungi/SLIDE candidate.
-- [ ] Repair lowering validation so holes cannot silently count as unsupported
-  work, every mapped operation and nested channel is validated, and missing or
-  null records produce typed refusal rather than foreign `TypeError`.
+- [x] Replace the validators' open JavaScript ingress with exact own-data
+  decoders at `packages-ts/galerina-target-photonic/src/index.ts:237-391`;
+  fields are captured from data descriptors once, and inherited/accessor/
+  proxy/surplus records, wrong classes, sparse/custom arrays and overlong text
+  are refused. The focused package suite is **10/10** at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-78`
+  and `:120-149`.
+- [!] Channel validation now prevents changing getters from bypassing the
+  wavelength check at `packages-ts/galerina-target-photonic/src/index.ts:396-447`,
+  including finite positive values and `-0` refusal. The remaining blocker is
+  the unresolved cross-package contract for exact binary64 boundary, Option
+  presence and UTF-16 rules; those rules are not defined by the current
+  `OpticalChannelLayout` interface at `packages-ts/galerina-target-photonic/src/index.ts:149-154`.
+- [x] Repair lowering validation at
+  `packages-ts/galerina-target-photonic/src/index.ts:314-391` and `:450-520`;
+  dense-array holes, malformed nested mappings/channels and missing records now
+  return typed refusal instead of foreign `TypeError`, and every admitted
+  nested channel is revalidated. The hostile cases are covered by the focused
+  **10/10** suite at `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:120-149`.
 - [ ] Reconcile same-named `PhotonicExecutionPlan` and `PhotonicDiagnostic`
   schemas plus the conflicting amplitude-zero rule across photonic packages.
 - [ ] Replace legacy `Galerina_PHOTONIC_*` codes with owned live

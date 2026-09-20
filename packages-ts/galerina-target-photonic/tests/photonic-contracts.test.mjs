@@ -42,6 +42,48 @@ describe("validateOpticalChannelLayout — physical validity", () => {
       "Galerina_PHOTONIC_PHASE_INVALID",
     ]);
   });
+
+  it("refuses accessor, inherited, surplus and proxy-shaped records", () => {
+    const accessor = { channelId: "c", wavelengthNm: 1550 };
+    Object.defineProperty(accessor, "wavelengthNm", {
+      enumerable: true,
+      get() { return 1550; },
+    });
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout(accessor)),
+      ["Galerina_PHOTONIC_CHANNEL_RECORD_INVALID"],
+    );
+
+    const inherited = Object.create({ wavelengthNm: 1550 });
+    inherited.channelId = "c";
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout(inherited)),
+      ["Galerina_PHOTONIC_CHANNEL_RECORD_INVALID"],
+    );
+
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout({
+        channelId: "c", wavelengthNm: 1550, unexpected: true,
+      })),
+      ["Galerina_PHOTONIC_CHANNEL_RECORD_INVALID"],
+    );
+
+    const throwingProxy = new Proxy(
+      { channelId: "c", wavelengthNm: 1550 },
+      { ownKeys() { throw new Error("trap"); } },
+    );
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout(throwingProxy)),
+      ["Galerina_PHOTONIC_CHANNEL_RECORD_INVALID"],
+    );
+
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout(new Proxy({
+        channelId: "c", wavelengthNm: 1550,
+      }, {}))),
+      ["Galerina_PHOTONIC_CHANNEL_RECORD_INVALID"],
+    );
+  });
 });
 
 describe("validatePhotonicLoweringPlan — no silent unsupported ops", () => {
@@ -80,5 +122,40 @@ describe("validatePhotonicLoweringPlan — no silent unsupported ops", () => {
     });
     assert.ok(codes(diags).includes("Galerina_PHOTONIC_STATUS_INVALID"));
     assert.ok(codes(diags).includes("Galerina_PHOTONIC_PLAN_EMPTY"));
+  });
+
+  it("refuses sparse, surplus and malformed nested records", () => {
+    const sparse = [];
+    sparse.length = 1;
+    assert.deepEqual(
+      codes(validatePhotonicLoweringPlan({
+        flow: "f", targetCapability: "cap", status: "unsupported",
+        mappedOperations: sparse, unsupportedOperations: [],
+      })),
+      ["Galerina_PHOTONIC_PLAN_RECORD_INVALID"],
+    );
+
+    assert.deepEqual(
+      codes(validatePhotonicLoweringPlan({
+        flow: "f", targetCapability: "cap", status: "unsupported",
+        mappedOperations: [{
+          operation: "matrix-multiply", sourceOperation: "mm",
+          targetOperation: "photonic-mm", channels: [{ channelId: "c" }],
+          extra: true,
+        }],
+        unsupportedOperations: [],
+      })),
+      ["Galerina_PHOTONIC_PLAN_RECORD_INVALID"],
+    );
+
+    assert.deepEqual(
+      codes(validatePhotonicLoweringPlan({
+        flow: "f", targetCapability: "cap", status: "unsupported",
+        mappedOperations: [], unsupportedOperations: [{
+          operation: "x", reason: "r", suggestedFallback: "cpu", extra: true,
+        }],
+      })),
+      ["Galerina_PHOTONIC_PLAN_RECORD_INVALID"],
+    );
   });
 });
