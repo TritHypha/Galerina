@@ -27,8 +27,8 @@ const KINDS = new Set<CheckScope>([
   "all",
 ]);
 
-function usage(): void {
-  process.stdout.write(
+function usage(stream: NodeJS.WriteStream = process.stdout): void {
+  stream.write(
     `galerina-test — the consolidated Galerina test harness
 
 Usage:
@@ -54,9 +54,21 @@ Flags:
   );
 }
 
-function fail(msg: string): never {
-  process.stderr.write(`galerina-test: ${msg}\n\n`);
-  usage();
+function fail(msg: string, json = false): never {
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({
+        kind: "argument-error",
+        ok: false,
+        exitCode: 2,
+        durationMs: 0,
+        detail: msg,
+      }) + "\n",
+    );
+  } else {
+    process.stderr.write(`galerina-test: ${msg}\n\n`);
+    usage(process.stderr);
+  }
   process.exit(2);
 }
 
@@ -80,18 +92,26 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
     packages?: string[];
     inheritStdio?: boolean;
   } = {};
-  let json = false;
+  let json = args.includes("--json");
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!; // bounded by the loop condition
     if (a === "--root") {
       const v = args[++i];
-      if (!v) fail("--root requires a directory");
+      if (!v || v.startsWith("-")) fail("--root requires a directory", json);
       opts.rootDir = v;
     } else if (a === "--timeout") {
       const v = args[++i];
       const n = Number(v);
-      if (!v || !Number.isFinite(n) || n <= 0) fail("--timeout requires a positive number of ms");
+      if (
+        !v ||
+        v.startsWith("-") ||
+        !/^\d+$/u.test(v) ||
+        !Number.isSafeInteger(n) ||
+        n <= 0
+      ) {
+        fail("--timeout requires a positive integer number of ms", json);
+      }
       opts.timeoutMs = n;
     } else if (a === "--core") {
       opts.core = true;
@@ -106,7 +126,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
       usage();
       process.exit(0);
     } else if (a.startsWith("--")) {
-      fail(`unknown flag: ${a}`);
+      fail(`unknown flag: ${a}`, json);
     } else {
       positionals.push(a);
     }
@@ -117,7 +137,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
   let scope: CheckScope = "all";
   if (positionals.length > 0) {
     const first = positionals[0]!;
-    if (!KINDS.has(first as CheckScope)) fail(`unknown subcommand: ${first}`);
+    if (!KINDS.has(first as CheckScope)) fail(`unknown subcommand: ${first}`, json);
     scope = first as CheckScope;
     const rest = positionals.slice(1);
     if (rest.length > 0) opts.packages = rest;

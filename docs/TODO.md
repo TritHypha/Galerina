@@ -1731,8 +1731,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   separately **218/221 pass, 2 fail, 1 Windows signal skip** because two
   unrelated conversion-overlay/source-literal checks still fail; that red
   evidence is not used to claim full harness closure.
-- [ ] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
-  `--timeout` data; add exact argv, stream-routing, JSON and exit-code tests.
+- [x] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
+  `--timeout` data. `packages-ts/galerina-test/src/cli.ts:30-116` now refuses
+  dash-prefixed values, requires a positive safe integer timeout, keeps human
+  usage/error output on stderr, and emits a bounded JSON argument-error with
+  exit code 2 when `--json` is present. The black-box checks at
+  `packages-ts/galerina-test/tests/cli-arguments.test.mjs:16-60` cover exact
+  argv refusal, stream routing, JSON payloads and exit codes; the adjacent
+  focused harness route is **51/51 pass, 1 Windows signal skip**. No
+  `.fungi` or corpus build was run.
 - [!] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
   module bytes/digest/imports/exports/sandbox evidence, and migrate legacy
   `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes. The
