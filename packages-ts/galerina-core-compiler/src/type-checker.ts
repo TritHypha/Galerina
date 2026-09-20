@@ -1223,6 +1223,28 @@ class TypeChecker {
           }
         }
 
+        // Option.sequence(Array<Option<T>>) -> Option<Array<T>> and
+        // Result.sequence(Array<Result<T, E>>) -> Result<Array<T>, E>.
+        // Keep malformed or untyped inputs at the bare algebraic type: this
+        // boundary must not invent payloads that later checks could mistake
+        // for verified information.
+        if (method === "sequence" && receiverNode?.kind === "identifier") {
+          const argumentNode = node.children?.[1];
+          const argumentType = argumentNode === undefined ? undefined : this.inferType(argumentNode);
+          const argumentRef = argumentType === undefined ? undefined : parseTypeString(argumentType);
+          if (argumentRef?.base === "Array" && argumentRef.args.length === 1) {
+            const elementRef = parseTypeString(argumentRef.args[0] ?? "");
+            if (receiverNode.value === "Option" && elementRef.base === "Option" && elementRef.args.length === 1) {
+              return `Option<Array<${elementRef.args[0]}>>`;
+            }
+            if (receiverNode.value === "Result" && elementRef.base === "Result" && elementRef.args.length === 2) {
+              return `Result<Array<${elementRef.args[0]}>, ${elementRef.args[1]}>`;
+            }
+          }
+          if (receiverNode.value === "Option") return "Option";
+          if (receiverNode.value === "Result") return "Result";
+        }
+
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
 

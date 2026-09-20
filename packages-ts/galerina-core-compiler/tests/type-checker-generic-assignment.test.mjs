@@ -293,4 +293,36 @@ pure flow badArrayConstructors() -> Array<String> {
       `each Array constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("infers bounded Option.sequence and Result.sequence returns", () => {
+    const errors = typeErrors(`
+pure flow sequenceConstructors() -> Option<Array<Int>> {
+  let options: Array<Option<Int>> = []
+  let results: Array<Result<Int, String>> = []
+  let combinedOptions: Option<Array<Int>> = Option.sequence(options)
+  let combinedResults: Result<Array<Int>, String> = Result.sequence(results)
+  return combinedOptions
+}
+`);
+
+    assert.deepEqual(errors, [], `sequence constructors must preserve admitted payload types: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Option.sequence and Result.sequence returns", () => {
+    const errors = typeErrors(`
+pure flow badSequenceConstructors() -> Option<Array<Int>> {
+  let options: Array<Option<Int>> = []
+  let results: Array<Result<Int, String>> = []
+  let combinedOptions: Option<Array<String>> = Option.sequence(options)
+  let combinedResults: Result<Array<String>, Int> = Result.sequence(results)
+  return combinedOptions
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      2,
+      `each sequence constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });
