@@ -6,6 +6,8 @@
 // =============================================================================
 
 import type {
+  AuditEvent,
+  AuditReservation,
   AuditSink,
   HandlerDispatch,
   RouteDeclaration,
@@ -63,6 +65,32 @@ export function createObservability(opts: CreateObservabilityOptions = {}): Obse
   const metrics = new MetricsCollector(opts.metrics ?? {});
   const logger = createLogger(opts.logger ?? {});
   const surface = observabilityRoutes({ registry, metrics, ...(opts.routes ?? {}) });
+  let metricsMode: "audit" | "instrument" | undefined;
+  const claimMetricsMode = (mode: "audit" | "instrument"): void => {
+    if (metricsMode !== undefined && metricsMode !== mode) {
+      throw new Error("Observability metrics seams are mutually exclusive: use auditSink or instrument, not both.");
+    }
+    metricsMode = mode;
+  };
+  const rawAuditSink = metricsAuditSink(metrics);
+  const auditSink: AuditSink = {
+    reserve(): AuditReservation | undefined {
+      claimMetricsMode("audit");
+      return rawAuditSink.reserve();
+    },
+    commit(reservation: AuditReservation, event: AuditEvent): void {
+      claimMetricsMode("audit");
+      rawAuditSink.commit(reservation, event);
+    },
+    cancel(reservation: AuditReservation): void {
+      claimMetricsMode("audit");
+      rawAuditSink.cancel(reservation);
+    },
+    emit(event: AuditEvent): void {
+      claimMetricsMode("audit");
+      rawAuditSink.emit(event);
+    },
+  };
 
   return {
     registry,
@@ -70,7 +98,10 @@ export function createObservability(opts: CreateObservabilityOptions = {}): Obse
     logger,
     routes: surface.routes,
     dispatch: surface.dispatch,
-    auditSink: metricsAuditSink(metrics),
-    instrument: (dispatch, instrumentOpts) => instrumentDispatch(dispatch, metrics, instrumentOpts ?? {}),
+    auditSink,
+    instrument: (dispatch, instrumentOpts) => {
+      claimMetricsMode("instrument");
+      return instrumentDispatch(dispatch, metrics, instrumentOpts ?? {});
+    },
   };
 }

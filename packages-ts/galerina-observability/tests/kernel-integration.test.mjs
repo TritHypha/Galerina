@@ -196,3 +196,20 @@ test("createObservability bundles a ready-to-compose surface", async () => {
   // The three handled requests were all instrumented into the bundled collector.
   assert.ok(bodyJson(metricsRes).totalRequests >= 2);
 });
+
+test("createObservability refuses mixing auditSink and instrument metrics seams", () => {
+  const auditFirst = createObservability();
+  const reservation = auditFirst.auditSink.reserve();
+  auditFirst.auditSink.cancel(reservation);
+  assert.throws(
+    () => auditFirst.instrument({}),
+    /mutually exclusive/,
+  );
+
+  const instrumentFirst = createObservability();
+  instrumentFirst.instrument({});
+  assert.throws(
+    () => instrumentFirst.auditSink.reserve(),
+    /mutually exclusive/,
+  );
+});

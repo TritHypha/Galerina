@@ -1616,8 +1616,11 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   route-surface vectors at
   `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:102-127`
   pass; the focused kernel/logger route is **25/25** with clean typecheck/build.
-- [ ] Enforce the documented mutual exclusion between `auditSink` and
-  `instrument`; the current active bundle exposes both and can double-count.
+- [x] Enforce the documented mutual exclusion between `auditSink` and
+  `instrument` in the active bundle. `packages-ts/galerina-observability/src/observability.ts:61-105`
+  claims the first used seam and refuses the opposite seam; both orderings are
+  covered at `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-216`.
+  The focused kernel/logger route is **26/26** with clean typecheck/build.
   Stabilize `failSafe` to one tagged public response schema.
 - [ ] **Priority substrate numerical/termination fix:** cap accepted odd `N`
   or replace the current recurrence with an independently verified stable
