@@ -85,12 +85,45 @@ declared limit; and returned capability/plan data is copied and immutable.
   evidence. Until then, retain the one-way fail-closed check and do not widen the
   report claim.
 
+### Astra contract review — 2026-09-20
+
+- **Receipt:** the composed prompt and complete advisory reply are retained in
+  the active task review receipt. Prompt SHA-256:
+  `C2C3CB3505C071D728C0CD2F91BCB190C6A076CD06C0F7B080F31B95F1CEAA6B`.
+  Reply SHA-256:
+  `DBBB620D4C09D016B20C23E161627EDC689AA3A9A70ECEFF2A4E9B9309773A39`.
+  Reviewer attempt: `01a0bc56-9e9f-7bd0-9ffb-21fd250c2de8`.
+- **Independent live recheck:** the observability package passed its bounded
+  typecheck/build/test route **43/43**, and the WASM target package passed its
+  bounded typecheck/build/test route **4/4**. These results verify the current
+  tests only; they do not close unspecified contracts.
+- **Disposition:** no TODO was closed and no new RD record was minted. Astra
+  found no genuinely new research problem: the logger items are ordinary
+  implementation candidates only after an explicit failure/redaction/clock
+  contract, while the WASM items remain an admission-authority decision.
+- **Exact unresolved logger blockers:**
+  `packages-ts/galerina-observability/src/logger.ts:56-63`,
+  `JsonLineSink.write`, can propagate a direct writer exception even though
+  `LogSink.write` claims non-throwing isolation; the surrounding catch is only
+  `:144-175`. Nested redaction and prototype-safe copying remain at
+  `:177-181`; failure accounting and clock semantics remain at `:144-175`.
+  **Fail closed:** keep these open until owner contract plus direct-call,
+  logger-mediated, hostile-property, secondary-failure, and clock tests exist.
+- **Exact unresolved WASM blockers:**
+  `packages-ts/galerina-target-wasm/src/index.ts:47-80`,
+  `validateWasmArtefact`, is compile-time typed rather than a runtime decoder;
+  `:84-95`, `createWasmTargetReport`, accepts caller-owned typed input and
+  aliases the artefact array. **Fail closed:** no admission claim until the
+  owner defines runtime schema/refusal, immutable ownership, path containment,
+  trusted bytes-digest binding, import/export authority, diagnostic ownership,
+  and migration/rollback evidence.
+
 ## Bridge preparation
 
 Grok is temporarily unavailable. When the bridge returns, ask the three questions
 above with the exact locators and request a decision, counterexample, or refusal
-case—not general commentary. Astra is being used now to compute the same gaps from
-the live source.
+case—not general commentary. The Astra contract review is recorded above and did
+not clear any blocker or mint a new R&D record.
 
 The R&D metadata query remains refused because tracked private RD sources are
 dirty. That limits an exhaustive current-coverage claim, but it does not block
