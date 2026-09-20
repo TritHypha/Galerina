@@ -61,6 +61,28 @@
   this record. RD-1237 is advisory only; no production, conversion, queue,
   corpus or `.fungi` authority follows.
 
+### Logger failure-accounting and clock adjudication — RD-1238 — 2026-09-20
+
+- [x] Record `RD-1238` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The current source
+  behavior is verified at
+  `packages-ts/galerina-observability/src/logger.ts:190-227`: `#emit` counts
+  sink-write and escaping record-construction exceptions, while `#safeNow`
+  maps throwing/non-finite/non-number clocks to positive `0` without counting.
+- [!] The owner contract remains open. Every finite primitive timestamp,
+  including negative, fractional and `-0`, passes through; fallback `0`
+  collides with genuine epoch/injected zero, and no provenance field exists.
+  Nested hostile redaction traps can become `[redacted]` without incrementing;
+  only exceptions escaping local guards reach the outer counter.
+- [!] Clearance requires an owner freeze for aggregate counter meaning versus
+  cause-specific counters, fallback/provenance semantics, and the complete
+  fixture matrix: finite/non-finite/signed-zero clocks, throwing getters and
+  messages, nested redaction, sink side-effect-then-throw, repeated and
+  combined failures, parent/child counters, filtered emissions and the planted
+  clock-as-sink-failure wrong-result control. RD-1237 remains HOLD; no
+  authenticated health, durability, conversion, queue, corpus or `.fungi`
+  authority follows.
+
 ### Exact blocker ledger refresh — 2026-09-20
 
 - [x] The SLIDE G4 false-positive call-site blocker is closed at
@@ -2082,9 +2104,11 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-observability/src/logger.ts:195-227` count sink-write
   and record-construction/redaction failures through `#emit`, while `#safeNow`
   catches clock exceptions and returns `0` without incrementing that counter.
-  The separation and negative/fractional/signed-zero clock contract need an
-  exact owner decision and direct vectors; RD-1237 explicitly leaves this
-  separate TODO open.
+  RD-1238 confirms that one public counter is defensible only as an explicitly
+  aggregate per-logger synchronous exception count; it cannot identify cause,
+  delivery, loss, durability or health. The separation and
+  negative/fractional/signed-zero clock contract need an owner decision and
+  the complete direct vectors; RD-1237 remains separate and open.
 - [x] Logger prototype-safety blocker: redaction now defines copied properties
   explicitly, so an own `__proto__` field cannot mutate the output prototype;
   hostile descriptors/cycles are refused at

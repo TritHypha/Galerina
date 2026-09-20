@@ -76,6 +76,36 @@ assurance. Those remain later gates after the component work is complete.
   close the accounting/clock TODO, or run queue/corpus/`.fungi` assurance from
   the package route or model agreement.
 
+### M-RD-008 — Galerina logger failure-accounting and clock contract — RD-1238
+
+- **Exact blocker:** `packages-ts/galerina-observability/src/logger.ts:190-227`.
+  `#emit` increments one per-logger counter for sink-write exceptions and
+  exceptions escaping record construction, while `#safeNow` maps throwing,
+  non-finite and non-number clocks to positive `0` without incrementing.
+- **Fresh evidence:** package typecheck/build/tests are **53/53**. Current
+  source accepts every finite primitive timestamp, including negative,
+  fractional and `-0`; JSON collapses `-0` to `0`; fallback `0` collides with
+  genuine epoch/injected zero and carries no provenance. Nested hostile
+  redaction traps can become `[redacted]` without incrementing; only faults
+  escaping local guards reach the outer counter.
+- **Decision:** `RD-1238` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. One public counter
+  is defensible only if explicitly frozen as an aggregate synchronous exception
+  count; it cannot identify cause, delivery, loss, durability or health. This
+  is an owner contract followed by ordinary bounded engineering, not new R&D.
+- **Clearance evidence:** owner freeze, aligned JSDoc, and a complete fixture
+  matrix for finite/non-finite/signed-zero clocks, throwing getters/messages,
+  nested redaction, side-effect-then-throw, repeated/combined failures,
+  parent/child counters, filtered emissions, serialization degradation and a
+  planted clock-as-sink-failure wrong-result control. Keep RD-1237 HOLD.
+- **Evidence:** private record
+  `private/research/rd/RD-1238-observability-failure-accounting-clock-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T094347Z-rd-1238-observability-failure-accounting-clock-private/`.
+- **Safe continuation:** do not close the counter/clock TODO, direct sink TODO,
+  authenticated health, durability, queue, corpus or `.fungi` assurance from
+  the current package route or model agreement.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
@@ -577,13 +607,14 @@ locator is not sufficient evidence of a blocker or of completion.
   at `:243-254` remain explicit residual controls. Clearance requires the
   owner contract, refusal/consumption rules, registry ownership and negative
   tests before any execution or physical-target authority claim.
-- **Galerina observability logger residuals:** direct writer failure still escapes
+- **Galerina observability logger residuals (RD-1237/RD-1238):** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:195-217`; the exact direct-sink
-  failure/isolation contract remains unresolved. The separate
+  failure/isolation contract remains unresolved under RD-1237. The separate
   failure-accounting/clock contract is also open: `#emit` counts sink/record
   failures at `:207-217`, while `#safeNow` returns `0` without counting clock
-  exceptions at `:219-227`. Nested redaction and prototype-safe copying are now closed by
+  exceptions at `:219-227`; RD-1238 retains the counter/clock contract hold.
+  Nested redaction and prototype-safe copying are now closed by
   the bounded descriptor-only clone at `:74-126,228-246`, with negative vectors
   at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:84-115`.
   The former `safeStringify` totality gap is closed at `:268-288` with focused
