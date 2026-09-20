@@ -124,9 +124,19 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     tests/rd-0120-governed-flow-valuestate.test.mjs and
     tests/tier-floor-fungi-tier-001.test.mjs.
 
-[ ] WAT emitter — remaining ~11% unlowered stdlib constructors
-    Money currency constructors, Decimal bignum, collection ops (range, map, filter,
-    reduce), redact. Each needs a WASM host import stub.
+[ ] WAT emitter — remaining exact unlowered stdlib surfaces
+    Money currency constructors, `print`/`println`, `redact`, and `range` are
+    already lowered or host-backed at `src/wat-emitter.ts:1198-1258`, with
+    host coverage at
+    `tests/wat-host-stdlib-stubs-oracle.test.mjs:22-123` and completeness
+    coverage at `tests/wat-host-runtime-completeness.test.mjs:27-42`.
+    The live blocker is the fail-closed set at `src/wat-emitter.ts:2028-2045`:
+    exact Decimal lowering needs a non-f64 representation, while
+    `map`/`reduce`/`filter` need a governed closure/callback ABI. Current
+    refusal evidence is `tests/wat-decimal-decline.test.mjs:21-40`; do not
+    replace these `(unreachable)` refusals with lossy or silent lowering.
+    Clearance requires an explicit host/closure contract, interpreter/WAT
+    parity, positive and negative tests, and exact-head receipts.
 
 [ ] Stage-B self-hosting WASM byte-parity
     Lexer tokenize + full parser ladder: proven (R3). GIR emitter: proven (R2).
