@@ -1,5 +1,32 @@
 # TODO
 
+### Current bounded component receipts — 2026-09-20
+
+- [x] Galerina source HEAD is `de0d55e0dc9c7e3e232930db84f6acf2ef23ef69`.
+  The photonic-emulator substrate-math ingress is bounded at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267` with
+  hostile/envelope coverage at
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
+  package build/typecheck/tests pass **61/61**. AI accelerator selection
+  ingress remains **7/7**; report admission is separately held at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-769`.
+- [x] SLIDE source HEAD is
+  `c22e855bba5be2ca6f6c51ee2841922c88b97df8`. Its bounded parent-swap
+  rollback residual is closed at
+  `SLIDE/src/checked-fungi-package-file.mjs:159-178,307-312`, with the
+  refusal/no-residual assertion at
+  `SLIDE/tests/checked-fungi-package-file.test.mjs:163-178`; the focused
+  publication/identity route is **41/41 pass**. Production descriptor-relative
+  authority remains held.
+- [x] Lyth-Weaver source HEAD is
+  `7f661360d0ea5f1eea5a0ca991e6015f01621ba0`; no Lyth implementation change
+  was made in this checkpoint. Its remaining rows remain named
+  DONE/REFUSED/HOLD and generation-dependent.
+- [!] These are bounded component receipts only. No corpus compile, conversion
+  queue regeneration, signing, profile activation, VOK authority or `.fungi`
+  build follows. The pre-existing dirty Galerina `README.md` remains
+  untouched.
+
 ### Beta-v1 operational-key preflight — 2026-09-19
 
 - [x] The owner generated dedicated hybrid Ed25519 + ML-DSA-65 operational
