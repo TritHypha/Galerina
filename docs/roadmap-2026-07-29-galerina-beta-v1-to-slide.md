@@ -5,7 +5,7 @@
 The current bounded implementation and documentation state remains
 non-authorizing:
 
-- Galerina `main` is now at `f345fbc874f5930f6cc842cb20f5b4e145e34035`, following
+- Galerina `main` is now at `f98d4212ca0599c1b264ab0e3601dfb80a47980d`, following
   the active-branch consolidation merge `0858b4be0620783837ab33c582af6ec3862165ff`.
   The generator-owned roadmap refresh is recorded through
   `scripts/gen-roadmap.mjs`; focused corpus-control and audit-map checks pass
@@ -18,7 +18,7 @@ non-authorizing:
   canonical GIR, independent SLIDE re-derivation and authenticated VOK
   current-context evidence.
 - The private KB source head before its latest continuation-table refresh is
-  `9fd6ca936a1cee2a7de922985c56b4f648940e4b`;
+  `22a25d3c5574554580b288291eb855e718e7cf1d`;
   its corpus continuation table is still **IN PROGRESS** and does not claim
   fresh corpus results. The canonical AGENTS owner used by the audit-map
   receipt is `c68276eb54cefb0a37260b60225734841603093d`.
