@@ -80,6 +80,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     is **40/40**. Broader unsupported expression inference remains open.
 
 [x] Bounded algebraic-constructor payload inference
+    Implementation commit: `b7e93978377240fd2e697224019fb67dad7a17ed`.
     `Some`, `Ok`, and `Err` now retain an inferable payload at
     `src/type-checker.ts:1156-1168` as `Option<T>`, `Result<T, Auto>`, or
     `Result<Auto, E>`. Named aliases are resolved at `:680-697`, flow-call

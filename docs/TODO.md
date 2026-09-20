@@ -12,6 +12,7 @@
   `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`.
   Typecheck/build pass; the focused route is **40/40**.
 - [x] Algebraic constructor payload inference is closed at
+  implementation commit `b7e93978377240fd2e697224019fb67dad7a17ed`, with
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`:
   `Some` retains `Option<T>`, `Ok` retains `Result<T, Auto>`, and `Err`
   retains `Result<Auto, E>`. Alias resolution at `:680-697`, flow-call and
