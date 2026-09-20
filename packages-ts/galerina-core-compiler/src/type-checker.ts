@@ -1245,6 +1245,26 @@ class TypeChecker {
           if (receiverNode.value === "Result") return "Result";
         }
 
+        // Option.fromNullable(T) -> Option<T> and
+        // Result.fromNullable(T, E) -> Result<T, E>.
+        // Result.fromNullable(T) uses the runtime's canonical String error
+        // fallback; unknown value/error types remain unparameterized.
+        if (method === "fromNullable" && receiverNode?.kind === "identifier") {
+          const valueNode = node.children?.[1];
+          const valueType = valueNode === undefined ? undefined : this.inferType(valueNode);
+          if (receiverNode.value === "Option") {
+            return valueType === undefined ? "Option" : `Option<${valueType}>`;
+          }
+          if (receiverNode.value === "Result") {
+            const errorNode = node.children?.[2];
+            const errorType = errorNode === undefined ? "String" : this.inferType(errorNode);
+            if (valueType !== undefined && errorType !== undefined) {
+              return `Result<${valueType}, ${errorType}>`;
+            }
+            return "Result";
+          }
+        }
+
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
 

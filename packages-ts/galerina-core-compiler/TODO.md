@@ -41,10 +41,10 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     declared-record result of a single-spread record update. The remaining gap is
     full expression-level inference for unsupported or unknown forms. Current
     blocker boundary:
-    `src/type-checker.ts:1054-1532` (`TypeChecker.inferType`), with the
+    `src/type-checker.ts:1054-1552` (`TypeChecker.inferType`), with the
     assignment relation at `:472-541`, record-update admission at `:1179-1188`,
-    return consumer at `:1721-1804`, call consumer at `:1850-1930`, and
-    binding consumer at `:2038-2273`.
+    return consumer at `:1742-1824`, call consumer at `:1870-1950`, and
+    binding consumer at `:2060-2293`.
     The record-update slice is intentionally refused when the update has zero or
     multiple `#spread` children, when the spread base cannot be inferred, or when
     the inferred base is not a declared record schema; those cases return unknown
@@ -65,7 +65,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     retain their inner type, and numerically compatible arm results join through
     the existing assignment relation (`Int`/`Float` → `Float`). Incompatible
     results remain fail-closed and reach the enclosing mismatch diagnostic.
-    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1476-1527`.
+    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1496-1547`.
     Focused evidence: `tests/type-checker-phase11-wave2.test.mjs:197-263`
     plus parser/domain/interpreter regressions; the combined bounded compiler
     route is **104/104**, parser/domain route **138/138**, and
@@ -94,7 +94,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 
 [x] Bounded Array list-method return inference
     `first`/`last` now retain `Option<T>`, while `append` retains the receiver
-    `Array<T>` at `src/type-checker.ts:1290-1295`. Positive and
+    `Array<T>` at `src/type-checker.ts:1310-1316`. Positive and
     negative assignment coverage is
     `tests/type-checker-generic-assignment.test.mjs:168-198` (11/11 in the
     file); the focused combined route is **34/34**. The last full package run
@@ -107,7 +107,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 [x] Bounded Map method return inference
     `Map.empty()` returns a bare `Map`, `keys()` returns `Array<K>`,
     `values()` returns `Array<V>`, and persistent `set`/`delete`/`remove`/
-    `merge` retain `Map<K,V>` at `src/type-checker.ts:1204-1207,1307-1327`.
+    `merge` retain `Map<K,V>` at `src/type-checker.ts:1204-1207,1327-1347`.
     Positive and negative coverage is
     `tests/type-checker-generic-assignment.test.mjs:200-232` (13/13 in the
     file); the focused combined route is **36/36**. The interpreter-backed
@@ -118,7 +118,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     `Set.empty()`/`Set.from()` retain a bare `Set`, type-preserving
     `add`/`remove`/`union`/`intersection`/`difference` retain `Set<T>`, and
     `toList`/`toArray` return `Array<T>` at
-    `src/type-checker.ts:1209-1211,1329-1341`. Positive and negative coverage
+    `src/type-checker.ts:1209-1211,1349-1361`. Positive and negative coverage
     is `tests/type-checker-generic-assignment.test.mjs:234-266` (**15/15** in
     file); the combined bounded collection route is **132/132**. Callback
     transforms `map`/`filter` remain deferred because their element type is not
@@ -145,13 +145,23 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     Malformed or untyped inputs remain bare `Option`/`Result` and defer rather
     than inventing payloads. Full package and corpus assurance remain deferred.
 
+[x] Bounded Option/Result from-nullable constructor return inference
+    `Option.fromNullable(T)` retains `Option<T>`, and
+    `Result.fromNullable(T,E)` retains `Result<T,E>` at
+    `src/type-checker.ts:1248-1266`, matching the runtime combinators at
+    `src/stdlib.ts:319-367,2573-2601`. Positive and negative coverage is
+    `tests/type-checker-generic-assignment.test.mjs:329-355`; the combined
+    bounded route is **136/136** and the focused type-checker file is **21/21**.
+    Unknown value/error types remain bare `Option`/`Result` and defer. Full
+    package and corpus assurance remain deferred.
+
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
     is implemented for argument count. Remaining work is complete operator and
     return-type coverage across unsupported expression forms; it still depends on
     the unresolved inference cases above. Source:
-    `src/type-checker.ts:1721-1804` (return consumer) and
-    `:1850-1930` (call consumer), with `:1054-1532` as the inference boundary.
+    `src/type-checker.ts:1742-1824` (return consumer) and
+    `:1870-1950` (call consumer), with `:1054-1552` as the inference boundary.
     Unsupported expression forms remain
     unknown and are intentionally refused/deferred. Clearance requires the
     expression-kind matrix plus positive and negative tests at one exact head.

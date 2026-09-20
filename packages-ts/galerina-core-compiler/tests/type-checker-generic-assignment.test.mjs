@@ -325,4 +325,32 @@ pure flow badSequenceConstructors() -> Option<Array<Int>> {
       `each sequence constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("infers bounded Option.fromNullable and Result.fromNullable returns", () => {
+    const errors = typeErrors(`
+pure flow nullableConstructors() -> Option<Int> {
+  let option: Option<Int> = Option.fromNullable(1)
+  let result: Result<Int, String> = Result.fromNullable(1, "missing")
+  return option
+}
+`);
+
+    assert.deepEqual(errors, [], `nullable constructors must preserve admitted payload types: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Option.fromNullable and Result.fromNullable returns", () => {
+    const errors = typeErrors(`
+pure flow badNullableConstructors() -> Option<Int> {
+  let option: Option<String> = Option.fromNullable(1)
+  let result: Result<String, Int> = Result.fromNullable(1, "missing")
+  return option
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      2,
+      `each nullable constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

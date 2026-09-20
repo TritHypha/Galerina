@@ -16,15 +16,15 @@
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`:
   `Some` retains `Option<T>`, `Ok` retains `Result<T, Auto>`, and `Err`
   retains `Result<Auto, E>`. Alias resolution at `:680-697`, flow-call and
-  `?` propagation at `:1197` and `:1393-1411`, and the return checker at
-  `:1721-1747,1766-1785` now validate those payloads, including structural record
+  `?` propagation at `:1197` and `:1413-1431`, and the return checker at
+  `:1742-1768,1787-1806` now validate those payloads, including structural record
   adoption, instead of bypassing `FUNGI-TYPE-008`. Positive/negative
   coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
   (**32/32** focused tests); the last full package run before the Set slice was
   **6,784/6,784** at `e67db0ce0`.
 - [x] Bounded Array list-method return inference is closed at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1290-1295`:
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1310-1316`:
   `first`/`last` retain `Option<T>` and `append` retains `Array<T>`.
   Positive and negative coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-198`
@@ -34,7 +34,7 @@
   remain explicitly deferred because callback/closure typing is not admitted
   by this bounded inference lane.
 - [x] Bounded Map method return inference is closed at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1204-1207,1307-1327`:
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1204-1207,1327-1347`:
   `Map.empty()` retains a bare `Map`, `keys()` returns `Array<K>`, `values()`
   returns `Array<V>`, and persistent `set`/`delete`/`remove`/`merge` retain
   `Map<K,V>`. Positive/negative coverage is
@@ -43,7 +43,7 @@
   collection route is **115/115**. `entries()` remains `Array<Auto>` because
   its anonymous `{key,value}` record has no admitted named schema here.
 - [x] Bounded Set method return inference is closed at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1209-1211,1329-1341`:
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1209-1211,1349-1361`:
   `Set.empty()`/`Set.from()` retain a bare `Set`, type-preserving
   `add`/`remove`/`union`/`intersection`/`difference` retain `Set<T>`, and
   `toList`/`toArray` return `Array<T>`. Positive/negative coverage is
@@ -63,6 +63,16 @@
   unknown `Array.of` element types remain `Array<Auto>` and defer. The last
   full package run before this slice was **6,784/6,784** at `e67db0ce0`; final
   assurance remains deferred.
+- [x] Bounded Option/Result from-nullable constructor return inference is closed
+  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1248-1266`:
+  `Option.fromNullable(T)` retains `Option<T>`, while
+  `Result.fromNullable(T,E)` retains `Result<T,E>`, matching the runtime
+  combinators at `packages-ts/galerina-core-compiler/src/stdlib.ts:319-367,2573-2601`.
+  Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:329-355`;
+  the combined bounded route is **136/136** and the focused type-checker file
+  is **21/21**. Unknown value/error types remain bare algebraic types and defer.
+  Full package and corpus assurance remain deferred.
 - [x] Bounded Option/Result sequence-constructor return inference is closed at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1226-1246`:
   `Option.sequence(Array<Option<T>>)` retains `Option<Array<T>>`, while
@@ -81,9 +91,9 @@
   (**256** occurrences, down from **262**); the standalone ratchet is **6/6**.
 - [!] The remaining compiler blocker is broad expression-level inference, not
   the closed slices above. The live fail-closed boundary is
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1532`
-  (`TypeChecker.inferType`), with the return consumer at `:1721-1804`, call
-  consumer at `:1850-1930`, and binding consumer at `:2038-2273`;
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1552`
+  (`TypeChecker.inferType`), with the return consumer at `:1742-1824`, call
+  consumer at `:1870-1950`, and binding consumer at `:2060-2293`;
   unsupported AST forms return unknown and therefore leave portions of
   FUNGI-TYPE-002/005-007 deferred. Clearance requires a complete
   expression-kind matrix with both valid and invalid cases, while preserving
@@ -142,7 +152,7 @@
   expression position at
   `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778`, unwraps
   expression-arm blocks and joins only assignment-compatible numeric results
-   at `packages-ts/galerina-core-compiler/src/type-checker.ts:1476-1527`.
+   at `packages-ts/galerina-core-compiler/src/type-checker.ts:1496-1547`.
 - [x] Regression evidence is **104/104** for the bounded compiler set,
   **138/138** for parser/domain regressions, and **61/61** for
   interpreter/match/governance regressions. The focused test additions are at
