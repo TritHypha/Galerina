@@ -221,11 +221,15 @@ locator is not sufficient evidence of a blocker or of completion.
   still a raw-text stub for `validateTypedContentBlock()`; the function accepts
   only `blockType`, `marker`, `content`, `file`, and `startLine`, so it has no
   binding/type environment from which to prove that a `ProtectedSecret` is
-  emitted. The source-preserving parser seam is now implemented at
+  emitted. A bounded source search found no production call site that invokes
+  this validator; the only current test reference is the explicit stub contract
+  at `packages-ts/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:394-404`,
+  which asserts an empty diagnostic list. The source-preserving parser seam is now implemented at
   `packages-ts/galerina-core-compiler/src/lexer.ts:22-37` and `:358-420`,
   `src/parser.ts:100-108`, `:1616-1643`, and `:2760-2768`, with regressions at
   `tests/typed-content-block-ast.test.mjs:14-49`. The remaining blocker is the
-  AST/type-environment validation layer, not raw content capture. The canonical
+  AST/type-environment validation layer and compiler wiring, not raw content
+  capture. The canonical
   contract explicitly records the dependency at
   `ZTF-Knowledge-Bases/reference/galerina/galerina-core-syntax-typed-content-blocks.md:233-250`
   and its implementation-status table at `:266-272` still needs an owner-side
