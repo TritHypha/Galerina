@@ -1305,7 +1305,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [ ] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must
-  be binding.
+  be binding. The bounded config slice now rejects malformed/accessor records,
+  surplus/missing keys, non-finite budgets, invalid target/privacy literals at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:76-425`, with **12/12**
+  focused contract tests at `tests/benchmark-contracts.test.mjs:45-158`;
+  `shareable:false` is now binding. The full report decoder and the
+  `opticalIo:null` versus absent contract remain open.
 - [x] Publish all registered owners individually and pass the complete 19-check
   matrix: **1,488/1,488** executable-family paths, **149** source Fungi files,
   graph **9,900 nodes / 10,039 edges / 0 violations**, semantic **3/3** with

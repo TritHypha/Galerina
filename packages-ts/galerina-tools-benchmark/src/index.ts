@@ -39,6 +39,91 @@ export interface BenchmarkConfig {
   readonly privacy: BenchmarkPrivacyPolicy;
 }
 
+const BENCHMARK_MODES = ["light", "full", "stress"] as const;
+const BENCHMARK_TARGETS = [
+  "logic",
+  "cpu",
+  "json",
+  "vector",
+  "gpu",
+  "ai_accelerator",
+  "low_bit_ai",
+  "optical_io",
+  "recovery",
+  "compare",
+] as const satisfies readonly BenchmarkTarget[];
+const BENCHMARK_CONFIG_KEYS = [
+  "defaultMode",
+  "maxDurationSeconds",
+  "maxSingleTestSeconds",
+  "runOnMajorUpdate",
+  "targets",
+  "privacy",
+] as const;
+const BENCHMARK_PRIVACY_KEYS = [
+  "includeHostname",
+  "includeUsername",
+  "includeProjectPath",
+  "anonymiseCpuModel",
+  "allowSubmit",
+] as const;
+
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasOwn(record: UnknownRecord, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
+function readOwnData(
+  record: UnknownRecord,
+  key: string,
+  path: string,
+  diagnostics: BenchmarkDiagnostic[],
+): unknown {
+  const descriptor = Object.getOwnPropertyDescriptor(record, key);
+  if (descriptor === undefined || "value" in descriptor) return descriptor?.value;
+  diagnostics.push(createBenchmarkDiagnostic(
+    "Galerina_BENCHMARK_FIELD_HOSTILE",
+    "error",
+    "Benchmark records must contain inert data properties, not accessors.",
+    `${path}.${key}`,
+  ));
+  return undefined;
+}
+
+function validateExactKeys(
+  record: UnknownRecord,
+  expectedKeys: readonly string[],
+  path: string,
+  diagnostics: BenchmarkDiagnostic[],
+): void {
+  const expected = new Set(expectedKeys);
+  for (const key of expectedKeys) {
+    if (!hasOwn(record, key)) {
+      diagnostics.push(createBenchmarkDiagnostic(
+        "Galerina_BENCHMARK_FIELD_REQUIRED",
+        "error",
+        `Benchmark record is missing required field '${key}'.`,
+        `${path}.${key}`,
+      ));
+    }
+  }
+  for (const key of Reflect.ownKeys(record)) {
+    if (typeof key !== "string" || !expected.has(key)) {
+      diagnostics.push(createBenchmarkDiagnostic(
+        "Galerina_BENCHMARK_FIELD_UNKNOWN",
+        "error",
+        "Benchmark record contains an unknown or symbolic field.",
+        `${path}.${String(key)}`,
+      ));
+    }
+  }
+}
+
 export interface BenchmarkSystemInfo {
   readonly osFamily: string;
   readonly architecture: string;
@@ -183,31 +268,63 @@ function createBenchmarkDiagnostic(
 // cannot be allowed to outlast the whole run), telemetry must be PII-free, and at
 // least one target must be enabled or the run does nothing.
 export function validateBenchmarkConfig(
-  config: BenchmarkConfig,
+  config: unknown,
   path = "config",
 ): readonly BenchmarkDiagnostic[] {
   const diagnostics: BenchmarkDiagnostic[] = [];
 
-  if (!(config.maxDurationSeconds > 0)) {
+  if (!isRecord(config)) {
+    return [createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_CONFIG_RECORD_REQUIRED",
+      "error",
+      "Benchmark config must be a non-null record.",
+      path,
+    )];
+  }
+  validateExactKeys(config, BENCHMARK_CONFIG_KEYS, path, diagnostics);
+
+  const defaultMode = hasOwn(config, "defaultMode")
+    ? readOwnData(config, "defaultMode", path, diagnostics)
+    : undefined;
+  if (hasOwn(config, "defaultMode") &&
+      !BENCHMARK_MODES.includes(defaultMode as BenchmarkMode)) {
+    diagnostics.push(createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_MODE_INVALID",
+      "error",
+      "Benchmark config defaultMode must be light, full or stress.",
+      `${path}.defaultMode`,
+    ));
+  }
+
+  const maxDurationSeconds = hasOwn(config, "maxDurationSeconds")
+    ? readOwnData(config, "maxDurationSeconds", path, diagnostics)
+    : undefined;
+  if (hasOwn(config, "maxDurationSeconds") &&
+      !(typeof maxDurationSeconds === "number" && Number.isFinite(maxDurationSeconds) && maxDurationSeconds > 0)) {
     diagnostics.push(createBenchmarkDiagnostic(
       "Galerina_BENCHMARK_MAX_DURATION_REQUIRED",
       "error",
-      "Benchmark config requires a positive maximum duration.",
+      "Benchmark config requires a positive finite maximum duration.",
       `${path}.maxDurationSeconds`,
     ));
   }
 
-  if (!(config.maxSingleTestSeconds > 0)) {
+  const maxSingleTestSeconds = hasOwn(config, "maxSingleTestSeconds")
+    ? readOwnData(config, "maxSingleTestSeconds", path, diagnostics)
+    : undefined;
+  if (hasOwn(config, "maxSingleTestSeconds") &&
+      !(typeof maxSingleTestSeconds === "number" && Number.isFinite(maxSingleTestSeconds) && maxSingleTestSeconds > 0)) {
     diagnostics.push(createBenchmarkDiagnostic(
       "Galerina_BENCHMARK_MAX_SINGLE_TEST_REQUIRED",
       "error",
-      "Benchmark config requires a positive maximum single-test duration.",
+      "Benchmark config requires a positive finite maximum single-test duration.",
       `${path}.maxSingleTestSeconds`,
     ));
   }
 
-  if (config.maxSingleTestSeconds > 0 && config.maxDurationSeconds > 0 &&
-      config.maxSingleTestSeconds > config.maxDurationSeconds) {
+  if (typeof maxSingleTestSeconds === "number" && Number.isFinite(maxSingleTestSeconds) && maxSingleTestSeconds > 0 &&
+      typeof maxDurationSeconds === "number" && Number.isFinite(maxDurationSeconds) && maxDurationSeconds > 0 &&
+      maxSingleTestSeconds > maxDurationSeconds) {
     diagnostics.push(createBenchmarkDiagnostic(
       "Galerina_BENCHMARK_SINGLE_TEST_EXCEEDS_TOTAL",
       "error",
@@ -216,25 +333,90 @@ export function validateBenchmarkConfig(
     ));
   }
 
-  for (const flag of ["includeHostname", "includeUsername", "includeProjectPath"] as const) {
-    if (config.privacy[flag] !== false) {
-      diagnostics.push(createBenchmarkDiagnostic(
-        "Galerina_BENCHMARK_PRIVACY_PII_FORBIDDEN",
-        "error",
-        `Benchmark telemetry must not include PII (${flag} must be false).`,
-        `${path}.privacy.${flag}`,
-      ));
-    }
+  const runOnMajorUpdate = hasOwn(config, "runOnMajorUpdate")
+    ? readOwnData(config, "runOnMajorUpdate", path, diagnostics)
+    : undefined;
+  if (hasOwn(config, "runOnMajorUpdate") && typeof runOnMajorUpdate !== "boolean") {
+    diagnostics.push(createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_RUN_ON_MAJOR_UPDATE_INVALID",
+      "error",
+      "Benchmark config runOnMajorUpdate must be Boolean.",
+      `${path}.runOnMajorUpdate`,
+    ));
   }
 
-  const anyTargetEnabled = Object.values(config.targets).some((v) => v === true || v === "optional");
-  if (!anyTargetEnabled) {
+  const targets = hasOwn(config, "targets")
+    ? readOwnData(config, "targets", path, diagnostics)
+    : undefined;
+  let anyTargetEnabled = false;
+  if (hasOwn(config, "targets") && !isRecord(targets)) {
+    diagnostics.push(createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_TARGETS_RECORD_REQUIRED",
+      "error",
+      "Benchmark config targets must be a non-null record.",
+      `${path}.targets`,
+    ));
+  } else if (isRecord(targets)) {
+    validateExactKeys(targets, BENCHMARK_TARGETS, `${path}.targets`, diagnostics);
+    for (const target of BENCHMARK_TARGETS) {
+      if (!hasOwn(targets, target)) continue;
+      const value = readOwnData(targets, target, `${path}.targets`, diagnostics);
+      if (value !== true && value !== false && value !== "optional") {
+        diagnostics.push(createBenchmarkDiagnostic(
+          "Galerina_BENCHMARK_TARGET_VALUE_INVALID",
+          "error",
+          "Benchmark target values must be Boolean or 'optional'.",
+          `${path}.targets.${target}`,
+        ));
+      }
+      if (value === true || value === "optional") anyTargetEnabled = true;
+    }
+  }
+  if (isRecord(targets) && !anyTargetEnabled) {
     diagnostics.push(createBenchmarkDiagnostic(
       "Galerina_BENCHMARK_NO_TARGETS",
       "error",
       "Benchmark config enables no targets; the run would do nothing.",
       `${path}.targets`,
     ));
+  }
+
+  const privacy = hasOwn(config, "privacy")
+    ? readOwnData(config, "privacy", path, diagnostics)
+    : undefined;
+  if (hasOwn(config, "privacy") && !isRecord(privacy)) {
+    diagnostics.push(createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_PRIVACY_RECORD_REQUIRED",
+      "error",
+      "Benchmark config privacy must be a non-null record.",
+      `${path}.privacy`,
+    ));
+  } else if (isRecord(privacy)) {
+    validateExactKeys(privacy, BENCHMARK_PRIVACY_KEYS, `${path}.privacy`, diagnostics);
+    for (const flag of ["includeHostname", "includeUsername", "includeProjectPath"] as const) {
+      if (!hasOwn(privacy, flag)) continue;
+      const value = readOwnData(privacy, flag, `${path}.privacy`, diagnostics);
+      if (value !== false) {
+        diagnostics.push(createBenchmarkDiagnostic(
+          "Galerina_BENCHMARK_PRIVACY_PII_FORBIDDEN",
+          "error",
+          `Benchmark telemetry must not include PII (${flag} must be false).`,
+          `${path}.privacy.${flag}`,
+        ));
+      }
+    }
+    for (const flag of ["anonymiseCpuModel", "allowSubmit"] as const) {
+      if (!hasOwn(privacy, flag)) continue;
+      const value = readOwnData(privacy, flag, `${path}.privacy`, diagnostics);
+      if (typeof value !== "boolean") {
+        diagnostics.push(createBenchmarkDiagnostic(
+          "Galerina_BENCHMARK_PRIVACY_BOOLEAN_INVALID",
+          "error",
+          `Benchmark privacy field ${flag} must be Boolean.`,
+          `${path}.privacy.${flag}`,
+        ));
+      }
+    }
   }
 
   return diagnostics;
@@ -247,9 +429,11 @@ export function isBenchmarkReportShareable(
   report: BenchmarkReport,
   config: BenchmarkConfig,
 ): boolean {
-  if (config.privacy.allowSubmit !== true) return false;
+  if (!isRecord(config) || !isRecord(config.privacy) || config.privacy.allowSubmit !== true) return false;
+  if (!isRecord(report) || !isRecord(report.privacy)) return false;
   const p = report.privacy;
   return (
+    p.shareable === true &&
     p.containsPersonalData === false &&
     p.machineId === "not_included" &&
     p.hostname === "not_included" &&

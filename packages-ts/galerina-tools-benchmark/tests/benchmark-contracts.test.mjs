@@ -78,6 +78,29 @@ describe("validateBenchmarkConfig — bounded, PII-free, non-empty (fail-closed)
     const diags = validateBenchmarkConfig({ ...DEFAULT_BENCHMARK_CONFIG, targets: noTargets });
     assert.deepEqual(codes(diags), ["Galerina_BENCHMARK_NO_TARGETS"]);
   });
+
+  it("rejects malformed records, missing/surplus keys and non-finite budgets", () => {
+    assert.ok(codes(validateBenchmarkConfig(null)).includes("Galerina_BENCHMARK_CONFIG_RECORD_REQUIRED"));
+
+    const malformed = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      maxDurationSeconds: Infinity,
+      defaultMode: "unknown",
+      runOnMajorUpdate: "yes",
+      extra: true,
+      targets: { ...DEFAULT_BENCHMARK_CONFIG.targets, logic: null, mystery: true },
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy, anonymiseCpuModel: "yes", extra: false },
+    };
+    delete malformed.maxSingleTestSeconds;
+    const malformedCodes = codes(validateBenchmarkConfig(malformed));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_FIELD_REQUIRED"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_FIELD_UNKNOWN"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_MAX_DURATION_REQUIRED"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_MODE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_RUN_ON_MAJOR_UPDATE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_TARGET_VALUE_INVALID"));
+    assert.ok(malformedCodes.includes("Galerina_BENCHMARK_PRIVACY_BOOLEAN_INVALID"));
+  });
 });
 
 describe("isBenchmarkReportShareable — default-deny", () => {
@@ -124,5 +147,14 @@ describe("isBenchmarkReportShareable — default-deny", () => {
     };
     const leaky = { ...cleanReport, privacy: { ...cleanReport.privacy, containsPersonalData: true } };
     assert.equal(isBenchmarkReportShareable(leaky, optIn), false);
+  });
+
+  it("stays deny when the report itself does not claim shareable", () => {
+    const optIn = {
+      ...DEFAULT_BENCHMARK_CONFIG,
+      privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy, allowSubmit: true },
+    };
+    const notShareable = { ...cleanReport, privacy: { ...cleanReport.privacy, shareable: false } };
+    assert.equal(isBenchmarkReportShareable(notShareable, optIn), false);
   });
 });
