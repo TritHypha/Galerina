@@ -2,7 +2,9 @@
 
 ### Current bounded component receipts — 2026-09-20
 
-- [x] Galerina source HEAD is `de0d55e0dc9c7e3e232930db84f6acf2ef23ef69`.
+- [x] Galerina implementation checkpoint is
+  `de0d55e0dc9c7e3e232930db84f6acf2ef23ef69` (the current `614cd059e`
+  checkpoint adds this receipt only).
   The photonic-emulator substrate-math ingress is bounded at
   `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267` with
   hostile/envelope coverage at
