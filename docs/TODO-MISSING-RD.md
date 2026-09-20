@@ -296,7 +296,17 @@ locator is not sufficient evidence of a blocker or of completion.
   the focused and adjacent type-checker evidence is **118/118** at source
   commit `489ef192494d30b32d6efa57df1be88229e80f6c`. Its deferred-work contract
   still requires complete expression-level inference before claiming
-  TYPE-002/005-007 done. Do not mark the rows complete from this bounded slice.
+  TYPE-002/005-007 done. A bounded match-expression slice is now closed at
+  Galerina implementation commit `1b10d5e32c6f1362dfb2df6232fb39d08570c85c`:
+  `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778` admits `match`
+  in expression position, and
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1366-1418` unwraps
+  expression-arm blocks and joins only assignment-compatible numeric arms.
+  Regression coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:197-263`,
+  with bounded compiler **104/104**, parser/domain **138/138**, and
+  interpreter/match **61/61**. Full unsupported expression inference remains
+  open; do not mark TYPE-002/005-007 complete from this bounded slice.
 - **Galerina core-config v0.2 contract:**
   `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
   blocked because the source `src/index.ts:97-101` still exposes the v0.1

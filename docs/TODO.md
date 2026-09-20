@@ -45,6 +45,22 @@
   exact mixed-EOL policy and matching current evidence. No line-ending rewrite
   was performed and no corpus DAG was launched.
 
+### Core compiler bounded match-inference receipt — 2026-09-20
+
+- [x] At implementation commit
+  `1b10d5e32c6f1362dfb2df6232fb39d08570c85c`, the compiler admits `match` in
+  expression position at
+  `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778`, unwraps
+  expression-arm blocks and joins only assignment-compatible numeric results
+  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1366-1418`.
+- [x] Regression evidence is **104/104** for the bounded compiler set,
+  **138/138** for parser/domain regressions, and **61/61** for
+  interpreter/match/governance regressions. The focused test additions are at
+  `packages-ts/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:197-263`.
+- [!] This closes only the bounded numeric match-expression slice. Unsupported
+  expression-level inference under FUNGI-TYPE-002/005..007 remains open; no
+  `.fungi`, corpus or conversion action follows from this receipt.
+
 ### Beta-v1 operational-key preflight — 2026-09-19
 
 - [x] The owner generated dedicated hybrid Ed25519 + ML-DSA-65 operational
