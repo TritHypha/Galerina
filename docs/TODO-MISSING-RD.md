@@ -180,6 +180,16 @@ locator is not sufficient evidence of a blocker or of completion.
   Its deferred-work contract at `:28-35` still requires complete
   expression-level inference before claiming TYPE-002/005-007 done. Do not
   mark the rows complete from the bounded literal/known-type cases alone.
+- **Galerina native-target residual admission:** the bounded decoder and
+  immutable snapshot are implemented at
+  `Galerina/packages-ts/galerina-target-native/src/index.ts:85-165`,
+  `:173-277`, `:369-443`, and `:445-484`, with **12/12** focused tests at
+  `Galerina/packages-ts/galerina-target-native/tests/native-contracts.test.mjs:42-67`
+  and `:102-157`. The remaining blocker is the artifact path check at
+  `:340-367`: it proves only non-empty text; canonical containment and binding
+  of selected ABI/profile to the exact artifact, target, digest and VOK
+  evidence are not source-defined. This remains an owner/architecture gate,
+  not a reason to invent an R&D result or promote native validation.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method
