@@ -16,4 +16,10 @@
     report snapshot; hostile records, arrays and retained-alias controls pass
     in `src/index.ts:85-165`, `:173-277`, `:369-443`, `:445-484` and
     `tests/native-contracts.test.mjs:42-67`, `:102-157`.
+[x] Current bounded package verification is **12/12** with clean typecheck/build.
+[!] Keep canonical artifact path containment and binding of selected ABI/profile
+    to the exact artifact, target, digest and VOK evidence open; the current
+    contract only requires a non-empty path at `src/index.ts:340-367`.
+[!] Legacy `Galerina_NATIVE_*` diagnostics still require owner-approved
+    `FUNGI-CATEGORY-NNN` registry ownership before promotion.
 ```
