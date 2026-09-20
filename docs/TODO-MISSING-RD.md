@@ -300,7 +300,7 @@ locator is not sufficient evidence of a blocker or of completion.
   Galerina implementation commit `1b10d5e32c6f1362dfb2df6232fb39d08570c85c`:
   `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778` admits `match`
   in expression position, and
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1422` unwraps
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1403-1453` unwraps
   expression-arm blocks and joins only assignment-compatible numeric arms.
   Regression coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:197-263`,
@@ -312,11 +312,20 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:71-85`
   and the SLIDE G4 adapter contract at
   `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`;
-  the focused combined route is **40/40**. Full unsupported expression
+  the focused combined route is **40/40**. The algebraic-constructor and
+  named-alias slice is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:680-697,1156-1168,1197,1320-1334,1649-1713`;
+  its focused route is **32/32**, and the full compiler package is
+  **6,780/6,780**. Full unsupported expression
   inference remains open at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1035-1425`, with
-  call/return consumers at `:1615-1767`; do not mark TYPE-002/005-007
-  complete from these bounded slices.
+  call/return consumers at `:1627-1767`. A bounded constructor slice is now
+  closed at `packages-ts/galerina-core-compiler/src/type-checker.ts:1137-1149`
+  and `:1627-1634`; `Some`, `Ok`, and `Err` retain inferable payloads and
+  concrete mismatches are refused. Coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-125`
+  (**30/30** focused tests). Do not mark TYPE-002/005-007 complete from
+  these bounded slices.
 - **Galerina core-config v0.2 contract:**
   `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
   blocked because the source `src/index.ts:97-101` still exposes the v0.1

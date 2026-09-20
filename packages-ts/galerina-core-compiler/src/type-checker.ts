@@ -585,6 +585,8 @@ class TypeChecker {
   private readonly typeScopes: Array<Map<string, string>> = [];
   /** Flow return type registry, built during collectDeclarations. */
   private readonly flowReturnTypes = new Map<string, string>();
+  /** Simple named type aliases, used to retain the declared generic return shape. */
+  private readonly typeAliases = new Map<string, string>();
   /** Flow parameter type list, built during collectDeclarations. */
   private readonly flowParamTypes = new Map<string, readonly string[]>();
   // Flow names already declared in THIS module. A second occurrence is a duplicate flow declaration:
@@ -672,6 +674,22 @@ class TypeChecker {
       ));
     }
     return true; // handled: adopted silently, or the precise diagnostic above
+  }
+
+  /** Resolve a bounded chain of simple named aliases without guessing through cycles. */
+  private resolveTypeAliases(raw: string): string {
+    let current = raw.trim();
+    const seen = new Set<string>();
+    while (current !== "") {
+      const qualifier = GOVERNANCE_QUALIFIER_PREFIXES.find((prefix) => current.startsWith(prefix));
+      const unqualified = qualifier === undefined ? current : current.slice(qualifier.length).trim();
+      const parsed = parseTypeString(unqualified);
+      const target = this.typeAliases.get(parsed.base);
+      if (target === undefined || seen.has(parsed.base)) return current;
+      seen.add(parsed.base);
+      current = `${qualifier ?? ""}${target.trim()}`;
+    }
+    return current;
   }
 
   check(ast: AstNode): void {
@@ -813,6 +831,7 @@ class TypeChecker {
     if (node.kind === "typeDecl" && node.value) {
       const aliasChild = node.children?.[0];
       if (aliasChild?.kind === "typeRef") {
+        if (aliasChild.value?.trim()) this.typeAliases.set(node.value.trim(), aliasChild.value.trim());
         const parsed = parseTypeString(aliasChild.value ?? "");
         if (parsed.base === "Brand") {
           this.brandedTypes.add(node.value.trim());
@@ -1137,8 +1156,17 @@ class TypeChecker {
       case "callExpr": {
         const method = node.value ?? "";
         // Algebraic constructors
-        if (method === "Ok" || method === "Err") return "Result";
-        if (method === "Some")                   return "Option";
+        if (method === "Ok" || method === "Err" || method === "Some") {
+          const payload = node.children?.[0];
+          const payloadType = payload === undefined ? undefined : this.inferType(payload);
+          if (method === "Some") {
+            return payloadType === undefined ? "Option" : `Option<${payloadType}>`;
+          }
+          if (payloadType === undefined) return "Result";
+          return method === "Ok"
+            ? `Result<${payloadType}, Auto>`
+            : `Result<Auto, ${payloadType}>`;
+        }
         if (method === "Decimal")                return "Decimal";
         // Money constructors (receiver = Money)
         if (method === "gbp" || method === "usd" || method === "eur" || method === "jpy") return "Money";
@@ -1166,7 +1194,7 @@ class TypeChecker {
         const isMethod = (node as AstNode & { callStyle?: string }).callStyle === "method";
         if (!isMethod) {
           const knownReturn = this.flowReturnTypes.get(method);
-          if (knownReturn !== undefined) return knownReturn;
+          if (knownReturn !== undefined) return this.resolveTypeAliases(knownReturn);
         }
 
         // Stdlib return type inference
@@ -1292,7 +1320,10 @@ class TypeChecker {
       case "errorPropagation": {
         const inner = node.children?.[0];
         if (inner === undefined) return undefined;
-        const innerType = this.inferType(inner);
+        const inferredInnerType = this.inferType(inner);
+        const innerType = inferredInnerType === undefined
+          ? undefined
+          : this.resolveTypeAliases(inferredInnerType);
         // ? on Result<T, E> → infers T (the Ok branch)
         if (innerType === "Result" || innerType?.startsWith("Result<")) {
           const match = innerType?.match(/^Result<([^,>]+)/);
@@ -1620,12 +1651,29 @@ class TypeChecker {
         if (returnExpr !== undefined && this.currentReturnType !== "" && this.currentReturnType !== "Void") {
           const inferredType = this.inferType(returnExpr);
           if (inferredType !== undefined) {
-            // Allow Ok/Err/Some/None for Result/Option return types
-            const isOkErrReturn = returnExpr.kind === "callExpr" &&
-              (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some");
-            const declaredBase = this.currentReturnType.split("<")[0]?.trim() ?? this.currentReturnType;
-            const isHttpResponseRecord = declaredBase === "Response" && inferredType === "Record";
-            if (!isOkErrReturn && !isHttpResponseRecord && !isAssignmentCompatible(this.currentReturnType, inferredType)) {
+            const declaredReturnType = this.resolveTypeAliases(this.currentReturnType);
+            const resolvedInferredType = this.resolveTypeAliases(inferredType);
+            const declaredBase = parseTypeString(declaredReturnType).base;
+            const isHttpResponseRecord = declaredBase === "Response" && resolvedInferredType === "Record";
+            let constructorPayloadHandled = false;
+            if (returnExpr.kind === "callExpr" &&
+                (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some")) {
+              const payloadIndex = returnExpr.value === "Err" ? 1 : 0;
+              const expectedPayload = parseTypeString(declaredReturnType).args[payloadIndex];
+              const payloadNode = returnExpr.children?.[0];
+              if (expectedPayload !== undefined && payloadNode?.kind === "callExpr" && payloadNode.value === "#record") {
+                constructorPayloadHandled = this.tryRecordLiteralAdoption(
+                  this.resolveTypeAliases(expectedPayload).split("<")[0]?.trim() ?? expectedPayload,
+                  payloadNode,
+                  node.location,
+                  "FUNGI-TYPE-008",
+                  "INVALID_RETURN_TYPE",
+                  `declared constructor payload '${expectedPayload}'`,
+                );
+              }
+            }
+            if (!isHttpResponseRecord && !constructorPayloadHandled &&
+                !isAssignmentCompatible(declaredReturnType, resolvedInferredType)) {
               // K3-005 (S3/A9, R&D bridge 0174) — a NON-Verdict value returned where Verdict is declared.
               // `return 2` (or any non-Verdict) as a Verdict smuggles an out-of-K3-domain value into a
               // governance result (fail-open). Fires BEFORE the generic TYPE-008 so the author gets the K3
@@ -1662,7 +1710,7 @@ class TypeChecker {
                 ));
               }
               }
-            } else if (!isOkErrReturn && declaredBase === "Auto") {
+            } else if (!constructorPayloadHandled && declaredBase === "Auto") {
               // Surface the deferral: isAssignmentCompatible() treats an `Auto`-declared
               // target as universally compatible, which silently mutes the return-type
               // check. Emit a visible advisory instead of nothing. Once an inference pass

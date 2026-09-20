@@ -86,4 +86,82 @@ pure flow caller(value: Array<Auto>) -> Void {
       `Array<Auto> is a deferred payload, not a concrete Array<String> mismatch: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("retains algebraic constructor payloads at a valid return boundary", () => {
+    const errors = typeErrors(`
+pure flow optionValue() -> Option<Int> {
+  return Some(1)
+}
+
+pure flow okValue() -> Result<Int, String> {
+  return Ok(1)
+}
+
+pure flow errValue() -> Result<Int, String> {
+  return Err("failed")
+}
+`);
+
+    assert.deepEqual(errors, [], `valid constructor payloads must remain typed: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched algebraic constructor payloads at a return boundary", () => {
+    const errors = typeErrors(`
+pure flow badOption() -> Option<Int> {
+  return Some("wrong")
+}
+
+pure flow badOk() -> Result<Int, String> {
+  return Ok("wrong")
+}
+
+pure flow badErr() -> Result<Int, String> {
+  return Err(1)
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-008").length,
+      3,
+      `each mismatched constructor payload must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+
+  it("resolves a named Result alias before checking constructor payloads", () => {
+    const errors = typeErrors(`
+type AliasResult = Result<Int, String>
+
+pure flow good() -> AliasResult {
+  return Ok(1)
+}
+
+pure flow bad() -> AliasResult {
+  return Ok("wrong")
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-008").length,
+      1,
+      `named algebraic aliases must retain their payload contract: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+
+  it("resolves a named Result alias through error propagation", () => {
+    const errors = typeErrors(`
+type Saved = Result<Int, String>
+type Processed = Result<Int, String>
+
+pure flow save() -> Saved {
+  return Ok(1)
+}
+
+pure flow process() -> Processed {
+  let value = save()?
+  return Ok(value)
+}
+`);
+
+    assert.deepEqual(errors, [], `error propagation must expose the aliased Ok payload: ${errors.map((error) => error.code).join(", ")}`);
+  });
 });

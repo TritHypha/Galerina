@@ -63,7 +63,7 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     retain their inner type, and numerically compatible arm results join through
     the existing assignment relation (`Int`/`Float` → `Float`). Incompatible
     results remain fail-closed and reach the enclosing mismatch diagnostic.
-    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1372-1422`.
+    Source: `src/parser.ts:2772-2778` and `src/type-checker.ts:1403-1453`.
     Focused evidence: `tests/type-checker-phase11-wave2.test.mjs:197-263`
     plus parser/domain/interpreter regressions; the combined bounded compiler
     route is **104/104**, parser/domain route **138/138**, and
@@ -78,6 +78,16 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     weakening concrete-vs-concrete generic mismatches. Regression coverage is
     `tests/type-checker-generic-assignment.test.mjs:71-85`; the focused route
     is **40/40**. Broader unsupported expression inference remains open.
+
+[x] Bounded algebraic-constructor payload inference
+    `Some`, `Ok`, and `Err` now retain an inferable payload at
+    `src/type-checker.ts:1156-1168` as `Option<T>`, `Result<T, Auto>`, or
+    `Result<Auto, E>`. Named aliases are resolved at `:680-697`, flow-call
+    results at `:1197`, and `?` propagation at `:1320-1334`; constructor return
+    checking and record-payload adoption are at `:1649-1713`. Positive and
+    negative coverage is at
+    `tests/type-checker-generic-assignment.test.mjs:90-165`; the focused route
+    is **32/32**. Unknown constructor payloads still defer conservatively.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007

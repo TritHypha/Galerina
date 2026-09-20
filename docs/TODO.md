@@ -11,6 +11,16 @@
   the affected adapter contracts are
   `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`.
   Typecheck/build pass; the focused route is **40/40**.
+- [x] Algebraic constructor payload inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`:
+  `Some` retains `Option<T>`, `Ok` retains `Result<T, Auto>`, and `Err`
+  retains `Result<Auto, E>`. Alias resolution at `:680-697`, flow-call and
+  `?` propagation at `:1197` and `:1320-1334`, and the return checker at
+  `:1649-1713` now validate those payloads, including structural record
+  adoption, instead of bypassing `FUNGI-TYPE-008`. Positive/negative
+  coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
+  (**32/32** focused tests); the full package suite is **6,780/6,780**.
 - [x] The unrelated source-hygiene ratchet baseline was tightened through its
   explicit regeneration path at
   `packages-ts/galerina-core-compiler/tests/source-hygiene-null-ratchet.test.mjs:165-187`.
@@ -20,7 +30,7 @@
 - [!] The remaining compiler blocker is broad expression-level inference, not
   the closed slices above. The fail-closed boundary is
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1035-1425`
-  (`TypeChecker.inferType`) and its consumers at `:1615-1767`; unsupported AST
+  (`TypeChecker.inferType`) and its consumers at `:1627-1767`; unsupported AST
   forms return unknown and therefore leave portions of FUNGI-TYPE-002/005-007
   deferred. Clearance requires a complete expression-kind matrix with both
   valid and invalid cases, while preserving refusal for genuinely unknown
@@ -78,7 +88,7 @@
   expression position at
   `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778`, unwraps
   expression-arm blocks and joins only assignment-compatible numeric results
-  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1422`.
+  at `packages-ts/galerina-core-compiler/src/type-checker.ts:1403-1453`.
 - [x] Regression evidence is **104/104** for the bounded compiler set,
   **138/138** for parser/domain regressions, and **61/61** for
   interpreter/match/governance regressions. The focused test additions are at
