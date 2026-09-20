@@ -1555,8 +1555,14 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [ ] Replace the five legacy `Galerina_NATIVE_*` diagnostic codes with owned
   live `FUNGI-CATEGORY-NNN` registry entries before native validation can be
   promoted beyond planning evidence.
-- [ ] Add a runtime decoder for `PhotonicActualTarget` before any execution
+- [x] Add a runtime decoder for `PhotonicActualTarget` before any execution
   plan treats its six-label TypeScript alias as admitted target evidence.
+  `decodePhotonicActualTarget` now returns a typed success/refusal union at
+  `packages-ts/galerina-target-photonic/src/index.ts:198,408-425` and refuses
+  unknown, boxed, control and non-string labels. Coverage is at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:12-31`;
+  the package route is **12/12 pass**. This does not release execution or
+  hardware authority.
 - [ ] Give adjacent package test `.mjs` entries a governed harness
   classification or exclusion before literal all-TS/MJS closure can be claimed.
 - [x] Complete the individual Slice 347 owner matrix: queue 1,486/1,486;

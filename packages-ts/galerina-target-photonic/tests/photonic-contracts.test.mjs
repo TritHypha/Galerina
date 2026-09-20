@@ -2,11 +2,32 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  decodePhotonicActualTarget,
   validateOpticalChannelLayout,
   validatePhotonicLoweringPlan,
 } from "../dist/index.js";
 
 const codes = (diags) => diags.map((d) => d.code);
+
+describe("decodePhotonicActualTarget — closed runtime vocabulary", () => {
+  it("admits only the six declared runtime target labels", () => {
+    for (const value of [
+      "photonic_hardware", "photonic_sim", "photonic_plan",
+      "optical_io_interconnect", "cpu_fallback", "unsupported",
+    ]) {
+      assert.deepEqual(decodePhotonicActualTarget(value), { ok: true, value });
+    }
+  });
+
+  it("refuses unknown, boxed, control and non-string target evidence", () => {
+    for (const value of ["photonic", "PHOTONIC_SIM", "photonic_sim\u0000", new String("photonic_sim"), 1, undefined]) {
+      const decoded = decodePhotonicActualTarget(value, "plan.actualTarget");
+      assert.equal(decoded.ok, false);
+      assert.equal(decoded.diagnostic.code, "Galerina_PHOTONIC_ACTUAL_TARGET_INVALID");
+      assert.match(decoded.diagnostic.suggestedFix, /plan\.actualTarget/);
+    }
+  });
+});
 
 describe("validateOpticalChannelLayout — physical validity", () => {
   it("accepts a physical channel", () => {

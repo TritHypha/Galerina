@@ -31,4 +31,8 @@ be part of the active v1 build surface.
 [!] Register owned FUNGI diagnostic codes before promotion beyond planning
     evidence; legacy diagnostic ownership remains open at
     `Galerina/docs/TODO.md:1422-1423`.
+[x] Add the closed runtime decoder for the six-label `PhotonicActualTarget`
+    vocabulary; `src/index.ts:198,408-425` and
+    `tests/photonic-contracts.test.mjs:12-31` pass as part of the **12/12**
+    bounded package route. Execution/hardware authority remains held.
 ```

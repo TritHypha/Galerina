@@ -195,11 +195,24 @@ export interface PhotonicDiagnostic {
   readonly suggestedFix?: string;
 }
 
+export type PhotonicActualTargetDecode =
+  | { readonly ok: true; readonly value: PhotonicActualTarget }
+  | { readonly ok: false; readonly diagnostic: PhotonicDiagnostic };
+
 const PHOTONIC_STATUSES: readonly PhotonicTargetStatus[] = [
   "photonic-compatible",
   "photonic-simulation-only",
   "optical-io-only",
   "fallback-required",
+  "unsupported",
+];
+
+const PHOTONIC_ACTUAL_TARGETS: readonly PhotonicActualTarget[] = [
+  "photonic_hardware",
+  "photonic_sim",
+  "photonic_plan",
+  "optical_io_interconnect",
+  "cpu_fallback",
   "unsupported",
 ];
 
@@ -389,6 +402,24 @@ function photonicDiagnostic(
   suggestedFix?: string,
 ): PhotonicDiagnostic {
   return { code, safeMessage, ...(suggestedFix === undefined ? {} : { suggestedFix }) };
+}
+
+/** Decode the runtime target label before it can enter an execution-plan report. */
+export function decodePhotonicActualTarget(
+  value: unknown,
+  path = "actualTarget",
+): PhotonicActualTargetDecode {
+  if (typeof value === "string" && PHOTONIC_ACTUAL_TARGETS.includes(value as PhotonicActualTarget)) {
+    return { ok: true, value: value as PhotonicActualTarget };
+  }
+  return {
+    ok: false,
+    diagnostic: photonicDiagnostic(
+      "Galerina_PHOTONIC_ACTUAL_TARGET_INVALID",
+      "A photonic execution target must use an admitted runtime label.",
+      `Set ${path} to one of the admitted photonic target labels.`,
+    ),
+  };
 }
 
 // An optical channel must sit at a physical wavelength (> 0 nm), and — when
