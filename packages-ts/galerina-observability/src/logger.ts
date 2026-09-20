@@ -41,7 +41,7 @@ export class MemoryLogSink implements LogSink {
     this.#records.push(record);
   }
   records(): readonly LogRecord[] {
-    return this.#records;
+    return [...this.#records];
   }
   clear(): void {
     this.#records.length = 0;

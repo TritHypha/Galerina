@@ -15,6 +15,42 @@ test("emits structured records to the sink with an injected clock", () => {
   assert.deepEqual(rec.fields, { a: 1 });
 });
 
+test("a retained records snapshot cannot inject a record into the sink", () => {
+  const sink = new MemoryLogSink();
+  const original = { level: "info", msg: "original", at: 1 };
+  sink.write(original);
+
+  const retained = sink.records();
+  retained.push({ level: "error", msg: "injected", at: 2 });
+
+  assert.deepEqual(sink.records(), [original]);
+});
+
+test("a retained records snapshot cannot delete a record from the sink", () => {
+  const sink = new MemoryLogSink();
+  const first = { level: "info", msg: "first", at: 1 };
+  const second = { level: "info", msg: "second", at: 2 };
+  sink.write(first);
+  sink.write(second);
+
+  const retained = sink.records();
+  retained.splice(0, 1);
+
+  assert.deepEqual(sink.records(), [first, second]);
+});
+
+test("clear does not mutate a previously retained records snapshot", () => {
+  const sink = new MemoryLogSink();
+  const original = { level: "info", msg: "original", at: 1 };
+  sink.write(original);
+
+  const retained = sink.records();
+  sink.clear();
+
+  assert.deepEqual(sink.records(), []);
+  assert.deepEqual(retained, [original]);
+});
+
 test("minLevel filters lower-severity records", () => {
   const sink = new MemoryLogSink();
   const log = createLogger({ sink, minLevel: "warn" });

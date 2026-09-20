@@ -1598,10 +1598,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   record copying, and `JSON.stringify` can return `undefined` without throwing.
   Translation commit `ed2cc43` and authoring commit `dcd99f8` remain private
   and unpushed.
-- [ ] Priority logger integrity fix: `MemoryLogSink.records()` exposes the
-  live backing array and `clear()` mutates every held alias. Return a proved
-  immutable snapshot or define an explicitly governed inspection capability;
-  add hostile injection, deletion and retained-alias tests.
+- [x] Priority logger integrity fix: `MemoryLogSink.records()` no longer exposes
+  the live backing array; `packages-ts/galerina-observability/src/logger.ts:43-44`
+  returns a detached snapshot. Hostile retained-alias injection, deletion and
+  `clear()` isolation are covered at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:18-52`.
+  Focused package typecheck/build/tests pass **39/39**.
 - [ ] Priority logger contract fix: direct `JsonLineSink.write()` propagates a
   throwing writer despite the `LogSink.write MUST NOT throw` contract. Choose
   and test one exact typed failure/isolation contract rather than relying on
