@@ -262,6 +262,14 @@
   tests at `tests/type-checker.test.mjs:921-1088` do not distinguish concrete
   `String` from deferred `undefined`. No source change follows from RD-1247.
 
+- [x] Added the bounded, source-defined numeric `binaryExpr` consumer KATs at
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:390-445`:
+  matching return acceptance plus return/call/binding mismatches for
+  `FUNGI-TYPE-008`, `FUNGI-TYPE-005` and `FUNGI-TYPE-002`. The focused
+  type-checker route is **27/27 pass** after clean typecheck/build. This is
+  test-only characterization of the existing `inferType` branch; it does not
+  widen inference or clear the RD-1232/RD-1247 owner contract.
+
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
   `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal

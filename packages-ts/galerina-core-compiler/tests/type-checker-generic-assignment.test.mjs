@@ -386,3 +386,60 @@ pure flow badResultAlgebraicReturns() -> Int {
     );
   });
 });
+
+describe("RD-1232 bounded numeric binary inference consumers", () => {
+  it("accepts a concrete Int binary expression at a matching return boundary", () => {
+    const errors = typeErrors(`
+pure flow returnsInt() -> Int {
+  return 1 + 2
+}
+`);
+
+    assert.deepEqual(errors, [], `matching numeric return must remain clean: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("reports FUNGI-TYPE-008 for a concrete Int binary expression returned as String", () => {
+    const errors = typeErrors(`
+pure flow badReturn() -> String {
+  return 1 + 2
+}
+`);
+
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-008"),
+      `Expected FUNGI-TYPE-008, got: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+
+  it("reports FUNGI-TYPE-005 for a concrete Int binary expression passed as String", () => {
+    const errors = typeErrors(`
+pure flow acceptString(value: String) -> Void {
+  return
+}
+
+pure flow badCall() -> Void {
+  acceptString(1 + 2)
+  return
+}
+`);
+
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-005"),
+      `Expected FUNGI-TYPE-005, got: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+
+  it("reports FUNGI-TYPE-002 for a concrete Int binary expression assigned to String", () => {
+    const errors = typeErrors(`
+pure flow badBinding() -> Void {
+  let text: String = 1 + 2
+  return
+}
+`);
+
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-002"),
+      `Expected FUNGI-TYPE-002, got: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+});
