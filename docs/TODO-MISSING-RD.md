@@ -120,12 +120,12 @@ declared limit; and returned capability/plan data is copied and immutable.
 - **Exact unresolved Photonic schema blockers:** the ingress implementation is
   now closed for the bounded decoder slice at
   `packages-ts/galerina-target-photonic/src/index.ts:237-391`, with validator
-  entrypoints at `:396-447` and `:450-520`. It captures own data once and
+  entrypoints at `:396-447` and `:450-518`. It captures own data once and
   refuses inherited/accessor/transparent-proxy/surplus/custom/sparse records,
   overlong text and malformed nested channels. The focused package suite is
   **10/10**, including hostile cases at
-  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-78`
-  and `:127-156`; the source commit is
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-85`
+  and `:127-160`; the source commit is
   `83d5d920833adcefa93001f3d97dce201ecef4df`.
   **Fail closed:** the remaining blocker is the owner contract, not raw
   JavaScript ingress: exact binary64 boundary/Option/UTF-16 rules remain

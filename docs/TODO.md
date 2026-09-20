@@ -1412,7 +1412,7 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   presence and UTF-16 rules; those rules are not defined by the current
   `OpticalChannelLayout` interface at `packages-ts/galerina-target-photonic/src/index.ts:149-154`.
 - [x] Repair lowering validation at
-  `packages-ts/galerina-target-photonic/src/index.ts:314-391` and `:450-520`;
+  `packages-ts/galerina-target-photonic/src/index.ts:314-391` and `:450-518`;
   dense-array holes, malformed nested mappings/channels and missing records now
   return typed refusal instead of foreign `TypeError`, and every admitted
   nested channel is revalidated. The hostile cases are covered by the focused
