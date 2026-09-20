@@ -197,6 +197,34 @@ test("createObservability bundles a ready-to-compose surface", async () => {
   assert.ok(bodyJson(metricsRes).totalRequests >= 2);
 });
 
+test("createObservability rejects route authority overrides and non-data options", () => {
+  assert.throws(
+    () => createObservability({ routes: { registry: new HealthRegistry() } }),
+    /unsupported key 'registry'/,
+  );
+  assert.throws(
+    () => createObservability({ routes: { metrics: new MetricsCollector() } }),
+    /unsupported key 'metrics'/,
+  );
+
+  const accessorRoutes = {};
+  Object.defineProperty(accessorRoutes, "metricsAuth", {
+    configurable: true,
+    enumerable: true,
+    get() { throw new Error("getter must not run"); },
+  });
+  assert.throws(
+    () => createObservability({ routes: accessorRoutes }),
+    /routes\.metricsAuth must be an own data property/,
+  );
+
+  const inheritedRoutes = Object.create({ metricsAuth: "public" });
+  assert.throws(
+    () => createObservability({ routes: inheritedRoutes }),
+    /plain or null prototype/,
+  );
+});
+
 test("createObservability refuses mixing auditSink and instrument metrics seams", () => {
   const auditFirst = createObservability();
   const reservation = auditFirst.auditSink.reserve();

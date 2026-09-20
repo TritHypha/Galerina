@@ -1608,10 +1608,14 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   field validation; authoring commits are `5547295` and `c2ae041`. Both
   repositories remain private and unpushed; independent forward-use probes
   correctly refused both unsafe shapes.
-- [ ] **Priority observability authority fix:** validate `opts.routes` as an
-  exact inert own-data schema and inject trusted `registry`/`metrics` last.
-  Current JavaScript can overwrite those fields after injection, so returned
-  trusted objects differ from the objects retained by route closures.
+- [x] **Priority observability authority fix:** `createObservability()` now
+  validates `opts.routes` as an exact inert own-data schema and injects trusted
+  `registry`/`metrics` last at
+  `packages-ts/galerina-observability/src/observability.ts:52-95,112-113`.
+  Unknown keys, symbols, accessors, hostile prototypes and invalid scalar
+  values refuse; hostile authority overrides are covered at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-225`.
+  The package route is **46/46** with clean typecheck/build.
 - [ ] **Priority public-health confidentiality fix:** liveness/readiness/health
   routes are public and return arbitrary component `detail` verbatim. Publish a
   closed status-only schema; retain diagnostic detail behind authenticated,
@@ -1622,7 +1626,7 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   characters while preserving one canonical leading/trailing form. Direct
   route-surface vectors at
   `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:102-127`
-  pass; the current focused kernel/logger route is **26/26** with clean
+  pass; the current focused kernel/logger route is **27/27** with clean
   typecheck/build.
 - [x] Enforce the documented mutual exclusion between `auditSink` and
   `instrument` in the active bundle. `packages-ts/galerina-observability/src/observability.ts:61-105`

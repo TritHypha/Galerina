@@ -274,6 +274,16 @@ locator is not sufficient evidence of a blocker or of completion.
   of selected ABI/profile to the exact artifact, target, digest and VOK
   evidence are not source-defined. This remains an owner/architecture gate,
   not a reason to invent an R&D result or promote native validation.
+- **Galerina observability route authority fix (closed):**
+  `packages-ts/galerina-observability/src/observability.ts:52-95,112-113`
+  now admits only the exact inert route-option data schema, rejects unknown
+  keys/symbols/accessors/hostile prototypes and invalid scalar values, and
+  injects the trusted registry and metrics instances last. Hostile override
+  vectors are covered at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-225`;
+  the package evidence is **46/46** with clean typecheck/build. This closes
+  the authority replacement blocker; the following health/logger items remain
+  separate.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink
