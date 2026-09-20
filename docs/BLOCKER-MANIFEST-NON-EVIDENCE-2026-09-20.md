@@ -14,15 +14,37 @@ The source heads checked for this manifest are:
 
 | Repository | Branch | HEAD | Working-tree note |
 |---|---|---|---|
-| Galerina | `main` | `f98d4212ca0599c1b264ab0e3601dfb80a47980d` | Existing bounded changes preserved; no unrelated files were reset. |
-| SLIDE/VOK | `codex/v2c-independent-frontend` | `6d8a7589278cb17d8d9e07c80df2ad66b4eb0eb9` | Existing security-workflow change preserved. |
-| Lyth-Weaver | `main` | `084f4198dbfaaf8c0405bb5b7d4b80b260d9542d` | Clean at inspection. |
+| Galerina | `main` | `398bc45d2511a1a2001ff618cdaaa0c68b337e7b` | Existing bounded changes preserved; dirty worktree retained; no unrelated files were reset. |
+| SLIDE/VOK | `codex/v2c-independent-frontend` | `d14e37eb12fc74480c09ae941aa6ea9629e0913b` | Existing security-workflow change preserved. |
+| Lyth-Weaver | `main` | `f5a3ffe147b5110216493c92cb7dabd1a5cc47cc` | Existing handover change preserved. |
 
 The RD range control passed its gold suite (`12/12`). A fresh locator-only
 range refresh of the private RD sources was refused because tracked RD source
 paths in the KB are dirty. Therefore the RD numbers below are linked from the
 current public TODO ledgers; this document does not copy private RD bodies or
 claim a fresh private-status refresh.
+
+## KB gap adjudication refresh
+
+The private KB now has a non-authorizing cross-record classification at
+`RD-1265`, committed at KB head
+`8acfdce002168af2f1c8f4f303c331610ea7304b`. It does not remove an active
+implementation blocker or admit a design:
+
+- `RD-1231`: bounded named-leaf conversion evidence remains separate from a
+  general emitter, whole-program conversion, queue completeness, or SLIDE/VOK
+  admission.
+- `RD-1008`: remains open theoretical research; §9.2 is queued, with 71/126
+  documentary comparisons complete and 55 pending in the cited corpus table.
+- `RD-1003`: remains `POST-DRAFT HOLD; NOT PUBLICATION-READY`; the refused
+  over-capacity packet was not a completed POST_DRAFT evaluation.
+- `RD-0864`: remains historical and superseded by RD-1003; supersession does
+  not prove every visual-language claim.
+
+This refresh resolves the classification gap only. It does not authorize
+conversion, queue regeneration, corpus assurance, signing, or a full `.fungi`
+build. See the [RD-1265 record](../../../../ZTF-Knowledge-Bases/private/research/rd/RD-1265-bounded-kb-gap-adjudication-PRIVATE.md)
+for the advisory Gemini/Grok inputs and Astra adjudication.
 
 ## Active non-evidence blockers
 
@@ -84,8 +106,8 @@ rather than a source/component change:
 - SLIDE/VOK profile activation, producer receipts, lifecycle/authority release,
   platform/durability evidence, signing, and queue regeneration.
 - Owner private-key custody or signing ceremony.
-- `RD-1231`, the large unresolved R&D corpus inventory, which the owner asked
-  to ignore for now.
+- `RD-1231`, the large unresolved R&D corpus inventory, which remains outside
+  this implementation-blocker count; `RD-1265` resolves classification only.
 - Full corpus compilation/build, final assurance bundle, and any claim based on
   platform or durability evidence.
 - Git branch/working-tree cleanup and CI transport. These are custody and
@@ -106,7 +128,31 @@ These are intentionally phrased as real-world research terms suitable for
 Google, YouTube, academic repositories, and open-source code search. They are
 search prompts, not project authority:
 
-## Research leads reviewed after the initial manifest
+### Current KB-gap review keywords
+
+- bounded source-to-source conversion evidence matrix
+- source shadow independent re-derivation compiler
+- no general emitter translation existence gap
+- one-symbol wave composition congruence proof
+- AST GIR source target digest binding
+- dependency queue completeness compiler conversion
+- parser compiler GIR semantic preservation audit
+- conversion manual boundary negative specification
+- K3 UNKNOWN non-coercion independent checker
+- adaptive interval refinement budget exhaustion incomplete result
+- interval enclosure composition theorem modular arithmetic
+- cache key semantic dependency graph hash rounding mode
+- non-authorizing planner independent verifier provenance
+- inverse quantizer interval witness source binding
+- exact rational interval endpoint admission proof
+- refused packet file ceiling post-draft admission
+- evidence packet capacity chunked admission hash chain
+- authenticated source forward quantizer inverse quantizer binding
+- RD corpus documentary review pending queue
+- visual semantic node canonical representation projection
+- `.fungi` conversion pilot non-authoritative evidence
+
+### Research leads reviewed after the initial manifest
 
 The following primary-source leads were reviewed in the requested order. Each
 surviving technique is recorded as conditional, non-authorizing R&D; none is a
@@ -123,6 +169,8 @@ drop-in fix or a clearance of an active blocker:
 Interpretation note: `Legato` was matched to the LEGaTO heterogeneous-computing
 project, and `Neptune` to the Neptune/Triton VM proof stack. The reviewed
 sources do not establish a direct Galerina or Tri-Fuse implementation.
+
+### Existing component and compiler search keywords
 
 - WebAssembly module admission validation digest attestation
 - WebAssembly import export section identity verification
