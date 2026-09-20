@@ -1649,10 +1649,17 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   values refuse; hostile authority overrides are covered at
   `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-225`.
   The package route is **46/46** with clean typecheck/build.
-- [ ] **Priority public-health confidentiality fix:** liveness/readiness/health
-  routes are public and return arbitrary component `detail` verbatim. Publish a
-  closed status-only schema; retain diagnostic detail behind authenticated,
-  redacted access.
+- [!] **Priority public-health confidentiality fix:** liveness/readiness/health
+  routes no longer return arbitrary component `detail`. The public response
+  schemas are now status-only at
+  `packages-ts/galerina-observability/src/kernel-integration.ts:178-194,225-240`,
+  and the fail-safe branch uses the same tagged `{ status }` body at `:273-277`.
+  Focused kernel vectors at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:73-108`
+  prove secret detail is absent and the fault path is **48/48** for the package
+  with clean typecheck/build. Residual: the repository has no owner-approved
+  authenticated/redacted diagnostic-detail route; keep component detail
+  internal until that separate contract is defined.
 - [x] Refuse ambiguous observability base paths. `packages-ts/galerina-observability/src/kernel-integration.ts:264-287`
   now rejects repeated slashes, dot segments, controls, query/fragment,
   backslash, non-ASCII text, surrounding whitespace and prefixes over 200
@@ -1666,11 +1673,11 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   claims the first used seam and refuses the opposite seam; both orderings are
   covered at `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:200-216`.
   The focused kernel/logger route is **26/26** with clean typecheck/build.
-- [ ] Stabilize `failSafe` to one tagged public response schema. Its catch branch
-  at `packages-ts/galerina-observability/src/kernel-integration.ts:254-260`
-  returns an ad-hoc `{ status: "DOWN", detail: ... }` body rather than the
-  normal HealthReport shape; add owner-approved schema and fault-vector tests
-  before changing the response contract.
+- [x] Stabilize `failSafe` to one tagged public response schema. Its catch branch
+  at `packages-ts/galerina-observability/src/kernel-integration.ts:273-277`
+  now returns `{ status: "DOWN" }`, matching the public status-only contract;
+  the direct fault vector is at
+  `packages-ts/galerina-observability/tests/kernel-integration.test.mjs:92-103`.
 - [x] **Priority substrate numerical/termination fix:** the current binary64
   recurrence now admits only odd `N <= MAX_NMR_N` (`1019`) at
   `packages-ts/galerina-substrate-math/src/index.ts:45,63-69`, rejects any

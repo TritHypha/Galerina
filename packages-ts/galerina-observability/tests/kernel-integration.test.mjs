@@ -67,6 +67,39 @@ test("combined /health reflects both surfaces", async () => {
   assert.equal(b.status, "UP");
   assert.equal(b.liveness.status, "UP");
   assert.equal(b.readiness.status, "UP");
+  assert.equal("components" in b, false);
+});
+
+test("public health responses are status-only and do not expose component detail", async () => {
+  const registry = new HealthRegistry();
+  registry.registerReadiness("db", () => ({ status: "DOWN", detail: "credential=secret-value" }));
+  const surface = observabilityRoutes({ registry, metrics: new MetricsCollector() });
+  const kernel = createAppKernel({ routes: surface.routes, dispatch: surface.dispatch });
+
+  const ready = await kernel.handle(req({ method: "GET", path: "/health/ready" }));
+  assert.equal(ready.status, 503);
+  assert.deepEqual(bodyJson(ready), { status: "DOWN" });
+  assert.ok(!new TextDecoder().decode(ready.body).includes("secret-value"));
+
+  const combined = await kernel.handle(req({ method: "GET", path: "/health" }));
+  assert.deepEqual(bodyJson(combined), {
+    status: "DOWN",
+    liveness: { status: "UP" },
+    readiness: { status: "DOWN" },
+  });
+});
+
+test("health fail-safe uses the tagged status-only public schema", async () => {
+  const surface = observabilityRoutes({
+    registry: {
+      async liveness() { throw new Error("private failure"); },
+      async readiness() { return { status: "UP", kind: "readiness", components: {} }; },
+    },
+    metrics: new MetricsCollector(),
+  });
+  const response = await surface.dispatch["observability.live"]({});
+  assert.equal(response.status, 503);
+  assert.deepEqual(response.body, { status: "DOWN" });
 });
 
 test("/metrics is secure-by-default (required auth ⇒ 401 without a verdict)", async () => {

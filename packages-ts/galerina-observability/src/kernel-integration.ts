@@ -30,7 +30,7 @@ import type {
 } from "../../galerina-framework-app-kernel/dist/index.js";
 import { MetricsCollector } from "./metrics.js";
 import { renderMetricsPrometheus } from "./metrics.js";
-import { HealthRegistry, type HealthReport } from "./health.js";
+import { HealthRegistry, type HealthReport, type HealthStatus } from "./health.js";
 
 // ── Metrics ⇐ kernel audit pipe (counts + error rates; NO latency) ────────────
 
@@ -175,8 +175,21 @@ const TEXT_PLAIN: Readonly<Record<string, string>> = Object.freeze({
   "content-type": "text/plain; version=0.0.4; charset=utf-8",
 });
 
+export interface PublicHealthStatus {
+  readonly status: HealthStatus;
+}
+
+export interface PublicHealthAggregate extends PublicHealthStatus {
+  readonly liveness: PublicHealthStatus;
+  readonly readiness: PublicHealthStatus;
+}
+
+function publicStatus(report: HealthReport): PublicHealthStatus {
+  return { status: report.status };
+}
+
 function reportToResult(report: HealthReport): HandlerResult {
-  return { status: report.status === "UP" ? 200 : 503, body: report };
+  return { status: report.status === "UP" ? 200 : 503, body: publicStatus(report) };
 }
 
 /**
@@ -215,7 +228,12 @@ export function observabilityRoutes(opts: ObservabilityRouteOptions): Observabil
       failSafe(async () => {
         const [liveness, readiness] = await Promise.all([registry.liveness(), registry.readiness()]);
         const status = liveness.status === "UP" && readiness.status === "UP" ? "UP" : "DOWN";
-        return { status: status === "UP" ? 200 : 503, body: { status, liveness, readiness } };
+        const body: PublicHealthAggregate = {
+          status,
+          liveness: publicStatus(liveness),
+          readiness: publicStatus(readiness),
+        };
+        return { status: status === "UP" ? 200 : 503, body };
       }),
     [metricsName]: (): HandlerResult => ({ status: 200, body: metrics.snapshot() }),
   };
@@ -256,7 +274,7 @@ async function failSafe(fn: () => Promise<HandlerResult>): Promise<HandlerResult
   try {
     return await fn();
   } catch {
-    return { status: 503, body: { status: "DOWN", detail: "health evaluation failed" } };
+    return { status: 503, body: { status: "DOWN" } satisfies PublicHealthStatus };
   }
 }
 

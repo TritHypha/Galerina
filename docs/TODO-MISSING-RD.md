@@ -392,14 +392,19 @@ locator is not sufficient evidence of a blocker or of completion.
   The remaining entries are exact implementation/design blockers; do not close
   them by silently swallowing writer errors or by claiming shallow redaction is
   complete.
-- **Galerina observability failSafe schema:** the fault branch at
-  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:254-260`
-  returns an ad-hoc `{ status: "DOWN", detail: ... }` body, while the normal
-  liveness/readiness paths return the HealthReport shape through `:212-218`.
-  No owner-approved tagged public schema or direct fault-vector test currently
-  settles whether detail is public. **Fail closed:** keep the response contract
-  open; do not widen the public health body or expose diagnostics until the
-  owner publishes the schema and redacted/authenticated boundary.
+- **Galerina observability public-health boundary:** public liveness/readiness/
+  health handlers now project only `{ status: "UP" | "DOWN" }` (combined health
+  includes status-only liveness/readiness children) at
+  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:178-194,225-240`;
+  `failSafe` uses the same tagged body at `:273-277`. The direct secret-detail
+  and fault vectors are
+  `Galerina/packages-ts/galerina-observability/tests/kernel-integration.test.mjs:73-108`,
+  and the package route is **48/48** with clean typecheck/build. **Residual
+  blocker:** no owner-approved authenticated/redacted diagnostic-detail route
+  exists. **Fail closed:** keep `HealthReport.components[*].detail` internal;
+  clearance requires a separately authenticated route contract, an explicit
+  redaction vocabulary, and negative vectors proving public responses cannot
+  carry component detail. Do not reopen the public body to satisfy diagnostics.
 - **Galerina WASM-target admission:** the current API is compile-time typed at
   `Galerina/packages-ts/galerina-target-wasm/src/index.ts:47`, while
   `createWasmTargetReport()` accepts typed caller-owned input at `:84` and
