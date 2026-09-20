@@ -1713,10 +1713,22 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
   its bounded package route is **61/61 pass**. Physical calibration and
   differential authority remain separate later gates.
-- [ ] **Priority accelerator ingress fix:** validate all model, capability,
-  preference, plan and adapter records at runtime. A fresh vector supplied rogue
-  kind, format, precision, adapter, workload and framework strings; selection
-  still returned `safe: true` and report construction preserved them.
+- [x] **Priority accelerator selection-ingress fix:** runtime decoding now
+  validates model, capability, preference and adapter records, including kind,
+  format, precision, workload/framework vocabulary, proxy/accessor/surplus and
+  sparse-array refusal, at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`.
+  The bounded package route is **7/7 pass** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`.
+- [!] **Remaining accelerator report blocker:**
+  `createAiAcceleratorTargetReport` still accepts caller-owned typed capability,
+  plan, selection and backend-profile records without a matching runtime schema
+  or decision-binding receipt at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-769`.
+  Keep report admission open until the owner defines the report schema,
+  diagnostic-severity validation, hostile-input refusal and selection-to-report
+  binding; the current alias-detachment vectors are only the test slice at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:89-146`.
 - [ ] Keep substrate TypeScript until an exact physical replacement and
   bootstrap/fixpoint proof exist. The quarantined staging Fungi candidate is
   non-authorizing and bit-different; checker tolerance is not parity.
