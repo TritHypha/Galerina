@@ -6,7 +6,7 @@
 // fail-closed exit-code handling live here, in one auditable spot.
 
 import { spawnSync } from "node:child_process";
-import type { HarnessOptions } from "./types.js";
+import type { HarnessOptions, SpawnInvocation } from "./types.js";
 
 export interface SpawnOutcome {
   /** Exit code; fail-closed to 1 when the child did not exit normally. */
@@ -24,6 +24,8 @@ export interface SpawnOutcome {
   readonly signal?: NodeJS.Signals;
   /** Stable host error code for timeout, output-limit or launch failures. */
   readonly errorCode?: string;
+  /** Exact executable, argv vector and working directory used for this spawn. */
+  readonly invocation: SpawnInvocation;
 }
 
 /** Default per-target timeout: 10 minutes (matches scripts/run-all-tests.cjs). */
@@ -49,6 +51,11 @@ export function runNode(
 ): SpawnOutcome {
   const live = opts.inheritStdio === true;
   const t0 = Date.now();
+  const invocation: SpawnInvocation = Object.freeze({
+    executable: process.execPath,
+    argv: Object.freeze([...args]),
+    cwd,
+  });
   const requestedOutputLimit = opts.outputLimitBytes ?? DEFAULT_OUTPUT_LIMIT_BYTES;
   if (!Number.isSafeInteger(requestedOutputLimit) || requestedOutputLimit <= 0) {
     return {
@@ -60,6 +67,7 @@ export function runNode(
       failureKind: "spawn-error",
       timedOut: false,
       errorCode: "INVALID_OUTPUT_LIMIT",
+      invocation,
     };
   }
   // A child launched by this harness is an independent test process, not a
@@ -107,5 +115,6 @@ export function runNode(
     timedOut: failureKind === "timeout",
     ...(signal !== undefined ? { signal } : {}),
     ...(typeof errorCode === "string" ? { errorCode } : {}),
+    invocation,
   };
 }

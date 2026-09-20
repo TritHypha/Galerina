@@ -1307,8 +1307,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-test/src/runners.ts:159-170`; duplicate/malformed/
   unsafe count summaries now refuse at `packages-ts/galerina-test/src/parse.ts:14-43`
   with **10/10** foundation tests plus **35/35** runner/spawn tests (one
-  Windows signal skip). Canonical argv/provenance, complete freshness framing,
-  and the remaining aggregation contract are still open.
+  Windows signal skip). The typed canonical argv slice is now closed:
+  `packages-ts/galerina-test/src/types.ts:35-39` defines `SpawnInvocation`,
+  `packages-ts/galerina-test/src/spawn.ts:54-60` captures the exact executable,
+  argv vector and cwd, and `packages-ts/galerina-test/src/runners.ts:208-407`
+  carries it through unit, e2e, conformance, fidelity and exact-corpus results;
+  `tests/spawn-outcomes.test.mjs:54-63` verifies the boundary. The focused
+  harness route is **36/36** with one host-specific signal skip. Exact
+  corpus/content provenance, complete freshness framing, and the remaining
+  aggregation contract are still open.
 - [ ] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must

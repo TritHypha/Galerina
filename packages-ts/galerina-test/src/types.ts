@@ -31,6 +31,13 @@ export interface TestCounts {
   readonly fail: number | null;
 }
 
+/** Exact child-process provenance. `command` below is display-only text. */
+export interface SpawnInvocation {
+  readonly executable: string;
+  readonly argv: readonly string[];
+  readonly cwd: string;
+}
+
 /** The verdict of one check (or the `all` aggregate). */
 export interface CheckResult {
   readonly kind: CheckResultKind;
@@ -41,8 +48,10 @@ export interface CheckResult {
   readonly durationMs: number;
   /** One-line human-readable status or failure reason. */
   readonly detail: string;
-  /** The underlying command that produced this verdict (provenance). */
+  /** Human-readable command summary; never use this as canonical provenance. */
   readonly command?: string;
+  /** Exact child invocations that produced this verdict. */
+  readonly invocations?: readonly SpawnInvocation[];
   /** node:test summary, when the runner emitted one. */
   readonly counts?: TestCounts;
   /** Sub-results, for the `all` aggregate. */

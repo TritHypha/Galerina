@@ -134,6 +134,10 @@ test("runUnit: passes and parses the node:test counts from the child", async () 
   assert.equal(res.ok, true);
   assert.equal(res.exitCode, 0);
   assert.equal(res.counts?.tests, 5);
+  assert.equal(res.invocations?.length, 1);
+  assert.equal(res.invocations?.[0].executable, process.execPath);
+  assert.deepEqual(res.invocations?.[0].argv, [join(root, "scripts/run-all-tests.cjs")]);
+  assert.equal(res.invocations?.[0].cwd, root);
   assert.match(res.detail, /5 tests/);
 });
 

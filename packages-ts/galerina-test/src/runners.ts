@@ -29,6 +29,7 @@ import type {
   E2eOptions,
   FidelityOptions,
   SlideOptions,
+  SpawnInvocation,
   UnitOptions,
 } from "./types.js";
 
@@ -204,6 +205,7 @@ export async function runUnit(opts: UnitOptions = {}): Promise<CheckResult> {
     durationMs: r.durationMs,
     detail,
     command: `node ${UNIT_RUNNER}${args.length > 1 ? " " + args.slice(1).join(" ") : ""}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -235,6 +237,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
   const verb = opts.build ? "build" : "check";
   const t0 = Date.now();
   let failures = 0;
+  const invocations: SpawnInvocation[] = [];
   for (const entry of entries) {
     const abs = resolveTarget(root, entry);
     if (!existsSync(abs)) { // perf-allow: loop-sync-io — one-shot e2e corpus existence scan; distinct example path per iteration
@@ -243,6 +246,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
       continue;
     }
     const r = runNode([cli, verb, entry], root, opts);
+    invocations.push(r.invocation);
     if (r.exitCode !== 0) failures++;
   }
   const durationMs = Date.now() - t0;
@@ -256,6 +260,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
       ? `e2e: ${entries.length}/${entries.length} examples ${verb}ed clean`
       : `e2e: ${failures}/${entries.length} examples failed (${verb})`,
     command: `node ${GALERINA_CLI} ${verb} <${entries.length} example(s)>`,
+    invocations: Object.freeze(invocations),
   };
 }
 
@@ -285,6 +290,7 @@ export async function runConformance(
       ? `conformance (R6) passed${counts.tests != null ? ` (${counts.tests} assertions)` : ""}`
       : spawnFailureDetail("conformance (R6)", r),
     command: `node --test ${opts.corpus ?? R6_PARITY}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -346,6 +352,7 @@ export async function runFidelity(
       ? `fidelity (0014) passed${counts.tests != null ? ` (${counts.tests} checks)` : ""}`
       : spawnFailureDetail("fidelity (0014)", r),
     command: `node --test ${opts.target ?? FIDELITY_DIFFERENTIAL}`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -397,6 +404,7 @@ function runExactNodeCorpus(
           ? `${kind} failed (exit ${r.exitCode})`
           : `${kind} refused uncountable or zero-test success`,
     command: `node --test <${tests.length} exact test files>`,
+    invocations: Object.freeze([r.invocation]),
     counts,
   };
 }
@@ -488,6 +496,7 @@ export async function runAll(opts: AllOptions = {}): Promise<CheckResult> {
     detail: ok
       ? `all ${children.length} checks passed`
       : `failed: ${failed.join(", ")}`,
+    invocations: Object.freeze(children.flatMap((child) => child.invocations ?? [])),
     children,
   };
 }

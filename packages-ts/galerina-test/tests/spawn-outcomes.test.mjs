@@ -51,6 +51,18 @@ test("captured output is delivered once, after canonical stream assembly", () =>
   assert.deepEqual(callbacks, [result.output]);
 });
 
+test("retains the exact executable, argv vector and cwd separately from display text", () => {
+  const args = ["-e", "process.exit(0)"];
+  const result = runNode(args, PACKAGE_ROOT);
+
+  assert.equal(result.failureKind, "none");
+  assert.equal(result.invocation.executable, process.execPath);
+  assert.deepEqual(result.invocation.argv, args);
+  assert.equal(result.invocation.cwd, PACKAGE_ROOT);
+  assert.ok(Object.isFrozen(result.invocation));
+  assert.ok(Object.isFrozen(result.invocation.argv));
+});
+
 test("child execution removes the parent node:test context marker", () => {
   const result = runNode(
     ["-e", "process.stdout.write(process.env.NODE_TEST_CONTEXT === undefined ? \"unset\" : \"present\")"],

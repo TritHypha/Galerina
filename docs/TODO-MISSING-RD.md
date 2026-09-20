@@ -376,6 +376,22 @@ locator is not sufficient evidence of a blocker or of completion.
   The remaining Stage-B parity, governed JSON codec, and crypto-provider move
   are tracked at `packages-ts/galerina-core-compiler/TODO.md:67-79`; they need
   cross-package contracts and are not bounded edits in the current pass.
+- **Galerina runner evidence residual:** the typed process-provenance slice is
+  now implemented and focused-tested: `packages-ts/galerina-test/src/types.ts:35-39`
+  defines `SpawnInvocation`, `packages-ts/galerina-test/src/spawn.ts:54-60`
+  captures the exact executable/argv/cwd and `src/runners.ts:208-407` carries
+  invocations through the five result lanes. The remaining blocker is exact
+  corpus/content provenance and aggregation semantics: the runner still emits
+  display-only summaries at `packages-ts/galerina-test/src/runners.ts:206`,
+  `:261`, `:292`, `:354`, and `:406`; those summaries do not identify the
+  exact content digest or a per-child outcome for every missing/failed e2e
+  entry. Freshness framing also remains incomplete at
+  `packages-ts/galerina-test/src/runners.ts:321-335`, where prerequisite
+  refusal has no child invocation because no process was launched. **Fail
+  closed:** do not treat the typed argv slice or a display string as complete
+  corpus provenance; clearance requires an owner-approved result schema,
+  per-child content/source receipts, and focused missing/failed aggregation
+  vectors.
 
 No VOK-specific unchecked logic item was found separate from the SLIDE
 reference-only and owner-gated boundaries above.
