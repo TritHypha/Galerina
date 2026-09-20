@@ -394,6 +394,21 @@ locator is not sufficient evidence of a blocker or of completion.
   negative coverage at `:149-164`. **Fail closed:** do not close the remaining
   sink/accounting blocker by silently swallowing writer errors; it requires an
   owner-approved typed failure signal and direct counter-separation vectors.
+- **Galerina metrics-audit authority boundary:**
+  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
+  maps only method/path/status into `metricsAuditSink`, while
+  `Galerina/packages-ts/galerina-observability/src/observability.ts:44-49,121-139`
+  exposes that lossy object as the kernel `AuditSink`. The mandatory runtime
+  evidence consumer at
+  `Galerina/packages-ts/galerina-framework-app-kernel/src/kernel.ts:746-795`
+  synchronously reserves/commits the full request event and returns 503 when
+  reservation or commit fails. **Blocker:** a metrics-only sink must not be
+  mistaken for receipt-preserving mandatory evidence, and the source comment's
+  "off the critical path/can never delay" claim is false for required commit.
+  **Fail closed:** clearance requires an owner-approved non-authorizing observer
+  or tee behind a real evidence sink, plus a required-runtime-report vector that
+  preserves requestId/errorCode/defaults/relaxations/posture and proves the
+  metrics observer cannot replace a response with a false success.
 - **Galerina observability public-health boundary:** public liveness/readiness/
   health handlers now project only `{ status: "UP" | "DOWN" }` (combined health
   includes status-only liveness/readiness children) at
