@@ -15,6 +15,26 @@
   assurance, queue regeneration, signing, and `.fungi` generation remain
   held by the exact blockers below.
 
+### Cross-project detached-GIR producer evidence — RD-1246 — 2026-09-20
+
+- [x] The current cross-project heads were rechecked before recording this
+  receipt: Galerina `997d1bcdae49e07e1c53bff318403dee550f1c2b` and Lyth-Weaver
+  `8e1a67070467ab5707fc5816319bb4e4a89b7bf0`. Lyth's RD-1246 review was
+  independently checked by Astra and remains
+  `COMPLETE_NON_AUTHORIZING; CROSS-PACKAGE EVIDENCE REQUIRED; HOLD`.
+- [!] Lyth rechecks extracted GIR bytes and work at
+  `lyth-weaver/tools/adapter/adapter.ts:441-457`, but returns
+  `UNAUTHENTICATED-RESEARCH-EVIDENCE` with both authority flags false at
+  `:537-544`. Its removal KAT remains `slide-reference` only at
+  `lyth-weaver/tools/removal/kat-removal.ts:1-3,21-28,46-57,77-83`; it does
+  not establish an authenticated checked-Fungi producer.
+- [!] Galerina Task 6 Step 1 and Tasks 6-8 remain locked at
+  `docs/TODO.md:1079-1098`: the next bounded evidence slice is one
+  owner-selected fixed scalar flow with retained source, complete toolchain
+  closure, canonical GIR and producer authentication, followed by independent
+  SLIDE re-derivation and authenticated VOK current-context evidence. No
+  `.fungi`, corpus, queue or admission action follows from RD-1246.
+
 ### WASM target admission adjudication — RD-1236 — 2026-09-20
 
 - [x] Record `RD-1236` as `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`.
