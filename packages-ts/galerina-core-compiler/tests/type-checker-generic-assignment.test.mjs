@@ -5,10 +5,21 @@ import { parseProgram, checkTypes } from "../dist/index.js";
 
 function typeErrors(source) {
   const parsed = parseProgram(source, "generic-assignment.fungi");
+  const parseErrors = parsed.diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+  if (parseErrors.length > 0) return parseErrors;
   return checkTypes(parsed.ast).diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 }
 
 describe("FUNGI-TYPE-002 generic assignment compatibility", () => {
+  it("does not hide parser diagnostics behind type checking", () => {
+    const errors = typeErrors("pure flow broken( -> Int { return 1 }");
+
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-PARSE-001"),
+      `Expected parser diagnostics, got: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
+
   it("rejects a mismatched generic Option payload", () => {
     const errors = typeErrors(`
 pure flow read(a: Array<Int>) -> String {
