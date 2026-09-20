@@ -1,5 +1,28 @@
 # TODO
 
+### Main-line consolidation and bounded corpus-control refresh — 2026-09-20
+
+- [x] Merged the active `codex/rd-0858-unit4-process-root` branch into
+  `main` at merge commit `0858b4be0620783837ab33c582af6ec3862165ff`.
+  Historical and detached worktrees remain retained for custody review; no
+  branch or worktree was deleted and nothing was pushed.
+- [x] Refreshed the generator-owned roadmap outputs after the merge. The
+  canonical producer is `scripts/gen-roadmap.mjs`; its bounded check suite
+  passes after writing `docs/ROADMAP.md`, `build/roadmap/roadmap.svg`, and
+  `build/roadmap/provenance.json`.
+- [x] Repaired the bounded PROJECT shard-capacity TODO in
+  `governance/phase-close-commands.json:362` and its contract assertion at
+  `scripts/tests/fungi-corpus-ownership.test.mjs:42`: two shards now admit
+  the exact current tracked boundary of **2,831** `.fungi` files as
+  **1,416/1,415** within a `2 x 1,500` limit.
+- [x] Focused corpus-control and audit-map checks pass **28/28** with the
+  explicit AGENTS owner (`c68276eb54cefb0a37260b60225734841603093d`) and
+  explicit Git executable input. These are structural controls only.
+- [!] The real PROJECT corpus audit, conversion-queue regeneration, signing,
+  and `.fungi` generation remain deferred until the owner-approved upstream
+  TODOs and evidence gates are closed. This section does not authorize the
+  expensive final assurance run.
+
 ### Current exact-head compiler batch — 2026-09-20
 
 - [x] The live Galerina compiler source head is
