@@ -1536,9 +1536,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   NaN/infinite cores/memory, unknown memory, rogue workload and aliased reports.
   `packages-ts/galerina-target-cpu/src/index.ts` now admits bounded immutable
   snapshots and the focused contract suite passes **10/10**.
-- [ ] Close GPU hostile record/array/text ingress, bound P×C traversal, validate
+- [!] Close GPU hostile record/array/text ingress, bound P×C traversal, validate
   every operation, return a deep snapshot, and migrate four legacy GPU codes to
-  governed `FUNGI-CATEGORY-NNN` registry ownership.
+  governed `FUNGI-CATEGORY-NNN` registry ownership. The runtime GPU boundary now
+  exact-decodes bounded plain records/arrays and returns frozen detached report
+  snapshots at `packages-ts/galerina-target-gpu/src/index.ts:71-217,271-315`;
+  plan/backend/operation checks remain at `:219-266`, with hostile/sparse,
+  proxy and alias-mutation coverage **6/6** at
+  `packages-ts/galerina-target-gpu/tests/gpu-contracts.test.mjs:46-74`.
+  The remaining blocker is diagnostic migration/registry ownership and any
+  physical GPU admission evidence; no backend authority is inferred.
 - [x] Fix JS plan/report fail-open behavior: invalid prerequisite domains must
   never render passed checks; cover builtin subpaths such as `fs/promises`,
   reconcile module imports with plan imports, and bind immutable typed receipts.

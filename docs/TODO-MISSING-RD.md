@@ -330,6 +330,17 @@ locator is not sufficient evidence of a blocker or of completion.
   snapshot/decision-binding contract exists. Exact clearance requires that
   report schema, fallback capability authority, alias-mutation vectors and
   diagnostic-severity refusal be defined and tested.
+- **Galerina GPU target ingress/snapshot (partial):** the GPU target now
+  exact-decodes bounded plain capability/plan records and arrays, refuses
+  accessors, proxies, symbols, surplus/sparse fields and control text, bounds
+  each collection to 1024 entries, and returns detached frozen report arrays at
+  `packages-ts/galerina-target-gpu/src/index.ts:71-217,271-315`. Plan/backend/
+  operation validation is at `:219-266`, with **6/6** focused tests at
+  `packages-ts/galerina-target-gpu/tests/gpu-contracts.test.mjs:46-74`.
+  **Remaining blockers:** legacy `Galerina_GPU_*` diagnostics still need
+  governed `FUNGI-CATEGORY-NNN` registry ownership, and no physical GPU
+  capability or production admission is established. Those gates are not
+  inferred from the passive plan-only package.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink
