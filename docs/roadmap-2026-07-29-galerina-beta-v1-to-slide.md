@@ -1,5 +1,31 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Current exact-head implementation refresh — 2026-09-20
+
+The current bounded implementation batch is source-checked and remains
+non-authorizing:
+
+- Galerina source implementation commits `0863e73f6`, `20bf92b4b` and
+  `d4dd8e120` add bounded generic return inference for sequence constructors,
+  nullable constructors, `Result.all` and `Result.unwrapOr`. The current
+  Galerina checkout is `6afcf74ef`; its two later commits are documentation
+  receipts only. `npm run build` passes; the explicit type-checker/record/phase
+  route is **139/139**, and the combined collection/interpreter/generic route
+  is **138/138**.
+- SLIDE checkout `ae270a0` is a documentation-only successor to tested source
+  head `c22e855b`; Lyth checkout `8e1a670` is a documentation-only successor to
+  tested source head `7f661360`. Their prior bounded source receipts therefore
+  remain valid for unchanged implementation files, but neither lane has
+  authority-release evidence.
+- Exact remaining blockers are recorded in the owning TODOs: Galerina broad
+  inference at `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`,
+  WAT refusal at `src/wat-emitter.ts:2028-2045`, SLIDE authority and producer
+  handoff at `SLIDE/TODO.md:20-23,48-63,126-146`, and Lyth checked-Fungi
+  admission at `lyth-weaver/TODO.md:50-52,86-89,107-109`.
+- Full corpus assurance, conversion-queue regeneration, signing/custody,
+  platform/durability claims and `.fungi` generation remain held until those
+  component and cross-repository gates are closed or explicitly owner-resolved.
+
 Date: 2026-08-08
 Working branch: `codex/galerina-final2-close-2026-08-08` (local; never pushed)
 Current revalidated checkpoint: Galerina and SLIDE were structurally re-indexed
