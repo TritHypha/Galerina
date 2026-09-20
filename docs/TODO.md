@@ -339,6 +339,20 @@
   diagnostic precedence. See
   `private/research/rd/RD-1252-list-literal-first-element-adjudication-PRIVATE.md`.
 
+- [!] `RD-1253` confirms that `Option.map`, `Result.map`, and `Result.mapErr`
+  erase callback result payloads: `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`
+  returns defined bare wrappers, which wildcard-match incompatible generic
+  consumers at `:454-463,521-528,1746-1828,1897-1923,2098-2123`. Method
+  callback arguments and arity are skipped at `:1191-1202,1874-1880`, while
+  the runtime transforms and rewraps values at
+  `packages-ts/galerina-core-compiler/src/stdlib.ts:328-333,356-361`. Astra
+  corrected the parser-valid callback fixture, `applyFn` arity behavior, and
+  missing-callback/runtime-error distinctions. Keep this at
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; characterization KATs must
+  precede any wrapper-payload reconstruction or method-argument diagnostic
+  rule. RD-1233 remains the separate WAT callback/closure hold. See
+  `private/research/rd/RD-1253-algebraic-map-callback-adjudication-PRIVATE.md`.
+
 - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
   `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
