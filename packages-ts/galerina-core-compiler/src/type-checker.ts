@@ -1209,6 +1209,19 @@ class TypeChecker {
         if ((method === "empty" || method === "from") && receiverNode?.kind === "identifier" && receiverNode.value === "Set") {
           return "Set";
         }
+        if (receiverNode?.kind === "identifier" && receiverNode.value === "Array") {
+          if (method === "empty") return "Array";
+          if (method === "range") return "Array<Int>";
+          if (method === "of") {
+            const elementTypes = (node.children ?? []).slice(1).map((child) => this.inferType(child));
+            if (elementTypes.length === 0) return "Array";
+            const firstType = elementTypes[0];
+            if (firstType !== undefined && elementTypes.every((type) => type === firstType)) {
+              return `Array<${firstType}>`;
+            }
+            return "Array<Auto>";
+          }
+        }
 
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";

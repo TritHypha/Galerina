@@ -264,4 +264,33 @@ pure flow badSetMethods() -> Set<String> {
       `each set-method return mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("infers bounded Array static constructor returns", () => {
+    const errors = typeErrors(`
+pure flow arrayConstructors() -> Array<Int> {
+  let empty: Array<String> = Array.empty()
+  let values: Array<Int> = Array.of(1, 2, 3)
+  let range: Array<Int> = Array.range(0, 3)
+  return values
+}
+`);
+
+    assert.deepEqual(errors, [], `bounded Array constructors must retain admitted element types: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Array static constructor returns", () => {
+    const errors = typeErrors(`
+pure flow badArrayConstructors() -> Array<String> {
+  let values: Array<String> = Array.of(1, 2)
+  let range: Array<String> = Array.range(0, 3)
+  return values
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      2,
+      `each Array constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

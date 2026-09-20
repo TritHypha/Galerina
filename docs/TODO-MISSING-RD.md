@@ -300,7 +300,7 @@ locator is not sufficient evidence of a blocker or of completion.
   Galerina implementation commit `1b10d5e32c6f1362dfb2df6232fb39d08570c85c`:
   `packages-ts/galerina-core-compiler/src/parser.ts:2776-2778` admits `match`
   in expression position, and
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1441-1491` unwraps
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1454-1504` unwraps
   expression-arm blocks and joins only assignment-compatible numeric arms.
   Regression coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:197-263`,
@@ -314,19 +314,19 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-core-compiler/src/self-hosted/slide-gfrontend-fixture-adapter.fungi:93-156`;
   the focused combined route is **40/40**. The algebraic-constructor and
   named-alias slice is closed at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:680-697,1156-1168,1197,1358-1376,1697-1711,1731-1749`;
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:680-697,1156-1168,1197,1371-1389,1710-1724,1744-1762`;
   its focused route is **32/32**, and the last full compiler package run before
   the Set slice was **6,784/6,784** at `e67db0ce0`. A bounded Array list-method
   slice now closes
   `first`/`last` → `Option<T>` and `append` → `Array<T>` at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1255-1260`, with
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1268-1273`, with
   positive/negative coverage at
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:168-198`
   (**11/11** in-file; **34/34** focused combined route). A bounded Map-method
   slice now closes `Map.empty()` → `Map`, `keys()` →
   `Array<K>`, `values()` → `Array<V>`, and persistent
   `set`/`delete`/`remove`/`merge` → `Map<K,V>` at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1204-1207,1272-1291`.
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1204-1207,1285-1304`.
   Positive/negative coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:200-232`
   (**13/13** in-file; **36/36** focused combined route), with the
@@ -339,15 +339,22 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1209-1211,1294-1306`.
   Positive/negative coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:234-266`
-  (**15/15** in-file; **130/130** combined bounded collection route).
-  Callback transforms `map`/`filter` remain deferred. The remaining unsupported
+  (**15/15** in-file; **132/132** combined bounded collection route).
+  Callback transforms `map`/`filter` remain deferred. Array static constructors
+  are now bounded at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1212-1224`:
+  `Array.empty()` → `Array`, homogeneous `Array.of(...)` → `Array<T>`, and
+  `Array.range(...)` → `Array<Int>`. Coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:268-295`
+  (**17/17** in-file; **132/132** combined bounded collection route). Mixed or
+  unknown `Array.of` element types remain `Array<Auto>` and defer. The remaining
   expression inference is open at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1497`
-  (`TypeChecker.inferType`), with the return consumer at `:1687-1769`, call
-  consumer at `:1815-1909`, and binding consumer at `:2005-2238`. A bounded
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1510`
+  (`TypeChecker.inferType`), with the return consumer at `:1700-1782`, call
+  consumer at `:1828-1922`, and binding consumer at `:2018-2251`. A bounded
   constructor slice is now
   closed at `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`
-  and `:1697-1711,1731-1749`; `Some`, `Ok`, and `Err` retain inferable payloads and
+  and `:1710-1724,1744-1762`; `Some`, `Ok`, and `Err` retain inferable payloads and
   concrete mismatches are refused. Coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
   (**32/32** focused tests). Do not mark TYPE-002/005-007 complete from
