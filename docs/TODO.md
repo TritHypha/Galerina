@@ -1879,13 +1879,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [x] Review both private Fungi skills. `NO_SKILL_UPDATE` is correct because
   current exact-record, open-input, binary64, no-`try/catch`, collection-order,
   boundedness and mutable-state rules cover all ten scopes.
-- [ ] Priority metrics boundedness defect: `#routeAccumulator` does not impose
-  a global route-series cap when method names vary. An exact probe with
-  `maxRoutes: 1`, one base observation and 100 distinct methods produced
-  **101 route series**, including **100 overflow series**. Add a hostile-method
-  regression, choose a single global overflow identity or a separately bounded
-  method vocabulary, conserve total/error/latency accounting and update the
-  file-level bounded-memory claim only after the fixed invariant is proved.
+- [x] Close the priority metrics boundedness defect at
+  `packages-ts/galerina-observability/src/metrics.ts:25-30,296-307`:
+  `#routeAccumulator` now folds every post-cap method/route pair into one
+  canonical `__overflow__/__overflow__` identity, so caller-controlled method
+  labels cannot grow the map beyond `maxRoutes + 1`. The hostile-method
+  regression at `packages-ts/galerina-observability/tests/metrics.test.mjs:111-127`
+  proves one admitted series plus one overflow series after 100 distinct
+  methods, with total/error/latency accounting conserved. The focused package
+  route is **51/51** with clean typecheck/build; the separate audit-sink
+  authority boundary remains open below.
 - [ ] Define one exact external-label/status-map/binary64/Option/record ABI plus
   an affine metrics capability with ordered multi-object mutation, failure
   containment, snapshot sorting and retained identity before reopening these
