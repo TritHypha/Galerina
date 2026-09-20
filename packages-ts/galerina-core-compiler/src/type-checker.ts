@@ -1206,6 +1206,9 @@ class TypeChecker {
         if (method === "empty" && receiverNode?.kind === "identifier" && receiverNode.value === "Map") {
           return "Map";
         }
+        if ((method === "empty" || method === "from") && receiverNode?.kind === "identifier" && receiverNode.value === "Set") {
+          return "Set";
+        }
 
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
@@ -1284,6 +1287,20 @@ class TypeChecker {
           if (method === "values") return valueType === undefined ? "Array" : `Array<${valueType}>`;
           if (method === "entries") return "Array<Auto>";
           if (method === "set" || method === "delete" || method === "remove" || method === "merge") {
+            return receiverType;
+          }
+        }
+
+        // Set methods
+        if (receiverType?.startsWith("Set<") || receiverType === "Set") {
+          if (method === "size" || method === "length") return "Int";
+          if (method === "contains" || method === "isEmpty") return "Bool";
+          const setType = parseTypeString(receiverType);
+          const elementType = setType.args[0]?.trim();
+          if (method === "toList" || method === "toArray") {
+            return elementType === undefined ? "Array" : `Array<${elementType}>`;
+          }
+          if (method === "add" || method === "remove" || method === "union" || method === "intersection" || method === "difference") {
             return receiverType;
           }
         }

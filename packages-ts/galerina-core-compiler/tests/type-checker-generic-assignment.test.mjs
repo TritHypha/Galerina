@@ -230,4 +230,38 @@ pure flow badMapMethods() -> Map<String, Int> {
       `each map-method return mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("retains Set<T> through bounded set methods", () => {
+    const errors = typeErrors(`
+pure flow setMethods() -> Set<String> {
+  let values: Set<String> = Set.empty()
+  let items: Array<String> = values.toList()
+  let added: Set<String> = values.add("one")
+  let merged: Set<String> = added.union(values)
+  let removed: Set<String> = merged.remove("one")
+  let present: Bool = removed.contains("one")
+  return removed
+}
+`);
+
+    assert.deepEqual(errors, [], `bounded set-method returns must retain their element type: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Set<T> method returns", () => {
+    const errors = typeErrors(`
+pure flow badSetMethods() -> Set<String> {
+  let values: Set<String> = Set.empty()
+  let items: Array<Int> = values.toList()
+  let added: Set<Int> = values.add("one")
+  let removed: Array<Int> = values.remove("one")
+  return values
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      3,
+      `each set-method return mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });
