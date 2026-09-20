@@ -1790,19 +1790,28 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-78`
   and `:120-149`.
 - [!] Channel validation now prevents changing getters from bypassing the
-  wavelength check at `packages-ts/galerina-target-photonic/src/index.ts:396-447`,
-  including finite positive values and `-0` refusal. The remaining blocker is
-  the unresolved cross-package contract for exact binary64 boundary, Option
-  presence and UTF-16 rules; those rules are not defined by the current
-  `OpticalChannelLayout` interface at `packages-ts/galerina-target-photonic/src/index.ts:149-154`.
+  wavelength check at `packages-ts/galerina-target-photonic/src/index.ts:426-471`,
+  including finite positive values and `-0` refusal. RD-1242 separately
+  confirms the remaining cross-package contract for diagnostic fields and
+  amplitude `0`/`-0`; exact binary64 boundary, Option presence and UTF-16
+  rules remain open and are not defined by the current `OpticalChannelLayout`
+  interface at `packages-ts/galerina-target-photonic/src/index.ts:149-154`.
 - [x] Repair lowering validation at
   `packages-ts/galerina-target-photonic/src/index.ts:314-391` and `:450-518`;
   dense-array holes, malformed nested mappings/channels and missing records now
   return typed refusal instead of foreign `TypeError`, and every admitted
   nested channel is revalidated. The hostile cases are covered by the focused
   **10/10** suite at `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:120-149`.
-- [ ] Reconcile same-named `PhotonicExecutionPlan` and `PhotonicDiagnostic`
-  schemas plus the conflicting amplitude-zero rule across photonic packages.
+- [!] **Photonic contract reconciliation — RD-1242:** core and target have
+  live incompatible `PhotonicDiagnostic` shapes at
+  `packages-ts/galerina-core-photonic/src/index.ts:40-47` and
+  `packages-ts/galerina-target-photonic/src/index.ts:192-196`, and disagree on
+  amplitude `0`/`-0` at core `:110-120` versus target `:466-472`. The TODO's
+  claim of two live `PhotonicExecutionPlan` interfaces is stale: core exports
+  `PhotonicPlan` at `:49-55`, while target alone exports
+  `PhotonicExecutionPlan` at `:106-114`; core's alternatives are documentation
+  proposals. Keep this open until the owner freezes diagnostic meaning,
+  amplitude/presence/signed-zero rules, versioning and registry ownership.
 - [ ] Replace legacy `Galerina_PHOTONIC_*` codes with owned live
   `FUNGI-CATEGORY-NNN` registry entries before these helpers can be promoted.
 - [x] Complete the individual Slice 372 owner matrix: queue 1,486/1,486;

@@ -204,6 +204,45 @@ assurance. Those remain later gates after the component work is complete.
   next concrete component TODO. Do not infer native, VOK, digest, physical,
   queue, signing, corpus or `.fungi` assurance from the 12/12 route.
 
+### M-RD-012 — Galerina photonic contract reconciliation — RD-1242
+
+- **Live conflict:** core defines `PhotonicDiagnostic` as
+  `{code,severity,message,path?}` at
+  `packages-ts/galerina-core-photonic/src/index.ts:40-47`; target defines
+  `{code,safeMessage,suggestedFix?}` at
+  `packages-ts/galerina-target-photonic/src/index.ts:192-196`. Both use shared
+  legacy wavelength/phase/amplitude codes with different payload meanings.
+- **Numeric conflict:** core permits amplitude `[0,1]` at `:110-120` and
+  accepts `-0`; target requires `(0,1]` and rejects `0` and `-0` at `:466-472`.
+  Neither package's prior tests asserted signed zero. Fresh bounded routes are
+  core **4/4** and target **12/12**, both with clean typecheck/build; these are
+  package-local results only.
+- **Stale claim correction:** there are not two live
+  `PhotonicExecutionPlan` interfaces. Core exports `PhotonicPlan` at `:49-55`;
+  target exports the live `PhotonicExecutionPlan` at `:106-114`. Core's
+  competing shapes are documentation proposals, so the TODO must distinguish
+  that stale claim from the live diagnostic compatibility gap.
+- **Decision:** `RD-1242` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The owner must
+  freeze shared diagnostic meaning, severity/redaction/path semantics,
+  amplitude/presence/signed-zero rules, versioning and code ownership before
+  any adapter or migration. Physical amplitude and hardware remain outside
+  this record.
+- **Registry qualification:** conflicting meaning tables remain at
+  `docs/COVERAGE.md:1156-1164`, with generated labels at
+  `build/code-registry/REGISTRY.md:1210`; selecting an owner meaning is
+  contract work, not automatic new R&D. Do not assign registry codes from
+  package-local green tests.
+- **Evidence:** private record
+  `private/research/rd/RD-1242-photonic-contract-reconciliation-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T104346Z-rd-1242-photonic-contract-reconciliation-private/`.
+- **Safe continuation:** keep the reconciliation TODO open, correct stale
+  documentation and add owner-approved signed-zero/diagnostic regression
+  vectors only after the contract decision. Do not infer photonic execution,
+  hardware, calibration, VOK, digest, queue, signing, corpus or `.fungi`
+  assurance from the 4/4 and 12/12 package routes.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
