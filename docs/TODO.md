@@ -3,9 +3,9 @@
 ### Current exact-head compiler batch — 2026-09-20
 
 - [x] The live Galerina head is
-  `55be426b0229bfdafe6c886c4920194857c7cfd1`. The bounded compiler source
+  `6afcf74ef0ff1c577ef5cf675b2589acca975786`. The bounded compiler source
   batch is represented by commits `0863e73f6`, `20bf92b4b`, and `d4dd8e120`;
-  the current head adds only the exact blocker receipt in `55be426b0`.
+  the current head adds the exact blocker receipt and the current R&D linkage.
 - [x] `npm run build` passes. The explicit type-checker, record, option,
   generic, and phase-11 route passes **139/139**; the combined collection,
   interpreter, and generic route passes **138/138**. The AGENTS anti-drift
@@ -129,6 +129,13 @@
   expression-kind matrix with both valid and invalid cases, while preserving
   refusal for genuinely unknown forms. No corpus, queue, signing, or
   `.fungi` assurance action follows.
+- [!] `RD-1232` records a complete Grok attempt and independent Astra review of
+  this blocker. The result is `PARTIAL`/`HOLD`: the current focused route remains
+  **139/139**, but live field-name heuristics, bare generic fallbacks, nested
+  generic extraction, `unwrapOr` fallback arguments, heterogeneous lists, and
+  generic record payload erasure still need an owner-frozen deferred-inference
+  contract plus hostile consumer tests. See
+  `private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
 
 ### Current bounded component receipts — 2026-09-20
 

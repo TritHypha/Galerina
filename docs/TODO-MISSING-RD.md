@@ -389,8 +389,24 @@ locator is not sufficient evidence of a blocker or of completion.
   and `:1746-1768,1787-1806`; `Some`, `Ok`, and `Err` retain inferable payloads and
   concrete mismatches are refused. Coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:90-165`
-  (**32/32** focused tests). Do not mark TYPE-002/005-007 complete from
-  these bounded slices.
+   (**32/32** focused tests). Do not mark TYPE-002/005-007 complete from
+   these bounded slices.
+- **RD-1232 broad expression-inference adjudication:** the governed Grok
+  attempt completed with `COMPLETE_NON_AUTHORITATIVE`, and an independent Astra
+  review returned `HOLD`. The exact record is
+  `ZTF-Knowledge-Bases/private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
+  The current head is `6afcf74ef0ff1c577ef5cf675b2589acca975786`; the fresh
+  focused route is **139/139**, but that does not clear the blocker. The exact
+  unresolved source boundary remains
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`
+  (`TypeChecker.inferType`), with consumers at `:1746-1828`, `:1874-1954`,
+  and `:2064-2297`. **Fail closed:** do not infer a complete matrix from the
+  passing bounded route. Clearance requires an owner decision for deferred
+  inference and positive/hostile tests for nested generics, malformed
+  combinators, list element consistency, `unwrapOr` fallbacks, generic record
+  fields/updates, HOF/zip wrappers, and protected-member value-state paths.
+  This RD found no new scientific R&D problem; it records the bridge result and
+  keeps the implementation/owner-contract blocker visible.
 - **Galerina core-config v0.2 contract:**
   `Galerina/packages-ts/galerina-core-config/TODO.md:41-72` is explicitly
   blocked because the source `src/index.ts:97-101` still exposes the v0.1
