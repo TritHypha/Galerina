@@ -43,4 +43,18 @@ test("readVotedGoverned: a dead-zone vote under revote (still dead) fails closed
 });
 test("DEFAULT_ON_INDETERMINATE is trap (fail-closed default)", () => {
   assert.equal(DEFAULT_ON_INDETERMINATE.kind, "trap");
+  assert.equal(Object.isFrozen(DEFAULT_ON_INDETERMINATE), true);
+  assert.equal(Reflect.set(DEFAULT_ON_INDETERMINATE, "kind", "fallback_digital"), false);
+  assert.equal(DEFAULT_ON_INDETERMINATE.kind, "trap");
+});
+test("dispatchDeadZone: unknown policy tags trap without invoking a callback", () => {
+  let callbackCalls = 0;
+  assert.throws(
+    () => dispatchDeadZone({ kind: "unsupported" }, 1, () => {
+      callbackCalls += 1;
+      return COMMIT;
+    }),
+    SubstrateDeadZoneTrap,
+  );
+  assert.equal(callbackCalls, 0);
 });

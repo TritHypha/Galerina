@@ -20,7 +20,7 @@ export type OnIndeterminate =
   | { readonly kind: "fallback_digital" };
 
 /** The default disposition when a substrate block omits `on_indeterminate`: trap (fail-closed). */
-export const DEFAULT_ON_INDETERMINATE: OnIndeterminate = { kind: "trap" };
+export const DEFAULT_ON_INDETERMINATE: OnIndeterminate = Object.freeze({ kind: "trap" });
 
 /** Thrown when a dead-zone reading cannot be resolved to a definite trit under the declared policy. */
 export class SubstrateDeadZoneTrap extends Error {
@@ -62,5 +62,7 @@ export function dispatchDeadZone(
     case "fallback_digital":
       // The digital lane computes the exact ideal trit with no noise. Deterministic, fail-safe.
       return { value: idealTrit, indeterminate: false, noiseMargin: 1 };
+    default:
+      throw new SubstrateDeadZoneTrap("unsupported on_indeterminate policy");
   }
 }
