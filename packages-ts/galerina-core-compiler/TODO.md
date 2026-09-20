@@ -43,7 +43,8 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     Regressions:
     tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
     tests/type-checker-record-adoption.test.mjs, and
-    tests/type-checker-generic-assignment.test.mjs.
+    tests/type-checker-generic-assignment.test.mjs,
+    tests/type-checker-option-unwrap.test.mjs.
 
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
