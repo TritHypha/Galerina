@@ -353,4 +353,36 @@ pure flow badNullableConstructors() -> Option<Int> {
       `each nullable constructor mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
     );
   });
+
+  it("infers Result.all and Result.unwrapOr payloads", () => {
+    const errors = typeErrors(`
+pure flow resultAlgebraicReturns() -> Int {
+  let results: Array<Result<Int, String>> = []
+  let combined: Result<Array<Int>, String> = Result.all(results)
+  let result: Result<Int, String> = Ok(1)
+  let value: Int = result.unwrapOr(0)
+  return value
+}
+`);
+
+    assert.deepEqual(errors, [], `Result aliases and unwrapOr must preserve admitted payloads: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("refuses mismatched Result.all and Result.unwrapOr payloads", () => {
+    const errors = typeErrors(`
+pure flow badResultAlgebraicReturns() -> Int {
+  let results: Array<Result<Int, String>> = []
+  let combined: Result<Array<String>, String> = Result.all(results)
+  let result: Result<Int, String> = Ok(1)
+  let value: String = result.unwrapOr(0)
+  return 0
+}
+`);
+
+    assert.equal(
+      errors.filter((error) => error.code === "FUNGI-TYPE-002").length,
+      2,
+      `each Result payload mismatch must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
+  });
 });

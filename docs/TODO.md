@@ -16,7 +16,7 @@
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1156-1168`:
   `Some` retains `Option<T>`, `Ok` retains `Result<T, Auto>`, and `Err`
   retains `Result<Auto, E>`. Alias resolution at `:680-697`, flow-call and
-  `?` propagation at `:1197` and `:1413-1431`, and the return checker at
+  `?` propagation at `:1197` and `:1417-1435`, and the return checker at
   `:1742-1768,1787-1806` now validate those payloads, including structural record
   adoption, instead of bypassing `FUNGI-TYPE-008`. Positive/negative
   coverage is
@@ -67,12 +67,21 @@
   at `packages-ts/galerina-core-compiler/src/type-checker.ts:1248-1266`:
   `Option.fromNullable(T)` retains `Option<T>`, while
   `Result.fromNullable(T,E)` retains `Result<T,E>`, matching the runtime
-  combinators at `packages-ts/galerina-core-compiler/src/stdlib.ts:319-367,2573-2601`.
+  combinators at `packages-ts/galerina-core-compiler/src/stdlib.ts:314-367,2581-2589,2595-2611`.
   Positive/negative coverage is
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:329-355`;
   the combined bounded route is **136/136** and the focused type-checker file
   is **21/21**. Unknown value/error types remain bare algebraic types and defer.
   Full package and corpus assurance remain deferred.
+- [x] Bounded Result alias and unwrap return inference is closed at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1231-1246,1385-1391`:
+  `Result.all(Array<Result<T,E>>)` retains `Result<Array<T>,E>`, and
+  `Result<T,E>.unwrapOr(...)` retains `T`, matching the runtime contracts at
+  `packages-ts/galerina-core-compiler/src/stdlib.ts:342-367,2568-2590`.
+  Positive/negative coverage is
+  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:357-387`;
+  the combined bounded route is **138/138** and the focused type-checker file
+  is **23/23**. Callback transforms and unknown payloads remain deferred.
 - [x] Bounded Option/Result sequence-constructor return inference is closed at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1226-1246`:
   `Option.sequence(Array<Option<T>>)` retains `Option<Array<T>>`, while
@@ -91,9 +100,9 @@
   (**256** occurrences, down from **262**); the standalone ratchet is **6/6**.
 - [!] The remaining compiler blocker is broad expression-level inference, not
   the closed slices above. The live fail-closed boundary is
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1552`
-  (`TypeChecker.inferType`), with the return consumer at `:1742-1824`, call
-  consumer at `:1870-1950`, and binding consumer at `:2060-2293`;
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`
+  (`TypeChecker.inferType`), with the return consumer at `:1746-1828`, call
+  consumer at `:1874-1954`, and binding consumer at `:2064-2297`;
   unsupported AST forms return unknown and therefore leave portions of
   FUNGI-TYPE-002/005-007 deferred. Clearance requires a complete
   expression-kind matrix with both valid and invalid cases, while preserving

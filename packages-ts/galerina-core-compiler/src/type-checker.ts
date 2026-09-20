@@ -1228,7 +1228,7 @@ class TypeChecker {
         // Keep malformed or untyped inputs at the bare algebraic type: this
         // boundary must not invent payloads that later checks could mistake
         // for verified information.
-        if (method === "sequence" && receiverNode?.kind === "identifier") {
+        if ((method === "sequence" || (method === "all" && receiverNode?.value === "Result")) && receiverNode?.kind === "identifier") {
           const argumentNode = node.children?.[1];
           const argumentType = argumentNode === undefined ? undefined : this.inferType(argumentNode);
           const argumentRef = argumentType === undefined ? undefined : parseTypeString(argumentType);
@@ -1385,6 +1385,10 @@ class TypeChecker {
         // Result methods
         if (receiverType === "Result" || receiverType?.startsWith("Result<")) {
           if (method === "isOk" || method === "isErr") return "Bool";
+          if (method === "unwrapOr") {
+            const resultType = parseTypeString(receiverType);
+            return resultType.base === "Result" ? resultType.args[0] : undefined;
+          }
           if (method === "map" || method === "mapErr") return "Result";
         }
 
