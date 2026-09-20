@@ -1751,9 +1751,18 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   schema authority; invalid-runtime report retention and duplicated error
   warning text are also exact residual controls at `index.ts:219,243-259`.
   No WASM execution authority is inferred.
-- [ ] Decide and enforce workspace-root marker attestation and target
-  containment; cover env/explicit-root bypass, file-vs-directory, symlinks,
-  traversal, drives, UNC paths and Error identity.
+- [!] **Workspace-root marker and target containment — RD-1243:** current
+  `packages-ts/galerina-test/src/paths.ts:20-27,41-58` accepts explicit/env
+  roots without marker attestation, treats any existing marker object as
+  sufficient, and passes absolute or escaping target paths through. The
+  current tests at `packages-ts/galerina-test/tests/foundation.test.mjs:87-113`
+  do not exercise the detached-root failure, marker type or containment
+  negatives. Grok and Astra both return
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; OWNER CONTRACT REQUIRED;
+  HOLD`. The owner must freeze marker/root reparse semantics, lexical versus
+  physical containment, independent-root admission, supported drive/UNC/device
+  namespaces and exact Error identity before a bounded `paths.ts` patch.
+  No `.fungi`, corpus, queue, signing or conversion authority follows.
 - [x] Prove the immutable `WORKSPACE_MARKER` String independently from its
   filesystem consumers: strict check plus interpretation/signed-Wasm **2/2**;
   TypeScript remains pending a consumer switch and retirement authority.

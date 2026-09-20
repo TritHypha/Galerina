@@ -243,6 +243,34 @@ assurance. Those remain later gates after the component work is complete.
   hardware, calibration, VOK, digest, queue, signing, corpus or `.fungi`
   assurance from the 4/4 and 12/12 package routes.
 
+### M-RD-013 — Galerina workspace-root marker and target containment — RD-1243
+
+- **Live gap:** `packages-ts/galerina-test/src/paths.ts:20-27` accepts any
+  successful `existsSync` marker result; `:41-44` returns explicit and
+  `GALERINA_ROOT` paths without checking the marker; and `:55-58` performs no
+  target containment. Local probes returned explicit/env roots without a
+  marker, `../outside` beyond the root and an absolute outside path.
+- **Test gap:** `packages-ts/galerina-test/tests/foundation.test.mjs:87-113`
+  uses a valid in-root explicit root and absolute target, while the named
+  no-workspace test only asserts the marker string. It does not cover
+  file-vs-directory, marker/root/ancestor reparse objects, sibling-prefix,
+  drive-relative, UNC/device or exact Error identity.
+- **Decision:** `RD-1243` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; OWNER CONTRACT REQUIRED;
+  HOLD`. The owner must freeze marker attestation, lexical versus physical
+  containment, supported Windows namespace/reparse behavior,
+  `independentRoot` treatment and exact refusal identity. A bounded patch is
+  ordinary engineering only after that freeze; `lstat`/`realpath` alone must
+  not be represented as race-safe confinement.
+- **Evidence:** private record
+  `private/research/rd/RD-1243-workspace-root-marker-attestation-and-containment-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T111749Z-rd-1243-workspace-root-marker-attestation-private/`.
+- **Safe continuation:** leave the item open and do not add a guessed
+  TypeScript implementation. The required next input is the owner contract
+  plus Windows privilege/share fixtures where physical or namespace claims are
+  expected. Do not infer queue, signing, corpus or `.fungi` assurance.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
