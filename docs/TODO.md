@@ -83,6 +83,28 @@
   authenticated health, durability, conversion, queue, corpus or `.fungi`
   authority follows.
 
+### Metrics-audit authority boundary adjudication — RD-1239 — 2026-09-20
+
+- [x] Record `RD-1239` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The current
+  bounded controls pass **16/16** for observability integration and **9/9**
+  for app-kernel audit behavior; they verify counts and affine/503 controls,
+  not receipt preservation.
+- [!] `metricsAuditSink` at
+  `packages-ts/galerina-observability/src/kernel-integration.ts:38-80` always
+  returns a token and records only method/path/status. It drops requestId,
+  errorCode, appliedDefaults, relaxations, timestamp and posture; exact status
+  becomes a class count and routes can truncate or overflow-fold. A mandatory
+  `runtimeReport` route can therefore return `200` without a full receipt.
+- [!] The kernel's full-event contract remains at
+  `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`:
+  reserve before effects, synchronous commit, and 503 on required refusal or
+  commit failure. Clearance requires an owner-selected public composition:
+  demote the metrics adapter or place it as a non-authorizing observer/tee
+  behind a receipt-preserving sink, then add full-field, capacity, affine,
+  observer-failure and receipt-loss controls. No durability or production
+  authority follows this record.
+
 ### Exact blocker ledger refresh — 2026-09-20
 
 - [x] The SLIDE G4 false-positive call-site blocker is closed at
@@ -2123,13 +2145,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   hostile inputs return that exact string. Focused package `npm test` passes
   **50/50** with zero failures and zero skips; `JsonLineSink` failure handling,
   failure accounting and the remaining authenticated/physical gates stay open.
-- [ ] Security boundary: do not use lossy `metricsAuditSink` as the kernel's
-  mandatory evidence sink. It can reserve/commit successfully while discarding
-  requestId, errorCode, defaults, relaxations, timestamp and posture. Introduce
-  a non-authorizing metrics observer or tee behind a real receipt-preserving
-  evidence sink; correct the false “off critical path/can never delay” wording
-  because required commit occurs synchronously and can replace the response
-  with 503.
+- [!] Security boundary: RD-1239 confirms that lossy `metricsAuditSink` must
+  not be the kernel's mandatory evidence sink. It can reserve/commit
+  successfully while discarding requestId, errorCode, defaults, relaxations,
+  timestamp and posture. Keep the owner API decision open: demote it to a
+  non-authorizing metrics observer or compose it behind a real
+  receipt-preserving evidence sink. Correct the false “off critical path/can
+  never delay” wording because required commit occurs synchronously and can
+  replace a response with 503. The current count tests do not detect receipt
+  loss.
 - [ ] Retain TypeScript and every logger/kernel consumer until each exact active
   ABI and physical SLIDE/VOK proof exists. Focused evidence grants no whole-file
   retirement, production, release or push authority.

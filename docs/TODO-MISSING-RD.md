@@ -106,6 +106,38 @@ assurance. Those remain later gates after the component work is complete.
   authenticated health, durability, queue, corpus or `.fungi` assurance from
   the current package route or model agreement.
 
+### M-RD-009 — Galerina metrics-audit authority boundary — RD-1239
+
+- **Exact blocker:** `packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
+  exposes a metrics projection as `AuditSink`; the kernel's full-event affine
+  contract is at `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`.
+- **Authority loss:** the adapter always returns a token, keeps only
+  method/path/status, drops request identity, error code, policy provenance,
+  timestamp and posture, and can truncate/overflow-fold routes or drop
+  malformed observations. A mandatory route can therefore return `200` without
+  a receipt-preserving event.
+- **Fresh evidence:** observability integration is **16/16** and app-kernel
+  audit controls are **9/9**. These tests verify metrics counts and in-memory
+  affine/503 behavior but are blind to lossy receipt substitution.
+- **Decision:** `RD-1239` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The existing kernel
+  contract is sufficient; the remaining decision is owner API/composition,
+  then ordinary bounded implementation. Demote the adapter or make it a
+  non-authorizing observer/tee behind a receipt-preserving sink. This is not
+  new R&D.
+- **Clearance evidence:** owner-selected composition, exact full-field
+  preservation, real capacity refusal before effects, commit failure/cancel,
+  foreign/reused reservation controls, observer throw/drop/overflow isolation,
+  non-required emit behavior, and a planted receipt-loss verifier that rejects
+  the lossy adapter. In-memory receipts are not durability.
+- **Evidence:** private record
+  `private/research/rd/RD-1239-metrics-audit-authority-boundary-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T095740Z-rd-1239-metrics-audit-authority-boundary-private/`.
+- **Safe continuation:** do not authorize sink replacement, production
+  evidence, queue/corpus/`.fungi` assurance, or durability from the passing
+  count tests or model agreement.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
@@ -623,7 +655,7 @@ locator is not sufficient evidence of a blocker or of completion.
   owner-approved direct failure behavior, explicit counter-visibility choice,
   and direct/repeated-failure vectors. Existing evidence does not require a
   new public typed failure signal.
-- **Galerina metrics-audit authority boundary:**
+- **Galerina metrics-audit authority boundary (RD-1239):**
   `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
   maps only method/path/status into `metricsAuditSink`, while
   `Galerina/packages-ts/galerina-observability/src/observability.ts:44-49,121-139`
@@ -631,13 +663,13 @@ locator is not sufficient evidence of a blocker or of completion.
   evidence consumer at
   `Galerina/packages-ts/galerina-framework-app-kernel/src/kernel.ts:746-795`
   synchronously reserves/commits the full request event and returns 503 when
-  reservation or commit fails. **Blocker:** a metrics-only sink must not be
-  mistaken for receipt-preserving mandatory evidence, and the source comment's
-  "off the critical path/can never delay" claim is false for required commit.
-  **Fail closed:** clearance requires an owner-approved non-authorizing observer
-  or tee behind a real evidence sink, plus a required-runtime-report vector that
-  preserves requestId/errorCode/defaults/relaxations/posture and proves the
-  metrics observer cannot replace a response with a false success.
+  reservation or commit fails. **Blocker:** RD-1239 confirms that a metrics-only
+  sink must not be mistaken for receipt-preserving mandatory evidence, and the
+  source comment's "off the critical path/can never delay" claim is false for
+  required commit. **Fail closed:** clearance requires the owner-selected
+  non-authorizing observer/tee composition, a required-runtime-report vector
+  that preserves requestId/errorCode/defaults/relaxations/posture, capacity and
+  affine controls, and a receipt-loss verifier that rejects the lossy adapter.
 - **Galerina observability public-health boundary:** public liveness/readiness/
   health handlers now project only `{ status: "UP" | "DOWN" }` (combined health
   includes status-only liveness/readiness children) at
