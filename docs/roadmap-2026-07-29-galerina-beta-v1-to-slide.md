@@ -5,18 +5,20 @@
 The current bounded implementation and documentation state remains
 non-authorizing:
 
-- Galerina `main` now contains the active branch consolidation at merge
-  `0858b4be0620783837ab33c582af6ec3862165ff`. The generator-owned roadmap
-  refresh is recorded through `scripts/gen-roadmap.mjs`; focused corpus-control
-  and audit-map checks pass **28/28**, including the corrected two-shard
-  PROJECT capacity of **2,831** tracked `.fungi` files at **1,416/1,415**.
-- SLIDE remains at TODO/documentation head
-  `bf6a3ed8e329e0b9004bd665a8c35bd26799b188`; Lyth-Weaver remains at
-  `02db110116c7cabc0778fa99541aba573feb430b`. Their RD-1246 producer/GIR
+- Galerina `main` is now at `f345fbc874f5930f6cc842cb20f5b4e145e34035`, following
+  the active-branch consolidation merge `0858b4be0620783837ab33c582af6ec3862165ff`.
+  The generator-owned roadmap refresh is recorded through
+  `scripts/gen-roadmap.mjs`; focused corpus-control and audit-map checks pass
+  **28/28**, including the corrected two-shard PROJECT capacity of **2,831**
+  tracked `.fungi` files at **1,416/1,415**.
+- SLIDE is at TODO/documentation head
+  `6d8a7589278cb17d8d9e07c80df2ad66b4eb0eb9`; Lyth-Weaver is at
+  `084f4198dbfaaf8c0405bb5b7d4b80b260d9542d`. Their RD-1246 producer/GIR
   boundary remains **HOLD** pending owner-selected Galerina producer bytes,
   canonical GIR, independent SLIDE re-derivation and authenticated VOK
   current-context evidence.
-- The private KB/index head is `b419838d3a69530909fbee025c9065df2446a202`;
+- The private KB source head before its latest continuation-table refresh is
+  `9fd6ca936a1cee2a7de922985c56b4f648940e4b`;
   its corpus continuation table is still **IN PROGRESS** and does not claim
   fresh corpus results. The canonical AGENTS owner used by the audit-map
   receipt is `c68276eb54cefb0a37260b60225734841603093d`.
