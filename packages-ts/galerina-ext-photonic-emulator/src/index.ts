@@ -13,6 +13,7 @@
 export {
   type PhysParams,
   ACT_MAX, ENOB_CEILING, PHOTONIC, NOISY,
+  type PhotonicEmulatorMathErrorCode, PhotonicEmulatorMathError, MAX_NMR_N,
   Xorshift32,
   tmacExact, analogVarianceClosedForm, adcRange, quantStep,
   tmacPhotonic, tmacVoted, N_MAX_VOTES, clampVotes,

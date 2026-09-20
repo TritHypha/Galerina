@@ -1698,20 +1698,21 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   with clean package typecheck/build. The cap is the smallest bounded change
   supported by RD-0839; a log-domain large-`N` replacement remains future
   owner-reviewed work.
-- [ ] Close substrate host ingress: validate exported `flipProbability`, capture
+- [x] Close substrate host ingress: validate exported `flipProbability`, capture
   each ordinary own-data field once, reject coercion/accessors/proxies/non-finite
   values, and use fixed typed failure codes rather than coercing rejected values
-  while formatting errors. Add exact-bit, negative-zero, envelope and mutation
-  KATs plus the Tower-Citizen/emulator drift gates. The shared math and
+  while formatting errors. The shared math,
   Tower-Citizen call-site slice is now bounded at
   `packages-ts/galerina-substrate-math/src/index.ts:22-121` and
   `packages-ts/galerina-tower-citizen/src/substrate-model.ts:33-113,177-189`,
   with hostile ingress coverage at
   `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`;
-  the item remains open because the copied emulator contract and its
-  differential/negative drift gates are unresolved at
-  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200` and
-  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:116-119`.
+  the copied emulator now mirrors the same guard at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267`, with
+  negative/envelope coverage at
+  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
+  its bounded package route is **61/61 pass**. Physical calibration and
+  differential authority remain separate later gates.
 - [ ] **Priority accelerator ingress fix:** validate all model, capability,
   preference, plan and adapter records at runtime. A fresh vector supplied rogue
   kind, format, precision, adapter, workload and framework strings; selection

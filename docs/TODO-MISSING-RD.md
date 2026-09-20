@@ -321,23 +321,23 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:52-66`
   and `packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:238-245`;
   bounded evidence is substrate math **7/7** and Tower-Citizen substrate
-  **21/21** with clean typecheck/build. This closes the shipped closed-form
-  envelope only. The independently owned photonic-emulator mirror remains
-  unresolved at `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200`;
-  its `N_MAX_VOTES` at `:119-150` bounds only the vote loop, not its copied
-  closed form. The shared `flipProbability` ingress is now fail-closed at
+  **21/21** with clean typecheck/build. The independently owned
+  photonic-emulator mirror now applies the same bounded closed-form envelope:
+  `PhotonicEmulatorMathError` and `MAX_NMR_N=1019` are defined at
+  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-210`, exact
+  own-data capture is at `:215-243`, and the guarded public paths are at
+  `:245-267`. The export surface is `src/index.ts:16`, and the hostile ingress
+  and envelope vectors are `tests/emulator.test.mjs:134-152`. The package
+  route is **61/61 pass** with clean build/typecheck. The shared
+  `flipProbability` ingress is fail-closed at
   `packages-ts/galerina-substrate-math/src/index.ts:22-121`: exact plain
   own-data fields are captured once, accessors/surplus fields/proxies and
   non-finite values refuse with typed codes, and Tower-Citizen projects its
   seeded record into that exact math shape at
   `packages-ts/galerina-tower-citizen/src/substrate-model.ts:76-113,177-189`.
   Hostile coverage is `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`.
-  The broader host-ingress TODO remains open because the independently owned
-  emulator mirror still has unguarded `flipProbability`/NMR paths at
-  `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:176-200`; its
-  loop cap at `:119-150` does not cap the copied closed form, and the required
-  emulator differential/negative drift vectors are not yet present at
-  `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:116-119`.
+  The copied emulator host-ingress gap is closed for the bounded numerical
+  slice; the separate R&D/physical calibration posture remains unchanged.
 - **Galerina AI-accelerator selection ingress (partial):** the runtime decoder
   at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`
   exact-decodes model/tensor/capability/preference records, rejects
