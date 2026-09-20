@@ -282,7 +282,7 @@
   test-only characterization of the existing `inferType` branch; it does not
   widen inference or clear the RD-1232/RD-1247 owner contract.
 
-- [!] `RD-1248` confirms the `unwrapOr` fallback-argument gap under RD-1232:
+ - [!] `RD-1248` confirms the `unwrapOr` fallback-argument gap under RD-1232:
   payload return inference exists at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`, but all
   method argument validation is skipped at `:1873-1880`. A wrong concrete
@@ -293,9 +293,24 @@
   change. Characterization KATs at
   `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:447-495`
   pass **31/31** and intentionally record the current gap. State remains
-  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; no source semantics changed.
+   `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; no source semantics changed.
 
-- [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
+ - [!] `RD-1250` confirms that `Map.entries()` is not a safe deferred boundary:
+   `packages-ts/galerina-core-compiler/src/type-checker.ts:1327-1346` returns
+   defined `Array<Auto>`, and inferred `Auto` is wildcard-compatible at
+   `:454-480`, so incompatible return/call/binding consumers can be silently
+   admitted at `:1746-1828,1874-1954,2064-2297`. The runtime instead emits
+   anonymous `{key, value}` records at
+   `packages-ts/galerina-core-compiler/src/stdlib.ts:890-896`; no declared
+   record authority applies to a method result. Astra reproduced the
+   populated-map false admission and corrected the direct-vs-`first()` and
+   `TYPE-026` distinctions. Keep this at
+   `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; add characterization KATs
+   only until the owner freezes entry payload/key/member/diagnostic semantics
+   and an authorized named or structural-record path. See
+   `private/research/rd/RD-1250-map-entries-anonymous-record-adjudication-PRIVATE.md`.
+
+ - [!] `RD-1233` records one refused/incomplete Grok attempt and an independent
   Astra review of the residual WAT-lowering blocker. The result is
   `REFUSED_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The exact refusal
   boundary remains `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2035-2045`,
