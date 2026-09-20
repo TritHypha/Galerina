@@ -212,7 +212,19 @@
   runtime contract at `packages-ts/galerina-core-compiler/src/stdlib.ts:2613-2621`
   returns an anonymous `{first, second}` record, but no admitted named record
   schema exists here. Clearance requires an owner-approved schema/typing
-  contract plus positive and negative tests.
+  contract plus positive and negative tests. RD-1249 confirms this remains an
+  owner-contract hold: the checker falls through to `undefined` at
+  `type-checker.ts:1414`, method arguments bypass the general checks at
+  `:1874-1880`, and unknown results bypass return/binding compatibility at
+  `:1749` and `:2100`. The runtime shape does not establish compiler schema
+  authority. Astra independently confirmed the hold and corrected the matrix:
+  explicit annotations can supply member types without validating the zip
+  initializer, bare `Option` annotations can raise `FUNGI-TYPE-009`, and
+  `Auto` does not produce `FUNGI-TYPE-026` for unknown zip inference. The RD
+  is `private/research/rd/RD-1249-option-zip-anonymous-record-adjudication-PRIVATE.md`;
+  only characterization KATs are justified until the owner freezes the
+  anonymous-structure, payload, annotation, member-access, and diagnostic
+  contract.
 - [x] Bounded Option/Result sequence-constructor return inference is closed at
   `packages-ts/galerina-core-compiler/src/type-checker.ts:1226-1246`:
   `Option.sequence(Array<Option<T>>)` retains `Option<Array<T>>`, while
