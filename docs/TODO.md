@@ -39,6 +39,28 @@
   physical-target authority, queue regeneration, corpus run, or `.fungi`
   generation is authorized by this record.
 
+### Direct logger sink failure adjudication — RD-1237 — 2026-09-20
+
+- [x] Record `RD-1237` as
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The bounded
+  observability package route is currently **53/53** with clean typecheck and
+  build. A direct runtime probe confirms that a throwing writer escapes from
+  `JsonLineSink.write()` while the same sink through `Logger` is isolated and
+  counted.
+- [!] The exact defect remains at
+  `packages-ts/galerina-observability/src/logger.ts:56-63`: the injected
+  writer is called without a local catch despite the `LogSink.write MUST NOT
+  throw` contract at `:31-34`. `Logger.#emit` catches only the mediated path
+  at `:195-217`; its counter also covers record-construction failures at
+  `:213-217`. `#safeNow` returns `0` without counting clock exceptions at
+  `:219-227`.
+- [!] Clearance needs an owner-frozen direct-sink failure contract, a direct
+  throwing-writer regression that cannot be satisfied by wrapping only
+  `Logger.#emit`, and single/repeated-failure controls. Do not redefine
+  `sinkFailures()` or close the separate failure-accounting/clock TODO from
+  this record. RD-1237 is advisory only; no production, conversion, queue,
+  corpus or `.fungi` authority follows.
+
 ### Exact blocker ledger refresh — 2026-09-20
 
 - [x] The SLIDE G4 false-positive call-site blocker is closed at
@@ -2028,10 +2050,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   Focused package typecheck/build/tests pass **39/39**.
 - [!] Priority logger contract blocker: direct `JsonLineSink.write()` at
   `packages-ts/galerina-observability/src/logger.ts:56-63` propagates a throwing
-  writer despite the `LogSink.write MUST NOT throw` contract. The exact typed
-  failure/isolation contract and its direct regression are not yet defined;
-  `Logger.#emit` at `:195-217` only catches the outer call and does not clear
-  the direct-sink contract.
+  writer despite the `LogSink.write MUST NOT throw` contract. RD-1237 confirms
+  the direct defect and retains the owner contract. The exact direct-sink
+  failure/isolation contract and regression are not yet defined;
+  `Logger.#emit` at `:195-217` only catches the mediated call and does not clear
+  the direct-sink contract. The current bounded package route is **53/53**;
+  this does not close the direct axis.
 - [x] Priority logger fail-closed fix: `packages-ts/galerina-observability/src/logger.ts:106`
   now validates runtime `minLevel` values through the closed `levelOrder` switch
   at `packages-ts/galerina-observability/src/logger.ts:186-193`, selecting named
@@ -2055,10 +2079,12 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   cover nested secrets and the package route is **50/50** with clean
   typecheck/build.
 - [!] Logger failure-accounting blocker: `#emit` and `#safeNow` at
-  `packages-ts/galerina-observability/src/logger.ts:195-227` currently merge
-  sink-write, record-construction/redaction and clock failures into one counter.
+  `packages-ts/galerina-observability/src/logger.ts:195-227` count sink-write
+  and record-construction/redaction failures through `#emit`, while `#safeNow`
+  catches clock exceptions and returns `0` without incrementing that counter.
   The separation and negative/fractional/signed-zero clock contract need an
-  exact decision and direct vectors.
+  exact owner decision and direct vectors; RD-1237 explicitly leaves this
+  separate TODO open.
 - [x] Logger prototype-safety blocker: redaction now defines copied properties
   explicitly, so an own `__proto__` field cannot mutate the output prototype;
   hostile descriptors/cycles are refused at

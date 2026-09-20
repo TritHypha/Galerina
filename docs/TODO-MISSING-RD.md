@@ -47,6 +47,35 @@ assurance. Those remain later gates after the component work is complete.
   claim WASM execution or physical-target authority, regenerate the queue, or
   run corpus/`.fungi` assurance from the 5/5 route or model agreement.
 
+### M-RD-007 — Galerina direct logger sink failure contract — RD-1237
+
+- **Exact blocker:** `packages-ts/galerina-observability/src/logger.ts:31-34,56-63`.
+  The interface claims `LogSink.write` must not throw, but direct
+  `JsonLineSink.write()` invokes the injected writer without a local catch.
+  `Logger.#emit` only protects the mediated path at `:195-217`.
+- **Fresh evidence:** the bounded package route is **53/53** with clean
+  typecheck/build. A direct `dist/index.js` probe observed the writer error
+  escaping, while the same sink through `Logger` was isolated with
+  `sinkFailures() === 1`. Existing outer-sink tests do not exercise the direct
+  boundary.
+- **Decision:** `RD-1237` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The defect is
+  confirmed; the remaining decision is an owner contract, then ordinary
+  engineering. A minimal swallow-and-void candidate must not invent retry,
+  buffering, delivery or durability semantics and must acknowledge any loss
+  of outer-counter visibility.
+- **Correction:** do not redefine `sinkFailures()` as only escaped writer
+  failures: `#emit` also counts record-construction failures at `:213-217`.
+  Clock exceptions at `:219-227` return `0` without incrementing it. The
+  separate failure-accounting/clock TODO remains open.
+- **Evidence:** private record
+  `private/research/rd/RD-1237-observability-json-line-sink-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T092748Z-rd-1237-observability-json-line-sink-private/`.
+- **Safe continuation:** do not claim the direct sink contract is complete,
+  close the accounting/clock TODO, or run queue/corpus/`.fungi` assurance from
+  the package route or model agreement.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
@@ -147,14 +176,16 @@ declared limit; and returned capability/plan data is copied and immutable.
   found no genuinely new research problem: the logger items are ordinary
   implementation candidates only after an explicit failure/redaction/clock
   contract, while the WASM items remain an admission-authority decision.
-- **Exact unresolved logger blockers:**
-  `packages-ts/galerina-observability/src/logger.ts:56-63`,
-  `JsonLineSink.write`, can propagate a direct writer exception even though
-  `LogSink.write` claims non-throwing isolation; the surrounding catch is only
-  `:144-175`. Nested redaction and prototype-safe copying remain at
-  `:177-181`; failure accounting and clock semantics remain at `:144-175`.
-  **Fail closed:** keep these open until owner contract plus direct-call,
-  logger-mediated, hostile-property, secondary-failure, and clock tests exist.
+- **Exact unresolved logger blockers (superseded by RD-1237):**
+  `packages-ts/galerina-observability/src/logger.ts:31-34,56-63` still permits
+  a direct writer exception despite the non-throwing interface contract;
+  `Logger.#emit` catches only the mediated path at `:195-217`. The current
+  bounded package route is **53/53**, but no direct throwing-writer regression
+  exists. `#emit` counts sink and record-construction failures at `:207-217`,
+  while `#safeNow` returns `0` without counting clock exceptions at `:219-227`.
+  **Fail closed:** retain RD-1237 until the owner freezes direct failure
+  behavior and direct-call/repeated-failure controls exist; keep the separate
+  failure-accounting/clock TODO open.
 - **Exact unresolved WASM blockers (superseded by RD-1236):** the bounded
   runtime decoder and detached report route now exist at
   `packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`, with 5/5
@@ -549,14 +580,18 @@ locator is not sufficient evidence of a blocker or of completion.
 - **Galerina observability logger residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:195-217`; the exact direct-sink
-  failure/isolation and separate failure-accounting contract remains unresolved
-  at `:195-227`. Nested redaction and prototype-safe copying are now closed by
+  failure/isolation contract remains unresolved. The separate
+  failure-accounting/clock contract is also open: `#emit` counts sink/record
+  failures at `:207-217`, while `#safeNow` returns `0` without counting clock
+  exceptions at `:219-227`. Nested redaction and prototype-safe copying are now closed by
   the bounded descriptor-only clone at `:74-126,228-246`, with negative vectors
   at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:84-115`.
   The former `safeStringify` totality gap is closed at `:268-288` with focused
   negative coverage at `:149-164`. **Fail closed:** do not close the remaining
   sink/accounting blocker by silently swallowing writer errors; it requires an
-  owner-approved typed failure signal and direct counter-separation vectors.
+  owner-approved direct failure behavior, explicit counter-visibility choice,
+  and direct/repeated-failure vectors. Existing evidence does not require a
+  new public typed failure signal.
 - **Galerina metrics-audit authority boundary:**
   `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
   maps only method/path/status into `metricsAuditSink`, while
