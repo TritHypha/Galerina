@@ -19,6 +19,34 @@ It also does not authorize a corpus compile, conversion-queue regeneration,
 `.fungi` build, signing or custody action, platform/durability work, or final
 assurance. Those remain later gates after the component work is complete.
 
+### M-RD-006 — Galerina WASM target admission contract — RD-1236
+
+- **Exact blocker:**
+  `packages-ts/galerina-target-wasm/src/index.ts:8-18,68-199,201-272`.
+  The bounded decoder/report route is **5/5**, but `WasmArtefact` remains
+  metadata-only: no module bytes/digest/attestation, section-bound
+  import/export identity, sandbox/effect/limit evidence, physical-file
+  binding, or named cross-package schema owner exists.
+- **Concrete residual controls:** invalid runtime data can remain in the
+  report artefact snapshot beside an error at `index.ts:219,259`, and decode
+  error text is repeated in warning presentation at `:243-254`. The mutation
+  snapshot proves detachment, not executable module identity, at
+  `tests/wasm-contracts.test.mjs:44-51`; exact-key decoding refuses an
+  unapproved added digest at `index.ts:83,173`.
+- **Decision:** `RD-1236` is `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED;
+  HOLD`. The blocker is owner contract plus cross-package schema authority,
+  then ordinary bounded implementation; it is not new R&D. Clearance needs
+  an owner-approved versioned schema, refusal/report-consumption rules,
+  diagnostic ownership, exact implementation, and negative tests for missing,
+  forged, mismatched, duplicate, malformed, and refused evidence.
+- **Evidence:** private record
+  `private/research/rd/RD-1236-wasm-target-admission-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T090725Z-rd-1236-wasm-target-admission-private/`.
+- **Safe continuation:** complete unrelated bounded component work. Do not
+  claim WASM execution or physical-target authority, regenerate the queue, or
+  run corpus/`.fungi` assurance from the 5/5 route or model agreement.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
@@ -127,14 +155,17 @@ declared limit; and returned capability/plan data is copied and immutable.
   `:177-181`; failure accounting and clock semantics remain at `:144-175`.
   **Fail closed:** keep these open until owner contract plus direct-call,
   logger-mediated, hostile-property, secondary-failure, and clock tests exist.
-- **Exact unresolved WASM blockers:**
-  `packages-ts/galerina-target-wasm/src/index.ts:47-80`,
-  `validateWasmArtefact`, is compile-time typed rather than a runtime decoder;
-  `:84-95`, `createWasmTargetReport`, accepts caller-owned typed input and
-  aliases the artefact array. **Fail closed:** no admission claim until the
-  owner defines runtime schema/refusal, immutable ownership, path containment,
-  trusted bytes-digest binding, import/export authority, diagnostic ownership,
-  and migration/rollback evidence.
+- **Exact unresolved WASM blockers (superseded by RD-1236):** the bounded
+  runtime decoder and detached report route now exist at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`, with 5/5
+  focused coverage. The current blocker is the owner-approved executable
+  schema: bytes/digest/attestation, section-bound import/export identity,
+  sandbox/effect/limit evidence, physical-file binding, cross-package schema
+  ownership, report refusal/consumption rules, and diagnostic registry
+  ownership. Invalid runtime retention and duplicated error warning text are
+  exact residual controls at `:219,243-259`. **Fail closed:** no admission,
+  execution, or physical-target claim until those source-defined contracts
+  and negative tests exist.
 - **Exact unresolved Photonic schema blockers:** the ingress implementation is
   now closed for the bounded decoder slice at
   `packages-ts/galerina-target-photonic/src/index.ts:237-391`, with validator
@@ -506,11 +537,15 @@ locator is not sufficient evidence of a blocker or of completion.
   surplus/sparse fields and control text, and `:241-272` returns detached
   frozen report arrays. Focused coverage is **5/5** at
   `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:34-59`.
-  **Remaining blockers:** the current `WasmArtefact` interface has no admitted
-  module bytes/digest, import/export identity, sandbox/effect evidence or
-  schema owner; legacy `Galerina_WASM_*` diagnostics are also not registry
-  migrated. Clearance requires those source-defined contracts and tests before
-  any execution or physical-target authority claim.
+  **Remaining blockers:** as adjudicated by `RD-1236`, the current
+  `WasmArtefact` interface has no admitted module bytes/digest/attestation,
+  section-bound import/export identity, sandbox/effect/limit evidence,
+  physical-file binding or cross-package schema owner; legacy
+  `Galerina_WASM_*` diagnostics are also not registry migrated. Invalid
+  runtime retention at `:219,259` and duplicated error warning presentation
+  at `:243-254` remain explicit residual controls. Clearance requires the
+  owner contract, refusal/consumption rules, registry ownership and negative
+  tests before any execution or physical-target authority claim.
 - **Galerina observability logger residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:195-217`; the exact direct-sink
@@ -553,12 +588,15 @@ locator is not sufficient evidence of a blocker or of completion.
 - **Galerina WASM-target admission:** the bounded runtime decoder and detached
   report snapshot are present at
   `Galerina/packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`,
-  with current package evidence **5/5**. The remaining admission blocker is
-  contract-level: `WasmArtefact` still has no module bytes/digest,
-  import/export identity, sandbox/effect evidence or cross-package schema
+  with current package evidence **5/5**. `RD-1236` and its independent Astra
+  review retain the admission hold: `WasmArtefact` still has no module
+  bytes/digest/attestation, section-bound import/export identity,
+  sandbox/effect/limit evidence, physical-file binding or cross-package schema
   owner, and legacy `Galerina_WASM_*` diagnostics are not registry-migrated.
-  Do not claim execution or physical-target authority until those exact fields,
-  refusal rules and owner evidence exist.
+  Invalid runtime retention at `index.ts:219,259` and duplicated error warning
+  presentation at `:243-254` remain exact residual controls. Do not claim
+  execution or physical-target authority until the owner contract, refusal
+  rules, registry ownership and negative tests exist.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method

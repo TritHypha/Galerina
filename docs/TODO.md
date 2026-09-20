@@ -15,6 +15,30 @@
   assurance, queue regeneration, signing, and `.fungi` generation remain
   held by the exact blockers below.
 
+### WASM target admission adjudication — RD-1236 — 2026-09-20
+
+- [x] Record `RD-1236` as `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`.
+  The pinned source head is
+  `0134c19b440707d605ebf2c99d944fa87e82cc44` on repository head
+  `68d3935d8730af8b343782eb631df222d1fae4cb`; the bounded package route is
+  **5/5** at
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:14-59`.
+- [!] The package decoder/report path is now source-defined at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`, but the
+  admission contract remains open. `WasmArtefact` at `:8-18` has no module
+  bytes/digest/attestation, section-bound import/export identity,
+  sandbox/effect/limit evidence, physical-file binding, or named
+  cross-package schema owner. Invalid runtime artefacts can remain in the
+  report snapshot beside an error at `:219,259`; error text is also repeated
+  in warning presentation at `:243-254`.
+- [!] Clearance requires an owner-approved versioned schema, refusal and
+  report-consumption rules, diagnostic-family ownership, exact-revision
+  implementation, and negative tests for missing/forged/mismatched,
+  duplicate, malformed, and refused evidence. RD-1236 and its exact Grok
+  response/Astra cross-check are retained in the private KB. No execution,
+  physical-target authority, queue regeneration, corpus run, or `.fungi`
+  generation is authorized by this record.
+
 ### Exact blocker ledger refresh — 2026-09-20
 
 - [x] The SLIDE G4 false-positive call-site blocker is closed at
@@ -1638,14 +1662,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `--timeout` data; add exact argv, stream-routing, JSON and exit-code tests.
 - [!] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
   module bytes/digest/imports/exports/sandbox evidence, and migrate legacy
-  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes. The bounded
-  record/array decoder and detached frozen report snapshot now live at
-  `packages-ts/galerina-target-wasm/src/index.ts:68-199,241-272`, with focused
+  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes. The
+  bounded record/array decoder and detached frozen report snapshot now live at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,243-272`, with focused
   hostile/alias coverage **5/5** at
-  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:34-59`.
-  Remaining blockers are exact module bytes/digest/import-export binding,
-  sandbox/effect evidence, runtime/schema ownership and legacy diagnostic
-  registry migration; no WASM execution authority is inferred.
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:14-59`.
+  RD-1236 confirms the remaining blocker is owner contract plus cross-package
+  schema authority; invalid-runtime report retention and duplicated error
+  warning text are also exact residual controls at `index.ts:219,243-259`.
+  No WASM execution authority is inferred.
 - [ ] Decide and enforce workspace-root marker attestation and target
   containment; cover env/explicit-root bypass, file-vs-directory, symlinks,
   traversal, drives, UNC paths and Error identity.
