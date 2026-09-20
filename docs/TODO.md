@@ -1329,10 +1329,18 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   process completion needs distinct exit/signal/deadline/spawn/output-limit/
   callback variants; freshness evidence must be duplicate-rejecting,
   length-prefixed, output-bound and one-snapshot.
-- [ ] Repair `runNode` so null status does not misreport invalid cwd, ENOBUFS or
-  other spawn failures as timeout. Add direct timeout, signal, spawn-error,
-  output-limit, stream ordering, environment and callback tests before any
-  Fungi/SLIDE candidate.
+- [x] Repair `runNode` so null status does not misreport invalid cwd, ENOBUFS or
+  other spawn failures as timeout. `packages-ts/galerina-test/src/spawn.ts:11-120`
+  now emits typed `failureKind`, `signal` and `errorCode` evidence, and
+  `packages-ts/galerina-test/src/runners.ts:159-170` preserves the distinction
+  in runner details. Direct
+  coverage at `packages-ts/galerina-test/tests/spawn-outcomes.test.mjs:10-72`
+  proves invalid-cwd/ENOENT, timeout/ETIMEDOUT, output-limit/ENOBUFS, stream
+  ordering, environment-marker removal and callback delivery; the signal case
+  is exercised on signal-capable hosts and explicitly skipped on Windows where
+  the host does not expose a signal status. Focused evidence is **35/35 pass,
+  1 skip, 0 fail** across the runner and spawn suites; no Fungi/SLIDE candidate
+  was built.
 - [ ] Replace compiler freshness evidence with duplicate-rejecting canonical
   bytes, domain-separated length-prefix framing, complete compile-affecting
   input/config/toolchain coverage, governed ignored/untracked policy, exact

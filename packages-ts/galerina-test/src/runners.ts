@@ -19,6 +19,7 @@ import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
 import { resolveRoot, resolveTarget } from "./paths.js";
 import { runNode } from "./spawn.js";
+import type { SpawnOutcome } from "./spawn.js";
 import { parseCounts, parseAggregateTotal } from "./parse.js";
 import type {
   AllOptions,
@@ -155,6 +156,21 @@ function targetMissing(kind: CheckResultKind, target: string): CheckResult {
   };
 }
 
+function spawnFailureDetail(prefix: string, result: SpawnOutcome): string {
+  switch (result.failureKind) {
+    case "timeout":
+      return `${prefix} timed out`;
+    case "signal":
+      return `${prefix} terminated by ${result.signal ?? "signal"}`;
+    case "output-limit":
+      return `${prefix} output limit exceeded`;
+    case "spawn-error":
+      return `${prefix} spawn failed${result.errorCode ? ` (${result.errorCode})` : ""}`;
+    case "none":
+      return `${prefix} failed (exit ${result.exitCode})`;
+  }
+}
+
 // ── unit ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -180,9 +196,7 @@ export async function runUnit(opts: UnitOptions = {}): Promise<CheckResult> {
   const ok = r.exitCode === 0;
   const detail = ok
     ? `unit suites passed${total != null ? ` (${total} tests)` : ""}`
-    : r.timedOut
-      ? "unit run timed out"
-      : `unit suites failed (exit ${r.exitCode})`;
+    : spawnFailureDetail("unit run", r);
   return {
     kind: "unit",
     ok,
@@ -269,9 +283,7 @@ export async function runConformance(
     durationMs: r.durationMs,
     detail: ok
       ? `conformance (R6) passed${counts.tests != null ? ` (${counts.tests} assertions)` : ""}`
-      : r.timedOut
-        ? "conformance (R6) timed out"
-        : `conformance (R6) failed (exit ${r.exitCode})`,
+      : spawnFailureDetail("conformance (R6)", r),
     command: `node --test ${opts.corpus ?? R6_PARITY}`,
     counts,
   };
@@ -332,9 +344,7 @@ export async function runFidelity(
     durationMs: r.durationMs,
     detail: ok
       ? `fidelity (0014) passed${counts.tests != null ? ` (${counts.tests} checks)` : ""}`
-      : r.timedOut
-        ? "fidelity (0014) timed out"
-        : `fidelity (0014) failed (exit ${r.exitCode})`,
+      : spawnFailureDetail("fidelity (0014)", r),
     command: `node --test ${opts.target ?? FIDELITY_DIFFERENTIAL}`,
     counts,
   };
@@ -381,8 +391,8 @@ function runExactNodeCorpus(
     durationMs: r.durationMs,
     detail: ok
       ? `${kind} passed (${counts.tests} tests from ${tests.length} files)`
-      : r.timedOut
-        ? `${kind} timed out`
+      : r.failureKind !== "none"
+        ? spawnFailureDetail(kind, r)
         : r.exitCode !== 0
           ? `${kind} failed (exit ${r.exitCode})`
           : `${kind} refused uncountable or zero-test success`,

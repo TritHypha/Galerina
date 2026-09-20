@@ -59,6 +59,8 @@ export interface HarnessOptions {
   readonly rootDir?: string;
   /** Per-target spawn timeout in ms. Default 600_000 (10 min). */
   readonly timeoutMs?: number;
+  /** Maximum captured stdout/stderr bytes. Default 8 MiB; overflow is a typed refusal. */
+  readonly outputLimitBytes?: number;
   /** Pipe the child's stdout/stderr straight to the parent as it runs. Default false. */
   readonly inheritStdio?: boolean;
   /** Receive the child's combined output (only in capture mode, i.e. not inheritStdio). */

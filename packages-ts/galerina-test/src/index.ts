@@ -20,6 +20,12 @@ export * from "./types.js";
 export { parseCounts, parseAggregateTotal } from "./parse.js";
 export { resolveRoot, resolveTarget, WORKSPACE_MARKER } from "./paths.js";
 export {
+  runNode,
+  DEFAULT_TIMEOUT_MS,
+  DEFAULT_OUTPUT_LIMIT_BYTES,
+} from "./spawn.js";
+export type { SpawnOutcome } from "./spawn.js";
+export {
   runUnit,
   runE2e,
   runConformance,
