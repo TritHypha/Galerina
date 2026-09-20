@@ -349,16 +349,18 @@ locator is not sufficient evidence of a blocker or of completion.
   bounded tensor dimensions. Compatibility at `:719-752` now treats missing
   model-format/operator/dynamic-shape evidence, insufficient on-device policy,
   memory overflow and adapter mismatch as incompatible. The focused package is
-  **6/6** at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-143`
-  with clean typecheck/build. **Remaining blockers:** fallback selection still
-  reports `safe` from a declared fallback without an admitted fallback
-  capability record at `src/index.ts:646-684`; report construction directly
-  aliases caller-owned profiles/plans/selections and preserves unvalidated
-  diagnostics at `src/index.ts:690-710`; and no owner-approved deep report
-  snapshot/decision-binding contract exists. Exact clearance requires that
-  report schema, fallback capability authority, alias-mutation vectors and
-  diagnostic-severity refusal be defined and tested.
+  **7/7** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`
+  with clean typecheck/build. Declared fallback selection now refuses absent
+  compatible capability evidence at `src/index.ts:673-687` with
+  `Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED`; report construction
+  now detaches/freezes known collections at `src/index.ts:703-769`, with
+  alias-mutation coverage at the test's `:102-146` slice. **Remaining
+  blockers:** the report constructor still has no exact runtime decoder for
+  caller-owned input, does not validate diagnostic severity/shape, and does not
+  bind a selection decision to the report snapshot. **Fail closed:** clearance
+  requires the owner-approved report schema, hostile report-input vectors,
+  diagnostic-severity refusal and a decision-binding receipt.
 - **Galerina GPU target ingress/snapshot (partial):** the GPU target now
   exact-decodes bounded plain capability/plan records and arrays, refuses
   accessors, proxies, symbols, surplus/sparse fields and control text, bounds

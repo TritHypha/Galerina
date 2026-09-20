@@ -670,7 +670,20 @@ export function selectAiAcceleratorTarget(input: unknown): AiAcceleratorTargetSe
   }
 
   if (fallback !== "reject") {
-    reasons.push(`Selected declared ${fallback} fallback.`);
+    const fallbackCapability = capabilities.find(
+      (capability) => capability.kind === fallback && isCapabilityCompatible(model, capability, preference, adapter),
+    );
+    if (fallbackCapability === undefined) {
+      diagnostics.push({
+        code: "Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED",
+        severity: "error",
+        message: "Declared AI accelerator fallback has no admitted compatible capability.",
+        path: "preference.fallback",
+      });
+      reasons.push(`Declared ${fallback} fallback has no admitted compatible capability.`);
+    } else {
+      reasons.push(`Selected admitted ${fallbackCapability.name} as the ${fallback} fallback.`);
+    }
   }
 
   return {
@@ -693,21 +706,61 @@ export function createAiAcceleratorTargetReport(input: {
   readonly selections?: readonly AiAcceleratorTargetSelection[];
   readonly backendProfiles?: readonly AiAcceleratorBackendProfile[];
 }): AiAcceleratorReport {
-  const warnings = (input.selections ?? []).flatMap((selection) =>
+  const capabilities = Object.freeze(input.capabilities.map((capability) => snapshotCapability(capability)));
+  const plans = Object.freeze((input.plans ?? []).map((plan) => snapshotPlan(plan)));
+  const targetSelections = Object.freeze((input.selections ?? []).map((selection) => snapshotSelection(selection)));
+  const backendProfiles = input.backendProfiles === undefined
+    ? undefined
+    : Object.freeze(input.backendProfiles.map((profile) => snapshotBackendProfile(profile)));
+  const warnings = Object.freeze((input.selections ?? []).flatMap((selection) =>
     selection.diagnostics
       .filter((diagnostic) => diagnostic.severity === "warning")
       .map((diagnostic) => diagnostic.message),
-  );
+  ));
 
-  return {
-    ...(input.backendProfiles === undefined
-      ? {}
-      : { backendProfiles: input.backendProfiles }),
-    capabilities: input.capabilities,
-    plans: input.plans ?? [],
-    targetSelections: input.selections ?? [],
+  return Object.freeze({
+    ...(backendProfiles === undefined ? {} : { backendProfiles }),
+    capabilities,
+    plans,
+    targetSelections,
     warnings,
-  };
+  });
+}
+
+function snapshotCapability(capability: AiAcceleratorCapability): AiAcceleratorCapability {
+  return Object.freeze({
+    ...capability,
+    supportedPrecisions: Object.freeze([...capability.supportedPrecisions]),
+    ...(capability.supportedModelFormats === undefined ? {} : { supportedModelFormats: Object.freeze([...capability.supportedModelFormats]) }),
+    ...(capability.supportedOperators === undefined ? {} : { supportedOperators: Object.freeze([...capability.supportedOperators]) }),
+    features: Object.freeze([...capability.features]),
+  });
+}
+
+function snapshotPlan(plan: AiAcceleratorPlan): AiAcceleratorPlan {
+  return Object.freeze({
+    ...plan,
+    operations: Object.freeze([...plan.operations]),
+  });
+}
+
+function snapshotSelection(selection: AiAcceleratorTargetSelection): AiAcceleratorTargetSelection {
+  return Object.freeze({
+    ...selection,
+    reasons: Object.freeze([...selection.reasons]),
+    diagnostics: Object.freeze(selection.diagnostics.map((diagnostic) => Object.freeze({ ...diagnostic }))),
+  });
+}
+
+function snapshotBackendProfile(profile: AiAcceleratorBackendProfile): AiAcceleratorBackendProfile {
+  return Object.freeze({
+    ...profile,
+    preferredWorkloads: Object.freeze([...profile.preferredWorkloads]),
+    supportedPrecisions: Object.freeze([...profile.supportedPrecisions]),
+    frameworks: Object.freeze([...profile.frameworks]),
+    memory: Object.freeze({ ...profile.memory }),
+    topologies: Object.freeze([...profile.topologies]),
+  });
 }
 
 export function validateAiAcceleratorModel(model: unknown): readonly AiAcceleratorDiagnostic[] {

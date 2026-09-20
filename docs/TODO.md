@@ -1590,26 +1590,28 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   rejects proxy/accessor/surplus/sparse inputs, enforces on-device, memory,
   adapter, format, operator and dynamic-shape compatibility at `:601-752`, and
   refuses malformed input through `selectedTarget: "reject", safe: false`.
-  Evidence is **6/6** at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-143`
+  Declared fallbacks now require an admitted compatible capability at
+  `:673-687`, returning `safe: false` with
+  `Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED` when absent. Evidence
+  is **7/7** at
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`
   with clean typecheck/build. This remains partial: the declared fallback path
-  can still report `safe` without an admitted fallback capability at
-  `src/index.ts:646-684`, and report construction still aliases caller-owned
-  profiles/plans/selections and carries unvalidated diagnostics at
-  `src/index.ts:690-710`.
+  is now fail-closed, but runtime report-input decoding and diagnostic-severity
+  admission remain open.
 - [!] **Priority accelerator snapshot repair:** model input and output tensor
   dimensions are now bounded and copied once by the decoder at
   `packages-ts/galerina-target-ai-accelerator/src/index.ts:392-468`, but the
-  report path at `:690-710` still returns caller-owned backend profiles,
-  capabilities, plans and selections without a deep exact snapshot or a
-  decision bound to that snapshot. Keep this open until the report schema and
-  ownership contract are explicit.
+  report path at `:703-769` now deep-copies the known profile/capability/
+  plan/selection collections and freezes the report; alias-mutation coverage is
+  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:102-146`.
+  Keep this partial because the report constructor still accepts typed
+  caller-input without an exact runtime decoder or a decision-binding receipt.
 - [!] Hostile accelerator coverage now includes malformed nested records,
   proxies, rogue vocabulary, absent capability evidence and bounded dimensions
-  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-143`.
-  Repeated-read A/B, mutable exported-profile, report-alias, every-vocabulary,
-  non-finite/unsafe-dimension and work-limit vectors remain open at
-  `src/index.ts:690-710` and require the snapshot/host contract first.
+  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`.
+  Repeated-read A/B, runtime report-input/accessor/proxy refusal, diagnostic
+  severity validation and work-limit vectors remain open at
+  `src/index.ts:703-769` and require the report-input contract first.
 - [x] Add closed CPU ingress for architecture, SIMD, workload, threading,
   capability, plan, report and probe records before later executable CPU
   scopes can claim these erased declarations as physical types. Selection now
