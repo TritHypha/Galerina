@@ -195,10 +195,12 @@ locator is not sufficient evidence of a blocker or of completion.
   while the outer logger catch is only `:144-166`; the exact direct-sink
   failure/isolation contract is unresolved. Nested redaction remains shallow at
   `:177-181`, failure classes and clock policy are combined at `:144-175`,
-  prototype-safe copying is not established at `:177-181`, and the declared
-  `string` result of `safeStringify` remains unresolved at `:204-225`. These
-  are exact implementation/design blockers; do not close them by silently
-  swallowing writer errors or by claiming shallow redaction is complete.
+  and prototype-safe copying is not established at `:177-181`. The former
+  `safeStringify` totality gap is closed at `:203-223` with focused negative
+  coverage at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:126-133`.
+  The remaining entries are exact implementation/design blockers; do not close
+  them by silently swallowing writer errors or by claiming shallow redaction is
+  complete.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
   `checkMethodChain()` seam. Its input carries only a receiver name, method
