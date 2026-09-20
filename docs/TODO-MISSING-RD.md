@@ -117,19 +117,23 @@ declared limit; and returned capability/plan data is copied and immutable.
   owner defines runtime schema/refusal, immutable ownership, path containment,
   trusted bytes-digest binding, import/export authority, diagnostic ownership,
   and migration/rollback evidence.
-- **Exact unresolved Photonic ingress blockers:**
-  `packages-ts/galerina-target-photonic/src/index.ts:216-255`,
-  `validateOpticalChannelLayout`, accepts a typed record and directly reads
-  fields; malformed JavaScript records can still reach foreign property/type
-  errors. `:261-303`, `validatePhotonicLoweringPlan`, directly calls
-  `includes`, `forEach`, and `trim` on typed nested values with the same
-  ingress gap. The owning TODO is `Galerina/docs/TODO.md:1401-1412` and the
-  current tests are only the typed happy/invalid cases at
-  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:11-82`.
-  **Fail closed:** do not claim Photonic admission until exact own-data
-  decoders, getter/proxy/inherited/surplus/sparse/wrong-type refusal tests,
-  and an owner-approved diagnostic registry are present. A bounded implementer
-  attempt on 2026-09-20 returned no patch and changed no files.
+- **Exact unresolved Photonic schema blockers:** the ingress implementation is
+  now closed for the bounded decoder slice at
+  `packages-ts/galerina-target-photonic/src/index.ts:237-391`, with validator
+  entrypoints at `:396-447` and `:450-520`. It captures own data once and
+  refuses inherited/accessor/transparent-proxy/surplus/custom/sparse records,
+  overlong text and malformed nested channels. The focused package suite is
+  **10/10**, including hostile cases at
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:46-78`
+  and `:127-156`; the source commit is
+  `83d5d920833adcefa93001f3d97dce201ecef4df`.
+  **Fail closed:** the remaining blocker is the owner contract, not raw
+  JavaScript ingress: exact binary64 boundary/Option/UTF-16 rules remain
+  undefined at the `OpticalChannelLayout` interface
+  `packages-ts/galerina-target-photonic/src/index.ts:151-156`, and the
+  legacy diagnostic names still require registry ownership at
+  `Galerina/docs/TODO.md:1422-1423`. Do not claim Photonic admission until
+  those two contracts are resolved and tested.
 
 ## Bridge preparation
 
@@ -140,11 +144,14 @@ not clear any blocker or mint a new R&D record.
 
 The R&D metadata query remains refused because tracked private RD sources are
 dirty. That limits an exhaustive current-coverage claim, but it does not block
-source-supported implementation slices. The code graph receipt is indexed at
-source head `345a6d2ac459315441432b5d7fbeb01afa734e36`. The later Galerina
-commits `7543a8a68` and `ec92e4e06` are documentation-only and the index
-explicitly excludes `docs`, so the source graph remains aligned; refresh it
-again after the next source-code commit.
+source-supported implementation slices. The refreshed Galerina code graph is
+exact at source head `83d5d920833adcefa93001f3d97dce201ecef4df` with
+`66,437/66,437` nodes and `166,525/166,525` edges, zero skipped files, and an
+artifact present. The canonical Myco owner refused a repository-root refresh
+with `MYCO-INDEX-TOO-LARGE` after `4,879` files / `2,000,000` term edges;
+the previous root snapshot remains a historical locator only. Use a bounded
+package-root Myco index if discovery is needed; do not turn the refusal into a
+MISS or an absence claim.
 
 If Astra or the bridge produces a genuinely new technical result, create a new
 KB-owned `RD-*` record for that issue before relying on it. The record must contain
@@ -191,11 +198,14 @@ locator is not sufficient evidence of a blocker or of completion.
   `133-145`. These are cross-repository process-root, conversion and
   re-admission gates. Lyth's owned rows are DONE, REFUSED or HOLD at
   `lyth-weaver/TODO.md:14-18`; no qualifying component TODO is open.
-- **AGENTS capability route:** `AGENTS/docs/TODO.md:16-20`, `39-47`, and
-  `88-89`. The tracked Myco index is stale and may only be refreshed by its
-  canonical owner; source-origin approval, exact graph refresh and receiving
-  task installation evidence remain outstanding. `AGENTS/docs/TODO.md:108-112`
-  separately holds the clean-candidate graph and integration gate.
+- **AGENTS capability route:** `AGENTS/docs/TODO.md:32-37` records the
+  canonical Myco refresh as current at the bounded ledger commit. The exact
+  remaining blocker is the external graph freshness mismatch at
+  `AGENTS/docs/TODO.md:62-69`: the service returned
+  `indexed_head_sha=0fdd1d3649b0fa5ce28fec36ed6093fb41a24a18` while the
+  receipt was taken at a later local head. Refuse current absence/closure
+  claims until the service returns the final HEAD; source-origin approval and
+  receiving-task installation remain separate owner gates.
 - **AGENTS mixed-EOL admission:** `AGENTS/tools/bounded-tool-batch.mjs:1264`
   rejects the live worktree's mixed tracked-file EOL evidence, reached through
   `observeWorktreeAggregate` at `:1452` and the self-test snapshot at `:1789`.
