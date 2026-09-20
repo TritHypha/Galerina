@@ -3,8 +3,8 @@
 ### Current bounded component receipts — 2026-09-20
 
 - [x] Galerina implementation checkpoint is
-  `de0d55e0dc9c7e3e232930db84f6acf2ef23ef69` (the current `614cd059e`
-  checkpoint adds this receipt only).
+  `94855fe6a` (the current `1c6c0c952` checkpoint records later bounded
+  target-gate receipts only).
   The photonic-emulator substrate-math ingress is bounded at
   `packages-ts/galerina-ext-photonic-emulator/src/emulator.ts:177-267` with
   hostile/envelope coverage at
@@ -28,6 +28,22 @@
   queue regeneration, signing, profile activation, VOK authority or `.fungi`
   build follows. The pre-existing dirty Galerina `README.md` remains
   untouched.
+
+### AGENTS bounded capability-route refresh — 2026-09-20
+
+- [x] At AGENTS HEAD `c68276eb54cefb0a37260b60225734841603093d`,
+  `tools/audit-map.mjs --self-test` passes **5/5 fixtures** and
+  `tools/audit-map.test.mjs` passes **9/9** with no skips or TODOs.
+- [x] The paired passive routing controls also pass: `context-route` is
+  **30/30** focused tests plus self-test; `context-retrieve` is **12/12**
+  focused tests plus self-test. `adaptive-effort-governor` and
+  `adaptive-agent-resource-governor` self-tests both return **OK**.
+- [!] These controls are read-only, body-free and non-authorizing. The real
+  AGENTS batch route remains refused by the mixed-EOL gate at
+  `AGENTS/tools/bounded-tool-batch.mjs:1264` (`validateEolEvidence`), called
+  by `observeWorktreeAggregate` at `:1452`; clearance requires the owner's
+  exact mixed-EOL policy and matching current evidence. No line-ending rewrite
+  was performed and no corpus DAG was launched.
 
 ### Beta-v1 operational-key preflight — 2026-09-19
 

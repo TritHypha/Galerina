@@ -200,14 +200,21 @@ After any source change, recheck the exact head and refresh the line range
 before treating the entry as current. A TODO description without a source
 locator is not sufficient evidence of a blocker or of completion.
 
-- **SLIDE general-backend boundary:** `SLIDE/TODO.md:1286-1298` and
-  `SLIDE/src/v2c-general-backend-scope.mjs:114-126`. The open families are
-  general loop bodies and general effects; the bounded contracts already
-  implemented were independently checked and are not to be rebuilt.
-- **SLIDE native-provider boundary:** `SLIDE/TODO.md:1539-1565` and
-  `SLIDE/docs/DEMAND-ADMITTED-NATIVE-PROVIDERS.md:292-330`. The descriptor,
-  semantic/target schema and admission contract are intentionally unbuilt
-  until the general-backend dependency is frozen.
+- **SLIDE general-backend boundary:** `SLIDE/src/v2c-general-backend-scope.mjs:114-126`,
+  symbol `OPEN` as consumed by `deriveGeneralBackendScopeManifest()` at
+  `:170-178`, with owner status at `SLIDE/TODO.md:1286-1298`. **Fail closed:**
+  general loop bodies and general effects remain outside the bounded contract
+  set, so no producer or profile may claim them. **Clearance evidence:** an
+  owner-frozen scope/schema plus focused positive and hostile refusal tests at
+  one exact source head; the already implemented bounded contracts are not to
+  be rebuilt.
+- **SLIDE native-provider boundary:** the owner contract is described at
+  `SLIDE/docs/DEMAND-ADMITTED-NATIVE-PROVIDERS.md:292-330`, with status at
+  `SLIDE/TODO.md:1539-1565`; the implementation admission point is not yet
+  source-defined. **Fail closed:** descriptor, semantic/target schema and
+  provider admission cannot be inferred from the proposal. **Clearance
+  evidence:** frozen descriptor/schema/admission contracts, implementation
+  tests for hostile and mismatched providers, and exact owner receipt.
 - **SLIDE package-publication rollback:** the bounded moved-parent residual is
   closed at `SLIDE/src/checked-fungi-package-file.mjs:159-178,307-312`; the
   current race test at `SLIDE/tests/checked-fungi-package-file.test.mjs:163-178`
@@ -215,14 +222,21 @@ locator is not sufficient evidence of a blocker or of completion.
   focused route at **41/41 pass**. **Fail closed:** production authority still
   requires an owner-approved descriptor-relative/retained-handle primitive and
   cross-platform evidence; no pathname cleanup or focused test releases it.
-- **SLIDE owner evidence and activation:** `SLIDE/TODO.md:305-311`,
-  `SLIDE/TODO.md:313-320`, and `SLIDE/TODO.md:1466-1473`. These require owner
-  ceremony/receipt evidence, profile ordering, production authority and exact
-  per-file package parity; they are not implementation TODOs for this pass.
-- **Lyth-Weaver handoff:** `lyth-weaver/TODO.md:89-91`, `107-109`, and
-  `133-145`. These are cross-repository process-root, conversion and
-  re-admission gates. Lyth's owned rows are DONE, REFUSED or HOLD at
-  `lyth-weaver/TODO.md:14-18`; no qualifying component TODO is open.
+- **SLIDE owner evidence and activation:** status is recorded at
+  `SLIDE/TODO.md:305-311,313-320,1466-1473`; the source-side activation
+  contract is `SLIDE/src/checked-fungi-package-file.mjs:159-178,307-312`.
+  **Fail closed:** owner ceremony/receipt, profile ordering, production
+  authority and exact per-file package parity are absent; the bounded test
+  cannot release them. **Clearance evidence:** owner-supplied ceremony and
+  receipt bytes, descriptor-relative/retained-handle authority, and a fresh
+  exact-head parity run.
+- **Lyth-Weaver handoff:** status is recorded at
+  `lyth-weaver/TODO.md:89-91,107-109,133-145`; the local authorizing boundary
+  is `lyth-weaver/TODO.md:14-18`. **Fail closed:** process-root, conversion,
+  detached-GIR and SLIDE/VOK re-admission evidence is external to Lyth, so its
+  laboratory proof cannot mint `ALLOW` or reopen `.fungi`. **Clearance
+  evidence:** matching Galerina producer, detached GIR, SLIDE re-derivation
+  and VOK receipt at one exact head.
 - **AGENTS capability route:** `AGENTS/docs/TODO.md:32-37` records the
   canonical Myco refresh as current at the bounded ledger commit. The last
   fresh graph receipt was at AGENTS head
@@ -234,13 +248,20 @@ locator is not sufficient evidence of a blocker or of completion.
   `docs`, `tools` and several skill trees and has no shareable artifact.
   Refuse current absence/closure claims; source-origin approval and
   receiving-task installation remain separate owner gates.
+- The current bounded route controls were independently refreshed at AGENTS
+  HEAD `c68276eb54cefb0a37260b60225734841603093d`: audit-map **5/5 fixtures
+  and 9/9 tests**, context-route **30/30**, context-retrieve **12/12**, and
+  both effort-governor self-tests **OK**. **Fail closed:** these are routing
+  controls, not a fresh graph or PROJECT receipt; they do not clear the Myco
+  freshness or source-origin gates.
 - **AGENTS mixed-EOL admission:** `AGENTS/tools/bounded-tool-batch.mjs:1264`
-  rejects the live worktree's mixed tracked-file EOL evidence, reached through
-  `observeWorktreeAggregate` at `:1452` and the self-test snapshot at `:1789`.
-  This is a deliberate `REPOSITORY_REFUSED` result, not a test to bypass: the
-  owner must decide the mixed-EOL policy and provide exact evidence before this
-  route can be admitted. Do not rewrite line endings solely to obtain a green
-  self-test.
+  symbol `validateEolEvidence` rejects the live worktree's mixed tracked-file
+  EOL evidence, reached through `observeWorktreeAggregate` at `:1452` and the
+  self-test snapshot at `:1789`. **Fail closed:** this is a deliberate
+  `REPOSITORY_REFUSED` result, not a test to bypass. **Clearance evidence:**
+  the owner must decide the mixed-EOL policy and provide exact current
+  evidence before this route can be admitted. Do not rewrite line endings
+  solely to obtain a green self-test.
 - **Galerina typed-content validation:**
   `Galerina/packages-ts/galerina-core-compiler/src/index.ts:2555-2575` is
   still a raw-text stub for `validateTypedContentBlock()`; the function accepts
