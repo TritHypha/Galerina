@@ -1230,7 +1230,13 @@ class TypeChecker {
         // Option methods
         if (receiverType === "Option" || receiverType?.startsWith("Option<")) {
           if (method === "isSome" || method === "isNone") return "Bool";
-          if (method === "unwrapOr") return undefined; // returns T
+          if (method === "unwrapOr") {
+            // Option<T>.unwrapOr(default) returns the contained T. Preserve the
+            // full generic payload so the caller's return/assignment boundary
+            // can reject a mismatch instead of silently deferring inference.
+            const optionType = parseTypeString(receiverType);
+            return optionType.base === "Option" ? optionType.args[0] : undefined;
+          }
           if (method === "map") return "Option"; // returns Option<mapped>
         }
 
