@@ -45,22 +45,21 @@ assurance. Those remain later gates after the component work is complete.
 
 ### M-RD-005 — SLIDE publication rollback after parent replacement
 
-- **Locator:** `SLIDE/src/checked-fungi-package-file.mjs:227-260,289-294` and
-  `SLIDE/src/filesystem-identity.mjs:60-78`.
-- **Current finding:** after the first output hard-link, replacing/renaming the
-  admitted parent correctly makes the publisher return `REFUSED`, but the
-  pathname-based output directory or staged artifact can remain under the moved
-  parent. Cleanup is gated by the invalidated parent anchor and has no
-  descriptor-relative unlink/rmdir authority.
-- **Existing test gap:** `SLIDE/tests/checked-fungi-package-file.test.mjs:163-180`
-  asserts only `verdict === -1`; it does not assert no residual artifact/receipt
-  under either parent or preservation of pre-existing targets.
-- **Clearance evidence:** an owner-approved retained-handle or descriptor-relative
-  publication/rollback primitive, plus the moved-parent race vector proving
-  `REFUSED`, zero residual owned entries and no unrelated deletion. Do not use
-  pathname cleanup as a production-authority substitute.
-- **What can proceed now:** retain the reference-only refusal and exact blocker;
-  do not promote the package publisher to production authority.
+- **Bounded closure locator:** `SLIDE/src/checked-fungi-package-file.mjs:159-178`
+  validates the retained stage/output directory identities before each owned
+  unlink and before directory removal; the `finally` cleanup route is at
+  `:307-312`. `SLIDE/src/filesystem-identity.mjs:60-78` remains the identity
+  revalidation primitive.
+- **Fresh evidence:**
+  `SLIDE/tests/checked-fungi-package-file.test.mjs:163-178` now proves the
+  parent-swap publication returns `REFUSED` and leaves no owned entries under
+  the moved parent. The focused publication/identity route is **41/41 pass**.
+- **Remaining production blocker:** this is retained identity-anchor,
+  pathname-based reference cleanup, not descriptor-relative `openat` authority.
+  Production release still requires an owner-approved descriptor-relative or
+  equivalent retained-handle publication/rollback primitive and cross-platform
+  evidence. Do not promote the package publisher to production authority from
+  this bounded result.
 
 ### M-RD-003 — Galerina boundary semantics that are not yet source-defined
 
@@ -209,16 +208,13 @@ locator is not sufficient evidence of a blocker or of completion.
   `SLIDE/docs/DEMAND-ADMITTED-NATIVE-PROVIDERS.md:292-330`. The descriptor,
   semantic/target schema and admission contract are intentionally unbuilt
   until the general-backend dependency is frozen.
-- **SLIDE package-publication rollback:**
-  `SLIDE/src/checked-fungi-package-file.mjs:227-260,289-294` creates output
-  directories and hard-links through pathnames, while
-  `SLIDE/src/filesystem-identity.mjs:60-78` correctly refuses after parent
-  replacement. The current race test at
-  `SLIDE/tests/checked-fungi-package-file.test.mjs:163-180` checks refusal only;
-  fresh evidence leaves a partial `.slide` artifact under the moved parent.
-  **Fail closed:** clearance requires descriptor-relative/retained-handle
-  cleanup and a residual-free moved-parent test with exact owned-entry tracking;
-  no pathname deletion or full assurance claim is sufficient.
+- **SLIDE package-publication rollback:** the bounded moved-parent residual is
+  closed at `SLIDE/src/checked-fungi-package-file.mjs:159-178,307-312`; the
+  current race test at `SLIDE/tests/checked-fungi-package-file.test.mjs:163-178`
+  proves refusal and zero owned entries under the moved parent, with the
+  focused route at **41/41 pass**. **Fail closed:** production authority still
+  requires an owner-approved descriptor-relative/retained-handle primitive and
+  cross-platform evidence; no pathname cleanup or focused test releases it.
 - **SLIDE owner evidence and activation:** `SLIDE/TODO.md:305-311`,
   `SLIDE/TODO.md:313-320`, and `SLIDE/TODO.md:1466-1473`. These require owner
   ceremony/receipt evidence, profile ordering, production authority and exact
