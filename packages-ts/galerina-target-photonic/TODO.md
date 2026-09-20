@@ -23,7 +23,12 @@ be part of the active v1 build surface.
 [x] Define data movement and topology report direction
 [x] Add examples
 [x] Add initial focused tests (8)
-[ ] Add exact hostile-record, changing-getter, sparse-array and nested-channel tests
-[ ] Reconcile shared photonic execution-plan, diagnostic and amplitude contracts
-[ ] Register owned FUNGI diagnostic codes before promotion beyond planning evidence
+[x] Add exact hostile-record, changing-getter, sparse-array and nested-channel
+    tests; the bounded own-data decoder and nested-channel refusal suite is
+    **10/10** in `tests/photonic-contracts.test.mjs:46-85` and `:127-160`.
+[!] Reconcile shared photonic execution-plan, diagnostic and amplitude contracts;
+    the remaining schema gap is recorded at `Galerina/docs/TODO.md:1408-1421`.
+[!] Register owned FUNGI diagnostic codes before promotion beyond planning
+    evidence; legacy diagnostic ownership remains open at
+    `Galerina/docs/TODO.md:1422-1423`.
 ```
