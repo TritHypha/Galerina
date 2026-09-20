@@ -27,6 +27,8 @@ export interface CreateObservabilityOptions {
   readonly health?: HealthRegistryOptions;
   readonly metrics?: MetricsCollectorOptions;
   readonly logger?: LoggerOptions;
+  /** Receipt-preserving primary for mandatory runtime reports; metrics remains a non-authorizing observer. */
+  readonly receiptSink?: AuditSink;
   /** Endpoint/path/auth knobs forwarded to `observabilityRoutes` (registry+metrics injected for you). */
   readonly routes?: Omit<ObservabilityRouteOptions, "registry" | "metrics">;
 }
@@ -118,7 +120,7 @@ export function createObservability(opts: CreateObservabilityOptions = {}): Obse
     }
     metricsMode = mode;
   };
-  const rawAuditSink = metricsAuditSink(metrics);
+  const rawAuditSink = metricsAuditSink(metrics, opts.receiptSink);
   const auditSink: AuditSink = {
     reserve(): AuditReservation | undefined {
       claimMetricsMode("audit");

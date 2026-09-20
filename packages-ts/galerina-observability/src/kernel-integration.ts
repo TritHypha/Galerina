@@ -35,41 +35,64 @@ import { HealthRegistry, type HealthReport, type HealthStatus } from "./health.j
 // ── Metrics ⇐ kernel audit pipe (counts + error rates; NO latency) ────────────
 
 /**
- * Adapt a MetricsCollector to the kernel's `AuditSink`. The kernel emits one audit
- * event per handled request OFF the critical path (Tri-Pipe), so feeding the
- * collector here can never delay or break a response. Provides request counts and
- * error rates — but NOT latency (the audit event carries no duration).
+ * Adapt a MetricsCollector to the kernel's `AuditSink`. A metrics-only adapter
+ * cannot manufacture mandatory evidence capacity, so it refuses `reserve()` until
+ * a receipt-preserving primary sink is supplied. When composed with a primary,
+ * the primary receives the complete event first and metrics observes only after
+ * successful acceptance. Provides request counts and error rates — but NOT latency
+ * (the audit event carries no duration).
  *
  * Use this OR `instrumentDispatch` for a given collector, never both (they would
  * double-count). Prefer `instrumentDispatch` when you can wrap dispatch — it adds latency.
  */
-export function metricsAuditSink(metrics: MetricsCollector): AuditSink {
-  const liveReservations = new WeakSet<AuditReservation>();
+export function metricsAuditSink(metrics: MetricsCollector, receiptSink?: AuditSink): AuditSink {
+  const liveReservations = new WeakMap<AuditReservation, AuditReservation>();
   const record = (event: AuditEvent): void => {
-    metrics.record({
-      method: event.method,
-      route: event.path,
-      status: event.status,
-    });
+    try {
+      metrics.record({
+        method: event.method,
+        route: event.path,
+        status: event.status,
+      });
+    } catch {
+      // Metrics are a non-authorizing observer and cannot erase accepted evidence.
+    }
   };
   return {
-    reserve(): AuditReservation {
+    reserve(): AuditReservation | undefined {
+      if (receiptSink === undefined) return undefined;
+      const upstream = receiptSink.reserve();
+      if (upstream === undefined) return undefined;
       const reservation = Object.freeze({ id: Symbol("metrics-audit-reservation") });
-      liveReservations.add(reservation);
+      liveReservations.set(reservation, upstream);
       return reservation;
     },
     commit(reservation: AuditReservation, event: AuditEvent): void {
-      if (!liveReservations.delete(reservation)) {
-        throw new Error("Metrics audit reservation is foreign or already consumed.");
+      if (receiptSink === undefined) {
+        throw new Error("Metrics audit sink has no receipt-preserving sink.");
+      }
+      const upstream = liveReservations.get(reservation);
+      if (upstream === undefined) throw new Error("Metrics audit reservation is foreign or already consumed.");
+      liveReservations.delete(reservation);
+      try {
+        receiptSink.commit(upstream, event);
+      } catch (error) {
+        try { receiptSink.cancel(upstream); } catch { /* preserve the commit failure */ }
+        throw error;
       }
       record(event);
     },
     cancel(reservation: AuditReservation): void {
-      if (!liveReservations.delete(reservation)) {
-        throw new Error("Metrics audit reservation is foreign or already consumed.");
+      if (receiptSink === undefined) {
+        throw new Error("Metrics audit sink has no receipt-preserving sink.");
       }
+      const upstream = liveReservations.get(reservation);
+      if (upstream === undefined) throw new Error("Metrics audit reservation is foreign or already consumed.");
+      liveReservations.delete(reservation);
+      receiptSink.cancel(upstream);
     },
     emit(event: AuditEvent): void {
+      if (receiptSink !== undefined) receiptSink.emit(event);
       record(event);
     },
   };

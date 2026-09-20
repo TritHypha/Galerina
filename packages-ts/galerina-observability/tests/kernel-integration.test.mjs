@@ -214,7 +214,14 @@ test("instrumented handler that THROWS ⇒ kernel 500 AND a recorded 5xx error (
 test("metricsAuditSink feeds counts off the kernel audit pipe (counts only, no latency)", async () => {
   const metrics = new MetricsCollector();
   const kernel = createAppKernel({
-    routes: [{ method: "GET", path: "/a", handler: "a", auth: { mode: "public" } }],
+    routes: [{
+      method: "GET",
+      path: "/a",
+      handler: "a",
+      auth: { mode: "public" },
+      // Metrics-only observation is valid only for an explicitly non-mandatory route.
+      audit: { runtimeReport: false },
+    }],
     dispatch: { a: () => ({ status: 200, body: {} }) },
     auditSink: metricsAuditSink(metrics),
   });
@@ -225,6 +232,149 @@ test("metricsAuditSink feeds counts off the kernel audit pipe (counts only, no l
   assert.equal(s.byStatusClass["2xx"], 1);
   assert.equal(s.byStatusClass["4xx"], 1);
   assert.equal(s.latency.count, 0); // audit pipe carries no duration
+});
+
+test("metrics-only audit sink fails closed for a mandatory runtime report", async () => {
+  const metrics = new MetricsCollector();
+  const kernel = createAppKernel({
+    routes: [{ method: "GET", path: "/required", handler: "required", auth: { mode: "public" } }],
+    dispatch: { required: () => ({ status: 200, body: {} }) },
+    auditSink: metricsAuditSink(metrics),
+  });
+
+  const response = await kernel.handle(req({ method: "GET", path: "/required" }));
+  assert.equal(response.status, 503);
+  assert.deepEqual(bodyJson(response), {
+    error: "audit_unavailable",
+    message: "Required runtime audit evidence capacity is unavailable.",
+  });
+  assert.equal(metrics.snapshot().totalRequests, 0);
+});
+
+test("metricsAuditSink refuses mandatory admission without a receipt-preserving sink", () => {
+  const metrics = new MetricsCollector();
+  const sink = metricsAuditSink(metrics);
+  assert.equal(sink.reserve(), undefined);
+  assert.throws(
+    () => sink.commit(Object.freeze({ id: Symbol("foreign") }), {
+      requestId: "rq-no-primary",
+      method: "GET",
+      path: "/required",
+      status: 200,
+      errorCode: undefined,
+      appliedDefaults: [],
+      relaxations: [],
+      at: 0,
+    }),
+    /receipt-preserving sink/i,
+  );
+});
+
+test("metricsAuditSink forwards the complete event before observing it", () => {
+  const order = [];
+  const retained = [];
+  const primary = {
+    reserve() {
+      const token = Object.freeze({ id: Symbol("primary") });
+      retained.push(token);
+      order.push("reserve");
+      return token;
+    },
+    commit(token, event) {
+      assert.equal(token, retained[0]);
+      order.push("commit");
+      assert.deepEqual(event, {
+        requestId: "rq-complete",
+        method: "POST",
+        path: "/required",
+        status: 503,
+        errorCode: "audit_unavailable",
+        appliedDefaults: ["auth"],
+        relaxations: ["posture"],
+        at: 123,
+        resolvedPosture: "linux",
+      });
+    },
+    cancel() { order.push("cancel"); },
+    emit(event) { order.push(["emit", event]); },
+  };
+  const metrics = { record() { order.push("observe"); } };
+  const sink = metricsAuditSink(metrics, primary);
+  const event = {
+    requestId: "rq-complete",
+    method: "POST",
+    path: "/required",
+    status: 503,
+    errorCode: "audit_unavailable",
+    appliedDefaults: ["auth"],
+    relaxations: ["posture"],
+    at: 123,
+    resolvedPosture: "linux",
+  };
+  const reservation = sink.reserve();
+  assert.ok(reservation);
+  assert.doesNotThrow(() => sink.commit(reservation, event));
+  assert.deepEqual(order, ["reserve", "commit", "observe"]);
+});
+
+test("createObservability wires its receipt-preserving sink into the audit seam", () => {
+  const primaryEvents = [];
+  const primary = {
+    reserve: () => ({ id: Symbol("primary") }),
+    commit: (_reservation, event) => { primaryEvents.push(event); },
+    cancel: () => {},
+    emit: (event) => { primaryEvents.push(event); },
+  };
+  const obs = createObservability({ receiptSink: primary });
+  const reservation = obs.auditSink.reserve();
+  assert.ok(reservation);
+
+  const event = {
+    requestId: "rq-wired",
+    method: "POST",
+    path: "/wired",
+    status: 201,
+    errorCode: undefined,
+    appliedDefaults: ["timeout"],
+    relaxations: [],
+    at: 12,
+  };
+  obs.auditSink.commit(reservation, event);
+  assert.deepEqual(primaryEvents, [event]);
+  assert.equal(obs.metrics.snapshot().totalRequests, 1);
+});
+
+test("metricsAuditSink isolates observer failure and keeps reservations affine", () => {
+  let commits = 0;
+  const primary = {
+    reserve() { return Object.freeze({ id: Symbol("primary") }); },
+    commit() { commits += 1; },
+    cancel() {},
+    emit() {},
+  };
+  const sink = metricsAuditSink({ record() { throw new Error("metrics observer failed"); } }, primary);
+  const reservation = sink.reserve();
+  assert.doesNotThrow(() => sink.commit(reservation, {
+    requestId: "rq-observer",
+    method: "GET",
+    path: "/observer",
+    status: 200,
+    errorCode: undefined,
+    appliedDefaults: [],
+    relaxations: [],
+    at: 0,
+  }));
+  assert.equal(commits, 1);
+  assert.throws(() => sink.commit(reservation, {
+    requestId: "rq-observer-replay",
+    method: "GET",
+    path: "/observer",
+    status: 200,
+    errorCode: undefined,
+    appliedDefaults: [],
+    relaxations: [],
+    at: 0,
+  }), /foreign|consumed|cancelled/i);
 });
 
 test("createObservability bundles a ready-to-compose surface", async () => {
@@ -273,8 +423,16 @@ test("createObservability rejects route authority overrides and non-data options
 
 test("createObservability refuses mixing auditSink and instrument metrics seams", () => {
   const auditFirst = createObservability();
-  const reservation = auditFirst.auditSink.reserve();
-  auditFirst.auditSink.cancel(reservation);
+  auditFirst.auditSink.emit({
+    requestId: "rq-audit",
+    method: "GET",
+    path: "/audit",
+    status: 200,
+    errorCode: undefined,
+    appliedDefaults: [],
+    relaxations: [],
+    at: 0,
+  });
   assert.throws(
     () => auditFirst.instrument({}),
     /mutually exclusive/,
