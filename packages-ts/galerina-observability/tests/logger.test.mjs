@@ -123,6 +123,15 @@ test("safeStringify degrades unserialisable fields instead of throwing", () => {
   assert.match(out, /not serialisable/);
 });
 
+test("safeStringify returns its canonical fallback for hostile top-level undefined", () => {
+  assert.equal(safeStringify(undefined), '{"level":"error","msg":"log record not serialisable","at":0}');
+});
+
+test("safeStringify returns its canonical fallback when toJSON returns undefined", () => {
+  const hostile = { toJSON: () => undefined };
+  assert.equal(safeStringify(hostile), '{"level":"error","msg":"log record not serialisable","at":0}');
+});
+
 test("JsonLineSink writes one JSON line per record to the supplied writer (no ambient I/O)", () => {
   const lines = [];
   const log = createLogger({ sink: new JsonLineSink((l) => lines.push(l)), clock: () => 7 });

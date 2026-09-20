@@ -1649,11 +1649,15 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `packages-ts/galerina-observability/src/logger.ts:177-181` uses a plain output
   record; hostile own `__proto__`, descriptors or proxies need an explicit
   refusal/copy contract and discriminating tests.
-- [!] Logger serialization blocker: `safeStringify` at
-  `packages-ts/galerina-observability/src/logger.ts:204-225` declares `string`
-  but its runtime JSON path does not establish a truthful result for hostile
-  top-level/`toJSON() => undefined` inputs. Define an inert bounded JSON algebra
-  and canonical wire, or expose a typed serialization result before closing it.
+- [x] Logger serialization contract fixed: `safeStringify` at
+  `packages-ts/galerina-observability/src/logger.ts:203-223` preserves successful
+  serialization and the existing circular-field fallback, while coalescing a
+  hostile top-level/`toJSON() => undefined` result to the deterministic canonical
+  JSON marker at `:203` and `:208`. The two runtime-negative regressions at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:126-133` prove both
+  hostile inputs return that exact string. Focused package `npm test` passes
+  **43/43** with zero failures and zero skips; `JsonLineSink`, redaction and the
+  other logger TODOs were not changed.
 - [ ] Security boundary: do not use lossy `metricsAuditSink` as the kernel's
   mandatory evidence sink. It can reserve/commit successfully while discarding
   requestId, errorCode, defaults, relaxations, timestamp and posture. Introduce

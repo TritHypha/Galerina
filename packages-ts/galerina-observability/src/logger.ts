@@ -200,10 +200,12 @@ function levelName(order: number): LogLevel {
   return "info";
 }
 
+const SAFE_STRINGIFY_FALLBACK = '{"level":"error","msg":"log record not serialisable","at":0}';
+
 /** Serialise a record to JSON, degrading unserialisable content to a safe marker (never throws). */
 export function safeStringify(record: LogRecord): string {
   try {
-    return JSON.stringify(record);
+    return JSON.stringify(record) ?? SAFE_STRINGIFY_FALLBACK;
   } catch {
     // Circular or otherwise unserialisable fields: emit the record without them.
     try {
@@ -216,7 +218,7 @@ export function safeStringify(record: LogRecord): string {
       };
       return JSON.stringify(safe);
     } catch {
-      return '{"level":"error","msg":"log record not serialisable","at":0}';
+      return SAFE_STRINGIFY_FALLBACK;
     }
   }
 }
