@@ -269,7 +269,7 @@
   `packages-ts/galerina-ext-photonic-emulator/tests/emulator.test.mjs:134-152`;
   package build/typecheck/tests pass **61/61**. AI accelerator selection
   ingress remains **7/7**; report admission is separately held at
-  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-769`.
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764`.
 - [x] SLIDE source HEAD is
   `c22e855bba5be2ca6f6c51ee2841922c88b97df8`. Its bounded parent-swap
   rollback residual is closed at
@@ -1916,7 +1916,7 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   release tests/audits and remain private and unpushed.
 - [!] **Priority accelerator fail-closed repair:** the selection ingress now
   exact-decodes nested model/tensor/capability/preference records and controlled
-  vocabularies at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`,
+  vocabularies at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`,
   rejects proxy/accessor/surplus/sparse inputs, enforces on-device, memory,
   adapter, format, operator and dynamic-shape compatibility at `:601-752`, and
   refuses malformed input through `selectedTarget: "reject", safe: false`.
@@ -1924,24 +1924,26 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   `:673-687`, returning `safe: false` with
   `Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED` when absent. Evidence
   is **7/7** at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`
   with clean typecheck/build. This remains partial: the declared fallback path
   is now fail-closed, but runtime report-input decoding and diagnostic-severity
   admission remain open.
 - [!] **Priority accelerator snapshot repair:** model input and output tensor
   dimensions are now bounded and copied once by the decoder at
   `packages-ts/galerina-target-ai-accelerator/src/index.ts:392-468`, but the
-  report path at `:703-769` now deep-copies the known profile/capability/
+  report path at `:703-764` now deep-copies the known profile/capability/
   plan/selection collections and freezes the report; alias-mutation coverage is
   at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:102-146`.
-  Keep this partial because the report constructor still accepts typed
-  caller-input without an exact runtime decoder or a decision-binding receipt.
+  Keep this partial because RD-1240 confirms that the report constructor still
+  accepts typed caller-input without an exact runtime decoder or a
+  decision-binding receipt; warnings reread caller diagnostics at `:715-718`
+  while the diagnostic snapshot is at `:751`.
 - [!] Hostile accelerator coverage now includes malformed nested records,
   proxies, rogue vocabulary, absent capability evidence and bounded dimensions
-  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`.
+  at `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
   Repeated-read A/B, runtime report-input/accessor/proxy refusal, diagnostic
   severity validation and work-limit vectors remain open at
-  `src/index.ts:703-769` and require the report-input contract first.
+  `src/index.ts:703-764` and require the report-input contract first.
 - [x] Add closed CPU ingress for architecture, SIMD, workload, threading,
   capability, plan, report and probe records before later executable CPU
   scopes can claim these erased declarations as physical types. Selection now
@@ -2043,18 +2045,25 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   validates model, capability, preference and adapter records, including kind,
   format, precision, workload/framework vocabulary, proxy/accessor/surplus and
   sparse-array refusal, at
-  `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`.
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`.
   The bounded package route is **7/7 pass** at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`.
-- [!] **Remaining accelerator report blocker:**
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
+- [!] **Remaining accelerator report blocker — RD-1240:**
   `createAiAcceleratorTargetReport` still accepts caller-owned typed capability,
   plan, selection and backend-profile records without a matching runtime schema
   or decision-binding receipt at
-  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-769`.
-  Keep report admission open until the owner defines the report schema,
-  diagnostic-severity validation, hostile-input refusal and selection-to-report
-  binding; the current alias-detachment vectors are only the test slice at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:89-146`.
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764`.
+  Selection ingress is bounded at `:272-613`, but report admission is not.
+  Warnings reread caller diagnostics at `:715-718` while diagnostic snapshots
+  are stored at `:751`; the report can therefore retain unbound or
+  inconsistent-looking content. The seven package tests span
+  `tests/ai-accelerator-contracts.test.mjs:28-205`; the planted unbound
+  selection fixture is `:89-99` and is explicitly `safe:false`, so it is not
+  itself a false-safe refusal control. Keep report admission open until the
+  owner defines the report schema, diagnostic-severity validation,
+  hostile-input refusal and selection-to-report binding. RD-1240 is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`; bounded package
+  evidence is fresh at **7/7** with clean typecheck/build.
 - [ ] Keep substrate TypeScript until an exact physical replacement and
   bootstrap/fixpoint proof exist. The quarantined staging Fungi candidate is
   non-authorizing and bit-different; checker tolerance is not parity.

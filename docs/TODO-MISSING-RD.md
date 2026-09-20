@@ -138,6 +138,39 @@ assurance. Those remain later gates after the component work is complete.
   evidence, queue/corpus/`.fungi` assurance, or durability from the passing
   count tests or model agreement.
 
+### M-RD-010 — Galerina AI accelerator report admission — RD-1240
+
+- **Exact blocker:** `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764`
+  accepts typed caller-owned capability, plan, selection and backend-profile
+  records without an exact runtime report decoder or a decision-binding
+  receipt. Selection ingress is separately guarded at `:272-613`.
+- **Provenance/diagnostic gap:** warnings reread caller diagnostics at
+  `:715-718` while the diagnostic snapshot is stored at `:751`; hostile
+  getters or mutable caller input can make the warning view disagree with the
+  frozen diagnostic view. The report has no owner-defined admitted-versus-
+  observational authority contract.
+- **Test qualification:** package tests span
+  `tests/ai-accelerator-contracts.test.mjs:28-205`; the planted fixture at
+  `:89-99` retains GPU selection with empty capabilities but explicitly asserts
+  `safe:false`, so it demonstrates unbound inclusion rather than proving a
+  false-safe admission. Fresh bounded package evidence is **7/7 pass** with
+  clean typecheck/build; it does not clear report authority.
+- **Decision:** `RD-1240` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The owner must
+  define the report schema, refusal representation, closed diagnostic
+  severity/code rules, same-ingress selection binding, and hostile positive /
+  negative controls. After that, ordinary bounded implementation may proceed;
+  this is not permission to claim accelerator execution, physical capability,
+  signing, queue, corpus, or `.fungi` assurance.
+- **Evidence:** private record
+  `private/research/rd/RD-1240-ai-accelerator-report-admission-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T101217Z-rd-1240-ai-accelerator-report-admission-private/`.
+- **Safe continuation:** keep the report TODO open and continue with the next
+  concrete component TODO. Treat
+  `_CORPUS-20260912-RESULTS-TABLE-PRIVATE.md` as the pending 126-record R&D
+  inventory, not as completed semantic or authority evidence.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile
@@ -594,25 +627,23 @@ locator is not sufficient evidence of a blocker or of completion.
   Hostile coverage is `packages-ts/galerina-substrate-math/tests/substrate-math.test.mjs:47-70`.
   The copied emulator host-ingress gap is closed for the bounded numerical
   slice; the separate R&D/physical calibration posture remains unchanged.
-- **Galerina AI-accelerator selection ingress (partial):** the runtime decoder
-  at `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-590`
+- **Galerina AI-accelerator selection/report boundary (partial; RD-1240):**
+  the runtime decoder at
+  `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`
   exact-decodes model/tensor/capability/preference records, rejects
   proxy/accessor/surplus/sparse collections and rogue vocabularies, and copies
-  bounded tensor dimensions. Compatibility at `:719-752` now treats missing
-  model-format/operator/dynamic-shape evidence, insufficient on-device policy,
-  memory overflow and adapter mismatch as incompatible. The focused package is
-  **7/7** at
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:101-191`
-  with clean typecheck/build. Declared fallback selection now refuses absent
-  compatible capability evidence at `src/index.ts:673-687` with
-  `Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED`; report construction
-  now detaches/freezes known collections at `src/index.ts:703-769`, with
-  alias-mutation coverage at the test's `:102-146` slice. **Remaining
-  blockers:** the report constructor still has no exact runtime decoder for
-  caller-owned input, does not validate diagnostic severity/shape, and does not
-  bind a selection decision to the report snapshot. **Fail closed:** clearance
-  requires the owner-approved report schema, hostile report-input vectors,
-  diagnostic-severity refusal and a decision-binding receipt.
+  bounded tensor dimensions. The focused package is **7/7** with clean
+  typecheck/build; tests span
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
+  Declared fallback selection refuses absent compatible capability evidence at
+  `src/index.ts:673-687`; report construction detaches/freezes known
+  collections at `src/index.ts:703-764`. **Remaining blocker:** report
+  admission still lacks an exact runtime decoder, closed diagnostic
+  severity/shape validation, and a selection-to-report binding receipt;
+  warnings reread caller diagnostics at `:715-718` while the snapshot is at
+  `:751`. **Fail closed:** clearance requires the owner-approved report
+  schema, hostile report-input vectors, diagnostic-severity refusal and a
+  decision-binding receipt. See RD-1240 above.
 - **Galerina GPU target ingress/snapshot (partial):** the GPU target now
   exact-decodes bounded plain capability/plan records and arrays, refuses
   accessors, proxies, symbols, surplus/sparse fields and control text, bounds
