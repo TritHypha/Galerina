@@ -23,7 +23,7 @@ assurance. Those remain later gates after the component work is complete.
 
 ### M-RD-001 — SLIDE general-backend profile
 
-- **Locator:** `SLIDE/TODO.md:1267-1272` and
+- **Locator:** `SLIDE/TODO.md:1286-1298` and
   `SLIDE/src/v2c-general-backend-scope.mjs:114-122`
 - **Missing decision:** choose the first bounded profile for loop-carried state,
   data-dependent loops, recursion/callbacks, or cross-package effects; define its
@@ -35,7 +35,7 @@ assurance. Those remain later gates after the component work is complete.
 
 ### M-RD-002 — SLIDE native-provider descriptor boundary
 
-- **Locator:** `SLIDE/TODO.md:1520-1545`
+- **Locator:** `SLIDE/TODO.md:1539-1550`
 - **Missing decision:** the exact provider descriptor, admission/refusal vectors,
   and dependency on the selected general-backend profile.
 - **What can proceed now:** document and test the boundary shape only; defer
@@ -59,13 +59,13 @@ assurance. Those remain later gates after the component work is complete.
 **Current Astra disposition:** no new R&D is required for the selected JS report
 slice. Exact own-data decoding, bounded arrays, immutable snapshots, and explicit
 refusal are ordinary engineering deductions already required by the existing
-TODO and R&D. The delivered slice is recorded at `Galerina/docs/TODO.md:1432`
-and `Galerina/docs/TODO.md:1473`; the exact source is
+TODO and R&D. The delivered slice is recorded at `Galerina/docs/TODO.md:1461-1463`
+and `Galerina/docs/TODO.md:1510-1513`; the exact source is
 `packages-ts/galerina-target-js/src/index.ts:123-695`, with focused regressions
 at `packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:104-220`.
 
 The same disposition applies to the CPU eligibility slice at
-`Galerina/docs/TODO.md:1466` and `Galerina/docs/TODO.md:1511`. Its exact source
+`Galerina/docs/TODO.md:1502-1505` and `Galerina/docs/TODO.md:1510-1513`. Its exact source
 boundary is `packages-ts/galerina-target-cpu/src/index.ts:78-534`, with focused
 regressions at `packages-ts/galerina-target-cpu/tests/cpu-target-contracts.test.mjs:56-158`.
 The required result is ordinary fail-closed admission: malformed or unknown
@@ -130,9 +130,9 @@ declared limit; and returned capability/plan data is copied and immutable.
   **Fail closed:** the remaining blocker is the owner contract, not raw
   JavaScript ingress: exact binary64 boundary/Option/UTF-16 rules remain
   undefined at the `OpticalChannelLayout` interface
-  `packages-ts/galerina-target-photonic/src/index.ts:151-156`, and the
+  `packages-ts/galerina-target-photonic/src/index.ts:149-154`, and the
   legacy diagnostic names still require registry ownership at
-  `Galerina/docs/TODO.md:1422-1423`. Do not claim Photonic admission until
+  `Galerina/docs/TODO.md:1436-1439`. Do not claim Photonic admission until
   those two contracts are resolved and tested.
 
 ## Bridge preparation
@@ -182,16 +182,16 @@ After any source change, recheck the exact head and refresh the line range
 before treating the entry as current. A TODO description without a source
 locator is not sufficient evidence of a blocker or of completion.
 
-- **SLIDE general-backend boundary:** `SLIDE/TODO.md:1267-1279` and
+- **SLIDE general-backend boundary:** `SLIDE/TODO.md:1286-1298` and
   `SLIDE/src/v2c-general-backend-scope.mjs:114-126`. The open families are
   general loop bodies and general effects; the bounded contracts already
   implemented were independently checked and are not to be rebuilt.
-- **SLIDE native-provider boundary:** `SLIDE/TODO.md:1520-1557` and
+- **SLIDE native-provider boundary:** `SLIDE/TODO.md:1539-1565` and
   `SLIDE/docs/DEMAND-ADMITTED-NATIVE-PROVIDERS.md:292-330`. The descriptor,
   semantic/target schema and admission contract are intentionally unbuilt
   until the general-backend dependency is frozen.
-- **SLIDE owner evidence and activation:** `SLIDE/TODO.md:289-292`,
-  `SLIDE/TODO.md:307-311`, and `SLIDE/TODO.md:1447-1454`. These require owner
+- **SLIDE owner evidence and activation:** `SLIDE/TODO.md:305-311`,
+  `SLIDE/TODO.md:313-320`, and `SLIDE/TODO.md:1466-1473`. These require owner
   ceremony/receipt evidence, profile ordering, production authority and exact
   per-file package parity; they are not implementation TODOs for this pass.
 - **Lyth-Weaver handoff:** `lyth-weaver/TODO.md:89-91`, `107-109`, and
@@ -285,7 +285,7 @@ locator is not sufficient evidence of a blocker or of completion.
   immutable snapshot, module containment/bytes-digest/import-export authority,
   diagnostic migration, and cross-package schema owner are not defined by the
   current contract. The unresolved ledger is
-  `Galerina/docs/TODO.md:1353`; do not invent a decoder or call this slice
+  `Galerina/docs/TODO.md:1369-1371`; do not invent a decoder or call this slice
   complete without that contract.
 - **Galerina pipeline checker:**
   `packages-ts/galerina-core-compiler/src/index.ts:3081-3098` is an empty
