@@ -285,6 +285,14 @@ locator is not sufficient evidence of a blocker or of completion.
   The remaining entries are exact implementation/design blockers; do not close
   them by silently swallowing writer errors or by claiming shallow redaction is
   complete.
+- **Galerina observability failSafe schema:** the fault branch at
+  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:254-260`
+  returns an ad-hoc `{ status: "DOWN", detail: ... }` body, while the normal
+  liveness/readiness paths return the HealthReport shape through `:212-218`.
+  No owner-approved tagged public schema or direct fault-vector test currently
+  settles whether detail is public. **Fail closed:** keep the response contract
+  open; do not widen the public health body or expose diagnostics until the
+  owner publishes the schema and redacted/authenticated boundary.
 - **Galerina WASM-target admission:** the current API is compile-time typed at
   `Galerina/packages-ts/galerina-target-wasm/src/index.ts:47`, while
   `createWasmTargetReport()` accepts typed caller-owned input at `:84` and
