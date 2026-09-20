@@ -443,24 +443,23 @@ locator is not sufficient evidence of a blocker or of completion.
   anchor was repaired separately at
   `packages-ts/galerina-test/tests/conversion-overlay-source-decisions-wave-40-fungi.test.mjs:11`
   and its focused check is **3/3**.
-- **Galerina benchmark report border:** the bounded config validator now rejects
-  malformed/accessor records, missing/surplus keys, non-finite budgets and
-  invalid target/privacy literals at
-  `packages-ts/galerina-tools-benchmark/src/index.ts:76-425`, with **12/12**
-  focused contract tests at
-  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-158`.
-  The remaining blocker is the report contract: the public type makes
-  `scores.opticalIo` optional at
-  `packages-ts/galerina-tools-benchmark/src/index.ts:151-158`, while the example
-  writes explicit `null` at
-  `packages-ts/galerina-tools-benchmark/examples/benchmark-report.example.json:37`;
-  no runtime report decoder currently resolves absent versus null or validates
-  the full report's finite numbers, exact literals and surplus fields. The
-  shareability gate now binds `privacy.shareable === true` at
-  `packages-ts/galerina-tools-benchmark/src/index.ts:428-443`, but that is not a
-  substitute for a complete report decoder. **Fail closed:** owner/contract
-  decision plus negative report vectors are required before report admission is
-  claimed.
+- **Galerina benchmark report border:** the bounded config and full report
+  validators now reject malformed/accessor/proxy records, missing/surplus keys,
+  non-finite numbers, sparse/oversized test arrays, invalid target/privacy
+  literals and explicit `null` scores at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:72-431`; the example no
+  longer emits `opticalIo:null`. The focused package route is **13/13** at
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-169`.
+  Absence of optional `scores.opticalIo` remains valid; explicit `null` is
+  refused. `privacy.shareable === true` is still required by the gate at
+  `packages-ts/galerina-tools-benchmark/src/index.ts:592-608`. **Residual
+  blocker:** no detached immutable report snapshot is exposed to downstream
+  consumers; the current validator/gate only proves the caller-owned report
+  shape at the decision point. **Fail closed:** do not treat a caller-owned
+  mutable report as a durable receipt; clearance requires an owner-approved
+  snapshot/ownership contract, a detached/frozen return surface, and mutation
+  regression vectors proving the admitted result cannot change through input
+  aliases.
 - **Galerina API-server/network contract:**
   `packages-ts/galerina-framework-api-server/TODO.md:3-8` is open because the
   API-server adapter still documents `ReplayStore.exists/save`, while the

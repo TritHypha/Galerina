@@ -1316,15 +1316,19 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   harness route is **36/36** with one host-specific signal skip. Exact
   corpus/content provenance, complete freshness framing, and the remaining
   aggregation contract are still open.
-- [ ] Harden benchmark config/report borders: reject missing/surplus/hostile
+- [!] Harden benchmark config/report borders: reject missing/surplus/hostile
   records, non-finite numbers and unknown target keys; reconcile `opticalIo:null`,
   validate every literal/privacy field, and rule whether `shareable:false` must
-  be binding. The bounded config slice now rejects malformed/accessor records,
-  surplus/missing keys, non-finite budgets, invalid target/privacy literals at
-  `packages-ts/galerina-tools-benchmark/src/index.ts:76-425`, with **12/12**
-  focused contract tests at `tests/benchmark-contracts.test.mjs:45-158`;
-  `shareable:false` is now binding. The full report decoder and the
-  `opticalIo:null` versus absent contract remain open.
+  be binding. The bounded config and full report validators now reject
+  malformed/accessor/proxy records, surplus/missing keys, non-finite numbers,
+  invalid target/privacy literals, sparse/oversized test arrays and explicit
+  `null` scores at `packages-ts/galerina-tools-benchmark/src/index.ts:72-431`;
+  `shareable:false` is binding at `src/index.ts:592-608`. The focused package
+  route is **13/13** at
+  `packages-ts/galerina-tools-benchmark/tests/benchmark-contracts.test.mjs:45-169`.
+  Absence of optional `opticalIo` remains valid; explicit `null` is refused and
+  the example no longer emits it. Residual: the public report type and gate do
+  not yet expose a detached immutable report snapshot for downstream consumers.
 - [x] Publish all registered owners individually and pass the complete 19-check
   matrix: **1,488/1,488** executable-family paths, **149** source Fungi files,
   graph **9,900 nodes / 10,039 edges / 0 violations**, semantic **3/3** with

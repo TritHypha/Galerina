@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   DEFAULT_BENCHMARK_CONFIG,
   validateBenchmarkConfig,
+  validateBenchmarkReport,
   isBenchmarkReportShareable,
 } from "../dist/index.js";
 
@@ -115,7 +116,10 @@ describe("isBenchmarkReportShareable — default-deny", () => {
       memoryBucket: "16-32", gpuBackend: "none", lowBitBackend: "none",
     },
     durationMs: 1000,
-    summary: {},
+    summary: {
+      logic: "passed", cpu: "passed", json: "passed", vector: "passed", gpu: "skipped",
+      ai_accelerator: "skipped", low_bit_ai: "skipped", optical_io: "skipped", recovery: "skipped", compare: "skipped",
+    },
     scores: { overall: 42 },
     tests: [],
     privacy: {
@@ -156,5 +160,13 @@ describe("isBenchmarkReportShareable — default-deny", () => {
     };
     const notShareable = { ...cleanReport, privacy: { ...cleanReport.privacy, shareable: false } };
     assert.equal(isBenchmarkReportShareable(notShareable, optIn), false);
+  });
+
+  it("refuses null opticalIo, non-finite scores, surplus fields and hostile rows", () => {
+    assert.ok(validateBenchmarkReport({ ...cleanReport, scores: { overall: 42, opticalIo: null } }).some((d) => d.code === "Galerina_BENCHMARK_REPORT_NUMBER_INVALID"));
+    assert.ok(validateBenchmarkReport({ ...cleanReport, scores: { overall: Infinity } }).some((d) => d.code === "Galerina_BENCHMARK_REPORT_NUMBER_INVALID"));
+    assert.ok(validateBenchmarkReport({ ...cleanReport, extra: true }).some((d) => d.code === "Galerina_BENCHMARK_FIELD_UNKNOWN"));
+    const hostile = { ...cleanReport, tests: [new Proxy({ id: "x", target: "logic", status: "passed" }, {})] };
+    assert.ok(validateBenchmarkReport(hostile).some((d) => d.code === "Galerina_BENCHMARK_REPORT_TEST_REQUIRED"));
   });
 });
