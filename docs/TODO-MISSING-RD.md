@@ -271,6 +271,33 @@ assurance. Those remain later gates after the component work is complete.
   plus Windows privilege/share fixtures where physical or namespace claims are
   expected. Do not infer queue, signing, corpus or `.fungi` assurance.
 
+### M-RD-014 — Galerina compiler freshness evidence — RD-1244
+
+- **Live gap:** `packages-ts/galerina-core-compiler/scripts/
+  write-build-evidence.mjs:37-48` and
+  `packages-ts/galerina-test/src/runners.ts:94-133` hash path/content records
+  with NUL separators and inspect JSON keys only after `JSON.parse`. A local
+  probe produced the same digest for distinct contents under the same path list;
+  duplicate literal and escaped keys can be accepted when the surviving value
+  is valid.
+- **Remaining coupled gates:** compile-affecting input/config/toolchain set,
+  ignored-file policy, consumed `dist` output set and exact output digest,
+  canonical path containment, schema/version migration and one immutable
+  producer/verifier snapshot. These cannot be inferred from the current tests.
+- **Decision:** `RD-1244` is
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. A pre-parse
+  duplicate-key refusal gate is the only bounded sub-slice currently clearable
+  without an owner contract. A framing repair requires a new schema/version;
+  do not silently dual-accept or mark the broad TODO complete.
+- **Evidence:** private record
+  `private/research/rd/RD-1244-compiler-freshness-canonical-evidence-and-adversarial-controls-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T115807Z-rd-1244-compiler-freshness-canonical-evidence-private/`.
+- **Safe continuation:** implement only the duplicate-key slice with
+  test-first literal and escaped-duplicate KATs if it remains within the
+  current owner scope. Keep the four KAT family open and do not run a corpus,
+  `.fungi` build, queue regeneration, signing or final assurance.
+
 ## Open questions to resolve, not implementation blockers
 
 ### M-RD-001 — SLIDE general-backend profile

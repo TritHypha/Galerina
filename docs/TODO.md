@@ -1699,12 +1699,21 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   the host does not expose a signal status. Focused evidence is **35/35 pass,
   1 skip, 0 fail** across the runner and spawn suites; no Fungi/SLIDE candidate
   was built.
-- [ ] Replace compiler freshness evidence with duplicate-rejecting canonical
-  bytes, domain-separated length-prefix framing, complete compile-affecting
-  input/config/toolchain coverage, governed ignored/untracked policy, exact
-  consumed-output digest, canonical containment and one immutable snapshot
-  through execution. Retain the four firing KATs for ignored input, tampered
-  `dist`, duplicate JSON keys and NUL-framing collision.
+- [!] **Compiler freshness evidence — RD-1244:** the current producer and
+  verifier at `packages-ts/galerina-core-compiler/scripts/
+  write-build-evidence.mjs:37-48` and
+  `packages-ts/galerina-test/src/runners.ts:94-133` use post-parse JSON key
+  checks and NUL-delimited path/content framing. A local byte probe reproduces
+  an equal digest for distinct same-path file contents containing NUL bytes;
+  duplicate JSON keys are erased by `JSON.parse` before the four-key check.
+  Grok and Astra agree the broad TODO remains **HOLD**. The only currently
+  clearable sub-slice is a test-first pre-parse duplicate-key refusal gate,
+  including escaped duplicates; it does not close framing, compile-affecting
+  input/config/toolchain coverage, ignored-file policy, consumed-output
+  digest, canonical containment or one immutable snapshot. Required KATs for
+  ignored input, tampered `dist`, duplicate JSON keys and NUL framing remain
+  open at `docs/TODO.md:1702-1707`. No `.fungi`, corpus or assurance action
+  follows from this record.
 - [ ] Preserve public declaration consumers through retained/versioned `.d.ts`
   artifacts or a governed binding/schema generator; `NO_RUNTIME_BEHAVIOR` is
   not source-deletion authority and `TestCounts` null-to-Option is a versioned
