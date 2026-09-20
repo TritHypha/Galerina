@@ -487,10 +487,21 @@ locator is not sufficient evidence of a blocker or of completion.
   canonical network contract is `ReplayStore.has/put` at
   `packages-ts/galerina-core-network/README.md:360-367`. The same mismatch is
   stated in the API-server README at `README.md:18-31` and repeated by its
-  scaffold contract at `README.md:1528-1537`. **Fail closed:** do not implement
-  or mark the adapter complete until the owner chooses the canonical names or
-  publishes an explicit adapter mapping, then supplies matching source and
-  tests for replay expiry and idempotency behavior.
+  scaffold contract at `README.md:1528-1537`. The checked-out runtime does not
+  yet contain that contract: `packages-ts/galerina-framework-api-server/src/index.ts:1-40`
+  declares a deliberately thin transport with no policy, routing, webhook or
+  replay authority, and its live request path is only body buffering,
+  channel/principal resolution, kernel dispatch and response writing at
+  `src/index.ts:624-721`. The current focused evidence is transport-only at
+  `tests/api-server.test.mjs:98-256` and TLS/certificate admission at
+  `tests/api-server-tls.test.mjs:112-257`; neither proves replay expiry,
+  idempotency or webhook ordering. **Fail closed:** do not implement the stale
+  multi-file scaffold piecemeal or mark the adapter complete until the owner
+  chooses the canonical `has/put` names or publishes an explicit
+  `exists/save` adapter mapping, and the package source/tests then define and
+  prove replay expiry, idempotency and HMAC-before-handler behavior. Clearance
+  requires that owner contract plus matching source and negative tests; no
+  `.fungi` or corpus action is implied.
 - **Galerina docs contract-type expansion:**
   `packages-ts/galerina-docs/TODO.md:12-18` leaves request/response component
   schemas as placeholders because the generator's `contractTypePlaceholder()`
