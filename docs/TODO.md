@@ -1399,9 +1399,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   any parsed value can affect SLIDE or other check success.
 - [ ] Repair CLI argument decoding so a flag cannot be consumed as `--root` or
   `--timeout` data; add exact argv, stream-routing, JSON and exit-code tests.
-- [ ] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
+- [!] Exact-decode WASM artefacts and dense arrays, remove caller aliases, bind
   module bytes/digest/imports/exports/sandbox evidence, and migrate legacy
-  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes.
+  `Galerina_WASM_*` diagnostics to owned `FUNGI-CATEGORY-NNN` codes. The bounded
+  record/array decoder and detached frozen report snapshot now live at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199,241-272`, with focused
+  hostile/alias coverage **5/5** at
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:34-59`.
+  Remaining blockers are exact module bytes/digest/import-export binding,
+  sandbox/effect evidence, runtime/schema ownership and legacy diagnostic
+  registry migration; no WASM execution authority is inferred.
 - [ ] Decide and enforce workspace-root marker attestation and target
   containment; cover env/explicit-root bypass, file-vs-directory, symlinks,
   traversal, drives, UNC paths and Error identity.

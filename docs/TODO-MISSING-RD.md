@@ -370,6 +370,17 @@ locator is not sufficient evidence of a blocker or of completion.
   governed `FUNGI-CATEGORY-NNN` registry ownership, and no physical GPU
   capability or production admission is established. Those gates are not
   inferred from the passive plan-only package.
+- **Galerina WASM target ingress/snapshot (partial):** the runtime decoder at
+  `packages-ts/galerina-target-wasm/src/index.ts:68-199` exact-decodes bounded
+  target/artefact records and dense arrays, rejects accessors/proxies/symbols/
+  surplus/sparse fields and control text, and `:241-272` returns detached
+  frozen report arrays. Focused coverage is **5/5** at
+  `packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:34-59`.
+  **Remaining blockers:** the current `WasmArtefact` interface has no admitted
+  module bytes/digest, import/export identity, sandbox/effect evidence or
+  schema owner; legacy `Galerina_WASM_*` diagnostics are also not registry
+  migrated. Clearance requires those source-defined contracts and tests before
+  any execution or physical-target authority claim.
 - **Galerina observability residuals:** direct writer failure still escapes
   `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
   while the outer logger catch is only `:144-166`; the exact direct-sink
