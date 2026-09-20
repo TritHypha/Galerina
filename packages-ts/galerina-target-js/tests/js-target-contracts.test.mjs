@@ -185,6 +185,19 @@ describe("createJsBundleReport — check outcomes are DERIVED, never caller-asse
     assert.ok(report.diagnostics.length >= 2);
   });
 
+  it("reports a non-server-only module import absent from the plan", () => {
+    const report = createJsBundleReport({
+      plan: { ...browserPlan, imports: ["./declared.js"] },
+      entry: "dist/missing-module.js",
+      modules: [{ path: "dist/missing-module.js", exports: [], imports: ["./missing.js"] }],
+    });
+    assert.deepEqual(errorCodes(report.diagnostics), ["FUNGI-JS-002"]);
+    assert.equal(
+      report.checks.find((check) => check.check === "server-only-imports-blocked")?.passed,
+      false,
+    );
+  });
+
   it("checks module imports and refuses an invalid plan instead of passing absent checks", () => {
     const leakingModule = createJsBundleReport({
       plan: { ...browserPlan, imports: ["./declared.js"] },

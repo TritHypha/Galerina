@@ -1873,8 +1873,17 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   module and adapter snapshot; positively prove every named check executed;
   cover bare builtin subpaths, module-import evidence, repeated getters,
   sparse/wrong-class arrays and copied receipt-bound report output. Delivered in
-  `packages-ts/galerina-target-js/src/index.ts` with **16/16** focused contract
+  `packages-ts/galerina-target-js/src/index.ts` with **17/17** focused contract
   tests at the current working head; compiler wiring remains separate.
+- [!] **JS import-set closure — RD-1245:** the live check at
+  `packages-ts/galerina-target-js/src/index.ts:630-650` remains the
+  source-backed module-imports ⊆ plan-import membership rule. The isolated
+  non-server missing-import regression at
+  `packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:188-201`
+  now proves `FUNGI-JS-002` independently; the target-JS route is **17/17**.
+  Reverse equality is still an owner-contract HOLD: choose allowlist, exact
+  set/bag, or a split schema before changing semantics. No SLIDE/VOK, Lyth,
+  `.fungi`, corpus or production authority follows.
 - [x] **Priority native border repair — bounded decoder slice:** exact-decode
   target, artifact, bridge and array records, capture own data once, reject
   inherited/accessor/proxy/custom/sparse/surplus inputs, bound arrays, and

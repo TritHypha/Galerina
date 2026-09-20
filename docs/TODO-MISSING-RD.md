@@ -375,16 +375,29 @@ declared limit; and returned capability/plan data is copied and immutable.
 
 ### M-RD-004 — JS import-set closure
 
-- **Locator:** `packages-ts/galerina-target-js/src/index.ts:642-648`
+- **Locator:** `packages-ts/galerina-target-js/src/index.ts:630-650`.
 - **Current behavior:** every module import must appear in the admitted plan
-  import set; this closes the observed module-to-plan leak.
-- **Unresolved contract:** whether the reverse direction must also hold—whether
-  every plan import must be represented by a module metadata entry. The current
-  source and tests do not establish that equality, so adding it would be a
-  semantic change rather than a mechanical hardening.
-- **Smallest next action:** ask the bridge for the owner contract or existing R&D
-  evidence. Until then, retain the one-way fail-closed check and do not widen the
-  report claim.
+  import set; unused plan entries pass when the rest of validation succeeds.
+  The relation is exact-string membership, not order or bag equality.
+- **Fresh adjudication:** `RD-1245` and Astra independently confirm that
+  reverse equality is a semantic owner choice, not mechanical hardening.
+  `FUNGI-JS-007` remains a separate browser server-only deny-list; it must not
+  be substituted for `FUNGI-JS-002`.
+- **Bounded closure:** the isolated non-server missing-import KAT at
+  `packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:188-201`
+  now detects `FUNGI-JS-002`; the current target-JS typecheck/build/test route
+  passes **17/17**. No source semantics were changed.
+- **Decision:** M-RD-004 remains
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; OWNER CONTRACT REQUIRED;
+  HOLD`. The owner must choose an admitted allowlist, exact consumed set/bag,
+  or split schema before any reverse check or new unused-entry diagnostic.
+- **Evidence:** private record
+  `private/research/rd/RD-1245-js-import-set-closure-adjudication-PRIVATE.md`;
+  Grok receipt/result under
+  `ai-reviews/grok-runs/results/20260920T124025Z-rd-1245-js-import-set-closure-private/`.
+- **Safe continuation:** retain the one-way rule and regression; do not widen
+  semantics, activate VOK/SLIDE, or infer Lyth, queue, corpus or `.fungi`
+  authority from the 17/17 package result.
 
 ### Astra contract review — 2026-09-20
 
