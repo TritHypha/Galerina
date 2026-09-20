@@ -712,7 +712,7 @@ export function createAiAcceleratorTargetReport(input: {
   const backendProfiles = input.backendProfiles === undefined
     ? undefined
     : Object.freeze(input.backendProfiles.map((profile) => snapshotBackendProfile(profile)));
-  const warnings = Object.freeze((input.selections ?? []).flatMap((selection) =>
+  const warnings = Object.freeze(targetSelections.flatMap((selection) =>
     selection.diagnostics
       .filter((diagnostic) => diagnostic.severity === "warning")
       .map((diagnostic) => diagnostic.message),

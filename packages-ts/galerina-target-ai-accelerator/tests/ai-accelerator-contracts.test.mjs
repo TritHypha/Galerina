@@ -144,6 +144,38 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
     assert.equal(Object.isFrozen(report.targetSelections[0].diagnostics), true);
   });
 
+  it("derives warnings from the same diagnostic snapshot as the report", () => {
+    const snapshotDiagnostics = [
+      { code: "SNAPSHOT_WARNING", severity: "warning", message: "snapshot A" },
+    ];
+    const callerDiagnostics = [
+      { code: "CALLER_WARNING", severity: "warning", message: "caller B" },
+    ];
+    let diagnosticReads = 0;
+    const selection = {
+      selectedTarget: "npu",
+      requestedTarget: "npu",
+      adapter: "onnxruntime",
+      fallbackUsed: false,
+      fallbackDeclared: false,
+      safe: true,
+      reasons: [],
+      get diagnostics() {
+        diagnosticReads += 1;
+        return diagnosticReads <= 2 ? snapshotDiagnostics : callerDiagnostics;
+      },
+    };
+
+    const report = createAiAcceleratorTargetReport({
+      capabilities: [],
+      selections: [selection],
+    });
+
+    assert.deepEqual(report.targetSelections[0]?.diagnostics, snapshotDiagnostics);
+    assert.deepEqual(report.warnings, ["snapshot A"]);
+    assert.equal(diagnosticReads, 2);
+  });
+
   it("validates external ONNX model profiles", () => {
     assert.equal(
       validateAiAcceleratorModel({ ...model, path: "./models/model.bin" })[0]
