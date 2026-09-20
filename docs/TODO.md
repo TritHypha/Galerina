@@ -84,9 +84,10 @@ counts or open items that a newer section explicitly supersedes.
   SLIDE/VOK focused suites **53/53 pass**; AGENTS RD-0873 audit-map controls
   **7/7 pass**; corpus-checker self-test **PASS**.
 - [!] These are non-corpus, non-authorizing checks. They do not supply PROJECT
-  evidence, Galerina producer/GIR inputs, VOK authority, owner key ceremonies,
-  physical durability evidence or queue eligibility. No `.fungi` build or
-  conversion-queue regeneration follows from them.
+  evidence, VOK authority, owner key ceremonies, physical durability evidence
+  or queue eligibility. The later corrected-path SLIDE receipt closes the
+  former producer/GIR locator issue, but no `.fungi` build or conversion-queue
+  regeneration follows from these checks.
 
 ### Dependency order and corpus-assurance hold — 2026-09-19
 
