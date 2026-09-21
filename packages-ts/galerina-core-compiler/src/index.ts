@@ -17,6 +17,9 @@ import {
   FUNGI_BINDING_004,
   FUNGI_BLOCK_001,
   FUNGI_BLOCK_002,
+  FUNGI_BLOCK_003,
+  FUNGI_BLOCK_004,
+  FUNGI_BLOCK_005,
   FUNGI_MEMORY_008,
   FUNGI_RAWPTR_001,
   FUNGI_SAFETY_001,
@@ -36,6 +39,9 @@ export {
   FUNGI_BINDING_004,
   FUNGI_BLOCK_001,
   FUNGI_BLOCK_002,
+  FUNGI_BLOCK_003,
+  FUNGI_BLOCK_004,
+  FUNGI_BLOCK_005,
   FUNGI_MEMORY_008,
   FUNGI_RAWPTR_001,
   FUNGI_SAFETY_001,
@@ -769,6 +775,35 @@ export {
   type ImportedTypeInput,
 } from "./type-checker.js";
 
+export {
+  CONTRACT_TYPES_SCHEMA,
+  exportContractSchemasFromSource,
+  type CompilerContractSchemaExport,
+  type ContractJsonSchema,
+  type ContractSchemaExportResult,
+} from "./contract-schema-export.js";
+
+export {
+  PATTERN_CAPABILITY_SCHEMA,
+  PATTERN_PROFILE,
+  admitPatternCapability,
+  digestPatternSource,
+  type CompilerPatternCapability,
+  type PatternAdmitResult,
+} from "./pattern-capability.js";
+
+export {
+  STAGE_B_PARITY_SCHEMA,
+  STAGE_B_TYPE_CODE_SUBSET,
+  collectHostStageBAtoms,
+  encodeStageBParity,
+  filterStageBTypeSubset,
+  uniqueStageBAtoms,
+  hashStageBParity,
+  type StageBParityAtom,
+  type StageBStage,
+} from "./stage-b-parity.js";
+
 /** FUNGI-TYPE-003: raw String assigned to a branded type (Brand<T,"Name"> alias) without a validation gate. */
 export const FUNGI_TYPE_003 = {
   code: "FUNGI-TYPE-003",
@@ -1333,8 +1368,11 @@ export {
   callStdlib,
   jsObjectToGalerina,
   galerinaValuesEqual,
+  type CryptoProvider,
   type StdlibContext,
 } from "./stdlib.js";
+
+export { createNodePasswordKdfProvider } from "./crypto-provider-node.js";
 
 // Phase 18H — Standard Library Registry
 export {
@@ -2104,34 +2142,15 @@ export const FUNGI_PIPELINE_DIAGNOSTICS = [
 ] as const;
 
 // ---------------------------------------------------------------------------
-// Typed content block diagnostics — FUNGI-BLOCK-001..004
+// Typed content block diagnostics — FUNGI-BLOCK-001..005
 // ---------------------------------------------------------------------------
-
-/** Unknown typed content block type — only html, dom, script, css are valid. */
-
-/** Typed content block was opened but its closing marker was never found. */
-
-/** The closing marker does not match the opening marker. */
-export const FUNGI_BLOCK_003 = {
-  code: "FUNGI-BLOCK-003",
-  name: "MISMATCHED_CONTENT_BLOCK_MARKER",
-  severity: "error",
-  message: "Typed content block closing marker does not match the opening marker.",
-} as const;
-
-/** A ProtectedSecret value was emitted into a script or html block. */
-export const FUNGI_BLOCK_004 = {
-  code: "FUNGI-BLOCK-004",
-  name: "SECRET_IN_CONTENT_BLOCK",
-  severity: "error",
-  message: "ProtectedSecret cannot be emitted into a typed content block.",
-} as const;
 
 export const FUNGI_BLOCK_DIAGNOSTICS = [
   FUNGI_BLOCK_001,
   FUNGI_BLOCK_002,
   FUNGI_BLOCK_003,
   FUNGI_BLOCK_004,
+  FUNGI_BLOCK_005,
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -2686,28 +2705,12 @@ interface MatchBlock {
 const TRI_CASES = ["Positive", "Neutral", "Negative"] as const;
 
 
-/**
- * Validates a typed content block at the AST level.
- *
- * Stage 1 status: source-preserving AST seam is live; content validation still
- * returns empty diagnostics until the compiler supplies the binding/type
- * environment required to validate block content by type:
- *   html/dom — HTML structure validation
- *   script   — JavaScript syntax check; FUNGI-BLOCK-004 secret detection
- *   css      — CSS property/selector validation
- *
- * TODO FUNGI-BLOCK-004: detect ProtectedSecret references interpolated into
- * script blocks using the binding/type environment, not raw-name matching.
- */
-export function validateTypedContentBlock(_input: {
-  readonly blockType: "html" | "dom" | "script" | "css";
-  readonly marker: string;
-  readonly content: string;
-  readonly file: string;
-  readonly startLine: number;
-}): readonly CompilerDiagnostic[] {
-  return [];
-}
+export {
+  validateTypedContentBlock,
+  type TypedContentBinding,
+  type TypedContentEnvironment,
+  type TypedContentBlockInput,
+} from "./typed-content-block.js";
 
 function collectFlowSymbols(
   file: string,
@@ -3212,28 +3215,11 @@ export function checkReadonlyMutation(input: {
   ];
 }
 
-/**
- * Validates a method-chain pipeline for type safety, effects, and readonly rules.
- *
- * Stage 1 status: STUB — returns an empty result.
- * Full implementation requires:
- *   - Type scope (to resolve method return types)
- *   - Effect context (to compare declared vs used effects)
- *   - Readonly scope (to detect readonly receiver mutation)
- *
- * TODO FUNGI-PIPELINE-001: reject unknown pipeline methods.
- * TODO FUNGI-PIPELINE-002: reject type mismatches between stages.
- * TODO FUNGI-PIPELINE-003: require Result handling in fallible pipelines.
- * TODO FUNGI-PIPELINE-004: require declared effects for effectful stages.
- * TODO FUNGI-PIPELINE-005: reject readonly receiver mutation.
- */
-export function checkMethodChain(_input: {
-  readonly receiver: string;
-  readonly calls: readonly { readonly methodName: string }[];
-  readonly location: SourceLocation;
-}): readonly CompilerDiagnostic[] {
-  return [];
-}
+export {
+  checkMethodChain,
+  type MethodChainInput,
+  type MethodChainStage,
+} from "./method-chain-checker.js";
 
 /**
  * Checks whether a `mut` binding is used inside a pure-context flow.

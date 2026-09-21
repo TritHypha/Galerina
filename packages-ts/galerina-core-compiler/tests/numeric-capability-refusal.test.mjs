@@ -40,9 +40,9 @@ const build = (dir) => spawnSync(process.execPath, [CLI, "build", "--target=wasm
 const check = (dir) => spawnSync(process.execPath, [CLI, "check", dir], { encoding: "utf8" });
 
 /** The unsupported set, from the enforcement point's own reasoning: Float16/32
- *  await the scalar f32 lane; Decimal is exact and must not become inexact f64. */
-const UNSUPPORTED = ["Decimal", "Float32", "Float16"];
-const SUPPORTED = ["Int", "Float", "Float64", "Int64"];
+ *  await the scalar f32 lane. Decimal is an exact i32 host handle after C02. */
+const UNSUPPORTED = ["Float32", "Float16"];
+const SUPPORTED = ["Int", "Float", "Float64", "Int64", "Decimal"];
 
 test("★ an unsupported numeric field REFUSES on the production build path, as a DIAGNOSTIC", () => {
   // Before this commit the guard threw a bare Error and the CLI let it escape
@@ -64,7 +64,7 @@ test("★ a refused build EXITS NON-ZERO and prints no PASS — 'wrote the messa
   // It wrote the error and returned 0, so a build that refused every input and
   // produced no artifact reported success, and `main` went on to print PASS. A
   // CI pipeline gating on exit status would have shipped a green on nothing.
-  const dir = project("Decimal");
+  const dir = project("Float32");
   try {
     const r = build(dir);
     assert.equal(r.status, 1, "a build that emitted nothing must fail");
@@ -76,7 +76,7 @@ test("★ NO ARTIFACT is left behind — the refusal precedes emission, not foll
   // "Refuses before execution" in its most load-bearing sense: nothing runnable
   // exists to be executed. A refusal that still wrote a partial module would be
   // worse than no refusal, because the module would look admitted.
-  const dir = project("Decimal");
+  const dir = project("Float32");
   try {
     build(dir);
     const wasmDir = join(dir, "build", "wasm");
@@ -106,7 +106,7 @@ test("★ RECORDED, NOT ASSERTED-AWAY: the refusal is TARGET-scoped, so `check` 
   // This is pinned so the behaviour cannot drift silently in either direction:
   // if `check` ever starts refusing, that is a deliberate change someone must
   // make here too.
-  const dir = project("Decimal");
+  const dir = project("Float32");
   try {
     assert.equal(check(dir).status, 0, "check is target-agnostic and passes today");
   } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -129,8 +129,8 @@ test("the refused set is tied to the enforcement point's own stated reasoning", 
   const guard = readFileSync(resolve(import.meta.dirname, "..", "src", "wat-emitter.ts"), "utf8");
   assert.match(guard, /Float16\/Float32 remain\s*\n?\s*\*?\s*refused until the scalar f32 expression lane is faithful/,
     "the guard must still state WHY Float16/32 are refused");
-  assert.match(guard, /Decimal (remains|stays) refused because/,
-    "the guard must still state WHY Decimal is refused");
+  assert.match(guard, /Decimal record fields lower as/,
+    "the guard must still state that Decimal is an i32 host handle, not an f64 slot");
   for (const type of UNSUPPORTED) {
     assert.ok(guard.includes(type), `${type} must appear in the guard's reasoning`);
   }

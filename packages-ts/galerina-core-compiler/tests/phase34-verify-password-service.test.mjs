@@ -11,8 +11,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { parseProgram, serve, executeFlow, checkEffects, verifyGovernance, checkTaint } from "../dist/index.js";
+import { parseProgram, serve, executeFlow, checkEffects, verifyGovernance, checkTaint, createNodePasswordKdfProvider } from "../dist/index.js";
 import bcrypt from "bcryptjs";
+
+const kdf = { cryptoProvider: createNodePasswordKdfProvider() };
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SERVICE = join(__dir, "..", "..", "..", "examples", "auth-service", "verifyPasswordService.fungi");
@@ -30,7 +32,7 @@ describe("Phase 34: BCrypt stdlib", () => {
     const hash = bcrypt.hashSync(FIXTURE_PASSWORD, 10);
     const src = "pure flow c(p: String, h: String) -> Bool contract { effects {} } { return BCrypt.verify(p, h) }";
     const prog = parseProgram(src, "t.fungi");
-    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: FIXTURE_PASSWORD }], ["h", { __tag: "string", value: hash }]]), prog.ast, prog.flows);
+    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: FIXTURE_PASSWORD }], ["h", { __tag: "string", value: hash }]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: true });
   });
 
@@ -38,21 +40,21 @@ describe("Phase 34: BCrypt stdlib", () => {
     const hash = bcrypt.hashSync(FIXTURE_PASSWORD, 10);
     const src = "pure flow c(p: String, h: String) -> Bool contract { effects {} } { return BCrypt.verify(p, h) }";
     const prog = parseProgram(src, "t.fungi");
-    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: "wrong" }], ["h", { __tag: "string", value: hash }]]), prog.ast, prog.flows);
+    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: "wrong" }], ["h", { __tag: "string", value: hash }]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: false });
   });
 
   it("BCrypt.verify never throws on a malformed hash (returns false)", async () => {
     const src = "pure flow c(p: String, h: String) -> Bool contract { effects {} } { return BCrypt.verify(p, h) }";
     const prog = parseProgram(src, "t.fungi");
-    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: "x" }], ["h", { __tag: "string", value: "not-a-hash" }]]), prog.ast, prog.flows);
+    const r = await executeFlow("c", new Map([["p", { __tag: "string", value: "x" }], ["h", { __tag: "string", value: "not-a-hash" }]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: false });
   });
 
   it("BCrypt.hash produces a verifiable $2b$ hash", async () => {
     const src = "pure flow h(p: String) -> String contract { effects {} } { return BCrypt.hash(p) }";
     const prog = parseProgram(src, "t.fungi");
-    const r = await executeFlow("h", new Map([["p", { __tag: "string", value: "hunter2" }]]), prog.ast, prog.flows);
+    const r = await executeFlow("h", new Map([["p", { __tag: "string", value: "hunter2" }]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.equal(r.value.__tag, "string");
     assert.ok(r.value.value.startsWith("$2"));
     assert.ok(bcrypt.compareSync("hunter2", r.value.value));
@@ -99,7 +101,7 @@ describe("Phase 34: live HTTP service", () => {
 
   before(async () => {
     const source = readFileSync(SERVICE, "utf8");
-    server = await serve(source, "verifyPasswordService.fungi", { port: PORT });
+    server = await serve(source, "verifyPasswordService.fungi", { port: PORT }, kdf);
   });
 
   after(async () => { if (server) await server.close(); });

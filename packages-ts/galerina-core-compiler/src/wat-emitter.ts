@@ -227,7 +227,9 @@ export function galerinaTypeToWAT(typeName: string): WATValType {
     case "Float16": case "Float32": return "f32";
     // #165: scalar `Float` is f64 (double) — matches the f64.const literal emission; the old
     // Float→f32 mapping was the inconsistency that made every float scalar flow an invalid module.
-    case "Float64": case "Double": case "Decimal": case "Float": return "f64";
+    case "Float64": case "Double": case "Float": return "f64";
+    // C02 / RD-1276: Decimal is an exact base-10 host handle, never f64.
+    case "Decimal": return "i32";
     // P9.2: String and all complex types (Array, Record, Option, Result, Char, Tensor)
     // are represented as opaque i32 handles in the Stage B self-hosted compiler.
     // String parameters in flows like scanWord/scanOperator are passed as integer indices
@@ -414,6 +416,10 @@ let enumVariants: ReadonlyMap<string, readonly string[]> | null = null;
  *  value-based __array_contains_str bridge. null/absent → no inference (placeholder). */
 let flowReturnTypes: ReadonlyMap<string, string> | null = null;
 
+/** C02 capture-free array HOF helpers requested while emitting a module. */
+type ArrayHofHelper = { readonly kind: "map" | "filter" | "reduce"; readonly fnName: string };
+let arrayHofHelpers: ArrayHofHelper[] = [];
+
 /** Step 3g (return-literal): the base type the CURRENT flow returns, so a bare `return <Int64 literal>`
  *  (no binding) emits i64.const. Module-level (mirrors recordVarTypes); set per flow in emitWATFromFlowAST. */
 let currentReturnBase = "";
@@ -527,12 +533,12 @@ export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map
 
 /**
  * True only when the WAT emitter has a faithful scalar representation and expression lane for a
- * record field. Decimal stays refused because Galerina Decimal is exact and must not be silently
- * rounded to f64. Float16/Float32 stay refused until the scalar f32 lane is complete.
+ * record field. Decimal is an i32 host handle (C02). Float16/Float32 stay refused
+ * until the scalar f32 lane is complete.
  */
 export function isWATRecordFieldTypeSupported(typeName: string): boolean {
   const base = numericBaseType(typeName.trim());
-  if (base === "Decimal" || base === "Float16" || base === "Float32") return false;
+  if (base === "Float16" || base === "Float32") return false;
   const watType = galerinaTypeToWAT(typeName.trim());
   return watType === "i32" || watType === "i64" || watType === "f64";
 }
@@ -570,9 +576,9 @@ export function buildWATRecordLayouts(ast: AstNode | undefined): Map<string, WAT
 /**
  * #132 fail-closed guard after typed natural-alignment support. i32 handles retain their compact
  * four-byte slots; i64 and f64 fields use naturally aligned eight-byte slots. Float16/Float32 remain
- * refused until the scalar f32 expression lane is faithful, and Decimal remains refused because its
- * exact semantics cannot be represented by the current f64 scalar mapping. The predicate is shared with
- * the corpus audit so new unsupported representations cannot enter silently.
+ * refused until the scalar f32 expression lane is faithful. Decimal record fields lower as
+ * i32 host handles (C02). The predicate is shared with the corpus audit so new unsupported
+ * representations cannot enter silently.
  */
 function assertLowerableRecordFields(ast: AstNode | undefined): void {
   const offenders: string[] = [];
@@ -590,9 +596,8 @@ function assertLowerableRecordFields(ast: AstNode | undefined): void {
     const diag = { code: "FUNGI-LAYOUT-001", name: "UNSUPPORTED_RECORD_LAYOUT", severity: "error" } as const;
     throw new Error(
       `${diag.code}: a record field has no faithful WAT record representation. Float16/Float32 require ` +
-      `the unfinished scalar f32 lane; Decimal is exact and must not be represented by inexact f64. Refusing ` +
-      `rather than emit an invalid or silently rounded value (fail-closed). ` +
-      `Offending field(s): ${offenders.join(", ")}.`,
+      `the unfinished scalar f32 lane. Refusing rather than emit an invalid or silently rounded value ` +
+      `(fail-closed). Offending field(s): ${offenders.join(", ")}.`,
     );
   }
 }
@@ -957,7 +962,7 @@ const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
 // #165: native f64 lowering for float operands. All floats are treated as f64 (matching the f64.const
 // literal emission, wat-emitter §numberLiteral). Without these, a float `+ - * /`/comparison emitted an
 // i32 checked helper over f64 operands → an invalid module (WASM tier declined → walker fallback).
-const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double", "Decimal"]);
+const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
 // Decimal remains exact and is deliberately excluded from the Float64 Option ABI.
 const FLOAT_OPTION_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
 const FLOAT_ARITH_WAT: Readonly<Record<string, string>> = { "+": "f64.add", "-": "f64.sub", "*": "f64.mul", "/": "f64.div" };
@@ -1296,6 +1301,9 @@ const STDLIB_HOST_CALL_MAP: Record<string, string> = {
 
   // Collection — range(lo, hi) returns an Array<Int> handle.
   range: "$host___range",
+
+  // C02: exact Decimal constructor. Argument is a string handle.
+  Decimal: "$host___decimal_from_str",
 };
 
 /**
@@ -1441,6 +1449,7 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       // interpreter's int64 dispatch promotion. Only fires when an operand already infers Int64 (an Int64
       // binding/param), so non-Int64 flows are unaffected.
       if (INT64_WAT_TYPES.has(l ?? "") || INT64_WAT_TYPES.has(r ?? "")) return "Int64";
+      if (l === "Decimal" || r === "Decimal") return "Decimal";
       return "Int"; // +, -, *, /, % over integers
     }
     case "callExpr": {
@@ -1472,6 +1481,15 @@ function inferExprType(node: AstNode | undefined): string | undefined {
           const inner = optionInnerType(inferExprType(node.children?.[0])?.replace(/^Array</, "Option<"));
           return inner !== undefined ? `Option<${inner}>` : undefined;
         }
+        if (name === "map" || name === "filter") {
+          return inferExprType(node.children?.[0]);
+        }
+        if (name === "reduce") {
+          return inferExprType(node.children?.[1]);
+        }
+        if (name === "divide" || name === "remainder") {
+          return inferExprType(node.children?.[0]) === "Decimal" ? "Decimal" : undefined;
+        }
         return undefined;
       }
       // Non-method call = flow-to-flow call → the callee's declared return type.
@@ -1479,6 +1497,7 @@ function inferExprType(node: AstNode | undefined): string | undefined {
         const inner = inferExprType(node.children?.[0]);
         return inner !== undefined ? `Option<${inner}>` : "Option";
       }
+      if (name === "Decimal") return "Decimal";
       return flowReturnTypes?.get(name);
     }
     default: return undefined;
@@ -1674,16 +1693,25 @@ export function emitWATExpr(
       // checked helper over f64 operands → an INVALID module (the WASM tier then declined → walker).
       // A mixed int operand is promoted to f64 (f64.convert_i32_s); all floats are treated as f64
       // (matching the f64.const literal emission). Comparisons yield i32 0/1 (the bool), as in WASM.
+      if (lty === "Decimal" || rty === "Decimal") {
+        if (lty !== "Decimal" || rty !== "Decimal") {
+          return `(unreachable) (; mixed Decimal '${op}' is not admitted — fail-closed C02 ;)`;
+        }
+        if (op === "+") return `(call $host___decimal_add ${left} ${right})`;
+        if (op === "-") return `(call $host___decimal_sub ${left} ${right})`;
+        if (op === "*") return `(call $host___decimal_mul ${left} ${right})`;
+        const cmp = `(call $host___decimal_compare ${left} ${right})`;
+        if (op === "==") return `(i32.eq ${cmp} (i32.const 0))`;
+        if (op === "!=") return `(i32.ne ${cmp} (i32.const 0))`;
+        if (op === "<") return `(i32.lt_s ${cmp} (i32.const 0))`;
+        if (op === ">") return `(i32.gt_s ${cmp} (i32.const 0))`;
+        if (op === "<=") return `(i32.le_s ${cmp} (i32.const 0))`;
+        if (op === ">=") return `(i32.ge_s ${cmp} (i32.const 0))`;
+        return `(unreachable) (; Decimal '${op}' is not in the C02 host ABI ;)`;
+      }
       const lFloat165 = FLOAT_WAT_TYPES.has(lty ?? "");
       const rFloat165 = FLOAT_WAT_TYPES.has(rty ?? "");
       if (lFloat165 || rFloat165) {
-        // Decimal is NOT f64-faithful (exact base-10 money). Lowering it to an f64 op silently computed
-        // wrong money (0.1 + 0.2 = 0.30000000000000004) — a HIGH fail-open (a wrong-but-plausible value
-        // signed into a manifest). DECLINE to the exact tree-walker path (fail-closed) for ANY Decimal
-        // operand, before any f64 emission. Float/Float64/Double keep their faithful f64 lowering below.
-        if (lty === "Decimal" || rty === "Decimal") {
-          return `(unreachable) (; Decimal '${op}' is not f64-faithful — emitter declines (no silent f64 money); exact arithmetic is the walker's ;)`;
-        }
         const L = lFloat165 ? left : `(f64.convert_i32_s ${left})`;
         const R = rFloat165 ? right : `(f64.convert_i32_s ${right})`;
         const arithOp = FLOAT_ARITH_WAT[op];
@@ -1781,13 +1809,16 @@ export function emitWATExpr(
         const innerI64 = childInt64 ? inner : `(i64.extend_i32_s ${inner})`;
         return `(call $fungi_checked_sub_i64 (i64.const 0) ${innerI64})`;
       }
+      if (op === "-" && childType === "Decimal") {
+        // C02: exact host negation. Decimal is not in FLOAT_WAT_TYPES; nesting this
+        // under the f64 lane previously fell through to i32 handle arithmetic.
+        const inner = child ? emitWATExpr(child, vars, staticConsts, "Decimal") : "(i32.const 0)";
+        return `(call $host___decimal_neg ${inner})`;
+      }
       if (op === "-" && FLOAT_WAT_TYPES.has(childType ?? "")) {
-        // Decimal is exact base-10 and must never enter the binary f64 lane. Float, Float64 and
-        // Double use native IEEE-754 negation, guarded to match the interpreter's mkFloat refusal
-        // for NaN and infinities. f64.neg also preserves signed-zero semantics.
-        if (childType === "Decimal") {
-          return `(unreachable) (; Decimal unary '-' is not f64-faithful — emitter declines (no silent f64 money); exact arithmetic is the walker's ;)`;
-        }
+        // Float, Float64 and Double use native IEEE-754 negation, guarded to match
+        // the interpreter's mkFloat refusal for NaN and infinities. f64.neg also
+        // preserves signed-zero semantics. Decimal never enters this lane.
         const inner = child ? emitWATExpr(child, vars, staticConsts, childType) : "(f64.const 0)";
         return `(call $fungi_assert_finite_f64 (f64.neg ${inner}))`;
       }
@@ -2052,7 +2083,7 @@ export function emitWATExpr(
         if ((name === "toString" || name === "toStr") && realReceiver !== undefined) {
           const recvType = isTypeRecv0 ? recvName0 : inferExprType(realReceiver);
           if (recvType === "Decimal") {
-            return `(unreachable) (; Decimal toString is not implemented in the WAT host boundary ;)`;
+            return `(call $host___decimal_to_str ${emitWATExpr(realReceiver, vars, staticConsts)})`;
           }
           const fn = recvType === "Char"
             ? "$host___char_to_string"
@@ -2098,6 +2129,15 @@ export function emitWATExpr(
           return `(call $host___unwrap_or_f64_v2 ${recvWat} ${defaultWat})`;
         }
 
+        if (realReceiver !== undefined && inferExprType(realReceiver) === "Decimal") {
+          if (name === "divide" && argNodes.length === 3) {
+            return `(call $host___decimal_div ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)} ${emitWATExpr(argNodes[1]!, vars, staticConsts)} ${emitWATExpr(argNodes[2]!, vars, staticConsts)})`;
+          }
+          if (name === "remainder" && argNodes.length === 1) {
+            return `(call $host___decimal_rem ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
+          }
+        }
+
         const hostFn = STDLIB_HOST_MAP[name];
         if (hostFn !== undefined) {
           // Static-form stdlib calls — e.g. String.charAt(s, i) — name the type
@@ -2112,6 +2152,37 @@ export function emitWATExpr(
           const operandWats = operandNodes.map((c) => emitWATExpr(c, vars, staticConsts));
           return `(call ${hostFn} ${operandWats.join(" ")})`.trimEnd();
         }
+        if ((name === "map" || name === "filter") && realReceiver !== undefined && argNodes.length === 1) {
+          const callback = argNodes[0];
+          const fnName = callback?.kind === "identifier" ? (callback.value ?? "") : "";
+          const paramBases = fnName === "" ? undefined : flowParamBases?.get(fnName);
+          if (fnName !== "" && flowReturnTypes?.has(fnName) && paramBases?.length === 1) {
+            arrayHofHelpers.push({ kind: name, fnName });
+            return `(call $fungi_array_${name}_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)})`;
+          }
+          return `(unreachable) (; C02: '${name}' requires a capture-free named unary flow ;)`;
+        }
+        if (name === "reduce" && realReceiver !== undefined && argNodes.length === 2) {
+          const callback = argNodes[1];
+          const fnName = callback?.kind === "identifier" ? (callback.value ?? "") : "";
+          const paramBases = fnName === "" ? undefined : flowParamBases?.get(fnName);
+          if (fnName !== "" && flowReturnTypes?.has(fnName) && paramBases?.length === 2) {
+            arrayHofHelpers.push({ kind: "reduce", fnName });
+            return `(call $fungi_array_reduce_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
+          }
+          return `(unreachable) (; C02: reduce requires a capture-free named binary flow ;)`;
+        }
+
+        // C20: matchesPattern has a compile-time PatternCapability identity in
+        // TypeScript. There is no admitted WAT ABI; do not emit an undefined
+        // host callee. Dynamic patterns are refused the same way.
+        if (name === "matchesPattern") {
+          if (argNodes[0]?.kind === "stringLiteral") {
+            return `(unreachable) (; C20: matchesPattern WAT ABI is not admitted; compile-time PatternCapability is interpreter-only ;)`;
+          }
+          return `(unreachable) (; C20: dynamic matchesPattern refused ;)`;
+        }
+
         // Unknown method — fail closed. A method call is not a user-flow call;
         // emitting a bare `$${name}` creates an undefined WAT callee and lets a
         // later assembler/adapter decide what to do with an unsupported form.
@@ -2162,13 +2233,7 @@ export function emitWATExpr(
       // NOTE: `flowReturnTypes` will not contain these names (they are not user flows), so
       // the lookup below will be null — meaning they WOULD fall through to the bare call.
       // Instead, fail closed here explicitly.
-      const UNLOWERED_STDLIB_CONSTRUCTORS = new Set([
-        // Decimal (bignum) constructor — no WASM host stub; lowers to f64 which is wrong (#137).
-        // Intentionally fail-closed: wat-decimal-decline.test.mjs pins this as (unreachable).
-        "Decimal",
-        // Higher-order collection ops — need HOF/closure support in WAT (not in scope).
-        "map", "reduce", "filter",
-      ]);
+      const UNLOWERED_STDLIB_CONSTRUCTORS = new Set<string>([]);
       if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && flowReturnTypes?.get(name) === undefined) {
         // Inline block comment (safe in any expression position — no `;;` that swallows parens).
         return `(unreachable) (; A2: '${name}' is a stdlib/Money constructor not yet lowered to a host import — fail-closed (task #163-A2) ;)`;
@@ -4086,6 +4151,7 @@ export function buildWATModule(
 ): WATModule {
   // Collect compile-time constants from `static NAME = EXPR` and `bitfield NAME { ... }`
   // top-level declarations in the AST. These are folded to (i32.const N) at every use site.
+  arrayHofHelpers = [];
   const staticConsts = collectStaticConsts(gir.ast);
 
   // Build deduped import list from effectful flows using getWATImportsForEffects.
@@ -4185,6 +4251,16 @@ export function buildWATModule(
     { module: "host", name: "__option_some_f64_v2", effect: "stdlib.result", type: { params: ["f64"],         results: ["i32"] } },
     { module: "host", name: "__option_value_f64_v2", effect: "stdlib.result", type: { params: ["i32"],         results: ["f64"] } },
     { module: "host", name: "__unwrap_or_f64_v2",    effect: "stdlib.result", type: { params: ["i32", "f64"], results: ["f64"] } },
+    // C02 exact Decimal host handles (i32). Never f64.
+    { module: "host", name: "__decimal_from_str", effect: "stdlib.decimal", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_to_str",   effect: "stdlib.decimal", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_add",      effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_sub",      effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_mul",      effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_neg",      effect: "stdlib.decimal", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_compare",  effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_div",      effect: "stdlib.decimal", type: { params: ["i32", "i32", "i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_rem",      effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
   ];
   // NOTE: HOST_RUNTIME_IMPORTS are merged AFTER function bodies are built (below),
   // and only the bridge functions actually referenced by a body are added. Pure
@@ -4375,7 +4451,7 @@ export function buildWATModule(
     }
 
     // #165: derive the result valtype from the flow's return type. The body lowers every
-    // float in FLOAT_WAT_TYPES (Float/Float64/Double/Decimal) to f64 — literals → f64.const,
+    // float in FLOAT_WAT_TYPES (Float/Float64/Double) to f64 — literals → f64.const,
     // arith → f64.*, comparisons → i32 — so a float-RETURNING flow MUST be typed `(result f64)`
     // or the module is invalid (i32 fallthru vs an f64 left on the stack → walker fallback).
     // Records/enums/strings/Int/Bool stay i32 (pointer or scalar). i64 and scalar-f32 bodies
@@ -4413,6 +4489,69 @@ export function buildWATModule(
       ...(namedParams.length > 0 ? { namedParams } : {}),
     };
   });
+
+  const seenHof = new Set<string>();
+  for (const helper of arrayHofHelpers) {
+    const helperName = `fungi_array_${helper.kind}_${helper.fnName}`;
+    if (seenHof.has(helperName)) continue;
+    seenHof.add(helperName);
+    const item = `(call $host___array_get (local.get $xs) (local.get $i))`;
+    if (helper.kind === "reduce") {
+      functions.push({
+        name: helperName,
+        isPure: true,
+        isEntryPoint: false,
+        handlesSecrets: false,
+        type: { params: ["i32", "i32"], results: ["i32"] },
+        body: [
+          `(local $i i32)`,
+          `(local $n i32)`,
+          `(local $acc i32)`,
+          `(local.set $n (call $host___array_length (local.get $xs)))`,
+          `(local.set $acc (local.get $init))`,
+          `(loop $hof`,
+          `  (if (i32.lt_s (local.get $i) (local.get $n))`,
+          `    (then`,
+          `      (local.set $acc (call $${helper.fnName} (local.get $acc) ${item}))`,
+          `      (local.set $i (i32.add (local.get $i) (i32.const 1)))`,
+          `      (br $hof)))`,
+          `(local.get $acc)`,
+        ].join("\n"),
+        namedParams: [{ name: "$xs", type: "i32" }, { name: "$init", type: "i32" }],
+      });
+      continue;
+    }
+    const apply = helper.kind === "filter"
+      ? [
+          `(if (call $${helper.fnName} ${item})`,
+          `  (then (drop (call $host___array_append (local.get $out) ${item}))))`,
+        ]
+      : [
+          `(drop (call $host___array_append (local.get $out) (call $${helper.fnName} ${item})))`,
+        ];
+    functions.push({
+      name: helperName,
+      isPure: true,
+      isEntryPoint: false,
+      handlesSecrets: false,
+      type: { params: ["i32"], results: ["i32"] },
+      body: [
+        `(local $i i32)`,
+        `(local $n i32)`,
+        `(local $out i32)`,
+        `(local.set $n (call $host___array_length (local.get $xs)))`,
+        `(local.set $out (call $host___array_create))`,
+        `(loop $hof`,
+        `  (if (i32.lt_s (local.get $i) (local.get $n))`,
+        `    (then`,
+        ...apply.map((line) => `      ${line}`),
+        `      (local.set $i (i32.add (local.get $i) (i32.const 1)))`,
+        `      (br $hof)))`,
+        `(local.get $out)`,
+      ].join("\n"),
+      namedParams: [{ name: "$xs", type: "i32" }],
+    });
+  }
 
   // Build exports from entryPoints, mapped to function indices.
   // Phase 27: when gir.exportAllPure is true (WASM instantiation mode),

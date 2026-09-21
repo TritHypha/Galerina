@@ -1,3 +1,16 @@
+export {
+  CRYPTO_PROVIDER_SCHEMA,
+  FUNGI_CRYPTO_PROVIDER_MALFORMED,
+  FUNGI_CRYPTO_PROVIDER_REQUIRED,
+  FUNGI_CRYPTO_PROVIDER_SCHEMA,
+  FUNGI_CRYPTO_PROVIDER_THREW,
+  invokeCryptoProvider,
+  type CryptoProvider,
+  type CryptoProviderRequest,
+  type CryptoProviderResult,
+  type PasswordKdfAlgorithm,
+} from "./crypto-provider.js";
+
 export type SecuritySeverity = "info" | "warning" | "error" | "critical";
 
 export type SecretClassification =

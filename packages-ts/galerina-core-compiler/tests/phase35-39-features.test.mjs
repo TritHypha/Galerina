@@ -10,7 +10,10 @@ import {
   parseProgram, executeFlow,
   buildProofGraph, computeExecutionSignature,
   signProofGraph, verifyGovernanceSignature, generateGovernanceKeyPair,
+  createNodePasswordKdfProvider,
 } from "../dist/index.js";
+
+const kdf = { cryptoProvider: createNodePasswordKdfProvider() };
 
 // ── Phase 33A: Tier telemetry ─────────────────────────────────────────────────
 
@@ -64,14 +67,14 @@ describe("Phase 35: Password.verify — stable facade", () => {
   it("Password.verify with bcrypt hash — correct password", async () => {
     const hash = bcrypt.hashSync("secret123", 10);
     const prog = parseProgram(VER_SRC, "t.fungi");
-    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"secret123"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows);
+    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"secret123"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: true });
   });
 
   it("Password.verify with bcrypt hash — wrong password", async () => {
     const hash = bcrypt.hashSync("secret123", 10);
     const prog = parseProgram(VER_SRC, "t.fungi");
-    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"wrong"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows);
+    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"wrong"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: false });
   });
 
@@ -84,7 +87,7 @@ describe("Phase 35: Password.verify — stable facade", () => {
 
   it("Password.hash returns a non-empty string", async () => {
     const prog = parseProgram(HASH_SRC, "t.fungi");
-    const r = await executeFlow("h", new Map([["p",{__tag:"string",value:"mypassword"}]]), prog.ast, prog.flows);
+    const r = await executeFlow("h", new Map([["p",{__tag:"string",value:"mypassword"}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.equal(r.value.__tag, "string");
     assert.ok(r.value.value.length > 10);
   });
@@ -98,32 +101,32 @@ describe("Phase 36: Argon2id verification", () => {
 
   it("Argon2.hash produces $argon2id$ prefix", async () => {
     const prog = parseProgram(A2_HASH_SRC, "t.fungi");
-    const r = await executeFlow("h", new Map([["p",{__tag:"string",value:"testpw"}]]), prog.ast, prog.flows);
+    const r = await executeFlow("h", new Map([["p",{__tag:"string",value:"testpw"}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.equal(r.value.__tag, "string");
     assert.ok(r.value.value.startsWith("$argon2"), `expected $argon2 prefix, got: ${r.value.value?.slice(0,15)}`);
   });
 
   it("Argon2.verify correct password → true", async () => {
     const hashProg = parseProgram(A2_HASH_SRC, "t.fungi");
-    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"hunter2"}]]), hashProg.ast, hashProg.flows);
+    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"hunter2"}]]), hashProg.ast, hashProg.flows, undefined, undefined, kdf);
     const hash = hashR.value.value;
     const prog = parseProgram(A2_VER_SRC, "t.fungi");
-    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"hunter2"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows);
+    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"hunter2"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: true });
   });
 
   it("Password.verify auto-routes to Argon2id for $argon2 hashes", async () => {
     const hashProg = parseProgram("secure flow h(p: String) -> String contract { effects { crypto.verify } } { return Argon2.hash(p) }", "t.fungi");
-    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"mypass"}]]), hashProg.ast, hashProg.flows);
+    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"mypass"}]]), hashProg.ast, hashProg.flows, undefined, undefined, kdf);
     const hash = hashR.value.value;
     const verProg = parseProgram("secure flow v(p: String, h: String) -> Bool contract { effects { crypto.verify } } { return Password.verify(p, h) }", "t.fungi");
-    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"mypass"}],["h",{__tag:"string",value:hash}]]), verProg.ast, verProg.flows);
+    const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"mypass"}],["h",{__tag:"string",value:hash}]]), verProg.ast, verProg.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: true });
   });
 
   it("Password.needsMigration returns false for Argon2id hash", async () => {
     const hashProg = parseProgram("secure flow h(p: String) -> String contract { effects { crypto.verify } } { return Argon2.hash(p) }", "t.fungi");
-    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"x"}]]), hashProg.ast, hashProg.flows);
+    const hashR = await executeFlow("h", new Map([["p",{__tag:"string",value:"x"}]]), hashProg.ast, hashProg.flows, undefined, undefined, kdf);
     const prog = parseProgram("pure flow n(h: String) -> Bool contract { effects {} } { return Password.needsMigration(h) }", "t.fungi");
     const r = await executeFlow("n", new Map([["h",{__tag:"string",value:hashR.value.value}]]), prog.ast, prog.flows);
     assert.deepEqual(r.value, { __tag: "bool", value: false });
@@ -138,7 +141,7 @@ describe("Phase 37: automatic hash migration", () => {
   it("migrate bcrypt → Argon2id on correct password", async () => {
     const bHash = bcrypt.hashSync("correct", 10);
     const prog = parseProgram(MIG_SRC, "t.fungi");
-    const r = await executeFlow("m", new Map([["p",{__tag:"string",value:"correct"}],["h",{__tag:"string",value:bHash}]]), prog.ast, prog.flows);
+    const r = await executeFlow("m", new Map([["p",{__tag:"string",value:"correct"}],["h",{__tag:"string",value:bHash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.equal(r.value.__tag, "record");
     assert.deepEqual(r.value.fields.get("migrated"), { __tag: "bool", value: true });
     const newHash = r.value.fields.get("newHash")?.value ?? "";
@@ -148,7 +151,7 @@ describe("Phase 37: automatic hash migration", () => {
   it("migrate returns migrated=false on wrong password", async () => {
     const bHash = bcrypt.hashSync("correct", 10);
     const prog = parseProgram(MIG_SRC, "t.fungi");
-    const r = await executeFlow("m", new Map([["p",{__tag:"string",value:"wrong"}],["h",{__tag:"string",value:bHash}]]), prog.ast, prog.flows);
+    const r = await executeFlow("m", new Map([["p",{__tag:"string",value:"wrong"}],["h",{__tag:"string",value:bHash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value.fields.get("migrated"), { __tag: "bool", value: false });
   });
 });

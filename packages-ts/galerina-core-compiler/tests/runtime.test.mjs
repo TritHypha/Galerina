@@ -86,13 +86,16 @@ pure flow grow(seed: Int) -> Int {
       ["seed", { __tag: "int", value: 7 }],
     ]));
 
-    assert.equal(result.value?.__tag, "int");
-    assert.equal(result.value?.value, 0);
+    assert.equal(result.ok, false, "an unknown method must deny the run");
     assert.ok(
-      result.diagnostics.some((diagnostic) => diagnostic.code === "FUNGI-RUNTIME-002"),
-      "the unresolved call must remain observable as a runtime diagnostic",
+      result.diagnostics.some((diagnostic) => diagnostic.code === "FUNGI-PIPELINE-001"),
+      "C03 refuses unknown methods at check time so they cannot become a discarded runtime success",
     );
-    assert.equal(result.ok, false, "an execution diagnostic must deny the run even when a later return produces a value");
+    assert.equal(
+      result.value,
+      undefined,
+      "a refused unknown method must not produce the later return value",
+    );
   });
 });
 

@@ -25,6 +25,11 @@ import {
   FUNGI_BYTE_004,
   FUNGI_INTENT_DIAGNOSTICS,
   FUNGI_BINDING_DIAGNOSTICS,
+  FUNGI_PIPELINE_001,
+  FUNGI_PIPELINE_002,
+  FUNGI_PIPELINE_003,
+  FUNGI_PIPELINE_004,
+  FUNGI_PIPELINE_005,
   FUNGI_PIPELINE_DIAGNOSTICS,
   FUNGI_SYNTAX_DIAGNOSTICS,
   FUNGI_BLOCK_DIAGNOSTICS,
@@ -295,14 +300,88 @@ flow doWork() {
     assert.equal(letDiags.length, 0);
   });
 
-  it("checkMethodChain returns empty diagnostics (stub — pending type scope)", () => {
+  it("checkMethodChain refuses unknown methods instead of returning empty", () => {
     const diags = checkMethodChain({
       receiver: "input",
       calls: [{ methodName: "validate" }, { methodName: "sanitize" }, { methodName: "save" }],
       location: { file: "test.fungi", line: 3, column: 1 },
     });
 
+    assert.ok(diags.some((d) => d.code === FUNGI_PIPELINE_001.code));
+  });
+
+  it("checkMethodChain accepts a typed Array append/length chain", () => {
+    const loc = { file: "test.fungi", line: 3, column: 1 };
+    const diags = checkMethodChain({
+      receiver: "xs",
+      receiverType: "Array<Int>",
+      receiverBindingKind: "let",
+      declaredEffects: [],
+      calls: [
+        { methodName: "append", receiverType: "Array<Int>", returnType: "Array<Int>", location: loc },
+        { methodName: "length", receiverType: "Array<Int>", returnType: "Int", location: loc },
+      ],
+      location: loc,
+    });
     assert.equal(diags.length, 0);
+  });
+
+  it("checkMethodChain fires 002/003/004/005 on their intended faults", () => {
+    const loc = { file: "test.fungi", line: 4, column: 1 };
+    const mismatch = checkMethodChain({
+      receiver: "xs",
+      receiverType: "Array<Int>",
+      calls: [
+        { methodName: "length", receiverType: "Array<Int>", returnType: "Int", location: loc },
+        { methodName: "trim", receiverType: "String", returnType: "String", location: loc },
+      ],
+      location: loc,
+    });
+    assert.ok(mismatch.some((d) => d.code === FUNGI_PIPELINE_002.code));
+
+    const unhandled = checkMethodChain({
+      receiver: "raw",
+      receiverType: "Json",
+      calls: [
+        { methodName: "decode", receiverType: "Json", returnType: "Result<String, DecodeError>", location: loc },
+        { methodName: "trim", receiverType: "String", returnType: "String", location: loc },
+      ],
+      location: loc,
+    });
+    assert.ok(unhandled.some((d) => d.code === FUNGI_PIPELINE_003.code));
+
+    const effect = checkMethodChain({
+      receiver: "db",
+      receiverType: "Array<Int>",
+      declaredEffects: [],
+      calls: [
+        { methodName: "length", receiverType: "Array<Int>", returnType: "Int", effects: ["database.write"], location: loc },
+      ],
+      location: loc,
+    });
+    assert.ok(effect.some((d) => d.code === FUNGI_PIPELINE_004.code));
+
+    const mutating = checkMethodChain({
+      receiver: "bag",
+      receiverType: "Map<String, Int>",
+      receiverBindingKind: "readonly",
+      calls: [
+        { methodName: "set", receiverType: "Map<String, Int>", returnType: "Map<String, Int>", location: loc },
+      ],
+      location: loc,
+    });
+    assert.ok(mutating.some((d) => d.code === FUNGI_PIPELINE_005.code));
+
+    const persistent = checkMethodChain({
+      receiver: "xs",
+      receiverType: "Array<Int>",
+      receiverBindingKind: "readonly",
+      calls: [
+        { methodName: "append", receiverType: "Array<Int>", returnType: "Array<Int>", location: loc },
+      ],
+      location: loc,
+    });
+    assert.equal(persistent.some((d) => d.code === FUNGI_PIPELINE_005.code), false);
   });
 
   it("diagnostic constant arrays use correct FUNGI-* code prefixes", () => {
@@ -391,7 +470,7 @@ flow renderScript() {
     assert.equal(result.diagnostics.length, 0);
   });
 
-  it("validateTypedContentBlock stub returns empty diagnostics", () => {
+  it("validateTypedContentBlock admits content without interpolations", () => {
     const diags = validateTypedContentBlock({
       blockType: "html",
       marker: "HTML",
@@ -540,7 +619,7 @@ flow renderScript() {
     assert.equal(FUNGI_BINDING_DIAGNOSTICS.length, 6); // 4 original + FUNGI-BINDING-005 + FUNGI-BINDING-006 (Phase 11A.2)
     assert.equal(FUNGI_PIPELINE_DIAGNOSTICS.length, 5);
     assert.equal(FUNGI_INTENT_DIAGNOSTICS.length, 4); // 5 → 4: INTENT-001 retired 2026-07-16 (#20 V2, dormant; number never reused)
-    assert.equal(FUNGI_BLOCK_DIAGNOSTICS.length, 4);
+    assert.equal(FUNGI_BLOCK_DIAGNOSTICS.length, 5);
     assert.equal(FUNGI_STRING_DIAGNOSTICS.length, 4);
     assert.equal(FUNGI_CHAR_DIAGNOSTICS.length, 4);
     assert.equal(FUNGI_BYTE_DIAGNOSTICS.length, 5);

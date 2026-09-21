@@ -79,17 +79,21 @@ pure flow negativeZero() -> Float64 { return -0.0 }`);
     assert.throws(() => ex.negate(Number.NaN), WebAssembly.RuntimeError);
   });
 
-  it("unary Decimal remains explicitly refused instead of entering the f64 lane", async () => {
+  it("unary Decimal uses the exact host neg and never enters the f64 lane", async () => {
     const p = L.parseProgram("pure flow negate(value: Decimal) -> Decimal { return -value }", "t.fungi");
     const fx = L.checkEffects(p.flows, p.ast);
     const { gir } = L.emitGIR(p.ast, p.flows, fx);
     const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", p.ast, true));
-    assert.match(wat, /Decimal unary '-' is not f64-faithful/);
+    assert.match(wat, /host___decimal_neg/);
     assert.doesNotMatch(wat, /f64\.neg/, "Decimal must not silently use binary floating-point negation");
+    assert.doesNotMatch(wat, /fungi_checked_sub_i32/, "Decimal must not negate the i32 handle");
     const asm = await L.assembleWAT(wat);
-    assert.equal(asm.valid, true, "the refusal must be a valid trapping module");
-    const { instance } = await WebAssembly.instantiate(asm.wasm, L.createHostRuntime().imports);
-    assert.throws(() => instance.exports.negate(1.0), WebAssembly.RuntimeError);
+    assert.equal(asm.valid, true, JSON.stringify(asm.diagnostics));
+    const host = L.createHostRuntime();
+    const { instance } = await WebAssembly.instantiate(asm.wasm, host.imports);
+    const value = host.internDecimal("1.25");
+    const negated = instance.exports.negate(value);
+    assert.equal(host.readDecimal(negated), "-1.25");
   });
 
   it("Option<Float64> keeps the handle on i32 and the payload on the f64 lane", async () => {

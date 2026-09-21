@@ -35,3 +35,17 @@ pure flow read(values: Array<Int>) -> String {
     `expected FUNGI-TYPE-008, got: ${diagnostics.map((diagnostic) => diagnostic.code).join(", ")}`,
   );
 });
+
+test("Option<T>.unwrapOr refuses a fallback whose type is not the payload T", () => {
+  const diagnostics = check(`
+pure flow read(values: Array<Int>) -> Int {
+  return values.get(0).unwrapOr("x")
+}
+`);
+
+  assert.equal(
+    diagnostics.some((diagnostic) => diagnostic.code === "FUNGI-TYPE-005"),
+    true,
+    `expected FUNGI-TYPE-005, got: ${diagnostics.map((diagnostic) => diagnostic.code).join(", ") || "(none)"}`,
+  );
+});

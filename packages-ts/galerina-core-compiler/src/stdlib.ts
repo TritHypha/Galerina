@@ -19,15 +19,20 @@ import { createRequire as _createRequire } from "node:module";
 // IPv4-in-IPv6 / CGNAT / *.corp bypasses + DNS-rebind recheck). Wiring the EXISTING guard rather than
 // re-cloning the inline regex (self-audit 61-9). egress-guard is pure — no node/tower-citizen load.
 import { guardOutboundUrl, guardResolvedAddresses } from "@galerina/core-network";
-import { compileCapability as compileTriRegex } from "@galerina/tri-regex";
-import bcrypt from "bcryptjs";  // Phase 34: real bcrypt ($2b$) for BCrypt.verify / BCrypt.hash
-// Phase 36: Argon2id (OWASP preferred memory-hard KDF) — async, imported lazily
-// to avoid startup cost when Password API is not used.
-const _argon2Import = import("argon2") as Promise<{
-  hash(plain: string, opts?: { type?: number }): Promise<string>;
-  verify(hash: string, plain: string): Promise<boolean>;
-  argon2id: number;
-}>;
+import {
+  encodeJsonValue,
+  parseJsonValue,
+  type JsonTaint,
+  type JsonValue,
+} from "@galerina/data-json";
+import { admitPatternCapability } from "./pattern-capability.js";
+import {
+  invokeCryptoProvider,
+  type CryptoProvider,
+  type CryptoProviderRequest,
+} from "@galerina/core-security";
+
+export type { CryptoProvider };
 // Phase 33: segment-safe path helpers.
 // Import resolve from node:path (named export works in TS); implement relative and
 // isAbsolute inline to avoid TypeScript's ESM named-export limitation.
@@ -208,6 +213,11 @@ export interface StdlibContext {
    * runtime code — this seam is the governed alternative (same pattern as auditSink).
    */
   readonly outputSink?: (line: string) => void;
+  /**
+   * Password/BCrypt/Argon2 injection seam. Absent or throwing providers refuse
+   * closed. Native KDF bindings are not loaded by this module.
+   */
+  readonly cryptoProvider?: CryptoProvider;
 }
 
 function safeDisplay(v: GalerinaValue): string {
@@ -457,18 +467,15 @@ function stringMethod(receiver: GalerinaValue, method: string, args: readonly Ga
     case "matchesPattern": {
       const pattern = strVal(args[0] ?? { __tag: "string", value: "" });
       if (s.length > MAX_REGEX_SUBJECT_CHARS) return err("RegexError: subject exceeds maximum length (4096 chars)");
-      const compiled = compileTriRegex(pattern, {
-        budget: { maxPatternLength: 500 },
-        uniformScan: true,
-      });
-      if (!compiled.ok) return err(`RegexError: ${compiled.code}: ${compiled.reason}`);
+      const admitted = admitPatternCapability(pattern);
+      if (!admitted.ok) return err(`RegexError: ${admitted.code}: ${admitted.message}`);
       const certifiedWork =
-        unicodeCodePointCount(s) * BigInt(compiled.capability.certificate.perCharWorkBound) +
-        BigInt(compiled.capability.certificate.boundaryWorkBound);
+        unicodeCodePointCount(s) * BigInt(admitted.capability.certificate.perCharWorkBound) +
+        BigInt(admitted.capability.certificate.boundaryWorkBound);
       if (certifiedWork > MAX_REGEX_CERTIFIED_WORK_UNITS) {
         return err("RegexError: certified work exceeds the runtime policy budget");
       }
-      return { __tag: "bool", value: compiled.capability.matcher.test(s).verdict === 1 };
+      return { __tag: "bool", value: admitted.matcher.test(s).verdict === 1 };
     }
 
     case "extractGroups": {
@@ -1305,72 +1312,120 @@ function jsValueToGalerina(v: unknown, budget: { nodes: number }, depth: number)
   return { __tag: "string", value: String(v) };
 }
 
-function galerinaToJsValue(v: GalerinaValue): unknown {
-  switch (v.__tag) {
-    case "string":
-      return v.value;
-    case "int":
-    case "float":
-      return v.value;
-    case "decimal":
-      return parseFloat(v.value);
+const JSON_STDLIB_MEMORY = {
+  maxDepth: 64,
+  maxDocumentBytes: 1_048_576,
+  maxStringBytes: 65_536,
+} as const;
+
+function jsonTaintOf(value: GalerinaValue): JsonTaint {
+  return value.__tag === "protected" || value.__tag === "redacted" || value.__tag === "secure"
+    ? "tainted"
+    : "clean";
+}
+
+function jsonValueToGalerina(value: JsonValue): GalerinaValue {
+  switch (value.kind) {
+    case "null":
+      return FUNGI_NONE;
     case "bool":
-      return v.value;
-    case "void":
-    case "none":
-      return null;
-    case "some":
-      return galerinaToJsValue(v.value);
-    case "ok":
-      return galerinaToJsValue(v.value);
-    case "err":
-      return { error: galerinaToJsValue(v.error) };
-    case "list":
-      return v.items.map((item) => galerinaToJsValue(item));
-    case "secure":
-    case "protected":
-    case "redacted":
-      return null;
-    case "record": {
-      const out: Record<string, unknown> = {};
-      for (const [k, val] of v.fields) {
-        if (!k.startsWith("__")) out[k] = galerinaToJsValue(val);
-      }
-      return out;
+      return { __tag: "bool", value: value.value };
+    case "string":
+      return { __tag: "string", value: value.value };
+    case "int":
+      return { __tag: "int", value: value.value };
+    case "array":
+      return { __tag: "list", items: value.items.map(jsonValueToGalerina) };
+    case "object": {
+      const fields = new Map<string, GalerinaValue>();
+      for (const field of value.fields) fields.set(field.name, jsonValueToGalerina(field.value));
+      return { __tag: "record", fields };
     }
-    default:
-      return null;
   }
 }
 
-function serialization(fullName: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
-  if (fullName === "json.decode" || fullName.startsWith("json.decode<")) {
-    const input = args[0] ?? FUNGI_VOID;
-    let raw: string;
-    if (input.__tag === "string") {
-      raw = input.value;
-    } else if (input.__tag === "bytes") {
-      try {
-        raw = new TextDecoder().decode(input.value);
-      } catch {
-        return err("DecodeError: invalid UTF-8");
+function galerinaToJsonValue(value: GalerinaValue, taint: JsonTaint): JsonValue | string {
+  switch (value.__tag) {
+    case "none":
+    case "void":
+      return { kind: "null", taint };
+    case "bool":
+      return { kind: "bool", value: value.value, taint };
+    case "string":
+      return { kind: "string", value: value.value, taint };
+    case "int":
+      if (!Number.isSafeInteger(value.value) || Object.is(value.value, -0)) {
+        return "EncodeError: JSON int must be a safe integer";
       }
+      return { kind: "int", value: value.value, taint };
+    case "list": {
+      const items: JsonValue[] = [];
+      for (const item of value.items) {
+        const encoded = galerinaToJsonValue(item, taint);
+        if (typeof encoded === "string") return encoded;
+        items.push(encoded);
+      }
+      return { kind: "array", items, taint };
+    }
+    case "record": {
+      const fields: { name: string; value: JsonValue }[] = [];
+      for (const [name, field] of value.fields) {
+        if (name.startsWith("__")) continue;
+        const encoded = galerinaToJsonValue(field, taint);
+        if (typeof encoded === "string") return encoded;
+        fields.push({ name, value: encoded });
+      }
+      return { kind: "object", fields, taint };
+    }
+    case "protected":
+    case "redacted":
+    case "secure":
+      return "EncodeError: protected, redacted, or secure values cannot be encoded as JSON";
+    case "float":
+    case "decimal":
+      return "EncodeError: JSON numbers are exact integers; float and Decimal are refused";
+    default:
+      return "EncodeError: value cannot be serialized";
+  }
+}
+
+function wrapJsonGalerina(value: GalerinaValue, taint: JsonTaint): GalerinaValue {
+  if (taint !== "tainted") return value;
+  return { __tag: "protected", baseType: "Json", value };
+}
+
+function serialization(fullName: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
+  if (fullName === "json.decode" || fullName.startsWith("json.decode<") || fullName === "Json.parse") {
+    const input = args[0] ?? FUNGI_VOID;
+    const taint = jsonTaintOf(input);
+    let source: string | Uint8Array;
+    if (input.__tag === "string") {
+      source = input.value;
+    } else if (input.__tag === "bytes") {
+      source = input.value;
+    } else if (input.__tag === "protected" && input.value.__tag === "string") {
+      source = input.value.value;
+    } else if (input.__tag === "protected" && input.value.__tag === "bytes") {
+      source = input.value.value;
+    } else if (input.__tag === "secure") {
+      source = input.value;
     } else {
       return err("DecodeError: expected String or Bytes");
     }
-    try {
-      return ok(jsObjectToGalerina(JSON.parse(raw)));
-    } catch {
-      return err("DecodeError: invalid JSON");
-    }
+    const parsed = parseJsonValue(source, { memory: JSON_STDLIB_MEMORY, taint });
+    if (!parsed.ok) return err(`DecodeError: ${parsed.diagnostic.message}`);
+    return ok(wrapJsonGalerina(jsonValueToGalerina(parsed.value), parsed.value.taint));
   }
 
-  if (fullName === "json.encode") {
-    try {
-      return { __tag: "string", value: JSON.stringify(galerinaToJsValue(args[0] ?? FUNGI_VOID)) };
-    } catch {
-      return err("EncodeError: value cannot be serialized");
+  if (fullName === "json.encode" || fullName === "Json.encode") {
+    const mapped = galerinaToJsonValue(args[0] ?? FUNGI_VOID, jsonTaintOf(args[0] ?? FUNGI_VOID));
+    if (typeof mapped === "string") return err(mapped);
+    const encoded = encodeJsonValue(mapped);
+    if (!encoded.ok) return err(`EncodeError: ${encoded.diagnostic.message}`);
+    if (encoded.taint === "tainted") {
+      return err("EncodeError: tainted JSON cannot be emitted as a clean string");
     }
+    return { __tag: "string", value: encoded.text };
   }
 
   if (fullName === "toml.decode" || fullName.startsWith("toml.decode<")) {
@@ -2077,19 +2132,19 @@ export async function callStdlib(
 
     if (fullName.startsWith("BCrypt.")) {
       const bcryptMethod = fullName.slice("BCrypt.".length);
-      const bcryptResult = bcryptModule(bcryptMethod, args);
+      const bcryptResult = await bcryptModule(bcryptMethod, args, ctx);
       if (bcryptResult !== undefined) return bcryptResult;
     }
 
-    // Phase 35/36: Password API (async — Argon2id is async) + Argon2 module
+    // Phase 35/36: Password API + Argon2 module via injected CryptoProvider.
     if (fullName.startsWith("Password.")) {
       const pwMethod = fullName.slice("Password.".length);
-      const pwResult = await passwordModule(pwMethod, args);
+      const pwResult = await passwordModule(pwMethod, args, ctx);
       if (pwResult !== undefined) return pwResult;
     }
     if (fullName.startsWith("Argon2.")) {
       const a2Method = fullName.slice("Argon2.".length);
-      const a2Result = await argon2Module(a2Method, args);
+      const a2Result = await argon2Module(a2Method, args, ctx);
       if (a2Result !== undefined) return a2Result;
     }
 
@@ -2835,43 +2890,54 @@ function cryptoModule(method: string, args: readonly GalerinaValue[]): GalerinaV
   }
 }
 
+function kdfPlain(value: GalerinaValue): string {
+  return value.__tag === "secure" ? value.value : strVal(value);
+}
+
+async function invokeKdf(
+  ctx: StdlibContext,
+  request: CryptoProviderRequest,
+  label: string,
+): Promise<GalerinaValue> {
+  const result = await invokeCryptoProvider(ctx.cryptoProvider, request);
+  if (!result.ok) return err(`${label}: ${result.message}`);
+  if (result.kind === "hash") return { __tag: "string", value: result.hash };
+  return { __tag: "bool", value: result.matches };
+}
+
 // ---------------------------------------------------------------------------
-// Phase 34 — BCrypt module: real bcrypt password verification via bcryptjs
+// Phase 34 — BCrypt module via injected CryptoProvider
 //
-// BCrypt.verify(plaintext, hash) -> Bool   — constant-time bcrypt comparison
-// BCrypt.hash(plaintext, rounds?) -> String — produce a $2b$ hash (for fixtures/tools)
-//
-// SECURITY: BCrypt.verify is registered as an untaint boundary for password
-// comparison — it accepts a raw (tainted) plaintext password by design, since
-// comparing against a stored hash is the whole point. The plaintext never
-// reaches any other sink. bcryptjs.compareSync is constant-time internally.
+// BCrypt.verify(plaintext, hash) -> Bool
+// BCrypt.hash(plaintext, rounds?) -> String
+// Native bcrypt bindings are not loaded here.
 // ---------------------------------------------------------------------------
 
-function bcryptModule(method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
+async function bcryptModule(
+  method: string,
+  args: readonly GalerinaValue[],
+  ctx: StdlibContext,
+): Promise<GalerinaValue | undefined> {
   switch (method) {
     case "verify": {
-      // verify(plaintext, hash) -> Bool
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const hashArg  = args[1] ?? FUNGI_VOID;
-      const plain = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
-      const hash  = hashArg.__tag === "secure"  ? hashArg.value  : strVal(hashArg);
-      try {
-        return { __tag: "bool", value: bcrypt.compareSync(plain, hash) };
-      } catch {
-        // Malformed hash → not a match (never throw out of the sink)
-        return { __tag: "bool", value: false };
-      }
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      const hash = kdfPlain(args[1] ?? FUNGI_VOID);
+      return invokeKdf(ctx, {
+        op: "password-verify",
+        algorithm: "bcrypt",
+        plaintext: plain,
+        hash,
+      }, "BCryptError");
     }
     case "hash": {
-      // hash(plaintext, rounds?) -> String
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const plain = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
       const rounds = args[1]?.__tag === "int" ? Number(args[1].value) : 10;
-      try {
-        return { __tag: "string", value: bcrypt.hashSync(plain, rounds) };
-      } catch (e) {
-        return err(`BCryptError: ${e instanceof Error ? e.message : String(e)}`);
-      }
+      return invokeKdf(ctx, {
+        op: "password-hash",
+        algorithm: "bcrypt",
+        plaintext: plain,
+        rounds,
+      }, "BCryptError");
     }
     default:
       return undefined;
@@ -2879,31 +2945,32 @@ function bcryptModule(method: string, args: readonly GalerinaValue[]): GalerinaV
 }
 
 // ---------------------------------------------------------------------------
-// Phase 36 — Argon2 module: Argon2id (OWASP preferred) password hashing
+// Phase 36 — Argon2id via injected CryptoProvider
 // ---------------------------------------------------------------------------
 
-async function argon2Module(method: string, args: readonly GalerinaValue[]): Promise<GalerinaValue | undefined> {
-  const a2 = await _argon2Import;
+async function argon2Module(
+  method: string,
+  args: readonly GalerinaValue[],
+  ctx: StdlibContext,
+): Promise<GalerinaValue | undefined> {
   switch (method) {
     case "verify": {
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const hashArg  = args[1] ?? FUNGI_VOID;
-      const plain = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
-      const hash  = hashArg.__tag === "secure"  ? hashArg.value  : strVal(hashArg);
-      try {
-        return { __tag: "bool", value: await a2.verify(hash, plain) };
-      } catch {
-        return { __tag: "bool", value: false };
-      }
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      const hash = kdfPlain(args[1] ?? FUNGI_VOID);
+      return invokeKdf(ctx, {
+        op: "password-verify",
+        algorithm: "argon2id",
+        plaintext: plain,
+        hash,
+      }, "Argon2Error");
     }
     case "hash": {
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const plain = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
-      try {
-        return { __tag: "string", value: await a2.hash(plain, { type: a2.argon2id }) };
-      } catch (e) {
-        return err(`Argon2Error: ${e instanceof Error ? e.message : String(e)}`);
-      }
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      return invokeKdf(ctx, {
+        op: "password-hash",
+        algorithm: "argon2id",
+        plaintext: plain,
+      }, "Argon2Error");
     }
     default:
       return undefined;
@@ -2911,75 +2978,58 @@ async function argon2Module(method: string, args: readonly GalerinaValue[]): Pro
 }
 
 // ---------------------------------------------------------------------------
-// Phase 35 — Password module: stable facade over the hash backend.
-//
-// Password.verify(plain, hash) -> Bool    — detects algo from hash prefix, delegates
-// Password.hash(plain)         -> String  — hashes with the current preferred algo
-// Password.needsMigration(hash) -> Bool   — true when hash uses a weaker algo
-//
-// Phase 34: backend = bcrypt    ($2b$...)
-// Phase 36: preferred = Argon2id ($argon2id$...) — bcrypt still verified for migration
-// Phase 37: Password.migrate(plain, oldHash) re-hashes to current preferred algo
-//
-// This is the stable call site: flows written with Password.* never change across phases.
+// Phase 35 — Password module: stable facade over the injected provider.
+// Password.needsMigration inspects the hash prefix and does not invoke KDF.
 // ---------------------------------------------------------------------------
 
-async function passwordModule(method: string, args: readonly GalerinaValue[]): Promise<GalerinaValue | undefined> {
+async function passwordModule(
+  method: string,
+  args: readonly GalerinaValue[],
+  ctx: StdlibContext,
+): Promise<GalerinaValue | undefined> {
   switch (method) {
     case "verify": {
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const hashArg  = args[1] ?? FUNGI_VOID;
-      const plain = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
-      const hash  = hashArg.__tag === "secure"  ? hashArg.value  : strVal(hashArg);
-      // Route by hash prefix
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      const hash = kdfPlain(args[1] ?? FUNGI_VOID);
       if (hash.startsWith("$argon2")) {
-        return argon2Module("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }]);
+        return argon2Module("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }], ctx);
       }
-      // Default: bcrypt ($2b$, $2a$, $2y$)
-      return bcryptModule("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }]);
+      return bcryptModule("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }], ctx);
     }
     case "hash": {
-      // Phase 36: default to Argon2id (OWASP preferred)
-      const plainArg = args[0] ?? FUNGI_VOID;
-      return argon2Module("hash", [plainArg]);
+      return argon2Module("hash", [args[0] ?? FUNGI_VOID], ctx);
     }
     case "needsMigration": {
-      // Returns true when the stored hash uses a weaker algorithm (bcrypt) vs current preferred
-      const hashArg = args[0] ?? FUNGI_VOID;
-      const hash = hashArg.__tag === "secure" ? hashArg.value : strVal(hashArg);
-      const isBcrypt = hash.startsWith("$2");
-      return { __tag: "bool", value: isBcrypt };
+      const hash = kdfPlain(args[0] ?? FUNGI_VOID);
+      return { __tag: "bool", value: hash.startsWith("$2") };
     }
     case "migrate": {
-      // Phase 37: verify with old hash, then re-hash with current preferred if valid.
-      // Returns { migrated: Bool, newHash: String }
-      const plainArg = args[0] ?? FUNGI_VOID;
-      const oldHashArg = args[1] ?? FUNGI_VOID;
-      const plain   = plainArg.__tag === "secure" ? plainArg.value : strVal(plainArg);
-      const oldHash = oldHashArg.__tag === "secure" ? oldHashArg.value : strVal(oldHashArg);
-      // Verify against old hash
-      let verified = false;
-      if (oldHash.startsWith("$argon2")) {
-        const v = await argon2Module("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: oldHash }]);
-        verified = v?.__tag === "bool" ? v.value : false;
-      } else {
-        try { verified = bcrypt.compareSync(plain, oldHash); } catch { verified = false; }
+      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      const oldHash = kdfPlain(args[1] ?? FUNGI_VOID);
+      const verified = oldHash.startsWith("$argon2")
+        ? await argon2Module("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: oldHash }], ctx)
+        : await bcryptModule("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: oldHash }], ctx);
+      if (verified?.__tag === "err") return verified;
+      const matches = verified?.__tag === "bool" ? verified.value : false;
+      if (!matches) {
+        return {
+          __tag: "record",
+          fields: new Map<string, GalerinaValue>([
+            ["migrated", { __tag: "bool", value: false }],
+            ["newHash", { __tag: "string", value: "" }],
+          ]),
+        };
       }
-      if (!verified) {
-        const fields = new Map<string, GalerinaValue>([
-          ["migrated", { __tag: "bool", value: false }],
-          ["newHash",  { __tag: "string", value: "" }],
-        ]);
-        return { __tag: "record", fields };
-      }
-      // Hash with new preferred algorithm (Argon2id)
-      const newHashResult = await argon2Module("hash", [{ __tag: "string", value: plain }]);
-      const newHash = newHashResult?.__tag === "string" ? newHashResult.value : oldHash;
-      const fields = new Map<string, GalerinaValue>([
-        ["migrated", { __tag: "bool", value: true }],
-        ["newHash",  { __tag: "string", value: newHash }],
-      ]);
-      return { __tag: "record", fields };
+      const newHashResult = await argon2Module("hash", [{ __tag: "string", value: plain }], ctx);
+      if (newHashResult?.__tag === "err") return newHashResult;
+      const newHash = newHashResult?.__tag === "string" ? newHashResult.value : "";
+      return {
+        __tag: "record",
+        fields: new Map<string, GalerinaValue>([
+          ["migrated", { __tag: "bool", value: true }],
+          ["newHash", { __tag: "string", value: newHash }],
+        ]),
+      };
     }
     default:
       return undefined;

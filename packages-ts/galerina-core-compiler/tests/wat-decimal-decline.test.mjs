@@ -22,19 +22,19 @@ describe("Decimal WASM fail-close (#53)", () => {
   it("Decimal + Decimal does NOT lower to f64.add — it declines (fail-closed, no silent f64 money)", () => {
     const wat = compileWAT(`pure flow add(a: Decimal, b: Decimal) -> Decimal\ncontract { effects {} }\n{ return a + b }`);
     assert.ok(!wat.includes("f64.add"), `Decimal '+' must NOT emit f64.add (silent wrong money):\n${wat}`);
-    assert.ok(wat.includes("unreachable"), `Decimal '+' must decline to (unreachable):\n${wat}`);
+    assert.ok(wat.includes("$host___decimal_add"), `Decimal '+' must use the exact host ABI:\n${wat}`);
   });
 
   it("Decimal * Decimal declines too (the VAT-scaling case)", () => {
     const wat = compileWAT(`pure flow mul(a: Decimal, b: Decimal) -> Decimal\ncontract { effects {} }\n{ return a * b }`);
     assert.ok(!wat.includes("f64.mul"), `Decimal '*' must NOT emit f64.mul:\n${wat}`);
-    assert.ok(wat.includes("unreachable"));
+    assert.ok(wat.includes("$host___decimal_mul"), wat);
   });
 
   it("Decimal comparison declines (no f64.lt over decimal-derived doubles)", () => {
     const wat = compileWAT(`pure flow lt(a: Decimal, b: Decimal) -> Bool\ncontract { effects {} }\n{ return a < b }`);
     assert.ok(!wat.includes("f64.lt"), `Decimal '<' must NOT emit f64.lt:\n${wat}`);
-    assert.ok(wat.includes("unreachable"));
+    assert.ok(wat.includes("$host___decimal_compare"), wat);
   });
 
   it("CONTROL: Float + Float STILL lowers to f64.add (the decline is Decimal-only, no Float regression)", () => {

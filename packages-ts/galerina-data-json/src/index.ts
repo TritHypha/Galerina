@@ -402,3 +402,24 @@ export function createJsonArchiveReport(input: {
       .map((diagnostic) => diagnostic.message),
   };
 }
+
+export {
+  JSON_VALUE_SCHEMA,
+  FUNGI_JSON_INVALID_TOKEN,
+  FUNGI_JSON_BOUND,
+  FUNGI_JSON_DUPLICATE_KEY,
+  FUNGI_JSON_NUMBER_NOT_INT,
+  FUNGI_JSON_ENCODE_REFUSED,
+  FUNGI_JSON_MEMORY_POLICY,
+  FUNGI_JSON_TRAILING,
+  Json,
+  encodeJsonValue,
+  joinJsonTaint,
+  parseJsonValue,
+  type JsonEncodeResult,
+  type JsonTaint,
+  type JsonValue,
+  type JsonValueField,
+  type JsonValueParseOptions,
+  type JsonValueResult,
+} from "./json-value.js";

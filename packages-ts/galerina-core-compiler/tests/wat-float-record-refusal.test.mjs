@@ -1,8 +1,9 @@
 /**
  * #132 / FUNGI-LAYOUT-001 — typed natural alignment admits faithful i32, i64 and f64 fields. The guard
- * still refuses Float16/Float32 until the scalar f32 expression lane exists, and refuses Decimal until
- * its exact representation replaces the current f64 mapping. Tests prove both the refusal and admission
- * directions so the boundary cannot be weakened or left permanently closed.
+ * still refuses Float16/Float32 until the scalar f32 expression lane exists. Decimal record
+ * fields lower as i32 host handles (C02) and must not be treated as inexact f64. Tests prove
+ * both the refusal and admission directions so the boundary cannot be weakened or left
+ * permanently closed.
  */
 
 import { describe, it } from "node:test";
@@ -30,13 +31,12 @@ function refusedByLayoutGuard(program) {
 }
 const trivialFlow = `pure flow f() -> Int contract { intent { "x" } } { return 0 }`;
 
-// Float32/Float16 do not yet have a scalar f32 expression lane, and Decimal must not be
-// represented as an inexact f64. These remain refused even after naturally aligned
-// f64/i64 record slots are admitted.
-const REFUSED = ["Float32", "Float16", "Decimal"];
+// Float32/Float16 do not yet have a scalar f32 expression lane. Decimal is an i32 host
+// handle after C02 and is admitted; these tests still refuse the unfinished f32 lane.
+const REFUSED = ["Float32", "Float16"];
 
 describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refused (fail-closed)", () => {
-  it("refuses f32 fields without a scalar f32 lane and inexact Decimal fields", () => {
+  it("refuses f32 fields without a scalar f32 lane", () => {
     for (const T of REFUSED) {
       const program = `record S { x: ${T} }\n${trivialFlow}`;
       assert.ok(refusedByLayoutGuard(program), `must refuse a record with a ${T} field`);
@@ -52,11 +52,11 @@ describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refus
 
   it("the refusal names the offending field and its lowered wasm type (checkable, actionable)", () => {
     let msg = "";
-    try { buildModule(`record Money { amount: Decimal }\n${trivialFlow}`, "f"); }
+    try { buildModule(`record Sample { amount: Float32 }\n${trivialFlow}`, "f"); }
     catch (e) { msg = String(e && e.message ? e.message : e); }
     assert.ok(/FUNGI-LAYOUT-001/.test(msg), "carries the code");
-    assert.ok(/Money\.amount/.test(msg), "names the offending record.field: " + msg.slice(0, 180));
-    assert.ok(/f64/.test(msg), "names the lowered wasm type (f64 for Decimal today)");
+    assert.ok(/Sample\.amount/.test(msg), "names the offending record.field: " + msg.slice(0, 180));
+    assert.ok(/f32/.test(msg), "names the lowered wasm type (f32 for Float32)");
   });
 
   it("does NOT refuse i32 / i32-handle fields — no false-refusal", () => {
@@ -64,6 +64,7 @@ describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refus
       `record S { x: Int }`,
       `record S { x: Bool; y: Byte }`,
       `record S { s: String; n: Int }`,                          // String = i32 handle
+      `record S { amount: Decimal; n: Int }`,                    // Decimal = i32 host handle, NOT an f64 slot
       `record S { xs: Array<Float>; n: Int }`,                   // Array<Float> = an i32 handle, NOT an f64 slot
       `record Inner { a: Int }\nrecord S { inner: Inner; n: Int }`, // nested record = i32 handle
     ]) {

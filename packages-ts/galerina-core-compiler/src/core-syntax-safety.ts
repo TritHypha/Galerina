@@ -134,6 +134,27 @@ export const FUNGI_BLOCK_002 = {
   message: "Typed content block is never closed. The closing marker must appear alone at the start of a line.",
 } as const;
 
+export const FUNGI_BLOCK_003 = {
+  code: "FUNGI-BLOCK-003",
+  name: "MISMATCHED_CONTENT_BLOCK_MARKER",
+  severity: "error",
+  message: "Typed content block closing marker does not match the opening marker.",
+} as const;
+
+export const FUNGI_BLOCK_004 = {
+  code: "FUNGI-BLOCK-004",
+  name: "SECRET_IN_CONTENT_BLOCK",
+  severity: "error",
+  message: "ProtectedSecret cannot be emitted into a typed content block.",
+} as const;
+
+export const FUNGI_BLOCK_005 = {
+  code: "FUNGI-BLOCK-005",
+  name: "INVALID_CONTENT_INTERPOLATION",
+  severity: "error",
+  message: "Typed content interpolation must be a closed {{ identifier }} bound in the type environment.",
+} as const;
+
 export const FUNGI_MEMORY_008 = {
   code: "FUNGI-MEMORY-008",
   name: "UNSAFE_MEMORY_REQUIRES_FALLBACK",

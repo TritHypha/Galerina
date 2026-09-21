@@ -65,6 +65,8 @@ import {
   FUNGI_REQUIREMENT_009,
 } from "./requirement-diagnostics.js";
 import { proveRequirementHandlerTerminality } from "./requirement-terminality.js";
+import { checkMethodChain, knownReceiverTypeName } from "./method-chain-checker.js";
+import { validateTypedContentBlock } from "./typed-content-block.js";
 
 // RD-0349 I1: the pinned ISO-4217 currency set — the SAME generated table the runtime `Money.of`
 // enforces (stdlib.ts). A Money<CCY> whose tag is not here now fails at COMPILE time (FUNGI-TYPE-032),
@@ -558,6 +560,41 @@ function isAssignmentCompatible(declared: string, inferred: string): boolean {
   return false;
 }
 
+type ElementJoin =
+  | { readonly kind: "empty" }
+  | { readonly kind: "unknown" }
+  | { readonly kind: "homogeneous"; readonly type: string }
+  | { readonly kind: "heterogeneous"; readonly types: readonly string[] };
+
+/**
+ * C01 join for list literals and Array.of. Unknown/Auto children stay unknown.
+ * Mixed definite non-unifiable children are heterogeneous (refused), not Array<Auto>.
+ */
+function joinElementTypes(types: readonly (string | undefined)[]): ElementJoin {
+  if (types.length === 0) return { kind: "empty" };
+  if (types.some((type) => type === undefined || type === "" || type === "Auto")) {
+    return { kind: "unknown" };
+  }
+  const defined = types as readonly string[];
+  const firstType = defined[0]!;
+  if (defined.every((type) => type === firstType)) {
+    return { kind: "homogeneous", type: firstType };
+  }
+  if (defined.every((type) => NUMERIC_TYPES.has(type))) {
+    const candidate = defined.includes("Decimal")
+      ? "Decimal"
+      : defined.includes("Float")
+        ? "Float"
+        : defined.includes("Int64")
+          ? "Int64"
+          : "Int";
+    if (defined.every((type) => isAssignmentCompatible(candidate, type))) {
+      return { kind: "homogeneous", type: candidate };
+    }
+  }
+  return { kind: "heterogeneous", types: defined };
+}
+
 // ---------------------------------------------------------------------------
 // Type checker implementation
 // ---------------------------------------------------------------------------
@@ -1032,6 +1069,24 @@ class TypeChecker {
       this.flowDeclaredEffects.set(flowDeclName, effectNames);
     }
 
+    if (node.kind === "fnDecl" && (node.value ?? "").trim() !== "") {
+      const fnName = node.value!.trim();
+      const fnChildren = node.children ?? [];
+      const fnReturn = fnChildren.find((child) => child.kind === "typeRef");
+      if (fnReturn?.value) {
+        this.flowReturnTypes.set(fnName, fnReturn.value.trim());
+      }
+      this.flowParamTypes.set(
+        fnName,
+        fnChildren
+          .filter((child) => child.kind === "paramDecl")
+          .map((child) => {
+            const typeRef = child.children?.find((inner) => inner.kind === "typeRef");
+            return typeRef?.value ? typeRef.value.trim() : "";
+          }),
+      );
+    }
+
     for (const child of node.children ?? []) {
       this.collectDeclarations(child);
     }
@@ -1063,6 +1118,14 @@ class TypeChecker {
       if (this.bindingScopes[i]!.has(name)) return true;
     }
     return false;
+  }
+
+  private constructorReceiverType(name: string): string | undefined {
+    const known = knownReceiverTypeName(name);
+    if (known !== undefined) return known;
+    if (this.userDefinedTypes.has(name)) return name;
+    if (!this.hasLexicalBinding(name) && /^[A-Z][A-Za-z0-9_]*$/.test(name)) return name;
+    return undefined;
   }
 
   private registerBinding(name: string): void {
@@ -1107,6 +1170,193 @@ class TypeChecker {
       if (t !== undefined) return t;
     }
     return undefined;
+  }
+
+  private snapshotTypedContentBindings(): { readonly name: string; readonly type: string }[] {
+    const seen = new Set<string>();
+    const bindings: { name: string; type: string }[] = [];
+    for (let i = this.typeScopes.length - 1; i >= 0; i -= 1) {
+      const scope = this.typeScopes[i];
+      if (scope === undefined) continue;
+      for (const [name, type] of scope) {
+        if (seen.has(name)) continue;
+        seen.add(name);
+        bindings.push({ name, type });
+      }
+    }
+    return bindings;
+  }
+
+  private checkTypedContentBlock(node: AstNode): void {
+    const blockType = node.blockType;
+    if (
+      blockType !== "html" &&
+      blockType !== "dom" &&
+      blockType !== "script" &&
+      blockType !== "css"
+    ) {
+      return;
+    }
+    const diagnostics = validateTypedContentBlock({
+      blockType,
+      marker: node.marker ?? "",
+      content: node.content ?? "",
+      file: node.location?.file ?? "",
+      startLine: node.location?.line ?? 1,
+      environment: { bindings: this.snapshotTypedContentBindings() },
+    });
+    for (const diagnostic of diagnostics) {
+      this.diagnostics.push({
+        code: diagnostic.code,
+        name: diagnostic.name,
+        severity: diagnostic.severity === "info" ? "warning" : diagnostic.severity,
+        message: diagnostic.message,
+        ...(diagnostic.location === undefined ? {} : { location: diagnostic.location }),
+        ...(diagnostic.suggestedFix === undefined ? {} : { suggestedFix: diagnostic.suggestedFix }),
+      });
+    }
+  }
+
+  private lookupRecordSchema(receiverType: string): Map<string, string> | undefined {
+    return this.recordFieldTypes.get(receiverType) ?? this.recordFieldTypes.get(parseTypeString(receiverType).base);
+  }
+
+  private mapEntryRecordType(keyType: string, valueType: string): string {
+    const name = `MapEntry<${keyType}, ${valueType}>`;
+    if (!this.recordFieldTypes.has(name)) {
+      this.recordFieldTypes.set(name, new Map([["key", keyType], ["value", valueType]]));
+    }
+    return name;
+  }
+
+  private namedCallbackReturn(callback: AstNode | undefined): string | undefined {
+    if (callback?.kind !== "identifier") return undefined;
+    const name = callback.value ?? "";
+    if (name === "") return undefined;
+    return this.flowReturnTypes.get(name);
+  }
+
+  private namedCallbackParams(callback: AstNode | undefined): readonly string[] | undefined {
+    if (callback?.kind !== "identifier") return undefined;
+    const name = callback.value ?? "";
+    if (name === "") return undefined;
+    return this.flowParamTypes.get(name);
+  }
+
+  private inferArrayFromElements(elements: readonly AstNode[]): string | undefined {
+    const joined = joinElementTypes(elements.map((element) => this.inferType(element)));
+    return joined.kind === "homogeneous" ? `Array<${joined.type}>` : undefined;
+  }
+
+  private checkMethodPipeline(outer: AstNode): void {
+    const stack: AstNode[] = [];
+    let current: AstNode | undefined = outer;
+    while (
+      current !== undefined
+      && current.kind === "callExpr"
+      && (current as AstNode & { callStyle?: string }).callStyle === "method"
+    ) {
+      stack.push(current);
+      current = current.children?.[0];
+    }
+    const root = current;
+    const stages = [];
+    while (stack.length > 0) {
+      const stageNode = stack.pop()!;
+      const method = stageNode.value ?? "";
+      const recv = stageNode.children?.[0];
+      let recvType = recv === undefined ? undefined : this.inferType(recv);
+      if (recvType === undefined && recv?.kind === "identifier") {
+        recvType = this.constructorReceiverType(recv.value ?? "");
+      }
+      stages.push({
+        methodName: method,
+        receiverType: recvType,
+        argumentTypes: (stageNode.children ?? []).slice(1).map((child) => this.inferType(child) ?? ""),
+        returnType: this.inferType(stageNode),
+        effects: undefined,
+        location: stageNode.location,
+        resultConsumed: false,
+      });
+    }
+    const rootName = root?.kind === "identifier" ? (root.value ?? "") : "<expr>";
+    let rootType = root === undefined ? undefined : this.inferType(root);
+    if (rootType === undefined && root?.kind === "identifier") {
+      rootType = this.constructorReceiverType(root.value ?? "");
+    }
+    const bindingKind = root?.kind === "identifier" ? this.lookupBindingKind(root.value ?? "") : undefined;
+    const diags = checkMethodChain({
+      receiver: rootName,
+      receiverType: rootType,
+      receiverBindingKind: bindingKind,
+      declaredEffects: this.currentFlowEffects,
+      calls: stages,
+      location: outer.location ?? { file: "", line: 0, column: 0 },
+    });
+    this.diagnostics.push(...diags);
+  }
+
+  private checkHomogeneousCollection(elements: readonly AstNode[], origin: string): void {
+    const types = elements.map((element) => this.inferType(element));
+    const joined = joinElementTypes(types);
+    if (joined.kind !== "heterogeneous") return;
+    const firstType = joined.types[0]!;
+    for (let index = 1; index < elements.length; index++) {
+      const inferred = types[index];
+      if (inferred === undefined || inferred === firstType) continue;
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-011",
+        "INVALID_COLLECTION_ELEMENT",
+        `${origin} mixes '${firstType}' and '${inferred}' elements. Heterogeneous collections are refused.`,
+        elements[index]!.location,
+        `Use one element type, or split the values into separate collections.`,
+      ));
+    }
+  }
+
+  private checkNamedCallbackMapping(
+    method: string,
+    expectedArg: string | undefined,
+    callback: AstNode | undefined,
+    location: SourceLocation | undefined,
+  ): void {
+    if (callback === undefined) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-007",
+        "INVALID_ARGUMENT_COUNT",
+        `'${method}' expects a named callback argument.`,
+        location,
+        `Pass a fn or flow whose parameter matches the payload type.`,
+      ));
+      return;
+    }
+    const params = this.namedCallbackParams(callback);
+    const returned = this.namedCallbackReturn(callback);
+    if (params === undefined || returned === undefined) return;
+    if (params.length !== 1) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-007",
+        "INVALID_ARGUMENT_COUNT",
+        `'${method}' callback expects 1 parameter but '${callback.value ?? "?"}' has ${params.length}.`,
+        callback.location ?? location,
+        `Use a unary callback.`,
+      ));
+      return;
+    }
+    const paramType = params[0] ?? "";
+    if (
+      expectedArg !== undefined && expectedArg !== "" && expectedArg !== "Auto" &&
+      paramType !== "" && paramType !== "Auto" &&
+      !isAssignmentCompatible(paramType, expectedArg)
+    ) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-005",
+        "INVALID_CALL_ARG_TYPE",
+        `'${method}' callback parameter expects '${paramType}' but the payload is '${expectedArg}'.`,
+        callback.location ?? location,
+        `Use a callback whose parameter is '${expectedArg}'.`,
+      ));
+    }
   }
 
   /**
@@ -1163,18 +1413,15 @@ class TypeChecker {
         const receiverBase = receiverType.split("<")[0]?.trim() ?? receiverType;
         if (receiverBase === "Auto") return undefined;
 
-        // REAL record schema lookup (the "Phase 11B" this comment block promised): a receiver
-        // whose type is a DECLARED record answers field accesses from its declaration — the
-        // declared field type, or undefined for a field the record does not declare. Takes
-        // precedence over every name-based heuristic below.
-        const schema = this.recordFieldTypes.get(receiverBase);
+        // Declared record schemas and synthetic MapEntry<K,V> records answer
+        // field access. Undeclared name-guessing is C01-deferred (RD-1247).
+        const schema = this.lookupRecordSchema(receiverType);
         if (schema !== undefined) {
-          const declared = schema.get(node.value ?? "");
+          const declared = schema.get(field);
           return declared === undefined || declared === "" ? undefined : declared;
         }
 
         // Request object fields — any field access on Request → String
-        // This is the common case: request.body.email, request.params.id, etc.
         if (receiverType === "Request") return "String";
 
         // Protected/redacted wrapper: protected Email → access returns String
@@ -1182,39 +1429,11 @@ class TypeChecker {
           return "String";
         }
 
-        // Record field access: if the receiver is a known record type,
-        // try to look up the field type from the record schema
-        // For now: return String as a conservative approximation for field access
-        // More accurate inference comes in Phase 11B with full type propagation
-        if (field !== "" && receiverType !== "") {
-          // Common HTTP/API fields
-          if (field === "body" || field === "params" || field === "query" || field === "headers") {
-            return "String";
-          }
-          if (field === "id" || field === "name" || field === "email" || field === "status" || field === "message") {
-            return "String";
-          }
-          // Numeric fields
-          if (field === "length" || field === "count" || field === "size") return "Int";
-          if (field === "amount" || field === "score" || field === "value") return "Decimal";
-          // Boolean fields
-          if (field === "ok" || field === "success" || field === "active" || field === "enabled") return "Bool";
-        }
-
-        // R5B: For any other field access (unknown record types, etc.),
-        // return undefined gracefully — do not crash, let later passes handle it.
-        // Phase 11B will add full record schema lookup.
         return undefined;
       }
 
-      case "listLiteral": {
-        const firstElement = node.children?.[0];
-        if (firstElement !== undefined) {
-          const elemType = this.inferType(firstElement);
-          if (elemType !== undefined) return `Array<${elemType}>`;
-        }
-        return "Array";
-      }
+      case "listLiteral":
+        return this.inferArrayFromElements(node.children ?? []);
 
       case "callExpr": {
         const method = node.value ?? "";
@@ -1279,15 +1498,7 @@ class TypeChecker {
         if (receiverNode?.kind === "identifier" && receiverNode.value === "Array") {
           if (method === "empty") return "Array";
           if (method === "range") return "Array<Int>";
-          if (method === "of") {
-            const elementTypes = (node.children ?? []).slice(1).map((child) => this.inferType(child));
-            if (elementTypes.length === 0) return "Array";
-            const firstType = elementTypes[0];
-            if (firstType !== undefined && elementTypes.every((type) => type === firstType)) {
-              return `Array<${firstType}>`;
-            }
-            return "Array<Auto>";
-          }
+          if (method === "of") return this.inferArrayFromElements((node.children ?? []).slice(1));
         }
 
         // Option.sequence(Array<Option<T>>) -> Option<Array<T>> and
@@ -1375,19 +1586,25 @@ class TypeChecker {
           if (method === "length" || method === "count") return "Int";
           if (method === "isEmpty") return "Bool";
           if (method === "first" || method === "last") {
-            const m = receiverType.match(/^Array<(.+)>$/);
-            if (m?.[1] !== undefined) return `Option<${m[1].trim()}>`;
-            return "Option";
+            const elementType = parseTypeString(receiverType).args[0]?.trim();
+            return elementType === undefined || elementType === "" ? undefined : `Option<${elementType}>`;
           }
           if (method === "append") return receiverType ?? "Array";
           if (method === "get") {
-            // Array<T>.get(i) → Option<T> — the bounds-safe accessor returns Option at runtime (callers
-            // `match { Some(x) => … None => … }`), so the type must too. Mirrors Map<K,V>.get() → Option<V>,
-            // which was already typed; Array.get was left inferring nothing (an asymmetry). Extract T greedily
-            // so nested element types (Array<Array<Int>>) round-trip.
-            const m = receiverType?.match(/^Array<(.+)>$/);
-            if (m?.[1] !== undefined) return `Option<${m[1].trim()}>`;
-            return "Option";
+            const elementType = parseTypeString(receiverType).args[0]?.trim();
+            return elementType === undefined || elementType === "" ? undefined : `Option<${elementType}>`;
+          }
+          if (method === "map") {
+            const mapped = this.namedCallbackReturn(node.children?.[1]);
+            if (mapped === undefined || mapped === "" || mapped === "Auto") return undefined;
+            const inner = parseTypeString(mapped);
+            if (inner.base === "Result" && inner.args.length === 2) {
+              return `Result<Array<${inner.args[0]}>, ${inner.args[1]}>`;
+            }
+            return `Array<${mapped}>`;
+          }
+          if (method === "filter") {
+            return receiverType === "Array" ? undefined : receiverType;
           }
         }
 
@@ -1397,17 +1614,20 @@ class TypeChecker {
           if (method === "has") return "Bool";
           if (method === "isEmpty") return "Bool";
           if (method === "get") {
-            // Map<K,V>.get() → Option<V>
-            const match = receiverType?.match(/^Map<[^,]+,\s*([^>]+)>/);
-            if (match?.[1] !== undefined) return `Option<${match[1].trim()}>`;
-            return "Option";
+            const valueType = parseTypeString(receiverType).args[1]?.trim();
+            return valueType === undefined || valueType === "" ? undefined : `Option<${valueType}>`;
           }
           const mapType = parseTypeString(receiverType);
           const keyType = mapType.args[0]?.trim();
           const valueType = mapType.args[1]?.trim();
-          if (method === "keys") return keyType === undefined ? "Array" : `Array<${keyType}>`;
-          if (method === "values") return valueType === undefined ? "Array" : `Array<${valueType}>`;
-          if (method === "entries") return "Array<Auto>";
+          if (method === "keys") return keyType === undefined ? undefined : `Array<${keyType}>`;
+          if (method === "values") return valueType === undefined ? undefined : `Array<${valueType}>`;
+          if (method === "entries") {
+            if (keyType === undefined || valueType === undefined || keyType === "" || valueType === "") {
+              return undefined;
+            }
+            return `Array<${this.mapEntryRecordType(keyType, valueType)}>`;
+          }
           if (method === "set" || method === "delete" || method === "remove" || method === "merge") {
             return receiverType;
           }
@@ -1440,13 +1660,27 @@ class TypeChecker {
         if (receiverType === "Option" || receiverType?.startsWith("Option<")) {
           if (method === "isSome" || method === "isNone") return "Bool";
           if (method === "unwrapOr") {
-            // Option<T>.unwrapOr(default) returns the contained T. Preserve the
-            // full generic payload so the caller's return/assignment boundary
-            // can reject a mismatch instead of silently deferring inference.
+            // Option<T>.unwrapOr(default) returns T only when the fallback is
+            // shown to inhabit T. A missing payload, Auto hole, or mismatched
+            // default stays UNKNOWN rather than completing to a convenient type.
             const optionType = parseTypeString(receiverType);
-            return optionType.base === "Option" ? optionType.args[0] : undefined;
+            const payload = optionType.base === "Option" ? optionType.args[0] : undefined;
+            const fallbackNode = node.children?.[1];
+            const fallbackType = fallbackNode === undefined ? undefined : this.inferType(fallbackNode);
+            if (payload === undefined || payload === "" || payload === "Auto") return undefined;
+            if (fallbackType === undefined || fallbackType === "" || fallbackType === "Auto") return undefined;
+            if (!isAssignmentCompatible(payload, fallbackType)) return undefined;
+            return payload;
           }
-          if (method === "map") return "Option"; // returns Option<mapped>
+          if (method === "map" || method === "flatMap") {
+            const mapped = this.namedCallbackReturn(node.children?.[1]);
+            if (mapped === undefined || mapped === "" || mapped === "Auto") return undefined;
+            if (method === "flatMap") {
+              const inner = parseTypeString(mapped);
+              return inner.base === "Option" ? mapped : undefined;
+            }
+            return `Option<${mapped}>`;
+          }
         }
 
         // Result methods
@@ -1454,9 +1688,29 @@ class TypeChecker {
           if (method === "isOk" || method === "isErr") return "Bool";
           if (method === "unwrapOr") {
             const resultType = parseTypeString(receiverType);
-            return resultType.base === "Result" ? resultType.args[0] : undefined;
+            const payload = resultType.base === "Result" ? resultType.args[0] : undefined;
+            const fallbackNode = node.children?.[1];
+            const fallbackType = fallbackNode === undefined ? undefined : this.inferType(fallbackNode);
+            if (payload === undefined || payload === "" || payload === "Auto") return undefined;
+            if (fallbackType === undefined || fallbackType === "" || fallbackType === "Auto") return undefined;
+            if (!isAssignmentCompatible(payload, fallbackType)) return undefined;
+            return payload;
           }
-          if (method === "map" || method === "mapErr") return "Result";
+          if (method === "map" || method === "mapErr" || method === "flatMap") {
+            const mapped = this.namedCallbackReturn(node.children?.[1]);
+            if (mapped === undefined || mapped === "" || mapped === "Auto") return undefined;
+            const resultType = parseTypeString(receiverType);
+            const okType = resultType.args[0]?.trim();
+            const errType = resultType.args[1]?.trim();
+            if (method === "map") {
+              return errType === undefined ? undefined : `Result<${mapped}, ${errType}>`;
+            }
+            if (method === "mapErr") {
+              return okType === undefined ? undefined : `Result<${okType}, ${mapped}>`;
+            }
+            const inner = parseTypeString(mapped);
+            return inner.base === "Result" ? mapped : undefined;
+          }
         }
 
         // Numeric methods
@@ -1488,15 +1742,11 @@ class TypeChecker {
         const innerType = inferredInnerType === undefined
           ? undefined
           : this.resolveTypeAliases(inferredInnerType);
-        // ? on Result<T, E> → infers T (the Ok branch)
-        if (innerType === "Result" || innerType?.startsWith("Result<")) {
-          const match = innerType?.match(/^Result<([^,>]+)/);
-          return match?.[1]?.trim() ?? undefined;
-        }
-        // ? on Option<T> → infers T
-        if (innerType === "Option" || innerType?.startsWith("Option<")) {
-          const match = innerType?.match(/^Option<([^>]+)/);
-          return match?.[1]?.trim() ?? undefined;
+        if (innerType === undefined) return undefined;
+        const innerRef = parseTypeString(innerType);
+        if (innerRef.base === "Result" || innerRef.base === "Option") {
+          const payload = innerRef.args[0]?.trim();
+          return payload === undefined || payload === "" ? undefined : payload;
         }
         return innerType;
       }
@@ -1943,6 +2193,62 @@ class TypeChecker {
         // Skip arity/type checking for method calls (receiver.method(args)).
         // These are external library calls, not user-defined flow calls.
         if ((node as AstNode & { callStyle?: string }).callStyle === "method") {
+          const methodReceiver = node.children?.[0];
+          const nestedMethod = methodReceiver !== undefined
+            && methodReceiver.kind === "callExpr"
+            && (methodReceiver as AstNode & { callStyle?: string }).callStyle === "method";
+          if (!nestedMethod) {
+            this.checkMethodPipeline(node);
+          }
+          if (flowName === "of") {
+            const arrayReceiver = node.children?.[0];
+            if (arrayReceiver?.kind === "identifier" && arrayReceiver.value === "Array") {
+              this.checkHomogeneousCollection((node.children ?? []).slice(1), "Array.of");
+            }
+          }
+          if (flowName === "map" || flowName === "flatMap" || flowName === "mapErr" || flowName === "filter") {
+            const receiverNode = node.children?.[0];
+            const receiverType = receiverNode === undefined ? undefined : this.inferType(receiverNode);
+            const parsed = receiverType === undefined ? undefined : parseTypeString(receiverType);
+            const payload = flowName === "mapErr"
+              ? parsed?.args[1]?.trim()
+              : parsed?.args[0]?.trim();
+            this.checkNamedCallbackMapping(flowName, payload, node.children?.[1], node.location);
+          }
+          if (flowName === "unwrapOr") {
+            const receiverNode = node.children?.[0];
+            const fallbackNode = node.children?.[1];
+            const extraArgs = (node.children?.length ?? 0) > 2;
+            if (fallbackNode === undefined || extraArgs) {
+              this.diagnostics.push(makeTCDiag(
+                "FUNGI-TYPE-007",
+                "INVALID_ARGUMENT_COUNT",
+                `'unwrapOr' expects 1 fallback argument but received ${(node.children?.length ?? 1) - 1}.`,
+                node.location,
+                `Provide exactly one fallback value whose type matches the Option/Result payload.`,
+              ));
+            } else {
+              const receiverType = receiverNode !== undefined ? this.inferType(receiverNode) : undefined;
+              const parsed = receiverType === undefined ? undefined : parseTypeString(receiverType);
+              const payload = parsed !== undefined && (parsed.base === "Option" || parsed.base === "Result")
+                ? parsed.args[0]
+                : undefined;
+              const fallbackType = this.inferType(fallbackNode);
+              if (
+                payload !== undefined && payload !== "" && payload !== "Auto" &&
+                fallbackType !== undefined && fallbackType !== "" && fallbackType !== "Auto" &&
+                !isAssignmentCompatible(payload, fallbackType)
+              ) {
+                this.diagnostics.push(makeTCDiag(
+                  "FUNGI-TYPE-005",
+                  "INVALID_CALL_ARG_TYPE",
+                  `'unwrapOr' fallback expects '${payload}' but received '${fallbackType}'.`,
+                  fallbackNode.location,
+                  `Pass a fallback of type '${payload}'.`,
+                ));
+              }
+            }
+          }
           if (flowName === "isPositive") {
             const receiverNode = node.children?.[0];
             const receiverName = receiverNode?.kind === "identifier" ? (receiverNode.value ?? "") : "";
@@ -2113,8 +2419,16 @@ class TypeChecker {
         return;
       }
 
+      case "typedContentBlockExpr":
+        this.checkTypedContentBlock(node);
+        return;
+
       default:
         break;
+    }
+
+    if (node.kind === "listLiteral") {
+      this.checkHomogeneousCollection(node.children ?? [], "List literal");
     }
 
     if (node.kind === "typeRef") {

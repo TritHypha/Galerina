@@ -24,3 +24,12 @@
 # registration; R&D registered it in compiler-diagnostics.md (`aaf5ab0`, line 1234, source-verified at the mint
 # site value-state-checker.ts scanDeclassifierShadows, bridge 0207) — shrunk back to EMPTY. The shrink-only gate
 # (diagnostic-namespace.test.mjs) drove this removal.
+#
+# 2026-09-21: C14/C17/C20 codes minted in-tree pending KB registration.
+FUNGI-BLOCK-005
+FUNGI-CONTRACT-SCHEMA-001
+FUNGI-CONTRACT-SCHEMA-002
+FUNGI-CONTRACT-SCHEMA-003
+FUNGI-CONTRACT-SCHEMA-004
+FUNGI-CONTRACT-SCHEMA-005
+FUNGI-PATTERN-001

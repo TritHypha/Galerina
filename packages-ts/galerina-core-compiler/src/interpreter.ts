@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, NodeFlags } from "./parser.js";
-import { callStdlib, galerinaValuesEqual, moneyBinary, constantTimeStringEquals } from "./stdlib.js";
+import { callStdlib, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider } from "./stdlib.js";
 import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
@@ -612,6 +612,8 @@ export interface InterpreterRuntimeOptions {
    * global; this seam is the governed alternative).
    */
   readonly outputSink?: (line: string) => void;
+  /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
+  readonly cryptoProvider?: CryptoProvider;
 }
 
 /** Default global compute-step budget — high enough that no legitimate flow reaches it (a flow doing
@@ -1340,6 +1342,9 @@ class Interpreter {
         return { __tag: "runtimeError" as const, message: `cannot apply '${fn.__tag === "unresolved" ? fn.name : fn.__tag}' as a function — pass a named fn or flow (higher-order call fails closed)` };
       },
       ...(this.runtimeOptions.outputSink !== undefined ? { outputSink: this.runtimeOptions.outputSink } : {}),
+      ...(this.runtimeOptions.cryptoProvider !== undefined
+        ? { cryptoProvider: this.runtimeOptions.cryptoProvider }
+        : {}),
     };
   }
 

@@ -25,6 +25,7 @@ import {
   type FlowExecutionResult,
   type GalerinaValue,
 } from "./interpreter.js";
+import type { CryptoProvider } from "./stdlib.js";
 import { buildFlowAuditEvent, createAuditWriter } from "./audit-writer.js";
 import { buildProofChain, type ExecutionProofChain } from "./proof-chain.js";
 import { startServer, type RunningServer, type ServerConfig } from "./route-dispatcher.js";
@@ -60,6 +61,8 @@ export interface RuntimeOptions {
   readonly emitExecutionPlan?: boolean;
   /** When true, naming policy violations are included in the ok=false condition. Default: false. */
   readonly enforceNamingPolicy?: boolean;
+  /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
+  readonly cryptoProvider?: CryptoProvider;
 }
 
 export interface RuntimeResult {
@@ -294,6 +297,9 @@ export async function run(
     parseResult.flows,
     finalEnforcer,
     capabilityHost,
+    options.cryptoProvider === undefined
+      ? undefined
+      : { cryptoProvider: options.cryptoProvider },
   );
   for (const diagnostic of execution.diagnostics) {
     allDiagnostics.push({

@@ -467,7 +467,7 @@ pure flow optionFallback() -> Int {
     assert.deepEqual(errors, [], `matching Option fallback must remain clean: ${errors.map((error) => error.code).join(", ")}`);
   });
 
-  it("records the current Option fallback gap without adding a method-argument diagnostic", () => {
+  it("refuses a mismatched Option unwrapOr fallback", () => {
     const errors = typeErrors(`
 pure flow optionFallbackGap() -> Int {
   let value: Option<Int> = Some(1)
@@ -475,13 +475,13 @@ pure flow optionFallbackGap() -> Int {
 }
 `);
 
-    // Known RD-1248 gap: method-call argument validation is intentionally still skipped.
-    // An owner-approved checker must flip this characterization to FUNGI-TYPE-005 or its
-    // separately owned method-specific diagnostic.
-    assert.deepEqual(errors, [], `wrong Option fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-005"),
+      `wrong Option fallback must be FUNGI-TYPE-005: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 
-  it("records the current Result fallback gap without adding a method-argument diagnostic", () => {
+  it("refuses a mismatched Result unwrapOr fallback", () => {
     const errors = typeErrors(`
 pure flow resultFallbackGap() -> Int {
   let value: Result<Int, String> = Ok(1)
@@ -489,11 +489,13 @@ pure flow resultFallbackGap() -> Int {
 }
 `);
 
-    // Known RD-1248 gap: the inferred return payload is Int, but the fallback child is not checked.
-    assert.deepEqual(errors, [], `wrong Result fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-005"),
+      `wrong Result fallback must be FUNGI-TYPE-005: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 
-  it("records the current nested fallback gap without changing generic return inference", () => {
+  it("refuses a nested unwrapOr fallback mismatch", () => {
     const errors = typeErrors(`
 pure flow nestedFallbackGap() -> Array<Int> {
   let value: Option<Array<Int>> = Some([1])
@@ -501,12 +503,15 @@ pure flow nestedFallbackGap() -> Array<Int> {
 }
 `);
 
-    assert.deepEqual(errors, [], `nested wrong fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-005"),
+      `nested wrong fallback must be FUNGI-TYPE-005: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 });
 
 describe("RD-1250 Map.entries characterization", () => {
-  it("records anonymous entry payload erasure as the current gap", () => {
+  it("refuses Map.entries() as Array<String>", () => {
     const errors = typeErrors(`
 pure flow entriesGap() -> Array<String> {
   let values: Map<String, Int> = Map.empty()
@@ -514,40 +519,45 @@ pure flow entriesGap() -> Array<String> {
 }
 `);
 
-    // Known RD-1250 gap: entries() returns anonymous {key,value} records, but
-    // the checker currently exposes Array<Auto> without a named schema.
-    assert.deepEqual(errors, [], `Map.entries() gap changed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-008"),
+      `Map.entries() must not wildcard-admit as Array<String>: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 });
 
 describe("RD-1251 mixed Array.of characterization", () => {
-  it("records mixed constructor arguments as the current gap", () => {
+  it("refuses mixed Array.of arguments", () => {
     const errors = typeErrors(`
 pure flow mixedArrayOfGap() -> Array<Int> {
   return Array.of(1, "nope")
 }
 `);
 
-    // Known RD-1251 gap: mixed child types become wildcard-compatible Auto.
-    assert.deepEqual(errors, [], `mixed Array.of gap changed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-011"),
+      `mixed Array.of must be FUNGI-TYPE-011: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 });
 
 describe("RD-1252 list-literal characterization", () => {
-  it("records first-element order dependence as the current gap", () => {
+  it("refuses a heterogeneous list literal at a return boundary", () => {
     const errors = typeErrors(`
 pure flow mixedListGap() -> Array<Int> {
   return [1, "nope"]
 }
 `);
 
-    // Known RD-1252 gap: return/call literals currently infer from the first child.
-    assert.deepEqual(errors, [], `mixed list gap changed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-011"),
+      `mixed list must be FUNGI-TYPE-011: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 });
 
 describe("RD-1253 algebraic-map characterization", () => {
-  it("records Option.map payload erasure as the current gap", () => {
+  it("refuses Option.map when the reconstructed payload does not match", () => {
     const errors = typeErrors(`
 flow Double(arg: Int) -> Int { return arg * 2 }
 pure flow optionMapGap() -> Option<String> {
@@ -556,11 +566,13 @@ pure flow optionMapGap() -> Option<String> {
 }
 `);
 
-    // Known RD-1253 gap: callback result payloads are not reconstructed yet.
-    assert.deepEqual(errors, [], `Option.map gap changed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.ok(
+      errors.some((error) => error.code === "FUNGI-TYPE-008"),
+      `Option.map payload mismatch must be FUNGI-TYPE-008: ${errors.map((error) => error.code).join(", ") || "(none)"}`,
+    );
   });
 
-  it("records Result.mapErr error-payload erasure as the current gap", () => {
+  it("reconstructs Result.mapErr error payloads", () => {
     const errors = typeErrors(`
 flow ToInt(arg: String) -> Int { return 1 }
 pure flow resultMapErrGap() -> Result<Int, Int> {
@@ -569,6 +581,6 @@ pure flow resultMapErrGap() -> Result<Int, Int> {
 }
 `);
 
-    assert.deepEqual(errors, [], `Result.mapErr gap changed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.deepEqual(errors, [], `matching Result.mapErr must reconstruct Result<Int, Int>: ${errors.map((error) => error.code).join(", ")}`);
   });
 });
