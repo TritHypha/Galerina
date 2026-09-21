@@ -1,5 +1,206 @@
 # TODO
 
+### Tower Citizen modular product-line — 2026-09-21
+
+- [x] `RD-1295` slice: `@galerina/tower-citizen/governance` is the
+  cli-check / `tower.governance.v1` entry. `core-network` cert-gate and
+  admission-feedback import that subpath, not the barrel. K3 trit gates
+  live in `trit-gates.ts` so governance does not load `TPLSimulator`.
+  Isolation walks the emitted JS graph (not export names). Focused
+  isolation+K3 **30/30**; cert/admission **31/31**.
+- [!] Kernel/inference/photonic/custody/dataplane subpaths, a certified
+  vs dev constructor split, and removing `core-network` → Tower entirely
+  remain outside. C12 receipt still covers only `dist/index.js` and
+  `dist/governance-mode.js`. No `.fungi` or SLIDE/VOK.
+
+### C18 overlay threshold and path parity — 2026-09-21
+
+- [x] `RD-1294`: Myco search budget twin is `120000` matching
+  `SEARCH_TIME_BUDGET_MS = 120_000`. Runner-constants twin uses
+  `packages-ts/...` and `fungi.compiler.build-evidence.v1`. Legacy path
+  aliases removed. Overlay primitives **2/2**; runner-constants **2/2**.
+- [!] Not a conversion-queue or SLIDE overlay-wave regeneration. No
+  `.fungi` corpus or SLIDE/VOK admission.
+
+### C12 live build-evidence after index accounting — 2026-09-21
+
+- [x] `RD-1293` producer at `705c80369`; consumer integration at
+  `61c6d6628`. `runFidelity` uses `verifyBuildEvidence` for
+  `fungi.compiler.build-evidence.v1`. Producer/verifier **7/7**;
+  runners/foundation **47/47**; compiler package **7289/7289**. Receipt
+  covers **867** inputs and consumed outputs `dist/index.js` plus
+  `dist/governance-mode.js` only.
+- [!] Independent audit pending. No `.fungi` or SLIDE/VOK.
+
+### C20 compile-time PatternCapability — 2026-09-21
+
+- [x] `RD-1292`: `fungi.pattern.capability.v1` admits compile-time
+  patterns with a SHA-256 digest and a closed refused profile
+  (word-boundary, captures, WAT trap). Interpreter MATCH/NO_MATCH stays
+  Bool; compile veto stays `err`. WAT emits a named unreachable, not
+  `$matchesPattern`. Focused tests **5/5**.
+- [!] `findAll`, captures, word boundaries, GIR executable op, and
+  SLIDE/VOK remain outside. Existing `RD-0795` is not closed. No `.fungi`
+  admission.
+
+## Live closure recheck — 2026-09-21
+
+- [x] Re-ran the focused implementation routes at the dirty worktree head.
+  Compiler C01/C02/C03/C17/C19 is **53/53**; config **59/59**; JSON
+  **33/33**; API **34/34**; docs **31/31**; observability **62/62**; WASM
+  **14/14**; native **22/22**; photonic **16/16**.
+- [x] Repaired three non-`.fungi` evidence defects: auth now expects the
+  explicit `NONE` diagnostic (**61/61**), and the context (**38/38**) and
+  project-graph (**92/92**) package manifests now declare their existing
+  governed Fungi assets.
+- [!] C12 has a fresh index-plus-working-tree producer receipt for 867 inputs
+  and focused tests **7/7**, but it is not commit-head freshness. The full
+  compiler package remains red with 123 failures.
+- [x] C18 source/twin parity is now **4/4**: the live Myco source says
+  `120_000`, the overlay returns `120000`, and runner constants use current
+  `packages-ts` paths plus `fungi.compiler.build-evidence.v1`.
+- [!] C18 is still not a conversion queue or overlay-wave regeneration.
+- [!] The example-app signed E2E fixture remains held because key
+  `942d6b2726b0a991` has no available public bundle in the fixture path;
+  do not use `allowUnsigned`.
+- [x] The unsigned registry candidate digest was refreshed after the bounded
+  auth-test change; the registry package is now **35/35**. This is candidate
+  evidence only and does not authorize signing or live admission.
+- [!] The fresh full package runner is **97/100 packages and 3,481 tests**;
+  the remaining red packages are core-compiler (123 failures), the signed
+  example-app fixture (3 unsigned-fuse failures), and galerina-test (one
+  intentional Windows skip rejected by the fail-closed summary gate). Tower
+  Citizen passes **517/517**. No corpus or full `.fungi` assurance run is
+  admissible.
+- [!] RD-1267 is absent and its exact query is `STALE`; residuals are recorded
+  in private `RD-1291`. This is a non-authorizing status record.
+
+### C19-C injected CryptoProvider — 2026-09-21
+
+- [x] `RD-1290`: `fungi.security.crypto-provider.v1`. Password/BCrypt/Argon2
+  use an injected provider. Absent/throwing/malformed refuse closed.
+  core-security **19/19**; compiler **4/4**.
+- [!] Node adapter lazy-loads bcryptjs/argon2 only when invoked. Live
+  verifyPassword HTTP serve is still blocked by `FUNGI-PIPELINE-001`.
+  No `.fungi` or SLIDE/VOK admission.
+
+### C19-B governed JsonValue codec — 2026-09-21
+
+- [x] `RD-1289`: `fungi.json.value.v1` closed `Json.parse`/`encode`. Never
+  `any`. Duplicate keys, IEEE numbers, `-0` refuse. Compiler
+  `json.decode` consumes the codec. data-json **33/33**; compiler **8/8**.
+- [!] JSON fractions are not Decimal. Compiler JSON null still maps to
+  `FUNGI_NONE`. C19-C stays open. No `.fungi` or SLIDE/VOK admission.
+
+### C19-A Stage-B type-code identity — 2026-09-21
+
+- [x] `RD-1288`: `fungi.compiler.stage-b-parity.v1` length-prefixes sorted
+  `{stage,code}` atoms. Unique host vs `type-checker.fungi` codes for
+  `FUNGI-TYPE-001`/`004`/`008`. Focused tests **11/11**.
+- [!] Effect/governance identity and WASM byte-parity remain outside.
+  C19-B JSON codec and C19-C crypto-provider stay open. No `.fungi` or
+  SLIDE/VOK admission.
+
+### C17 compiler contract schema export — 2026-09-21
+
+- [x] `RD-1287`: `exportContractSchemasFromSource` emits
+  `galerina.contract-types.v1` from `record` declarations. Docs integration
+  stamps source identity onto OpenAPI components. Compiler export **2/2**;
+  docs **31/31**. Decimal is refused.
+- [!] Nested records, arrays, and Option/Result remain outside this freeze.
+  No `.fungi` or SLIDE/VOK admission.
+
+### C16 API replay/HMAC — 2026-09-21
+
+- [x] `RD-1286`: webhook HMAC over raw bytes, then atomic
+  `claim("replay", eventId, ttl)`, then kernel decode/handler. Invalid HMAC
+  does not claim or dispatch. API-server tests **34/34**.
+- [!] Process-local only. Durable/multi-process storage remains excluded. No
+  `.fungi` or SLIDE/VOK admission.
+
+### C15 EnvironmentConfig v2 — 2026-09-21
+
+- [x] `RD-1285`: `EnvironmentConfigV2` / `galerina.config.environment.v2`.
+  Loader `FUNGI-CONFIG-028/029`; mode keeps `001/002`. Sources
+  `env|vault|kms|runtime`; hyphenated categories. Package tests **59/59**.
+- [!] Handoff snapshot stays unversioned. No directory split, `.fungi`, or
+  SLIDE/VOK admission.
+
+### C14 typed-content validation — 2026-09-21
+
+- [x] `RD-1284`: `validateTypedContentBlock` takes a binding/type environment.
+  `FUNGI-BLOCK-004` refuses protected/Secret interpolations by type. A
+  `String` binding named `secret` is admitted. `checkTypes` wires
+  `typedContentBlockExpr`. Focused tests **44/44**.
+- [!] HTML/DOM/CSS structure and JS syntax remain Stage 2. No `.fungi`,
+  queue, or SLIDE/VOK admission.
+
+### C12 build-evidence framing — 2026-09-21
+
+- [x] `RD-1283`: `fungi.compiler.build-evidence.v1` length-prefixes input and
+  output digests, binds tsconfig include `src/**/*.ts`, node/typescript pins,
+  and consumed `dist/index.js` plus `dist/governance-mode.js`. Legacy v1 is
+  refused. Producer tests **7/7**; focused harness route **43/43**.
+- [!] Untracked compiler files still refuse. The runner-constants `.fungi`
+  twin still returns the legacy schema string (C18 alias). No `.fungi`
+  regeneration, queue, or SLIDE/VOK admission.
+
+### C10 photonic diagnostic schema — 2026-09-21
+
+- [x] `RD-1282`: both `@galerina/core-photonic` and
+  `@galerina/target-photonic` emit/decode `fungi.photonic.diagnostic.v1`
+  `{schema,code,severity,message,path?,suggestedFix?}`. `message` is redacted;
+  legacy `safeMessage` is refused. Core **8/8**, target **16/16**.
+- [!] Registry `FUNGI-PHOTONIC-001..006` and hardware remain outside this
+  freeze. No `.fungi` or SLIDE/VOK admission.
+
+### C09 native path/digest/VOK — 2026-09-21
+
+- [x] `RD-1281`: `@galerina/target-native` `fungi.native.artifact.v1` binds a
+  relative locator, SHA-256 of exact `bytesHex`, VOK
+  `{receiptId,subjectDigest,state:current}`, and ABI/profile. Path is not
+  identity. Legacy `{path,target,format}` is refused. Focused tests **22/22**.
+- [!] Physical open, inode race, and VOK receipt verification remain outside
+  this package. No `.fungi` or SLIDE/VOK admission.
+
+### C08 AI accelerator report binding — 2026-09-21
+
+- [x] `RD-1280`: report decoder, closed severity, capability-bound `safe:true`.
+  Package tests **10/10**. Forged safe GPU selections are refused.
+- [!] Not execution authority. No `.fungi` or SLIDE/VOK admission.
+
+### C04 WASM artefact admission — 2026-09-21
+
+- [x] `RD-1279`: `@galerina/target-wasm` `fungi.wasm.artefact.v1` binds
+  bytes, digest, attestation, section identity, limits and effects. Reports
+  split admitted/refused. Focused tests **14/14**.
+- [!] Ed25519 verification and physical TOCTOU remain the runtime TCB.
+  Diagnostic-code registry migration and `galerina-core-compute` schema merge
+  stay open. No `.fungi` or SLIDE/VOK admission.
+
+### C02 remainder and C03 method-chain checker — 2026-09-21
+
+- [x] C02 follow-on `RD-1277`: Decimal `divide`/`remainder` host ABI, capture-free
+  binary `reduce`, instantiate parity for `0.1+0.2="0.3"`. Bare `/` still traps.
+- [x] C03 `RD-1278`: `checkMethodChain` is a real detector for
+  `FUNGI-PIPELINE-001..005`, wired from the type-checker. Stub empty-result
+  test replaced with a red unknown-method control.
+- [!] C04–C04 schema, C08–C09, C10 shape, C12, C14–C20 remain. No `.fungi` or
+  SLIDE/VOK admission.
+
+### C01 inference matrix and C02 Decimal/HOF WAT ABI — 2026-09-21
+
+- [x] C01 expression-inference contract frozen and implemented (`RD-1275`,
+  `RD-1274`). Undeclared fields defer; heterogeneous lists/`Array.of` refuse;
+  `Map.entries()` is `MapEntry<K,V>`; algebraic `map`/`mapErr` reconstruct
+  payloads. Focused type-checker routes **115/115** and **92/92**.
+- [x] C02 Decimal WAT ABI frozen as i32 host handles, never f64 (`RD-1276`).
+  Capture-free named `map`/`filter` emit helpers. `reduce` and Decimal
+  division remain refused. WAT tests **11/11**; runtime-wasm **27/27**.
+- [!] `Option.zip` stays unknown (no named schema). C03 `checkMethodChain`,
+  C04 WASM digest, C08–C09, C10 schema, C12, C14–C20 remain. No `.fungi`,
+  queue, signing, or SLIDE/VOK admission.
+
 ### C17 source-backed OpenAPI schema gate — 2026-09-21
 
 - [x] Replace the misleading request/response component placeholder path in
@@ -11,9 +212,10 @@
   `packages-ts/galerina-docs/tests/generate.test.mjs`; the docs package remains
   a focused, source-backed transform and passed **30/30** (typecheck, build,
   generation, and validation tests) without running the full corpus.
-- [!] Wire the actual compiler `types {}` export to the boundary and prove an
-  integration fixture against the runtime request validator. Until then C17 is
-  reduced but OPEN; no generated OpenAPI document is release authority.
+- [x] `RD-1287` wires `exportContractSchemasFromSource` into
+  `ContractSchemaExport`. Integration fixture proves source identity and
+  ChargeRequest runtime-validator parity. Generated OpenAPI is still not
+  release authority.
 
 ### Astra Ultra blocker cross-examination and WAT refusal hardening — 2026-09-21
 
@@ -111,11 +313,9 @@
   The explicit atomic
   `claim(scope,key,ttl) -> claimed | duplicate` contract is now implemented
   for app-kernel idempotency and tested after pre-handler refusal gates, with
-  separate replay and idempotency namespaces still required. The remaining
-  guarded transport path must be specified and tested as
-  `auth -> HMAC -> atomic replay claim -> decode -> atomic idempotency claim ->
-  remaining gates -> handler`. C16 remains open for API-server wiring, owner
-  decisions, durability and the full negative ordering matrix.
+  separate replay and idempotency namespaces still required. `RD-1286` wires
+  HMAC-then-`claim("replay")` on the API transport before kernel decode.
+  Durability and retry/lifecycle remain excluded.
 - [x] Published the canonical `ReplayStore.has/put` and
   `IdempotencyRecord`/`IdempotencyStore.get/put` interfaces from
   `packages-ts/galerina-core-network/src/index.ts`. The emitted declaration
@@ -2033,20 +2233,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   the host does not expose a signal status. Focused evidence is **35/35 pass,
   1 skip, 0 fail** across the runner and spawn suites; no Fungi/SLIDE candidate
   was built.
-- [!] **Compiler freshness evidence — RD-1244:** the current producer and
-  verifier at `packages-ts/galerina-core-compiler/scripts/
-  write-build-evidence.mjs:37-48` and
-  `packages-ts/galerina-test/src/runners.ts:49-153,219-239` now reject
-  duplicate JSON object keys before parsing, including escaped duplicates;
-  focused KATs are at `packages-ts/galerina-test/tests/runners.test.mjs:337-382`.
-  A local byte probe still reproduces an equal digest for distinct same-path
-  file contents containing NUL bytes. Grok and Astra agree the broad TODO
-  remains **HOLD**: the implemented sub-slice does not close framing,
-  compile-affecting input/config/toolchain coverage, ignored-file policy,
-  consumed-output digest, canonical containment or one immutable snapshot.
-  Required KATs for ignored input, tampered `dist` and NUL framing remain open
-  at `docs/TODO.md:1702-1707`. No `.fungi`, corpus or assurance action follows
-  from this record.
+- [x] **Compiler freshness evidence — RD-1283 / historical RD-1244:**
+  `fungi.compiler.build-evidence.v1` at
+  `packages-ts/galerina-core-compiler/scripts/write-build-evidence.mjs:9-14`,
+  `:56-73`, `:275-348`, `:352-430`. Verifier is
+  `packages-ts/galerina-test/src/runners.ts:50-68`. KATs at
+  `packages-ts/galerina-test/tests/compiler-build-evidence.test.mjs:58-210`
+  and `tests/runners.test.mjs:319-373`. Length-prefix framing distinguishes
+  the old NUL collision pair; ignored compile-affecting source and tampered
+  consumed outputs refuse. Focused producer **7/7**; harness route **43/43**.
+  The runner-constants `.fungi` twin still returns the legacy schema string.
 - [ ] Preserve public declaration consumers through retained/versioned `.d.ts`
   artifacts or a governed binding/schema generator; `NO_RUNTIME_BEHAVIOR` is
   not source-deletion authority and `TestCounts` null-to-Option is a versioned
@@ -2173,16 +2369,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   return typed refusal instead of foreign `TypeError`, and every admitted
   nested channel is revalidated. The hostile cases are covered by the focused
   **10/10** suite at `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:120-149`.
-- [!] **Photonic contract reconciliation — RD-1242:** core and target have
-  live incompatible `PhotonicDiagnostic` shapes at
-  `packages-ts/galerina-core-photonic/src/index.ts:40-47` and
-  `packages-ts/galerina-target-photonic/src/index.ts:192-196`, and disagree on
-  amplitude `0`/`-0` at core `:110-120` versus target `:466-472`. The TODO's
-  claim of two live `PhotonicExecutionPlan` interfaces is stale: core exports
-  `PhotonicPlan` at `:49-55`, while target alone exports
-  `PhotonicExecutionPlan` at `:106-114`; core's alternatives are documentation
-  proposals. Keep this open until the owner freezes diagnostic meaning,
-  amplitude/presence/signed-zero rules, versioning and registry ownership.
+- [x] **Photonic contract reconciliation — RD-1282 / historical RD-1242:**
+  both packages now emit and decode `fungi.photonic.diagnostic.v1` at
+  `packages-ts/galerina-core-photonic/src/index.ts:40-70`, `:265-351` and
+  `packages-ts/galerina-target-photonic/src/index.ts:193-230`, `:430-525`.
+  `message` is the redacted text; `safeMessage` is refused. Amplitude remains
+  RD-1273. Core tests **8/8** at
+  `packages-ts/galerina-core-photonic/tests/photonic-contracts.test.mjs:122-210`;
+  target tests **16/16** including
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:52-123`.
+  Registry-code migration remains open.
 - [ ] Replace legacy `Galerina_PHOTONIC_*` codes with owned live
   `FUNGI-CATEGORY-NNN` registry entries before these helpers can be promoted.
 - [x] Complete the individual Slice 372 owner matrix: queue 1,486/1,486;
@@ -2222,19 +2418,19 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   target, artifact, bridge and array records, capture own data once, reject
   inherited/accessor/proxy/custom/sparse/surplus inputs, bound arrays, and
   return one detached immutable report snapshot. Source locators are
-  `packages-ts/galerina-target-native/src/index.ts:85-165`, `:173-277`,
-  `:369-443`, `:445-484`; hostile and retained-alias regressions are at
-  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:42-67`,
-  `:102-157`. Independent package verification passes **12/12**.
-- [!] **Remaining native admission blocker — RD-1241:** the decoded artifact
-  path is only required to be non-empty at
-  `packages-ts/galerina-target-native/src/index.ts:340-367`; canonical path
-  containment and binding of selected ABI/profile to the exact artifact,
-  target, digest and VOK evidence are not source-defined or implemented.
-  The bounded package route is freshly **12/12 pass** with clean
-  typecheck/build, but those tests prove planning decode and snapshots only.
-  Keep native validation non-promotable until the owner freezes the path/root,
-  artifact identity, ABI/profile, digest/VOK and refusal contracts.
+  `packages-ts/galerina-target-native/src/index.ts:103-189`, `:191-290`,
+  `:337-384`, `:511-633`; hostile and retained-alias regressions are at
+  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:41-89`,
+  `:224-280`. Independent package verification passes **22/22**.
+- [x] **Native admission identity — RD-1281 / historical RD-1241:**
+  `fungi.native.artifact.v1` binds relative locator, bytes digest, VOK
+  subject, and ABI/profile at
+  `packages-ts/galerina-target-native/src/index.ts:395-507`, `:511-633`.
+  Identity tests are at
+  `packages-ts/galerina-target-native/tests/native-contracts.test.mjs:91-165`,
+  `:168-222`. Path is a locator, not identity; omitted bytes refuse.
+  Physical open, inode race, and VOK verification remain outside this
+  package. The bounded package route is **22/22**.
 - [ ] Replace the six legacy `Galerina_NATIVE_*` diagnostic codes with owned
   live `FUNGI-CATEGORY-NNN` registry entries before native validation can be
   be promoted beyond planning evidence. RD-1241 verified source emissions at
@@ -2242,10 +2438,10 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [x] Add a runtime decoder for `PhotonicActualTarget` before any execution
   plan treats its six-label TypeScript alias as admitted target evidence.
   `decodePhotonicActualTarget` now returns a typed success/refusal union at
-  `packages-ts/galerina-target-photonic/src/index.ts:198,408-425` and refuses
+  `packages-ts/galerina-target-photonic/src/index.ts:528-545` and refuses
   unknown, boxed, control and non-string labels. Coverage is at
-  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:12-31`;
-  the package route is **12/12 pass**. This does not release execution or
+  `packages-ts/galerina-target-photonic/tests/photonic-contracts.test.mjs:28-50`;
+  the package route is **16/16 pass**. This does not release execution or
   hardware authority.
 - [ ] Give adjacent package test `.mjs` entries a governed harness
   classification or exclusion before literal all-TS/MJS closure can be claimed.

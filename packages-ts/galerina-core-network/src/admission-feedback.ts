@@ -31,7 +31,7 @@ import {
   vAnd,
   type BoundaryDecision,
   type GovernanceDiagnostic,
-} from "../../galerina-tower-citizen/dist/index.js";
+} from "@galerina/tower-citizen/governance";
 import { withSideSignal, certGate, type CertGateInput } from "./cert-gate.js";
 
 /** Aggregate health, as produced by an observability readiness/liveness probe. */

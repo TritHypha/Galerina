@@ -1,7 +1,42 @@
 # Galerina Compiler TODO
 
-This file tracks open work for the compiler package. Updated 2026-09-20 to reflect
+This file tracks open work for the compiler package. Updated 2026-09-21 to reflect
 the actual shipped state. Items marked `[x]` are implemented and tested.
+
+[x] C12 `fungi.compiler.build-evidence.v1` (`RD-1283`, live `RD-1293`) in
+    `scripts/write-build-evidence.mjs`. Length-prefixed input/output digests;
+    tsconfig include, toolchain pins, and consumed `dist/index.js` plus
+    `dist/governance-mode.js`. Legacy v1 refused. Untracked src/tests still
+    refuse. Committed producer at `705c80369`; fidelity consumer at
+    `61c6d6628`. Live `fungi.compiler.build-evidence.v1` covers **867**
+    inputs. Consumed outputs remain `dist/index.js` and
+    `dist/governance-mode.js` only. Independent audit pending.
+[x] C14 typed-content type environment (`RD-1284`) in
+    `src/typed-content-block.ts`, wired from `checkTypes`. `FUNGI-BLOCK-004`
+    refuses protected/Secret interpolations by type, not by name. Stage 2
+    HTML/JS/CSS structure validation remains open.
+[x] C17 contract schema export (`RD-1287`) in
+    `src/contract-schema-export.ts`. `record` declarations emit
+    `galerina.contract-types.v1`. Decimal is refused. Nested records remain
+    outside.
+[x] C19-A Stage-B type-code identity (`RD-1288`) in
+    `src/stage-b-parity.ts`. Schema `fungi.compiler.stage-b-parity.v1`.
+    Unique host vs `type-checker.fungi` codes for
+    `FUNGI-TYPE-001`/`004`/`008`. Bag digest stays multiplicity-sensitive.
+    Effect/governance codes and WASM byte-parity remain outside.
+[x] C19-B governed JsonValue (`RD-1289`) in `@galerina/data-json`
+    `src/json-value.ts`. Schema `fungi.json.value.v1`. `Json.parse` never
+    returns `any`. Compiler `json.decode`/`Json.parse` consume it.
+    Float/Decimal/protected encode refuse. Streaming json_lines remains
+    the archive contract.
+[x] C19-C injected CryptoProvider (`RD-1290`) in
+    `@galerina/core-security` `src/crypto-provider.ts`. Schema
+    `fungi.security.crypto-provider.v1`. Compiler stdlib does not load
+    native KDF bindings. Absent/throwing providers refuse closed.
+[x] C20 compile-time PatternCapability (`RD-1292`) in
+    `src/pattern-capability.ts`. Schema `fungi.pattern.capability.v1`.
+    WAT `matchesPattern` traps; word boundaries and captures remain
+    refused. Not SLIDE/VOK admission.
 
 ## Shipped (Stage A — complete)
 
@@ -190,44 +225,44 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     tests/rd-0120-governed-flow-valuestate.test.mjs and
     tests/tier-floor-fungi-tier-001.test.mjs.
 
-[ ] WAT emitter — remaining exact unlowered stdlib surfaces
-    Money currency constructors, `print`/`println`, `redact`, and `range` are
-    already lowered or host-backed at `src/wat-emitter.ts:1198-1258`, with
-    host coverage at
-    `tests/wat-host-stdlib-stubs-oracle.test.mjs:22-123` and completeness
-    coverage at `tests/wat-host-runtime-completeness.test.mjs:27-42`.
-    The live blocker is the fail-closed set at `src/wat-emitter.ts:2028-2045`:
-    exact Decimal lowering needs a non-f64 representation, while
-    `map`/`reduce`/`filter` need a governed closure/callback ABI. Current
-    refusal evidence is `tests/wat-decimal-decline.test.mjs:21-40`; do not
-    replace these `(unreachable)` refusals with lossy or silent lowering.
-    Clearance requires an explicit host/closure contract, interpreter/WAT
-    parity, positive and negative tests, and exact-head receipts.
+[x] WAT emitter — C02 Decimal host ABI and capture-free map/filter (RD-1276)
+    Decimal is an i32 host handle (`__decimal_*`), never f64.
+    Named unary `map`/`filter` emit `$fungi_array_*` helpers. `reduce` and
+    Decimal division remain `(unreachable)`. Evidence:
+    `tests/wat-c02-decimal-hof.test.mjs` and `tests/wat-decimal-decline.test.mjs`.
 
-[ ] C19-A Stage-B self-hosting WASM byte-parity
+[x] C19-A Stage-B type-code identity (`RD-1288`)
     Owner: `galerina-core-compiler`.
-    Contract: lexer/parser/type/effect/governance stages must produce the same
-    governed bytes at the self-host boundary; no host-side semantic shortcut.
-    Existing evidence: lexer/parser/GIR slices. Remaining implementation:
-    type-checker, effect-checker and governance-verifier parity.
-    Focused routes: the owning `tests/type-checker-*.test.mjs`,
-    `tests/effect-checker/`, `tests/governance/`, and
-    `tests/bootstrap-determinism/` suites, each bound to the same source head.
+    Contract: `fungi.compiler.stage-b-parity.v1` length-prefixed SHA-256 of
+    sorted `{stage,code}` atoms. `uniqueStageBAtoms` is host vs
+    `src/self-hosted/type-checker.fungi` `checkFlows` identity for
+    `FUNGI-TYPE-001`/`004`/`008`. Parse/lex codes are not type-stage.
+    Bag digest remains host-deterministic and multiplicity-sensitive.
+    This is not WASM byte-parity.
+    Evidence: `tests/stage-b-parity.test.mjs` **11/11**.
+    Residual: effect/governance code identity, remaining type codes, and
+    parser→GIR→WAT→WASM byte-parity.
 
-[ ] C19-B stdlib JSON governed codec (`galerina-data-json`)
+[x] C19-B stdlib JSON governed codec (`RD-1289`)
     Owner: `galerina-data-json` with compiler integration in this package.
-    Contract: `Json.parse()` returns a closed governed `JsonValue`, never
-    plain `any`, and preserves taint/effect boundaries through encode/decode.
-    Source seam: `packages-ts/galerina-data-json/src/index.ts`.
-    Focused route: `packages-ts/galerina-data-json/tests/json-contracts.test.mjs`
-    plus a compiler integration test before any service-flow admission.
+    Contract: `Json.parse()` returns closed `fungi.json.value.v1`
+    (`null|bool|string|int|array|object`), never `any`. Duplicate keys,
+    IEEE numbers, `-0`, and unbounded memory refuse. Taint is preserved
+    on the value; encode of protected/redacted/secure/float/Decimal
+    refuses. Compiler `json.decode` / `Json.parse` / `json.encode` consume
+    the codec.
+    Evidence: `packages-ts/galerina-data-json/tests/json-contracts.test.mjs`
+    **33/33**; `tests/json-c19b-codec.test.mjs` **8/8**.
+    Residual: JSON fractions are not Decimal; compiler JSON null still
+    maps to `FUNGI_NONE`.
 
-[ ] C19-C injected crypto-provider boundary
-    Owner: `galerina-core-security`; compiler owns the typed injection seam.
-    Contract: Password/BCrypt/Argon2 calls use an injected `CryptoProvider`;
-    native C bindings are not loaded by the compiler TCB and absent/throwing
-    providers refuse closed. Focused routes: the core-security package tests
-    and compiler stdlib security tests, with dependency and runtime receipts.
+[x] C19-C injected crypto-provider boundary (`RD-1290`)
+    Owner: `galerina-core-security`; compiler owns `StdlibContext.cryptoProvider`.
+    Contract: Password/BCrypt/Argon2 call `invokeCryptoProvider`. Absent,
+    throwing, malformed, and wrong-schema providers refuse closed.
+    `stdlib.ts` does not import `bcryptjs` or `argon2`.
+    Evidence: core-security **19/19**; `tests/crypto-c19c-provider.test.mjs`
+    **4/4**. Residual: node adapter lazy-loads KDF only when invoked.
 ```
 
 ## Post-v1 (owner-gated)

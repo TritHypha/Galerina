@@ -32,15 +32,11 @@
 
 import { AuditLogger } from "./audit-logger.js";
 import { GovernanceEnforcer } from "./governance-enforcer.js";
+import { minTrit, maxTrit, negTrit, SecurityTrap } from "./trit-gates.js";
+
+export { minTrit, maxTrit, negTrit, SecurityTrap };
 
 // ── Errors (Hardened Border traps) ───────────────────────────────────────────
-
-export class SecurityTrap extends Error {
-  constructor(message: string) {
-    super(`[SECURITY_TRAP]: ${message}`);
-    this.name = "SecurityTrap";
-  }
-}
 
 export class TPLIntegrityFault extends Error {
   constructor(message: string) {
@@ -120,12 +116,6 @@ export function asTrit(n: number): Trit {
   return n as Trit;
 }
 
-/** Negation (NOT): +1 ↔ -1, 0 ↦ 0. INTERNAL number primitive — shared by vNot (Verdict face) and negT (Trit face). */
-export function negTrit(a: number): number {
-  assertTrit(a);
-  return a === 0 ? 0 : -a;   // normalise away JS -0
-}
-
 /** Arith negation — the `Trit` face of negTrit (the K3 face is `vNot`). */
 export function negT(a: Trit): Trit {
   return asTrit(negTrit(a));
@@ -165,19 +155,6 @@ export function mulTrit(a: Trit, b: Trit): Trit {
   assertTrit(a); assertTrit(b);
   const p = a * b;
   return asTrit(p === 0 ? 0 : p); // normalise away JS -0 (e.g. -1 * 0)
-}
-
-/** Balanced-ternary AND (min): the more-cautious (negative) input wins — fail-closed. INTERNAL number
- *  primitive (the shared K3/arith math) — reached only via the branded faces `vAnd` (Verdict) etc., not the barrel. */
-export function minTrit(a: number, b: number): number {
-  assertTrit(a); assertTrit(b);
-  return a < b ? a : b;
-}
-
-/** Balanced-ternary OR (max): the more-permissive (positive) input wins. INTERNAL number primitive (see minTrit). */
-export function maxTrit(a: number, b: number): number {
-  assertTrit(a); assertTrit(b);
-  return a > b ? a : b;
 }
 
 /**

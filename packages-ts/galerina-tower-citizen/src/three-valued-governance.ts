@@ -25,7 +25,7 @@
  * fail-closed soundness theorem, and the no-coercion proof.
  */
 
-import { minTrit, maxTrit, negTrit } from "./tpl-simulator.js";
+import { minTrit, maxTrit, negTrit } from "./trit-gates.js";
 
 // ── The trit verdict ─────────────────────────────────────────────────────────
 

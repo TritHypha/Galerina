@@ -36,6 +36,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./governance": {
+      "import": "./dist/governance.js",
+      "types": "./dist/governance.d.ts"
     }
   },
   "scripts": {
