@@ -44,6 +44,11 @@ test("foldStaticVerdict: anything runtime-dependent is 0 (unknown → keep the g
   assert.equal(foldStaticVerdict(bin("&&", bool("true"), id("x"))), 0); // a conjunction is not itself a constant
 });
 
+test("foldStaticVerdict: a denied operand annihilates a K3 conjunction beside runtime state", () => {
+  assert.equal(foldStaticVerdict(bin("&&", bool("false"), id("x"))), -1);
+  assert.equal(foldStaticVerdict(bin("&&", id("x"), bool("false"))), -1);
+});
+
 test("flattenGovernanceConjunction: left-assoc && chain → ordered operands; non-conjunction → singleton", () => {
   const chain = bin("&&", bin("&&", bool("true"), id("x")), bin(">", id("y"), num(0)));
   const ops = flattenGovernanceConjunction(chain);

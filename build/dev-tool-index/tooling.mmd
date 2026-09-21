@@ -112,6 +112,7 @@ flowchart LR
   T_audit_conversion_report_commit_mjs --> C_graph_index
   T_audit_conversion_slice_close_mjs["audit-conversion-slice-close.mjs"]
   T_audit_conversion_slice_close_mjs --> C_governance
+  T_audit_conversion_slice_close_mjs --> C_teaching_corpus
   T_audit_conversion_slice_close_mjs --> C_source_hygiene
   T_audit_conversion_slice_close_mjs --> C_doc_drift
   T_audit_conversion_slice_close_mjs --> C_graph_index
@@ -753,7 +754,7 @@ flowchart LR
   T_check_gate_injection_mjs --> C_package_border
   T_check_gate_injection_mjs --> C_graph_index
   T_conversion_queue_mjs["conversion-queue.mjs"]
-  T_conversion_queue_mjs --> C_governance
+  T_conversion_queue_mjs --> C_teaching_corpus
   T_conversion_queue_mjs --> C_source_hygiene
   T_conversion_queue_mjs --> C_graph_index
   T_debug_compiler_globs_mjs["debug-compiler-globs.mjs"]

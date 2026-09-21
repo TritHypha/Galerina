@@ -13,8 +13,9 @@
 // call `foldStaticVerdict`, so they cannot disagree about what is a proven constant.
 //
 // The fold is deliberately conservative — a constant boolean, a comparison of two numeric
-// literals, or the negation of a constant boolean, and nothing else. It NEVER folds a
-// runtime-dependent operand, so an elided gate is ALWAYS a proven constant and UNKNOWN ⇒ 0
+// literals, the negation of a constant boolean, or the K3 conjunction of those results. It
+// NEVER folds a runtime-dependent operand to ALLOW, so an elided gate is ALWAYS a proven
+// constant and UNKNOWN ⇒ 0
 // ⇒ keep the runtime gate (fail-CLOSED). The richer lattice (escape-analysis, manifest-
 // proven targets, effect/grant — RD-0456 full-A) plugs in HERE later; until then the trit
 // is exactly what a constant-fold can prove, and both consumers see the same trit.
@@ -41,8 +42,9 @@ export function flattenGovernanceConjunction(expr: AstNode): AstNode[] {
 /** The ONE constant-fold static oracle. Returns the discharge trit for `expr`:
  *  +1 if it provably evaluates to true, -1 if provably false, 0 if it is not a constant.
  *  Superset of the historical `tryStaticEval`/`tryConstantFold` (bool literal · numeric-literal
- *  comparison · negation of a bool literal) — the union of what both sides proved, so neither
- *  consumer loses a case and both now agree on every case. */
+ *  comparison · negation of a bool literal), with K3 conjunction propagation so a proven DENY
+ *  annihilates a conjunction containing runtime state. The union of what both sides prove means
+ *  neither consumer loses a case and both now agree on every case. */
 export function foldStaticVerdict(expr: AstNode): StaticVerdict {
   // ensure true / ensure false
   if (expr.kind === "boolLiteral") return expr.value === "true" ? 1 : -1;
@@ -59,6 +61,17 @@ export function foldStaticVerdict(expr: AstNode): StaticVerdict {
         case "==": return lv === rv ? 1 : -1;
         case "!=": return lv !== rv ? 1 : -1;
       }
+    }
+    // Governance conjunctions use the K3 minimum: a proven DENY annihilates the
+    // whole expression even when another operand remains runtime-dependent.
+    // This keeps verifier classification aligned with the emitter's per-operand
+    // collapse, so `false && predicate` cannot lose its fail-closed outcome.
+    if (expr.value === "&&" || expr.value === "and") {
+      const lv = foldStaticVerdict(l!);
+      const rv = foldStaticVerdict(r!);
+      if (lv === -1 || rv === -1) return -1;
+      if (lv === 1 && rv === 1) return 1;
+      return 0;
     }
   }
   // ensure !<boolLit>   (the verifier already proved this; the emitter now agrees — one oracle)

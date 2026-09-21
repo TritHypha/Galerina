@@ -1318,6 +1318,7 @@
       "cadenceDisposition": "scheduled",
       "concerns": [
         "governance",
+        "teaching-corpus",
         "source-hygiene",
         "doc-drift",
         "graph/index"
@@ -2035,7 +2036,7 @@
       "purpose": "the NIGHTLY / RELEASE stage of the retention gate.",
       "selfTest": true,
       "inCadence": true,
-      "cadenceDisposition": "self-test-transitive",
+      "cadenceDisposition": "scheduled",
       "concerns": [
         "diagnostics"
       ]
@@ -3075,7 +3076,7 @@
       "inCadence": true,
       "cadenceDisposition": "scheduled",
       "concerns": [
-        "governance",
+        "teaching-corpus",
         "source-hygiene",
         "graph/index"
       ]
@@ -4161,7 +4162,6 @@
       "run-phase-close-special.mjs",
       "status.mjs",
       "beta-v1-release-admission.mjs",
-      "conversion-queue.mjs",
       "debug-compiler-globs.mjs",
       "export-slide-checked-decision-receipt.mjs",
       "flat-package-root-lock.mjs",
@@ -4320,6 +4320,7 @@
       "test-compiler-subdirs.mjs"
     ],
     "teaching-corpus": [
+      "audit-conversion-slice-close.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-doc-drift.mjs",
       "audit-example-diagnostics.mjs",
@@ -4347,6 +4348,7 @@
       "ts-retirement-graph.mjs",
       "lint-conventions.mjs",
       "run-phase-close-legacy.mjs",
+      "conversion-queue.mjs",
       "migrate-fungi.mjs",
       "wat-invalid-triage.mjs"
     ],
@@ -5403,7 +5405,7 @@
       "via": [],
       "cadences": [],
       "lifecycle": "not-applicable",
-      "disposition": "self-test-transitive"
+      "disposition": "scheduled"
     },
     {
       "tool": "audit-route-overlap.mjs",

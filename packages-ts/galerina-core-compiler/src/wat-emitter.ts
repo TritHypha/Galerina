@@ -3466,8 +3466,8 @@ function extractInvariantEnsures(flowNode: AstNode): AstNode[] {
     // conjunction and fold each operand on the SHARED oracle: a statically-ALLOW operand ELIDES (min-identity
     // min(ALLOW,x)=x; true && x = x), a statically-DENY operand COLLAPSES the whole to DENY (annihilator →
     // verifier flagged it, no runtime gate), an unknown operand KEEPS its gate. Sound + fail-CLOSED:
-    // foldStaticVerdict only proves a constant bool / literal comparison / negated bool, so no runtime-dependent
-    // operand is ever elided. A conjunction with nothing to elide is pushed unchanged (byte-identical);
+    // foldStaticVerdict only proves a constant bool / literal comparison / negated bool / K3 conjunction,
+    // so no runtime-dependent operand is ever elided. A conjunction with nothing to elide is pushed unchanged (byte-identical);
     // otherwise the gate covers only the surviving operands.
     const operands = flattenGovernanceConjunction(expr);
     if (operands.length === 1) { ensures.push(expr); continue; } // not a conjunction — unchanged

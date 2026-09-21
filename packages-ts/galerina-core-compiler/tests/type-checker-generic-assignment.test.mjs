@@ -456,7 +456,7 @@ pure flow optionFallback() -> Int {
     assert.deepEqual(errors, [], `matching Option fallback must remain clean: ${errors.map((error) => error.code).join(", ")}`);
   });
 
-  it("records the current Option fallback gap without adding a method-argument diagnostic", () => {
+  it("rejects an incompatible Option fallback argument", () => {
     const errors = typeErrors(`
 pure flow optionFallbackGap() -> Int {
   let value: Option<Int> = Some(1)
@@ -464,13 +464,14 @@ pure flow optionFallbackGap() -> Int {
 }
 `);
 
-    // Known RD-1248 gap: method-call argument validation is intentionally still skipped.
-    // An owner-approved checker must flip this characterization to FUNGI-TYPE-005 or its
-    // separately owned method-specific diagnostic.
-    assert.deepEqual(errors, [], `wrong Option fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.deepEqual(
+      errors.map((error) => error.code),
+      ["FUNGI-TYPE-005"],
+      `wrong Option fallback must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
   });
 
-  it("records the current Result fallback gap without adding a method-argument diagnostic", () => {
+  it("rejects an incompatible Result fallback argument", () => {
     const errors = typeErrors(`
 pure flow resultFallbackGap() -> Int {
   let value: Result<Int, String> = Ok(1)
@@ -478,11 +479,14 @@ pure flow resultFallbackGap() -> Int {
 }
 `);
 
-    // Known RD-1248 gap: the inferred return payload is Int, but the fallback child is not checked.
-    assert.deepEqual(errors, [], `wrong Result fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.deepEqual(
+      errors.map((error) => error.code),
+      ["FUNGI-TYPE-005"],
+      `wrong Result fallback must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
   });
 
-  it("records the current nested fallback gap without changing generic return inference", () => {
+  it("rejects an incompatible nested fallback argument", () => {
     const errors = typeErrors(`
 pure flow nestedFallbackGap() -> Array<Int> {
   let value: Option<Array<Int>> = Some([1])
@@ -490,6 +494,10 @@ pure flow nestedFallbackGap() -> Array<Int> {
 }
 `);
 
-    assert.deepEqual(errors, [], `nested wrong fallback is currently accepted: ${errors.map((error) => error.code).join(", ")}`);
+    assert.deepEqual(
+      errors.map((error) => error.code),
+      ["FUNGI-TYPE-005"],
+      `nested wrong fallback must be refused: ${errors.map((error) => error.code).join(", ")}`,
+    );
   });
 });

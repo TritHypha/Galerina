@@ -21,7 +21,7 @@
 |---|---|
 | [`BETA-V1-RELEASE-EVIDENCE-SIGNING-WALKTHROUGH.md`](BETA-V1-RELEASE-EVIDENCE-SIGNING-WALKTHROUGH.md) | Beta-v1 Release Evidence Signing Walkthrough |
 | [`OFFLINE-KEY-SIGNING-CEREMONY-REFERENCE.md`](OFFLINE-KEY-SIGNING-CEREMONY-REFERENCE.md) | Galerina offline registry-index signing ceremony reference |
-| [`OFFLINE-KEY-SIGNING-WALKTHROUGH.md`](OFFLINE-KEY-SIGNING-WALKTHROUGH.md) | Galerina offline registry signing — COMPLETE |
+| [`OFFLINE-KEY-SIGNING-WALKTHROUGH.md`](OFFLINE-KEY-SIGNING-WALKTHROUGH.md) | Galerina offline registry signing — historical ceremony receipt |
 | [`PATENT-AND-PROVENANCE-REGISTER.md`](PATENT-AND-PROVENANCE-REGISTER.md) | Galerina patent and provenance register |
 | [`POST-SLIDE-EXECUTION-AUTHORITY-LEDGER.md`](POST-SLIDE-EXECUTION-AUTHORITY-LEDGER.md) | Post-SLIDE execution-authority ledger |
 | [`cybersec-skills-audit-2026-07-09.md`](cybersec-skills-audit-2026-07-09.md) | Cybersecurity-skills defensive audit of Galerina — 2026-07-09 |

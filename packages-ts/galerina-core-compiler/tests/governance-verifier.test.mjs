@@ -1559,6 +1559,18 @@ contract {
     assert.ok(hasDiag(result, "FUNGI-INV-001"), "Expected FUNGI-INV-001 for ensure false");
   });
 
+  it("ensure false && runtime predicate: FUNGI-INV-001 (K3 DENY annihilates the conjunction)", () => {
+    const result = parseAndVerify(`
+pure flow brokenConjunction(n: Int) -> Int
+contract {
+  intent { "Broken conjunction." }
+  invariant { ensure false && n > 0; }
+}
+{ return n }
+`);
+    assert.ok(hasDiag(result, "FUNGI-INV-001"), "Expected FUNGI-INV-001 for false && runtime predicate");
+  });
+
   it("ensure 1 > 5: FUNGI-INV-001 (statically proved false — literal comparison)", () => {
     const result = parseAndVerify(`
 pure flow impossible(x: Int) -> Int

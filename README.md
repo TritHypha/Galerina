@@ -244,11 +244,25 @@ Benchmark publication follows three rules:
 2. derive the winner, sign and rank from the recorded measurements;
 3. publish “not measured” rather than converting a reference-only lane into production evidence.
 
-Current views:
+### Results readable on GitHub
 
-- [Production SLIDE-zero chart](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-zero-latest.html) — deliberately reports “not measured” because no admitted production SLIDE lane exists.
-- [Production SLIDE-zero HTML table](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-zero-table-latest.html) — the same fail-closed production status in table form.
-- [Verified SLIDE reference and historic WASM page](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-vs-wasm-history-latest.html) — the upper chart and table put the non-authorizing Galerina/SLIDE reference at zero and show faster peers as positive and slower peers as negative. The lower chart retains the archived Galerina/WASM results with old WASM at zero for each workload.
+- [Benchmark report and historical comparison](packages-ts/galerina-devtools-benchmarks/results/benchmark-report-latest.md) — recorded results, measurement boundaries and changes from the retained baseline.
+- [Verified native-operation report](packages-ts/galerina-devtools-benchmarks/results/verified-native-operation-latest.md) — the measured reference workload and its limits.
+
+**Production SLIDE remains not measured:** no admitted production SLIDE lane is represented by these reference results.
+
+[![Recorded verified native-operation benchmark — reference evidence, not production results](packages-ts/galerina-devtools-benchmarks/results/verified-native-operation-latest.svg)](packages-ts/galerina-devtools-benchmarks/results/verified-native-operation-latest.svg)
+
+<details>
+<summary>Interactive HTML charts — download or open from a local checkout</summary>
+
+GitHub displays HTML source rather than running these charts. Download the repository or use a local checkout, then open the files below in a browser. Links here locate the files; they are not hosted chart previews.
+
+- [Production SLIDE-zero chart — HTML file](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-zero-latest.html)
+- [Production SLIDE-zero table — HTML file](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-zero-table-latest.html)
+- [SLIDE reference and historical WASM comparison — HTML file](packages-ts/galerina-devtools-benchmarks/results/benchmark-slide-vs-wasm-history-latest.html)
+
+</details>
 
 On the exact one-million-element reference workload, Rust AVX2 wins and the
 Galerina/SLIDE reference is fourth of six, ahead of Go and Python. This is
@@ -258,6 +272,46 @@ groups and 18 comparable groups, but production SLIDE coverage is **0/18**;
 one separately labelled SLIDE reference group is measured. The benchmark truth audit excludes diagnostic
 interpreters from production rankings and refuses ratios for mismatched work or
 units.
+
+## Diagrams
+
+Select any image to open the full-size SVG. These existing diagrams include implemented architecture, design proposals and historical comparisons; use the [current roadmap](docs/ROADMAP.md) for implementation status.
+
+### Architecture and application examples
+
+| Diagram | Diagram |
+|---|---|
+| **Full stack**<br>[![Full stack](docs/diagrams/galerina-full-stack.svg)](docs/diagrams/galerina-full-stack.svg) | **Governance pipeline**<br>[![Governance pipeline](docs/diagrams/galerina-mechanics.svg)](docs/diagrams/galerina-mechanics.svg) |
+| **Compiler**<br>[![Compiler](docs/diagrams/galerina-compiler.svg)](docs/diagrams/galerina-compiler.svg) | **Compiler direction**<br>[![Compiler direction](docs/diagrams/galerina-compiler-pipeline-foresight.svg)](docs/diagrams/galerina-compiler-pipeline-foresight.svg) |
+| **Runtime**<br>[![Runtime](docs/diagrams/galerina-runtime.svg)](docs/diagrams/galerina-runtime.svg) | **Application framework**<br>[![Application framework](docs/diagrams/galerina-framework.svg)](docs/diagrams/galerina-framework.svg) |
+| **Tower containment model**<br>[![Tower containment model](docs/diagrams/galerina-tower-citizen.svg)](docs/diagrams/galerina-tower-citizen.svg) | **Tri-Pipe routing**<br>[![Tri-Pipe routing](docs/diagrams/galerina-tri-pipe.svg)](docs/diagrams/galerina-tri-pipe.svg) |
+| **Untrusted compute lane**<br>[![Untrusted compute lane](docs/diagrams/galerina-untrusted-governed-lane.svg)](docs/diagrams/galerina-untrusted-governed-lane.svg) | **Governance and native boundaries**<br>[![Governance and native boundaries](docs/diagrams/galerina-govern-dont-absorb.svg)](docs/diagrams/galerina-govern-dont-absorb.svg) |
+| **K3 verdicts**<br>[![K3 verdicts](docs/diagrams/galerina-k3-verdict-lattice.svg)](docs/diagrams/galerina-k3-verdict-lattice.svg) | **Value-state lifecycle**<br>[![Value-state lifecycle](docs/diagrams/galerina-trust-state-lifecycle.svg)](docs/diagrams/galerina-trust-state-lifecycle.svg) |
+| **Governed data queries**<br>[![Governed data queries](docs/diagrams/galerina-governed-data-query-lane.svg)](docs/diagrams/galerina-governed-data-query-lane.svg) | **TritMesh query design**<br>[![TritMesh query design](docs/diagrams/galerina-tritmesh-query-lane.svg)](docs/diagrams/galerina-tritmesh-query-lane.svg) |
+| **TritMesh cache design**<br>[![TritMesh cache design](docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg)](docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg) | **Data protection comparison**<br>[![Data protection comparison](docs/diagrams/galerina-ungoverned-vs-governed-breach.svg)](docs/diagrams/galerina-ungoverned-vs-governed-breach.svg) |
+| **Healthcare example**<br>[![Healthcare example](docs/diagrams/galerina-healthcare-getpatient-flow.svg)](docs/diagrams/galerina-healthcare-getpatient-flow.svg) | **Payments example**<br>[![Payments example](docs/diagrams/galerina-payments-money-lane.svg)](docs/diagrams/galerina-payments-money-lane.svg) |
+| **Privacy-cut design**<br>[![Privacy-cut design](docs/diagrams/galerina-privacy-cut-authoring.svg)](docs/diagrams/galerina-privacy-cut-authoring.svg) |  |
+
+### Recorded comparisons and research profiles
+
+These charts retain their original values and scope. They are not fresh benchmark results or current completion scores.
+
+| Diagram | Diagram |
+|---|---|
+| **Security and governance**<br>[![Security and governance](docs/diagrams/radar-1-security-governance.svg)](docs/diagrams/radar-1-security-governance.svg) | **Performance and systems**<br>[![Performance and systems](docs/diagrams/radar-2-performance-systems.svg)](docs/diagrams/radar-2-performance-systems.svg) |
+| **Developer experience**<br>[![Developer experience](docs/diagrams/radar-3-devx-ecosystem.svg)](docs/diagrams/radar-3-devx-ecosystem.svg) | **Governed chaos**<br>[![Governed chaos](docs/diagrams/radar-4-governed-chaos.svg)](docs/diagrams/radar-4-governed-chaos.svg) |
+| **Build and developer support**<br>[![Build and developer support](docs/diagrams/radar-5-cicd-devsupport.svg)](docs/diagrams/radar-5-cicd-devsupport.svg) | **Ternary model**<br>[![Ternary model](docs/diagrams/radar-6-tri-ternary.svg)](docs/diagrams/radar-6-tri-ternary.svg) |
+| **Web and API security**<br>[![Web and API security](docs/diagrams/radar-7-web-api-secure.svg)](docs/diagrams/radar-7-web-api-secure.svg) | **Database direction**<br>[![Database direction](docs/diagrams/radar-8-databasing.svg)](docs/diagrams/radar-8-databasing.svg) |
+| **Data-science direction**<br>[![Data-science direction](docs/diagrams/radar-9-data-science.svg)](docs/diagrams/radar-9-data-science.svg) | **AI and machine learning**<br>[![AI and machine learning](docs/diagrams/radar-10-AI-ML-NuroNet.svg)](docs/diagrams/radar-10-AI-ML-NuroNet.svg) |
+| **Language and type system**<br>[![Language and type system](docs/diagrams/radar-11-language-type-system.svg)](docs/diagrams/radar-11-language-type-system.svg) | **Native VOK benchmark — 2 August 2026**<br>[![Native VOK benchmark — 2 August 2026](docs/diagrams/native-vok-authority-benchmark-2026-08-02.svg)](docs/diagrams/native-vok-authority-benchmark-2026-08-02.svg) |
+
+[Browse all diagram files and descriptions](docs/diagrams/README.md).
+
+### Visual roadmap
+
+[![Galerina implementation and evidence roadmap](build/roadmap/roadmap.svg)](build/roadmap/roadmap.svg)
+
+[Open the full-size roadmap on GitHub main](https://github.com/TritHypha/Galerina/blob/main/build/roadmap/roadmap.svg) · [Read the roadmap ledger](docs/ROADMAP.md)
 
 ## Graphs and developer tools
 

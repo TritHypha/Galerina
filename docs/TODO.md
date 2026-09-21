@@ -282,18 +282,15 @@
   test-only characterization of the existing `inferType` branch; it does not
   widen inference or clear the RD-1232/RD-1247 owner contract.
 
-- [!] `RD-1248` confirms the `unwrapOr` fallback-argument gap under RD-1232:
-  payload return inference exists at
-  `packages-ts/galerina-core-compiler/src/type-checker.ts:1372-1393`, but all
-  method argument validation is skipped at `:1873-1880`. A wrong concrete
-  fallback can therefore be returned on `None`/`Err`; the runtime returns
-  `FUNGI_VOID` when the fallback is missing. The owner must freeze a
-  method-specific guard, concrete payload/fallback relation, numeric widening,
-  nested/`Auto` deferral, arity and diagnostic ownership before any checker
-  change. Characterization KATs at
-  `packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:447-495`
-  pass **31/31** and intentionally record the current gap. State remains
-  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`; no source semantics changed.
+- [!] `RD-1248` is now **partially strengthened** under RD-1232: the bounded
+  `unwrapOr(default)` contract checks concrete `Option<T>` and `Result<T, E>`
+  fallbacks at
+  `packages-ts/galerina-core-compiler/src/type-checker.ts:1876-1914` and
+  refuses incompatible values with `FUNGI-TYPE-005`. Focused KATs now pass
+  **33/33** and the complete compiler-package suite passes **6802/6802**.
+  Bare/unknown wrappers, missing-argument/arity policy, `Auto` deferral, and
+  all other method arguments remain outside this bounded repair and stay
+  `OWNER CONTRACT REQUIRED; HOLD UNDER RD-1232`.
 
 - [!] `RD-1250` confirms that `Map.entries()` is not a safe deferred boundary:
    `packages-ts/galerina-core-compiler/src/type-checker.ts:1327-1346` returns

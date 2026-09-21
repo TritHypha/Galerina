@@ -798,6 +798,7 @@ Provides:
 - WasmDiagnostic
 - validateWasmArtefact
 - createWasmTargetReport
+- isProxy
 
 ## galerina-target-gpu
 
@@ -811,6 +812,7 @@ Provides:
 - GpuDiagnostic
 - validateGpuKernelPlan
 - createGpuTargetReport
+- isProxy
 
 ## galerina-target-ai-accelerator
 
@@ -1004,10 +1006,10 @@ Provides:
 - DEFAULT_E2E_EXAMPLES
 - SpawnOutcome
 - DEFAULT_TIMEOUT_MS
+- DEFAULT_OUTPUT_LIMIT_BYTES
 - runNode
 - CheckKind
 - CheckScope
-- CheckResultKind
 
 ## galerina-devtools-graph-project
 
@@ -1051,11 +1053,14 @@ Reference REST protocol-adapter (L3): /src governed flow → fusable .wasm, fuse
 Pure substrate-noise math shared by the governance layer: per-lane error probability + von Neumann NMR (N-modular-redundancy) closed form. Zero runtime deps. Single source of truth for the NMR calculus used by both galerina-tower-citizen (substrate-model) and galerina-core-compiler (substrate-inference).
 
 Provides:
+- SubstrateMathErrorCode
 - SubstrateMathError
 - SubstrateNoiseParams
+- MAX_NMR_N
 - flipProbability
 - singleLaneErrorProbability
 - nmrFailureProbability
+- isProxy
 
 ## galerina-inference-bridge-contract
 
@@ -1213,8 +1218,9 @@ Provides:
 - ExecutionRouter
 - createExecutionRouter
 - TriPipeOptions
-- TriPipeEngine
+- TriPipeProposal
 - createTriPipeEngine
+- dispatchTriPipeEngine
 
 ## galerina-tri-regex
 

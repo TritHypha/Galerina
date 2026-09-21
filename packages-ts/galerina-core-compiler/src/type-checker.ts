@@ -1876,6 +1876,40 @@ class TypeChecker {
         // Skip arity/type checking for method calls (receiver.method(args)).
         // These are external library calls, not user-defined flow calls.
         if ((node as AstNode & { callStyle?: string }).callStyle === "method") {
+          // RD-1248: unwrapOr(default) has a typed payload boundary even though
+          // general method-argument checking remains deferred. Check only this
+          // closed, already-inferred contract; unknown/bare wrappers stay deferred.
+          if (flowName === "unwrapOr") {
+            const receiverNode = node.children?.[0];
+            const fallbackNode = node.children?.[1];
+            const receiverType = receiverNode === undefined
+              ? undefined
+              : this.resolveTypeAliases(this.inferType(receiverNode) ?? "");
+            const fallbackType = fallbackNode === undefined
+              ? undefined
+              : this.inferType(fallbackNode);
+            const receiverRef = receiverType === undefined || receiverType === ""
+              ? undefined
+              : parseTypeString(receiverType);
+            const expectedType = receiverRef !== undefined
+              && (receiverRef.base === "Option" || receiverRef.base === "Result")
+              ? receiverRef.args[0]
+              : undefined;
+            if (
+              expectedType !== undefined
+              && expectedType !== ""
+              && fallbackType !== undefined
+              && !isAssignmentCompatible(expectedType, fallbackType)
+            ) {
+              this.diagnostics.push(makeTCDiag(
+                "FUNGI-TYPE-005",
+                "INVALID_CALL_ARG_TYPE",
+                `Method 'unwrapOr' expects fallback type '${expectedType}' but received '${fallbackType}'.`,
+                fallbackNode?.location,
+                `Pass a fallback value compatible with '${expectedType}'.`,
+              ));
+            }
+          }
           for (const child of node.children ?? []) this.walkNode(child);
           return;
         }
