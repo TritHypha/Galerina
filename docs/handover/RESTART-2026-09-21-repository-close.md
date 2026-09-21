@@ -22,7 +22,13 @@ This restart point covers the active Galerina RD-0873 implementation worktree, t
 
 ## Close receipts
 
-The final commit IDs and pushed remote refs are recorded by the closing commit that contains this document. Re-verify them with live Git; this note is a locator, not authority. No private signing key belongs in any repository.
+The bounded close commits before this receipt update are:
+
+- ZTF Knowledge Bases `main`: `f244f29`
+- Galerina RD-0873 implementation worktree `main`: `209f46f79`
+- Galerina root `codex/rd-0858-unit4-process-root`: `4cde8c5d8`
+
+This receipt update is a documentation-only follow-up on the RD-0873 worktree. Re-verify all hashes and remote refs with live Git; this note is a locator, not authority. No private signing key belongs in any repository.
 
 ## Current assurance boundary
 
