@@ -1,6 +1,6 @@
 {
   "note": "type-position `| null` per file; see source-hygiene-null-ratchet.test.mjs",
-  "total": 256,
+  "total": 255,
   "files": {
     "packages-ts/galerina-auth/src/bearer.ts": 1,
     "packages-ts/galerina-core-cli/src/core-command.ts": 1,
@@ -78,7 +78,7 @@
     "packages-ts/galerina-hardware-tier/src/hardware-directive.ts": 1,
     "packages-ts/galerina-test/src/parse.ts": 2,
     "packages-ts/galerina-test/src/paths.ts": 1,
-    "packages-ts/galerina-test/src/runners.ts": 3,
+    "packages-ts/galerina-test/src/runners.ts": 2,
     "packages-ts/galerina-test/src/types.ts": 3,
     "packages-ts/galerina-tools-myco/src/graph/index-contract.ts": 1,
     "packages-ts/galerina-tools-myco/src/graph/model.ts": 1,

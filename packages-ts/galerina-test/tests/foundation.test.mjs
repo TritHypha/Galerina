@@ -84,8 +84,12 @@ test("root run-all-tests parser refuses duplicate and unsafe summaries", () => {
 
 // ── resolveRoot / resolveTarget (fail-closed) ────────────────────────────────
 
-test("resolveRoot: an explicit rootDir is trusted as-is", () => {
+test("resolveRoot: an explicit rootDir must contain the workspace marker", () => {
   assert.equal(resolveRoot(ROOT), ROOT);
+  assert.throws(
+    () => resolveRoot(resolve(ROOT, "packages-ts", "galerina-test", "tests")),
+    /not an attested Galerina workspace/,
+  );
 });
 
 test("resolveRoot: auto-detects this workspace by walking up from cwd", () => {
@@ -110,4 +114,21 @@ test("resolveTarget: relative paths resolve under the root, absolute pass throug
   );
   const abs = resolve(ROOT, "galerina.mjs");
   assert.equal(resolveTarget(ROOT, abs), abs);
+});
+
+test("resolveTarget: refuses lexical escape, empty targets and device-namespace paths", () => {
+  assert.throws(
+    () => resolveTarget(ROOT, "../outside-workspace.txt"),
+    /escapes the workspace root/,
+  );
+  assert.throws(() => resolveTarget(ROOT, ""), /target path is empty/);
+  assert.throws(
+    () => resolveTarget(ROOT, "\\\\.\\NUL"),
+    /device-namespace/,
+  );
+});
+
+test("resolveTarget: a missing relative file stays lexical and contained", () => {
+  const missing = "does-not-exist-yet.fungi";
+  assert.equal(resolveTarget(ROOT, missing), resolve(ROOT, missing));
 });

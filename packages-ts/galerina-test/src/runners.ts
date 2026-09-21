@@ -15,13 +15,13 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import { join, relative } from "node:path";
 import { resolveRoot, resolveTarget } from "./paths.js";
 import { runNode } from "./spawn.js";
 import type { SpawnOutcome } from "./spawn.js";
 import { parseCounts, parseAggregateTotal } from "./parse.js";
+import { verifyBuildEvidence } from "../../galerina-core-compiler/scripts/write-build-evidence.mjs";
 import type {
   AllOptions,
   CheckResult,
@@ -44,137 +44,7 @@ const COMPILER_BUILD_EVIDENCE =
   "packages-ts/galerina-core-compiler/dist/build-evidence.json";
 const COMPILER_PACKAGE = "packages-ts/galerina-core-compiler";
 const GALERINA_CLI = "galerina.mjs";
-const COMPILER_EVIDENCE_SCHEMA = "galerina.compiler-build-evidence.v1";
-
-class DuplicateJsonKeyError extends Error {
-  constructor(key: string) {
-    super(`duplicate JSON object key: ${JSON.stringify(key)}`);
-    this.name = "DuplicateJsonKeyError";
-  }
-}
-
-/**
- * Detect duplicate object keys before JSON.parse erases their identity.
- * JSON.parse remains the syntax/type authority; this scanner only walks JSON
- * structure and decodes member-name strings so literal and escaped spellings
- * of the same key cannot be silently collapsed.
- */
-function assertNoDuplicateJsonKeys(json: string): void {
-  let index = 0;
-
-  const failSyntax = (): never => {
-    throw new SyntaxError("invalid JSON");
-  };
-
-  const skipWhitespace = (): void => {
-    while (index < json.length && /[\u0009\u000a\u000d\u0020]/.test(json[index] ?? "")) {
-      index += 1;
-    }
-  };
-
-  const readString = (): string => {
-    const start = index;
-    if (json[index] !== '"') failSyntax();
-    index += 1;
-    while (index < json.length) {
-      const char = json[index];
-      if (char === "\\") {
-        index += 2;
-        continue;
-      }
-      if (char === '"') {
-        index += 1;
-        const decoded: unknown = JSON.parse(json.slice(start, index));
-        if (typeof decoded !== "string") failSyntax();
-        return decoded as string;
-      }
-      if (char !== undefined && char < " ") failSyntax();
-      index += 1;
-    }
-    return failSyntax();
-  };
-
-  const readPrimitive = (): void => {
-    const start = index;
-    while (
-      index < json.length &&
-      !/[\u0009\u000a\u000d\u0020,\]}]/.test(json[index] ?? "")
-    ) {
-      index += 1;
-    }
-    if (index === start) failSyntax();
-  };
-
-  const readValue = (): void => {
-    skipWhitespace();
-    const char = json[index];
-    if (char === "{") {
-      readObject();
-      return;
-    }
-    if (char === "[") {
-      readArray();
-      return;
-    }
-    if (char === '"') {
-      readString();
-      return;
-    }
-    readPrimitive();
-  };
-
-  const readObject = (): void => {
-    index += 1;
-    skipWhitespace();
-    const keys = new Set<string>();
-    if (json[index] === "}") {
-      index += 1;
-      return;
-    }
-    while (index < json.length) {
-      skipWhitespace();
-      const key = readString();
-      if (keys.has(key)) throw new DuplicateJsonKeyError(key);
-      keys.add(key);
-      skipWhitespace();
-      if (json[index] !== ":") failSyntax();
-      index += 1;
-      readValue();
-      skipWhitespace();
-      if (json[index] === "}") {
-        index += 1;
-        return;
-      }
-      if (json[index] !== ",") failSyntax();
-      index += 1;
-    }
-    failSyntax();
-  };
-
-  const readArray = (): void => {
-    index += 1;
-    skipWhitespace();
-    if (json[index] === "]") {
-      index += 1;
-      return;
-    }
-    while (index < json.length) {
-      readValue();
-      skipWhitespace();
-      if (json[index] === "]") {
-        index += 1;
-        return;
-      }
-      if (json[index] !== ",") failSyntax();
-      index += 1;
-    }
-    failSyntax();
-  };
-
-  readValue();
-  skipWhitespace();
-  if (index !== json.length) failSyntax();
-}
+const COMPILER_EVIDENCE_SCHEMA = "fungi.compiler.build-evidence.v1";
 
 function compilerFreshnessFailure(
   root: string,
@@ -185,39 +55,6 @@ function compilerFreshnessFailure(
     return "fidelity freshness cannot be proven: compiler package is outside the workspace";
   }
 
-  const gitPaths = (args: readonly string[]): readonly string[] | null => {
-    const result = spawnSync(
-      "git",
-      [
-        "-C",
-        root,
-        ...args,
-        "-z",
-        "--",
-        `${packageFromRoot}/src`,
-        `${packageFromRoot}/tests`,
-      ],
-      { encoding: "utf8", timeout: 30_000 },
-    );
-    if (result.error || result.status !== 0 || result.signal) return null;
-    return result.stdout.split("\0").filter(Boolean).sort();
-  };
-
-  const inputs = gitPaths(["ls-files"]);
-  if (inputs === null) {
-    return "fidelity freshness cannot be proven from tracked compiler inputs (build the compiler first)";
-  }
-  if (inputs.length === 0) {
-    return "fidelity freshness cannot be proven: no tracked compiler source/test inputs (build the compiler first)";
-  }
-  const untracked = gitPaths(["ls-files", "--others", "--exclude-standard"]);
-  if (untracked === null) {
-    return "fidelity freshness cannot be proven while untracked-input enumeration is unavailable";
-  }
-  if (untracked.length > 0) {
-    return `fidelity found untracked compiler inputs; freshness cannot be proven: ${untracked.join(", ")}`;
-  }
-
   const evidencePath = resolveTarget(root, COMPILER_BUILD_EVIDENCE);
   let rawEvidence: string;
   try {
@@ -226,50 +63,10 @@ function compilerFreshnessFailure(
     return `fidelity build evidence is missing or unreadable: ${COMPILER_BUILD_EVIDENCE} (build the compiler first)`;
   }
 
-  let evidence: unknown;
-  try {
-    assertNoDuplicateJsonKeys(rawEvidence);
-    evidence = JSON.parse(rawEvidence);
-  } catch (error) {
-    if (error instanceof DuplicateJsonKeyError) {
-      return `fidelity build evidence contains ${error.message}`;
-    }
+  const verified = verifyBuildEvidence(root, packageFromRoot, rawEvidence);
+  if (!verified.ok) return verified.reason;
+  if (verified.evidence.schema !== COMPILER_EVIDENCE_SCHEMA) {
     return "fidelity build evidence is malformed (build the compiler first)";
-  }
-  if (typeof evidence !== "object" || evidence === null || Array.isArray(evidence)) {
-    return "fidelity build evidence is malformed (build the compiler first)";
-  }
-  const record = evidence as Record<string, unknown>;
-  const keys = Object.keys(record).sort();
-  const expectedKeys = ["algorithm", "inputDigest", "schema", "trackedInputs"];
-  if (
-    JSON.stringify(keys) !== JSON.stringify(expectedKeys) ||
-    record.schema !== COMPILER_EVIDENCE_SCHEMA ||
-    record.algorithm !== "sha256" ||
-    !Array.isArray(record.trackedInputs) ||
-    !record.trackedInputs.every((path) => typeof path === "string") ||
-    typeof record.inputDigest !== "string" ||
-    !/^[0-9a-f]{64}$/.test(record.inputDigest)
-  ) {
-    return "fidelity build evidence is malformed (build the compiler first)";
-  }
-  if (JSON.stringify(record.trackedInputs) !== JSON.stringify(inputs)) {
-    return "fidelity build evidence input set mismatch (build the compiler first)";
-  }
-
-  const hash = createHash("sha256");
-  try {
-    for (const input of inputs) {
-      hash.update(input);
-      hash.update("\0");
-      hash.update(readFileSync(join(root, input)));
-      hash.update("\0");
-    }
-  } catch {
-    return "fidelity build evidence cannot be recomputed from every tracked input";
-  }
-  if (hash.digest("hex") !== record.inputDigest) {
-    return "fidelity build evidence digest mismatch (build the compiler first)";
   }
   return null;
 }

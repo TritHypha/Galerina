@@ -17,9 +17,9 @@ import {
   readFileSync,
 } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
+import { createBuildEvidence } from "../../galerina-core-compiler/scripts/write-build-evidence.mjs";
 
 import {
   runUnit,
@@ -57,37 +57,11 @@ const FAKE_CLI = [
 const PASSING_TEST = `import { test } from "node:test"; test("ok", () => {});\n`;
 
 function writeCompilerEvidence(root) {
-  const tracked = spawnSync(
-    "git",
-    [
-      "-C",
-      root,
-      "ls-files",
-      "-z",
-      "--",
-      "packages-ts/galerina-core-compiler/src",
-      "packages-ts/galerina-core-compiler/tests",
-    ],
-    { encoding: "utf8" },
-  );
-  assert.equal(tracked.status, 0, tracked.stderr);
-  const trackedInputs = tracked.stdout.split("\0").filter(Boolean).sort();
-  const hash = createHash("sha256");
-  for (const path of trackedInputs) {
-    hash.update(path);
-    hash.update("\0");
-    hash.update(readFileSync(join(root, path)));
-    hash.update("\0");
-  }
+  const evidence = createBuildEvidence(root, "packages-ts/galerina-core-compiler");
   w(
     root,
     "packages-ts/galerina-core-compiler/dist/build-evidence.json",
-    JSON.stringify({
-      schema: "galerina.compiler-build-evidence.v1",
-      algorithm: "sha256",
-      trackedInputs,
-      inputDigest: hash.digest("hex"),
-    }, null, 2) + "\n",
+    JSON.stringify(evidence, null, 2) + "\n",
   );
 }
 
@@ -102,7 +76,15 @@ function fullWorkspace() {
   w(root, "packages-ts/galerina-core-compiler/tests/fidelity-differential.test.mjs", PASSING_TEST);
   w(root, "packages-ts/galerina-core-compiler/tests/slide-green.test.mjs", PASSING_TEST);
   w(root, "packages-ts/galerina-core-compiler/src/index.ts", "export {};\n");
+  w(root, "packages-ts/galerina-core-compiler/tsconfig.json", JSON.stringify({
+    compilerOptions: { outDir: "dist", rootDir: "src" },
+    include: ["src/**/*.ts"],
+  }, null, 2) + "\n");
+  w(root, "packages-ts/galerina-core-compiler/package.json", JSON.stringify({
+    devDependencies: { typescript: "^5.5.0" },
+  }, null, 2) + "\n");
   w(root, "packages-ts/galerina-core-compiler/dist/index.js", "export {};\n");
+  w(root, "packages-ts/galerina-core-compiler/dist/governance-mode.js", "export const mode = 1;\n");
   w(root, "examples/good.fungi", "pure flow main() -> Int { return 0 }\n");
   w(root, "examples/bad.fungi", "pure flow main() -> Int { return 0 }\n");
   const init = spawnSync("git", ["init", "--quiet"], { cwd: root, encoding: "utf8" });
@@ -341,14 +323,10 @@ test("runFidelity: refuses duplicate evidence keys before JSON parsing", async (
     "packages-ts/galerina-core-compiler/dist/build-evidence.json",
   );
   const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
-  const body = [
-    `  "schema": "rejected-first",`,
-    `  "schema": ${JSON.stringify(valid.schema)},`,
-    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
-    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
-    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
-  ].join("\n");
-  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+  const rest = Object.entries(valid)
+    .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
+    .join(",\n");
+  writeFileSync(evidencePath, `{\n  "schema": "rejected-first",\n${rest}\n}\n`);
 
   const res = await runFidelity({ rootDir: root });
 
@@ -364,20 +342,34 @@ test("runFidelity: refuses escaped duplicate evidence keys before parsing", asyn
     "packages-ts/galerina-core-compiler/dist/build-evidence.json",
   );
   const valid = JSON.parse(readFileSync(evidencePath, "utf8"));
-  const body = [
-    `  "schema": "rejected-first",`,
-    `  "\\u0073chema": ${JSON.stringify(valid.schema)},`,
-    `  "algorithm": ${JSON.stringify(valid.algorithm)},`,
-    `  "trackedInputs": ${JSON.stringify(valid.trackedInputs)},`,
-    `  "inputDigest": ${JSON.stringify(valid.inputDigest)}`,
-  ].join("\n");
-  writeFileSync(evidencePath, `{\n${body}\n}\n`);
+  const rest = Object.entries(valid)
+    .filter(([key]) => key !== "schema")
+    .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
+    .join(",\n");
+  writeFileSync(
+    evidencePath,
+    `{\n  "schema": "rejected-first",\n  "\\u0073chema": ${JSON.stringify(valid.schema)},\n${rest}\n}\n`,
+  );
 
   const res = await runFidelity({ rootDir: root });
 
   assert.equal(res.ok, false);
   assert.equal(res.exitCode, 1);
   assert.match(res.detail, /duplicate.*key/i);
+});
+
+test("runFidelity: refuses a tampered consumed compiler output", async () => {
+  const root = fullWorkspace();
+  writeFileSync(
+    join(root, "packages-ts/galerina-core-compiler/dist/governance-mode.js"),
+    "export const mode = 99;\n",
+  );
+
+  const res = await runFidelity({ rootDir: root });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.exitCode, 1);
+  assert.match(res.detail, /output digest mismatch/i);
 });
 
 test("runFidelity: refuses untracked compiler source/test inputs", async () => {
