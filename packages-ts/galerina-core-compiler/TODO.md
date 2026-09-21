@@ -204,19 +204,30 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     Clearance requires an explicit host/closure contract, interpreter/WAT
     parity, positive and negative tests, and exact-head receipts.
 
-[ ] Stage-B self-hosting WASM byte-parity
-    Lexer tokenize + full parser ladder: proven (R3). GIR emitter: proven (R2).
-    Remaining: type-checker, effect-checker, governance-verifier (same #100 erasure
-    pattern, cleared the same way as the parser and gir-emitter).
+[ ] C19-A Stage-B self-hosting WASM byte-parity
+    Owner: `galerina-core-compiler`.
+    Contract: lexer/parser/type/effect/governance stages must produce the same
+    governed bytes at the self-host boundary; no host-side semantic shortcut.
+    Existing evidence: lexer/parser/GIR slices. Remaining implementation:
+    type-checker, effect-checker and governance-verifier parity.
+    Focused routes: the owning `tests/type-checker-*.test.mjs`,
+    `tests/effect-checker/`, `tests/governance/`, and
+    `tests/bootstrap-determinism/` suites, each bound to the same source head.
 
-[ ] stdlib.json governed codec (galerina-data-json)
-    Json.parse() returning a governed JsonValue type (not plain any). Required for
-    service flows to exchange JSON without bypassing taint tracking.
+[ ] C19-B stdlib JSON governed codec (`galerina-data-json`)
+    Owner: `galerina-data-json` with compiler integration in this package.
+    Contract: `Json.parse()` returns a closed governed `JsonValue`, never
+    plain `any`, and preserves taint/effect boundaries through encode/decode.
+    Source seam: `packages-ts/galerina-data-json/src/index.ts`.
+    Focused route: `packages-ts/galerina-data-json/tests/json-contracts.test.mjs`
+    plus a compiler integration test before any service-flow admission.
 
-[ ] Move argon2 / bcryptjs out of compiler into galerina-core-security
-    KDFs with native C bindings do not belong in the TCB. Move Password/BCrypt/Argon2
-    stdlib calls to an injected CryptoProvider interface; ship the implementation in
-    galerina-core-security.
+[ ] C19-C injected crypto-provider boundary
+    Owner: `galerina-core-security`; compiler owns the typed injection seam.
+    Contract: Password/BCrypt/Argon2 calls use an injected `CryptoProvider`;
+    native C bindings are not loaded by the compiler TCB and absent/throwing
+    providers refuse closed. Focused routes: the core-security package tests
+    and compiler stdlib security tests, with dependency and runtime receipts.
 ```
 
 ## Post-v1 (owner-gated)

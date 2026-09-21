@@ -205,7 +205,7 @@ not rewritten because their bytes already matched the selected candidates.
 **Steps:**
 
 - [ ] Record each gate's exact status, receipt path, head/tree, and next action. Preserve `HOLD` for profiles 64/256, production authority, and any unverified platform evidence.
-- [ ] Keep `MEMORY.md` as an index; if a durable memory update is explicitly requested, add a small locator note under `C:\Users\phill\.codex\memories\extensions\ad_hoc\notes\` rather than copying the evidence warehouse into memory.
+- [ ] Keep `MEMORY.md` as an index; if a durable memory update is explicitly requested, add a small locator note under `<CODEX_HOME>/memories/extensions/ad_hoc/notes/` rather than copying the evidence warehouse into memory.
 - [ ] Validate JSON, run `git diff --check` on the planned files, and ensure no protected graph path is included.
 - [ ] Commit only the planned implementation, receipt, and documentation files after all checks pass. Hold the push for the owner.
 

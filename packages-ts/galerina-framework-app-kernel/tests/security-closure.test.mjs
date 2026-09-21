@@ -157,13 +157,21 @@ test("route rate, deadline, and response-memory budgets are enforced", async () 
 test("default idempotency storage expires entries, rejects oversized keys, and stays bounded", () => {
   let now = 1_000;
   const store = new InMemoryIdempotencyStore({ capacity: 2, maxKeyBytes: 8, now: () => now });
-  assert.equal(store.seen("r", "a", 1), false);
-  assert.equal(store.seen("r", "a", 1), true);
+  assert.equal(store.claim("r", "a", 1), "claimed");
+  assert.equal(store.claim("r", "a", 1), "duplicate");
   now += 1_001;
-  assert.equal(store.seen("r", "a", 1), false);
-  assert.throws(() => store.seen("r", "0123456789", 1), /idempotency key/i);
-  assert.equal(store.seen("r", "b", 60), false);
-  assert.throws(() => store.seen("r", "c", 60), /capacity/i);
+  assert.equal(store.claim("r", "a", 1), "claimed");
+  assert.throws(() => store.claim("r", "0123456789", 1), /idempotency key/i);
+  assert.equal(store.claim("r", "b", 60), "claimed");
+  assert.throws(() => store.claim("r", "c", 60), /capacity/i);
+  assert.equal(store.seen("r", "a", 1), true);
+});
+
+test("atomic claims admit exactly one concurrent duplicate", async () => {
+  const store = new InMemoryIdempotencyStore();
+  const results = await Promise.all(Array.from({ length: 32 }, () => Promise.resolve(store.claim("r", "same", 60))));
+  assert.equal(results.filter((result) => result === "claimed").length, 1);
+  assert.equal(results.filter((result) => result === "duplicate").length, 31);
 });
 
 test("default audit retention refuses overflow without breaking accepted seals", async () => {

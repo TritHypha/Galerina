@@ -3,7 +3,7 @@
 ## Resume identity
 
 - Repository: Galerina
-- Checkout: `C:\Users\phill\Documents\GitHub\Galerina\.worktrees\rd-0873-native-fungi-bootstrap-implementation`
+- Checkout: `<repository-worktree>/rd-0873-native-fungi-bootstrap-implementation`
 - Branch: `main`
 - HEAD: `e716fc677d3ca609b016cf76d7f994b67fd36466`
 - Tree: `80aa41e53fd9cacd608bf0ba392b1d8f2c005e0a`

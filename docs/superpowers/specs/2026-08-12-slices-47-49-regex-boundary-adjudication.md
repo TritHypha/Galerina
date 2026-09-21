@@ -31,10 +31,14 @@ safe-label pattern are within its bounded, non-backtracking subset. Slice 49's
 header pattern compiles, while its flow and contract patterns refuse because
 word-boundary support is not present in v0.1.
 
-An exact Fungi probe using `String.matchesPattern` parses and effect-checks, but
-runtime interpretation returns an unresolved-call error and WAT assembly
-refuses the undefined `$matchesPattern` callee. Checker or standard-library
-catalogue presence is therefore not executable lowering evidence.
+At the earlier adjudication head, an exact Fungi probe using
+`String.matchesPattern` parsed and effect-checked, while runtime interpretation
+returned an unresolved-call error and the WAT path had no admitted
+`$matchesPattern` callee. The current bounded hardening instead makes the WAT
+fallback explicit at
+`packages-ts/galerina-core-compiler/src/wat-emitter.ts:2115-2122`: it emits a
+fail-closed trap rather than an undefined call. Checker or standard-library
+catalogue presence is therefore still not executable lowering evidence.
 
 The current physical checked-Fungi surface admits exact equality, trim,
 contains, prefix, suffix and fixed-index slice operations. It does not admit

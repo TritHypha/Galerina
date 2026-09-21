@@ -19,6 +19,20 @@ It also does not authorize a corpus compile, conversion-queue regeneration,
 `.fungi` build, signing or custody action, platform/durability work, or final
 assurance. Those remain later gates after the component work is complete.
 
+## Cross-record KB adjudication refresh — 2026-09-20
+
+- [x] `RD-1265` records the bounded Gemini/Grok/Astra classification for
+  `RD-1231`, `RD-1008` and `RD-1003`; `RD-0864` remains historical and
+  superseded by `RD-1003`.
+- [!] This is documentary classification only. It does not close any missing
+  R&D question, admit a design, or promote local tests into general conversion
+  evidence.
+- [!] Keep `UNKNOWN`, `NOT_VERIFIABLE`, `HOLD` and capacity refusal states
+  explicit. Do not infer queue, corpus, signing or `.fungi` clearance from
+  model agreement or bounded pilot results.
+- **Locator:** `RD-1265-bounded-kb-gap-adjudication-PRIVATE.md` at KB head
+  `8acfdce002168af2f1c8f4f303c331610ea7304b`.
+
 ### M-RD-006 — Galerina WASM target admission contract — RD-1236
 
 - **Exact blocker:**
@@ -40,7 +54,7 @@ assurance. Those remain later gates after the component work is complete.
   diagnostic ownership, exact implementation, and negative tests for missing,
   forged, mismatched, duplicate, malformed, and refused evidence.
 - **Evidence:** private record
-  `private/research/rd/RD-1236-wasm-target-admission-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1236;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T090725Z-rd-1236-wasm-target-admission-private/`.
 - **Safe continuation:** complete unrelated bounded component work. Do not
@@ -50,26 +64,26 @@ assurance. Those remain later gates after the component work is complete.
 ### M-RD-007 — Galerina direct logger sink failure contract — RD-1237
 
 - **Exact blocker:** `packages-ts/galerina-observability/src/logger.ts:31-34,56-63`.
-  The interface claims `LogSink.write` must not throw, but direct
-  `JsonLineSink.write()` invokes the injected writer without a local catch.
-  `Logger.#emit` only protects the mediated path at `:195-217`.
-- **Fresh evidence:** the bounded package route is **53/53** with clean
-  typecheck/build. A direct `dist/index.js` probe observed the writer error
-  escaping, while the same sink through `Logger` was isolated with
-  `sinkFailures() === 1`. Existing outer-sink tests do not exercise the direct
-  boundary.
+  The interface claims `LogSink.write` must not throw. Direct
+  `JsonLineSink.write()` is now locally guarded at `:61-69`; the guard catches
+  only the caller writer and performs no retry or delivery claim.
+- **Fresh evidence:** the bounded package route is **59/59** with clean
+  typecheck/build. The direct-writer regression at
+  `packages-ts/galerina-observability/tests/logger.test.mjs:178-186` proves
+  one attempt and no exception escape, while the existing mediated sink test
+  still proves `sinkFailures() === 1` for `Logger.#emit`.
 - **Decision:** `RD-1237` is
-  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The defect is
-  confirmed; the remaining decision is an owner contract, then ordinary
-  engineering. A minimal swallow-and-void candidate must not invent retry,
-  buffering, delivery or durability semantics and must acknowledge any loss
-  of outer-counter visibility.
+  `IMPLEMENTATION_SLICE_COMPLETE; COMPLETE_NON_AUTHORITATIVE;
+  ASTRA_CROSS_CHECKED; HOLD`. The remaining decision is owner confirmation
+  that swallow-and-void is the intended direct boundary; it must not invent
+  retry, buffering, delivery or durability semantics and acknowledges the
+  direct path has no outer-counter visibility.
 - **Correction:** do not redefine `sinkFailures()` as only escaped writer
   failures: `#emit` also counts record-construction failures at `:213-217`.
   Clock exceptions at `:219-227` return `0` without incrementing it. The
   separate failure-accounting/clock TODO remains open.
 - **Evidence:** private record
-  `private/research/rd/RD-1237-observability-json-line-sink-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1237;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T092748Z-rd-1237-observability-json-line-sink-private/`.
 - **Safe continuation:** do not claim the direct sink contract is complete,
@@ -99,7 +113,7 @@ assurance. Those remain later gates after the component work is complete.
   parent/child counters, filtered emissions, serialization degradation and a
   planted clock-as-sink-failure wrong-result control. Keep RD-1237 HOLD.
 - **Evidence:** private record
-  `private/research/rd/RD-1238-observability-failure-accounting-clock-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1238;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T094347Z-rd-1238-observability-failure-accounting-clock-private/`.
 - **Safe continuation:** do not close the counter/clock TODO, direct sink TODO,
@@ -108,30 +122,30 @@ assurance. Those remain later gates after the component work is complete.
 
 ### M-RD-009 — Galerina metrics-audit authority boundary — RD-1239
 
-- **Exact blocker:** `packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
-  exposes a metrics projection as `AuditSink`; the kernel's full-event affine
-  contract is at `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`.
-- **Authority loss:** the adapter always returns a token, keeps only
-  method/path/status, drops request identity, error code, policy provenance,
-  timestamp and posture, and can truncate/overflow-fold routes or drop
-  malformed observations. A mandatory route can therefore return `200` without
-  a receipt-preserving event.
-- **Fresh evidence:** observability integration is **16/16** and app-kernel
-  audit controls are **9/9**. These tests verify metrics counts and in-memory
-  affine/503 behavior but are blind to lossy receipt substitution.
+- **Exact implementation:** `packages-ts/galerina-observability/src/kernel-integration.ts:38-99`
+  now exposes metrics only as a non-authorizing observer unless an explicit
+  `receiptSink` is supplied; the kernel full-event affine contract remains at
+  `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`.
+- **Bounded clearance:** without a primary, `reserve()` returns `undefined`
+  and mandatory kernel routes fail closed with `503 audit_unavailable` before
+  dispatch. With a primary, the adapter delegates capacity, forwards the
+  complete event before metrics observation, preserves wrapper-token affinity,
+  cancels once after commit failure, and isolates observer failure. Explicitly
+  non-mandatory routes retain metrics-only observation.
+- **Fresh evidence:** the observability package passes **58/58**, including
+  full-event, wiring, mandatory-refusal, affine, non-required emit, and
+  observer-failure controls. This is bounded implementation evidence, not a
+  durability receipt or production deployment proof.
 - **Decision:** `RD-1239` is
-  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The existing kernel
-  contract is sufficient; the remaining decision is owner API/composition,
-  then ordinary bounded implementation. Demote the adapter or make it a
-  non-authorizing observer/tee behind a receipt-preserving sink. This is not
-  new R&D.
-- **Clearance evidence:** owner-selected composition, exact full-field
-  preservation, real capacity refusal before effects, commit failure/cancel,
-  foreign/reused reservation controls, observer throw/drop/overflow isolation,
-  non-required emit behavior, and a planted receipt-loss verifier that rejects
-  the lossy adapter. In-memory receipts are not durability.
+  `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; BOUNDED_IMPLEMENTATION; INDEPENDENT_AUDIT_PENDING`.
+  No new R&D is required for this slice. Keep the production primary-sink,
+  physical-durability, and final assurance gates open.
+- **Remaining evidence:** independent review of the exact diff, an owner-
+  supplied receipt-preserving production implementation, and any deployment-
+  level durability evidence. Do not close queue/corpus/`.fungi` assurance from
+  in-memory or package-level evidence.
 - **Evidence:** private record
-  `private/research/rd/RD-1239-metrics-audit-authority-boundary-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1239;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T095740Z-rd-1239-metrics-audit-authority-boundary-private/`.
 - **Safe continuation:** do not authorize sink replacement, production
@@ -144,17 +158,23 @@ assurance. Those remain later gates after the component work is complete.
   accepts typed caller-owned capability, plan, selection and backend-profile
   records without an exact runtime report decoder or a decision-binding
   receipt. Selection ingress is separately guarded at `:272-613`.
-- **Provenance/diagnostic gap:** warnings reread caller diagnostics at
-  `:715-718` while the diagnostic snapshot is stored at `:751`; hostile
-  getters or mutable caller input can make the warning view disagree with the
-  frozen diagnostic view. The report has no owner-defined admitted-versus-
-  observational authority contract.
+- **Provenance/diagnostic gap:** warnings previously reread caller diagnostics at
+  `:715-718` while the diagnostic snapshot is stored at `:751`; the bounded
+  consistency defect is now repaired by deriving warnings from the detached
+  `targetSelections` snapshot. The report still has no owner-defined
+  admitted-versus-observational authority contract.
+- **[x] Bounded consistency slice:** a getter-mutation regression at
+  `tests/ai-accelerator-contracts.test.mjs:147-177` proves warning messages
+  agree with the frozen diagnostic snapshot and that caller diagnostics are
+  not reread after snapshotting. Package verification is **8/8 pass** with
+  typecheck/build clean.
 - **Test qualification:** package tests span
-  `tests/ai-accelerator-contracts.test.mjs:28-205`; the planted fixture at
+  `tests/ai-accelerator-contracts.test.mjs:28-177`; the planted fixture at
   `:89-99` retains GPU selection with empty capabilities but explicitly asserts
   `safe:false`, so it demonstrates unbound inclusion rather than proving a
-  false-safe admission. Fresh bounded package evidence is **7/7 pass** with
-  clean typecheck/build; it does not clear report authority.
+  false-safe admission. Fresh bounded package evidence is **8/8 pass** with
+  clean typecheck/build; it does not clear report authority. The consistency
+  slice above is engineering closure only.
 - **Decision:** `RD-1240` is
   `COMPLETE_NON_AUTHORITATIVE; ASTRA_CROSS_CHECKED; HOLD`. The owner must
   define the report schema, refusal representation, closed diagnostic
@@ -163,12 +183,12 @@ assurance. Those remain later gates after the component work is complete.
   this is not permission to claim accelerator execution, physical capability,
   signing, queue, corpus, or `.fungi` assurance.
 - **Evidence:** private record
-  `private/research/rd/RD-1240-ai-accelerator-report-admission-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1240;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T101217Z-rd-1240-ai-accelerator-report-admission-private/`.
 - **Safe continuation:** keep the report TODO open and continue with the next
   concrete component TODO. Treat
-  `_CORPUS-20260912-RESULTS-TABLE-PRIVATE.md` as the pending 126-record R&D
+  the private corpus results table as the pending 126-record R&D
   inventory, not as completed semantic or authority evidence.
 
 ### M-RD-011 — Galerina native artifact admission — RD-1241
@@ -197,7 +217,7 @@ assurance. Those remain later gates after the component work is complete.
   `src/index.ts:65,301,311,320,349,358`, while the TODO previously said five.
   Correct that documentation count separately from governed registry migration.
 - **Evidence:** private record
-  `private/research/rd/RD-1241-native-artifact-admission-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1241;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T103049Z-rd-1241-native-artifact-admission-private/`.
 - **Safe continuation:** keep this admission TODO open and continue with the
@@ -234,7 +254,7 @@ assurance. Those remain later gates after the component work is complete.
   contract work, not automatic new R&D. Do not assign registry codes from
   package-local green tests.
 - **Evidence:** private record
-  `private/research/rd/RD-1242-photonic-contract-reconciliation-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1242;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T104346Z-rd-1242-photonic-contract-reconciliation-private/`.
 - **Safe continuation:** keep the reconciliation TODO open, correct stale
@@ -263,7 +283,7 @@ assurance. Those remain later gates after the component work is complete.
   ordinary engineering only after that freeze; `lstat`/`realpath` alone must
   not be represented as race-safe confinement.
 - **Evidence:** private record
-  `private/research/rd/RD-1243-workspace-root-marker-attestation-and-containment-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1243;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T111749Z-rd-1243-workspace-root-marker-attestation-private/`.
 - **Safe continuation:** leave the item open and do not add a guessed
@@ -293,7 +313,7 @@ assurance. Those remain later gates after the component work is complete.
   requires a new schema/version; do not silently dual-accept or mark the broad
   TODO complete.
 - **Evidence:** private record
-  `private/research/rd/RD-1244-compiler-freshness-canonical-evidence-and-adversarial-controls-PRIVATE.md`;
+  the private adjudication record for RD-1244;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T115807Z-rd-1244-compiler-freshness-canonical-evidence-private/`.
 - **Safe continuation:** keep the duplicate-key slice bounded and preserve its
@@ -392,7 +412,7 @@ declared limit; and returned capability/plan data is copied and immutable.
   HOLD`. The owner must choose an admitted allowlist, exact consumed set/bag,
   or split schema before any reverse check or new unused-entry diagnostic.
 - **Evidence:** private record
-  `private/research/rd/RD-1245-js-import-set-closure-adjudication-PRIVATE.md`;
+  the private adjudication record for RD-1245;
   Grok receipt/result under
   `ai-reviews/grok-runs/results/20260920T124025Z-rd-1245-js-import-set-closure-private/`.
 - **Safe continuation:** retain the one-way rule and regression; do not widen
@@ -415,16 +435,17 @@ declared limit; and returned capability/plan data is copied and immutable.
   found no genuinely new research problem: the logger items are ordinary
   implementation candidates only after an explicit failure/redaction/clock
   contract, while the WASM items remain an admission-authority decision.
-- **Exact unresolved logger blockers (superseded by RD-1237):**
-  `packages-ts/galerina-observability/src/logger.ts:31-34,56-63` still permits
-  a direct writer exception despite the non-throwing interface contract;
-  `Logger.#emit` catches only the mediated path at `:195-217`. The current
-  bounded package route is **53/53**, but no direct throwing-writer regression
-  exists. `#emit` counts sink and record-construction failures at `:207-217`,
+- **Exact unresolved logger blockers (superseded by RD-1237):** at the
+  2026-09-20 review head, `packages-ts/galerina-observability/src/logger.ts:31-34,56-63`
+  still permitted a direct writer exception despite the non-throwing interface
+  contract. The later RD-1237 slice adds the local guard at `:61-69` and the
+  direct throwing-writer regression at
+  `tests/logger.test.mjs:178-186`; the current package route is **59/59**.
+  `#emit` still counts sink and record-construction failures at `:207-217`,
   while `#safeNow` returns `0` without counting clock exceptions at `:219-227`.
-  **Fail closed:** retain RD-1237 until the owner freezes direct failure
-  behavior and direct-call/repeated-failure controls exist; keep the separate
-  failure-accounting/clock TODO open.
+  **Fail closed:** retain RD-1237 until the owner confirms direct-loss and
+  counter-visibility semantics; keep the separate failure-accounting/clock
+  TODO open.
 - **Exact unresolved WASM blockers (superseded by RD-1236):** the bounded
   runtime decoder and detached report route now exist at
   `packages-ts/galerina-target-wasm/src/index.ts:68-199,201-272`, with 5/5
@@ -695,7 +716,7 @@ locator is not sufficient evidence of a blocker or of completion.
 - **RD-1232 broad expression-inference adjudication:** the governed Grok
   attempt completed with `COMPLETE_NON_AUTHORITATIVE`, and an independent Astra
   review returned `HOLD`. The exact record is
-  `ZTF-Knowledge-Bases/private/research/rd/RD-1232-broad-expression-inference-adjudication-PRIVATE.md`.
+  the private adjudication record for RD-1232.
   The current compiler source head is `6afcf74ef0ff1c577ef5cf675b2589acca975786`;
   the fresh
   focused route is **139/139**, but that does not clear the blocker. The exact
@@ -776,16 +797,16 @@ locator is not sufficient evidence of a blocker or of completion.
   `packages-ts/galerina-target-ai-accelerator/src/index.ts:272-613`
   exact-decodes model/tensor/capability/preference records, rejects
   proxy/accessor/surplus/sparse collections and rogue vocabularies, and copies
-  bounded tensor dimensions. The focused package is **7/7** with clean
+  bounded tensor dimensions. The focused package is **8/8** with clean
   typecheck/build; tests span
-  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-205`.
+  `packages-ts/galerina-target-ai-accelerator/tests/ai-accelerator-contracts.test.mjs:28-177`.
   Declared fallback selection refuses absent compatible capability evidence at
   `src/index.ts:673-687`; report construction detaches/freezes known
   collections at `src/index.ts:703-764`. **Remaining blocker:** report
   admission still lacks an exact runtime decoder, closed diagnostic
   severity/shape validation, and a selection-to-report binding receipt;
-  warnings reread caller diagnostics at `:715-718` while the snapshot is at
-  `:751`. **Fail closed:** clearance requires the owner-approved report
+  warnings now derive from the detached snapshot at `:715-719`, while the
+  remaining report fields lack owner-defined admission binding. **Fail closed:** clearance requires the owner-approved report
   schema, hostile report-input vectors, diagnostic-severity refusal and a
   decision-binding receipt. See RD-1240 above.
 - **Galerina GPU target ingress/snapshot (partial):** the GPU target now
@@ -814,37 +835,37 @@ locator is not sufficient evidence of a blocker or of completion.
   at `:243-254` remain explicit residual controls. Clearance requires the
   owner contract, refusal/consumption rules, registry ownership and negative
   tests before any execution or physical-target authority claim.
-- **Galerina observability logger residuals (RD-1237/RD-1238):** direct writer failure still escapes
-  `JsonLineSink.write()` at `Galerina/packages-ts/galerina-observability/src/logger.ts:56-63`,
-  while the outer logger catch is only `:195-217`; the exact direct-sink
-  failure/isolation contract remains unresolved under RD-1237. The separate
-  failure-accounting/clock contract is also open: `#emit` counts sink/record
-  failures at `:207-217`, while `#safeNow` returns `0` without counting clock
-  exceptions at `:219-227`; RD-1238 retains the counter/clock contract hold.
+- **Galerina observability logger residuals (RD-1237/RD-1238):** the direct
+  `JsonLineSink.write()` boundary now catches an injected writer exception at
+  `Galerina/packages-ts/galerina-observability/src/logger.ts:61-69`, with one
+  attempt and no retry/delivery claim covered at
+  `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:178-186`.
+  The direct-loss and counter-visibility contract remains owner-held under
+  RD-1237. The separate failure-accounting/clock contract is also open:
+  `#emit` counts sink/record failures at `:207-217`, while `#safeNow` returns
+  `0` without counting clock exceptions at `:219-227`; RD-1238 retains the
+  counter/clock contract hold.
   Nested redaction and prototype-safe copying are now closed by
   the bounded descriptor-only clone at `:74-126,228-246`, with negative vectors
   at `Galerina/packages-ts/galerina-observability/tests/logger.test.mjs:84-115`.
   The former `safeStringify` totality gap is closed at `:268-288` with focused
-  negative coverage at `:149-164`. **Fail closed:** do not close the remaining
-  sink/accounting blocker by silently swallowing writer errors; it requires an
-  owner-approved direct failure behavior, explicit counter-visibility choice,
-  and direct/repeated-failure vectors. Existing evidence does not require a
-  new public typed failure signal.
-- **Galerina metrics-audit authority boundary (RD-1239):**
-  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:38-80`
-  maps only method/path/status into `metricsAuditSink`, while
-  `Galerina/packages-ts/galerina-observability/src/observability.ts:44-49,121-139`
-  exposes that lossy object as the kernel `AuditSink`. The mandatory runtime
+  negative coverage at `:149-164`. **Fail closed:** the local guard is an
+  implementation slice only; do not close the remaining sink/accounting
+  blocker until the owner confirms direct-loss behavior and counter visibility.
+  Existing evidence does not require a new public typed failure signal.
+- **Galerina metrics-audit authority boundary (RD-1239):** the bounded repair at
+  `Galerina/packages-ts/galerina-observability/src/kernel-integration.ts:38-99`
+  now treats metrics as a non-authorizing observer. Without an explicit primary
+  receipt sink, `reserve()` refuses capacity and the kernel's mandatory runtime
   evidence consumer at
   `Galerina/packages-ts/galerina-framework-app-kernel/src/kernel.ts:746-795`
-  synchronously reserves/commits the full request event and returns 503 when
-  reservation or commit fails. **Blocker:** RD-1239 confirms that a metrics-only
-  sink must not be mistaken for receipt-preserving mandatory evidence, and the
-  source comment's "off the critical path/can never delay" claim is false for
-  required commit. **Fail closed:** clearance requires the owner-selected
-  non-authorizing observer/tee composition, a required-runtime-report vector
-  that preserves requestId/errorCode/defaults/relaxations/posture, capacity and
-  affine controls, and a receipt-loss verifier that rejects the lossy adapter.
+  returns 503 before dispatch. With a primary, the full event is forwarded
+  before observation, wrapper reservations are affine, commit failure attempts
+  one cancel, and observer faults are isolated. The public wiring is at
+  `observability.ts:26-31,123-139`; focused package evidence is **58/58**.
+  **Residual hold:** independent review, owner-supplied production receipt
+  implementation, physical durability, and final assurance remain open. This
+  package result does not close queue/corpus/`.fungi` authority.
 - **Galerina observability public-health boundary:** public liveness/readiness/
   health handlers now project only `{ status: "UP" | "DOWN" }` (combined health
   includes status-only liveness/readiness children) at
@@ -892,7 +913,7 @@ locator is not sufficient evidence of a blocker or of completion.
   `push`/`append` in the persistent-transform/`FUNGI-TYPE-028` lane; do not
   classify them as readonly receiver mutation without a receiver contract.
   Exact record:
-  `private/research/rd/RD-1234-pipeline-checker-adjudication-PRIVATE.md`.
+  the private adjudication record for RD-1234.
 - **Galerina residual WAT lowering:**
   `packages-ts/galerina-core-compiler/TODO.md:63-65` remains open. The emitter
   intentionally fails closed at `src/wat-emitter.ts:2035-2045` for Decimal and
@@ -912,12 +933,12 @@ locator is not sufficient evidence of a blocker or of completion.
   Clearance requires an owner-frozen Decimal representation/ABI, rounding and
   resource contract, plus a bounded capture-free/effect-free callback ABI for
   `map`/`reduce`/`filter`, hostile and exhaustion tests, and exact-head
-  interpreter/WAT parity. Method calls enter the plain-call fallback at
-  `wat-emitter.ts:1996-1998` before the named refusal set, while
-  `wat-assembler.ts:145-157` rejects undefined callees; treat this as
-  inconsistent refusal coverage, not proven silent deletion. Keep the
-  fail-closed traps. Exact record:
-  `private/research/rd/RD-1233-wat-lowering-adjudication-PRIVATE.md`.
+  interpreter/WAT parity. The previously unsafe unknown-method fallback now
+  refuses at `wat-emitter.ts:2115-2122` instead of emitting an undefined WAT
+  callee; the focused regression is
+  `tests/wat-phase25-arithmetic.test.mjs` (1/1). The remaining Decimal/HOF
+  refusal contract is unchanged. Keep the fail-closed traps. Exact record:
+  the private adjudication record for RD-1233.
 - **Galerina test-package conversion-overlay drift:** the bounded TypeScript
   harness work is green, but its package-wide Fungi overlay checks still expose
   two stale source/asset bindings. The primitive check at
@@ -955,27 +976,51 @@ locator is not sufficient evidence of a blocker or of completion.
   boundary:** downstream consumers now have an explicit capture result and
   must use its detached snapshot rather than retain caller-owned input. This
   does not authorize platform/durability or submission work.
-- **Galerina API-server/network contract:**
-  `packages-ts/galerina-framework-api-server/TODO.md:3-8` is open because the
-  API-server adapter still documents `ReplayStore.exists/save`, while the
-  canonical network contract is `ReplayStore.has/put` at
-  `packages-ts/galerina-core-network/README.md:360-367`. The same mismatch is
-  stated in the API-server README at `README.md:18-31` and repeated by its
-  scaffold contract at `README.md:1528-1537`. The checked-out runtime does not
-  yet contain that contract: `packages-ts/galerina-framework-api-server/src/index.ts:1-40`
-  declares a deliberately thin transport with no policy, routing, webhook or
-  replay authority, and its live request path is only body buffering,
-  channel/principal resolution, kernel dispatch and response writing at
-  `src/index.ts:624-721`. The current focused evidence is transport-only at
+ - **Galerina API-server/network contract:**
+  `packages-ts/galerina-framework-api-server/TODO.md:3-13` now consumes the
+  canonical `ReplayStore.has/put` and `IdempotencyStore.get/put` interfaces
+  exported by `packages-ts/galerina-core-network/src/index.ts` and documented
+  at `packages-ts/galerina-core-network/README.md:373-380`. The checked-out
+  runtime remains a deliberately thin transport with no policy, routing,
+  webhook or replay authority: the bounded process-local adapter at
+  `packages-ts/galerina-framework-api-server/src/replay-store.ts:1-70` is not
+  wired into `packages-ts/galerina-framework-api-server/src/index.ts:1-40` or
+  its live request path at `:527-562,624-761`, which covers body buffering,
+  channel/principal resolution, kernel dispatch and response writing. The
+  current focused evidence is transport-only at
   `tests/api-server.test.mjs:98-256` and TLS/certificate admission at
   `tests/api-server-tls.test.mjs:112-257`; neither proves replay expiry,
-  idempotency or webhook ordering. **Fail closed:** do not implement the stale
-  multi-file scaffold piecemeal or mark the adapter complete until the owner
-  chooses the canonical `has/put` names or publishes an explicit
-  `exists/save` adapter mapping, and the package source/tests then define and
-  prove replay expiry, idempotency and HMAC-before-handler behavior. Clearance
-  requires that owner contract plus matching source and negative tests; no
-  `.fungi` or corpus action is implied.
+  idempotency or webhook ordering. The app-kernel's current atomic
+  `IdempotencyStore.seen` contract is at
+  `packages-ts/galerina-framework-app-kernel/src/kernel.ts:97-100,566-584`;
+  core-network `get/put` must not be substituted through a race-prone
+  read-then-write adapter. Astra Ultra cross-examination confirms that both
+  `get/put` and `has/put` can admit two concurrent callers and that the
+  route-scoped kernel `seen` contract does not carry the network record's
+  lifecycle, provider or identity semantics. The RD router's gold control passed,
+  but its bounded range query was **REFUSED** because tracked RD source paths
+  are dirty; therefore no new RD number is inferred from the current ledger.
+  A clean detached KB query at exact head `8acfdce` was then refreshed only in
+  isolation and remained `STALE` because `research/RD-TODO-MAP.md` pins older
+  KB/product build points. The canonical map refresh refuses the current dirty
+  product TODOs, so the owner must clean those sources and refresh the map and
+  metadata indexes together before C16 can receive a valid RD linkage.
+  Adjacent untracked KB records `RD-1254` through `RD-1256` were checked by
+  title/state and are non-authorizing subjects outside C16; none is reused as
+  a substitute linkage.
+  **Fail closed:** do not implement the stale
+  multi-file scaffold piecemeal or mark the adapter complete until the package
+  consumes canonical replay storage, reconciles the atomic idempotency seam
+  through an explicitly atomic `claim(scope,key,ttl)` operation (or proves
+  equivalent storage authority), and source/tests define and prove replay
+  expiry, idempotency and HMAC-before-handler behavior. Clearance also needs an explicit
+  durability/multi-process owner decision plus matching negative tests; no
+  `.fungi` or corpus action is implied. The current `MemoryReplayStore` remains
+  process-local only; it is not evidence of cross-process durability. Required
+  negative evidence includes barrier-synchronised duplicates, invalid-HMAC
+  non-mutation, malformed/refused store outcomes, exact expiry/non-renewal,
+  namespace isolation, capacity exhaustion, and same-key retry behavior after
+  downstream refusal or timeout.
 - **Galerina docs contract-type expansion:**
   `packages-ts/galerina-docs/TODO.md:12-18` leaves request/response component
   schemas as placeholders because the generator's `contractTypePlaceholder()`

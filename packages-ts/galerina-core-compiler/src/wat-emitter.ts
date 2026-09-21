@@ -2112,9 +2112,13 @@ export function emitWATExpr(
           const operandWats = operandNodes.map((c) => emitWATExpr(c, vars, staticConsts));
           return `(call ${hostFn} ${operandWats.join(" ")})`.trimEnd();
         }
-        // Unknown method — fall through to a plain $method call (legacy behaviour).
-        const args = children.map((c) => emitWATExpr(c, vars, staticConsts));
-        return `(call $${name} ${args.join(" ")})`.trimEnd();
+        // Unknown method — fail closed. A method call is not a user-flow call;
+        // emitting a bare `$${name}` creates an undefined WAT callee and lets a
+        // later assembler/adapter decide what to do with an unsupported form.
+        // Keep the refusal in the emitter so unsupported method syntax cannot
+        // become an apparently executable target before C03 freezes the
+        // context-rich method-chain checker (RD-1234).
+        return `(unreachable) (; unknown method '${name}' — fail-closed WAT refusal; C03/RD-1234 ;)`;
       }
 
       // #163-A2: redact(x) ALWAYS returns the -2 "redacted" sentinel (galerina-core-runtime-wasm

@@ -15,6 +15,16 @@ import { generateOpenApi } from "../dist/index.js";
 const doc = generateOpenApi({
   info: { title: "Orders API", version: "1.0.0", description: "A governed Galerina order service." },
   servers: [{ url: "https://api.example.com", description: "production" }],
+  // Contract type names are not schemas. The compiler-owned export is required;
+  // the generator refuses to emit a placeholder when it is absent.
+  contractSchemas: {
+    schemaVersion: "galerina.contract-types.v1",
+    sourceIdentity: "compiler-example:contract-types-v1",
+    types: {
+      CreateOrderRequest: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+      OrderResponse: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    },
+  },
   routes: [
     // Auth-required, scoped, mutating → security + 401/403/409/413/415/422/429/500.
     {

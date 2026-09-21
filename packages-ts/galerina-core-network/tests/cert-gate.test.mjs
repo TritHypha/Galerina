@@ -45,7 +45,7 @@ test("example (a): valid pinned chain + fresh OCSP → +1 → ALLOW", () => {
   assert.equal(decision.verdict, ALLOW);
   assert.equal(decision.decision, "allow");
   assert.equal(decision.authorized, true);
-  assert.equal(decision.diagnostic, null);
+  assert.deepEqual(decision.diagnostic, { kind: "NONE" });
 });
 
 test("example (b): revocation responder unreachable → 0 → DENY + FUNGI-GOV-3VL-001 (the soft-fail hole, closed)", () => {
@@ -80,7 +80,7 @@ test("example (c): hash-pin mismatch → −1 → DENY, no diagnostic (library-v
   assert.equal(decision.verdict, DENY);
   assert.equal(decision.decision, "deny");
   assert.equal(decision.authorized, false);
-  assert.equal(decision.diagnostic, null); // definite −1 is an ordinary policy denial, not a collapsed 0
+  assert.deepEqual(decision.diagnostic, { kind: "NONE" }); // definite −1 is an ordinary policy denial, not a collapsed 0
 });
 
 // ── Exhaustive 3⁴ = 81-row truth table ────────────────────────────────────────
@@ -212,7 +212,7 @@ test('revocation "revoked" → −1 → deny, no diagnostic', () => {
   assert.equal(toSubVerdicts(input).revocationFresh, DENY);
   const decision = certGate(input);
   assert.equal(decision.authorized, false);
-  assert.equal(decision.diagnostic, null); // definite −1, not a collapsed 0
+  assert.deepEqual(decision.diagnostic, { kind: "NONE" }); // definite −1, not a collapsed 0
 });
 
 test("injected revocationCheck overrides the declarative outcome", () => {

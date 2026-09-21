@@ -14,6 +14,16 @@ import { generateOpenApi, exportOpenApi, validateOpenApiDocument } from "../dist
 import { resolveEffectiveRoutePolicy } from "../../galerina-framework-app-kernel/dist/index.js";
 
 const INFO = { title: "Test API", version: "1.0.0" };
+const CONTRACT_SCHEMAS = {
+  schemaVersion: "galerina.contract-types.v1",
+  sourceIdentity: "compiler-test:contract-types-v1",
+  types: {
+    UploadReq: { type: "object", properties: { bytes: { type: "integer" } }, required: ["bytes"] },
+    CreateOrderRequest: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    OrderResponse: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    R: { type: "object", properties: { value: { type: "string" } } },
+  },
+};
 
 test("basic generation → valid OpenAPI 3.1.0 document that re-validates and serialises", () => {
   const doc = generateOpenApi({
@@ -93,6 +103,7 @@ test("mutating method → idempotency 409 + Idempotency-Key header param (kernel
 test("body-bearing route → requestBody + 413/415/422 + x-galerina-max-body-bytes", () => {
   const doc = generateOpenApi({
     info: INFO,
+    contractSchemas: CONTRACT_SCHEMAS,
     routes: [{ method: "POST", path: "/upload", handler: "upload", requestType: "UploadReq", auth: { mode: "public" } }],
   });
   const op = doc.paths["/upload"].post;
@@ -106,6 +117,7 @@ test("body-bearing route → requestBody + 413/415/422 + x-galerina-max-body-byt
 test("request/response types → component schemas + $ref, Error schema always present", () => {
   const doc = generateOpenApi({
     info: INFO,
+    contractSchemas: CONTRACT_SCHEMAS,
     routes: [{ method: "POST", path: "/orders", handler: "createOrder", requestType: "CreateOrderRequest", responseType: "OrderResponse", auth: { mode: "public" } }],
   });
   assert.ok(doc.components.schemas.CreateOrderRequest, "request type schema defined");
@@ -120,6 +132,7 @@ test("posture 'on' tightens the documented body ceiling to 64 KiB", () => {
   const doc = generateOpenApi({
     info: INFO,
     posture: "on",
+    contractSchemas: CONTRACT_SCHEMAS,
     routes: [{ method: "POST", path: "/secure-upload", handler: "up", requestType: "R", auth: { mode: "public" } }],
   });
   assert.equal(doc.paths["/secure-upload"].post["x-galerina-max-body-bytes"], 64 * 1024);
@@ -130,6 +143,62 @@ test("already-resolved policies are documented verbatim", () => {
   const doc = exportOpenApi({ info: INFO, policies: [policy] });
   assert.ok(doc.paths["/verbatim"].get, "policy-sourced operation is present");
   assert.deepEqual(doc.paths["/verbatim"].get.security, []);
+});
+
+test("referenced contract type without an export refuses instead of emitting a placeholder", () => {
+  assert.throws(
+    () => generateOpenApi({
+      info: INFO,
+      routes: [{ method: "POST", path: "/orders", handler: "createOrder", requestType: "Missing", auth: { mode: "public" } }],
+    }),
+    /refusing placeholders/,
+  );
+});
+
+test("missing named contract schema and component-name collisions refuse closed generation", () => {
+  assert.throws(
+    () => generateOpenApi({
+      info: INFO,
+      contractSchemas: { ...CONTRACT_SCHEMAS, types: { ...CONTRACT_SCHEMAS.types } },
+      routes: [{ method: "POST", path: "/orders", handler: "createOrder", requestType: "Missing", auth: { mode: "public" } }],
+    }),
+    /missing from the source-backed export/,
+  );
+  assert.throws(
+    () => generateOpenApi({
+      info: INFO,
+      contractSchemas: {
+        ...CONTRACT_SCHEMAS,
+        types: { ...CONTRACT_SCHEMAS.types, "A B": { type: "string" }, "A@B": { type: "string" } },
+      },
+      routes: [
+        { method: "GET", path: "/a", handler: "a", responseType: "A B", auth: { mode: "public" } },
+        { method: "GET", path: "/b", handler: "b", responseType: "A@B", auth: { mode: "public" } },
+      ],
+    }),
+    /collide as OpenAPI component/,
+  );
+});
+
+test("accessor-backed contract definitions refuse without executing the accessor", () => {
+  let accessed = false;
+  const types = {};
+  Object.defineProperty(types, "Unsafe", {
+    enumerable: true,
+    get() {
+      accessed = true;
+      throw new Error("accessor executed");
+    },
+  });
+  assert.throws(
+    () => generateOpenApi({
+      info: INFO,
+      contractSchemas: { ...CONTRACT_SCHEMAS, types },
+      routes: [{ method: "GET", path: "/unsafe", handler: "unsafe", responseType: "Unsafe", auth: { mode: "public" } }],
+    }),
+    /data property/,
+  );
+  assert.equal(accessed, false);
 });
 
 test("routes + policies can be combined in one document", () => {

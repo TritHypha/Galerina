@@ -26,7 +26,7 @@ behaviour**:
 |---|---|
 | `method` + `path` (`:param` → `{param}`) | path item + operation + path parameters |
 | `handler` | `operationId` (de-duplicated) |
-| `requestType` / `responseType` | `requestBody` / `200` response `$ref` to a component schema |
+| `requestType` / `responseType` + `contractSchemas` | `requestBody` / `200` response `$ref` to a source-backed component schema |
 | `auth.mode = "required"` | `security: [{ bearerAuth: [] }]` + `401`/`403` responses |
 | `auth.mode = "public"` | `security: []` (the documented relaxation) |
 | `auth.scopes` | `x-galerina-scopes` + documented in the operation description |
@@ -65,6 +65,14 @@ import { resolveEffectiveRoutePolicy } from "@galerina/framework-app-kernel";
 // From the declarations a developer writes (resolved through the secure defaults):
 const doc = generateOpenApi({
   info: { title: "Orders API", version: "1.0.0" },
+  contractSchemas: {
+    schemaVersion: "galerina.contract-types.v1",
+    sourceIdentity: "compiler-export:<exact-source-identity>",
+    types: {
+      CreateOrderRequest: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+      OrderResponse: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    },
+  },
   routes: [
     { method: "POST", path: "/orders", handler: "createOrder",
       requestType: "CreateOrderRequest", responseType: "OrderResponse" },
@@ -80,8 +88,10 @@ console.log(JSON.stringify(doc, null, 2)); // a valid OpenAPI 3.1.0 document
 
 `exportOpenApi` is the spec-named entry point from the api-server README;
 `generateOpenApi` is its alias. Both accept either `routes` (resolved for you) or
-`policies` (used as-is) and an optional `openApiVersion` (`"3.1.0"` default, or
-`"3.0.3"`).
+`policies` (used as-is), an optional `contractSchemas` export for every referenced
+request/response type, and an optional `openApiVersion` (`"3.1.0"` default, or
+`"3.0.3"`). A referenced type without a matching versioned schema is refused;
+the generator never emits a placeholder schema.
 
 ## Build
 
@@ -98,5 +108,8 @@ node --test tests/*.test.mjs
 - It does not serve HTTP, route requests, or run handlers — that is the App
   Kernel and `galerina-framework-api-server`.
 - It does not own the route model — it reads the App Kernel's types.
+- It does not infer contract schemas from names. The compiler/app-kernel boundary
+  must provide the versioned `contractSchemas` export; compiler wiring remains a
+  separate integration task.
 - It is not the source of truth — the governed source and the kernel are. The
   generated OpenAPI is a derived view and is regenerated, never hand-edited.

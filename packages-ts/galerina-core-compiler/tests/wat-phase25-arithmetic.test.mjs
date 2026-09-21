@@ -87,6 +87,21 @@ describe("emitWATExpr: identifier", () => {
   });
 });
 
+describe("emitWATExpr: unsupported method calls", () => {
+  it("fails closed instead of emitting an undefined WAT callee", () => {
+    const result = emitWATExpr({
+      kind: "callExpr",
+      value: "notAStdlibMethod",
+      callStyle: "method",
+      children: [
+        { kind: "identifier", value: "receiver" },
+      ],
+    }, new Map([["receiver", "$p0"]]));
+    assert.match(result, /unreachable/);
+    assert.doesNotMatch(result, /call \$notAStdlibMethod/);
+  });
+});
+
 describe("emitWATExpr: binary operations", () => {
   it("+ → checked add", () => {
     // owner Fork A=TRAP: + lowers to a checked-add call that traps on overflow

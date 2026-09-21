@@ -10,7 +10,7 @@ This package owns the canonical v0.2 network and webhook contracts referenced by
 Current canonical choices:
 
 ```text
-NetworkProtocol = "http" | "https" | "tcp" | "udp" | "grpc" | "websocket" | "quic"
+NetworkProtocol = "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket"
 WebhookVerificationConfig.secret: string | Uint8Array
 ReplayStore.has(key) / put(key, ttlSeconds)
 IdempotencyStore.get(key) / put(IdempotencyRecord, ttlSeconds?)
@@ -88,20 +88,23 @@ SSRF-safe
 
 ## Core Governance Types
 
-### NetworkProtocol + quic
+### NetworkProtocol (current source contract)
 
 ```ts
 export type NetworkProtocol =
-    | "http"
     | "https"
+    | "http"
+    | "tls"
     | "tcp"
     | "udp"
-    | "grpc"
     | "websocket"
-    | "quic"
+    | "rawSocket"
 ```
 
-### NetworkDestinationReference
+`grpc` and `quic` remain planned protocol extensions in `TODO.md`; they are
+not admitted by the current source type.
+
+### NetworkDestinationReference (planned, not a current source export)
 
 ```ts
 export interface NetworkDestinationReference {
@@ -120,43 +123,56 @@ export interface NetworkDestinationReference {
 
 ```ts
 export interface NetworkPolicy {
-    default: "allow" | "deny"
-    allowDestinations: NetworkDestinationReference[]
-    denyDestinations: string[]
-    requireTls: boolean
-    allowRawSockets: boolean
-    allowPlainHttp: boolean
-    aiProviders: AiProviderNetworkPolicy[]
+    name: string
+    defaultEffect: "allow" | "deny"
+    tls: TlsPolicy
+    endpoints: NetworkEndpointRule[]
+    rateLimits: RateLimitRule[]
+    privacy: NetworkPrivacyPolicy
+    denyRawSockets: boolean
     requireTimeouts: boolean
-    requireRateLimits: boolean
+    requireBackpressure: boolean
+    egress?: EgressPolicy
 }
 ```
 
 ### productionNetworkPolicy (SSRF-safe)
 
 ```ts
-export const productionNetworkPolicy: NetworkPolicy = {
-    default: "deny",
-    requireTls: true,
-    allowRawSockets: false,
-    allowPlainHttp: false,
+export const productionNetworkPolicy: NetworkPolicy = Object.freeze({
+    name: "production",
+    defaultEffect: "deny",
+    tls: DEFAULT_TLS_POLICY,
+    endpoints: [{
+        direction: "outbound",
+        protocol: "https",
+        effect: "deny",
+        hosts: [
+            "localhost", "127.0.0.1", "0.0.0.0", "::1",
+            "169.254.169.254", "metadata.google.internal", "metadata.azure.internal"
+        ]
+    }],
+    rateLimits: [],
+    privacy: DEFAULT_NETWORK_PRIVACY_POLICY,
+    denyRawSockets: true,
     requireTimeouts: true,
-    requireRateLimits: true,
-
-    denyDestinations: [
-        "localhost",
-        "127.0.0.1",
-        "0.0.0.0",
-        "::1",
-        "169.254.169.254",
-        "metadata.google.internal",
-        "metadata.azure.internal"
-    ],
-
-    allowDestinations: [],
-    aiProviders: []
-}
+    requireBackpressure: true,
+    egress: {
+        allowedSchemes: ["https"],
+        allowedPorts: [443],
+        allowNonPublicHosts: false,
+        allowMetadataEndpoint: false,
+        allowUrlCredentials: false,
+        requireTls: true,
+        allowLoopback: false
+    }
+})
 ```
+
+The policy is declarative. Before dialing, pass `productionNetworkPolicy.egress`
+to `guardOutboundUrl`, then reclassify every resolved address with
+`guardResolvedAddresses`; an unresolved or mixed public/private result remains
+denied.
 
 Always deny:
 
@@ -382,6 +398,24 @@ export interface IdempotencyStore {
     put(record: IdempotencyRecord, ttlSeconds?: number): Promise<void> | void
 }
 ```
+
+### Atomic admission
+
+Lifecycle `get`/`put` records are not an admission decision. A runtime that
+protects a handler with replay or idempotency must provide one storage-authority
+operation and must not emulate it with a read followed by a write:
+
+```ts
+export type AtomicClaimResult = "claimed" | "duplicate"
+
+export interface AtomicAdmissionStore {
+    claim(scope: string, key: string, ttlSeconds: number):
+        Promise<AtomicClaimResult> | AtomicClaimResult
+}
+```
+
+This contract describes atomicity of the decision only; durability and
+cross-process guarantees remain owner/runtime contracts.
 
 ### Validation Functions
 

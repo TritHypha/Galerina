@@ -7,6 +7,10 @@
 # Reviewed classes: 40 diagnostic-code identifiers, 24 SHA-256 digests,
 # 11 non-secret schema/config identifiers or labels, two canonical JWT
 # detector test vectors, and one deliberately denied Stripe-shaped example.
+# Governed ownerKey values in the source-origin expectation table are identifiers,
+# not credentials. Exact finding: commit + path + rule + line.
+
+e071034ca02b2303aeec1f7583bdc2e3ff86e908:governance/logic-aig-source-origin-expected-parse-outcomes.json:generic-api-key:1
 
 9a903e0311abd2ae9467f1c5b772794b975982bf:build/kb-graph/kb-report.md:generic-api-key:74
 23e8fcf144cfbaa170d735e98a6df97716f9c2a7:build/kb-graph/kb-report.md:generic-api-key:128

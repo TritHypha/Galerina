@@ -21,9 +21,9 @@ policy belongs in `galerina-framework-app-kernel`.
 [ ] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
 [ ] Upgrade NetworkDestinationReference: add provider, category, dataCategories
 [ ] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits
-[ ] Implement productionNetworkPolicy const with SSRF-safe deny list (localhost, 127.0.0.1, 0.0.0.0, 169.254.169.254, metadata.google.internal, metadata.azure.internal)
-[ ] Define AiProviderNetworkPolicy: provider, allowedEndpoints, requireApiKeyCapability, dataCategories, auditRequired
-[ ] Define OPENAI_POLICY const
+[x] Implement frozen current-schema productionNetworkPolicy with SSRF-safe deny list, HTTPS/443-only egress, and runtime-guard regression (declarative policy does not itself dial or resolve DNS)
+[x] Define AiProviderNetworkPolicy: provider, allowedEndpoints, requireApiKeyCapability, dataCategories, auditRequired, prompt/privacy controls
+[x] Define immutable OPENAI_POLICY const and regression (declarative only; no credential or network authority)
 [ ] Define GovernedNetworkRuntime interface: policy, validate(), request()
 [ ] Define SafeHttpRequestInput: destination, method, headers, body?, timeoutMs, capability
 [ ] Define SafeHttpResponse: status, headers, body, destination
@@ -35,9 +35,12 @@ policy belongs in `galerina-framework-app-kernel`.
 [ ] Define WebhookVerificationResult: valid, reason?, diagnostics[]
 [ ] Implement verifyWebhookHmac(payload, signature, config): WebhookVerificationResult
 [ ] Implement validateWebhookTimestamp(timestamp, maxAgeSeconds): WebhookVerificationResult
-[ ] Define ReplayStore interface: has(key: string): Promise<boolean> | boolean, put(key: string, ttlSeconds: number): Promise<void> | void
+[x] Define canonical ReplayStore interface: has(key: string): Promise<boolean> | boolean, put(key: string, ttlSeconds: number): Promise<void> | void
 [ ] Implement validateReplayProtection(id, store): Promise<NetworkDiagnostic[]>
-[ ] Define IdempotencyStore interface: get(key: string): Promise<IdempotencyRecord | undefined> | IdempotencyRecord | undefined, put(record: IdempotencyRecord, ttlSeconds?: number): Promise<void> | void
+[x] Define canonical IdempotencyRecord and IdempotencyStore interfaces; storage, clock, and ordering semantics remain runtime-owned
+[!] Reconcile observational IdempotencyStore get/put with the app-kernel atomic
+    IdempotencyStore.seen gate before wiring; never implement admission as an
+    unprotected read-then-write pair
 [ ] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]>
 [ ] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[]
 [ ] Define NetworkDiagnostic: code, message, severity, destination?

@@ -54,8 +54,9 @@ classification automatically.
 
 The frontend standard library recognizes `String.matchesPattern`, and its
 host standard-library path is guarded by TriRegex work certification. That is
-not physical execution evidence: the current interpreter/WAT path leaves the
-callee unresolved, and SLIDE has no regex opcode/profile.
+not physical execution evidence: the current interpreter path is bounded, but
+the WAT method map has no admitted regex operation and the emitter explicitly
+traps unsupported methods; SLIDE still has no regex opcode/profile.
 
 The alternative explicit implementation is also unavailable. The selected
 physical surface has no source-equivalent text length, character/code-unit

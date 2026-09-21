@@ -50,6 +50,16 @@ export interface SchemaObject {
   readonly [extension: `x-${string}`]: unknown;
 }
 
+/**
+ * Source-backed contract schemas supplied by the compiler/app-kernel boundary.
+ * The docs generator does not infer a schema from a type name.
+ */
+export interface ContractSchemaExport {
+  readonly schemaVersion: "galerina.contract-types.v1";
+  readonly sourceIdentity: string;
+  readonly types: Readonly<Record<string, SchemaObject>>;
+}
+
 export interface MediaTypeObject {
   readonly schema: SchemaOrRef;
 }
@@ -166,6 +176,8 @@ export interface GenerateOpenApiInput {
   readonly routes?: readonly RouteDeclaration[];
   /** Already-resolved effective policies — documented exactly as the kernel enforces them. */
   readonly policies?: readonly EffectiveRoutePolicy[];
+  /** Required when a route references requestType/responseType; placeholders are refused. */
+  readonly contractSchemas?: ContractSchemaExport;
   /** Output document version. Default `"3.1.0"`. */
   readonly openApiVersion?: OpenApiVersion;
   /** Posture used when resolving `routes` (`"on"` tightens body/limit ceilings). Default `"off"`. */

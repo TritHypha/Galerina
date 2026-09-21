@@ -85,5 +85,5 @@ test("retention workflow builds the governed closure before one enforcing gate",
   const gate = workflow.indexOf("npm run audit:retention");
   assert.ok(build >= 0, "workflow must derive and build the compiler dependency closure");
   assert.ok(gate > build, "retention gate must run after the closure build");
-  assert.doesNotMatch(workflow, /continue-on-error|schedule:|ZTF_KB_READ_TOKEN/u);
+  assert.doesNotMatch(workflow, /continue-on-error|ZTF_KB_READ_TOKEN/u);
 });

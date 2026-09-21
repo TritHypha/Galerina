@@ -65,6 +65,79 @@ export interface NetworkPrivacyPolicy {
   readonly denySensitiveDataInUrls: boolean;
 }
 
+export interface AiProviderNetworkPolicy {
+  readonly provider: string;
+  readonly allowedEndpoints: readonly string[];
+  readonly requireApiKeyCapability: string;
+  readonly dataCategories: readonly string[];
+  readonly auditRequired: boolean;
+  readonly allowSecretsInPrompt: boolean;
+  readonly allowPii: boolean;
+  readonly allowedRegions?: readonly string[];
+  readonly maxPromptBytes?: number;
+  readonly requireRedaction: boolean;
+}
+
+/**
+ * Documented OpenAI provider policy. This is a declarative policy value only;
+ * it does not perform network access, resolve credentials, or grant authority.
+ */
+export const OPENAI_POLICY: AiProviderNetworkPolicy = Object.freeze({
+  provider: "openai",
+  allowedEndpoints: Object.freeze(["api.openai.com"]),
+  requireApiKeyCapability: "OpenAiApiKey",
+  dataCategories: Object.freeze([] as string[]),
+  auditRequired: true,
+  allowSecretsInPrompt: false,
+  allowPii: false,
+  allowedRegions: Object.freeze(["eu-west"]),
+  maxPromptBytes: 1024 * 1024,
+  requireRedaction: true,
+});
+
+/**
+ * Canonical replay boundary. The contract describes storage operations only;
+ * it does not choose a clock, persistence medium, or request ordering.
+ */
+export interface ReplayStore {
+  has(key: string): Promise<boolean> | boolean;
+  put(key: string, ttlSeconds: number): Promise<void> | void;
+}
+
+export interface IdempotencyRecord {
+  readonly key: string;
+  readonly provider: string;
+  readonly status: "processing" | "processed" | "failed";
+  readonly createdAtMs: number;
+  readonly expiresAtMs?: number;
+}
+
+export type AtomicClaimResult = "claimed" | "duplicate";
+
+/**
+ * Atomic admission authority for replay/idempotency gates.
+ *
+ * `claim` must make the decision and reservation one storage operation. A
+ * read followed by a write is not an implementation of this contract, and
+ * the interface does not imply durability or cross-process guarantees.
+ */
+export interface AtomicAdmissionStore {
+  claim(
+    scope: string,
+    key: string,
+    ttlSeconds: number,
+  ): Promise<AtomicClaimResult> | AtomicClaimResult;
+}
+
+/**
+ * Canonical idempotency boundary. Implementations must define their own
+ * durability/clock guarantees at the consuming runtime boundary.
+ */
+export interface IdempotencyStore {
+  get(key: string): Promise<IdempotencyRecord | undefined> | IdempotencyRecord | undefined;
+  put(record: IdempotencyRecord, ttlSeconds?: number): Promise<void> | void;
+}
+
 export interface NetworkPolicy {
   readonly name: string;
   readonly defaultEffect: NetworkEffect;
@@ -129,6 +202,50 @@ export const DEFAULT_NETWORK_PRIVACY_POLICY: NetworkPrivacyPolicy = {
   redactSensitiveHeaders: true,
   denySensitiveDataInUrls: true,
 };
+
+const PRODUCTION_SSRF_DENY_HOSTS = Object.freeze([
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "::1",
+  "169.254.169.254",
+  "metadata.google.internal",
+  "metadata.azure.internal",
+]);
+
+/**
+ * Current-schema production posture. This is declarative policy only: callers
+ * must still pass its egress member to the runtime guard and perform the
+ * connect-time DNS recheck before dialing a hostname.
+ */
+export const productionNetworkPolicy: NetworkPolicy = Object.freeze({
+  name: "production",
+  defaultEffect: "deny",
+  tls: Object.freeze({ ...DEFAULT_TLS_POLICY }),
+  endpoints: Object.freeze([
+    Object.freeze({
+      direction: "outbound",
+      protocol: "https",
+      effect: "deny",
+      hosts: PRODUCTION_SSRF_DENY_HOSTS,
+      reason: "SSRF and metadata destinations are never admitted by production policy.",
+    }),
+  ]),
+  rateLimits: Object.freeze([] as RateLimitRule[]),
+  privacy: Object.freeze({ ...DEFAULT_NETWORK_PRIVACY_POLICY }),
+  denyRawSockets: true,
+  requireTimeouts: true,
+  requireBackpressure: true,
+  egress: Object.freeze({
+    allowedSchemes: Object.freeze(["https"]),
+    allowedPorts: Object.freeze([443]),
+    allowNonPublicHosts: false,
+    allowMetadataEndpoint: false,
+    allowUrlCredentials: false,
+    requireTls: true,
+    allowLoopback: false,
+  }),
+});
 
 export function defineNetworkPolicy(
   name: string,

@@ -94,10 +94,12 @@ export type HandlerFn = (ctx: HandlerContext) => HandlerResult | Promise<Handler
 /** name → handler. The route declares the name; only declared names are reachable. */
 export type HandlerDispatch = Readonly<Record<string, HandlerFn>>;
 
-/** Pluggable store for idempotency keys (default: in-memory). Deny-by-default: an absent store still gates. */
+export type IdempotencyClaimResult = "claimed" | "duplicate";
+
+/** Pluggable atomic admission store for idempotency keys (default: in-memory). */
 export interface IdempotencyStore {
-  /** Returns true if the key was already seen (and records it if not). Fail-closed on the caller side. */
-  seen(routeKey: string, key: string, ttlSeconds: number): boolean | Promise<boolean>;
+  /** Decides and reserves the key as one atomic storage operation. */
+  claim(scope: string, key: string, ttlSeconds: number): IdempotencyClaimResult | Promise<IdempotencyClaimResult>;
 }
 
 /** Default in-memory idempotency store. Process-local; replaced via options in real deployments. */
@@ -115,7 +117,13 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
     if (!Number.isSafeInteger(this.#maxKeyBytes) || this.#maxKeyBytes < 1) throw new Error("Idempotency key limit must be a positive safe integer.");
   }
 
-  seen(routeKey: string, key: string, ttlSeconds: number): boolean {
+  claim(scope: string, key: string, ttlSeconds: number): IdempotencyClaimResult {
+    if (typeof scope !== "string" || scope.trim().length === 0) {
+      throw new TypeError("Idempotency scope must be a non-empty string");
+    }
+    if (typeof key !== "string" || key.trim().length === 0) {
+      throw new TypeError("Idempotency key must be a non-empty string");
+    }
     if (new TextEncoder().encode(key).byteLength > this.#maxKeyBytes) {
       throw new Error("Idempotency key exceeds the configured byte limit.");
     }
@@ -124,14 +132,19 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
     for (const [entryKey, expiresAt] of this.#seen) {
       if (expiresAt <= now) this.#seen.delete(entryKey);
     }
-    const composite = `${routeKey}\u0000${key}`;
+    const composite = `${scope}\u0000${key}`;
     const existing = this.#seen.get(composite);
-    if (existing !== undefined && existing > now) return true;
+    if (existing !== undefined && existing > now) return "duplicate";
     if (!this.#seen.has(composite) && this.#seen.size >= this.#capacity) {
       throw new Error("Idempotency store capacity reached.");
     }
     this.#seen.set(composite, now + ttlSeconds * 1_000);
-    return false;
+    return "claimed";
+  }
+
+  /** @deprecated Use claim() so callers cannot mistake admission for observation. */
+  seen(scope: string, key: string, ttlSeconds: number): boolean {
+    return this.claim(scope, key, ttlSeconds) === "duplicate";
   }
 }
 
@@ -563,27 +576,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       json = undefined;
     }
 
-    // ── 8 idempotency ──
-    if (policy.idempotency.enabled) {
-      const key = header(req.headers, policy.idempotency.header);
-      if (key === undefined || key.length === 0) {
-        return { response: errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy };
-      } else {
-        const rk = routeKey(method, path);
-        let duplicate: boolean;
-        try {
-          duplicate = await idempotencyStore.seen(rk, key, policy.idempotency.ttlSeconds);
-        } catch {
-          // Fail closed: if the store errors we reject rather than risk a replay.
-          return { response: errorResponse(409, "conflict", "Idempotency store unavailable."), policy };
-        }
-        if (duplicate) {
-          return { response: errorResponse(409, "conflict", `Duplicate idempotency key '${key}'.`), policy };
-        }
-      }
-    }
-
-    // ── 8.5 rate ──
+    // ── 8 rate ──
     const rk = routeKey(method, path);
     const now = Date.now();
     const rateLimit = ratesPerMinute.get(rk) as number;
@@ -641,13 +634,37 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         return { response: errorResponse(503, secretRefusal, "A required secret is unavailable."), policy };
       }
 
-      // ── 10 dispatch handler ── (ONLY now is developer code reached)
       const fn = opts.dispatch[policy.handler];
       if (fn === undefined) {
-        // Misconfiguration, not client error: route declares an unknown handler.
+        // Misconfiguration, not client error: do not consume an admission key
+        // for a route that cannot dispatch.
         return { response: errorResponse(500, "internal_error", `No handler '${policy.handler}' registered.`), policy };
       }
 
+      // ── 9.75 idempotency ──
+      // Claim only after every pre-handler refusal gate has passed. A rejected
+      // rate/resource/concurrency/secret/route attempt must not consume a key.
+      if (policy.idempotency.enabled) {
+        const key = header(req.headers, policy.idempotency.header);
+        if (key === undefined || key.length === 0) {
+          return { response: errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy };
+        }
+        let claim: IdempotencyClaimResult;
+        try {
+          claim = await idempotencyStore.claim(rk, key, policy.idempotency.ttlSeconds);
+        } catch {
+          // Fail closed: if the store errors or returns malformed data, reject.
+          return { response: errorResponse(409, "conflict", "Idempotency store unavailable."), policy };
+        }
+        if (claim !== "claimed" && claim !== "duplicate") {
+          return { response: errorResponse(409, "conflict", "Idempotency store returned an invalid claim."), policy };
+        }
+        if (claim === "duplicate") {
+          return { response: errorResponse(409, "conflict", `Duplicate idempotency key '${key}'.`), policy };
+        }
+      }
+
+      // ── 10 dispatch handler ── (ONLY now is developer code reached)
       let result: HandlerResult;
       const deadline = new AbortController();
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;

@@ -55,6 +55,7 @@ import {
   type ChainValidationOutcome,
   type RevocationOutcome,
 } from "../../galerina-core-network/dist/index.js";
+export { MemoryReplayStore, type MemoryReplayStoreOptions } from "./replay-store.js";
 
 /** Default hard cap on buffered body bytes (8 MiB). Additive to the kernel's own body-size gate. */
 export const DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024;

@@ -59,7 +59,13 @@ export class JsonLineSink implements LogSink {
     this.#writeLine = writeLine;
   }
   write(record: LogRecord): void {
-    this.#writeLine(safeStringify(record));
+    try {
+      this.#writeLine(safeStringify(record));
+    } catch {
+      // The LogSink contract is non-throwing. Isolate the caller-supplied
+      // writer here; do not retry, buffer, claim delivery, or alter the
+      // Logger.sinkFailures() aggregate for this direct sink boundary.
+    }
   }
 }
 

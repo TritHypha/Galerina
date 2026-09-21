@@ -16,8 +16,8 @@
 
 ## Coverage Reconciliation Status
 
-This package may expose adapter-level request handling names, but webhook HMAC,
-replay and idempotency semantics must map to the canonical
+This package may expose adapter-level request handling names, but webhook HMAC
+and replay semantics must map to the canonical
 `galerina-core-network` v0.2 contract:
 
 ```text
@@ -26,9 +26,14 @@ ReplayStore.has(key) / put(key, ttlSeconds)
 IdempotencyStore.get(key) / put(IdempotencyRecord, ttlSeconds?)
 ```
 
-Existing `ReplayStore.exists/save` wording is an API-server adapter shape, not
-the canonical network package API. Implementation docs should either adopt the
-network names or document the adapter mapping explicitly.
+The app-kernel performs atomic idempotency admission through its
+`IdempotencyStore.claim(scope, key, ttlSeconds)` contract, returning only
+`"claimed"` or `"duplicate"`. The deprecated in-memory `seen` helper delegates
+to that operation for compatibility; it is not the admission interface. The
+API-server scaffold must not replace that atomic gate with a `get` followed by
+`put`; the transport package does not silently alias or reinterpret either
+contract. Replay storage, idempotency reconciliation, and HMAC/replay/handler
+ordering remain implementation TODOs.
 
 In the current prototype/runtime phase, this package is expected to be
 Node-hosted for practical web/API serving. Future implementations may use
@@ -1528,13 +1533,12 @@ export interface WebhookVerificationConfig {
 #### ReplayStore
 
 ```ts
-export interface ReplayStore {
-  exists(key: string): Promise<boolean>
-  save(key: string, ttlSeconds: number): Promise<void>
-}
+import type { ReplayStore } from "@galerina/core-network"
 ```
 
-`MemoryReplayStore` implementation auto-prunes expired entries.
+`MemoryReplayStore` must implement the imported `has/put` contract and
+auto-prune expired entries; that implementation is not present in the current
+package.
 
 #### Kernel Interfaces
 
@@ -1607,7 +1611,7 @@ production returns public message only via `publicMessageForStatus(status)`.
 ```text
 verifyHmacSha256Webhook() — HMAC-SHA256 with timing-safe comparison
 assertWebhookVerified()   — full verification flow (HMAC + replay check)
-assertWebhookNotReplayed() — timestamp window + ReplayStore.exists/save
+assertWebhookNotReplayed() — timestamp window + ReplayStore.has/put
 extractSignature()        — strips prefix (e.g. "v1=abc123" → "abc123")
 timingSafeHexEqual()      — constant-time hex comparison
 ```

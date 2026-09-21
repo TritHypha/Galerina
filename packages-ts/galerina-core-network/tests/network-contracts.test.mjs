@@ -9,6 +9,9 @@ import {
   validateNetworkPolicy,
   DEFAULT_TLS_POLICY,
   DEFAULT_NETWORK_PRIVACY_POLICY,
+  OPENAI_POLICY,
+  productionNetworkPolicy,
+  guardOutboundUrl,
 } from "../dist/index.js";
 
 describe("galerina-core-network contracts", () => {
@@ -140,6 +143,67 @@ describe("galerina-core-network contracts", () => {
     assert.equal(DEFAULT_NETWORK_PRIVACY_POLICY.redactSensitiveHeaders, true);
     assert.equal(DEFAULT_NETWORK_PRIVACY_POLICY.denySensitiveDataInUrls, true);
     assert.equal(DEFAULT_NETWORK_PRIVACY_POLICY.minimiseMetadata, true);
+  });
+
+  it("defines the documented fail-closed OpenAI provider policy", () => {
+    assert.deepEqual(OPENAI_POLICY, {
+      provider: "openai",
+      allowedEndpoints: ["api.openai.com"],
+      requireApiKeyCapability: "OpenAiApiKey",
+      dataCategories: [],
+      auditRequired: true,
+      allowSecretsInPrompt: false,
+      allowPii: false,
+      allowedRegions: ["eu-west"],
+      maxPromptBytes: 1024 * 1024,
+      requireRedaction: true,
+    });
+  });
+
+  it("defines a frozen production policy with runtime SSRF and port guards", () => {
+    assert.equal(productionNetworkPolicy.name, "production");
+    assert.equal(productionNetworkPolicy.defaultEffect, "deny");
+    assert.deepEqual(
+      productionNetworkPolicy.endpoints.find(
+        (endpoint) => endpoint.direction === "outbound" && endpoint.effect === "deny",
+      )?.hosts,
+      [
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+        "::1",
+        "169.254.169.254",
+        "metadata.google.internal",
+        "metadata.azure.internal",
+      ],
+    );
+    assert.equal(validateNetworkPolicy(productionNetworkPolicy, { production: true }).length, 0);
+    assert.equal(Object.isFrozen(productionNetworkPolicy), true);
+    assert.equal(Object.isFrozen(productionNetworkPolicy.egress), true);
+
+    assert.equal(guardOutboundUrl("https://api.example.com/", productionNetworkPolicy.egress).allowed, true);
+    assert.equal(guardOutboundUrl("https://api.example.com:8443/", productionNetworkPolicy.egress).allowed, false);
+    assert.equal(guardOutboundUrl("http://api.example.com/", productionNetworkPolicy.egress).allowed, false);
+    assert.equal(guardOutboundUrl("https://127.0.0.1/", productionNetworkPolicy.egress).allowed, false);
+    assert.equal(guardOutboundUrl("https://metadata.google.internal/", productionNetworkPolicy.egress).allowed, false);
+  });
+
+  it("publishes the canonical replay and idempotency contracts", async () => {
+    const declarations = await readFile(
+      new URL("../dist/index.d.ts", import.meta.url),
+      "utf8",
+    );
+
+    assert.match(declarations, /export interface ReplayStore\s*\{/);
+    assert.match(declarations, /has\(key: string\): Promise<boolean> \| boolean/);
+    assert.match(declarations, /put\(key: string, ttlSeconds: number\): Promise<void> \| void/);
+    assert.match(declarations, /export interface IdempotencyRecord\s*\{/);
+    assert.match(declarations, /export type AtomicClaimResult = "claimed" \| "duplicate"/);
+    assert.match(declarations, /export interface AtomicAdmissionStore\s*\{/);
+    assert.match(declarations, /claim\(\s*scope: string,\s*key: string,\s*ttlSeconds: number/);
+    assert.match(declarations, /export interface IdempotencyStore\s*\{/);
+    assert.match(declarations, /get\(key: string\): Promise<IdempotencyRecord \| undefined>/);
+    assert.match(declarations, /put\(record: IdempotencyRecord, ttlSeconds\?: number\)/);
   });
 
   it("rejects a policy with default-allow effect", () => {

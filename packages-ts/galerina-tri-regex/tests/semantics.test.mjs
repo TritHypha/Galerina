@@ -2,7 +2,7 @@
 // first-completion in CODE POINTS (declared — not POSIX-longest).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compile } from "../dist/index.js";
+import { compile, compileCapability, findAll } from "../dist/index.js";
 
 const m = (pattern) => {
   const r = compile(pattern);
@@ -89,6 +89,31 @@ test("unicode: astral code points are single units", () => {
   hit("\\u{1F600}", "\u{1F600}", [0, 1]);
   hit("[\u{1F600}-\u{1F64F}]", "\u{1F60A}", [0, 1]);
   miss("A", "a"); // no flags in v0.1 — case-sensitive, by design
+});
+
+test("typed capability carries the certificate and bounded findAll refuses truncation", () => {
+  const capability = compileCapability("a+");
+  assert.equal(capability.ok, true);
+  if (!capability.ok) return;
+  assert.equal(capability.capability.kind, "triregex-pattern");
+  assert.equal(capability.capability.engineVersion, "0.1.1");
+  const found = findAll(capability.capability, "a ba aa", { maxMatches: 4 });
+  assert.equal(found.ok, true);
+  if (found.ok) assert.deepEqual(found.spans.map((span) => [...span]), [[0, 1], [3, 4], [5, 7]]);
+  const refused = findAll(capability.capability, "a a a", { maxMatches: 1, maxCertifiedWorkUnits: 1_000_000 });
+  assert.equal(refused.ok, false);
+  if (!refused.ok) assert.equal(refused.code, "TPRX-BUDGET");
+});
+
+test("typed capability refuses invalid findAll budgets without running", () => {
+  const capability = compileCapability("a");
+  assert.equal(capability.ok, true);
+  if (!capability.ok) return;
+  for (const options of [{ maxMatches: 0 }, { maxSubjectCodePoints: Number.NaN }, { maxCertifiedWorkUnits: Number.POSITIVE_INFINITY }]) {
+    const result = findAll(capability.capability, "a", options);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "TPRX-BUDGET");
+  }
 });
 
 test("escapes", () => {

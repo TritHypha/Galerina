@@ -77,6 +77,10 @@ automaton exceeds the budget.
   the certified work-unit bound.
 - Budget overrides are runtime-validated as finite safe integers; `NaN`,
   infinity, fractions and invalid negative values cannot disable a limit.
+- `compileCapability()` returns a certificate-bearing typed pattern capability.
+  `findAll()` is bounded by subject, match-count and certified-work limits and
+  refuses instead of returning a truncated result. This is an interpreter
+  contract only; it does not authorize a Fungi/GIR/WAT/SLIDE/VOK operation.
 - `end()` is idempotent. `feed()` after `end()` throws the named
   `TPRX-STREAM` lifecycle error rather than silently accepting unchecked suffix
   data.

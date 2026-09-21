@@ -19,7 +19,7 @@ import { createRequire as _createRequire } from "node:module";
 // IPv4-in-IPv6 / CGNAT / *.corp bypasses + DNS-rebind recheck). Wiring the EXISTING guard rather than
 // re-cloning the inline regex (self-audit 61-9). egress-guard is pure — no node/tower-citizen load.
 import { guardOutboundUrl, guardResolvedAddresses } from "@galerina/core-network";
-import { compile as compileTriRegex } from "@galerina/tri-regex";
+import { compileCapability as compileTriRegex } from "@galerina/tri-regex";
 import bcrypt from "bcryptjs";  // Phase 34: real bcrypt ($2b$) for BCrypt.verify / BCrypt.hash
 // Phase 36: Argon2id (OWASP preferred memory-hard KDF) — async, imported lazily
 // to avoid startup cost when Password API is not used.
@@ -463,12 +463,12 @@ function stringMethod(receiver: GalerinaValue, method: string, args: readonly Ga
       });
       if (!compiled.ok) return err(`RegexError: ${compiled.code}: ${compiled.reason}`);
       const certifiedWork =
-        unicodeCodePointCount(s) * BigInt(compiled.certificate.perCharWorkBound) +
-        BigInt(compiled.certificate.boundaryWorkBound);
+        unicodeCodePointCount(s) * BigInt(compiled.capability.certificate.perCharWorkBound) +
+        BigInt(compiled.capability.certificate.boundaryWorkBound);
       if (certifiedWork > MAX_REGEX_CERTIFIED_WORK_UNITS) {
         return err("RegexError: certified work exceeds the runtime policy budget");
       }
-      return { __tag: "bool", value: compiled.matcher.test(s).verdict === 1 };
+      return { __tag: "bool", value: compiled.capability.matcher.test(s).verdict === 1 };
     }
 
     case "extractGroups": {

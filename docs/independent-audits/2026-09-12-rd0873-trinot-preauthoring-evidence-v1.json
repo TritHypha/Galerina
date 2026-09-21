@@ -297,7 +297,7 @@
   },
   "supersessionReview": {
     "ownerClaim": "Current triNot checkpoint is superseded by RD-1003.",
-    "checkedRecord": "ZTF-Knowledge-Bases/private/research/rd/RD-1003-interval-witness-defensive-admission-PRIVATE.md",
+    "checkedRecord": "RD-1003 private adjudication record",
     "checkedRecordScope": "Separate private interval-witness research construction; explicitly no Galerina, SLIDE, .fungi, physical experiment, signing, hosted run or push.",
     "relationshipStatus": "UNCONFIRMED",
     "effect": "Preserve this receipt as historical HOLD_NON_AUTHORING. Do not substitute RD-1003 for a Galerina exact-head admission or resume this authoring lane until the owner names a Galerina-related superseding record or confirms the hold is still needed."

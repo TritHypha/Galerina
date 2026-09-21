@@ -43,6 +43,9 @@ jobs:
       - name: Install the pinned compiler floor
         run: npm ci --prefix packages-ts/galerina-core-compiler
 
+      - name: Build the compiler dependency closure
+        run: node scripts/build-core-chain.mjs --gate-subjects
+
       - name: Build the compiler before retention checks
         working-directory: packages-ts/galerina-core-compiler
         run: npm run build
@@ -78,6 +81,9 @@ jobs:
 
       - name: Install the pinned compiler floor
         run: npm ci --prefix packages-ts/galerina-core-compiler
+
+      - name: Build the compiler dependency closure
+        run: node scripts/build-core-chain.mjs --gate-subjects
 
       - name: Build the compiler before dynamic measurements
         working-directory: packages-ts/galerina-core-compiler

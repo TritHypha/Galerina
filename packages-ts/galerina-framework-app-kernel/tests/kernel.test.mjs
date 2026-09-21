@@ -268,6 +268,47 @@ test("idempotency: duplicate key -> 409", async () => {
   assert.equal(errorOf(second), "conflict");
 });
 
+test("idempotency claim is deferred until rate admission succeeds", async () => {
+  let claims = 0;
+  const store = {
+    claim() {
+      claims += 1;
+      return "claimed";
+    },
+  };
+  const k = createAppKernel({
+    routes: [{
+      method: "POST", path: "/limited", handler: "limited", auth: { mode: "public" },
+      idempotency: { enabled: true }, limits: { rate: "1/minute" },
+    }],
+    idempotencyStore: store,
+    dispatch: { limited: () => ({ status: 200, body: { ok: true } }) },
+  });
+  const make = () => req({
+    method: "POST", path: "/limited",
+    headers: { "idempotency-key": "same" },
+  });
+  assert.equal((await k.handle(make())).status, 200);
+  assert.equal((await k.handle(make())).status, 429);
+  assert.equal(claims, 1);
+});
+
+test("malformed atomic claim result fails closed before handler dispatch", async () => {
+  let ran = false;
+  const k = createAppKernel({
+    routes: [{ method: "POST", path: "/malformed", handler: "malformed", auth: { mode: "public" }, idempotency: { enabled: true } }],
+    idempotencyStore: { claim: () => "not-a-claim" },
+    dispatch: { malformed: () => { ran = true; return { body: { ok: true } }; } },
+  });
+  const res = await k.handle(req({
+    method: "POST", path: "/malformed",
+    headers: { "idempotency-key": "same" },
+  }));
+  assert.equal(res.status, 409);
+  assert.equal(errorOf(res), "conflict");
+  assert.equal(ran, false);
+});
+
 test("over concurrency limit -> 429", async () => {
   let release;
   const gate = new Promise((r) => { release = r; });

@@ -19,7 +19,7 @@
 //   fault entirely — exactly the RUNTIME-006 failure. Reported as a hard violation.
 //
 // Scope: source = packages-ts/<pkg>/src/**/*.ts structured diagnostic objects (those with a
-// `name:`); doc = <KB>/compiler-diagnostics.md (sibling ZTF-Knowledge-Bases repo; GALERINA_KB_DIR
+// `name:`); doc = <KB>/reference/language/compiler-diagnostics.md (sibling ZTF-Knowledge-Bases repo; GALERINA_KB_DIR
 // overrides) fenced `CODE   description` lines.
 // Exit code = violation count (0 = clean). Run from repo root.
 //   node scripts/audit-diagnostic-doc-drift.mjs             → scan the committed doc + source
@@ -32,7 +32,7 @@ const SRC_ROOT = "packages-ts";
 // The canonical doc migrated to the sibling ZTF-Knowledge-Bases repo — resolve like kb-index.mjs
 // (GALERINA_KB_DIR override first, sibling default). Still fail-closed below when absent.
 const KB_DIR = process.env.GALERINA_KB_DIR || join(process.cwd(), "..", "ZTF-Knowledge-Bases");
-const DOC = join(KB_DIR, "compiler-diagnostics.md");
+const DOC = join(KB_DIR, "reference", "language", "compiler-diagnostics.md");
 
 // Words too generic to count as agreement between a doc description and a source name/message.
 const STOP = new Set([

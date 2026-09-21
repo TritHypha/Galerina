@@ -174,3 +174,13 @@ test("JsonLineSink writes one JSON line per record to the supplied writer (no am
   assert.equal(parsed.at, 7);
   assert.equal(parsed.fields.k, "v");
 });
+
+test("JsonLineSink isolates a throwing writer without inventing retry or counter semantics", () => {
+  let attempts = 0;
+  const sink = new JsonLineSink(() => {
+    attempts += 1;
+    throw new Error("writer unavailable");
+  });
+  assert.doesNotThrow(() => sink.write({ level: "error", msg: "lost", at: 0 }));
+  assert.equal(attempts, 1, "the writer is attempted once and is not retried");
+});

@@ -88,16 +88,6 @@ function errorResponse(description: string): ResponseObject {
   return { description, content: jsonContent({ $ref: `#/components/schemas/${ERROR_SCHEMA}` }) };
 }
 
-function contractTypePlaceholder(original: string): SchemaObject {
-  return {
-    type: "object",
-    description:
-      `Galerina contract type '${original}'. Referenced by a route's request/response; ` +
-      `expand from the governed contract's types {} block.`,
-    "x-galerina-source": "contract-type",
-  };
-}
-
 /** OpenAPI component keys must match `^[a-zA-Z0-9._-]+$`. */
 function sanitizeSchemaName(typeName: string): string {
   const cleaned = typeName.replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "");
@@ -139,15 +129,121 @@ function convertPath(rawPath: string): { readonly path: string; readonly params:
 /** Mutable build state threaded through the per-route builders. */
 interface BuildContext {
   readonly usedOperationIds: Set<string>;
-  /** sanitized schema name → original Galerina type name (for the placeholder description). */
+  /** sanitized schema name → original Galerina type name (for source-backed lookup). */
   readonly referencedSchemas: Map<string, string>;
   anyAuthRequired: boolean;
 }
 
 function refSchema(typeName: string, ctx: BuildContext): Reference {
   const name = sanitizeSchemaName(typeName);
+  const previous = ctx.referencedSchemas.get(name);
+  if (previous !== undefined && previous !== typeName) {
+    throw new OpenApiGenerationError(
+      `Contract type names '${previous}' and '${typeName}' collide as OpenAPI component '${name}'.`,
+    );
+  }
   if (!ctx.referencedSchemas.has(name)) ctx.referencedSchemas.set(name, typeName);
   return { $ref: `#/components/schemas/${name}` };
+}
+
+function cloneContractValue(value: unknown, path: string): unknown {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new OpenApiGenerationError(`Contract schema ${path} contains a non-finite number.`);
+    return value;
+  }
+  if (Array.isArray(value)) {
+    const descriptors = Object.getOwnPropertyDescriptors(value) as Record<string, PropertyDescriptor>;
+    if (Object.getOwnPropertySymbols(value).length !== 0) {
+      throw new OpenApiGenerationError(`Contract schema ${path} contains symbol properties.`);
+    }
+    const lengthDescriptor = descriptors.length;
+    if (lengthDescriptor === undefined || !("value" in lengthDescriptor) || !Number.isSafeInteger(lengthDescriptor.value)) {
+      throw new OpenApiGenerationError(`Contract schema ${path} contains an invalid array length.`);
+    }
+    const length = lengthDescriptor.value as number;
+    const entries = Object.keys(descriptors).filter((key) => key !== "length");
+    if (entries.length !== length || entries.some((key) => !/^\d+$/.test(key) || Number(key) >= length)) {
+      throw new OpenApiGenerationError(`Contract schema ${path} contains array holes or extra properties.`);
+    }
+    const clone: unknown[] = [];
+    for (let index = 0; index < length; index += 1) {
+      const descriptor = descriptors[String(index)];
+      if (descriptor === undefined || !("value" in descriptor)) {
+        throw new OpenApiGenerationError(`Contract schema ${path}[${index}] must be a data property.`);
+      }
+      clone.push(cloneContractValue(descriptor.value, `${path}[${index}]`));
+    }
+    return clone;
+  }
+  if (typeof value !== "object" || value === undefined) {
+    throw new OpenApiGenerationError(`Contract schema ${path} contains a non-JSON value.`);
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new OpenApiGenerationError(`Contract schema ${path} must contain plain JSON objects only.`);
+  }
+  if (Object.getOwnPropertySymbols(value).length !== 0) {
+    throw new OpenApiGenerationError(`Contract schema ${path} contains symbol properties.`);
+  }
+  const clone: Record<string, unknown> = {};
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      throw new OpenApiGenerationError(`Contract schema ${path} contains a forbidden property name.`);
+    }
+    if (!("value" in descriptor)) {
+      throw new OpenApiGenerationError(`Contract schema ${path}.${key} must be a data property.`);
+    }
+    clone[key] = cloneContractValue(descriptor.value, `${path}.${key}`);
+  }
+  return clone;
+}
+
+function sourceBackedSchemas(
+  ctx: BuildContext,
+  contractSchemas: GenerateOpenApiInput["contractSchemas"],
+): Record<string, SchemaObject> {
+  if (ctx.referencedSchemas.size === 0) return {};
+  if (contractSchemas === undefined) {
+    throw new OpenApiGenerationError(
+      "Referenced request/response contract types require a versioned contractSchemas export; refusing placeholders.",
+    );
+  }
+  if (contractSchemas.schemaVersion !== "galerina.contract-types.v1") {
+    throw new OpenApiGenerationError(`Unsupported contract schema version '${String(contractSchemas.schemaVersion)}'.`);
+  }
+  if (typeof contractSchemas.sourceIdentity !== "string" || contractSchemas.sourceIdentity.trim() === "") {
+    throw new OpenApiGenerationError("contractSchemas.sourceIdentity must be a non-empty string.");
+  }
+  if (contractSchemas.types === null || typeof contractSchemas.types !== "object" || Array.isArray(contractSchemas.types)) {
+    throw new OpenApiGenerationError("contractSchemas.types must be a record of named schemas.");
+  }
+
+  const schemas: Record<string, SchemaObject> = {};
+  for (const [componentName, originalName] of ctx.referencedSchemas) {
+    if (!Object.prototype.hasOwnProperty.call(contractSchemas.types, originalName)) {
+      throw new OpenApiGenerationError(`Contract schema '${originalName}' is missing from the source-backed export.`);
+    }
+    const schemaDescriptor = Object.getOwnPropertyDescriptor(contractSchemas.types, originalName);
+    if (schemaDescriptor === undefined || !("value" in schemaDescriptor)) {
+      throw new OpenApiGenerationError(`Contract schema '${originalName}' must be a data property.`);
+    }
+    const sourceSchema = schemaDescriptor.value;
+    if (sourceSchema === null || typeof sourceSchema !== "object" || Array.isArray(sourceSchema)) {
+      throw new OpenApiGenerationError(`Contract schema '${originalName}' must be a non-empty object.`);
+    }
+    const cloned = cloneContractValue(sourceSchema, `types.${originalName}`) as SchemaObject;
+    if (Object.keys(cloned).length === 0) {
+      throw new OpenApiGenerationError(`Contract schema '${originalName}' must not be empty.`);
+    }
+    schemas[componentName] = {
+      ...cloned,
+      "x-galerina-contract-type": originalName,
+      "x-galerina-contract-schema-version": contractSchemas.schemaVersion,
+      "x-galerina-contract-source": contractSchemas.sourceIdentity,
+    };
+  }
+  return schemas;
 }
 
 function uniqueOperationId(base: string, used: Set<string>): string {
@@ -367,11 +463,8 @@ export function generateOpenApi(input: GenerateOpenApiInput): OpenApiDocument {
     paths[path] = item;
   }
 
-  // components.schemas: referenced contract types (placeholders) + the shared Error envelope.
-  const schemas: Record<string, SchemaObject> = {};
-  for (const [name, original] of ctx.referencedSchemas) {
-    schemas[name] = contractTypePlaceholder(original);
-  }
+  // components.schemas: source-backed contract types + the shared Error envelope.
+  const schemas: Record<string, SchemaObject> = sourceBackedSchemas(ctx, input.contractSchemas);
   schemas[ERROR_SCHEMA] = ERROR_SCHEMA_OBJECT;
 
   const components: ComponentsObject = ctx.anyAuthRequired

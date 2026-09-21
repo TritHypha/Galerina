@@ -3,13 +3,15 @@
 ## Coverage Reconciliation
 
 ```text
-[!] Map API-server ReplayStore.exists/save adapter names to
-    galerina-core-network has/put or adopt the canonical names. The live source
-    is transport/TLS handling only at `src/index.ts:1-40,527-562,624-761`;
-    no replay/idempotency implementation exists to reconcile yet.
+[!] Consume the canonical `ReplayStore.has/put` and
+    `IdempotencyStore.get/put` contracts from `galerina-core-network`. The live
+    source is transport/TLS handling only at `src/index.ts:1-40,527-562,624-761`;
+    replay storage is not wired, and app-kernel currently owns a separate
+    atomic `IdempotencyStore.seen` gate at `kernel.ts:97-100,566-584`.
 [!] Align webhook/idempotency implementation docs with
     `galerina-core-network-webhook.md` before implementing the scaffold. The
-    canonical contracts are recorded at `galerina-core-network/README.md:360-382`;
+    canonical contracts are exported by `galerina-core-network/src/index.ts`
+    and documented at `galerina-core-network/README.md:373-382`;
     do not invent adapter semantics or claim API-server readiness.
 ```
 
@@ -35,7 +37,7 @@
 [x] Define RouteLimits: rate?, maxConcurrent?, memoryBytes?, timeoutMs?
 [x] Define RouteReportPolicy: audit, security, memory, network, failure (all boolean)
 [x] Define WebhookVerificationConfig: provider, secret, signatureHeader, timestampHeader?, replayWindowSeconds, expectedPrefix?, eventIdHeader?, eventIdPath?
-[x] Define ReplayStore interface: exists(key): Promise<boolean>, save(key, ttlSeconds): Promise<void>
+[x] Use canonical ReplayStore interface from core-network: has(key): Promise<boolean> | boolean, put(key, ttlSeconds): Promise<void> | void
 [x] Define GalerinaAppKernel interface: handleApiRequest(input): Promise<GalerinaKernelResponse>
 [x] Define HandleApiRequestInput: route, request, replayStore?
 [x] Define GalerinaKernelRequest: method, url, path, query, headers, body (Buffer), rawBody?, remoteAddress?, requestId, receivedAt
@@ -73,7 +75,7 @@
 [ ] Implement RouteLimits interface
 [ ] Implement RouteReportPolicy interface
 [ ] Implement WebhookVerificationConfig interface (use secret field, not sharedSecret)
-[ ] Implement ReplayStore interface (async: exists/save with ttlSeconds)
+[ ] Consume the canonical ReplayStore interface (has/put with ttlSeconds)
 [ ] Implement GalerinaAppKernel interface
 [ ] Implement HandleApiRequestInput interface
 [ ] Implement GalerinaKernelRequest interface (body as Buffer)
@@ -139,11 +141,11 @@
 ## Implementation — src/replay-store.ts
 
 ```text
-[ ] Implement MemoryReplayStore class
-[ ] MemoryReplayStore.exists(key): Promise<boolean>
-[ ] MemoryReplayStore.save(key, ttlSeconds): Promise<void>
-[ ] Implement pruneExpired() — auto-prune entries past TTL
-[ ] Add replay-store.test.ts coverage
+[x] Implement bounded process-local MemoryReplayStore class
+[x] MemoryReplayStore.has(key): Promise<boolean>
+[x] MemoryReplayStore.put(key, ttlSeconds): Promise<void>
+[x] Implement pruneExpired() — auto-prune entries past TTL
+[x] Add replay-store.test.mjs coverage, including invalid key/TTL and clock refusal
 ```
 
 ## Implementation — src/create-server.ts

@@ -1,9 +1,15 @@
 # Non-evidence blocker manifest
 
-**Date:** 2026-09-20
+**Date:** 2026-09-21
 **Purpose:** identify the remaining work that can change implementation,
 component contracts, compiler behaviour, or generated assets. Evidence-only
 holds are deliberately excluded from the active blocker count.
+
+The table below is a navigation index, not the full issue record. Every
+blocker row links to one corresponding chapter in
+[`BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md`](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md),
+where the issue, source boundary, required outcome, and evidence boundary are
+recorded in full.
 
 ## Verification boundary
 
@@ -14,7 +20,7 @@ The source heads checked for this manifest are:
 
 | Repository | Branch | HEAD | Working-tree note |
 |---|---|---|---|
-| Galerina | `main` | `398bc45d2511a1a2001ff618cdaaa0c68b337e7b` | Existing bounded changes preserved; dirty worktree retained; no unrelated files were reset. |
+| Galerina | `main` | `daa2e92b233a2f4a555fefe6d42a604001cd99b1` | Compiler, observability, core-network, and ledger edits are present in the working tree; unrelated dirty paths are retained; no files were reset or pushed. |
 | SLIDE/VOK | `codex/v2c-independent-frontend` | `d14e37eb12fc74480c09ae941aa6ea9629e0913b` | Existing security-workflow change preserved. |
 | Lyth-Weaver | `main` | `f5a3ffe147b5110216493c92cb7dabd1a5cc47cc` | Existing handover change preserved. |
 
@@ -52,21 +58,31 @@ These are the blocks that require a contract decision followed by ordinary
 engineering, tests, or source/asset regeneration. A green focused test does
 not close a row when the source contract is still incomplete.
 
-| Project | Blocker and exact source locator | RD linkage | Expected outcome |
+| Project | Blocker and exact source locator | Full chapter | RD linkage | Expected outcome |
+|---|---|---|---|---|
+| Galerina compiler | Broad expression inference is still fail-closed/partial at `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`, consumed at `:1746-1828`, `:1874-1954`, and `:2064-2297`. The unresolved cases include deferred fields, nested generics, `unwrapOr` fallbacks, heterogeneous lists, anonymous map entries, and callback wrapper payloads. | [C01](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c01) | `RD-1232`; satellites `RD-1247`, `RD-1248`, `RD-1250`, `RD-1251`, `RD-1252`, `RD-1253` (`docs/TODO.md:267-377`). | Freeze the deferred-inference and diagnostic contract; implement a complete expression-kind matrix; add positive and hostile consumer tests; preserve refusal for genuinely unknown forms. |
+| Galerina compiler | WAT lowering intentionally refuses Decimal and higher-order collection operations at `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2020-2045`, with fallback at `:4503-4534`; unsupported method calls now trap at `:2115-2122`. | [C02](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c02) | `RD-1233` (`docs/TODO.md:379-392`). | Freeze the Decimal representation/ABI, rounding and resource limits, and a bounded capture-free callback ABI; implement only those admitted cases; prove interpreter/WAT parity and keep unsupported cases trapped. |
+| Galerina compiler / TriRegex / SLIDE-VOK | The interpreter now consumes a certificate-bearing `PatternCapability` and bounded refusal-on-truncation `findAll` at `packages-ts/galerina-tri-regex/src/index.ts`; the WAT method map still has no `matchesPattern` operation at `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1233-1268`, and the fallback traps at `:2115-2122`. TriRegex v0.1.1 still refuses `\\b`/`\\B` and has no capture boundary. | [C20](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c20) | Existing `RD-0795`; related source adjudication `docs/superpowers/specs/2026-08-12-slices-47-49-regex-boundary-adjudication.md`. | Keep the typed interpreter capability bounded; still freeze the exact source/profile semantics, GIR/WAT operation, typed refusal/result and SLIDE/VOK work receipt; either prove word boundaries or retain the affected conversion as refused. |
+| Galerina compiler | `checkMethodChain()` is an empty seam at `packages-ts/galerina-core-compiler/src/index.ts:3081-3100`; its current inputs cannot evaluate receiver type, arguments, Result consumption, effects, bindings, readonly mutation, or stage locations. | [C03](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c03) | `RD-1234` (`docs/TODO.md:394-408`). | Replace the stub with a context-rich `callExpr`-integrated checker for `FUNGI-PIPELINE-001..005`, with positive/negative controls and correct preservation of persistent `push`/`append` transforms. |
+| Galerina WASM target | `WasmArtefact` and its report decoder at `packages-ts/galerina-target-wasm/src/index.ts:8-18,68-199,201-272` lack module bytes/digest/attestation, section-bound identity, sandbox/effect/limit evidence, physical binding, and an owned cross-package schema. | [C04](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c04) | `RD-1236` (`docs/TODO-MISSING-RD.md:22-48`). | Freeze a versioned schema and report/refusal rules; bind selected artefacts to exact bytes, digest, target and evidence; migrate diagnostics; add missing/forged/mismatched/duplicate/malformed/refused tests. |
+| Galerina observability | `JsonLineSink.write()` now isolates an injected writer exception at `packages-ts/galerina-observability/src/logger.ts:61-69`, but the owner has not yet confirmed the swallow-and-void direct-loss semantics. | [C05](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c05) | `RD-1237` (`docs/TODO-MISSING-RD.md:50-75`). | Confirm the direct-sink contract and retain the minimal guard/test; do not invent retry, buffering, delivery, durability or outer-counter semantics. |
+| Galerina observability | Logger failure accounting and clock fallback at `packages-ts/galerina-observability/src/logger.ts:190-227` conflates aggregate failures, does not count clock faults, and uses fallback `0` without provenance. | [C06](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c06) | `RD-1238` (`docs/TODO-MISSING-RD.md:79-105`). | Freeze aggregate/cause counter meaning, timestamp fallback/provenance, and serialization-degradation rules; implement the chosen contract; pass the complete clock, redaction, repeated-failure, and combined-failure matrix. |
+| Galerina AI accelerator | Report construction at `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764` lacks an exact report decoder, closed diagnostic validation, and selection-to-report binding; warnings reread caller data at `:715-718`. | [C08](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c08) | `RD-1240` (`docs/TODO-MISSING-RD.md:141-172`). | Freeze the report schema and severity vocabulary; decode once into an immutable snapshot; bind it to the selected capability/plan; add hostile caller-input and false-safe/negative controls. |
+| Galerina native target | Artifact admission at `packages-ts/galerina-target-native/src/index.ts:340-367` checks only non-empty text; root containment, file identity, replacement/race policy, digest/VOK binding, and target/ABI/profile binding are absent. | [C09](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c09) | `RD-1241` (`docs/TODO-MISSING-RD.md:174-205`). | Freeze the root/path and identity model; implement canonical containment and binding; add dot-segment, alternate-separator, race, digest, profile, and VOK mismatch refusals. |
+| Galerina photonic | Core and target disagree on `PhotonicDiagnostic` shape and amplitude rules at `packages-ts/galerina-core-photonic/src/index.ts:40-47,110-120` and `packages-ts/galerina-target-photonic/src/index.ts:192-196,466-472`. | [C10](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c10) | `RD-1242` (`docs/TODO-MISSING-RD.md:207-245`). | Freeze shared diagnostic meaning, redaction/path/severity semantics, amplitude/presence/signed-zero rules, version and code ownership; then reconcile adapters and add signed-zero regressions. |
+| Galerina test/runtime paths | Workspace-root selection and containment at `packages-ts/galerina-test/src/paths.ts:20-27,41-44,55-58` accept roots/targets without the required marker and containment checks. | [C11](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c11) | `RD-1243` (`docs/TODO-MISSING-RD.md:246-272`). | Freeze marker attestation, lexical versus physical containment, Windows namespace/reparse policy, and refusal identity; implement the bounded policy and hostile path fixtures. |
+| Galerina compiler/test evidence producer | Build evidence framing at `packages-ts/galerina-core-compiler/scripts/write-build-evidence.mjs:37-48` and `packages-ts/galerina-test/src/runners.ts:94-133` can collide distinct contents under the same path list and accept duplicate JSON key spellings. | [C12](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c12) | `RD-1244` (`docs/TODO-MISSING-RD.md:274-299`). | Adopt a versioned framing/schema that binds compile inputs, configuration, toolchain, consumed outputs, containment and digests; keep duplicate-key refusal and add producer/verifier snapshot tests. |
+| Galerina JS target | Import-set validation at `packages-ts/galerina-target-js/src/index.ts:630-650` enforces module-to-plan inclusion but leaves unused plan entries admitted. | [C13](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c13) | `RD-1245` (`docs/TODO-MISSING-RD.md:376-398`). | Owner-select exact set, bag, allowlist, or split-schema semantics; implement the chosen relation and add unused-entry, missing-import, duplicate, and server-only diagnostic controls. |
+
+### Recently bounded, retained for traceability
+
+This row is no longer counted as an active implementation blocker. Its chapter
+records the completed bounded change and the residual authority hold so the
+former TODO remains auditable.
+
+| Project | Blocker | Full chapter | Current state |
 |---|---|---|---|
-| Galerina compiler | Broad expression inference is still fail-closed/partial at `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`, consumed at `:1746-1828`, `:1874-1954`, and `:2064-2297`. The unresolved cases include deferred fields, nested generics, `unwrapOr` fallbacks, heterogeneous lists, anonymous map entries, and callback wrapper payloads. | `RD-1232`; satellites `RD-1247`, `RD-1248`, `RD-1250`, `RD-1251`, `RD-1252`, `RD-1253` (`docs/TODO.md:267-377`). | Freeze the deferred-inference and diagnostic contract; implement a complete expression-kind matrix; add positive and hostile consumer tests; preserve refusal for genuinely unknown forms. |
-| Galerina compiler | WAT lowering intentionally refuses Decimal and higher-order collection operations at `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2020-2045`, with fallback at `:4503-4534`. | `RD-1233` (`docs/TODO.md:379-392`). | Freeze the Decimal representation/ABI, rounding and resource limits, and a bounded capture-free callback ABI; implement only those admitted cases; prove interpreter/WAT parity and keep unsupported cases trapped. |
-| Galerina compiler | `checkMethodChain()` is an empty seam at `packages-ts/galerina-core-compiler/src/index.ts:3081-3100`; its current inputs cannot evaluate receiver type, arguments, Result consumption, effects, bindings, readonly mutation, or stage locations. | `RD-1234` (`docs/TODO.md:394-408`). | Replace the stub with a context-rich `callExpr`-integrated checker for `FUNGI-PIPELINE-001..005`, with positive/negative controls and correct preservation of persistent `push`/`append` transforms. |
-| Galerina WASM target | `WasmArtefact` and its report decoder at `packages-ts/galerina-target-wasm/src/index.ts:8-18,68-199,201-272` lack module bytes/digest/attestation, section-bound identity, sandbox/effect/limit evidence, physical binding, and an owned cross-package schema. | `RD-1236` (`docs/TODO-MISSING-RD.md:22-48`). | Freeze a versioned schema and report/refusal rules; bind selected artefacts to exact bytes, digest, target and evidence; migrate diagnostics; add missing/forged/mismatched/duplicate/malformed/refused tests. |
-| Galerina observability | Direct `JsonLineSink.write()` at `packages-ts/galerina-observability/src/logger.ts:31-34,56-63` can let an injected writer exception escape, although the interface says it must not throw. | `RD-1237` (`docs/TODO-MISSING-RD.md:50-75`). | Freeze direct-sink failure semantics, then isolate the direct failure with a local guard and regression tests without inventing retry, buffering, delivery, or durability guarantees. |
-| Galerina observability | Logger failure accounting and clock fallback at `packages-ts/galerina-observability/src/logger.ts:190-227` conflates aggregate failures, does not count clock faults, and uses fallback `0` without provenance. | `RD-1238` (`docs/TODO-MISSING-RD.md:79-105`). | Freeze aggregate/cause counter meaning, timestamp fallback/provenance, and serialization-degradation rules; implement the chosen contract; pass the complete clock, redaction, repeated-failure, and combined-failure matrix. |
-| Galerina observability/kernel | `metricsAuditSink` at `packages-ts/galerina-observability/src/kernel-integration.ts:38-80` projects lossy method/path/status data into the full-event `AuditSink` required by `packages-ts/galerina-framework-app-kernel/src/kernel.ts:142-177,744-795`. | `RD-1239` (`docs/TODO-MISSING-RD.md:109-134`). | Choose a non-authorizing observer/tee composition or demote the adapter; preserve the full receipt fields; add capacity, commit-failure, observer-failure, and receipt-loss rejection tests. |
-| Galerina AI accelerator | Report construction at `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764` lacks an exact report decoder, closed diagnostic validation, and selection-to-report binding; warnings reread caller data at `:715-718`. | `RD-1240` (`docs/TODO-MISSING-RD.md:141-172`). | Freeze the report schema and severity vocabulary; decode once into an immutable snapshot; bind it to the selected capability/plan; add hostile caller-input and false-safe/negative controls. |
-| Galerina native target | Artifact admission at `packages-ts/galerina-target-native/src/index.ts:340-367` checks only non-empty text; root containment, file identity, replacement/race policy, digest/VOK binding, and target/ABI/profile binding are absent. | `RD-1241` (`docs/TODO-MISSING-RD.md:174-205`). | Freeze the root/path and identity model; implement canonical containment and binding; add dot-segment, alternate-separator, race, digest, profile, and VOK mismatch refusals. |
-| Galerina photonic | Core and target disagree on `PhotonicDiagnostic` shape and amplitude rules at `packages-ts/galerina-core-photonic/src/index.ts:40-47,110-120` and `packages-ts/galerina-target-photonic/src/index.ts:192-196,466-472`. | `RD-1242` (`docs/TODO-MISSING-RD.md:207-245`). | Freeze shared diagnostic meaning, redaction/path/severity semantics, amplitude/presence/signed-zero rules, version and code ownership; then reconcile adapters and add signed-zero regressions. |
-| Galerina test/runtime paths | Workspace-root selection and containment at `packages-ts/galerina-test/src/paths.ts:20-27,41-44,55-58` accept roots/targets without the required marker and containment checks. | `RD-1243` (`docs/TODO-MISSING-RD.md:246-272`). | Freeze marker attestation, lexical versus physical containment, Windows namespace/reparse policy, and refusal identity; implement the bounded policy and hostile path fixtures. |
-| Galerina compiler/test evidence producer | Build evidence framing at `packages-ts/galerina-core-compiler/scripts/write-build-evidence.mjs:37-48` and `packages-ts/galerina-test/src/runners.ts:94-133` can collide distinct contents under the same path list and accept duplicate JSON key spellings. | `RD-1244` (`docs/TODO-MISSING-RD.md:274-299`). | Adopt a versioned framing/schema that binds compile inputs, configuration, toolchain, consumed outputs, containment and digests; keep duplicate-key refusal and add producer/verifier snapshot tests. |
-| Galerina JS target | Import-set validation at `packages-ts/galerina-target-js/src/index.ts:630-650` enforces module-to-plan inclusion but leaves unused plan entries admitted. | `RD-1245` (`docs/TODO-MISSING-RD.md:376-398`). | Owner-select exact set, bag, allowlist, or split-schema semantics; implement the chosen relation and add unused-entry, missing-import, duplicate, and server-only diagnostic controls. |
+| Galerina observability/kernel | `metricsAuditSink` previously projected lossy method/path/status data into the full-event audit contract. | [C07](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c07) | Bounded implementation committed in `daa2e92b233a2f4a555fefe6d42a604001cd99b1`; observability package tests are `58/58` pass. Production receipt/durability remains an excluded authority hold. |
 
 ## Source TODOs with no RD linkage in the current ledger
 
@@ -75,14 +91,14 @@ does not attach an RD number. They are listed rather than silently treated as
 resolved. Before implementation, either link an existing RD or create the
 smallest owner-approved RD record.
 
-| Project | Blocker and exact source locator | RD linkage | Expected outcome |
-|---|---|---|---|
-| Galerina compiler | Typed-content validation remains a raw-text stub at `packages-ts/galerina-core-compiler/src/index.ts:2555-2575`; the source-preserving parser seam exists, but the validator is not wired to an AST/type environment. | No RD linked in `docs/TODO-MISSING-RD.md:566-585`. | Add the binding/type-environment seam and compiler wiring; prove that protected-secret interpolation is rejected without falling back to name matching. |
-| Galerina core-config | The v0.1 `EnvironmentConfig` source at `packages-ts/galerina-core-config/src/index.ts:97-101,1142-1179` conflicts with the v0.2 README contract at `README.md:209-260`. | No RD linked in `docs/TODO-MISSING-RD.md:712-724`. | Freeze one v0.2 schema, source/category vocabulary, and disjoint diagnostic ownership; then update implementation and tests as one contract. |
-| Galerina API server/network | The adapter TODO expects `ReplayStore.exists/save`, while the canonical network contract says `has/put`; see `packages-ts/galerina-framework-api-server/TODO.md:3-8`, `packages-ts/galerina-core-network/README.md:360-367`, and live transport at `packages-ts/galerina-framework-api-server/src/index.ts:624-721`. | No RD linked in `docs/TODO-MISSING-RD.md:958-978`. | Select the canonical names or an explicit mapping, then implement and test replay expiry, idempotency, and HMAC-before-handler ordering. |
-| Galerina documentation generator | Request/response component schemas remain placeholders because `packages-ts/galerina-docs/src/openapi.ts:91-99` has no governed `types {}` export to consume. | No RD linked in `docs/TODO-MISSING-RD.md:979-986`. | Publish an owned contract-type export from the compiler/app kernel, then generate source-backed schemas with negative validation tests. |
-| Galerina conversion overlays | Two source/asset bindings are stale: the 5,000 ms overlay versus the 120,000 ms owner value and retired `packages-galerina` runner paths; see `docs/TODO-MISSING-RD.md:921-938`. | No RD linked; generation-dependent. | Freeze the threshold/path contract after non-`.fungi` work, then regenerate the owning overlays and prove exact source/asset/interpretation parity. |
-| Galerina compiler architecture | Stage-B parity, governed JSON codec, and crypto-provider relocation remain open at `packages-ts/galerina-core-compiler/TODO.md:67-79`. | No RD linked in `docs/TODO-MISSING-RD.md:987-990`. | Split each architecture item into a bounded contract, owner, test route, and RD linkage; do not treat the umbrella TODO as one implementation task. |
+| Project | Blocker and exact source locator | Full chapter | RD linkage | Expected outcome |
+|---|---|---|---|---|
+| Galerina compiler | Typed-content validation remains a raw-text stub at `packages-ts/galerina-core-compiler/src/index.ts:2555-2575`; the source-preserving parser seam exists, but the validator is not wired to an AST/type environment. | [C14](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c14) | No RD linked in `docs/TODO-MISSING-RD.md:566-585`. | Add the binding/type-environment seam and compiler wiring; prove that protected-secret interpolation is rejected without falling back to name matching. |
+| Galerina core-config | The v0.1 `EnvironmentConfig` source at `packages-ts/galerina-core-config/src/index.ts:97-101,1142-1179` conflicts with the v0.2 README contract at `README.md:209-260`. | [C15](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c15) | No RD linked in `docs/TODO-MISSING-RD.md:712-724`. | Freeze one v0.2 schema, source/category vocabulary, and disjoint diagnostic ownership; then update implementation and tests as one contract. |
+| Galerina API server/network | Canonical store interfaces and a bounded process-local `MemoryReplayStore` now exist, and app-kernel idempotency now uses explicit atomic `IdempotencyStore.claim(scope,key,ttl) -> claimed \| duplicate` admission after pre-handler refusal gates. The transport still has no replay/HMAC wiring or durable/shared authority. | [C16](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c16) | No RD linked; the live bounded range query was **REFUSED** because tracked RD source paths are dirty. No number was invented. | Retain the explicit atomic claim seam and separate replay/idempotency namespaces; inject replay storage, define durability/multi-process and retry authority, and prove expiry, duplicate handling, HMAC-before-handler ordering, and handler non-execution on refusal. |
+| Galerina documentation generator | Placeholder request/response schemas are now refused. `packages-ts/galerina-docs/src/types.ts` defines the versioned `ContractSchemaExport`, and `src/openapi.ts` requires it, validates it, and stamps source/type/version provenance; the real compiler `types {}` export adapter is still absent. | [C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17) | No RD linked in `docs/TODO-MISSING-RD.md:979-986`. | Wire the compiler's governed `types {}` export to `ContractSchemaExport`, then prove source-head and runtime-validator parity with an integration fixture. |
+| Galerina conversion overlays | Two source/asset bindings are stale: the 5,000 ms overlay versus the 120,000 ms owner value and retired `packages-galerina` runner paths; see `docs/TODO-MISSING-RD.md:921-938`. | [C18](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c18) | No RD linked; generation-dependent. | Freeze the threshold/path contract after non-`.fungi` work, then regenerate the owning overlays and prove exact source/asset/interpretation parity. |
+| Galerina compiler architecture | Stage-B parity, governed JSON codec, and crypto-provider relocation remain open, but are now split into C19-A/C19-B/C19-C at `packages-ts/galerina-core-compiler/TODO.md:207-235`. | [C19](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c19) | No RD linked in `docs/TODO-MISSING-RD.md:987-990`. | Implement and independently verify each bounded owner/contract/test row; do not treat the split as implementation clearance. |
 
 ## Deferred technical work, not counted as evidence blockers
 
@@ -169,6 +185,29 @@ drop-in fix or a clearance of an active blocker:
 Interpretation note: `Legato` was matched to the LEGaTO heterogeneous-computing
 project, and `Neptune` to the Neptune/Triton VM proof stack. The reviewed
 sources do not establish a direct Galerina or Tri-Fuse implementation.
+
+### 2026-09-21 implementation and benchmark keywords
+
+- full-event audit receipt preserving observer adapter
+- mandatory audit capacity reserve before dispatch
+- non-authorizing metrics tee full event
+- affine audit reservation commit cancel
+- audit observer failure isolation
+- logger direct writer exception isolation
+- logger failure accounting clock provenance
+- K3 unknown generic type inference
+- deferred generic fallback unwrapOr type checking
+- WebAssembly artefact digest attestation section identity
+- WebAssembly Decimal lowering ABI rounding
+- closure-free higher-order collection lowering
+- compiler method-chain effect ownership checker
+- native artifact path containment race digest binding
+- JSON evidence canonical framing duplicate keys
+- exact import set closure compiler target
+- SLIDE production lane admission work equivalence
+- benchmark uncertified comparison fail closed
+- historical WASM non-production benchmark control
+- Galerina observability receipt sink durability
 
 ### Existing component and compiler search keywords
 
