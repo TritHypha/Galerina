@@ -46,5 +46,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/index-filename.fungi`
 - `src/self-hosted/top-k.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

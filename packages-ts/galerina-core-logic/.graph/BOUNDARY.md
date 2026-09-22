@@ -66,5 +66,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/fungi-tri-005-malformed-unknown-reason.fungi`
 - `src/self-hosted/tri-ops.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

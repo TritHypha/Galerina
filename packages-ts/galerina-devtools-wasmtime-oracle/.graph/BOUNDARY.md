@@ -48,5 +48,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 ## Loaded Assets
 _none declared_
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 - `src/admission.rs` -- Rust module ownership is declared by `pub mod admission`; the JavaScript-oriented boundary scanner does not parse Rust module declarations.

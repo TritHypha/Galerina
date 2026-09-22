@@ -48,5 +48,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/fungi-cli-redact-001.fungi`
 - `src/self-hosted/redaction.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 4 |
-| Internal edges | 0 |
+| Files | 6 |
+| Internal edges | 2 |
 | External dependencies | 8 |
 | ├─ Node core | 5 |
 | ├─ Workspace (@galerina/*) | 3 |
@@ -49,6 +49,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/default-idle-timeout-ms.fungi`
 - `src/self-hosted/default-max-body-bytes.fungi`
 - `src/self-hosted/max-principal-scopes.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

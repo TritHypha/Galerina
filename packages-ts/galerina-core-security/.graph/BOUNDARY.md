@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 14 |
-| Internal edges | 22 |
+| Files | 15 |
+| Internal edges | 23 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
@@ -46,6 +46,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/dss/index.fungi`
 - `src/dss/mmcp-registry.fungi`
 - `src/interim.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

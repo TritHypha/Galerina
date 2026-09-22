@@ -13,8 +13,8 @@
 |---|---|
 | Files | 3 |
 | Internal edges | 2 |
-| External dependencies | 4 |
-| ├─ Node core | 0 |
+| External dependencies | 5 |
+| ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 4 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,7 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
-_none_
+- `node:crypto`
 
 ### Workspace (@galerina/*)
 - `@galerina/ext-photonic-emulator`
@@ -43,6 +43,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/index.ts`
 
 ## Loaded Assets
+_none declared_
+
+## Product Assets
 _none declared_
 
 ## Allowed Orphans

@@ -45,5 +45,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/structured-await-plan-version.fungi`
 - `src/self-hosted/vok-authority-admission.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

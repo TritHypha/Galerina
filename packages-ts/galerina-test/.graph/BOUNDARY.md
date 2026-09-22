@@ -12,10 +12,10 @@
 | Metric | Count |
 |---|---|
 | Files | 2210 |
-| Internal edges | 12 |
-| External dependencies | 5 |
+| Internal edges | 13 |
+| External dependencies | 6 |
 | ├─ Node core | 5 |
-| ├─ Workspace (@galerina/*) | 0 |
+| ├─ Workspace (@galerina/*) | 1 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -23,13 +23,13 @@
 
 ### Node core
 - `node:child_process`
-- `node:crypto`
 - `node:fs`
 - `node:path`
+- `node:perf_hooks`
 - `node:url`
 
 ### Workspace (@galerina/*)
-_none_
+- `@galerina/core-compiler`
 
 ### Third-party
 _none_
@@ -2248,6 +2248,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/runner-constants.fungi`
 - `src/self-hosted/test-marker.fungi`
 - `src/self-hosted/workspace-marker.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

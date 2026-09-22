@@ -25,7 +25,7 @@
 _none_
 
 ### Workspace (@galerina/*)
-- `@galerina/tower-citizen`
+- `@galerina/tower-citizen/governance`
 
 ### Third-party
 _none_
@@ -47,6 +47,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/defensive-controls.fungi`
 - `src/self-hosted/egress-guard.fungi`
 - `src/self-hosted/inbound-guard.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

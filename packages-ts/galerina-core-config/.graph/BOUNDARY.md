@@ -13,8 +13,8 @@
 |---|---|
 | Files | 8 |
 | Internal edges | 3 |
-| External dependencies | 0 |
-| ├─ Node core | 0 |
+| External dependencies | 1 |
+| ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,7 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
-_none_
+- `node:util/types`
 
 ### Workspace (@galerina/*)
 _none_
@@ -45,6 +45,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/default-governance-mode.fungi`
 - `src/self-hosted/default-security-posture.fungi`
 - `src/self-hosted/egress-allowed-hosts-env.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

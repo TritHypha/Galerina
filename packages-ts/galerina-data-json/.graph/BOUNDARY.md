@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 1 |
-| Internal edges | 0 |
+| Files | 2 |
+| Internal edges | 2 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
@@ -40,6 +40,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/index.ts`
 
 ## Loaded Assets
+_none declared_
+
+## Product Assets
 _none declared_
 
 ## Allowed Orphans

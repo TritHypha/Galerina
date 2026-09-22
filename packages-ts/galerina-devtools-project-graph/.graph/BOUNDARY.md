@@ -44,5 +44,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 ## Loaded Assets
 _none declared_
 
+## Product Assets
+- `packages/fungi/products/galerina/rd0873-devtools-project-graph/resource-transition.fungi`
+
 ## Allowed Orphans
 _none declared_

@@ -43,5 +43,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/hardened-border.fungi`
 - `src/self-hosted/manifest-validator.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

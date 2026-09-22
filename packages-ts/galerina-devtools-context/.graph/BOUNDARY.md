@@ -43,5 +43,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 ## Loaded Assets
 - `src/self-hosted/devtools-context-version.fungi`
 
+## Product Assets
+- `packages/fungi/products/galerina/rd0873-devtools-context/builtin-name.fungi`
+
 ## Allowed Orphans
 _none declared_

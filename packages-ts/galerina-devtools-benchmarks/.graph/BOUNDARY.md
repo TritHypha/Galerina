@@ -84,5 +84,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `evidence/slide-verified-native-operation-reference.json`
 - `src/wasm-runner.mjs`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 - `src/mem-sampler.mjs` -- Dormant exported sampler retained for benchmark instrumentation; no executable or import currently owns it.

@@ -48,5 +48,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/pack-entry-size.fungi`
 - `src/self-hosted/tmx-profile-shake.fungi`
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

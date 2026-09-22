@@ -13,8 +13,8 @@
 |---|---|
 | Files | 12 |
 | Internal edges | 19 |
-| External dependencies | 1 |
-| ├─ Node core | 0 |
+| External dependencies | 2 |
+| ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 1 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,7 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
-_none_
+- `node:util/types`
 
 ### Workspace (@galerina/*)
 - `@galerina/inference-bridge-contract`
@@ -43,6 +43,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/act-max.fungi`
 - `src/self-hosted/enob-ceiling.fungi`
 - `src/self-hosted/w-rep.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 _none declared_

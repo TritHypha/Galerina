@@ -44,5 +44,8 @@ _none detected_
 ## Loaded Assets
 _none declared_
 
+## Product Assets
+_none declared_
+
 ## Allowed Orphans
 _none declared_

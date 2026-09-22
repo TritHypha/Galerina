@@ -11,12 +11,12 @@
 
 | Metric | Count |
 |---|---|
-| Files | 53 |
-| Internal edges | 79 |
-| External dependencies | 7 |
-| ├─ Node core | 4 |
+| Files | 65 |
+| Internal edges | 117 |
+| External dependencies | 9 |
+| ├─ Node core | 5 |
 | ├─ Workspace (@galerina/*) | 2 |
-| └─ Third-party | 1 |
+| └─ Third-party | 2 |
 | Orphan files | 0 |
 
 ## External Dependencies (the Border)
@@ -24,6 +24,7 @@
 ### Node core
 - `node:crypto`
 - `node:fs`
+- `node:module`
 - `node:path`
 - `node:util`
 
@@ -33,6 +34,7 @@
 
 ### Third-party
 - `@noble/post-quantum/ml-dsa.js`
+- `typescript`
 
 ## Governance
 No boundary violations. All external imports are allowed and every scanned file has declared ownership.
@@ -41,7 +43,15 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
+- `src/custody.ts`
+- `src/dataplane.ts`
+- `src/governance-v1.ts`
+- `src/governance.ts`
 - `src/index.ts`
+- `src/inference.ts`
+- `src/kernel.ts`
+- `src/photonic.ts`
+- `src/tpl.ts`
 
 ## Loaded Assets
 - `src/self-hosted/authorization-boundary.fungi`
@@ -66,5 +76,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/verdict-or.fungi`
 - `src/trit-brand.type-guard.ts`
 
-## Allowed Orphans
+## Product Assets
 _none declared_
+
+## Allowed Orphans
+- `src/load-graph.ts` -- Isolation checker consumed by package tests via dist/load-graph.js; not a public package export.

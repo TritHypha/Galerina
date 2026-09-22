@@ -11,11 +11,11 @@
 
 | Metric | Count |
 |---|---|
-| Files | 287 |
-| Internal edges | 461 |
-| External dependencies | 19 |
+| Files | 293 |
+| Internal edges | 480 |
+| External dependencies | 20 |
 | ├─ Node core | 10 |
-| ├─ Workspace (@galerina/*) | 6 |
+| ├─ Workspace (@galerina/*) | 7 |
 | └─ Third-party | 3 |
 | Orphan files | 0 |
 
@@ -37,6 +37,7 @@
 - `@galerina/core-network`
 - `@galerina/core-runtime-wasm`
 - `@galerina/core-security`
+- `@galerina/data-json`
 - `@galerina/devtools-graph-algorithms`
 - `@galerina/substrate-math`
 - `@galerina/tri-regex`
@@ -212,6 +213,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/verifier-id.fungi`
 - `src/self-hosted/wat-64-bit-type.fungi`
 - `src/self-hosted/wgsl-skeleton-template.fungi`
+
+## Product Assets
+_none declared_
 
 ## Allowed Orphans
 - `src/source-origin-parser-entry.ts` -- Task 6 source-origin observation entry is owned by the dedicated tsconfig.source-origin-parser.json toolchain and is not a package runtime entrypoint.
