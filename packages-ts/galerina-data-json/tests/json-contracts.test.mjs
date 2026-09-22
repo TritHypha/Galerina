@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  Json,
   createJsonArchiveReport,
+  encodeJsonValue,
+  parseJsonValue,
   validateJsonDecodePlan,
   validateJsonExtractionPlan,
   validateJsonMemoryPolicy,
@@ -230,5 +233,104 @@ describe("createJsonArchiveReport — archives carry their own diagnostics", () 
       codes(report.diagnostics).filter((c) => c === "Galerina_DATA_JSON_COUNT_INVALID").length,
       2,
     );
+  });
+});
+
+describe("C19-B Json.parse governed JsonValue — never any", () => {
+  const memory = boundedMemory;
+
+  it("parses a closed integer object and round-trips", () => {
+    const parsed = Json.parse('{"a":1}', { memory });
+    assert.equal(parsed.ok, true);
+    if (!parsed.ok) return;
+    assert.equal(parsed.value.kind, "object");
+    assert.equal(parsed.value.taint, "clean");
+    const encoded = Json.encode(parsed.value);
+    assert.equal(encoded.ok, true);
+    if (!encoded.ok) return;
+    assert.equal(encoded.text, '{"a":1}');
+    assert.equal(encoded.taint, "clean");
+  });
+
+  it("keeps JSON null distinct from a missing field", () => {
+    const parsed = parseJsonValue("null", { memory });
+    assert.equal(parsed.ok, true);
+    if (!parsed.ok) return;
+    assert.equal(parsed.value.kind, "null");
+  });
+
+  it("refuses IEEE numbers instead of mapping them to float", () => {
+    const parsed = parseJsonValue("1.5", { memory });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-004");
+    assert.equal(JSON.stringify(parsed).includes("decimal"), false);
+  });
+
+  it("refuses JSON -0", () => {
+    const parsed = parseJsonValue("-0", { memory });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-004");
+  });
+
+  it("refuses duplicate keys that JSON.parse would last-win", () => {
+    assert.equal(JSON.parse('{"a":1,"a":2}').a, 2);
+    const parsed = parseJsonValue('{"a":1,"a":2}', { memory });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-003");
+  });
+
+  it("stores __proto__ as a field without polluting Object.prototype", () => {
+    const parsed = parseJsonValue('{"__proto__":1}', { memory });
+    assert.equal(parsed.ok, true);
+    if (!parsed.ok) return;
+    assert.equal(parsed.value.kind, "object");
+    assert.equal(parsed.value.fields[0].name, "__proto__");
+    assert.equal(Object.prototype.polluted, undefined);
+  });
+
+  it("refuses over-depth nesting", () => {
+    const parsed = parseJsonValue("[[[1]]]", { memory: { maxDepth: 2, maxDocumentBytes: 1024 } });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-002");
+  });
+
+  it("refuses a missing or unbounded memory policy", () => {
+    const parsed = parseJsonValue("1", { memory: { maxDepth: 0, maxDocumentBytes: 1024 } });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-006");
+  });
+
+  it("carries taint through parse and encode and does not launder it", () => {
+    const parsed = parseJsonValue('{"a":1}', { memory, taint: "tainted" });
+    assert.equal(parsed.ok, true);
+    if (!parsed.ok) return;
+    assert.equal(parsed.value.taint, "tainted");
+    const encoded = encodeJsonValue(parsed.value);
+    assert.equal(encoded.ok, true);
+    if (!encoded.ok) return;
+    assert.equal(encoded.taint, "tainted");
+    const replayed = parseJsonValue(encoded.text, { memory });
+    assert.equal(replayed.ok, true);
+    if (!replayed.ok) return;
+    assert.equal(replayed.value.taint, "clean");
+  });
+
+  it("refuses an unknown runtime kind on encode", () => {
+    const encoded = encodeJsonValue({ kind: "float", value: 1.25, taint: "clean" });
+    assert.equal(encoded.ok, false);
+    if (encoded.ok) return;
+    assert.equal(encoded.diagnostic.code, "FUNGI-JSON-005");
+  });
+
+  it("refuses trailing tokens", () => {
+    const parsed = parseJsonValue("1 2", { memory });
+    assert.equal(parsed.ok, false);
+    if (parsed.ok) return;
+    assert.equal(parsed.diagnostic.code, "FUNGI-JSON-007");
   });
 });

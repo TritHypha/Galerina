@@ -47,7 +47,7 @@ export interface WalkOptions {
 }
 
 interface Rule {
-  re: RegExp;
+  pattern: string;
   dirOnly: boolean;
   negate: boolean;
   basename: boolean; // no-slash rule -> test the basename, else the full path
@@ -62,19 +62,40 @@ const ALWAYS_SKIP = new Set([".git", ".myco"]);
 // silent), a vendored skip is a coverage cap the user must be able to see and lift.
 const VENDORED_SKIP = new Set(["node_modules"]);
 
-function globToRegExp(glob: string): RegExp {
-  let re = "";
-  for (const ch of glob) {
-    if (ch === "*") re += "[^/]*";
-    else if (ch === "?") re += "[^/]";
-    else re += ch.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+const MAX_IGNORE_BYTES = 64 * 1024;
+const MAX_IGNORE_RULES = 256;
+const MAX_IGNORE_PATTERN = 256;
+
+/** Linear glob match for `*` and `?` only — no regex backtracking. */
+function globMatch(pattern: string, value: string): boolean {
+  let p = 0;
+  let s = 0;
+  let star = -1;
+  let match = 0;
+  while (s < value.length) {
+    if (p < pattern.length && (pattern[p] === value[s] || pattern[p] === "?")) {
+      p += 1;
+      s += 1;
+    } else if (p < pattern.length && pattern[p] === "*") {
+      star = p;
+      match = s;
+      p += 1;
+    } else if (star !== -1) {
+      p = star + 1;
+      match += 1;
+      s = match;
+    } else {
+      return false;
+    }
   }
-  return new RegExp(`^${re}$`);
+  while (p < pattern.length && pattern[p] === "*") p += 1;
+  return p === pattern.length;
 }
 
 function parseIgnore(text: string, base: string): Rule[] {
   const rules: Rule[] = [];
-  for (const raw of text.split(/\r?\n/)) {
+  const bounded = text.length > MAX_IGNORE_BYTES ? text.slice(0, MAX_IGNORE_BYTES) : text;
+  for (const raw of bounded.split(/\r?\n/)) {
     const line = raw.trim();
     if (line === "" || line.startsWith("#")) continue;
     let body = line;
@@ -89,9 +110,10 @@ function parseIgnore(text: string, base: string): Rule[] {
     // unsupported (documented) — but silently missing `**/x` was indexing build caches
     // a correct .gitignore already excluded (owner 2026-07-25, the .fungi-cache case).
     if (body.startsWith("**/")) body = body.slice(3);
-    if (body === "") continue;
+    if (body === "" || body.length > MAX_IGNORE_PATTERN) continue;
+    if (rules.length >= MAX_IGNORE_RULES) break;
     const basename = !body.includes("/");
-    rules.push({ re: globToRegExp(body), dirOnly, negate, basename, base });
+    rules.push({ pattern: body, dirOnly, negate, basename, base });
   }
   return rules;
 }
@@ -138,7 +160,7 @@ function isIgnored(rules: Rule[], relPath: string, isDir: boolean): boolean {
       sub = relPath.slice(r.base.length + 1);
     }
     const target = r.basename ? sub.slice(sub.lastIndexOf("/") + 1) : sub;
-    if (r.re.test(target)) ignored = !r.negate;
+    if (globMatch(r.pattern, target)) ignored = !r.negate;
   }
   return ignored;
 }

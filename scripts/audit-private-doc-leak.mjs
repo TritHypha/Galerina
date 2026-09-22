@@ -120,4 +120,4 @@ if (violations.length) {
 }
 console.log(`VIOLATIONS: ${violations.length}`);
 console.log(`TOTAL: ${violations.length} private-doc-leak violation(s) · ${scanned} tracked text file(s) scanned`);
-process.exit(violations.length);
+process.exit(violations.length > 0 ? 1 : 0);

@@ -796,7 +796,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         } catch {
           return errorResponse(503, "audit_unavailable", "Required runtime audit evidence could not be accepted.");
         }
-      } else {
+      } else if (policy !== undefined) {
         try {
           auditSink.emit(event);
         } catch {

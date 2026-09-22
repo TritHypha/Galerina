@@ -78,6 +78,26 @@ test("orphan detection flags unreferenced non-entry files", () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test("boundary gate: an undeclared specifier remains a violation after an exact sibling is allowed", () => {
+  const root = makeFixture({
+    "src/index.ts": `import { x } from "@galerina/tower-citizen/governance";\n`,
+  });
+  runBoundaryGate(root, buildGraph(scanPackage(root)), false);
+  const policyPath = join(root, ".graph", "boundary-policy.json");
+  writeFileSync(policyPath, JSON.stringify({
+    packageName: "@galerina/fixture",
+    allowedExternal: ["@galerina/tower-citizen/governance"],
+  }));
+  const admitted = runBoundaryGate(root, buildGraph(scanPackage(root)), true);
+  assert.equal(admitted.status, "PASS");
+
+  writeFileSync(join(root, "src", "index.ts"), `import { x } from "@galerina/tower-citizen";\n`);
+  const barrel = runBoundaryGate(root, buildGraph(scanPackage(root)), true);
+  assert.equal(barrel.status, "FAIL");
+  assert.ok(barrel.violations.includes("@galerina/tower-citizen"));
+  rmSync(root, { recursive: true, force: true });
+});
+
 test("boundary gate: an unexplained orphan is a blocking --check violation", () => {
   const root = makeFixture({
     "src/index.ts": `export const main = 1;`,
@@ -152,6 +172,66 @@ test("a named allowOrphans entry suppresses only its exact justified path", () =
   }]);
   assert.deepEqual(graph.orphans, ["src/unexplained.ts"]);
   rmSync(root, { recursive: true, force: true });
+});
+
+test("productAssets record foreign fungi products without ../ loadedAssets", () => {
+  const workspace = mkdtempSync(join(tmpdir(), "pkg-graph-ws-"));
+  writeFileSync(join(workspace, "galerina.workspace.json"), "{}\n");
+  const tree = join(workspace, "packages", "fungi", "products", "galerina", "rd-fixture");
+  mkdirSync(tree, { recursive: true });
+  writeFileSync(join(tree, "stage.fungi"), "pure flow stage() -> Int { return 1 }\n");
+  const root = join(workspace, "packages-ts", "fixture");
+  mkdirSync(join(root, "src"), { recursive: true });
+  writeFileSync(join(root, "package.json"), JSON.stringify({
+    name: "@galerina/fixture",
+    packageGraph: {
+      productAssets: [{
+        tree: "packages/fungi/products/galerina/rd-fixture",
+        path: "stage.fungi",
+      }],
+    },
+  }));
+  writeFileSync(join(root, "src", "index.ts"), "export const main = 1;\n");
+  try {
+    const graph = buildGraph(scanPackage(root));
+    assert.deepEqual(graph.productAssets, [{
+      tree: "packages/fungi/products/galerina/rd-fixture",
+      path: "stage.fungi",
+    }]);
+    assert.deepEqual(graph.loadedAssets, []);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("productAssets refuse .., missing files, and in-package paths; loadedAssets still refuse ../", () => {
+  const workspace = mkdtempSync(join(tmpdir(), "pkg-graph-ws-"));
+  writeFileSync(join(workspace, "galerina.workspace.json"), "{}\n");
+  const tree = join(workspace, "packages", "fungi", "products", "galerina", "rd-fixture");
+  mkdirSync(tree, { recursive: true });
+  writeFileSync(join(tree, "stage.fungi"), "pure flow stage() -> Int { return 1 }\n");
+  const root = join(workspace, "packages-ts", "fixture");
+  mkdirSync(join(root, "src"), { recursive: true });
+  writeFileSync(join(root, "src", "index.ts"), "export const main = 1;\n");
+  writeFileSync(join(root, "src", "inside.fungi"), "pure flow inside() -> Int { return 1 }\n");
+  const writePkg = (packageGraph) => {
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@galerina/fixture", packageGraph }));
+  };
+  try {
+    writePkg({ loadedAssets: ["../outside.fungi"] });
+    assert.throws(() => scanPackage(root), /loadedAssets.*inside the package/i);
+
+    writePkg({ productAssets: [{ tree: "../escape", path: "stage.fungi" }] });
+    assert.throws(() => scanPackage(root), /productAssets\[0\]\.tree/i);
+
+    writePkg({ productAssets: [{ tree: "packages/fungi/products/galerina/rd-fixture", path: "missing.fungi" }] });
+    assert.throws(() => scanPackage(root), /does not exist/i);
+
+    writePkg({ productAssets: [{ tree: "packages-ts/fixture/src", path: "inside.fungi" }] });
+    assert.throws(() => scanPackage(root), /outside the declaring package/i);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test("declared ownership paths refuse missing, escaping, non-canonical, duplicate, and malformed entries", () => {
@@ -309,6 +389,26 @@ test("comments do not produce phantom imports", () => {
   });
   const graph = buildGraph(scanPackage(root));
   assert.equal(graph.stats.thirdpartyCount, 0); // commented-out imports ignored
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("comment markers inside strings do not hide real imports", () => {
+  const root = makeFixture({
+    "src/index.ts": `const marker = "//";\nimport "hidden-dep";\nconst block = "/*";\nimport "second-dep";\n`,
+  });
+  const graph = buildGraph(scanPackage(root));
+  const specs = graph.externalDeps.map((d) => d.specifier).sort();
+  assert.deepEqual(specs, ["hidden-dep", "second-dep"]);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("comment markers inside regex literals do not hide real imports", () => {
+  const root = makeFixture({
+    "src/index.ts": `const re = /http:\\/\\//;\nimport "regex-hidden-dep";\nexport const x = 1;\n`,
+  });
+  const graph = buildGraph(scanPackage(root));
+  const specs = graph.externalDeps.map((d) => d.specifier).sort();
+  assert.deepEqual(specs, ["regex-hidden-dep"]);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -555,11 +655,25 @@ test("configured JSON scans exclude generated .myco metadata from the source nod
 
 test("scanned scope is reported even when zero files match (no silent empty border)", () => {
   const root = makeFixture({
-    "package.json": JSON.stringify({ name: "@galerina/empty", packageGraph: { roots: ["does-not-exist"] } }),
+    "package.json": JSON.stringify({ name: "@galerina/empty" }),
   });
   const graph = buildGraph(scanPackage(root));
   assert.equal(graph.stats.fileCount, 0);
-  assert.deepEqual(graph.scannedRoots, []);                 // configured root absent → nothing scanned
-  assert.ok(graph.scannedExtensions.length > 0);            // extensions still recorded for the report
+  assert.deepEqual(graph.scannedRoots, ["src"]);
+  assert.ok(graph.scannedExtensions.length > 0);
   rmSync(root, { recursive: true, force: true });
+});
+
+test("explicit missing or escaping scan roots are refused", () => {
+  const missing = makeFixture({
+    "package.json": JSON.stringify({ name: "@galerina/missing-root", packageGraph: { roots: ["does-not-exist"] } }),
+  });
+  assert.throws(() => scanPackage(missing), /does not exist/);
+  rmSync(missing, { recursive: true, force: true });
+
+  const escaping = makeFixture({
+    "package.json": JSON.stringify({ name: "@galerina/escape-root", packageGraph: { roots: ["../victim"] } }),
+  });
+  assert.throws(() => scanPackage(escaping), /canonical|inside the package|\.\./);
+  rmSync(escaping, { recursive: true, force: true });
 });

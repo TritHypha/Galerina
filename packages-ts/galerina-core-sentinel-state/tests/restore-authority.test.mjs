@@ -9,6 +9,7 @@ import {
 } from "../dist/index.js";
 import { tmpDir } from "./_tmp.mjs";
 
+const TEST_KEY = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const PACKAGE_IDENTITY = "@galerina/core-sentinel-state";
 const EXPORT_NAME = "restoreVerdict";
 
@@ -23,7 +24,7 @@ function authority(restoreVerdict, overrides = {}) {
 
 function dependencies() {
   return {
-    serializer: new StateSerializer(),
+    serializer: new StateSerializer({ hmacKey: TEST_KEY }),
     writer: new AtomicWriter(tmpDir()),
   };
 }

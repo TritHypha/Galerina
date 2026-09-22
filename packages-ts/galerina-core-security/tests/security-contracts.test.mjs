@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  CRYPTO_PROVIDER_SCHEMA,
   createSafeCookieReference,
   createSafeHeaderReference,
   createSafeTokenReference,
@@ -10,6 +11,7 @@ import {
   createSecurityReport,
   decidePermission,
   definePermissionModel,
+  invokeCryptoProvider,
   redactText,
   validateCryptographicPolicy,
   validatePermissionModel,
@@ -232,5 +234,77 @@ describe("galerina-core-security contracts", () => {
     assert.equal(ref.fingerprint, "sha256:abc123");
     assert.equal(ref.redacted, true);
     assert.equal(Object.hasOwn(ref, "value"), false);
+  });
+});
+
+describe("C19-C CryptoProvider — absent and throwing refuse closed", () => {
+  const hashReq = {
+    op: "password-hash",
+    algorithm: "argon2id",
+    plaintext: "secret",
+  };
+
+  it("refuses when no provider is injected", async () => {
+    const result = await invokeCryptoProvider(undefined, hashReq);
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "FUNGI-CRYPTO-001");
+  });
+
+  it("refuses a provider with the wrong schema", async () => {
+    const result = await invokeCryptoProvider(
+      { schema: "not-a-provider", invoke: async () => ({ ok: true, kind: "hash", algorithm: "argon2id", hash: "$argon2id$x" }) },
+      hashReq,
+    );
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "FUNGI-CRYPTO-004");
+  });
+
+  it("refuses a throwing provider", async () => {
+    const result = await invokeCryptoProvider(
+      {
+        schema: CRYPTO_PROVIDER_SCHEMA,
+        invoke: async () => {
+          throw new Error("native binding exploded");
+        },
+      },
+      hashReq,
+    );
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "FUNGI-CRYPTO-002");
+  });
+
+  it("refuses a malformed provider result", async () => {
+    const result = await invokeCryptoProvider(
+      {
+        schema: CRYPTO_PROVIDER_SCHEMA,
+        invoke: async () => ({ ok: true, kind: "hash", algorithm: "argon2id", hash: 1 }),
+      },
+      hashReq,
+    );
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "FUNGI-CRYPTO-003");
+  });
+
+  it("accepts a closed fake hash result", async () => {
+    const result = await invokeCryptoProvider(
+      {
+        schema: CRYPTO_PROVIDER_SCHEMA,
+        invoke: async () => ({
+          ok: true,
+          kind: "hash",
+          algorithm: "argon2id",
+          hash: "$argon2id$v=19$m=16,t=2,p=1$fake",
+        }),
+      },
+      hashReq,
+    );
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.kind, "hash");
+    assert.equal(result.hash.startsWith("$argon2"), true);
   });
 });

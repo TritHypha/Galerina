@@ -229,8 +229,34 @@ describe("production registry durability composition", () => {
     }
   });
 
+  it("materializes the signed manifest before branding so a Proxy cannot swap fields after verify", () => {
+    const base = manifest();
+    let swapped = false;
+    const proxied = new Proxy(base, {
+      get(target, prop, receiver) {
+        if (swapped && prop === "generationId") return "c".repeat(64);
+        if (prop === "rootSignature") {
+          swapped = true;
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+    const profile = admitRegistryDurabilityProfile(proxied, evidence(), authority());
+    assert.equal(profile.generationId, "b".repeat(64));
+    assert.notEqual(profile.generationId, "c".repeat(64));
+  });
+
   it("binds generation, key, delegation, index, adapter, checkpoint, and active window", () => {
-    const profile = admitRegistryDurabilityProfile(manifest(), evidence(), authority());
+    const candidate = admitRegistryDurabilityProfile(manifest(), evidence(), authority());
+    const profile = activateRegistryDurabilityProfile(
+      candidate,
+      releaseAuthorization(),
+      (message, signature, keyId) =>
+        message.length > 0
+        && signature === "owner-release-test"
+        && keyId === "owner-release-key",
+      Date.parse("2026-08-01T19:30:00.000Z"),
+    );
     const candidateGeneration = {
       generationId: "b".repeat(64),
       operationalKeyId: "f31-example-public-id",

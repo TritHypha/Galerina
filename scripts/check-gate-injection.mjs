@@ -48,9 +48,10 @@ const toRel = (f) => relative(REPO, f).split(sep).join("/");
 
 /** Pure classifier (also exercised by --self-test): "none" | "skip" | "guarded" | "test" | "offender". */
 export function classifyCaller(path, src) {
-  if (!ADMIT_CALLS.some((c) => src.includes(c))) return "none";
+  const code = String(src).replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
+  if (!ADMIT_CALLS.some((c) => code.includes(c))) return "none";
   if (isDefinition(path)) return "skip";
-  if (src.includes(GATE)) return "guarded";
+  if (code.includes(GATE)) return "guarded";
   return isTest(path) ? "test" : "offender";
 }
 

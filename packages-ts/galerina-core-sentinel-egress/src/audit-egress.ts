@@ -72,19 +72,30 @@ function isWeakKey(key: Uint8Array | undefined): boolean {
 
 /**
  * Compute the keyed batch hash for a chain link.
- * Legacy (no epoch): `HMAC-SHA256-hex(prevHash + "\n" + records.join("\n"))` — unchanged bytes.
- * Epoch-stamped:     the input is prefixed with `epoch:<id>\n`, binding the epoch
- * into the MAC so a batch cannot be relabelled to verify under a different epoch's key.
+ *
+ * Length-prefixed v2 encoding binds count, each record's byte length, optional
+ * epoch, and sequence so merging or splitting newline-containing records cannot
+ * preserve the MAC.
  */
 function computeBatchHash(
   hmacKey: Uint8Array,
   prevHash: string,
   records: readonly string[],
   epochId?: number,
+  seq?: number,
 ): string {
   const h = createHmac("sha256", hmacKey);
+  h.update("galerina.audit-batch.v2\n");
   if (epochId !== undefined) h.update(`epoch:${epochId}\n`);
-  h.update(prevHash + "\n" + records.join("\n"));
+  if (seq !== undefined) h.update(`seq:${seq}\n`);
+  h.update(prevHash);
+  h.update("\n");
+  h.update(`count:${records.length}\n`);
+  for (const r of records) {
+    h.update(`${Buffer.byteLength(r, "utf8")}:`);
+    h.update(r);
+    h.update("\n");
+  }
   return h.digest("hex");
 }
 
@@ -205,7 +216,7 @@ export class AuditEgress {
       return null;
     }
     const prevHash = this.#prevHash;
-    const batchHash = computeBatchHash(this.#hmacKey, prevHash, records, this.#epochId);
+    const batchHash = computeBatchHash(this.#hmacKey, prevHash, records, this.#epochId, this.#seq);
     const batch: AuditBatch = {
       seq: this.#seq,
       count: records.length,
@@ -263,7 +274,7 @@ export class AuditEgress {
       if (b.count !== b.records.length) {
         return false;
       }
-      const recomputed = computeBatchHash(key, b.prevHash, b.records, b.epochId);
+      const recomputed = computeBatchHash(key, b.prevHash, b.records, b.epochId, b.seq);
       if (recomputed !== b.batchHash) {
         return false;
       }
@@ -320,7 +331,7 @@ export class AuditEgress {
       if (!key || isWeakKey(key)) {
         return false; // unknown / future / revoked epoch, or a weak key → fail-closed
       }
-      if (computeBatchHash(key, b.prevHash, b.records, b.epochId) !== b.batchHash) {
+      if (computeBatchHash(key, b.prevHash, b.records, b.epochId, b.seq) !== b.batchHash) {
         return false;
       }
       expectedPrev = b.batchHash;

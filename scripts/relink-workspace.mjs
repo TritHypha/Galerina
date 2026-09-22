@@ -33,7 +33,7 @@
 
 import { readFileSync, readdirSync, existsSync, lstatSync, statSync,
          mkdirSync, rmdirSync, unlinkSync, symlinkSync } from "node:fs";
-import { join, dirname, resolve, relative } from "node:path";
+import { join, dirname, resolve, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -85,10 +85,14 @@ for (const pj of pkgJsons) {
   };
   for (const [name, spec] of Object.entries(deps)) {
     if (typeof spec !== "string" || !spec.startsWith("file:")) continue;
+    if (typeof name !== "string" || name.includes("\0") || name.split("/").some((part) => part === "" || part === "." || part === "..")) continue;
     const targetRel = spec.slice("file:".length);
     const target = resolve(pkgDir, targetRel);
+    const targetFromRoot = relative(ROOT, target);
+    if (targetFromRoot.startsWith("..") || isAbsolute(targetFromRoot)) continue;
     const link = join(pkgDir, "node_modules", ...name.split("/"));
     const rel = relative(ROOT, link);
+    if (rel.startsWith("..") || isAbsolute(rel) || !rel.replace(/\\/g, "/").includes("/node_modules/")) continue;
 
     if (!existsSync(target)) { report.missingTarget.push({ link: rel, target }); continue; }
 

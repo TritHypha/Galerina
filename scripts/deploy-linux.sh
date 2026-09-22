@@ -66,7 +66,7 @@ echo ""
 
 # ── step 4: verify sourceHash present ────────────────────────────────────────
 if [ -f "${MANIFEST_JSON}" ]; then
-  SOURCE_HASH="$(node -e "const m=JSON.parse(require('fs').readFileSync('${MANIFEST_JSON}','utf8')); process.stdout.write(m.sourceHash||'')")"
+  SOURCE_HASH="$(node --input-type=module -e "import fs from 'node:fs'; const m=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); process.stdout.write(m.sourceHash||'')" "${MANIFEST_JSON}")"
   if [ -n "${SOURCE_HASH}" ]; then
     echo "Manifest sourceHash: ${SOURCE_HASH}"
   else

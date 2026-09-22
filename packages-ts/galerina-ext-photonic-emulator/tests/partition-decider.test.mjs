@@ -69,8 +69,9 @@ test("A-2: crypto declared via effects routes digital even with isCrypto:false (
   assert.ok(/derived from declared effects/.test(d.reason));
   // conservative superset: a future crypto.* effect (e.g. crypto.kem) is also caught.
   assert.equal(decider.decide({ n: 100000, redundancyN: 1, lane: "photonic", declaredEffects: ["crypto.kem"] }).target, "digital");
-  // non-crypto effects on a large photonic kernel still offload (the gate didn't over-fire).
-  assert.equal(decider.decide({ n: 100000, redundancyN: 1, lane: "photonic", declaredEffects: ["math.matmul"] }).target, "photonic");
+  // non-crypto effects on a net-win photonic kernel still offload (the gate didn't over-fire).
+  const offloadN = Math.min(4096, Math.ceil(crossover(1) * 4));
+  assert.equal(decider.decide({ n: offloadN, redundancyN: 1, lane: "photonic", declaredEffects: ["math.matmul"] }).target, "photonic");
 });
 
 // M6 — fail-closed on unknown cost.

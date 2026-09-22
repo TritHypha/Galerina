@@ -138,6 +138,24 @@ test("POST /nope (unknown path) → 404", async () => {
   });
 });
 
+test("malformed request targets return 400 without an unhandled rejection", async () => {
+  const unhandled = [];
+  const onUnhandled = (reason) => { unhandled.push(reason); };
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    await withServer({}, async (port) => {
+      const res = await request(port, { method: "GET", path: "//[" });
+      assert.equal(res.status, 400);
+      const body = JSON.parse(res.body);
+      assert.equal(body.error, "bad_request");
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(unhandled.length, 0, "malformed targets must stay inside the request error boundary");
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
+});
+
 test("oversized body (> adapter maxBodyBytes) → 413", async () => {
   // Configure a tiny adapter cap so the additive DoS guard trips before the kernel.
   await withServer({ maxBodyBytes: 64 }, async (port) => {

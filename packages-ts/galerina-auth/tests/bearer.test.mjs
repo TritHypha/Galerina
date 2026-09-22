@@ -91,6 +91,12 @@ test("key-type mismatch: HS256 pinned but an asymmetric public key supplied → 
   assert.equal(bearerTokenVerdict(bearer(t), { key: rsa.publicKey, algorithms: ["HS256"], now }), Verdict.DENY);
 });
 
+test("serialized PEM public keys cannot be used as HS256 HMAC secrets", () => {
+  const pubPem = rsa.publicKey.export({ type: "spki", format: "pem" }).toString();
+  const forged = jwt({ alg: "HS256", typ: "JWT" }, { sub: "attacker", exp: NOW + 100 }, hsSign(pubPem));
+  assert.equal(bearerTokenVerdict(bearer(forged), { key: pubPem, algorithms: ["HS256"], now }), Verdict.DENY);
+});
+
 // ── footgun #4: exp required by default ────────────────────────────────────────
 test("missing exp with default requireExp → DENY", () => {
   const t = jwt({ alg: "HS256", typ: "JWT" }, { sub: "u1" }, hsSign(HS_SECRET));

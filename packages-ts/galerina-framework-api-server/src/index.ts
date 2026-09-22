@@ -51,11 +51,24 @@ import { Verdict } from "../../galerina-tower-citizen/dist/index.js";
 // TLS library's outputs and forwards the folded verdict — it never re-implements any crypto/PKI.
 import {
   certGate,
+  type AtomicAdmissionStore,
   type CertGateInput,
   type ChainValidationOutcome,
   type RevocationOutcome,
 } from "../../galerina-core-network/dist/index.js";
 export { MemoryReplayStore, type MemoryReplayStoreOptions } from "./replay-store.js";
+export {
+  admitWebhookReplay,
+  WEBHOOK_REPLAY_SCOPE,
+  type WebhookAdmissionHooks,
+  type WebhookAdmissionInput,
+  type WebhookAdmissionOutcome,
+  type WebhookAdmissionRefusal,
+} from "./webhook-admission.js";
+import {
+  admitWebhookReplay,
+  type WebhookAdmissionHooks,
+} from "./webhook-admission.js";
 
 /** Default hard cap on buffered body bytes (8 MiB). Additive to the kernel's own body-size gate. */
 export const DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024;
@@ -195,6 +208,22 @@ export interface CreateApiServerOptions {
    * leaf-certificate SHA-256 digest as the principal ID and grants no application scopes.
    */
   readonly resolvePrincipal?: (req: http.IncomingMessage) => PrincipalResolution | undefined;
+  /**
+   * Optional webhook HMAC + atomic replay gate. Evaluated after the channel
+   * factor and before `kernel.handle`, so invalid HMAC never decodes or
+   * dispatches. Replay uses the `replay` namespace on the injected store.
+   */
+  readonly webhook?: ApiServerWebhookOptions;
+}
+
+export interface ApiServerWebhookOptions {
+  readonly secret: string | Uint8Array;
+  readonly signatureHeader: string;
+  readonly eventIdHeader: string;
+  readonly replayStore: AtomicAdmissionStore;
+  readonly replayTtlSeconds: number;
+  readonly signaturePrefix?: string;
+  readonly hooks?: WebhookAdmissionHooks;
 }
 
 /** A fail-closed 500 written when the kernel itself throws. Never leaks the error. */
@@ -206,6 +235,14 @@ const INTERNAL_ERROR_BODY = Buffer.from(
 /** A 413 written by the adapter's own body cap (distinct from the kernel's 413). */
 const PAYLOAD_TOO_LARGE_BODY = Buffer.from(
   JSON.stringify({ error: "payload_too_large" }),
+  "utf8",
+);
+const WEBHOOK_UNAUTHORIZED_BODY = Buffer.from(
+  JSON.stringify({ error: "unauthorized" }),
+  "utf8",
+);
+const WEBHOOK_REPLAY_BODY = Buffer.from(
+  JSON.stringify({ error: "replay" }),
   "utf8",
 );
 
@@ -272,15 +309,33 @@ function lowercaseHeaders(
   return out;
 }
 
+class RequestTargetError extends Error {
+  constructor() {
+    super("malformed request target");
+    this.name = "RequestTargetError";
+  }
+}
+
 /** Parse `req.url` into a kernel path + flat query Record. */
 function parseUrl(rawUrl: string | undefined): {
   path: string;
   query: Record<string, string>;
 } {
-  const url = new URL(rawUrl ?? "/", "http://x");
+  const raw = rawUrl ?? "/";
+  if (raw.startsWith("//") || raw.includes("\\") || raw.includes("\0")) {
+    throw new RequestTargetError();
+  }
+  let url: URL;
+  try {
+    url = new URL(raw, "http://x");
+  } catch {
+    throw new RequestTargetError();
+  }
+  if (url.protocol !== "http:" || url.hostname !== "x" || url.port !== "" || url.username !== "" || url.password !== "") {
+    throw new RequestTargetError();
+  }
   const query: Record<string, string> = {};
   for (const [k, v] of url.searchParams.entries()) {
-    // Last value wins for repeated keys — a flat Record cannot represent arrays.
     query[k] = v;
   }
   return { path: url.pathname, query };
@@ -513,9 +568,15 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
       resolveChannelVerdict,
       opts.resolvePrincipal,
       opts.tls !== undefined,
+      opts.webhook,
       req,
       res,
-    );
+    ).catch(() => {
+      if (!res.headersSent && !res.writableEnded) {
+        res.writeHead(500, { "content-type": "application/json" });
+        res.end(INTERNAL_ERROR_BODY);
+      }
+    });
   };
 
   // HTTPS when `tls` is set, else plain HTTP. https.Server is declared as `extends tls.Server`
@@ -628,6 +689,7 @@ async function handleRequest(
   resolveChannelVerdict: ((req: http.IncomingMessage) => Verdict | undefined) | undefined,
   resolvePrincipal: ((req: http.IncomingMessage) => PrincipalResolution | undefined) | undefined,
   deriveTlsPrincipal: boolean,
+  webhook: ApiServerWebhookOptions | undefined,
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ): Promise<void> {
@@ -689,7 +751,20 @@ async function handleRequest(
   }
 
   // (3) Normalise into a GalerinaKernelRequest.
-  const { path, query } = parseUrl(req.url);
+  let path: string;
+  let query: Record<string, string>;
+  try {
+    ({ path, query } = parseUrl(req.url));
+  } catch (err) {
+    if (err instanceof RequestTargetError || err instanceof TypeError) {
+      if (!res.headersSent && !res.writableEnded) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "bad_request", message: "Malformed request target." }));
+      }
+      return;
+    }
+    throw err;
+  }
   const kreq: GalerinaKernelRequest = {
     method: normaliseMethod(req.method),
     path,
@@ -705,7 +780,34 @@ async function handleRequest(
     } : {}),
   };
 
-  // (4) Hand to the kernel's fixed, non-bypassable pipeline. (5) Write its response.
+  // (4) Optional webhook HMAC + atomic replay claim on authenticated raw bytes.
+  // Auth (channel) already ran. Invalid HMAC never reaches kernel decode/handler.
+  if (webhook !== undefined && channelVerdict !== Verdict.DENY) {
+    const admitted = await admitWebhookReplay({
+      body: kreq.body,
+      headers: kreq.headers,
+      secret: webhook.secret,
+      signatureHeader: webhook.signatureHeader,
+      eventIdHeader: webhook.eventIdHeader,
+      replayStore: webhook.replayStore,
+      replayTtlSeconds: webhook.replayTtlSeconds,
+      ...(webhook.signaturePrefix === undefined ? {} : { signaturePrefix: webhook.signaturePrefix }),
+      ...(webhook.hooks === undefined ? {} : { hooks: webhook.hooks }),
+    });
+    if (!admitted.ok) {
+      if (!res.headersSent && !res.writableEnded) {
+        const status = admitted.reason === "replay" ? 409 : admitted.reason === "hmac" ? 401 : 500;
+        const body = admitted.reason === "replay" ? WEBHOOK_REPLAY_BODY
+          : admitted.reason === "hmac" ? WEBHOOK_UNAUTHORIZED_BODY
+          : INTERNAL_ERROR_BODY;
+        res.writeHead(status, { "content-type": "application/json" });
+        res.end(body);
+      }
+      return;
+    }
+  }
+
+  // (5) Hand to the kernel's fixed, non-bypassable pipeline. (6) Write its response.
   let resp: GalerinaKernelResponse;
   try {
     resp = await kernel.handle(kreq);

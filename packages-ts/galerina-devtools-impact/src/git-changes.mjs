@@ -10,7 +10,7 @@ function zeroSeparated(buffer) {
 
 export function discoverChangedPaths(rootValue, base = "HEAD") {
   const root = resolve(rootValue);
-  if (typeof base !== "string" || base === "" || base.includes("\0")) {
+  if (typeof base !== "string" || base === "" || base.includes("\0") || base.startsWith("-")) {
     throw new Error("Git base must be a non-empty ref string");
   }
   const common = {

@@ -95,16 +95,15 @@ describe("epoch-aware state serializer", () => {
   });
 
   it("fails closed when key authority is absent, weak, or throws", () => {
-    const noActive = new StateSerializer({
-      keyProvider: {
-        active: () => null,
-        resolve: () => null,
-      },
-      strictKey: true,
-    });
     assert.throws(
-      () => noActive.serialize({ blocked: true }, 1),
-      (error) => error instanceof SecurityTrap && error.code === "LSS-KEY-002",
+      () => new StateSerializer({
+        keyProvider: {
+          active: () => null,
+          resolve: () => null,
+        },
+        strictKey: true,
+      }),
+      (error) => error instanceof SecurityTrap && error.code === "LSS-KEY-001",
     );
 
     assert.throws(

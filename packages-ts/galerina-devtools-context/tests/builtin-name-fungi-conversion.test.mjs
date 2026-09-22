@@ -8,7 +8,9 @@ import { parseProgram } from "@galerina/core-compiler";
 import { generateReceipts } from "../dist/index.js";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ASSET = "../../packages/fungi/products/galerina/rd0873-devtools-context/builtin-name.fungi";
+const PRODUCT_TREE = "packages/fungi/products/galerina/rd0873-devtools-context";
+const ASSET = "builtin-name.fungi";
+const ASSET_ROOT = join(PACKAGE_ROOT, "..", "..", PRODUCT_TREE);
 const ACCEPTED = Object.freeze(["AuditLog", "Secrets", "Crypto", "Database", "Http", "File", "Auth", "Session", "validate", "redact", "emit", "return", "Ok", "Err", "Some", "None", "true", "false"]);
 const CASES = Object.freeze([
   ...ACCEPTED.map((value) => ({ value, expected: true })),
@@ -46,6 +48,9 @@ describe("devtools-context package-owned builtin name decision", () => {
     assertScalarClassifierAsset({
       packageRoot: PACKAGE_ROOT,
       assetRelative: ASSET,
+      assetRoot: ASSET_ROOT,
+      packageAssetRequired: false,
+      productTree: PRODUCT_TREE,
       referenceRelative: "src/receipt-generator.ts",
       assertReference(reference) {
         for (const value of ACCEPTED) assert.match(reference, new RegExp(`"${value}"`, "u"));
@@ -59,7 +64,7 @@ describe("devtools-context package-owned builtin name decision", () => {
   });
 
   it("matches every builtin and hostile surplus text", async () => {
-    await proveScalarClassifier({ packageRoot: PACKAGE_ROOT, assetRelative: ASSET, flowName: "isBuiltin", parameterName: "name", cases: CASES });
+    await proveScalarClassifier({ packageRoot: PACKAGE_ROOT, assetRoot: ASSET_ROOT, assetRelative: ASSET, flowName: "isBuiltin", parameterName: "name", cases: CASES });
   });
 
   it("keeps every builtin out of the public receipt callee list", () => {

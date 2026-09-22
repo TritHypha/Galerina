@@ -86,11 +86,23 @@ test("child execution removes the parent node:test context marker", () => {
   assert.equal(result.stdout, "unset");
 });
 
-test("signal termination is distinct from timeout on signal-capable hosts", { skip: process.platform === "win32" }, () => {
-  const result = runNode(["-e", "process.kill(process.pid, \"SIGTERM\")"], PACKAGE_ROOT);
+if (process.platform === "win32") {
+  test("Windows child termination is distinct from timeout", () => {
+    const result = runNode(["-e", "process.kill(process.pid, \"SIGTERM\")"], PACKAGE_ROOT);
 
-  assert.equal(result.exitCode, 1);
-  assert.equal(result.timedOut, false);
-  assert.equal(result.failureKind, "signal");
-  assert.equal(result.signal, "SIGTERM");
-});
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.timedOut, false);
+    assert.notEqual(result.failureKind, "timeout");
+    assert.notEqual(result.failureKind, "spawn-error");
+    assert.notEqual(result.failureKind, "output-limit");
+  });
+} else {
+  test("signal termination is distinct from timeout on signal-capable hosts", () => {
+    const result = runNode(["-e", "process.kill(process.pid, \"SIGTERM\")"], PACKAGE_ROOT);
+
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.timedOut, false);
+    assert.equal(result.failureKind, "signal");
+    assert.equal(result.signal, "SIGTERM");
+  });
+}

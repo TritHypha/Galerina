@@ -74,6 +74,21 @@ test("a wrong HMAC key -> verifyChain === false", () => {
   assert.equal(AuditEgress.verifyChain(batches, wrongKey), false);
 });
 
+test("merging newline-containing records cannot preserve the MAC", () => {
+  const dir = freshDir();
+  const eg = new AuditEgress({ dir, batchSize: 2 });
+  eg.push("a");
+  eg.push("b");
+  const batches = readEgressLedger(dir);
+  assert.equal(AuditEgress.verifyChain(batches), true);
+  const merged = batches.map((b) => ({
+    ...b,
+    count: 1,
+    records: [b.records.join("\n")],
+  }));
+  assert.equal(AuditEgress.verifyChain(merged), false);
+});
+
 test("chain verifies under an injected (non-zero) HMAC key", () => {
   const dir = freshDir();
   const key = new Uint8Array(32).fill(42);

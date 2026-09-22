@@ -20,7 +20,7 @@
 //   node scripts/emit-doc-wat.mjs --write        # regenerate excerpts in place
 //   node scripts/emit-doc-wat.mjs --self-test    # prove extraction + drift detection work
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -45,7 +45,19 @@ export function extractFunc(wat, name) {
 }
 
 async function generateExcerpt(L, sourceRel, flowNames) {
-  let src = readFileSync(join(ROOT, sourceRel), "utf8");
+  if (typeof sourceRel !== "string"
+      || sourceRel.includes("\0")
+      || sourceRel.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
+      || sourceRel.startsWith("/")
+      || /^[A-Za-z]:/.test(sourceRel)) {
+    throw new Error(`emit-doc-wat source '${sourceRel}' is not an admitted repository-relative path`);
+  }
+  const absSource = resolve(ROOT, sourceRel);
+  const fromRoot = relative(ROOT, absSource);
+  if (fromRoot.startsWith("..") || fromRoot.startsWith("/") || /^[A-Za-z]:/.test(fromRoot)) {
+    throw new Error(`emit-doc-wat source '${sourceRel}' escapes the repository`);
+  }
+  let src = readFileSync(absSource, "utf8");
   if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
   const prog = L.parseProgram(src, sourceRel.split("/").pop());
   const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");

@@ -115,6 +115,12 @@ test("v2: ROGUE signer (valid sig, wrong key) is REJECTED when a root is pinned"
   assert.throws(() => assertRegistryTrustworthy(d), /rogue-signer rejected|pinned trust anchor/);
 });
 
+test("v2: pinned root + MISSING registry → fail closed", () => {
+  const d = pinnedRoot("rootkey");
+  assert.throws(() => assertRegistryTrustworthy(d), /MISSING.*pinned|pinned.*requires a signed/i);
+  assert.throws(() => loadRevokedKeyIds(d), /MISSING.*pinned|pinned.*requires a signed/i);
+});
+
 test("v2: pinned root + UNSIGNED registry → fail closed", () => {
   const d = pinnedRoot("rootkey");
   writeFileSync(join(d, "governance", "revocations.json"),

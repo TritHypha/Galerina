@@ -19,12 +19,17 @@ export type LogLevel = "debug" | "info" | "warn" | "error";
 
 const LEVEL_ORDER: Readonly<Record<LogLevel, number>> = { debug: 10, info: 20, warn: 30, error: 40 };
 
+/** Provenance for `LogRecord.at`. Fallback `0` is not a silent Unix-epoch reading. */
+export type LogTimestampSource = "clock" | "fallback";
+
 /** One structured log record. `fields` is already redacted by the time it reaches a sink. */
 export interface LogRecord {
   readonly level: LogLevel;
   readonly msg: string;
-  /** ms since epoch (from the injected clock). */
+  /** ms since epoch (from the injected clock), or `0` when `atSource` is `"fallback"`. */
   readonly at: number;
+  /** Distinguishes a genuine clock reading from the labelled fallback. */
+  readonly atSource?: LogTimestampSource;
   readonly logger?: string;
   readonly fields?: Readonly<Record<string, unknown>>;
 }
@@ -37,7 +42,12 @@ export interface LogSink {
 /** Default sink: keep records in memory. No I/O, no ambient authority. Ideal for tests + embedding. */
 export class MemoryLogSink implements LogSink {
   readonly #records: LogRecord[] = [];
+  readonly #maxRecords: number;
+  constructor(maxRecords = 4096) {
+    this.#maxRecords = Number.isSafeInteger(maxRecords) && maxRecords > 0 ? maxRecords : 4096;
+  }
   write(record: LogRecord): void {
+    if (this.#records.length >= this.#maxRecords) this.#records.shift();
     this.#records.push(record);
   }
   records(): readonly LogRecord[] {
@@ -157,6 +167,8 @@ export class Logger {
   readonly #redact: ReadonlySet<string>;
   readonly #clock: () => number;
   #sinkFailures = 0;
+  #clockFailures = 0;
+  #constructionFailures = 0;
 
   constructor(opts: LoggerOptions = {}) {
     this.#sink = opts.sink ?? new MemoryLogSink();
@@ -193,9 +205,19 @@ export class Logger {
     });
   }
 
-  /** Count of sink writes that threw and were isolated. Lets a host observe its own logging health. */
+  /** Count of mediated `sink.write` throws that were isolated. Direct `JsonLineSink` writer faults are not counted here. */
   sinkFailures(): number {
     return this.#sinkFailures;
+  }
+
+  /** Count of clock readings that were non-finite, signed-zero, non-numeric, or threw. */
+  clockFailures(): number {
+    return this.#clockFailures;
+  }
+
+  /** Count of record-construction / redaction failures isolated from the caller. */
+  constructionFailures(): number {
+    return this.#constructionFailures;
   }
 
   #emit(level: LogLevel, msg: string, fields?: Readonly<Record<string, unknown>>): void {
@@ -203,10 +225,12 @@ export class Logger {
       if (LEVEL_ORDER[level] < this.#minLevel) return;
       const merged = { ...this.#baseFields, ...(fields ?? {}) };
       const redacted = this.#redactFields(merged);
+      const stamped = this.#safeNow();
       const record: LogRecord = {
         level,
         msg: typeof msg === "string" ? msg : String(msg),
-        at: this.#safeNow(),
+        at: stamped.at,
+        atSource: stamped.source,
         ...(this.#name !== undefined ? { logger: this.#name } : {}),
         ...(Object.keys(redacted).length > 0 ? { fields: redacted } : {}),
       };
@@ -218,16 +242,21 @@ export class Logger {
       }
     } catch {
       // Even record construction is wrapped: logging can never throw into the request path.
-      this.#sinkFailures += 1;
+      this.#constructionFailures += 1;
     }
   }
 
-  #safeNow(): number {
+  #safeNow(): { readonly at: number; readonly source: LogTimestampSource } {
     try {
       const n = this.#clock();
-      return typeof n === "number" && Number.isFinite(n) ? n : 0;
+      if (typeof n === "number" && Number.isFinite(n) && !Object.is(n, -0)) {
+        return { at: n, source: "clock" };
+      }
+      this.#clockFailures += 1;
+      return { at: 0, source: "fallback" };
     } catch {
-      return 0;
+      this.#clockFailures += 1;
+      return { at: 0, source: "fallback" };
     }
   }
 
@@ -281,6 +310,7 @@ export function safeStringify(record: LogRecord): string {
         level: record.level,
         msg: record.msg,
         at: record.at,
+        ...(record.atSource !== undefined ? { atSource: record.atSource } : {}),
         ...(record.logger !== undefined ? { logger: record.logger } : {}),
         fields: { _note: "fields omitted: not serialisable" },
       };

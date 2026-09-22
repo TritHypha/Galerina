@@ -21,12 +21,15 @@ export interface Budget {
   maxPatternLength: number;
   /** Max finite repetition bound in {n}, {n,m} (mirrors the myco guard's cap). */
   maxRepetition: number;
+  /** Max group-nesting depth for `(` parsing. */
+  maxNesting?: number;
 }
 
 export const DEFAULT_BUDGET: Budget = {
   maxInstructions: 4096,
   maxPatternLength: 4096,
   maxRepetition: 1000,
+  maxNesting: 32,
 };
 
 /** The certificate: the bounds a consumer can check BEFORE running the matcher. */

@@ -138,6 +138,11 @@ export function readSpore(buf: Uint8Array): SporeReadResult {
   }
   if (regionOffBig + payloadRegionLen > lenBig) throw new SporeError("MalformedTable", "payload region extends past EOF");
   if (!signed && regionOffBig + payloadRegionLen !== lenBig) throw new SporeError("MalformedTable", "unsigned file has trailing bytes");
+  let referenced = 0n;
+  for (const p of parsed) referenced += p.blobLen;
+  if (referenced > payloadRegionLen) {
+    throw new SporeError("MalformedTable", "overlapping or repeated payload ranges");
+  }
 
   const leaves: Uint8Array[] = [];
   const sections: Array<SporeSection & { leafHash: Uint8Array }> = [];

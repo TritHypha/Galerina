@@ -58,8 +58,14 @@ function dirHasCode(dir) {
   return false;
 }
 
-/** A scan that matched 0 files while one of its (existing) source roots holds code is a vacuous border. */
+const DEFAULT_SCAN_ROOTS = ["src", "host"];
+
+/** A scan that matched 0 files while source exists, or that omitted default roots that still hold code. */
 function isVacuousScan(scan) {
+  for (const r of DEFAULT_SCAN_ROOTS) {
+    if (scan.roots.includes(r)) continue;
+    if (dirHasCode(join(scan.scopePath, r))) return true;
+  }
   if (scan.files.length > 0) return false;
   return scan.roots.some((r) => dirHasCode(join(scan.scopePath, r)));
 }
@@ -131,13 +137,14 @@ function checkPkg(S, pkgPath) {
   const gate = S.runBoundaryGate(pkgPath, graph, /* check */ true);
   // Vacuous-PASS guard (RD-0348): a 0-file scan over a package that DOES have source code is a green
   // border over an unscanned package — fail-closed rather than let it pass silently, and name the fix.
-  if (gate.status !== "FAIL" && isVacuousScan(scan)) {
+  if (isVacuousScan(scan)) {
     return {
       status: "FAIL",
       violations: [
-        "vacuous border — 0 files matched this package's scan extensions, but its source roots contain " +
-        "code files. The border is green over an UNSCANNED package. Add a `packageGraph`.extensions " +
-        "override to package.json covering the real source extension(s) so its imports are gated.",
+        ...(gate.violations ?? []),
+        "vacuous border — scan omitted package source that still contains code, or matched 0 files " +
+        "over a root that holds code. The border is green over an UNSCANNED package. Keep default " +
+        "src/host coverage or admit a complete packageGraph.roots/extensions set.",
       ],
       orphanWarnings: gate.orphanWarnings ?? [],
     };
@@ -182,6 +189,23 @@ function selfTest(S) {
     const rc = checkPkg(S, c);
     if (rc.status !== "FAIL" || !rc.violations.some((v) => String(v).includes("vacuous"))) {
       console.error("SELF-TEST FAIL: a 0-file scan over a package WITH .mjs source did not fail-closed (vacuous-border hole):", JSON.stringify(rc));
+      process.exit(2);
+    }
+    // (D) package-owned roots omit src/ while src still holds code → must FAIL (narrowing bypass).
+    const d = join(base, "pkgD");
+    mkdirSync(join(d, "src"), { recursive: true });
+    mkdirSync(join(d, "docs"), { recursive: true });
+    mkdirSync(join(d, ".graph"), { recursive: true });
+    writeFileSync(join(d, "package.json"), JSON.stringify({
+      name: "@selftest/d",
+      packageGraph: { roots: ["docs"], extensions: [".ts"] },
+    }));
+    writeFileSync(join(d, "src", "index.ts"), 'import x from "hidden-dep";\nexport const y = x;\n');
+    writeFileSync(join(d, "docs", "index.ts"), "export const n = 1;\n");
+    writeFileSync(join(d, ".graph", "boundary-policy.json"), JSON.stringify({ packageName: "@selftest/d", allowedExternal: [] }));
+    const rd = checkPkg(S, d);
+    if (rd.status !== "FAIL" || !rd.violations.some((v) => String(v).includes("vacuous"))) {
+      console.error("SELF-TEST FAIL: omitting src/ while it holds code did not fail-closed:", JSON.stringify(rd));
       process.exit(2);
     }
     console.log("  self-test: gate fires on unlisted-external, missing-policy AND vacuous-scan ✅");

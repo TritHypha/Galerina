@@ -36,9 +36,19 @@ export type Verdict = (typeof Verdict)[keyof typeof Verdict];
 /** A trit value in the Kleene-3 alphabet. */
 export type Trit = -1 | 0 | 1;
 
+const MAX_TRITS = 4096;
+const MAX_BATCH = 65_536;
+
+function admitLenTrits(lenTrits: number): number {
+  if (!Number.isSafeInteger(lenTrits) || lenTrits < 0 || lenTrits > MAX_TRITS) {
+    throw new RangeError(`lenTrits must be a safe integer in [0, ${MAX_TRITS}]`);
+  }
+  return lenTrits;
+}
+
 /** Number of packed bytes needed for `lenTrits` trits. */
 export function packedLen(lenTrits: number): number {
-  return Math.floor((lenTrits + 3) / 4);
+  return Math.floor((admitLenTrits(lenTrits) + 3) / 4);
 }
 
 /**
@@ -71,6 +81,7 @@ function tritOf(code: number): Trit | null {
 
 /** Decode a packed buffer back to `lenTrits` trit values (reserved → 0). Interop/debug helper. */
 export function unpack(packed: Uint8Array, lenTrits: number): Trit[] {
+  admitLenTrits(lenTrits);
   const out: Trit[] = new Array<Trit>(lenTrits).fill(0);
   for (let i = 0; i < lenTrits; i++) out[i] = tritOf(codeAt(packed, i)) ?? 0;
   return out;
@@ -127,6 +138,9 @@ export function prefilterBatch(
   lenTrits: number,
   n: number,
 ): Verdict[] {
+  if (!Number.isSafeInteger(n) || n < 0 || n > MAX_BATCH) {
+    throw new RangeError(`n must be a safe integer in [0, ${MAX_BATCH}]`);
+  }
   const stride = packedLen(lenTrits);
   const out: Verdict[] = new Array(n).fill(Verdict.Deny);
   for (let k = 0; k < n; k++) {

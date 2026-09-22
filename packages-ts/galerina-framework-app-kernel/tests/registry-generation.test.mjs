@@ -23,6 +23,7 @@ import {
 import {
   buildRegistryGeneration,
   admitRegistryDurabilityProfile,
+  activateRegistryDurabilityProfile,
   createRegistryGenerationHostEvidenceAdapter,
   isPersistedRegistryGeneration,
   isProductionAdmittedRegistryGeneration,
@@ -567,7 +568,7 @@ describe("statically linked production generation seam", () => {
         expectedOperatingSystem: "windows-10",
         requiredBoundaryIds: ["DIRECTORY_BARRIER", "FILE_BARRIER", "PROCESS_TERMINATION"],
       });
-      const profile = admitRegistryDurabilityProfile({
+      const candidate = admitRegistryDurabilityProfile({
         schema: "galerina.registry.durability.production-manifest.v1",
         adapterId: "galerina.registry.durability.windows.v1",
         sourceDigest,
@@ -651,7 +652,27 @@ describe("statically linked production generation seam", () => {
           publicBundle: key.publicBundle,
           minIndexIssuedAt: "2026-07-30T16:33:10.307Z",
         },
-        durabilityProfile: profile,
+        durabilityProfile: activateRegistryDurabilityProfile(
+          candidate,
+          {
+            schema: "galerina.registry.durability.production-release.v1",
+            releaseId: "galerina-beta-v1-release-1",
+            ownerKeyId: "owner-release-key",
+            targetEvidenceId: candidate.evidenceId,
+            targetGenerationId: candidate.generationId,
+            issuedAt: candidate.indexIssuedAt,
+            notBefore: candidate.indexIssuedAt,
+            notAfter: candidate.notAfter,
+            signature: "owner-release-test",
+            canon: "jcs",
+            context: "galerina.registry.durability.production.release.v1",
+          },
+          (message, signature, keyId) =>
+            message.length > 0
+            && signature === "owner-release-test"
+            && keyId === "owner-release-key",
+          Date.parse(candidate.indexIssuedAt) + 60_000,
+        ),
       });
       assert.equal(isPersistedRegistryGeneration(persisted), true);
       assert.equal(isProductionAdmittedRegistryGeneration(persisted), true);

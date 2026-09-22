@@ -195,12 +195,15 @@ export class StaticMemoryPool {
   i32(block: Block): Int32Array {
     this.assertLive(block);
     MemoryValidator.assertAligned(block.ptr);
-    return new Int32Array(this.buffer, block.ptr, block.bytes / 4);
+    const rec = this.live.get(block.ptr)!;
+    const bytes = rec.count * this.blockBytes;
+    return new Int32Array(this.buffer, block.ptr, bytes / 4);
   }
 
   u8(block: Block): Uint8Array {
     this.assertLive(block);
-    return new Uint8Array(this.buffer, block.ptr, block.bytes);
+    const rec = this.live.get(block.ptr)!;
+    return new Uint8Array(this.buffer, block.ptr, rec.count * this.blockBytes);
   }
 
   get capacityBytes(): number {

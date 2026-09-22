@@ -13,6 +13,8 @@ import {
 } from "../dist/index.js";
 import { tmpDir } from "./_tmp.mjs";
 
+const TEST_KEY = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
+
 const TEST_RESTORE_AUTHORITY = Object.freeze({
   packageIdentity: "@galerina/core-sentinel-state",
   exportName: "restoreVerdict",
@@ -24,7 +26,7 @@ const TEST_RESTORE_AUTHORITY = Object.freeze({
 function makeOrchestrator() {
   const dir = tmpDir();
   const orch = new ColdBootOrchestrator(
-    new StateSerializer(),
+    new StateSerializer({ hmacKey: TEST_KEY }),
     new AtomicWriter(dir),
     TEST_RESTORE_AUTHORITY,
   );
@@ -58,6 +60,18 @@ test("restore of a missing name throws HardenedBorderViolation LSS-NOSNAP-001", 
   const err = caught(() => orch.restore("never-checkpointed"));
   assert.ok(err instanceof HardenedBorderViolation);
   assert.equal(err.code, "LSS-NOSNAP-001");
+});
+
+test("restore refuses a snapshot below the rollback floor", () => {
+  const dir = tmpDir();
+  const writer = new AtomicWriter(dir);
+  const serializer = new StateSerializer({ hmacKey: TEST_KEY });
+  const low = new ColdBootOrchestrator(serializer, writer, TEST_RESTORE_AUTHORITY, 0);
+  low.checkpoint("engine", { a: 1 }, 5);
+  const high = new ColdBootOrchestrator(serializer, writer, TEST_RESTORE_AUTHORITY, 10);
+  const err = caught(() => high.restore("engine"));
+  assert.ok(err instanceof HardenedBorderViolation);
+  assert.equal(err.code, "LSS-ROLLBACK-001");
 });
 
 test("scrub hard-erases the snapshot; no throw when absent", () => {

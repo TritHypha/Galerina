@@ -11,7 +11,7 @@
  */
 
 import { dirname, extname, join, normalize, sep } from "node:path";
-import type { ScanResult, EdgeKind, AllowedOrphan } from "./scanner.js";
+import type { ScanResult, EdgeKind, AllowedOrphan, ProductAsset } from "./scanner.js";
 
 export interface InternalEdge {
   readonly from: string; // package-relative path
@@ -35,6 +35,7 @@ export interface PackageGraph {
   readonly entryPoints: readonly string[];
   readonly loadedAssets: readonly string[];
   readonly allowedOrphans: readonly AllowedOrphan[];
+  readonly productAssets: readonly ProductAsset[];
   readonly stats: {
     readonly fileCount: number;
     readonly internalEdgeCount: number;
@@ -117,6 +118,7 @@ export function buildGraph(scan: ScanResult): PackageGraph {
     entryPoints,
     loadedAssets,
     allowedOrphans,
+    productAssets: [...scan.productAssets].sort((a, b) => `${a.tree}/${a.path}`.localeCompare(`${b.tree}/${b.path}`)),
     stats: {
       fileCount: nodes.length,
       internalEdgeCount: internalEdges.length,

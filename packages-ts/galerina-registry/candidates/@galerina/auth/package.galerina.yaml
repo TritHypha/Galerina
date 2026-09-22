@@ -29,7 +29,7 @@ effects:
   - "clock.read"
   - "crypto.verify"
 installScript: null
-hash: "sha256:dbb963f8d752d88204d27e12de376e91f1121437d78b39ab46a8ad36d5209f5e"
+hash: "sha256:8951828740177f535a70a70d2b165d5d613af1c10f25666b39ad68b0a8869861"
 publisher: "galerina-owner-governance"
 keyId: "f3172a48372bfb23"
 signerKeyId: null

@@ -1,13 +1,30 @@
 import { readFile } from "node:fs/promises";
 import type { TaskDefinition } from "./types.js";
 
+const MAX_TASK_SOURCE_BYTES = 1_048_576;
+
+async function admitTaskFile(path: string): Promise<void> {
+  const fsPromises = await import("node:fs/promises") as {
+    stat?: (target: string) => Promise<{ isFile(): boolean; size: number }>;
+  };
+  if (typeof fsPromises.stat !== "function") return;
+  const st = await fsPromises.stat(path);
+  if (!st.isFile() || st.size > MAX_TASK_SOURCE_BYTES) {
+    throw new Error(`task file '${path}' is not an admitted regular file under ${MAX_TASK_SOURCE_BYTES} bytes`);
+  }
+}
+
 export interface LoadedTasks {
   readonly path: string;
   readonly tasks: readonly TaskDefinition[];
 }
 
 export async function loadTasks(path: string): Promise<LoadedTasks> {
+  await admitTaskFile(path);
   const source = await readFile(path, "utf8");
+  if (source.length > MAX_TASK_SOURCE_BYTES) {
+    throw new Error(`task file '${path}' exceeds ${MAX_TASK_SOURCE_BYTES} bytes`);
+  }
 
   return {
     path,

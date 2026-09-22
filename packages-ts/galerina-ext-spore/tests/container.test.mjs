@@ -72,6 +72,24 @@ test("bad magic → BadMagic", () => {
   assert.throws(() => readSpore(t), isCode("BadMagic"));
 });
 
+test("overlapping/repeated payload ranges are refused before hashing amplification", () => {
+  const le16 = (x) => { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, x, true); return b; };
+  const le64 = (x) => { const b = new Uint8Array(8); new DataView(b.buffer).setBigUint64(0, BigInt(x), true); return b; };
+  const kind = 1;
+  const modality = 0;
+  const c = coord(1, 2, 3);
+  const payload = enc.encode("hello");
+  const leaf = leafHash(kind, modality, c, payload);
+  const blobLen = c.length + payload.length;
+  const n = 8;
+  const entry = cat(le16(kind), le16(modality), le32(c.length), le64(0), le64(blobLen), leaf);
+  const leaves = Array.from({ length: n }, () => leaf);
+  const hc = headerCore(0, 0, n);
+  const root = tmxRoot(hc, leaves);
+  const buf = cat(hc, root, ...Array.from({ length: n }, () => entry), c, payload);
+  assert.throws(() => readSpore(buf), isCode("MalformedTable"));
+});
+
 test("unknown tmx_profile → UnknownProfile (checked before any hashing)", () => {
   const t = writeSpore(golden).slice();
   t[12] = 0x09; // tmx_profile = 9

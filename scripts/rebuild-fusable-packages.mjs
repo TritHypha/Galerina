@@ -74,7 +74,6 @@ for (let index = 0; index < argv.length; index += 1) {
   console.error(`fuse-rebuild: unknown argument ${argument}`);
   process.exit(2);
 }
-const isWin = process.platform === "win32";
 // Cascade guard override (owner-directed 2026-07-01, forwarding approved
 // 2026-07-02): a committed ceremony-signed package is NEVER auto-rebuilt —
 // replacing its offline-ceremony .lmanifest with a locally minted UNSIGNED one
@@ -154,8 +153,8 @@ for (const pkg of packages) {
   // override, or a forced rebuild of a signed package would be refused downstream.
   const buildArgs = [join(REPO, "galerina.mjs"), "build", "--package", dir];
   if (ALLOW_SIGNED) buildArgs.push("--force");
-  const r = spawnSync("node", buildArgs,
-    { cwd: REPO, encoding: "utf8", shell: isWin, timeout: 60000 });
+  const r = spawnSync(process.execPath, buildArgs,
+    { cwd: REPO, encoding: "utf8", shell: false, windowsHide: true, timeout: 60000 });
   if (r.status === 0) { rebuilt++; details.push(`✅ rebuilt ${name}`); }
   else {
     failed++;

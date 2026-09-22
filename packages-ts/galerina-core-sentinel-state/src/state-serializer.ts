@@ -37,7 +37,6 @@ export interface StateSerializerOptions {
 
 const SNAPSHOT_VERSION = "2.0";
 const LOCAL_KEY_ID = "local-development-epoch-1";
-const DEV_ZERO_KEY = new Uint8Array(32);
 
 /** XOR-fold UTF-8 bytes of a string into an unsigned 32-bit integer. */
 function xorFold32(bytes: Uint8Array): number {
@@ -94,8 +93,13 @@ export class StateSerializer {
       );
     }
     this.#strictKey = opts?.strictKey === true;
-    this.#keyProvider = opts?.keyProvider
-      ?? fixedProvider(opts?.hmacKey ?? DEV_ZERO_KEY);
+    if (opts?.keyProvider === undefined && opts?.hmacKey === undefined) {
+      throw new SecurityTrap(
+        "LSS-KEY-001",
+        "StateSerializer requires an explicit hmacKey or keyProvider; the all-zero development key is not an authorizing default",
+      );
+    }
+    this.#keyProvider = opts?.keyProvider ?? fixedProvider(opts!.hmacKey!);
     if (
       typeof this.#keyProvider.active !== "function"
       || typeof this.#keyProvider.resolve !== "function"
@@ -105,19 +109,17 @@ export class StateSerializer {
         "StateSerializer key authority is malformed",
       );
     }
-    if (this.#strictKey) {
-      let active: SnapshotKeyHandle | null;
-      try {
-        active = this.#keyProvider.active();
-      } catch {
-        active = null;
-      }
-      if (active !== null && (!validHandle(active) || isWeakKey(active.key))) {
-        throw new SecurityTrap(
-          "LSS-KEY-001",
-          "StateSerializer strictKey requires a valid non-zero epoch key of at least 256 bits",
-        );
-      }
+    let active: SnapshotKeyHandle | null;
+    try {
+      active = this.#keyProvider.active();
+    } catch {
+      active = null;
+    }
+    if (active === null || !validHandle(active) || isWeakKey(active.key)) {
+      throw new SecurityTrap(
+        "LSS-KEY-001",
+        "StateSerializer requires a valid non-zero epoch key of at least 256 bits",
+      );
     }
   }
 
@@ -204,35 +206,48 @@ export class StateSerializer {
     };
   }
 
+  /** Copy own data fields once so verify and parse cannot observe different getters. */
+  #ownSnapshot(snap: Snapshot): Snapshot | null {
+    if (typeof snap !== "object" || snap === null) return null;
+    const version = snap.version;
+    const keyEpoch = snap.keyEpoch;
+    const keyId = snap.keyId;
+    const logicalTick = snap.logicalTick;
+    const payloadJson = snap.payloadJson;
+    const xorChecksum = snap.xorChecksum;
+    const hmac = snap.hmac;
+    if (
+      version !== SNAPSHOT_VERSION
+      || !Number.isSafeInteger(keyEpoch)
+      || keyEpoch < 1
+      || typeof keyId !== "string"
+      || keyId.length < 1
+      || keyId.length > 128
+      || /[\0\r\n|]/.test(keyId)
+      || !Number.isSafeInteger(logicalTick)
+      || logicalTick < 0
+      || typeof payloadJson !== "string"
+      || !Number.isSafeInteger(xorChecksum)
+      || xorChecksum < 0
+      || xorChecksum > 0xffff_ffff
+      || typeof hmac !== "string"
+      || !/^[0-9a-f]{64}$/.test(hmac)
+    ) {
+      return null;
+    }
+    return { version, keyEpoch, keyId, logicalTick, payloadJson, xorChecksum, hmac };
+  }
+
   /** Verify checksum, epoch authority and MAC; any ambiguity returns false. */
   verify(snap: Snapshot): boolean {
-    if (
-      typeof snap !== "object"
-      || snap === null
-      || snap.version !== SNAPSHOT_VERSION
-      || !Number.isSafeInteger(snap.keyEpoch)
-      || snap.keyEpoch < 1
-      || typeof snap.keyId !== "string"
-      || snap.keyId.length < 1
-      || snap.keyId.length > 128
-      || /[\0\r\n|]/.test(snap.keyId)
-      || !Number.isSafeInteger(snap.logicalTick)
-      || snap.logicalTick < 0
-      || typeof snap.payloadJson !== "string"
-      || !Number.isSafeInteger(snap.xorChecksum)
-      || snap.xorChecksum < 0
-      || snap.xorChecksum > 0xffff_ffff
-      || typeof snap.hmac !== "string"
-      || !/^[0-9a-f]{64}$/.test(snap.hmac)
-    ) {
-      return false;
-    }
-    const expectedChecksum = xorFold32(Buffer.from(snap.payloadJson, "utf8"));
-    if (expectedChecksum !== snap.xorChecksum) return false;
+    const owned = this.#ownSnapshot(snap);
+    if (owned === null) return false;
+    const expectedChecksum = xorFold32(Buffer.from(owned.payloadJson, "utf8"));
+    if (expectedChecksum !== owned.xorChecksum) return false;
 
     let key: Uint8Array | null;
     try {
-      key = this.#keyProvider.resolve(snap.keyEpoch, snap.keyId);
+      key = this.#keyProvider.resolve(owned.keyEpoch, owned.keyId);
     } catch {
       return false;
     }
@@ -243,30 +258,31 @@ export class StateSerializer {
     try {
       expectedHmac = this.#computeHmac(
         key,
-        snap.version,
-        snap.keyEpoch,
-        snap.keyId,
-        snap.logicalTick,
-        snap.xorChecksum,
-        snap.payloadJson,
+        owned.version,
+        owned.keyEpoch,
+        owned.keyId,
+        owned.logicalTick,
+        owned.xorChecksum,
+        owned.payloadJson,
       );
     } catch {
       return false;
     }
     const expected = Buffer.from(expectedHmac, "hex");
-    const actual = Buffer.from(snap.hmac, "hex");
+    const actual = Buffer.from(owned.hmac, "hex");
     return expected.length === actual.length
       && timingSafeEqual(expected, actual);
   }
 
-  /** Verify-then-parse. */
+  /** Verify-then-parse the same owned payload that authenticated. */
   deserialize(snap: Snapshot): unknown {
-    if (!this.verify(snap)) {
+    const owned = this.#ownSnapshot(snap);
+    if (owned === null || !this.verify(owned)) {
       throw new SecurityTrap(
         "LSS-INTEGRITY-001",
         "snapshot integrity check failed — checksum, epoch authority, or HMAC mismatch",
       );
     }
-    return JSON.parse(snap.payloadJson);
+    return JSON.parse(owned.payloadJson);
   }
 }

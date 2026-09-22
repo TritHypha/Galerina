@@ -29,7 +29,6 @@ export class TPLStateBuffer {
 
   private readonly pool: StaticMemoryPool;
   private readonly _block: Block;
-  private readonly view: Int32Array;
 
   constructor(pool: StaticMemoryPool, tritCount: number) {
     if (tritCount < 0) {
@@ -40,7 +39,12 @@ export class TPLStateBuffer {
     const words = Math.ceil(tritCount / TRITS_PER_WORD);
     const bytes = MemoryValidator.alignUp(words * 4);
     this._block = pool.allocate(bytes, "compute");
-    this.view = pool.i32(this._block);
+    this.pool.i32(this._block);
+  }
+
+  /** Revalidate generation on every access so a freed/reused block cannot be aliased. */
+  private liveView(): Int32Array {
+    return this.pool.i32(this._block);
   }
 
   private locate(i: number): { word: number; shift: number } {
@@ -60,9 +64,10 @@ export class TPLStateBuffer {
       throw new SecurityTrap("LSM-TRIT-INDEX", `trit index ${i} out of range [0, ${this.tritCount})`);
     }
     const { word, shift } = this.locate(i);
+    const view = this.liveView();
     const enc = ENC_FROM_TRIT[value]!;
-    const cleared = this.view[word]! & ~(0x3 << shift);
-    this.view[word] = cleared | (enc << shift);
+    const cleared = view[word]! & ~(0x3 << shift);
+    view[word] = cleared | (enc << shift);
   }
 
   getTrit(i: number): -1 | 0 | 1 {
@@ -70,7 +75,8 @@ export class TPLStateBuffer {
       throw new SecurityTrap("LSM-TRIT-INDEX", `trit index ${i} out of range [0, ${this.tritCount})`);
     }
     const { word, shift } = this.locate(i);
-    const enc = (this.view[word]! >>> shift) & 0x3;
+    const view = this.liveView();
+    const enc = (view[word]! >>> shift) & 0x3;
     const trit = TRIT_FROM_ENC[enc];
     if (trit === null || trit === undefined) {
       throw new SecurityTrap("LSM-TRIT-CORRUPT", `corruption sentinel read at trit ${i}`);

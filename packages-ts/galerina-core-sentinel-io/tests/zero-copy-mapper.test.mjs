@@ -101,6 +101,18 @@ test("a TAMPERED source makes map() throw HardenedBorderViolation", () => {
   );
 });
 
+test("source SharedArrayBuffer is refused (LSIO-MAP-002)", () => {
+  const { manifest } = makeFixture();
+  const sab = new SharedArrayBuffer(manifest.totalBytes);
+  const source = new Uint8Array(sab);
+  const mon = new IntegrityMonitor();
+  const mapper = new ZeroCopyMapper();
+  assert.throws(
+    () => mapper.map(manifest, source, mon),
+    (err) => err instanceof SecurityTrap && err.code === "LSIO-MAP-002",
+  );
+});
+
 test("source shorter than totalBytes throws LSIO-MAP-001", () => {
   const { manifest } = makeFixture();
   const mon = new IntegrityMonitor();

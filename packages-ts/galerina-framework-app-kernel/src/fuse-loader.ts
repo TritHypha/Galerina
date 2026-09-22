@@ -464,6 +464,22 @@ async function verifyManifestSignature(
   return "verified";
 }
 
+const SIGNING_KEY_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+
+function admittedGovernanceKeyPath(
+  path: NodePath,
+  governanceDir: string,
+  keyId: string,
+  suffix: string,
+): string | undefined {
+  if (!SIGNING_KEY_ID.test(keyId)) return undefined;
+  const fileName = `signing-key-${keyId}${suffix}`;
+  if (path.basename(fileName) !== fileName) return undefined;
+  const candidate = path.join(governanceDir, fileName);
+  if (path.basename(candidate) !== fileName) return undefined;
+  return candidate;
+}
+
 /** Find `signing-key-<keyId>.pub.pem` only in the caller-admitted governance directory. */
 function resolvePublicKey(
   fs: NodeFs,
@@ -472,12 +488,10 @@ function resolvePublicKey(
   governanceDir: string | undefined,
   _packageDir: string,
 ): string | undefined {
-  const fileName = `signing-key-${keyId}.pub.pem`;
-  const candidates: string[] = [];
-  if (governanceDir !== undefined) candidates.push(path.join(governanceDir, fileName));
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c; // perf-allow: loop-sync-io — app-fusion signing-key discovery, one-shot boot path; distinct candidate path per iteration
-  }
+  if (governanceDir === undefined) return undefined;
+  const candidate = admittedGovernanceKeyPath(path, governanceDir, keyId, ".pub.pem");
+  if (candidate === undefined) return undefined;
+  if (fs.existsSync(candidate)) return candidate;
   return undefined;
 }
 
@@ -554,6 +568,9 @@ async function loadAndVerifyPackage(
   const pkgDescPath = path.join(dir, "package.fungi.json");
   const pkgDesc = readJson(fs, pkgDescPath, "FUNGI-FUSE-NO-PACKAGE") as Record<string, unknown>;
   const name = typeof pkgDesc["name"] === "string" ? (pkgDesc["name"] as string) : path.basename(dir);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name) || path.basename(name) !== name) {
+    return fuseError("FUNGI-FUSE-BAD-PACKAGE", `package name '${name}' is not an admitted filename`);
+  }
 
   const distDir = path.join(dir, "dist");
   const manifestJsonPath = path.join(distDir, `${name}.lmanifest.json`);

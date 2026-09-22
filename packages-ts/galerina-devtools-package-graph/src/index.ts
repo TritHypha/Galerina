@@ -5,6 +5,7 @@ export type {
   FileImport,
   EdgeKind,
   AllowedOrphan,
+  ProductAsset,
   PackageGraphConfig,
 } from "./scanner.js";
 export { buildGraph } from "./graph.js";

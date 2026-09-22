@@ -52,6 +52,7 @@ const veto = (code: CompileVeto["code"], reason: string, at?: number): CompileVe
 
 class P {
   private i = 0;
+  private nest = 0;
   private readonly s: string;
   private readonly budget: Budget;
   constructor(s: string, budget: Budget) { this.s = s; this.budget = budget; }
@@ -164,9 +165,15 @@ class P {
     const cp = this.next();
     switch (cp) {
       case 0x28: { // (
+        const nestCap = this.budget.maxNesting ?? 32;
+        if (this.nest + 1 > nestCap) {
+          return veto("TPRX-BUDGET", `group nesting exceeds budget.maxNesting (${nestCap})`, at);
+        }
+        this.nest += 1;
         if (this.eat("?")) {
           if (this.eat(":")) { /* non-capturing — fine */ }
           else {
+            this.nest -= 1;
             const nx = this.s.slice(this.i, this.i + 2);
             const name =
               nx.startsWith("=") ? "lookahead (?=)" :
@@ -178,6 +185,7 @@ class P {
           }
         }
         const inner = this.alt();
+        this.nest -= 1;
         if (!inner.ok) return inner;
         if (!this.eat(")")) return veto("TPRX-PARSE", "unterminated group '('", at);
         return inner;

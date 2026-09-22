@@ -407,7 +407,8 @@ export function createGovernedRuntimeExecutor(
       if (bytes === undefined) {
         return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
       }
-      const computed = hashArtifact(bytes);
+      const ownedBytes = Uint8Array.from(bytes);
+      const computed = hashArtifact(ownedBytes);
       if (computed !== request.artifactSha256) {
         return denyVerdict(
           `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
@@ -421,13 +422,13 @@ export function createGovernedRuntimeExecutor(
       // check-then-swap window. The verifier also hard-gates that `exportName` is a defined export of that
       // hash-verified module (the export table is part of the signed bytes), so a valid signature can never
       // admit a call to an export the signed module does not define.
-      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: bytes })) {
+      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes })) {
         return denyVerdict(
           `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
         );
       }
       const executed = lowLevel.instantiateAndCall({
-        artifactBytes: bytes,
+        artifactBytes: ownedBytes,
         exportName: request.exportName,
         args: request.args,
       });

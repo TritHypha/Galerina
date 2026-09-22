@@ -132,6 +132,18 @@ export class PhotonicEmulatorBridge implements InferenceBridge, PhotonicBackend 
 
   /** Decode BitNet-packed i32 words into a trit array (mirrors the stub decoder; traps 0b11). */
   private decodePackedTrits(packed: Int32Array, count: number, offset: number): number[] {
+    const MAX_COUNT = 1_048_576;
+    if (!Number.isSafeInteger(count) || count < 0 || count > MAX_COUNT) {
+      throw new Error(`[PHOTONIC_EMULATOR]: packed trit count ${count} is outside the admitted bound`);
+    }
+    if (!Number.isSafeInteger(offset) || offset < 0) {
+      throw new Error(`[PHOTONIC_EMULATOR]: packed trit offset ${offset} is not a non-negative safe integer`);
+    }
+    const lastIndex = offset + count - (count === 0 ? 0 : 1);
+    const neededWords = count === 0 ? 0 : ((lastIndex / 16) | 0) + 1;
+    if (neededWords > packed.length) {
+      throw new Error(`[PHOTONIC_EMULATOR]: packed weights lack capacity for count ${count} at offset ${offset}`);
+    }
     const out: number[] = [];
     for (let i = 0; i < count; i++) {
       const idx = offset + i;
@@ -153,6 +165,9 @@ export class PhotonicEmulatorBridge implements InferenceBridge, PhotonicBackend 
   private trits(op: BridgeOp): number[] {
     if (!(op.weights instanceof Int32Array)) {
       throw new Error(`[PHOTONIC_EMULATOR]: emulation requires packed Int32Array weights, got a native handle.`);
+    }
+    if (op.activations == null || typeof op.activations.length !== "number" || op.activations.length < op.count) {
+      throw new Error(`[PHOTONIC_EMULATOR]: activations lack coverage for count ${op.count}`);
     }
     return this.decodePackedTrits(op.weights, op.count, op.offset ?? 0);
   }

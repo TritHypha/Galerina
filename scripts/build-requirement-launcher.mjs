@@ -13,7 +13,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, join, relative } from "node:path";
+import { basename, dirname, isAbsolute, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -137,6 +137,47 @@ function packageGraphDigest(workerDigest, protocolDigest) {
     .update("\0")
     .update(protocolDigest)
     .digest("hex");
+}
+
+function admitOutputDir(dir, code) {
+  const fromRoot = relative(ROOT, dir);
+  if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) {
+    throw new Error(`${code}_OUTSIDE_ROOT`);
+  }
+  mkdirSync(dir, { recursive: true });
+  if (lstatSync(dir).isSymbolicLink() || !statSync(dir).isDirectory()) {
+    throw new Error(`${code}_LINKED`);
+  }
+  const resolved = realpathSync.native(dir);
+  const root = realpathSync.native(ROOT);
+  const rel = relative(root, resolved);
+  if (rel.startsWith("..") || isAbsolute(rel) || !rel.replace(/\\/g, "/").startsWith("build/")) {
+    throw new Error(`${code}_ESCAPED`);
+  }
+  return resolved;
+}
+
+function refuseLinkedPath(path, code) {
+  let current = path;
+  for (;;) {
+    if (existsSync(current) && lstatSync(current).isSymbolicLink()) {
+      throw new Error(`${code}_LINKED`);
+    }
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+    if (relative(ROOT, current) === "" || relative(ROOT, current).startsWith("..")) break;
+  }
+}
+
+function writeOutputFile(path, content, code) {
+  refuseLinkedPath(path, code);
+  writeFileSync(path, content);
+}
+
+function copyOutputFile(from, to, code) {
+  refuseLinkedPath(to, code);
+  copyFileSync(from, to);
 }
 
 function regularFile(path, code) {
@@ -285,10 +326,10 @@ if (JSON.stringify(checkedArtifactIdentity) !== JSON.stringify({
   fail("REQUIREMENT_CHECKED_ARTIFACT_IDENTITY_REFUSED");
 }
 
-mkdirSync(OUTPUT, { recursive: true });
-writeFileSync(WORKER, SENTINEL_SOURCE, "utf8");
-writeFileSync(BAD_READY_WORKER, BAD_READY_SOURCE, "utf8");
-copyFileSync(requirementProtocol, PROTOCOL_COPY);
+admitOutputDir(OUTPUT, "REQUIREMENT_LAUNCHER_OUTPUT");
+writeOutputFile(WORKER, SENTINEL_SOURCE, "REQUIREMENT_LAUNCHER_OUTPUT");
+writeOutputFile(BAD_READY_WORKER, BAD_READY_SOURCE, "REQUIREMENT_LAUNCHER_OUTPUT");
+copyOutputFile(requirementProtocol, PROTOCOL_COPY, "REQUIREMENT_LAUNCHER_OUTPUT");
 const runtimeDigest = digest(runtime);
 const workerDigest = digest(WORKER);
 const requirementWorkerDigest = digest(requirementWorker);
@@ -343,7 +384,7 @@ async function buildPinnedLauncher(
   admittedProtocolDigest,
   code,
 ) {
-  mkdirSync(target, { recursive: true });
+  admitOutputDir(target, code);
   const build = await runOwnedProcess({
     command: cargo,
     args: command.slice(1),
@@ -371,7 +412,7 @@ async function buildPinnedLauncher(
   if (!existsSync(cargoBinary) || !statSync(cargoBinary).isFile()) {
     fail(`${code}_BINARY_MISSING`);
   }
-  copyFileSync(cargoBinary, outputBinary);
+  copyOutputFile(cargoBinary, outputBinary, `${code}_PUBLISH`);
 }
 
 await buildPinnedLauncher(
@@ -450,7 +491,7 @@ const registry = Object.freeze({
   timeoutMs: 1_500,
   environment,
 });
-writeFileSync(REGISTRY, canonicalJson(registry), "utf8");
+writeOutputFile(REGISTRY, canonicalJson(registry), "REQUIREMENT_LAUNCHER_OUTPUT");
 const registrySha256 = digest(REGISTRY);
 const workerRegistry = Object.freeze({
   schemaVersion: 1,
@@ -472,7 +513,7 @@ const workerRegistry = Object.freeze({
   timeoutMs: 1_500,
   environment,
 });
-writeFileSync(WORKER_REGISTRY, canonicalJson(workerRegistry), "utf8");
+writeOutputFile(WORKER_REGISTRY, canonicalJson(workerRegistry), "REQUIREMENT_LAUNCHER_OUTPUT");
 const workerRegistrySha256 = digest(WORKER_REGISTRY);
 const badReadyRegistry = Object.freeze({
   ...workerRegistry,
@@ -482,7 +523,7 @@ const badReadyRegistry = Object.freeze({
   packageRootDigest: packageGraphDigest(badReadyWorkerDigest, requirementProtocolDigest),
   timeoutMs: 1_500,
 });
-writeFileSync(BAD_READY_REGISTRY, canonicalJson(badReadyRegistry), "utf8");
+writeOutputFile(BAD_READY_REGISTRY, canonicalJson(badReadyRegistry), "REQUIREMENT_LAUNCHER_OUTPUT");
 const badReadyRegistrySha256 = digest(BAD_READY_REGISTRY);
 const receipt = Object.freeze({
   schemaVersion: 1,
@@ -517,8 +558,8 @@ const receipt = Object.freeze({
   workerFile: basename(WORKER),
   badReadyWorkerFile: basename(BAD_READY_WORKER),
 });
-mkdirSync(dirname(RECEIPT), { recursive: true });
-writeFileSync(RECEIPT, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+admitOutputDir(dirname(RECEIPT), "REQUIREMENT_LAUNCHER_OUTPUT");
+writeOutputFile(RECEIPT, `${JSON.stringify(receipt, null, 2)}\n`, "REQUIREMENT_LAUNCHER_OUTPUT");
 console.log(JSON.stringify({
   schema: "galerina.requirement-launcher-build.v1",
   verdict: receipt.verdict,

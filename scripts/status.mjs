@@ -18,6 +18,8 @@ const RND_TASKS = join(ROOT, "..", "Galerina-R-AND-D", "_session-bridge", "tasks
 const RND_DONE = join(ROOT, "..", "Galerina-R-AND-D", "_session-bridge", "done");
 const STATUS_LEDGER = process.env.GALERINA_STATUS_LEDGER || join(ROOT, "governance", "status-ledger.json");
 const STATUS_LEDGER_MAX_BYTES = 16_384;
+// Detailed gate summaries remain bounded independently of the whole-file cap.
+const STATUS_GATE_SUMMARY_MAX_CHARS = 2_048;
 
 const NA = "n/a";
 const readText = (p) => { try { return readFileSync(p, "utf8"); } catch { return null; } };
@@ -122,7 +124,7 @@ const validateStatusLedger = (value) => {
     if (typeof gate.id !== "string" || !/^[A-Z][A-Z0-9-]{2,47}$/u.test(gate.id)) return "gate id is not canonical uppercase kebab-case";
     if (ids.has(gate.id)) return "gate ids must be unique";
     ids.add(gate.id);
-    if (!isBoundedLine(gate.summary, 240)) return `gate ${gate.id} summary is empty, oversized, or multiline`;
+    if (!isBoundedLine(gate.summary, STATUS_GATE_SUMMARY_MAX_CHARS)) return `gate ${gate.id} summary is empty, oversized, or multiline`;
     if (!admittedDocPath(gate.evidence)) return `gate ${gate.id} evidence is not an existing repository docs/*.md path`;
   }
   return null;

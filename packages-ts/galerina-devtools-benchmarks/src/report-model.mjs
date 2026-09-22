@@ -61,7 +61,18 @@ export function buildCrossLanguageRows(latest, runtimeCatalog = REPORT_RUNTIMES)
 }
 
 function markdown(value) {
-  return String(value ?? "").replaceAll("|", "\\|").replaceAll("\r", " ").replaceAll("\n", " ");
+  return String(value ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("|", "\\|")
+    .replaceAll("`", "\\`")
+    .replaceAll("*", "\\*")
+    .replaceAll("_", "\\_")
+    .replaceAll("[", "\\[")
+    .replaceAll("]", "\\]")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\r", " ")
+    .replaceAll("\n", " ");
 }
 
 function formatScore(row, runtimeKey) {

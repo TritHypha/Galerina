@@ -47,3 +47,13 @@ test("attachExternalBus('local') is a no-op (already attached)", () => {
   const bus = mk();
   assert.doesNotThrow(() => bus.attachExternalBus("local"));
 });
+
+test("channel read/write cannot exceed the channel stride", () => {
+  const bus = mk();
+  const ch = bus.channel(0);
+  const over = Int32Array.from({ length: 513 }, () => 1); // 513 * 4 > 2048
+  const err = caught(() => ch.write(0, over));
+  assert.ok(err);
+  const readErr = caught(() => ch.read(512, 1));
+  assert.ok(readErr);
+});

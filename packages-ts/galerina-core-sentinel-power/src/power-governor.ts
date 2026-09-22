@@ -69,6 +69,9 @@ export class PowerGovernor {
 
   /** Set the latest temperature manually (for tests / no-sensor operation). */
   setReading(tempC: number): void {
+    if (!Number.isFinite(tempC)) {
+      throw new PowerFault("LSP-READ-001", "temperature reading must be a finite number");
+    }
     this.lastReading = tempC;
   }
 
@@ -95,6 +98,9 @@ export class PowerGovernor {
    */
   evaluate(): PowerDecision {
     const tempC = this.read();
+    if (!Number.isFinite(tempC)) {
+      throw new PowerFault("LSP-READ-001", "temperature reading must be a finite number");
+    }
     const state = this.stateFor(tempC);
     const kernel = kernelForState(state);
 

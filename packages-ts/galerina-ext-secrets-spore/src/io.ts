@@ -50,12 +50,14 @@ export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
   const stdin = process.stdin;
   if (!stdin.isTTY) throw new Error("promptNoEcho requires a TTY; pipe the value via STDIN instead");
   process.stderr.write(prompt); // prompt to stderr so stdout stays clean for piping
+  const stolen = stdin.listeners("data").slice() as Array<(...args: unknown[]) => void>;
+  stdin.removeAllListeners("data");
   const wasRaw = stdin.isRaw ?? false;
   stdin.setRawMode(true);
   stdin.resume();
   const bytes: number[] = [];
   try {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       const onData = (d: Buffer): void => {
         for (const ch of d) {
           if (ch === 0x0d || ch === 0x0a) { // CR/LF = end of line
@@ -69,7 +71,8 @@ export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
           }
           if (ch === 0x03) { // Ctrl-C
             stdin.removeListener("data", onData);
-            throw new Error("aborted");
+            reject(new Error("aborted"));
+            return;
           }
           bytes.push(ch);
         }
@@ -77,6 +80,8 @@ export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
       stdin.on("data", onData);
     });
   } finally {
+    stdin.removeAllListeners("data");
+    for (const listener of stolen) stdin.on("data", listener);
     stdin.setRawMode(wasRaw);
     stdin.pause();
     process.stderr.write("\n");

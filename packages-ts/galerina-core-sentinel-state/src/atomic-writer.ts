@@ -9,10 +9,44 @@
 // The host (native/README.md) is responsible for the NVMe/flash double-buffer
 // partition and encryption-at-rest; this class provides the atomic-swap seam.
 
-import { mkdirSync, writeFileSync, renameSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  mkdirSync,
+  openSync,
+  readSync,
+  renameSync,
+  unlinkSync,
+  writeSync,
+} from "node:fs";
+import { basename, join, relative, resolve, sep } from "node:path";
 import { SecurityTrap } from "./errors.js";
 import type { Snapshot } from "./state-serializer.js";
+
+const SNAPSHOT_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+const MAX_SNAPSHOT_BYTES = 1_048_576;
+
+function admitSnapshotName(name: string): string {
+  if (typeof name !== "string" || !SNAPSHOT_NAME.test(name) || name.includes("..")) {
+    throw new SecurityTrap("LSS-NAME-001", `snapshot name '${name}' is not an admitted filename`);
+  }
+  return name;
+}
+
+function assertContained(root: string, candidate: string): string {
+  const resolvedRoot = resolve(root);
+  const resolved = resolve(candidate);
+  if (basename(resolved) !== basename(candidate)) {
+    throw new SecurityTrap("LSS-NAME-001", "snapshot path is not a single filename");
+  }
+  const rel = relative(resolvedRoot, resolved);
+  if (rel.startsWith("..") || rel.split(sep).includes("..")) {
+    throw new SecurityTrap("LSS-NAME-001", "snapshot path escapes the storage directory");
+  }
+  return resolved;
+}
 
 export class AtomicWriter {
   readonly #dir: string;
@@ -23,7 +57,7 @@ export class AtomicWriter {
   }
 
   #live(name: string): string {
-    return join(this.#dir, `${name}.snap`);
+    return assertContained(this.#dir, join(this.#dir, `${admitSnapshotName(name)}.snap`));
   }
 
   /** Resolve the live `.snap` path for a name (the writer owns the on-disk layout). */
@@ -32,15 +66,32 @@ export class AtomicWriter {
   }
 
   #temp(name: string): string {
-    return join(this.#dir, `${name}.tmp`);
+    return assertContained(this.#dir, join(this.#dir, `${admitSnapshotName(name)}.tmp`));
   }
 
-  /** Atomically persist a snapshot: write `.tmp`, then rename over `.snap`. */
+  /** Atomically persist a snapshot: exclusive `.tmp` create, then rename over `.snap`. */
   write(name: string, snap: Snapshot): void {
     const tmp = this.#temp(name);
     const live = this.#live(name);
-    writeFileSync(tmp, JSON.stringify(snap), "utf8");
-    renameSync(tmp, live); // atomic swap — never corrupts the live snapshot
+    const payload = JSON.stringify(snap);
+    if (Buffer.byteLength(payload, "utf8") > MAX_SNAPSHOT_BYTES) {
+      throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
+    }
+    this.#refuseLink(tmp, name);
+    this.#refuseLink(live, name);
+    try {
+      unlinkSync(tmp);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    }
+    const fd = openSync(tmp, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600);
+    try {
+      writeSync(fd, payload, undefined, "utf8");
+    } finally {
+      closeSync(fd);
+    }
+    this.#refuseLink(live, name);
+    renameSync(tmp, live);
   }
 
   /** Read the live snapshot, or null if none exists. Throws on malformed JSON. */
@@ -48,7 +99,25 @@ export class AtomicWriter {
     const live = this.#live(name);
     let raw: string;
     try {
-      raw = readFileSync(live, "utf8");
+      const st = lstatSync(live);
+      if (st.isSymbolicLink()) {
+        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" is a link and is refused`);
+      }
+      if (!st.isFile() || st.size > MAX_SNAPSHOT_BYTES) {
+        throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
+      }
+      const fd = openSync(live, constants.O_RDONLY);
+      try {
+        const opened = fstatSync(fd);
+        if (opened.ino !== st.ino || opened.dev !== st.dev || opened.size !== st.size || opened.size > MAX_SNAPSHOT_BYTES) {
+          throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before read`);
+        }
+        const buf = Buffer.alloc(opened.size);
+        const n = readSync(fd, buf, 0, opened.size, 0);
+        raw = buf.subarray(0, n).toString("utf8");
+      } finally {
+        closeSync(fd);
+      }
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
       throw err;
@@ -57,6 +126,56 @@ export class AtomicWriter {
       return JSON.parse(raw) as Snapshot;
     } catch {
       throw new SecurityTrap("LSS-READ-001", `snapshot "${name}" is malformed JSON — on-disk corruption`);
+    }
+  }
+
+  /** Zero-overwrite then unlink a regular checkpoint. No-op if absent. Refuses links. */
+  scrub(name: string): void {
+    const live = this.#live(name);
+    let st;
+    try {
+      st = lstatSync(live);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw err;
+    }
+    if (st.isSymbolicLink() || !st.isFile()) {
+      throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" is not a regular file and cannot be scrubbed`);
+    }
+    if (st.size > MAX_SNAPSHOT_BYTES) {
+      throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
+    }
+    const fd = openSync(live, constants.O_WRONLY);
+    try {
+      const opened = fstatSync(fd);
+      if (opened.ino !== st.ino || opened.dev !== st.dev || opened.size !== st.size) {
+        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before scrub`);
+      }
+      writeSync(fd, Buffer.alloc(opened.size, 0));
+    } finally {
+      closeSync(fd);
+    }
+    const after = lstatSync(live);
+    if (after.ino !== st.ino || after.dev !== st.dev) {
+      throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before unlink`);
+    }
+    unlinkSync(live);
+    try {
+      unlinkSync(this.#temp(name));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    }
+  }
+
+  #refuseLink(path: string, name: string): void {
+    try {
+      const st = lstatSync(path);
+      if (st.isSymbolicLink()) {
+        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" path is a link and is refused`);
+      }
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw err;
     }
   }
 }

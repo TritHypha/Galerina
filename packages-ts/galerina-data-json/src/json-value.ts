@@ -344,14 +344,22 @@ export function parseJsonValue(
   if (memoryErrors[0] !== undefined) {
     return { ok: false, diagnostic: memoryErrors[0] };
   }
+  const maxBytes = options.memory.maxDocumentBytes;
+  if (typeof source !== "string") {
+    if (source.byteLength > maxBytes) {
+      return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
+    }
+  } else if (source.length > maxBytes) {
+    return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
+  }
   const decoded = sourceText(source);
   if (!decoded.ok) return decoded;
   const text = decoded.text;
   if (text.charCodeAt(0) === 0xFEFF) {
     return err(FUNGI_JSON_INVALID_TOKEN, "JSON value source must not start with a UTF-8 BOM.");
   }
-  const bytes = encoder.encode(text).byteLength;
-  if (bytes > options.memory.maxDocumentBytes) {
+  const bytes = typeof source === "string" ? encoder.encode(text).byteLength : source.byteLength;
+  if (bytes > maxBytes) {
     return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
   }
   const taint: JsonTaint = options.taint === "tainted" ? "tainted" : "clean";
@@ -382,7 +390,23 @@ function encodeString(value: string): string {
   return `${out}"`;
 }
 
-function encodeNode(value: JsonValue, path: string): { text: string; taint: JsonTaint } | JsonEncodeResult {
+const MAX_ENCODE_DEPTH = 64;
+const MAX_ENCODE_BYTES = 1_048_576;
+const MAX_ENCODE_NODES = 100_000;
+
+function encodeNode(
+  value: JsonValue,
+  path: string,
+  depth: number,
+  budget: { remaining: number; nodes: number },
+): { text: string; taint: JsonTaint } | JsonEncodeResult {
+  if (depth > MAX_ENCODE_DEPTH) {
+    return encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode nesting exceeds the host bound.", path);
+  }
+  budget.nodes += 1;
+  if (budget.nodes > MAX_ENCODE_NODES) {
+    return encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode node count exceeds the host bound.", path);
+  }
   switch (value.kind) {
     case "null":
       return { text: "null", taint: value.taint };
@@ -401,7 +425,7 @@ function encodeNode(value: JsonValue, path: string): { text: string; taint: Json
       let taint = value.taint;
       for (const [index, item] of value.items.entries()) {
         const childPath = path === "" ? `/${index}` : `${path}/${index}`;
-        const encoded = encodeNode(item, childPath);
+        const encoded = encodeNode(item, childPath, depth + 1, budget);
         if ("ok" in encoded) return encoded;
         parts.push(encoded.text);
         taint = joinJsonTaint(taint, encoded.taint);
@@ -418,7 +442,7 @@ function encodeNode(value: JsonValue, path: string): { text: string; taint: Json
         }
         seen.add(field.name);
         const childPath = path === "" ? `/${field.name}` : `${path}/${field.name}`;
-        const encoded = encodeNode(field.value, childPath);
+        const encoded = encodeNode(field.value, childPath, depth + 1, budget);
         if ("ok" in encoded) return encoded;
         parts.push(`${encodeString(field.name)}:${encoded.text}`);
         taint = joinJsonTaint(taint, encoded.taint);
@@ -431,8 +455,12 @@ function encodeNode(value: JsonValue, path: string): { text: string; taint: Json
 }
 
 export function encodeJsonValue(value: JsonValue): JsonEncodeResult {
-  const encoded = encodeNode(value, "");
+  const budget = { remaining: MAX_ENCODE_BYTES, nodes: 0 };
+  const encoded = encodeNode(value, "", 1, budget);
   if ("ok" in encoded) return encoded;
+  if (encoded.text.length > MAX_ENCODE_BYTES) {
+    return encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode output exceeds the host bound.", "");
+  }
   return { ok: true, text: encoded.text, taint: encoded.taint };
 }
 

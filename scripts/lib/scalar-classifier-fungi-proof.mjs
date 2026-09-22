@@ -28,6 +28,7 @@ export function assertScalarClassifierAsset({
   assertReference,
   assetRoot = packageRoot,
   packageAssetRequired = assetRoot === packageRoot,
+  productTree,
 }) {
   const sourcePath = join(assetRoot, ...assetRelative.split("/"));
   assert.ok(existsSync(sourcePath), `missing governed Fungi asset: ${assetRelative}`);
@@ -39,6 +40,14 @@ export function assertScalarClassifierAsset({
       "packageGraph.loadedAssets must be an explicit array",
     );
     assert.ok(packageJson.packageGraph.loadedAssets.includes(assetRelative));
+  } else {
+    const productAssets = packageJson.packageGraph?.productAssets ?? [];
+    assert.ok(
+      Array.isArray(productAssets) && productAssets.some((entry) =>
+        entry?.tree === productTree && entry?.path === assetRelative
+      ),
+      `missing productAssets declaration for ${productTree}/${assetRelative}`,
+    );
   }
 
   const source = readUtf8(sourcePath);

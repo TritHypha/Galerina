@@ -183,6 +183,13 @@ async function cmdIndex(root: string, index: IndexOptions): Promise<number> {
 
 function noteSaveOutcome(saved: SaveOutcome): void {
   if (saved.written) return;
+  if (saved.reason === "unsafe-path") {
+    process.stdout.write(
+      "myco: note — index NOT cached: cache directory or index.json is a link or escaped path. "
+        + "Results are correct, but the write was refused.\n",
+    );
+    return;
+  }
   if (saved.reason === "invalid-payload") {
     process.stdout.write(
       "myco: note — index NOT cached: generated graph violates the stored-index contract. "
@@ -199,6 +206,13 @@ function noteSaveOutcome(saved: SaveOutcome): void {
 
 async function cmdStatus(root: string): Promise<number> {
   const outcome = await loadGraphOutcome(root);
+  if (outcome.status === "unsafe") {
+    process.stderr.write(
+      `index at ${path.join(root, ".myco")} is UNSAFE (symlink or escaped path) — `
+        + `remove the link and run: myco index\n`,
+    );
+    return 2;
+  }
   if (outcome.status === "rejected") {
     process.stderr.write(
       `index at ${path.join(root, ".myco")} exists but was REFUSED `
@@ -472,6 +486,13 @@ async function cmdSearch(
       graph = loaded.graph;
     } else {
       const prior = await loadGraphOutcome(root);
+      if (prior.status === "unsafe") {
+        process.stderr.write(
+          `myco: existing index at ${path.join(path.resolve(root), ".myco")} is UNSAFE `
+            + `(symlink or escaped path) — refusing to rewrite through that identity\n`,
+        );
+        return 2;
+      }
       if (prior.status === "rejected") {
         process.stdout.write(
           `myco: existing index at ${path.join(path.resolve(root), ".myco")} was REFUSED `

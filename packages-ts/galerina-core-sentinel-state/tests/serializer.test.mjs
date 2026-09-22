@@ -4,8 +4,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { StateSerializer, SecurityTrap } from "../dist/index.js";
 
+const TEST_KEY = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
+const serializer = () => new StateSerializer({ hmacKey: TEST_KEY });
+
 test("serialize → verify true; deserialize round-trips an object", () => {
-  const s = new StateSerializer();
+  const s = serializer();
   const payload = { a: 1, b: [1, 2, 3] };
   const snap = s.serialize(payload, 42);
   assert.equal(s.verify(snap), true);
@@ -14,7 +17,7 @@ test("serialize → verify true; deserialize round-trips an object", () => {
 });
 
 test("tampering payloadJson → verify false; deserialize throws SecurityTrap LSS-INTEGRITY-001", () => {
-  const s = new StateSerializer();
+  const s = serializer();
   const snap = s.serialize({ a: 1, b: [1, 2, 3] }, 7);
   const tampered = { ...snap, payloadJson: snap.payloadJson.replace("1", "9") };
   assert.equal(s.verify(tampered), false);
@@ -24,14 +27,14 @@ test("tampering payloadJson → verify false; deserialize throws SecurityTrap LS
 });
 
 test("tampering xorChecksum → verify false", () => {
-  const s = new StateSerializer();
+  const s = serializer();
   const snap = s.serialize({ x: "hello" }, 1);
   const tampered = { ...snap, xorChecksum: (snap.xorChecksum ^ 0xff) >>> 0 };
   assert.equal(s.verify(tampered), false);
 });
 
 test("tampering hmac → verify false", () => {
-  const s = new StateSerializer();
+  const s = serializer();
   const snap = s.serialize({ x: "hello" }, 1);
   const flipped = snap.hmac.slice(0, -1) + (snap.hmac.endsWith("a") ? "b" : "a");
   const tampered = { ...snap, hmac: flipped };

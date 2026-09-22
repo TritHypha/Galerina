@@ -465,12 +465,20 @@ export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerif
 
   interface Tbl { epoch: number; flags: number; segOff: bigint; segLen: bigint; rootHint: Uint8Array; }
   const table: Tbl[] = [];
+  let payloadRegionLen = 0n;
+  let referenced = 0n;
   for (let i = 0; i < segmentCount; i++) {
     const e = 48 + i * 56;
     const segOff = dv.getBigUint64(e + 8, true);
     const segLen = dv.getBigUint64(e + 16, true);
+    const end = segOff + segLen;
+    if (end > payloadRegionLen) payloadRegionLen = end;
+    referenced += segLen;
     if (regionOffBig + segOff + segLen > lenBig) throw new SporeHistoryError("MalformedTable", `segment ${i} body extends past EOF`);
     table.push({ epoch: dv.getUint32(e, true), flags: dv.getUint32(e + 4, true), segOff, segLen, rootHint: buf.slice(e + 24, e + 56) });
+  }
+  if (referenced > payloadRegionLen) {
+    throw new SporeHistoryError("MalformedTable", "overlapping or repeated segment ranges");
   }
 
   // 3. recompute every root; chain_id under header_core must equal the pack chain_id.

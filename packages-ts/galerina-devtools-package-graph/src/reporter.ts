@@ -200,6 +200,9 @@ ${graph.entryPoints.map((e) => `- \`${e}\``).join("\n") || "_none detected_"}
 ## Loaded Assets
 ${graph.loadedAssets.map((e) => `- \`${e}\``).join("\n") || "_none declared_"}
 
+## Product Assets
+${graph.productAssets.map((entry) => `- \`${entry.tree}/${entry.path}\``).join("\n") || "_none declared_"}
+
 ## Allowed Orphans
 ${graph.allowedOrphans.map((entry) => `- \`${entry.path}\` -- ${entry.reason}`).join("\n") || "_none declared_"}
 `;

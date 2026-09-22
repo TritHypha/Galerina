@@ -28,7 +28,7 @@ test("previewAdmission(ALLOW) → authorized, decision allow, no diagnostic", ()
   const d = previewAdmission(Verdict.ALLOW);
   assert.equal(d.authorized, true);
   assert.equal(d.decision, "allow");
-  assert.equal(d.diagnostic, null);
+  assert.deepEqual(d.diagnostic, { kind: "NONE" });
 });
 
 test("previewAdmission(INDETERMINATE) → deny + FUNGI-GOV-3VL-001 diagnostic", () => {
@@ -44,5 +44,5 @@ test("previewAdmission(DENY) → deny, no diagnostic (ordinary policy denial)", 
   const d = previewAdmission(Verdict.DENY);
   assert.equal(d.authorized, false);
   assert.equal(d.decision, "deny");
-  assert.equal(d.diagnostic, null);
+  assert.deepEqual(d.diagnostic, { kind: "NONE" });
 });

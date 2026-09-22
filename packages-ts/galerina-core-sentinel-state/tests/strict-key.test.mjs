@@ -17,6 +17,9 @@ test("StateSerializer strictKey accepts a real key", () => {
   assert.doesNotThrow(() => new StateSerializer({ strictKey: true, hmacKey: key }));
 });
 
-test("default (non-strict) still permits the dev key for local use", () => {
-  assert.doesNotThrow(() => new StateSerializer());
+test("construction refuses a missing or all-zero key", () => {
+  const e1 = caught(() => new StateSerializer());
+  assert.ok(e1); assert.match(String(e1.code ?? e1.message), /LSS-KEY-001/);
+  const e2 = caught(() => new StateSerializer({ hmacKey: new Uint8Array(32) }));
+  assert.ok(e2); assert.match(String(e2.code ?? e2.message), /LSS-KEY-001/);
 });

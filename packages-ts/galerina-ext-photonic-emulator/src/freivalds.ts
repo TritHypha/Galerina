@@ -28,10 +28,37 @@ export function freivaldsVerify(
   A: ReadonlyArray<Float64Array>, B: ReadonlyArray<Float64Array>, C: ReadonlyArray<Float64Array>,
   n: number, k: number, tol: number, rng: () => number,
 ): boolean {
+  const MAX_N = 4_096;
+  const MAX_K = 64;
+  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_N) return false;
+  if (!Number.isSafeInteger(k) || k < 1 || k > MAX_K) return false;
+  if (!Number.isFinite(tol) || tol < 0) return false;
+  if (typeof rng !== "function") return false;
+  if (!isSquare(A, n) || !isSquare(B, n) || !isSquare(C, n)) return false;
   for (let t = 0; t < k; t++) {
-    const r = Float64Array.from({ length: n }, () => (rng() < 0.5 ? 0 : 1));
+    const r = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const bit = rng();
+      if (!Number.isFinite(bit)) return false;
+      r[i] = bit < 0.5 ? 0 : 1;
+    }
     const Br = matvec(B, r, n), ABr = matvec(A, Br, n), Cr = matvec(C, r, n);
-    for (let i = 0; i < n; i++) if (Math.abs(ABr[i]! - Cr[i]!) > tol) return false;
+    for (let i = 0; i < n; i++) {
+      const left = ABr[i]!;
+      const right = Cr[i]!;
+      if (!Number.isFinite(left) || !Number.isFinite(right)) return false;
+      if (Math.abs(left - right) > tol) return false;
+    }
+  }
+  return true;
+}
+
+function isSquare(M: ReadonlyArray<Float64Array>, n: number): boolean {
+  if (M.length !== n) return false;
+  for (let i = 0; i < n; i++) {
+    const row = M[i];
+    if (!(row instanceof Float64Array) || row.length !== n) return false;
+    for (let j = 0; j < n; j++) if (!Number.isFinite(row[j]!)) return false;
   }
   return true;
 }

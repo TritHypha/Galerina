@@ -205,6 +205,31 @@ function refuse(code: string): never {
   throw new RegistryDurabilityProductionError(code);
 }
 
+function snapshotPlainData(value: unknown): unknown {
+  if (value === null) return null;
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "number" || valueType === "boolean") return value;
+  if (valueType !== "object" || Array.isArray(value)) return null;
+  if (Object.getPrototypeOf(value) !== Object.prototype) return null;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const owned: Record<string, unknown> = {};
+  for (const key of Object.keys(descriptors).sort()) {
+    const descriptor = descriptors[key];
+    if (
+      descriptor === undefined
+      || descriptor.get !== undefined
+      || descriptor.set !== undefined
+      || !Object.prototype.hasOwnProperty.call(descriptor, "value")
+    ) {
+      return null;
+    }
+    const copied = snapshotPlainData(descriptor.value);
+    if (copied === null && descriptor.value !== null) return null;
+    owned[key] = copied;
+  }
+  return Object.freeze(owned);
+}
+
 function hasExactDataShape(
   value: object,
   keys: readonly string[],
@@ -373,7 +398,8 @@ export function admitRegistryDurabilityProfile(
   authorityValue: RegistryDurabilityProductionAuthority,
 ): ProductionRegistryDurabilityProfile {
   try {
-    if (!manifestShapeIsValid(manifestValue)) {
+    const ownedManifest = snapshotPlainData(manifestValue);
+    if (!manifestShapeIsValid(ownedManifest)) {
       refuse("REGISTRY_DURABILITY_PRODUCTION_MANIFEST_REFUSED");
     }
     if (!isVerifiedRegistryDurabilityEvidence(evidenceValue)) {
@@ -382,7 +408,7 @@ export function admitRegistryDurabilityProfile(
     if (!authorityShapeIsValid(authorityValue)) {
       refuse("REGISTRY_DURABILITY_PRODUCTION_AUTHORITY_REFUSED");
     }
-    const manifest = manifestValue;
+    const manifest = ownedManifest;
     const evidence = evidenceValue;
     const authority = authorityValue;
     const at = canonicalInstant(authority.at) as number;
@@ -558,7 +584,7 @@ export function isReleasedRegistryDurabilityProfile(
 }
 
 export interface RegistryDurabilityRotationIdentity {
-  readonly profile: ProductionRegistryDurabilityProfile;
+  readonly profile: ReleasedRegistryDurabilityProfile;
   readonly candidateGeneration: PersistedRegistryGeneration;
   readonly receipt: AdmittedRegistryRotationCandidate;
   readonly admittedIndex: AdmittedRegistryRotationIndex;
@@ -570,7 +596,7 @@ export function registryDurabilityProfileMatchesRotation(
   identity: RegistryDurabilityRotationIdentity,
 ): boolean {
   try {
-    if (!isProductionRegistryDurabilityProfile(identity.profile)) return false;
+    if (!isReleasedRegistryDurabilityProfile(identity.profile)) return false;
     const authorityAt = canonicalInstant(identity.authorityAt);
     const notAfter = canonicalInstant(identity.profile.notAfter);
     return authorityAt !== null

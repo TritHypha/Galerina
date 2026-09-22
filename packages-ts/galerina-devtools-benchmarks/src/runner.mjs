@@ -296,8 +296,8 @@ export async function runBenchmark(bench) {
       const denoBin = resolveDenoBin();
       // Quote the executable path (it may contain spaces / be a full path) for shell:true.
       // Single command string, no args array — args+shell:true triggers Node DEP0190.
-      const dr = _sp(`"${denoBin}" run --unstable-webgpu "${denoWebGpuRunner}"`, {
-        encoding: "utf8", timeout: 60000, shell: true,
+      const dr = _sp(denoBin, ["run", "--unstable-webgpu", denoWebGpuRunner], {
+        encoding: "utf8", timeout: 60000, shell: false, windowsHide: true,
       });
       res.denoWebGpu = (dr.status === 0 && dr.stdout?.trim())
         ? (() => { try { return JSON.parse(dr.stdout.trim()); } catch { return null; } })()

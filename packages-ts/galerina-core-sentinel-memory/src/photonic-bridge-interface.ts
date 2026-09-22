@@ -44,23 +44,37 @@ export class LocalSramBus extends PhotonicBridgeInterface {
   }
 
   channel(id: number): MemoryChannel {
+    if (!Number.isSafeInteger(id) || id < 0) {
+      throw new HardenedBorderViolation("LSM-PBI-002", "channel id must be a non-negative safe integer");
+    }
+    const maxInts = this.stride / 4;
     const base = id * this.stride;
+    MemoryValidator.assertInBounds(base, this.stride, this.pool.capacityBytes);
     const pool = this.pool;
     const stride = this.stride;
     return {
       id,
       read(offset: number, length: number): Int32Array {
+        if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(length) || length < 0) {
+          throw new HardenedBorderViolation("LSM-PBI-003", "channel offset/length must be non-negative safe integers");
+        }
+        if (offset > maxInts || length > maxInts - offset) {
+          throw new HardenedBorderViolation("LSM-PBI-003", "channel access exceeds stride");
+        }
         const byteOffset = base + offset * 4;
-        MemoryValidator.assertInBounds(byteOffset, length * 4, pool.capacityBytes);
+        MemoryValidator.assertInBounds(byteOffset, length * 4, base + stride);
         const src = new Int32Array(pool.buffer, byteOffset, length);
         return src.slice(); // detached copy: reads do not alias the buffer
       },
       write(offset: number, data: Int32Array): void {
-        const byteOffset = base + offset * 4;
-        MemoryValidator.assertInBounds(byteOffset, data.length * 4, pool.capacityBytes);
-        if (offset * 4 + data.length * 4 > stride) {
-          MemoryValidator.assertInBounds(byteOffset, data.length * 4, base + stride);
+        if (!Number.isSafeInteger(offset) || offset < 0 || !(data instanceof Int32Array)) {
+          throw new HardenedBorderViolation("LSM-PBI-003", "channel write requires a non-negative offset and Int32Array");
         }
+        if (offset > maxInts || data.length > maxInts - offset) {
+          throw new HardenedBorderViolation("LSM-PBI-003", "channel access exceeds stride");
+        }
+        const byteOffset = base + offset * 4;
+        MemoryValidator.assertInBounds(byteOffset, data.length * 4, base + stride);
         const dst = new Int32Array(pool.buffer, byteOffset, data.length);
         dst.set(data);
       },

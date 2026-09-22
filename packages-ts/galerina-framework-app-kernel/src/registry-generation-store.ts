@@ -10,8 +10,8 @@ import {
   PRODUCTION_ADMITTED_REGISTRY_DURABILITY_DIGESTS,
 } from "./registry-durability-admission.js";
 import {
-  isProductionRegistryDurabilityProfile,
-  type ProductionRegistryDurabilityProfile,
+  isReleasedRegistryDurabilityProfile,
+  type ReleasedRegistryDurabilityProfile,
 } from "./registry-durability-production-admission.js";
 import { loadRegistryGenerationHostFloor } from "./host-floor.js";
 
@@ -26,6 +26,7 @@ interface NodeStats {
 }
 
 interface NodeFileHandle {
+  chmod(mode: number): Promise<void>;
   close(): Promise<void>;
   readFile(): Promise<Uint8Array>;
   stat(): Promise<NodeStats>;
@@ -108,7 +109,7 @@ export interface LinkedRegistryGenerationStoreOptions {
   readonly directory: string;
   readonly generation: RegistryGeneration;
   readonly verify: VerifyRegistryGenerationOptions;
-  readonly durabilityProfile: ProductionRegistryDurabilityProfile;
+  readonly durabilityProfile: ReleasedRegistryDurabilityProfile;
   readonly maxBytes?: number;
 }
 
@@ -637,8 +638,8 @@ export async function publishRegistryGenerationWithLinkedHost(
   options: LinkedRegistryGenerationStoreOptions,
 ): Promise<PersistedRegistryGeneration> {
   const maxBytes = sizeBound(options.maxBytes);
-  if (!isProductionRegistryDurabilityProfile(options.durabilityProfile)) {
-    throw new TypeError("linked registry durability profile is not admitted");
+  if (!isReleasedRegistryDurabilityProfile(options.durabilityProfile)) {
+    throw new TypeError("linked registry durability profile is not owner-released");
   }
   verifyRegistryGeneration(options.generation, options.verify);
   const canonical = registryGenerationCanonicalJson(options.generation);
@@ -816,6 +817,8 @@ export async function persistRegistryGeneration(
     if (!staged.isFile() || staged.size !== bytes.length) {
       throw new TypeError("registry generation staging write was incomplete");
     }
+    await handle.chmod(0o444);
+    await handle.sync();
     await handle.close();
     handle = undefined;
     try {
@@ -843,7 +846,6 @@ export async function persistRegistryGeneration(
         options.durabilityAdapter,
       );
     }
-    await fs.chmod(finalPath, 0o444);
     const reopened = await loadRegistryGeneration({
       directory,
       generationId,

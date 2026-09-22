@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Canonical environment mode constants for the Galerina platform.
  *
  * EnvironmentMode is owned by this package (@galerina/core-config).
@@ -24,6 +24,8 @@ export * from "./posture.js";
 
 // JOB 0011 (a) â€” project governance ceiling (full|auto|lean, default full, fail-closed).
 export * from "./governance.js";
+
+import { isProxy as isNodeProxy } from "node:util/types";
 
 /**
  * Diagnostic severity levels for config diagnostics.
@@ -94,6 +96,10 @@ export interface EnvironmentVariableReference {
   readonly description?: string;
 }
 
+/**
+ * Unversioned runtime-handoff snapshot used by `RuntimeConfigHandoff`.
+ * The versioned schema is `EnvironmentConfigV2`.
+ */
 export interface EnvironmentConfig {
   readonly mode: EnvironmentMode;
   readonly variables: readonly EnvironmentVariableReference[];
@@ -1432,4 +1438,294 @@ export interface EnvironmentConfigReport {
   readonly secretCount: number;
   readonly secrets: readonly SecretReportValue[];
   readonly diagnostics: readonly ConfigDiagnostic[];
+}
+
+export const ENVIRONMENT_CONFIG_SCHEMA = "galerina.config.environment.v2" as const;
+export const FUNGI_CONFIG_028 = "FUNGI-CONFIG-028";
+export const FUNGI_CONFIG_029 = "FUNGI-CONFIG-029";
+export const FUNGI_CONFIG_030 = "FUNGI-CONFIG-030";
+
+export type SecretRedactionMode = "full" | "partial" | "fingerprint_only";
+
+export interface SecretEnvironmentReference {
+  readonly id: string;
+  readonly name: string;
+  readonly present: boolean;
+  readonly redacted: true;
+  readonly fingerprint?: string;
+  readonly source: SecretConfigSource;
+  readonly category: SecretCategory;
+  readonly requiredIn: readonly EnvironmentMode[];
+  readonly allowedSinks: readonly string[];
+  readonly deniedSinks: readonly string[];
+  readonly redaction: SecretRedactionMode;
+}
+
+export interface EnvironmentConfigV2 {
+  readonly schemaVersion: typeof ENVIRONMENT_CONFIG_SCHEMA;
+  readonly mode: EnvironmentMode;
+  readonly variables: readonly string[];
+  readonly secrets: readonly SecretEnvironmentReference[];
+  readonly policy: EnvironmentPolicy;
+}
+
+export interface LoadEnvironmentConfigInput {
+  readonly mode: unknown;
+  readonly variableNames: readonly string[];
+  readonly secretNames: readonly string[];
+  readonly availableEnvironment: Readonly<Record<string, string | undefined>>;
+  readonly policy?: Partial<EnvironmentPolicy>;
+  readonly schemaVersion?: string;
+}
+
+const SECRET_CATEGORY_SET: ReadonlySet<string> = new Set([
+  "api-key",
+  "signing-key",
+  "password",
+  "token",
+  "certificate",
+  "database-credential",
+  "webhook-secret",
+  "oauth-secret",
+  "generic",
+]);
+
+function secretReference(
+  name: string,
+  present: boolean,
+  mode: EnvironmentMode,
+): SecretEnvironmentReference {
+  return {
+    id: `env:${name}`,
+    name,
+    present,
+    redacted: true,
+    source: { kind: "env", variableName: name },
+    category: "generic",
+    requiredIn: [mode],
+    allowedSinks: [],
+    deniedSinks: [],
+    redaction: "full",
+  };
+}
+
+const CONFIG_SECRET_REDACTION_MARKER = "[REDACTED]";
+
+function readOwnEnvironmentString(
+  availableEnvironment: unknown,
+  name: string,
+): string | undefined {
+  if (
+    typeof availableEnvironment !== "object" ||
+    availableEnvironment === null ||
+    isNodeProxy(availableEnvironment)
+  ) {
+    return undefined;
+  }
+
+  try {
+    const descriptor = Object.getOwnPropertyDescriptor(availableEnvironment, name);
+    if (
+      descriptor === undefined ||
+      !("value" in descriptor) ||
+      typeof descriptor.value !== "string"
+    ) {
+      return undefined;
+    }
+    return descriptor.value;
+  } catch {
+    return undefined;
+  }
+}
+
+function collectAvailableEnvironmentStrings(
+  availableEnvironment: unknown,
+): readonly string[] {
+  if (
+    typeof availableEnvironment !== "object" ||
+    availableEnvironment === null ||
+    isNodeProxy(availableEnvironment)
+  ) {
+    return [];
+  }
+
+  let names: readonly string[];
+  try {
+    names = Object.getOwnPropertyNames(availableEnvironment);
+  } catch {
+    return [];
+  }
+
+  const values: string[] = [];
+  for (const name of names) {
+    const value = readOwnEnvironmentString(availableEnvironment, name);
+    if (value !== undefined && value.length > 0) {
+      values.push(value);
+    }
+  }
+  return values;
+}
+
+function redactConfigText(text: string, values: readonly string[]): string {
+  const orderedValues = [...new Set(values)]
+    .filter((value) => value.length > 0)
+    .sort((left, right) => right.length - left.length);
+  if (orderedValues.length === 0) {
+    return text;
+  }
+
+  let redacted = "";
+  let index = 0;
+  while (index < text.length) {
+    const matchedValue = orderedValues.find((value) => text.startsWith(value, index));
+    if (matchedValue === undefined) {
+      redacted += text.slice(index, index + 1);
+      index += 1;
+      continue;
+    }
+    redacted += CONFIG_SECRET_REDACTION_MARKER;
+    index += matchedValue.length;
+  }
+  return redacted;
+}
+
+function redactConfigDiagnostic(
+  diagnostic: ConfigDiagnostic,
+  values: readonly string[],
+): ConfigDiagnostic {
+  const message = redactConfigText(diagnostic.message, values);
+  const path = diagnostic.path === undefined
+    ? undefined
+    : redactConfigText(diagnostic.path, values);
+  const suggestedFix = diagnostic.suggestedFix === undefined
+    ? undefined
+    : redactConfigText(diagnostic.suggestedFix, values);
+
+  if (
+    message === diagnostic.message &&
+    path === diagnostic.path &&
+    suggestedFix === diagnostic.suggestedFix
+  ) {
+    return diagnostic;
+  }
+
+  return {
+    ...diagnostic,
+    message,
+    ...(path === undefined ? {} : { path }),
+    ...(suggestedFix === undefined ? {} : { suggestedFix }),
+  };
+}
+
+export async function loadEnvironmentConfig(
+  input: LoadEnvironmentConfigInput,
+): Promise<{
+  readonly config: EnvironmentConfigV2;
+  readonly diagnostics: readonly ConfigDiagnostic[];
+}> {
+  const diagnostics: ConfigDiagnostic[] = [];
+  if (input.schemaVersion !== undefined && input.schemaVersion !== ENVIRONMENT_CONFIG_SCHEMA) {
+    diagnostics.push(
+      createConfigDiagnostic(
+        FUNGI_CONFIG_030,
+        "LEGACY_ENVIRONMENT_SCHEMA",
+        "error",
+        `Environment config schema must be ${ENVIRONMENT_CONFIG_SCHEMA}.`,
+        "schemaVersion",
+        `Set schemaVersion to ${ENVIRONMENT_CONFIG_SCHEMA}.`,
+      ),
+    );
+  }
+
+  const modeResult = resolveEnvironmentMode(input.mode);
+  diagnostics.push(...modeResult.diagnostics);
+  const mode = modeResult.mode;
+  const policy = {
+    ...defaultEnvironmentPolicy(mode),
+    ...(input.policy ?? {}),
+    secretReportMode: SECRET_REPORT_MODE,
+  };
+
+  const variables: string[] = [];
+  for (const name of input.variableNames) {
+    if (typeof name !== "string" || !ENVIRONMENT_VARIABLE_NAME_PATTERN.test(name)) {
+      diagnostics.push(
+        createConfigDiagnostic(
+          FUNGI_CONFIG_028,
+          "REQUIRED_ENVIRONMENT_VARIABLE_MISSING",
+          "error",
+          "Public environment variable names must be uppercase identifiers.",
+          "variables",
+        ),
+      );
+      continue;
+    }
+    variables.push(name);
+    const value = readOwnEnvironmentString(input.availableEnvironment, name);
+    if (value === undefined || value === "") {
+      diagnostics.push(
+        createConfigDiagnostic(
+          FUNGI_CONFIG_028,
+          "REQUIRED_ENVIRONMENT_VARIABLE_MISSING",
+          "error",
+          `Required environment variable "${name}" is missing.`,
+          `variables.${name}`,
+        ),
+      );
+    }
+  }
+
+  const secrets: SecretEnvironmentReference[] = [];
+  for (const name of input.secretNames) {
+    if (typeof name !== "string" || !ENVIRONMENT_VARIABLE_NAME_PATTERN.test(name)) {
+      diagnostics.push(
+        createConfigDiagnostic(
+          FUNGI_CONFIG_029,
+          "REQUIRED_SECRET_MISSING",
+          "error",
+          "Secret names must be uppercase identifiers.",
+          "secrets",
+        ),
+      );
+      continue;
+    }
+    const value = readOwnEnvironmentString(input.availableEnvironment, name);
+    const present = value !== undefined && value.length > 0;
+    secrets.push(secretReference(name, present, mode));
+    if (!present) {
+      diagnostics.push(
+        createConfigDiagnostic(
+          FUNGI_CONFIG_029,
+          "REQUIRED_SECRET_MISSING",
+          "error",
+          `Required secret "${name}" is missing.`,
+          `secrets.${name}`,
+        ),
+      );
+    }
+  }
+
+  const config: EnvironmentConfigV2 = {
+    schemaVersion: ENVIRONMENT_CONFIG_SCHEMA,
+    mode,
+    variables,
+    secrets,
+    policy,
+  };
+
+  const availableEnvironmentStrings = collectAvailableEnvironmentStrings(
+    input.availableEnvironment,
+  );
+  const safeDiagnostics = diagnostics.map((diagnostic) =>
+    redactConfigDiagnostic(diagnostic, availableEnvironmentStrings),
+  );
+
+  return {
+    config,
+    diagnostics: Object.freeze(safeDiagnostics),
+  };
+}
+
+export function isSecretCategory(value: unknown): value is SecretCategory {
+  return typeof value === "string" && SECRET_CATEGORY_SET.has(value);
 }

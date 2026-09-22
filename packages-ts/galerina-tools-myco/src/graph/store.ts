@@ -9,6 +9,7 @@
 // absolute root path — it is derived from where the index file sits — so the
 // artifact never embeds a machine-specific path.
 
+import { randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 
@@ -74,7 +75,8 @@ function compareCodeUnits(left: string, right: string): number {
 export type SaveOutcome =
   | { written: true }
   | { written: false; reason: "term-edge-ceiling"; edges: number; limit: number }
-  | { written: false; reason: "invalid-payload" };
+  | { written: false; reason: "invalid-payload" }
+  | { written: false; reason: "unsafe-path" };
 
 // Write the graph to <root>/.myco/index.json (creating the dir if needed).
 //
@@ -120,10 +122,72 @@ export async function saveGraph(
   if (validated === null) {
     return { written: false, reason: "invalid-payload" };
   }
-  const dir = path.join(root, INDEX_DIR);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(indexPath(root), JSON.stringify(validated), "utf8");
+  const dir = await admitCacheDirectory(root);
+  if (dir === null) {
+    return { written: false, reason: "unsafe-path" };
+  }
+  const dest = path.join(dir, INDEX_FILE);
+  try {
+    const fileStat = await fs.lstat(dest);
+    if (fileStat.isSymbolicLink() || !fileStat.isFile()) {
+      return { written: false, reason: "unsafe-path" };
+    }
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") {
+      return { written: false, reason: "unsafe-path" };
+    }
+  }
+  const tmp = path.join(dir, `.${INDEX_FILE}.${process.pid}.${randomBytes(8).toString("hex")}.tmp`);
+  try {
+    const handle = await fs.open(tmp, "wx");
+    try {
+      await handle.writeFile(JSON.stringify(validated), "utf8");
+    } finally {
+      await handle.close();
+    }
+    await fs.rename(tmp, dest);
+  } catch {
+    await fs.unlink(tmp).catch(() => undefined);
+    return { written: false, reason: "unsafe-path" };
+  }
   return { written: true };
+}
+
+async function admitCacheDirectory(root: string): Promise<string | null> {
+  let rootStat;
+  try {
+    rootStat = await fs.lstat(root);
+  } catch {
+    return null;
+  }
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) return null;
+  const dir = path.join(root, INDEX_DIR);
+  try {
+    const existing = await fs.lstat(dir);
+    if (existing.isSymbolicLink() || !existing.isDirectory()) return null;
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") return null;
+    try {
+      await fs.mkdir(dir);
+    } catch {
+      return null;
+    }
+    try {
+      const created = await fs.lstat(dir);
+      if (created.isSymbolicLink() || !created.isDirectory()) return null;
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const realRoot = await fs.realpath(root);
+    const realDir = await fs.realpath(dir);
+    const relativeDir = path.relative(realRoot, realDir);
+    if (relativeDir !== INDEX_DIR) return null;
+  } catch {
+    return null;
+  }
+  return dir;
 }
 
 // Why a load produced no graph. `absent` = nothing to read (a genuine first
@@ -133,7 +197,7 @@ export async function saveGraph(
 // `null` is what let an over-ceiling index report itself as "first run" on
 // every invocation: a refusal rendering as an absence, so the user sees a slow
 // tool rather than a stated reason and has nothing to act on.
-export type LoadStatus = "ok" | "absent" | "rejected";
+export type LoadStatus = "ok" | "absent" | "rejected" | "unsafe";
 
 // Load the graph from disk, or null if there is no (compatible) index yet.
 // Kept for callers that only need the graph; `loadGraphOutcome` is the form
@@ -154,7 +218,7 @@ export async function loadGraphOutcome(
   options: LoadGraphOptions = {},
 ): Promise<
   | { status: "ok"; graph: SearchGraph; meta: IndexMeta }
-  | { status: "absent" | "rejected" }
+  | { status: "absent" | "rejected" | "unsafe" }
 > {
   const maxIndexBytes = options.maxIndexBytes ?? MAX_INDEX_BYTES;
   if (
@@ -167,6 +231,18 @@ export async function loadGraphOutcome(
   let text: string;
   try {
     const requestedIndex = indexPath(root);
+    const cacheDir = path.join(root, INDEX_DIR);
+    try {
+      const cacheStat = await fs.lstat(cacheDir);
+      if (cacheStat.isSymbolicLink() || !cacheStat.isDirectory()) {
+        return { status: "unsafe" };
+      }
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException)?.code === "ENOENT") {
+        return { status: "absent" };
+      }
+      return { status: "rejected" };
+    }
     const [realRoot, realIndex] = await Promise.all([
       fs.realpath(root),
       fs.realpath(requestedIndex),
@@ -178,10 +254,13 @@ export async function loadGraphOutcome(
       || relativeIndex.startsWith(`..${path.sep}`)
       || path.isAbsolute(relativeIndex)
     ) {
-      return { status: "rejected" };
+      return { status: "unsafe" };
     }
     const stat = await fs.lstat(requestedIndex);
-    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > maxIndexBytes) {
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      return { status: "unsafe" };
+    }
+    if (stat.size > maxIndexBytes) {
       return { status: "rejected" };
     }
     text = await fs.readFile(requestedIndex, "utf8");

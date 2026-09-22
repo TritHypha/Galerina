@@ -37,14 +37,41 @@ export type PhotonicMode =
   | "mach-zehnder"
   | "optical-matrix-multiply";
 
+export const PHOTONIC_DIAGNOSTIC_SCHEMA = "fungi.photonic.diagnostic.v1";
+
 export type PhotonicDiagnosticSeverity = "warning" | "error";
 
 export interface PhotonicDiagnostic {
+  readonly schema: typeof PHOTONIC_DIAGNOSTIC_SCHEMA;
   readonly code: string;
   readonly severity: PhotonicDiagnosticSeverity;
   readonly message: string;
   readonly path?: string;
+  readonly suggestedFix?: string;
 }
+
+export type PhotonicDiagnosticDecode =
+  | { readonly ok: true; readonly value: PhotonicDiagnostic }
+  | { readonly ok: false; readonly diagnostic: PhotonicDiagnostic };
+
+const PHOTONIC_DIAGNOSTIC_ALLOWED: readonly string[] = [
+  "schema",
+  "code",
+  "severity",
+  "message",
+  "path",
+  "suggestedFix",
+];
+const PHOTONIC_DIAGNOSTIC_REQUIRED: readonly string[] = [
+  "schema",
+  "code",
+  "severity",
+  "message",
+];
+const PHOTONIC_DIAGNOSTIC_SEVERITIES: readonly PhotonicDiagnosticSeverity[] = [
+  "warning",
+  "error",
+];
 
 export interface PhotonicPlan {
   readonly name: string;
@@ -109,18 +136,19 @@ export function validateOpticalSignal(
 
   if (
     !Number.isFinite(signal.amplitude.value) ||
+    Object.is(signal.amplitude.value, -0) ||
     signal.amplitude.value < 0 ||
     signal.amplitude.value > 1
   ) {
     diagnostics.push(createPhotonicDiagnostic(
       "Galerina_PHOTONIC_AMPLITUDE_INVALID",
       "error",
-      "Amplitude must be a finite value from 0 to 1.",
+      "Amplitude must be a finite value from 0 to 1, excluding IEEE signed zero.",
       `${path}.amplitude.value`,
     ));
   }
 
-  return diagnostics;
+  return freezePhotonicDiagnostics(diagnostics);
 }
 
 export function validatePhotonicMapping(
@@ -174,7 +202,7 @@ export function validatePhotonicMapping(
     );
   });
 
-  return diagnostics;
+  return freezePhotonicDiagnostics(diagnostics);
 }
 
 export function createPhotonicReport(plan: PhotonicPlan): PhotonicReport {
@@ -225,7 +253,13 @@ export function validatePhotonicPlan(
     );
   });
 
-  return diagnostics;
+  return freezePhotonicDiagnostics(diagnostics);
+}
+
+function freezePhotonicDiagnostics(
+  diagnostics: readonly PhotonicDiagnostic[],
+): readonly PhotonicDiagnostic[] {
+  return Object.freeze([...diagnostics]);
 }
 
 function createPhotonicDiagnostic(
@@ -233,11 +267,79 @@ function createPhotonicDiagnostic(
   severity: PhotonicDiagnosticSeverity,
   message: string,
   path?: string,
+  suggestedFix?: string,
 ): PhotonicDiagnostic {
-  return {
+  return Object.freeze({
+    schema: PHOTONIC_DIAGNOSTIC_SCHEMA,
     code,
     severity,
     message,
     ...(path === undefined ? {} : { path }),
+    ...(suggestedFix === undefined ? {} : { suggestedFix }),
+  });
+}
+
+function capturePhotonicDiagnosticRecord(value: unknown): Record<string, unknown> | undefined {
+  try {
+    if (typeof value !== "object" || value === null || Array.isArray(value) ||
+        Object.getPrototypeOf(value) !== Object.prototype) {
+      return undefined;
+    }
+    const captured: Record<string, unknown> = {};
+    for (const key of Reflect.ownKeys(value)) {
+      if (typeof key !== "string" || !PHOTONIC_DIAGNOSTIC_ALLOWED.includes(key)) {
+        return undefined;
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) {
+        return undefined;
+      }
+      captured[key] = descriptor.value;
+    }
+    if (PHOTONIC_DIAGNOSTIC_REQUIRED.some((key) => !Object.prototype.hasOwnProperty.call(captured, key))) {
+      return undefined;
+    }
+    return captured;
+  } catch {
+    return undefined;
+  }
+}
+
+export function decodePhotonicDiagnostic(
+  value: unknown,
+  path = "diagnostic",
+): PhotonicDiagnosticDecode {
+  const invalid = (): PhotonicDiagnosticDecode => ({
+    ok: false,
+    diagnostic: createPhotonicDiagnostic(
+      "Galerina_PHOTONIC_DIAGNOSTIC_INVALID",
+      "error",
+      "A photonic diagnostic must be an exact fungi.photonic.diagnostic.v1 record.",
+      path,
+    ),
+  });
+  const record = capturePhotonicDiagnosticRecord(value);
+  if (record === undefined) return invalid();
+
+  const { schema, code, severity, message, path: locator, suggestedFix } = record;
+  if (schema !== PHOTONIC_DIAGNOSTIC_SCHEMA ||
+      typeof code !== "string" || code.trim().length === 0 ||
+      typeof severity !== "string" ||
+      !PHOTONIC_DIAGNOSTIC_SEVERITIES.includes(severity as PhotonicDiagnosticSeverity) ||
+      typeof message !== "string" || message.trim().length === 0 ||
+      (locator !== undefined && (typeof locator !== "string" || locator.trim().length === 0)) ||
+      (suggestedFix !== undefined && (typeof suggestedFix !== "string" || suggestedFix.trim().length === 0))) {
+    return invalid();
+  }
+
+  return {
+    ok: true,
+    value: createPhotonicDiagnostic(
+      code,
+      severity as PhotonicDiagnosticSeverity,
+      message,
+      locator === undefined ? undefined : locator,
+      suggestedFix === undefined ? undefined : suggestedFix,
+    ),
   };
 }

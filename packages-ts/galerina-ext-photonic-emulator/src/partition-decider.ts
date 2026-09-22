@@ -84,7 +84,10 @@ export function meechRealizedRatio(): { idealRatio: number; realizedRatio: numbe
  * the vote = Var_closed_form / N. A degraded lane whose SYSTEMATIC ADC-quantization floor
  * alone exceeds the target returns Infinity (voting cannot beat a systematic floor) ⇒ refuse.
  */
+const MAX_KERNEL_N = 4_096;
+
 export function requiredRedundancy(n: number, phys: PhysParams, tol: number): number {
+  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_KERNEL_N) return Infinity;
   const span = adcRange(n);
   const w = new Int8Array(n).fill(1), a = new Int32Array(n).fill(3); // conservative all-active worst case
   const varCF = analogVarianceClosedForm(w, a, n, phys);
@@ -132,9 +135,9 @@ export class PartitionDecider {
     }
 
     const n = kernel.n;
-    // (M6) fail-closed on garbage input.
-    if (!Number.isFinite(n) || n < 1) {
-      return { target: "digital", reason: "FAIL-CLOSED: n missing/NaN/<1 → digital" };
+    // (M6) fail-closed on garbage input and oversized kernels.
+    if (!Number.isSafeInteger(n) || n < 1 || n > MAX_KERNEL_N) {
+      return { target: "digital", reason: "FAIL-CLOSED: n missing/NaN/<1/oversized → digital" };
     }
 
     // Required votes from D1's real variance (or supplied). Infeasible lane ⇒ refuse.

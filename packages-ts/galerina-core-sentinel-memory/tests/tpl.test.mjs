@@ -53,6 +53,15 @@ test("byteLength + block reflect the allocated compute block", () => {
   assert.equal(pool.segmentOf(tpl.block.ptr), "compute");
 });
 
+test("a freed TPL buffer cannot access a reused allocation", () => {
+  const pool = mkPool();
+  const tpl = new TPLStateBuffer(pool, 4);
+  tpl.setTrit(0, 1);
+  pool.free(tpl.block.ptr);
+  const err = caught(() => tpl.setTrit(0, -1));
+  assert.ok(err instanceof SecurityTrap);
+});
+
 test("corruption sentinel (enc=3) read trips LSM-TRIT-CORRUPT", () => {
   const pool = mkPool();
   const tpl = new TPLStateBuffer(pool, 4);

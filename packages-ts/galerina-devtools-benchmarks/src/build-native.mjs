@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,16 +28,22 @@ const CPP_OUT = {
   "six-digit-guess":      "bench-guess",
 };
 
-function tryCmd(label, cmd, opts = {}) {
-  try {
-    execSync(cmd, { stdio: "pipe", ...opts });
+function tryCmd(label, file, args, opts = {}) {
+  const result = spawnSync(file, args, {
+    encoding: "utf8",
+    shell: false,
+    windowsHide: true,
+    timeout: 120_000,
+    stdio: "pipe",
+    ...opts,
+  });
+  if (result.status === 0) {
     console.log(`  [ok]   ${label}`);
     return true;
-  } catch (e) {
-    const msg = String(e.stderr || e.message || e).split("\n")[0].slice(0, 90);
-    console.log(`  [skip] ${label} — ${msg}`);
-    return false;
   }
+  const msg = String(result.stderr || result.error?.message || result.status).split("\n")[0].slice(0, 90);
+  console.log(`  [skip] ${label} — ${msg}`);
+  return false;
 }
 
 const dirs = readdirSync(benchDir).filter((d) => {
@@ -56,19 +62,17 @@ for (const d of dirs) {
   // ── Rust: generic (portable) + AVX2-tuned ───────────────────────────────
   if (existsSync(rs)) {
     rsDirs++;
-    if (tryCmd(`Rust generic (${d})`,
-        `rustc -O -o "${join(dir, "bench-native-rust.exe")}" "${rs}"`)) rustGen++;
-    if (tryCmd(`Rust AVX2 (${d})`,
-        `rustc -O -C target-feature=+avx2,+fma -o "${join(dir, "bench-native-avx2.exe")}" "${rs}"`)) rustAvx2++;
+    if (tryCmd(`Rust generic (${d})`, "rustc", ["-O", "-o", join(dir, "bench-native-rust.exe"), rs])) rustGen++;
+    if (tryCmd(`Rust AVX2 (${d})`, "rustc", ["-O", "-C", "target-feature=+avx2,+fma", "-o", join(dir, "bench-native-avx2.exe"), rs])) rustAvx2++;
   }
 
   // ── C++: only the dirs whose output names runner.mjs recognises ──────────
   if (existsSync(cpp) && CPP_OUT[d]) {
     const out = join(dir, CPP_OUT[d]);
     const ok =
-      tryCmd(`C++ g++ (${d})`,     `g++ -O2 -march=native -o "${out}" "${cpp}" -lm`) ||
-      tryCmd(`C++ clang++ (${d})`, `clang++ -O2 -march=native -o "${out}" "${cpp}" -lm`) ||
-      tryCmd(`C++ MSVC cl (${d})`, `cl /O2 /EHsc "${cpp}" /Fe:"${out}.exe"`, { cwd: dir });
+      tryCmd(`C++ g++ (${d})`, "g++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
+      tryCmd(`C++ clang++ (${d})`, "clang++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
+      tryCmd(`C++ MSVC cl (${d})`, "cl", ["/O2", "/EHsc", cpp, `/Fe:${out}.exe`], { cwd: dir });
     if (ok) cppN++;
   } else if (existsSync(cpp)) {
     console.log(`  [note] C++ source present but runner.mjs has no lookup name for "${d}" — skipping (Rust covers the native column).`);

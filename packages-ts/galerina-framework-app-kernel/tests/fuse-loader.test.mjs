@@ -282,6 +282,40 @@ test("a package cannot supply the trust anchor used to admit its own signature",
   }
 });
 
+test("a path-shaped keyId cannot escape the admitted governance directory", async () => {
+  const { root, pkg } = copyDemo();
+  try {
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519", {
+      publicKeyEncoding: { type: "spki", format: "pem" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+    const keyId = "x/../../plugin/attacker";
+    const govDir = join(root, "governance");
+    const pluginDir = join(root, "plugin");
+    mkdirSync(govDir, { recursive: true });
+    mkdirSync(pluginDir, { recursive: true });
+    writeFileSync(join(pluginDir, "attacker.pub.pem"), publicKey);
+
+    const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    const { governanceSignature: _drop, ...withoutSig } = manifest;
+    const bytes = Buffer.from(JSON.stringify(withoutSig, null, 2));
+    const signature = cryptoSign(null, bytes, createPrivateKey(privateKey)).toString("base64");
+    writeFileSync(manifestPath, JSON.stringify({
+      ...withoutSig,
+      governanceSignature: { algorithm: "Ed25519", keyId, signature, signedAt: new Date().toISOString() },
+    }, null, 2));
+
+    await assert.rejects(
+      () => fusePackage(pkg, { governanceDir: govDir, requireSignature: true, warn: () => {} }),
+      /FUNGI-FUSE-(UNSIGNED|NO-PUBKEY|TRUST|SIG)/,
+      "keyId path components must not select a public key outside governanceDir",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // ── 5b — REVOCATION (audit fix): a validly-signed but REVOKED key is refused at the fuse gate ──
 test("a validly-signed manifest whose signing key is REVOKED is refused (fail-closed)", async () => {
   const { root, pkg } = copyDemo();

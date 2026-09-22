@@ -36,6 +36,9 @@ export class SynchronizationGate {
 
   /** Record the boot mapping: this physical instant corresponds to clock.now(). */
   syncToPhysical(physicalMs: number): void {
+    if (!Number.isFinite(physicalMs)) {
+      throw new PrecisionFault("LST-SYNC-002", "physicalMs must be a finite number");
+    }
     this.#bootPhysicalMs = physicalMs;
     this.#bootTick = this.#clock.now();
   }
@@ -47,6 +50,9 @@ export class SynchronizationGate {
         "LST-SYNC-001",
         "syncToPhysical must be called before expectedTicks",
       );
+    }
+    if (!Number.isFinite(physicalMs) || !Number.isFinite(ticksPerMs) || ticksPerMs <= 0) {
+      throw new PrecisionFault("LST-SYNC-002", "physicalMs and ticksPerMs must be finite, and ticksPerMs must be positive");
     }
     return (physicalMs - this.#bootPhysicalMs) * ticksPerMs;
   }

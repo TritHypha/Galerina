@@ -9,7 +9,6 @@
 //   scrub      — hard-erase a checkpoint (zero-overwrite then unlink) so a
 //                decommissioned snapshot leaves no recoverable residue.
 
-import { writeFileSync, statSync, rmSync } from "node:fs";
 import { HardenedBorderViolation } from "./errors.js";
 import { StateSerializer, type Snapshot } from "./state-serializer.js";
 import { AtomicWriter } from "./atomic-writer.js";
@@ -34,11 +33,13 @@ export class ColdBootOrchestrator {
   readonly #serializer: StateSerializer;
   readonly #writer: AtomicWriter;
   readonly #restoreAuthority: RestoreVerdictAuthority;
+  #minLogicalTick: number;
 
   constructor(
     serializer: StateSerializer,
     writer: AtomicWriter,
     restoreAuthority: RestoreVerdictAuthority,
+    minLogicalTick = 0,
   ) {
     if (
       restoreAuthority === null
@@ -49,15 +50,26 @@ export class ColdBootOrchestrator {
     ) {
       throw authorityRefusal("missing or incorrectly identified decision port");
     }
+    if (!Number.isSafeInteger(minLogicalTick) || minLogicalTick < 0) {
+      throw authorityRefusal("rollback floor is not a non-negative safe integer");
+    }
     this.#serializer = serializer;
     this.#writer = writer;
     this.#restoreAuthority = restoreAuthority;
+    this.#minLogicalTick = minLogicalTick;
   }
 
   /** Serialise + durably persist a checkpoint; returns the snapshot written. */
   checkpoint(name: string, payload: unknown, logicalTick: number): Snapshot {
+    if (!Number.isSafeInteger(logicalTick) || logicalTick < this.#minLogicalTick) {
+      throw new HardenedBorderViolation(
+        "LSS-ROLLBACK-001",
+        `checkpoint logicalTick ${String(logicalTick)} is below the rollback floor ${String(this.#minLogicalTick)}`,
+      );
+    }
     const snap = this.#serializer.serialize(payload, logicalTick);
     this.#writer.write(name, snap);
+    this.#minLogicalTick = logicalTick;
     return snap;
   }
 
@@ -78,6 +90,12 @@ export class ColdBootOrchestrator {
 
     const integrityOk = this.#serializer.verify(snap);
     this.#requireRestoreVerdict(true, integrityOk);
+    if (!Number.isSafeInteger(snap.logicalTick) || snap.logicalTick < this.#minLogicalTick) {
+      throw new HardenedBorderViolation(
+        "LSS-ROLLBACK-001",
+        `snapshot logicalTick ${String(snap.logicalTick)} is below the rollback floor ${String(this.#minLogicalTick)}`,
+      );
+    }
     if (!integrityOk) {
       // Keep StateSerializer as the single owner of the integrity trap. If a
       // future defect ever makes deserialize accept an input that verify
@@ -109,18 +127,8 @@ export class ColdBootOrchestrator {
     return verdict;
   }
 
-  /** Hard-erase a checkpoint: zero-overwrite the bytes, then unlink. No-op if absent. */
+  /** Hard-erase a checkpoint: zero-overwrite the admitted regular file, then unlink. No-op if absent. */
   scrub(name: string): void {
-    // The AtomicWriter owns the on-disk layout; ask it for the live path.
-    const live = this.#writer.livePath(name);
-    let size: number;
-    try {
-      size = statSync(live).size;
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") return; // nothing to scrub
-      throw err;
-    }
-    writeFileSync(live, Buffer.alloc(size, 0)); // overwrite contents with zeros
-    rmSync(live, { force: true }); // then unlink
+    this.#writer.scrub(name);
   }
 }

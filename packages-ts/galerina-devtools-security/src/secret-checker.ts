@@ -36,7 +36,10 @@ const CREDENTIAL_PATTERNS: ReadonlyArray<{ re: RegExp; label: string }> = [
 
 /** Normalise a key name for lookup. */
 function normaliseKey(key: string): string {
-  return key.toLowerCase().replace(/[-.\s]/g, "_");
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase()
+    .replace(/[-.\s]+/g, "_");
 }
 
 /**

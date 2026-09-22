@@ -54,10 +54,16 @@ export function loadRegistry(rootDir = ".") {
   return data;
 }
 
-/** The set of revoked signing-key ids. Missing registry → empty set; malformed → throws. */
+/** The set of revoked signing-key ids. Missing registry → empty set unless a pin is present (then throw). */
 export function loadRevokedKeyIds(rootDir = ".") {
   const data = loadRegistry(rootDir);
-  if (data === null) return new Set();
+  if (data === null) {
+    const pin = loadTrustAnchor(rootDir);
+    if (pin) {
+      throw new Error(`revocation registry is MISSING, but trust anchor ${pin} is pinned — a pinned deployment requires a signed registry`);
+    }
+    return new Set();
+  }
   return new Set(
     data.revoked
       .map((e) => (e && typeof e.keyId === "string" ? e.keyId : null))
@@ -140,9 +146,13 @@ function loadTrustAnchor(rootDir) {
 }
 
 function assertRegistryObjectTrustworthy(data, rootDir = ".") {
-  if (data === null) return { present: false, signed: false, valid: false };
-
   const pin = loadTrustAnchor(rootDir); // throws if the anchor file is malformed
+  if (data === null) {
+    if (pin) {
+      throw new Error(`revocation registry is MISSING, but trust anchor ${pin} is pinned — a pinned deployment requires a signed registry`);
+    }
+    return { present: false, signed: false, valid: false };
+  }
 
   if (!data.signature) {
     // A pinned deployment REQUIRES a signed registry — an unsigned one is untrustworthy.

@@ -7,6 +7,10 @@
 // `galerin`, so it cannot recreate the `galerinaa` typo). Dry-run unless --write.
 //   node scripts/brand-audit.mjs . --json | node scripts/fix-logicn-brand.mjs [--write]
 import { readFileSync, writeFileSync } from "node:fs";
+import { isAbsolute, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const WRITE = process.argv.includes("--write");
 const audit = JSON.parse(readFileSync(0, "utf8"));
 const SKIP_EXT = /\.(pdb|exe|dll|so|dylib|o|a|lib|node|wasm|lindex)$/i;
@@ -19,8 +23,12 @@ const files = [...new Set(audit.findings.STRAGGLER.map((f) => f.file))]
   .filter((f) => !/ClaragonwwwLOtest/.test(f));    // tracked junk — removed separately
 let changed = 0, total = 0;
 for (const rel of files) {
+  if (typeof rel !== "string" || rel.includes("\0") || rel.split(/[\\/]/).includes("..") || isAbsolute(rel) || /^[A-Za-z]:/.test(rel)) continue;
+  const abs = resolve(ROOT, rel);
+  const fromRoot = relative(ROOT, abs);
+  if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) continue;
   let buf;
-  try { buf = readFileSync(rel); } catch { continue; }
+  try { buf = readFileSync(abs); } catch { continue; }
   const orig = buf.toString("latin1");             // byte-exact (preserves any non-ASCII verbatim)
   const next = orig
     .replace(/LogicN/g, "Galerina")

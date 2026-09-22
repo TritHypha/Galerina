@@ -292,7 +292,14 @@ async function collectPath(
   path: string,
   files: ProjectGraphWorkspaceFile[],
 ): Promise<void> {
+  if (path.split(/[\\/]/).includes("..")) {
+    return;
+  }
   const absolutePath = resolve(cwd, path);
+  const fromCwd = relative(cwd, absolutePath).replace(/\\/g, "/");
+  if (fromCwd === ".." || fromCwd.startsWith("../") || fromCwd.startsWith("/") || /^[A-Za-z]:/.test(fromCwd)) {
+    return;
+  }
   let pathStat;
 
   try {
@@ -304,6 +311,10 @@ async function collectPath(
   if (pathStat.isDirectory()) {
     const entries = await readdir(absolutePath, { withFileTypes: true });
     for (const entry of entries) {
+      const maybeLink = entry as unknown as { isSymbolicLink?: () => boolean };
+      if (typeof maybeLink.isSymbolicLink === "function" && maybeLink.isSymbolicLink()) {
+        continue;
+      }
       const childPath = join(path, entry.name);
       const normalizedChildPath = childPath.replace(/\\/g, "/");
       if (shouldSkipPath(normalizedChildPath)) {

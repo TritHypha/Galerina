@@ -93,22 +93,40 @@ test("audit event carries the typed error code for a rejected request", async ()
   assert.equal(events[0].errorCode, "unauthorized");
 });
 
-test("a 404 (no route matched) is still audited, with no policy provenance", async () => {
-  const sink = new InMemoryAuditSink();
+test("unmatched 404/405 traffic does not consume mandatory audit capacity", async () => {
+  const sink = new InMemoryAuditSink({ capacity: 1 });
+  let effects = 0;
   const k = createAppKernel({
-    routes: [{ method: "GET", path: "/health", handler: "health", auth: { mode: "public" } }],
-    dispatch: { health: () => ({ body: {} }) },
+    routes: [{
+      method: "GET",
+      path: "/health",
+      handler: "health",
+      auth: { mode: "public" },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      health: () => {
+        effects += 1;
+        return { status: 200, body: { status: "up" } };
+      },
+    },
     auditSink: sink,
   });
 
-  await k.handle(req({ method: "GET", path: "/nope" }));
+  const missing = await k.handle(req({ method: "GET", path: "/nope", requestId: "rq-404" }));
+  assert.equal(missing.status, 404);
+  const wrongMethod = await k.handle(req({ method: "POST", path: "/health", requestId: "rq-405" }));
+  assert.equal(wrongMethod.status, 405);
   await tick();
-  const events = sink.drained();
-  assert.equal(events.length, 1);
-  assert.equal(events[0].status, 404);
-  assert.equal(events[0].errorCode, "route_not_found");
-  assert.deepEqual([...events[0].appliedDefaults], []); // no route → no resolved policy
-  assert.deepEqual([...events[0].relaxations], []);
+  assert.equal(sink.drained().length, 0, "unmatched routes must not retain audit evidence");
+  assert.equal(effects, 0);
+
+  const admitted = await k.handle(req({ requestId: "rq-matched" }));
+  assert.equal(admitted.status, 200);
+  assert.equal(effects, 1, "mandatory-audit routes must retain capacity after unmatched traffic");
+  await tick();
+  assert.equal(sink.drained().length, 1);
+  assert.equal(sink.drained()[0].requestId, "rq-matched");
 });
 
 // ── non-blocking guarantee (item 2b) ── a deliberately SLOW sink must NOT delay handle().

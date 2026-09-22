@@ -88,10 +88,13 @@ async function compileCandidate() {
 describe("project-graph package-owned Fungi resource transition decision", () => {
   it("requires the governed asset and complete source transition table", () => {
     const packageJson = JSON.parse(readFileSync(PACKAGE, "utf8"));
-    const loadedAssets = packageJson.packageGraph?.loadedAssets ?? [];
+    const productAssets = packageJson.packageGraph?.productAssets ?? [];
     assert.ok(
-      loadedAssets.includes(ASSET_RELATIVE),
-      `missing loaded asset: ${ASSET_RELATIVE}`,
+      productAssets.some((entry) =>
+        entry?.tree === "packages/fungi/products/galerina/rd0873-devtools-project-graph"
+        && entry?.path === "resource-transition.fungi"
+      ),
+      "missing productAssets declaration for resource-transition.fungi",
     );
     assert.equal(existsSync(ASSET), true, `missing governed Fungi asset: ${ASSET_RELATIVE}`);
 

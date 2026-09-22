@@ -14,7 +14,13 @@
   ],
   "type": "module",
   "packageGraph": {
-    "loadedAssets": []
+    "loadedAssets": [],
+    "productAssets": [
+      {
+        "tree": "packages/fungi/products/galerina/rd0873-devtools-project-graph",
+        "path": "resource-transition.fungi"
+      }
+    ]
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

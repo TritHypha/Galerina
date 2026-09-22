@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const IS_WIN = process.platform === "win32";
-const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", shell: IS_WIN });
+const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", shell: false, windowsHide: true });
 
 // Three disjoint cases: "tmf" (all-lower), "Tmf" (identifier), "TMF" (const/env). No mixed forms occur.
 const rebrand = (s) => s.split("tmf").join("spore").split("Tmf").join("Spore").split("TMF").join("SPORE");

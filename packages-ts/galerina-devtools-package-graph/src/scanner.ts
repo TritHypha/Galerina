@@ -37,7 +37,7 @@
  *   import("spec")  (dynamic)   import plugin <mode> "spec" as Name { … }  (.fungi)
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
 
 export type EdgeKind = "internal" | "node_core" | "workspace" | "thirdparty";
@@ -64,11 +64,18 @@ export interface ScanResult {
   readonly entryPoints: readonly string[];
   readonly loadedAssets: readonly string[];
   readonly allowOrphans: readonly AllowedOrphan[];
+  readonly productAssets: readonly ProductAsset[];
 }
 
 export interface AllowedOrphan {
   readonly path: string;
   readonly reason: string;
+}
+
+/** Foreign fungi-product file owned outside this package; never a `../` loadedAsset. */
+export interface ProductAsset {
+  readonly tree: string;
+  readonly path: string;
 }
 
 export interface PackageGraphConfig {
@@ -77,6 +84,7 @@ export interface PackageGraphConfig {
   readonly entryPoints?: readonly string[];
   readonly loadedAssets?: readonly string[];
   readonly allowOrphans?: readonly AllowedOrphan[];
+  readonly productAssets?: readonly ProductAsset[];
 }
 
 /** Default source roots — the canonical app template puts governed source in src/ and its host in host/. */
@@ -142,7 +150,8 @@ function listSourceFiles(dir: string, extensions: readonly string[]): string[] {
   for (const name of entries) {
     const full = join(dir, name);
     let s;
-    try { s = statSync(full); } catch { continue; }
+    try { s = lstatSync(full); } catch { continue; }
+    if (s.isSymbolicLink()) continue;
     if (s.isDirectory()) {
       if (name === "node_modules" || name === "dist" || name === ".myco") continue;
       out.push(...listSourceFiles(full, extensions));
@@ -161,10 +170,12 @@ function isSourceFile(name: string, extensions: readonly string[]): boolean {
 interface PackageMeta {
   readonly name: string;
   readonly roots: readonly string[];
+  readonly rootsExplicit: boolean;
   readonly extensions: readonly string[];
   readonly entryPoints: readonly string[];
   readonly loadedAssets: readonly string[];
   readonly allowOrphans: readonly AllowedOrphan[];
+  readonly productAssets: readonly ProductAsset[];
 }
 
 /** Read the package name and (optional) `packageGraph` scan config. A provided config REPLACES the default. */
@@ -185,10 +196,12 @@ function readPackageMeta(scopePath: string): PackageMeta {
   return {
     name,
     roots: configuredStrings(cfg, "roots", DEFAULT_ROOTS, false),
+    rootsExplicit: Object.prototype.hasOwnProperty.call(cfg, "roots"),
     extensions: configuredStrings(cfg, "extensions", DEFAULT_EXTENSIONS, false),
     entryPoints: configuredStrings(cfg, "entryPoints", [], true),
     loadedAssets: configuredStrings(cfg, "loadedAssets", [], true),
     allowOrphans: configuredAllowedOrphans(cfg.allowOrphans),
+    productAssets: configuredProductAssets(cfg.productAssets),
   };
 }
 
@@ -211,6 +224,83 @@ function configuredStrings(
     throw new Error(`packageGraph.${key} must be ${allowEmpty ? "an" : "a non-empty"} array of non-empty strings`);
   }
   return [...value] as string[];
+}
+
+function configuredProductAssets(value: unknown): ProductAsset[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new Error("packageGraph.productAssets must be an array");
+  return value.map((entry, index) => {
+    if (!isRecord(entry) ||
+        typeof entry.tree !== "string" || entry.tree.length === 0 ||
+        typeof entry.path !== "string" || entry.path.length === 0) {
+      throw new Error(`packageGraph.productAssets[${index}] must contain non-empty tree and path strings`);
+    }
+    return { tree: entry.tree, path: entry.path };
+  });
+}
+
+function findRepoRoot(scopePath: string): string {
+  let dir = resolve(scopePath);
+  for (;;) {
+    if (existsSync(join(dir, "galerina.workspace.json"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) {
+      throw new Error("packageGraph.productAssets require a repository root (galerina.workspace.json)");
+    }
+    dir = parent;
+  }
+}
+
+function canonicalRelative(kind: string, value: string): string {
+  const posix = value.replace(/\\/g, "/");
+  if (value !== posix || posix.length === 0 || isAbsolute(value) || /^[A-Za-z]:/.test(posix)) {
+    throw new Error(`packageGraph.${kind} '${value}' must be a canonical relative path`);
+  }
+  const canonical = normalize(posix).split(sep).join("/");
+  if (canonical !== posix || canonical === "." || canonical === ".." || canonical.startsWith("../") || canonical.split("/").includes("..")) {
+    throw new Error(`packageGraph.${kind} '${value}' must be canonical and contain no '..'`);
+  }
+  return canonical;
+}
+
+function validateProductAssets(scopePath: string, assets: readonly ProductAsset[]): ProductAsset[] {
+  if (assets.length === 0) return [];
+  const repoRoot = findRepoRoot(scopePath);
+  const seen = new Set<string>();
+  return assets.map((asset, index) => {
+    const tree = canonicalRelative(`productAssets[${index}].tree`, asset.tree);
+    const path = canonicalRelative(`productAssets[${index}].path`, asset.path);
+    const key = `${tree}/${path}`;
+    if (seen.has(key)) {
+      throw new Error(`packageGraph.productAssets '${key}' is declared more than once`);
+    }
+    seen.add(key);
+    const treeAbs = resolve(repoRoot, tree);
+    const fromRepo = relative(repoRoot, treeAbs).split(sep).join("/");
+    if (fromRepo === ".." || fromRepo.startsWith("../")) {
+      throw new Error(`packageGraph.productAssets[${index}].tree '${asset.tree}' must stay inside the repository`);
+    }
+    const fileAbs = resolve(treeAbs, path);
+    const fromTree = relative(treeAbs, fileAbs).split(sep).join("/");
+    if (fromTree === ".." || fromTree.startsWith("../")) {
+      throw new Error(`packageGraph.productAssets[${index}].path '${asset.path}' must stay inside tree '${tree}'`);
+    }
+    const fromPackage = relative(scopePath, fileAbs).split(sep).join("/");
+    if (!(fromPackage === ".." || fromPackage.startsWith("../"))) {
+      throw new Error(`packageGraph.productAssets[${index}] must identify a file outside the declaring package`);
+    }
+    if (!existsSync(fileAbs)) {
+      throw new Error(`packageGraph.productAssets[${index}] path '${tree}/${path}' does not exist`);
+    }
+    let fileStat;
+    try { fileStat = statSync(fileAbs); } catch {
+      throw new Error(`packageGraph.productAssets[${index}] path '${tree}/${path}' cannot be inspected`);
+    }
+    if (!fileStat.isFile()) {
+      throw new Error(`packageGraph.productAssets[${index}] path '${tree}/${path}' must identify a file`);
+    }
+    return { tree, path };
+  }).sort((a, b) => `${a.tree}/${a.path}`.localeCompare(`${b.tree}/${b.path}`));
 }
 
 function configuredAllowedOrphans(value: unknown): AllowedOrphan[] {
@@ -299,12 +389,150 @@ function validateOwnership(
   };
 }
 
-/** Strip line and block comments so commented-out imports are not counted. `;;` is a Galerina line comment. */
+const REGEX_PREFIX_KEYWORDS = new Set([
+  "return", "case", "throw", "typeof", "void", "delete", "await", "yield", "in", "of", "new", "instanceof",
+]);
+
+/** Strip line and block comments so commented-out imports are not counted. `;;` is a Galerina line comment.
+ *  String/template/regex contents are copied verbatim so a marker inside a literal cannot hide a real import. */
 function stripComments(src: string, isFungi: boolean): string {
-  let out = src
-    .replace(/\/\*[\s\S]*?\*\//g, "")       // block comments
-    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");  // line comments (avoid eating "://")
-  if (isFungi) out = out.replace(/;;[^\n]*/g, ""); // Galerina govComment line comments
+  let out = "";
+  let i = 0;
+  const n = src.length;
+  let canRegex = true;
+  while (i < n) {
+    const c = src[i]!;
+    const n1 = src[i + 1];
+    if (c === " " || c === "\t" || c === "\r") {
+      out += c;
+      i += 1;
+      continue;
+    }
+    if (c === "\n") {
+      out += c;
+      i += 1;
+      canRegex = true;
+      continue;
+    }
+    if (c === "\"" || c === "'" || c === "`") {
+      out += c;
+      i += 1;
+      while (i < n) {
+        const ch = src[i]!;
+        out += ch;
+        if (ch === "\\" && i + 1 < n) {
+          out += src[i + 1]!;
+          i += 2;
+          continue;
+        }
+        if (ch === c) {
+          i += 1;
+          break;
+        }
+        i += 1;
+      }
+      canRegex = false;
+      continue;
+    }
+    if (c === "/" && n1 === "*") {
+      i += 2;
+      while (i + 1 < n && !(src[i] === "*" && src[i + 1] === "/")) i += 1;
+      i += 2;
+      continue;
+    }
+    if (c === "/" && n1 === "/") {
+      while (i < n && src[i] !== "\n") i += 1;
+      continue;
+    }
+    if (isFungi && c === ";" && n1 === ";") {
+      while (i < n && src[i] !== "\n") i += 1;
+      continue;
+    }
+    if (!isFungi && c === "/" && canRegex) {
+      out += c;
+      i += 1;
+      let inClass = false;
+      while (i < n) {
+        const ch = src[i]!;
+        out += ch;
+        if (ch === "\\" && i + 1 < n) {
+          out += src[i + 1]!;
+          i += 2;
+          continue;
+        }
+        if (inClass) {
+          if (ch === "]") inClass = false;
+        } else if (ch === "[") {
+          inClass = true;
+        } else if (ch === "/") {
+          i += 1;
+          break;
+        } else if (ch === "\n") {
+          i += 1;
+          canRegex = true;
+          break;
+        }
+        i += 1;
+      }
+      while (i < n) {
+        const flag = src[i]!;
+        if (flag < "a" || flag > "z") break;
+        out += flag;
+        i += 1;
+      }
+      canRegex = false;
+      continue;
+    }
+    if ((c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_" || c === "$") {
+      let id = c;
+      out += c;
+      i += 1;
+      while (i < n) {
+        const ch = src[i]!;
+        if ((ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9") || ch === "_" || ch === "$") {
+          id += ch;
+          out += ch;
+          i += 1;
+          continue;
+        }
+        break;
+      }
+      canRegex = REGEX_PREFIX_KEYWORDS.has(id);
+      continue;
+    }
+    if (c >= "0" && c <= "9") {
+      out += c;
+      i += 1;
+      while (i < n) {
+        const ch = src[i]!;
+        if ((ch >= "0" && ch <= "9") || ch === "_" || ch === ".") {
+          out += ch;
+          i += 1;
+          continue;
+        }
+        break;
+      }
+      canRegex = false;
+      continue;
+    }
+    if ((c === "+" || c === "-") && n1 === c) {
+      const prefix = canRegex;
+      out += c;
+      out += n1;
+      i += 2;
+      canRegex = prefix;
+      continue;
+    }
+    if (c === ")" || c === "]" || c === "}") {
+      out += c;
+      i += 1;
+      canRegex = false;
+      continue;
+    }
+    out += c;
+    i += 1;
+    canRegex = true;
+  }
   return out;
 }
 
@@ -351,11 +579,32 @@ interface OwningPackage {
   readonly kind: "workspace" | "thirdparty";
 }
 
+function admitScanRoot(scopePath: string, root: string, required: boolean): string | null {
+  const canonical = canonicalRelative("roots", root);
+  const absolute = resolve(scopePath, canonical);
+  let link;
+  try {
+    link = lstatSync(absolute);
+  } catch {
+    if (required) throw new Error(`packageGraph.roots '${root}' does not exist`);
+    return null;
+  }
+  if (link.isSymbolicLink() || !link.isDirectory()) {
+    throw new Error(`packageGraph.roots '${root}' must be a real directory inside the package`);
+  }
+  const fromScope = relative(scopePath, absolute).split(sep).join("/");
+  if (fromScope === ".." || fromScope.startsWith("../")) {
+    throw new Error(`packageGraph.roots '${root}' must stay inside the package`);
+  }
+  return canonical;
+}
+
 export function scanPackage(scopePath: string): ScanResult {
   const meta = readPackageMeta(scopePath);
 
-  // Roots that actually exist on disk (a configured-but-absent root is simply skipped).
-  const roots = meta.roots.filter((r) => existsSync(join(scopePath, r)));
+  const roots = meta.roots
+    .map((root) => admitScanRoot(scopePath, root, meta.rootsExplicit))
+    .filter((root): root is string => root !== null);
   const sourceFiles = roots.flatMap((r) => listSourceFiles(join(scopePath, r), meta.extensions));
   const pkgCache = new Map<string, OwningPackage | null>();
 
@@ -428,5 +677,6 @@ export function scanPackage(scopePath: string): ScanResult {
     extensions: meta.extensions,
     files,
     ...ownership,
+    productAssets: validateProductAssets(scopePath, meta.productAssets),
   };
 }

@@ -69,10 +69,19 @@ export function verifyIndexIntegrity(index: WorkspaceIndex): boolean {
 // File system walk
 // ---------------------------------------------------------------------------
 
+const MAX_INTEL_FILES = 4096;
+const MAX_INTEL_FILE_BYTES = 1_048_576;
+const MAX_INTEL_TOTAL_BYTES = 32 * 1024 * 1024;
+const MAX_INTEL_DEPTH = 24;
+const MAX_INTEL_CACHE_BYTES = 8 * 1024 * 1024;
+
 async function walkFungiFiles(dir: string): Promise<string[]> {
   const results: string[] = [];
 
-  async function recurse(current: string): Promise<void> {
+  async function recurse(current: string, depth: number): Promise<void> {
+    if (depth > MAX_INTEL_DEPTH) {
+      throw new Error(`FUNGI-INTEL-003: workspace nesting exceeds ${MAX_INTEL_DEPTH}`);
+    }
     let entries;
     try {
       entries = await readdir(current, { withFileTypes: true });
@@ -80,19 +89,22 @@ async function walkFungiFiles(dir: string): Promise<string[]> {
       return;
     }
     for (const entry of entries) {
+      if (entry.isSymbolicLink()) continue;
       const fullPath = join(current, entry.name);
       if (entry.isDirectory()) {
-        // Skip node_modules and dist
         if (entry.name !== "node_modules" && entry.name !== "dist" && !entry.name.startsWith(".")) {
-          await recurse(fullPath);
+          await recurse(fullPath, depth + 1);
         }
       } else if (entry.isFile() && entry.name.endsWith(".fungi")) {
+        if (results.length >= MAX_INTEL_FILES) {
+          throw new Error(`FUNGI-INTEL-003: workspace contains more than ${MAX_INTEL_FILES} .fungi files`);
+        }
         results.push(fullPath);
       }
     }
   }
 
-  await recurse(dir);
+  await recurse(dir, 0);
   return results;
 }
 
@@ -102,6 +114,8 @@ async function walkFungiFiles(dir: string): Promise<string[]> {
 
 async function loadExistingIndex(indexPath: string): Promise<WorkspaceIndex | null> {
   try {
+    const st = await stat(indexPath);
+    if (!st.isFile() || st.size > MAX_INTEL_CACHE_BYTES) return null;
     const raw = await readFileAsync(indexPath, "utf-8");
     const parsed = JSON.parse(raw) as unknown;
     if (
@@ -193,24 +207,36 @@ export async function buildIndex(
   const newFileHashes: Record<string, string> = {};
   let filesIndexed = 0;
   let filesSkipped = 0;
+  let totalBytes = 0;
 
   for (const filePath of fungiFiles) {
     // Check mtime for incremental (fast pre-filter)
     let mtime = 0;
+    let fileBytes = 0;
     try {
       const st = await stat(filePath);
       mtime = st.mtimeMs;
+      fileBytes = st.size;
     } catch {
       // Skip unreadable files
       continue;
     }
 
-    // Read file content for SHA-256 differential check
+    if (fileBytes > MAX_INTEL_FILE_BYTES) {
+      throw new Error(`FUNGI-INTEL-003: ${filePath} exceeds ${MAX_INTEL_FILE_BYTES} bytes`);
+    }
+    totalBytes += fileBytes;
+    if (totalBytes > MAX_INTEL_TOTAL_BYTES) {
+      throw new Error(`FUNGI-INTEL-003: workspace source exceeds ${MAX_INTEL_TOTAL_BYTES} bytes`);
+    }
     let source = "";
     try {
       source = await readFile(filePath, "utf-8");
     } catch {
       continue;
+    }
+    if (Buffer.byteLength(source, "utf8") > MAX_INTEL_FILE_BYTES) {
+      throw new Error(`FUNGI-INTEL-003: ${filePath} exceeds ${MAX_INTEL_FILE_BYTES} bytes`);
     }
 
     // Compute SHA-256 of file content

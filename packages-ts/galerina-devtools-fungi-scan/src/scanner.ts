@@ -15,7 +15,7 @@
 // FINDING (counted, listed), never silently skipped.
 // =============================================================================
 
-import { readFileSync, readdirSync } from "node:fs";
+import { lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { lex, type Token } from "@galerina/core-compiler";
 import { scanInlineFixtures } from "./inline-fixtures.js";
@@ -119,11 +119,14 @@ export function discoverCorpus(root: string): { fungi: string[]; gate: string[] 
       return; // unreadable dir (junction stub etc.) — files inside are unreachable anyway
     }
     for (const e of entries) {
+      if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) {
         if (!SKIP_DIRS.has(e.name)) walk(join(dir, e.name));
       } else if (e.name.endsWith(".fungi")) {
+        if (fungi.length + gate.length >= 8192) return;
         fungi.push(join(dir, e.name));
       } else if (e.name.endsWith(".gate")) {
+        if (fungi.length + gate.length >= 8192) return;
         gate.push(join(dir, e.name));
       }
     }
@@ -160,7 +163,7 @@ export function findSignedPackageRoots(root: string): string[] {
       if (e.isFile() && e.name === "package.fungi.json") {
         try {
           const name = (JSON.parse(readFileSync(join(dir, e.name), "utf8")) as { name?: string }).name; // perf-allow — one descriptor read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
-          if (typeof name === "string") {
+          if (typeof name === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name) && !name.includes("..")) {
             const manifest = JSON.parse(readFileSync(join(dir, "dist", `${name}.lmanifest.json`), "utf8")) as { // perf-allow — one manifest read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
               governanceSignature?: { keyId?: unknown; signature?: unknown };
             };
@@ -356,7 +359,14 @@ export function scanCorpus(root: string): CorpusScan {
         : classifyCorpus(relPath);
       let source: string;
       try {
+        const st = lstatSync(abs);
+        if (st.isSymbolicLink() || !st.isFile() || st.size > 1_048_576) {
+          throw new Error("corpus file is not an admitted regular file under 1 MiB");
+        }
         source = readFileSync(abs, "utf8"); // perf-allow: loop-sync-io — one read per corpus file in a per-file CLI scan loop — distinct path per iteration, not hoistable
+        if (source.length > 1_048_576) {
+          throw new Error("corpus file exceeds 1 MiB after decode");
+        }
       } catch (err) {
         // fail-closed: unreadable file is a FINDING, not a skip
         files.push({

@@ -43,7 +43,7 @@ import {
 } from "./registry-generation-store.js";
 import {
   registryDurabilityProfileMatchesRotation,
-  type ProductionRegistryDurabilityProfile,
+  type ReleasedRegistryDurabilityProfile,
 } from "./registry-durability-production-admission.js";
 
 export interface AdvanceRegistryRotationOptions {
@@ -362,7 +362,7 @@ export interface AdvanceRegistryRotationStateOptions
   readonly state: RegistryRotationState;
   readonly admittedIndex: AdmittedRegistryRotationIndex;
   readonly candidateGeneration: PersistedRegistryGeneration;
-  readonly durabilityProfile: ProductionRegistryDurabilityProfile;
+  readonly durabilityProfile: ReleasedRegistryDurabilityProfile;
   readonly acceptedCheckpointDigest: string;
   readonly forwardProbe: RegistryGenerationForwardProbe;
 }

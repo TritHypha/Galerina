@@ -192,6 +192,10 @@ export interface HostRuntime {
   readOption(handle: number): { tag: "none" } | { tag: "some"; value: number };
   /** Resolve a Money handle (from a `__money_*` currency constructor) to its currency + amount. */
   readMoney(handle: number): { currency: string; amountStr: string } | undefined;
+  /** Resolve a Decimal handle (C02 exact base-10 host value). */
+  readDecimal(handle: number): string | undefined;
+  /** Intern a canonical decimal string, returning its handle. */
+  internDecimal(text: string): number;
   /** Bind the instance's exported memory after instantiation (for record reads). */
   bindMemory(memory: WebAssembly.Memory): void;
   /** Read field `slot` (0-based i32 slots) of a record at linear-memory `ptr`. */
@@ -235,6 +239,39 @@ export function compareUtf16CodeUnits(left: string, right: string): -1 | 0 | 1 {
   return left < right ? -1 : 1;
 }
 
+/** Exact base-10 host Decimal (mirrors compiler decimal-arith.ts; no IEEE-754). */
+function parseHostDecimal(text: string): { unscaled: bigint; scale: number } | null {
+  const match = /^([+-]?)(\d*)(?:\.(\d*))?$/.exec(text.trim());
+  if (!match) return null;
+  const sign = match[1] === "-" ? -1n : 1n;
+  const intPart = match[2] ?? "";
+  const fracPart = match[3] ?? "";
+  if (intPart === "" && fracPart === "") return null;
+  const digits = intPart + fracPart;
+  return { unscaled: sign * BigInt(digits === "" ? "0" : digits), scale: fracPart.length };
+}
+
+function formatHostDecimal(unscaled: bigint, scale: number): string {
+  const neg = unscaled < 0n;
+  let digits = (neg ? -unscaled : unscaled).toString();
+  if (scale === 0) return (neg ? "-" : "") + digits;
+  while (digits.length <= scale) digits = "0" + digits;
+  return (neg ? "-" : "") + digits.slice(0, digits.length - scale) + "." + digits.slice(digits.length - scale);
+}
+
+function alignHostDecimal(
+  left: { unscaled: bigint; scale: number },
+  right: { unscaled: bigint; scale: number },
+): { ua: bigint; ub: bigint; scale: number } {
+  const scale = Math.max(left.scale, right.scale);
+  const pow = (n: number): bigint => 10n ** BigInt(n);
+  return {
+    ua: left.unscaled * pow(scale - left.scale),
+    ub: right.unscaled * pow(scale - right.scale),
+    scale,
+  };
+}
+
 /**
  * Build the closed host runtime for the self-hosted lexer's 4-function surface:
  *   __array_create() → handle · __array_append(handle, item) → () ·
@@ -267,6 +304,7 @@ export function createHostRuntime(
   // handle whose payload is stored here. Raw array access stays separate for counted loops.
   const options: OptionEntry[] = [];
   const moneys: { currency: string; amountStr: string }[] = [];
+  const decimals: string[] = [];
   let memory: WebAssembly.Memory | null = null;
   // RD-0389: host bump pointer for records STAGED to pass in (allocRecord), based at the same
   // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
@@ -532,10 +570,126 @@ export function createHostRuntime(
     // range(lo, hi): returns an Array<Int> handle containing [lo, lo+1, … hi-1].
     // Mirrors stdlib.ts Array.range (exclusive upper bound, step 1).
     __range: (lo: number, hi: number) => {
+      const from = lo | 0;
+      const to = hi | 0;
+      const MAX_RANGE = 1_000_000;
+      if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || to < from) {
+        throw new Error("Array.range: bounds are not a finite progressing interval");
+      }
+      const count = to - from;
+      if (count > MAX_RANGE) {
+        throw new Error("Array.range: cardinality exceeds the host bound");
+      }
       const items: number[] = [];
-      for (let i = lo | 0; i < (hi | 0); i++) items.push(i);
+      for (let i = from; i < to; i++) items.push(i);
       const id = arrays.length; arrays.push(items);
       return tap("__range", [lo, hi], id) as number;
+    },
+
+    __decimal_from_str: (h: number) => {
+      const text = strings[h];
+      if (text === undefined || parseHostDecimal(text) === null) {
+        throw new Error("MalformedDecimal");
+      }
+      const id = decimals.length;
+      decimals.push(text);
+      return tap("__decimal_from_str", [h], id) as number;
+    },
+    __decimal_to_str: (h: number) => {
+      const text = decimals[h];
+      if (text === undefined) throw new Error(`unknown Decimal handle ${h} (fail-closed)`);
+      const id = strings.length;
+      strings.push(text);
+      return tap("__decimal_to_str", [h], id) as number;
+    },
+    __decimal_add: (a: number, b: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      if (!left || !right) throw new Error("MalformedDecimal");
+      const { ua, ub, scale } = alignHostDecimal(left, right);
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(ua + ub, scale));
+      return tap("__decimal_add", [a, b], id) as number;
+    },
+    __decimal_sub: (a: number, b: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      if (!left || !right) throw new Error("MalformedDecimal");
+      const { ua, ub, scale } = alignHostDecimal(left, right);
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(ua - ub, scale));
+      return tap("__decimal_sub", [a, b], id) as number;
+    },
+    __decimal_mul: (a: number, b: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      if (!left || !right) throw new Error("MalformedDecimal");
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(left.unscaled * right.unscaled, left.scale + right.scale));
+      return tap("__decimal_mul", [a, b], id) as number;
+    },
+    __decimal_neg: (h: number) => {
+      const parsed = parseHostDecimal(decimals[h] ?? "");
+      if (!parsed) throw new Error("MalformedDecimal");
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(-parsed.unscaled, parsed.scale));
+      return tap("__decimal_neg", [h], id) as number;
+    },
+    __decimal_compare: (a: number, b: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      if (!left || !right) throw new Error("MalformedDecimal");
+      const { ua, ub } = alignHostDecimal(left, right);
+      const cmp = ua < ub ? -1 : ua > ub ? 1 : 0;
+      return tap("__decimal_compare", [a, b], cmp) as number;
+    },
+    __decimal_div: (a: number, b: number, scale: number, modeHandle: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      const mode = strings[modeHandle];
+      if (!left || !right || !Number.isInteger(scale) || scale < 0 || scale > 100) {
+        throw new Error("MalformedDecimal");
+      }
+      if (right.unscaled === 0n) throw new Error("DivideByZero");
+      const modes = new Set(["halfEven", "halfUp", "halfDown", "up", "down", "ceiling", "floor"]);
+      if (mode === undefined || !modes.has(mode)) throw new Error("MalformedDecimal");
+      const exp = scale + right.scale - left.scale;
+      let num = left.unscaled;
+      let den = right.unscaled;
+      const pow = (n: number): bigint => 10n ** BigInt(n);
+      if (exp >= 0) num *= pow(exp);
+      else den *= pow(-exp);
+      if (den < 0n) { num = -num; den = -den; }
+      const q = num / den;
+      const r = num - q * den;
+      let rounded = q;
+      if (r !== 0n) {
+        const neg = num < 0n;
+        const twiceAbsR = (r < 0n ? -r : r) * 2n;
+        let roundAway = false;
+        if (mode === "up") roundAway = true;
+        else if (mode === "down") roundAway = false;
+        else if (mode === "floor") roundAway = neg;
+        else if (mode === "ceiling") roundAway = !neg;
+        else if (mode === "halfUp") roundAway = twiceAbsR >= den;
+        else if (mode === "halfDown") roundAway = twiceAbsR > den;
+        else roundAway = twiceAbsR > den || (twiceAbsR === den && (q % 2n) !== 0n);
+        if (roundAway) rounded = neg ? q - 1n : q + 1n;
+      }
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(rounded, scale));
+      return tap("__decimal_div", [a, b, scale, modeHandle], id) as number;
+    },
+    __decimal_rem: (a: number, b: number) => {
+      const left = parseHostDecimal(decimals[a] ?? "");
+      const right = parseHostDecimal(decimals[b] ?? "");
+      if (!left || !right) throw new Error("MalformedDecimal");
+      if (right.unscaled === 0n) throw new Error("DivideByZero");
+      const { ua, ub, scale } = alignHostDecimal(left, right);
+      const q = ua / ub;
+      const id = decimals.length;
+      decimals.push(formatHostDecimal(ua - q * ub, scale));
+      return tap("__decimal_rem", [a, b], id) as number;
     },
   };
 
@@ -557,6 +711,13 @@ export function createHostRuntime(
     readResult(handle: number) { return results[handle]; },
     readOption(handle: number) { return handle === -1 ? { tag: "none" } : { tag: "some", value: optionEntry(handle).value }; },
     readMoney(handle: number) { return moneys[handle]; },
+    readDecimal(handle: number) { return decimals[handle]; },
+    internDecimal(text: string): number {
+      if (parseHostDecimal(text) === null) throw new Error("MalformedDecimal");
+      const id = decimals.length;
+      decimals.push(text);
+      return id;
+    },
     bindMemory(m: WebAssembly.Memory) { memory = m; },
     readRecordField(ptr: number, slot: number): number {
       if (memory === null) throw new Error("readRecordField before bindMemory");
@@ -602,6 +763,17 @@ export interface AdmissionResult {
  * Throws `CRITICAL_SECURITY_VIOLATION: …` on any attestation failure — and fires
  * `observe.onViolation` with the rejected binary before throwing.
  */
+function snapshotWasmBytes(wasm: Uint8Array): Uint8Array {
+  if (
+    !(wasm instanceof Uint8Array)
+    || Object.getPrototypeOf(wasm) !== Uint8Array.prototype
+    || wasm.buffer instanceof SharedArrayBuffer
+  ) {
+    throw new Error("CRITICAL_SECURITY_VIOLATION: wasm bytes are not an exclusively owned Uint8Array");
+  }
+  return Uint8Array.from(wasm);
+}
+
 export async function admitAndInstantiate(opts: {
   wasm: Uint8Array;
   attestation: WasmAttestation | undefined;
@@ -609,10 +781,11 @@ export async function admitAndInstantiate(opts: {
   host: HostRuntime;
   observe?: Observer;
 }): Promise<AdmissionResult> {
-  const verdict = verifyWasm(opts.wasm, opts.attestation, opts.policy);
+  const wasm = snapshotWasmBytes(opts.wasm);
+  const verdict = verifyWasm(wasm, opts.attestation, opts.policy);
   if (!verdict.ok) {
     // Attestation First: dump state and refuse BEFORE any host function is linked.
-    opts.observe?.onViolation?.(verdict.reason ?? "attestation failed", opts.wasm);
+    opts.observe?.onViolation?.(verdict.reason ?? "attestation failed", wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${verdict.reason ?? "attestation failed"} (hash=${verdict.hash})`);
   }
   // Instantiate with ONLY the closed host import object. A LinkError here means the
@@ -622,12 +795,12 @@ export async function admitAndInstantiate(opts: {
   // LinkError that a caller might mistake for an ordinary runtime fault (#105).
   let wasmResult: unknown;
   try {
-    wasmResult = await WebAssembly.instantiate(opts.wasm as BufferSource, opts.host.imports);
+    wasmResult = await WebAssembly.instantiate(wasm, opts.host.imports);
   } catch (err) {
     const reason = err instanceof WebAssembly.LinkError
       ? `disallowed host import (module requires an import outside the closed host set): ${err.message}`
       : `instantiation failed: ${err instanceof Error ? err.message : String(err)}`;
-    opts.observe?.onViolation?.(reason, opts.wasm);
+    opts.observe?.onViolation?.(reason, wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
   }
   const instance = (wasmResult as { instance?: WebAssembly.Instance }).instance

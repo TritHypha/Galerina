@@ -181,6 +181,63 @@ test("JsonLineSink isolates a throwing writer without inventing retry or counter
     attempts += 1;
     throw new Error("writer unavailable");
   });
+  const log = createLogger({ sink });
   assert.doesNotThrow(() => sink.write({ level: "error", msg: "lost", at: 0 }));
   assert.equal(attempts, 1, "the writer is attempted once and is not retried");
+  assert.equal(log.sinkFailures(), 0, "direct writer loss is not a mediated sinkFailure");
+  assert.equal(log.clockFailures(), 0);
+  assert.equal(log.constructionFailures(), 0);
+});
+
+test("a genuine clock reading is labelled clock and does not increment clockFailures", () => {
+  const sink = new MemoryLogSink();
+  const log = createLogger({ sink, clock: () => 0 });
+  log.info("epoch");
+  const [rec] = sink.records();
+  assert.equal(rec.at, 0);
+  assert.equal(rec.atSource, "clock");
+  assert.equal(log.clockFailures(), 0);
+  assert.equal(log.sinkFailures(), 0);
+});
+
+test("non-finite, signed-zero and throwing clocks use labelled fallback 0", () => {
+  const sink = new MemoryLogSink();
+  const logNaN = createLogger({ sink, clock: () => Number.NaN });
+  logNaN.info("nan");
+  const logInf = createLogger({ sink, clock: () => Number.POSITIVE_INFINITY });
+  logInf.info("inf");
+  const logNegZero = createLogger({ sink, clock: () => -0 });
+  logNegZero.info("negzero");
+  const logThrow = createLogger({
+    sink,
+    clock: () => {
+      throw new Error("clock unavailable");
+    },
+  });
+  assert.doesNotThrow(() => logThrow.info("threw"));
+
+  const records = sink.records();
+  assert.equal(records.length, 4);
+  for (const rec of records) {
+    assert.equal(rec.at, 0);
+    assert.equal(rec.atSource, "fallback");
+  }
+  assert.equal(logNaN.clockFailures(), 1);
+  assert.equal(logInf.clockFailures(), 1);
+  assert.equal(logNegZero.clockFailures(), 1);
+  assert.equal(logThrow.clockFailures(), 1);
+  assert.equal(logNaN.sinkFailures(), 0);
+  assert.equal(logThrow.sinkFailures(), 0);
+  assert.equal(logThrow.constructionFailures(), 0);
+});
+
+test("mediated sink faults stay distinct from clock and construction counters", () => {
+  const log = createLogger({
+    sink: { write() { throw new Error("disk full"); } },
+    clock: () => 9,
+  });
+  assert.doesNotThrow(() => log.error("boom"));
+  assert.equal(log.sinkFailures(), 1);
+  assert.equal(log.clockFailures(), 0);
+  assert.equal(log.constructionFailures(), 0);
 });

@@ -76,6 +76,20 @@ export interface BearerVerifyOptions {
 }
 
 const HMAC_HASH: Partial<Record<JwtAlg, string>> = { HS256: "sha256", HS384: "sha384", HS512: "sha512" };
+const PEM_MARKER = /-----BEGIN [A-Z0-9 ]*(PUBLIC KEY|PRIVATE KEY|CERTIFICATE|RSA PUBLIC KEY)-----/;
+
+function isSerializedAsymmetricKey(key: string | Uint8Array): boolean {
+  const text = typeof key === "string" ? key : Buffer.from(key).toString("utf8");
+  if (PEM_MARKER.test(text)) return true;
+  try {
+    const pub = typeof key === "string"
+      ? createPublicKey(key)
+      : createPublicKey({ key: Buffer.from(key), format: "der", type: "spki" });
+    return typeof pub.asymmetricKeyType === "string";
+  } catch {
+    return false;
+  }
+}
 const RSA_HASH: Partial<Record<JwtAlg, string>> = { RS256: "sha256", RS384: "sha384", RS512: "sha512" };
 
 /** Case-insensitive header lookup over a frozen record (mirrors credential.ts). */
@@ -123,6 +137,7 @@ function verifySignature(
     if (alg in HMAC_HASH) {
       // Key-type defence (#3): an asymmetric KeyObject must NOT be used as an HMAC secret.
       if (typeof key === "object" && !(key instanceof Uint8Array)) return false;
+      if (isSerializedAsymmetricKey(key)) return false;
       const secret = typeof key === "string" ? Buffer.from(key, "utf8") : Buffer.from(key as Uint8Array);
       const expected = createHmac(HMAC_HASH[alg] as string, secret).update(signingInput).digest();
       // timingSafeEqual throws on unequal lengths — a length mismatch is simply a non-match.

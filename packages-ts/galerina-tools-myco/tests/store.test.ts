@@ -9,7 +9,7 @@ import {
   validateStoredIndex,
 } from "../src/graph/index-contract.ts";
 import { SearchGraph } from "../src/graph/model.ts";
-import { loadGraph, saveGraph } from "../src/graph/store.ts";
+import { loadGraph, loadGraphOutcome, saveGraph } from "../src/graph/store.ts";
 
 function validIndex(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -293,4 +293,33 @@ test("canonical persistence order is code-unit based, not host-locale based", as
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
+});
+
+test("saveGraph refuses to write through a linked cache directory", async () => {
+  const parent = await fs.mkdtemp(path.join(os.tmpdir(), "myco-unsafe-"));
+  const root = path.join(parent, "root");
+  const outside = path.join(parent, "outside");
+  await fs.mkdir(root, { recursive: true });
+  await fs.mkdir(outside, { recursive: true });
+  try {
+    await fs.symlink(outside, path.join(root, ".myco"), "dir");
+  } catch {
+    await fs.rm(parent, { recursive: true, force: true });
+    return;
+  }
+  const graph = new SearchGraph();
+  graph.setFile("a.ts", 1, 1, new Map([["alpha", 1]]));
+  const saved = await saveGraph(root, graph);
+  assert.equal(saved.written, false);
+  if (saved.written === false) assert.equal(saved.reason, "unsafe-path");
+  const loaded = await loadGraphOutcome(root);
+  assert.equal(loaded.status, "unsafe");
+  let escapedExists = true;
+  try {
+    await fs.stat(path.join(outside, "index.json"));
+  } catch {
+    escapedExists = false;
+  }
+  assert.equal(escapedExists, false);
+  await fs.rm(parent, { recursive: true, force: true });
 });

@@ -69,6 +69,14 @@ export class ZeroCopyMapper {
         `source length ${source.length} < manifest.totalBytes ${manifest.totalBytes}`,
       );
     }
+    if (source.buffer instanceof SharedArrayBuffer) {
+      throw new SecurityTrap(
+        "LSIO-MAP-002",
+        "source SharedArrayBuffer is refused — integrity cannot bind a concurrently mutable view",
+      );
+    }
+    const ownedSource = new Uint8Array(source.byteLength);
+    ownedSource.set(source);
 
     const backing: ArrayBufferLike = this.#shared
       ? new SharedArrayBuffer(manifest.totalBytes)
@@ -80,14 +88,12 @@ export class ZeroCopyMapper {
     for (const block of manifest.blocks) {
       const start = block.offset;
       const end = block.offset + block.length;
-      // subarray = zero-copy view into the source for the integrity check.
-      const slice = source.subarray(start, end);
+      const slice = ownedSource.subarray(start, end);
 
-      // INTEGRITY GATE — release nothing until this passes. The manifest's
-      // `sha256` field is the expected digest in whatever mode the monitor runs.
+      // INTEGRITY GATE — release nothing until this passes. The digest is over
+      // the owned snapshot, which is also the bytes staged into the backing buffer.
       monitor.enforceBlock(slice, block.sha256, block.id);
 
-      // Stage ONCE into the backing buffer after the gate passes.
       backingBytes.set(slice, block.offset);
 
       const offset = block.offset;

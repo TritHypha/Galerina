@@ -10,8 +10,8 @@ import { PrecisionFault } from "./errors.js";
 
 /** Guard: `v` must be a finite, non-negative integer. */
 function assertNonNegInt(v: number, code: string, label: string): void {
-  if (!Number.isInteger(v) || v < 0) {
-    throw new PrecisionFault(code, `${label} must be a non-negative integer, got ${v}`);
+  if (!Number.isSafeInteger(v) || v < 0) {
+    throw new PrecisionFault(code, `${label} must be a non-negative safe integer, got ${v}`);
   }
 }
 
@@ -31,6 +31,9 @@ export class LogicalClock {
 
   /** Increment by 1 and return the NEW tick. One call per execution unit / event. */
   tick(): number {
+    if (this.#tick >= Number.MAX_SAFE_INTEGER) {
+      throw new PrecisionFault("LST-OVF-001", "logical clock exceeded MAX_SAFE_INTEGER");
+    }
     this.#tick += 1;
     return this.#tick;
   }
@@ -43,6 +46,9 @@ export class LogicalClock {
   /** Increment by `n` (non-negative integer) and return the new tick. */
   advance(n: number): number {
     assertNonNegInt(n, "LST-ADV-001", "advance amount");
+    if (this.#tick + n > Number.MAX_SAFE_INTEGER) {
+      throw new PrecisionFault("LST-OVF-001", "logical clock exceeded MAX_SAFE_INTEGER");
+    }
     this.#tick += n;
     return this.#tick;
   }

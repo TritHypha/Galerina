@@ -89,13 +89,19 @@ export type EventDAG = Graph<AuditEventNodeData, CausalityEdgeData>;
  * Events are inserted as nodes in timestamp order. Duplicate eventIds are
  * skipped (last-writer-wins semantics for recovery scenarios).
  */
+const MAX_AUDIT_EVENTS = 8192;
+
 export function buildEventDAG(events: readonly RuntimeAuditEvent[]): EventDAG {
+  if (events.length > MAX_AUDIT_EVENTS) {
+    throw new Error(`EventDAG refuses more than ${MAX_AUDIT_EVENTS} audit events`);
+  }
   // Sort by timestamp for deterministic ordering.
   const sorted = [...events].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   const builder = new GraphBuilder<AuditEventNodeData, CausalityEdgeData>();
   const spanIndex = new Map<string, string>(); // spanId → eventId
   const seen = new Set<string>();
+  const linked = new Set<string>();
 
   for (const event of sorted) {
     if (seen.has(event.eventId)) continue;
@@ -124,6 +130,7 @@ export function buildEventDAG(events: readonly RuntimeAuditEvent[]): EventDAG {
     if (event.parentSpanId !== undefined) {
       const parentEventId = spanIndex.get(event.parentSpanId);
       if (parentEventId !== undefined && parentEventId !== event.eventId) {
+        linked.add(`${parentEventId}\0${event.eventId}`);
         builder.addEdge(parentEventId, event.eventId, { relationKind: "child-span" });
       }
     }
@@ -142,12 +149,9 @@ export function buildEventDAG(events: readonly RuntimeAuditEvent[]): EventDAG {
     for (let i = 0; i < eventIds.length - 1; i++) {
       const from = eventIds[i]!;
       const to = eventIds[i + 1]!;
-      // Only add continuation if not already linked by child-span.
-      const alreadyLinked = builder
-        .build()
-        .outEdges(from)
-        .some((e) => e.to === to);
-      if (!alreadyLinked) {
+      const key = `${from}\0${to}`;
+      if (!linked.has(key)) {
+        linked.add(key);
         builder.addEdge(from, to, { relationKind: "continuation" });
       }
     }

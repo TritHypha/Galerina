@@ -159,6 +159,11 @@ describe("buildEventDAG", () => {
     const allowed = eventsByStatus(dag, "allowed");
     assert.equal(allowed.length, 2);
   });
+
+  it("refuses an oversized event list", () => {
+    const events = Array.from({ length: 8193 }, (_, i) => makeEvent(`e${i}`, "allowed", "t", `s${i}`));
+    assert.throws(() => buildEventDAG(events), /8192/);
+  });
 });
 
 // ---------------------------------------------------------------------------

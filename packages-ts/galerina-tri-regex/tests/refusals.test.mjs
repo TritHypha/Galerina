@@ -36,6 +36,10 @@ test("unknown alpha escapes are refused — no silent literal", () => {
   veto("\\A", "TPRX-UNSUPPORTED");
 });
 
+test("deep group nesting is a budget veto", () => {
+  veto("(".repeat(40) + "a" + ")".repeat(40), "TPRX-BUDGET");
+});
+
 test("malformed patterns are parse refusals", () => {
   veto("(ab", "TPRX-PARSE");
   veto("ab)", "TPRX-PARSE");
