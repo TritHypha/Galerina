@@ -116,6 +116,11 @@ export function readSpore(buf: Uint8Array): SporeReadResult {
   // §2b bounds — overflow-safe in BigInt, BEFORE any hashing.
   const countBig = dv.getBigUint64(16, true);
   if (countBig === 0n) throw new SporeError("MalformedTable", "section_count must be ≥ 1");
+  const MAX_SECTIONS = 4_096;
+  const MAX_HASHED_BYTES = 8 * 1024 * 1024;
+  if (countBig > BigInt(MAX_SECTIONS)) {
+    throw new SporeError("MalformedTable", `section_count exceeds the ${MAX_SECTIONS} work ceiling`);
+  }
   const lenBig = BigInt(len);
   const regionOffBig = 56n + countBig * 56n;
   if (regionOffBig > lenBig) throw new SporeError("MalformedTable", "section table extends past EOF");
@@ -142,6 +147,9 @@ export function readSpore(buf: Uint8Array): SporeReadResult {
   for (const p of parsed) referenced += p.blobLen;
   if (referenced > payloadRegionLen) {
     throw new SporeError("MalformedTable", "overlapping or repeated payload ranges");
+  }
+  if (referenced > BigInt(MAX_HASHED_BYTES)) {
+    throw new SporeError("MalformedTable", `hashed payload work ${referenced} exceeds the ${MAX_HASHED_BYTES} byte ceiling`);
   }
 
   const leaves: Uint8Array[] = [];

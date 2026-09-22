@@ -36,6 +36,21 @@ import { totalmem, freemem } from "node:os";
 // before the allocation it would otherwise exhaust the host with.
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the lexer's FUNGI-LEX-004 constant
 
+async function productionOrDevRevocation(rootDir = ".") {
+  const { resolveSigningProfileWarned } = await import("./governance/profile.mjs");
+  const {
+    isKeyRevoked,
+    assertRegistryTrustworthy,
+    loadTrustedRevocationSnapshot,
+  } = await import("./governance/revocation-registry.mjs");
+  if (resolveSigningProfileWarned().profile === "production") {
+    const snapshot = loadTrustedRevocationSnapshot(rootDir);
+    return (keyId) => snapshot.isRevoked(keyId);
+  }
+  assertRegistryTrustworthy(rootDir);
+  return (keyId) => isKeyRevoked(keyId, rootDir);
+}
+
 // ── Repo-relative source paths in COMMITTED artifacts (no-absolute-local-paths) ──
 // .lmanifest{,.json} + governance-impact.json record sourceFile. An absolute input
 // path (rebuild-fusable-packages passes one) would leak the local user home into a
@@ -1177,9 +1192,17 @@ Baseline comparison (governance-cost):
       // REVOKED key (the revoked key's public key is shipped in-repo). Inject a registry-backed check;
       // an untrustworthy/tampered revocation registry fails the whole fuse closed.
       try {
-        const { isKeyRevoked, assertRegistryTrustworthy } = await import("./governance/revocation-registry.mjs");
-        assertRegistryTrustworthy("."); // throws if the registry is unsigned-under-pin / signed by a revoked key
-        opts.revocationCheck = (keyId) => isKeyRevoked(keyId, ".");
+        const { isKeyRevoked, assertRegistryTrustworthy, loadTrustedRevocationSnapshot } = await import("./governance/revocation-registry.mjs");
+        const { resolveSigningProfileWarned } = await import("./governance/profile.mjs");
+        const productionFuse = resolveSigningProfileWarned().profile === "production";
+        if (productionFuse) {
+          const snapshot = loadTrustedRevocationSnapshot(".");
+          opts.requireSignature = true;
+          opts.revocationCheck = (keyId) => snapshot.isRevoked(keyId);
+        } else {
+          assertRegistryTrustworthy("."); // throws if the registry is unsigned-under-pin / signed by a revoked key
+          opts.revocationCheck = (keyId) => isKeyRevoked(keyId, ".");
+        }
       } catch (e) {
         console.error(`❌ FUNGI-FUSE-REVOCATION-UNTRUSTED: ${e.message} — refusing to fuse (fail-closed)`);
         process.exit(1);
@@ -2098,9 +2121,8 @@ Baseline comparison (governance-cost):
               console.error(`❌ FUNGI-MANIFEST-PQ-REQUIRED: incomplete/inconsistent or non-both-half hybrid (v2) signature — refusing to run (fail-closed, no PQ downgrade).`);
               process.exit(1);
             }
-            const reg = await import("./governance/revocation-registry.mjs");
-            reg.assertRegistryTrustworthy(".");
-            if (reg.isKeyRevoked(sig.keyId)) {
+            const isRevoked = await productionOrDevRevocation(".");
+            if (isRevoked(sig.keyId)) {
               console.error(`❌ FUNGI-MANIFEST-REVOKED-KEY: manifest signed by REVOKED key ${sig.keyId} — refusing to run (fail-closed, Deny).`);
               process.exit(1);
             }
@@ -2138,9 +2160,8 @@ Baseline comparison (governance-cost):
             process.exit(1);
           }
           // A revoked signer is Deny even with a cryptographically valid signature.
-          const reg = await import("./governance/revocation-registry.mjs");
-          reg.assertRegistryTrustworthy("."); // throws on a tampered / revoked-signer registry → caught below
-          if (reg.isKeyRevoked(sig.keyId)) {
+          const isRevoked = await productionOrDevRevocation(".");
+          if (isRevoked(sig.keyId)) {
             console.error(`❌ FUNGI-MANIFEST-REVOKED-KEY: manifest signed by REVOKED key ${sig.keyId} — refusing to run (fail-closed, Deny).`);
             process.exit(1);
           }

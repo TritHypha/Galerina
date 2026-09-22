@@ -72,6 +72,14 @@ test("fusePackages (multi-module) ALSO enforces registryCheck — an unlisted me
 });
 
 // ── 1 — the built demo package fuses, and invoke('main') runs the governed wasm ──
+test("requireSignature without a revocation check refuses production fusion", async () => {
+  assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
+  await assert.rejects(
+    () => fusePackage(DEMO_DIR, { requireSignature: true, warn: () => {} }),
+    /FUNGI-FUSE-REVOCATION-REQUIRED/,
+  );
+});
+
 test("the built demo package fuses (allowUnsigned: placeholder-signed) and invokes main → 200", async () => {
   assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
   const { warn, lines } = capturingWarn();
@@ -273,7 +281,7 @@ test("a package cannot supply the trust anchor used to admit its own signature",
     }, null, 2));
 
     await assert.rejects(
-      () => fusePackage(pkg, { requireSignature: true, warn: () => {} }),
+      () => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn: () => {} }),
       /FUNGI-FUSE-(UNSIGNED|NO-PUBKEY|TRUST)/,
       "only a caller-admitted external governance root may authorize a package",
     );
@@ -307,7 +315,7 @@ test("a path-shaped keyId cannot escape the admitted governance directory", asyn
     }, null, 2));
 
     await assert.rejects(
-      () => fusePackage(pkg, { governanceDir: govDir, requireSignature: true, warn: () => {} }),
+      () => fusePackage(pkg, { governanceDir: govDir, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
       /FUNGI-FUSE-(UNSIGNED|NO-PUBKEY|TRUST|SIG)/,
       "keyId path components must not select a public key outside governanceDir",
     );
@@ -523,7 +531,7 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
   // (d) "unverifiable" → treated as UNSIGNED: refused without allowUnsigned, admitted with it.
   { const { root, pkg } = mkHybrid();
     try {
-      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, warn: () => {}, hybridVerifier: () => "unverifiable" }), /FUNGI-FUSE-UNSIGNED/);
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn: () => {}, hybridVerifier: () => "unverifiable" }), /FUNGI-FUSE-UNSIGNED/);
       const c = await fusePackage(pkg, { allowUnsigned: true, warn: () => {}, hybridVerifier: () => "unverifiable" });
       assert.equal(c.invoke("main"), 200);
     } finally { rmSync(root, { recursive: true, force: true }); } }
@@ -532,7 +540,7 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
   { const { root, pkg } = mkHybrid();
     try {
       const { warn, lines } = capturingWarn();
-      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, warn }), /FUNGI-FUSE-UNSIGNED/);
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn }), /FUNGI-FUSE-UNSIGNED/);
       assert.ok(lines.some((l) => l.includes("FUNGI-FUSE-HYBRID-UNVERIFIED")), "must warn hybrid-unverified when no verifier is injected");
     } finally { rmSync(root, { recursive: true, force: true }); } }
 

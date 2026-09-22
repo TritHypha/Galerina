@@ -90,6 +90,31 @@ test("overlapping/repeated payload ranges are refused before hashing amplificati
   assert.throws(() => readSpore(buf), isCode("MalformedTable"));
 });
 
+test("hashed payload work above the byte ceiling is refused before leaf hashing", () => {
+  const le16 = (x) => { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, x, true); return b; };
+  const le64 = (x) => { const b = new Uint8Array(8); new DataView(b.buffer).setBigUint64(0, BigInt(x), true); return b; };
+  const kind = 1;
+  const modality = 0;
+  const c = coord(1, 2, 3);
+  const payload = enc.encode("x");
+  const leaf = leafHash(kind, modality, c, payload);
+  const fiveMiB = 5 * 1024 * 1024;
+  const entry0 = cat(le16(kind), le16(modality), le32(c.length), le64(0), le64(fiveMiB), leaf);
+  const entry1 = cat(le16(kind), le16(modality), le32(c.length), le64(fiveMiB), le64(fiveMiB), leaf);
+  const hc = headerCore(0, 0, 2);
+  const root = tmxRoot(hc, [leaf, leaf]);
+  const region = new Uint8Array(10 * 1024 * 1024);
+  const buf = cat(hc, root, entry0, entry1, region);
+  assert.throws(() => readSpore(buf), isCode("MalformedTable"));
+});
+
+test("section_count above the work ceiling is refused before table allocation", () => {
+  const t = writeSpore(golden).slice();
+  const view = new DataView(t.buffer, t.byteOffset, t.byteLength);
+  view.setBigUint64(16, 5000n, true);
+  assert.throws(() => readSpore(t), isCode("MalformedTable"));
+});
+
 test("unknown tmx_profile → UnknownProfile (checked before any hashing)", () => {
   const t = writeSpore(golden).slice();
   t[12] = 0x09; // tmx_profile = 9

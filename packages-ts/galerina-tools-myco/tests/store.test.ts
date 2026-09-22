@@ -10,6 +10,14 @@ import {
 } from "../src/graph/index-contract.ts";
 import { SearchGraph } from "../src/graph/model.ts";
 import { loadGraph, loadGraphOutcome, saveGraph } from "../src/graph/store.ts";
+import { readFileSync } from "node:fs";
+
+test("boundary policy admits the live node:crypto import", () => {
+  const policy = JSON.parse(readFileSync(new URL("../.graph/boundary-policy.json", import.meta.url), "utf8"));
+  const store = readFileSync(new URL("../src/graph/store.ts", import.meta.url), "utf8");
+  assert.equal(store.includes('from "node:crypto"'), true);
+  assert.equal(policy.allowedExternal.includes("node:crypto"), true);
+});
 
 function validIndex(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {

@@ -79,11 +79,27 @@ pure flow zip(a: Option<Int>, b: Option<Int>) -> Pair {
 `);
     assert.equal(hasCode(mismatch, "FUNGI-TYPE-002"), true);
 
-    const ok = typeErrors(`
-pure flow zipOk(a: Option<Int>, b: Option<Int>) -> Option<Auto> {
+    const exact = typeErrors(`
+pure flow zipOk(a: Option<Int>, b: Option<String>) -> Option<ZipPair<Int, String>> {
   return a.zip(b)
 }
 `);
-    assert.deepEqual(ok.map((error) => error.code), []);
+    assert.deepEqual(exact.map((error) => error.code), []);
+
+    const wrapperMismatch = typeErrors(`
+pure flow zipWrongWrapper(a: Option<Int>, b: Option<String>) -> Int {
+  let joined: Option<Int> = a.zip(b)
+  return 1
+}
+`);
+    assert.equal(hasCode(wrapperMismatch, "FUNGI-TYPE-002"), true);
+
+    const innerMismatch = typeErrors(`
+pure flow zipWrongInner(a: Option<Int>, b: Option<String>) -> Int {
+  let joined: Option<ZipPair<Int, Int>> = a.zip(b)
+  return 1
+}
+`);
+    assert.equal(hasCode(innerMismatch, "FUNGI-TYPE-002"), true);
   });
 });

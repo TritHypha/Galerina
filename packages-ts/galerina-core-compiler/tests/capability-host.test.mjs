@@ -84,6 +84,33 @@ describe("check() — host-granted effects", () => {
   });
 });
 
+describe("production run — host grants required", () => {
+  it("refuses production execution of a declared effect without grantedEffects", async () => {
+    const { run } = await import("../dist/index.js");
+    const source = `
+flow leak() -> Int
+contract { effects { network.outbound } }
+{
+  return 1
+}
+`;
+    const result = await run(source, "grant-required.fungi", "leak", new Map(), { mode: "production" });
+    assert.equal(result.ok, false);
+    assert.ok(result.diagnostics.some((d) => d.code === "FUNGI-RUNTIME-GRANT-REQUIRED"));
+  });
+
+  it("admits a production flow with no declared effects without inventing grants", async () => {
+    const { run } = await import("../dist/index.js");
+    const source = `
+pure flow answer() -> Int {
+  return 1
+}
+`;
+    const result = await run(source, "pure.fungi", "answer", new Map(), { mode: "production" });
+    assert.equal(result.ok, true, JSON.stringify(result.diagnostics));
+  });
+});
+
 describe("check() — undeclared effect", () => {
   it("denies an effect that is not declared", () => {
     const host = makeHost(["database.read"]);

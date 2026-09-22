@@ -344,6 +344,17 @@ async function optionMethod(
     case "value":
     case "get":
       return receiver.__tag === "some" ? receiver.value : FUNGI_NONE;
+    case "zip": {
+      const other = args[0];
+      if (receiver.__tag !== "some" || other === undefined || other.__tag !== "some") return FUNGI_NONE;
+      return mkSome({
+        __tag: "record",
+        fields: new Map([
+          ["first", receiver.value],
+          ["second", other.value],
+        ]),
+      });
+    }
     default:
       return undefined;
   }

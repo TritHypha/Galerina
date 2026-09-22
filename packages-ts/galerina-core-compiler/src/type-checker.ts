@@ -106,7 +106,8 @@ function isBuiltInType(typeName: string): boolean {
   // Fallback 1: domain/enterprise types in the BUILT_IN_TYPES string Set
   if (BUILT_IN_TYPES.has(typeName)) return true;
   // Fallback 2: commonly used domain types (KNOWN_DOMAIN_TYPES)
-  return KNOWN_DOMAIN_TYPES.has(typeName);
+  if (KNOWN_DOMAIN_TYPES.has(typeName)) return true;
+  return typeName === "ZipPair";
 }
 
 // ---------------------------------------------------------------------------
@@ -308,6 +309,7 @@ const GENERIC_ARITY: ReadonlyMap<string, number> = new Map([
   ["Authority",    1],  // Authority<"domain.tag.v1"> — opaque runtime-minted authority
   ["Embedding",    1],  // Embedding<768> — dimensioned embedding vector
   ["Secret",       1],  // Secret<ApiKey> — parameterised secret wrapper
+  ["ZipPair",      2],  // ZipPair<T, U> — Option.zip named pair (first, second)
 ]);
 
 // Example strings for each generic type — used in fix suggestions (suggestedFix prose)
@@ -329,6 +331,7 @@ const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
   ["Authority",    "Authority<\"domain.authority.v1\">"],
   ["Embedding",    "Embedding<768>"],
   ["Secret",       "Secret<ApiKey>"],
+  ["ZipPair",      "ZipPair<T, U>"],
 ]);
 
 // The KIND of each type-argument POSITION for a generic. A position that is anything but
@@ -3508,6 +3511,12 @@ class TypeChecker {
     // RD-0659: an Authority tag is a closed runtime identity, not display text.
     // Keep it ASCII and length-bounded so confusable, empty, path-shaped or
     // unbounded tags cannot enter the authority namespace.
+    if (base === "ZipPair" && args.length === 2) {
+      const first = (args[0] ?? "").trim();
+      const second = (args[1] ?? "").trim();
+      if (first !== "" && second !== "") this.zipPairRecordType(first, second);
+    }
+
     if (base === "Authority" && args.length === 1) {
       const rawTag = (args[0] ?? "").trim();
       const quoted =

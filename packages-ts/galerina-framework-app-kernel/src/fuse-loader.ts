@@ -627,6 +627,13 @@ async function loadAndVerifyPackage(
   // `signature === "verified"` would let such a manifest skip revocation and — combined with
   // allowUnsigned — admit a manifest that NAMES a REVOKED key. A named-revoked key is refused even when
   // its signature could not be verified and even under allowUnsigned; the security posture wins.
+  if (opts.requireSignature === true && typeof opts.revocationCheck !== "function") {
+    return fuseError(
+      "FUNGI-FUSE-REVOCATION-REQUIRED",
+      "production/certified fusion requires a pinned revocation check — refusing (no implicit empty-registry fallback)",
+    );
+  }
+
   if (keyId !== undefined && opts.revocationCheck !== undefined) {
     let revoked: boolean;
     try {
@@ -679,7 +686,17 @@ async function instantiateComponent(
  *
  * Fail-closed on: hash mismatch, invalid signature, unknown/undeclarable capability.
  */
+function requireProductionRevocation(opts: FusePackageOptions): void {
+  if (opts.requireSignature === true && typeof opts.revocationCheck !== "function") {
+    return fuseError(
+      "FUNGI-FUSE-REVOCATION-REQUIRED",
+      "production/certified fusion requires a pinned revocation check — refusing (no implicit empty-registry fallback)",
+    );
+  }
+}
+
 export async function fusePackage(dir: string, opts: FusePackageOptions = {}): Promise<FusedComponent> {
+  requireProductionRevocation(opts);
   const warn = opts.warn ?? ((m: string) => console.warn(m));
   const node = await loadNode();
   const { fs, path } = node;
@@ -950,6 +967,7 @@ export async function fusePackages(
   dirs: readonly string[],
   opts: FusePackageOptions = {},
 ): Promise<Map<string, FusedComponent>> {
+  requireProductionRevocation(opts);
   const warn = opts.warn ?? ((m: string) => console.warn(m));
   const node = await loadNode();
   const registry: Record<string, CapabilityImportFactory> = {

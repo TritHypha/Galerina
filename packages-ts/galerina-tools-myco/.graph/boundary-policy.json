@@ -1,6 +1,7 @@
 {
   "packageName": "@galerina/tools-myco",
   "allowedExternal": [
+    "node:crypto",
     "node:fs",
     "node:path",
     "node:util",

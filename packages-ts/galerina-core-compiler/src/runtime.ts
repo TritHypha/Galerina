@@ -63,7 +63,12 @@ export interface RuntimeOptions {
   readonly enforceNamingPolicy?: boolean;
   /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
   readonly cryptoProvider?: CryptoProvider;
-  /** Host-owned effect grants. When set, only the intersection with source-declared effects is authorized. */
+  /**
+   * Host-owned effect grants. Source declarations request effects; they never grant them.
+   * Production and deterministic modes require this array whenever the flow declares any
+   * effect. Development may omit it (declared-only compatibility) and cannot be relabelled
+   * production. The runtime snapshots the array before dispatch.
+   */
   readonly grantedEffects?: readonly string[];
 }
 
@@ -103,6 +108,21 @@ function decodeRuntimeMode(value: unknown): RuntimeMode {
     return value;
   }
   throw new Error(`Galerina: unknown runtime mode '${String(value)}'`);
+}
+
+function snapshotGrantedEffects(value: unknown): { ok: true; grants: ReadonlySet<string> } | { ok: false; reason: string } {
+  if (value === undefined) return { ok: false, reason: "missing" };
+  if (!Array.isArray(value)) {
+    return { ok: false, reason: "grantedEffects must be an array of strings" };
+  }
+  const grants = new Set<string>();
+  for (const item of value) {
+    if (typeof item !== "string" || item.length === 0) {
+      return { ok: false, reason: "grantedEffects entries must be non-empty strings" };
+    }
+    grants.add(item);
+  }
+  return { ok: true, grants };
 }
 
 function admitRuntime(
@@ -286,10 +306,32 @@ export async function run(
   // Collect declared effects for the target flow from the FlowMeta list.
   const flowMeta = parseResult.flows.find((f) => f.name === flowName);
   const declaredEffects = new Set<string>(flowMeta?.declaredEffects ?? []);
-
-  const grantedEffects = options.grantedEffects === undefined
-    ? undefined
-    : new Set(options.grantedEffects);
+  const productionAuthority = mode === "production" || mode === "deterministic";
+  let grantedEffects: ReadonlySet<string> | undefined;
+  if (productionAuthority && declaredEffects.size > 0) {
+    const snap = snapshotGrantedEffects(options.grantedEffects);
+    if (!snap.ok) {
+      allDiagnostics.push({
+        code: "FUNGI-RUNTIME-GRANT-REQUIRED",
+        severity: "error",
+        message: `production authorization requires host grantedEffects (${snap.reason}); source declarations do not grant effects`,
+      });
+      return {
+        ok: false,
+        diagnostics: allDiagnostics,
+        governanceDiagnostics: admission.governanceDiagnostics,
+        escapeDiagnostics: admission.escapeDiagnostics,
+        namingDiagnostics: admission.namingDiagnostics,
+        mode,
+      };
+    }
+    grantedEffects = snap.grants;
+  } else if (!productionAuthority && options.grantedEffects !== undefined) {
+    const snap = snapshotGrantedEffects(options.grantedEffects);
+    if (snap.ok) grantedEffects = snap.grants;
+  } else if (productionAuthority) {
+    grantedEffects = new Set();
+  }
   const capabilityHost: CapabilityHost = createCapabilityHost({
     declaredEffects,
     ...(grantedEffects !== undefined ? { grantedEffects } : {}),

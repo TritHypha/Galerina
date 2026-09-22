@@ -27,7 +27,7 @@
  * Exit code: 0 = clean, 1 = at least one BROKEN/STALE artifact found.
  */
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative, sep, dirname, basename } from "node:path";
+import { join, relative, sep, dirname, basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { assertRegistryTrustworthy } from "../governance/revocation-registry.mjs";
@@ -167,12 +167,36 @@ function wasmCrossCheck(cur) {
     const wasmRef = node.wasm ?? node.wasmPath;
     const shaRef = node.sha256 ?? node.wasmSha256;
     if (typeof wasmRef === "string" && typeof shaRef === "string") {
-      const wasmAbs = join(dirname(cur), wasmRef);
-      const want = shaRef.replace(/^sha256:/, "");
-      if (existsSync(wasmAbs)) {
-        const got = sha256(readFileSync(wasmAbs));
-        if (got !== want)
-          findings.push({ rel: relative(REPO, cur), wasm: wasmRef, status: "WASM-HASH-MISMATCH", note: `manifest=${want.slice(0, 12)} file=${got.slice(0, 12)}` });
+      const pathRefused =
+        wasmRef.includes("\0")
+        || wasmRef.split(/[\\/]/).includes("..")
+        || wasmRef.startsWith("/")
+        || /^[A-Za-z]:/.test(wasmRef);
+      if (pathRefused) {
+        findings.push({
+          rel: relative(REPO, cur),
+          wasm: wasmRef,
+          status: "WASM-PATH-REFUSED",
+          note: "wasm path is not an admitted relative subject",
+        });
+      } else {
+        const wasmAbs = join(dirname(cur), wasmRef);
+        const fromRepo = relative(REPO, wasmAbs);
+        if (fromRepo.startsWith("..") || fromRepo.startsWith("/") || /^[A-Za-z]:/.test(fromRepo)) {
+          findings.push({
+            rel: relative(REPO, cur),
+            wasm: wasmRef,
+            status: "WASM-PATH-REFUSED",
+            note: "wasm path escapes the repository",
+          });
+        } else {
+          const want = shaRef.replace(/^sha256:/, "");
+          if (existsSync(wasmAbs)) {
+            const got = sha256(readFileSync(wasmAbs));
+            if (got !== want)
+              findings.push({ rel: relative(REPO, cur), wasm: wasmRef, status: "WASM-HASH-MISMATCH", note: `manifest=${want.slice(0, 12)} file=${got.slice(0, 12)}` });
+          }
+        }
       }
     }
     for (const v of Array.isArray(node) ? node : Object.values(node)) visit(v);
@@ -180,6 +204,8 @@ function wasmCrossCheck(cur) {
   visit(obj);
   return findings;
 }
+
+export { wasmCrossCheck };
 
 // ── crypto wire-format string scan (compiler source) ─────────────────────────
 function wireScan() {
@@ -211,6 +237,10 @@ function wireScan() {
   return hits;
 }
 
+const isCli = process.argv[1] !== undefined
+  && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+function runCli() {
 // ── run ──────────────────────────────────────────────────────────────────────
 const report = { registry: null, artifacts: [], wasmHash: [], wire: [] };
 
@@ -234,7 +264,7 @@ for (const a of artifacts) {
 report.wire = wireScan();
 
 // ── output ────────────────────────────────────────────────────────────────────
-const BROKEN = new Set(["BROKEN", "SIGNATURE-STALE", "WASM-HASH-MISMATCH"]);
+const BROKEN = new Set(["BROKEN", "SIGNATURE-STALE", "WASM-HASH-MISMATCH", "WASM-PATH-REFUSED"]);
 const counts = {};
 for (const a of report.artifacts) counts[a.status] = (counts[a.status] ?? 0) + 1;
 
@@ -273,3 +303,6 @@ const isRegen = (rel) => rel.split(sep)[0] === "build";
 const fatal = report.artifacts.filter((a) => BROKEN.has(a.status) && !isRegen(a.rel)).length + report.wasmHash.length + (report.registry.ok ? 0 : 1);
 if (!JSON_OUT) console.log(`\n${fatal === 0 ? "✅ INTEGRITY OK — no fatal issues (wire-format clean, registry valid, wasm hashes match; any build/ staleness is regenerable)." : "❌ " + fatal + " FATAL integrity issue(s) — see above."}`);
 process.exit(fatal > 0 ? 1 : 0);
+}
+
+if (isCli) runCli();
