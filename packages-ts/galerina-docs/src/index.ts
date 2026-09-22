@@ -6,5 +6,5 @@
 // document, failing closed (`OpenApiGenerationError`) rather than emit an invalid
 // or misleading API contract. See README.md and the api-server README §30 spec.
 export * from "./types.js";
-export { generateOpenApi, exportOpenApi } from "./openapi.js";
+export { generateOpenApi, exportOpenApi, exportOpenApiYaml } from "./openapi.js";
 export { OpenApiGenerationError, validateOpenApiDocument } from "./validate.js";

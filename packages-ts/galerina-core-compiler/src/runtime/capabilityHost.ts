@@ -90,6 +90,8 @@ export interface FlowCallCounters {
 
 export interface CapabilityHostConfig {
   readonly declaredEffects: ReadonlySet<string>;
+  /** Host-owned grants. When present, only the intersection with declaredEffects is authorized. */
+  readonly grantedEffects?: ReadonlySet<string>;
   readonly enforcer: ContractEnforcer;
   /** Optional network destination policy parsed from the flow's contract. */
   readonly networkPolicy?: NetworkDestinationPolicy;
@@ -212,6 +214,12 @@ export function createCapabilityHost(config: CapabilityHostConfig): CapabilityHo
       return {
         allowed: false,
         reason: `Effect '${call.effect}' not declared on this flow`,
+      };
+    }
+    if (config.grantedEffects !== undefined && !config.grantedEffects.has(call.effect)) {
+      return {
+        allowed: false,
+        reason: `Effect '${call.effect}' is not granted by the host`,
       };
     }
 

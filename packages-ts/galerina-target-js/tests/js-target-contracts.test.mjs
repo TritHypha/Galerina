@@ -162,7 +162,11 @@ describe("createJsBundleReport — check outcomes are DERIVED, never caller-asse
     const report = createJsBundleReport({
       plan: browserPlan,
       entry: "dist/checkout-ui.js",
-      modules: [{ path: "dist/checkout-ui.js", exports: ["mount"], imports: [] }],
+      modules: [{
+        path: "dist/checkout-ui.js",
+        exports: ["mount"],
+        imports: ["./dom-glue.js", "galerina-web-render"],
+      }],
       adapters: [{ framework: "react", mountPoint: "#app" }],
     });
     assert.deepEqual(report.checks.map((c) => [c.check, c.passed]), [
@@ -187,7 +191,7 @@ describe("createJsBundleReport — check outcomes are DERIVED, never caller-asse
 
   it("reports a non-server-only module import absent from the plan", () => {
     const report = createJsBundleReport({
-      plan: { ...browserPlan, imports: ["./declared.js"] },
+      plan: { ...browserPlan, imports: [] },
       entry: "dist/missing-module.js",
       modules: [{ path: "dist/missing-module.js", exports: [], imports: ["./missing.js"] }],
     });
@@ -196,6 +200,26 @@ describe("createJsBundleReport — check outcomes are DERIVED, never caller-asse
       report.checks.find((check) => check.check === "server-only-imports-blocked")?.passed,
       false,
     );
+  });
+
+  it("refuses unused and duplicate plan import entries (exact set, not allowlist or bag)", () => {
+    const unused = createJsBundleReport({
+      plan: { ...browserPlan, imports: ["./used.js", "./spare.js"] },
+      entry: "dist/app.js",
+      modules: [{ path: "dist/app.js", exports: ["mount"], imports: ["./used.js"] }],
+    });
+    assert.ok(errorCodes(unused.diagnostics).includes("FUNGI-JS-017"));
+    assert.equal(
+      unused.checks.find((check) => check.check === "server-only-imports-blocked")?.passed,
+      false,
+    );
+
+    const duplicate = createJsBundleReport({
+      plan: { ...browserPlan, imports: ["./used.js", "./used.js"] },
+      entry: "dist/app.js",
+      modules: [{ path: "dist/app.js", exports: ["mount"], imports: ["./used.js"] }],
+    });
+    assert.ok(errorCodes(duplicate.diagnostics).includes("FUNGI-JS-016"));
   });
 
   it("checks module imports and refuses an invalid plan instead of passing absent checks", () => {
@@ -216,7 +240,11 @@ describe("createJsBundleReport — check outcomes are DERIVED, never caller-asse
   });
 
   it("returns immutable report snapshots rather than caller-owned aliases", () => {
-    const modules = [{ path: "dist/checkout-ui.js", exports: ["mount"], imports: [] }];
+    const modules = [{
+      path: "dist/checkout-ui.js",
+      exports: ["mount"],
+      imports: ["./dom-glue.js", "galerina-web-render"],
+    }];
     const adapters = [{ framework: "react", mountPoint: "#app" }];
     const report = createJsBundleReport({
       plan: browserPlan,

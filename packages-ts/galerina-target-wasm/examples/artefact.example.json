@@ -1,0 +1,12 @@
+{
+  "schema": "fungi.wasm.artefact.v1",
+  "path": "out/mod.wasm",
+  "target": { "runtime": "server", "features": ["simd"] },
+  "exports": [{ "name": "run", "kind": "func" }],
+  "imports": [],
+  "digest": "PLACEHOLDER",
+  "bytesHex": "0061736d01000000",
+  "attestation": { "sha256": "PLACEHOLDER", "profile": "dev", "signature": "" },
+  "limits": { "memoryMinPages": 1, "memoryMaxPages": 4, "tableMax": 0, "fuel": 1000 },
+  "effects": []
+}

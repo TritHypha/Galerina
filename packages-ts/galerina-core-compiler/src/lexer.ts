@@ -312,6 +312,24 @@ export function lex(source: string, file: string): LexResult {
 
   const tokens: Token[] = [];
   const diagnostics: LexerDiagnostic[] = [];
+  let tokenBudgetExceeded = false;
+
+  function emitToken(token: Token): boolean {
+    if (tokenBudgetExceeded) return false;
+    if (tokens.length >= MAX_TOKEN_COUNT) {
+      diagnostics.push({
+        code: "FUNGI-LEX-004",
+        name: "FILE_TOO_LARGE",
+        severity: "error",
+        message: "Token count exceeds maximum limit (1,000,000). Split into smaller files.",
+        location: { file, line: token.line, column: token.column },
+      });
+      tokenBudgetExceeded = true;
+      return false;
+    }
+    tokens.push(token);
+    return true;
+  }
 
   // FUNGI-LEX-004: Reject files that exceed the maximum size limit.
   if (source.length > MAX_FILE_SIZE) {
@@ -455,6 +473,7 @@ export function lex(source: string, file: string): LexResult {
   // ── Main scan loop ─────────────────────────────────────────────────────────
 
   while (pos < source.length) {
+    if (tokenBudgetExceeded) break;
     const startPos = pos;
     const startLine = line;
     const startCol = col;
@@ -468,7 +487,7 @@ export function lex(source: string, file: string): LexResult {
 
     const contentBlockToken = scanContentBlock(startPos, startLine, startCol);
     if (contentBlockToken !== undefined) {
-      tokens.push(contentBlockToken);
+      emitToken(contentBlockToken);
       continue;
     }
 
@@ -493,18 +512,7 @@ export function lex(source: string, file: string): LexResult {
       // A genuinely deep single-line generic (>8 `<` before any newline) still
       // trips the threshold, so detection is preserved.
       genericDepth = 0;
-      tokens.push(tok("newline", "\n", startPos, startLine, startCol));
-      // FUNGI-LEX-004: Guard against token count overflow.
-      if (tokens.length > MAX_TOKEN_COUNT) {
-        diagnostics.push({
-          code: "FUNGI-LEX-004",
-          name: "FILE_TOO_LARGE",
-          severity: "error",
-          message: "Token count exceeds maximum limit (1,000,000). Split into smaller files.",
-          location: { file, line, column: col },
-        });
-        break;
-      }
+      if (!emitToken(tok("newline", "\n", startPos, startLine, startCol))) break;
       continue;
     }
 
@@ -525,14 +533,14 @@ export function lex(source: string, file: string): LexResult {
         if (peek() === "\n") {
           // Keep line/col tracking accurate inside block comments
           advance();
-          tokens.push(tok("newline", "\n", pos - 1, line - 1, 0));
+          emitToken(tok("newline", "\n", pos - 1, line - 1, 0));
           lineStartPos = pos;
         } else {
           advance();
         }
       }
       // Emit a single comment token for the whole block (value is the raw text)
-      tokens.push(tok("comment", source.slice(scanStart, pos), startPos, startLine, startCol));
+      emitToken(tok("comment", source.slice(scanStart, pos), startPos, startLine, startCol));
       continue;
     }
 
@@ -543,7 +551,7 @@ export function lex(source: string, file: string): LexResult {
         advance();
       }
       const value = source.slice(scanStart, pos);
-      tokens.push(tok("docComment", value, startPos, startLine, startCol));
+      emitToken(tok("docComment", value, startPos, startLine, startCol));
       continue;
     }
 
@@ -559,7 +567,7 @@ export function lex(source: string, file: string): LexResult {
         advance();
       }
       const value = source.slice(scanStart, pos);
-      tokens.push(tok("genComment", value, startPos, startLine, startCol));
+      emitToken(tok("genComment", value, startPos, startLine, startCol));
       continue;
     }
 
@@ -570,7 +578,7 @@ export function lex(source: string, file: string): LexResult {
         advance();
       }
       const value = source.slice(scanStart, pos);
-      tokens.push(tok("comment", value, startPos, startLine, startCol));
+      emitToken(tok("comment", value, startPos, startLine, startCol));
       continue;
     }
 
@@ -606,7 +614,7 @@ export function lex(source: string, file: string): LexResult {
           `Use double quotes for strings: "${value}"`,
         );
       }
-      tokens.push(tok("char", value, startPos, startLine, startCol));
+      emitToken(tok("char", value, startPos, startLine, startCol));
       continue;
     }
 
@@ -713,7 +721,7 @@ export function lex(source: string, file: string): LexResult {
           `Close the string with a double-quote character.`,
         );
       }
-      tokens.push(tok("string", value, startPos, startLine, startCol));
+      emitToken(tok("string", value, startPos, startLine, startCol));
       continue;
     }
 
@@ -731,7 +739,7 @@ export function lex(source: string, file: string): LexResult {
         ) {
           advance();
         }
-        tokens.push(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
+        emitToken(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
         continue;
       }
 
@@ -742,7 +750,7 @@ export function lex(source: string, file: string): LexResult {
         while (pos < source.length && (peek() === "0" || peek() === "1")) {
           advance();
         }
-        tokens.push(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
+        emitToken(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
         continue;
       }
 
@@ -753,7 +761,7 @@ export function lex(source: string, file: string): LexResult {
         while (pos < source.length && peek() >= "0" && peek() <= "7") {
           advance();
         }
-        tokens.push(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
+        emitToken(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
         continue;
       }
 
@@ -783,7 +791,7 @@ export function lex(source: string, file: string): LexResult {
           advance();
         }
       }
-      tokens.push(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
+      emitToken(tok("number", source.slice(startPos, pos), startPos, startLine, startCol));
       continue;
     }
 
@@ -804,7 +812,7 @@ export function lex(source: string, file: string): LexResult {
       if (twoChar !== undefined) {
         advance();
         advance();
-        tokens.push(tok("operator", twoChar, startPos, startLine, startCol));
+        emitToken(tok("operator", twoChar, startPos, startLine, startCol));
         continue;
       }
     }
@@ -828,7 +836,7 @@ export function lex(source: string, file: string): LexResult {
       } else if (ch === ">") {
         if (genericDepth > 0) genericDepth--;
       }
-      tokens.push(tok("operator", ch, startPos, startLine, startCol));
+      emitToken(tok("operator", ch, startPos, startLine, startCol));
       continue;
     }
 
@@ -851,7 +859,7 @@ export function lex(source: string, file: string): LexResult {
       while (pos < source.length && peek() !== "\n") {
         advance();
       }
-      tokens.push(tok("govComment", source.slice(scanStart, pos), startPos, startLine, startCol));
+      emitToken(tok("govComment", source.slice(scanStart, pos), startPos, startLine, startCol));
       continue;
     }
 
@@ -874,10 +882,10 @@ export function lex(source: string, file: string): LexResult {
       // Emitting "newline" (not "symbol") means the parser never sees it as
       // a syntax element — it just ends the current statement cleanly.
       if (ch === ";") {
-        tokens.push(tok("newline", ";", startPos, startLine, startCol));
+        emitToken(tok("newline", ";", startPos, startLine, startCol));
         continue;
       }
-      tokens.push(tok("symbol", ch, startPos, startLine, startCol));
+      emitToken(tok("symbol", ch, startPos, startLine, startCol));
       continue;
     }
 
@@ -903,7 +911,7 @@ export function lex(source: string, file: string): LexResult {
       }
 
       if (V1_ACTIVE_KEYWORDS.has(value)) {
-        tokens.push(tok("keyword", value, startPos, startLine, startCol));
+        emitToken(tok("keyword", value, startPos, startLine, startCol));
       } else if (V1_FUTURE_RESERVED.has(value)) {
         diag(
           "FUNGI-SYNTAX-003",
@@ -914,9 +922,9 @@ export function lex(source: string, file: string): LexResult {
           `Rename the identifier. "${value}" is reserved for a planned Galerina feature.`,
         );
         // Emit as keyword so the parser can skip gracefully
-        tokens.push(tok("keyword", value, startPos, startLine, startCol));
+        emitToken(tok("keyword", value, startPos, startLine, startCol));
       } else {
-        tokens.push(tok("identifier", value, startPos, startLine, startCol));
+        emitToken(tok("identifier", value, startPos, startLine, startCol));
       }
       continue;
     }
@@ -951,7 +959,7 @@ export function lex(source: string, file: string): LexResult {
   }
 
   // ── EOF sentinel ───────────────────────────────────────────────────────────
-  tokens.push({ kind: "eof", kindId: TokenKindId.Eof, value: "", line, column: col, endLine: line, endColumn: col, start: pos, end: pos });
+  emitToken({ kind: "eof", kindId: TokenKindId.Eof, value: "", line, column: col, endLine: line, endColumn: col, start: pos, end: pos });
 
   return { tokens, diagnostics };
 }

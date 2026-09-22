@@ -17,6 +17,7 @@ import {
   mkdirSync,
   writeFileSync,
   existsSync,
+  statSync,
 } from "node:fs";
 import { execSync, spawnSync } from "node:child_process";
 import { parseProgram, type AstNode, type FlowMeta } from "./parser.js";
@@ -405,6 +406,20 @@ interface FileCompileResult {
 // need it. This module now guards its process entry point so focused compiler
 // tests can import `compileFile` without executing the CLI as a side effect.
 
+const MAX_COMPILER_SOURCE_BYTES = 10 * 1024 * 1024;
+
+function readBoundedSource(filePath: string): string {
+  const st = statSync(filePath);
+  if (!st.isFile() || st.size > MAX_COMPILER_SOURCE_BYTES) {
+    throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+  }
+  const source = readFileSync(filePath, "utf8");
+  if (source.length > MAX_COMPILER_SOURCE_BYTES) {
+    throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+  }
+  return source;
+}
+
 export function compileFile(
   filePath: string,
   mode: CliMode,
@@ -412,7 +427,7 @@ export function compileFile(
 ): FileCompileResult {
   let source: string;
   try {
-    source = readFileSync(filePath, "utf8");
+    source = readBoundedSource(filePath);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return {
@@ -871,7 +886,7 @@ function runVerifySelfhost(): void {
   for (const filePath of fungiFiles) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      source = readBoundedSource(filePath); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -927,7 +942,7 @@ function runFixEffects(targetDir: string): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      source = readBoundedSource(filePath); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -1103,7 +1118,7 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      source = readBoundedSource(filePath); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       inputWasBlocked = true;
       continue;
@@ -1308,7 +1323,7 @@ function runGovernanceDiff(baseRefArg: string): void {
     const rel = file.replace(process.cwd() + "\\", "").replace(process.cwd() + "/", "").replace(/\\/g, "/");
     // After = working tree
     try {
-      const afterSrc = readFileSync(file, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      const afterSrc = readBoundedSource(file); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       afterFlows.push(...parseProgram(afterSrc, file).flows);
     } catch { /* skip unreadable */ }
     // Before = the file at baseRef (git show)
@@ -1373,7 +1388,7 @@ function runCostAnalysis(targetDir: string): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      source = readBoundedSource(filePath); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -1633,7 +1648,7 @@ function main(): void {
     // Parse per-file disable directives from the source
     let directives: DisableDirectives = { fileDisabled: new Set(), lineDisabled: new Map() };
     try {
-      const src = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+      const src = readBoundedSource(filePath); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       directives = parseDisableDirectives(src);
     } catch { /* ignore read error -- file already compiled above */ }
 

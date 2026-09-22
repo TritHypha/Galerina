@@ -3,7 +3,9 @@
 > Current-status note (2026-08-09): this package roadmap preserves the original
 > staged direction and is not the live completion ledger. Current conversion,
 > security and authority state is owned by
-> `docs/ROADMAP.md` at repository root.
+> `docs/ROADMAP.md` at repository root. 2026-09-22: Q1/Q2 photonic coupon
+> continuation and constitution discussion draft are on that root roadmap /
+> work register (W15 / CONST).
 
 This roadmap outlines the planned direction for **Galerina / Galerina**.
 

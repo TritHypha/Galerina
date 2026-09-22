@@ -63,6 +63,8 @@ export interface RuntimeOptions {
   readonly enforceNamingPolicy?: boolean;
   /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
   readonly cryptoProvider?: CryptoProvider;
+  /** Host-owned effect grants. When set, only the intersection with source-declared effects is authorized. */
+  readonly grantedEffects?: readonly string[];
 }
 
 export interface RuntimeResult {
@@ -285,8 +287,12 @@ export async function run(
   const flowMeta = parseResult.flows.find((f) => f.name === flowName);
   const declaredEffects = new Set<string>(flowMeta?.declaredEffects ?? []);
 
+  const grantedEffects = options.grantedEffects === undefined
+    ? undefined
+    : new Set(options.grantedEffects);
   const capabilityHost: CapabilityHost = createCapabilityHost({
     declaredEffects,
+    ...(grantedEffects !== undefined ? { grantedEffects } : {}),
     enforcer: finalEnforcer,
   });
 

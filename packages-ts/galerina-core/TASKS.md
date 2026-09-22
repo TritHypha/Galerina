@@ -1,5 +1,8 @@
 # Galerina Tasks
 
+> Current sequencing: root [work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md).
+> Security Q1/Q2 and the constitution discussion are recorded there, not in this historical task list.
+
 This document tracks practical tasks for **Galerina / Galerina**.
 
 Galerina is a strict, memory-safe, security-first, JSON-native, API-native and accelerator-aware programming language concept.

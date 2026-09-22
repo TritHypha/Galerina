@@ -16,6 +16,7 @@
  *     structural defect the generator THROWS rather than emit a misleading contract.
  *   - The generator reads policy metadata only — never bodies, env, or secrets.
  */
+import { isProxy } from "node:util/types";
 import type {
   EffectiveRoutePolicy,
   GenerateOpenApiInput,
@@ -43,6 +44,9 @@ import { OpenApiGenerationError, validateOpenApiDocument } from "./validate.js";
 const DEFAULT_VERSION: OpenApiVersion = "3.1.0";
 const BEARER_SCHEME = "bearerAuth";
 const ERROR_SCHEMA = "Error";
+const MAX_CONTRACT_SCHEMAS = 1024;
+const MAX_CONTRACT_DEPTH = 64;
+const MAX_CONTRACT_VALUES = 65536;
 
 /** Methods that carry a JSON request body by contract (and so get body gates documented). */
 const BODY_METHODS: ReadonlySet<HttpMethod> = new Set<HttpMethod>([
@@ -136,17 +140,36 @@ interface BuildContext {
 
 function refSchema(typeName: string, ctx: BuildContext): Reference {
   const name = sanitizeSchemaName(typeName);
+  if ([ERROR_SCHEMA, "__proto__", "constructor", "prototype"].includes(typeName) ||
+      [ERROR_SCHEMA, "__proto__", "constructor", "prototype"].includes(name)) {
+    throw new OpenApiGenerationError(`Contract type '${typeName}' uses reserved component '${name}'.`);
+  }
   const previous = ctx.referencedSchemas.get(name);
   if (previous !== undefined && previous !== typeName) {
     throw new OpenApiGenerationError(
       `Contract type names '${previous}' and '${typeName}' collide as OpenAPI component '${name}'.`,
     );
   }
-  if (!ctx.referencedSchemas.has(name)) ctx.referencedSchemas.set(name, typeName);
+  if (!ctx.referencedSchemas.has(name)) {
+    if (ctx.referencedSchemas.size >= MAX_CONTRACT_SCHEMAS) {
+      throw new OpenApiGenerationError("Contract schema reference closure exceeds the schema limit.");
+    }
+    ctx.referencedSchemas.set(name, typeName);
+  }
   return { $ref: `#/components/schemas/${name}` };
 }
 
-function cloneContractValue(value: unknown, path: string): unknown {
+function cloneContractValue(
+  value: unknown,
+  path: string,
+  ctx: BuildContext,
+  budget: { remaining: number },
+  depth = 0,
+): unknown {
+  if (depth > MAX_CONTRACT_DEPTH || --budget.remaining < 0) {
+    throw new OpenApiGenerationError(`Contract schema ${path} exceeds the depth or value limit.`);
+  }
+  if (isProxy(value)) throw new OpenApiGenerationError(`Contract schema ${path} must not contain proxies.`);
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
   if (typeof value === "number") {
     if (!Number.isFinite(value)) throw new OpenApiGenerationError(`Contract schema ${path} contains a non-finite number.`);
@@ -172,7 +195,7 @@ function cloneContractValue(value: unknown, path: string): unknown {
       if (descriptor === undefined || !("value" in descriptor)) {
         throw new OpenApiGenerationError(`Contract schema ${path}[${index}] must be a data property.`);
       }
-      clone.push(cloneContractValue(descriptor.value, `${path}[${index}]`));
+      clone.push(cloneContractValue(descriptor.value, `${path}[${index}]`, ctx, budget, depth + 1));
     }
     return clone;
   }
@@ -194,7 +217,24 @@ function cloneContractValue(value: unknown, path: string): unknown {
     if (!("value" in descriptor)) {
       throw new OpenApiGenerationError(`Contract schema ${path}.${key} must be a data property.`);
     }
-    clone[key] = cloneContractValue(descriptor.value, `${path}.${key}`);
+    if (key === "$ref") {
+      const ref: unknown = descriptor.value;
+      if (typeof ref !== "string") {
+        throw new OpenApiGenerationError(`Contract schema ${path} requires a string $ref.`);
+      }
+      if (ref.startsWith("#/types/")) {
+        const originalName = ref.slice("#/types/".length);
+        if (originalName.length === 0 || /[/~]/.test(originalName)) {
+          throw new OpenApiGenerationError(`Contract schema ${path} has an unsupported type reference.`);
+        }
+        clone[key] = refSchema(originalName, ctx).$ref;
+      } else {
+        // Existing local component references remain subject to output validation.
+        clone[key] = ref;
+      }
+    } else {
+      clone[key] = cloneContractValue(descriptor.value, `${path}.${key}`, ctx, budget, depth + 1);
+    }
   }
   return clone;
 }
@@ -220,6 +260,9 @@ function sourceBackedSchemas(
   }
 
   const schemas: Record<string, SchemaObject> = {};
+  const budget = { remaining: MAX_CONTRACT_VALUES };
+  // Map iteration visits newly discovered references once, including recursive
+  // type graphs, without recursively expanding the referenced definitions.
   for (const [componentName, originalName] of ctx.referencedSchemas) {
     if (!Object.prototype.hasOwnProperty.call(contractSchemas.types, originalName)) {
       throw new OpenApiGenerationError(`Contract schema '${originalName}' is missing from the source-backed export.`);
@@ -229,10 +272,13 @@ function sourceBackedSchemas(
       throw new OpenApiGenerationError(`Contract schema '${originalName}' must be a data property.`);
     }
     const sourceSchema = schemaDescriptor.value;
+    if (isProxy(sourceSchema)) {
+      throw new OpenApiGenerationError(`Contract schema '${originalName}' must not be a proxy.`);
+    }
     if (sourceSchema === null || typeof sourceSchema !== "object" || Array.isArray(sourceSchema)) {
       throw new OpenApiGenerationError(`Contract schema '${originalName}' must be a non-empty object.`);
     }
-    const cloned = cloneContractValue(sourceSchema, `types.${originalName}`) as SchemaObject;
+    const cloned = cloneContractValue(sourceSchema, `types.${originalName}`, ctx, budget) as SchemaObject;
     if (Object.keys(cloned).length === 0) {
       throw new OpenApiGenerationError(`Contract schema '${originalName}' must not be empty.`);
     }
@@ -489,3 +535,17 @@ export function generateOpenApi(input: GenerateOpenApiInput): OpenApiDocument {
  * entry point described in `galerina-framework-api-server` README §30.
  */
 export const exportOpenApi = generateOpenApi;
+
+/**
+ * JSON-compatible YAML 1.2 of the same document `generateOpenApi` emits.
+ * No second YAML object model: OpenAPI JSON is valid YAML 1.2.
+ * Generation still fails closed through {@link generateOpenApi}.
+ */
+export function exportOpenApiYaml(input: GenerateOpenApiInput): string {
+  const doc = generateOpenApi(input);
+  const text = JSON.stringify(doc);
+  if (typeof text !== "string" || text.length === 0) {
+    throw new OpenApiGenerationError("OpenAPI YAML export refused: document did not serialise.");
+  }
+  return text;
+}

@@ -208,6 +208,26 @@ pure flow badListMethods() -> Array<Int> {
     );
   });
 
+  it("types Map.entries as Array<MapEntry<K,V>> and refuses a String array binding", () => {
+    const ok = typeErrors(`
+pure flow entriesOk() -> Int {
+  let values: Map<String, Int> = Map.empty()
+  let rows = values.entries()
+  return 1
+}
+`);
+    assert.deepEqual(ok.map((e) => e.code).filter((c) => c === "FUNGI-TYPE-002"), []);
+
+    const bad = typeErrors(`
+pure flow entriesBad() -> Array<String> {
+  let values: Map<String, Int> = Map.empty()
+  let rows: Array<String> = values.entries()
+  return rows
+}
+`);
+    assert.ok(bad.some((e) => e.code === "FUNGI-TYPE-002"));
+  });
+
   it("retains Map<K,V> through bounded map methods", () => {
     const errors = typeErrors(`
 pure flow mapMethods() -> Map<String, Int> {

@@ -1,5 +1,9 @@
 # Galerina TODO
 
+> Current sequencing: root [work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
+> (W15 security continuation, CONST constitution discussion draft). This package
+> checklist is historical language-core planning.
+
 This document lists the working TODO items for **Galerina / Galerina**.
 
 Galerina is a strict, memory-safe, security-first, JSON-native, API-native and accelerator-aware programming language concept.

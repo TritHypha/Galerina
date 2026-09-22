@@ -29,7 +29,11 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
         const bcryptMod = await import("bcryptjs");
         const bcrypt = bcryptMod.default ?? bcryptMod;
         if (request.op === "password-hash") {
-          return hashResult("bcrypt", bcrypt.hashSync(request.plaintext, request.rounds ?? 10));
+          const rounds = request.rounds ?? 10;
+          if (!Number.isSafeInteger(rounds) || rounds < 10 || rounds > 12) {
+            throw new RangeError("bcrypt rounds must be a safe integer in 10..12");
+          }
+          return hashResult("bcrypt", bcrypt.hashSync(request.plaintext, rounds));
         }
         try {
           return verifyResult(bcrypt.compareSync(request.plaintext, request.hash));

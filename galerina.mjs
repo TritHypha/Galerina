@@ -21,7 +21,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, appendFileSync } from "node:fs";
-import { join, basename, dirname, resolve, sep } from "node:path";
+import { join, basename, dirname, resolve, sep, relative, isAbsolute } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { execSync, spawnSync } from "node:child_process";
@@ -1018,8 +1018,31 @@ Baseline comparison (governance-cost):
       try { packageDescriptor = JSON.parse(readFileSync(descPath, "utf8")); }
       catch (e) { console.error(`Error: invalid package.fungi.json — ${e.message}`); process.exit(1); }
       if (!packageDescriptor.name) { console.error('Error: package.fungi.json must declare a "name"'); process.exit(1); }
+      if (typeof packageDescriptor.name !== "string"
+          || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(packageDescriptor.name)
+          || packageDescriptor.name.includes("..")) {
+        console.error(`Error: package.fungi.json name '${packageDescriptor.name}' is not an admitted filename`);
+        process.exit(1);
+      }
       packageBuild = pkgDir;
-      fungiFile = join(pkgDir, packageDescriptor.entry || "src/index.fungi");
+      const entryRel = packageDescriptor.entry || "src/index.fungi";
+      if (typeof entryRel !== "string"
+          || entryRel.includes("\0")
+          || entryRel.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
+          || /^[A-Za-z]:/.test(entryRel)
+          || entryRel.startsWith("/")
+          || entryRel.startsWith("\\")) {
+        console.error(`Error: package.fungi.json entry '${entryRel}' is not an admitted package-relative path`);
+        process.exit(1);
+      }
+      fungiFile = join(pkgDir, entryRel);
+      const pkgAbs = resolve(pkgDir);
+      const entryAbs = resolve(fungiFile);
+      const entryFromPkg = relative(pkgAbs, entryAbs);
+      if (entryFromPkg.startsWith("..") || isAbsolute(entryFromPkg)) {
+        console.error(`Error: package.fungi.json entry escapes the package directory`);
+        process.exit(1);
+      }
       // ── CG-7 third end (owner-approved 2026-07-02; committed-state refinement
       // 2026-07-10, #21): refuse to locally rebuild a SIGNED fusable package via direct
       // `build --package` when its manifest is a COMMITTED ceremony artifact — git-tracked
@@ -1842,6 +1865,11 @@ Baseline comparison (governance-cost):
                 const mlPubRaw = new Uint8Array(Buffer.from(readFileSync(mlPubPath, "utf-8").trim(), "base64"));
                 const valid = await cc.verifyGovernanceSignatureHybrid(envelope, edPubDer, mlPubRaw);
                 if (valid) {
+                  if (jsonManifest.sourceHash !== manifest.sourceHash
+                      || jsonManifest.schemaVersion !== manifest.schemaVersion) {
+                    console.error(`❌ FUNGI-MANIFEST-TAMPER: signed JSON sidecar does not bind the checked CBOR subject`);
+                    process.exit(1);
+                  }
                   console.log(`   🔐🛡️  Hybrid signature verified (Ed25519+ML-DSA-65, keyId: ${sig.keyId.slice(0, 8)}...) — both halves`);
                 } else {
                   console.error(`❌ FUNGI-MANIFEST-TAMPER: hybrid signature verification FAILED (both halves required) — manifest may be tampered or PQ-downgraded.`);
@@ -1892,6 +1920,11 @@ Baseline comparison (governance-cost):
                   const valid = cryptoVerify(null, Buffer.from(manifestForVerification), publicKey, Buffer.from(sig.signature, "base64"));
 
                   if (valid) {
+                    if (jsonManifest.sourceHash !== manifest.sourceHash
+                        || jsonManifest.schemaVersion !== manifest.schemaVersion) {
+                      console.error(`❌ FUNGI-MANIFEST-TAMPER: signed JSON sidecar does not bind the checked CBOR subject`);
+                      process.exit(1);
+                    }
                     console.log(`   🔐 Signature verified (${sig.algorithm}, keyId: ${sig.keyId.slice(0, 8)}...)`);
                   } else {
                     console.error(`❌ FUNGI-MANIFEST-TAMPER: Signature verification FAILED — manifest may be tampered`);
@@ -2378,10 +2411,14 @@ Baseline comparison (governance-cost):
 
   if (command === "build") {
     const name = packageBuild ? packageDescriptor.name : basename(fungiFile, ".fungi");
+    if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name) || name.includes("..")) {
+      console.error(`Error: artifact name '${name}' is not an admitted filename`);
+      process.exit(1);
+    }
     const outDir = packageBuild ? join(packageBuild, "dist") : "build";
     mkdirSync(outDir, { recursive: true });
-    writeFileSync(`${outDir}/${name}.wasm`, assembled.wasm);
-    writeFileSync(`${outDir}/${name}.wat`, wat);
+    writeFileSync(join(outDir, `${name}.wasm`), assembled.wasm);
+    writeFileSync(join(outDir, `${name}.wat`), wat);
 
     // ── SIGNING-BOUNDARY GATE — the ONE production security gate (RD-0234/0234b) ──
     // Formerly (CG-4, 2026-07-01) this re-ran ONLY value-state / effects / governance,
@@ -2442,8 +2479,6 @@ Baseline comparison (governance-cost):
       );
       const govResult = m.verifyGovernance(parsed.ast, parsed.flows,
         m.checkEffects(parsed.flows, parsed.ast), "dev");
-      const source = readUntrustedSource(fungiFile);
-      if (source === null) process.exit(1); // fail-closed: oversized/unreadable .fungi rejected
       const baseManifest = generateManifest(
         source,
         toRepoRelative(fungiFile),

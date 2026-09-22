@@ -184,20 +184,51 @@ export interface PhotonicTargetReport {
 
 // ── runtime contract helpers ──────────────────────────────────────────────────
 // The interfaces above are the type contract; the helpers below enforce it at
-// runtime for lowering plans that arrive as untrusted parsed JSON. The diagnostic
-// shape matches PhotonicTargetReport.diagnostics ({code, safeMessage, suggestedFix})
-// — a "safe" message never leaks vendor/host detail. Fail-closed: physically
-// impossible channels and silently-dropped operations are rejected.
+// runtime for lowering plans that arrive as untrusted parsed JSON. Diagnostics
+// use fungi.photonic.diagnostic.v1: message is redacted (the former
+// safeMessage meaning), severity is required, path is a locator, and
+// suggestedFix is advisory only. Fail-closed: physically impossible channels
+// and silently-dropped operations are rejected.
+
+export const PHOTONIC_DIAGNOSTIC_SCHEMA = "fungi.photonic.diagnostic.v1";
+
+export type PhotonicDiagnosticSeverity = "warning" | "error";
 
 export interface PhotonicDiagnostic {
+  readonly schema: typeof PHOTONIC_DIAGNOSTIC_SCHEMA;
   readonly code: string;
-  readonly safeMessage: string;
+  readonly severity: PhotonicDiagnosticSeverity;
+  readonly message: string;
+  readonly path?: string;
   readonly suggestedFix?: string;
 }
+
+export type PhotonicDiagnosticDecode =
+  | { readonly ok: true; readonly value: PhotonicDiagnostic }
+  | { readonly ok: false; readonly diagnostic: PhotonicDiagnostic };
 
 export type PhotonicActualTargetDecode =
   | { readonly ok: true; readonly value: PhotonicActualTarget }
   | { readonly ok: false; readonly diagnostic: PhotonicDiagnostic };
+
+const PHOTONIC_DIAGNOSTIC_ALLOWED: readonly string[] = [
+  "schema",
+  "code",
+  "severity",
+  "message",
+  "path",
+  "suggestedFix",
+];
+const PHOTONIC_DIAGNOSTIC_REQUIRED: readonly string[] = [
+  "schema",
+  "code",
+  "severity",
+  "message",
+];
+const PHOTONIC_DIAGNOSTIC_SEVERITIES: readonly PhotonicDiagnosticSeverity[] = [
+  "warning",
+  "error",
+];
 
 const PHOTONIC_STATUSES: readonly PhotonicTargetStatus[] = [
   "photonic-compatible",
@@ -396,12 +427,101 @@ function decodePhotonicLoweringPlan(value: unknown): PhotonicLoweringPlan | unde
   };
 }
 
+function createPhotonicDiagnostic(
+  code: string,
+  severity: PhotonicDiagnosticSeverity,
+  message: string,
+  path: string | undefined,
+  suggestedFix: string | undefined,
+): PhotonicDiagnostic {
+  return Object.freeze({
+    schema: PHOTONIC_DIAGNOSTIC_SCHEMA,
+    code,
+    severity,
+    message,
+    ...(path === undefined ? {} : { path }),
+    ...(suggestedFix === undefined ? {} : { suggestedFix }),
+  });
+}
+
 function photonicDiagnostic(
   code: string,
-  safeMessage: string,
-  suggestedFix?: string,
+  message: string,
+  path: string | undefined,
+  suggestedFix: string | undefined,
 ): PhotonicDiagnostic {
-  return { code, safeMessage, ...(suggestedFix === undefined ? {} : { suggestedFix }) };
+  return createPhotonicDiagnostic(code, "error", message, path, suggestedFix);
+}
+
+function freezePhotonicDiagnostics(
+  diagnostics: readonly PhotonicDiagnostic[],
+): readonly PhotonicDiagnostic[] {
+  return Object.freeze([...diagnostics]);
+}
+
+function capturePhotonicDiagnosticRecord(value: unknown): Record<string, unknown> | undefined {
+  try {
+    if (typeof value !== "object" || value === null || Array.isArray(value) ||
+        Object.getPrototypeOf(value) !== Object.prototype) {
+      return undefined;
+    }
+    const captured: Record<string, unknown> = {};
+    for (const key of Reflect.ownKeys(value)) {
+      if (typeof key !== "string" || !PHOTONIC_DIAGNOSTIC_ALLOWED.includes(key)) {
+        return undefined;
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) {
+        return undefined;
+      }
+      captured[key] = descriptor.value;
+    }
+    if (PHOTONIC_DIAGNOSTIC_REQUIRED.some((key) => !Object.prototype.hasOwnProperty.call(captured, key))) {
+      return undefined;
+    }
+    return captured;
+  } catch {
+    return undefined;
+  }
+}
+
+export function decodePhotonicDiagnostic(
+  value: unknown,
+  path = "diagnostic",
+): PhotonicDiagnosticDecode {
+  const invalid = (): PhotonicDiagnosticDecode => ({
+    ok: false,
+    diagnostic: photonicDiagnostic(
+      "Galerina_PHOTONIC_DIAGNOSTIC_INVALID",
+      "A photonic diagnostic must be an exact fungi.photonic.diagnostic.v1 record.",
+      path,
+      "Supply schema, code, severity, and a redacted message; do not use safeMessage.",
+    ),
+  });
+  const record = capturePhotonicDiagnosticRecord(value);
+  if (record === undefined) return invalid();
+
+  const { schema, code, severity, message, path: locator, suggestedFix } = record;
+  if (schema !== PHOTONIC_DIAGNOSTIC_SCHEMA ||
+      typeof code !== "string" || code.trim().length === 0 ||
+      typeof severity !== "string" ||
+      !PHOTONIC_DIAGNOSTIC_SEVERITIES.includes(severity as PhotonicDiagnosticSeverity) ||
+      typeof message !== "string" || message.trim().length === 0 ||
+      (locator !== undefined && (typeof locator !== "string" || locator.trim().length === 0)) ||
+      (suggestedFix !== undefined && (typeof suggestedFix !== "string" || suggestedFix.trim().length === 0))) {
+    return invalid();
+  }
+
+  return {
+    ok: true,
+    value: createPhotonicDiagnostic(
+      code,
+      severity as PhotonicDiagnosticSeverity,
+      message,
+      locator === undefined ? undefined : locator,
+      suggestedFix === undefined ? undefined : suggestedFix,
+    ),
+  };
 }
 
 /** Decode the runtime target label before it can enter an execution-plan report. */
@@ -417,6 +537,7 @@ export function decodePhotonicActualTarget(
     diagnostic: photonicDiagnostic(
       "Galerina_PHOTONIC_ACTUAL_TARGET_INVALID",
       "A photonic execution target must use an admitted runtime label.",
+      path,
       `Set ${path} to one of the admitted photonic target labels.`,
     ),
   };
@@ -430,11 +551,12 @@ export function validateOpticalChannelLayout(
 ): readonly PhotonicDiagnostic[] {
   const decoded = decodeOpticalChannel(channel);
   if (decoded === undefined) {
-    return [photonicDiagnostic(
+    return freezePhotonicDiagnostics([photonicDiagnostic(
       "Galerina_PHOTONIC_CHANNEL_RECORD_INVALID",
       "An optical channel must be an exact own-data record.",
+      path,
       `Replace ${path} with a plain record containing only its admitted fields.`,
-    )];
+    )]);
   }
 
   const diagnostics: PhotonicDiagnostic[] = [];
@@ -443,6 +565,7 @@ export function validateOpticalChannelLayout(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_CHANNEL_ID_REQUIRED",
       "An optical channel requires an identifier.",
+      `${path}.channelId`,
       `Set ${path}.channelId to a non-empty value.`,
     ));
   }
@@ -451,6 +574,7 @@ export function validateOpticalChannelLayout(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_WAVELENGTH_INVALID",
       "An optical channel wavelength must be a positive number of nanometres.",
+      `${path}.wavelengthNm`,
       `Set ${path}.wavelengthNm to a finite value greater than 0.`,
     ));
   }
@@ -459,20 +583,25 @@ export function validateOpticalChannelLayout(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_PHASE_INVALID",
       "An optical channel phase, when set, must be a finite number of degrees.",
+      `${path}.phaseDegrees`,
       `Set ${path}.phaseDegrees to a finite value.`,
     ));
   }
 
   if (decoded.amplitude !== undefined &&
-      (!Number.isFinite(decoded.amplitude) || decoded.amplitude <= 0 || decoded.amplitude > 1)) {
+      (!Number.isFinite(decoded.amplitude) ||
+        Object.is(decoded.amplitude, -0) ||
+        decoded.amplitude < 0 ||
+        decoded.amplitude > 1)) {
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_AMPLITUDE_INVALID",
-      "An optical channel amplitude, when set, must be normalised within (0, 1].",
-      `Set ${path}.amplitude to a value greater than 0 and at most 1.`,
+      "An optical channel amplitude, when set, must be a finite value in [0, 1], excluding IEEE signed zero.",
+      `${path}.amplitude`,
+      `Set ${path}.amplitude to a finite value from 0 to 1 that is not signed zero.`,
     ));
   }
 
-  return diagnostics;
+  return freezePhotonicDiagnostics(diagnostics);
 }
 
 // A lowering plan must carry a known status, explain every unsupported operation
@@ -484,11 +613,12 @@ export function validatePhotonicLoweringPlan(
 ): readonly PhotonicDiagnostic[] {
   const decoded = decodePhotonicLoweringPlan(plan);
   if (decoded === undefined) {
-    return [photonicDiagnostic(
+    return freezePhotonicDiagnostics([photonicDiagnostic(
       "Galerina_PHOTONIC_PLAN_RECORD_INVALID",
       "A photonic lowering plan must be an exact own-data record with dense nested arrays.",
+      path,
       `Replace ${path} with a complete plain lowering-plan record.`,
-    )];
+    )]);
   }
 
   const diagnostics: PhotonicDiagnostic[] = [];
@@ -497,6 +627,7 @@ export function validatePhotonicLoweringPlan(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_STATUS_INVALID",
       "A lowering plan status must be one of the known photonic target statuses.",
+      `${path}.status`,
       `Set ${path}.status to one of: ${PHOTONIC_STATUSES.join(", ")}.`,
     ));
   }
@@ -506,6 +637,7 @@ export function validatePhotonicLoweringPlan(
       diagnostics.push(photonicDiagnostic(
         "Galerina_PHOTONIC_MAPPED_OP_INVALID",
         "A mapped photonic operation must use a known operation kind.",
+        `${path}.mappedOperations.${mappingIndex}.operation`,
         `Set ${path}.mappedOperations.${mappingIndex}.operation to a known operation.`,
       ));
     }
@@ -522,6 +654,7 @@ export function validatePhotonicLoweringPlan(
       diagnostics.push(photonicDiagnostic(
         "Galerina_PHOTONIC_UNSUPPORTED_OP_UNEXPLAINED",
         "An unsupported operation must carry both a reason and a suggested fallback.",
+        `${path}.unsupportedOperations.${index}`,
         `Populate ${path}.unsupportedOperations.${index}.reason and .suggestedFallback.`,
       ));
     }
@@ -531,6 +664,7 @@ export function validatePhotonicLoweringPlan(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_STATUS_INCONSISTENT",
       "A plan marked photonic-compatible must not carry unsupported operations.",
+      `${path}.status`,
       `Either map the unsupported operations or set ${path}.status to fallback-required.`,
     ));
   }
@@ -541,9 +675,10 @@ export function validatePhotonicLoweringPlan(
     diagnostics.push(photonicDiagnostic(
       "Galerina_PHOTONIC_PLAN_EMPTY",
       "A lowering plan maps no operations and reports none unsupported.",
+      path,
       `Populate ${path}.mappedOperations or mark ${path}.status as unsupported.`,
     ));
   }
 
-  return diagnostics;
+  return freezePhotonicDiagnostics(diagnostics);
 }

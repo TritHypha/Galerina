@@ -758,13 +758,21 @@ function writeIfMissing(file, content) {
   fs.writeFileSync(file, content, "utf8");
 }
 
+const MAX_PROJECT_FILES = 4096;
+const MAX_PROJECT_FILE_BYTES = 10 * 1024 * 1024;
+const MAX_PROJECT_TOTAL_BYTES = 32 * 1024 * 1024;
+const MAX_PROJECT_DEPTH = 32;
+
 function loadProject(input, excludePatterns = []) {
   const root = path.resolve(input || ".");
   if (!fs.existsSync(root)) {
     fail(`Path does not exist: ${root}`);
   }
 
-  const stat = fs.statSync(root);
+  const stat = fs.lstatSync(root);
+  if (stat.isSymbolicLink()) {
+    fail(`Project path is a symbolic link: ${root}`);
+  }
   const files = stat.isFile() ? [root] : listLOFiles(root);
   const filteredFiles = files.filter((file) => {
     const relative = path.relative(stat.isFile() ? path.dirname(root) : root, file).replace(/\\/g, "/");
@@ -774,29 +782,57 @@ function loadProject(input, excludePatterns = []) {
     fail(`No .fungi files found under ${root}`);
   }
 
+  let totalBytes = 0;
   return {
     root: stat.isFile() ? path.dirname(root) : root,
     input: root,
-    files: filteredFiles.map((file) => ({
-      path: file,
-      relativePath: path.relative(stat.isFile() ? path.dirname(root) : root, file).replace(/\\/g, "/"),
-      content: fs.readFileSync(file, "utf8")
-    }))
+    files: filteredFiles.map((file) => {
+      const st = fs.lstatSync(file);
+      if (st.isSymbolicLink() || !st.isFile() || st.size > MAX_PROJECT_FILE_BYTES) {
+        fail(`Source file '${file}' is not an admitted regular file`);
+      }
+      totalBytes += st.size;
+      if (totalBytes > MAX_PROJECT_TOTAL_BYTES) {
+        fail(`Project source exceeds ${MAX_PROJECT_TOTAL_BYTES} bytes`);
+      }
+      const content = fs.readFileSync(file, "utf8");
+      if (Buffer.byteLength(content, "utf8") > MAX_PROJECT_FILE_BYTES) {
+        fail(`Source file '${file}' exceeds ${MAX_PROJECT_FILE_BYTES} bytes`);
+      }
+      return {
+        path: file,
+        relativePath: path.relative(stat.isFile() ? path.dirname(root) : root, file).replace(/\\/g, "/"),
+        content
+      };
+    })
   };
 }
 
 function listLOFiles(root) {
   const output = [];
-  walk(root);
+  walk(root, 0);
   return output.sort();
 
-  function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+  function walk(dir, depth) {
+    if (depth > MAX_PROJECT_DEPTH) {
+      fail(`Project directory nesting exceeds ${MAX_PROJECT_DEPTH}`);
+    }
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
       if (IGNORED_SOURCE_DIRECTORIES.has(entry.name)) continue;
+      if (typeof entry.isSymbolicLink === "function" && entry.isSymbolicLink()) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        walk(full);
+        walk(full, depth + 1);
       } else if (entry.isFile() && entry.name.endsWith(".fungi")) {
+        if (output.length >= MAX_PROJECT_FILES) {
+          fail(`Project contains more than ${MAX_PROJECT_FILES} .fungi files`);
+        }
         output.push(full);
       }
     }
@@ -3067,11 +3103,24 @@ function generateDevelopmentOutputs(result, outDir) {
 }
 
 function writeReportFiles(outDir, reports) {
-  fs.mkdirSync(outDir, { recursive: true });
+  const root = path.resolve(outDir);
+  fs.mkdirSync(root, { recursive: true });
   const written = [];
   for (const [name, content] of Object.entries(reports)) {
-    const file = path.join(outDir, name);
+    const relative = normaliseBuildOutputPath(name);
+    const file = path.resolve(root, relative);
+    const rel = path.relative(root, file);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) {
+      fail("Build output path escapes the configured build directory.");
+    }
     fs.mkdirSync(path.dirname(file), { recursive: true });
+    try {
+      if (fs.lstatSync(file).isSymbolicLink()) {
+        fail("Build output path is a link and is refused.");
+      }
+    } catch (err) {
+      if (err && err.code !== "ENOENT") throw err;
+    }
     fs.writeFileSync(file, content.endsWith("\n") ? content : content + "\n", "utf8");
     written.push(file);
   }
@@ -3122,13 +3171,32 @@ function verifyBuild(input) {
     const uniqueFiles = Array.from(new Set(outputFiles));
 
     for (const fileName of uniqueFiles) {
-      check(`artefact exists: ${fileName}`, () => fs.existsSync(path.join(buildDir, fileName)), `Missing artefact ${fileName}.`);
+      check(`artefact exists: ${fileName}`, () => {
+        const relative = normaliseBuildOutputPath(fileName);
+        const file = path.resolve(buildDir, relative);
+        const rel = path.relative(buildDir, file);
+        if (rel.startsWith("..") || path.isAbsolute(rel)) return false;
+        try {
+          const st = fs.lstatSync(file);
+          return st.isFile() && !st.isSymbolicLink();
+        } catch {
+          return false;
+        }
+      }, `Missing artefact ${fileName}.`);
     }
 
     for (const [fileName, expectedHash] of Object.entries(manifest.outputHashes || {})) {
       check(`hash matches: ${fileName}`, () => {
-        const file = path.join(buildDir, fileName);
-        if (!fs.existsSync(file)) return false;
+        const relative = normaliseBuildOutputPath(fileName);
+        const file = path.resolve(buildDir, relative);
+        const rel = path.relative(buildDir, file);
+        if (rel.startsWith("..") || path.isAbsolute(rel)) return false;
+        try {
+          const st = fs.lstatSync(file);
+          if (!st.isFile() || st.isSymbolicLink()) return false;
+        } catch {
+          return false;
+        }
         return `sha256:${sha256(fs.readFileSync(file, "utf8"))}` === expectedHash;
       }, `Hash mismatch for ${fileName}.`);
     }
@@ -3142,7 +3210,12 @@ function verifyBuild(input) {
 
     for (const fileName of manifest.reports || []) {
       check(`report JSON parses: ${fileName}`, () => {
-        JSON.parse(fs.readFileSync(path.join(buildDir, fileName), "utf8"));
+        const relative = normaliseBuildOutputPath(fileName);
+        const file = path.resolve(buildDir, relative);
+        const rel = path.relative(buildDir, file);
+        if (rel.startsWith("..") || path.isAbsolute(rel)) return false;
+        if (fs.lstatSync(file).isSymbolicLink()) return false;
+        JSON.parse(fs.readFileSync(file, "utf8"));
         return true;
       }, `Report is not valid JSON: ${fileName}.`);
     }
@@ -4637,9 +4710,21 @@ function requiredOutputs(result) {
 }
 
 function normaliseBuildOutputPath(file) {
+  if (typeof file !== "string" || file.includes("\0")) {
+    fail("Build output path is not an admitted relative filename.");
+  }
   let value = file.replace(/\\/g, "/").replace(/^\.\//, "");
   if (value.startsWith("build/")) value = value.slice("build/".length);
   value = value.replace(/^(debug|release|examples)\//, "");
+  if (
+    value.length === 0
+    || value.startsWith("/")
+    || value.startsWith("//")
+    || /^[A-Za-z]:/.test(value)
+    || value.split("/").some((part) => part === "" || part === "." || part === "..")
+  ) {
+    fail("Build output path escapes the configured build directory.");
+  }
   return value;
 }
 
@@ -5193,14 +5278,15 @@ function runProject(project, result, runOptions = {}) {
 
   const source = project.files.find((file) => file.relativePath === mainFlow.file) || project.files[0];
   const content = stripComments(source.content);
-  if (/\brunComputeMixThroughputBenchmark\s*\(/.test(content)) {
-    return runComputeMixThroughputBenchmarkExample(source, result, content, mainFlow, runOptions);
+  const mainBody = extractNamedFlowBody(content, "main");
+  if (/\brunComputeMixThroughputBenchmark\s*\(/.test(mainBody)) {
+    return runComputeMixThroughputBenchmarkExample(source, result, mainBody, mainFlow, runOptions);
   }
-  if (/\brunArithmeticThresholdBenchmark\s*\(/.test(content)) {
-    return runArithmeticThresholdBenchmarkExample(source, result, content, mainFlow);
+  if (/\brunArithmeticThresholdBenchmark\s*\(/.test(mainBody)) {
+    return runArithmeticThresholdBenchmarkExample(source, result, mainBody, mainFlow);
   }
-  if (/\bguessFourDigitCode\s*\(/.test(content)) {
-    return runFourDigitBenchmarkExample(source, result, content, mainFlow);
+  if (/\bguessFourDigitCode\s*\(/.test(mainBody)) {
+    return runFourDigitBenchmarkExample(source, result, mainBody, mainFlow);
   }
   const functions = collectRunFunctions(content);
   const variables = collectRunVariables(content, functions);
@@ -5223,7 +5309,7 @@ function runArithmeticThresholdBenchmarkExample(source, result, content, mainFlo
   let i = 0;
   let additions = 0;
 
-  while (total <= threshold) {
+  while (total <= threshold && additions < 1_000_000) {
     total += i;
     i += 1;
     additions += 1;
@@ -5301,7 +5387,7 @@ function runComputeMixThroughputBenchmarkExample(source, result, content, mainFl
   const startedCpu = process.cpuUsage();
   let operations = 0;
 
-  if (config.operations !== null) {
+  if (config.operations !== undefined) {
     while (operations < config.operations) {
       const batch = Math.min(config.batchSize, config.operations - operations);
       runComputeMixBatch(state, batch);
@@ -5365,13 +5451,30 @@ function runComputeMixThroughputBenchmarkExample(source, result, content, mainFl
   };
 }
 
+function admitBoundedInt(value, fallback, min, max) {
+  if (!Number.isSafeInteger(value) || value < min) return fallback;
+  return Math.min(value, max);
+}
+
+function extractNamedFlowBody(content, flowName) {
+  const match = content.match(new RegExp(`\\bflow\\s+${flowName}\\s*\\(`));
+  if (!match) return "";
+  const open = content.indexOf("{", match.index);
+  const close = findMatchingBrace(content, open);
+  if (open < 0 || close < 0) return "";
+  return content.slice(open, close + 1);
+}
+
 function extractComputeMixBenchmarkConfig(content, runOptions = {}) {
   const call = content.match(/\brunComputeMixThroughputBenchmark\s*\(\s*([0-9_]+)\s*,\s*([0-9_]+)\s*,\s*([0-9_]+)\s*\)/);
+  const parsedTarget = call ? Number.parseInt(call[1].replace(/_/g, ""), 10) : 20000;
+  const parsedWarmup = call ? Number.parseInt(call[2].replace(/_/g, ""), 10) : 2000;
+  const parsedBatch = call ? Number.parseInt(call[3].replace(/_/g, ""), 10) : 100000;
   return {
-    targetMs: runOptions.targetMs ?? (call ? Number.parseInt(call[1].replace(/_/g, ""), 10) : 20000),
-    warmupMs: runOptions.warmupMs ?? (call ? Number.parseInt(call[2].replace(/_/g, ""), 10) : 2000),
-    batchSize: runOptions.batchSize ?? (call ? Number.parseInt(call[3].replace(/_/g, ""), 10) : 100000),
-    operations: runOptions.operations,
+    targetMs: admitBoundedInt(runOptions.targetMs ?? parsedTarget, 1000, 1, 5000),
+    warmupMs: admitBoundedInt(runOptions.warmupMs ?? parsedWarmup, 0, 0, 1000),
+    batchSize: admitBoundedInt(runOptions.batchSize ?? parsedBatch, 1000, 1, 10000),
+    operations: runOptions.operations === undefined ? undefined : admitBoundedInt(runOptions.operations, 10000, 1, 100000),
     seed: runOptions.seed ?? 123456789
   };
 }
@@ -5397,8 +5500,8 @@ function runComputeMixBatch(state, batchSize) {
 
 function extractArithmeticThresholdBenchmarkConfig(content) {
   const call = content.match(/\brunArithmeticThresholdBenchmark\s*\(\s*([0-9_]+)\s*\)/);
-  if (!call) return 100_000_000_000_000;
-  return Number.parseInt(call[1].replace(/_/g, ""), 10);
+  const parsed = call ? Number.parseInt(call[1].replace(/_/g, ""), 10) : 1_000_000;
+  return admitBoundedInt(parsed, 1_000_000, 1, 1_000_000);
 }
 
 function runFourDigitBenchmarkExample(source, result, content, mainFlow) {
@@ -5470,19 +5573,21 @@ function extractFourDigitBenchmarkConfig(content) {
   }
   return {
     target: call[1],
-    maxAttempts: Number.parseInt(call[2].replace(/_/g, ""), 10)
+    maxAttempts: admitBoundedInt(Number.parseInt(call[2].replace(/_/g, ""), 10), 10000, 1, 10000)
   };
 }
 
 function collectRunVariables(content, functions) {
+  const budget = { depth: 0, steps: 0, visiting: new Set() };
   const variables = new Map();
   for (const match of matches(content, /\blet\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*[A-Za-z_][A-Za-z0-9_<>, ]*\s*=\s*([^\r\n]+)/g)) {
-    variables.set(match[1], evaluateRunExpression(match[2], variables, functions));
+    variables.set(match[1], evaluateRunExpression(match[2], variables, functions, budget));
   }
   return variables;
 }
 
 function collectRunOutput(content, variables, functions) {
+  const budget = { depth: 0, steps: 0, visiting: new Set() };
   const output = [];
   const regex = /\b(?:print|console\.log)\s*\(/g;
   let match;
@@ -5490,21 +5595,23 @@ function collectRunOutput(content, variables, functions) {
     const open = content.indexOf("(", match.index);
     const close = findMatchingParen(content, open);
     if (close === -1) continue;
-    output.push(evaluateRunExpression(content.slice(open + 1, close), variables, functions));
+    output.push(evaluateRunExpression(content.slice(open + 1, close), variables, functions, budget));
     regex.lastIndex = close + 1;
   }
   return output;
 }
 
-function evaluateRunExpression(expression, variables, functions) {
+function evaluateRunExpression(expression, variables, functions, budget) {
+  budget.steps += 1;
+  if (budget.depth > 32 || budget.steps > 10000) return "";
   const text = expression.trim().replace(/;$/, "");
   const concatParts = splitRunOperator(text, ".");
   if (concatParts.length > 1) {
-    return concatParts.map((part) => evaluateRunExpression(part, variables, functions)).join("");
+    return concatParts.map((part) => evaluateRunExpression(part, variables, functions, budget)).join("");
   }
   const additionParts = splitRunOperator(text, "+");
   if (additionParts.length > 1) {
-    const values = additionParts.map((part) => evaluateRunExpression(part, variables, functions));
+    const values = additionParts.map((part) => evaluateRunExpression(part, variables, functions, budget));
     if (values.every(isNumericText)) return sumNumericText(values);
     return text;
   }
@@ -5515,24 +5622,32 @@ function evaluateRunExpression(expression, variables, functions) {
   const simpleCall = text.match(/^([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/);
   const dottedCall = text.match(/^([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/);
   if (dottedCall && dottedCall[1] === "json" && dottedCall[2] === "pretty") {
-    const value = evaluateRunExpression(dottedCall[3], variables, functions);
+    const value = evaluateRunExpression(dottedCall[3], variables, functions, budget);
     return prettyRunJson(value);
   }
   if (simpleCall && functions.has(simpleCall[1])) {
-    return evaluateRunFunction(simpleCall[1], simpleCall[2], variables, functions);
+    return evaluateRunFunction(simpleCall[1], simpleCall[2], variables, functions, budget);
   }
   if (variables.has(text)) return variables.get(text);
   return text;
 }
 
-function evaluateRunFunction(name, argsText, outerVariables, functions) {
+function evaluateRunFunction(name, argsText, outerVariables, functions, budget) {
+  if (budget.visiting.has(name) || budget.depth >= 32 || budget.steps > 10000) return "";
   const flow = functions.get(name);
-  const localVariables = new Map(outerVariables);
-  const args = splitTopLevel(argsText).map((arg) => evaluateRunExpression(arg, outerVariables, functions));
-  flow.params.forEach((param, index) => {
-    localVariables.set(param.name, args[index] || "");
-  });
-  return evaluateRunExpression(flow.returnExpression, localVariables, functions);
+  budget.visiting.add(name);
+  budget.depth += 1;
+  try {
+    const localVariables = new Map(outerVariables);
+    const args = splitTopLevel(argsText).map((arg) => evaluateRunExpression(arg, outerVariables, functions, budget));
+    flow.params.forEach((param, index) => {
+      localVariables.set(param.name, args[index] || "");
+    });
+    return evaluateRunExpression(flow.returnExpression, localVariables, functions, budget);
+  } finally {
+    budget.depth -= 1;
+    budget.visiting.delete(name);
+  }
 }
 
 function collectRunFunctions(content) {

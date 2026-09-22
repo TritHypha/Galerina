@@ -5,7 +5,7 @@
 // genuine signature and fails CLOSED on tamper / missing-or-malformed PQ key (RD-0119/0120).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash, createPublicKey } from "node:crypto";
@@ -87,6 +87,24 @@ test("a hybrid package cannot supply the public keys used to admit itself", asyn
     const verify = makeLmanifestHybridVerifier();
     assert.equal(
       await verify(callInput(f, { governanceDir: undefined, packageDir: f.root })),
+      "unverifiable",
+    );
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});
+
+test("a path-shaped keyId cannot select hybrid keys outside the governance directory", async () => {
+  const f = await fixture();
+  try {
+    const plugin = join(f.root, "plugin");
+    mkdirSync(plugin, { recursive: true });
+    writeFileSync(join(plugin, "attacker.pub.pem"), readFileSync(join(f.gov, `signing-key-${f.keyId}.pub.pem`)));
+    writeFileSync(
+      join(plugin, "attacker.mldsa.pub.b64"),
+      readFileSync(join(f.gov, `signing-key-${f.keyId}.mldsa.pub.b64`)),
+    );
+    const verify = makeLmanifestHybridVerifier();
+    assert.equal(
+      await verify(callInput(f, { keyId: "x/../../plugin/attacker" })),
       "unverifiable",
     );
   } finally { rmSync(f.root, { recursive: true, force: true }); }

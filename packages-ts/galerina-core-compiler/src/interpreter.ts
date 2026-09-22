@@ -2755,6 +2755,13 @@ class Interpreter {
       }
     }
 
+    if (resolveCapabilityEffect(fullName) === "secret.read" && this.capabilityHost === undefined) {
+      return {
+        __tag: "err",
+        error: { __tag: "string", value: "CapabilityError: environment reads require a capability host" },
+      };
+    }
+
     const stdlibResult = await callStdlib(
       fullName,
       evaluatedReceiver,
@@ -3677,6 +3684,14 @@ function resolveCapabilityEffect(fullName: string): string | undefined {
   // AI model calls (e.g. AI.complete, Model.infer, Claude.generate)
   if (/^(AI|Model|Claude|GPT|LLM)\./i.test(fullName)) {
     return "ai.inference";
+  }
+  if (
+    fullName.startsWith("Env.")
+    || fullName.startsWith("env.")
+    || fullName.startsWith("vault.")
+    || fullName.startsWith("Secrets.")
+  ) {
+    return "secret.read";
   }
   return undefined;
 }

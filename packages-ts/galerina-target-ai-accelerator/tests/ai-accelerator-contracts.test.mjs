@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
 
 import {
+  AI_ACCELERATOR_REPORT_SCHEMA,
   GENERIC_ONNX_NPU_PROFILE,
   createAiAcceleratorTargetReport,
   selectAiAcceleratorTarget,
@@ -97,6 +98,8 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
     assert.equal(selection.safe, false);
     assert.equal(selection.diagnostics.some((diagnostic) => diagnostic.code === "Galerina_AI_ACCELERATOR_FALLBACK_CAPABILITY_REQUIRED"), true);
     assert.equal(report.targetSelections[0]?.selectedTarget, "gpu");
+    assert.equal(report.schema, AI_ACCELERATOR_REPORT_SCHEMA);
+    assert.equal(report.refusedSelections.length, 0);
   });
 
   it("detaches and freezes report collections", () => {
@@ -144,14 +147,7 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
     assert.equal(Object.isFrozen(report.targetSelections[0].diagnostics), true);
   });
 
-  it("derives warnings from the same diagnostic snapshot as the report", () => {
-    const snapshotDiagnostics = [
-      { code: "SNAPSHOT_WARNING", severity: "warning", message: "snapshot A" },
-    ];
-    const callerDiagnostics = [
-      { code: "CALLER_WARNING", severity: "warning", message: "caller B" },
-    ];
-    let diagnosticReads = 0;
+  it("refuses accessor diagnostics instead of rereading caller input", () => {
     const selection = {
       selectedTarget: "npu",
       requestedTarget: "npu",
@@ -161,8 +157,7 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
       safe: true,
       reasons: [],
       get diagnostics() {
-        diagnosticReads += 1;
-        return diagnosticReads <= 2 ? snapshotDiagnostics : callerDiagnostics;
+        return [{ code: "SNAPSHOT_WARNING", severity: "warning", message: "snapshot A" }];
       },
     };
 
@@ -171,9 +166,46 @@ describe("galerina-target-ai-accelerator NPU contracts", () => {
       selections: [selection],
     });
 
-    assert.deepEqual(report.targetSelections[0]?.diagnostics, snapshotDiagnostics);
-    assert.deepEqual(report.warnings, ["snapshot A"]);
-    assert.equal(diagnosticReads, 2);
+    assert.equal(report.targetSelections.length, 0);
+    assert.equal(report.refusedSelections.length, 1);
+    assert.equal(report.refusedSelections[0]?.diagnostics[0]?.code, "Galerina_AI_ACCELERATOR_INPUT_REFUSED");
+    assert.deepEqual(report.warnings, []);
+  });
+
+  it("refuses a forged safe selection that is not bound to a decoded capability", () => {
+    const report = createAiAcceleratorTargetReport({
+      capabilities: [],
+      selections: [{
+        requestedTarget: "npu",
+        selectedTarget: "gpu",
+        adapter: "onnxruntime",
+        fallbackUsed: true,
+        fallbackDeclared: true,
+        safe: true,
+        reasons: ["forged"],
+        diagnostics: [],
+      }],
+    });
+    assert.equal(report.targetSelections.length, 0);
+    assert.equal(report.refusedSelections[0]?.diagnostics[0]?.code, "Galerina_AI_ACCELERATOR_SELECTION_UNBOUND");
+  });
+
+  it("refuses a closed-vocabulary severity violation", () => {
+    const report = createAiAcceleratorTargetReport({
+      capabilities: [],
+      selections: [{
+        requestedTarget: "npu",
+        selectedTarget: "reject",
+        adapter: "plan-only",
+        fallbackUsed: false,
+        fallbackDeclared: false,
+        safe: false,
+        reasons: [],
+        diagnostics: [{ code: "Galerina_AI_ACCELERATOR_X", severity: "fatal", message: "nope" }],
+      }],
+    });
+    assert.equal(report.targetSelections.length, 0);
+    assert.equal(report.refusedSelections[0]?.diagnostics[0]?.code, "Galerina_AI_ACCELERATOR_INPUT_REFUSED");
   });
 
   it("validates external ONNX model profiles", () => {

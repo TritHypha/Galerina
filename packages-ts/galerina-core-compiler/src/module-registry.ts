@@ -274,6 +274,7 @@ export function resolveFileImports(
   sourceFile: string,
   importDecls: readonly AstNode[],
   inProgress: Set<string> = new Set(),
+  completed: Map<string, ResolvedFileModule> = new Map(),
 ): ResolvedFileModule[] {
   const results: ResolvedFileModule[] = [];
   const sourceDir = dirname(sourceFile);
@@ -327,6 +328,12 @@ export function resolveFileImports(
           importedFrom: relPath,
         }],
       });
+      continue;
+    }
+
+    const cached = completed.get(resolvedPath);
+    if (cached !== undefined) {
+      results.push(cached);
       continue;
     }
 
@@ -426,7 +433,7 @@ export function resolveFileImports(
       c => c.kind === "importDecl",
     );
     if (nestedImportDecls.length > 0) {
-      const nestedResults = resolveFileImports(resolvedPath, nestedImportDecls, inProgress);
+      const nestedResults = resolveFileImports(resolvedPath, nestedImportDecls, inProgress, completed);
       for (const nestedMod of nestedResults) {
         // Propagate nested symbols into this module's symbol set
         symbols.push(...nestedMod.symbols);
@@ -439,7 +446,9 @@ export function resolveFileImports(
 
     inProgress.delete(resolvedPath);
 
-    results.push({ filePath: resolvedPath, symbols, diagnostics: symbolDiagnostics });
+    const resolved: ResolvedFileModule = { filePath: resolvedPath, symbols, diagnostics: symbolDiagnostics };
+    completed.set(resolvedPath, resolved);
+    results.push(resolved);
   }
 
   return results;
@@ -519,7 +528,7 @@ export function gatherFileImports(
   }
 
   const inProgress = new Set<string>([sourceFile]);
-  const resolvedModules = resolveFileImports(sourceFile, importDecls, inProgress);
+  const resolvedModules = resolveFileImports(sourceFile, importDecls, inProgress, new Map());
 
   const allSymbols: FileImportedSymbol[] = [];
   const allDiagnostics: FileModuleDiagnostic[] = [];

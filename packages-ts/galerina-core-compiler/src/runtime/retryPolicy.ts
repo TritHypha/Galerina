@@ -23,6 +23,10 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   delayMs: 0,
 };
 
+/** Host-owned ceiling. Source-declared attempts above this refuse rather than loop. */
+const MAX_RETRY_ATTEMPTS = 8;
+const MAX_RETRY_DELAY_MS = 30_000;
+
 const DEFAULT_EFFECT_RETRY_POLICY: EffectRetryPolicy = {
   policies: new Map<string, RetryConfig>(),
 };
@@ -71,11 +75,20 @@ export function parseRetryPolicy(
 
     const effectName = effectMatch[1];
     const maxAttempts = parseInt(effectMatch[2], 10);
+    if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > MAX_RETRY_ATTEMPTS) {
+      continue;
+    }
     const rawStrategy = (effectMatch[3] ?? "linear").toLowerCase();
     const strategy = isValidStrategy(rawStrategy) ? rawStrategy : "linear";
     const delayValue = effectMatch[4] !== undefined ? parseFloat(effectMatch[4]) : 0;
+    if (!Number.isFinite(delayValue) || delayValue < 0) {
+      continue;
+    }
     const delayUnit = effectMatch[5] ?? "ms";
     const delayMs = delayUnit.startsWith("second") ? delayValue * 1000 : delayValue;
+    if (!Number.isFinite(delayMs) || delayMs > MAX_RETRY_DELAY_MS) {
+      continue;
+    }
 
     policies.set(effectName, { maxAttempts, strategy, delayMs });
   }
@@ -94,16 +107,20 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
 ): Promise<T> {
   const config: RetryConfig = policy.policies.get(effectName) ?? DEFAULT_RETRY_CONFIG;
+  const maxAttempts = Math.min(
+    Number.isSafeInteger(config.maxAttempts) && config.maxAttempts >= 1 ? config.maxAttempts : 1,
+    MAX_RETRY_ATTEMPTS,
+  );
 
   let lastError: unknown;
 
-  for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (err) {
       lastError = err;
 
-      if (attempt < config.maxAttempts && config.strategy !== "none" && config.delayMs > 0) {
+      if (attempt < maxAttempts && config.strategy !== "none" && config.delayMs > 0) {
         const delay = computeDelay(config, attempt);
         await sleep(delay);
       }

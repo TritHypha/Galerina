@@ -2,10 +2,26 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  PHOTONIC_DIAGNOSTIC_SCHEMA,
   decodePhotonicActualTarget,
+  decodePhotonicDiagnostic,
   validateOpticalChannelLayout,
   validatePhotonicLoweringPlan,
 } from "../dist/index.js";
+
+function assertCanonicalDiagnostic(diagnostic, extras = {}) {
+  assert.equal(diagnostic.schema, PHOTONIC_DIAGNOSTIC_SCHEMA);
+  assert.equal(typeof diagnostic.code, "string");
+  assert.ok(diagnostic.code.length > 0);
+  assert.ok(diagnostic.severity === "warning" || diagnostic.severity === "error");
+  assert.equal(typeof diagnostic.message, "string");
+  assert.ok(diagnostic.message.length > 0);
+  assert.equal("safeMessage" in diagnostic, false);
+  assert.equal(Object.isFrozen(diagnostic), true);
+  for (const [key, value] of Object.entries(extras)) {
+    assert.equal(diagnostic[key], value);
+  }
+}
 
 const codes = (diags) => diags.map((d) => d.code);
 
@@ -23,9 +39,86 @@ describe("decodePhotonicActualTarget — closed runtime vocabulary", () => {
     for (const value of ["photonic", "PHOTONIC_SIM", "photonic_sim\u0000", new String("photonic_sim"), 1, undefined]) {
       const decoded = decodePhotonicActualTarget(value, "plan.actualTarget");
       assert.equal(decoded.ok, false);
-      assert.equal(decoded.diagnostic.code, "Galerina_PHOTONIC_ACTUAL_TARGET_INVALID");
+      assertCanonicalDiagnostic(decoded.diagnostic, {
+        code: "Galerina_PHOTONIC_ACTUAL_TARGET_INVALID",
+        severity: "error",
+        path: "plan.actualTarget",
+      });
       assert.match(decoded.diagnostic.suggestedFix, /plan\.actualTarget/);
     }
+  });
+});
+
+describe("decodePhotonicDiagnostic — C10 shared shape", () => {
+  const canonical = {
+    schema: PHOTONIC_DIAGNOSTIC_SCHEMA,
+    code: "Galerina_PHOTONIC_AMPLITUDE_INVALID",
+    severity: "error",
+    message: "An optical channel amplitude, when set, must be a finite value in [0, 1], excluding IEEE signed zero.",
+    path: "channel.amplitude",
+    suggestedFix: "Set channel.amplitude to a finite value from 0 to 1 that is not signed zero.",
+  };
+
+  it("emits fungi.photonic.diagnostic.v1 records from validators", () => {
+    const diagnostics = validateOpticalChannelLayout({
+      channelId: "c", wavelengthNm: 1550, amplitude: -0,
+    });
+    assert.equal(diagnostics.length, 1);
+    assertCanonicalDiagnostic(diagnostics[0], {
+      code: "Galerina_PHOTONIC_AMPLITUDE_INVALID",
+      severity: "error",
+      path: "channel.amplitude",
+    });
+    assert.ok(diagnostics[0].suggestedFix);
+    assert.equal(Object.isFrozen(diagnostics), true);
+  });
+
+  it("admits a canonical record and preserves warning severity", () => {
+    const admitted = decodePhotonicDiagnostic(canonical);
+    assert.equal(admitted.ok, true);
+    assertCanonicalDiagnostic(admitted.value, {
+      path: canonical.path,
+      suggestedFix: canonical.suggestedFix,
+    });
+
+    const warning = decodePhotonicDiagnostic({
+      schema: PHOTONIC_DIAGNOSTIC_SCHEMA,
+      code: "Galerina_PHOTONIC_STATUS_INVALID",
+      severity: "warning",
+      message: "A lowering plan status must be one of the known photonic target statuses.",
+    });
+    assert.equal(warning.ok, true);
+    assertCanonicalDiagnostic(warning.value, { severity: "warning" });
+  });
+
+  it("refuses legacy safeMessage instead of aliasing it to message", () => {
+    const legacy = decodePhotonicDiagnostic({
+      code: "Galerina_PHOTONIC_AMPLITUDE_INVALID",
+      safeMessage: "vendor=/opt/secret amplitude=-0",
+      suggestedFix: "retry",
+    });
+    assert.equal(legacy.ok, false);
+    assertCanonicalDiagnostic(legacy.diagnostic, {
+      code: "Galerina_PHOTONIC_DIAGNOSTIC_INVALID",
+    });
+    assert.equal("safeMessage" in legacy.diagnostic, false);
+  });
+
+  it("refuses missing schema, info severity, accessors, and surplus keys", () => {
+    assert.equal(decodePhotonicDiagnostic({
+      code: canonical.code,
+      severity: "error",
+      message: canonical.message,
+    }).ok, false);
+    assert.equal(decodePhotonicDiagnostic({ ...canonical, severity: "info" }).ok, false);
+
+    const accessor = { ...canonical };
+    Object.defineProperty(accessor, "message", {
+      enumerable: true,
+      get() { throw new Error("getter must not run"); },
+    });
+    assert.equal(decodePhotonicDiagnostic(accessor).ok, false);
+    assert.equal(decodePhotonicDiagnostic({ ...canonical, extra: true }).ok, false);
   });
 });
 
@@ -43,14 +136,18 @@ describe("validateOpticalChannelLayout — physical validity", () => {
     assert.ok(diags[0].suggestedFix);
   });
 
-  it("rejects an amplitude outside (0, 1]", () => {
+  it("rejects an amplitude outside [0, 1] and IEEE signed zero", () => {
     assert.deepEqual(
       codes(validateOpticalChannelLayout({ channelId: "c", wavelengthNm: 1550, amplitude: 1.5 })),
       ["Galerina_PHOTONIC_AMPLITUDE_INVALID"],
     );
     assert.deepEqual(
-      codes(validateOpticalChannelLayout({ channelId: "c", wavelengthNm: 1550, amplitude: 0 })),
+      codes(validateOpticalChannelLayout({ channelId: "c", wavelengthNm: 1550, amplitude: -0 })),
       ["Galerina_PHOTONIC_AMPLITUDE_INVALID"],
+    );
+    assert.deepEqual(
+      codes(validateOpticalChannelLayout({ channelId: "c", wavelengthNm: 1550, amplitude: 0 })),
+      [],
     );
   });
 

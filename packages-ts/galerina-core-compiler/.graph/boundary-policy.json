@@ -4,6 +4,7 @@
     "@galerina/core-network",
     "@galerina/core-runtime-wasm",
     "@galerina/core-security",
+    "@galerina/data-json",
     "@galerina/devtools-graph-algorithms",
     "@galerina/substrate-math",
     "@galerina/tri-regex",

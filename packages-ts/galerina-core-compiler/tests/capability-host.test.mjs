@@ -60,6 +60,30 @@ describe("check() — declared effect", () => {
 // check() — undeclared effect
 // ---------------------------------------------------------------------------
 
+describe("check() — host-granted effects", () => {
+  it("denies a declared effect that the host did not grant", () => {
+    const host = createCapabilityHost({
+      declaredEffects: new Set(["database.read", "network.outbound"]),
+      grantedEffects: new Set(["database.read"]),
+      enforcer: makeEnforcer(),
+    });
+    assert.equal(host.check({
+      capabilityId: "host.database.read",
+      effect: "database.read",
+      args: [],
+      context: DUMMY_CONTEXT,
+    }).allowed, true);
+    const denied = host.check({
+      capabilityId: "host.network.outbound",
+      effect: "network.outbound",
+      args: [],
+      context: DUMMY_CONTEXT,
+    });
+    assert.equal(denied.allowed, false);
+    assert.ok(denied.reason.includes("not granted"));
+  });
+});
+
 describe("check() — undeclared effect", () => {
   it("denies an effect that is not declared", () => {
     const host = makeHost(["database.read"]);

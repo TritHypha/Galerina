@@ -43,8 +43,8 @@ const VALIDATE_GATES = new Set([
 ]);
 
 const METHODS_BY_RECEIVER: Readonly<Record<string, ReadonlySet<string>>> = {
-  Array: new Set(["empty", "of", "range", "length", "count", "isEmpty", "first", "last", "get", "push", "append", "filter", "map", "reduce", "contains", "includes", "reverse", "slice", "join", "sort", "find", "partition"]),
-  Option: new Set(["sequence", "fromNullable", "isSome", "isNone", "unwrapOr", "map", "flatMap"]),
+  Array: new Set(["empty", "of", "range", "length", "count", "isEmpty", "first", "last", "get", "push", "append", "filter", "map", "reduce", "contains", "includes", "reverse", "slice", "join", "sort", "find", "partition", "zip"]),
+  Option: new Set(["sequence", "fromNullable", "isSome", "isNone", "unwrapOr", "map", "flatMap", "zip"]),
   Result: new Set(["sequence", "fromNullable", "all", "ok", "isOk", "isErr", "unwrapOr", "map", "mapErr", "flatMap"]),
   String: new Set(["length", "charCount", "concat", "trim", "slice", "split", "startsWith", "endsWith", "contains", "includes", "indexOf", "toString", "toStr", "toLower", "toUpper", "charAt", "encode", "toInt", "parse"]),
   Decimal: new Set(["parse", "fromInt", "divide", "remainder", "toString", "toStr"]),

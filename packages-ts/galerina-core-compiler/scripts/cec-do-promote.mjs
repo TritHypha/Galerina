@@ -2,8 +2,8 @@
 // Apply /// test_status: stable headers to all promotion candidates.
 // Reads from cec-promote-list.json.
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { lstatSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join, dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -23,8 +23,24 @@ let alreadyStable = 0;
 let notFound = 0;
 
 for (const name of candidates) {
+  if (typeof name !== "string"
+      || name.length === 0
+      || name.includes("\0")
+      || name.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
+      || isAbsolute(name)
+      || /^[A-Za-z]:/.test(name)) {
+    console.log(`  REFUSED: ${name}`);
+    notFound++;
+    continue;
+  }
   const fungiFile = join(EXAMPLES_DIR, name, "example.fungi");
-  if (!existsSync(fungiFile)) {
+  const fromExamples = relative(resolve(EXAMPLES_DIR), resolve(fungiFile));
+  if (fromExamples.startsWith("..") || isAbsolute(fromExamples)) {
+    console.log(`  REFUSED: ${name}`);
+    notFound++;
+    continue;
+  }
+  if (!existsSync(fungiFile) || lstatSync(fungiFile).isSymbolicLink()) {
     console.log(`  NOT FOUND: ${name}`);
     notFound++;
     continue;

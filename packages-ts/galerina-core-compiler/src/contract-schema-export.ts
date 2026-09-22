@@ -8,6 +8,7 @@ export interface ContractJsonSchema {
   readonly properties?: Readonly<Record<string, ContractJsonSchema>>;
   readonly required?: readonly string[];
   readonly items?: ContractJsonSchema;
+  readonly $ref?: string;
 }
 
 export interface CompilerContractSchemaExport {
@@ -27,22 +28,52 @@ export type ContractSchemaExportResult =
 
 const FIELD = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.+)$/;
 
+function ownRecord<V>(): Record<string, V> {
+  return {};
+}
+
+function defineOwn<V>(target: Record<string, V>, key: string, value: V): void {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  });
+}
+
 function sourceIdentity(source: string): string {
   return `sha256:${createHash("sha256").update(source, "utf8").digest("hex")}`;
 }
 
-function mapPrimitive(typeName: string): ContractJsonSchema | undefined {
+function stripQualifiers(typeName: string): string {
   let input = typeName.trim();
   if (input.startsWith("protected ")) input = input.slice("protected ".length).trim();
   if (input.startsWith("redacted ")) input = input.slice("redacted ".length).trim();
+  return input;
+}
+
+function mapType(typeName: string, recordNames: ReadonlySet<string>): ContractJsonSchema | undefined {
+  const input = stripQualifiers(typeName);
   if (input === "String") return { type: "string" };
   if (input === "Int") return { type: "integer" };
   if (input === "Bool") return { type: "boolean" };
+  if (input.startsWith("Array<") && input.endsWith(">")) {
+    const inner = input.slice("Array<".length, -1);
+    const items = mapType(inner, recordNames);
+    if (items === undefined) return undefined;
+    return { type: "array", items };
+  }
+  if (recordNames.has(input)) {
+    return { $ref: `#/types/${input}` };
+  }
   return undefined;
 }
 
-function recordSchema(node: AstNode): ContractJsonSchema | ContractSchemaDiagnostic {
-  const properties: Record<string, ContractJsonSchema> = {};
+function recordSchema(
+  node: AstNode,
+  recordNames: ReadonlySet<string>,
+): ContractJsonSchema | ContractSchemaDiagnostic {
+  const properties = ownRecord<ContractJsonSchema>();
   const required: string[] = [];
   const seen = new Set<string>();
   for (const field of node.children ?? []) {
@@ -61,7 +92,7 @@ function recordSchema(node: AstNode): ContractJsonSchema | ContractSchemaDiagnos
         message: `Record '${node.value ?? ""}' repeats field '${name}'.`,
       };
     }
-    const mapped = mapPrimitive(match[2]);
+    const mapped = mapType(match[2], recordNames);
     if (mapped === undefined) {
       return {
         code: "FUNGI-CONTRACT-SCHEMA-003",
@@ -69,7 +100,7 @@ function recordSchema(node: AstNode): ContractJsonSchema | ContractSchemaDiagnos
       };
     }
     seen.add(name);
-    properties[name] = mapped;
+    defineOwn(properties, name, mapped);
     required.push(name);
   }
   if (required.length === 0) {
@@ -104,7 +135,7 @@ export function exportContractSchemasFromSource(
 
   const records: AstNode[] = [];
   collectRecords(parsed.ast, records);
-  const types: Record<string, ContractJsonSchema> = {};
+  const recordNames = new Set<string>();
   for (const record of records) {
     const name = record.value?.trim() ?? "";
     if (name === "") {
@@ -113,7 +144,7 @@ export function exportContractSchemasFromSource(
         diagnostics: [{ code: "FUNGI-CONTRACT-SCHEMA-005", message: "A record declaration is missing its name." }],
       };
     }
-    if (Object.prototype.hasOwnProperty.call(types, name)) {
+    if (recordNames.has(name)) {
       return {
         ok: false,
         diagnostics: [{
@@ -122,9 +153,14 @@ export function exportContractSchemasFromSource(
         }],
       };
     }
-    const schema = recordSchema(record);
+    recordNames.add(name);
+  }
+  const types = ownRecord<ContractJsonSchema>();
+  for (const record of records) {
+    const name = record.value?.trim() ?? "";
+    const schema = recordSchema(record, recordNames);
     if ("code" in schema) return { ok: false, diagnostics: [schema] };
-    types[name] = schema;
+    defineOwn(types, name, schema);
   }
   if (Object.keys(types).length === 0) {
     return {

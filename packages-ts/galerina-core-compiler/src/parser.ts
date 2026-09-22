@@ -2739,9 +2739,25 @@ class Parser {
       const loc = this.loc();
       const op = this.current().value;
       this.advance();
-      // Recursive for chained prefix ops: !!x, --x
-      const operand = this.parsePrefixExpression();
-      return { kind: "unaryExpr", value: op, location: loc, children: [operand] };
+      // Recursive for chained prefix ops: !!x, --x — each prefix level counts
+      // toward FUNGI-PARSE-DEPTH-001 so unary chains cannot bypass the guard.
+      if (++this.exprDepth > MAX_EXPR_DEPTH) {
+        this.exprDepth--;
+        this.emit(
+          "FUNGI-PARSE-DEPTH-001",
+          "EXCESSIVE_NESTING",
+          `Expression nesting exceeds the maximum depth of ${MAX_EXPR_DEPTH} — refusing to parse (stack-exhaustion / denial-of-service guard).`,
+          loc,
+          "Flatten the expression: bind nested sub-expressions to intermediate `let` values instead of deeply nesting them.",
+        );
+        throw new ParseAborted();
+      }
+      try {
+        const operand = this.parsePrefixExpression();
+        return { kind: "unaryExpr", value: op, location: loc, children: [operand] };
+      } finally {
+        this.exprDepth--;
+      }
     }
     // W5a K3 (2026-07-08): `flip(expr)` — K3 negation, Verdict-only (A9: `!` stays
     // Bool-only; the type-checker rejects cross-application). Parentheses REQUIRED —

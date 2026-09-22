@@ -1753,14 +1753,30 @@ async function filesystemAsync(fullName: string, args: readonly GalerinaValue[],
   // Layer 2: symlink canonicalization via realpathSync on the existing ancestor
   {
     const fsModule = await import("node:fs") as unknown as {
-      realpathSync(p: string): string; existsSync(p: string): boolean;
+      realpathSync(p: string): string;
+      existsSync(p: string): boolean;
+      lstatSync(p: string): { isSymbolicLink(): boolean; isFile(): boolean; isDirectory(): boolean };
     };
     try {
-      const { realpathSync, existsSync } = fsModule;
+      const { realpathSync, existsSync, lstatSync } = fsModule;
+      try {
+        if (lstatSync(safePath).isSymbolicLink()) {
+          return err(`FileError: path '${path}' is a symbolic link — refusing`);
+        }
+      } catch {
+        // Path does not exist yet (writes). Check parent below.
+      }
       const realRoot = realpathSync(fsRoot);
       // Resolve whichever ancestor exists (file itself, parent, or root)
       const checkPath = existsSync(safePath) ? safePath
         : existsSync(pathResolve(safePath, "..")) ? pathResolve(safePath, "..") : fsRoot;
+      try {
+        if (lstatSync(checkPath).isSymbolicLink()) {
+          return err(`FileError: path '${path}' escapes sandbox via symlink`);
+        }
+      } catch {
+        return err(`FileError: path '${path}' could not be canonicalized (access denied)`);
+      }
       const realTarget = realpathSync(checkPath);
       const realRel    = pathRelative(realRoot, realTarget);
       if (realRel.startsWith("..") || pathIsAbsolute(realRel)) {
@@ -2027,8 +2043,19 @@ export async function callStdlib(
       const from = numVal(args[0] ?? { __tag: "int", value: 0 });
       const to   = numVal(args[1] ?? { __tag: "int", value: 0 });
       const step = args[2] !== undefined ? numVal(args[2]) : 1;
+      const MAX_RANGE = 1_000_000;
+      if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isFinite(step) || step === 0) {
+        throw new Error("Array.range: step must be a finite non-zero number");
+      }
+      if ((step > 0 && from >= to) || (step < 0 && from <= to)) {
+        return { __tag: "list", items: [] };
+      }
+      const count = Math.floor((to - from) / step);
+      if (!Number.isSafeInteger(count) || count < 0 || count > MAX_RANGE) {
+        throw new Error("Array.range: cardinality exceeds the host bound");
+      }
       const items: GalerinaValue[] = [];
-      for (let i = from; i < to; i += step) items.push({ __tag: "int", value: i });
+      for (let i = from, n = 0; n < count; i += step, n++) items.push({ __tag: "int", value: i });
       return { __tag: "list", items };
     }
 
@@ -2932,6 +2959,9 @@ async function bcryptModule(
     case "hash": {
       const plain = kdfPlain(args[0] ?? FUNGI_VOID);
       const rounds = args[1]?.__tag === "int" ? Number(args[1].value) : 10;
+      if (!Number.isSafeInteger(rounds) || rounds < 10 || rounds > 12) {
+        return err("BCryptError: rounds must be an integer in 10..12");
+      }
       return invokeKdf(ctx, {
         op: "password-hash",
         algorithm: "bcrypt",

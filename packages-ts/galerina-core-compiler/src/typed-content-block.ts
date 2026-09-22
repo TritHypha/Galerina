@@ -1,6 +1,7 @@
 import {
   FUNGI_BLOCK_004,
   FUNGI_BLOCK_005,
+  FUNGI_BLOCK_006,
   type CompilerDiagnostic,
   type SourceLocation,
 } from "./core-syntax-safety.js";
@@ -30,23 +31,50 @@ interface InterpolationSite {
 
 const IDENT = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
+const HTML_INJECTION = [
+  /<\s*script\b/i,
+  /javascript\s*:/i,
+  /\bon(?:error|load|click|mouseover)\s*=/i,
+] as const;
+const SCRIPT_INJECTION = [
+  /\beval\s*\(/i,
+  /\bFunction\s*\(/,
+  /\bdocument\.write\s*\(/i,
+] as const;
+const CSS_INJECTION = [
+  /expression\s*\(/i,
+  /javascript\s*:/i,
+] as const;
+
+function advanceLocation(
+  content: string,
+  from: number,
+  to: number,
+  line: number,
+  column: number,
+): { line: number; column: number } {
+  let nextLine = line;
+  let nextColumn = column;
+  const end = to < 0 ? content.length : Math.min(to, content.length);
+  for (let i = from; i < end; i += 1) {
+    if (content[i] === "\n") {
+      nextLine += 1;
+      nextColumn = 1;
+    } else {
+      nextColumn += 1;
+    }
+  }
+  return { line: nextLine, column: nextColumn };
+}
+
 function locationAt(
   file: string,
   startLine: number,
   content: string,
   index: number,
 ): SourceLocation {
-  let line = startLine;
-  let column = 1;
-  for (let i = 0; i < index; i += 1) {
-    if (content[i] === "\n") {
-      line += 1;
-      column = 1;
-    } else {
-      column += 1;
-    }
-  }
-  return { file, line, column };
+  const loc = advanceLocation(content, 0, index, startLine, 1);
+  return { file, line: loc.line, column: loc.column };
 }
 
 function diagnostic(
@@ -92,10 +120,15 @@ function scanInterpolations(
   const sites: InterpolationSite[] = [];
   const diagnostics: CompilerDiagnostic[] = [];
   let index = 0;
+  let line = startLine;
+  let column = 1;
   while (index < content.length) {
     const open = content.indexOf("{{", index);
     if (open < 0) break;
-    const location = locationAt(file, startLine, content, open);
+    const loc = advanceLocation(content, index, open, line, column);
+    line = loc.line;
+    column = loc.column;
+    const location = { file, line, column };
     let cursor = open + 2;
     while (cursor < content.length && (content[cursor] === " " || content[cursor] === "\t")) {
       cursor += 1;
@@ -116,10 +149,16 @@ function scanInterpolations(
         "Use a closed {{ identifier }} interpolation bound in the surrounding flow.",
       ));
       index = open + 2;
+      const skipped = advanceLocation(content, open, index, line, column);
+      line = skipped.line;
+      column = skipped.column;
       continue;
     }
     sites.push({ name, location });
     index = cursor + 2;
+    const consumed = advanceLocation(content, open, index, line, column);
+    line = consumed.line;
+    column = consumed.column;
   }
   return { sites, diagnostics };
 }
@@ -130,6 +169,23 @@ export function validateTypedContentBlock(
   const diagnostics: CompilerDiagnostic[] = [];
   const scanned = scanInterpolations(input.content, input.file, input.startLine);
   diagnostics.push(...scanned.diagnostics);
+
+  const injection = input.blockType === "script"
+    ? SCRIPT_INJECTION
+    : input.blockType === "css"
+      ? CSS_INJECTION
+      : HTML_INJECTION;
+  for (const pattern of injection) {
+    if (pattern.test(input.content)) {
+      diagnostics.push(diagnostic(
+        FUNGI_BLOCK_006,
+        FUNGI_BLOCK_006.message,
+        locationAt(input.file, input.startLine, input.content, 0),
+        "Remove the refused construct. This is a closed injection list, not a full HTML/JS/CSS parser.",
+      ));
+      break;
+    }
+  }
 
   for (const site of scanned.sites) {
     const type = lookupBindingType(input.environment, site.name);

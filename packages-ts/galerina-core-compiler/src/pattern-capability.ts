@@ -39,6 +39,19 @@ export type PatternAdmitResult =
       readonly message: string;
     };
 
+function patternHasCaptures(pattern: string): boolean {
+  for (let i = 0; i < pattern.length; i++) {
+    if (pattern[i] === "\\" ) {
+      i += 1;
+      continue;
+    }
+    if (pattern[i] !== "(") continue;
+    if (pattern.startsWith("(?:", i)) continue;
+    return true;
+  }
+  return false;
+}
+
 export function digestPatternSource(pattern: string): string {
   return `sha256:${createHash("sha256").update(pattern, "utf8").digest("hex")}`;
 }
@@ -49,6 +62,13 @@ export function admitPatternCapability(pattern: string): PatternAdmitResult {
       ok: false,
       code: "FUNGI-PATTERN-001",
       message: "pattern must be a string",
+    };
+  }
+  if (patternHasCaptures(pattern)) {
+    return {
+      ok: false,
+      code: "FUNGI-PATTERN-002",
+      message: "capturing groups are refused by fungi.pattern.capability.v1",
     };
   }
   const compiled = compileCapability(pattern, {

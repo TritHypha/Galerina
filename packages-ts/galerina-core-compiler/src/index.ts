@@ -20,6 +20,7 @@ import {
   FUNGI_BLOCK_003,
   FUNGI_BLOCK_004,
   FUNGI_BLOCK_005,
+  FUNGI_BLOCK_006,
   FUNGI_MEMORY_008,
   FUNGI_RAWPTR_001,
   FUNGI_SAFETY_001,
@@ -42,6 +43,7 @@ export {
   FUNGI_BLOCK_003,
   FUNGI_BLOCK_004,
   FUNGI_BLOCK_005,
+  FUNGI_BLOCK_006,
   FUNGI_MEMORY_008,
   FUNGI_RAWPTR_001,
   FUNGI_SAFETY_001,
@@ -2142,7 +2144,7 @@ export const FUNGI_PIPELINE_DIAGNOSTICS = [
 ] as const;
 
 // ---------------------------------------------------------------------------
-// Typed content block diagnostics — FUNGI-BLOCK-001..005
+// Typed content block diagnostics — FUNGI-BLOCK-001..006
 // ---------------------------------------------------------------------------
 
 export const FUNGI_BLOCK_DIAGNOSTICS = [
@@ -2151,6 +2153,7 @@ export const FUNGI_BLOCK_DIAGNOSTICS = [
   FUNGI_BLOCK_003,
   FUNGI_BLOCK_004,
   FUNGI_BLOCK_005,
+  FUNGI_BLOCK_006,
 ] as const;
 
 // ---------------------------------------------------------------------------

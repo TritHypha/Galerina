@@ -10,7 +10,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { generateOpenApi, exportOpenApi, validateOpenApiDocument } from "../dist/index.js";
+import { generateOpenApi, exportOpenApi, exportOpenApiYaml, validateOpenApiDocument } from "../dist/index.js";
 import { resolveEffectiveRoutePolicy } from "../../galerina-framework-app-kernel/dist/index.js";
 
 const INFO = { title: "Test API", version: "1.0.0" };
@@ -37,6 +37,17 @@ test("basic generation → valid OpenAPI 3.1.0 document that re-validates and se
   assert.doesNotThrow(() => validateOpenApiDocument(doc));
   // Fully JSON-serialisable.
   assert.doesNotThrow(() => JSON.parse(JSON.stringify(doc)));
+});
+
+test("exportOpenApiYaml is JSON-compatible YAML of the same document", () => {
+  const input = {
+    info: INFO,
+    routes: [{ method: "GET", path: "/ping", handler: "ping", auth: { mode: "public" } }],
+  };
+  const doc = generateOpenApi(input);
+  const yaml = exportOpenApiYaml(input);
+  assert.deepEqual(JSON.parse(yaml), JSON.parse(JSON.stringify(doc)));
+  assert.throws(() => exportOpenApiYaml({ info: INFO, routes: [] }), /empty API document/);
 });
 
 test("exportOpenApi is the spec-named alias of generateOpenApi", () => {

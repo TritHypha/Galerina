@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import {
   createComputeTransfer,
   createFileOwnedArtifactRepository,
@@ -74,7 +74,11 @@ function runRequest(request: unknown): Record<string, unknown> {
   const compilerCommitDigest = digest(root.compilerCommitDigest, "COMPILER");
   if (typeof root.authorityEpoch !== "number" || !Number.isSafeInteger(root.authorityEpoch) || root.authorityEpoch < 0) refuse("EPOCH");
   const authorityContextDigest = digest(root.authorityContextDigest, "CONTEXT");
+  const MAX_DETACHED_SOURCE_BYTES = 10 * 1024 * 1024;
+  const sourceStat = statSync(root.sourcePath);
+  if (!sourceStat.isFile() || sourceStat.size < 1 || sourceStat.size > MAX_DETACHED_SOURCE_BYTES) refuse("SOURCE_SIZE");
   const sourceBytes = new Uint8Array(readFileSync(root.sourcePath));
+  if (sourceBytes.byteLength > MAX_DETACHED_SOURCE_BYTES) refuse("SOURCE_SIZE");
   const sourceText = new TextDecoder("utf-8", { fatal: true }).decode(sourceBytes);
   const safety = validateCoreSyntaxSafety({ file: root.sourceFile, text: sourceText });
   const parsed = parseProgram(sourceText, root.sourceFile, { requireVersionHeader: true });

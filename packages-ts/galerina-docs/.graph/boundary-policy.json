@@ -1,7 +1,8 @@
 {
   "packageName": "@galerina/docs",
   "allowedExternal": [
-    "@galerina/framework-app-kernel"
+    "@galerina/framework-app-kernel",
+    "node:util/types"
   ],
   "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
 }

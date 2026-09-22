@@ -155,6 +155,13 @@ export const FUNGI_BLOCK_005 = {
   message: "Typed content interpolation must be a closed {{ identifier }} bound in the type environment.",
 } as const;
 
+export const FUNGI_BLOCK_006 = {
+  code: "FUNGI-BLOCK-006",
+  name: "UNSAFE_CONTENT_CONSTRUCT",
+  severity: "error",
+  message: "Typed content block contains a refused injection construct. HTML/JS/CSS grammar beyond this closed list remains unspecified.",
+} as const;
+
 export const FUNGI_MEMORY_008 = {
   code: "FUNGI-MEMORY-008",
   name: "UNSAFE_MEMORY_REQUIRES_FALLBACK",

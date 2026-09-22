@@ -1229,6 +1229,14 @@ class TypeChecker {
     return name;
   }
 
+  private zipPairRecordType(firstType: string, secondType: string): string {
+    const name = `ZipPair<${firstType}, ${secondType}>`;
+    if (!this.recordFieldTypes.has(name)) {
+      this.recordFieldTypes.set(name, new Map([["first", firstType], ["second", secondType]]));
+    }
+    return name;
+  }
+
   private namedCallbackReturn(callback: AstNode | undefined): string | undefined {
     if (callback?.kind !== "identifier") return undefined;
     const name = callback.value ?? "";
@@ -1527,6 +1535,28 @@ class TypeChecker {
         // Result.fromNullable(T, E) -> Result<T, E>.
         // Result.fromNullable(T) uses the runtime's canonical String error
         // fallback; unknown value/error types remain unparameterized.
+        if (method === "zip") {
+          const optionPayload = (type: string | undefined): string | undefined => {
+            if (type === undefined) return undefined;
+            const ref = parseTypeString(type);
+            if (ref.base !== "Option") return undefined;
+            const inner = ref.args[0]?.trim();
+            return inner === undefined || inner === "" ? undefined : inner;
+          };
+          if (receiverNode?.kind === "identifier" && receiverNode.value === "Option") {
+            const first = optionPayload(node.children?.[1] === undefined ? undefined : this.inferType(node.children[1]));
+            const second = optionPayload(node.children?.[2] === undefined ? undefined : this.inferType(node.children[2]));
+            if (first === undefined || second === undefined) return "Option";
+            return `Option<${this.zipPairRecordType(first, second)}>`;
+          }
+          if (receiverType === "Option" || receiverType?.startsWith("Option<")) {
+            const first = optionPayload(receiverType);
+            const second = optionPayload(node.children?.[1] === undefined ? undefined : this.inferType(node.children[1]));
+            if (first === undefined || second === undefined) return "Option";
+            return `Option<${this.zipPairRecordType(first, second)}>`;
+          }
+        }
+
         if (method === "fromNullable" && receiverNode?.kind === "identifier") {
           const valueNode = node.children?.[1];
           const valueType = valueNode === undefined ? undefined : this.inferType(valueNode);

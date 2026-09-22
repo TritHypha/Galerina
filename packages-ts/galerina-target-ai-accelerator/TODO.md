@@ -1,5 +1,10 @@
 # Galerina Target AI Accelerator TODO
 
+## Graph integration follow-up — 2026-09-22
+
+- [x] Admitted `node:util/types` on the boundary because `src/index.ts` already
+      loads it. Live `--check` PASS. Exact-specifier hostility retained.
+
 Post-v1 status: AI accelerator target work is preserved as planning only and
 must not be part of the active v1 build surface.
 
@@ -12,11 +17,10 @@ must not be part of the active v1 build surface.
 [x] Define accelerator capability and plan placeholders
 [x] Define passive Intel Gaudi 3 backend profile concept
 [x] Define NPU/TPU/AI-chip capability detection contracts
-[ ] Define VPU, FPGA and generic AI ASIC target planning examples
-[ ] Define accelerator data-sensitivity and isolation-level report examples
+[!] POST-V1 VPU/FPGA/ASIC planning examples and isolation-level reports.
 [x] Define precision compatibility checks
 [x] Define framework adapter planning examples
-[ ] Define HBM and topology report examples
+[!] POST-V1 HBM and topology report examples.
 [x] Define fallback report examples
 [x] Add examples
 [x] Add tests

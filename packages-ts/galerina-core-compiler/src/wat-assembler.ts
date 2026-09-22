@@ -326,9 +326,16 @@ export async function executeWASMFlow(
     };
   }
 
+  const WASM_FLOW_DEADLINE_MS = 5_000;
   try {
     const t0 = performance.now();
-    const wasmResult: unknown = await WebAssembly.instantiate(assembled.wasm);
+    const wasmBytes = Uint8Array.from(assembled.wasm);
+    const wasmResult: unknown = await Promise.race([
+      WebAssembly.instantiate(wasmBytes),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("WASM execution deadline exceeded")), WASM_FLOW_DEADLINE_MS);
+      }),
+    ]);
     const instance = (wasmResult as { instance: WebAssembly.Instance }).instance
                   ?? (wasmResult as unknown as WebAssembly.Instance);
     const fn = (instance.exports as Record<string, unknown>)[flowName];
@@ -337,12 +344,15 @@ export async function executeWASMFlow(
         flowName, args, result: null,
         error: `Export '${flowName}' not found. Available: ${Object.keys(instance.exports).join(", ")}`,
         execMs: performance.now() - t0,
-        binaryBytes: assembled.wasm.byteLength,
+        binaryBytes: wasmBytes.byteLength,
       };
     }
     const result = (fn as (...a: number[]) => number | bigint)(...args);
     const execMs = performance.now() - t0;
-    return { flowName, args, result: result as number | bigint, execMs, binaryBytes: assembled.wasm.byteLength };
+    if (execMs > WASM_FLOW_DEADLINE_MS) {
+      return { flowName, args, result: null, error: "WASM execution deadline exceeded", execMs, binaryBytes: wasmBytes.byteLength };
+    }
+    return { flowName, args, result: result as number | bigint, execMs, binaryBytes: wasmBytes.byteLength };
   } catch (err) {
     return {
       flowName, args, result: null,

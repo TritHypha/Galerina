@@ -13,8 +13,8 @@
 // "unverifiable"/unsigned (RD-0119 (a)#6 / the H5 attack-6 + requireHybrid discipline).
 
 import { createHash, createPublicKey } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { basename, isAbsolute, join, relative } from "node:path";
 import { makeManifestEnvelope, verifyGovernanceSignatureHybrid, type ProofGraph } from "./proof-graph.js";
 
 /** FIPS-204 ML-DSA-65 (NIST cat-3) raw public-key length, in bytes. */
@@ -33,11 +33,26 @@ export interface LmanifestHybridVerifierInput {
   readonly packageDir: string;
 }
 
+const SIGNING_KEY_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+
 /** Resolve `<fileName>` only from the caller-admitted governance root. */
 function resolveGovernanceFile(fileName: string, governanceDir: string | undefined): string | undefined {
   if (governanceDir === undefined) return undefined;
+  if (basename(fileName) !== fileName || fileName.includes("..")) return undefined;
+  const keyMatch = /^signing-key-(.+)\.(?:pub\.pem|mldsa\.pub\.b64)$/.exec(fileName);
+  if (keyMatch === null || !SIGNING_KEY_ID.test(keyMatch[1] ?? "")) return undefined;
   const candidate = join(governanceDir, fileName);
-  return existsSync(candidate) ? candidate : undefined;
+  if (basename(candidate) !== fileName) return undefined;
+  try {
+    const root = realpathSync(governanceDir);
+    if (!existsSync(candidate)) return undefined;
+    const opened = realpathSync(candidate);
+    const rel = relative(root, opened);
+    if (rel.startsWith("..") || isAbsolute(rel)) return undefined;
+    return opened;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

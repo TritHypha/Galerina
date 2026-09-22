@@ -158,11 +158,20 @@ export interface AiAcceleratorPlan {
   readonly fallback: "cpu" | "gpu" | "low_bit_ai" | "reject";
 }
 
+export const AI_ACCELERATOR_REPORT_SCHEMA = "fungi.ai.accelerator.report.v1";
+
+export interface AiAcceleratorRefusedSelection {
+  readonly selectedTarget: AiAcceleratorTargetSelection["selectedTarget"] | undefined;
+  readonly diagnostics: readonly AiAcceleratorDiagnostic[];
+}
+
 export interface AiAcceleratorReport {
+  readonly schema: typeof AI_ACCELERATOR_REPORT_SCHEMA;
   readonly backendProfiles?: readonly AiAcceleratorBackendProfile[];
   readonly capabilities: readonly AiAcceleratorCapability[];
   readonly plans: readonly AiAcceleratorPlan[];
-  readonly targetSelections?: readonly AiAcceleratorTargetSelection[];
+  readonly targetSelections: readonly AiAcceleratorTargetSelection[];
+  readonly refusedSelections: readonly AiAcceleratorRefusedSelection[];
   readonly warnings: readonly string[];
 }
 
@@ -249,6 +258,11 @@ const AI_ACCELERATOR_TOPOLOGIES: readonly AiAcceleratorTopology[] = ["single-car
 const AI_ACCELERATOR_FALLBACKS: readonly ("gpu" | "cpu" | "low_bit_ai" | AiAcceleratorKind)[] = [
   "gpu", "cpu", "low_bit_ai", ...AI_ACCELERATOR_KINDS,
 ];
+const AI_ACCELERATOR_SELECTED_TARGETS: readonly AiAcceleratorTargetSelection["selectedTarget"][] = [
+  "gpu", "cpu", "low_bit_ai", "reject", ...AI_ACCELERATOR_KINDS,
+];
+const AI_ACCELERATOR_SEVERITIES: readonly AiAcceleratorDiagnosticSeverity[] = ["info", "warning", "error"];
+const AI_ACCELERATOR_PLAN_FALLBACKS: readonly AiAcceleratorPlan["fallback"][] = ["cpu", "gpu", "low_bit_ai", "reject"];
 const MAX_ACCELERATOR_ARRAY_ITEMS = 1024;
 const MAX_ACCELERATOR_STRING_LENGTH = 2048;
 const MAX_TENSOR_RANK = 8;
@@ -700,18 +714,259 @@ export function selectAiAcceleratorTarget(input: unknown): AiAcceleratorTargetSe
   };
 }
 
-export function createAiAcceleratorTargetReport(input: {
-  readonly capabilities: readonly AiAcceleratorCapability[];
-  readonly plans?: readonly AiAcceleratorPlan[];
-  readonly selections?: readonly AiAcceleratorTargetSelection[];
-  readonly backendProfiles?: readonly AiAcceleratorBackendProfile[];
-}): AiAcceleratorReport {
-  const capabilities = Object.freeze(input.capabilities.map((capability) => snapshotCapability(capability)));
-  const plans = Object.freeze((input.plans ?? []).map((plan) => snapshotPlan(plan)));
-  const targetSelections = Object.freeze((input.selections ?? []).map((selection) => snapshotSelection(selection)));
-  const backendProfiles = input.backendProfiles === undefined
-    ? undefined
-    : Object.freeze(input.backendProfiles.map((profile) => snapshotBackendProfile(profile)));
+function decodeDiagnostic(value: unknown, path: string): DecodeResult<AiAcceleratorDiagnostic> {
+  const record = decodeRecord(value, ["code", "severity", "message", "path"], ["code", "severity", "message"], path);
+  if (isDecodeFailure(record)) return record;
+  const code = decodeString(record.value.code, `${path}.code`);
+  if (isDecodeFailure(code)) return code;
+  const severity = decodeEnum(record.value.severity, `${path}.severity`, AI_ACCELERATOR_SEVERITIES);
+  if (isDecodeFailure(severity)) return severity;
+  const message = decodeString(record.value.message, `${path}.message`);
+  if (isDecodeFailure(message)) return message;
+  let diagnosticPath: string | undefined;
+  if (record.value.path !== undefined) {
+    const decodedPath = decodeString(record.value.path, `${path}.path`);
+    if (isDecodeFailure(decodedPath)) return decodedPath;
+    diagnosticPath = decodedPath.value;
+  }
+  return {
+    value: Object.freeze({
+      code: code.value,
+      severity: severity.value,
+      message: message.value,
+      ...(diagnosticPath === undefined ? {} : { path: diagnosticPath }),
+    }),
+  };
+}
+
+function decodeTargetSelection(value: unknown, path: string): DecodeResult<AiAcceleratorTargetSelection> {
+  const record = decodeRecord(
+    value,
+    ["requestedTarget", "selectedTarget", "adapter", "fallbackUsed", "fallbackDeclared", "safe", "reasons", "diagnostics"],
+    ["requestedTarget", "selectedTarget", "adapter", "fallbackUsed", "fallbackDeclared", "safe", "reasons", "diagnostics"],
+    path,
+  );
+  if (isDecodeFailure(record)) return record;
+  const requestedTarget = decodeEnum(record.value.requestedTarget, `${path}.requestedTarget`, AI_ACCELERATOR_KINDS);
+  if (isDecodeFailure(requestedTarget)) return requestedTarget;
+  const selectedTarget = decodeEnum(record.value.selectedTarget, `${path}.selectedTarget`, AI_ACCELERATOR_SELECTED_TARGETS);
+  if (isDecodeFailure(selectedTarget)) return selectedTarget;
+  const adapter = decodeEnum(record.value.adapter, `${path}.adapter`, AI_ACCELERATOR_ADAPTERS);
+  if (isDecodeFailure(adapter)) return adapter;
+  const fallbackUsed = decodeBoolean(record.value.fallbackUsed, `${path}.fallbackUsed`);
+  if (isDecodeFailure(fallbackUsed)) return fallbackUsed;
+  const fallbackDeclared = decodeBoolean(record.value.fallbackDeclared, `${path}.fallbackDeclared`);
+  if (isDecodeFailure(fallbackDeclared)) return fallbackDeclared;
+  const safe = decodeBoolean(record.value.safe, `${path}.safe`);
+  if (isDecodeFailure(safe)) return safe;
+  const reasons = decodeStringArray(record.value.reasons, `${path}.reasons`);
+  if (isDecodeFailure(reasons)) return reasons;
+  const diagnostics = decodeArray(record.value.diagnostics, `${path}.diagnostics`);
+  if (isDecodeFailure(diagnostics)) return diagnostics;
+  const decodedDiagnostics: AiAcceleratorDiagnostic[] = [];
+  for (const [index, diagnostic] of diagnostics.value.entries()) {
+    const decoded = decodeDiagnostic(diagnostic, `${path}.diagnostics.${index}`);
+    if (isDecodeFailure(decoded)) return decoded;
+    decodedDiagnostics.push(decoded.value);
+  }
+  return {
+    value: Object.freeze({
+      requestedTarget: requestedTarget.value,
+      selectedTarget: selectedTarget.value,
+      adapter: adapter.value,
+      fallbackUsed: fallbackUsed.value,
+      fallbackDeclared: fallbackDeclared.value,
+      safe: safe.value,
+      reasons: reasons.value,
+      diagnostics: Object.freeze(decodedDiagnostics),
+    }),
+  };
+}
+
+function decodePlan(value: unknown, path: string): DecodeResult<AiAcceleratorPlan> {
+  const record = decodeRecord(
+    value,
+    ["flow", "model", "accelerator", "backendProfileId", "operations", "workload", "framework", "precision", "fallbackPrecision", "fallback"],
+    ["flow", "model", "accelerator", "operations", "fallback"],
+    path,
+  );
+  if (isDecodeFailure(record)) return record;
+  const flow = decodeString(record.value.flow, `${path}.flow`);
+  if (isDecodeFailure(flow)) return flow;
+  const model = decodeString(record.value.model, `${path}.model`);
+  if (isDecodeFailure(model)) return model;
+  const accelerator = decodeEnum(record.value.accelerator, `${path}.accelerator`, ["ai_accelerator"] as const);
+  if (isDecodeFailure(accelerator)) return accelerator;
+  const operations = decodeStringArray(record.value.operations, `${path}.operations`);
+  if (isDecodeFailure(operations)) return operations;
+  const fallback = decodeEnum(record.value.fallback, `${path}.fallback`, AI_ACCELERATOR_PLAN_FALLBACKS);
+  if (isDecodeFailure(fallback)) return fallback;
+  return {
+    value: Object.freeze({
+      flow: flow.value,
+      model: model.value,
+      accelerator: accelerator.value,
+      operations: operations.value,
+      fallback: fallback.value,
+    }),
+  };
+}
+
+function selectionBoundToCapabilities(
+  selection: AiAcceleratorTargetSelection,
+  capabilities: readonly AiAcceleratorCapability[],
+): boolean {
+  if (selection.safe !== true) return true;
+  if (selection.selectedTarget === "reject") return false;
+  if (selection.selectedTarget === "plan-only") return selection.adapter === "plan-only";
+  return capabilities.some((capability) => capability.kind === selection.selectedTarget);
+}
+
+export function createAiAcceleratorTargetReport(input: unknown): AiAcceleratorReport {
+  const empty = Object.freeze({
+    schema: AI_ACCELERATOR_REPORT_SCHEMA,
+    capabilities: Object.freeze([]),
+    plans: Object.freeze([]),
+    targetSelections: Object.freeze([]),
+    refusedSelections: Object.freeze([]),
+    warnings: Object.freeze([]),
+  });
+  const record = decodeRecord(
+    input,
+    ["capabilities", "plans", "selections", "backendProfiles"],
+    ["capabilities"],
+    "input",
+  );
+  if (isDecodeFailure(record)) {
+    return Object.freeze({
+      ...empty,
+      refusedSelections: Object.freeze([{ selectedTarget: undefined, diagnostics: Object.freeze([record.diagnostic]) }]),
+    });
+  }
+
+  const rawCapabilities = decodeArray(record.value.capabilities, "capabilities");
+  if (isDecodeFailure(rawCapabilities)) {
+    return Object.freeze({
+      ...empty,
+      refusedSelections: Object.freeze([{ selectedTarget: undefined, diagnostics: Object.freeze([rawCapabilities.diagnostic]) }]),
+    });
+  }
+  const capabilities: AiAcceleratorCapability[] = [];
+  for (const [index, capability] of rawCapabilities.value.entries()) {
+    const decoded = decodeCapability(capability, `capabilities.${index}`);
+    if (isDecodeFailure(decoded)) {
+      return Object.freeze({
+        ...empty,
+        refusedSelections: Object.freeze([{ selectedTarget: undefined, diagnostics: Object.freeze([decoded.diagnostic]) }]),
+      });
+    }
+    capabilities.push(decoded.value);
+  }
+
+  const plans: AiAcceleratorPlan[] = [];
+  if (record.value.plans !== undefined) {
+    const rawPlans = decodeArray(record.value.plans, "plans");
+    if (isDecodeFailure(rawPlans)) {
+      return Object.freeze({
+        ...empty,
+        capabilities: Object.freeze(capabilities),
+        refusedSelections: Object.freeze([{ selectedTarget: undefined, diagnostics: Object.freeze([rawPlans.diagnostic]) }]),
+      });
+    }
+    for (const [index, plan] of rawPlans.value.entries()) {
+      const decoded = decodePlan(plan, `plans.${index}`);
+      if (isDecodeFailure(decoded)) {
+        return Object.freeze({
+          ...empty,
+          capabilities: Object.freeze(capabilities),
+          refusedSelections: Object.freeze([{ selectedTarget: undefined, diagnostics: Object.freeze([decoded.diagnostic]) }]),
+        });
+      }
+      plans.push(decoded.value);
+    }
+  }
+
+  const targetSelections: AiAcceleratorTargetSelection[] = [];
+  const refusedSelections: AiAcceleratorRefusedSelection[] = [];
+  if (record.value.selections !== undefined) {
+    const rawSelections = decodeArray(record.value.selections, "selections");
+    if (isDecodeFailure(rawSelections)) {
+      refusedSelections.push(Object.freeze({ selectedTarget: undefined, diagnostics: Object.freeze([rawSelections.diagnostic]) }));
+    } else {
+      for (const [index, selection] of rawSelections.value.entries()) {
+        const decoded = decodeTargetSelection(selection, `selections.${index}`);
+        if (isDecodeFailure(decoded)) {
+          refusedSelections.push(Object.freeze({ selectedTarget: undefined, diagnostics: Object.freeze([decoded.diagnostic]) }));
+          continue;
+        }
+        if (!selectionBoundToCapabilities(decoded.value, capabilities)) {
+          refusedSelections.push(Object.freeze({
+            selectedTarget: decoded.value.selectedTarget,
+            diagnostics: Object.freeze([{
+              code: "Galerina_AI_ACCELERATOR_SELECTION_UNBOUND",
+              severity: "error" as const,
+              message: "Safe AI accelerator selection is not bound to a decoded capability of the same kind.",
+              path: `selections.${index}`,
+            }]),
+          }));
+          continue;
+        }
+        targetSelections.push(decoded.value);
+      }
+    }
+  }
+
+  let backendProfiles: readonly AiAcceleratorBackendProfile[] | undefined;
+  if (record.value.backendProfiles !== undefined) {
+    const rawProfiles = decodeArray(record.value.backendProfiles, "backendProfiles");
+    if (!isDecodeFailure(rawProfiles)) {
+      const profiles: AiAcceleratorBackendProfile[] = [];
+      for (const [index, profile] of rawProfiles.value.entries()) {
+        const decoded = decodeRecord(
+          profile,
+          ["id", "vendor", "device", "kind", "passiveProfile", "preferredWorkloads", "supportedPrecisions", "frameworks", "memory", "topologies"],
+          ["id", "vendor", "device", "kind", "passiveProfile", "preferredWorkloads", "supportedPrecisions", "frameworks", "memory", "topologies"],
+          `backendProfiles.${index}`,
+        );
+        if (isDecodeFailure(decoded)) continue;
+        const id = decodeString(decoded.value.id, `backendProfiles.${index}.id`);
+        const vendor = decodeString(decoded.value.vendor, `backendProfiles.${index}.vendor`);
+        const device = decodeString(decoded.value.device, `backendProfiles.${index}.device`);
+        const kind = decodeEnum(decoded.value.kind, `backendProfiles.${index}.kind`, AI_ACCELERATOR_KINDS);
+        const passiveProfile = decodeBoolean(decoded.value.passiveProfile, `backendProfiles.${index}.passiveProfile`);
+        if (isDecodeFailure(id) || isDecodeFailure(vendor) || isDecodeFailure(device) || isDecodeFailure(kind) || isDecodeFailure(passiveProfile)) continue;
+        if (passiveProfile.value !== true) continue;
+        const preferredWorkloads = decodeStringArray(decoded.value.preferredWorkloads, `backendProfiles.${index}.preferredWorkloads`, AI_ACCELERATOR_WORKLOADS);
+        const supportedPrecisions = decodeStringArray(decoded.value.supportedPrecisions, `backendProfiles.${index}.supportedPrecisions`, AI_ACCELERATOR_PRECISIONS);
+        const frameworks = decodeStringArray(decoded.value.frameworks, `backendProfiles.${index}.frameworks`, AI_ACCELERATOR_FRAMEWORKS);
+        const topologies = decodeStringArray(decoded.value.topologies, `backendProfiles.${index}.topologies`, AI_ACCELERATOR_TOPOLOGIES);
+        if (isDecodeFailure(preferredWorkloads) || isDecodeFailure(supportedPrecisions) || isDecodeFailure(frameworks) || isDecodeFailure(topologies)) continue;
+        const memoryRecord = decodeRecord(
+          decoded.value.memory,
+          ["hbmBytes", "onDieSramBytes", "hbmBandwidthBytesPerSecond", "pooledHbmBytes", "avoidHostTransfers"],
+          ["avoidHostTransfers"],
+          `backendProfiles.${index}.memory`,
+        );
+        if (isDecodeFailure(memoryRecord)) continue;
+        const avoidHostTransfers = decodeBoolean(memoryRecord.value.avoidHostTransfers, `backendProfiles.${index}.memory.avoidHostTransfers`);
+        if (isDecodeFailure(avoidHostTransfers)) continue;
+        profiles.push(Object.freeze({
+          id: id.value,
+          vendor: vendor.value,
+          device: device.value,
+          kind: kind.value,
+          passiveProfile: true,
+          preferredWorkloads: preferredWorkloads.value as readonly AiAcceleratorWorkloadKind[],
+          supportedPrecisions: supportedPrecisions.value as readonly AiAcceleratorPrecision[],
+          frameworks: frameworks.value as readonly AiAcceleratorFramework[],
+          memory: Object.freeze({ avoidHostTransfers: avoidHostTransfers.value }),
+          topologies: topologies.value as readonly AiAcceleratorTopology[],
+        }));
+      }
+      backendProfiles = Object.freeze(profiles);
+    }
+  }
+
   const warnings = Object.freeze(targetSelections.flatMap((selection) =>
     selection.diagnostics
       .filter((diagnostic) => diagnostic.severity === "warning")
@@ -719,47 +974,13 @@ export function createAiAcceleratorTargetReport(input: {
   ));
 
   return Object.freeze({
+    schema: AI_ACCELERATOR_REPORT_SCHEMA,
     ...(backendProfiles === undefined ? {} : { backendProfiles }),
-    capabilities,
-    plans,
-    targetSelections,
+    capabilities: Object.freeze(capabilities),
+    plans: Object.freeze(plans),
+    targetSelections: Object.freeze(targetSelections),
+    refusedSelections: Object.freeze(refusedSelections),
     warnings,
-  });
-}
-
-function snapshotCapability(capability: AiAcceleratorCapability): AiAcceleratorCapability {
-  return Object.freeze({
-    ...capability,
-    supportedPrecisions: Object.freeze([...capability.supportedPrecisions]),
-    ...(capability.supportedModelFormats === undefined ? {} : { supportedModelFormats: Object.freeze([...capability.supportedModelFormats]) }),
-    ...(capability.supportedOperators === undefined ? {} : { supportedOperators: Object.freeze([...capability.supportedOperators]) }),
-    features: Object.freeze([...capability.features]),
-  });
-}
-
-function snapshotPlan(plan: AiAcceleratorPlan): AiAcceleratorPlan {
-  return Object.freeze({
-    ...plan,
-    operations: Object.freeze([...plan.operations]),
-  });
-}
-
-function snapshotSelection(selection: AiAcceleratorTargetSelection): AiAcceleratorTargetSelection {
-  return Object.freeze({
-    ...selection,
-    reasons: Object.freeze([...selection.reasons]),
-    diagnostics: Object.freeze(selection.diagnostics.map((diagnostic) => Object.freeze({ ...diagnostic }))),
-  });
-}
-
-function snapshotBackendProfile(profile: AiAcceleratorBackendProfile): AiAcceleratorBackendProfile {
-  return Object.freeze({
-    ...profile,
-    preferredWorkloads: Object.freeze([...profile.preferredWorkloads]),
-    supportedPrecisions: Object.freeze([...profile.supportedPrecisions]),
-    frameworks: Object.freeze([...profile.frameworks]),
-    memory: Object.freeze({ ...profile.memory }),
-    topologies: Object.freeze([...profile.topologies]),
   });
 }
 

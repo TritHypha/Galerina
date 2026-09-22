@@ -78,6 +78,38 @@ describe("validateTypedContentBlock — type environment", () => {
     });
     assert.ok(unclosed.some((d) => d.code === "FUNGI-BLOCK-005"));
   });
+
+  it("refuses closed injection constructs in html, script, and css", () => {
+    const html = validateTypedContentBlock({
+      blockType: "html",
+      marker: "HTML",
+      content: "<div onclick=\"x()\"></div>\n",
+      file: "content.fungi",
+      startLine: 2,
+      environment: { bindings: [] },
+    });
+    assert.ok(html.some((d) => d.code === "FUNGI-BLOCK-006"));
+
+    const script = validateTypedContentBlock({
+      blockType: "script",
+      marker: "SCRIPT",
+      content: "eval(user);\n",
+      file: "content.fungi",
+      startLine: 2,
+      environment: { bindings: [] },
+    });
+    assert.ok(script.some((d) => d.code === "FUNGI-BLOCK-006"));
+
+    const css = validateTypedContentBlock({
+      blockType: "css",
+      marker: "CSS",
+      content: "width: expression(alert(1));\n",
+      file: "content.fungi",
+      startLine: 2,
+      environment: { bindings: [] },
+    });
+    assert.ok(css.some((d) => d.code === "FUNGI-BLOCK-006"));
+  });
 });
 
 describe("checkTypes — typed content compiler wiring", () => {

@@ -1,0 +1,16 @@
+{
+  "schema": "fungi.wasm.handoff.v1",
+  "compiler": {
+    "projectRoot": "packages-ts/galerina-target-wasm",
+    "entryFiles": ["src/index.ts"]
+  },
+  "compute": {
+    "requested": "wasm",
+    "selectedTarget": "wasm",
+    "reason": "Target is available and appears first in preference order.",
+    "fallback": false,
+    "satisfied": true
+  },
+  "wasmRuntime": "server",
+  "admission": "not-evaluated"
+}

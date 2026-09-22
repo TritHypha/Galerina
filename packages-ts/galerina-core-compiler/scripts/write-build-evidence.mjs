@@ -73,7 +73,13 @@ function lengthPrefixedDigest(label, entries) {
 }
 
 export function assertNoDuplicateJsonKeys(json) {
+  if (typeof json !== "string" || json.length > MAX_EVIDENCE_FILE_BYTES) {
+    throw new SyntaxError("invalid JSON");
+  }
   let index = 0;
+  let nodes = 0;
+  const MAX_NODES = 100_000;
+  const MAX_DEPTH = 32;
 
   const failSyntax = () => {
     throw new SyntaxError("invalid JSON");
@@ -118,15 +124,18 @@ export function assertNoDuplicateJsonKeys(json) {
     if (index === start) failSyntax();
   };
 
-  const readValue = () => {
+  const readValue = (depth = 0) => {
+    if (depth > MAX_DEPTH) failSyntax();
+    nodes += 1;
+    if (nodes > MAX_NODES) failSyntax();
     skipWhitespace();
     const char = json[index];
     if (char === "{") {
-      readObject();
+      readObject(depth + 1);
       return;
     }
     if (char === "[") {
-      readArray();
+      readArray(depth + 1);
       return;
     }
     if (char === '"') {
@@ -136,7 +145,7 @@ export function assertNoDuplicateJsonKeys(json) {
     readPrimitive();
   };
 
-  const readObject = () => {
+  const readObject = (depth) => {
     index += 1;
     skipWhitespace();
     const keys = new Set();
@@ -152,7 +161,7 @@ export function assertNoDuplicateJsonKeys(json) {
       skipWhitespace();
       if (json[index] !== ":") failSyntax();
       index += 1;
-      readValue();
+      readValue(depth);
       skipWhitespace();
       if (json[index] === "}") {
         index += 1;
@@ -164,7 +173,7 @@ export function assertNoDuplicateJsonKeys(json) {
     failSyntax();
   };
 
-  const readArray = () => {
+  const readArray = (depth) => {
     index += 1;
     skipWhitespace();
     if (json[index] === "]") {
@@ -172,7 +181,7 @@ export function assertNoDuplicateJsonKeys(json) {
       return;
     }
     while (index < json.length) {
-      readValue();
+      readValue(depth);
       skipWhitespace();
       if (json[index] === "]") {
         index += 1;

@@ -49,6 +49,17 @@ describe("C20 compile-time PatternCapability", () => {
     assert.equal(first.capability.patternDigest, second.capability.patternDigest);
   });
 
+  it("refuses capturing groups instead of compiling them", () => {
+    const numbered = admitPatternCapability("(hello)");
+    assert.equal(numbered.ok, false);
+    if (numbered.ok) return;
+    assert.equal(numbered.code, "FUNGI-PATTERN-002");
+    const named = admitPatternCapability("(?<word>hello)");
+    assert.equal(named.ok, false);
+    const nonCapture = admitPatternCapability("(?:hello)");
+    assert.equal(nonCapture.ok, true);
+  });
+
   it("refuses word boundaries instead of silently compiling them", () => {
     const admitted = admitPatternCapability("\\bword\\b");
     assert.equal(admitted.ok, false);

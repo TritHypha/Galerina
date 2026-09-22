@@ -1,7 +1,27 @@
 # Galerina Compiler TODO
 
-This file tracks open work for the compiler package. Updated 2026-09-21 to reflect
-the actual shipped state. Items marked `[x]` are implemented and tested.
+Current sequencing and classification: [pre-.fungi work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md),
+W04-W07/W13. Existing bounded results below do not close residual inference,
+schema or lowering semantics, or authorize .fungi changes.
+
+## Security continuation — 2026-09-22
+
+- [x] CapabilityHost intersects `declaredEffects` with optional host
+      `grantedEffects` (`src/runtime/capabilityHost.ts`, `src/runtime.ts`).
+- [!] OWNER_DECISION: production `run` still authorizes source-declared
+      effects unless the host passes `grantedEffects`. Not a new RD.
+      Next security slice is Q3 work-performed ceilings, owned with Tower
+      ([report](../../docs/reports/security-q1q2-continuation-2026-09-22.md)).
+
+## Graph integration follow-up — 2026-09-22
+
+- [x] Admitted `@galerina/data-json` on the boundary because `src/stdlib.ts`
+      already loads it. Live `--check` PASS. Hostile undeclared specifiers still
+      fail. See [C22](../../docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c22).
+
+This file tracks open work for the compiler package. Reconciled 2026-09-22
+against the working tree; implemented does not mean committed or admitted.
+Items marked `[x]` describe bounded slices, subject to explicit residuals.
 
 [x] C12 `fungi.compiler.build-evidence.v1` (`RD-1283`, live `RD-1293`) in
     `scripts/write-build-evidence.mjs`. Length-prefixed input/output digests;
@@ -14,11 +34,21 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
 [x] C14 typed-content type environment (`RD-1284`) in
     `src/typed-content-block.ts`, wired from `checkTypes`. `FUNGI-BLOCK-004`
     refuses protected/Secret interpolations by type, not by name. Stage 2
-    HTML/JS/CSS structure validation remains open.
+    HTML/JS/CSS Stage-2 is a closed injection list (`FUNGI-BLOCK-006`):
+    html/dom refuse `<script`, `javascript:`, `onerror|load|click|mouseover=`;
+    script refuses `eval(`, `Function(`, `document.write(`; css refuses
+    `expression(` and `javascript:`. Not an HTML/JS/CSS parser. Tests in
+    `typed-content-validation.test.mjs`.
 [x] C17 contract schema export (`RD-1287`) in
     `src/contract-schema-export.ts`. `record` declarations emit
-    `galerina.contract-types.v1`. Decimal is refused. Nested records remain
-    outside.
+    `galerina.contract-types.v1`. Same-source nested records and Array<T>
+    are implemented; Option/Result/Decimal still refuse.
+[x] C17 own-key preservation (`RD-1287`): `src/contract-schema-export.ts`
+    stores field and record names with `defineOwn` / Object.defineProperty
+    on ordinary dictionaries. `__proto__` names remain own enumerable
+    keys through `JSON.stringify`. Docs OpenAPI still refuses those names
+    as reserved components (closed, not silent drop). Option/Result/Decimal
+    refusals unchanged.
 [x] C19-A Stage-B type-code identity (`RD-1288`) in
     `src/stage-b-parity.ts`. Schema `fungi.compiler.stage-b-parity.v1`.
     Unique host vs `type-checker.fungi` codes for
@@ -198,12 +228,16 @@ the actual shipped state. Items marked `[x]` are implemented and tested.
     `tests/type-checker-generic-assignment.test.mjs:357-387`; the combined
     bounded route is **138/138** and the focused type-checker file is **23/23**.
     Callback transforms remain deferred; unknown payloads are not invented.
-    `Option.zip` remains intentionally deferred at the static inference boundary
-    `src/type-checker.ts:1200-1266`: its runtime contract at
-    `src/stdlib.ts:2613-2621` returns an anonymous `{first, second}` record,
-    but no admitted named record schema exists here. Clearance requires an
-    owner-approved schema/typing contract plus positive and negative tests.
+    `Option.zip` infers `Option<ZipPair<T,U>>` (`zipPairRecordType`) matching
+    stdlib `{first, second}`. Assigning the Option to a user `Pair` record is
+    FUNGI-TYPE-002. Method catalog includes `zip` on Option. Evidence:
+    `tests/type-checker-expression-kind-matrix.test.mjs` **6/6**.
 
+[x] Bounded FUNGI-TYPE expression-kind matrix (`tests/type-checker-expression-kind-matrix.test.mjs`, **6/6**):
+    admitted literals/idents/arithmetic/match/`unwrapOr`; TYPE-002 known mismatch;
+    TYPE-004 Int+String; TYPE-007 arity; unknown spread-update stays deferred.
+    Option.zip is typed (see previous item). Remaining: full unsupported-form inference
+    still returns unknown at `inferType` default (`type-checker.ts:1870`).
 [ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
     is implemented for argument count. Remaining work is complete operator and

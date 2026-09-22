@@ -628,8 +628,10 @@ export function createJsBundleReport(input: {
   }
 
   if (plan !== undefined) {
+    const usedImports = new Set<string>();
     for (const [moduleIndex, module] of modules.entries()) {
       for (const [importIndex, specifier] of module.imports.entries()) {
+        usedImports.add(specifier);
         if (plan.runtime === "browser" && isServerOnlyImport(specifier)) {
           diagnostics.push(jsDiagnostic(
             "FUNGI-JS-007",
@@ -648,6 +650,26 @@ export function createJsBundleReport(input: {
         }
       }
     }
+    const seenPlanImports = new Set<string>();
+    for (const [index, specifier] of plan.imports.entries()) {
+      if (seenPlanImports.has(specifier)) {
+        diagnostics.push(jsDiagnostic(
+          "FUNGI-JS-016",
+          "error",
+          `Plan import "${specifier}" is duplicated; the admitted import set is exact, not a bag.`,
+          `plan.imports.${index}`,
+        ));
+      }
+      seenPlanImports.add(specifier);
+      if (!usedImports.has(specifier)) {
+        diagnostics.push(jsDiagnostic(
+          "FUNGI-JS-017",
+          "error",
+          `Plan import "${specifier}" is unused by the module set; surplus plan entries are refused.`,
+          `plan.imports.${index}`,
+        ));
+      }
+    }
   }
 
   if (validationComplete && !isStructuredCloneable(input)) {
@@ -663,7 +685,8 @@ export function createJsBundleReport(input: {
   const checks: JsBundleCheckOutcome[] = [
     {
       check: "server-only-imports-blocked",
-      passed: checksAdmitted && !has("FUNGI-JS-007") && !has("FUNGI-JS-002"),
+      passed: checksAdmitted && !has("FUNGI-JS-007") && !has("FUNGI-JS-002")
+        && !has("FUNGI-JS-016") && !has("FUNGI-JS-017"),
       detail: browserPlan
         ? "browser plan scanned against the server-only module list (deny-by-default)"
         : checksAdmitted ? "node target — server modules are legal here" : "input validation refused",
