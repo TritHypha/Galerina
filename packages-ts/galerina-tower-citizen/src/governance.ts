@@ -1,10 +1,10 @@
 /**
- * tower.governance.v1 / cli-check entry.
+ * cli-check composition entry (`TOWER_COMPOSITION_CLI_CHECK`).
  *
- * K3 decisions, compiled ai{}, and No-Coercion admission. Does not re-export
- * kernel runtime, hybrid inference, TPLSimulator, photonic, custody, or
- * data-plane modules. Transitive runtime imports are trit-gates plus this
- * cluster; see tests/rd-1295-governance-isolation.test.mjs.
+ * Kernel-free K3 decisions, compiled ai{}, and No-Coercion admission.
+ * This is not `tower.governance.v1` (frozen as kernel + governance).
+ * Transitive runtime imports are trit-gates plus this cluster; see
+ * tests/rd-1295-governance-isolation.test.mjs and src/load-graph.ts.
  */
 
 export {
@@ -52,6 +52,8 @@ export type { TransitionPolicy, RestrictedTransition } from "./governance-enforc
 export {
   TOWER_PROFILE_GOVERNANCE,
   TOWER_COMPOSITION_CLI_CHECK,
+  CLI_CHECK_ALLOWED_STEMS,
+  CLI_CHECK_PERMITTED_EXTERNALS,
   GOVERNANCE_PROFILE_MODULES,
   GOVERNANCE_FORBIDDEN_MODULES,
   moduleStem,

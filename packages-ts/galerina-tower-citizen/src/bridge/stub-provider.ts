@@ -61,6 +61,9 @@ export class StubTernaryBridge implements InferenceBridge {
 
     // Reconstruct the simulator over the supplied packed weights.
     // (The simulator is the authoritative byte-faithful ternary kernel.)
+    if (op.activations == null || typeof op.activations.length !== "number" || op.activations.length < op.count) {
+      throw new Error(`[STUB_TERNARY]: activations lack coverage for count ${op.count}`);
+    }
     const trits = this.decodePackedTrits(op.weights, op.count, op.offset ?? 0);
     const sim = new TPLSimulator(this.logger, this.governance, Math.max(1, op.count));
     sim.loadWeights(trits);
@@ -79,6 +82,18 @@ export class StubTernaryBridge implements InferenceBridge {
 
   /** Decode BitNet-packed i32 words back into a trit array for the simulator. */
   private decodePackedTrits(packed: Int32Array, count: number, offset: number): number[] {
+    const MAX_COUNT = 1_048_576;
+    if (!Number.isSafeInteger(count) || count < 0 || count > MAX_COUNT) {
+      throw new Error(`[STUB_TERNARY]: packed trit count ${count} is outside the admitted bound`);
+    }
+    if (!Number.isSafeInteger(offset) || offset < 0) {
+      throw new Error(`[STUB_TERNARY]: packed trit offset ${offset} is not a non-negative safe integer`);
+    }
+    const lastIndex = offset + count - (count === 0 ? 0 : 1);
+    const neededWords = count === 0 ? 0 : ((lastIndex / 16) | 0) + 1;
+    if (neededWords > packed.length) {
+      throw new Error(`[STUB_TERNARY]: packed weights lack capacity for count ${count} at offset ${offset}`);
+    }
     const out: number[] = [];
     for (let i = 0; i < count; i++) {
       const idx = offset + i;

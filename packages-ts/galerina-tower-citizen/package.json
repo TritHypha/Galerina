@@ -6,6 +6,22 @@
   "private": true,
   "type": "module",
   "packageGraph": {
+    "entryPoints": [
+      "src/custody.ts",
+      "src/dataplane.ts",
+      "src/governance.ts",
+      "src/governance-v1.ts",
+      "src/inference.ts",
+      "src/kernel.ts",
+      "src/photonic.ts",
+      "src/tpl.ts"
+    ],
+    "allowOrphans": [
+      {
+        "path": "src/load-graph.ts",
+        "reason": "Isolation checker consumed by package tests via dist/load-graph.js; not a public package export."
+      }
+    ],
     "loadedAssets": [
       "src/self-hosted/authorization-boundary.fungi",
       "src/self-hosted/canary.fungi",
@@ -40,6 +56,34 @@
     "./governance": {
       "import": "./dist/governance.js",
       "types": "./dist/governance.d.ts"
+    },
+    "./governance-v1": {
+      "import": "./dist/governance-v1.js",
+      "types": "./dist/governance-v1.d.ts"
+    },
+    "./kernel": {
+      "import": "./dist/kernel.js",
+      "types": "./dist/kernel.d.ts"
+    },
+    "./inference": {
+      "import": "./dist/inference.js",
+      "types": "./dist/inference.d.ts"
+    },
+    "./tpl": {
+      "types": "./dist/tpl.d.ts",
+      "import": "./dist/tpl.js"
+    },
+    "./photonic": {
+      "types": "./dist/photonic.d.ts",
+      "import": "./dist/photonic.js"
+    },
+    "./custody": {
+      "types": "./dist/custody.d.ts",
+      "import": "./dist/custody.js"
+    },
+    "./dataplane": {
+      "types": "./dist/dataplane.d.ts",
+      "import": "./dist/dataplane.js"
     }
   },
   "scripts": {

@@ -93,8 +93,21 @@ test("SOUNDNESS: no non-ALLOW admission ever authorizes; STORAGE_ADMIT_CAP is th
 
 // ── the SIGNED eraseModel attestation rail (R&D 0118 §2 — the discovery answer) ──
 const KP = generateSubstrateKeypair();
-const policy = (granted = [STORAGE_ADMIT_CAP], revocationCheck) => ({ publicKeyPem: KP.publicKeyPem, grantedCapabilities: granted, revocationCheck });
-const manifest = (eraseModel, extra = {}) => ({ schemaVersion: "galerina.substrate-config.v1", id: "drive-1", eraseModel, capability: STORAGE_ADMIT_CAP, ...extra });
+const SIGNER = "k-admit-1";
+const policy = (granted = [STORAGE_ADMIT_CAP], revocationCheck = () => false, signerKeyId = SIGNER) => ({
+  publicKeyPem: KP.publicKeyPem,
+  grantedCapabilities: granted,
+  signerKeyId,
+  revocationCheck,
+});
+const manifest = (eraseModel, extra = {}) => ({
+  schemaVersion: "galerina.substrate-config.v1",
+  id: "drive-1",
+  eraseModel,
+  capability: STORAGE_ADMIT_CAP,
+  signerKeyId: SIGNER,
+  ...extra,
+});
 
 test("admitStorageSubstrate: a valid signed `overwrite` attestation yields attested:true → cleartext secret ALLOWED end-to-end", () => {
   const att = signSubstrateAttestation(manifest("overwrite"), KP.privateKeyPem);
@@ -140,9 +153,32 @@ test("admitStorageSubstrate: a signature from the WRONG key fails → attested:f
 
 test("admitStorageSubstrate: a REVOKED signer key is refused even with a valid signature", () => {
   const att = signSubstrateAttestation(manifest("overwrite", { signerKeyId: "k1" }), KP.privateKeyPem);
-  const adm = admitStorageSubstrate(att, policy([STORAGE_ADMIT_CAP], (id) => id === "k1"));
+  const adm = admitStorageSubstrate(att, policy([STORAGE_ADMIT_CAP], (id) => id === "k1", "k1"));
   assert.equal(adm.descriptor.attested, false);
   assert.match(adm.reason, /REVOKED/);
+});
+
+test("admitStorageSubstrate: omitted signer identity cannot skip revocation for overwrite", () => {
+  const att = signSubstrateAttestation({
+    schemaVersion: "galerina.substrate-config.v1",
+    id: "drive-1",
+    eraseModel: "overwrite",
+    capability: STORAGE_ADMIT_CAP,
+  }, KP.privateKeyPem);
+  const adm = admitStorageSubstrate(att, {
+    publicKeyPem: KP.publicKeyPem,
+    grantedCapabilities: [STORAGE_ADMIT_CAP],
+    revocationCheck: () => false,
+  });
+  assert.equal(adm.descriptor.attested, false);
+  assert.match(adm.reason, /signerKeyId and revocationCheck must be supplied together|requires a revocation check/);
+});
+
+test("admitStorageSubstrate: policy and manifest signer identities must match", () => {
+  const att = signSubstrateAttestation(manifest("overwrite", { signerKeyId: "k-left" }), KP.privateKeyPem);
+  const adm = admitStorageSubstrate(att, policy([STORAGE_ADMIT_CAP], () => false, "k-right"));
+  assert.equal(adm.descriptor.attested, false);
+  assert.match(adm.reason, /signer identity mismatch/);
 });
 
 test("admitStorageSubstrate: deny-by-default capability — `storage.admit` not granted → attested:false", () => {

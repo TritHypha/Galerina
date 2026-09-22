@@ -38,3 +38,10 @@ export function maxTrit(a: number, b: number): number {
   assertTrit(b);
   return a > b ? a : b;
 }
+
+/** Internal arithmetic vote shared by the branded TPL face and substrate readings. */
+export function consensusTritValue(a: number, b: number, c: number): -1 | 0 | 1 {
+  assertTrit(a); assertTrit(b); assertTrit(c);
+  const s = a + b + c;
+  return s > 0 ? 1 : s < 0 ? -1 : 0;
+}

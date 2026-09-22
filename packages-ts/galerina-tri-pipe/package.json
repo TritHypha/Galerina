@@ -1,7 +1,7 @@
 {
   "name": "@galerina/tri-pipe",
   "version": "1.0.0-beta.2",
-  "description": "The Tri-Pipe capstone: createTriPipeEngine() composes the hardware() capability directive + the photonic backend/router + the governed HybridInferenceEngine into one call, selecting the digital registry and photonic offload by the resolved {binary|hybrid|photonic} tier. Digital is the default; photonic only on a proven net win; fail-closed to binary.",
+  "description": "Tri-Pipe proposal, routing and composition layer (RD-0855). createTriPipeEngine() proposes a digest-bound route; it does not construct an engine or authorise dispatch. ExecutionRouter composes hardware-tier, precision and photonic net-win axes. Fail-closed to binary.",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",

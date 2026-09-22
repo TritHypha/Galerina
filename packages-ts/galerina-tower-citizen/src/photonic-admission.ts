@@ -153,16 +153,24 @@ export function admitPhotonicConfig(
     return at(Verdict.DENY, `signature check error: ${(e as Error).message}`, configHash);
   }
 
-  // 3. REVOCATION — a valid signature from a revoked key is refused (fail-closed on a throw).
-  if (m.signerKeyId !== undefined && policy.revocationCheck !== undefined) {
-    let revoked: boolean;
-    try {
-      revoked = policy.revocationCheck(m.signerKeyId) === true;
-    } catch (e) {
-      return at(Verdict.DENY, `revocation status for keyId '${m.signerKeyId}' could not be determined (${(e as Error).message}) — fail-closed`, configHash);
-    }
-    if (revoked) return at(Verdict.DENY, `signing key '${m.signerKeyId}' is REVOKED`, configHash);
+  // 3. REVOCATION — reprogram is a privilege: signer identity and a revocation check are required together.
+  const policyKey = typeof policy.signerKeyId === "string" && policy.signerKeyId.length > 0 ? policy.signerKeyId : undefined;
+  const manifestKey = typeof m.signerKeyId === "string" && m.signerKeyId.length > 0 ? m.signerKeyId : undefined;
+  if (policyKey !== undefined && manifestKey !== undefined && policyKey !== manifestKey) {
+    return at(Verdict.DENY, `signer identity mismatch: manifest '${manifestKey}' != policy '${policyKey}'`, configHash);
   }
+  const keyId = policyKey ?? manifestKey;
+  const hasCheck = typeof policy.revocationCheck === "function";
+  if (!hasCheck || keyId === undefined) {
+    return at(Verdict.DENY, "revocation status cannot be determined — signerKeyId and revocationCheck must be supplied together", configHash);
+  }
+  let revoked: boolean;
+  try {
+    revoked = policy.revocationCheck!(keyId) === true;
+  } catch (e) {
+    return at(Verdict.DENY, `revocation status for keyId '${keyId}' could not be determined (${(e as Error).message}) — fail-closed`, configHash);
+  }
+  if (revoked) return at(Verdict.DENY, `signing key '${keyId}' is REVOKED`, configHash);
 
   // 4. CAPABILITY — deny-by-default: declared AND granted.
   if (m.capability !== PHOTONIC_REPROGRAM_CAP) {

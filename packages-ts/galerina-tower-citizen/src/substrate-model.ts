@@ -6,9 +6,8 @@
  * about a flow's declared guarantee *before any silicon exists*. It is NOT a hardware
  * twin: it is (a) a conservative checker, and (b) the spec a future backend is held to.
  *
- * Reuse, don't modify: this is a NEW sibling of tpl-simulator.ts. It imports
- * `consensusTrit` (the #173/#196 3-input majority kernel) and Direction A's `vAnd`/
- * `Verdict`/`decideAtBoundary` UNCHANGED. tpl-simulator's gate semantics are frozen.
+ * Shares the three-input arithmetic vote primitive with the branded TPL face
+ * without loading its simulator. Direction A's K3 gate semantics are unchanged.
  *
  * The central result (§4 of galerina-substrate-failure-model.md):
  *   effectiveVerdict(ideal, reading) = vAnd(ideal, reading)
@@ -24,7 +23,7 @@
  * Spec: ../ZTF-Knowledge-Bases/galerina-substrate-failure-model.md.
  */
 
-import { consensusTrit, asTrit } from "./tpl-simulator.js";
+import { consensusTritValue } from "./trit-gates.js";
 import { Verdict, vAnd } from "./three-valued-governance.js";
 import { dispatchDeadZone, type OnIndeterminate } from "./deadzone-dispatcher.js";
 // Pure NMR compute is the shared single source of truth (also used by the compiler's
@@ -401,11 +400,8 @@ export function empiricalAdversarialError(
   return wrong / trials;
 }
 
-/** N=3 majority delegates to the shipped consensusTrit (reuse, not reimplement). */
+/** N=3 majority uses the same validated arithmetic primitive as the TPL face. */
 export function votedTrit3(a: -1 | 0 | 1, b: -1 | 0 | 1, c: -1 | 0 | 1): -1 | 0 | 1 {
-  // Substrate readings are trit-valued MEASUREMENTS, so the arith consensus (majority) is the right face here.
-  // asTrit each reading in; narrow the Trit result back to the reading union out — a deliberate, audited
-  // reading↔Trit boundary (never a bare cast, never a Verdict — a vote of readings is not a governance verdict).
-  const r = consensusTrit(asTrit(a), asTrit(b), asTrit(c));
-  return r === 1 ? 1 : r === -1 ? -1 : 0;
+  // Readings are measurements, never governance Verdicts. Validate all inputs.
+  return consensusTritValue(a, b, c);
 }

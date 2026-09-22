@@ -15,7 +15,7 @@
  */
 
 import { createHash, sign as edSign, verify as edVerify, createPrivateKey, createPublicKey } from "node:crypto";
-import type { AttestationPolicy, AttestationResult } from "./bridge-attestation.js";
+import { evaluateSignerRevocation, type AttestationPolicy, type AttestationResult } from "./bridge-attestation.js";
 
 export interface CapabilityGrant {
   /** The engine identity this grant authorizes — must equal the engine's own id, so a grant
@@ -82,7 +82,12 @@ export async function verifyCapabilityGrant(
   expectedEngineId: string,
 ): Promise<AttestationResult> {
   if (!signed || !signed.grant) return { ok: false, reason: "no capability grant provided" };
-  const g = signed.grant;
+  const raw = signed.grant;
+  const g: CapabilityGrant = {
+    engineId: raw.engineId,
+    capabilityMask: raw.capabilityMask >>> 0,
+    ...(raw.grantId !== undefined ? { grantId: raw.grantId } : {}),
+  };
   const hash = capabilityGrantHash(g);
 
   if (typeof g.engineId !== "string" || g.engineId !== expectedEngineId) {
@@ -107,17 +112,8 @@ export async function verifyCapabilityGrant(
     return { ok: false, reason: `grant signature check error: ${(e as Error).message}`, hash };
   }
 
-  // Revocation (defense-in-depth, mirrors verifyAttestation): a validly-signed grant from a
-  // REVOKED signing key is refused. Fail-closed: a throwing check is itself a denial.
-  if (policy.signerKeyId !== undefined && policy.revocationCheck !== undefined) {
-    let revoked: boolean;
-    try {
-      revoked = policy.revocationCheck(policy.signerKeyId) === true;
-    } catch (e) {
-      return { ok: false, reason: `revocation status for keyId '${policy.signerKeyId}' could not be determined (${(e as Error).message}) — fail-closed`, hash };
-    }
-    if (revoked) return { ok: false, reason: `signing key '${policy.signerKeyId}' is REVOKED`, hash };
-  }
+  const revocation = evaluateSignerRevocation(policy, hash);
+  if (revocation !== null) return revocation;
 
   // Hybrid ML-DSA-65 half (no PQ downgrade) when the policy demands it.
   if (policy.requireHybrid === true || policy.mlDsaPublicKey !== undefined) {
@@ -139,5 +135,5 @@ export async function verifyCapabilityGrant(
     }
   }
 
-  return { ok: true, hash };
+  return { ok: true, hash, capabilityMask: g.capabilityMask };
 }

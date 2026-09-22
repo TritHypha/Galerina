@@ -77,7 +77,7 @@ async function certifiedEngine(photonic) {
 
 test("certified + a VERIFIED attestation bound to the declared backend admits the photonic lane", async () => {
   // H5 binding: PhotonicConfig.bridgeId must match the verified manifest's bridgeId ("photonic-certified").
-  const eng = await certifiedEngine({ router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation: GOOD_ATTESTATION, bridgeId: "photonic-certified" });
+  const eng = await certifiedEngine({ router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation: GOOD_ATTESTATION, bridgeId: "photonic-certified", couponRevocationCheck: () => false });
   const r = await eng.infer(CALL);
   assert.equal(r.trapFired, false);
   assert.ok(r.bridgesUsed.some((b) => b.startsWith("photonic:")), `expected a photonic: bridge, got ${JSON.stringify(r.bridgesUsed)}`);
@@ -161,6 +161,18 @@ test("H5 LANE-BINDING (RD-0129): a certified photonic coupon for a DIFFERENT bac
     `a coupon for a different photonic backend must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
 });
 
+test("certified photonic without couponRevocationCheck keeps the lane off", async () => {
+  const eng = await certifiedEngine({
+    router: createPhotonicRouterPort(),
+    kernelFor: bigKernel,
+    certifiedAttestation: GOOD_ATTESTATION,
+    bridgeId: "photonic-certified",
+  });
+  const r = await eng.infer(CALL);
+  assert.ok(!r.bridgesUsed.some((b) => b.startsWith("photonic:")),
+    `missing coupon revocation must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
+});
+
 test("H5 LANE-BINDING (RD-0129): a valid certified photonic coupon with NO declared PhotonicConfig.bridgeId is REFUSED", async () => {
   // Without a declared backend id there is nothing to bind the coupon to → fail closed.
   const eng = await certifiedEngine({ router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation: GOOD_ATTESTATION }); // no bridgeId
@@ -185,6 +197,60 @@ test("0118 coupon-revocation: a REVOKED coupon (device-level) keeps photonic OFF
   const live = await certifiedEngine({ ...base, couponRevocationCheck: () => false });
   r = await live.infer(CALL);
   assert.ok(r.bridgesUsed.some((b) => b.startsWith("photonic:")), `a non-revoked coupon should still admit; got ${JSON.stringify(r.bridgesUsed)}`);
+});
+
+test("Q1: a getter manifest cannot authenticate one coupon and later bind another", async () => {
+  const live = {
+    ...CERTIFIED_MANIFEST,
+    get bridgeId() { return "photonic-certified"; },
+    get hardwareIdentity() { return "photonic-certified-backend"; },
+    get certificationProfile() { return "certified"; },
+  };
+  const signedManifest = await signManifestHybrid(live, privateKeyPem, mlDsaPrivateKey);
+  const certifiedAttestation = { attested: true, certificationProfile: "certified", toleranceWitnessed: true, signedManifest };
+  const eng = await certifiedEngine({
+    router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation,
+    bridgeId: "photonic-certified", couponRevocationCheck: () => false,
+  });
+  const r = await eng.infer(CALL);
+  assert.ok(!r.bridgesUsed.some((b) => b.startsWith("photonic:")),
+    `getter coupon must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
+});
+
+test("Q1: mutating a signed CPU coupon after signing cannot admit the photonic lane", async () => {
+  const cpu = { ...CERTIFIED_MANIFEST, bridgeId: "real-fp16", hardwareIdentity: "x86_64-avx2", precision: "fp16" };
+  const signedCpu = await signManifestHybrid(cpu, privateKeyPem, mlDsaPrivateKey);
+  signedCpu.manifest.bridgeId = "photonic-certified";
+  signedCpu.manifest.hardwareIdentity = "photonic-certified-backend";
+  signedCpu.manifest.certificationProfile = "certified";
+  signedCpu.manifest.precision = "ternary";
+  const certifiedAttestation = { attested: true, certificationProfile: "certified", toleranceWitnessed: true, signedManifest: signedCpu };
+  const eng = await certifiedEngine({
+    router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation,
+    bridgeId: "photonic-certified", couponRevocationCheck: () => false,
+  });
+  const r = await eng.infer(CALL);
+  assert.ok(!r.bridgesUsed.some((b) => b.startsWith("photonic:")),
+    `mutated CPU coupon must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
+});
+
+test("Q2: coupon revocation after a cached certified admission keeps photonic OFF", async () => {
+  const revoked = new Set();
+  const eng = await certifiedEngine({
+    router: createPhotonicRouterPort(),
+    kernelFor: bigKernel,
+    certifiedAttestation: GOOD_ATTESTATION,
+    bridgeId: "photonic-certified",
+    couponRevocationCheck: (c) => revoked.has(c.bridgeId),
+  });
+  const first = await eng.infer(CALL);
+  assert.ok(first.bridgesUsed.some((b) => b.startsWith("photonic:")),
+    `live coupon should admit; got ${JSON.stringify(first.bridgesUsed)}`);
+  revoked.add("photonic-certified");
+  const second = await eng.infer(CALL);
+  assert.ok(!second.bridgesUsed.some((b) => b.startsWith("photonic:")),
+    `revoked coupon after cached admission must keep photonic OFF; got ${JSON.stringify(second.bridgesUsed)}`);
+  assert.ok(second.bridgesUsed.includes("stub-ternary"));
 });
 
 test("control: NON-certified mode runs photonic without any attestation (existing behaviour unchanged)", async () => {

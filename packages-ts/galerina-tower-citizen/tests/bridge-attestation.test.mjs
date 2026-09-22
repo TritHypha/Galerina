@@ -74,6 +74,69 @@ test("engine DENIES an unattested bridge under an attestation policy", async () 
   assert.equal(r.trapCode, "ERR_BRIDGE_UNATTESTED");
 });
 
+test("a substituted registry entry cannot inherit a previously admitted attestation", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const honest = attestBridge(new StubTernaryBridge(inMem()), privateKeyPem);
+  const registry = new Map([[honest.technique, honest]]);
+  const eng = createHybridEngine({
+    airGapped: true, governanceTier: 1, bridges: registry,
+    attestation: { requireSigned: true, publicKeyPem },
+    governance: { allowUnsignedCapabilityGrant: true },
+  });
+  const first = await eng.infer({ prompt: "x", correlationId: cid("bind-1"), opClasses: ["feedforward"] });
+  assert.equal(first.trapFired, false);
+
+  let attackerRan = false;
+  const attacker = {
+    bridgeId: honest.bridgeId,
+    technique: honest.technique,
+    nativeAvailable: false,
+    manifest: honest.manifest,
+    attestation: honest.attestation,
+    initialize() {},
+    shutdown() {},
+    execute() {
+      attackerRan = true;
+      return { value: 999, executedNatively: true, bridgeId: "attacker", technique: honest.technique, latencyMs: 0, deterministic: true };
+    },
+  };
+  registry.set(honest.technique, attacker);
+  const second = await eng.infer({ prompt: "x", correlationId: cid("bind-2"), opClasses: ["feedforward"] });
+  assert.equal(attackerRan, false, "admitted execute must remain the attested implementation");
+  assert.equal(second.trapFired, false);
+  assert.ok(second.bridgesUsed.includes("stub-ternary"));
+});
+
+test("revocation after a cached admission denies the next inference", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const signed = attestBridge(new StubTernaryBridge(inMem()), privateKeyPem);
+  const revoked = new Set();
+  const eng = createHybridEngine({
+    airGapped: true, governanceTier: 1, bridges: new Map([[signed.technique, signed]]),
+    attestation: {
+      requireSigned: true,
+      publicKeyPem,
+      signerKeyId: "live-key",
+      revocationCheck: (id) => revoked.has(id),
+    },
+    governance: { allowUnsignedCapabilityGrant: true },
+  });
+  const first = await eng.infer({ prompt: "x", correlationId: cid("rev-1"), opClasses: ["feedforward"] });
+  assert.equal(first.trapFired, false);
+  revoked.add("live-key");
+  const second = await eng.infer({ prompt: "x", correlationId: cid("rev-2"), opClasses: ["feedforward"] });
+  assert.equal(second.trapFired, true);
+  assert.equal(second.trapCode, "ERR_BRIDGE_UNATTESTED");
+});
+
+test("verifyAttestation refuses a signerKeyId without a revocation check", () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const att = signManifest(new StubTernaryBridge(inMem()).manifest, privateKeyPem);
+  const denied = verifyAttestation(att, { requireSigned: true, publicKeyPem, signerKeyId: "only-id" });
+  assert.equal(denied.ok, false);
+  assert.match(denied.reason, /cannot be determined/);
+});
+
 test("engine PERMITS an attested (signed) bridge registry", async () => {
   const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
   const signed = attestBridge(new StubTernaryBridge(inMem()), privateKeyPem);

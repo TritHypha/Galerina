@@ -139,6 +139,30 @@ test("cap gate is INERT when the route was already digital (binary tier) — lan
 // The grant must be checked against `decision.target` (the lane actually dispatched to). Unknown or
 // mismatched target ⇒ DENY down to the always-safe digital substrate (fail-safe, never open).
 
+test("RD-0855: default representation profile is 1 and Trit is not Verdict", () => {
+  const d = router.route({ opClass: "feedforward", routing: cloud, capability: { targetId: "cpu", attestationVerified: true }, kernel: big });
+  assert.equal(d.representationProfile, 1);
+  assert.equal(d.authorityReleased, false);
+  assert.equal(d.dataBrand, "Trit");
+  assert.equal(d.governanceBrand, "Verdict");
+  assert.notEqual(d.dataBrand, d.governanceBrand);
+});
+
+test("RD-0855: experimental 128/512 cannot route — digital floor, no photonic", () => {
+  const d = router.route({
+    opClass: "feedforward",
+    routing: cloud,
+    capability: { targetId: "photonic", attestationVerified: true, componentFullyEligible: true },
+    kernel: big,
+    representationProfile: 128,
+  });
+  assert.equal(d.tier, "binary");
+  assert.equal(d.offloadTarget, "digital");
+  assert.equal(d.photonic, false);
+  assert.equal(d.authorityReleased, false);
+  assert.match(d.offloadReason, /no ABI/);
+});
+
 test("RD-0236 #6: noisy-only grant dispatched to photonic backend → DENIED to digital (not admitted)", () => {
   // Flow granted ONLY the noisy (analog) lane. Kernel declares lane:noisy; big n ⇒ decider routes to
   // the PHOTONIC backend. photonic is NOT in the grant → the authority taken ≠ the authority checked.

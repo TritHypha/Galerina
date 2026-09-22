@@ -153,6 +153,8 @@ export interface SubstrateAdmissionPolicy {
   readonly publicKeyPem: string;
   /** Capabilities granted to the admitter. `storage.admit` must be present (deny-by-default). */
   readonly grantedCapabilities: readonly string[];
+  /** Pinned signer identity — must match `manifest.signerKeyId` when both are present. */
+  readonly signerKeyId?: string;
   /** Registry-backed revocation predicate (host-injected). A throw is treated as a denial. */
   readonly revocationCheck?: (keyId: string) => boolean;
 }
@@ -231,14 +233,28 @@ export function admitStorageSubstrate(
   }
 
   // 2. REVOCATION — a valid signature from a revoked key is refused (fail-closed on a throw).
-  if (m.signerKeyId !== undefined && policy.revocationCheck !== undefined) {
+  // signerKeyId and revocationCheck are a pair; overwrite (the earned exception) always requires both.
+  const policyKey = typeof policy.signerKeyId === "string" && policy.signerKeyId.length > 0 ? policy.signerKeyId : undefined;
+  const manifestKey = typeof m.signerKeyId === "string" && m.signerKeyId.length > 0 ? m.signerKeyId : undefined;
+  if (policyKey !== undefined && manifestKey !== undefined && policyKey !== manifestKey) {
+    return reject(Verdict.DENY, `signer identity mismatch: manifest '${manifestKey}' != policy '${policyKey}'`, m.id);
+  }
+  const keyId = policyKey ?? manifestKey;
+  const hasCheck = typeof policy.revocationCheck === "function";
+  if ((keyId !== undefined) !== hasCheck) {
+    return reject(Verdict.DENY, "revocation status cannot be determined — signerKeyId and revocationCheck must be supplied together", m.id);
+  }
+  if (m.eraseModel === "overwrite" && !hasCheck) {
+    return reject(Verdict.DENY, "overwrite attestation requires a revocation check — fail-closed", m.id);
+  }
+  if (hasCheck && keyId !== undefined) {
     let revoked: boolean;
     try {
-      revoked = policy.revocationCheck(m.signerKeyId) === true;
+      revoked = policy.revocationCheck!(keyId) === true;
     } catch (e) {
-      return reject(Verdict.DENY, `revocation status for '${m.signerKeyId}' undeterminable (${(e as Error).message}) — fail-closed`, m.id);
+      return reject(Verdict.DENY, `revocation status for '${keyId}' undeterminable (${(e as Error).message}) — fail-closed`, m.id);
     }
-    if (revoked) return reject(Verdict.DENY, `signing key '${m.signerKeyId}' is REVOKED`, m.id);
+    if (revoked) return reject(Verdict.DENY, `signing key '${keyId}' is REVOKED`, m.id);
   }
 
   // 3. CAPABILITY — deny-by-default: declared AND granted (a photonic.reprogram key cannot mount storage).

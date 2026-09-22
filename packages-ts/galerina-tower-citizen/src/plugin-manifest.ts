@@ -16,7 +16,7 @@
 
 import { createHash, sign as edSign, verify as edVerify, createPrivateKey, createPublicKey } from "node:crypto";
 import { types as utilTypes } from "node:util";
-import type { AttestationPolicy, AttestationResult } from "./bridge-attestation.js";
+import { evaluateSignerRevocation, type AttestationPolicy, type AttestationResult } from "./bridge-attestation.js";
 import { snapshotPluginMetadata, type PluginMetadata } from "./plugin-sandbox.js";
 
 export interface SignedPluginManifest {
@@ -167,17 +167,8 @@ export async function verifyPluginManifest(
     return { ok: false, reason: `manifest signature check error: ${(e as Error).message}`, hash };
   }
 
-  // Revocation (defense-in-depth, mirrors verifyAttestation): a validly-signed manifest from a REVOKED
-  // signing key is refused. Fail-closed: a throwing check is itself a denial.
-  if (policy.signerKeyId !== undefined && policy.revocationCheck !== undefined) {
-    let revoked: boolean;
-    try {
-      revoked = policy.revocationCheck(policy.signerKeyId) === true;
-    } catch (e) {
-      return { ok: false, reason: `revocation status for keyId '${policy.signerKeyId}' could not be determined (${(e as Error).message}) — fail-closed`, hash };
-    }
-    if (revoked) return { ok: false, reason: `signing key '${policy.signerKeyId}' is REVOKED`, hash };
-  }
+  const revocation = evaluateSignerRevocation(policy, hash);
+  if (revocation !== null) return revocation;
 
   // Hybrid ML-DSA-65 half (no PQ downgrade) when the policy demands it.
   if (policy.requireHybrid === true || policy.mlDsaPublicKey !== undefined) {

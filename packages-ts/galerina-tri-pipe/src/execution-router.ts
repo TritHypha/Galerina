@@ -31,6 +31,11 @@ export interface CapabilityInput {
 }
 
 export interface ExecutionRouteInput {
+  /**
+   * RD-0855 representation-profile candidate. Default 1. 128/512 refuse.
+   * Selection here is a proposal operand, never admission.
+   */
+  readonly representationProfile?: number;
   /** The op being routed (drives the precision decision). */
   readonly opClass: InferenceOpClass;
   /** Precision-router context (governance tier, fp4 hw, air-gap, declared tolerance). */
@@ -63,6 +68,13 @@ export interface ExecutionRouteInput {
 export interface ExecutionDecision {
   /** AXIS-1: the cached capability tier. */
   readonly tier: Tier;
+  /** RD-0855 representation-profile candidate (1/32/64/256). Never authority. */
+  readonly representationProfile: 1 | 32 | 64 | 256;
+  readonly authorityReleased: false;
+  /** Arithmetic data brand. Never interchangeable with Verdict. */
+  readonly dataBrand: "Trit";
+  /** Governance brand. Never interchangeable with Trit. */
+  readonly governanceBrand: "Verdict";
   /** AXIS-2: the precision technique + scheduling + provenance. */
   readonly precision: PrecisionDecision;
   /** AXIS-3: the per-kernel offload target (digital | photonic). */
@@ -107,6 +119,22 @@ export class ExecutionRouter {
   }
 
   route(input: ExecutionRouteInput): ExecutionDecision {
+    const requested = input.representationProfile ?? 1;
+    if (requested !== 1 && requested !== 32 && requested !== 64 && requested !== 256) {
+      return {
+        tier: "binary",
+        representationProfile: 1,
+        authorityReleased: false,
+        dataBrand: "Trit",
+        governanceBrand: "Verdict",
+        precision: routePrecision(input.opClass, input.routing),
+        offloadTarget: "digital",
+        offloadReason: `representation profile ${requested} has no ABI — experimental or unknown profiles cannot route`,
+        photonic: false,
+        laneGranted: true,
+        reason: `tier=binary · representation=${requested} refused · digital floor`,
+      };
+    }
     // AXIS-1 — capability tier (attested, fail-closed to binary).
     const tier = resolveHardware({
       targetId: input.capability.targetId,
@@ -150,12 +178,16 @@ export class ExecutionRouter {
 
     return {
       tier,
+      representationProfile: requested,
+      authorityReleased: false,
+      dataBrand: "Trit",
+      governanceBrand: "Verdict",
       precision,
       offloadTarget: gated.target,
       offloadReason: gated.reason,
       photonic: gated.target === "photonic",
       laneGranted,
-      reason: `tier=${tier} · precision=${precision.precision} (${precision.reason}) · offload=${gated.target} (${gated.reason})`,
+      reason: `tier=${tier} · profile=${requested} · precision=${precision.precision} (${precision.reason}) · offload=${gated.target} (${gated.reason})`,
     };
   }
 }

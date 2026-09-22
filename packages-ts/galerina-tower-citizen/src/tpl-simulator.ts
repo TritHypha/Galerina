@@ -32,7 +32,7 @@
 
 import { AuditLogger } from "./audit-logger.js";
 import { GovernanceEnforcer } from "./governance-enforcer.js";
-import { minTrit, maxTrit, negTrit, SecurityTrap } from "./trit-gates.js";
+import { minTrit, maxTrit, negTrit, consensusTritValue, SecurityTrap } from "./trit-gates.js";
 
 export { minTrit, maxTrit, negTrit, SecurityTrap };
 
@@ -162,9 +162,7 @@ export function mulTrit(a: Trit, b: Trit): Trit {
  * (HOLD), the fail-closed neutral, matching the Epistemic-Hold posture.
  */
 export function consensusTrit(a: Trit, b: Trit, c: Trit): Trit {
-  assertTrit(a); assertTrit(b); assertTrit(c);
-  const s = a + b + c;
-  return asTrit(s > 0 ? 1 : s < 0 ? -1 : 0);
+  return asTrit(consensusTritValue(a, b, c));
 }
 
 /**

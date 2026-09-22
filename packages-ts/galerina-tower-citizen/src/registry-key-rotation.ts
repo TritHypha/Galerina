@@ -261,11 +261,13 @@ export function restoreRegistryRotationCheckpoint(
   ) {
     throw new TypeError("registry rotation checkpoint is malformed");
   }
+  const payloadJson = checkpoint.payloadJson;
+  const hmac = checkpoint.hmac;
   const expected = Buffer.from(
-    checkpointMac(ringMacKey, checkpoint.payloadJson),
+    checkpointMac(ringMacKey, payloadJson),
     "hex",
   );
-  const actual = Buffer.from(checkpoint.hmac, "hex");
+  const actual = Buffer.from(hmac, "hex");
   if (
     expected.length !== actual.length
     || !timingSafeEqual(expected, actual)
@@ -274,7 +276,7 @@ export function restoreRegistryRotationCheckpoint(
   }
   let state: RegistryRotationState;
   try {
-    state = JSON.parse(checkpoint.payloadJson) as RegistryRotationState;
+    state = JSON.parse(payloadJson) as RegistryRotationState;
   } catch {
     throw new TypeError("registry rotation checkpoint payload is not JSON");
   }

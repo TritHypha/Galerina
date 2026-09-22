@@ -70,6 +70,8 @@ export interface AttestationResult {
   readonly ok: boolean;
   readonly reason?: string;
   readonly hash?: string;
+  /** Verified capability mask, when the result is a capability grant. Never re-read from caller storage. */
+  readonly capabilityMask?: number;
 }
 
 /** sha256 hex of the canonical manifest pre-image — the attestation hash. */
@@ -125,18 +127,8 @@ export function verifyAttestation(
     }
   }
 
-  // Revocation (defense-in-depth, mirrors the fuse admission gate): a validly-signed
-  // attestation from a REVOKED signing key is refused. Fail-closed: a throwing check
-  // (untrustworthy/tampered registry) is itself a denial. Absent fields ⇒ no gate.
-  if (policy.signerKeyId !== undefined && policy.revocationCheck !== undefined) {
-    let revoked: boolean;
-    try {
-      revoked = policy.revocationCheck(policy.signerKeyId) === true;
-    } catch (e) {
-      return { ok: false, reason: `revocation status for keyId '${policy.signerKeyId}' could not be determined (${(e as Error).message}) — fail-closed`, hash };
-    }
-    if (revoked) return { ok: false, reason: `signing key '${policy.signerKeyId}' is REVOKED`, hash };
-  }
+  const revocation = evaluateSignerRevocation(policy, hash);
+  if (revocation !== null) return revocation;
 
   return { ok: true, hash };
 }
@@ -155,22 +147,67 @@ export function generateAttestationKeypair(): { publicKeyPem: string; privateKey
 /** Sign a bridge's manifest and return a DELEGATING wrapper that carries the
  *  attestation while preserving the original bridge's behaviour (its methods live
  *  on the prototype, so a plain spread would drop them — we delegate explicitly). */
+export function evaluateSignerRevocation(
+  policy: AttestationPolicy,
+  hash?: string,
+): AttestationResult | null {
+  const hashField = hash !== undefined ? { hash } : {};
+  const hasKey = typeof policy.signerKeyId === "string" && policy.signerKeyId.length > 0;
+  const hasCheck = typeof policy.revocationCheck === "function";
+  if (hasKey !== hasCheck) {
+    return { ok: false, reason: "revocation status cannot be determined — signerKeyId and revocationCheck must be supplied together", ...hashField };
+  }
+  if (policy.requireCertifiedProfile === true && !hasCheck) {
+    return { ok: false, reason: "certified admission requires a revocation check — fail-closed", ...hashField };
+  }
+  if (!hasCheck || !hasKey) return null;
+  try {
+    if (policy.revocationCheck!(policy.signerKeyId!) === true) {
+      return { ok: false, reason: `signing key '${policy.signerKeyId}' is REVOKED`, ...hashField };
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      reason: `revocation status for keyId '${policy.signerKeyId}' could not be determined (${(e as Error).message}) — fail-closed`,
+      ...hashField,
+    };
+  }
+  return null;
+}
+
+function freezeAttestedBridge(bridge: InferenceBridge, attestation: BridgeAttestation): InferenceBridge {
+  const bridgeId = bridge.bridgeId;
+  const technique = bridge.technique;
+  const nativeAvailable = bridge.nativeAvailable;
+  const execute = bridge.execute.bind(bridge);
+  const initialize = bridge.initialize.bind(bridge);
+  const shutdown = bridge.shutdown.bind(bridge);
+  const manifest = attestation.manifest;
+  if (manifest.bridgeId !== bridgeId) {
+    throw new Error("ERR_BRIDGE_IDENTITY: attested manifest.bridgeId does not match the live bridge");
+  }
+  if (manifest.precision !== undefined && manifest.precision !== technique) {
+    throw new Error("ERR_BRIDGE_IDENTITY: attested precision does not match the live bridge technique");
+  }
+  return Object.freeze({
+    get bridgeId() { return bridgeId; },
+    get technique() { return technique; },
+    get nativeAvailable() { return nativeAvailable; },
+    manifest,
+    attestation,
+    initialize,
+    shutdown,
+    execute,
+  });
+}
+
 export function attestBridge(bridge: InferenceBridge, privateKeyPem: string): InferenceBridge {
   const manifest = bridge.manifest;
   if (!manifest) {
     throw new Error("ERR_BRIDGE_NO_MANIFEST: cannot attest a bridge that has no manifest to sign");
   }
   const attestation = signManifest(manifest, privateKeyPem);
-  return {
-    get bridgeId() { return bridge.bridgeId; },
-    get technique() { return bridge.technique; },
-    get nativeAvailable() { return bridge.nativeAvailable; },
-    manifest,
-    attestation,
-    initialize: () => bridge.initialize(),
-    shutdown: () => bridge.shutdown(),
-    execute: (op: BridgeOp): BridgeResult => bridge.execute(op),
-  };
+  return freezeAttestedBridge(bridge, attestation);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,11 +269,20 @@ export async function verifyAttestationHybrid(
   policy: AttestationPolicy,
   mlDsaPublicKey: Uint8Array,
 ): Promise<AttestationResult> {
-  // Force the Ed25519 half to be checked even if the caller forgot requireSigned.
-  const base = verifyAttestation(attestation, { ...policy, requireSigned: true });
+  if (!attestation) return { ok: false, reason: "no attestation provided" };
+  if (typeof attestation.signature !== "string" || attestation.signature.length < 1) {
+    return { ok: false, reason: "signature required but absent" };
+  }
+  const frozen: BridgeAttestation = {
+    manifest: attestation.manifest,
+    signature: attestation.signature,
+    ...(typeof attestation.mlDsaSignature === "string" ? { mlDsaSignature: attestation.mlDsaSignature } : {}),
+  };
+  const preimage = canonicalManifestString(frozen.manifest);
+  const base = verifyAttestation(frozen, { ...policy, requireSigned: true });
   if (!base.ok) return base;
   const hashField = base.hash !== undefined ? { hash: base.hash } : {};
-  if (!attestation?.mlDsaSignature) {
+  if (!frozen.mlDsaSignature) {
     return { ok: false, reason: "ML-DSA signature required but absent (hybrid)", ...hashField };
   }
   try {
@@ -244,8 +290,8 @@ export async function verifyAttestationHybrid(
       ml_dsa65: { verify(s: Uint8Array, m: Uint8Array, pk: Uint8Array, opts?: { context?: Uint8Array }): boolean };
     };
     const ok = ml_dsa65.verify(
-      Buffer.from(attestation.mlDsaSignature, "base64"),
-      Buffer.from(canonicalManifestString(attestation.manifest), "utf8"),
+      Buffer.from(frozen.mlDsaSignature, "base64"),
+      Buffer.from(preimage, "utf8"),
       mlDsaPublicKey,
       { context: BRIDGE_MLDSA_CONTEXT },
     );
@@ -268,14 +314,5 @@ export async function attestBridgeHybrid(
     throw new Error("ERR_BRIDGE_NO_MANIFEST: cannot attest a bridge that has no manifest to sign");
   }
   const attestation = await signManifestHybrid(manifest, privateKeyPem, mlDsaPrivateKey);
-  return {
-    get bridgeId() { return bridge.bridgeId; },
-    get technique() { return bridge.technique; },
-    get nativeAvailable() { return bridge.nativeAvailable; },
-    manifest,
-    attestation,
-    initialize: () => bridge.initialize(),
-    shutdown: () => bridge.shutdown(),
-    execute: (op: BridgeOp): BridgeResult => bridge.execute(op),
-  };
+  return freezeAttestedBridge(bridge, attestation);
 }

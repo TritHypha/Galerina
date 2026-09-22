@@ -33,6 +33,7 @@ function fixture(overrides = {}) {
   const policy = {
     publicKeyPem,
     grantedCapabilities: [PHOTONIC_REPROGRAM_CAP],
+    revocationCheck: () => false,
     ...overrides.policy,
   };
   return { publicKeyPem, privateKeyPem, manifest, attestation, policy };
@@ -65,7 +66,7 @@ test("deny: a tampered manifest field breaks the signature", () => {
 test("deny: signature from the wrong key fails verification", () => {
   const { attestation } = fixture();
   const other = generatePhotonicConfigKeypair();
-  const r = admitPhotonicConfig(BLOB, attestation, { publicKeyPem: other.publicKeyPem, grantedCapabilities: [PHOTONIC_REPROGRAM_CAP] });
+  const r = admitPhotonicConfig(BLOB, attestation, { publicKeyPem: other.publicKeyPem, grantedCapabilities: [PHOTONIC_REPROGRAM_CAP], revocationCheck: () => false });
   assert.equal(r.admitted, false);
   assert.match(r.reason, /signature/i);
 });
@@ -111,10 +112,10 @@ test("deny: manifest declaring the wrong capability", () => {
   // hand-build a manifest that declares a different capability
   const manifest = {
     schemaVersion: "galerina.photonic-config.v1", name: "x", configSha256: photonicConfigHash(BLOB),
-    capability: "network.outbound", seam: "ppu.lane0",
+    capability: "network.outbound", seam: "ppu.lane0", signerKeyId: "feedfacecafe0001",
   };
   const attestation = signPhotonicConfig(manifest, privateKeyPem);
-  const r = admitPhotonicConfig(BLOB, attestation, { publicKeyPem, grantedCapabilities: [PHOTONIC_REPROGRAM_CAP] });
+  const r = admitPhotonicConfig(BLOB, attestation, { publicKeyPem, grantedCapabilities: [PHOTONIC_REPROGRAM_CAP], revocationCheck: () => false });
   assert.equal(r.admitted, false);
   assert.match(r.reason, /is not/);
 });
@@ -124,6 +125,25 @@ test("pin set: only an allow-listed config hash is admitted", () => {
   const hash = photonicConfigHash(BLOB);
   assert.equal(admitPhotonicConfig(BLOB, attestation, { ...policy, allowedHashes: ["sha256:deadbeef"] }).admitted, false);
   assert.equal(admitPhotonicConfig(BLOB, attestation, { ...policy, allowedHashes: [hash] }).admitted, true);
+});
+
+test("deny: omitted signer identity cannot skip revocation", () => {
+  const { privateKeyPem, publicKeyPem } = fixture();
+  const manifest = {
+    schemaVersion: "galerina.photonic-config.v1",
+    name: "mesh-weights-v1",
+    configSha256: photonicConfigHash(BLOB),
+    capability: PHOTONIC_REPROGRAM_CAP,
+    seam: "ppu.lane0",
+  };
+  const attestation = signPhotonicConfig(manifest, privateKeyPem);
+  const r = admitPhotonicConfig(BLOB, attestation, {
+    publicKeyPem,
+    grantedCapabilities: [PHOTONIC_REPROGRAM_CAP],
+    revocationCheck: () => false,
+  });
+  assert.equal(r.admitted, false);
+  assert.match(r.reason, /signerKeyId and revocationCheck must be supplied together/);
 });
 
 test("SOUNDNESS: across mutations of blob/sig/cap, admission requires ALL gates", () => {

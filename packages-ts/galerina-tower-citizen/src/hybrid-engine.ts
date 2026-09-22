@@ -35,9 +35,9 @@ import {
   type PrecisionTechnique,
 } from "./precision-strategy.js";
 import { createStubRegistry } from "./bridge/stub-provider.js";
-import { assertDeterminism, type BridgeRegistry, type BridgeOp, type BridgeResult, type BridgeAttestation } from "./bridge/interface.js";
+import { assertDeterminism, type BridgeRegistry, type BridgeOp, type BridgeResult, type BridgeAttestation, type BridgeManifest, type InferenceBridge } from "./bridge/interface.js";
 import type { EgressSink } from "./audit-logger.js";
-import { verifyAttestation, verifyAttestationHybrid, type AttestationPolicy } from "./bridge-attestation.js";
+import { verifyAttestation, verifyAttestationHybrid, evaluateSignerRevocation, type AttestationPolicy } from "./bridge-attestation.js";
 import { verifyCapabilityGrant, type SignedCapabilityGrant } from "./capability-grant.js";
 import { compilePolicy, POL_HAS_ALLOWLIST, POL_HAS_CALL_BUDGET, POL_HAS_TOKEN_BUDGET, POL_DENY_HOST_NATIVE, type CompiledPolicy } from "./compiled-policy.js";
 
@@ -317,6 +317,77 @@ export interface PhotonicConfig {
 
 const defaultPhotonicKernelFor = (op: BridgeOp): PhotonicKernelCost => ({ n: op.count, lane: "photonic", tolerance: 0.05 });
 
+interface AdmittedBridge {
+  readonly technique: PrecisionTechnique;
+  readonly bridgeId: string;
+  readonly execute: (op: BridgeOp) => BridgeResult;
+  readonly initialize: () => void | Promise<void>;
+  readonly shutdown: () => void | Promise<void>;
+}
+
+/**
+ * Own enumerable data snapshot of an attested manifest. Getters, prototypes other
+ * than Object.prototype, and nested non-plain values refuse, so a Proxy cannot
+ * authenticate one coupon and later bind a different identity.
+ */
+function snapshotOwnPlainData(value: unknown): unknown {
+  if (value === null) return null;
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "number" || valueType === "boolean") return value;
+  if (valueType !== "object" || Array.isArray(value)) return null;
+  if (Object.getPrototypeOf(value) !== Object.prototype) return null;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const owned: Record<string, unknown> = {};
+  for (const key of Object.keys(descriptors).sort()) {
+    const descriptor = descriptors[key];
+    if (
+      descriptor === undefined
+      || descriptor.get !== undefined
+      || descriptor.set !== undefined
+      || !Object.prototype.hasOwnProperty.call(descriptor, "value")
+    ) {
+      return null;
+    }
+    const copied = snapshotOwnPlainData(descriptor.value);
+    if (copied === null && descriptor.value !== null) return null;
+    owned[key] = copied;
+  }
+  return Object.freeze(owned);
+}
+
+function admitLiveBridge(
+  technique: PrecisionTechnique,
+  bridge: InferenceBridge,
+): { ok: true; admitted: AdmittedBridge } | { ok: false; reason: string } {
+  const bridgeId = bridge.bridgeId;
+  const liveTechnique = bridge.technique;
+  if (typeof bridgeId !== "string" || bridgeId.length === 0) {
+    return { ok: false, reason: `${String(technique)}: live bridge has no bridgeId` };
+  }
+  if (liveTechnique !== technique) {
+    return { ok: false, reason: `${bridgeId}: registry key '${technique}' does not match live technique '${liveTechnique}'` };
+  }
+  const manifest = bridge.attestation?.manifest ?? bridge.manifest;
+  if (manifest !== undefined) {
+    if (manifest.bridgeId !== bridgeId) {
+      return { ok: false, reason: `${bridgeId}: attested manifest.bridgeId '${manifest.bridgeId}' does not match live identity` };
+    }
+    if (manifest.precision !== undefined && manifest.precision !== liveTechnique) {
+      return { ok: false, reason: `${bridgeId}: attested precision '${manifest.precision}' does not match live technique` };
+    }
+  }
+  return {
+    ok: true,
+    admitted: {
+      technique,
+      bridgeId,
+      execute: bridge.execute.bind(bridge),
+      initialize: bridge.initialize.bind(bridge),
+      shutdown: bridge.shutdown.bind(bridge),
+    },
+  };
+}
+
 export class HybridInferenceEngine {
   private readonly tower: TowerRuntime;
   private readonly ctx: RoutingContext;
@@ -352,8 +423,12 @@ export class HybridInferenceEngine {
   private photonicCertifiedVerified = false;
   private photonicCertifiedChecked = false;
   private photonicCertifiedDenial: string | null = null;
+  /** Coupon identity copied from the snapshot that verified — later field mutation cannot change it. */
+  #photonicCouponIdentity: { readonly bridgeId: string; readonly hardwareIdentity: string } | null = null;
   private bridgeAttestationDenial: string | null = null; // cached: first offending bridge id, if any
   private bridgeAttestationChecked = false;
+  /** Bridges whose attestation AND live identity were bound at admission. Execute/init/shutdown use this set. */
+  #admittedBridges: ReadonlyMap<PrecisionTechnique, AdmittedBridge> | null = null;
   private bridgesInitialized = false;
   private callCount = 0;
   private initialized = false;
@@ -375,6 +450,7 @@ export class HybridInferenceEngine {
     grantedCapabilityMask: number = HYBRID_METADATA.capabilityMask,
     photonic: PhotonicConfig | null = null,
     signedCapabilityGrant?: SignedCapabilityGrant,
+    private readonly pluginLoadEvidence?: Parameters<TowerRuntime["load"]>[2],
   ) {
     this.ctx = {
       governanceTier: ctx.governanceTier ?? 1,
@@ -450,8 +526,8 @@ export class HybridInferenceEngine {
     // Fail-secure: without BOTH an attestation policy AND a signed grant, no authority is conferred.
     if (this.attestationPolicy === null || this.#capabilityGrant === undefined) return; // mask stays 0
     const res = await verifyCapabilityGrant(this.#capabilityGrant, this.attestationPolicy, HYBRID_METADATA.engineId);
-    if (res.ok) {
-      this.#grantedCapabilityMask = this.#capabilityGrant.grant.capabilityMask >>> 0;
+    if (res.ok && typeof res.capabilityMask === "number") {
+      this.#grantedCapabilityMask = res.capabilityMask >>> 0;
     }
     // else: authority stays 0 → the capability gate traps ERR_CAPABILITY_DENIED (audited).
   }
@@ -463,43 +539,75 @@ export class HybridInferenceEngine {
    */
   private async checkBridgeAttestation(): Promise<string | null> {
     if (this.bridgeAttestationChecked) return this.bridgeAttestationDenial;
-    this.bridgeAttestationChecked = true;
-    // RD-0236 #2 (fail-secure INVERSION): a null attestation policy no longer means "all bridges
-    // attested". Without a policy the engine has NO way to cryptographically verify a bridge, so a
-    // registry carrying ≥1 bridge is DENIED unless the deployment explicitly opts in. An EMPTY
-    // registry (nothing to verify) with no policy stays fine — there is no unverified authority.
-    if (this.attestationPolicy === null) {
-      const hasBridges = this.bridges.size > 0;
-      if (hasBridges && this.governance.allowUnattestedBridges !== true) {
-        this.bridgeAttestationDenial =
-          "no attestation policy configured — bridges cannot be verified (fail-secure; set allowUnattestedBridges to opt out)";
+    try {
+      const admitted = new Map<PrecisionTechnique, AdmittedBridge>();
+      if (this.attestationPolicy === null) {
+        const hasBridges = this.bridges.size > 0;
+        if (hasBridges && this.governance.allowUnattestedBridges !== true) {
+          this.bridgeAttestationDenial =
+            "no attestation policy configured — bridges cannot be verified (fail-secure; set allowUnattestedBridges to opt out)";
+          this.#admittedBridges = new Map();
+          this.bridgeAttestationChecked = true;
+          return this.bridgeAttestationDenial;
+        }
+        for (const [technique, bridge] of this.bridges.entries()) {
+          const snap = admitLiveBridge(technique, bridge);
+          if (!snap.ok) {
+            this.bridgeAttestationDenial = snap.reason;
+            this.#admittedBridges = new Map();
+            this.bridgeAttestationChecked = true;
+            return this.bridgeAttestationDenial;
+          }
+          admitted.set(technique, snap.admitted);
+        }
+        this.#admittedBridges = admitted;
+        this.bridgeAttestationDenial = null;
+        this.bridgeAttestationChecked = true;
+        return null;
+      }
+      const policy = this.attestationPolicy;
+      const mlDsaPublicKey = policy.mlDsaPublicKey;
+      if (policy.requireHybrid === true && mlDsaPublicKey === undefined) {
+        this.bridgeAttestationDenial = "requireHybrid set but no mlDsaPublicKey provisioned (no PQ downgrade)";
+        this.#admittedBridges = new Map();
+        this.bridgeAttestationChecked = true;
         return this.bridgeAttestationDenial;
       }
+      for (const [technique, bridge] of this.bridges.entries()) {
+        const result = mlDsaPublicKey !== undefined
+          ? await verifyAttestationHybrid(bridge.attestation, policy, mlDsaPublicKey)
+          : verifyAttestation(bridge.attestation, policy);
+        if (!result.ok) {
+          this.bridgeAttestationDenial = `${bridge.bridgeId}: ${result.reason ?? "unattested"}`;
+          this.#admittedBridges = new Map();
+          this.bridgeAttestationChecked = true;
+          return this.bridgeAttestationDenial;
+        }
+        const snap = admitLiveBridge(technique, bridge);
+        if (!snap.ok) {
+          this.bridgeAttestationDenial = snap.reason;
+          this.#admittedBridges = new Map();
+          this.bridgeAttestationChecked = true;
+          return this.bridgeAttestationDenial;
+        }
+        admitted.set(technique, snap.admitted);
+      }
+      this.#admittedBridges = admitted;
       this.bridgeAttestationDenial = null;
+      this.bridgeAttestationChecked = true;
       return null;
-    }
-    const policy = this.attestationPolicy;
-    // #34: a configured ML-DSA public key escalates admission to the hybrid verifier —
-    // BOTH the Ed25519 and the ML-DSA-65 half must verify (no PQ downgrade). Absent ⇒
-    // classical Ed25519-only verification (backward-compatible default).
-    const mlDsaPublicKey = policy.mlDsaPublicKey;
-    // CRYPTO-002: requireHybrid forbids the classical fallback — a policy that mandates hybrid
-    // but provisions no ML-DSA key must fail closed, not silently downgrade to Ed25519-only.
-    if (policy.requireHybrid === true && mlDsaPublicKey === undefined) {
-      this.bridgeAttestationDenial = "requireHybrid set but no mlDsaPublicKey provisioned (no PQ downgrade)";
+    } catch (e) {
+      this.bridgeAttestationDenial = `attestation check error: ${(e as Error).message}`;
+      this.#admittedBridges = new Map();
+      this.bridgeAttestationChecked = true;
       return this.bridgeAttestationDenial;
     }
-    for (const bridge of this.bridges.values()) {
-      const result = mlDsaPublicKey !== undefined
-        ? await verifyAttestationHybrid(bridge.attestation, policy, mlDsaPublicKey)
-        : verifyAttestation(bridge.attestation, policy);
-      if (!result.ok) {
-        this.bridgeAttestationDenial = `${bridge.bridgeId}: ${result.reason ?? "unattested"}`;
-        return this.bridgeAttestationDenial;
-      }
-    }
-    this.bridgeAttestationDenial = null;
-    return null;
+  }
+
+  private revalidateCachedRevocation(): string | null {
+    if (this.attestationPolicy === null) return null;
+    const denial = evaluateSignerRevocation(this.attestationPolicy);
+    return denial === null ? null : (denial.reason ?? "revocation status cannot be determined");
   }
 
   /**
@@ -527,6 +635,22 @@ export class HybridInferenceEngine {
       this.photonicCertifiedDenial = "certified photonic requires a signed BridgeManifest (self-declared attestation is not trusted)";
       return false;
     }
+    const snapped = snapshotOwnPlainData(signed.manifest);
+    if (snapped === null || typeof snapped !== "object") {
+      this.photonicCertifiedDenial = "certified photonic manifest is not snapshotable own-data (getters/proxies refused)";
+      return false;
+    }
+    const manifest = snapped as BridgeManifest;
+    const signature = typeof signed.signature === "string" ? String(signed.signature) : "";
+    const frozenAttestation: BridgeAttestation = {
+      manifest,
+      signature,
+      ...(typeof signed.mlDsaSignature === "string" ? { mlDsaSignature: String(signed.mlDsaSignature) } : {}),
+    };
+    if (this.photonic?.couponRevocationCheck === undefined) {
+      this.photonicCertifiedDenial = "certified photonic requires couponRevocationCheck (revocation status cannot be determined)";
+      return false;
+    }
     const mlDsaPublicKey = policy.mlDsaPublicKey;
     // Mirror checkBridgeAttestation: a policy that mandates hybrid but provisions no ML-DSA key fails closed.
     if (policy.requireHybrid === true && mlDsaPublicKey === undefined) {
@@ -536,8 +660,8 @@ export class HybridInferenceEngine {
     let result;
     try {
       result = mlDsaPublicKey !== undefined
-        ? await verifyAttestationHybrid(signed, policy, mlDsaPublicKey)
-        : verifyAttestation(signed, policy);
+        ? await verifyAttestationHybrid(frozenAttestation, policy, mlDsaPublicKey)
+        : verifyAttestation(frozenAttestation, policy);
     } catch (e) {
       this.photonicCertifiedDenial = `photonic attestation verify error: ${(e as Error).message}`;
       return false; // a throwing verifier is itself a denial
@@ -546,8 +670,8 @@ export class HybridInferenceEngine {
       this.photonicCertifiedDenial = `photonic attestation rejected: ${result.reason ?? "unverified"}`;
       return false;
     }
-    if (signed.manifest.certificationProfile !== "certified") {
-      this.photonicCertifiedDenial = `photonic manifest profile is "${signed.manifest.certificationProfile}", not "certified"`;
+    if (manifest.certificationProfile !== "certified") {
+      this.photonicCertifiedDenial = `photonic manifest profile is "${manifest.certificationProfile}", not "certified"`;
       return false;
     }
     // H5 LANE BINDING (red-team RD-0129): a verified certified coupon is NOT sufficient — it must describe THIS
@@ -564,7 +688,7 @@ export class HybridInferenceEngine {
     // (a verified signature attests authenticity/integrity, not source-/substrate-FIDELITY) — see
     // ../ZTF-Knowledge-Bases/galerina-provenance-integrity-vs-fidelity.md. The residual (a trust-root holder
     // mislabelling its own backend) is outside the confused-deputy model (requires the pinned signing key).
-    const hwId = signed.manifest.hardwareIdentity;
+    const hwId = manifest.hardwareIdentity;
     if (typeof hwId !== "string" || !hwId.startsWith("photonic")) {
       this.photonicCertifiedDenial = `certified coupon is not a photonic backend (hardwareIdentity="${String(hwId)}") — a non-photonic coupon cannot admit the photonic lane`;
       return false;
@@ -574,8 +698,8 @@ export class HybridInferenceEngine {
       this.photonicCertifiedDenial = "certified photonic requires PhotonicConfig.bridgeId (the declared backend identity the coupon is bound to)";
       return false;
     }
-    if (signed.manifest.bridgeId !== declaredBridgeId) {
-      this.photonicCertifiedDenial = `certified coupon bridgeId "${signed.manifest.bridgeId}" != declared photonic backend "${declaredBridgeId}" (coupon reuse refused)`;
+    if (manifest.bridgeId !== declaredBridgeId) {
+      this.photonicCertifiedDenial = `certified coupon bridgeId "${manifest.bridgeId}" != declared photonic backend "${declaredBridgeId}" (coupon reuse refused)`;
       return false;
     }
     // 0118 (capture-replay / ZT tenets 5-6): coupon/DEVICE-level revocation, parallel to the key-level
@@ -596,8 +720,34 @@ export class HybridInferenceEngine {
         return false;
       }
     }
+    this.#photonicCouponIdentity = { bridgeId: declaredBridgeId, hardwareIdentity: hwId };
     this.photonicCertifiedVerified = true;
     return true;
+  }
+
+  /**
+   * Coupon revocation is not a one-time admission. Re-run the host predicate on every
+   * certified infer against the snapshot identity that verified, so a later device
+   * revocation cannot keep using a cached photonicCertifiedVerified=true.
+   */
+  private revalidateCachedPhotonicCoupon(): void {
+    if (!this.certified || !this.photonicCertifiedVerified) return;
+    const check = this.photonic?.couponRevocationCheck;
+    const id = this.#photonicCouponIdentity;
+    if (typeof check !== "function" || id === null) {
+      this.photonicCertifiedVerified = false;
+      this.photonicCertifiedDenial = "certified photonic coupon identity cannot be revalidated";
+      return;
+    }
+    try {
+      if (check(id) === true) {
+        this.photonicCertifiedVerified = false;
+        this.photonicCertifiedDenial = `certified coupon for backend "${id.bridgeId}" (${id.hardwareIdentity}) is REVOKED`;
+      }
+    } catch (e) {
+      this.photonicCertifiedVerified = false;
+      this.photonicCertifiedDenial = `coupon revocation check errored (fail-closed): ${(e as Error).message}`;
+    }
   }
 
   initialize(): { plan: HybridPlan } {
@@ -643,16 +793,28 @@ export class HybridInferenceEngine {
    *   scheduled → static plan replay                    (Groq-derived scheduler)
    * Stage A returns a governed stub; the governance/audit path is fully real.
    */
+  #admitOpClasses(ops: readonly InferenceOpClass[] | undefined): readonly InferenceOpClass[] | null {
+    const candidate = ops ?? STANDARD_INFERENCE_OPS;
+    if (!Array.isArray(candidate) || candidate.length < 1 || candidate.length > STANDARD_INFERENCE_OPS.length) {
+      return null;
+    }
+    const allowed = new Set<string>(STANDARD_INFERENCE_OPS as readonly string[]);
+    const admitted: InferenceOpClass[] = [];
+    for (let i = 0; i < candidate.length; i += 1) {
+      const op = candidate[i];
+      if (typeof op !== "string" || !allowed.has(op)) return null;
+      admitted.push(op as InferenceOpClass);
+    }
+    return admitted;
+  }
+
   async infer(request: HybridInferenceRequest): Promise<HybridInferenceReceipt> {
     if (!this.initialized) this.initialize();
 
-    const ops = request.opClasses ?? STANDARD_INFERENCE_OPS;
-    // A sealed deployment must NOT plan in flight: an op-set never preflighted is a
-    // denial (deny-by-default extended to routing). Otherwise use the memoized plan.
-    const planPreflighted = !this.sealed || this.planCache.has(ops.join(","));
-    const plan = planPreflighted ? this.planFor(ops) : this.planFor(STANDARD_INFERENCE_OPS);
+    const ops = this.#admitOpClasses(request.opClasses);
+    const planPreflighted = ops !== null && (!this.sealed || this.planCache.has(ops.join(",")));
 
-    const { sandbox, correlationId } = await this.tower.load(HYBRID_METADATA, request.correlationId);
+    const { sandbox, correlationId } = await this.tower.load(HYBRID_METADATA, request.correlationId, this.pluginLoadEvidence);
     const audit = this.tower.getAudit();
     const t0 = Date.now();
 
@@ -667,24 +829,29 @@ export class HybridInferenceEngine {
       // RD-0236 #1: resolve real authority from the signed grant (deny-by-default) before the gate reads it.
       await this.resolveCapabilityGrant();
       const capabilityHeld = (AI_INFERENCE_CAP & this.#grantedCapabilityMask) === AI_INFERENCE_CAP;
-      const bridgeDenial = await this.checkBridgeAttestation();
+      const bridgeDenial = await this.checkBridgeAttestation()
+        ?? this.revalidateCachedRevocation();
       // H5: verify the certified-photonic SIGNED manifest once (fail-closed; sets photonicCertifiedVerified).
       // Cheap + cached; in non-certified mode the read site uses `!this.certified` so this is a no-op gate.
-      if (this.photonic && this.certified) await this.verifyPhotonicCertifiedAdmission();
+      if (this.photonic && this.certified) {
+        await this.verifyPhotonicCertifiedAdmission();
+        this.revalidateCachedPhotonicCoupon();
+      }
       const govTrap = !capabilityHeld
         ? { code: "ERR_CAPABILITY_DENIED", details: { required: AI_INFERENCE_CAP, granted: this.#grantedCapabilityMask } }
         : bridgeDenial !== null
           ? { code: "ERR_BRIDGE_UNATTESTED", details: { bridge: bridgeDenial } }
-          : !planPreflighted
-            ? { code: "ERR_PLAN_NOT_PREFLIGHTED", details: { ops: [...ops] } }
+          : ops === null || !planPreflighted
+            ? { code: "ERR_PLAN_NOT_PREFLIGHTED", details: { ops: ops === null ? [] : [...ops] } }
             : this.checkAiGovernance(request);
       if (govTrap) {
         audit.trap(correlationId, HYBRID_METADATA.artifactHash, HYBRID_METADATA.engineId,
           govTrap.code, govTrap.details);
         const latencyMs = Date.now() - t0;
         await this.tower.erase(sandbox, correlationId);
-        return this.buildReceipt(request, plan, "", latencyMs, "sha256:0", [], false, 0, true, true, govTrap.code);
+        return this.buildReceipt(request, this.planFor(STANDARD_INFERENCE_OPS), "", latencyMs, "sha256:0", [], false, 0, true, true, govTrap.code);
       }
+      const plan = this.planFor(ops ?? STANDARD_INFERENCE_OPS);
       this.callCount++;
 
       const execResult: ExecutionResult = await this.tower.execute(sandbox, request, correlationId);
@@ -823,7 +990,7 @@ export class HybridInferenceEngine {
     trap: { code: string; details: Record<string, unknown> } | null;
   } {
     if (!this.bridgesInitialized) {
-      for (const bridge of this.bridges.values()) bridge.initialize();
+      for (const bridge of (this.#admittedBridges ?? new Map()).values()) bridge.initialize();
       this.bridgesInitialized = true;
     }
     const used = new Set<string>();
@@ -887,7 +1054,7 @@ export class HybridInferenceEngine {
         // ph null / non-finite → fall through to the UNCHANGED digital dispatch (fail-closed).
       }
 
-      const bridge = this.bridges.get(decision.precision);
+      const bridge = this.#admittedBridges?.get(decision.precision);
       if (!bridge) {
         // No accelerator bridge for this precision (e.g. fp8/fp16). In permissive
         // mode it runs host-native; in aerospace mode that silent fallback is denied.
@@ -919,7 +1086,7 @@ export class HybridInferenceEngine {
   /** Release native bridge resources. Call once at engine teardown (NOT per-infer —
    *  registry bridges are shared across calls). Part of the Erase discipline. */
   async shutdown(): Promise<void> {
-    for (const bridge of this.bridges.values()) await bridge.shutdown();
+    for (const bridge of (this.#admittedBridges ?? new Map()).values()) await bridge.shutdown();
     this.bridgesInitialized = false;
   }
 
@@ -993,6 +1160,10 @@ export class HybridInferenceEngine {
  * Air-gapped is the default safe assumption; callers opt into cloud/GPU explicitly.
  */
 export function createHybridEngine(profile: {
+  /** Explicit load policy for named products; omitted retains legacy bootstrap behavior. */
+  allowUnsignedLoad?: boolean;
+  /** Deployment-supplied evidence for the internal plugin descriptor; never signed here. */
+  pluginLoadEvidence?: Parameters<TowerRuntime["load"]>[2];
   airGapped?: boolean;
   fp4Hardware?: boolean;
   governanceTier?: 1 | 2 | 3;
@@ -1052,6 +1223,10 @@ export function createHybridEngine(profile: {
 } = {}): HybridInferenceEngine {
   const certified = profile.certified ?? false;
 
+  if (certified && profile.allowUnsignedLoad === true) {
+    throw new Error("ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN: certified tower forbids allowUnsignedLoad");
+  }
+
   // Fail closed at construction: certified mode cannot write audit to disk directly.
   if (certified && !profile.auditEgress) {
     throw new Error("ERR_CERTIFIED_NO_EGRESS: certified profile requires a governed audit egress sink (no direct filesystem audit writes)");
@@ -1085,7 +1260,7 @@ export function createHybridEngine(profile: {
     throw new Error("ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN: certified profile forbids allowUnsignedCapabilityGrant — capability authority must come from a signedCapabilityGrant that verifies against the attestation policy (no plain-mask self-grant)");
   }
 
-  const needTower = certified || profile.auditInMemory || (profile.auditBatchSize ?? 0) > 0 ||
+  const needTower = profile.allowUnsignedLoad !== undefined || certified || profile.auditInMemory || (profile.auditBatchSize ?? 0) > 0 ||
     profile.auditEgress || profile.auditTickSource;
   const tower = needTower
     ? new TowerRuntime({
@@ -1095,8 +1270,10 @@ export function createHybridEngine(profile: {
         auditBatchSize: profile.auditBatchSize ?? 0,
         ...(profile.auditEgress ? { auditEgress: profile.auditEgress } : {}),
         ...(profile.auditTickSource ? { auditTickSource: profile.auditTickSource } : {}),
-        // RD-0236 #10: the engine only ever self-loads its own hardcoded descriptor — opt into the floor.
-        allowUnsignedLoad: true,
+        // Omission preserves the legacy bootstrap. Named products always supply a policy.
+        allowUnsignedLoad: profile.allowUnsignedLoad ?? true,
+        certified: certified && profile.allowUnsignedLoad === false,
+        ...(profile.attestation ? { attestationPolicy: profile.attestation } : {}),
       })
     : undefined;
 
@@ -1120,5 +1297,6 @@ export function createHybridEngine(profile: {
     profile.capabilityMask ?? HYBRID_METADATA.capabilityMask,
     profile.photonic ?? null,
     profile.signedCapabilityGrant,
+    profile.pluginLoadEvidence,
   );
 }

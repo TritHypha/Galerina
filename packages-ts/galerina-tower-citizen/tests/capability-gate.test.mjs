@@ -7,7 +7,14 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createHybridEngine } from "../dist/index.js";
+import {
+  createHybridEngine,
+  generateAttestationKeypair,
+  attestBridge,
+  StubTernaryBridge,
+  signCapabilityGrant,
+  AuditLogger,
+} from "../dist/index.js";
 
 const AI_INFERENCE_CAP = 0b00100000;
 const cid = (s) => `CAP-${s}-${process.pid}-${Math.random().toString(36).slice(2, 7)}`;
@@ -38,6 +45,25 @@ test("the capability gate is the FIRST authority check (precedes attestation)", 
     attestation: { requireSigned: true, publicKeyPem: "not-a-real-key" },
   });
   const r = await eng.infer({ prompt: "x", correlationId: cid("first"), opClasses: ["feedforward"] });
+  assert.equal(r.trapCode, "ERR_CAPABILITY_DENIED");
+});
+
+test("mutating a signed grant after construction cannot inflate admitted authority", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const grant = { engineId: "galerina-hybrid-uhie-v1", capabilityMask: 0 };
+  const signedGrant = signCapabilityGrant(grant, privateKeyPem);
+  const signed = attestBridge(new StubTernaryBridge(new AuditLogger(null)), privateKeyPem);
+  const eng = createHybridEngine({
+    airGapped: true,
+    governanceTier: 1,
+    bridges: new Map([[signed.technique, signed]]),
+    attestation: { requireSigned: true, publicKeyPem },
+    signedCapabilityGrant: signedGrant,
+  });
+  grant.capabilityMask = AI_INFERENCE_CAP;
+  signedGrant.grant.capabilityMask = AI_INFERENCE_CAP;
+  const r = await eng.infer({ prompt: "x", correlationId: cid("grant-mut"), opClasses: ["feedforward"] });
+  assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_CAPABILITY_DENIED");
 });
 

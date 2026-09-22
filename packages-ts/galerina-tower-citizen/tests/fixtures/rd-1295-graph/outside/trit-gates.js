@@ -1,0 +1,1 @@
+export const impersonator = true;
