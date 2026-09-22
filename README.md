@@ -2,6 +2,16 @@
 
 **A governance-first application language for high-assurance software.**
 
+> **Current work checkpoint (2026-09-22): HOLD before new .fungi work.**
+> See the [roadmap](docs/ROADMAP.md), [work register](docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
+> and [status ledger](governance/status-ledger.json). The product-tree and test
+> figures below describe their earlier bounded evidence, not a fresh clean-head
+> corpus or production admission. Graph integration, remaining contracts and
+> independent assurance are still open. Q1/Q2 photonic coupon identity is patched
+> in the dirty tree ([security continuation](docs/reports/security-q1q2-continuation-2026-09-22.md));
+> the 124-finding scan is not closed. The Governed Computing Constitution is a
+> discussion draft only.
+
 Galerina is designed for application logic where authority, effects, data handling and failure behaviour must be explicit before execution. Developers write `.fungi`; the compiler checks types, effects, value state and governance, then emits a governed intermediate representation (GIR) and auditable evidence. The workspace now contains a complete, dispositioned Fungi product tree under `packages/fungi/products`.
 
 The project is in beta. The compiler and governance model are substantial and tested. The Fungi product tree has 95 direct buildable leaves across 100 dispositioned package roots, while the TypeScript compiler/bootstrap and host/native boundaries remain retained compatibility layers. The current CLI uses WAT/WASM as its compatibility and bootstrap execution path. Independent SLIDE can execute bounded admitted Fungi families through physical `.slide`, independent re-admission and VOK, but that evidence does **not** establish a general production backend, platform durability or release authority.

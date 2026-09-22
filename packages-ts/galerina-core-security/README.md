@@ -32,6 +32,7 @@ It belongs in:
 Use this package for:
 
 ```text
+injected CryptoProvider (fungi.security.crypto-provider.v1)
 SecureString model helpers
 Secret<T> / protected secret reference contracts
 redaction primitives

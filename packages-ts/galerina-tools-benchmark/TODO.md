@@ -1,5 +1,10 @@
 # Galerina Benchmark TODO
 
+## Graph integration follow-up — 2026-09-22
+
+- [x] Admitted `node:util/types` on the boundary because `src/index.ts` already
+      loads it. Live `--check` PASS. Exact-specifier hostility retained.
+
 ## Phase 1: Package Setup
 
 ```text

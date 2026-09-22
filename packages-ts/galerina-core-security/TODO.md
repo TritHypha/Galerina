@@ -1,5 +1,10 @@
 # Galerina Security TODO
 
+Scan/Q1–Q2 continuation (2026-09-22) is owned by Tower Citizen + compiler
+runtime (`grantedEffects`), not this v0.2 secret-model backlog. Do not invent
+a full secret subsystem from the unchecked items below.
+See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
+
 ```text
 [x] Canonical ProtectedSecret<T> unwrap API resolved: unwrapForApprovedSink(sink); private revealUnsafeForRuntimeOnly() for internal use only (2026-05-26)
 [x] Create /packages-ts/galerina-core-security

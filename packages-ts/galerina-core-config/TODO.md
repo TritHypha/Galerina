@@ -1,5 +1,10 @@
 # Galerina Config TODO
 
+## Graph integration follow-up — 2026-09-22
+
+- [x] Admitted `node:util/types` on the boundary because `src/index.ts` already
+      loads it. Live `--check` PASS. Exact-specifier hostility retained.
+
 ```text
 [x] Create /packages-ts/galerina-core-config
 [x] Add README.md
@@ -20,52 +25,53 @@
 [x] Define ConfigValue discriminated union: string|number|boolean|url|duration|bytes|region|semver|currency|mime-type|array (2026-05-26)
 [x] Define EnvironmentPolicy with secretReportMode: "redacted-only" (single-valued by type; no plaintext mode exists) (2026-05-26)
 [x] Implement defaultEnvironmentPolicy(mode): EnvironmentPolicy per mode — development/test allow .env; staging/production forbid it (2026-05-26)
-[ ] Upgrade EnvironmentConfig to v0.2: add schemaVersion "galerina.config.environment.v1", policy field
-[ ] Upgrade SecretEnvironmentReference: add id, source (SecretConfigSource), category, provider, requiredIn[], allowedSinks, deniedSinks, redaction
+[x] Upgrade EnvironmentConfigV2: schemaVersion "galerina.config.environment.v2", policy field (`RD-1285`)
+[x] Upgrade SecretEnvironmentReference: add id, source (SecretConfigSource), category, requiredIn[], allowedSinks, deniedSinks, redaction
 [x] Define SecretConfigSource discriminated union: env|vault|kms|runtime (2026-05-26)
-[ ] Define SecretEnvironmentReference.redacted: true marker (never the raw value)
-[ ] Define LoadEnvironmentConfigInput: mode, variableNames, secretNames, availableEnvironment, policy?
-[ ] Implement loadEnvironmentConfig(input): Promise<{config, diagnostics}> with FUNGI-CONFIG-001, FUNGI-CONFIG-002
+[x] Define SecretEnvironmentReference.redacted: true marker (never the raw value)
+[x] Define LoadEnvironmentConfigInput: mode, variableNames, secretNames, availableEnvironment, policy?
+[x] Implement loadEnvironmentConfig(input): Promise<{config, diagnostics}> with FUNGI-CONFIG-028/029 (001/002 remain mode-owned)
 [x] Define EnvironmentConfigReport and SecretReportValue (source: kind only, not raw path/value) (2026-05-26)
 [x] Implement ProductionStrictnessPolicy enforcement — validateProductionStrictness() + integration in createRuntimeConfigHandoff()
 [x] Implement RuntimeConfigHandoff type — type defined (project/environment/productionPolicy/activeProductionPackageOverrides/diagnostics/canRun/generatedAt) + createRuntimeConfigHandoff() constructor
-[x] Ensure no raw secret values can appear in any config diagnostic output — EnvironmentPolicy.secretReportMode is always false (2026-05-26)
-[x] Implement host package manifest boundary diagnostic (FUNGI-CONFIG-010) — validateHostPackageManifestBoundary() rejects Galerina keys from package.json; diagnostic rename pass complete — all codes now use FUNGI-CONFIG-001…027 format with {code, name, message} metadata (2026-05-26)
+[x] Define the redacted-only config report contract; loadEnvironmentConfig redacts available environment values from diagnostic message/path/suggestedFix without removing errors or changing code/name/severity (verified 2026-09-21)
+[x] Implement host package manifest boundary diagnostic (FUNGI-CONFIG-010) — validateHostPackageManifestBoundary() rejects Galerina keys from package.json; historical diagnostic rename pass covered FUNGI-CONFIG-001…027 with {code, name, message} metadata (2026-05-26); v2 loader/schema codes 028…030 are later additions
 [x] Define ConfigVaultEntry<T>, ConfigVaultSchema, ConfigVaultResult, getVaultEntry<T>() (2026-05-26)
 [x] Define FUNGI-VAULT-001 through FUNGI-VAULT-005 diagnostic codes and constructors (2026-05-26)
 [x] Define SecretCategory type (api-key|signing-key|password|token|certificate|database-credential|webhook-secret|oauth-secret|generic) (2026-05-26)
 [x] Define SecretRedactionPolicy with DEFAULT_SECRET_REDACTION_POLICY (2026-05-26)
-[ ] Create internal dir structure: environment/, secrets/, loaders/, types/
+[ ] Create internal dir structure: environment/, secrets/, loaders/, types/ — DEFERRED by the RD-1285 v0.2 freeze; symbols remain intentionally in src/index.ts and no split receipt authorizes this work
 ```
 
-## v0.2 admission blocker (2026-09-20)
+## v0.2 freeze (2026-09-21) — `RD-1285`
 
-`[BLOCKED]` No remaining v0.2 item is currently source-defined enough to enter a
-TDD red/green cycle. Refuse new tests and production code until the owner/KB
-contract resolves all of the following exact conflicts:
+- Schema: `galerina.config.environment.v2` as `EnvironmentConfigV2`.
+- Handoff snapshot remains unversioned `EnvironmentConfig`.
+- Secret sources: `env|vault|kms|runtime`. Categories hyphenated.
+- Loader diagnostics: `FUNGI-CONFIG-028`/`029`. Mode diagnostics keep `001`/`002`.
+- No internal directory split. `file`/`secretStore`/`runtimeInjected` and
+  underscore categories are not admitted.
 
-- `EnvironmentConfig` is still the v0.1 shape at
-  `packages-ts/galerina-core-config/src/index.ts:97-101` (symbol
-  `EnvironmentConfig`), while the TODO requires schema version
-  `galerina.config.environment.v1` at `TODO.md:23` and the README requires
-  `galerina.config.environment.v2` plus `SecretEnvironmentReference[]` and
-  `policy` at `README.md:209-218`.
-- The README's `SecretConfigSource` contract at `README.md:221-243` requires
-  `file`, `secretStore`, and `runtimeInjected` variants plus underscore category
-  values, but the source-defined `SecretConfigSource` at
-  `packages-ts/galerina-core-config/src/index.ts:1142-1148` is `env|vault|kms|runtime`
-  and `SecretCategory` at `src/index.ts:1170-1179` uses a different hyphenated
-  closed set. `SecretEnvironmentReference` has no source symbol to extend.
-- The loader contract at `README.md:246-260` and TODO item `TODO.md:27-28`
-  assign `FUNGI-CONFIG-001`/`FUNGI-CONFIG-002` to missing variables/secrets,
-  while the existing `resolveEnvironmentMode` symbol at
-  `packages-ts/galerina-core-config/src/index.ts:218-255` already owns those
-  codes for invalid/missing environment mode diagnostics.
+## Live reconciliation (2026-09-21)
 
-Refusal condition: do not add a red test, implementation, or internal directory
-split for TODO items 23-28 until an owner/KB decision publishes one schema
-version, one secret-reference/source/category contract, and non-overlapping
-diagnostic-code ownership. Evidence: `npm run typecheck` passed and the package
-`npm test` command passed 54/54 tests on 2026-09-20; those tests cover the live
-v0.1/config-vault surface only and do not authorize either conflicting v0.2
-contract.
+- Implemented source locators are in `src/index.ts`: `resolveEnvironmentMode`,
+  `createRuntimeConfigHandoff`, `validateHostPackageManifestBoundary`,
+  `SecretConfigSource`, `SecretCategory`, `defaultEnvironmentPolicy`,
+  `ConfigVaultEntry`, `EnvironmentConfigReport`, `EnvironmentConfigV2`,
+  `LoadEnvironmentConfigInput`, and `loadEnvironmentConfig`.
+- Loader hardening helpers are `readOwnEnvironmentString`,
+  `collectAvailableEnvironmentStrings` and `redactConfigDiagnostic` in
+  `src/index.ts`. They accept only own data string descriptors;
+  `src/node-util-shim.d.ts` declares the `node:util/types` import used to
+  refuse proxies before reflection, including revoked and
+  trapping proxies. Redaction sanitizes messages, paths and suggested fixes
+  without dropping diagnostics.
+- The package-owned v2 hostile tests are
+  `tests/environment-config-v2.test.mjs:16-228`. Fresh focused tests pass
+  **11/11**; fresh full `npm.cmd test` passes **65/65**, including typecheck and
+  build.
+- The sole unchecked row is intentionally deferred by RD-1285, not an
+  unexplained implementation blocker. The historical source layout remains
+  preserved above for traceability.
+- Independent audit remains pending. The source encoding check still flags
+  pre-existing mojibake; this bounded repair does not rewrite those comments.

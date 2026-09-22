@@ -1,8 +1,90 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Security continuation — 2026-09-22
+
+Q1/Q2 Tower photonic coupon identity is snapshot-before-verify and coupon
+revocation is rechecked on every certified infer. Focused tests 24/24 on dirty
+HEAD `0f24ca30…`. Independent audit pending. The 124-finding scan is not closed.
+See [security-q1q2-continuation-2026-09-22.md](reports/security-q1q2-continuation-2026-09-22.md).
+The Governed Computing Constitution is a discussion draft only (work-register
+CONST / W15); it does not amend SECURITY.md or admit production.
+
+## Current checkpoint — 2026-09-22
+
+The [pre-.fungi work register](PRE-FUNGI-WORK-REGISTER-2026-09-22.md) now
+owns the complete next-work catalogue assembled from the current owner TODOs.
+It is a planning reconciliation, not a completed estate-wide source audit.
+The next phase is: reconcile the inventory; repair admitted graph and Tower
+boundaries; complete admitted compiler/schema/API/target work; recover missing
+owner contracts; verify independent downstream tasks; then integrate reviewed
+changes and refresh producer/PROJECT evidence. Optional/post-v1 features and
+physical/platform receipts remain separate, not silently added release work.
+
+No implementation blocker is closed by this documentation update. Existing
+.fungi files and edits are preserved; authoring, modification, deletion, bulk
+regeneration, queue/overlay waves and final corpus assurance remain held.
+The [maintenance receipt](reports/documentation-work-register-refresh-2026-09-22.md)
+distinguishes this refresh's checks from earlier execution evidence.
+
+Registered graph refresh: 6/8 upstream steps passed. Package graphs refused
+16 declarations; semantic assurance refused dirty retirement evidence.
+The generated roadmap region/SVG was not refreshed. See the
+[full graph report](reports/graph-todo-ledger-refresh-2026-09-22.md) and
+[C22](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c22).
+
+**HOLD overall; bounded repairs verified.** The original 85-test review
+exposed Tower runtime-resolution parity
+([C21](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c21)) and C17 special-name
+schema-preservation defects ([C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17)).
+Concurrent repairs now pass an independent 93-test rerun plus all four
+original failure probes, with matching source/emitted pins.
+See the [source-pinned review](reports/rd1295-c17-review-2026-09-22.md).
+Next reconcile package graph declarations, map remaining Tower compositions
+and settle the individual contract gaps; do not relabel them evidence-only.
+No corpus, queue, signing or .fungi authority follows from a graph refresh.
+
+The compiler 7291/7291, test package 236/236 and six-package 185/185 results
+below are later implementation-session reports, not reruns by this
+maintenance pass. The earlier compiler-123-fail and Windows-skip claims are
+historical. Durable replay, excluded pattern features, Decimal JSON mapping
+and Option.zip are not all evidence-only blockers.
+
+Current owners are this document and `governance/status-ledger.json`.
+The registered roadmap generator owns `build/roadmap/roadmap.svg`;
+`build/component-health/roadmap-subway.svg` is a historical artifact, not
+the current generator destination. Do not hand-edit it or claim it refreshed.
+
+## Pre-.fungi closure recheck — 2026-09-21
+
+The current implementation worktree has useful bounded contract slices, but
+the project is **HOLD**, not ready for corpus or full `.fungi` assurance.
+Focused routes are green for the bounded C01/C02/C03/C04/C05/C06/C08/C09/C10/
+C11/C12/C13/C14/C15/C16/C17/C18/C19/C20 slices. The current C20 slice is
+compile-time pattern identity plus a named WAT trap; it is not a WASM matcher
+or SLIDE/VOK admission.
+
+The 123-fail compiler package claim is stale. A fresh compiler
+`node --test` of `tests/*.test.mjs` plus the package subdir globs is
+**7291/7291** (6530 + 761), 0 fail, 0 skip. `galerina-test` is **236/236**, skipped **0**
+after the Windows SIGTERM skip was replaced with a platform-split
+termination test. Tower product-line isolation+products is **71/71**.
+C17 nested-record/`Array<T>` schema export is **4/4**. The signed
+`galerina-framework-example-app` unsigned-fuse fixture remains held
+(key `942d6b2726b0a991` has no public bundle). C12 has a fresh
+index-plus-working-tree producer receipt for 867 inputs and focused tests
+**7/7**, but not commit-head assurance. C18 source/twin parity is **4/4**,
+but no conversion queue or overlay wave was regenerated. The unsigned
+registry candidate remains **35/35** with no signing or live admission.
+Independent exact-head, physical/production receipts, queue/signing,
+SLIDE/VOK admission, corpus, and full `.fungi` assurance remain held. See
+private `RD-1291` and
+`docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md` for the bounded closure
+map.
+
 Date: 2026-08-28 (roadmap origin)
-Current review: 2026-09-19
-Evidence checkout: `codex/rd-0858-unit4-process-root`
+Current review: 2026-09-22
+Evidence checkout: active `main` worktree, base
+`0f24ca30ef3f173c43a60c914c18b161327f2227`, with uncommitted changes.
 
 ## Upstream readiness checkpoint — 2026-09-19
 

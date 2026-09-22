@@ -29,28 +29,25 @@ host package manifest boundary checks
 export type EnvironmentMode = "development" | "test" | "staging" | "production"
 ```
 
-Unknown modes emit `FUNGI-CONFIG-003` rather than silently falling back.
+Unknown modes emit `FUNGI-CONFIG-001`. An unset mode emits `FUNGI-CONFIG-002`
+and falls back to `development` with a warning.
 
 ## Environment Config Types
+
+`EnvironmentConfig` is the **unversioned runtime-handoff snapshot** used by
+`RuntimeConfigHandoff`. The versioned schema is `EnvironmentConfigV2`.
 
 ```ts
 export interface EnvironmentConfig {
   mode: EnvironmentMode
-  variables: string[]   // names only, not values
-  secrets: string[]     // names only, not values
-}
-
-export interface SecretEnvironmentReference {
-  name: string
-  present: boolean
-  redacted: true        // never the raw value
-  fingerprint?: string
+  variables: EnvironmentVariableReference[]
+  secrets: EnvironmentVariableReference[]
 }
 ```
 
-`loadEnvironmentConfig()` validates required variables and secrets, emits
-`FUNGI-CONFIG-001` for missing public variables and `FUNGI-CONFIG-002` for missing
-secrets.
+`loadEnvironmentConfig()` returns `EnvironmentConfigV2` and emits
+`FUNGI-CONFIG-028` for missing public variables and `FUNGI-CONFIG-029` for
+missing secrets. It does not reuse 001/002.
 
 ## Safe Secret Resolution Flow
 
@@ -72,13 +69,14 @@ raw value is never logged or reported
 
 | Code | Meaning |
 | --- | --- |
-| `FUNGI-CONFIG-001` | required public environment variable missing |
-| `FUNGI-CONFIG-002` | required secret missing |
-| `FUNGI-CONFIG-003` | unknown environment mode |
-| `FUNGI-CONFIG-004` | production strict mode disabled |
-| `FUNGI-CONFIG-005` | unsafe secret default detected |
-| `FUNGI-CONFIG-006` | development package enabled in production |
-| `FUNGI-CONFIG-010` | host package manifest boundary violation |
+| `FUNGI-CONFIG-001` | invalid environment mode (`resolveEnvironmentMode`) |
+| `FUNGI-CONFIG-002` | missing environment mode (`resolveEnvironmentMode`) |
+| `FUNGI-CONFIG-003` | project config is not an object |
+| `FUNGI-CONFIG-004` | required environment variable missing (runtime handoff) |
+| `FUNGI-CONFIG-005` | production handoff requires environment validation |
+| `FUNGI-CONFIG-028` | required public variable missing (`loadEnvironmentConfig`) |
+| `FUNGI-CONFIG-029` | required secret missing (`loadEnvironmentConfig`) |
+| `FUNGI-CONFIG-030` | legacy environment schema refused |
 
 ## Contracts
 
@@ -189,27 +187,22 @@ export type ConfigValue =
 
 ### EnvironmentPolicy
 
+Live policy (not a second undocumented shape):
+
 ```ts
 export interface EnvironmentPolicy {
-    mode: EnvironmentMode
-    requireHttps: boolean
-    requireSecrets: boolean
-    allowLocalhost: boolean
-    allowDevTools: boolean
-    allowDebugLogging: boolean
-    secretReportMode: "redacted-only"   // an INVARIANT: no mode yields plaintext
-    strictMode: boolean
+    allowDotEnvFiles: boolean
+    allowUnsafeOverrides: boolean
+    secretReportMode: "redacted-only"   // invariant: no plaintext mode exists
 }
 
-// Returns the default policy for the given mode
 export function defaultEnvironmentPolicy(mode: EnvironmentMode): EnvironmentPolicy
-// development: loose, test: moderate, staging: strict-ish, production: full strict
 ```
 
-### EnvironmentConfig (v0.2)
+### EnvironmentConfigV2
 
 ```ts
-export interface EnvironmentConfig {
+export interface EnvironmentConfigV2 {
     schemaVersion: "galerina.config.environment.v2"
     mode: EnvironmentMode
     variables: string[]    // names only, not values
@@ -218,30 +211,34 @@ export interface EnvironmentConfig {
 }
 ```
 
-### SecretEnvironmentReference (Extended)
+### SecretEnvironmentReference
+
+Live source/category vocabulary (hyphenated categories; `env|vault|kms|runtime`):
 
 ```ts
 export type SecretConfigSource =
-    | { kind: "env";             variableName: string }
-    | { kind: "file";            path: string         }
-    | { kind: "secretStore";     provider: string; secretId: string }
-    | { kind: "runtimeInjected"; label: string        }
+    | { kind: "env";     variableName: string }
+    | { kind: "vault";   storeId: string; keyPath: string }
+    | { kind: "kms";     keyId: string; provider?: string }
+    | { kind: "runtime" }
 
 export interface SecretEnvironmentReference {
     id: string
     name: string
     present: boolean
-    redacted: true           // never the raw value
+    redacted: true
     fingerprint?: string
     source: SecretConfigSource
-    category: "api_key" | "password" | "token" | "certificate" | "signing_key" | "generic"
-    provider?: string
-    requiredIn: EnvironmentMode[]     // modes where this secret is required
+    category: SecretCategory
+    requiredIn: EnvironmentMode[]
     allowedSinks: string[]
     deniedSinks: string[]
     redaction: "full" | "partial" | "fingerprint_only"
 }
 ```
+
+Underscore categories (`api_key`) and `file` / `secretStore` / `runtimeInjected`
+source kinds are **not** admitted.
 
 ### Loading Contracts
 
@@ -252,51 +249,39 @@ export interface LoadEnvironmentConfigInput {
     secretNames: string[]
     availableEnvironment: Record<string, string>
     policy?: Partial<EnvironmentPolicy>
+    schemaVersion?: string
 }
 
 export async function loadEnvironmentConfig(
     input: LoadEnvironmentConfigInput
-): Promise<{ config: EnvironmentConfig; diagnostics: ConfigDiagnostic[] }>
+): Promise<{ config: EnvironmentConfigV2; diagnostics: ConfigDiagnostic[] }>
 ```
 
 ### Config Report Types
 
+Live report shape (source-owned; not a second schema):
+
 ```ts
+export interface SecretReportValue {
+    name: string
+    sourceKind: SecretConfigSourceKind
+    redacted: true
+    category?: SecretCategory
+}
+
 export interface EnvironmentConfigReport {
-    schemaVersion: "galerina.config.report.v1"
+    schemaVersion: "galerina.config.environment.v2"
     mode: EnvironmentMode
     policy: EnvironmentPolicy
-    variables: string[]
+    variableCount: number
+    secretCount: number
     secrets: SecretReportValue[]
     diagnostics: ConfigDiagnostic[]
 }
-
-export interface SecretReportValue {
-    name: string
-    present: boolean
-    redaction: string
-    source: string     // kind only, not raw path/value
-}
 ```
 
-### Internal File Layout
-
-```text
-packages-ts/galerina-core-config/src/
-  environment/
-    environment-config.ts     ← EnvironmentConfig, EnvironmentMode, EnvironmentPolicy
-    environment-policy.ts     ← defaultEnvironmentPolicy()
-    environment-report.ts     ← EnvironmentConfigReport, SecretReportValue
-  secrets/
-    secret-reference.ts       ← SecretEnvironmentReference, SecretConfigSource
-    secret-categories.ts
-  loaders/
-    load-environment.ts       ← loadEnvironmentConfig()
-    load-project.ts
-    load-config-objects.ts    ← loadConfigFromObjects()
-  types/
-    config-value.ts           ← ConfigValue discriminated union
-    config-diagnostic.ts      ← ConfigDiagnostic
+Internal directory split (`environment/`, `secrets/`, `loaders/`) is **not**
+part of this freeze. Symbols remain in `src/index.ts`.
 ```
 
 ## Boundary

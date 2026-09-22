@@ -1,12 +1,12 @@
 {
   "schema": "galerina.status-ledger.v1",
-  "asOf": "2026-08-12",
-  "milestone": "Receipt-bound Galerina-to-SLIDE package execution before terminal TypeScript and dependency retirement",
+  "asOf": "2026-09-22",
+  "milestone": "Bounded pre-.fungi implementation closure before receipt-bound Galerina-to-SLIDE execution",
   "roadmap": "docs/ROADMAP.md",
   "openGates": [
     {
       "id": "PLATFORM-DURABILITY",
-      "summary": "Implementation and the Ubuntu round-two verifier are present; obtain admitted live filesystem, retained-handle, reboot, and physical power-loss receipts.",
+      "summary": "Implementation and the Ubuntu round-two verifier are present; obtain admitted live filesystem, retained-handle, reboot, and physical power-loss receipts. Owner-deferred from the current pre-.fungi core-work priority; retained as a future production gate, not marked complete.",
       "evidence": "docs/platform-handover/ubuntu-desktop/CODEX-HANDOVER.md"
     },
     {
@@ -21,18 +21,38 @@
     },
     {
       "id": "SLIDE-EXECUTABLE",
-      "summary": "Canonical .slide, flat package ABI/import/resource, affine VOK and typed receipts are implemented. Dynamic routing, broader closed bodies, effects, mutation/manual memory, callbacks, initialisers and production authentication remain open.",
+      "summary": "Canonical .slide, flat package ABI/import/resource, affine VOK and typed receipts are implemented. Dynamic routing, broader closed bodies, effects, mutation/manual memory, callbacks, initialisers and production authentication remain open. The current work register requires checking independent ordinary work without minting a new producer/GIR subject or lifting SLIDE/VOK admission holds. Documentation reconciliation is not a fresh downstream test run.",
       "evidence": "docs/superpowers/plans/2026-07-30-galerina-slide-full-fungi-retirement.md"
     },
     {
       "id": "FUNGI-PACKAGE-RETIREMENT",
-      "summary": "Current debt is 538 TypeScript paths, 2551 unexecuted Fungi sources, 57 host boundaries, 95 package dependency trees and one nested package. Each must reach zero through exact admission.",
+      "summary": "The 2026-09-22 regenerated retirement graph reports 565 TypeScript paths, 2544 unexecuted Fungi sources, 57 host boundaries, 95 package dependency trees and one nested package. This is a staged-index-derived snapshot, not coverage of untracked working-tree implementation. Each retirement requires exact admission; graph regeneration is not corpus execution or retirement authority.",
       "evidence": "docs/superpowers/plans/2026-07-30-galerina-slide-full-fungi-retirement.md"
     },
     {
       "id": "PLATFORM-MATRIX",
-      "summary": "The seven-OS digest-pinned release gate and public receipt workflow are implemented; return Windows 10, Windows 11, Ubuntu, Debian, Fedora, Linux Mint and macOS receipts without inferring untested hosts.",
+      "summary": "The seven-OS digest-pinned release gate and public receipt workflow are implemented; return Windows 10, Windows 11, Ubuntu, Debian, Fedora, Linux Mint and macOS receipts without inferring untested hosts. Retained for later release admission, outside the owner's current core-logic completion priority.",
       "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "GRAPH-REFRESH-INTEGRATION",
+      "summary": "The registered graph-all run passed project graph, integrity, KB graph, dev-tool index, Fungi source capability inventory and retirement graph (6/8 upstream steps). Package graphs refused 16 packages: undeclared boundary imports, two escaping loadedAssets declarations and Tower source entrypoints reported as orphans. Semantic assurance refused SEMANTIC_PROVENANCE_DIRTY at build/ts-retirement/ts-retirement.json. The orchestrator did not run the generated roadmap. No boundary policies were widened, no source files staged and no assurance receipt manufactured. Resolve the source/package declarations and custody prerequisites before treating these outputs as a complete fresh graph set. This is the earlier graph-all snapshot, not a rerun by the documentation update. Work-register W02/W14 separates declaration repairs from evidence custody; a documentation project-graph refresh does not clear either hold.",
+      "evidence": "docs/reports/graph-todo-ledger-refresh-2026-09-22.md"
+    },
+    {
+      "id": "PRE-FUNGI-NON-EVIDENCE-CLOSURE",
+      "summary": "HOLD at working-tree base 0f24ca30ef3f173c43a60c914c18b161327f2227. Independent focused review reran Tower isolation/products 71/71, C17 exporter 4/4 and docs nested contracts 10/10: 85 passed, no skips. That earlier review exposed two defect groups: RD-1295 runtime resolver mismatch and RD-1287 C17 loss of __proto__ schema fields/definitions. Concurrent fixes were independently rechecked: 93/93 focused tests (Tower 75, compiler 6, docs 12), all four original failing cases and ordinary controls pass. New source/emitted hashes match the linked review. Those bounded defects are repaired; complete resolver semantics and all frozen compositions are not certified. Seven Tower subpaths and certified/dev factories exist; complete frozen-composition admission remains unproven. Later implementation-session reports are compiler 7291/7291, galerina-test 236/236 with no skip, and six-package 185/185; these were not independently rerun by this maintenance pass. They supersede the earlier 97/100-package, 3481-test aggregate with compiler 123 failures, test package 235 observed/234 pass/one Windows skip and Tower 517/517. Example-app signing remains held (reported three unsigned-fuse failures; key 942d6b2726b0a991 lacks its fixture public bundle). C12 producer and fidelity consumer are committed through 61c6d6628; its reported 867-input receipt covers only dist/index.js and dist/governance-mode.js, not Tower graph closure or current clean-head assurance. C18 source/twin parity is reported 4/4; no queue or overlay wave was regenerated. Registry candidate is reported 35/35 without signing or live admission. Durable C16 replay, excluded C20 features, fractional Decimal mapping and Option.zip have separate contract/implementation limits, not merely missing receipts. Independent completion audit, physical/production receipts, signing, SLIDE/VOK re-admission, corpus and .fungi assurance remain open or owner-paused. The linked work register adds sequenced owner lanes; this documentation update closes no implementation blocker.",
+      "evidence": "docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md"
+    },
+    {
+      "id": "SECURITY-SCAN-CONTINUATION",
+      "summary": "HOLD. Dirty worktree at HEAD 0f24ca30ef3f173c43a60c914c18b161327f2227, origin/main ahead 3, security patches uncommitted. Codex scan snapshot 57f45438… reported 124 Galerina findings; this is not closed. Q1/Q2 certified photonic coupon now snapshots own-data before verify and revalidates coupon revocation on every infer. Focused tower-citizen tests photonic-certified-admission + bridge-attestation: 24/24 pass, 0 skip. Independent audit pending. Production grantedEffects remains an owner decision. SLIDE/Lyth/KB are inventory-only. Next implementable row is Q3 work-performed ceilings.",
+      "evidence": "docs/reports/security-q1q2-continuation-2026-09-22.md"
+    },
+    {
+      "id": "CONSTITUTION-DISCUSSION-DRAFT",
+      "summary": "HOLD. The Governed Computing Constitution is a discussion draft only. It restates live distinctions in SECURITY.md, the charter, constellation architecture and Hallmark non-authorities. It is not adopted, not a SECURITY.md amendment, and not production admission. No new RD allocated. Next owner artefacts: custody (Galerina docs vs KB reference vs RD overlay) and a section-10 guarantee register with current evidence states.",
+      "evidence": "docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md"
     }
   ]
 }

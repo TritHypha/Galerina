@@ -1,218 +1,199 @@
 # Galerina API Server TODO
 
-## Coverage Reconciliation
+Current sequencing: [pre-.fungi work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md),
+W08/W09. The admitted HTTP adapter, historical manifest scaffold and deferred
+durable replay adapter remain distinct; no new authority follows from prose.
+
+## Current source-backed reconciliation (2026-09-21)
+
+`[x]` means the current source and a focused test receipt support the claim.
+`[HOLD]` means the old v0.2 design item has no current implementation authority;
+it must not be closed by the existence of README prose. This package is a thin
+Node HTTP adapter around the App Kernel. It does not own a manifest loader,
+route table, runtime flow dispatcher, durable store, signing authority, or
+OpenAPI generator.
+
+### Current package and public seam
 
 ```text
-[!] Consume the canonical `ReplayStore.has/put` and
-    `IdempotencyStore.get/put` contracts from `galerina-core-network`. The live
-    source is transport/TLS handling only at `src/index.ts:1-40,527-562,624-761`;
-    replay storage is not wired, and app-kernel currently owns a separate
-    atomic `IdempotencyStore.seen` gate at `kernel.ts:97-100,566-584`.
-[!] Align webhook/idempotency implementation docs with
-    `galerina-core-network-webhook.md` before implementing the scaffold. The
-    canonical contracts are exported by `galerina-core-network/src/index.ts`
-    and documented at `galerina-core-network/README.md:373-382`;
-    do not invent adapter semantics or claim API-server readiness.
+[x] Package metadata and NodeNext strict TypeScript: package.json:1-32 and tsconfig.json:1-17.
+[x] Public adapter exports: src/index.ts:47-71.
+[x] `createApiServer(opts)` constructs an HTTP or HTTPS server and requires
+    explicit plaintext authority when TLS is absent: src/index.ts:525-577.
+[x] `listen(server, port, host)` restricts plaintext servers to loopback:
+    src/index.ts:790-821.
+[HOLD] The historical `cli` module, an exports map, and a `galerina-api-server`
+    bin are not
+    present and are outside the current adapter seam.
 ```
 
-## Architecture Depth (v0.2) — Completed
+### Current kernel contracts
 
 ```text
-[x] Create /packages-ts/galerina-framework-api-server
-[x] Add README.md
-[x] Document package boundary
-[x] Define v0.2 architecture position (transport boundary → kernel → runtime)
-[x] Define GalerinaApiManifest: schemaVersion "galerina.api.manifest.v2", api, version, generatedAt, routes[]
-[x] Define GalerinaRouteManifest: id, method, path, handler, requestType?, responseType, policies[], body, limits, reports, webhook?
-[x] Define HttpMethod enum: GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD (7 values)
-[x] Define RoutePolicy as 7-kind discriminated union: auth|scope|body|effect|network|rateLimit|idempotency
-[x] Define AuthRoutePolicy: kind:"auth", type: "none"|"bearer"|"apiKey"|"jwt"|"oauth2"|"mtls"
-[x] Define ScopeRoutePolicy: kind:"scope", required: string[]
-[x] Define BodyRoutePolicy: kind:"body", maxSizeBytes, unknownFields, duplicateKeys, rawBodyRequired
-[x] Define EffectRoutePolicy: kind:"effect", allow: string[], deny: string[]
-[x] Define NetworkRoutePolicy: kind:"network", denyByDefault, allowPlainHttp, outbound[]
-[x] Define RateLimitRoutePolicy: kind:"rateLimit", rate: string, keyBy: "ip"|"authSubject"|"apiKey"|"route"
-[x] Define IdempotencyRoutePolicy: kind:"idempotency", required, header, ttlSeconds, onDuplicate
-[x] Define BodyPolicy: contentType?, maxSizeBytes, unknownFields "deny"|"strip"|"allow", duplicateKeys "deny"|"lastWins", rawBodyRequired
-[x] Define RouteLimits: rate?, maxConcurrent?, memoryBytes?, timeoutMs?
-[x] Define RouteReportPolicy: audit, security, memory, network, failure (all boolean)
-[x] Define WebhookVerificationConfig: provider, secret, signatureHeader, timestampHeader?, replayWindowSeconds, expectedPrefix?, eventIdHeader?, eventIdPath?
-[x] Use canonical ReplayStore interface from core-network: has(key): Promise<boolean> | boolean, put(key, ttlSeconds): Promise<void> | void
-[x] Define GalerinaAppKernel interface: handleApiRequest(input): Promise<GalerinaKernelResponse>
-[x] Define HandleApiRequestInput: route, request, replayStore?
-[x] Define GalerinaKernelRequest: method, url, path, query, headers, body (Buffer), rawBody?, remoteAddress?, requestId, receivedAt
-[x] Define GalerinaKernelResponse: status, headers, body?
-[x] Define StartApiServerOptions: manifestPath, port, host?, env, appKernel, replayStore?
-[x] Define GalerinaHttpError(status, code, message, safeDetails?): extends Error
-[x] Define 10-step request pipeline (create-server.ts)
-[x] Define webhook verification functions (verifyHmacSha256Webhook, assertWebhookVerified, timingSafeHexEqual)
-[x] Define route table: buildRouteTable(manifest), :param regex matching, RouteMatch
-[x] Define safe log header redaction: 8 headers (authorization, cookie, set-cookie, x-api-key, x-signature, x-hub-signature, x-hub-signature-256, stripe-signature)
-[x] Define OpenAPI 3.1 export from manifest (exportOpenApi)
-[x] Define 17 HTTP status codes contract
-[x] Define 10 security rules
-[x] Define full src layout (13 files: index, cli, create-server, load-manifest, route-table, read-body-with-limit, write-response, error-mapper, webhook, replay-store, openapi, safe-log, types)
-[x] Define what package may / must not do
+[x] The adapter consumes `AppKernel.handle(req)` and the canonical
+    `GalerinaKernelRequest`/`GalerinaKernelResponse` from
+    ../galerina-framework-app-kernel/src/kernel.ts:45-75,303-304.
+[x] `HttpMethod` is consumed from the kernel types, not redefined here:
+    ../galerina-framework-app-kernel/src/types.ts:10.
+[x] Body buffering, lowercase headers, URL/query normalization, request ID,
+    and response writing are implemented by `bufferBody`, `lowercaseHeaders`,
+    `parseUrl`, `normaliseMethod`, and `writeResponse`: src/index.ts:249-346.
+[x] Kernel dispatch and fail-closed response handling are in `handleRequest`:
+    src/index.ts:663-788. Route policy, decoding, and typed flow semantics
+    remain App Kernel ownership.
 ```
 
-## Implementation — Package Setup
+### Current transport and identity gates
 
 ```text
-[ ] Add package.json (type:module, exports map, bin: galerina-api-server)
-[ ] Add tsconfig.json (ES2022, NodeNext, strict)
-[ ] Add src/index.ts with public API exports
-[ ] Add src/cli.ts minimal CLI entrypoint
+[x] TLS certificate admission folds through the core-network cert gate;
+    custom channel verdicts are an additional factor: src/index.ts:349-509.
+[x] Principal evidence is snapshotted and rejects accessors, proxies, symbols,
+    malformed scopes, duplicates, and invalid values: src/index.ts:583-660.
+[x] Adapter body cap and explicit request/header/idle timeouts are wired:
+    src/index.ts:74-79,249-296,570-577. Package tests: 14/14 in
+    tests/api-server.test.mjs and 12/12 in tests/api-server-tls.test.mjs.
 ```
 
-## Implementation — src/types.ts
+### Current webhook and replay boundary
 
 ```text
-[ ] Implement HttpMethod enum (7 values)
-[ ] Implement GalerinaApiManifest interface with schemaVersion literal "galerina.api.manifest.v2"
-[ ] Implement GalerinaRouteManifest interface
-[ ] Implement all 7 RoutePolicy discriminated kinds
-[ ] Implement BodyPolicy interface
-[ ] Implement RouteLimits interface
-[ ] Implement RouteReportPolicy interface
-[ ] Implement WebhookVerificationConfig interface (use secret field, not sharedSecret)
-[ ] Consume the canonical ReplayStore interface (has/put with ttlSeconds)
-[ ] Implement GalerinaAppKernel interface
-[ ] Implement HandleApiRequestInput interface
-[ ] Implement GalerinaKernelRequest interface (body as Buffer)
-[ ] Implement GalerinaKernelResponse interface
-[ ] Implement StartApiServerOptions interface
+[x] Canonical core-network storage contracts are `ReplayStore.has/put` and
+    `AtomicAdmissionStore.claim(scope, key, ttlSeconds)`, including the
+    "claimed"/"duplicate" result: ../galerina-core-network/src/index.ts:102-130.
+[x] `MemoryReplayStore` implements both contracts with validated clocks,
+    TTLs, namespaced atomic claims, and pruning. It is process-local only and
+    supplies no durability or cross-process authority: src/replay-store.ts:12-107.
+[x] `admitWebhookReplay` verifies HMAC on raw bytes, then claims the fixed
+    `replay` scope, then optionally invokes the decode hook: src/webhook-admission.ts:7-100.
+    Invalid HMAC does not claim, decode, or dispatch.
+[x] `createApiServer` invokes that gate before `kernel.handle` and maps HMAC,
+    replay, and malformed-store refusals to 401, 409, and 500:
+    src/index.ts:747-778.
+[x] Hostile webhook and replay coverage: 5/5 tests in
+    tests/replay-store.test.mjs and 4/4 tests in
+    tests/webhook-admission.test.mjs. Package receipt: 35/35 tests, zero
+    failures (`npm.cmd test`).
+[HOLD] A durable, multi-process, crash-safe, or C16 production replay store
+    is not implemented here. Do not add a durable store or treat `MemoryReplayStore`
+    as production authority.
 ```
 
-## Implementation — src/load-manifest.ts
+## Historical v0.2 architecture record (retained, non-authorizing)
+
+The following checklist preserves the original v0.2 manifest-scaffold intent.
+Those definitions remain design prose in `README.md`; they are not current
+TypeScript implementation claims. The current implementation is the adapter
+surface above.
 
 ```text
-[ ] Implement loadManifest(manifestPath): Promise<GalerinaApiManifest>
-[ ] Implement assertGalerinaApiManifest(data): asserts data is GalerinaApiManifest
-[ ] Validate schemaVersion === "galerina.api.manifest.v2"
-[ ] Validate all route fields present
-[ ] Fail fast on invalid manifest (startup blocker)
+[x] Package boundary, transport -> kernel -> runtime position, and the
+    proposed manifest/route policy vocabulary remain documented in README.md.
+[HOLD] GalerinaApiManifest and GalerinaRouteManifest TypeScript interfaces.
+[HOLD] The seven RoutePolicy kinds: auth, scope, body, effect, network,
+       rateLimit, and idempotency.
+[HOLD] BodyPolicy, RouteLimits, RouteReportPolicy, and
+       WebhookVerificationConfig implementation.
+[HOLD] A local GalerinaAppKernel/HandleApiRequestInput model; current code
+       consumes AppKernel from framework-app-kernel.
+[HOLD] A local manifestPath/port StartApiServerOptions model; current code
+       exposes createApiServer and listen.
+[HOLD] GalerinaHttpError and a standalone error-mapper module.
+[HOLD] The proposed thirteen-module layout, including cli, load-manifest,
+       route-table, read-body-with-limit, webhook, openapi, and safe-log.
+[x] OpenAPI generation is owned by the docs package and consumes App Kernel
+    route declarations or effective policies: ../galerina-docs/src/openapi.ts:2-9,330-398;
+    `generateOpenApi` and its `exportOpenApi` alias are current there.
+[HOLD] Adapter-local manifest-driven OpenAPI integration, examples, and a
+       standalone route table with named :param matching.
 ```
 
-## Implementation — src/route-table.ts
+## Historical v0.2 implementation scaffold - explicit HOLDs
+
+These are the old unchecked implementation items, retained so their provenance
+is visible. They are not a request to recreate the superseded architecture.
+
+### Package setup and the historical types module
 
 ```text
-[ ] Implement buildRouteTable(manifest): RouteTable
-[ ] Implement compileRoute(route): CompiledRoute with named :param regex
-[ ] Implement RouteTable.match(method, url): RouteMatch | undefined
-[ ] Support :param path segments (e.g. /orders/:id)
-[ ] Return 405 when path matches but method does not
-[ ] Return 404 when no path match found
-[ ] Add route-table.test.ts coverage
+[x] package.json, tsconfig.json, and src/index.ts exist in the current package.
+[HOLD] Add the historical cli module, an exports map, and a bin entry.
+[HOLD] Add the historical types module implementing the manifest, route-policy, local-kernel,
+       and StartApiServerOptions models from the old v0.2 sketch.
 ```
 
-## Implementation — src/read-body-with-limit.ts
+### Historical load-manifest and route-table modules
 
 ```text
-[ ] Implement readBodyWithLimit(req, maxSizeBytes): Promise<Buffer>
-[ ] Enforce limit while streaming (not after full read)
-[ ] Throw GalerinaHttpError(413, "BODY_TOO_LARGE", ...) on oversize
-[ ] Add body-limit.test.ts coverage
+[HOLD] loadManifest, assertGalerinaApiManifest, schema validation, and startup
+       rejection of an invalid manifest: no such current source seam exists.
+[HOLD] buildRouteTable, compileRoute, :param matching, and standalone 404/405
+       logic: the App Kernel owns route matching and the adapter forwards its
+       normalized request.
+[HOLD] route-table.test.ts: no standalone route-table module or receipt exists.
 ```
 
-## Implementation — src/error-mapper.ts
+### Historical read-body-with-limit and error-mapper modules
 
 ```text
-[ ] Implement GalerinaHttpError class: status, code, message, safeDetails?
-[ ] Implement mapErrorToHttpResponse(error, env): { status, headers, body }
-[ ] In development: include safeDetails in response body
-[ ] In production: return publicMessageForStatus(status) only
-[ ] Implement publicMessageForStatus(status): string (safe generic messages)
-[ ] Add error-mapper.test.ts coverage
+[x] The bounded behavior is implemented by `bufferBody` and `BodyCapExceeded`
+    in src/index.ts:249-296; oversize input receives 413 and the socket is
+    destroyed before kernel dispatch.
+[HOLD] A separate read-body-with-limit module and GalerinaHttpError contract.
+[x] Kernel responses and adapter failures are written by `writeResponse` and
+    the fail-closed 500 paths in src/index.ts:229-247,333-346,675-728,761-786.
+[HOLD] Development safeDetails, production publicMessageForStatus, and an
+       independent error-mapper.test.ts receipt.
 ```
 
-## Implementation — src/webhook.ts
+### Historical webhook module and current replay-store module
 
 ```text
-[ ] Implement verifyHmacSha256Webhook(payload: Buffer, signature: string, secret: string): boolean
-[ ] Implement timingSafeHexEqual(a: string, b: string): boolean (constant-time)
-[ ] Implement extractSignature(header: string, expectedPrefix?: string): string
-[ ] Implement assertWebhookVerified(payload, headers, config, replayStore): Promise<void>
-[ ] Implement assertWebhookNotReplayed(eventId, replayStore, windowSeconds): Promise<void>
-[ ] Enforce: HMAC verification BEFORE JSON decoding
-[ ] Enforce: replay check BEFORE handler execution
-[ ] Add webhook-signature.test.ts coverage
+[x] The bounded current equivalent is `admitWebhookReplay` in
+    src/webhook-admission.ts:45-100: SHA-256 HMAC with timing-safe comparison,
+    raw-body ordering, atomic claim, and fail-closed malformed-store handling.
+[x] The current replay adapter is `MemoryReplayStore` in src/replay-store.ts:19-107.
+[HOLD] Timestamp-window verification, provider-specific signature encodings,
+       and the old has-then-put `assertWebhookNotReplayed` scaffold.
+[HOLD] Reintroduce the historical webhook module or claim the old webhook-signature.test.ts
+       contract without a current owner specification.
 ```
 
-## Implementation — src/replay-store.ts
+### Historical create-server and write-response modules, plus logging
 
 ```text
-[x] Implement bounded process-local MemoryReplayStore class
-[x] MemoryReplayStore.has(key): Promise<boolean>
-[x] MemoryReplayStore.put(key, ttlSeconds): Promise<void>
-[x] Implement pruneExpired() — auto-prune entries past TTL
-[x] Add replay-store.test.mjs coverage, including invalid key/TTL and clock refusal
+[x] Current request handling is `createApiServer` + `handleRequest` in
+    src/index.ts:525-788; 10-step semantics that belong to the App Kernel are
+    not duplicated in this transport adapter.
+[x] Current listening helper is `listen` in src/index.ts:790-821.
+[x] Current response writer is `writeResponse` in src/index.ts:333-346.
+[HOLD] The old `startApiServer(options): Promise<void>` API, standalone
+       writeJson, request-ID response-header policy, safe-log module, raw-body
+       logging policy, and reports emission.
 ```
 
-## Implementation — src/create-server.ts
+### OpenAPI, examples, and production startup policy
 
 ```text
-[ ] Implement startApiServer(options: StartApiServerOptions): Promise<void>
-[ ] Step 1: Receive HTTP request
-[ ] Step 2: Match method and path (buildRouteTable)
-[ ] Step 3: Reject unknown route/method BEFORE body read
-[ ] Step 4: Enforce body limit (readBodyWithLimit)
-[ ] Step 5: Normalize headers, path, query, request-id, raw body
-[ ] Step 6: Verify webhook HMAC and replay (when webhook configured)
-[ ] Step 7: Execute App Kernel route policies
-[ ] Step 8: Decode and validate typed request
-[ ] Step 9: Execute typed Galerina runtime flow, validate typed response
-[ ] Step 10: Map result/error to HTTP response, emit reports/logs
-[ ] Add basic-server.test.ts coverage
+[x] `generateOpenApi`/`exportOpenApi` and their source-backed route-policy
+    tests belong to ../galerina-docs/src/openapi.ts (`generateOpenApi`,
+    `exportOpenApi`, `sourceBackedSchemas`) and its docs package
+    test suite; this package does not duplicate them.
+[HOLD] Independent audit/receipt of any future adapter-to-docs integration is
+       pending; this package's 35/35 tests do not close that boundary.
+[HOLD] examples/basic-api and examples/webhook-api manifest/server trees.
+[HOLD] Manifest-missing, handler-reference, per-route body-limit, and
+       network-deny-by-default startup checks; these require the manifest and
+       route authority that this package does not currently own.
 ```
 
-## Implementation — src/write-response.ts
+## Remaining bounded work
 
 ```text
-[ ] Implement writeKernelResponse(res, kernelResponse): void
-[ ] Implement writeJson(res, status, body, headers?): void
-[ ] Apply safe default headers (Content-Type, X-Request-Id)
-[ ] Never expose stack traces in response body
-```
-
-## Implementation — src/safe-log.ts
-
-```text
-[ ] Implement safeRequestLog(req, route): SafeLogEntry
-[ ] Redact: authorization, cookie, set-cookie, x-api-key, x-signature
-[ ] Redact: x-hub-signature, x-hub-signature-256, stripe-signature
-[ ] Never log raw bodies
-[ ] Replace redacted values with "[REDACTED]"
-```
-
-## Implementation — src/openapi.ts
-
-```text
-[ ] Implement exportOpenApi(manifest: GalerinaApiManifest): OpenApiSpec
-[ ] Generate OpenAPI 3.1.0 output
-[ ] Map :param segments to path parameter objects
-[ ] Add bearerAuth / apiKeyAuth security schemes from auth policies
-[ ] Add request/response $ref schema references
-[ ] Include standard response codes: 200/400/401/403/404/409/413/415/422/429/500
-[ ] OpenAPI is output from manifest — manifest is source of truth
-[ ] Add openapi-export.test.ts coverage
-```
-
-## Implementation — Examples
-
-```text
-[ ] Add examples/basic-api/manifest.json (schemaVersion: "galerina.api.manifest.v2")
-[ ] Add examples/basic-api/server.ts
-[ ] Add examples/webhook-api/manifest.json (with WebhookVerificationConfig)
-[ ] Add examples/webhook-api/server.ts
-```
-
-## Implementation — Production Safety
-
-```text
-[ ] Fail startup if manifest missing or invalid schemaVersion
-[ ] Fail startup in production if any route has no body limit
-[ ] Fail startup in production if webhook route has no replay protection
-[ ] Verify all handler references resolvable at startup
-[ ] Never expose safeDetails in production error responses
-[ ] Enforce network deny-by-default at route level
+[HOLD] Replace process-local replay with a separately authorized durable,
+       multi-process storage owner and receipt chain.
+[HOLD] Reopen the v0.2 manifest scaffold only after an authoritative manifest,
+       route, OpenAPI, and ownership contract is supplied.
+[HOLD] Do not create or modify `.fungi` sources in this package as part of this
+       reconciliation.
 ```

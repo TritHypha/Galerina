@@ -1,17 +1,181 @@
 # TODO
 
+### Pre-.fungi work programme — 2026-09-22
+
+- [x] Reconciled the next-work catalogue into the linked
+  [work register](PRE-FUNGI-WORK-REGISTER-2026-09-22.md); this is documentation,
+  not new implementation or an all-repository completion audit.
+- [x] W01: remaining unchecked rows are classified in
+  [PRE-FUNGI-WORK-REGISTER-2026-09-22.md](PRE-FUNGI-WORK-REGISTER-2026-09-22.md).
+  C22 declaration TODOs are closed; FUNGI-TYPE-002/005–007, Option.zip,
+  JSON-fractions, OAuth/OpenAPI CLI, durable replay, WASM/native mapping,
+  photonic post-v1, C20 matcher, SLIDE/VOK/Lyth admission and PROJECT READY
+  remain open under their existing classes.
+- [x] W02: C22 declaration slice — 16 previously refusing packages now
+  PASS live boundary `--check`. Tower product entries declared; load-graph
+  is an allowOrphan. Devtools escaping loadedAssets removed (fungi products
+  stay in `packages/fungi`). Hostile undeclared-specifier control **29/29**.
+- [x] W03: RD-1295 package surface — `/governance-v1`, composition consumers
+  (photonic/registry/api-data/air-gap), isolation **36/36** + products **47/47**.
+  Core-network runtime is `/governance` only. Package-dep extraction remains a proposal.
+- [!] W04–W11 remain open as CONTRACT_DECISION / DEFERRED_SCOPE: FUNGI-TYPE
+  unknown-form inference, Option.zip schema, JSON fractions, OAuth/OpenAPI
+  CLI/webhooks, C16 durable replay, WASM/native mapping, photonic post-v1.
+  No new semantics invented this session.
+- [x] W12: SLIDE/Lyth independent inventory found no ordinary TS/docs/tooling
+  row without a Galerina subject / VOK / `.fungi`.
+- [x] W14 package-graph refresh after C22: `--check` 100/201 current.
+  Semantic-assurance dirty provenance and PROJECT READY remain HOLD.
+- [!] No .fungi authoring/modification/deletion, queue/overlay wave, corpus,
+  signing or downstream admission follows from this documentation refresh.
+  Physical/platform evidence remains outside the current core-work priority.
+- [!] Security continuation 2026-09-22: Q1/Q2 photonic coupon snapshot-before-verify
+  and cached coupon revalidation are in the dirty tree
+  ([report](reports/security-q1q2-continuation-2026-09-22.md)). Focused Tower tests
+  **24/24**. This does not close the 124-finding scan. Independent audit, KB SHA-pin,
+  production `grantedEffects` policy and remaining Q3 work-ceilings stay open.
+- [!] Governed Computing Constitution remains a **discussion draft** (not adopted,
+  no new RD). Next artefact is owner custody plus a §10 guarantee register.
+  Do not treat the draft as SECURITY.md, charter, or production admission.
+
+### Source-verified reconciliation — 2026-09-22
+
+- [x] Ran the registered graph refresh: six upstream steps passed, package
+  graphs and semantic assurance refused; generated roadmap was withheld.
+- [x] C22 declarations repaired; `node scripts/package-graph-generator.mjs --check`
+  is **100 packages / 201 outputs current**. Hostile undeclared-specifier and
+  `../` loadedAssets controls remain. See [C22](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c22).
+- [!] Semantic provenance remains dirty; old roadmap SVG is not refreshed.
+  Full [graph results](reports/graph-todo-ledger-refresh-2026-09-22.md).
+- [x] Owner-requested ledger summary bound raised from 240 to 2048 characters;
+  whole-file and other field bounds retained, 8 boundary controls pass.
+- [x] Independently reran Tower isolation/product entries (71 tests), C17
+  compiler export (4) and nested docs (10): 85 passed, no failures or skips.
+  Source pins and scope: [review](reports/rd1295-c17-review-2026-09-22.md).
+- [x] Later concurrent fixes independently rechecked: 93 focused tests pass,
+  all four original defect cases and ordinary controls pass; source/emitted
+  implementations match the new pins in that review.
+- [x] RD-1295 resolver parity (`load-graph.ts` `pickEsmExport`,
+  `findInstalledPackage`): ESM export matching walks own keys in insertion
+  order against `{node-addons,node,import,default}`; PACKAGE_SELF is checked
+  before nested `node_modules`. Node `import.meta.resolve` is the fixture
+  oracle. Closed-set checks that omit the runtime target fail. Require-only
+  exports refuse `unsupported-esm-export`. Isolation+products **75/75**.
+  See [C21](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c21).
+- [x] C17 own-key preservation (`contract-schema-export.ts`): field and
+  record names are stored with `defineOwn`. `__proto__` remains an own
+  enumerable key through `JSON.stringify`. Docs OpenAPI refuses those names
+  as reserved components (closed, not silent drop). Compiler export **6/6**;
+  nested docs **12/12**. Nested records/arrays remain supported.
+  See [C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17).
+- [!] Compiler 7291/7291, galerina-test 236/236 and six-package 185/185
+  totals below are implementation-session reports, not new whole-suite
+  verification by this maintenance pass. The old 123-failure/Windows-skip
+  report is historical and superseded, not a current red result.
+- [!] Residual classes (not all receipt blockers):
+  C16 durable replay — **explicitly deferred feature**: process-local
+  `MemoryReplayStore` is implemented (`replay-store.ts`); a durable
+  multi-process store needs an owner-admitted adapter (`RD-1286`).
+  C20 captures/word-boundaries/`findAll` — **explicitly deferred feature**
+  in the `RD-1292` refused profile.
+  JSON fractions as Decimal — **missing owner decision**: `RD-1289` freeze
+  refuses IEEE numbers and does not map fractions to Decimal.
+  Option.zip — **missing design**: runtime returns an anonymous
+  `{first,second}` record (`stdlib.ts`); no admitted named schema
+  (`type-checker.ts` inference boundary).
+  Isolated Tower subpaths are not frozen profile/composition admission
+  (air-gap, registry, api-data, full-lab, photonic=governance+photonic).
+  Independent audit, signing, producer/GIR remain outside.
+
+### Global `.fungi` stop — remaining conversion TODOs — 2026-09-21
+
+- [!] Owner instruction this session: do not author new `.fungi` files.
+  The remaining unchecked conversion, producer/GIR, queue, corpus,
+  signing, overlay-wave, and SLIDE/VOK rows stay HOLD until that stop is
+  lifted. This session does not close them by documentation.
+
+### Six-package TypeScript blocker reconciliation — 2026-09-21
+
+- [x] Reconciled the package TODOs for target-native, target-wasm,
+  core-photonic, docs, core-config, and framework-api-server against local
+  source. Existing definitions now have source/test locators; old API-server
+  manifest-scaffold prose is distinguished from the current kernel adapter.
+- [x] Docs C17 consumer bridge: `packages-ts/galerina-docs/src/openapi.ts`
+  `sourceBackedSchemas` translates compiler `#/types/` references and includes
+  reachable nested record/array definitions. It refuses missing definitions,
+  component collisions, hostile schema objects and excessive traversal.
+  `packages-ts/galerina-docs/tests/nested-contracts.test.mjs` is **10/10**; full docs
+  typecheck/build and tests are **41/41**. Existing compiler C17 tests remain
+  **4/4**; the compiler source was preserved.
+- [x] API replay scope identity: `MemoryReplayStore.claim` in
+  `packages-ts/galerina-framework-api-server/src/replay-store.ts` keeps scope
+  and key separate, so embedded separators cannot collide. Expired claims
+  are pruned per scope. The hostile separator/TTL regression is in
+  `packages-ts/galerina-framework-api-server/tests/replay-store.test.mjs`.
+  This remains process-local; C16 durable storage is still HOLD.
+- [x] Config loader repair: `loadEnvironmentConfig` and its own-data/redaction
+  helpers in `packages-ts/galerina-core-config/src/index.ts` refuse inherited,
+  accessor and proxy-backed environment values. Redaction preserves diagnostic
+  count, code, name and severity instead of filtering errors out.
+  `packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs`
+  passes **11/11** with malformed/proxy and overlapping-redaction controls.
+- [x] Fresh package `npm.cmd test` results (each includes typecheck and build):
+  target-native **22/22**, target-wasm **14/14**, core-photonic **8/8**, docs
+  **41/41**, core-config **65/65**, framework-api-server **35/35**. Total
+  **185/185**, failures **0**, skipped **0**. The source encoding gate still
+  reports pre-existing mojibake in core-config; it was left unchanged.
+- [!] HOLD native platform triples: missing owner-approved architecture/OS/ABI
+  mapping and rejection cases; non-empty metadata is not that receipt. Physical
+  artifact opening and current VOK verification still need their owner receipts.
+- [!] HOLD WASM compiler/compute handoff and fallback reports: missing versioned
+  producer/consumer binding, runtime-vocabulary reconciliation, and fallback
+  reason/identity schema. Signature verification remains with its runtime owner.
+- [!] HOLD photonic transport enum, diagnostic ownership, simulation semantics,
+  and v0.2 runtime/governance: missing reconciled core-vector/core-compute/
+  target-photonic owner decisions and, for execution, hardware/runtime receipts.
+- [!] HOLD API manifest-driven scaffold and C16 durable storage: missing the
+  manifest/route authority contract and independently admitted durable atomic
+  replay store. Process-local HMAC/replay tests do not supply either receipt.
+- [!] Option.zip, JSON fractions as Decimal, C20 captures/word-boundaries,
+  example-app signing, and core-network's Tower dependency remain unchanged.
+  Independent audit remains pending. No `.fungi`, conversion-queue regeneration,
+  signing, commit, merge, push, or reset is part of this reconciliation.
+
+### C17 nested records and arrays — 2026-09-21
+
+- [x] `exportContractSchemasFromSource` now maps same-source nested records
+  as `$ref: "#/types/<Name>"` and `Array<T>` of admitted primitives or
+  nested records. Option, Result, Decimal, unknown names, and
+  `Array<Decimal>` still refuse `FUNGI-CONTRACT-SCHEMA-003`. Focused
+  export tests **6/6**.
+- [x] Own-key preservation: `__proto__` field and record names remain
+  own enumerable keys through JSON serialization. Docs consumer refuses
+  them as reserved OpenAPI components. Compiler export **6/6**; nested
+  docs **12/12**.
+- [!] Option/Result remain outside this freeze. No `.fungi` or SLIDE/VOK.
+
+### galerina-test Windows termination classification — 2026-09-21
+
+- [x] Replaced the `node:test` `{ skip: win32 }` on POSIX SIGTERM with a
+  platform split that still runs on Windows. Windows asserts
+  `process.kill(SIGTERM)` is not timeout/spawn-error/output-limit.
+  Package suite **236/236**, skipped **0**. The fail-closed
+  `tests != pass` gate is no longer tripped by an intentional skip.
+- [!] Independent audit pending. No `.fungi` or SLIDE/VOK.
+
 ### Tower Citizen modular product-line — 2026-09-21
 
-- [x] `RD-1295` slice: `@galerina/tower-citizen/governance` is the
-  cli-check / `tower.governance.v1` entry. `core-network` cert-gate and
-  admission-feedback import that subpath, not the barrel. K3 trit gates
-  live in `trit-gates.ts` so governance does not load `TPLSimulator`.
-  Isolation walks the emitted JS graph (not export names). Focused
-  isolation+K3 **30/30**; cert/admission **31/31**.
-- [!] Kernel/inference/photonic/custody/dataplane subpaths, a certified
-  vs dev constructor split, and removing `core-network` → Tower entirely
-  remain outside. C12 receipt still covers only `dist/index.js` and
-  `dist/governance-mode.js`. No `.fungi` or SLIDE/VOK.
+- [x] `RD-1295` product entries: `@galerina/tower-citizen/{governance,kernel,inference,tpl,photonic,custody,dataplane}`.
+  `src/governance.ts` remains kernel-free `cli-check`, not
+  `tower.governance.v1`. `GOVERNANCE_ALLOWED_STEMS` is the §6.2 kernel∪cli-check
+  closed set. Walker `src/load-graph.ts` allows those seven subpaths and
+  refuses the root barrel and unknown subpaths. Isolation **32/32**;
+  product-line **39/39**; combined focused **71/71**. Named
+  `createCertifiedTower` / `createDevTower` factories live in
+  `src/product-constructors.ts`. Kernel linter refuses TPL/photonic/custody/dataplane.
+- [!] `core-network` still *installs* the Tower package; runtime graphs remain
+  cli-check. Independent audit pending. C12 receipt still covers only
+  `dist/index.js` and `dist/governance-mode.js`. No `.fungi` or SLIDE/VOK.
 
 ### C18 overlay threshold and path parity — 2026-09-21
 
@@ -55,7 +219,8 @@
   governed Fungi assets.
 - [!] C12 has a fresh index-plus-working-tree producer receipt for 867 inputs
   and focused tests **7/7**, but it is not commit-head freshness. The full
-  compiler package remains red with 123 failures.
+  compiler package had 123 failures in that earlier run; this historical
+  result is superseded by the later implementation-session report below.
 - [x] C18 source/twin parity is now **4/4**: the live Myco source says
   `120_000`, the overlay returns `120000`, and runner constants use current
   `packages-ts` paths plus `fungi.compiler.build-evidence.v1`.
@@ -66,12 +231,12 @@
 - [x] The unsigned registry candidate digest was refreshed after the bounded
   auth-test change; the registry package is now **35/35**. This is candidate
   evidence only and does not authorize signing or live admission.
-- [!] The fresh full package runner is **97/100 packages and 3,481 tests**;
-  the remaining red packages are core-compiler (123 failures), the signed
-  example-app fixture (3 unsigned-fuse failures), and galerina-test (one
-  intentional Windows skip rejected by the fail-closed summary gate). Tower
-  Citizen passes **517/517**. No corpus or full `.fungi` assurance run is
-  admissible.
+- [!] The 123-fail compiler package claim is stale: a fresh compiler
+  `node --test` of `tests/*.test.mjs` plus the package subdir globs is
+  **7291/7291** (6530 + 761). galerina-test is **236/236** with skipped
+  **0**. The signed example-app fixture remains held (3 unsigned-fuse
+  failures; key `942d6b2726b0a991` has no public bundle). No corpus or
+  full `.fungi` assurance run is admissible.
 - [!] RD-1267 is absent and its exact query is `STALE`; residuals are recorded
   in private `RD-1291`. This is a non-authorizing status record.
 
@@ -107,8 +272,9 @@
   `galerina.contract-types.v1` from `record` declarations. Docs integration
   stamps source identity onto OpenAPI components. Compiler export **2/2**;
   docs **31/31**. Decimal is refused.
-- [!] Nested records, arrays, and Option/Result remain outside this freeze.
-  No `.fungi` or SLIDE/VOK admission.
+- [x] Nested records and arrays are covered by the later C17 compiler work
+  and docs consumer reconciliation above. Option/Result and Decimal remain
+  outside the admitted schema mapping. No `.fungi` or SLIDE/VOK admission.
 
 ### C16 API replay/HMAC — 2026-09-21
 

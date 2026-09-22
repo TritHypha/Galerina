@@ -5,7 +5,7 @@ development and full-suite testing, but it is **not production authority**.
 Production signing custody, platform durability evidence, general source-family
 coverage, literal TypeScript retirement, and the source-to-SLIDE bootstrap
 fixpoint remain open. Read this before relying on any guarantee. Last
-reconciled: 2026-08-09.
+reconciled: 2026-08-09. Security continuation addendum: 2026-09-22.
 
 ## What is implemented and tested (bounded evidence, not production authority)
 
@@ -34,6 +34,16 @@ reconciled: 2026-08-09.
   authoritative specifications and independent SLIDE executes a bounded checked-Fungi family, but
   TypeScript remains the executing differential/bootstrap layer. Production authority, general
   source families, and literal `.ts` retirement are still open.
+
+## Security continuation — 2026-09-22 (dirty tree; not production authority)
+
+Q1/Q2 certified photonic coupons now snapshot own-data before verify and
+recheck coupon revocation on every infer (`packages-ts/galerina-tower-citizen`).
+Focused photonic+bridge tests **24/24**. The Codex scan of this HEAD reported
+**124** Galerina findings; that set is not closed. Independent audit, KB SHA-pin,
+production `grantedEffects`, and Q3 work-performed ceilings remain open.
+See `docs/reports/security-q1q2-continuation-2026-09-22.md`. The 2026-08-09
+suite counts below stay historical.
 
 ## Security disclosures
 

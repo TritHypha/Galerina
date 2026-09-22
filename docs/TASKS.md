@@ -1,5 +1,11 @@
 # Tasks
 
+Current sequencing lives in
+[PRE-FUNGI-WORK-REGISTER-2026-09-22.md](PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
+(W15 security continuation, CONST constitution discussion draft). This file
+is the historical phase-planning catalogue; it is not rewritten as the 2026-09-22
+security slice.
+
 ## Phase 1: Planning
 
 - [x] Update workspace documentation for the `packages-ts/galerina-core/` language package move

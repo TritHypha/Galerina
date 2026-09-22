@@ -1,5 +1,10 @@
 # Galerina Core Network TODO
 
+## Graph integration follow-up — 2026-09-22
+
+- [x] Admitted `@galerina/tower-citizen/governance` (not the barrel).
+      Live `--check` PASS. Barrel import remains a distinct FAIL.
+
 V1 freeze rule: this package defines network policy and report contracts only.
 HTTP serving belongs in `galerina-framework-api-server`; application request
 policy belongs in `galerina-framework-app-kernel`.

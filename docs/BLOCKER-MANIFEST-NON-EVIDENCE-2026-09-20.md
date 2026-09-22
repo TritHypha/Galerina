@@ -1,6 +1,6 @@
 # Non-evidence blocker manifest
 
-**Date:** 2026-09-21
+**Date:** 2026-09-22
 **Purpose:** identify the remaining work that can change implementation,
 component contracts, compiler behaviour, or generated assets. Evidence-only
 holds are deliberately excluded from the active blocker count.
@@ -11,6 +11,42 @@ blocker row links to one corresponding chapter in
 where the issue, source boundary, required outcome, and evidence boundary are
 recorded in full.
 
+<a id="current-action-queue"></a>
+## Current action queue — 2026-09-22
+
+The broader [pre-.fungi work register](PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
+adds compiler, schema/API, target, downstream-verification and integration
+lanes that must not disappear behind this short queue. It separates actual
+implementation work, missing owner decisions, deliberate deferrals and
+evidence-only holds. Its lane count is not a blocker count. No new completion
+or fresh whole-estate test/graph claim is made by the documentation refresh.
+
+The older C01–C20 tables below are a contract-slice catalogue, not a count of
+currently unresolved implementation defects. Do not infer a total from their
+row count. This reconciliation does not claim all repository TODOs complete.
+
+| Owner | Remaining issue | Full description and expected outcome | RD |
+|---|---|---|---|
+| Package graph owners | REPAIRED: 16 declaration refusals admitted against live imports; `productAssets` records foreign fungi products. | [C22](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c22): `package-graph-generator.mjs --check` is 100 packages / 201 outputs. Semantic-assurance dirty provenance remains a separate hold. | Package integration follow-up; RD-1295 relevant to Tower, no new RD assigned. |
+| Tower | REPAIRED: original conditional-export/self-reference false-green cases. | [C21](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c21): independent runtime-target and wrong-allow-list controls now pass; broader composition admission remains separate. | RD-1295 |
+| Compiler/docs | REPAIRED: original __proto__ field/type loss. | [C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17): own keys survive serialization; docs explicitly refuses reserved names. | RD-1287 |
+| Tower | Full frozen profile/composition mapping is not established by subpaths alone. | [C21](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c21): explicit manifest/admission and forbidden-composition coverage. Package-dependency removal is a separate architectural decision. | RD-1295 |
+| API | Durable multi-process replay is outside the process-local implementation. | [C16](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c16): select the storage contract/owner and implement before claiming durability. | RD-1286 |
+| Compiler | Option.zip named typing/schema remains deferred. | [C01](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c01): admitted type contract, then implementation and hostile tests. | RD-1275 |
+| Compiler/patterns | Captures, word boundaries and executable target matcher remain outside the closed profile. | [C20](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c20): retain refusal unless a new contract and implementation are admitted. | RD-1292 |
+| JSON/compiler | Fractional JSON-to-Decimal mapping remains refused. | [C19](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c19): admitted numeric contract and parity controls before widening the codec. | RD-1289 |
+| Tower / security | Q1/Q2 photonic coupon identity is patched in the dirty tree; 124-finding scan remains open. | [W15](PRE-FUNGI-WORK-REGISTER-2026-09-22.md) / [report](reports/security-q1q2-continuation-2026-09-22.md): next Q3 work-performed ceilings; independent audit pending. Constitution discussion draft is not a blocker chapter. | RD-0236, RD-0118, RD-0129 |
+
+The original Tower resolver and C17 defect groups are now repaired and
+independently rechecked; they are retained for traceability, not active debt.
+The graph row records additional integration findings. Other rows retain
+their own contract/deferred status; this table is not a newly authorized
+implementation scope. Evidence-only and owner-paused holds remain below.
+The [review](reports/rd1295-c17-review-2026-09-22.md) records the original
+85-test run and subsequent 93-test rerun, original probes and new source pins.
+Larger suite counts below are reported
+implementation evidence, not a fresh estate-wide audit.
+
 ## Verification boundary
 
 This manifest was built from the current owner TODOs and the exact source
@@ -20,7 +56,7 @@ The source heads checked for this manifest are:
 
 | Repository | Branch | HEAD | Working-tree note |
 |---|---|---|---|
-| Galerina | `main` | `daa2e92b233a2f4a555fefe6d42a604001cd99b1` | Compiler, observability, core-network, and ledger edits are present in the working tree; unrelated dirty paths are retained; no files were reset or pushed. |
+| Galerina implementation worktree | `main` | `0f24ca30ef3f173c43a60c914c18b161327f2227` | Mixed working-tree implementation and documentation edits remain; no clean-head or independent-completion claim. |
 | SLIDE/VOK | `codex/v2c-independent-frontend` | `d14e37eb12fc74480c09ae941aa6ea9629e0913b` | Existing security-workflow change preserved. |
 | Lyth-Weaver | `main` | `f5a3ffe147b5110216493c92cb7dabd1a5cc47cc` | Existing handover change preserved. |
 
@@ -49,10 +85,42 @@ implementation blocker or admit a design:
 
 This refresh resolves the classification gap only. It does not authorize
 conversion, queue regeneration, corpus assurance, signing, or a full `.fungi`
-build. See the [RD-1265 record](../../../../ZTF-Knowledge-Bases/private/research/rd/RD-1265-bounded-kb-gap-adjudication-PRIVATE.md)
+build. See KB record `RD-1265` through the private KB owner
 for the advisory Gemini/Grok inputs and Astra adjudication.
 
-## Active non-evidence blockers
+## 2026-09-21 bounded implementation session
+
+Keyword encyclopedia: `RD-1268`. Per-issue records: `RD-1269` (C05),
+`RD-1270` (C06), `RD-1271` (C13), `RD-1272` (C11), `RD-1273` (C10 amplitude),
+`RD-1274` (C01 unwrapOr slice), `RD-1275` (C01 expression matrix),
+`RD-1276`/`RD-1277` (C02 Decimal/HOF WAT ABI), `RD-1278` (C03 method chain),
+`RD-1279` (C04 WASM artefact admission), `RD-1280` (C08 AI report binding),
+`RD-1281` (C09 native path/digest/VOK), `RD-1282` (C10 photonic diagnostic),
+`RD-1283` (C12 build-evidence framing), `RD-1284` (C14 typed-content),
+`RD-1285` (C15 EnvironmentConfig v2), `RD-1286` (C16 API replay/HMAC),
+`RD-1287` (C17 contract schema export),
+`RD-1288` (C19-A Stage-B type-code identity),
+`RD-1289` (C19-B governed JsonValue codec),
+`RD-1290` (C19-C injected CryptoProvider),
+`RD-1292` (C20 compile-time PatternCapability / WAT trap),
+`RD-1293` (C12 live build-evidence after index accounting),
+`RD-1294` (C18 overlay threshold and path parity),
+`RD-1295` (Tower Citizen modular product-line).
+None of these authorize `.fungi`
+generation, queue regeneration, signing, or SLIDE/VOK admission. Chapter
+statuses were refreshed in `BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md`.
+
+The residual review is recorded in `RD-1291`. The 123-fail compiler
+package claim is stale: a fresh compiler `node --test` of
+`tests/*.test.mjs` plus the package subdir globs is **7291/7291**.
+`galerina-test` is **236/236** with skipped **0**. Tower RD-1295
+isolation+products is **71/71**. The
+signed example-app fixture remains **3** unsigned-fuse failures. C12 has a
+fresh index-plus-working-tree producer receipt; C18 source/twin parity is
+**4/4**. The registry candidate digest mismatch was repaired as an unsigned
+candidate-only change; no live signing or admission occurred.
+
+## C01–C13 bounded contract catalogue and residuals
 
 These are the blocks that require a contract decision followed by ordinary
 engineering, tests, or source/asset regeneration. A green focused test does
@@ -60,19 +128,19 @@ not close a row when the source contract is still incomplete.
 
 | Project | Blocker and exact source locator | Full chapter | RD linkage | Expected outcome |
 |---|---|---|---|---|
-| Galerina compiler | Broad expression inference is still fail-closed/partial at `packages-ts/galerina-core-compiler/src/type-checker.ts:1054-1556`, consumed at `:1746-1828`, `:1874-1954`, and `:2064-2297`. The unresolved cases include deferred fields, nested generics, `unwrapOr` fallbacks, heterogeneous lists, anonymous map entries, and callback wrapper payloads. | [C01](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c01) | `RD-1232`; satellites `RD-1247`, `RD-1248`, `RD-1250`, `RD-1251`, `RD-1252`, `RD-1253` (`docs/TODO.md:267-377`). | Freeze the deferred-inference and diagnostic contract; implement a complete expression-kind matrix; add positive and hostile consumer tests; preserve refusal for genuinely unknown forms. |
-| Galerina compiler | WAT lowering intentionally refuses Decimal and higher-order collection operations at `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1611-1617,2020-2045`, with fallback at `:4503-4534`; unsupported method calls now trap at `:2115-2122`. | [C02](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c02) | `RD-1233` (`docs/TODO.md:379-392`). | Freeze the Decimal representation/ABI, rounding and resource limits, and a bounded capture-free callback ABI; implement only those admitted cases; prove interpreter/WAT parity and keep unsupported cases trapped. |
-| Galerina compiler / TriRegex / SLIDE-VOK | The interpreter now consumes a certificate-bearing `PatternCapability` and bounded refusal-on-truncation `findAll` at `packages-ts/galerina-tri-regex/src/index.ts`; the WAT method map still has no `matchesPattern` operation at `packages-ts/galerina-core-compiler/src/wat-emitter.ts:1233-1268`, and the fallback traps at `:2115-2122`. TriRegex v0.1.1 still refuses `\\b`/`\\B` and has no capture boundary. | [C20](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c20) | Existing `RD-0795`; related source adjudication `docs/superpowers/specs/2026-08-12-slices-47-49-regex-boundary-adjudication.md`. | Keep the typed interpreter capability bounded; still freeze the exact source/profile semantics, GIR/WAT operation, typed refusal/result and SLIDE/VOK work receipt; either prove word boundaries or retain the affected conversion as refused. |
-| Galerina compiler | `checkMethodChain()` is an empty seam at `packages-ts/galerina-core-compiler/src/index.ts:3081-3100`; its current inputs cannot evaluate receiver type, arguments, Result consumption, effects, bindings, readonly mutation, or stage locations. | [C03](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c03) | `RD-1234` (`docs/TODO.md:394-408`). | Replace the stub with a context-rich `callExpr`-integrated checker for `FUNGI-PIPELINE-001..005`, with positive/negative controls and correct preservation of persistent `push`/`append` transforms. |
-| Galerina WASM target | `WasmArtefact` and its report decoder at `packages-ts/galerina-target-wasm/src/index.ts:8-18,68-199,201-272` lack module bytes/digest/attestation, section-bound identity, sandbox/effect/limit evidence, physical binding, and an owned cross-package schema. | [C04](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c04) | `RD-1236` (`docs/TODO-MISSING-RD.md:22-48`). | Freeze a versioned schema and report/refusal rules; bind selected artefacts to exact bytes, digest, target and evidence; migrate diagnostics; add missing/forged/mismatched/duplicate/malformed/refused tests. |
-| Galerina observability | `JsonLineSink.write()` now isolates an injected writer exception at `packages-ts/galerina-observability/src/logger.ts:61-69`, but the owner has not yet confirmed the swallow-and-void direct-loss semantics. | [C05](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c05) | `RD-1237` (`docs/TODO-MISSING-RD.md:50-75`). | Confirm the direct-sink contract and retain the minimal guard/test; do not invent retry, buffering, delivery, durability or outer-counter semantics. |
-| Galerina observability | Logger failure accounting and clock fallback at `packages-ts/galerina-observability/src/logger.ts:190-227` conflates aggregate failures, does not count clock faults, and uses fallback `0` without provenance. | [C06](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c06) | `RD-1238` (`docs/TODO-MISSING-RD.md:79-105`). | Freeze aggregate/cause counter meaning, timestamp fallback/provenance, and serialization-degradation rules; implement the chosen contract; pass the complete clock, redaction, repeated-failure, and combined-failure matrix. |
-| Galerina AI accelerator | Report construction at `packages-ts/galerina-target-ai-accelerator/src/index.ts:703-764` lacks an exact report decoder, closed diagnostic validation, and selection-to-report binding; warnings reread caller data at `:715-718`. | [C08](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c08) | `RD-1240` (`docs/TODO-MISSING-RD.md:141-172`). | Freeze the report schema and severity vocabulary; decode once into an immutable snapshot; bind it to the selected capability/plan; add hostile caller-input and false-safe/negative controls. |
-| Galerina native target | Artifact admission at `packages-ts/galerina-target-native/src/index.ts:340-367` checks only non-empty text; root containment, file identity, replacement/race policy, digest/VOK binding, and target/ABI/profile binding are absent. | [C09](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c09) | `RD-1241` (`docs/TODO-MISSING-RD.md:174-205`). | Freeze the root/path and identity model; implement canonical containment and binding; add dot-segment, alternate-separator, race, digest, profile, and VOK mismatch refusals. |
-| Galerina photonic | Core and target disagree on `PhotonicDiagnostic` shape and amplitude rules at `packages-ts/galerina-core-photonic/src/index.ts:40-47,110-120` and `packages-ts/galerina-target-photonic/src/index.ts:192-196,466-472`. | [C10](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c10) | `RD-1242` (`docs/TODO-MISSING-RD.md:207-245`). | Freeze shared diagnostic meaning, redaction/path/severity semantics, amplitude/presence/signed-zero rules, version and code ownership; then reconcile adapters and add signed-zero regressions. |
-| Galerina test/runtime paths | Workspace-root selection and containment at `packages-ts/galerina-test/src/paths.ts:20-27,41-44,55-58` accept roots/targets without the required marker and containment checks. | [C11](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c11) | `RD-1243` (`docs/TODO-MISSING-RD.md:246-272`). | Freeze marker attestation, lexical versus physical containment, Windows namespace/reparse policy, and refusal identity; implement the bounded policy and hostile path fixtures. |
-| Galerina compiler/test evidence producer | Build evidence framing at `packages-ts/galerina-core-compiler/scripts/write-build-evidence.mjs:37-48` and `packages-ts/galerina-test/src/runners.ts:94-133` can collide distinct contents under the same path list and accept duplicate JSON key spellings. | [C12](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c12) | `RD-1244` (`docs/TODO-MISSING-RD.md:274-299`). | Adopt a versioned framing/schema that binds compile inputs, configuration, toolchain, consumed outputs, containment and digests; keep duplicate-key refusal and add producer/verifier snapshot tests. |
-| Galerina JS target | Import-set validation at `packages-ts/galerina-target-js/src/index.ts:630-650` enforces module-to-plan inclusion but leaves unused plan entries admitted. | [C13](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c13) | `RD-1245` (`docs/TODO-MISSING-RD.md:376-398`). | Owner-select exact set, bag, allowlist, or split-schema semantics; implement the chosen relation and add unused-entry, missing-import, duplicate, and server-only diagnostic controls. |
+| Galerina compiler | C01 expression matrix is frozen in `RD-1275`. Residual: `Option.zip` has no named schema. | [C01](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c01) | `RD-1232` + `RD-1275`; satellites `RD-1247`–`RD-1253`. | Retain the frozen matrix; do not invent an `Option.zip` schema. |
+| Galerina compiler | C02 Decimal host ABI plus divide/remainder, capture-free `map`/`filter`/`reduce`, and instantiate parity (`RD-1276`/`RD-1277`). Bare `/` stays trapped. | [C02](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c02) | `RD-1233` + `RD-1276` + `RD-1277`. | Keep traps for bare Decimal `/`. |
+| Galerina compiler / TriRegex / SLIDE-VOK | C20 compile-time `fungi.pattern.capability.v1` (`RD-1292`) admits patterns with a SHA-256 digest and a closed refused profile. WAT `matchesPattern` emits a named unreachable, not an undefined callee. Word boundaries and captures stay refused. | [C20](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c20) | Existing `RD-0795` + `RD-1292`. | `findAll`, captures, word boundaries, executable GIR/WAT matcher, and SLIDE/VOK remain outside. |
+| Galerina compiler | C03 `checkMethodChain` implemented (`RD-1278`). Unknown methods fire `FUNGI-PIPELINE-001`; persistent `append` is not mutation. | [C03](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c03) | `RD-1234` + `RD-1278`. | Domain methods outside the stdlib catalog still 001 until registered. |
+| Galerina WASM target | C04 `fungi.wasm.artefact.v1` binds bytes/digest/attestation/sections/limits (`RD-1279`). Error artefacts are refused, not admitted. | [C04](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c04) | `RD-1236` + `RD-1279`. | Signature verification and physical TOCTOU stay with the runtime TCB. |
+| Galerina observability | C05 swallow-and-void direct sink is frozen (`RD-1269`). Direct writer loss is not a mediated counter. | [C05](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c05) | `RD-1237` + `RD-1269`. | Retain the guard; no retry/durability. |
+| Galerina observability | C06 split counters and labelled `atSource` are implemented (`RD-1270`). | [C06](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c06) | `RD-1238` + `RD-1270`. | No retry/durability. |
+| Galerina AI accelerator | C08 report schema `fungi.ai.accelerator.report.v1` decodes once and refuses unbound `safe:true` selections (`RD-1280`). | [C08](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c08) | `RD-1240` + `RD-1280`. | Observational `safe:false` fallbacks remain listed; execution authority is not granted. |
+| Galerina native target | C09 `fungi.native.artifact.v1` binds relative locator, bytes digest, VOK subject, and ABI/profile (`RD-1281`). Path is not identity; omitted bytes refuse. | [C09](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c09) | `RD-1241` + `RD-1281`. | Physical open, inode race, and VOK receipt verification remain outside this package. |
+| Galerina photonic | C10 `fungi.photonic.diagnostic.v1` is shared (`RD-1282`); amplitude `[0,1]` excluding `-0` (`RD-1273`). Legacy `safeMessage` is refused. | [C10](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c10) | `RD-1242` + `RD-1273` + `RD-1282`. | Registry `FUNGI-PHOTONIC-001..006` migration and hardware remain outside this freeze. |
+| Galerina test/runtime paths | C11 marker attestation and containment implemented (`RD-1272`). | [C11](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c11) | `RD-1243` + `RD-1272`. | C09 planning identity is `RD-1281`; physical native open remains separate. |
+| Galerina compiler/test evidence producer | C12 `fungi.compiler.build-evidence.v1` (`RD-1283`). After index-accounting (`RD-1293`), live producer wrote 867 inputs and verifier returned ok. Untracked inputs still refuse. | [C12](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c12) | `RD-1244` + `RD-1283` + `RD-1293`. | Not commit-head freshness. The runner twin now uses the current schema string; queue and exact-head assurance remain held. |
+| Galerina JS target | C13 exact-set implemented (`RD-1271`, `FUNGI-JS-016`/`017`). | [C13](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c13) | `RD-1245` + `RD-1271`. | Compiler-derived plans remain future work. |
 
 ### Recently bounded, retained for traceability
 
@@ -84,21 +152,19 @@ former TODO remains auditable.
 |---|---|---|---|
 | Galerina observability/kernel | `metricsAuditSink` previously projected lossy method/path/status data into the full-event audit contract. | [C07](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c07) | Bounded implementation committed in `daa2e92b233a2f4a555fefe6d42a604001cd99b1`; observability package tests are `58/58` pass. Production receipt/durability remains an excluded authority hold. |
 
-## Source TODOs with no RD linkage in the current ledger
+## C14–C19 contract catalogue — RD linkage now present
 
-These are real implementation or contract blocks, but the current TODO ledger
-does not attach an RD number. They are listed rather than silently treated as
-resolved. Before implementation, either link an existing RD or create the
-smallest owner-approved RD record.
+The former six unlinked rows now have the RD owners shown below.
+An RD link or bounded slice does not close a residual contract or defect.
 
 | Project | Blocker and exact source locator | Full chapter | RD linkage | Expected outcome |
 |---|---|---|---|---|
-| Galerina compiler | Typed-content validation remains a raw-text stub at `packages-ts/galerina-core-compiler/src/index.ts:2555-2575`; the source-preserving parser seam exists, but the validator is not wired to an AST/type environment. | [C14](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c14) | No RD linked in `docs/TODO-MISSING-RD.md:566-585`. | Add the binding/type-environment seam and compiler wiring; prove that protected-secret interpolation is rejected without falling back to name matching. |
-| Galerina core-config | The v0.1 `EnvironmentConfig` source at `packages-ts/galerina-core-config/src/index.ts:97-101,1142-1179` conflicts with the v0.2 README contract at `README.md:209-260`. | [C15](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c15) | No RD linked in `docs/TODO-MISSING-RD.md:712-724`. | Freeze one v0.2 schema, source/category vocabulary, and disjoint diagnostic ownership; then update implementation and tests as one contract. |
-| Galerina API server/network | Canonical store interfaces and a bounded process-local `MemoryReplayStore` now exist, and app-kernel idempotency now uses explicit atomic `IdempotencyStore.claim(scope,key,ttl) -> claimed \| duplicate` admission after pre-handler refusal gates. The transport still has no replay/HMAC wiring or durable/shared authority. | [C16](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c16) | No RD linked; the live bounded range query was **REFUSED** because tracked RD source paths are dirty. No number was invented. | Retain the explicit atomic claim seam and separate replay/idempotency namespaces; inject replay storage, define durability/multi-process and retry authority, and prove expiry, duplicate handling, HMAC-before-handler ordering, and handler non-execution on refusal. |
-| Galerina documentation generator | Placeholder request/response schemas are now refused. `packages-ts/galerina-docs/src/types.ts` defines the versioned `ContractSchemaExport`, and `src/openapi.ts` requires it, validates it, and stamps source/type/version provenance; the real compiler `types {}` export adapter is still absent. | [C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17) | No RD linked in `docs/TODO-MISSING-RD.md:979-986`. | Wire the compiler's governed `types {}` export to `ContractSchemaExport`, then prove source-head and runtime-validator parity with an integration fixture. |
-| Galerina conversion overlays | Two source/asset bindings are stale: the 5,000 ms overlay versus the 120,000 ms owner value and retired `packages-galerina` runner paths; see `docs/TODO-MISSING-RD.md:921-938`. | [C18](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c18) | No RD linked; generation-dependent. | Freeze the threshold/path contract after non-`.fungi` work, then regenerate the owning overlays and prove exact source/asset/interpretation parity. |
-| Galerina compiler architecture | Stage-B parity, governed JSON codec, and crypto-provider relocation remain open, but are now split into C19-A/C19-B/C19-C at `packages-ts/galerina-core-compiler/TODO.md:207-235`. | [C19](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c19) | No RD linked in `docs/TODO-MISSING-RD.md:987-990`. | Implement and independently verify each bounded owner/contract/test row; do not treat the split as implementation clearance. |
+| Galerina compiler | C14 `validateTypedContentBlock` uses a binding/type environment; `FUNGI-BLOCK-004` refuses `protected`/`Secret` interpolations by type (`RD-1284`). A `String` binding named `secret` is admitted. | [C14](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c14) | `RD-1284`. | HTML/DOM/CSS structure and JS syntax checks remain Stage 2. |
+| Galerina core-config | C15 freezes `EnvironmentConfigV2` / `galerina.config.environment.v2` (`RD-1285`). Loader uses `FUNGI-CONFIG-028/029`; mode keeps `001/002`. Live sources are `env\|vault\|kms\|runtime`; categories are hyphenated. | [C15](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c15) | `RD-1285`. | Handoff snapshot stays unversioned `EnvironmentConfig`. No directory split. |
+| Galerina API server/network | C16 wires HMAC-then-`claim(scope=replay)` before kernel decode/handler (`RD-1286`). Invalid HMAC does not claim, decode, or dispatch. Process-local only. | [C16](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c16) | `RD-1286`. | Durable/multi-process storage and retry/lifecycle remain outside this freeze. |
+| Galerina documentation generator | C17 source-bound export supports same-source nested records and arrays; own-key schema preservation has a reproduced defect. | [C17](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c17) | `RD-1287`. | Fix special-name loss; Option/Result/Decimal remain refused. |
+| Galerina conversion overlays | C18 twins now match live TypeScript (`RD-1294`): search budget `120_000` and `packages-ts` runner paths / `fungi.compiler.build-evidence.v1`. Legacy aliases removed. | [C18](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c18) | `RD-1294`. | Not a conversion-queue or SLIDE overlay-wave regeneration. |
+| Galerina compiler architecture | C19-A (`RD-1288`), C19-B (`RD-1289`), and C19-C (`RD-1290`) are frozen as separate contracts. WASM byte-parity remains outside C19-A. | [C19](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c19) | `RD-1288` / `RD-1289` / `RD-1290`. | Do not treat C19 as one combined task. |
 
 ## Deferred technical work, not counted as evidence blockers
 
@@ -143,6 +209,19 @@ signing, or the full `.fungi` build.
 These are intentionally phrased as real-world research terms suitable for
 Google, YouTube, academic repositories, and open-source code search. They are
 search prompts, not project authority:
+
+### Current implementation review keywords
+
+- Node.js ESM conditional exports object property order
+- Node.js package self-reference resolution nested node_modules
+- static module load graph runtime resolution equivalence
+- closed-world module allowlist false negative
+- package dependency allowlist governance entrypoint reachability graph
+- cross-package asset ownership path containment manifest
+- JavaScript __proto__ own property dictionary Object.create(null)
+- JSON Schema required properties reference closure serialization
+- product-line dependency closure composition admission negative testing
+- durable replay atomic claim multi-process crash recovery
 
 ### Current KB-gap review keywords
 
