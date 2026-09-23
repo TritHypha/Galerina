@@ -54,6 +54,26 @@ test("a snapshot signed with key A fails verify under a serializer with key B", 
   assert.equal(err.code, "LSS-INTEGRITY-001");
 });
 
+test("hostile: a getter cannot make deserialize parse a different payload than HMAC verified", () => {
+  const s = serializer();
+  const snap = s.serialize({ a: 1 }, 1);
+  const good = snap.payloadJson;
+  let reads = 0;
+  const swapped = new Proxy(snap, {
+    get(target, prop, receiver) {
+      if (prop === "payloadJson") {
+        reads += 1;
+        return reads === 1 ? good : '{"a":9}';
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+  assert.equal(s.verify(swapped), true);
+  const err = caught(() => s.deserialize(swapped));
+  assert.ok(err instanceof SecurityTrap);
+  assert.equal(err.code, "LSS-INTEGRITY-001");
+});
+
 function caught(fn) {
   try {
     fn();

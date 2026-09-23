@@ -4,7 +4,7 @@ import { promises as fs } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 
-import { walk } from "../src/ingest/walk.ts";
+import { globMatch, MAX_IGNORE_PATTERN, walk } from "../src/ingest/walk.ts";
 
 async function tmpTree(files: Record<string, string>): Promise<string> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "myco-walk-"));
@@ -176,6 +176,38 @@ test("walk skips node_modules by default, REPORTS the skip, and --vendored inclu
     assert.ok(allRels.has("node_modules/dep/index.js"), "--vendored includes the tree");
     assert.ok(allRels.has("sub/node_modules/dep3/y.js"));
     assert.deepEqual(none, [], "nothing reported skipped when vendored dirs are included");
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("globMatch is a linear * / ? matcher", () => {
+  assert.equal(globMatch("*.log", "b.log"), true);
+  assert.equal(globMatch("*.log", "b.txt"), false);
+  assert.equal(globMatch("a?c", "abc"), true);
+  assert.equal(globMatch("a?c", "ac"), false);
+});
+
+test("hostile: nested-star ignore globs finish without regex backtracking", () => {
+  const pattern = "*a*a*a*a*a*a*a*a*a*a*b";
+  const value = "a".repeat(48);
+  const t0 = performance.now();
+  assert.equal(globMatch(pattern, value), false);
+  const ms = performance.now() - t0;
+  assert.ok(ms < 50, `globMatch took ${ms}ms on a nested-star miss`);
+});
+
+test("hostile: ignore patterns longer than MAX_IGNORE_PATTERN are not applied", async () => {
+  const huge = "*".repeat(MAX_IGNORE_PATTERN + 1);
+  const dir = await tmpTree({
+    ".mycoignore": `${huge}\n`,
+    "keep.txt": "keep",
+  });
+  try {
+    const rels = new Set(
+      (await walk(dir, { maxFileSize: 1 << 20, useGitignore: false })).map((m) => m.relPath),
+    );
+    assert.ok(rels.has("keep.txt"), "an oversize all-star ignore must not hide keep.txt");
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }

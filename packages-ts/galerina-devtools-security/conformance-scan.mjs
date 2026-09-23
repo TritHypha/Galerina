@@ -30,10 +30,17 @@ import { fileURLToPath } from "node:url";
 
 // packages-ts/galerina-devtools-security/ -> the Galerina monorepo root.
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+export function sourcePresenceText(src) {
+  if (typeof src !== "string") return "";
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/^\s*\/\/.*$/gm, " ");
+}
+
 const readText = (rel) => {
   const abs = join(REPO, rel);
   if (!existsSync(abs)) return null;
-  try { return readFileSync(abs, "utf8"); } catch { return null; }
+  try { return sourcePresenceText(readFileSync(abs, "utf8")); } catch { return null; }
 };
 
 // ── by-construction checks (pure: a text-resolver is injected so --self-test can plant regressions) ──────────
@@ -286,25 +293,33 @@ const listWorkflows = () => {
   try { return readdirSync(dir).filter((f) => /\.ya?ml$/.test(f)).map((f) => `.github/workflows/${f}`); } catch { return []; }
 };
 
-if (process.argv.includes("--self-test")) { selfTest(); process.exit(0); }
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
 
-const findings = runAll(readText, listWorkflows);
-const regressed = findings.filter((f) => !f.ok);
+if (isDirectRun() && process.argv.includes("--self-test")) { selfTest(); process.exit(0); }
 
-if (process.argv.includes("--json")) {
-  console.log(JSON.stringify({ schemaVersion: "galerina.conformance.v1", findings, ok: regressed.length === 0 }, null, 2));
-} else {
-  console.log("\n  by-construction conformance (RD-0296) — a check goes RED when the construction regresses:\n");
-  for (const f of findings) {
-    const mark = f.ok ? (f.tier === "CONFIRMED" ? "✅" : "•") : "❌";
-    console.log(`  ${mark} [${f.tier}] ${f.check} (${f.cwe}, ${f.rd}) — ${f.target}`);
-    console.log(`      ${f.message}`);
+if (isDirectRun()) {
+  const findings = runAll(readText, listWorkflows);
+  const regressed = findings.filter((f) => !f.ok);
+
+  if (process.argv.includes("--json")) {
+    console.log(JSON.stringify({ schemaVersion: "galerina.conformance.v1", findings, ok: regressed.length === 0 }, null, 2));
+  } else {
+    console.log("\n  by-construction conformance (RD-0296) — a check goes RED when the construction regresses:\n");
+    for (const f of findings) {
+      const mark = f.ok ? (f.tier === "CONFIRMED" ? "✅" : "•") : "❌";
+      console.log(`  ${mark} [${f.tier}] ${f.check} (${f.cwe}, ${f.rd}) — ${f.target}`);
+      console.log(`      ${f.message}`);
+    }
+    console.log("");
   }
-  console.log("");
-}
 
-if (regressed.length) {
-  console.error(`  ❌ conformance: ${regressed.length} construction(s) REGRESSED or unverifiable — fail-closed.\n`);
-  process.exit(1);
+  if (regressed.length) {
+    console.error(`  ❌ conformance: ${regressed.length} construction(s) REGRESSED or unverifiable — fail-closed.\n`);
+    process.exit(1);
+  }
+  console.log(`  ✅ conformance: ${findings.length} construction(s) hold (CONFIRMED where the engine is readable; tracked residuals reported).`);
 }
-console.log(`  ✅ conformance: ${findings.length} construction(s) hold (CONFIRMED where the engine is readable; tracked residuals reported).`);

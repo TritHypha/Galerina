@@ -76,18 +76,29 @@ export async function signCapabilityGrantHybrid(
  * `{ ok: false }`. When `policy.requireHybrid` or `policy.mlDsaPublicKey` is set the ML-DSA
  * signature is REQUIRED and verified (no PQ downgrade), mirroring verifyAttestationHybrid.
  */
+function ownSignedGrant(signed: SignedCapabilityGrant): SignedCapabilityGrant {
+  const raw = signed.grant;
+  const grant: CapabilityGrant = Object.freeze({
+    engineId: String(raw.engineId ?? ""),
+    capabilityMask: Number(raw.capabilityMask) >>> 0,
+    ...(typeof raw.grantId === "string" && raw.grantId.length > 0 ? { grantId: String(raw.grantId) } : {}),
+  });
+  return Object.freeze({
+    grant,
+    ...(typeof signed.signature === "string" ? { signature: String(signed.signature) } : {}),
+    ...(typeof signed.mlDsaSignature === "string" ? { mlDsaSignature: String(signed.mlDsaSignature) } : {}),
+  });
+}
+
 export async function verifyCapabilityGrant(
   signed: SignedCapabilityGrant | undefined,
   policy: AttestationPolicy,
   expectedEngineId: string,
 ): Promise<AttestationResult> {
   if (!signed || !signed.grant) return { ok: false, reason: "no capability grant provided" };
-  const raw = signed.grant;
-  const g: CapabilityGrant = {
-    engineId: raw.engineId,
-    capabilityMask: raw.capabilityMask >>> 0,
-    ...(raw.grantId !== undefined ? { grantId: raw.grantId } : {}),
-  };
+  const owned = ownSignedGrant(signed);
+  const g = owned.grant;
+  const preimage = canonicalGrantString(g);
   const hash = capabilityGrantHash(g);
 
   if (typeof g.engineId !== "string" || g.engineId !== expectedEngineId) {
@@ -98,14 +109,14 @@ export async function verifyCapabilityGrant(
   }
 
   // Ed25519 — a grant IS authority, so a signature is always required (there is no "unsigned grant").
-  if (!signed.signature) return { ok: false, reason: "grant signature required but absent", hash };
+  if (!owned.signature) return { ok: false, reason: "grant signature required but absent", hash };
   if (!policy.publicKeyPem) return { ok: false, reason: "no public key configured to verify the grant", hash };
   try {
     const ok = edVerify(
       null,
-      Buffer.from(canonicalGrantString(g), "utf8"),
+      Buffer.from(preimage, "utf8"),
       createPublicKey(policy.publicKeyPem),
-      Buffer.from(signed.signature, "base64"),
+      Buffer.from(owned.signature, "base64"),
     );
     if (!ok) return { ok: false, reason: "grant signature verification failed", hash };
   } catch (e) {
@@ -118,14 +129,14 @@ export async function verifyCapabilityGrant(
   // Hybrid ML-DSA-65 half (no PQ downgrade) when the policy demands it.
   if (policy.requireHybrid === true || policy.mlDsaPublicKey !== undefined) {
     if (!policy.mlDsaPublicKey) return { ok: false, reason: "requireHybrid set but policy has no mlDsaPublicKey", hash };
-    if (!signed.mlDsaSignature) return { ok: false, reason: "ML-DSA grant signature required but absent (hybrid)", hash };
+    if (!owned.mlDsaSignature) return { ok: false, reason: "ML-DSA grant signature required but absent (hybrid)", hash };
     try {
       const { ml_dsa65 } = await import("@noble/post-quantum/ml-dsa.js") as {
         ml_dsa65: { verify(s: Uint8Array, m: Uint8Array, pk: Uint8Array, opts?: { context?: Uint8Array }): boolean };
       };
       const ok = ml_dsa65.verify(
-        Buffer.from(signed.mlDsaSignature, "base64"),
-        Buffer.from(canonicalGrantString(g), "utf8"),
+        Buffer.from(owned.mlDsaSignature, "base64"),
+        Buffer.from(preimage, "utf8"),
         policy.mlDsaPublicKey,
         { context: CAP_MLDSA_CONTEXT },
       );

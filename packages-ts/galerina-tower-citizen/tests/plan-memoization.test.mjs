@@ -37,6 +37,27 @@ test("a sealed deployment DENIES an op-set that was never preflighted", async ()
   assert.equal(r.trapCode, "ERR_PLAN_NOT_PREFLIGHTED");
 });
 
+test("hostile: oversized or unknown opClasses are refused without in-flight planning", async () => {
+  const eng = createHybridEngine({
+    airGapped: true, governanceTier: 1,
+    governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true },
+  });
+  const oversized = await eng.infer({
+    prompt: "x",
+    correlationId: cid("huge"),
+    opClasses: Array(32).fill("feedforward"),
+  });
+  assert.equal(oversized.trapFired, true);
+  assert.equal(oversized.trapCode, "ERR_PLAN_NOT_PREFLIGHTED");
+  const unknown = await eng.infer({
+    prompt: "x",
+    correlationId: cid("unknown"),
+    opClasses: ["not-an-admitted-op"],
+  });
+  assert.equal(unknown.trapFired, true);
+  assert.equal(unknown.trapCode, "ERR_PLAN_NOT_PREFLIGHTED");
+});
+
 test("a sealed deployment PERMITS a preflighted op-set", async () => {
   const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   eng.seal([["embedding", "feedforward"]]); // preflight this exact set

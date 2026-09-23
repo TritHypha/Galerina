@@ -14,9 +14,11 @@ try {
     policy: { requireSigned: true, publicKeyPem },
     host: L.createHostRuntime(),
   });
-  let trapped = false, value;
-  try { value = instance.exports[flow](...args); } catch { trapped = true; }
-  parentPort.postMessage({ ok: true, trapped, value: typeof value === "number" ? value : null });
+  let trapped = false, value = null;
+  const invoked = L.invokeAdmittedExport(instance, flow, args);
+  if (!invoked.ok) trapped = true;
+  else value = typeof invoked.result === "number" ? invoked.result : invoked.result;
+  parentPort.postMessage({ ok: true, trapped, value });
 } catch (e) {
   parentPort.postMessage({ ok: false, error: String(e && e.message ? e.message : e) });
 }

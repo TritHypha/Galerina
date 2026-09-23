@@ -79,6 +79,44 @@ test("a native handle (number weights) is refused — emulation needs packed tri
   assert.throws(() => b.execute(handle), /PHOTONIC_EMULATOR/);
 });
 
+test("hostile: packed trit count above the admitted ceiling is refused", () => {
+  const b = new PhotonicEmulatorBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: { length: 1_048_577 }, count: 1_048_577, scale: 1, offset: 0,
+  };
+  assert.throws(() => b.execute(bad), /admitted bound/);
+});
+
+test("hostile: packed weights shorter than needed words are refused", () => {
+  const b = new PhotonicEmulatorBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: new Int32Array(17), count: 17, scale: 1, offset: 0,
+  };
+  assert.throws(() => b.execute(bad), /lack capacity/);
+});
+
+test("hostile: offset+count overflow is refused", () => {
+  const b = new PhotonicEmulatorBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: new Int32Array(10), count: 10, scale: 1,
+    offset: Number.MAX_SAFE_INTEGER - 5,
+  };
+  assert.throws(() => b.execute(bad), /overflow/);
+});
+
+test("hostile: a 2^35 offset does not wrap into packed[0]", () => {
+  const b = new PhotonicEmulatorBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: new Int32Array(1), count: 1, scale: 1,
+    offset: 2 ** 35,
+  };
+  assert.throws(() => b.execute(bad), /lack capacity|overflow|offset/);
+});
+
 // ── caller-independent N_MAX vote-count clamp (roadmap item 4: resource-exhaustion fail-open) ──
 
 test("clampVotes bounds to [1, N_MAX_VOTES]; non-finite/garbage falls back", () => {

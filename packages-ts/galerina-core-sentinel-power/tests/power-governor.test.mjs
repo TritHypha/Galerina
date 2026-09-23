@@ -116,6 +116,27 @@ test("sensor is re-read on each evaluate (live sensor)", () => {
   assert.equal(g.evaluate().state, "TERMINAL");
 });
 
+test("non-finite setReading and sensor results refuse instead of selecting NOMINAL", () => {
+  const g = gov();
+  assert.throws(
+    () => g.setReading(Number.NaN),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+  assert.throws(
+    () => g.setReading(Number.POSITIVE_INFINITY),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+  const nanSensor = new PowerGovernor(AEROSPACE_ENVELOPE, { sensor: () => Number.NaN });
+  assert.throws(
+    () => nanSensor.evaluate(),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+  assert.throws(
+    () => nanSensor.assertWithinEnvelope(),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+});
+
 test("constructor validates the envelope", () => {
   assert.throws(
     () => new PowerGovernor({ throttleC: 95, safeC: 85, criticalC: 70 }),

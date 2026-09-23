@@ -30,8 +30,18 @@ export class SynchronizationGate {
   #bootTick = 0;
 
   constructor(clock: LogicalClock, envelope: StabilityEnvelope) {
+    if (
+      envelope == null ||
+      !Number.isSafeInteger(envelope.maxDriftTicks) ||
+      envelope.maxDriftTicks < 0
+    ) {
+      throw new PrecisionFault(
+        "LST-SYNC-002",
+        "maxDriftTicks must be a non-negative safe integer",
+      );
+    }
     this.#clock = clock;
-    this.#envelope = envelope;
+    this.#envelope = { maxDriftTicks: envelope.maxDriftTicks };
   }
 
   /** Record the boot mapping: this physical instant corresponds to clock.now(). */
@@ -59,8 +69,16 @@ export class SynchronizationGate {
 
   /** Actual ticks elapsed minus expected ticks. Positive = clock ran fast. */
   driftTicks(physicalMs: number, ticksPerMs: number): number {
-    const actual = this.#clock.now() - this.#bootTick;
-    return actual - this.expectedTicks(physicalMs, ticksPerMs);
+    const now = this.#clock.now();
+    if (!Number.isFinite(now)) {
+      throw new PrecisionFault("LST-SYNC-002", "logical clock now() must be finite");
+    }
+    const actual = now - this.#bootTick;
+    const drift = actual - this.expectedTicks(physicalMs, ticksPerMs);
+    if (!Number.isFinite(drift)) {
+      throw new PrecisionFault("LST-SYNC-002", "computed drift must be finite");
+    }
+    return drift;
   }
 
   /** Fault deterministically if |drift| exceeds the envelope. Requires a prior sync. */
@@ -72,7 +90,7 @@ export class SynchronizationGate {
       );
     }
     const drift = this.driftTicks(physicalMs, ticksPerMs);
-    if (Math.abs(drift) > this.#envelope.maxDriftTicks) {
+    if (!Number.isFinite(drift) || Math.abs(drift) > this.#envelope.maxDriftTicks) {
       throw new PrecisionFault(
         "LST-DRIFT-001",
         `logical clock drift ${drift} ticks exceeds envelope ` +

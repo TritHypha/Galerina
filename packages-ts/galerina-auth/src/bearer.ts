@@ -81,10 +81,37 @@ const PEM_MARKER = /-----BEGIN [A-Z0-9 ]*(PUBLIC KEY|PRIVATE KEY|CERTIFICATE|RSA
 function isSerializedAsymmetricKey(key: string | Uint8Array): boolean {
   const text = typeof key === "string" ? key : Buffer.from(key).toString("utf8");
   if (PEM_MARKER.test(text)) return true;
+  const trimmed = text.trim();
+  if (trimmed.startsWith("{")) {
+    try {
+      const parsed: unknown = JSON.parse(trimmed);
+      if (
+        parsed !== null
+        && typeof parsed === "object"
+        && !Array.isArray(parsed)
+        && typeof (parsed as { kty?: unknown }).kty === "string"
+        && (parsed as { kty: string }).kty !== "oct"
+      ) {
+        const pub = createPublicKey({ key: parsed as never, format: "jwk" });
+        return typeof pub.asymmetricKeyType === "string";
+      }
+    } catch {
+      // not a usable public JWK
+    }
+  }
+  const bytes = typeof key === "string" ? Buffer.from(key, "utf8") : Buffer.from(key);
+  for (const type of ["spki", "pkcs1"] as const) {
+    try {
+      const pub = createPublicKey({ key: bytes, format: "der", type });
+      if (typeof pub.asymmetricKeyType === "string") return true;
+    } catch {
+      // try the next encoding
+    }
+  }
   try {
     const pub = typeof key === "string"
       ? createPublicKey(key)
-      : createPublicKey({ key: Buffer.from(key), format: "der", type: "spki" });
+      : createPublicKey({ key: bytes, format: "der", type: "spki" });
     return typeof pub.asymmetricKeyType === "string";
   } catch {
     return false;

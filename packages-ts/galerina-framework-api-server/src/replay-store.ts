@@ -22,6 +22,21 @@ export interface MemoryReplayStoreOptions {
  */
 const DEFAULT_MAX_ENTRIES = 4_096;
 const DEFAULT_MAX_KEY_BYTES = 256;
+const PROCESS_LOCAL_REPLAY_STORES = new WeakSet<object>();
+const ADMITTED_DURABLE_REPLAY_STORES = new WeakSet<object>();
+
+/** True when the store is the process-local MemoryReplayStore (not durable). */
+export function isProcessLocalReplayStore(store: object): boolean {
+  return PROCESS_LOCAL_REPLAY_STORES.has(store);
+}
+
+/**
+ * Positive durability admit-list. Empty until an owner-admitted durable backend
+ * exists. Unknown adapters, wrappers, and MemoryReplayStore are not admitted.
+ */
+export function isAdmittedDurableReplayStore(store: object): boolean {
+  return ADMITTED_DURABLE_REPLAY_STORES.has(store);
+}
 
 export class MemoryReplayStore implements ReplayStore, AtomicAdmissionStore {
   readonly #now: () => number;
@@ -42,6 +57,7 @@ export class MemoryReplayStore implements ReplayStore, AtomicAdmissionStore {
     if (!Number.isSafeInteger(this.#maxKeyBytes) || this.#maxKeyBytes < 1) {
       throw new RangeError("ReplayStore maxKeyBytes must be a positive safe integer");
     }
+    PROCESS_LOCAL_REPLAY_STORES.add(this);
   }
 
   public has(key: string): boolean {
@@ -73,7 +89,8 @@ export class MemoryReplayStore implements ReplayStore, AtomicAdmissionStore {
       throw new RangeError("ReplayStore expiry is outside the finite clock range");
     }
     this.#admitCapacity(expiresAtMs !== undefined);
-    (scopeEntries ?? this.#newScope(scope)).set(key, nextExpiry);
+    // pruneExpired may delete an empty scope map; re-resolve after admission.
+    (this.#claims.get(scope) ?? this.#newScope(scope)).set(key, nextExpiry);
     return "claimed";
   }
 

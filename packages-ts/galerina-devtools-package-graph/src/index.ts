@@ -1,4 +1,4 @@
-export { scanPackage } from "./scanner.js";
+export { scanPackage, scanOmitsCoveredDefaultRoots, DEFAULT_ROOTS } from "./scanner.js";
 export type {
   ScanResult,
   ScannedFile,

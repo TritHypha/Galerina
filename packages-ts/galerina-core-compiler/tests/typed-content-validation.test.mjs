@@ -5,6 +5,8 @@ import {
   checkTypes,
   parseProgram,
   validateTypedContentBlock,
+  MAX_TYPED_CONTENT_CHARS,
+  MAX_TYPED_CONTENT_INTERPOLATIONS,
 } from "../dist/index.js";
 
 function typeErrors(source) {
@@ -109,6 +111,33 @@ describe("validateTypedContentBlock — type environment", () => {
       environment: { bindings: [] },
     });
     assert.ok(css.some((d) => d.code === "FUNGI-BLOCK-006"));
+  });
+
+  it("refuses a typed content block above the character bound before interpolation scan", () => {
+    const diags = validateTypedContentBlock({
+      blockType: "html",
+      marker: "HTML",
+      content: "x".repeat(MAX_TYPED_CONTENT_CHARS + 1),
+      file: "content.fungi",
+      startLine: 2,
+      environment: { bindings: [] },
+    });
+    assert.ok(diags.some((d) => d.code === "FUNGI-BLOCK-005" && /host bound/i.test(d.message)));
+  });
+
+  it("refuses interpolation counts above the host bound", () => {
+    const content = Array.from({ length: MAX_TYPED_CONTENT_INTERPOLATIONS + 1 }, () => "{{ x }}").join(" ");
+    const started = Date.now();
+    const diags = validateTypedContentBlock({
+      blockType: "html",
+      marker: "HTML",
+      content,
+      file: "content.fungi",
+      startLine: 2,
+      environment: { bindings: [{ name: "x", type: "String" }] },
+    });
+    assert.ok(Date.now() - started < 1000);
+    assert.ok(diags.some((d) => d.code === "FUNGI-BLOCK-005" && /interpolation count/i.test(d.message)));
   });
 });
 

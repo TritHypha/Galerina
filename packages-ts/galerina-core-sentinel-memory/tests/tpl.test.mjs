@@ -60,6 +60,65 @@ test("a freed TPL buffer cannot access a reused allocation", () => {
   pool.free(tpl.block.ptr);
   const err = caught(() => tpl.setTrit(0, -1));
   assert.ok(err instanceof SecurityTrap);
+  assert.equal(err.code, "LSM-UAF-001");
+});
+
+test("hostile: stale TPL cannot write a reused allocation after free+realloc", () => {
+  const pool = mkPool();
+  const stale = new TPLStateBuffer(pool, 4);
+  stale.setTrit(0, 1);
+  const ptr = stale.block.ptr;
+  pool.free(ptr);
+  const live = new TPLStateBuffer(pool, 4);
+  live.setTrit(0, 1);
+  assert.equal(live.block.ptr, ptr);
+  const err = caught(() => stale.setTrit(0, -1));
+  assert.ok(err instanceof SecurityTrap);
+  assert.equal(err.code, "LSM-UAF-001");
+  assert.equal(live.getTrit(0), 1);
+});
+
+test("hostile: forging Block.generation cannot alias a reused TPL allocation", () => {
+  const pool = mkPool();
+  const stale = new TPLStateBuffer(pool, 4);
+  stale.setTrit(0, 1);
+  pool.free(stale.block.ptr);
+  const live = new TPLStateBuffer(pool, 4);
+  live.setTrit(0, 1);
+  const forged = caught(() => {
+    stale.block.generation = live.block.generation;
+  });
+  if (forged !== null) {
+    assert.ok(forged instanceof TypeError);
+  }
+  const err = caught(() => stale.setTrit(0, -1));
+  assert.ok(err instanceof SecurityTrap, "forged generation must not grant write access");
+  assert.equal(err.code, "LSM-UAF-001");
+  assert.equal(live.getTrit(0), 1);
+});
+
+test("hostile: assigning _block cannot retarget a stale TPL onto a live allocation", () => {
+  const pool = mkPool();
+  const stale = new TPLStateBuffer(pool, 4);
+  stale.setTrit(0, 1);
+  pool.free(stale.block.ptr);
+  const live = new TPLStateBuffer(pool, 4);
+  live.setTrit(0, 1);
+  stale._block = live.block;
+  const err = caught(() => stale.setTrit(0, -1));
+  assert.ok(err instanceof SecurityTrap);
+  assert.equal(err.code, "LSM-UAF-001");
+  assert.equal(live.getTrit(0), 1);
+});
+
+test("a recycled TPL allocation starts as packed-trit REJECT, not the 0xff corruption sentinel", () => {
+  const pool = mkPool();
+  const stale = new TPLStateBuffer(pool, 4);
+  stale.setTrit(0, 1);
+  pool.free(stale.block.ptr);
+  const live = new TPLStateBuffer(pool, 4);
+  assert.equal(live.getTrit(0), -1);
+  assert.equal(live.getTrit(1), -1);
 });
 
 test("corruption sentinel (enc=3) read trips LSM-TRIT-CORRUPT", () => {

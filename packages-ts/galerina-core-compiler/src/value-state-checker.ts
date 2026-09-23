@@ -465,7 +465,7 @@ function isProtectedValueExpression(node: AstNode): boolean {
  * (SecureString-equivalent), so the existing FUNGI-SECRET-001 (logging) and FUNGI-SECRET-003
  * (serialization) sink guards fire if that binding ever reaches a log / serialize / audit
  * sink. Recognised accessors (receiver namespace . method):
- *   secret.get / secret.read / vault.read / vault.get / kms.decrypt / secrets.get  (any case)
+ *   secret.get / secret.read / vault.read / vault.get / kms.decrypt / secrets.get / Env.get / env.secret  (any case)
  */
 function isSecretSourceExpression(node: AstNode): boolean {
   if (node.kind === "errorPropagation") {
@@ -475,7 +475,7 @@ function isSecretSourceExpression(node: AstNode): boolean {
   if (node.kind !== "callExpr") return false;
   // VSC-003: handle memberExpr receivers (e.g. app.vault.read, ctx.secrets.get) via last segment.
   const ns = receiverSegment(node);
-  return ns === "secret" || ns === "secrets" || ns === "vault" || ns === "kms";
+  return ns === "secret" || ns === "secrets" || ns === "vault" || ns === "kms" || ns === "env";
 }
 
 /**

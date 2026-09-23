@@ -15,7 +15,7 @@ import type { FlowContextReceipt, FileContextReceipts } from "./types.js";
  *   **File:** auth.fungi | **Qualifier:** secure | **Return:** HashResult
  *   ...
  */
-function md(value: unknown): string {
+export function md(value: unknown): string {
   return String(value ?? "")
     .replaceAll("\\", "\\\\")
     .replaceAll("|", "\\|")

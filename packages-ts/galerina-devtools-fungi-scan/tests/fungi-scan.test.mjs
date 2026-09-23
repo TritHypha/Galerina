@@ -2,6 +2,7 @@
 // anti-pattern AND stay silent on the good form (anti-vacuous, A27).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,6 +16,8 @@ import {
   extractFungiFixtures,
   looksLikeFungi,
   scanInlineFixtures,
+  corpusSourceExceedsMaxBytes,
+  MAX_CORPUS_FILE_BYTES,
 } from "../dist/index.js";
 
 // ── version header ───────────────────────────────────────────────────────────
@@ -163,20 +166,23 @@ test("discoverCorpus skips node_modules/dist/build; classifies tests/ as test-co
   }
 });
 
-test("signed-frozen: files inside a REAL-SIGNED fusable package are classified + strict-exempt (CG-7), and a placeholder signature does NOT freeze", () => {
+function git(root, args) {
+  const r = spawnSync("git", args, { cwd: root, encoding: "utf8", timeout: 15_000, shell: false, windowsHide: true });
+  assert.equal(r.status, 0, r.stderr);
+  return r;
+}
+
+test("signed-frozen: disk-only signature shape does not freeze; committed HEAD ceremony signature does", () => {
   const root = mkdtempSync(join(tmpdir(), "fungi-scan-signed-"));
   try {
-    // a signed package: package.fungi.json + dist/<name>.lmanifest.json with a REAL signature
-    mkdirSync(join(root, "pkg-signed", "dist"), { recursive: true });
-    mkdirSync(join(root, "pkg-signed", "src"), { recursive: true });
-    writeFileSync(join(root, "pkg-signed", "package.fungi.json"), JSON.stringify({ name: "greeting" }));
+    mkdirSync(join(root, "pkg-fake", "dist"), { recursive: true });
+    mkdirSync(join(root, "pkg-fake", "src"), { recursive: true });
+    writeFileSync(join(root, "pkg-fake", "package.fungi.json"), JSON.stringify({ name: "greeting" }));
     writeFileSync(
-      join(root, "pkg-signed", "dist", "greeting.lmanifest.json"),
+      join(root, "pkg-fake", "dist", "greeting.lmanifest.json"),
       JSON.stringify({ governanceSignature: { keyId: "9c2d7d4502a2eedd", signature: "AbCdEf123" } }),
     );
-    // frozen source: NO @version header + legacy && — would be 2 strict findings if runtime
-    writeFileSync(join(root, "pkg-signed", "src", "index.fungi"), "flow f() {\n  let a = x&&y\n}\n");
-    // a placeholder-signed package must NOT be frozen (still migratable)
+    writeFileSync(join(root, "pkg-fake", "src", "index.fungi"), "flow f() {\n  let a = x&&y\n}\n");
     mkdirSync(join(root, "pkg-dev", "dist"), { recursive: true });
     writeFileSync(join(root, "pkg-dev", "package.fungi.json"), JSON.stringify({ name: "devpkg" }));
     writeFileSync(
@@ -185,15 +191,35 @@ test("signed-frozen: files inside a REAL-SIGNED fusable package are classified +
     );
     writeFileSync(join(root, "pkg-dev", "main.fungi"), "flow f() {\n  let a = x&&y\n}\n");
 
+    const diskOnly = scanCorpus(root);
+    const fake = diskOnly.files.find((f) => f.file.endsWith("pkg-fake/src/index.fungi"));
+    const dev = diskOnly.files.find((f) => f.file.endsWith("pkg-dev/main.fungi"));
+    assert.equal(fake.corpus, "runtime", "disk-only signature shape must NOT freeze");
+    assert.equal(dev.corpus, "runtime", "placeholder signature must NOT freeze");
+    const diskFindings = strictFindings(diskOnly);
+    assert.ok(diskFindings.some((f) => f.file.endsWith("pkg-fake/src/index.fungi")), "uncommitted fake signature still gates strict");
+    assert.ok(diskFindings.some((f) => f.file.endsWith("pkg-dev/main.fungi")), "dev-signed package still gates strict");
+
+    mkdirSync(join(root, "pkg-signed", "dist"), { recursive: true });
+    mkdirSync(join(root, "pkg-signed", "src"), { recursive: true });
+    writeFileSync(join(root, "pkg-signed", "package.fungi.json"), JSON.stringify({ name: "greeting" }));
+    writeFileSync(
+      join(root, "pkg-signed", "dist", "greeting.lmanifest.json"),
+      JSON.stringify({ governanceSignature: { keyId: "9c2d7d4502a2eedd", signature: "AbCdEf123" } }),
+    );
+    writeFileSync(join(root, "pkg-signed", "src", "index.fungi"), "flow f() {\n  let a = x&&y\n}\n");
+    git(root, ["init", "--quiet"]);
+    git(root, ["config", "user.email", "scan-test@example.invalid"]);
+    git(root, ["config", "user.name", "scan-test"]);
+    git(root, ["add", "--", "pkg-signed/dist/greeting.lmanifest.json"]);
+    git(root, ["-c", "commit.gpgsign=false", "commit", "-m", "ceremony", "--quiet", "--no-gpg-sign"]);
+
     const scan = scanCorpus(root);
     const frozen = scan.files.find((f) => f.file.endsWith("pkg-signed/src/index.fungi"));
-    const dev = scan.files.find((f) => f.file.endsWith("pkg-dev/main.fungi"));
-    assert.equal(frozen.corpus, "signed-frozen", "real-signed package source must be classified frozen");
-    assert.equal(dev.corpus, "runtime", "placeholder signature must NOT freeze");
-
+    assert.equal(frozen.corpus, "signed-frozen", "committed ceremony signature freezes");
     const findings = strictFindings(scan);
     assert.ok(findings.every((f) => !f.file.includes("pkg-signed/")), "signed-frozen files are strict-exempt");
-    assert.ok(findings.some((f) => f.file.endsWith("pkg-dev/main.fungi")), "dev-signed package still gates strict");
+    assert.ok(findings.some((f) => f.file.endsWith("pkg-fake/src/index.fungi")), "disk-only fake remains gated");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -309,6 +335,56 @@ test("unreadable/lex-error files are FINDINGS, not skips (fail-closed reporting)
     assert.equal(scan.files.length, 1);
     // either lexErrors > 0 or it lexed cleanly — but it must NEVER be absent from the report
     assert.ok(f.file.endsWith("weird.fungi"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("hostile: oversize .fungi is a readError finding and is never lexed", () => {
+  const root = mkdtempSync(join(tmpdir(), "fungi-scan-oversize-"));
+  try {
+    const huge = Buffer.concat([
+      Buffer.from("@version 1\nflow f() {\n  let a = x&&y\n}\n"),
+      Buffer.alloc(MAX_CORPUS_FILE_BYTES, 0x61),
+    ]);
+    assert.ok(huge.byteLength > MAX_CORPUS_FILE_BYTES);
+    writeFileSync(join(root, "huge.fungi"), huge);
+    writeFileSync(join(root, "ok.fungi"), "@version 1\nflow f() {\n  let a = x and y\n}\n");
+    const scan = scanCorpus(root);
+    const hugeScan = scan.files.find((f) => f.file.endsWith("huge.fungi"));
+    const okScan = scan.files.find((f) => f.file.endsWith("ok.fungi"));
+    assert.equal(hugeScan.readError, "corpus file is not an admitted regular file under 1 MiB");
+    assert.equal(hugeScan.lexErrors, 0);
+    assert.equal(hugeScan.legacyOps.and2, 0, "parser must not see the oversize file");
+    assert.equal(okScan.readError, null);
+    assert.equal(okScan.version.valid, true);
+    const findings = strictFindings(scan);
+    assert.ok(findings.some((f) => f.file.endsWith("huge.fungi") && /unreadable/.test(f.why)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("hostile: scanFungiSource refuses in-memory source above the byte ceiling before lex", () => {
+  const oversize = "x".repeat(MAX_CORPUS_FILE_BYTES + 1);
+  assert.equal(corpusSourceExceedsMaxBytes(oversize), true);
+  const s = scanFungiSource(oversize, "mem.fungi");
+  assert.equal(s.readError, "corpus source exceeds 1 MiB");
+  assert.equal(s.lexErrors, 0);
+  const small = scanFungiSource("@version 1\nflow f() { let a = x&&y }\n", "small.fungi");
+  assert.equal(small.readError, null);
+  assert.equal(small.legacyOps.and2, 1);
+});
+
+test("hostile: oversize inline host is a finding, not a silent extract", () => {
+  const root = mkdtempSync(join(tmpdir(), "fungi-scan-inline-oversize-"));
+  try {
+    const body = "const src = `@version 1\\nflow f() { let a = x&&y }`;\n" + "x".repeat(MAX_CORPUS_FILE_BYTES + 1);
+    writeFileSync(join(root, "host.mjs"), body);
+    const inline = scanInlineFixtures(root);
+    assert.equal(inline.length, 1);
+    assert.equal(inline[0].readError, "inline host is not an admitted regular file under 1 MiB");
+    assert.equal(inline[0].legacyOps.and2, 0);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

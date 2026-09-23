@@ -69,3 +69,22 @@ test("driftTicks measures from boot tick, not from zero", () => {
   assert.equal(gate.driftTicks(2050, 1), 0);
   assert.doesNotThrow(() => gate.enforceDrift(2050, 1));
 });
+
+test("hostile: NaN/Infinity envelope and clock inputs refuse instead of suppressing drift", () => {
+  assert.equal(caught(() => new SynchronizationGate(new LogicalClock(), { maxDriftTicks: Number.NaN })).code, "LST-SYNC-002");
+  assert.equal(caught(() => new SynchronizationGate(new LogicalClock(), { maxDriftTicks: Number.POSITIVE_INFINITY })).code, "LST-SYNC-002");
+  assert.equal(caught(() => new SynchronizationGate(new LogicalClock(), { maxDriftTicks: -1 })).code, "LST-SYNC-002");
+
+  const gate = new SynchronizationGate(new LogicalClock(), { maxDriftTicks: 5 });
+  assert.equal(caught(() => gate.syncToPhysical(Number.NaN)).code, "LST-SYNC-002");
+  gate.syncToPhysical(0);
+  assert.equal(caught(() => gate.enforceDrift(Number.NaN, 1)).code, "LST-SYNC-002");
+  assert.equal(caught(() => gate.enforceDrift(100, Number.NaN)).code, "LST-SYNC-002");
+  assert.equal(caught(() => gate.enforceDrift(100, 0)).code, "LST-SYNC-002");
+  assert.equal(caught(() => gate.enforceDrift(Number.POSITIVE_INFINITY, 1)).code, "LST-SYNC-002");
+
+  const nanClock = { now: () => Number.NaN };
+  const poisoned = new SynchronizationGate(nanClock, { maxDriftTicks: 5 });
+  poisoned.syncToPhysical(0);
+  assert.equal(caught(() => poisoned.enforceDrift(100, 1)).code, "LST-SYNC-002");
+});

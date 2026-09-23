@@ -27,7 +27,8 @@ import {
 } from "./store.js";
 import { keygen, KEM_PROFILE } from "./spore.js";
 import { fromHex, toHex } from "./schema.js";
-import { readStdinBytes, promptNoEcho, atomicWriteCiphertext } from "./io.js";
+import { readStdinBytes, promptNoEcho, promptNoEchoExclusive, atomicWriteCiphertext } from "./io.js";
+import type { EchoingLineReader } from "./io.js";
 import { unwrapRecipientSecret } from "./anchor.js";
 import type { WrappedKey } from "./anchor.js";
 
@@ -86,9 +87,9 @@ function getWrappedKey(): WrappedKey {
   return { salt: raw.subarray(0, 16), iv: raw.subarray(16, 28), ct: raw.subarray(28) };
 }
 
-async function withRecipientSecret<T>(fn: (sec: Buffer) => T): Promise<T> {
+async function withRecipientSecret<T>(fn: (sec: Buffer) => T, lineReader?: EchoingLineReader): Promise<T> {
   const wrapped = getWrappedKey();
-  const pass = await promptNoEcho("passphrase: ");
+  const pass = await promptNoEchoExclusive("passphrase: ", lineReader);
   try {
     return unwrapRecipientSecret(wrapped, pass, fn);
   } finally {
@@ -248,15 +249,15 @@ async function runShell(file: string, pub: Uint8Array): Promise<void> {
       else if (t === "list") {
         await withRecipientSecret((sec) => {
           for (const r of listSecrets(readFile(file), sec, K3.ALLOW)) process.stderr.write(`  ${r.name}\n`);
-        });
+        }, rl);
       } else if (t.startsWith("set ")) {
         const name = t.slice(4).trim();
-        const value = await promptNoEcho(`  value for ${name}: `);
+        const value = await promptNoEchoExclusive(`  value for ${name}: `, rl);
         try {
           await withRecipientSecret((sec) => {
             const res = setSecret(readFile(file), sec, pub, K3.ALLOW, name, value);
             atomicWriteCiphertext(file, res.bytes);
-          });
+          }, rl);
         } finally { value.fill(0); }
         process.stderr.write(`  set ${name}\n`);
       } else if (t.startsWith("get ")) {
@@ -268,7 +269,7 @@ async function runShell(file: string, pub: Uint8Array): Promise<void> {
         await withRecipientSecret((sec) => {
           const res = rmSecret(readFile(file), sec, pub, K3.ALLOW, name);
           atomicWriteCiphertext(file, res.bytes);
-        });
+        }, rl);
         process.stderr.write(`  removed ${name}\n`);
       } else if (t === ".save") {
         process.stderr.write("  (each mutation already atomic-saves ciphertext; nothing buffered to disk)\n");

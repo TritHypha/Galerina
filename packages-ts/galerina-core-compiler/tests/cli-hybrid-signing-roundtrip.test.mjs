@@ -146,17 +146,22 @@ test("hybrid CLI round-trip: certified build emits a v2 both-half manifest, veri
     assert.match(out(verifyRevoked), /FUNGI-MANIFEST-REVOKED-KEY/);
     rmSync(revocationsPath);
 
-    // ── (5) flip a byte of the manifest BODY (a signed field) and re-verify → FAIL CLOSED. ──
-    // The signature is left intact; mutating any signed body field breaks the re-derived bodyHash, so
-    // the verifier must reject (exit 1, FUNGI-MANIFEST-TAMPER) rather than admit a tampered manifest.
-    const tampered = JSON.parse(readFileSync(jsonPath, "utf8"));
-    tampered.flowCount = (tampered.flowCount ?? 0) + 1; // a one-field flip = "one byte" of the body
-    writeFileSync(jsonPath, JSON.stringify(tampered, null, 2));
+    // ── (5) sidecar-only flip must NOT fail: JSON is not the checked subject. ──
+    const originalJson = readFileSync(jsonPath, "utf8");
+    const sidecarFlip = JSON.parse(originalJson);
+    sidecarFlip.flowCount = (sidecarFlip.flowCount ?? 0) + 1;
+    writeFileSync(jsonPath, JSON.stringify(sidecarFlip, null, 2));
+    const verifySidecarOnly = run(["verify", "answer.fungi"], {}, dir);
+    assert.equal(verifySidecarOnly.status, 0, `JSON sidecar field flip must not fail CBOR-subject verify: ${out(verifySidecarOnly)}`);
+    writeFileSync(jsonPath, originalJson);
 
+    // ── (6) flip a signed field on the CBOR subject → FAIL CLOSED. ──
+    const tamperedCbor = { ...decoded, flowCount: (decoded.flowCount ?? 0) + 1 };
+    writeFileSync(cborPath, Buffer.from(encodeCBOR(tamperedCbor)));
     const verifyTampered = run(["verify", "answer.fungi"], {}, dir);
-    assert.equal(verifyTampered.status, 1, `tampered manifest must fail closed (exit 1): ${out(verifyTampered)}`);
+    assert.equal(verifyTampered.status, 1, `tampered CBOR subject must fail closed (exit 1): ${out(verifyTampered)}`);
     assert.match(out(verifyTampered), /FUNGI-MANIFEST-TAMPER/,
-      "tamper is reported as FUNGI-MANIFEST-TAMPER (fail-closed)");
+      "CBOR body tamper is reported as FUNGI-MANIFEST-TAMPER (fail-closed)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

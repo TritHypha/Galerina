@@ -34,6 +34,9 @@ export type BoundaryGraph = Graph<BoundaryNodeData, BoundaryEdgeData>;
 
 // ─── Helper: derive BoundaryKind from qualifier ───────────────────────────────
 
+/** Qualifier used when a call-graph name has no flow metadata. */
+export const UNKNOWN_FLOW_QUALIFIER = "unknown";
+
 function qualifierToKind(qualifier: string): BoundaryKind {
   const q = qualifier.toLowerCase();
   if (q === "api") return "api";
@@ -42,7 +45,7 @@ function qualifierToKind(qualifier: string): BoundaryKind {
   if (q === "package") return "package";
   if (q === "secure") return "secure";
   if (q === "public") return "public";
-  return "internal";
+  return "public";
 }
 
 function qualifierToTrustLevel(qualifier: string): BoundaryTrustLevel {
@@ -140,7 +143,7 @@ export function buildBoundaryGraph(
     // Ensure caller node exists (may not be in flows list)
     if (!builder["nodes"].has(callerName)) {
       const callerMeta = flowIndex.get(callerName);
-      const callerQualifier = callerMeta?.qualifier ?? "internal";
+      const callerQualifier = callerMeta?.qualifier ?? UNKNOWN_FLOW_QUALIFIER;
       builder.addNode(callerName, {
         kind: qualifierToKind(callerQualifier),
         trustLevel: qualifierToTrustLevel(callerQualifier),
@@ -157,7 +160,7 @@ export function buildBoundaryGraph(
       // Ensure callee node exists
       if (!builder["nodes"].has(calleeName)) {
         const calleeMeta = flowIndex.get(calleeName);
-        const calleeQualifier = calleeMeta?.qualifier ?? "internal";
+        const calleeQualifier = calleeMeta?.qualifier ?? UNKNOWN_FLOW_QUALIFIER;
         builder.addNode(calleeName, {
           kind: qualifierToKind(calleeQualifier),
           trustLevel: qualifierToTrustLevel(calleeQualifier),

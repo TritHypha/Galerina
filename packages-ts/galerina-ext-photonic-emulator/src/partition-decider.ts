@@ -84,7 +84,7 @@ export function meechRealizedRatio(): { idealRatio: number; realizedRatio: numbe
  * the vote = Var_closed_form / N. A degraded lane whose SYSTEMATIC ADC-quantization floor
  * alone exceeds the target returns Infinity (voting cannot beat a systematic floor) ⇒ refuse.
  */
-const MAX_KERNEL_N = 4_096;
+export const MAX_KERNEL_N = 4_096;
 
 export function requiredRedundancy(n: number, phys: PhysParams, tol: number): number {
   if (!Number.isSafeInteger(n) || n < 1 || n > MAX_KERNEL_N) return Infinity;

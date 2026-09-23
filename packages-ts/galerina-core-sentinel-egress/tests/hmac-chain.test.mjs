@@ -89,6 +89,20 @@ test("merging newline-containing records cannot preserve the MAC", () => {
   assert.equal(AuditEgress.verifyChain(merged), false);
 });
 
+test("splitting one record into two cannot preserve the MAC", () => {
+  const dir = freshDir();
+  const eg = new AuditEgress({ dir, batchSize: 1 });
+  eg.push("ab");
+  const batches = readEgressLedger(dir);
+  assert.equal(AuditEgress.verifyChain(batches), true);
+  const split = batches.map((b) => ({
+    ...b,
+    count: 2,
+    records: ["a", "b"],
+  }));
+  assert.equal(AuditEgress.verifyChain(split), false);
+});
+
 test("chain verifies under an injected (non-zero) HMAC key", () => {
   const dir = freshDir();
   const key = new Uint8Array(32).fill(42);

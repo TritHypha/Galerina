@@ -20,7 +20,7 @@
 // Schema version: fungi.compliance-ledger.v1
 // =============================================================================
 
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -40,6 +40,7 @@ export interface EgressBatch {
   readonly prevHash: string;
   readonly batchHash: string;
   readonly records: readonly string[];
+  readonly epochId?: number;
 }
 
 /** Ledger file name written by AuditEgress under its egress directory. */
@@ -47,6 +48,44 @@ const EGRESS_LEDGER_FILE = "audit-egress.jsonl";
 
 /** Genesis chain head for the compliance report: 64 hex zeros (SHA-256 width). */
 const GENESIS = "0".repeat(64);
+
+/** Same all-zero development key AuditEgress uses when hmacKey is omitted. */
+const ZERO_KEY = new Uint8Array(32);
+
+function computeEgressBatchHash(
+  hmacKey: Uint8Array,
+  prevHash: string,
+  records: readonly string[],
+  epochId?: number,
+  seq?: number,
+): string {
+  const h = createHmac("sha256", hmacKey);
+  h.update("galerina.audit-batch.v2\n");
+  if (epochId !== undefined) h.update(`epoch:${epochId}\n`);
+  if (seq !== undefined) h.update(`seq:${seq}\n`);
+  h.update(prevHash);
+  h.update("\n");
+  h.update(`count:${records.length}\n`);
+  for (const r of records) {
+    h.update(`${Buffer.byteLength(r, "utf8")}:`);
+    h.update(r);
+    h.update("\n");
+  }
+  return h.digest("hex");
+}
+
+function hexEqual(left: string, right: string): boolean {
+  if (typeof left !== "string" || typeof right !== "string" || left.length !== right.length || left.length === 0) {
+    return false;
+  }
+  try {
+    const a = Buffer.from(left, "hex");
+    const b = Buffer.from(right, "hex");
+    return a.length === b.length && a.length > 0 && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
 
 /** Compliance report file name written under the configured report directory. */
 const COMPLIANCE_LEDGER_FILE = "compliance-ledger.jsonl";
@@ -58,7 +97,10 @@ const COMPLIANCE_LEDGER_FILE = "compliance-ledger.jsonl";
  * {@link EgressBatch}. Returns `[]` if the ledger file does not exist.
  * Format-compatible with `readEgressLedger` from @galerina/core-sentinel-egress.
  */
-export function readEgressBatches(dir: string): EgressBatch[] {
+export function readEgressBatches(dir: string, hmacKey: Uint8Array = ZERO_KEY): EgressBatch[] {
+  if (!(hmacKey instanceof Uint8Array) || hmacKey.byteLength === 0) {
+    throw new Error("compliance ledger requires an HMAC key to authenticate egress batches");
+  }
   const path = join(dir, EGRESS_LEDGER_FILE);
   let text: string;
   try {
@@ -70,10 +112,34 @@ export function readEgressBatches(dir: string): EgressBatch[] {
     throw err;
   }
   const out: EgressBatch[] = [];
+  let prev = GENESIS;
   for (const line of text.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
-    out.push(JSON.parse(trimmed) as EgressBatch); // perf-allow: loop-json-parse — hash-linked egress-ledger replay; each line is distinct, no behavior-change refactor
+    const parsed = JSON.parse(trimmed) as EgressBatch; // perf-allow: loop-json-parse — hash-linked egress-ledger replay; each line is distinct, no behavior-change refactor
+    if (
+      parsed === null || typeof parsed !== "object" || Array.isArray(parsed)
+      || !Number.isInteger(parsed.seq) || parsed.seq < 0
+      || !Array.isArray(parsed.records) || parsed.records.some((record) => typeof record !== "string")
+      || typeof parsed.prevHash !== "string" || typeof parsed.batchHash !== "string"
+    ) {
+      throw new Error("egress batch is malformed");
+    }
+    if (!hexEqual(parsed.prevHash, prev)) {
+      throw new Error("egress batch prevHash does not continue the authenticated chain");
+    }
+    const expected = computeEgressBatchHash(
+      hmacKey,
+      parsed.prevHash,
+      parsed.records,
+      parsed.epochId,
+      parsed.seq,
+    );
+    if (!hexEqual(parsed.batchHash, expected)) {
+      throw new Error("egress batch HMAC does not authenticate");
+    }
+    prev = parsed.batchHash;
+    out.push(parsed);
   }
   return out;
 }
@@ -299,8 +365,8 @@ export function buildComplianceReport(
  *
  * Convenience wrapper: {@link readEgressBatches} + {@link buildComplianceReport}.
  */
-export function buildComplianceReportFromDir(dir: string, generatedAt?: string): ComplianceReport {
-  return buildComplianceReport(readEgressBatches(dir), dir, generatedAt);
+export function buildComplianceReportFromDir(dir: string, generatedAt?: string, hmacKey?: Uint8Array): ComplianceReport {
+  return buildComplianceReport(readEgressBatches(dir, hmacKey), dir, generatedAt);
 }
 
 // ---------------------------------------------------------------------------

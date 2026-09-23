@@ -245,14 +245,37 @@ function hasTlsDeclaration(rawSource: string): boolean {
 }
 
 /**
- * Extract the raw source text for a flow.
- * Since we have source positions from the AST, we can use offset-based extraction.
- * Fallback: use the full source and rely on the authority block regex.
+ * Extract the raw source span for one named flow (signature through its last
+ * top-level brace group). Empty string is fail-closed: regex fallbacks must
+ * not search unrelated flows in the same file.
  */
 function getFlowSource(rawSource: string, flowName: string): string {
-  // Simple approach: find the flow declaration and extract until the matching }
-  // We'll just return the full source — the regex-based checks scope to the flow name.
-  return rawSource;
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(flowName)) return "";
+  const re = new RegExp(String.raw`(?:(?:secure|guarded|pure)\s+)?flow\s+${flowName}\s*\(`);
+  const m = re.exec(rawSource);
+  if (m === null || m.index === undefined) return "";
+  let depth = 0;
+  let started = false;
+  let lastClose = -1;
+  for (let i = m.index; i < rawSource.length; i += 1) {
+    const c = rawSource[i];
+    if (c === "{") {
+      depth += 1;
+      started = true;
+    } else if (c === "}" && started) {
+      depth -= 1;
+      if (depth === 0) {
+        lastClose = i;
+        let j = i + 1;
+        while (j < rawSource.length && /\s/.test(rawSource[j] ?? "")) j += 1;
+        while (j < rawSource.length && /[A-Za-z_]/.test(rawSource[j] ?? "")) j += 1;
+        while (j < rawSource.length && /\s/.test(rawSource[j] ?? "")) j += 1;
+        if (rawSource[j] !== "{") break;
+      }
+    }
+  }
+  if (lastClose < m.index) return "";
+  return rawSource.slice(m.index, lastClose + 1);
 }
 
 /**
@@ -546,7 +569,7 @@ export function runPciAudit(
     }
 
     // FUNGI-PCI-008 — Req 8: secure flow processing payment data with no authority.requires
-    if (isSecure && isPayment && !hasAuthorityRequires(flowNode, source)) {
+    if (isSecure && isPayment && !hasAuthorityRequires(flowNode, flowSource)) {
       findings.push(makeFinding(
         "FUNGI-PCI-008",
         "SecurePaymentFlowMissingAuthorityRequires",

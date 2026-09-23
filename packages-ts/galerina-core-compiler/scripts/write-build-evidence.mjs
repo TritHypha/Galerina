@@ -24,8 +24,10 @@ const EVIDENCE_KEYS = Object.freeze([
   "outputDigest",
 ]);
 const ENTRY_KEYS = Object.freeze(["path", "bytes", "digest"]);
-const MAX_EVIDENCE_FILES = 4096;
-const MAX_EVIDENCE_FILE_BYTES = 8 * 1024 * 1024;
+export const MAX_EVIDENCE_FILES = 4096;
+export const MAX_EVIDENCE_FILE_BYTES = 8 * 1024 * 1024;
+export const MAX_EVIDENCE_JSON_NODES = 100_000;
+export const MAX_EVIDENCE_JSON_DEPTH = 32;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 
 class DuplicateJsonKeyError extends Error {
@@ -78,8 +80,6 @@ export function assertNoDuplicateJsonKeys(json) {
   }
   let index = 0;
   let nodes = 0;
-  const MAX_NODES = 100_000;
-  const MAX_DEPTH = 32;
 
   const failSyntax = () => {
     throw new SyntaxError("invalid JSON");
@@ -125,9 +125,9 @@ export function assertNoDuplicateJsonKeys(json) {
   };
 
   const readValue = (depth = 0) => {
-    if (depth > MAX_DEPTH) failSyntax();
+    if (depth > MAX_EVIDENCE_JSON_DEPTH) failSyntax();
     nodes += 1;
-    if (nodes > MAX_NODES) failSyntax();
+    if (nodes > MAX_EVIDENCE_JSON_NODES) failSyntax();
     skipWhitespace();
     const char = json[index];
     if (char === "{") {

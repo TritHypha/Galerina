@@ -11,10 +11,11 @@ export type {
   SnapshotKeyProvider,
   StateSerializerOptions,
 } from "./state-serializer.js";
-export { AtomicWriter } from "./atomic-writer.js";
+export { AtomicWriter, refuseSnapshotSpecialFile } from "./atomic-writer.js";
 export {
   ColdBootOrchestrator,
   RESTORE_VERDICT_EXPORT_NAME,
   RESTORE_VERDICT_PACKAGE_IDENTITY,
+  ROLLBACK_FLOOR_NAME,
 } from "./cold-boot.js";
 export type { RestoreVerdictAuthority } from "./cold-boot.js";

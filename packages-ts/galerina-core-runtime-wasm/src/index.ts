@@ -10,6 +10,7 @@ export { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
 export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
+  finalizeSecretExportResult, invokeAdmittedExport,
 } from "./wasm-runtime.js";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,

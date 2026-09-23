@@ -90,14 +90,18 @@ contract { intent { "primitive secret return" } privacy { contains PII } }
   assert.equal(mem[257], 0, "…all of it");
 });
 
-test("B2b zero-on-exit: an EARLY-return secret flow falls back to lazy (no on-exit zeroing) — correct, no bypass", async () => {
+test("B2b zero-on-exit: an EARLY-return secret flow still zeros the fall-through tail", async () => {
   const src = `record Sec { a: Int }
 pure flow g(s: Int) -> Int
 contract { intent { "early return" } privacy { contains PII } }
 { let w: Sec = Sec { a: s } if s > 10 { return 1 } return w.a }
 `;
-  const { wat } = await build(src);
-  assert.ok(!wat.includes("$__fungi_xl"), "an early-return flow must NOT zero-on-exit (a block-wrap can't catch (return …))");
+  const { wat, instance } = await build(src);
+  assert.ok(wat.includes("G5c capture-then-wipe") || wat.includes("$__fungi_xl"),
+    "early (return) captures then wipes; the fall-through tail uses on-exit zeroing");
+  assert.equal(instance.exports.g(7), 7);
+  const mem = new Int32Array(instance.exports.memory.buffer);
+  assert.equal(mem[256], 0);
 });
 
 test("B2b zero-on-exit: a HEAP-returning secret flow does NOT zero-on-exit (the return IS in the heap)", async () => {

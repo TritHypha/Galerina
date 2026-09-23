@@ -35,6 +35,36 @@ function admitSnapshotName(name: string): string {
   return name;
 }
 
+export function refuseSnapshotSpecialFile(
+  st: { isSymbolicLink(): boolean; isFile(): boolean; isFIFO?: () => boolean },
+  name: string,
+): void {
+  if (typeof st.isFIFO === "function" && st.isFIFO() === true) {
+    throw new SecurityTrap("LSS-FIFO-001", `snapshot "${name}" is a FIFO and is refused`);
+  }
+  if (st.isSymbolicLink()) {
+    throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" path is a link and is refused`);
+  }
+}
+
+function openFlags(write: boolean): number {
+  const base = write ? constants.O_WRONLY : constants.O_RDONLY;
+  const nonblock = typeof constants.O_NONBLOCK === "number" ? constants.O_NONBLOCK : 0;
+  return base | nonblock;
+}
+
+function openSnapshotFd(path: string, write: boolean, name: string): number {
+  try {
+    return openSync(path, openFlags(write));
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "ENXIO" || code === "EAGAIN" || code === "EWOULDBLOCK") {
+      throw new SecurityTrap("LSS-FIFO-001", `snapshot "${name}" is a FIFO and is refused`);
+    }
+    throw err;
+  }
+}
+
 function assertContained(root: string, candidate: string): string {
   const resolvedRoot = resolve(root);
   const resolved = resolve(candidate);
@@ -100,15 +130,17 @@ export class AtomicWriter {
     let raw: string;
     try {
       const st = lstatSync(live);
-      if (st.isSymbolicLink()) {
-        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" is a link and is refused`);
-      }
+      refuseSnapshotSpecialFile(st, name);
       if (!st.isFile() || st.size > MAX_SNAPSHOT_BYTES) {
         throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
       }
-      const fd = openSync(live, constants.O_RDONLY);
+      const fd = openSnapshotFd(live, false, name);
       try {
         const opened = fstatSync(fd);
+        refuseSnapshotSpecialFile(opened, name);
+        if (!opened.isFile() || opened.size > MAX_SNAPSHOT_BYTES) {
+          throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
+        }
         if (opened.ino !== st.ino || opened.dev !== st.dev || opened.size !== st.size || opened.size > MAX_SNAPSHOT_BYTES) {
           throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before read`);
         }
@@ -129,25 +161,34 @@ export class AtomicWriter {
     }
   }
 
-  /** Zero-overwrite then unlink a regular checkpoint. No-op if absent. Refuses links. */
+  /** Zero-overwrite then unlink live `.snap` and sibling `.tmp`. No-op if both absent. Refuses links. */
   scrub(name: string): void {
-    const live = this.#live(name);
+    this.#zeroUnlinkIfPresent(this.#temp(name), name);
+    this.#zeroUnlinkIfPresent(this.#live(name), name);
+  }
+
+  #zeroUnlinkIfPresent(path: string, name: string): void {
     let st;
     try {
-      st = lstatSync(live);
+      st = lstatSync(path);
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
       throw err;
     }
-    if (st.isSymbolicLink() || !st.isFile()) {
+    refuseSnapshotSpecialFile(st, name);
+    if (!st.isFile()) {
       throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" is not a regular file and cannot be scrubbed`);
     }
     if (st.size > MAX_SNAPSHOT_BYTES) {
       throw new SecurityTrap("LSS-READ-002", `snapshot "${name}" exceeds the admitted size ceiling`);
     }
-    const fd = openSync(live, constants.O_WRONLY);
+    const fd = openSnapshotFd(path, true, name);
     try {
       const opened = fstatSync(fd);
+      refuseSnapshotSpecialFile(opened, name);
+      if (!opened.isFile()) {
+        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" is not a regular file and cannot be scrubbed`);
+      }
       if (opened.ino !== st.ino || opened.dev !== st.dev || opened.size !== st.size) {
         throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before scrub`);
       }
@@ -155,24 +196,17 @@ export class AtomicWriter {
     } finally {
       closeSync(fd);
     }
-    const after = lstatSync(live);
+    const after = lstatSync(path);
     if (after.ino !== st.ino || after.dev !== st.dev) {
       throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" identity changed before unlink`);
     }
-    unlinkSync(live);
-    try {
-      unlinkSync(this.#temp(name));
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-    }
+    unlinkSync(path);
   }
 
   #refuseLink(path: string, name: string): void {
     try {
       const st = lstatSync(path);
-      if (st.isSymbolicLink()) {
-        throw new SecurityTrap("LSS-LINK-001", `snapshot "${name}" path is a link and is refused`);
-      }
+      refuseSnapshotSpecialFile(st, name);
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
       throw err;

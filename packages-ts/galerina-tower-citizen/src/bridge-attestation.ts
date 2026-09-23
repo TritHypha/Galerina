@@ -264,6 +264,54 @@ export async function signManifestHybrid(
  * the ML-DSA-65 signature to verify (logical AND, no downgrade). Fails CLOSED throughout.
  * `policy.requireSigned` + `policy.publicKeyPem` must be set so the Ed25519 half is checked.
  */
+const MANIFEST_SNAPSHOT_KEYS = [
+  "bridgeId",
+  "packageName",
+  "packageHash",
+  "nativeAddonHash",
+  "sourceEngine",
+  "precision",
+  "layoutVersion",
+  "hardwareIdentity",
+  "determinismMode",
+  "certificationProfile",
+  "domain",
+  "tolerance",
+  "pinnedEnvHash",
+  "backendArtifactHash",
+  "comparabilityHash",
+  "measuredFidelity",
+  "minFidelity",
+  "toleranceWitness",
+  "quantizationMethod",
+] as const;
+
+function ownManifestSnapshot(manifest: BridgeManifest): BridgeManifest {
+  const owned: Record<string, unknown> = {};
+  for (const key of MANIFEST_SNAPSHOT_KEYS) {
+    const value = manifest[key];
+    if (value === undefined) continue;
+    if (key === "toleranceWitness" && value !== null && typeof value === "object") {
+      owned[key] = Object.freeze({ ...value });
+      continue;
+    }
+    owned[key] = value;
+  }
+  return Object.freeze(owned) as unknown as BridgeManifest;
+}
+
+function ownAttestationSnapshot(attestation: BridgeAttestation): BridgeAttestation {
+  const signature = String(attestation.signature);
+  const frozen: BridgeAttestation = {
+    manifest: ownManifestSnapshot(attestation.manifest),
+    signature,
+    ...(typeof attestation.mlDsaSignature === "string"
+      ? { mlDsaSignature: String(attestation.mlDsaSignature) }
+      : {}),
+  };
+  return Object.freeze(frozen);
+}
+
 export async function verifyAttestationHybrid(
   attestation: BridgeAttestation | undefined,
   policy: AttestationPolicy,
@@ -273,11 +321,7 @@ export async function verifyAttestationHybrid(
   if (typeof attestation.signature !== "string" || attestation.signature.length < 1) {
     return { ok: false, reason: "signature required but absent" };
   }
-  const frozen: BridgeAttestation = {
-    manifest: attestation.manifest,
-    signature: attestation.signature,
-    ...(typeof attestation.mlDsaSignature === "string" ? { mlDsaSignature: attestation.mlDsaSignature } : {}),
-  };
+  const frozen = ownAttestationSnapshot(attestation);
   const preimage = canonicalManifestString(frozen.manifest);
   const base = verifyAttestation(frozen, { ...policy, requireSigned: true });
   if (!base.ok) return base;

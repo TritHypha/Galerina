@@ -66,6 +66,34 @@ test("stub ternary bridge reports deterministic=true (Standard 1)", () => {
   assert.doesNotThrow(() => assertDeterminism(r));
 });
 
+test("hostile: packed trit count above the admitted ceiling is refused", () => {
+  const bridge = new StubTernaryBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: { length: 1_048_577 }, count: 1_048_577, scale: 1, offset: 0,
+  };
+  assert.throws(() => bridge.execute(bad), /admitted bound/);
+});
+
+test("hostile: packed weights shorter than needed words are refused", () => {
+  const bridge = new StubTernaryBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: new Int32Array(17), count: 17, scale: 1, offset: 0,
+  };
+  assert.throws(() => bridge.execute(bad), /lack capacity/);
+});
+
+test("hostile: a 2^35 offset does not wrap into packed[0]", () => {
+  const bridge = new StubTernaryBridge();
+  const bad = {
+    opClass: "feedforward", precision: "ternary", correlationId: "x",
+    weights: new Int32Array(1), activations: new Int32Array(1), count: 1, scale: 1,
+    offset: 2 ** 35,
+  };
+  assert.throws(() => bridge.execute(bad), /lack capacity|overflow|offset/);
+});
+
 // ── Stub FP4 bridge — honest unexecuted result, no fake numbers ───────────────
 
 test("stub fp4 bridge returns an honest unexecuted result", () => {

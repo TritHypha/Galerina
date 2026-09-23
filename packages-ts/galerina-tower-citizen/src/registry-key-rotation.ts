@@ -253,16 +253,20 @@ export function restoreRegistryRotationCheckpoint(
     || typeof checkpoint !== "object"
     || checkpoint === null
     || checkpoint.schema !== "galerina-registry-rotation-checkpoint/v1"
-    || typeof checkpoint.payloadJson !== "string"
-    || checkpoint.payloadJson.length === 0
-    || checkpoint.payloadJson.length > 1_048_576
-    || typeof checkpoint.hmac !== "string"
-    || !/^[0-9a-f]{64}$/.test(checkpoint.hmac)
   ) {
     throw new TypeError("registry rotation checkpoint is malformed");
   }
   const payloadJson = checkpoint.payloadJson;
   const hmac = checkpoint.hmac;
+  if (
+    typeof payloadJson !== "string"
+    || payloadJson.length === 0
+    || payloadJson.length > 1_048_576
+    || typeof hmac !== "string"
+    || !/^[0-9a-f]{64}$/.test(hmac)
+  ) {
+    throw new TypeError("registry rotation checkpoint is malformed");
+  }
   const expected = Buffer.from(
     checkpointMac(ringMacKey, payloadJson),
     "hex",

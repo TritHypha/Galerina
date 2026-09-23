@@ -56,7 +56,12 @@ import {
   type ChainValidationOutcome,
   type RevocationOutcome,
 } from "../../galerina-core-network/dist/index.js";
-export { MemoryReplayStore, type MemoryReplayStoreOptions } from "./replay-store.js";
+export {
+  MemoryReplayStore,
+  isProcessLocalReplayStore,
+  isAdmittedDurableReplayStore,
+  type MemoryReplayStoreOptions,
+} from "./replay-store.js";
 export {
   admitWebhookReplay,
   WEBHOOK_REPLAY_SCOPE,
@@ -69,6 +74,7 @@ import {
   admitWebhookReplay,
   type WebhookAdmissionHooks,
 } from "./webhook-admission.js";
+import { isAdmittedDurableReplayStore } from "./replay-store.js";
 
 /** Default hard cap on buffered body bytes (8 MiB). Additive to the kernel's own body-size gate. */
 export const DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024;
@@ -214,6 +220,12 @@ export interface CreateApiServerOptions {
    * dispatches. Replay uses the `replay` namespace on the injected store.
    */
   readonly webhook?: ApiServerWebhookOptions;
+  /**
+   * Production posture: a process-local MemoryReplayStore cannot satisfy durable
+   * multi-process replay. When true and a webhook store is process-local, construction
+   * refuses. Development/test may omit this and keep MemoryReplayStore.
+   */
+  readonly requireDurableReplay?: boolean;
 }
 
 export interface ApiServerWebhookOptions {
@@ -544,6 +556,15 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
   if (opts.tls === undefined && opts.allowInsecureLoopback !== true) {
     throw new Error("createApiServer: TLS is required unless plaintext loopback is explicitly authorized");
   }
+  if (
+    opts.requireDurableReplay === true
+    && opts.webhook !== undefined
+    && !isAdmittedDurableReplayStore(opts.webhook.replayStore)
+  ) {
+    throw new Error(
+      "createApiServer: production durable replay is outstanding — no admitted durable replay store is present",
+    );
+  }
   const { kernel } = opts;
   const maxBodyBytes =
     opts.maxBodyBytes !== undefined ? opts.maxBodyBytes : DEFAULT_MAX_BODY_BYTES;
@@ -781,8 +802,17 @@ async function handleRequest(
   };
 
   // (4) Optional webhook HMAC + atomic replay claim on authenticated raw bytes.
-  // Auth (channel) already ran. Invalid HMAC never reaches kernel decode/handler.
-  if (webhook !== undefined && channelVerdict !== Verdict.DENY) {
+  // A configured channel factor must ALLOW before replay identity is consumed.
+  // Invalid HMAC never reaches kernel decode/handler.
+  if (webhook !== undefined) {
+    if (channelVerdict === Verdict.DENY
+      || (resolveChannelVerdict !== undefined && channelVerdict !== Verdict.ALLOW)) {
+      if (!res.headersSent && !res.writableEnded) {
+        res.writeHead(401, { "content-type": "application/json" });
+        res.end(WEBHOOK_UNAUTHORIZED_BODY);
+      }
+      return;
+    }
     const admitted = await admitWebhookReplay({
       body: kreq.body,
       headers: kreq.headers,

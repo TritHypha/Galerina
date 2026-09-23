@@ -46,12 +46,14 @@ function formatProject(project, options = {}) {
     results.push({ file: source.relativePath, changed });
 
     if (changed && check === false) {
+      let st;
       try {
-        if (fs.lstatSync(source.path).isSymbolicLink()) {
-          throw new Error(`fmt refuses to follow a source symlink: ${source.relativePath}`);
-        }
+        st = fs.lstatSync(source.path);
       } catch (err) {
-        if (err && err.code !== "ENOENT") throw err;
+        throw new Error(`fmt cannot stat source: ${source.relativePath}`);
+      }
+      if (st.isSymbolicLink() || !st.isFile()) {
+        throw new Error(`fmt refuses to follow a source symlink: ${source.relativePath}`);
       }
       fs.writeFileSync(source.path, formatted, "utf8");
       source.content = formatted;

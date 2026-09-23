@@ -1017,6 +1017,16 @@ ${body}
     const r = parseAndCheck(mk('  let x = compute(1)\n  log.info(x)'));
     assert.ok(!hasDiag(r, "FUNGI-SECRET-001") && !hasDiag(r, "FUNGI-SECRET-003"));
   });
+  it("Env.get then logged → FUNGI-SECRET-001", () => {
+    const r = parseAndCheck(`guarded flow f() -> Int
+contract { effects { secret.read } }
+{
+  let key = Env.get("K")
+  log.info(key)
+  return 0
+}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-001"), `expected SECRET-001 for Env.get, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+  });
 });
 
 // ── Secret → network egress guard (FUNGI-SECRET-005) ───────────────────────────

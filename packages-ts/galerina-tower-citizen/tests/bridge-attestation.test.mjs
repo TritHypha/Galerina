@@ -65,6 +65,22 @@ test("hash pinning: only a pinned manifest hash passes", () => {
   assert.equal(verifyAttestation(att, { allowedHashes: ["b".repeat(64)] }).ok, false);
 });
 
+test("hostile: concurrent infer does not treat in-flight attestation as already admitted", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const honest = attestBridge(new StubTernaryBridge(inMem()), privateKeyPem);
+  const eng = createHybridEngine({
+    airGapped: true, governanceTier: 1, bridges: new Map([[honest.technique, honest]]),
+    attestation: { requireSigned: true, publicKeyPem },
+    governance: { allowUnsignedCapabilityGrant: true },
+  });
+  const [first, second] = await Promise.all([
+    eng.infer({ prompt: "x", correlationId: cid("inflight-1"), opClasses: ["feedforward"] }),
+    eng.infer({ prompt: "x", correlationId: cid("inflight-2"), opClasses: ["feedforward"] }),
+  ]);
+  assert.equal(first.trapFired, false);
+  assert.equal(second.trapFired, false);
+});
+
 test("engine DENIES an unattested bridge under an attestation policy", async () => {
   const { publicKeyPem } = generateAttestationKeypair();
   // default stub registry — bridges have a manifest but NO signature.

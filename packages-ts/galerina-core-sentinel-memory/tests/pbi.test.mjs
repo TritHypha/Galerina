@@ -53,7 +53,32 @@ test("channel read/write cannot exceed the channel stride", () => {
   const ch = bus.channel(0);
   const over = Int32Array.from({ length: 513 }, () => 1); // 513 * 4 > 2048
   const err = caught(() => ch.write(0, over));
-  assert.ok(err);
+  assert.ok(err instanceof HardenedBorderViolation);
+  assert.equal(err.code, "LSM-PBI-003");
   const readErr = caught(() => ch.read(512, 1));
-  assert.ok(readErr);
+  assert.ok(readErr instanceof HardenedBorderViolation);
+  assert.equal(readErr.code, "LSM-PBI-003");
+});
+
+test("hostile: an overflowing write cannot mutate the next channel", () => {
+  const bus = mk();
+  const a = bus.channel(0);
+  const b = bus.channel(1);
+  b.write(0, Int32Array.from([222]));
+  const cross = Int32Array.from({ length: 2 }, () => 111);
+  const err = caught(() => a.write(511, cross));
+  assert.ok(err instanceof HardenedBorderViolation);
+  assert.equal(err.code, "LSM-PBI-003");
+  assert.equal(b.read(0, 1)[0], 222);
+});
+
+test("hostile: negative offset and non-integer length are refused", () => {
+  const bus = mk();
+  const ch = bus.channel(0);
+  const neg = caught(() => ch.read(-1, 1));
+  assert.ok(neg instanceof HardenedBorderViolation);
+  assert.equal(neg.code, "LSM-PBI-003");
+  const inf = caught(() => ch.read(0, Number.POSITIVE_INFINITY));
+  assert.ok(inf instanceof HardenedBorderViolation);
+  assert.equal(inf.code, "LSM-PBI-003");
 });

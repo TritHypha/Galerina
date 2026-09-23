@@ -23,7 +23,7 @@
 
 // TYPE-ONLY seam interfaces (the ✅ direction; core-runtime is a zero-dep leaf — see .graph/boundary-policy.json).
 import type { GovernedAdmissionVerifier, LowLevelWasmExecutor } from "@galerina/core-runtime";
-import { wasmHash, verifyWasm } from "./wasm-runtime.js";
+import { wasmHash, verifyWasm, invokeAdmittedExport } from "./wasm-runtime.js";
 import { createHostRuntime } from "./wasm-runtime.js";
 import type { AdmissionPolicy, WasmAttestation, RunnerProfile } from "./wasm-runtime.js";
 
@@ -147,16 +147,7 @@ export function createLowLevelWasmExecutor(): LowLevelWasmExecutor {
       }
       const mem = (instance.exports as Record<string, unknown>)["memory"];
       if (mem instanceof WebAssembly.Memory) host.bindMemory(mem);
-      const fn = (instance.exports as Record<string, unknown>)[exportName];
-      if (typeof fn !== "function") {
-        return { ok: false, reason: `export '${exportName}' is not a callable function of the module` };
-      }
-      try {
-        const result = (fn as (...a: number[]) => unknown)(...(args as readonly number[]));
-        return { ok: true, result };
-      } catch (err) {
-        return { ok: false, reason: `trap during '${exportName}': ${err instanceof Error ? err.message : String(err)}` };
-      }
+      return invokeAdmittedExport(instance, exportName, args as readonly number[]);
     },
   };
 }

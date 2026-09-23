@@ -28,7 +28,7 @@ export class TPLStateBuffer {
   readonly tritCount: number;
 
   private readonly pool: StaticMemoryPool;
-  private readonly _block: Block;
+  readonly #block: Block;
 
   constructor(pool: StaticMemoryPool, tritCount: number) {
     if (tritCount < 0) {
@@ -38,13 +38,16 @@ export class TPLStateBuffer {
     this.tritCount = tritCount;
     const words = Math.ceil(tritCount / TRITS_PER_WORD);
     const bytes = MemoryValidator.alignUp(words * 4);
-    this._block = pool.allocate(bytes, "compute");
-    this.pool.i32(this._block);
+    this.#block = pool.allocate(bytes, "compute");
+    // Recycled Compute blocks are 0xFF-filled (0b11). Packed-trit 0b11 is the
+    // corruption sentinel; initialise to ENC_REJECT (0b00 → -1) so a fresh
+    // allocation is valid packed-trit state, not LSM-TRIT-CORRUPT.
+    this.pool.i32(this.#block).fill(0);
   }
 
   /** Revalidate generation on every access so a freed/reused block cannot be aliased. */
   private liveView(): Int32Array {
-    return this.pool.i32(this._block);
+    return this.pool.i32(this.#block);
   }
 
   private locate(i: number): { word: number; shift: number } {
@@ -97,10 +100,10 @@ export class TPLStateBuffer {
   }
 
   get block(): Block {
-    return this._block;
+    return this.#block;
   }
 
   get byteLength(): number {
-    return this._block.bytes;
+    return this.#block.bytes;
   }
 }

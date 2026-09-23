@@ -56,6 +56,22 @@ test("advance(-1) / non-integer advance throws PrecisionFault LST-ADV-001", () =
   assert.equal(caught(() => c.advance(2.5)).code, "LST-ADV-001");
 });
 
+test("tick() at MAX_SAFE_INTEGER throws PrecisionFault LST-OVF-001", () => {
+  const c = new LogicalClock(Number.MAX_SAFE_INTEGER);
+  const err = caught(() => c.tick());
+  assert.ok(err instanceof PrecisionFault);
+  assert.equal(err.code, "LST-OVF-001");
+  assert.equal(c.now(), Number.MAX_SAFE_INTEGER);
+});
+
+test("advance() past MAX_SAFE_INTEGER throws PrecisionFault LST-OVF-001", () => {
+  const c = new LogicalClock(Number.MAX_SAFE_INTEGER - 1);
+  const err = caught(() => c.advance(2));
+  assert.ok(err instanceof PrecisionFault);
+  assert.equal(err.code, "LST-OVF-001");
+  assert.equal(c.now(), Number.MAX_SAFE_INTEGER - 1);
+});
+
 test("determinism: same startTick yields identical tick sequences", () => {
   const a = new LogicalClock(7);
   const b = new LogicalClock(7);

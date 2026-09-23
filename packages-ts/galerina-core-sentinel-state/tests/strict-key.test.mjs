@@ -23,3 +23,12 @@ test("construction refuses a missing or all-zero key", () => {
   const e2 = caught(() => new StateSerializer({ hmacKey: new Uint8Array(32) }));
   assert.ok(e2); assert.match(String(e2.code ?? e2.message), /LSS-KEY-001/);
 });
+
+test("hostile: a 31-byte key is refused; a 32-byte non-zero key is admitted", () => {
+  const short = caught(() => new StateSerializer({ hmacKey: Uint8Array.from({ length: 31 }, (_, i) => i + 1) }));
+  assert.ok(short);
+  assert.match(String(short.code ?? short.message), /LSS-KEY-001/);
+  const key = new Uint8Array(32);
+  key[31] = 1;
+  assert.doesNotThrow(() => new StateSerializer({ hmacKey: key }));
+});

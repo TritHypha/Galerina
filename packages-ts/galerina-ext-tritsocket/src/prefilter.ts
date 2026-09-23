@@ -57,6 +57,9 @@ export function packedLen(lenTrits: number): number {
  * treats as a hard Deny).
  */
 export function pack(trits: readonly number[]): Uint8Array {
+  if (!Array.isArray(trits)) {
+    throw new RangeError("trits must be an array");
+  }
   const out = new Uint8Array(packedLen(trits.length));
   for (let i = 0; i < trits.length; i++) {
     const t = trits[i];
@@ -142,6 +145,9 @@ export function prefilterBatch(
     throw new RangeError(`n must be a safe integer in [0, ${MAX_BATCH}]`);
   }
   const stride = packedLen(lenTrits);
+  if (n > 0 && (!Number.isSafeInteger(n * stride) || n * stride > subjects.length)) {
+    throw new RangeError("batch subjects are smaller than n packed rows");
+  }
   const out: Verdict[] = new Array(n).fill(Verdict.Deny);
   for (let k = 0; k < n; k++) {
     out[k] = prefilter(subjects.subarray(k * stride, (k + 1) * stride), maskPacked, lenTrits);

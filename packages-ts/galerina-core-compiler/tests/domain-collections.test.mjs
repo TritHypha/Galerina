@@ -7,6 +7,8 @@ import {
   checkValueStates,
   resolveSymbols,
   executeFlow,
+  FUNGI_VOID,
+  callStdlib,
 } from "../dist/index.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -392,6 +394,67 @@ pure flow test() -> Int {
 `, "test");
     assert.equal(result.value.__tag, "int");
     assert.equal(result.value.value, 0);
+  });
+
+  it("Array.range with a zero step traps instead of hanging", async () => {
+    const result = await parseAndRun(`
+pure flow test() -> Int {
+  let xs = Array.range(0, 1, 0)
+  return xs.length()
+}
+`, "test");
+    assert.equal(result.value.__tag, "runtimeError");
+    assert.match(result.value.message, /finite non-zero/i);
+  });
+
+  it("Array.range with a non-progressing negative step is empty", async () => {
+    const result = await parseAndRun(`
+pure flow test() -> Int {
+  let xs = Array.range(0, 5, -1)
+  return xs.length()
+}
+`, "test");
+    assert.equal(result.value.__tag, "int");
+    assert.equal(result.value.value, 0);
+  });
+
+  it("Array.range with a progressing negative step is finite", async () => {
+    const result = await parseAndRun(`
+pure flow test() -> Int {
+  let xs = Array.range(5, 0, -1)
+  return xs.length()
+}
+`, "test");
+    assert.equal(result.value.__tag, "int");
+    assert.equal(result.value.value, 5);
+  });
+
+  it("Array.range cardinality above 1_000_000 traps before allocation", async () => {
+    const result = await parseAndRun(`
+pure flow test() -> Int {
+  let xs = Array.range(0, 1000001)
+  return xs.length()
+}
+`, "test");
+    assert.equal(result.value.__tag, "runtimeError");
+    assert.match(result.value.message, /cardinality exceeds the host bound/i);
+  });
+
+  it("Array.range refuses non-finite step, start, or end", async () => {
+    const ctx = {
+      recordEffect: () => {},
+      resolveIdentifier: () => undefined,
+      callFlow: async () => FUNGI_VOID,
+      applyFn: async (_fn, arg) => arg,
+    };
+    const inf = { __tag: "float", value: Number.POSITIVE_INFINITY };
+    const nan = { __tag: "float", value: Number.NaN };
+    const zero = { __tag: "int", value: 0 };
+    const one = { __tag: "int", value: 1 };
+    await assert.rejects(() => callStdlib("Array.range", undefined, [zero, one, inf], ctx), /finite non-zero/i);
+    await assert.rejects(() => callStdlib("Array.range", undefined, [zero, one, nan], ctx), /finite non-zero/i);
+    await assert.rejects(() => callStdlib("Array.range", undefined, [inf, one, one], ctx), /finite non-zero/i);
+    await assert.rejects(() => callStdlib("Array.range", undefined, [zero, inf, one], ctx), /finite non-zero/i);
   });
 });
 

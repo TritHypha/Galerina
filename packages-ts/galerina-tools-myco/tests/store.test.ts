@@ -303,6 +303,38 @@ test("canonical persistence order is code-unit based, not host-locale based", as
   }
 });
 
+test("saveGraph refuses to write through a dangling index.json symlink", async (t) => {
+  const parent = await fs.mkdtemp(path.join(os.tmpdir(), "myco-index-file-link-"));
+  const root = path.join(parent, "root");
+  const outside = path.join(parent, "escaped-index.json");
+  await fs.mkdir(path.join(root, ".myco"), { recursive: true });
+  try {
+    try {
+      await fs.symlink(outside, path.join(root, ".myco", "index.json"));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EPERM") {
+        t.skip("host cannot create a file symlink for the containment test");
+        return;
+      }
+      throw error;
+    }
+    const graph = new SearchGraph();
+    graph.setFile("a.ts", 1, 1, new Map([["alpha", 1]]));
+    const saved = await saveGraph(root, graph);
+    assert.equal(saved.written, false);
+    if (saved.written === false) assert.equal(saved.reason, "unsafe-path");
+    let escapedExists = true;
+    try {
+      await fs.stat(outside);
+    } catch {
+      escapedExists = false;
+    }
+    assert.equal(escapedExists, false);
+  } finally {
+    await fs.rm(parent, { recursive: true, force: true });
+  }
+});
+
 test("saveGraph refuses to write through a linked cache directory", async () => {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), "myco-unsafe-"));
   const root = path.join(parent, "root");

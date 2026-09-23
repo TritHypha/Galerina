@@ -123,3 +123,18 @@ test("source shorter than totalBytes throws LSIO-MAP-001", () => {
     (e) => e instanceof SecurityTrap && e.code === "LSIO-MAP-001",
   );
 });
+
+test("hostile: mutating source during enforceBlock cannot change staged bytes", () => {
+  const { manifest, source } = makeFixture();
+  const mon = new IntegrityMonitor();
+  const orig = mon.enforceBlock.bind(mon);
+  mon.enforceBlock = (bytes, expectedHex, blockId) => {
+    orig(bytes, expectedHex, blockId);
+    source[0] = 0xff;
+  };
+  const mapper = new ZeroCopyMapper();
+  const blocks = mapper.map(manifest, source, mon);
+  const nums = blocks.find((b) => b.id === "nums");
+  assert.equal(nums.i32()[0], 10);
+  assert.equal(source[0], 0xff);
+});

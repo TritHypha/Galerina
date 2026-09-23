@@ -21,22 +21,48 @@ function verifyResult(matches: boolean): CryptoProviderResult {
  * Importing this module does not load native C bindings; calling invoke does.
  * The compiler stdlib TCB does not import this file.
  */
+export const BCRYPT_MIN_ROUNDS = 10;
+export const BCRYPT_MAX_ROUNDS = 12;
+
+type BcryptJs = {
+  hash: (data: string, rounds: number, cb: (err: Error | undefined, hashed: string) => void) => void;
+  compare: (data: string, hash: string, cb: (err: Error | undefined, same: boolean) => void) => void;
+};
+
+function bcryptHashAsync(bcrypt: BcryptJs, plaintext: string, rounds: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    bcrypt.hash(plaintext, rounds, (err, hashed) => {
+      if (err !== undefined && err !== null) reject(err);
+      else resolve(hashed);
+    });
+  });
+}
+
+function bcryptCompareAsync(bcrypt: BcryptJs, plaintext: string, hash: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(plaintext, hash, (err, same) => {
+      if (err !== undefined && err !== null) reject(err);
+      else resolve(same);
+    });
+  });
+}
+
 export function createNodePasswordKdfProvider(): CryptoProvider {
   return {
     schema: CRYPTO_PROVIDER_SCHEMA,
     async invoke(request: CryptoProviderRequest): Promise<CryptoProviderResult> {
       if (request.algorithm === "bcrypt") {
         const bcryptMod = await import("bcryptjs");
-        const bcrypt = bcryptMod.default ?? bcryptMod;
+        const bcrypt = (bcryptMod.default ?? bcryptMod) as BcryptJs;
         if (request.op === "password-hash") {
-          const rounds = request.rounds ?? 10;
-          if (!Number.isSafeInteger(rounds) || rounds < 10 || rounds > 12) {
+          const rounds = request.rounds ?? BCRYPT_MIN_ROUNDS;
+          if (!Number.isSafeInteger(rounds) || rounds < BCRYPT_MIN_ROUNDS || rounds > BCRYPT_MAX_ROUNDS) {
             throw new RangeError("bcrypt rounds must be a safe integer in 10..12");
           }
-          return hashResult("bcrypt", bcrypt.hashSync(request.plaintext, rounds));
+          return hashResult("bcrypt", await bcryptHashAsync(bcrypt, request.plaintext, rounds));
         }
         try {
-          return verifyResult(bcrypt.compareSync(request.plaintext, request.hash));
+          return verifyResult(await bcryptCompareAsync(bcrypt, request.plaintext, request.hash));
         } catch {
           return verifyResult(false);
         }

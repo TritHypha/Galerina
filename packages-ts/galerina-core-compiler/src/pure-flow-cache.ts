@@ -11,7 +11,7 @@
 // Cache invalidation: explicit clear on source change (uses sourceHash)
 // =============================================================================
 
-import { canonicalHash } from "./runtime/canonicalHash.js";
+import { createHash } from "node:crypto";
 import type { GalerinaValue } from "./interpreter.js";
 import { productArtifactKey, type ProductArtifactContext } from "./product-artifact-identity.js";
 
@@ -20,6 +20,7 @@ const MAX_ENTRIES = 1000;
 // LRU doubly-linked list node
 interface LRUNode {
   key:   string;
+  exact: string;
   value: GalerinaValue;
   prev:  LRUNode | null;
   next:  LRUNode | null;
@@ -27,8 +28,8 @@ interface LRUNode {
 
 class LRUCache {
   private map    = new Map<string, LRUNode>();
-  private head:  LRUNode = { key: "", value: {} as GalerinaValue, prev: null, next: null };
-  private tail:  LRUNode = { key: "", value: {} as GalerinaValue, prev: null, next: null };
+  private head:  LRUNode = { key: "", exact: "", value: {} as GalerinaValue, prev: null, next: null };
+  private tail:  LRUNode = { key: "", exact: "", value: {} as GalerinaValue, prev: null, next: null };
   private hits   = 0;
   private misses = 0;
   private evictions = 0;
@@ -38,18 +39,28 @@ class LRUCache {
     this.tail.prev = this.head;
   }
 
-  get(key: string): GalerinaValue | undefined {
+  get(key: string, exact: string): GalerinaValue | undefined {
     const node = this.map.get(key);
     if (node === undefined) { this.misses++; return undefined; }
+    if (exact.length > 0 && node.exact.length > 0 && node.exact !== exact) {
+      this.misses++;
+      return undefined;
+    }
     this.hits++;
     this.moveToFront(node);
-    return node.value;
+    return ownGalerinaValue(node.value);
   }
 
-  set(key: string, value: GalerinaValue): void {
+  set(key: string, value: GalerinaValue, exact: string): void {
+    const owned = ownGalerinaValue(value);
     const existing = this.map.get(key);
-    if (existing !== undefined) { existing.value = value; this.moveToFront(existing); return; }
-    const node: LRUNode = { key, value, prev: null, next: null };
+    if (existing !== undefined) {
+      existing.value = owned;
+      existing.exact = exact;
+      this.moveToFront(existing);
+      return;
+    }
+    const node: LRUNode = { key, exact, value: owned, prev: null, next: null };
     this.map.set(key, node);
     this.addToFront(node);
     if (this.map.size > MAX_ENTRIES) { this.evictLast(); this.evictions++; }
@@ -135,11 +146,9 @@ function fnvStr(hash: number, s: string): number {
 /**
  * Compute an FNV-1a structural fingerprint for a GalerinaValue.
  *
- * Returns a 32-bit unsigned integer as a JS number.
- * Identical inputs always produce the same output; the probability of a false
- * collision between structurally distinct values is 1/2³² ≈ 2.3×10⁻¹⁰ —
- * acceptable for an LRU cache over semantically-equal-by-construction pure
- * flow arguments.
+ * Returns a 32-bit unsigned integer as a JS number. Identical inputs always
+ * produce the same output. Distinct strings can collide; cache identity uses
+ * exact encodings, not this fingerprint.
  */
 export function galerinaValueFingerprint(v: GalerinaValue): number {
   // Seed each variant with the FNV offset XOR the tag's first char code so
@@ -206,24 +215,211 @@ export function galerinaValueFingerprint(v: GalerinaValue): number {
  *                   (e.g. the source file path or source hash). Prevents cross-file
  *                   pollution when multiple files have a flow named "main".
  */
+const MAX_EXACT_BYTES = 65_536;
+const MAX_EXACT_DEPTH = 32;
+const MAX_EXACT_NODES = 4_096;
+
+export function admitPureFlowSourceTag(sourceTag: string | undefined | null): string {
+  if (
+    typeof sourceTag !== "string" ||
+    sourceTag.length === 0 ||
+    sourceTag.length > 256 ||
+    sourceTag.includes("\0")
+  ) {
+    throw new Error("FUNGI-CACHE-001: pure-flow cache requires a non-empty source identity");
+  }
+  return sourceTag;
+}
+
+export function composeSourceBoundTag(sourceHash: string, extra: string): string {
+  if (extra.length === 0) return sourceHash;
+  const tag = `${sourceHash}:${extra}`;
+  if (tag.length <= 256) return tag;
+  const x = createHash("sha256").update(new TextEncoder().encode(extra)).digest("hex");
+  return `${sourceHash}:x:${x}`;
+}
+
+function encodeValue(v: GalerinaValue, depth: number, nodes: { n: number }, seen: WeakSet<object>): string | null {
+  if (depth > MAX_EXACT_DEPTH || nodes.n >= MAX_EXACT_NODES) return null;
+  nodes.n += 1;
+  switch (v.__tag) {
+    case "int":
+      if (!Number.isSafeInteger(v.value)) return null;
+      return `I${v.value}`;
+    case "byte":
+      if (!Number.isInteger(v.value) || v.value < 0 || v.value > 255) return null;
+      return `U${v.value}`;
+    case "bool":
+      return v.value ? "Bt" : "Bf";
+    case "verdict":
+      return `V${v.value}`;
+    case "char":
+      return `Y${v.value.length}:${v.value}`;
+    case "string":
+      return `S${v.value.length}:${v.value}`;
+    case "decimal":
+      return `D${v.value.length}:${v.value}`;
+    case "float": {
+      const buf = new ArrayBuffer(8);
+      new DataView(buf).setFloat64(0, v.value, false);
+      const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      return `F${hex}`;
+    }
+    case "int64":
+    case "uint64":
+      return `J${v.__tag[0]}${v.value.toString()}`;
+    case "bytes": {
+      const hex = [...v.value].map((b) => b.toString(16).padStart(2, "0")).join("");
+      return `X${v.value.length}:${hex}`;
+    }
+    case "void":
+      return "0";
+    case "none":
+      return "N";
+    case "some":
+    case "ok": {
+      if (typeof v === "object" && v !== null) {
+        if (seen.has(v)) return null;
+        seen.add(v);
+      }
+      const inner = encodeValue(v.value, depth + 1, nodes, seen);
+      if (inner === null) return null;
+      return `${v.__tag === "some" ? "M" : "K"}${inner}`;
+    }
+    case "err": {
+      if (seen.has(v)) return null;
+      seen.add(v);
+      const inner = encodeValue(v.error, depth + 1, nodes, seen);
+      if (inner === null) return null;
+      return `E${inner}`;
+    }
+    case "list": {
+      if (seen.has(v)) return null;
+      seen.add(v);
+      const items: string[] = [];
+      for (const item of v.items) {
+        const enc = encodeValue(item, depth + 1, nodes, seen);
+        if (enc === null) return null;
+        items.push(enc);
+      }
+      return `L${items.length}:[${items.join(",")}]`;
+    }
+    case "record": {
+      if (seen.has(v)) return null;
+      seen.add(v);
+      const keys = [...v.fields.keys()].sort();
+      const fields: string[] = [];
+      for (const k of keys) {
+        const fv = v.fields.get(k);
+        if (fv === undefined) return null;
+        const enc = encodeValue(fv, depth + 1, nodes, seen);
+        if (enc === null) return null;
+        fields.push(`${k.length}:${k}=${enc}`);
+      }
+      return `R${fields.length}:{${fields.join(",")}}`;
+    }
+    case "secure":
+    case "protected":
+    case "redacted":
+    case "unresolved":
+    case "function":
+    case "runtimeError":
+    case "error":
+      return null;
+    default:
+      return null;
+  }
+}
+
+export function encodePureFlowArgs(args: ReadonlyMap<string, GalerinaValue>): string | null {
+  const nodes = { n: 0 };
+  const seen = new WeakSet<object>();
+  const keys = [...args.keys()].sort();
+  const parts: string[] = [];
+  for (const k of keys) {
+    const v = args.get(k);
+    if (v === undefined) return null;
+    const enc = encodeValue(v, 0, nodes, seen);
+    if (enc === null) return null;
+    parts.push(`${k.length}:${k}=${enc}`);
+  }
+  const exact = parts.join(";");
+  if (new TextEncoder().encode(exact).byteLength > MAX_EXACT_BYTES) return null;
+  return exact;
+}
+
+function ownGalerinaValue(v: GalerinaValue): GalerinaValue {
+  switch (v.__tag) {
+    case "int":
+    case "byte":
+    case "bool":
+    case "verdict":
+    case "char":
+    case "string":
+    case "decimal":
+    case "float":
+    case "int64":
+    case "uint64":
+      return { ...v };
+    case "bytes":
+      return { __tag: "bytes", value: Uint8Array.from(v.value) };
+    case "void":
+      return { __tag: "void" };
+    case "none":
+      return { __tag: "none" };
+    case "some":
+      return { __tag: "some", value: ownGalerinaValue(v.value) };
+    case "ok":
+      return { __tag: "ok", value: ownGalerinaValue(v.value) };
+    case "err":
+      return { __tag: "err", error: ownGalerinaValue(v.error) };
+    case "list":
+      return { __tag: "list", items: Object.freeze(v.items.map(ownGalerinaValue)) };
+    case "record": {
+      const fields = new Map<string, GalerinaValue>();
+      for (const [k, fv] of v.fields) fields.set(k, ownGalerinaValue(fv));
+      return { __tag: "record", fields };
+    }
+    default:
+      return { ...v };
+  }
+}
+
+export interface PureFlowCacheIdentity {
+  readonly key: string;
+  readonly exact: string;
+}
+
+export function admitPureFlowCacheIdentity(
+  context: ProductArtifactContext,
+  flowName: string,
+  args: ReadonlyMap<string, GalerinaValue>,
+  sourceTag: string,
+): PureFlowCacheIdentity | null {
+  const admitted = admitPureFlowSourceTag(sourceTag);
+  const exact = encodePureFlowArgs(args);
+  if (exact === null) return null;
+  const digest = "sha256:" + createHash("sha256")
+    .update(new TextEncoder().encode(`${flowName}\n${admitted}\n${exact}`))
+    .digest("hex");
+  return { key: `${productArtifactKey(context, digest)}:${flowName}`, exact };
+}
+
 export function pureFlowCacheKey(
   context: ProductArtifactContext,
   flowName: string,
   args: ReadonlyMap<string, GalerinaValue>,
-  sourceTag?: string,
+  sourceTag: string,
 ): string {
-  // Build key as "flowName:arg0tag=fp0,arg1tag=fp1,…" — pre-computed integer
-  // fingerprints joined with commas; zero JSON.stringify, zero SHA-256.
-  const parts: string[] = [];
-  for (const [k, v] of args) {
-    parts.push(`${k}=${galerinaValueFingerprint(v)}`);
+  const identity = admitPureFlowCacheIdentity(context, flowName, args, sourceTag);
+  if (identity === null) {
+    throw new Error("FUNGI-CACHE-002: arguments are not cache-eligible");
   }
-  const semanticDigest = canonicalHash({ flowName, args: parts, sourceTag: sourceTag ?? null });
-  return `${productArtifactKey(context, semanticDigest)}:${flowName}`;
+  return identity.key;
 }
 
-export function getCachedPureFlow(key: string): GalerinaValue | undefined {
-  return SESSION_CACHE.get(key);
+export function getCachedPureFlow(key: string, exact = ""): GalerinaValue | undefined {
+  return SESSION_CACHE.get(key, exact);
 }
 
 /**
@@ -241,10 +437,10 @@ export function getCachedPureFlow(key: string): GalerinaValue | undefined {
  * @param key   - Cache key from pureFlowCacheKey()
  * @param value - The deterministic result to cache
  */
-export function setCachedPureFlow(key: string, value: GalerinaValue): void {
+export function setCachedPureFlow(key: string, value: GalerinaValue, exact = ""): void {
   // Guard: never cache error results (they may contain internal state info)
   if (value.__tag === "runtimeError" || value.__tag === "error") return;
-  SESSION_CACHE.set(key, value);
+  SESSION_CACHE.set(key, value, exact);
 }
 
 export function clearPureFlowCache(): void {

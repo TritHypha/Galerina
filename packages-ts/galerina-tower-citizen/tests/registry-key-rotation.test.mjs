@@ -352,5 +352,40 @@ describe("registry rotation cryptographic adapter", () => {
         expectedAcceptedGenerationId: "b".repeat(64),
       },
     ));
+
+    const floors = {
+      minEpochId: 1,
+      minDelegationSerialFloor: 2,
+      minIndexIssuedAtFloor: "2026-07-01T00:00:00.000Z",
+      minAcceptedDelegationSerial: 3,
+      minAcceptedIndexIssuedAt: "2026-08-01T00:00:00.000Z",
+      expectedAcceptedGenerationId: "a".repeat(64),
+    };
+    let reads = 0;
+    const swapped = new Proxy(checkpoint, {
+      get(target, prop, receiver) {
+        if (prop === "payloadJson") {
+          reads += 1;
+          return reads === 1 ? target.payloadJson : '{"schema":"forged"}';
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+    const owned = restoreRegistryRotationCheckpoint(swapped, RING_KEY, floors);
+    assert.equal(owned.acceptedGenerationId, "a".repeat(64));
+    assert.ok(reads >= 1);
+    assert.throws(
+      () => restoreRegistryRotationCheckpoint(
+        new Proxy(checkpoint, {
+          get(target, prop, receiver) {
+            if (prop === "payloadJson") return '{"schema":"forged"}';
+            return Reflect.get(target, prop, receiver);
+          },
+        }),
+        RING_KEY,
+        floors,
+      ),
+      /malformed|authentication failed|not JSON|proxy/i,
+    );
   });
 });

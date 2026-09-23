@@ -10,10 +10,27 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const EXAMPLES_DIR = join(__dir, "../../../docs/Examples");
 const listFile = join(__dir, "cec-promote-list.json");
 
-if (!existsSync(listFile)) {
+export function admitPromoteCandidate(name) {
+  return typeof name === "string"
+    && name.length > 0
+    && !name.includes("\0")
+    && !name.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
+    && !isAbsolute(name)
+    && !/^[A-Za-z]:/.test(name);
+}
+
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+if (!isDirectRun()) {
+  // imported for admitPromoteCandidate
+} else if (!existsSync(listFile)) {
   console.error("Run cec-audit.mjs first to generate the promotion list.");
   process.exit(1);
-}
+} else {
 
 const { candidates } = JSON.parse(readFileSync(listFile, "utf8"));
 console.log(`Promoting ${candidates.length} examples to stable...\n`);
@@ -23,13 +40,20 @@ let alreadyStable = 0;
 let notFound = 0;
 
 for (const name of candidates) {
-  if (typeof name !== "string"
-      || name.length === 0
-      || name.includes("\0")
-      || name.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
-      || isAbsolute(name)
-      || /^[A-Za-z]:/.test(name)) {
+  if (!admitPromoteCandidate(name)) {
     console.log(`  REFUSED: ${name}`);
+    notFound++;
+    continue;
+  }
+  const candidateDir = join(EXAMPLES_DIR, name);
+  try {
+    if (lstatSync(candidateDir).isSymbolicLink()) {
+      console.log(`  REFUSED: ${name}`);
+      notFound++;
+      continue;
+    }
+  } catch {
+    console.log(`  NOT FOUND: ${name}`);
     notFound++;
     continue;
   }
@@ -92,3 +116,4 @@ for (const name of candidates) {
 
 console.log(`\nDone. Promoted: ${promoted}, Already stable: ${alreadyStable}, Not found: ${notFound}`);
 console.log(`Total stable now: ${96 + promoted} (was 96)`);
+}

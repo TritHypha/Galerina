@@ -33,10 +33,16 @@
 //     enforces), never a crash or a false --strict gate.
 // =============================================================================
 
-import { readFileSync, readdirSync } from "node:fs";
+import { lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import type { FileScan } from "./scanner.js";
-import { scanFungiSource } from "./scanner.js";
+import {
+  corpusSourceExceedsMaxBytes,
+  MAX_CORPUS_FILE_BYTES,
+  MAX_CORPUS_FILES,
+  MAX_CORPUS_WALK_DEPTH,
+  scanFungiSource,
+} from "./scanner.js";
 
 const SKIP_DIRS = new Set([
   "node_modules", ".git", "dist", "build", ".graph", "coverage", ".claude",
@@ -48,7 +54,8 @@ const HOST_EXT = /\.(?:c|m)js$/;
 /** Recursively find every .mjs/.cjs host under root (generated/dep dirs skipped). */
 export function discoverInlineHosts(root: string): string[] {
   const out: string[] = [];
-  const walk = (dir: string): void => {
+  const walk = (dir: string, depth: number): void => {
+    if (depth > MAX_CORPUS_WALK_DEPTH || out.length >= MAX_CORPUS_FILES) return;
     let entries;
     try {
       entries = readdirSync(dir, { withFileTypes: true });
@@ -56,14 +63,16 @@ export function discoverInlineHosts(root: string): string[] {
       return; // unreadable dir — files inside are unreachable anyway
     }
     for (const e of entries) {
+      if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) {
-        if (!SKIP_DIRS.has(e.name)) walk(join(dir, e.name));
+        if (!SKIP_DIRS.has(e.name)) walk(join(dir, e.name), depth + 1);
       } else if (HOST_EXT.test(e.name)) {
+        if (out.length >= MAX_CORPUS_FILES) return;
         out.push(join(dir, e.name));
       }
     }
   };
-  walk(root);
+  walk(root, 0);
   out.sort();
   return out;
 }
@@ -228,7 +237,14 @@ export function scanInlineFixtures(root: string): FileScan[] {
     const relPath = rel(abs);
     let source: string;
     try {
+      const st = lstatSync(abs);
+      if (st.isSymbolicLink() || !st.isFile() || st.size > MAX_CORPUS_FILE_BYTES) {
+        throw new Error("inline host is not an admitted regular file under 1 MiB");
+      }
       source = readFileSync(abs, "utf8"); // perf-allow: loop-sync-io — one read per host file in a per-file CLI scan loop — distinct path per iteration, not hoistable
+      if (corpusSourceExceedsMaxBytes(source)) {
+        throw new Error("inline host exceeds 1 MiB after decode");
+      }
     } catch (err) {
       out.push(hostFinding(relPath, err instanceof Error ? err.message : String(err)));
       continue;

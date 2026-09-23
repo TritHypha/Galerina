@@ -97,6 +97,15 @@ test("shared:true reserves a SharedArrayBuffer; never grows", () => {
 });
 
 // 0033 use-after-free guard (generation tag) — a stale Block must TRAP, not silently alias reused memory.
+test("hostile: a forged Block.bytes cannot widen the live view", () => {
+  const pool = mkPool();
+  const b = pool.allocate(16);
+  const forged = { ptr: b.ptr, bytes: 256, segment: b.segment, generation: b.generation };
+  assert.equal(caught(() => pool.i32(forged)).code, "LSM-BOUNDS-001");
+  assert.equal(caught(() => pool.u8(forged)).code, "LSM-BOUNDS-001");
+  assert.equal(pool.i32(b).length, 4);
+});
+
 test("use-after-free: accessing a freed Block traps LSM-UAF-001 (still-free case)", () => {
   const pool = mkPool();
   const b = pool.allocate(16);

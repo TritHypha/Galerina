@@ -1,7 +1,7 @@
 export { checkTaskPermissions } from "./check-permissions.js";
 export { resolveTaskDependencies } from "./dependency-graph.js";
 export { createDryRunPlan, dryRunTask } from "./dry-run.js";
-export { loadTasks, parseTasksSource } from "./load-tasks.js";
+export { loadTasks, parseTasksSource, MAX_TASK_SOURCE_BYTES, MAX_TASK_BLOCKS } from "./load-tasks.js";
 export { runTask } from "./run-task.js";
 export { createTaskReport, createTaskRunReport } from "./task-report.js";
 export type {

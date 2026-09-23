@@ -1,13 +1,16 @@
 import { readFile } from "node:fs/promises";
 import type { TaskDefinition } from "./types.js";
 
-const MAX_TASK_SOURCE_BYTES = 1_048_576;
+export const MAX_TASK_SOURCE_BYTES = 1_048_576;
+export const MAX_TASK_BLOCKS = 4_096;
 
 async function admitTaskFile(path: string): Promise<void> {
   const fsPromises = await import("node:fs/promises") as {
     stat?: (target: string) => Promise<{ isFile(): boolean; size: number }>;
   };
-  if (typeof fsPromises.stat !== "function") return;
+  if (typeof fsPromises.stat !== "function") {
+    throw new Error("task file admission requires fs.stat");
+  }
   const st = await fsPromises.stat(path);
   if (!st.isFile() || st.size > MAX_TASK_SOURCE_BYTES) {
     throw new Error(`task file '${path}' is not an admitted regular file under ${MAX_TASK_SOURCE_BYTES} bytes`);
@@ -33,6 +36,9 @@ export async function loadTasks(path: string): Promise<LoadedTasks> {
 }
 
 export function parseTasksSource(source: string): readonly TaskDefinition[] {
+  if (source.length > MAX_TASK_SOURCE_BYTES) {
+    throw new Error(`task source exceeds ${MAX_TASK_SOURCE_BYTES} bytes`);
+  }
   return extractTaskBlocks(source).map(parseTaskBlock);
 }
 
@@ -43,16 +49,15 @@ interface TaskBlock {
 
 function extractTaskBlocks(source: string): readonly TaskBlock[] {
   const blocks: TaskBlock[] = [];
-  let index = 0;
+  const re = /\btask\s+([A-Za-z_][A-Za-z0-9_-]*)\s*\{/g;
+  let match: RegExpExecArray | null;
 
-  while (index < source.length) {
-    const match = /\btask\s+([A-Za-z_][A-Za-z0-9_-]*)\s*\{/g.exec(source.slice(index));
-    if (match === null) {
-      break;
+  while ((match = re.exec(source)) !== null) {
+    if (blocks.length >= MAX_TASK_BLOCKS) {
+      throw new Error(`task source exceeds ${MAX_TASK_BLOCKS} task definitions`);
     }
-
     const name = match[1];
-    const openBraceIndex = index + match.index + match[0].lastIndexOf("{");
+    const openBraceIndex = match.index + match[0].lastIndexOf("{");
     const closeBraceIndex = findMatchingBrace(source, openBraceIndex);
 
     if (name === undefined || closeBraceIndex === undefined) {
@@ -63,7 +68,7 @@ function extractTaskBlocks(source: string): readonly TaskBlock[] {
       name,
       body: source.slice(openBraceIndex + 1, closeBraceIndex)
     });
-    index = closeBraceIndex + 1;
+    re.lastIndex = closeBraceIndex + 1;
   }
 
   return blocks;

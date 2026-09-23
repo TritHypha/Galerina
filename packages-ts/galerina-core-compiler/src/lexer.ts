@@ -331,6 +331,18 @@ export function lex(source: string, file: string): LexResult {
     return true;
   }
 
+  function emitLineTooLong(completedLine: number, length: number): void {
+    if (length > MAX_LINE_LENGTH) {
+      diagnostics.push({
+        code: "FUNGI-LEX-005",
+        name: "LINE_TOO_LONG",
+        severity: "warning",
+        message: `Line ${completedLine} exceeds maximum length (10,000 characters).`,
+        location: { file, line: completedLine, column: 1 },
+      });
+    }
+  }
+
   // FUNGI-LEX-004: Reject files that exceed the maximum size limit.
   if (source.length > MAX_FILE_SIZE) {
     const sizeError: LexerDiagnostic = {
@@ -493,17 +505,7 @@ export function lex(source: string, file: string): LexResult {
 
     // ── Newline ────────────────────────────────────────────────────────────
     if (ch === "\n") {
-      // FUNGI-LEX-005: Check if the line just completed exceeds MAX_LINE_LENGTH.
-      const lineLength = startPos - lineStartPos;
-      if (lineLength > MAX_LINE_LENGTH) {
-        diagnostics.push({
-          code: "FUNGI-LEX-005",
-          name: "LINE_TOO_LONG",
-          severity: "warning",
-          message: `Line ${startLine} exceeds maximum length (10,000 characters).`,
-          location: { file, line: startLine, column: 1 },
-        });
-      }
+      emitLineTooLong(startLine, startPos - lineStartPos);
       advance();
       // FUNGI-LEX-001: A generic type expression never spans a newline, but a
       // comparison `<` (e.g. `while i < n`) does. Reset the generic-nesting
@@ -531,10 +533,9 @@ export function lex(source: string, file: string): LexResult {
           break;
         }
         if (peek() === "\n") {
-          // Keep line/col tracking accurate inside block comments
+          emitLineTooLong(line, pos - lineStartPos);
           advance();
           emitToken(tok("newline", "\n", pos - 1, line - 1, 0));
-          lineStartPos = pos;
         } else {
           advance();
         }
@@ -959,6 +960,7 @@ export function lex(source: string, file: string): LexResult {
   }
 
   // ── EOF sentinel ───────────────────────────────────────────────────────────
+  emitLineTooLong(line, pos - lineStartPos);
   emitToken({ kind: "eof", kindId: TokenKindId.Eof, value: "", line, column: col, endLine: line, endColumn: col, start: pos, end: pos });
 
   return { tokens, diagnostics };

@@ -24,3 +24,9 @@ test("Git discovery includes tracked byte changes and untracked paths exactly on
     "docs/untracked.md",
   ]);
 });
+
+test("option-like Git bases are refused before exec", () => {
+  assert.throws(() => discoverChangedPaths(process.cwd(), "--output=/tmp/pwn"), /Git base/);
+  assert.throws(() => discoverChangedPaths(process.cwd(), "-c"), /Git base/);
+  assert.throws(() => discoverChangedPaths(process.cwd(), ""), /Git base/);
+});

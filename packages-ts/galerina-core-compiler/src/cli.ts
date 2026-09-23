@@ -406,7 +406,7 @@ interface FileCompileResult {
 // need it. This module now guards its process entry point so focused compiler
 // tests can import `compileFile` without executing the CLI as a side effect.
 
-const MAX_COMPILER_SOURCE_BYTES = 10 * 1024 * 1024;
+export const MAX_COMPILER_SOURCE_BYTES = 10 * 1024 * 1024;
 
 function readBoundedSource(filePath: string): string {
   const st = statSync(filePath);

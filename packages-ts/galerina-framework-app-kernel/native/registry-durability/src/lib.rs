@@ -615,6 +615,14 @@ fn linux_deny(code: &'static str) -> LinuxHostProbeVerdict {
     LinuxHostProbeVerdict::Deny(LinuxHostProbeError { code })
 }
 
+/// Linux `O_NONBLOCK`. Opening a preexisting FIFO without it can block forever.
+pub const LINUX_PUBLICATION_O_NONBLOCK: i32 = 0o4000;
+
+/// `ENXIO` (6) and `EAGAIN` (11) from a nonblocking FIFO open.
+pub fn linux_fifo_open_errno_is_refused(raw_os_error: Option<i32>) -> bool {
+    matches!(raw_os_error, Some(6) | Some(11))
+}
+
 pub fn admit_measured_linux_host(measured: MeasuredLinuxHost) -> LinuxHostProbeVerdict {
     if !measured.facts_complete {
         return linux_deny("LINUX_HOST_FACTS_INCOMPLETE");
@@ -1250,18 +1258,22 @@ mod linux {
     use std::fs::{self, File, Metadata, OpenOptions};
     use std::io::{self, Read, Write};
     use std::os::fd::{AsRawFd, FromRawFd, RawFd};
-    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    use std::os::unix::fs::{FileTypeExt, MetadataExt, OpenOptionsExt};
     use std::path::{Component, Path, PathBuf};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     const MAX_GENERATION_BYTES: usize = 16 * 1024 * 1024;
+    const O_RDONLY: c_int = 0;
     const O_WRONLY: c_int = 1;
     const O_CREAT: c_int = 0o100;
     const O_EXCL: c_int = 0o200;
+    const O_NONBLOCK: c_int = 0o4000;
     const O_DIRECTORY: c_int = 0o200000;
     const O_NOFOLLOW: c_int = 0o400000;
     const O_CLOEXEC: c_int = 0o2000000;
     const ENOENT: i32 = 2;
+    const ENXIO: i32 = 6;
+    const EAGAIN: i32 = 11;
     const EEXIST: i32 = 17;
     const RENAME_NOREPLACE: u32 = 1;
     const STATFS_OUTPUT_BYTES: usize = 256;
@@ -1506,6 +1518,16 @@ mod linux {
         CString::new(value).map_err(|_| ())
     }
 
+    fn file_is_fifo(file: &File) -> bool {
+        file.metadata()
+            .map(|metadata| metadata.file_type().is_fifo())
+            .unwrap_or(false)
+    }
+
+    fn fifo_open_denied(error: &io::Error) -> bool {
+        matches!(error.raw_os_error(), Some(ENXIO) | Some(EAGAIN))
+    }
+
     fn openat_file(directory: RawFd, name: &CString, flags: c_int, mode: u32) -> io::Result<File> {
         // SAFETY: name is NUL-terminated, directory is a live retained
         // descriptor, and ownership of a successful descriptor moves to File.
@@ -1523,7 +1545,16 @@ mod linux {
     }
 
     fn read_exact_at(directory: RawFd, name: &CString, expected: &[u8]) -> Result<bool, ()> {
-        let mut file = openat_file(directory, name, O_NOFOLLOW | O_CLOEXEC, 0).map_err(|_| ())?;
+        let mut file = openat_file(
+            directory,
+            name,
+            O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK,
+            0,
+        )
+        .map_err(|_| ())?;
+        if file_is_fifo(&file) {
+            return Err(());
+        }
         let before = file.metadata().map_err(|_| ())?;
         if !before.is_file() || before.nlink() != 1 || before.len() != expected.len() as u64 {
             return Ok(false);
@@ -1612,8 +1643,17 @@ mod linux {
             Ok(value) => value,
             Err(()) => return publication_deny("LINUX_PUBLICATION_FINAL_NAME_REFUSED"),
         };
-        match openat_file(descriptor, &final_name, O_NOFOLLOW | O_CLOEXEC, 0) {
-            Ok(_) => {
+        match openat_file(
+            descriptor,
+            &final_name,
+            O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK,
+            0,
+        ) {
+            Ok(existing) => {
+                if file_is_fifo(&existing) {
+                    return publication_deny("LINUX_FIFO_REFUSED");
+                }
+                drop(existing);
                 return match read_exact_at(descriptor, &final_name, bytes) {
                     Ok(true)
                         if anchor.directory.sync_all().is_ok() && anchor_unchanged(&anchor) =>
@@ -1626,6 +1666,9 @@ mod linux {
                 };
             }
             Err(error) if error.raw_os_error() == Some(ENOENT) => {}
+            Err(error) if fifo_open_denied(&error) => {
+                return publication_deny("LINUX_FIFO_REFUSED");
+            }
             Err(_) => return publication_deny("LINUX_PUBLICATION_EXISTING_OPEN_REFUSED"),
         }
         let nonce = match SystemTime::now().duration_since(UNIX_EPOCH) {

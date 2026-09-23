@@ -11,8 +11,13 @@ export { BitNetCpuBridge } from "./bitnet-cpu-bridge.js";
 export { BitNetGpuBridge } from "./bitnet-gpu-bridge.js";
 export { detectCpu, detectGpu } from "./hardware-detect.js";
 export type { CpuCapability, GpuCapability } from "./hardware-detect.js";
-export { loadNativeAddon } from "./addon-loader.js";
-export type { BitNetNativeAddon, AddonLoadResult } from "./addon-loader.js";
+export {
+  loadNativeAddon,
+  snapshotAddonFile,
+  stageAddonBytes,
+  MAX_ADDON_BYTES,
+} from "./addon-loader.js";
+export type { BitNetNativeAddon, AddonLoadResult, AddonSnapshot } from "./addon-loader.js";
 
 import { BitNetCpuBridge } from "./bitnet-cpu-bridge.js";
 import { BitNetGpuBridge } from "./bitnet-gpu-bridge.js";

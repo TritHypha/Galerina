@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import http from "node:http";
 
 import { createAppKernel } from "../../galerina-framework-app-kernel/dist/index.js";
+import { Verdict } from "../../galerina-tower-citizen/dist/index.js";
 import {
   MemoryReplayStore,
   admitWebhookReplay,
@@ -273,8 +274,109 @@ describe("createApiServer webhook gate", () => {
       });
       assert.equal(replayed.status, 409);
       assert.equal(ran.value, false);
+
+      const rotatedId = await request(port, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": "charge-http-3",
+          "x-hub-signature-256": signature(BODY),
+          "x-event-id": "evt-http-3",
+        },
+        body: BODY,
+      });
+      assert.equal(rotatedId.status, 409);
+      assert.equal(ran.value, false);
     } finally {
       await new Promise((resolve) => server.close(resolve));
+    }
+  });
+
+  it("hostile: a non-ALLOW channel does not consume replay identity", async () => {
+    const ran = { value: false };
+    const store = new MemoryReplayStore({ now: () => 10_000 });
+    const uniqueBody = Buffer.from(JSON.stringify({ amount: 777 }), "utf8");
+    const kernel = createAppKernel({
+      routes: [{
+        method: "POST",
+        path: "/charge",
+        handler: "charge",
+        requestType: "ChargeRequest",
+        auth: { mode: "public" },
+      }],
+      requestValidators: {
+        ChargeRequest(value) {
+          return value !== null && typeof value === "object" && !Array.isArray(value)
+            && Object.keys(value).length === 1 && Number.isFinite(value.amount);
+        },
+      },
+      dispatch: {
+        charge: () => { ran.value = true; return { status: 200, body: { ok: true } }; },
+      },
+    });
+    const denied = createApiServer({
+      kernel,
+      allowInsecureLoopback: true,
+      resolveChannelVerdict: () => undefined,
+      webhook: {
+        secret: SECRET,
+        signatureHeader: "x-hub-signature-256",
+        eventIdHeader: "x-event-id",
+        replayStore: store,
+        replayTtlSeconds: 30,
+        signaturePrefix: "sha256=",
+      },
+    });
+    const { port: deniedPort } = await listen(denied, 0);
+    try {
+      const blocked = await request(deniedPort, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "x-hub-signature-256": signature(uniqueBody),
+          "x-event-id": "evt-channel-1",
+        },
+        body: uniqueBody,
+      });
+      assert.equal(blocked.status, 401);
+      assert.equal(ran.value, false);
+    } finally {
+      await new Promise((resolve) => denied.close(resolve));
+    }
+
+    const allowed = createApiServer({
+      kernel,
+      allowInsecureLoopback: true,
+      resolveChannelVerdict: () => Verdict.ALLOW,
+      resolvePrincipal: () => ({ principalId: "webhook-test", principalScopes: [] }),
+      webhook: {
+        secret: SECRET,
+        signatureHeader: "x-hub-signature-256",
+        eventIdHeader: "x-event-id",
+        replayStore: store,
+        replayTtlSeconds: 30,
+        signaturePrefix: "sha256=",
+      },
+    });
+    const { port: allowedPort } = await listen(allowed, 0);
+    try {
+      const ok = await request(allowedPort, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": "charge-channel-1",
+          "x-hub-signature-256": signature(uniqueBody),
+          "x-event-id": "evt-channel-1",
+        },
+        body: uniqueBody,
+      });
+      assert.equal(ok.status, 200, ok.body);
+      assert.equal(ran.value, true);
+    } finally {
+      await new Promise((resolve) => allowed.close(resolve));
     }
   });
 });

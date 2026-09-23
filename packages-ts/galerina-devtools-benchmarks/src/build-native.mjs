@@ -1,7 +1,27 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+export function nativeCompileSpawnSpec(file, args) {
+  if (typeof file !== "string" || file.length === 0) {
+    throw new Error("REFUSED: compiler executable path is missing");
+  }
+  if (!Array.isArray(args) || args.some((a) => typeof a !== "string") || args.length < 1) {
+    throw new Error("REFUSED: compiler argv is not a non-empty string vector");
+  }
+  return {
+    file,
+    args: Object.freeze([...args]),
+    options: Object.freeze({
+      encoding: "utf8",
+      shell: false,
+      windowsHide: true,
+      timeout: 120_000,
+      stdio: "pipe",
+    }),
+  };
+}
 
 // Rebuild ALL native benchmark binaries from source so the comparison never
 // trusts a stale, checked-in .exe that may have been built on a different CPU.
@@ -29,14 +49,8 @@ const CPP_OUT = {
 };
 
 function tryCmd(label, file, args, opts = {}) {
-  const result = spawnSync(file, args, {
-    encoding: "utf8",
-    shell: false,
-    windowsHide: true,
-    timeout: 120_000,
-    stdio: "pipe",
-    ...opts,
-  });
+  const spec = nativeCompileSpawnSpec(file, args);
+  const result = spawnSync(spec.file, spec.args, { ...spec.options, ...opts });
   if (result.status === 0) {
     console.log(`  [ok]   ${label}`);
     return true;
@@ -46,38 +60,44 @@ function tryCmd(label, file, args, opts = {}) {
   return false;
 }
 
-const dirs = readdirSync(benchDir).filter((d) => {
-  try { return statSync(join(benchDir, d)).isDirectory(); } catch { return false; }
-}).sort();
+function main() {
+  const dirs = readdirSync(benchDir).filter((d) => {
+    try { return statSync(join(benchDir, d)).isDirectory(); } catch { return false; }
+  }).sort();
 
-let rustGen = 0, rustAvx2 = 0, cppN = 0, rsDirs = 0;
+  let rustGen = 0, rustAvx2 = 0, cppN = 0, rsDirs = 0;
 
-for (const d of dirs) {
-  const dir = join(benchDir, d);
-  const rs  = join(dir, "bench.rs");
-  const cpp = join(dir, "bench.cpp");
-  if (!existsSync(rs) && !existsSync(cpp)) continue;
-  console.log(`\n=== ${d} ===`);
+  for (const d of dirs) {
+    const dir = join(benchDir, d);
+    const rs  = join(dir, "bench.rs");
+    const cpp = join(dir, "bench.cpp");
+    if (!existsSync(rs) && !existsSync(cpp)) continue;
+    console.log(`\n=== ${d} ===`);
 
-  // ── Rust: generic (portable) + AVX2-tuned ───────────────────────────────
-  if (existsSync(rs)) {
-    rsDirs++;
-    if (tryCmd(`Rust generic (${d})`, "rustc", ["-O", "-o", join(dir, "bench-native-rust.exe"), rs])) rustGen++;
-    if (tryCmd(`Rust AVX2 (${d})`, "rustc", ["-O", "-C", "target-feature=+avx2,+fma", "-o", join(dir, "bench-native-avx2.exe"), rs])) rustAvx2++;
+    // ── Rust: generic (portable) + AVX2-tuned ───────────────────────────────
+    if (existsSync(rs)) {
+      rsDirs++;
+      if (tryCmd(`Rust generic (${d})`, "rustc", ["-O", "-o", join(dir, "bench-native-rust.exe"), rs])) rustGen++;
+      if (tryCmd(`Rust AVX2 (${d})`, "rustc", ["-O", "-C", "target-feature=+avx2,+fma", "-o", join(dir, "bench-native-avx2.exe"), rs])) rustAvx2++;
+    }
+
+    // ── C++: only the dirs whose output names runner.mjs recognises ──────────
+    if (existsSync(cpp) && CPP_OUT[d]) {
+      const out = join(dir, CPP_OUT[d]);
+      const ok =
+        tryCmd(`C++ g++ (${d})`, "g++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
+        tryCmd(`C++ clang++ (${d})`, "clang++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
+        tryCmd(`C++ MSVC cl (${d})`, "cl", ["/O2", "/EHsc", cpp, `/Fe:${out}.exe`], { cwd: dir });
+      if (ok) cppN++;
+    } else if (existsSync(cpp)) {
+      console.log(`  [note] C++ source present but runner.mjs has no lookup name for "${d}" — skipping (Rust covers the native column).`);
+    }
   }
 
-  // ── C++: only the dirs whose output names runner.mjs recognises ──────────
-  if (existsSync(cpp) && CPP_OUT[d]) {
-    const out = join(dir, CPP_OUT[d]);
-    const ok =
-      tryCmd(`C++ g++ (${d})`, "g++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
-      tryCmd(`C++ clang++ (${d})`, "clang++", ["-O2", "-march=native", "-o", out, cpp, "-lm"]) ||
-      tryCmd(`C++ MSVC cl (${d})`, "cl", ["/O2", "/EHsc", cpp, `/Fe:${out}.exe`], { cwd: dir });
-    if (ok) cppN++;
-  } else if (existsSync(cpp)) {
-    console.log(`  [note] C++ source present but runner.mjs has no lookup name for "${d}" — skipping (Rust covers the native column).`);
-  }
+  console.log(`\nDone. Rust dirs: ${rsDirs} | generic built: ${rustGen} | AVX2 built: ${rustAvx2} | C++ built: ${cppN}.`);
+  if (cppN === 0) console.log("No C++ toolchain found (g++/clang++/cl) — C++ column will be N/A; the Rust column is the native CPU ceiling.");
 }
 
-console.log(`\nDone. Rust dirs: ${rsDirs} | generic built: ${rustGen} | AVX2 built: ${rustAvx2} | C++ built: ${cppN}.`);
-if (cppN === 0) console.log("No C++ toolchain found (g++/clang++/cl) — C++ column will be N/A; the Rust column is the native CPU ceiling.");
+const IS_MAIN = process.argv[1] !== undefined
+  && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (IS_MAIN) main();

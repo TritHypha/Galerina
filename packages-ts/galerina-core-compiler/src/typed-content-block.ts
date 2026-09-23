@@ -30,6 +30,8 @@ interface InterpolationSite {
 }
 
 const IDENT = /^[A-Za-z_][A-Za-z0-9_]*$/;
+export const MAX_TYPED_CONTENT_CHARS = 1_048_576;
+export const MAX_TYPED_CONTENT_INTERPOLATIONS = 4_096;
 
 const HTML_INJECTION = [
   /<\s*script\b/i,
@@ -155,6 +157,15 @@ function scanInterpolations(
       continue;
     }
     sites.push({ name, location });
+    if (sites.length > MAX_TYPED_CONTENT_INTERPOLATIONS) {
+      diagnostics.push(diagnostic(
+        FUNGI_BLOCK_005,
+        `Typed content interpolation count exceeds the ${MAX_TYPED_CONTENT_INTERPOLATIONS} host bound.`,
+        location,
+        "Reduce interpolations in this block; the validator is single-pass and count-capped.",
+      ));
+      return { sites, diagnostics };
+    }
     index = cursor + 2;
     const consumed = advanceLocation(content, open, index, line, column);
     line = consumed.line;
@@ -167,6 +178,16 @@ export function validateTypedContentBlock(
   input: TypedContentBlockInput,
 ): readonly CompilerDiagnostic[] {
   const diagnostics: CompilerDiagnostic[] = [];
+  if (input.content.length > MAX_TYPED_CONTENT_CHARS) {
+    return Object.freeze([
+      diagnostic(
+        FUNGI_BLOCK_005,
+        `Typed content block exceeds the ${MAX_TYPED_CONTENT_CHARS}-character host bound.`,
+        locationAt(input.file, input.startLine, input.content, 0),
+        "Split the block or reduce interpolated payload size before type-checking.",
+      ),
+    ]);
+  }
   const scanned = scanInterpolations(input.content, input.file, input.startLine);
   diagnostics.push(...scanned.diagnostics);
 

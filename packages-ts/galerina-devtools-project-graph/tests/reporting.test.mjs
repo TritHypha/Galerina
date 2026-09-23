@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import {
   buildProofChainFromBuffers, upgradeExecutionProofV1ToV2, validateProofChain,
@@ -163,6 +164,15 @@ describe("buildEventDAG", () => {
   it("refuses an oversized event list", () => {
     const events = Array.from({ length: 8193 }, (_, i) => makeEvent(`e${i}`, "allowed", "t", `s${i}`));
     assert.throws(() => buildEventDAG(events), /8192/);
+  });
+
+  it("does not rebuild an immutable graph inside the continuation loop", () => {
+    const src = readFileSync(new URL("../src/reporting/event-dag.ts", import.meta.url), "utf8");
+    assert.match(src, /const linked = new Set<string>\(\)/);
+    assert.match(src, /return builder\.build\(\);/);
+    const loop = src.indexOf("// continuation:");
+    const build = src.lastIndexOf("builder.build()");
+    assert.ok(loop >= 0 && build > loop);
   });
 });
 

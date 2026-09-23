@@ -36,17 +36,29 @@ async function build(src) {
   return { wat, wasm: asm.wasm, instance };
 }
 
+test("G5(c): a secret early-return flow captures the operand then wipes", async () => {
+  const src = `record Wide { a: Int, b: Int, c: Int }
+pure flow checkPos(s: Int) -> Int
+contract { intent { "checkPos" } privacy { contains PII } }
+{ if s <= 0 { return 0 } let w: Wide = Wide { a: s, b: s, c: s } return w.a }
+`;
+  const { wat } = await build(src);
+  assert.ok(wat.includes("G5c capture-then-wipe"),
+    `early-return secret flows must capture then wipe:\n${wat}`);
+  assert.ok(!/\(memory\.fill[\s\S]{0,80}\(return \(i32\.load/.test(wat),
+    "wipe must not precede evaluation of a heap load operand");
+});
+
 test("G5(b): a secret flow emits memory.fill BEFORE the invariant-breach unreachable", async () => {
   const { wat } = await build(mk(true));
   // The runtime-guard breach gate now wipes the arena immediately before trapping.
   assert.ok(wat.includes("G5b intrusion-wipe before trap"),
     `the intrusion-wipe marker must be emitted at the breach:\n${wat}`);
   // The exact folded shape: the bulk-memory fill sits INSIDE the (then …) branch, right before `unreachable`.
-  assert.ok(/\(then \(memory\.fill[^\n]*\) unreachable/.test(wat),
-    `the wipe must be inside the (then …) branch, before unreachable:\n${wat}`);
-  // It must use the part-a fill shape (same base + live $__fungi_heap length).
-  assert.ok(/\(then \(memory\.fill \(i32\.const 1024\) \(i32\.const 0\) \(i32\.sub \(global\.get \$__fungi_heap\) \(i32\.const 1024\)\)\) unreachable/.test(wat),
-    `the breach wipe must match the part-a memory.fill (base 1024, live $__fungi_heap length):\n${wat}`);
+  assert.ok(/\(then \(memory\.fill \(local\.get \$__fungi_owner_base\)/.test(wat),
+    `the wipe must be this call's owned arena, inside the (then …) branch:\n${wat}`);
+  assert.ok(wat.includes("unreachable (; G5b intrusion-wipe before trap ;)"),
+    `unreachable must follow the owned wipe:\n${wat}`);
 });
 
 test("G5(b): a NON-secret flow with the same invariant does NOT wipe at the breach (byte-identical, pays nothing)", async () => {

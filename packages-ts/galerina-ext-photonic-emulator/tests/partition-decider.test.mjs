@@ -7,7 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   PartitionDecider, meechRealizedRatio, requiredRedundancy, crossover, Tdigital, Tphotonic,
-  PHOTONIC, NOISY,
+  PHOTONIC, NOISY, MAX_KERNEL_N,
 } from "../dist/index.js";
 
 const decider = new PartitionDecider();
@@ -79,4 +79,17 @@ test("M6: NaN/negative/infeasible inputs all fail closed → digital", () => {
   assert.equal(decider.decide({ n: 1024, redundancyN: NaN, lane: "photonic" }).target, "digital");
   assert.equal(decider.decide({ n: -5, redundancyN: 1, lane: "photonic" }).target, "digital");
   assert.equal(decider.decide({ n: 512, lane: "photonic", phys: NOISY, tolerance: 0.001 }).target, "digital");
+});
+
+test("hostile: oversized kernel n does not allocate and stays digital", () => {
+  const t0 = Date.now();
+  const huge = decider.decide({ n: 1_000_000_000, redundancyN: 1, lane: "photonic" });
+  const over = decider.decide({ n: MAX_KERNEL_N + 1, redundancyN: 1, lane: "photonic" });
+  const inf = requiredRedundancy(1_000_000_000, PHOTONIC, 0.05);
+  const ms = Date.now() - t0;
+  assert.equal(huge.target, "digital");
+  assert.match(huge.reason, /FAIL-CLOSED|oversized/);
+  assert.equal(over.target, "digital");
+  assert.equal(inf, Infinity);
+  assert.ok(ms < 200, `must not allocate n=1e9 arrays; took ${ms}ms`);
 });

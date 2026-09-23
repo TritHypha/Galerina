@@ -60,7 +60,7 @@ export function buildCrossLanguageRows(latest, runtimeCatalog = REPORT_RUNTIMES)
   });
 }
 
-function markdown(value) {
+export function markdown(value) {
   return String(value ?? "")
     .replaceAll("\\", "\\\\")
     .replaceAll("|", "\\|")

@@ -21,7 +21,7 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { analyzeFile, buildProvenanceGraph, collectFungiFiles } from "./analyzer.js";
+import { analyzeFile, buildProvenanceGraph, collectFungiCorpus } from "./analyzer.js";
 import { renderTextReport, renderJsonReport, renderProvReport } from "./reporter.js";
 import type { ProvenanceOptions } from "./types.js";
 
@@ -103,16 +103,20 @@ async function main(): Promise<number> {
         return 1;
       }
 
-      const files = collectFungiFiles(resolve(dir));
-      if (files.length === 0) {
+      const collected = collectFungiCorpus(resolve(dir));
+      if (!collected.complete) {
+        process.stderr.write(`provenance audit: incomplete traversal of '${dir}' (${collected.refused.length} refused)\n`);
+        return 2;
+      }
+      if (collected.files.length === 0) {
         process.stderr.write(`No .fungi files found in '${dir}'\n`);
         return 0;
       }
 
-      const graph = buildProvenanceGraph(files);
+      const graph = buildProvenanceGraph([...collected.files]);
 
       process.stdout.write(`\nProvenance Audit — ${dir}\n`);
-      process.stdout.write(`Files: ${files.length} | Flows: ${graph.summary.totalFlows} | Tainted: ${graph.summary.flowsWithTaintedData} | High-risk: ${graph.summary.flowsWithUngatedSinks}\n\n`);
+      process.stdout.write(`Files: ${collected.files.length} | Flows: ${graph.summary.totalFlows} | Tainted: ${graph.summary.flowsWithTaintedData} | High-risk: ${graph.summary.flowsWithUngatedSinks}\n\n`);
 
       if (graph.riskFlows.length === 0) {
         process.stdout.write("  No high-risk flows — all tainted data passes through gates before reaching sinks.\n\n");
@@ -140,21 +144,24 @@ async function main(): Promise<number> {
       const formatArg = formatIdx >= 0 ? args[formatIdx + 1] : undefined;
       const wantProvJson = formatArg === "prov-json";
 
-      const files = collectFungiFiles(resolve(dir));
-
-      if (files.length === 0) {
+      const collected = collectFungiCorpus(resolve(dir));
+      if (!collected.complete) {
+        process.stderr.write(`provenance report: incomplete traversal of '${dir}' (${collected.refused.length} refused)\n`);
+        return 2;
+      }
+      if (collected.files.length === 0) {
         process.stderr.write(`No .fungi files found in '${dir}'\n`);
         return 0;
       }
 
-      const graph = buildProvenanceGraph(files);
+      const graph = buildProvenanceGraph([...collected.files]);
 
       if (wantProvJson) {
         process.stdout.write(renderProvReport(graph, { format: "prov-json" }) + "\n");
       } else if (wantJson) {
-        process.stdout.write(renderJsonReport(graph, files.length) + "\n");
+        process.stdout.write(renderJsonReport(graph, collected.files.length) + "\n");
       } else {
-        process.stdout.write(renderTextReport(graph, files.length));
+        process.stdout.write(renderTextReport(graph, collected.files.length));
       }
 
       return graph.summary.flowsWithUngatedSinks > 0 ? 2 : 0;

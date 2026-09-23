@@ -28,8 +28,16 @@
 // WATAssemblerConfig is defined in type-registry to avoid duplication.
 // Import it for use in this module, and re-export so callers can import
 // from this module directly.
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { WATAssemblerConfig } from "./type-registry.js";
 export type { WATAssemblerConfig } from "./type-registry.js";
+
+/** Wall-clock bound for instantiate+call. Same-thread timeouts cannot stop a guest loop. */
+export const WASM_FLOW_DEADLINE_MS = 5_000;
+/** Cooperative loop back-edge budget injected before assembly. */
+export const WASM_FLOW_MAX_LOOP_BACKEDGES = 1_000_000;
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -288,26 +296,97 @@ export interface WASMExecutionResult {
   readonly binaryBytes: number;
 }
 
+export interface WASMFlowExecutionOptions {
+  readonly deadlineMs?: number;
+  readonly maxLoopBackedges?: number;
+}
+
+function admitPositiveBound(raw: number | undefined, fallback: number, label: string): number | string {
+  const n = raw === undefined ? fallback : raw;
+  if (typeof n !== "number" || !Number.isFinite(n) || n <= 0 || n > fallback) {
+    return `${label} is not an admitted positive bound at most ${fallback}`;
+  }
+  return n;
+}
+
+/** Insert a mutating fuel global and a back-edge tick at every `(loop`. */
+export function injectLoopFuel(watSource: string, fuel: number): string {
+  if (typeof fuel !== "number" || !Number.isSafeInteger(fuel) || fuel < 1) {
+    throw new Error("maxLoopBackedges must be a positive safe integer");
+  }
+  if (watSource.includes("$__fungi_fuel") || !/\(loop\b/.test(watSource)) return watSource;
+  const tick =
+    "(global.set $__fungi_fuel (i32.sub (global.get $__fungi_fuel) (i32.const 1)))" +
+    "(if (i32.le_s (global.get $__fungi_fuel) (i32.const 0)) (then (unreachable)))";
+  const withGlobal = watSource.replace(/\(module\b/, `(module (global $__fungi_fuel (mut i32) (i32.const ${fuel}))`);
+  return withGlobal.replace(/\(loop(\s+\$[A-Za-z0-9_$.]+)?/g, (_m, label: string | undefined) => `(loop${label ?? ""} ${tick}`);
+}
+
+function resolveFlowWorkerFile(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const nextToJs = join(here, "wasm-flow-worker.mjs");
+  if (existsSync(nextToJs)) return nextToJs;
+  return join(here, "..", "src", "wasm-flow-worker.mjs");
+}
+
+function invokeWithDeadline(
+  wasm: Uint8Array,
+  flowName: string,
+  args: readonly number[],
+  deadlineMs: number,
+): Promise<{ result?: number | bigint; error?: string; execMs: number }> {
+  const started = performance.now();
+  const workerFile = resolveFlowWorkerFile();
+  return import("node:worker_threads" as string).then((wt) => {
+    const WorkerCtor = (wt as { Worker: new (file: string, opts: object) => {
+      once(event: string, fn: (...args: never[]) => void): void;
+      terminate(): Promise<number>;
+    } }).Worker;
+    return new Promise((resolve) => {
+      let settled = false;
+      const worker = new WorkerCtor(workerFile, { workerData: { wasm, flowName, args: [...args] } });
+      const settle = (msg: { result?: number | bigint; error?: string }): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        void worker.terminate();
+        resolve({ ...msg, execMs: performance.now() - started });
+      };
+      const timer = setTimeout(() => {
+        settle({ error: "WASM execution deadline exceeded" });
+      }, deadlineMs);
+      worker.once("message", (msg: { ok?: boolean; result?: number | bigint; error?: string }) => {
+        if (msg !== null && msg !== undefined && msg.ok === true && (typeof msg.result === "number" || typeof msg.result === "bigint")) {
+          settle({ result: msg.result });
+        } else {
+          settle({ error: String(msg?.error ?? "WASM invoke failed") });
+        }
+      });
+      worker.once("error", (err: unknown) => settle({ error: String(err) }));
+    });
+  });
+}
+
 /**
- * Phase 27: Compiles a Galerina pure flow to binary WASM and executes it.
- *
- * Full pipeline:
- *   1. Assemble WAT → binary WASM via wabt
- *   2. WebAssembly.instantiate(binary)
- *   3. Call the exported function with args
- *   4. Return the result
- *
- * @param watSource - WAT module source (from renderWAT).
- * @param flowName  - Name of the exported function to call.
- * @param args      - Integer arguments to pass (must match the function signature).
- * @returns         - Execution result including the return value and timing.
+ * Phase 27: Compiles a Galerina pure flow to binary WASM and executes it
+ * under a loop-fuel budget and a worker wall-clock deadline.
  */
 export async function executeWASMFlow(
   watSource: string,
   flowName: string,
   args: readonly number[],
+  opts?: WASMFlowExecutionOptions,
 ): Promise<WASMExecutionResult> {
-  const assembled = await assembleWAT(watSource);
+  const deadline = admitPositiveBound(opts?.deadlineMs, WASM_FLOW_DEADLINE_MS, "WASM execution deadline");
+  if (typeof deadline === "string") {
+    return { flowName, args, result: null, error: deadline, execMs: 0, binaryBytes: 0 };
+  }
+  const fuel = admitPositiveBound(opts?.maxLoopBackedges, WASM_FLOW_MAX_LOOP_BACKEDGES, "WASM loop fuel");
+  if (typeof fuel === "string") {
+    return { flowName, args, result: null, error: fuel, execMs: 0, binaryBytes: 0 };
+  }
+  const metered = injectLoopFuel(watSource, fuel);
+  const assembled = await assembleWAT(metered);
   // #163 defense-in-depth: a wabt-REJECTED module falls back to the minimal-encoder
   // STUB with `valid:true` + a "NOT a faithful compile" diagnostic. Gating on `valid`
   // ALONE would RUN that stub and return a WRONG VALUE instead of trapping (the exact
@@ -325,42 +404,17 @@ export async function executeWASMFlow(
       binaryBytes: assembled.wasm.byteLength,
     };
   }
-
-  const WASM_FLOW_DEADLINE_MS = 5_000;
-  try {
-    const t0 = performance.now();
-    const wasmBytes = Uint8Array.from(assembled.wasm);
-    const wasmResult: unknown = await Promise.race([
-      WebAssembly.instantiate(wasmBytes),
-      new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error("WASM execution deadline exceeded")), WASM_FLOW_DEADLINE_MS);
-      }),
-    ]);
-    const instance = (wasmResult as { instance: WebAssembly.Instance }).instance
-                  ?? (wasmResult as unknown as WebAssembly.Instance);
-    const fn = (instance.exports as Record<string, unknown>)[flowName];
-    if (typeof fn !== "function") {
-      return {
-        flowName, args, result: null,
-        error: `Export '${flowName}' not found. Available: ${Object.keys(instance.exports).join(", ")}`,
-        execMs: performance.now() - t0,
-        binaryBytes: wasmBytes.byteLength,
-      };
-    }
-    const result = (fn as (...a: number[]) => number | bigint)(...args);
-    const execMs = performance.now() - t0;
-    if (execMs > WASM_FLOW_DEADLINE_MS) {
-      return { flowName, args, result: null, error: "WASM execution deadline exceeded", execMs, binaryBytes: wasmBytes.byteLength };
-    }
-    return { flowName, args, result: result as number | bigint, execMs, binaryBytes: wasmBytes.byteLength };
-  } catch (err) {
+  const invoked = await invokeWithDeadline(Uint8Array.from(assembled.wasm), flowName, args, deadline);
+  if (invoked.error !== undefined) {
     return {
-      flowName, args, result: null,
-      error: String(err),
-      execMs: 0,
+      flowName, args, result: null, error: invoked.error, execMs: invoked.execMs,
       binaryBytes: assembled.wasm.byteLength,
     };
   }
+  return {
+    flowName, args, result: invoked.result ?? null, execMs: invoked.execMs,
+    binaryBytes: assembled.wasm.byteLength,
+  };
 }
 
 // ---------------------------------------------------------------------------

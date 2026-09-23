@@ -24,8 +24,8 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 };
 
 /** Host-owned ceiling. Source-declared attempts above this refuse rather than loop. */
-const MAX_RETRY_ATTEMPTS = 8;
-const MAX_RETRY_DELAY_MS = 30_000;
+export const MAX_RETRY_ATTEMPTS = 8;
+export const MAX_RETRY_DELAY_MS = 30_000;
 
 const DEFAULT_EFFECT_RETRY_POLICY: EffectRetryPolicy = {
   policies: new Map<string, RetryConfig>(),
@@ -135,11 +135,12 @@ export async function withRetry<T>(
 // ---------------------------------------------------------------------------
 
 function computeDelay(config: RetryConfig, attempt: number): number {
-  if (config.strategy === "exponential_backoff") {
-    return config.delayMs * Math.pow(2, attempt - 1);
-  }
-  // linear or none
-  return config.delayMs;
+  const base = Number.isFinite(config.delayMs) && config.delayMs > 0 ? config.delayMs : 0;
+  const raw = config.strategy === "exponential_backoff"
+    ? base * Math.pow(2, attempt - 1)
+    : base;
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.min(raw, MAX_RETRY_DELAY_MS);
 }
 
 function sleep(ms: number): Promise<void> {

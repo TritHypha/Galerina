@@ -130,7 +130,7 @@ export class StaticMemoryPool {
     const generation = (this.genCounter.get(ptr) ?? 0) + 1; // 0033: bump per (re)allocation of this ptr
     this.genCounter.set(ptr, generation);
     this.live.set(ptr, { count: need, segment, generation });
-    return { ptr, bytes: capacity, segment, generation };
+    return Object.freeze({ ptr, bytes: capacity, segment, generation });
   }
 
   /** Find the start of the first run of `need` contiguous free blocks, or -1. */
@@ -197,13 +197,26 @@ export class StaticMemoryPool {
     MemoryValidator.assertAligned(block.ptr);
     const rec = this.live.get(block.ptr)!;
     const bytes = rec.count * this.blockBytes;
+    if (block.bytes !== bytes || block.segment !== rec.segment) {
+      throw new SecurityTrap(
+        "LSM-BOUNDS-001",
+        `block view does not match the live allocation at ptr ${block.ptr}`,
+      );
+    }
     return new Int32Array(this.buffer, block.ptr, bytes / 4);
   }
 
   u8(block: Block): Uint8Array {
     this.assertLive(block);
     const rec = this.live.get(block.ptr)!;
-    return new Uint8Array(this.buffer, block.ptr, rec.count * this.blockBytes);
+    const bytes = rec.count * this.blockBytes;
+    if (block.bytes !== bytes || block.segment !== rec.segment) {
+      throw new SecurityTrap(
+        "LSM-BOUNDS-001",
+        `block view does not match the live allocation at ptr ${block.ptr}`,
+      );
+    }
+    return new Uint8Array(this.buffer, block.ptr, bytes);
   }
 
   get capacityBytes(): number {

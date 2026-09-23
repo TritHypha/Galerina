@@ -15,10 +15,12 @@
 // =============================================================================
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, symlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadNativeAddon } from "../dist/index.js";
+import { tmpdir } from "node:os";
+import { loadNativeAddon, snapshotAddonFile, stageAddonBytes } from "../dist/index.js";
 
 // The loader's FIRST candidate path, derived the same way it does (relative to the package root).
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -81,4 +83,67 @@ test("RD-0238: absent addon ⇒ no-addon-found (clean-checkout path unaffected)"
   const r = loadNativeAddon();
   assert.equal(r.loaded, false);
   assert.match(r.reason, /no compiled native addon found/, r.reason);
+});
+
+test("pin identity: snapshot hash is of captured bytes; staged copy survives source replace", () => {
+  plantDummy();
+  try {
+    const snap = snapshotAddonFile(ADDON_PATH);
+    const expected = createHash("sha256").update(DUMMY).digest("hex");
+    assert.equal(snap.hash, expected);
+    assert.deepEqual(snap.bytes, DUMMY);
+    writeFileSync(ADDON_PATH, Buffer.from("replaced-after-snapshot\n"));
+    const staged = stageAddonBytes(snap.bytes);
+    try {
+      assert.deepEqual(readFileSync(staged.path), DUMMY);
+      assert.notDeepEqual(readFileSync(ADDON_PATH), DUMMY);
+    } finally {
+      rmSync(staged.dir, { recursive: true, force: true });
+    }
+  } finally { unplant(); }
+});
+
+test("pin identity: directory candidate is refused; require is not reached", () => {
+  mkdirSync(RELEASE_DIR, { recursive: true });
+  try { rmSync(ADDON_PATH, { force: true }); } catch { /* ignore */ }
+  mkdirSync(ADDON_PATH);
+  try {
+    const r = loadNativeAddon({ expectedHash: "0".repeat(64) });
+    assert.equal(r.loaded, false);
+    assert.match(r.reason, /ERR_ADDON_NOT_REGULAR/, r.reason);
+  } finally {
+    rmSync(ADDON_PATH, { recursive: true, force: true });
+  }
+});
+
+test("pin identity: symlink candidate is refused", (t) => {
+  const target = join(tmpdir(), `addon-target-${process.pid}.node`);
+  writeFileSync(target, DUMMY);
+  mkdirSync(RELEASE_DIR, { recursive: true });
+  try { rmSync(ADDON_PATH, { force: true }); } catch { /* ignore */ }
+  try {
+    try {
+      symlinkSync(target, ADDON_PATH);
+    } catch (err) {
+      t.skip(`symlink creation refused on this host: ${err instanceof Error ? err.message : err}`);
+      return;
+    }
+    const r = loadNativeAddon({ expectedHash: createHash("sha256").update(DUMMY).digest("hex") });
+    assert.equal(r.loaded, false);
+    assert.match(r.reason, /ERR_ADDON_SYMLINK/, r.reason);
+  } finally {
+    try { rmSync(ADDON_PATH, { force: true }); } catch { /* ignore */ }
+    try { rmSync(target, { force: true }); } catch { /* ignore */ }
+  }
+});
+
+test("pin identity: allowUnverified still hashes captured bytes then stages before require", () => {
+  plantDummy();
+  try {
+    const r = loadNativeAddon({ allowUnverified: true });
+    assert.equal(r.loaded, false);
+    assert.equal(r.addonHash, createHash("sha256").update(DUMMY).digest("hex"));
+    assert.match(r.reason, /failed to load/, r.reason);
+    assert.doesNotMatch(r.reason, /ERR_ADDON_UNPINNED/);
+  } finally { unplant(); }
 });

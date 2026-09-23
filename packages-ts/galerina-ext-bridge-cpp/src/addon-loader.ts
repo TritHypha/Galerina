@@ -19,9 +19,18 @@
  */
 
 import { createRequire } from "node:module";
-import { existsSync, readFileSync } from "node:fs";
+import {
+  closeSync,
+  lstatSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+  writeSync,
+} from "node:fs";
 import { createHash } from "node:crypto";
-import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -51,11 +60,60 @@ export interface AddonLoadResult {
   readonly reason: string;
   /** Resolved path of the addon that was found (if any). */
   readonly addonPath?: string;
+  /** Exclusive copy that `require()` actually loaded, when a load was attempted. */
+  readonly loadedFrom?: string;
   /** CF-7: SHA-256 hex of the `.node` binary, computed BEFORE `require()`.
    *  Feeds the bridge manifest's `nativeAddonHash` for supply-chain attestation. */
   readonly addonHash?: string;
   /** RD-0238: true iff the loaded addon's hash was verified against a caller-supplied pin. */
   readonly verified?: boolean;
+}
+
+export const MAX_ADDON_BYTES = 64 * 1024 * 1024;
+
+export interface AddonSnapshot {
+  readonly sourcePath: string;
+  readonly bytes: Buffer;
+  readonly hash: string;
+}
+
+/** lstat + bounded read of one candidate. Hash is of these captured bytes. */
+export function snapshotAddonFile(sourcePath: string): AddonSnapshot {
+  let st;
+  try {
+    st = lstatSync(sourcePath);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`ERR_ADDON_MISSING at ${sourcePath}: ${msg}`);
+  }
+  if (st.isSymbolicLink()) {
+    throw new Error(`ERR_ADDON_SYMLINK at ${sourcePath}`);
+  }
+  if (!st.isFile()) {
+    throw new Error(`ERR_ADDON_NOT_REGULAR at ${sourcePath}`);
+  }
+  if (st.size > MAX_ADDON_BYTES) {
+    throw new Error(`ERR_ADDON_TOO_LARGE at ${sourcePath}: ${st.size} bytes`);
+  }
+  const bytes = readFileSync(sourcePath);
+  if (bytes.byteLength !== st.size) {
+    throw new Error(`ERR_ADDON_SIZE_MISMATCH at ${sourcePath}`);
+  }
+  const hash = createHash("sha256").update(bytes).digest("hex");
+  return { sourcePath, bytes, hash };
+}
+
+/** wx-write captured bytes into a unique temp file. Caller owns cleanup. */
+export function stageAddonBytes(bytes: Buffer): { dir: string; path: string } {
+  const dir = mkdtempSync(join(tmpdir(), "galerina-pinned-addon-"));
+  const path = join(dir, "bitnet_addon.node");
+  const fd = openSync(path, "wx", 0o600);
+  try {
+    writeSync(fd, bytes);
+  } finally {
+    closeSync(fd);
+  }
+  return { dir, path };
 }
 
 const CANDIDATE_PATHS = [
@@ -74,9 +132,21 @@ export function loadNativeAddon(opts: { expectedHash?: string; allowUnverified?:
   const searched: string[] = [];
   for (const p of CANDIDATE_PATHS) {
     searched.push(p);
-    if (!existsSync(p)) continue; // perf-allow: loop-sync-io — one-shot native-addon discovery over 3 fixed candidate paths (distinct per iteration)
-    // CF-7: hash the binary BEFORE loading it.
-    const addonHash = createHash("sha256").update(readFileSync(p)).digest("hex"); // perf-allow: loop-sync-io — one-shot addon-discovery scan; reads the first present candidate then returns
+    let snap: AddonSnapshot;
+    try {
+      snap = snapshotAddonFile(p);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.startsWith("ERR_ADDON_MISSING")) continue;
+      if (msg.startsWith("ERR_ADDON_SYMLINK") || msg.startsWith("ERR_ADDON_NOT_REGULAR") || msg.startsWith("ERR_ADDON_TOO_LARGE") || msg.startsWith("ERR_ADDON_SIZE_MISMATCH")) {
+        return {
+          loaded: false, addon: null, searchedPaths: searched, addonPath: p, verified: false,
+          reason: msg,
+        };
+      }
+      continue;
+    }
+    const addonHash = snap.hash;
 
     // RD-0238 FAIL-CLOSED GATE. Enumerate the SAFE ways to run native code; default-DENY everything else.
     if (opts.expectedHash === undefined) {
@@ -90,7 +160,7 @@ export function loadNativeAddon(opts: { expectedHash?: string; allowUnverified?:
       }
       // else: explicit, audited dev opt-out — fall through and load, reported verified:false below.
     } else if (opts.expectedHash !== addonHash) {
-      // Pin present but the binary does not match ⇒ fail closed (unchanged correct behavior).
+      // Pin present but the captured bytes do not match ⇒ fail closed.
       return {
         loaded: false, addon: null, searchedPaths: searched, addonPath: p, addonHash, verified: false,
         reason: `ERR_ADDON_HASH_MISMATCH at ${p}: expected ${opts.expectedHash}, got ${addonHash}`,
@@ -98,19 +168,29 @@ export function loadNativeAddon(opts: { expectedHash?: string; allowUnverified?:
     }
 
     const verified = opts.expectedHash !== undefined;   // true ⇒ pin matched; false ⇒ audited dev opt-out
+    let stagedDir: string | undefined;
     try {
-      const addon = require(p) as BitNetNativeAddon;
+      const staged = stageAddonBytes(snap.bytes);
+      stagedDir = staged.dir;
+      const addon = require(staged.path) as BitNetNativeAddon;
       // Minimal contract check.
       if (typeof addon.tmac === "function" && typeof addon.init === "function") {
         return {
-          loaded: true, addon, searchedPaths: searched, addonPath: p, addonHash, verified,
-          reason: verified ? `loaded ${p} (hash-verified)` : `loaded ${p} (UNVERIFIED — allowUnverified dev opt-out)`,
+          loaded: true, addon, searchedPaths: searched, addonPath: p, loadedFrom: staged.path, addonHash, verified,
+          reason: verified ? `loaded ${staged.path} (hash-verified)` : `loaded ${staged.path} (UNVERIFIED — allowUnverified dev opt-out)`,
         };
       }
-      return { loaded: false, addon: null, searchedPaths: searched, addonPath: p, addonHash, verified, reason: `addon at ${p} missing required exports` };
+      try { rmSync(stagedDir, { recursive: true, force: true }); } catch { /* ignore */ }
+      return {
+        loaded: false, addon: null, searchedPaths: searched, addonPath: p, loadedFrom: staged.path, addonHash, verified,
+        reason: `addon at ${staged.path} missing required exports`,
+      };
     } catch (err) {
+      if (stagedDir !== undefined) {
+        try { rmSync(stagedDir, { recursive: true, force: true }); } catch { /* ignore */ }
+      }
       const msg = err instanceof Error ? err.message : String(err);
-      return { loaded: false, addon: null, searchedPaths: searched, reason: `failed to load ${p}: ${msg}` };
+      return { loaded: false, addon: null, searchedPaths: searched, addonPath: p, addonHash, verified, reason: `failed to load ${p}: ${msg}` };
     }
   }
   return {

@@ -55,8 +55,18 @@ describe("buildBoundaryGraph — node creation", () => {
     const graph = buildBoundaryGraph(flows, cg);
 
     assert.ok(graph.hasNode("unknownCallee"));
-    // Stub node defaults to internal kind
-    assert.equal(graph.node("unknownCallee")?.data.kind, "internal");
+    assert.equal(graph.node("unknownCallee")?.data.kind, "public");
+    assert.equal(graph.node("unknownCallee")?.data.trustLevel, "untrusted");
+  });
+
+  it("hostile: missing callee metadata is not internal trust", () => {
+    const flows = [
+      { name: "secureFlow", qualifier: "secure", declaredEffects: [] },
+    ];
+    const graph = buildBoundaryGraph(flows, makeCallGraph([["secureFlow", ["ghost"]]]));
+    assert.equal(graph.node("ghost")?.data.kind, "public");
+    assert.equal(graph.node("ghost")?.data.trustLevel, "untrusted");
+    assert.equal(graph.outEdges("secureFlow")[0].data.crossingAllowed, false);
   });
 });
 

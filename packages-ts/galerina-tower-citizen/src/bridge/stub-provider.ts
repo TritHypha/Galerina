@@ -89,15 +89,25 @@ export class StubTernaryBridge implements InferenceBridge {
     if (!Number.isSafeInteger(offset) || offset < 0) {
       throw new Error(`[STUB_TERNARY]: packed trit offset ${offset} is not a non-negative safe integer`);
     }
+    if (count > 0 && offset > Number.MAX_SAFE_INTEGER - (count - 1)) {
+      throw new Error(`[STUB_TERNARY]: packed trit offset+count overflows the safe integer range`);
+    }
     const lastIndex = offset + count - (count === 0 ? 0 : 1);
-    const neededWords = count === 0 ? 0 : ((lastIndex / 16) | 0) + 1;
+    const neededWords = count === 0 ? 0 : Math.floor(lastIndex / 16) + 1;
     if (neededWords > packed.length) {
       throw new Error(`[STUB_TERNARY]: packed weights lack capacity for count ${count} at offset ${offset}`);
     }
     const out: number[] = [];
     for (let i = 0; i < count; i++) {
       const idx = offset + i;
-      const word = packed[(idx / 16) | 0] ?? 0;
+      const wordIndex = Math.floor(idx / 16);
+      if (wordIndex >= packed.length) {
+        throw new Error(`[STUB_TERNARY]: packed weights lack capacity for count ${count} at offset ${offset}`);
+      }
+      const word = packed[wordIndex];
+      if (word === undefined) {
+        throw new Error(`[STUB_TERNARY]: packed weights lack capacity for count ${count} at offset ${offset}`);
+      }
       const local = idx % 16;
       const byteIdx = (local / 4) | 0;
       const posInByte = local % 4;

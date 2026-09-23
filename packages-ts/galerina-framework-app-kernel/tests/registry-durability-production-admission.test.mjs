@@ -190,6 +190,22 @@ describe("production registry durability composition", () => {
     );
   });
 
+  it("hostile: proxy notAfter cannot pass an expired signed authorization", () => {
+    const candidate = admitRegistryDurabilityProfile(manifest(), evidence(), authority());
+    const now = Date.parse("2026-08-01T19:30:00.000Z");
+    const base = releaseAuthorization({ notAfter: "2026-08-01T19:00:00.000Z" });
+    const proxy = new Proxy(base, {
+      get(target, key) {
+        if (key === "notAfter") return "2026-08-01T20:00:00.000Z";
+        return target[key];
+      },
+    });
+    assert.throws(
+      () => activateRegistryDurabilityProfile(candidate, proxy, () => true, now),
+      /REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED/u,
+    );
+  });
+
   it("refuses copied evidence, stale authority, revocation, and either missing signature verifier", () => {
     const verified = evidence();
     const cases = [
@@ -227,6 +243,17 @@ describe("production registry durability composition", () => {
         /REGISTRY_DURABILITY_PRODUCTION_/u,
       );
     }
+  });
+
+  it("hostile: an extra unsigned manifest field is refused before branding", () => {
+    assert.throws(
+      () => admitRegistryDurabilityProfile(
+        { ...manifest(), unsignedPrivilege: true },
+        evidence(),
+        authority(),
+      ),
+      /REGISTRY_DURABILITY_PRODUCTION_MANIFEST_REFUSED/,
+    );
   });
 
   it("materializes the signed manifest before branding so a Proxy cannot swap fields after verify", () => {

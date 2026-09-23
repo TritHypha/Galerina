@@ -8,6 +8,10 @@ import { tmpdir } from "node:os";
 
 import {
   COMPILER_BUILD_EVIDENCE_SCHEMA,
+  MAX_EVIDENCE_FILE_BYTES,
+  MAX_EVIDENCE_JSON_DEPTH,
+  MAX_EVIDENCE_JSON_NODES,
+  assertNoDuplicateJsonKeys,
   createBuildEvidence,
   verifyBuildEvidence,
   writeBuildEvidence,
@@ -209,4 +213,15 @@ test("verifier refuses legacy v1 evidence and duplicate keys", () => {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("hostile: nested duplicate keys, depth, nodes, and oversize refuse", () => {
+  assert.throws(() => assertNoDuplicateJsonKeys('{"a":{"b":1,"b":2}}'), /duplicate JSON object key/);
+  const tooDeep = `${'{"a":'.repeat(MAX_EVIDENCE_JSON_DEPTH + 1)}1${"}".repeat(MAX_EVIDENCE_JSON_DEPTH + 1)}`;
+  assert.throws(() => assertNoDuplicateJsonKeys(tooDeep), /invalid JSON/);
+  const tooManyNodes = `[${"1,".repeat(MAX_EVIDENCE_JSON_NODES)}1]`;
+  assert.throws(() => assertNoDuplicateJsonKeys(tooManyNodes), /invalid JSON/);
+  const oversized = " ".repeat(MAX_EVIDENCE_FILE_BYTES + 1);
+  assert.throws(() => assertNoDuplicateJsonKeys(oversized), /invalid JSON/);
+  assert.doesNotThrow(() => assertNoDuplicateJsonKeys('{"a":{"b":1,"c":2}}'));
 });

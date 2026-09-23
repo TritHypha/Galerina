@@ -234,6 +234,37 @@ test("Q1: mutating a signed CPU coupon after signing cannot admit the photonic l
     `mutated CPU coupon must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
 });
 
+test("Q2: signing-key revocation after cached admission denies the attested bridge", async () => {
+  const revoked = new Set();
+  const attestation = {
+    requireSigned: true,
+    publicKeyPem,
+    mlDsaPublicKey,
+    signerKeyId: "hybrid-k1",
+    revocationCheck: (id) => revoked.has(id),
+  };
+  const eng = createHybridEngine({
+    certified: true,
+    auditEgress: new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey }),
+    governance: fullGov,
+    bridges: await signedTernaryRegistry(),
+    attestation,
+    photonic: {
+      router: createPhotonicRouterPort(),
+      kernelFor: bigKernel,
+      certifiedAttestation: GOOD_ATTESTATION,
+      bridgeId: "photonic-certified",
+      couponRevocationCheck: () => false,
+    },
+    signedCapabilityGrant: capGrant,
+  });
+  const first = await eng.infer(CALL);
+  assert.notEqual(first.trapCode, "ERR_BRIDGE_UNATTESTED");
+  revoked.add("hybrid-k1");
+  const second = await eng.infer({ ...CALL, correlationId: "cp-revoked-key" });
+  assert.equal(second.trapCode, "ERR_BRIDGE_UNATTESTED");
+});
+
 test("Q2: coupon revocation after a cached certified admission keeps photonic OFF", async () => {
   const revoked = new Set();
   const eng = await certifiedEngine({

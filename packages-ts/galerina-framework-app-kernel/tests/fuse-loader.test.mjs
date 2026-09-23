@@ -12,7 +12,7 @@ import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { generateKeyPairSync, sign as cryptoSign, createPrivateKey } from "node:crypto";
 
-import { fusePackage, fusePackages, buildCapabilityImports } from "../dist/index.js";
+import { fusePackage, fusePackages, buildCapabilityImports, admitFusePackageName } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 // tests/  →  package dir  →  packages-ts  →  repo root  →  examples/…
@@ -555,4 +555,27 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
     try {
       await assert.rejects(() => fusePackage(pkg, { warn: () => {}, hybridVerifier: () => Promise.reject(new Error("async boom")) }), /FUNGI-FUSE-HYBRID-ERROR/);
     } finally { rmSync(root, { recursive: true, force: true }); } }
+});
+
+test("admitFusePackageName accepts a single filename token", () => {
+  assert.equal(admitFusePackageName("my-custom-api-rest"), true);
+  assert.equal(admitFusePackageName("../evil"), false);
+  assert.equal(admitFusePackageName("foo/bar"), false);
+  assert.equal(admitFusePackageName("foo\\bar"), false);
+  assert.equal(admitFusePackageName("foo..bar"), false);
+  assert.equal(admitFusePackageName(""), false);
+});
+
+test("hostile: package name cannot escape dist/", async () => {
+  assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
+  const { root, pkg } = copyDemo();
+  try {
+    writeFileSync(join(pkg, "package.fungi.json"), JSON.stringify({ name: "../evil" }));
+    await assert.rejects(
+      () => fusePackage(pkg, { allowUnsigned: true, warn: () => {} }),
+      /FUNGI-FUSE-BAD-PACKAGE/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

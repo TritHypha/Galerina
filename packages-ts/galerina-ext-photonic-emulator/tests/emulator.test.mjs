@@ -112,6 +112,16 @@ test("E5: Freivalds catches out-of-tolerance product (≥1−2⁻ᵏ), verify ch
   const bigN = 256; assert.ok(freivaldsVerifyCost(bigN, k) < bigN ** 3, "verify O(k·n²) ≪ op O(n³)");
 });
 
+test("hostile: Freivalds refuses non-finite products", () => {
+  const n = 2, k = 4, tol = 1e-9, rng = () => 0.1;
+  const I = [Float64Array.from([1, 0]), Float64Array.from([0, 1])];
+  const infC = [Float64Array.from([Number.POSITIVE_INFINITY, 0]), Float64Array.from([0, 1])];
+  const nanC = [Float64Array.from([Number.NaN, 0]), Float64Array.from([0, 1])];
+  assert.equal(freivaldsVerify(I, I, I, n, k, tol, rng), true);
+  assert.equal(freivaldsVerify(I, I, infC, n, k, tol, rng), false);
+  assert.equal(freivaldsVerify(I, I, nanC, n, k, tol, rng), false);
+});
+
 // E6 — fail-closed: degraded lane can't be voted into spec; a confident DENY never flips OPEN.
 test("E6: clean lane converges under NMR, noisy (pBad≥0.5) does NOT; degraded misses tolerance", () => {
   const pPhot = singleLaneErrorProbability({ phaseDriftSigma: 0.02, crosstalkCoeff: 0, laneFailureProb: 0, readoutSigma: 0 });

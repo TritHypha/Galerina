@@ -18,6 +18,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { PackageGraph } from "./graph.js";
+import { scanOmitsCoveredDefaultRoots } from "./scanner.js";
 
 export interface BoundaryPolicy {
   readonly packageName: string;
@@ -60,7 +61,13 @@ export function runBoundaryGate(scopePath: string, graph: PackageGraph, check: b
   const currentExternal = graph.externalDeps.map((d) => d.specifier).sort();
 
   const orphanWarnings = graph.orphans.map((o) => `orphan:${o} (no inbound internal import or ownership declaration)`);
-  const orphanViolations = check ? graph.orphans.map((o) => `orphan:${o}`) : [];
+  const coverageViolations = scanOmitsCoveredDefaultRoots(scopePath, graph.scannedRoots)
+    ? ["vacuous border — scan omitted default src/host coverage that still contains code"]
+    : [];
+  const orphanViolations = [
+    ...coverageViolations,
+    ...(check ? graph.orphans.map((o) => `orphan:${o}`) : []),
+  ];
 
   if (!existsSync(policyPath)) {
     // FAIL-CLOSED on a MISSING policy under --check (delete-to-launder defence). If --check re-baselined a
@@ -76,6 +83,9 @@ export function runBoundaryGate(scopePath: string, graph: PackageGraph, check: b
                      ...orphanViolations],
         orphanWarnings,
       };
+    }
+    if (coverageViolations.length > 0) {
+      return { status: "FAIL", violations: coverageViolations, orphanWarnings };
     }
     // First run / generate mode — establish the baseline (the Hardened Border).
     const policy: BoundaryPolicy = {

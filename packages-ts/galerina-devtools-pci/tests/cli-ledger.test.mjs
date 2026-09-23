@@ -5,22 +5,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { AuditEgress } from "../../galerina-core-sentinel-egress/dist/index.js";
 
 const CLI = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 
 function makeEgressDir() {
   const dir = mkdtempSync(join(tmpdir(), "fungi-ledger-"));
-  const records = [
-    JSON.stringify({ who: "svc-a", what: "charge", effect: "Network", decision: "allow", timestamp: "2026-06-15T10:00:00Z" }),
-    JSON.stringify({ who: "svc-b", what: "refund", effect: "Network", decision: "deny", timestamp: "2026-06-15T10:01:00Z" }),
-    "opaque-non-json-record", // undeterminable → must fail closed to deny
-  ];
-  const batch = { seq: 0, count: records.length, prevHash: "0".repeat(64), batchHash: "x".repeat(64), records };
-  writeFileSync(join(dir, "audit-egress.jsonl"), JSON.stringify(batch) + "\n");
+  const eg = new AuditEgress({ dir, batchSize: 8 });
+  eg.push(JSON.stringify({ who: "svc-a", what: "charge", effect: "Network", decision: "allow", timestamp: "2026-06-15T10:00:00Z" }));
+  eg.push(JSON.stringify({ who: "svc-b", what: "refund", effect: "Network", decision: "deny", timestamp: "2026-06-15T10:01:00Z" }));
+  eg.push("opaque-non-json-record"); // undeterminable → must fail closed to deny
+  eg.flush();
   return dir;
 }
 

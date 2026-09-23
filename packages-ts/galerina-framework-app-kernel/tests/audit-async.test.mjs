@@ -202,6 +202,28 @@ test("default audit sink is used when none is supplied (no crash, response intac
   await tick();
 });
 
+test("hostile: unknown-path 404s cannot exhaust mandatory audit capacity", async () => {
+  const sink = new InMemoryAuditSink({ capacity: 1 });
+  const k = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/health",
+      handler: "health",
+      auth: { mode: "public" },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: { health: () => ({ status: 200, body: { status: "up" } }) },
+    auditSink: sink,
+  });
+
+  for (let i = 0; i < 8; i += 1) {
+    const missed = await k.handle(req({ requestId: `rq-404-${i}`, path: "/nope" }));
+    assert.equal(missed.status, 404);
+  }
+  const admitted = await k.handle(req({ requestId: "rq-health" }));
+  assert.equal(admitted.status, 200);
+});
+
 test("mandatory audit capacity is reserved before handler effects", async () => {
   const sink = new InMemoryAuditSink({ capacity: 1 });
   let effects = 0;

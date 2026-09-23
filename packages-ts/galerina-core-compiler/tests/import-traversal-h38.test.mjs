@@ -87,3 +87,47 @@ test("a small within-root import passes the size guard (reaches parse, no IMPORT
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a double import of the same file reuses the completed-module cache", () => {
+  const dir = join(ROOT, ".h38-tmp-memo");
+  try {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "leaf.fungi"), "pure flow leaf() -> Int { 1 }\n");
+    writeFileSync(
+      join(dir, "mid.fungi"),
+      'import "./leaf.fungi"\npure flow mid() -> Int { 1 }\n',
+    );
+    const src = join(dir, "entry.fungi");
+    const mods = resolveFileImports(src, [importDecl("./mid.fungi"), importDecl("./mid.fungi")]);
+    assert.equal(mods.length, 2);
+    assert.equal(mods[0], mods[1], "second import must be the same completed module object");
+    assert.equal(diagCodes(mods).length, 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("an acyclic double-import chain does not re-expand descendants exponentially", () => {
+  const dir = join(ROOT, ".h38-tmp-exp");
+  const depth = 12;
+  try {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, `L${depth}.fungi`), "pure flow leaf() -> Int { 1 }\n");
+    for (let i = depth - 1; i >= 0; i--) {
+      writeFileSync(
+        join(dir, `L${i}.fungi`),
+        `import "./L${i + 1}.fungi"\nimport "./L${i + 1}.fungi"\npure flow f${i}() -> Int { 1 }\n`,
+      );
+    }
+    const src = join(dir, "L0.fungi");
+    const started = Date.now();
+    const mods = resolveFileImports(src, [importDecl("./L1.fungi"), importDecl("./L1.fungi")]);
+    const elapsed = Date.now() - started;
+    assert.equal(mods.length, 2);
+    assert.equal(mods[0], mods[1]);
+    assert.equal(diagCodes(mods).length, 0);
+    assert.ok(elapsed < 2000, `memoized resolution must finish quickly, took ${elapsed}ms`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

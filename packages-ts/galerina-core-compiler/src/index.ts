@@ -85,6 +85,7 @@ export {
   type OwnedArtifactRepository,
   type Sha256Digest,
 } from "./artifact-reference.js";
+export { wipeSecretHeapAfterHostCopy, copyI32ThenWipeSecretHeap } from "./wat-emitter.js";
 export {
   CHECKED_MODULE_SNAPSHOT_EDITION,
   CHECKED_MODULE_SNAPSHOT_MAX_BYTES,
@@ -1239,6 +1240,11 @@ export { checkProductionReadiness } from "./production-check.js";
 // Pure Flow LRU Memoization Cache
 export {
   pureFlowCacheKey,
+  admitPureFlowSourceTag,
+  admitPureFlowCacheIdentity,
+  composeSourceBoundTag,
+  encodePureFlowArgs,
+  galerinaValueFingerprint,
   getCachedPureFlow,
   setCachedPureFlow,
   clearPureFlowCache,
@@ -1270,8 +1276,12 @@ export {
 export {
   assembleWAT,
   executeWASMFlow,
+  injectLoopFuel,
+  WASM_FLOW_DEADLINE_MS,
+  WASM_FLOW_MAX_LOOP_BACKEDGES,
   type WATAssemblerResult,
   type WASMExecutionResult,
+  type WASMFlowExecutionOptions,
 } from "./wat-assembler.js";
 
 // P9 (#105) — WASM execution harness as a SECURITY ADMISSION GATE
@@ -1281,6 +1291,7 @@ export {
 export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
+  invokeAdmittedExport, finalizeSecretExportResult,
 } from "@galerina/core-runtime-wasm";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
@@ -2710,6 +2721,8 @@ const TRI_CASES = ["Positive", "Neutral", "Negative"] as const;
 
 export {
   validateTypedContentBlock,
+  MAX_TYPED_CONTENT_CHARS,
+  MAX_TYPED_CONTENT_INTERPOLATIONS,
   type TypedContentBinding,
   type TypedContentEnvironment,
   type TypedContentBlockInput,

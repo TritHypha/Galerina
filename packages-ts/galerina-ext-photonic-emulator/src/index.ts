@@ -27,7 +27,7 @@ export { freivaldsVerify, freivaldsVerifyCost, toleranceCheck } from "./freivald
 // ── D2: the partition cost-model router (the `target.photonic` selector) ─────────────
 export {
   type Target, type Lane, type KernelCost, type Decision,
-  NS, W_REP, meechRealizedRatio, requiredRedundancy,
+  NS, W_REP, meechRealizedRatio, requiredRedundancy, MAX_KERNEL_N,
   Tdigital, Tphotonic, crossover,
   PartitionDecider,
 } from "./partition-decider.js";

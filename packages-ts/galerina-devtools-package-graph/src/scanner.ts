@@ -88,7 +88,39 @@ export interface PackageGraphConfig {
 }
 
 /** Default source roots — the canonical app template puts governed source in src/ and its host in host/. */
-const DEFAULT_ROOTS = ["src", "host"] as const;
+export const DEFAULT_ROOTS = ["src", "host"] as const;
+const COVERAGE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".fungi"] as const;
+
+function dirHasCode(dir: string): boolean {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  for (const entry of entries) {
+    if (entry.isSymbolicLink()) continue;
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".myco") continue;
+      if (dirHasCode(join(dir, entry.name))) return true;
+    } else if (!entry.name.endsWith(".d.ts") && COVERAGE_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** True when packageGraph.roots omitted a default root that still holds code. */
+export function scanOmitsCoveredDefaultRoots(
+  scopePath: string,
+  scannedRoots: readonly string[],
+): boolean {
+  for (const root of DEFAULT_ROOTS) {
+    if (scannedRoots.includes(root)) continue;
+    if (dirHasCode(join(scopePath, root))) return true;
+  }
+  return false;
+}
 /** Default source extensions — TypeScript host code AND governed Galerina flows. */
 const DEFAULT_EXTENSIONS = [".ts", ".fungi"] as const;
 

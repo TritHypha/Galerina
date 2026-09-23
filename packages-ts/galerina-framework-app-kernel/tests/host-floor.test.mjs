@@ -30,7 +30,8 @@ test("host floor exposes only each consumer's fixed primitive slice", async () =
   assert.deepEqual(keys(artifact.path), ["dirname", "isAbsolute", "resolve", "sep"]);
 
   const generation = await loadRegistryGenerationHostFloor();
-  assert.deepEqual(keys(generation.fs), ["chmod", "link", "lstat", "open", "realpath", "unlink"]);
+  assert.deepEqual(keys(generation.fs), ["chmod", "constants", "link", "lstat", "open", "realpath", "unlink"]);
+  assert.deepEqual(keys(generation.fs.constants), ["O_NONBLOCK", "O_RDONLY"]);
   assert.deepEqual(keys(generation.path), ["isAbsolute", "join", "resolve"]);
   assert.equal(keys(generation.process).includes("execPath"), true);
 

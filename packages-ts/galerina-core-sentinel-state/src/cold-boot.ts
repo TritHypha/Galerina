@@ -15,6 +15,7 @@ import { AtomicWriter } from "./atomic-writer.js";
 
 export const RESTORE_VERDICT_PACKAGE_IDENTITY = "@galerina/core-sentinel-state" as const;
 export const RESTORE_VERDICT_EXPORT_NAME = "restoreVerdict" as const;
+export const ROLLBACK_FLOOR_NAME = "rollback-floor" as const;
 
 export interface RestoreVerdictAuthority {
   readonly packageIdentity: typeof RESTORE_VERDICT_PACKAGE_IDENTITY;
@@ -61,12 +62,19 @@ export class ColdBootOrchestrator {
 
   /** Serialise + durably persist a checkpoint; returns the snapshot written. */
   checkpoint(name: string, payload: unknown, logicalTick: number): Snapshot {
+    if (name === ROLLBACK_FLOOR_NAME) {
+      throw new HardenedBorderViolation(
+        "LSS-ROLLBACK-001",
+        `snapshot name "${ROLLBACK_FLOOR_NAME}" is reserved for the durable rollback floor`,
+      );
+    }
     if (!Number.isSafeInteger(logicalTick) || logicalTick < this.#minLogicalTick) {
       throw new HardenedBorderViolation(
         "LSS-ROLLBACK-001",
         `checkpoint logicalTick ${String(logicalTick)} is below the rollback floor ${String(this.#minLogicalTick)}`,
       );
     }
+    this.#persistRollbackFloor(logicalTick);
     const snap = this.#serializer.serialize(payload, logicalTick);
     this.#writer.write(name, snap);
     this.#minLogicalTick = logicalTick;
@@ -79,6 +87,11 @@ export class ColdBootOrchestrator {
    * @throws SecurityTrap if the snapshot fails integrity (LSS-INTEGRITY-001).
    */
   restore(name: string): { payload: unknown; logicalTick: number } {
+    if (name === ROLLBACK_FLOOR_NAME) {
+      throw this.#rollbackRefuse(
+        `snapshot name "${ROLLBACK_FLOOR_NAME}" is reserved for the durable rollback floor`,
+      );
+    }
     const snap = this.#writer.read(name);
     if (snap === null) {
       this.#requireRestoreVerdict(false, false);
@@ -90,10 +103,11 @@ export class ColdBootOrchestrator {
 
     const integrityOk = this.#serializer.verify(snap);
     this.#requireRestoreVerdict(true, integrityOk);
-    if (!Number.isSafeInteger(snap.logicalTick) || snap.logicalTick < this.#minLogicalTick) {
+    const floor = this.#durableRollbackFloor();
+    if (!Number.isSafeInteger(snap.logicalTick) || snap.logicalTick < floor) {
       throw new HardenedBorderViolation(
         "LSS-ROLLBACK-001",
-        `snapshot logicalTick ${String(snap.logicalTick)} is below the rollback floor ${String(this.#minLogicalTick)}`,
+        `snapshot logicalTick ${String(snap.logicalTick)} is below the rollback floor ${String(floor)}`,
       );
     }
     if (!integrityOk) {
@@ -108,6 +122,50 @@ export class ColdBootOrchestrator {
     // never replaces the serializer's own integrity gate.
     const payload = this.#serializer.deserialize(snap);
     return { payload, logicalTick: snap.logicalTick };
+  }
+
+  #rollbackRefuse(reason: string): HardenedBorderViolation {
+    return new HardenedBorderViolation("LSS-ROLLBACK-001", reason);
+  }
+
+  #persistRollbackFloor(logicalTick: number): void {
+    const next = Math.max(this.#minLogicalTick, logicalTick, this.#readPersistedFloor() ?? 0);
+    this.#writer.write(
+      ROLLBACK_FLOOR_NAME,
+      this.#serializer.serialize({ minLogicalTick: next }, next),
+    );
+    this.#minLogicalTick = next;
+  }
+
+  #readPersistedFloor(): number | null {
+    const floorSnap = this.#writer.read(ROLLBACK_FLOOR_NAME);
+    if (floorSnap === null) return null;
+    if (!this.#serializer.verify(floorSnap)) {
+      this.#serializer.deserialize(floorSnap);
+      throw this.#rollbackRefuse("durable rollback floor failed integrity verification");
+    }
+    if (!Number.isSafeInteger(floorSnap.logicalTick) || floorSnap.logicalTick < 0) {
+      throw this.#rollbackRefuse("durable rollback floor tick is not a non-negative safe integer");
+    }
+    const payload = this.#serializer.deserialize(floorSnap);
+    if (
+      payload === null
+      || typeof payload !== "object"
+      || Array.isArray(payload)
+      || !("minLogicalTick" in payload)
+      || payload.minLogicalTick !== floorSnap.logicalTick
+    ) {
+      throw this.#rollbackRefuse("durable rollback floor payload does not bind its tick");
+    }
+    return floorSnap.logicalTick;
+  }
+
+  #durableRollbackFloor(): number {
+    const persisted = this.#readPersistedFloor();
+    if (persisted === null) {
+      throw this.#rollbackRefuse("durable rollback floor is missing");
+    }
+    return Math.max(this.#minLogicalTick, persisted);
   }
 
   #requireRestoreVerdict(snapshotPresent: boolean, integrityOk: boolean): 1 | -1 {

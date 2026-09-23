@@ -34,18 +34,7 @@ const STRING_CASES = new Map([
   ["compilerBuildEvidence", { name: "COMPILER_BUILD_EVIDENCE", value: "packages-ts/galerina-core-compiler/dist/build-evidence.json" }],
   ["compilerPackage", { name: "COMPILER_PACKAGE", value: "packages-ts/galerina-core-compiler" }],
   ["galerinaCli", { name: "GALERINA_CLI", value: "galerina.mjs" }],
-  ["compilerEvidenceSchema", { name: "COMPILER_EVIDENCE_SCHEMA", value: "galerina.compiler-build-evidence.v1" }],
-]);
-
-// The reference-only Fungi twin predates the TypeScript package-root move and
-// retains the legacy root until a separately admitted source wave updates it.
-// Keep this compatibility set explicit and closed: any other value still
-// fails the parity check.
-const FUNGI_LEGACY_PATH_ALIASES = new Map([
-  ["packages-ts/galerina-core-compiler/tests/fidelity-differential.test.mjs", "packages-galerina/galerina-core-compiler/tests/fidelity-differential.test.mjs"],
-  ["packages-ts/galerina-core-compiler/dist/index.js", "packages-galerina/galerina-core-compiler/dist/index.js"],
-  ["packages-ts/galerina-core-compiler/dist/build-evidence.json", "packages-galerina/galerina-core-compiler/dist/build-evidence.json"],
-  ["packages-ts/galerina-core-compiler", "packages-galerina/galerina-core-compiler"],
+  ["compilerEvidenceSchema", { name: "COMPILER_EVIDENCE_SCHEMA", value: "fungi.compiler.build-evidence.v1" }],
 ]);
 
 function escapeRegExp(value) {
@@ -121,10 +110,9 @@ describe("galerina-test package-owned Fungi runner constants", () => {
     assert.notEqual(compiled.instance.exports.defaultTimeoutMs(), 600_001);
     for (const [flow, { value: expected }] of STRING_CASES) {
       const interpreted = await executeFlow(flow, new Map(), compiled.program.ast, compiled.program.flows);
-      const accepted = new Set([expected, FUNGI_LEGACY_PATH_ALIASES.get(expected) ?? expected]);
       assert.equal(interpreted.value.__tag, "string");
-      assert.ok(accepted.has(interpreted.value.value), `${flow} returned an unapproved path value`);
-      assert.ok(accepted.has(compiled.host.readString(compiled.instance.exports[flow]())), `${flow} returned an unapproved Wasm path value`);
+      assert.equal(interpreted.value.value, expected, `${flow} must match the live TypeScript path`);
+      assert.equal(compiled.host.readString(compiled.instance.exports[flow]()), expected, `${flow} Wasm path must match`);
       assert.notEqual(expected.toUpperCase(), expected);
     }
   });

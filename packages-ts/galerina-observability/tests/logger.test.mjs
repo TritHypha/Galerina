@@ -15,6 +15,24 @@ test("emits structured records to the sink with an injected clock", () => {
   assert.deepEqual(rec.fields, { a: 1 });
 });
 
+test("MemoryLogSink drops the oldest records once the admitted ceiling is reached", () => {
+  const sink = new MemoryLogSink(2);
+  sink.write({ level: "info", msg: "a", at: 1 });
+  sink.write({ level: "info", msg: "b", at: 2 });
+  sink.write({ level: "info", msg: "c", at: 3 });
+  assert.deepEqual(sink.records().map((r) => r.msg), ["b", "c"]);
+});
+
+test("the default logger MemoryLogSink retains at most 4096 records", () => {
+  const sink = new MemoryLogSink();
+  const log = createLogger({ sink, clock: () => 1 });
+  for (let i = 0; i < 4097; i++) log.info(`n${i}`);
+  const recs = sink.records();
+  assert.equal(recs.length, 4096);
+  assert.equal(recs[0].msg, "n1");
+  assert.equal(recs[4095].msg, "n4096");
+});
+
 test("a retained records snapshot cannot inject a record into the sink", () => {
   const sink = new MemoryLogSink();
   const original = { level: "info", msg: "original", at: 1 };

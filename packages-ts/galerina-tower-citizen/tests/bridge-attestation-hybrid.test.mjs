@@ -68,6 +68,44 @@ test("engine ENFORCES hybrid: a hybrid bridge is permitted when mlDsaPublicKey i
   assert.notEqual(r.trapCode, "ERR_BRIDGE_UNATTESTED");
 });
 
+test("hybrid: a getter that swaps the manifest and PQ half after await cannot mix preimages", async () => {
+  const k = await generateHybridAttestationKeypair();
+  const aManifest = new StubTernaryBridge(inMem()).manifest;
+  const bManifest = { ...aManifest, hardwareIdentity: "evil-kernel" };
+  const a = await signManifestHybrid(aManifest, k.privateKeyPem, k.mlDsaPrivateKey);
+  const b = await signManifestHybrid(bManifest, k.privateKeyPem, k.mlDsaPrivateKey);
+  let generation = 0;
+  queueMicrotask(() => { generation = 1; });
+  const live = {
+    get signature() { return a.signature; },
+    get mlDsaSignature() { return generation === 0 ? "00" : b.mlDsaSignature; },
+    get manifest() { return generation === 0 ? a.manifest : b.manifest; },
+  };
+  const result = await verifyAttestationHybrid(live, { publicKeyPem: k.publicKeyPem }, k.mlDsaPublicKey);
+  assert.equal(result.ok, false, "post-await live B must not authenticate after a classical snapshot of A");
+});
+
+test("hybrid: a hardwareIdentity getter cannot split the classical hash from the PQ preimage", async () => {
+  const k = await generateHybridAttestationKeypair();
+  const baseManifest = new StubTernaryBridge(inMem()).manifest;
+  const a = await signManifestHybrid(baseManifest, k.privateKeyPem, k.mlDsaPrivateKey);
+  let reads = 0;
+  const manifest = new Proxy(baseManifest, {
+    get(target, prop, receiver) {
+      if (prop === "hardwareIdentity") {
+        reads += 1;
+        return reads === 1 ? target.hardwareIdentity : "evil-kernel";
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+  const live = { manifest, signature: a.signature, mlDsaSignature: a.mlDsaSignature };
+  const result = await verifyAttestationHybrid(live, { publicKeyPem: k.publicKeyPem }, k.mlDsaPublicKey);
+  const honest = await verifyAttestationHybrid(a, { publicKeyPem: k.publicKeyPem }, k.mlDsaPublicKey);
+  assert.equal(result.ok, true);
+  assert.equal(result.hash, honest.hash);
+});
+
 test("engine DENIES an Ed25519-only bridge under a hybrid-requiring policy (no PQ downgrade at admission)", async () => {
   const k = await generateHybridAttestationKeypair();
   const edOnly = attestBridge(new StubTernaryBridge(inMem()), k.privateKeyPem); // valid Ed25519, NO ML-DSA half

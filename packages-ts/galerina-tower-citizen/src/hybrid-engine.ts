@@ -427,6 +427,7 @@ export class HybridInferenceEngine {
   #photonicCouponIdentity: { readonly bridgeId: string; readonly hardwareIdentity: string } | null = null;
   private bridgeAttestationDenial: string | null = null; // cached: first offending bridge id, if any
   private bridgeAttestationChecked = false;
+  #bridgeAttestationInFlight: Promise<string | null> | null = null;
   /** Bridges whose attestation AND live identity were bound at admission. Execute/init/shutdown use this set. */
   #admittedBridges: ReadonlyMap<PrecisionTechnique, AdmittedBridge> | null = null;
   private bridgesInitialized = false;
@@ -539,6 +540,17 @@ export class HybridInferenceEngine {
    */
   private async checkBridgeAttestation(): Promise<string | null> {
     if (this.bridgeAttestationChecked) return this.bridgeAttestationDenial;
+    if (this.#bridgeAttestationInFlight !== null) return this.#bridgeAttestationInFlight;
+    const pending = this.#runBridgeAttestation();
+    this.#bridgeAttestationInFlight = pending;
+    try {
+      return await pending;
+    } finally {
+      if (this.#bridgeAttestationInFlight === pending) this.#bridgeAttestationInFlight = null;
+    }
+  }
+
+  async #runBridgeAttestation(): Promise<string | null> {
     try {
       const admitted = new Map<PrecisionTechnique, AdmittedBridge>();
       if (this.attestationPolicy === null) {

@@ -104,8 +104,9 @@ export async function loadRegistryGenerationHostFloor(): Promise<{
   readonly path: unknown;
   readonly process: unknown;
 }> {
-  const [fs, path, processModule] = await Promise.all([
+  const [fs, fsSync, path, processModule] = await Promise.all([
     importHostModule("node:fs/promises"),
+    importHostModule("node:fs"),
     importHostModule("node:path"),
     importHostModule("node:process"),
   ]);
@@ -126,8 +127,24 @@ export async function loadRegistryGenerationHostFloor(): Promise<{
       value: linkedBinding.value,
     });
   }
+  const constantSource = requireHostRecord(
+    dataField(fsSync, "fs", "constants"),
+    "fs.constants",
+  );
+  const calls = callableSlice(fs, "fs/promises", ["chmod", "link", "lstat", "open", "realpath", "unlink"]);
   return Object.freeze({
-    fs: callableSlice(fs, "fs/promises", ["chmod", "link", "lstat", "open", "realpath", "unlink"]),
+    fs: Object.freeze({
+      chmod: calls.chmod,
+      link: calls.link,
+      lstat: calls.lstat,
+      open: calls.open,
+      realpath: calls.realpath,
+      unlink: calls.unlink,
+      constants: Object.freeze({
+        O_RDONLY: constantSource.O_RDONLY,
+        O_NONBLOCK: constantSource.O_NONBLOCK,
+      }),
+    }),
     path: callableSlice(path, "path", ["isAbsolute", "join", "resolve"]),
     process: Object.freeze(processSlice),
   });

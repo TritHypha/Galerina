@@ -86,6 +86,8 @@ describe("secret-checker: credential detection", () => {
     assert.ok(!checkKeyValueForSecret("apiKey", "anything").clean);
     assert.ok(!checkKeyValueForSecret("accessToken", "anything").clean);
     assert.ok(!checkKeyValueForSecret("privateKey", "anything").clean);
+    assert.ok(!checkKeyValueForSecret("clientSecret", "anything").clean);
+    assert.ok(!checkKeyValueForSecret("refreshToken", "anything").clean);
   });
 
   it("detects JWT values", () => {

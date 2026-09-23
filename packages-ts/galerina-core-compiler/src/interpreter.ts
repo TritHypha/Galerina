@@ -11,7 +11,12 @@ import { type ContractEnforcementRecord } from "./runtime/runtimeReport.js";
 import { type PassiveExecutionPlan, executePlan } from "./runtime/executionPlan.js";
 import { type RuntimeManifest, EffectCheckerFlags } from "./type-registry.js";
 import { FUNGI_RUNTIME_006 } from "./security-policy.js";
-import { pureFlowCacheKey, getCachedPureFlow, setCachedPureFlow } from "./pure-flow-cache.js";
+import {
+  admitPureFlowCacheIdentity,
+  composeSourceBoundTag,
+  getCachedPureFlow,
+  setCachedPureFlow,
+} from "./pure-flow-cache.js";
 import { activeSinkMonitor } from "./security-sink-monitor.js";
 import { buildExecutionGraph, getOrLoadGraph, storeGraph, executionGraphCacheKey, ExecOp, type ExecutionGraph } from "./execution-graph.js";
 import { compileToBytecode, runBytecode } from "./bytecode-vm.js";
@@ -4037,6 +4042,24 @@ function runFromGraph(graph: ExecutionGraph, args: ReadonlyMap<string, GalerinaV
   return FUNGI_VOID;
 }
 
+function sourceBoundPureFlowTag(
+  ast: AstNode,
+  flowName: string,
+  runtimeOptions?: InterpreterRuntimeOptions,
+): string | null {
+  const flowNode = buildFlowIndex(ast).get(flowName);
+  if (flowNode === undefined) return null;
+  const sourceHash = canonicalHash(flowNode);
+  if (typeof sourceHash !== "string" || sourceHash.length === 0) return null;
+  const opts = runtimeOptions as Record<string, unknown> | undefined;
+  const extra = typeof opts?.sourceTag === "string" && opts.sourceTag.length > 0
+    ? opts.sourceTag
+    : typeof opts?.traceId === "string" && opts.traceId.length > 0
+      ? `req:${opts.traceId}`
+      : "";
+  return composeSourceBoundTag(sourceHash, extra);
+}
+
 export async function executeFlow(
   flowName: string,
   args: ReadonlyMap<string, GalerinaValue>,
@@ -4067,15 +4090,13 @@ export async function executeFlow(
     // Bytecode/sync/cache cannot bypass control they do not yet model.
     !flowRequiresGovernedPath(ast, flowName)
   ) {
-    // Phase 49: per-request cache scoping.
-    // The cache key includes a sourceTag so that pure flows cached for one request
-    // cannot be served to a different request (prevents cross-request cache poisoning).
-    // Use: (1) explicit sourceTag from runtimeOptions, or (2) traceId as the scope.
-    const opts = runtimeOptions as Record<string, unknown>;
-    const sourceTag = (typeof opts?.sourceTag === "string" ? opts.sourceTag : undefined)
-      ?? (typeof opts?.traceId === "string" ? `req:${opts.traceId}` : undefined);
-    const cacheKey = pureFlowCacheKey(productContext, flowName, args, sourceTag);
-    const cached = getCachedPureFlow(cacheKey);
+    // Bind the result cache to the current flow AST (plus optional request scope).
+    // A missing source identity skips cache rather than colliding two bodies of `main`.
+    const sourceBoundTag = sourceBoundPureFlowTag(ast, flowName, runtimeOptions);
+    const cacheIdentity = sourceBoundTag === null
+      ? null
+      : admitPureFlowCacheIdentity(productContext, flowName, args, sourceBoundTag);
+    const cached = cacheIdentity === null ? undefined : getCachedPureFlow(cacheIdentity.key, cacheIdentity.exact);
     if (cached !== undefined) {
       // Return a synthetic result wrapping the cached value
       const now = new Date().toISOString();
@@ -4163,9 +4184,8 @@ export async function executeFlow(
             result: "ok" as const,
           } satisfies ExecutionAuditRecord,
         } satisfies FlowExecutionResult;
-        if (intResult.__tag !== "runtimeError") {
-          const cacheKey3 = pureFlowCacheKey(productContext, flowName, args, typeof (runtimeOptions as Record<string, unknown>)?.sourceTag === "string" ? (runtimeOptions as Record<string, unknown>).sourceTag as string : undefined);
-          setCachedPureFlow(cacheKey3, intResult);
+        if (intResult.__tag !== "runtimeError" && cacheIdentity !== null) {
+          setCachedPureFlow(cacheIdentity.key, intResult, cacheIdentity.exact);
         }
         return bcAuditResult;
       }
@@ -4196,9 +4216,8 @@ export async function executeFlow(
         } satisfies ExecutionAuditRecord,
       } satisfies FlowExecutionResult;
       // Cache the sync result too
-      if (syncResult.__tag !== "runtimeError") {
-        const cacheKey2 = pureFlowCacheKey(productContext, flowName, args, typeof (runtimeOptions as Record<string, unknown>)?.sourceTag === "string" ? (runtimeOptions as Record<string, unknown>).sourceTag as string : undefined);
-        setCachedPureFlow(cacheKey2, syncResult);
+      if (syncResult.__tag !== "runtimeError" && cacheIdentity !== null) {
+        setCachedPureFlow(cacheIdentity.key, syncResult, cacheIdentity.exact);
       }
       return syncAuditResult;
     }
@@ -4214,8 +4233,8 @@ export async function executeFlow(
     );
     const result = await interpreter.runFlow(flowName, args);
     // Only cache successful, non-error results
-    if (result.value.__tag !== "runtimeError" && result.value.__tag !== "error") {
-      setCachedPureFlow(cacheKey, result.value);
+    if (cacheIdentity !== null && result.value.__tag !== "runtimeError" && result.value.__tag !== "error") {
+      setCachedPureFlow(cacheIdentity.key, result.value, cacheIdentity.exact);
     }
     // Phase 33A: sync-failed-but-pure → still tree tier (sync returned null)
     return { ...result, executionTier: "tree" as const, fallbackReason: "sync-unsupported" as const } satisfies FlowExecutionResult;

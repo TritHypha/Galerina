@@ -310,6 +310,10 @@ export function createHostRuntime(
   // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
   // scenario resets it, and it never overlaps a heap-free consuming flow (which makes no allocations).
   let recordBump = WAT_HEAP_BASE;
+  // Host-side Array.range must not outrun guest linear memory or a work budget.
+  // One WASM page is 65536 bytes = 16384 i32 words; that is the unbound default.
+  const UNBOUND_GUEST_WORDS = 16_384;
+  let rangeFuel = UNBOUND_GUEST_WORDS;
   // I/O sink — print/println route through the observer's capture when one is wired (the governed,
   // auditable path a DSS supervisor supplies); otherwise dev fallback to console.log. With an observer
   // present nothing hits the ambient console — a supervisor/test sees exactly what the module emitted.
@@ -572,14 +576,25 @@ export function createHostRuntime(
     __range: (lo: number, hi: number) => {
       const from = lo | 0;
       const to = hi | 0;
-      const MAX_RANGE = 1_000_000;
-      if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || to < from) {
+      if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to)) {
         throw new Error("Array.range: bounds are not a finite progressing interval");
       }
-      const count = to - from;
-      if (count > MAX_RANGE) {
-        throw new Error("Array.range: cardinality exceeds the host bound");
+      if (to <= from) {
+        const id = arrays.length;
+        arrays.push([]);
+        return tap("__range", [lo, hi], id) as number;
       }
+      const count = to - from;
+      const guestWords = memory !== null
+        ? Math.floor(memory.buffer.byteLength / 4)
+        : UNBOUND_GUEST_WORDS;
+      if (count > guestWords) {
+        throw new Error("Array.range: cardinality exceeds guest memory");
+      }
+      if (count > rangeFuel) {
+        throw new Error("Array.range: fuel exhausted");
+      }
+      rangeFuel -= count;
       const items: number[] = [];
       for (let i = from; i < to; i++) items.push(i);
       const id = arrays.length; arrays.push(items);
@@ -718,7 +733,10 @@ export function createHostRuntime(
       decimals.push(text);
       return id;
     },
-    bindMemory(m: WebAssembly.Memory) { memory = m; },
+    bindMemory(m: WebAssembly.Memory) {
+      memory = m;
+      rangeFuel = Math.floor(m.buffer.byteLength / 4);
+    },
     readRecordField(ptr: number, slot: number): number {
       if (memory === null) throw new Error("readRecordField before bindMemory");
       return new Int32Array(memory.buffer)[(ptr >>> 2) + slot] ?? 0;
@@ -788,6 +806,9 @@ export async function admitAndInstantiate(opts: {
     opts.observe?.onViolation?.(verdict.reason ?? "attestation failed", wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${verdict.reason ?? "attestation failed"} (hash=${verdict.hash})`);
   }
+  if (wasmHash(wasm) !== verdict.hash) {
+    throw new Error("CRITICAL_SECURITY_VIOLATION: admitted bytes changed before instantiate");
+  }
   // Instantiate with ONLY the closed host import object. A LinkError here means the
   // module declared a host import the closed set does NOT provide — i.e. it tried to
   // reach a capability outside its grant. Fail CLOSED: classify it as a CRITICAL
@@ -807,5 +828,103 @@ export async function admitAndInstantiate(opts: {
     ?? (wasmResult as WebAssembly.Instance);
   const mem = (instance.exports as Record<string, unknown>)["memory"];
   if (mem instanceof WebAssembly.Memory) opts.host.bindMemory(mem);
-  return { instance, host: opts.host, hash: verdict.hash };
+  return { instance: wrapAdmittedExports(instance), host: opts.host, hash: verdict.hash };
+}
+
+const SECRET_HELPER_EXPORTS = new Set([
+  "__fungi_wipe_owned",
+  "__fungi_heap_get",
+  "__fungi_ret_is_heap_get",
+  "__fungi_ret_words_get",
+]);
+const RAW_ADMITTED_INSTANCES = new WeakMap<WebAssembly.Instance, WebAssembly.Instance>();
+
+function wrapAdmittedExports(instance: WebAssembly.Instance): WebAssembly.Instance {
+  const wrappedExports: Record<string, unknown> = Object.create(null);
+  for (const [name, value] of Object.entries(instance.exports)) {
+    if (typeof value === "function" && !SECRET_HELPER_EXPORTS.has(name)) {
+      wrappedExports[name] = (...args: unknown[]) =>
+        finalizeSecretExportResult(instance, (value as (...a: unknown[]) => unknown)(...args));
+    } else {
+      wrappedExports[name] = value;
+    }
+  }
+  const wrapped = new Proxy(instance, {
+    get(target, prop, receiver) {
+      if (prop === "exports") return wrappedExports;
+      return Reflect.get(target, prop, receiver);
+    },
+  }) as WebAssembly.Instance;
+  RAW_ADMITTED_INSTANCES.set(wrapped, instance);
+  return wrapped;
+}
+
+const MAX_COPIED_RECORD_WORDS = 64;
+
+/**
+ * After a guest export returns, copy `returnWordCount` i32 words from the
+ * pointer when the guest tagged a heap result, then wipe
+ * `[WAT_HEAP_BASE, $__fungi_heap)`. One word stays a number (numeric-fold ABI);
+ * several words become a frozen array. Modules without `__fungi_wipe_owned`
+ * are unchanged.
+ */
+export function finalizeSecretExportResult(
+  instance: WebAssembly.Instance,
+  result: unknown,
+): unknown {
+  const exports = instance.exports as Record<string, unknown>;
+  const wipe = exports["__fungi_wipe_owned"];
+  if (typeof wipe !== "function") return result;
+  const heapResult = exports["__fungi_ret_is_heap_get"];
+  const resultIsHeapPointer = typeof heapResult === "function" && (heapResult as () => number)() === 1;
+  if (
+    resultIsHeapPointer
+    && typeof result === "number"
+    && Number.isSafeInteger(result)
+    && result >= WAT_HEAP_BASE
+    && (result & 3) === 0
+  ) {
+    const memory = exports["memory"];
+    if (memory instanceof WebAssembly.Memory) {
+      const view = new Int32Array(memory.buffer);
+      const start = result >>> 2;
+      const wordsGet = exports["__fungi_ret_words_get"];
+      const taggedWords = typeof wordsGet === "function" ? (wordsGet as () => number)() : 1;
+      const count = Math.min(
+        MAX_COPIED_RECORD_WORDS,
+        Math.max(1, Number.isSafeInteger(taggedWords) ? taggedWords : 1),
+        Math.max(0, view.length - start),
+      );
+      if (count > 0 && start < view.length) {
+        const words: number[] = [];
+        for (let i = 0; i < count; i++) words.push(view[start + i]!);
+        (wipe as () => void)();
+        return words.length === 1 ? words[0]! : Object.freeze(words);
+      }
+    }
+  }
+  (wipe as () => void)();
+  return result;
+}
+
+/** Call an admitted export then apply guest-owned secret finalize. */
+export function invokeAdmittedExport(
+  instance: WebAssembly.Instance,
+  exportName: string,
+  args: readonly number[],
+): { readonly ok: true; readonly result: unknown } | { readonly ok: false; readonly reason: string } {
+  const raw = RAW_ADMITTED_INSTANCES.get(instance) ?? instance;
+  const fn = (raw.exports as Record<string, unknown>)[exportName];
+  if (typeof fn !== "function") {
+    return { ok: false, reason: `export '${exportName}' is not a callable function of the module` };
+  }
+  try {
+    const value = (fn as (...a: number[]) => unknown)(...args);
+    return { ok: true, result: finalizeSecretExportResult(raw, value) };
+  } catch (err) {
+    return {
+      ok: false,
+      reason: `trap during '${exportName}': ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
 }

@@ -294,3 +294,51 @@ describe("FUNGI-PCI-001: comments do not trigger findings", () => {
     assert.ok(report.passed, "Should pass — no card-data in bindings or string literals");
   });
 });
+
+describe("FUNGI-PCI-003: TLS evidence is scoped to the payment flow", () => {
+  it("fires FUNGI-PCI-003 when only an unrelated flow mentions https://", () => {
+    const source = [
+      "pure flow helper() -> String",
+      "contract { effects {} }",
+      "{",
+      "  return \"https://unrelated.example/health\"",
+      "}",
+      "secure flow processPayment(req: Request) -> Result<PaymentId, PaymentError>",
+      "contract {",
+      "  intent { \"Process a payment transaction.\" }",
+      "  effects { network.outbound  audit.write }",
+      "}",
+      "authority { requires role: \"payment-processor\" }",
+      "{",
+      "  return Ok(1)",
+      "}",
+    ].join("\n");
+    const report = runPciAudit(source, "payment.fungi");
+    const codes = report.findings.map((f) => f.code);
+    assert.ok(codes.includes("FUNGI-PCI-003"), `Expected FUNGI-PCI-003, got: [${codes.join(", ")}]`);
+  });
+});
+
+describe("FUNGI-PCI-008: authority.requires is scoped to the payment flow", () => {
+  it("fires FUNGI-PCI-008 when only an unrelated flow has authority.requires", () => {
+    const source = [
+      "pure flow helper() -> Int",
+      "authority { requires role: \"admin\" }",
+      "{",
+      "  return 1",
+      "}",
+      "secure flow processPayment(req: Request) -> Result<PaymentId, PaymentError>",
+      "contract {",
+      "  intent { \"Process a payment transaction.\" }",
+      "  effects { database.write  audit.write }",
+      "}",
+      "authority { role: \"none\" }",
+      "{",
+      "  return Ok(1)",
+      "}",
+    ].join("\n");
+    const report = runPciAudit(source, "payment.fungi");
+    const codes = report.findings.map((f) => f.code);
+    assert.ok(codes.includes("FUNGI-PCI-008"), `Expected FUNGI-PCI-008, got: [${codes.join(", ")}]`);
+  });
+});

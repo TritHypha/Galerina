@@ -74,6 +74,28 @@ test("restore refuses a snapshot below the rollback floor", () => {
   assert.equal(err.code, "LSS-ROLLBACK-001");
 });
 
+test("hostile: a fresh orchestrator refuses an older authentic snapshot after a later checkpoint", () => {
+  const dir = tmpDir();
+  const writer = new AtomicWriter(dir);
+  const serializer = new StateSerializer({ hmacKey: TEST_KEY });
+  const first = new ColdBootOrchestrator(serializer, writer, TEST_RESTORE_AUTHORITY);
+  first.checkpoint("engine", { gen: "old" }, 5);
+  const older = readFileSync(join(dir, "engine.snap"));
+  first.checkpoint("engine", { gen: "new" }, 20);
+  writeFileSync(join(dir, "engine.snap"), older);
+  const cold = new ColdBootOrchestrator(serializer, writer, TEST_RESTORE_AUTHORITY);
+  const err = caught(() => cold.restore("engine"));
+  assert.ok(err instanceof HardenedBorderViolation, "integrity-ok older snapshot must not restore");
+  assert.equal(err.code, "LSS-ROLLBACK-001");
+});
+
+test("checkpoint refuses the reserved rollback-floor snapshot name", () => {
+  const { orch } = makeOrchestrator();
+  const err = caught(() => orch.checkpoint("rollback-floor", { a: 1 }, 1));
+  assert.ok(err instanceof HardenedBorderViolation);
+  assert.equal(err.code, "LSS-ROLLBACK-001");
+});
+
 test("scrub hard-erases the snapshot; no throw when absent", () => {
   const { dir, orch } = makeOrchestrator();
   orch.checkpoint("doomed", { secret: 42 }, 9);
@@ -84,6 +106,14 @@ test("scrub hard-erases the snapshot; no throw when absent", () => {
   // Idempotent: scrubbing an absent snapshot does not throw.
   assert.doesNotThrow(() => orch.scrub("doomed"));
   assert.doesNotThrow(() => orch.scrub("never-existed"));
+});
+
+test("scrub removes an orphaned plaintext .tmp left by an interrupted write", () => {
+  const { dir, orch } = makeOrchestrator();
+  const tmpPath = join(dir, "doomed.tmp");
+  writeFileSync(tmpPath, JSON.stringify({ secret: "still-on-disk" }));
+  orch.scrub("doomed");
+  assert.equal(existsSync(tmpPath), false);
 });
 
 function caught(fn) {

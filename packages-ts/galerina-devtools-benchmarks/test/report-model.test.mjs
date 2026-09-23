@@ -5,6 +5,7 @@ import {
   REPORT_RUNTIMES,
   buildCrossLanguageRows,
   buildReportMarkdown,
+  markdown as escapeMarkdown,
 } from "../src/report-model.mjs";
 
 const transition = Object.freeze({
@@ -138,8 +139,8 @@ test("the report names the frozen old-Wasm baseline and defers until a real SLID
   });
 
   assert.match(markdown, /Galerina\/SLIDE versus archived Galerina\/Wasm/u);
-  assert.match(markdown, /2026-08-02_galerina-wasm-before-slide/u);
-  assert.match(markdown, /DEFERRED_NO_SLIDE_LANE/u);
+  assert.match(markdown, /2026-08-02\\_galerina-wasm-before-slide/u);
+  assert.match(markdown, /DEFERRED\\_NO\\_SLIDE\\_LANE/u);
   assert.match(markdown, /No production `slide` lane is present/u);
 });
 
@@ -160,4 +161,25 @@ test("an active transition renders comparisons and every exclusion", () => {
   assert.match(markdown, /\| same-work \| ops\/s \| higher is better \| 100 \| 125 \| 1\.25x \| BETTER \|/u);
   assert.match(markdown, /new-only: missing archived workload/u);
   assert.match(markdown, /does not release production authority/u);
+});
+
+test("hostile: result-controlled markup is escaped in Markdown cells", () => {
+  assert.equal(escapeMarkdown("a|b"), "a\\|b");
+  assert.equal(escapeMarkdown("<script>"), "&lt;script&gt;");
+  assert.equal(escapeMarkdown("line\nbreak"), "line break");
+  const crossLanguage = buildCrossLanguageRows([{
+    benchmark: "evil|name\n<script>",
+    metricClass: "cpu-throughput",
+    units: { comparable: true, status: "PASS", unit: "ops/s" },
+    results: { rust: { normThroughput: 1 } },
+  }]);
+  const rendered = buildReportMarkdown({
+    baseline: "base|line",
+    runtimes: REPORT_RUNTIMES,
+    diffFromLast: [],
+    crossLanguage,
+    slideTransition: transition,
+  });
+  assert.ok(rendered.includes("evil\\|name &lt;script&gt;"));
+  assert.equal(rendered.includes("<script>"), false);
 });

@@ -128,6 +128,12 @@ export async function saveGraph(
   }
   const dest = path.join(dir, INDEX_FILE);
   try {
+    await fs.readlink(dest);
+    return { written: false, reason: "unsafe-path" };
+  } catch {
+    // ENOENT / EINVAL / UNKNOWN: dest is missing or not a symlink.
+  }
+  try {
     const fileStat = await fs.lstat(dest);
     if (fileStat.isSymbolicLink() || !fileStat.isFile()) {
       return { written: false, reason: "unsafe-path" };

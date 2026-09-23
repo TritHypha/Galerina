@@ -558,6 +558,16 @@ interface AdmittedPackage {
  * unsigned POLICY decision (refuse vs allowUnsigned) is left to the caller — a multi-module
  * compose enforces the set-level invariant, a single fuse enforces it per package.
  */
+/** Single filename token used to derive dist/<name>.lmanifest.json and dist/<name>.wasm. */
+export function admitFusePackageName(name: unknown): name is string {
+  return typeof name === "string"
+    && /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)
+    && !name.includes("..")
+    && !name.includes("/")
+    && !name.includes("\\")
+    && !name.includes("\0");
+}
+
 async function loadAndVerifyPackage(
   node: { crypto: NodeCrypto; fs: NodeFs; path: NodePath },
   dir: string,
@@ -568,8 +578,8 @@ async function loadAndVerifyPackage(
   const pkgDescPath = path.join(dir, "package.fungi.json");
   const pkgDesc = readJson(fs, pkgDescPath, "FUNGI-FUSE-NO-PACKAGE") as Record<string, unknown>;
   const name = typeof pkgDesc["name"] === "string" ? (pkgDesc["name"] as string) : path.basename(dir);
-  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name) || path.basename(name) !== name) {
-    return fuseError("FUNGI-FUSE-BAD-PACKAGE", `package name '${name}' is not an admitted filename`);
+  if (!admitFusePackageName(name)) {
+    return fuseError("FUNGI-FUSE-BAD-PACKAGE", `package name '${String(name)}' is not an admitted filename`);
   }
 
   const distDir = path.join(dir, "dist");

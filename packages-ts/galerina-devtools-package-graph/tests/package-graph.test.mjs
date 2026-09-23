@@ -402,6 +402,16 @@ test("comment markers inside strings do not hide real imports", () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test("hostile: a same-line string containing // does not hide the following import", () => {
+  const root = makeFixture({
+    "src/index.ts": `const s = "foo // bar"; import "same-line-dep";\n`,
+  });
+  const graph = buildGraph(scanPackage(root));
+  const specs = graph.externalDeps.map((d) => d.specifier);
+  assert.deepEqual(specs, ["same-line-dep"]);
+  rmSync(root, { recursive: true, force: true });
+});
+
 test("comment markers inside regex literals do not hide real imports", () => {
   const root = makeFixture({
     "src/index.ts": `const re = /http:\\/\\//;\nimport "regex-hidden-dep";\nexport const x = 1;\n`,
@@ -661,6 +671,26 @@ test("scanned scope is reported even when zero files match (no silent empty bord
   assert.equal(graph.stats.fileCount, 0);
   assert.deepEqual(graph.scannedRoots, ["src"]);
   assert.ok(graph.scannedExtensions.length > 0);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("omitting src while it holds code fails the boundary gate", () => {
+  const root = makeFixture({
+    "package.json": JSON.stringify({
+      name: "@galerina/narrow",
+      packageGraph: { roots: ["docs"], extensions: [".ts"] },
+    }),
+    "src/index.ts": `import x from "hidden-dep";\nexport const y = x;\n`,
+    "docs/index.ts": "export const n = 1;\n",
+    ".graph/boundary-policy.json": JSON.stringify({
+      packageName: "@galerina/narrow",
+      allowedExternal: [],
+    }),
+  });
+  const graph = buildGraph(scanPackage(root));
+  const gate = runBoundaryGate(root, graph, true);
+  assert.equal(gate.status, "FAIL");
+  assert.ok(gate.violations.some((v) => /vacuous/i.test(String(v))));
   rmSync(root, { recursive: true, force: true });
 });
 

@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 // Galerina Phase 13 — SemanticGraph
 //
 // The resolved, queryable semantic layer built from the AST.
@@ -137,22 +137,28 @@ export function reachable(
   edgeKind: SemanticEdgeKind,
 ): readonly SemanticNode[] {
   const nodeMap = new Map(graph.nodes.map((n) => [n.id, n]));
+  const adj = new Map<string, string[]>();
+  for (const edge of graph.edges) {
+    if (edge.kind !== edgeKind) continue;
+    const list = adj.get(edge.from);
+    if (list === undefined) adj.set(edge.from, [edge.to]);
+    else list.push(edge.to);
+  }
   const result: SemanticNode[] = [];
   const visited = new Set<string>();
   const queue = [fromId];
+  const maxVisits = graph.nodes.length + 1;
 
-  while (queue.length > 0) {
+  while (queue.length > 0 && visited.size < maxVisits) {
     const current = queue.shift()!;
     if (visited.has(current)) continue;
     visited.add(current);
 
-    for (const edge of graph.edges) {
-      if (edge.from === current && edge.kind === edgeKind) {
-        const target = nodeMap.get(edge.to);
-        if (target !== undefined && !visited.has(edge.to)) {
-          result.push(target);
-          queue.push(edge.to);
-        }
+    for (const to of adj.get(current) ?? []) {
+      const target = nodeMap.get(to);
+      if (target !== undefined && !visited.has(to)) {
+        result.push(target);
+        queue.push(to);
       }
     }
   }

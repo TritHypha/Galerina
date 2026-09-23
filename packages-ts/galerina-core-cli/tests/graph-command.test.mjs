@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -95,5 +95,36 @@ describe("Galerina graph command", () => {
     assert.equal(explain.ok, true);
     assert.match(explain.message, /galerina-core-security/);
     assert.equal(path.ok, true);
+  });
+
+  it("hostile: a symlink package root is not followed outside the workspace", async (t) => {
+    const cwd = await mkdtemp(join(tmpdir(), "galerina-core-cli-graph-link-"));
+    const outside = await mkdtemp(join(tmpdir(), "galerina-core-cli-graph-secret-"));
+    await writeFile(join(outside, "secret.md"), "# leaked\n", "utf8");
+    try {
+      await symlink(outside, join(cwd, "pkg-link"));
+    } catch (err) {
+      t.skip(`symlink creation refused on this host: ${err instanceof Error ? err.message : err}`);
+      return;
+    }
+    await writeFile(
+      join(cwd, "galerina.workspace.json"),
+      `${JSON.stringify({ name: "Galerina-test", packages: ["pkg-link"] }, null, 2)}\n`,
+      "utf8",
+    );
+    await writeFile(join(cwd, "AGENTS.md"), "# Agent Instructions\n", "utf8");
+    const priorEpoch = process.env.SOURCE_DATE_EPOCH;
+    process.env.SOURCE_DATE_EPOCH = "1700000000";
+    let result;
+    try {
+      result = await runCli(["graph", "--out", "graph-out"], cwd);
+    } finally {
+      if (priorEpoch === undefined) delete process.env.SOURCE_DATE_EPOCH;
+      else process.env.SOURCE_DATE_EPOCH = priorEpoch;
+    }
+    assert.equal(result.ok, true);
+    const graph = JSON.parse(await readFile(join(cwd, "graph-out", "galerina-devtools-project-graph.json"), "utf8"));
+    const leaked = JSON.stringify(graph).includes("secret.md") || JSON.stringify(graph).includes("leaked");
+    assert.equal(leaked, false);
   });
 });

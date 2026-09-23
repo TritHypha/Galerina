@@ -432,13 +432,16 @@ function scanGateCalls(source: string): GateCallSite[] {
   const exactRe = /\bredact\s*\(([^)]*)\)/g;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? "";
+    const trimmed = line.trim();
+    if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) continue;
+    const code = line.replace(/\/\/.*$/, "").replace(/(['"`])(?:\\.|[^\\])*?\1/g, "''");
     let m: RegExpExecArray | null;
     gateRe.lastIndex = 0;
-    while ((m = gateRe.exec(line)) !== null) {
+    while ((m = gateRe.exec(code)) !== null) {
       results.push({ callName: m[0].split("(")[0]?.trim() ?? "", lineNumber: i + 1, argText: m[1] ?? "" });
     }
     exactRe.lastIndex = 0;
-    while ((m = exactRe.exec(line)) !== null) {
+    while ((m = exactRe.exec(code)) !== null) {
       if (!results.some(r => r.lineNumber === i + 1 && r.callName === "redact")) {
         results.push({ callName: "redact", lineNumber: i + 1, argText: m[1] ?? "" });
       }
@@ -608,11 +611,14 @@ export function analyzeFile(
     const flowGateCalls  = inRange(allGateCalls,  startLine, endLine);
     const flowSinkCalls  = inRange(allSinkCalls,  startLine, endLine);
 
-    // Build a set of gated binding names within this flow
-    const gatedBindings = new Set<string>();
-    for (const gate of flowGateCalls) {
-      const argNames = gate.argText.split(/[,\s()]+/).filter(s => /^\w+$/.test(s));
-      for (const n of argNames) gatedBindings.add(n);
+    function gatedBefore(lineNumber: number): Set<string> {
+      const gatedBindings = new Set<string>();
+      for (const gate of flowGateCalls) {
+        if (gate.lineNumber >= lineNumber) continue;
+        const argNames = gate.argText.split(/[,\s()]+/).filter(s => /^\w+$/.test(s));
+        for (const n of argNames) gatedBindings.add(n);
+      }
+      return gatedBindings;
     }
 
     // Build nodes for this flow
@@ -671,6 +677,7 @@ export function analyzeFile(
 
       // Ungated detection: a tainted binding in this flow reaches the sink without a gate.
       // We check both the source-level arg analysis AND the compiler value-state diagnostics.
+      const gatedBindings = gatedBefore(sc.lineNumber);
       const hasUngatedArg = sc.args.some(arg => {
         return sourceNodeMap.has(arg) && !gatedBindings.has(arg);
       });
@@ -710,17 +717,7 @@ export function analyzeFile(
           }
         }
       }
-      if (!linkedSomething) {
-        const lastTx = [...transformNodeMap.values()].at(-1);
-        if (lastTx !== undefined) {
-          flowEdges.push({ from: lastTx, to: sinkId });
-        } else {
-          const lastSrc = [...sourceNodeMap.values()].at(-1);
-          if (lastSrc !== undefined) {
-            flowEdges.push({ from: lastSrc, to: sinkId });
-          }
-        }
-      }
+      // Incomplete wiring is unknown coverage, not a fabricated last-transform edge.
 
       if (sinkUngated) {
         flowUngated = true;
@@ -769,32 +766,92 @@ function inferSourceKindFromRhs(rhs: string): DataSourceKind {
 // Workspace-level aggregation
 // ---------------------------------------------------------------------------
 
-import { readFileSync } from "node:fs";
-import { readdirSync, statSync } from "node:fs";
-import { join, extname } from "node:path";
+import { lstatSync, readFileSync, readdirSync } from "node:fs";
+import { extname, join, relative, resolve } from "node:path";
 
-export function collectFungiFiles(dir: string): string[] {
+const MAX_FUNGI_FILES = 8192;
+const MAX_WALK_DEPTH = 32;
+
+export interface FungiCollection {
+  readonly files: readonly string[];
+  readonly complete: boolean;
+  readonly refused: readonly string[];
+}
+
+function contained(rootAbs: string, candidate: string): boolean {
+  const rel = relative(rootAbs, resolve(candidate));
+  return rel === "" || (!rel.startsWith("..") && !rel.startsWith("/") && !/^[A-Za-z]:/.test(rel));
+}
+
+export function collectFungiCorpus(dir: string): FungiCollection {
   const files: string[] = [];
-  let entries: string[];
+  const refused: string[] = [];
+  let complete = true;
+  let rootAbs: string;
   try {
-    entries = readdirSync(dir);
+    const rootStat = lstatSync(dir);
+    if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+      return { files, complete: false, refused: [dir] };
+    }
+    rootAbs = resolve(dir);
   } catch {
-    return files;
+    return { files, complete: false, refused: [dir] };
   }
-  for (const entry of entries) {
-    const full = join(dir, entry);
+
+  const walk = (current: string, depth: number): void => {
+    if (depth > MAX_WALK_DEPTH) {
+      complete = false;
+      refused.push(current);
+      return;
+    }
+    let entries: string[];
     try {
-      const stat = statSync(full); // perf-allow: loop-sync-io — one-shot recursive directory scan, distinct path each entry
-      if (stat.isDirectory()) {
-        files.push(...collectFungiFiles(full));
-      } else if (extname(entry) === ".fungi") {
+      entries = readdirSync(current);
+    } catch {
+      complete = false;
+      refused.push(current);
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(current, entry);
+      if (!contained(rootAbs, full)) {
+        complete = false;
+        refused.push(full);
+        continue;
+      }
+      let st;
+      try {
+        st = lstatSync(full); // perf-allow: loop-sync-io — one-shot recursive directory scan, distinct path each entry
+      } catch {
+        complete = false;
+        refused.push(full);
+        continue;
+      }
+      if (st.isSymbolicLink()) {
+        complete = false;
+        refused.push(full);
+        continue;
+      }
+      if (st.isDirectory()) {
+        walk(full, depth + 1);
+      } else if (st.isFile() && extname(entry) === ".fungi") {
+        if (files.length >= MAX_FUNGI_FILES) {
+          complete = false;
+          refused.push(full);
+          return;
+        }
         files.push(full);
       }
-    } catch {
-      // skip unreadable
     }
-  }
-  return files;
+  };
+
+  walk(rootAbs, 0);
+  return { files, complete, refused };
+}
+
+/** Compatibility wrapper: file list only. Prefer {@link collectFungiCorpus} for coverage. */
+export function collectFungiFiles(dir: string): string[] {
+  return [...collectFungiCorpus(dir).files];
 }
 
 export function buildProvenanceGraph(

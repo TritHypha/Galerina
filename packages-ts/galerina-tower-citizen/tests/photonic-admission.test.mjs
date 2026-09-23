@@ -146,6 +146,18 @@ test("deny: omitted signer identity cannot skip revocation", () => {
   assert.match(r.reason, /signerKeyId and revocationCheck must be supplied together/);
 });
 
+test("hostile: omitting revocationCheck cannot skip revocation even with signerKeyId", () => {
+  const { attestation, policy, manifest } = fixture();
+  const rest = { ...policy };
+  delete rest.revocationCheck;
+  const r = admitPhotonicConfig(BLOB, attestation, {
+    ...rest,
+    signerKeyId: manifest.signerKeyId,
+  });
+  assert.equal(r.admitted, false);
+  assert.match(r.reason, /signerKeyId and revocationCheck must be supplied together/);
+});
+
 test("SOUNDNESS: across mutations of blob/sig/cap, admission requires ALL gates", () => {
   const { attestation, policy } = fixture();
   // baseline admits

@@ -15,6 +15,7 @@
 // FINDING (counted, listed), never silently skipped.
 // =============================================================================
 
+import { spawnSync } from "node:child_process";
 import { lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { lex, type Token } from "@galerina/core-compiler";
@@ -71,11 +72,10 @@ export interface FileScan {
    *  inline-fixtures.ts; it bit W4 @version proofs and the W5b keyword reserve). */
   readonly source?: "disk" | "inline";
   /** "test" = under a tests/ or fixtures/ path segment (negative fixtures allowed
-   *  to hold old syntax). "signed-frozen" = inside a REAL-SIGNED fusable package
-   *  (CG-7: the .lmanifest binds the source hash, so the file is byte-frozen until
-   *  the offline re-sign ceremony — it must NOT be migrated in place and is exempt
-   *  from --strict, but the debt is REPORTED, never silent). Everything else is
-   *  "runtime" corpus and must migrate. */
+   *  to hold old syntax). "signed-frozen" = inside a fusable package whose
+   *  committed HEAD .lmanifest carries a real ceremony signature (CG-7). Disk
+   *  shape alone does not freeze. Exempt from --strict; the debt is reported.
+   *  Everything else is "runtime" corpus and must migrate. */
   readonly corpus: "runtime" | "test" | "signed-frozen";
   /** Lexer error-severity diagnostics (a file that cannot lex is a finding). */
   readonly lexErrors: number;
@@ -107,11 +107,21 @@ const SKIP_DIRS = new Set([
 
 const TEST_SEGMENT = /^(tests?|fixtures?|__tests__)$/i;
 
+/** Disk and in-memory corpus sources are admitted only under this UTF-8 byte ceiling. */
+export const MAX_CORPUS_FILE_BYTES = 1_048_576;
+export const MAX_CORPUS_WALK_DEPTH = 32;
+export const MAX_CORPUS_FILES = 8192;
+
+export function corpusSourceExceedsMaxBytes(source: string): boolean {
+  return Buffer.byteLength(source, "utf8") > MAX_CORPUS_FILE_BYTES;
+}
+
 /** Recursively find every .fungi and .gate under root (generated/dep dirs skipped). */
 export function discoverCorpus(root: string): { fungi: string[]; gate: string[] } {
   const fungi: string[] = [];
   const gate: string[] = [];
-  const walk = (dir: string): void => {
+  const walk = (dir: string, depth: number): void => {
+    if (depth > MAX_CORPUS_WALK_DEPTH) return;
     let entries;
     try {
       entries = readdirSync(dir, { withFileTypes: true });
@@ -121,17 +131,17 @@ export function discoverCorpus(root: string): { fungi: string[]; gate: string[] 
     for (const e of entries) {
       if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) {
-        if (!SKIP_DIRS.has(e.name)) walk(join(dir, e.name));
+        if (!SKIP_DIRS.has(e.name)) walk(join(dir, e.name), depth + 1);
       } else if (e.name.endsWith(".fungi")) {
-        if (fungi.length + gate.length >= 8192) return;
+        if (fungi.length + gate.length >= MAX_CORPUS_FILES) return;
         fungi.push(join(dir, e.name));
       } else if (e.name.endsWith(".gate")) {
-        if (fungi.length + gate.length >= 8192) return;
+        if (fungi.length + gate.length >= MAX_CORPUS_FILES) return;
         gate.push(join(dir, e.name));
       }
     }
   };
-  walk(root);
+  walk(root, 0);
   fungi.sort();
   gate.sort();
   return { fungi, gate };
@@ -141,13 +151,60 @@ function classifyCorpus(relPath: string): "runtime" | "test" {
   return relPath.split(/[\\/]/).some((seg) => TEST_SEGMENT.test(seg)) ? "test" : "runtime";
 }
 
+function isRealSignature(sig: unknown): boolean {
+  return (
+    sig !== null &&
+    typeof sig === "object" &&
+    typeof (sig as { keyId?: unknown }).keyId === "string" &&
+    typeof (sig as { signature?: unknown }).signature === "string" &&
+    (sig as { signature: string }).signature.length > 0 &&
+    !(sig as { signature: string }).signature.startsWith("placeholder")
+  );
+}
+
 /**
- * Find package roots whose dist/<name>.lmanifest.json carries a REAL signature.
- * Mirrors scripts/lib/signed-lmanifest.mjs `isRealSignedManifest` (keyId +
- * non-placeholder signature) — kept in sync by the shared test expectation;
- * the lib is plain-scripts side and this package must stay self-contained.
- * Learned 2026-07-08: the version-stamp codemod dirtied 2 signed packages and
- * audit-signed-fixture-drift went red — this class is now machine-checked here.
+ * Strict-exemption privilege: freeze only when git HEAD carries a real
+ * ceremony signature. Disk shape alone does not exempt. Git errors, untracked
+ * manifests, and unreadable HEAD blobs stay runtime (fail-closed for exemption).
+ */
+export function isCommittedCeremonyManifest(gitRoot: string, manifestPath: string): boolean {
+  const rel = relative(gitRoot, manifestPath).split(sep).join("/");
+  if (
+    rel.length === 0 ||
+    rel.includes("\0") ||
+    rel.startsWith("/") ||
+    rel.startsWith("..") ||
+    rel.split("/").some((part) => part === "" || part === "." || part === "..")
+  ) {
+    return false;
+  }
+  const tracked = spawnSync("git", ["-C", gitRoot, "ls-files", "--error-unmatch", "--", rel], {
+    encoding: "utf8",
+    timeout: 15_000,
+    shell: false,
+    windowsHide: true,
+  });
+  if (tracked.status !== 0) return false;
+  const show = spawnSync("git", ["-C", gitRoot, "show", `HEAD:${rel}`], {
+    encoding: "utf8",
+    timeout: 15_000,
+    shell: false,
+    windowsHide: true,
+  });
+  if (show.status !== 0 || typeof show.stdout !== "string" || show.stdout.length === 0) {
+    return false;
+  }
+  try {
+    return isRealSignature((JSON.parse(show.stdout) as { governanceSignature?: unknown }).governanceSignature);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Find package roots whose committed HEAD dist/<name>.lmanifest.json carries a
+ * REAL ceremony signature. Disk-only keyId+signature shape does not freeze.
+ * This package stays self-contained (does not import scripts/lib).
  */
 export function findSignedPackageRoots(root: string): string[] {
   const out: string[] = [];
@@ -160,24 +217,24 @@ export function findSignedPackageRoots(root: string): string[] {
       return;
     }
     for (const e of entries) {
+      if (e.isSymbolicLink()) continue;
       if (e.isFile() && e.name === "package.fungi.json") {
         try {
-          const name = (JSON.parse(readFileSync(join(dir, e.name), "utf8")) as { name?: string }).name; // perf-allow — one descriptor read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
-          if (typeof name === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name) && !name.includes("..")) {
-            const manifest = JSON.parse(readFileSync(join(dir, "dist", `${name}.lmanifest.json`), "utf8")) as { // perf-allow — one manifest read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
-              governanceSignature?: { keyId?: unknown; signature?: unknown };
-            };
-            const sig = manifest.governanceSignature;
-            if (
-              sig !== null && typeof sig === "object" &&
-              typeof sig.keyId === "string" && typeof sig.signature === "string" &&
-              sig.signature.length > 0 && !sig.signature.startsWith("placeholder")
-            ) {
-              out.push(dir);
-            }
+          const descPath = join(dir, e.name);
+          const st = lstatSync(descPath);
+          if (st.isSymbolicLink() || !st.isFile() || st.size > MAX_CORPUS_FILE_BYTES) continue;
+          const raw = readFileSync(descPath, "utf8");
+          if (corpusSourceExceedsMaxBytes(raw)) continue;
+          const name = (JSON.parse(raw) as { name?: string }).name;
+          if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)) continue;
+          const manifestPath = join(dir, "dist", `${name}.lmanifest.json`);
+          const relManifest = relative(dir, manifestPath);
+          if (relManifest.startsWith("..") || relManifest.startsWith("/") || /^[A-Za-z]:/.test(relManifest)) continue;
+          if (isCommittedCeremonyManifest(root, manifestPath)) {
+            out.push(dir);
           }
         } catch {
-          /* absent/unreadable manifest → not signed; the drift auditor owns deeper checks */
+          /* absent/unreadable descriptor → not signed; the drift auditor owns deeper checks */
         }
       } else if (e.isDirectory() && !SKIP_DIRS.has(e.name)) {
         walk(join(dir, e.name), depth + 1);
@@ -306,7 +363,25 @@ const EMPTY_MATCHES: MatchStats = { total: 0, withoutWildcard: 0, linesWithoutWi
 
 // ── per-file scan ────────────────────────────────────────────────────────────
 
+function oversizedSourceScan(relPath: string, kind: "fungi" | "gate"): Omit<FileScan, "corpus"> {
+  return {
+    file: relPath,
+    kind,
+    lexErrors: 0,
+    readError: "corpus source exceeds 1 MiB",
+    version: { present: false, valid: false, raw: null, value: null },
+    legacyOps: { and2: 0, or2: 0 },
+    legacyIdents: {},
+    matches: EMPTY_MATCHES,
+    usage: {},
+    secureFlow: 0,
+  };
+}
+
 export function scanFungiSource(source: string, relPath: string): Omit<FileScan, "corpus"> {
+  if (corpusSourceExceedsMaxBytes(source)) {
+    return oversizedSourceScan(relPath, "fungi");
+  }
   const version = readVersionHeader(source, "fungi");
   // Lex WITHOUT the header line so a future header never distorts token analysis
   // (today the lexer has no @version rule; post-W4 the parser owns it).
@@ -331,6 +406,9 @@ export function scanFungiSource(source: string, relPath: string): Omit<FileScan,
 /** .gate is NOT .fungi grammar — header check only; gate-parser stays its authority.
  *  (.gate is never a runtime code file — owner rule 2026-07-08.) */
 export function scanGateSource(source: string, relPath: string): Omit<FileScan, "corpus"> {
+  if (corpusSourceExceedsMaxBytes(source)) {
+    return oversizedSourceScan(relPath, "gate");
+  }
   return {
     file: relPath,
     kind: "gate",
@@ -360,11 +438,11 @@ export function scanCorpus(root: string): CorpusScan {
       let source: string;
       try {
         const st = lstatSync(abs);
-        if (st.isSymbolicLink() || !st.isFile() || st.size > 1_048_576) {
+        if (st.isSymbolicLink() || !st.isFile() || st.size > MAX_CORPUS_FILE_BYTES) {
           throw new Error("corpus file is not an admitted regular file under 1 MiB");
         }
         source = readFileSync(abs, "utf8"); // perf-allow: loop-sync-io — one read per corpus file in a per-file CLI scan loop — distinct path per iteration, not hoistable
-        if (source.length > 1_048_576) {
+        if (corpusSourceExceedsMaxBytes(source)) {
           throw new Error("corpus file exceeds 1 MiB after decode");
         }
       } catch (err) {

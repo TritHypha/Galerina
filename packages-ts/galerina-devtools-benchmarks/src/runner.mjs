@@ -126,6 +126,20 @@ export const BENCHMARKS = [
   { id: "provenance-trace",   dir: "provenance-trace",   devtoolsOnly: true },
 ];
 
+export function denoWebGpuSpawnSpec(denoBin, runnerPath) {
+  if (typeof denoBin !== "string" || denoBin.length === 0) {
+    throw new Error("REFUSED: deno executable path is missing");
+  }
+  if (typeof runnerPath !== "string" || runnerPath.length === 0) {
+    throw new Error("REFUSED: deno runner path is missing");
+  }
+  return {
+    file: denoBin,
+    args: Object.freeze(["run", "--unstable-webgpu", runnerPath]),
+    options: Object.freeze({ encoding: "utf8", timeout: 60000, shell: false, windowsHide: true }),
+  };
+}
+
 // Resolve a usable Deno executable path on this machine.
 // Windows-safe: prefer a real .exe path (cmd.exe under shell:true cannot run the
 // POSIX-style path that Git's `which` returns, e.g. /c/Users/.../deno).
@@ -293,12 +307,8 @@ export async function runBenchmark(bench) {
     console.log(`  deno-webgpu...`);
     try {
       const { spawnSync: _sp } = await import("node:child_process");
-      const denoBin = resolveDenoBin();
-      // Quote the executable path (it may contain spaces / be a full path) for shell:true.
-      // Single command string, no args array — args+shell:true triggers Node DEP0190.
-      const dr = _sp(denoBin, ["run", "--unstable-webgpu", denoWebGpuRunner], {
-        encoding: "utf8", timeout: 60000, shell: false, windowsHide: true,
-      });
+      const spec = denoWebGpuSpawnSpec(resolveDenoBin(), denoWebGpuRunner);
+      const dr = _sp(spec.file, spec.args, spec.options);
       res.denoWebGpu = (dr.status === 0 && dr.stdout?.trim())
         ? (() => { try { return JSON.parse(dr.stdout.trim()); } catch { return null; } })()
         : { error: true, reason: dr.stderr?.slice(0,200) ?? "spawn failed", runtime: "deno-webgpu" };

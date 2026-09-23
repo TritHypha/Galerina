@@ -49,14 +49,21 @@ export function readStdinBytes(): Uint8Array {
 export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
   const stdin = process.stdin;
   if (!stdin.isTTY) throw new Error("promptNoEcho requires a TTY; pipe the value via STDIN instead");
+  if (typeof stdin.setRawMode !== "function") {
+    throw new Error("promptNoEcho requires a TTY with setRawMode");
+  }
   process.stderr.write(prompt); // prompt to stderr so stdout stays clean for piping
-  const stolen = stdin.listeners("data").slice() as Array<(...args: unknown[]) => void>;
+  const stolenData = stdin.listeners("data").slice() as Array<(...args: unknown[]) => void>;
+  const stolenKeypress = stdin.listeners("keypress").slice() as Array<(...args: unknown[]) => void>;
   stdin.removeAllListeners("data");
+  stdin.removeAllListeners("keypress");
   const wasRaw = stdin.isRaw ?? false;
-  stdin.setRawMode(true);
-  stdin.resume();
+  let rawChanged = false;
   const bytes: number[] = [];
   try {
+    stdin.setRawMode(true);
+    rawChanged = true;
+    stdin.resume();
     await new Promise<void>((resolve, reject) => {
       const onData = (d: Buffer): void => {
         for (const ch of d) {
@@ -81,14 +88,53 @@ export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
     });
   } finally {
     stdin.removeAllListeners("data");
-    for (const listener of stolen) stdin.on("data", listener);
-    stdin.setRawMode(wasRaw);
-    stdin.pause();
-    process.stderr.write("\n");
+    stdin.removeAllListeners("keypress");
+    for (const listener of stolenData) stdin.on("data", listener);
+    for (const listener of stolenKeypress) stdin.on("keypress", listener);
+    if (rawChanged) {
+      try {
+        stdin.setRawMode(wasRaw);
+      } catch {
+        try { stdin.setRawMode(false); } catch { /* best-effort echo restore */ }
+      }
+    }
+    try { stdin.pause(); } catch { /* ignore */ }
+    try { process.stderr.write("\n"); } catch { /* ignore */ }
   }
   const res = Uint8Array.from(bytes);
   bytes.fill(0);
   return res;
+}
+
+/** Readline (or similar) that would echo keypresses onto an output stream. */
+export interface EchoingLineReader {
+  pause(): unknown;
+  resume(): unknown;
+  _ttyWrite?: (...args: unknown[]) => unknown;
+}
+
+/**
+ * Secret prompt with exclusive stdin ownership. An attached echoing line reader
+ * is paused and its TTY writer is muted for the prompt lifetime, including abort.
+ */
+export async function promptNoEchoExclusive(
+  prompt: string,
+  lineReader?: EchoingLineReader,
+): Promise<Uint8Array> {
+  if (lineReader === undefined) return promptNoEcho(prompt);
+  lineReader.pause();
+  const originalTty = lineReader._ttyWrite;
+  if (typeof originalTty === "function") {
+    lineReader._ttyWrite = () => undefined;
+  }
+  try {
+    return await promptNoEcho(prompt);
+  } finally {
+    if (typeof originalTty === "function") {
+      lineReader._ttyWrite = originalTty;
+    }
+    lineReader.resume();
+  }
 }
 
 /**

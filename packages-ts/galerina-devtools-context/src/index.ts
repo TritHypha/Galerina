@@ -21,6 +21,7 @@ export {
 
 // Markdown renderer
 export {
+  md,
   renderReceiptMarkdown,
   renderFileReceiptsMarkdown,
 } from "./markdown-renderer.js";

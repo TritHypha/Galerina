@@ -18,8 +18,19 @@ export function discoverChangedPaths(rootValue, base = "HEAD") {
     windowsHide: true,
     maxBuffer: 64 * 1024 * 1024,
   };
+  let sha;
+  try {
+    sha = execFileSync("git", ["rev-parse", "--verify", `${base}^{commit}`], common)
+      .toString("utf8")
+      .trim();
+  } catch {
+    throw new Error("Git base must resolve to a commit");
+  }
+  if (!/^[0-9a-f]{40,64}$/i.test(sha)) {
+    throw new Error("Git base must resolve to a commit");
+  }
   const tracked = execFileSync("git", [
-    "diff", "--name-only", "-z", "--diff-filter=ACMRTUXB", base, "--",
+    "diff", "--name-only", "-z", "--no-ext-diff", "--diff-filter=ACMRTUXB", sha, "--",
   ], common);
   const untracked = execFileSync("git", [
     "ls-files", "--others", "--exclude-standard", "-z", "--",

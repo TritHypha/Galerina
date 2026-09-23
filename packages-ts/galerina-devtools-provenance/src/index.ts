@@ -5,8 +5,10 @@
 export {
   analyzeFile,
   buildProvenanceGraph,
+  collectFungiCorpus,
   collectFungiFiles,
   type FileProvenanceResult,
+  type FungiCollection,
 } from "./analyzer.js";
 
 export {

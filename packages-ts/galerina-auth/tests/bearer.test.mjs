@@ -97,6 +97,24 @@ test("serialized PEM public keys cannot be used as HS256 HMAC secrets", () => {
   assert.equal(bearerTokenVerdict(bearer(forged), { key: pubPem, algorithms: ["HS256"], now }), Verdict.DENY);
 });
 
+test("hostile: SPKI DER public keys cannot be used as HS256 HMAC secrets", () => {
+  const der = rsa.publicKey.export({ type: "spki", format: "der" });
+  const forged = jwt({ alg: "HS256", typ: "JWT" }, { sub: "attacker", exp: NOW + 100 }, hsSign(der));
+  assert.equal(bearerTokenVerdict(bearer(forged), { key: der, algorithms: ["HS256"], now }), Verdict.DENY);
+});
+
+test("hostile: PKCS#1 DER public keys cannot be used as HS256 HMAC secrets", () => {
+  const der = rsa.publicKey.export({ type: "pkcs1", format: "der" });
+  const forged = jwt({ alg: "HS256", typ: "JWT" }, { sub: "attacker", exp: NOW + 100 }, hsSign(der));
+  assert.equal(bearerTokenVerdict(bearer(forged), { key: der, algorithms: ["HS256"], now }), Verdict.DENY);
+});
+
+test("hostile: JWK public keys cannot be used as HS256 HMAC secrets", () => {
+  const jwk = JSON.stringify(rsa.publicKey.export({ format: "jwk" }));
+  const forged = jwt({ alg: "HS256", typ: "JWT" }, { sub: "attacker", exp: NOW + 100 }, hsSign(jwk));
+  assert.equal(bearerTokenVerdict(bearer(forged), { key: jwk, algorithms: ["HS256"], now }), Verdict.DENY);
+});
+
 // ── footgun #4: exp required by default ────────────────────────────────────────
 test("missing exp with default requireExp → DENY", () => {
   const t = jwt({ alg: "HS256", typ: "JWT" }, { sub: "u1" }, hsSign(HS_SECRET));

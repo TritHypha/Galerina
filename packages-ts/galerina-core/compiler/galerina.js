@@ -3102,6 +3102,41 @@ function generateDevelopmentOutputs(result, outDir) {
   return writeReportFiles(outDir, reports);
 }
 
+function pathIsSymlink(file) {
+  try {
+    fs.readlinkSync(file);
+    return true;
+  } catch (err) {
+    if (err && (err.code === "ENOENT" || err.code === "EINVAL" || err.code === "UNKNOWN")) {
+      // missing path, or not a reparse point
+    } else {
+      throw err;
+    }
+  }
+  try {
+    return fs.lstatSync(file).isSymbolicLink();
+  } catch (err) {
+    if (err && err.code === "ENOENT") return false;
+    throw err;
+  }
+}
+
+function refuseBuildOutputLinks(root, file) {
+  let cursor = file;
+  for (;;) {
+    if (pathIsSymlink(cursor)) {
+      fail("Build output path is a link and is refused.");
+    }
+    const parent = path.dirname(cursor);
+    if (parent === cursor) break;
+    const parentRel = path.relative(root, parent);
+    if (parent === root || parentRel === "" || parentRel === ".." || parentRel.startsWith("..") || path.isAbsolute(parentRel)) {
+      break;
+    }
+    cursor = parent;
+  }
+}
+
 function writeReportFiles(outDir, reports) {
   const root = path.resolve(outDir);
   fs.mkdirSync(root, { recursive: true });
@@ -3110,17 +3145,12 @@ function writeReportFiles(outDir, reports) {
     const relative = normaliseBuildOutputPath(name);
     const file = path.resolve(root, relative);
     const rel = path.relative(root, file);
-    if (rel.startsWith("..") || path.isAbsolute(rel)) {
+    if (rel === ".." || rel.startsWith("..") || path.isAbsolute(rel)) {
       fail("Build output path escapes the configured build directory.");
     }
+    refuseBuildOutputLinks(root, file);
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    try {
-      if (fs.lstatSync(file).isSymbolicLink()) {
-        fail("Build output path is a link and is refused.");
-      }
-    } catch (err) {
-      if (err && err.code !== "ENOENT") throw err;
-    }
+    refuseBuildOutputLinks(root, file);
     fs.writeFileSync(file, content.endsWith("\n") ? content : content + "\n", "utf8");
     written.push(file);
   }
@@ -5279,13 +5309,14 @@ function runProject(project, result, runOptions = {}) {
   const source = project.files.find((file) => file.relativePath === mainFlow.file) || project.files[0];
   const content = stripComments(source.content);
   const mainBody = extractNamedFlowBody(content, "main");
-  if (/\brunComputeMixThroughputBenchmark\s*\(/.test(mainBody)) {
+  const kind = benchmarkKindFromMainBody(mainBody);
+  if (kind === "compute-mix") {
     return runComputeMixThroughputBenchmarkExample(source, result, mainBody, mainFlow, runOptions);
   }
-  if (/\brunArithmeticThresholdBenchmark\s*\(/.test(mainBody)) {
+  if (kind === "arithmetic-threshold") {
     return runArithmeticThresholdBenchmarkExample(source, result, mainBody, mainFlow);
   }
-  if (/\bguessFourDigitCode\s*\(/.test(mainBody)) {
+  if (kind === "four-digit") {
     return runFourDigitBenchmarkExample(source, result, mainBody, mainFlow);
   }
   const functions = collectRunFunctions(content);
@@ -5449,6 +5480,32 @@ function runComputeMixThroughputBenchmarkExample(source, result, content, mainFl
     entry: mainFlow.file,
     output: [JSON.stringify(report, null, 2)]
   };
+}
+
+function stripQuotedStrings(content) {
+  let out = "";
+  for (let i = 0; i < content.length; i += 1) {
+    const ch = content[i];
+    if (ch === "\"" || ch === "'") {
+      const quote = ch;
+      i += 1;
+      while (i < content.length && content[i] !== quote) {
+        if (content[i] === "\\") i += 1;
+        i += 1;
+      }
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+function benchmarkKindFromMainBody(mainBody) {
+  const searchable = stripQuotedStrings(mainBody);
+  if (/\brunComputeMixThroughputBenchmark\s*\(/.test(searchable)) return "compute-mix";
+  if (/\brunArithmeticThresholdBenchmark\s*\(/.test(searchable)) return "arithmetic-threshold";
+  if (/\bguessFourDigitCode\s*\(/.test(searchable)) return "four-digit";
+  return null;
 }
 
 function admitBoundedInt(value, fallback, min, max) {
@@ -5800,4 +5857,22 @@ ${first.problem}
 ${first.suggestedFix}`;
 }
 
-main(process.argv);
+if (require.main === module) {
+  main(process.argv);
+}
+
+module.exports = {
+  writeReportFiles,
+  normaliseBuildOutputPath,
+  loadProject,
+  MAX_PROJECT_FILES,
+  MAX_PROJECT_FILE_BYTES,
+  MAX_PROJECT_TOTAL_BYTES,
+  MAX_PROJECT_DEPTH,
+  stripQuotedStrings,
+  benchmarkKindFromMainBody,
+  admitBoundedInt,
+  collectRunFunctions,
+  collectRunVariables,
+  collectRunOutput,
+};

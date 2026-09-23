@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import {
   createDefaultProjectGraphOutputManifest,
@@ -287,6 +287,24 @@ async function collectProjectGraphFiles(
   return files;
 }
 
+async function lstatPath(absolutePath: string): Promise<{
+  isSymbolicLink(): boolean;
+  isDirectory(): boolean;
+  isFile(): boolean;
+} | null> {
+  const mod = await import("node:fs/promises") as unknown as {
+    lstat?: (path: string) => Promise<{
+      isSymbolicLink(): boolean;
+      isDirectory(): boolean;
+      isFile(): boolean;
+    }>;
+  };
+  if (typeof mod.lstat !== "function") {
+    return null;
+  }
+  return mod.lstat(absolutePath);
+}
+
 async function collectPath(
   cwd: string,
   path: string,
@@ -303,8 +321,15 @@ async function collectPath(
   let pathStat;
 
   try {
-    pathStat = await stat(absolutePath);
+    pathStat = await lstatPath(absolutePath);
   } catch {
+    return;
+  }
+  if (pathStat === null) {
+    return;
+  }
+
+  if (pathStat.isSymbolicLink()) {
     return;
   }
 

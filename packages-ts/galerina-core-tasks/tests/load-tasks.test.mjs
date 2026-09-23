@@ -9,6 +9,8 @@ import {
   createTaskRunReport,
   loadTasks,
   parseTasksSource,
+  MAX_TASK_SOURCE_BYTES,
+  MAX_TASK_BLOCKS,
   resolveTaskDependencies,
   runTask
 } from "../dist/index.js";
@@ -164,5 +166,24 @@ task build {
     assert.equal(missing?.code, "Galerina_TASK_ENVIRONMENT_PERMISSION_REQUIRED");
     assert.equal(invalid?.code, "Galerina_TASK_ENVIRONMENT_PERMISSION_INVALID");
     assert.equal(valid, undefined);
+  });
+
+  it("refuses a task source above the byte ceiling", () => {
+    assert.throws(
+      () => parseTasksSource("x".repeat(MAX_TASK_SOURCE_BYTES + 1)),
+      /exceeds/,
+    );
+  });
+
+  it("refuses more than MAX_TASK_BLOCKS task definitions", () => {
+    const source = Array.from({ length: MAX_TASK_BLOCKS + 1 }, (_, i) => `task t${i} { }`).join("\n");
+    assert.throws(() => parseTasksSource(source), /task definitions/);
+  });
+
+  it("refuses an oversize task file before parse", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "galerina-core-tasks-big-"));
+    const taskFile = join(cwd, "tasks.fungi");
+    await writeFile(taskFile, "x".repeat(MAX_TASK_SOURCE_BYTES + 1), "utf8");
+    await assert.rejects(() => loadTasks(taskFile), /admitted regular file/);
   });
 });

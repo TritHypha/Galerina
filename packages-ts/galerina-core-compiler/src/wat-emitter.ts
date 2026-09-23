@@ -172,6 +172,9 @@ export interface WATFunction {
   /** The flow's Galerina return type name (e.g. "Int", "Bool", "String", a record name). Used by the B2b
    *  zero-on-EXIT path to apply eager secret-zeroing ONLY to flows that return a non-heap PRIMITIVE. */
   readonly returnType?: string;
+  /** Flattened i32 words in a heap-pointer return (nested records inlined). */
+  readonly returnWordCount?: number;
+  readonly flattenPlan?: readonly FlattenStep[];
   /**
    * Named parameters for this function.
    * Phase 22: present for pure flows; enables emitWATBody to reference locals.
@@ -399,6 +402,183 @@ export interface WATRecordLayout {
   readonly fields: readonly WATRecordFieldLayout[];
   readonly size: number;
   readonly alignment: 4 | 8;
+}
+
+interface FlattenStep {
+  readonly srcOffset: number;
+  readonly nested?: readonly FlattenStep[];
+  readonly zero?: true;
+}
+
+const MAX_FLATTEN_DEPTH = 8;
+
+/** One closed expansion of a recursive field: nested records become zeros, scalars copy.
+ *  Unsupported: runtime cycle walks and trees deeper than this single expansion;
+ *  self-referential `let leaf = T { child: leaf }` may trap. */
+function flattenClosedRecursivePlan(
+  typeName: string,
+  layouts: ReadonlyMap<string, WATRecordLayout>,
+): FlattenStep[] | undefined {
+  const layout = layouts.get(typeName);
+  if (layout === undefined) return undefined;
+  const steps: FlattenStep[] = [];
+  for (const field of layout.fields) {
+    if (field.watType === "i32" && layouts.has(field.type)) {
+      steps.push({ srcOffset: field.offset, zero: true });
+    } else if (field.size === 8) {
+      steps.push({ srcOffset: field.offset });
+      steps.push({ srcOffset: field.offset + 4 });
+    } else {
+      steps.push({ srcOffset: field.offset });
+    }
+  }
+  return steps;
+}
+
+function flattenPlanFor(
+  typeName: string,
+  layouts: ReadonlyMap<string, WATRecordLayout>,
+  ancestors: ReadonlySet<string> = new Set(),
+  depth = 0,
+): FlattenStep[] | undefined {
+  if (depth > MAX_FLATTEN_DEPTH) return undefined;
+  const layout = layouts.get(typeName);
+  if (layout === undefined) return undefined;
+  const next = new Set(ancestors);
+  next.add(typeName);
+  const steps: FlattenStep[] = [];
+  for (const field of layout.fields) {
+    if (field.watType === "i32" && layouts.has(field.type)) {
+      if (next.has(field.type)) {
+        const closed = flattenClosedRecursivePlan(field.type, layouts);
+        steps.push(closed !== undefined ? { srcOffset: field.offset, nested: closed } : { srcOffset: field.offset, zero: true });
+        continue;
+      }
+      const nested = flattenPlanFor(field.type, layouts, next, depth + 1);
+      steps.push(nested !== undefined ? { srcOffset: field.offset, nested } : { srcOffset: field.offset, zero: true });
+    } else if (field.size === 8) {
+      steps.push({ srcOffset: field.offset });
+      steps.push({ srcOffset: field.offset + 4 });
+    } else {
+      steps.push({ srcOffset: field.offset });
+    }
+  }
+  return steps;
+}
+
+function flattenWordCount(steps: readonly FlattenStep[]): number {
+  let n = 0;
+  for (const step of steps) n += step.nested !== undefined ? flattenWordCount(step.nested) : 1;
+  return n;
+}
+
+function flattenNeedsTemps(steps: readonly FlattenStep[]): number {
+  let n = 0;
+  for (const step of steps) {
+    if (step.nested !== undefined) n += 1 + flattenNeedsTemps(step.nested);
+  }
+  return n;
+}
+
+function planHasNested(steps: readonly FlattenStep[]): boolean {
+  return steps.some((step) => step.nested !== undefined || step.zero === true);
+}
+
+function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: string[]; body: string[] } {
+  const plan = fn.flattenPlan;
+  const words = fn.returnWordCount ?? 1;
+  const byteLen = words * 4;
+  const nested = plan !== undefined && planHasNested(plan);
+  const temps = nested
+    ? Array.from({ length: flattenNeedsTemps(plan) }, (_, i) => `$__fungi_n${i}`)
+    : [];
+  const destOff = { value: 0 };
+  const tempAt = { value: 0 };
+  const stores = nested
+    ? emitFlattenStores(plan, "$__fungi_heap_ret", "$__fungi_flat", destOff, temps, tempAt, `${indent}    `)
+    : [];
+  const nullThen = [
+    `${indent}    (local.set $__fungi_flat (global.get $__fungi_heap))`,
+    `${indent}    (memory.fill (local.get $__fungi_flat) (i32.const 0) (i32.const ${byteLen}))`,
+    `${indent}    (global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
+  ];
+  if (!nested) {
+    return {
+      extraLocals: ["$__fungi_flat"],
+      body: [
+        `${indent}(if (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))`,
+        `${indent}  (then`,
+        ...nullThen,
+        `${indent}    (local.set $__fungi_heap_ret (local.get $__fungi_flat))`,
+        `${indent}  ))`,
+        `${indent}(global.set $__fungi_ret_is_heap (i32.const 1))`,
+        `${indent}(global.set $__fungi_ret_words (i32.const ${words}))`,
+        `${indent}(local.get $__fungi_heap_ret)`,
+      ],
+    };
+  }
+  return {
+    extraLocals: ["$__fungi_flat", ...temps],
+    body: [
+      `${indent}(local.set $__fungi_flat (global.get $__fungi_heap))`,
+      `${indent}(if (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))`,
+      `${indent}  (then`,
+      `${indent}    (memory.fill (local.get $__fungi_flat) (i32.const 0) (i32.const ${byteLen}))`,
+      `${indent}  )`,
+      `${indent}  (else`,
+      ...stores,
+      `${indent}  ))`,
+      `${indent}(global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
+      `${indent}(global.set $__fungi_ret_is_heap (i32.const 1))`,
+      `${indent}(global.set $__fungi_ret_words (i32.const ${words}))`,
+      `${indent}(local.get $__fungi_flat)`,
+    ],
+  };
+}
+
+function emitFlattenStores(
+  steps: readonly FlattenStep[],
+  src: string,
+  dest: string,
+  destOff: { value: number },
+  temps: readonly string[],
+  tempAt: { value: number },
+  indent: string,
+): string[] {
+  const lines: string[] = [];
+  for (const step of steps) {
+    if (step.zero === true) {
+      lines.push(`${indent}(i32.store (i32.add (local.get ${dest}) (i32.const ${destOff.value})) (i32.const 0))`);
+      destOff.value += 4;
+      continue;
+    }
+    if (step.nested === undefined) {
+      lines.push(
+        `${indent}(i32.store (i32.add (local.get ${dest}) (i32.const ${destOff.value})) (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))))`,
+      );
+      destOff.value += 4;
+      continue;
+    }
+    const temp = temps[tempAt.value] ?? "$__fungi_n0";
+    tempAt.value += 1;
+    const nestedWords = flattenWordCount(step.nested);
+    const start = destOff.value;
+    const elseLines = emitFlattenStores(step.nested, temp, dest, destOff, temps, tempAt, `${indent}  `);
+    const zeroLines: string[] = [];
+    for (let i = 0; i < nestedWords; i++) {
+      zeroLines.push(`${indent}  (i32.store (i32.add (local.get ${dest}) (i32.const ${start + i * 4})) (i32.const 0))`);
+    }
+    lines.push(`${indent}(local.set ${temp} (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))))`);
+    lines.push(`${indent}(if (i32.lt_u (local.get ${temp}) (i32.const ${WAT_HEAP_BASE}))`);
+    lines.push(`${indent}  (then`);
+    lines.push(...zeroLines);
+    lines.push(`${indent}  )`);
+    lines.push(`${indent}  (else`);
+    lines.push(...elseLines);
+    lines.push(`${indent}  )`);
+    lines.push(`${indent})`);
+  }
+  return lines;
 }
 /** Canonical, naturally aligned record layout for the module currently being emitted. */
 let watRecordLayouts: ReadonlyMap<string, WATRecordLayout> | null = null;
@@ -635,6 +815,115 @@ function recordTypeOfBinding(raw: string, initNode: AstNode | undefined): string
  * path. Production callers must provide the checked AST/GIR through
  * `buildWATModuleFromGIR` so admission and semantic gates cannot be bypassed.
  */
+/** G5c: evaluate a WAT `(return …)` operand, wipe the secret arena, then return the captured i32. */
+function rewriteG5cCaptureThenWipe(body: string, wipeFill: string): string {
+  const token = "(return";
+  let out = "";
+  let i = 0;
+  while (i < body.length) {
+    const at = body.indexOf(token, i);
+    if (at < 0) {
+      out += body.slice(i);
+      break;
+    }
+    const after = at + token.length;
+    if (after < body.length && /[A-Za-z0-9_]/.test(body.charAt(after))) {
+      out += body.slice(i, after);
+      i = after;
+      continue;
+    }
+    let depth = 1;
+    let j = after;
+    while (j < body.length && depth > 0) {
+      const ch = body.charAt(j);
+      if (ch === "(") depth += 1;
+      else if (ch === ")") depth -= 1;
+      j += 1;
+    }
+    if (depth !== 0) {
+      out += body.slice(i);
+      break;
+    }
+    const inner = body.slice(after, j - 1);
+    out += body.slice(i, at);
+    out += `(return (block (result i32) (local.set $__fungi_g5c_ret${inner}) ${wipeFill} (global.set $__fungi_ret_is_heap (i32.const 0)) (local.get $__fungi_g5c_ret) (; G5c capture-then-wipe ;)))`;
+    i = j;
+  }
+  return out;
+}
+
+/** Heap-pointer `(return …)` must tag the result before the function-level return skips the exit wrapper. */
+function rewriteHeapReturnTag(body: string, fn: WATFunction): string {
+  const token = "(return";
+  let out = "";
+  let i = 0;
+  while (i < body.length) {
+    const at = body.indexOf(token, i);
+    if (at < 0) {
+      out += body.slice(i);
+      break;
+    }
+    const after = at + token.length;
+    if (after < body.length && /[A-Za-z0-9_]/.test(body.charAt(after))) {
+      out += body.slice(i, after);
+      i = after;
+      continue;
+    }
+    let depth = 1;
+    let j = after;
+    while (j < body.length && depth > 0) {
+      const ch = body.charAt(j);
+      if (ch === "(") depth += 1;
+      else if (ch === ")") depth -= 1;
+      j += 1;
+    }
+    if (depth !== 0) {
+      out += body.slice(i);
+      break;
+    }
+    const inner = body.slice(after, j - 1);
+    out += body.slice(i, at);
+    const flattenWAT = flattenFromHeapRet(fn, " ").body.join(" ");
+    out += `(return (block (result i32) (local.set $__fungi_heap_ret${inner}) ${flattenWAT}))`;
+    i = j;
+  }
+  return out;
+}
+
+/**
+ * Guest-owned secret-heap wipe. The range is `[WAT_HEAP_BASE, $__fungi_heap)`
+ * inside the module; the host cannot widen it by writing an exported global.
+ */
+export function wipeSecretHeapAfterHostCopy(instance: WebAssembly.Instance): void {
+  const wipe = instance.exports["__fungi_wipe_owned"];
+  if (typeof wipe !== "function") {
+    throw new TypeError("wipeSecretHeapAfterHostCopy: __fungi_wipe_owned export is missing");
+  }
+  (wipe as () => void)();
+}
+
+/** Read a 4-byte heap field, then ask the guest to wipe its owned secret arena. */
+export function copyI32ThenWipeSecretHeap(
+  instance: WebAssembly.Instance,
+  byteOffset: number,
+): number {
+  const memory = instance.exports["memory"];
+  if (!(memory instanceof WebAssembly.Memory)) {
+    throw new TypeError("copyI32ThenWipeSecretHeap: memory export is missing");
+  }
+  if (!Number.isSafeInteger(byteOffset) || byteOffset < WAT_HEAP_BASE || (byteOffset & 3) !== 0) {
+    throw new RangeError("copyI32ThenWipeSecretHeap: byteOffset is not an aligned arena field");
+  }
+  const view = new Int32Array(memory.buffer);
+  const index = byteOffset / 4;
+  if (index >= view.length) {
+    throw new RangeError("copyI32ThenWipeSecretHeap: byteOffset is outside memory");
+  }
+  const copied = view[index]!;
+  wipeSecretHeapAfterHostCopy(instance);
+  return copied;
+}
+
 export function renderWAT(module: WATModule): string {
   // ── Usage scan ──────────────────────────────────────────────────────────────
   // Only emit host imports / the listLiteral global that are ACTUALLY referenced
@@ -694,6 +983,18 @@ export function renderWAT(module: WATModule): string {
   if (usesHeap) {
     lines.push(`  ;; P9.4b: bump-allocator heap pointer for record struct layout`);
     lines.push(`  (global $__fungi_heap (mut i32) (i32.const ${WAT_HEAP_BASE}))`);
+    lines.push(`  (func $__fungi_heap_get (result i32) (global.get $__fungi_heap))`);
+    lines.push(`  (export "__fungi_heap_get" (func $__fungi_heap_get))`);
+    lines.push(`  (func $__fungi_wipe_owned`);
+    lines.push(`    (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`);
+    lines.push(`  )`);
+    lines.push(`  (export "__fungi_wipe_owned" (func $__fungi_wipe_owned))`);
+    lines.push(`  (global $__fungi_ret_is_heap (mut i32) (i32.const 0))`);
+    lines.push(`  (func $__fungi_ret_is_heap_get (result i32) (global.get $__fungi_ret_is_heap))`);
+    lines.push(`  (export "__fungi_ret_is_heap_get" (func $__fungi_ret_is_heap_get))`);
+    lines.push(`  (global $__fungi_ret_words (mut i32) (i32.const 1))`);
+    lines.push(`  (func $__fungi_ret_words_get (result i32) (global.get $__fungi_ret_words))`);
+    lines.push(`  (export "__fungi_ret_words_get" (func $__fungi_ret_words_get))`);
     lines.push(``);
   }
 
@@ -766,13 +1067,27 @@ export function renderWAT(module: WATModule): string {
       // the body); the compile-time `(unreachable) (; … emitter cannot lower …` lowering stubs carry no
       // `then` and are untouched. The fill is type [] → [] (consumes its 3 i32 args, leaves nothing), so the
       // `(then …)` statement-branch stays []→[] — valid WASM (wabt encodes memory.fill as 0xFC 0x0B).
-      const wipeSecretsOnBreach = emitArenaReset && fn.handlesSecrets === true;
-      const flowBody = wipeSecretsOnBreach
+      const wipeSecretsOnBreach = usesHeap && fn.handlesSecrets === true;
+      const prevArenaFill =
+        `(memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`;
+      // Owned wipe: only [this-call-base, heap). Nested secret calls must not destroy the caller's live records.
+      const ownedFill =
+        `(memory.fill (local.get $__fungi_owner_base) (i32.const 0) (i32.sub (global.get $__fungi_heap) (local.get $__fungi_owner_base))) (global.set $__fungi_heap (local.get $__fungi_owner_base))`;
+      const isPrimI32Return = fn.returnType !== undefined && PRIMITIVE_RETURN_TYPES.has(fn.returnType)
+        && (fn.type.results[0] ?? "i32") === "i32";
+      let flowBody = wipeSecretsOnBreach
         ? fn.body.replace(
             /\(then unreachable\)/g,
-            `(then (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE}))) unreachable (; G5b intrusion-wipe before trap ;))`,
+            `(then ${ownedFill} unreachable (; G5b intrusion-wipe before trap ;))`,
           )
         : fn.body;
+      // G5c: primitive i32 early returns capture the operand, wipe THIS call's arena, then return.
+      // Heap-pointer results skip this rewrite so the returned object is not destroyed-as-success.
+      if (wipeSecretsOnBreach && isPrimI32Return) {
+        flowBody = rewriteG5cCaptureThenWipe(flowBody, ownedFill);
+      } else if (wipeSecretsOnBreach && (fn.type.results[0] ?? "i32") === "i32") {
+        flowBody = rewriteHeapReturnTag(flowBody, fn);
+      }
 
       // B2b zero-on-EXIT (owner-chosen, audit): eagerly destroy THIS call's secret records BEFORE returning,
       // closing the host-readable remanence window. SAFE SUBSET ONLY — a secret leaf that returns a non-heap
@@ -784,11 +1099,13 @@ export function renderWAT(module: WATModule): string {
       // NB `(local ` (a DECLARATION) only — `\s` after "local" excludes `(local.set …)` (a statement),
       // which `\b` would wrongly match (boundary before the dot) and split the body mid-statement.
       while (locEnd < bodyArr.length && /^\s*\(local\s/.test(bodyArr[locEnd]!)) locEnd++;
-      const isPrimI32Return = fn.returnType !== undefined && PRIMITIVE_RETURN_TYPES.has(fn.returnType)
-        && (fn.type.results[0] ?? "i32") === "i32";
       const bodyHasEarlyReturn = bodyArr.some((l) => /\(return\b/.test(l));
-      const emitZeroOnExit = emitArenaReset && fn.handlesSecrets === true && isPrimI32Return
-        && !bodyHasEarlyReturn && (bodyArr.length - locEnd) > 0;
+      const needsG5cRetLocal = wipeSecretsOnBreach && isPrimI32Return && bodyHasEarlyReturn;
+      const lastInstr = bodyArr[bodyArr.length - 1] ?? "";
+      const tailIsFunctionReturn = /\(return\b/.test(lastInstr);
+      const emitZeroOnExit = wipeSecretsOnBreach && isPrimI32Return
+        && (bodyArr.length - locEnd) > 0
+        && !tailIsFunctionReturn;
 
       if (emitZeroOnExit) {
         // G5 (Intrusion-Triggered Arena Fill): the reclaimed/secret region [WAT_HEAP_BASE, $__fungi_heap) is
@@ -798,26 +1115,66 @@ export function renderWAT(module: WATModule): string {
         // existing "$__fungi_zl/$__fungi_xl emitted" secret-zeroing recognition still holds. memory.fill reads
         // the LIVE $__fungi_heap for its length, so it MUST run before the rebase. wabt encodes it as 0xFC 0x0B
         // (bulk-memory, default-on); an OOB fill traps cleanly — fail-closed.
-        const zloop = (zd: string, zl: string) => [
-          `    ;; ${zd} ${zl} — bulk-memory zero-fill [base, heap) (G5 memory.fill, was an i32.store loop)`,
-          `    (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`,
+        const zloopPrev = (zd: string, zl: string) => [
+          `    ;; ${zd} ${zl} — bulk-memory zero-fill previous leaf arena [module-base, heap)`,
+          `    ${prevArenaFill}`,
+        ];
+        const zloopOwned = (zd: string, zl: string) => [
+          `    ;; ${zd} ${zl} — bulk-memory zero-fill this call's owned arena [owner-base, heap)`,
+          `    ${ownedFill}`,
         ];
         for (const l of bodyArr.slice(0, locEnd)) lines.push(`    ${l}`);            // the body's own locals
+        if (needsG5cRetLocal) lines.push(`    (local $__fungi_g5c_ret i32)`);
+        lines.push(`    (local $__fungi_owner_base i32)`);
         lines.push(`    (local $__fungi_ret i32)`);
-        if (emitZeroing) { lines.push(`    ;; B2b on-entry: zero the reclaimed previous arena`); for (const z of zloop("$__fungi_zd", "$__fungi_zl")) lines.push(z); }
-        lines.push(`    ;; B2 per-flow arena reset (rebase the bump pointer before this call allocates)`);
-        lines.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
+        if (emitZeroing) { lines.push(`    ;; B2b on-entry: zero the reclaimed previous arena`); for (const z of zloopPrev("$__fungi_zd", "$__fungi_zl")) lines.push(z); }
+        if (emitArenaReset) {
+          lines.push(`    ;; B2 per-flow arena reset (rebase the bump pointer before this call allocates)`);
+          lines.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
+        }
+        lines.push(`    (local.set $__fungi_owner_base (global.get $__fungi_heap))`);
+        lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
         lines.push(`    ;; capture the PRIMITIVE result, then DESTROY this call's secret records before returning`);
         lines.push(`    (local.set $__fungi_ret (block (result i32)`);
         for (const l of bodyArr.slice(locEnd)) lines.push(`      ${l}`);
         lines.push(`    ))`);
         lines.push(`    ;; B2b on-EXIT (owner-chosen): no host-readable secret remanence window after return`);
-        for (const z of zloop("$__fungi_xd", "$__fungi_xl")) lines.push(z);
+        for (const z of zloopOwned("$__fungi_xd", "$__fungi_xl")) lines.push(z);
+        lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
         lines.push(`    (local.get $__fungi_ret)`);
         lines.push(`  )`);
         if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
         lines.push("");
         continue; // this flow is fully emitted via the zero-on-exit path
+      }
+
+      if (
+        wipeSecretsOnBreach
+        && !isPrimI32Return
+        && (fn.type.results[0] ?? "i32") === "i32"
+        && (bodyArr.length - locEnd) > 0
+      ) {
+        const flatten = flattenFromHeapRet(fn, "    ");
+        for (const l of bodyArr.slice(0, locEnd)) lines.push(`    ${l}`);
+        lines.push(`    (local $__fungi_owner_base i32)`);
+        lines.push(`    (local $__fungi_heap_ret i32)`);
+        for (const extra of flatten.extraLocals) lines.push(`    (local ${extra} i32)`);
+        if (emitZeroing) {
+          lines.push(`    ${prevArenaFill}`);
+        }
+        if (emitArenaReset) {
+          lines.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
+        }
+        lines.push(`    (local.set $__fungi_owner_base (global.get $__fungi_heap))`);
+        lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
+        lines.push(`    (local.set $__fungi_heap_ret (block (result i32)`);
+        for (const l of bodyArr.slice(locEnd)) lines.push(`      ${l}`);
+        lines.push(`    ))`);
+        for (const line of flatten.body) lines.push(line);
+        lines.push(`  )`);
+        if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
+        lines.push("");
+        continue;
       }
 
       // G5 (Intrusion-Triggered Arena Fill): zero the reclaimed arena with the WASM bulk-memory
@@ -828,24 +1185,46 @@ export function renderWAT(module: WATModule): string {
         resetBlock.push(`    ;; B2b (R&D 0055)/G5: zero the reclaimed arena [base, prev-heap) before rebasing — the WASM`);
         resetBlock.push(`    ;; module exports its memory, so an un-zeroed reclaimed secret arena is host-readable remanence.`);
         resetBlock.push(`    ;; $__fungi_zd $__fungi_zl — bulk-memory zero-fill (G5 memory.fill, was an i32.store loop)`);
-        resetBlock.push(`    (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`);
+        resetBlock.push(`    ${prevArenaFill}`);
       }
       if (emitArenaReset) {
         resetBlock.push(`    ;; B2 (R&D 0055): per-flow arena reset — reclaim the previous invocation's heap (leaf entry-point)`);
         resetBlock.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
       }
+      if (wipeSecretsOnBreach) {
+        resetBlock.push(`    (local.set $__fungi_owner_base (global.get $__fungi_heap))`);
+        resetBlock.push(
+          isPrimI32Return
+            ? `    (global.set $__fungi_ret_is_heap (i32.const 0))`
+            : `    (global.set $__fungi_ret_is_heap (i32.const 1))`,
+        );
+      }
       let resetInjected = false;
+      let g5cLocalInjected = !needsG5cRetLocal;
+      let ownerLocalInjected = !wipeSecretsOnBreach;
       // Indent each instruction line with 4 spaces inside the function.
       for (const bodyLine of flowBody.split("\n")) {
         if (bodyLine.trim().length === 0) continue;
-        if (emitArenaReset && !resetInjected && !/^\s*\(local\s/.test(bodyLine)) {
-          for (const rl of resetBlock) lines.push(rl);
-          resetInjected = true;
+        const isLocalDecl = /^\s*\(local\s/.test(bodyLine);
+        if (!isLocalDecl) {
+          if (!ownerLocalInjected) {
+            lines.push(`    (local $__fungi_owner_base i32)`);
+            ownerLocalInjected = true;
+          }
+          if (!g5cLocalInjected) {
+            lines.push(`    (local $__fungi_g5c_ret i32)`);
+            g5cLocalInjected = true;
+          }
+          if (!resetInjected && resetBlock.length > 0) {
+            for (const rl of resetBlock) lines.push(rl);
+            resetInjected = true;
+          }
         }
         lines.push(`    ${bodyLine}`);
       }
-      // A body that is ALL locals (no instructions) still gets the rebase (+ zeroing) appended.
-      if (emitArenaReset && !resetInjected) {
+      if (!ownerLocalInjected) lines.push(`    (local $__fungi_owner_base i32)`);
+      if (!g5cLocalInjected) lines.push(`    (local $__fungi_g5c_ret i32)`);
+      if (!resetInjected && resetBlock.length > 0) {
         for (const rl of resetBlock) lines.push(rl);
       }
     } else {
@@ -4478,12 +4857,20 @@ export function buildWATModule(
       declaredReturn !== undefined && is64BitWatType(numericBaseType(declaredReturn)) ? "i64" :
       "i32";
     const resultTypes: readonly WATValType[] = isVoidReturn ? [] : [resultVal];
+    const flattenPlan = declaredReturn !== undefined && watRecordLayouts !== null
+      ? flattenPlanFor(declaredReturn, watRecordLayouts)
+      : undefined;
+    const returnWordCount = flattenPlan !== undefined
+      ? flattenWordCount(flattenPlan)
+      : undefined;
     return {
       name: flow.name,
       isPure: flow.qualifier === "pure",
       isEntryPoint: entrySet.has(flow.name),
       handlesSecrets: gir.ast !== undefined ? flowHandlesSecrets(findFlowNodeInAST(gir.ast, flow.name)) : false,
       ...(declaredReturn !== undefined ? { returnType: declaredReturn } : {}),
+      ...(returnWordCount !== undefined ? { returnWordCount } : {}),
+      ...(flattenPlan !== undefined ? { flattenPlan } : {}),
       type: { params: paramValTypes, results: resultTypes },
       body,
       ...(namedParams.length > 0 ? { namedParams } : {}),

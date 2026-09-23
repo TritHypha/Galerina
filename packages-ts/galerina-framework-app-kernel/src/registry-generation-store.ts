@@ -23,11 +23,13 @@ interface NodeStats {
   isDirectory(): boolean;
   isFile(): boolean;
   isSymbolicLink(): boolean;
+  isFIFO?(): boolean;
 }
 
 interface NodeFileHandle {
   chmod(mode: number): Promise<void>;
   close(): Promise<void>;
+  read?(buffer: Uint8Array, offset?: number, length?: number, position?: number): Promise<{ bytesRead: number }>;
   readFile(): Promise<Uint8Array>;
   stat(): Promise<NodeStats>;
   sync(): Promise<void>;
@@ -38,9 +40,13 @@ interface NodeFsPromises {
   chmod(path: string, mode: number): Promise<void>;
   link(existingPath: string, newPath: string): Promise<void>;
   lstat(path: string): Promise<NodeStats>;
-  open(path: string, flags: string, mode?: number): Promise<NodeFileHandle>;
+  open(path: string, flags: string | number, mode?: number): Promise<NodeFileHandle>;
   realpath(path: string): Promise<string>;
   unlink(path: string): Promise<void>;
+  readonly constants?: {
+    readonly O_RDONLY?: number;
+    readonly O_NONBLOCK?: number;
+  };
 }
 
 interface NodePath {
@@ -295,6 +301,10 @@ function samePath(left: string, right: string): boolean {
     : left === right;
 }
 
+function isFifo(stats: NodeStats): boolean {
+  return typeof stats.isFIFO === "function" && stats.isFIFO() === true;
+}
+
 function sameFile(
   before: NodeStats,
   handle: NodeStats,
@@ -402,7 +412,7 @@ async function canonicalDirectory(
   return resolved;
 }
 
-async function readBoundedRegularFile(
+export async function readBoundedRegularFile(
   fs: NodeFsPromises,
   filePath: string,
   maxBytes: number,
@@ -414,7 +424,8 @@ async function readBoundedRegularFile(
     throw new TypeError("registry generation file is unavailable");
   }
   if (
-    !before.isFile()
+    isFifo(before)
+    || !before.isFile()
     || before.isSymbolicLink()
     || !Number.isSafeInteger(before.size)
     || before.size < 1
@@ -422,15 +433,33 @@ async function readBoundedRegularFile(
   ) {
     throw new TypeError("registry generation is not a bounded regular file");
   }
+  const readOnly = typeof fs.constants?.O_RDONLY === "number" ? fs.constants.O_RDONLY : 0;
+  const nonblock = typeof fs.constants?.O_NONBLOCK === "number" ? fs.constants.O_NONBLOCK : 0;
   let handle: NodeFileHandle;
   try {
-    handle = await fs.open(filePath, "r");
-  } catch {
+    handle = await fs.open(filePath, readOnly | nonblock);
+  } catch (err) {
+    const code = errorCode(err);
+    if (code === "ENXIO" || code === "EAGAIN" || code === "EWOULDBLOCK") {
+      throw new TypeError("registry generation is not a bounded regular file");
+    }
     throw new TypeError("registry generation file could not be opened");
   }
   try {
     const opened = await handle.stat();
-    const bytes = await handle.readFile();
+    if (isFifo(opened) || opened.isSymbolicLink() || !opened.isFile()) {
+      throw new TypeError("registry generation is not a bounded regular file");
+    }
+    if (typeof handle.read !== "function") {
+      throw new TypeError("registry generation file could not be opened");
+    }
+    const cap = maxBytes + 1;
+    const buf = new Uint8Array(cap);
+    const result = await handle.read(buf, 0, cap, 0);
+    if (!Number.isSafeInteger(result.bytesRead) || result.bytesRead < 1 || result.bytesRead > maxBytes) {
+      throw new TypeError("registry generation is not a bounded regular file");
+    }
+    const bytes = buf.subarray(0, result.bytesRead);
     const afterRead = await handle.stat();
     const afterPath = await fs.lstat(filePath);
     if (

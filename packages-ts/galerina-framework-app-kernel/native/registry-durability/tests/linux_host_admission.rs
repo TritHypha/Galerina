@@ -1,8 +1,9 @@
 use galerina_registry_durability_native::{
     admit_measured_linux_host, classify_linux_sysfs_observation, correlate_linux_host_observation,
-    decode_linux_device_number, parse_linux_mountinfo, parse_linux_mountinfo_line,
-    select_linux_mount_for_target, LinuxHostObservation, LinuxHostProbeVerdict, LinuxStorageKind,
-    LinuxSysfsObservation, MeasuredLinuxHost, BTRFS_SUPER_MAGIC, EXT4_SUPER_MAGIC, XFS_SUPER_MAGIC,
+    decode_linux_device_number, linux_fifo_open_errno_is_refused, parse_linux_mountinfo,
+    parse_linux_mountinfo_line, select_linux_mount_for_target, LinuxHostObservation,
+    LinuxHostProbeVerdict, LinuxStorageKind, LinuxSysfsObservation, MeasuredLinuxHost,
+    BTRFS_SUPER_MAGIC, EXT4_SUPER_MAGIC, LINUX_PUBLICATION_O_NONBLOCK, XFS_SUPER_MAGIC,
 };
 #[cfg(not(target_os = "linux"))]
 use galerina_registry_durability_native::{
@@ -172,6 +173,15 @@ fn mount_selection_uses_one_deepest_component_boundary() {
 
     let duplicate = [records[0].clone(), records[0].clone()];
     assert!(select_linux_mount_for_target(&duplicate, "/tmp").is_err());
+}
+
+#[test]
+fn preexisting_fifo_open_errors_are_refused_and_nonblock_is_admitted() {
+    assert_eq!(LINUX_PUBLICATION_O_NONBLOCK, 0o4000);
+    assert!(linux_fifo_open_errno_is_refused(Some(6)));
+    assert!(linux_fifo_open_errno_is_refused(Some(11)));
+    assert!(!linux_fifo_open_errno_is_refused(Some(2)));
+    assert!(!linux_fifo_open_errno_is_refused(None));
 }
 
 #[test]

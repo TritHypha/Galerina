@@ -1767,9 +1767,17 @@ async function filesystemAsync(fullName: string, args: readonly GalerinaValue[],
       realpathSync(p: string): string;
       existsSync(p: string): boolean;
       lstatSync(p: string): { isSymbolicLink(): boolean; isFile(): boolean; isDirectory(): boolean };
+      readlinkSync(p: string): string;
     };
     try {
-      const { realpathSync, existsSync, lstatSync } = fsModule;
+      const { realpathSync, existsSync, lstatSync, readlinkSync } = fsModule;
+      // readlink succeeds on dangling links; lstat can throw on some Windows dangling reparse points.
+      try {
+        readlinkSync(safePath);
+        return err(`FileError: path '${path}' is a symbolic link — refusing`);
+      } catch {
+        // ENOENT / EINVAL: no symlink at this path.
+      }
       try {
         if (lstatSync(safePath).isSymbolicLink()) {
           return err(`FileError: path '${path}' is a symbolic link — refusing`);
@@ -1801,13 +1809,26 @@ async function filesystemAsync(fullName: string, args: readonly GalerinaValue[],
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nodeFs = await import("node:fs/promises") as any;
-    if (fullName === "fs.readText" || fullName === "File.readText") {
-      const text: string = await nodeFs.readFile(safePath, "utf8");
-      return ok({ __tag: "string", value: String(text) });
-    }
-    if (fullName === "fs.readBytes" || fullName === "File.readBytes") {
-      const buffer: Uint8Array = await nodeFs.readFile(safePath);
-      return ok({ __tag: "bytes", value: new Uint8Array(buffer) });
+    const nodeFsSync = await import("node:fs") as any;
+    if (fullName === "fs.readText" || fullName === "File.readText"
+      || fullName === "fs.readBytes" || fullName === "File.readBytes") {
+      const flags = nodeFsSync.constants.O_RDONLY | (nodeFsSync.constants.O_NOFOLLOW ?? 0);
+      let fd: number | undefined;
+      try {
+        fd = nodeFsSync.openSync(safePath, flags);
+        const st = nodeFsSync.fstatSync(fd);
+        if (!st.isFile()) {
+          return err(`FileError: path '${path}' is not a regular file`);
+        }
+        if (fullName === "fs.readText" || fullName === "File.readText") {
+          const text: string = nodeFsSync.readFileSync(fd, "utf8");
+          return ok({ __tag: "string", value: String(text) });
+        }
+        const buffer: Uint8Array = nodeFsSync.readFileSync(fd);
+        return ok({ __tag: "bytes", value: new Uint8Array(buffer) });
+      } finally {
+        if (fd !== undefined) nodeFsSync.closeSync(fd);
+      }
     }
     if (fullName === "fs.writeText" || fullName === "File.writeText") {
       await nodeFs.writeFile(safePath, strVal(args[1] ?? FUNGI_VOID), "utf8");

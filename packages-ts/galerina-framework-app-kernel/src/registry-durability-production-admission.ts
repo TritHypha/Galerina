@@ -511,14 +511,15 @@ export function activateRegistryDurabilityProfile(
     if (!isProductionRegistryDurabilityProfile(profileValue)) {
       refuse("REGISTRY_DURABILITY_PRODUCTION_PROFILE_REFUSED");
     }
-    if (!releaseAuthorizationShapeIsValid(authorizationValue)) {
+    const ownedAuthorization = snapshotPlainData(authorizationValue);
+    if (!releaseAuthorizationShapeIsValid(ownedAuthorization)) {
       refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
     }
     if (typeof verifier !== "function") {
       refuse("REGISTRY_DURABILITY_PRODUCTION_RELEASE_REFUSED");
     }
     const profile = profileValue;
-    const authorization = authorizationValue;
+    const authorization = ownedAuthorization;
     const issuedAt = canonicalInstant(authorization.issuedAt) as number;
     const notBefore = canonicalInstant(authorization.notBefore) as number;
     const notAfter = canonicalInstant(authorization.notAfter) as number;

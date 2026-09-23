@@ -62,12 +62,12 @@ const ALWAYS_SKIP = new Set([".git", ".myco"]);
 // silent), a vendored skip is a coverage cap the user must be able to see and lift.
 const VENDORED_SKIP = new Set(["node_modules"]);
 
-const MAX_IGNORE_BYTES = 64 * 1024;
-const MAX_IGNORE_RULES = 256;
-const MAX_IGNORE_PATTERN = 256;
+export const MAX_IGNORE_BYTES = 64 * 1024;
+export const MAX_IGNORE_RULES = 256;
+export const MAX_IGNORE_PATTERN = 256;
 
 /** Linear glob match for `*` and `?` only — no regex backtracking. */
-function globMatch(pattern: string, value: string): boolean {
+export function globMatch(pattern: string, value: string): boolean {
   let p = 0;
   let s = 0;
   let star = -1;

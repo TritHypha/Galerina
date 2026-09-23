@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   chmod,
   mkdtemp,
@@ -609,6 +610,20 @@ describe("statically linked production generation seam", () => {
         verifyRootMlDsa65: () => true,
       });
 
+      await assert.rejects(
+        () => publishRegistryGenerationWithLinkedHost({
+          directory,
+          generation,
+          verify: {
+            expectedDelegationSerial: 2,
+            publicBundle: key.publicBundle,
+            minIndexIssuedAt: "2026-07-30T16:33:10.307Z",
+          },
+          durabilityProfile: candidate,
+        }),
+        /not owner-released/,
+      );
+
       const nativeReceipts = new WeakSet();
       const binding = Object.freeze({
         publishGeneration: async (target, requestedId, bytes) => {
@@ -685,5 +700,15 @@ describe("statically linked production generation seam", () => {
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
+  });
+
+  it("hostile: publication chmod is applied to the staging handle, not a replaceable pathname", () => {
+    const src = readFileSync(
+      join(import.meta.dirname, "../src/registry-generation-store.ts"),
+      "utf8",
+    );
+    assert.match(src, /handle = await fs\.open\(stagingPath, "wx"/);
+    assert.match(src, /await handle\.chmod\(0o444\)/);
+    assert.doesNotMatch(src, /await fs\.chmod\(/);
   });
 });

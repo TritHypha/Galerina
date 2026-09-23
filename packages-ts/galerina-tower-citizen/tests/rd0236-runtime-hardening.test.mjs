@@ -9,7 +9,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   HybridInferenceEngine, TowerRuntime, GovernanceEnforcer, TPL_DEFAULT_POLICY, createHybridEngine,
-  signCapabilityGrant, generateAttestationKeypair, attestBridge, StubTernaryBridge, AuditLogger,
+  signCapabilityGrant, signCapabilityGrantHybrid, verifyCapabilityGrant,
+  generateAttestationKeypair, generateHybridAttestationKeypair,
+  attestBridge, StubTernaryBridge, AuditLogger,
   signPluginManifest, artifactBytesHash,
 } from "../dist/index.js";
 
@@ -266,4 +268,46 @@ test("RD-0236 #1 (follow-on): capability authority requires a SIGNED grant — d
   const wrongIdEng = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: policy, governance: permissive, signedCapabilityGrant: wrongId });
   const w = await wrongIdEng.infer({ prompt: "x", correlationId: "RD0236-1-wrongid", opClasses: ["feedforward"] });
   assert.equal(w.trapCode, "ERR_CAPABILITY_DENIED", "a grant minted for another engineId is refused");
+});
+
+test("hostile: mutating capabilityMask after snapshot cannot mint inference authority", async () => {
+  const ENGINE_ID = "galerina-hybrid-uhie-v1";
+  const AI_INFERENCE_CAP = 0b00100000;
+  const k = await generateHybridAttestationKeypair();
+  const policy = { requireSigned: true, publicKeyPem: k.publicKeyPem, mlDsaPublicKey: k.mlDsaPublicKey };
+  const body = { engineId: ENGINE_ID, capabilityMask: 0 };
+  const signed = await signCapabilityGrantHybrid(body, k.privateKeyPem, k.mlDsaPrivateKey);
+  queueMicrotask(() => { body.capabilityMask = AI_INFERENCE_CAP; });
+  const live = { grant: body, signature: signed.signature, mlDsaSignature: signed.mlDsaSignature };
+  const verified = await verifyCapabilityGrant(live, policy, ENGINE_ID);
+  assert.equal(verified.ok, true);
+  assert.equal(verified.capabilityMask, 0);
+  const signedBridge = attestBridge(new StubTernaryBridge(new AuditLogger(null)), k.privateKeyPem);
+  const eng = createHybridEngine({
+    airGapped: true, governanceTier: 1, attestation: policy,
+    bridges: new Map([[signedBridge.technique, signedBridge]]),
+    governance: { allowHostNativeFallback: true },
+    signedCapabilityGrant: live,
+  });
+  const r = await eng.infer({ prompt: "x", correlationId: "RD0236-1-swap-mask", opClasses: ["feedforward"] });
+  assert.equal(r.trapCode, "ERR_CAPABILITY_DENIED");
+});
+
+test("hostile: a getter that swaps the grant mask after await cannot confer ai.inference", async () => {
+  const ENGINE_ID = "galerina-hybrid-uhie-v1";
+  const AI_INFERENCE_CAP = 0b00100000;
+  const k = await generateHybridAttestationKeypair();
+  const policy = { requireSigned: true, publicKeyPem: k.publicKeyPem, mlDsaPublicKey: k.mlDsaPublicKey };
+  const honest = { engineId: ENGINE_ID, capabilityMask: 0 };
+  const signed = await signCapabilityGrantHybrid(honest, k.privateKeyPem, k.mlDsaPrivateKey);
+  let generation = 0;
+  queueMicrotask(() => { generation = 1; });
+  const liveGrant = {
+    get engineId() { return ENGINE_ID; },
+    get capabilityMask() { return generation === 0 ? 0 : AI_INFERENCE_CAP; },
+  };
+  const live = { grant: liveGrant, signature: signed.signature, mlDsaSignature: signed.mlDsaSignature };
+  const verified = await verifyCapabilityGrant(live, policy, ENGINE_ID);
+  assert.equal(verified.ok, true);
+  assert.equal(verified.capabilityMask, 0);
 });

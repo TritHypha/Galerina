@@ -120,3 +120,35 @@ test("low-level execution failure is surfaced as a deny (not an admit)", () => {
 test("the composed executor pins the current seam version", () => {
   assert.equal(createGovernedRuntimeExecutor().seamVersion, GOVERNED_RUNTIME_SEAM_VERSION);
 });
+
+test("hostile: mutating the source buffer after return cannot change hashed or executed bytes", () => {
+  const leaked = new Uint8Array([7, 7, 7]);
+  let hashedFirst = null;
+  let executedFirst = null;
+  const { exec, calls } = wired({
+    artifactSource: {
+      seamVersion: V,
+      artifactBytesFor: () => leaked,
+    },
+    hashArtifact: (bytes) => {
+      leaked[0] = 99;
+      hashedFirst = bytes[0];
+      return fakeHash(bytes);
+    },
+    lowLevel: {
+      seamVersion: V,
+      instantiateAndCall: ({ artifactBytes }) => {
+        calls.instantiate += 1;
+        executedFirst = artifactBytes[0];
+        assert.notEqual(artifactBytes, leaked);
+        return { ok: true, result: 42 };
+      },
+    },
+  });
+  const v = exec.admitAndExecute(req());
+  assert.equal(v.outcome, "admit");
+  assert.equal(leaked[0], 99);
+  assert.equal(hashedFirst, 7);
+  assert.equal(executedFirst, 7);
+  assert.equal(calls.verifyArg.artifactBytes[0], 7);
+});

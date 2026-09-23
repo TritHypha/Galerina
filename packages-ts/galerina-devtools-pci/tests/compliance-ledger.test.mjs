@@ -12,7 +12,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { tmpdir } from "node:os";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -217,6 +217,19 @@ describe("empty ledger handling", () => {
     assert.equal(report.chainHead, "0".repeat(64), "empty report head is genesis");
     assert.ok(verifyComplianceChain(report.entries), "empty chain trivially verifies");
     assert.deepEqual(readEgressBatches("definitely-does-not-exist-xyz"), [], "missing dir => []");
+  });
+
+  it("hostile: forged allow decision without a matching HMAC is refused", () => {
+    const dir = freshDir("forged");
+    const forged = {
+      seq: 0,
+      count: 1,
+      prevHash: "0".repeat(64),
+      batchHash: "a".repeat(64),
+      records: [JSON.stringify({ who: "mallory", action: "exfiltrate", decision: "allow" })],
+    };
+    writeFileSync(join(dir, "audit-egress.jsonl"), `${JSON.stringify(forged)}\n`);
+    assert.throws(() => readEgressBatches(dir), /HMAC does not authenticate|malformed|prevHash/);
   });
 });
 
