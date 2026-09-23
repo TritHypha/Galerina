@@ -8,10 +8,54 @@ schema or lowering semantics, or authorize .fungi changes.
 
 - [x] CapabilityHost intersects `declaredEffects` with optional host
       `grantedEffects` (`src/runtime/capabilityHost.ts`, `src/runtime.ts`).
-- [!] OWNER_DECISION: production `run` still authorizes source-declared
-      effects unless the host passes `grantedEffects`. Not a new RD.
-      Next security slice is Q3 work-performed ceilings, owned with Tower
-      ([report](../../docs/reports/security-q1q2-continuation-2026-09-22.md)).
+- [x] Production `run` requires host `grantedEffects` whenever the flow declares
+      any effect (`FUNGI-RUNTIME-GRANT-REQUIRED`). Dev remains declared-only.
+      Tests in `tests/capability-host.test.mjs`. Independent audit pending.
+- [!] APPROVED_DEFERRED_SCOPE: JSON fractions/Decimal remain refused (RD-1289).
+- [x] Option.zip named pair `ZipPair<T,U>` with `first`/`second` is a built-in
+      generic (arity 2). Exact `Option<ZipPair<Int, String>>` return and
+      `Option<ZipPair<Int, Int>>` mismatch tests in
+      `tests/type-checker-expression-kind-matrix.test.mjs` **6/6**.
+      Not general tuple, schema-export, or WAT-lowering clearance.
+- [x] Q1 G5c capture-then-wipe for primitive early returns
+      (`rewriteG5cCaptureThenWipe`). Mixed-body fall-through also uses
+      on-exit zeroing. Nested secret calls wipe only `[owner_base, heap)`.
+      Host cleanup calls guest `__fungi_wipe_owned`. Production
+      `createLowLevelWasmExecutor` copies layout-sized heap words then wipes.
+      Recursive `Node { child: Node, n: Int }` closed flatten copies
+      `[0, 1, 7]` (not lossy `[0, 7]` or 8-hop pad). Q1 **27/27**.
+      Independent scoped PASS `2026-09-22-closed-recursive-flatten-hold.md`.
+      Residual: deeper than one recursive expansion still drops grandchild
+      secrets. Not clean-HEAD admission.
+- [x] `executeWASMFlow` work metering: loop-fuel ticks + worker
+      instantiate/call with terminate-on-deadline (`src/wat-assembler.ts`,
+      `src/wasm-flow-worker.mjs`). Tests
+      `tests/wat-execution-meter.test.mjs` plus Phase 27 and isolation.
+      Scan `csf_0a079c981e51180496dc447a` PARTIAL_THIS_TREE. Independent
+      scoped PASS `2026-09-22-wat-execution-meter-hold.md` (`01a0cb36`).
+      Recursion without `loop` relies on trap or deadline.
+- [x] `withRetry` attempt/delay ceilings (`MAX_RETRY_ATTEMPTS` 8,
+      `MAX_RETRY_DELAY_MS`). Tests `retry-policy-bounds.test.mjs` **4/4**.
+      Scan `csf_77b916a8ab8239a016c1794f` PARTIAL_THIS_TREE.
+      Independent scoped PASS `2026-09-22-retry-policy-bounds-hold.md`.
+- [x] Unary-prefix `FUNGI-PARSE-DEPTH-001` + `readBoundedSource` 10 MiB
+      ceiling. Tests `parse-depth-and-source-bounds.test.mjs` **3/3**.
+      Scans `csf_bec723cd02be20807a46da3c`, `csf_4b117d1baa93121b41b11e87`.
+      Independent scoped PASS `2026-09-22-parse-depth-source-bounds-hold.md`.
+- [x] FUNGI-LEX-005 on EOF and block-comment newlines (`emitLineTooLong`).
+      Tests `lexer-line-bounds.test.mjs` **4/4**. Scan
+      `csf_554dd888b982b37741c01b17` PARTIAL_THIS_TREE. Independent scoped
+      PASS `2026-09-22-lexer-line-bounds-hold.md` (`01a0cbf0`). Residual:
+      LEX-005 remains a warning; oversized tokens are still emitted;
+      typed content-block internal lines still skip the check.
+- [x] `filesystemAsync` refuses dangling/present symlinks via `readlinkSync`
+      before write. Tests `fs-root-symlink-refuse.test.mjs` **2/2**.
+      Scan `csf_87352346f8708fa965b75642`. Independent scoped PASS
+      `2026-09-22-fs-root-dangling-symlink-hold.md`. Residual: TOCTOU
+      between readlink and writeFile.
+- [x] BCrypt host adapter: rounds 10..12, async hash/compare. Tests
+      `bcrypt-rounds-bound.test.mjs` **3/3**. Scan `csf_7a6508dbb21c910a7648d293`.
+      Independent scoped PASS `2026-09-22-bcrypt-rounds-hold.md`.
 
 ## Graph integration follow-up — 2026-09-22
 

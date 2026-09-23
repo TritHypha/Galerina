@@ -20,6 +20,9 @@ OpenAPI generator.
 [x] Public adapter exports: src/index.ts:47-71.
 [x] `createApiServer(opts)` constructs an HTTP or HTTPS server and requires
     explicit plaintext authority when TLS is absent: src/index.ts:525-577.
+[x] Q2 `requireDurableReplay` refuses unless `isAdmittedDurableReplayStore`
+    (empty admit-list). Hostile `q2-durable-replay-admission.test.mjs` **13/13**.
+    No durable backend fabricated. RD-1286 remains deferred.
 [x] `listen(server, port, host)` restricts plaintext servers to loopback:
     src/index.ts:790-821.
 [HOLD] The historical `cli` module, an exports map, and a `galerina-api-server`

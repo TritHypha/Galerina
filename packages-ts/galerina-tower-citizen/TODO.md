@@ -18,6 +18,8 @@ the core-network *package* install are not this package's remaining source work.
 [x] Certified composition contains the inference load graph.
 [x] Walker: TypeScript AST, Node-faithful export conditions, PACKAGE_SELF first,
     refuse barrel and unknown subpaths, refuse require-only CJS exports.
+[x] Walker bounds (E01/RD-1296 slice 2): lstat refuse symlink; file/edge/byte
+    caps. Tests `load-graph-bounds.test.mjs` 3/3. Residual: lstat→read TOCTOU.
 [x] Kernel linter hostile controls for TPL/photonic/custody/dataplane.
 [x] Package graph entryPoints for the eight public entries; load-graph.ts is
     an explained allowOrphan. node:module and typescript admitted as live loads.

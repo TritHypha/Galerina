@@ -1,13 +1,67 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Custody and roadmap refresh — 2026-09-23
+
+Historical checkpoint: HEAD was `ed4a1359…` when this section was drafted
+(`fix(status): preserve ten bounded ledger gates`; parent `91b4dec0…`).
+Recheck Git for current custody; this is not an exact-head receipt. The item-7
+inventory has 0 OPEN_ON_SCAN_SNAPSHOT, 120 PARTIAL_THIS_TREE,
+and 4 PATCHED_AUDIT_PENDING of 124 findings. This is not security clearance.
+E01/RD-1296 load-graph bounds are implemented with 86/86 focused tests;
+composition snapshot and evidence-packet slices 3–4 remain. RD-1308 exact
+typed argument encoding is implemented on this dirty tree (identity tests
+7/7; independent PASS `01a0ceda-70d7`); finding
+`csf_456107f3e63d6f916462d1bf` stays PARTIAL_THIS_TREE (flowNode hash still
+omits imports; `SESSION_CACHE` remains process-wide) and is not PATCHED.
+The 242 open `docs/TODO.md` boxes remain HOLD, not completed conversion. The
+live status ledger retains all ten named gates; its reader admits up to
+twelve bounded gates and refuses any larger set.
+
+The registered SVG generator's `--check` refused on dirty provenance,
+starting with `docs/ARCHITECTURE.md`. Consequently
+`build/roadmap/roadmap.svg` and the generated region below are stale, not
+regenerated. Do not use either as an exact-head receipt. Cleanly account for
+and integrate relevant source inputs before running the generator's `--write`
+route. Signing, `.fungi` authoring/corpus, SLIDE/VOK admission, and
+independent production review remain separate gates.
+
 ## Security continuation — 2026-09-22
 
 Q1/Q2 Tower photonic coupon identity is snapshot-before-verify and coupon
-revocation is rechecked on every certified infer. Focused tests 24/24 on dirty
-HEAD `0f24ca30…`. Independent audit pending. The 124-finding scan is not closed.
-See [security-q1q2-continuation-2026-09-22.md](reports/security-q1q2-continuation-2026-09-22.md).
-The Governed Computing Constitution is a discussion draft only (work-register
-CONST / W15); it does not amend SECURITY.md or admit production.
+revocation is rechecked on every certified infer. Focused tests 24/24.
+Three-boundary repairs on dirty HEAD `91b4dec0…`: WAT capture-then-wipe +
+nested owned-arena wipe Q1 **27/27** (including closed recursive flatten
+`[0,1,7]`), durable-replay empty admit-list **13/13**, FIFO TOCTOU **15/15**
+WSL. Independent production admission remains HOLD. Scan `0f6063dd` is
+inventoried **124/124 IDs**, currently **0 OPEN_ON_SCAN_SNAPSHOT** / 120
+PARTIAL_THIS_TREE / 4 PATCHED_AUDIT_PENDING. Inventory is not closure.
+Doc alignment:
+[documentation-reconciliation-2026-09-23.md](reports/documentation-reconciliation-2026-09-23.md).
+Patched-high verification 2026-09-23 (dirty-tree, not admission):
+[patched-highs-verification-2026-09-23.md](reports/patched-highs-verification-2026-09-23.md).
+See
+[scan-0f6063dd-disposition-2026-09-22.md](reports/scan-0f6063dd-disposition-2026-09-22.md),
+[outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md),
+[security-three-boundaries-2026-09-22.md](reports/security-three-boundaries-2026-09-22.md)
+and [approved-decisions-implementation-2026-09-22.md](reports/approved-decisions-implementation-2026-09-22.md).
+The Governed Computing Constitution is a KB DISCUSSION_DRAFT / NOT_ADOPTED.
+
+The later resolution pass repaired the JSON v1 encoder bound: the shared
+output budget now charges UTF-8 bytes during construction, including escapes,
+keys and delimiters, and refuses before visiting later children after
+exhaustion. Focused encoder controls **7/7** and the data-json package
+**40/40**. Duplicate-key diagnostics remain the v1 result even when the
+budget is exhausted. This is dirty-candidate evidence; it does not implement
+JSON fractions or Decimal mapping. See
+[resolution-continuation-2026-09-22.md](reports/resolution-continuation-2026-09-22.md)
+and [coding-batch-ready-2026-09-22.md](reports/coding-batch-ready-2026-09-22.md).
+
+Nested secret-call owned-arena wipe and guest-owned host cleanup are
+implemented on this dirty tree (Q1 **27/27**); residual: recursive flatten
+deeper than one closed expansion still drops grandchild secrets. The
+124-finding scan remains **INCOMPLETE_NON_AUTHORITATIVE / HOLD**. The
+roadmap SVG generator still REFUSES dirty provenance; this note does not
+regenerate it.
 
 ## Current checkpoint — 2026-09-22
 
@@ -26,9 +80,12 @@ regeneration, queue/overlay waves and final corpus assurance remain held.
 The [maintenance receipt](reports/documentation-work-register-refresh-2026-09-22.md)
 distinguishes this refresh's checks from earlier execution evidence.
 
-Registered graph refresh: 6/8 upstream steps passed. Package graphs refused
-16 declarations; semantic assurance refused dirty retirement evidence.
-The generated roadmap region/SVG was not refreshed. See the
+The earlier registered graph refresh passed 6/8 upstream steps and recorded
+16 package declarations refused; the later bounded package-graph check
+reports **100/201 current outputs** after the C22 declaration repairs.
+Semantic assurance still refused dirty retirement evidence. The generated
+roadmap region/SVG was not refreshed because the current generator refuses
+dirty relevant provenance inputs. See the
 [full graph report](reports/graph-todo-ledger-refresh-2026-09-22.md) and
 [C22](BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md#blocker-c22).
 
@@ -53,6 +110,9 @@ Current owners are this document and `governance/status-ledger.json`.
 The registered roadmap generator owns `build/roadmap/roadmap.svg`;
 `build/component-health/roadmap-subway.svg` is a historical artifact, not
 the current generator destination. Do not hand-edit it or claim it refreshed.
+The generator's current check is REFUSED while relevant implementation and
+documentation inputs are dirty; regeneration must follow an explicit-path
+commit or another clean, exact source boundary.
 
 ## Pre-.fungi closure recheck — 2026-09-21
 

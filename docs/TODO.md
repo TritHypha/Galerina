@@ -1,5 +1,654 @@
 # TODO
 
+Current outstanding and blockers:
+[outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
+Historical checkpoint HEAD `ed4a1359…` (parent `91b4dec0…`); recheck Git
+for current custody. This document is not an exact-head receipt.
+Scan `0f6063dd` is 124/124 IDs inventoried, **0 OPEN**.
+GROK-CODING-BATCH-READY Phase A+B complete. Items 1–15 remain
+INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
+
+## Open-checkbox census — 2026-09-23
+
+- [x] Counted Markdown `- [ ]` rows under this worktree `docs/` plus package
+  `TODO.md` files: **2043** open boxes in **88** files. `docs/TODO.md` itself
+  has **242**. Superpowers plans hold most of the rest. Historical procedure
+  boxes are not a work queue.
+- [x] Scan `0f6063dd` live inventory remains **0 OPEN / 120 PARTIAL / 4
+  PATCHED**. Item-7 OPEN lows are exhausted.
+- [x] E01/RD-1296 slice 2 (load-graph bounds): `lstat` refuse symlink,
+  `MAX_LOAD_GRAPH_FILES` 4096, `MAX_LOAD_GRAPH_FILE_BYTES` 1 MiB,
+  `MAX_LOAD_GRAPH_EDGES` 16384. Tests load-graph-bounds **3/3** plus
+  RD-1295 isolation/products **83/83** (**86/86** combined). Residual:
+  lstat→read TOCTOU.
+- [x] RD-1308 exact typed argument encoding for the pure-flow LRU:
+  `encodePureFlowArgs` + `admitPureFlowCacheIdentity` + exact-mismatch
+  miss + owned copies. Tests pure-flow-cache-identity **7/7**. Independent
+  scoped PASS `01a0ceda-70d7`
+  (`docs/independent-audits/2026-09-23-pureflow-exact-args-hold.md`). Scan
+  `csf_456107f3e63d6f916462d1bf` stays PARTIAL_THIS_TREE. Not PATCHED.
+- [x] Live recount 2026-09-23 after HEAD `ed4a1359`
+  (`fix(status): preserve ten bounded ledger gates`). Checkbox census still
+  **2043** open boxes in **88** files; `docs/TODO.md` **242**. Inventory
+  still **0 OPEN / 120 PARTIAL / 4 PATCHED**. This session did not create
+  `ed4a1359`. Remaining dirty paths include the RD-1308 candidate.
+- [!] The **242** `docs/TODO.md` `[ ]` rows stay **HOLD**: `.fungi` pause,
+  conversion, commit, Decimal/OAuth, durable backend, constitution, signing,
+  hardware, bulk TypeScript retirement, SLIDE/VOK admission, Myco/graph
+  owners. Checking them would fake completion. E01 slices 3–4, PARTIAL
+  residuals, and PATCHED highs remain open engineering, not checkbox
+  closure.
+- [!] Items 1–15 remain BLOCKED/HOLD/EXCLUDED as inventoried. No commit,
+  pin bump, or production admission from this census.
+
+### Resolution continuation — 2026-09-22 (later than the three-boundary packet)
+
+- [x] Q1 nested-call owned-arena wipe and guest-owned host cleanup are in the
+  dirty tree (`outer(7)===14`; Q1 **27/27** including closed recursive flatten
+  `[0,1,7]`). Independent scoped PASSes exist; production admission remains HOLD.
+  Scan `csf_0906c00787369feb953dde55` PARTIAL_THIS_TREE.
+- [!] Scan `0f6063dd` inventory is **124/124 IDs**
+  ([disposition](reports/scan-0f6063dd-disposition-2026-09-22.md),
+  [json](reports/scan-0f6063dd-inventory-2026-09-22.json)).
+  **0** remain OPEN_ON_SCAN_SNAPSHOT (4 PATCHED_AUDIT_PENDING, 120
+  PARTIAL_THIS_TREE). Remaining work is PARTIAL residuals and E01/RD-1296, listed in
+  [outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
+  Cluster-level repair is not full closure.
+- [!] JSON v1 encoder byte-budget repair implemented; focused **7/7** and
+  package **40/40** re-verified 2026-09-22 (impl untouched this batch). See
+  [coding-batch-ready-2026-09-22.md](reports/coding-batch-ready-2026-09-22.md).
+  Scan `csf_5d8c6b9918cd7dfe231ce75f` PARTIAL_THIS_TREE.
+- [x] secrets-spore REPL exclusive no-echo (`promptNoEchoExclusive` + keypress
+  detach). Dummy-value tests **7/7**. Independent scoped PASS `01a0cb29`
+  (`docs/independent-audits/2026-09-22-cli-repl-echo-hold.md`). Hardware TTY
+  NOT VERIFIABLE. Scan `csf_8eb750c29eea3b36b37a8d65` PARTIAL_THIS_TREE.
+- [x] `executeWASMFlow` loop-fuel + worker deadline. Meter/Phase27/isolation
+  **27/27**. Independent scoped PASS `01a0cb36`
+  (`docs/independent-audits/2026-09-22-wat-execution-meter-hold.md`).
+  Scan `csf_0a079c981e51180496dc447a` PARTIAL_THIS_TREE.
+- [x] `galerina verify` authenticates decoded CBOR `.lmanifest` subject;
+  JSON-sidecar-only signatures refuse. Helper tests **6/6**; hybrid CLI
+  round-trip **1/1**. Independent scoped PASS `01a0cb43`
+  (`docs/independent-audits/2026-09-22-cbor-subject-auth-hold.md`). Scan
+  `csf_9f99c2b9351a58e3105857f0` PARTIAL_THIS_TREE.
+- [x] Linux native registry publication opens existing generation with
+  `O_NONBLOCK` and refuses FIFO (`LINUX_FIFO_REFUSED`). Classifier test
+  **1/1** Windows; live FIFO tests **2/2** WSL. Independent scoped PASS
+  `01a0cb4d` (`docs/independent-audits/2026-09-22-native-fifo-admission-hold.md`).
+  Scan `csf_bae056fe7c8d64f567f4b7ec` PARTIAL_THIS_TREE. Windows native FIFO
+  NOT VERIFIABLE.
+- [x] WASM host `__range` refuses cardinality above guest linear-memory
+  words and debits range fuel. Runtime tests **9/9**; range oracle **3/3**.
+  Independent scoped PASS `01a0cb5b`
+  (`docs/independent-audits/2026-09-22-wasm-range-host-hold.md`). Scan
+  `csf_e3409dfe75ff7adda18f556a` PARTIAL_THIS_TREE.
+- [x] `admitAndInstantiate` copies exclusive `Uint8Array` then re-hashes
+  before instantiate; caller-buffer mutation cannot swap the module.
+  Runtime tests **11/11**. Independent scoped PASS `01a0cb69`
+  (`docs/independent-audits/2026-09-22-admit-instantiate-snapshot-hold.md`).
+  Scan `csf_6ffbe767fb4a7baff5000c26` PARTIAL_THIS_TREE.
+- [x] `withRetry` clamps attempts to 8; Infinity/non-positive collapse to 1.
+  Tests `retry-policy-bounds.test.mjs` **4/4**. Independent scoped PASS
+  `01a0cb76` (`docs/independent-audits/2026-09-22-retry-policy-bounds-hold.md`).
+  Scan `csf_77b916a8ab8239a016c1794f` PARTIAL_THIS_TREE.
+- [x] Unary-prefix depth guard + compiler source intake ceiling. Tests
+  `parse-depth-and-source-bounds.test.mjs` **3/3**. Independent scoped PASS
+  `01a0cb80` (`docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md`).
+  Scans `csf_bec723cd02be20807a46da3c` and `csf_4b117d1baa93121b41b11e87`
+  PARTIAL_THIS_TREE.
+- [x] Tri-regex `compile()` admits `maxNesting` into the work-budget (host
+  ceiling 32). Refusals tests include caller maxNesting 2 vs depth 3.
+  Independent scoped PASS `01a0cb88`
+  (`docs/independent-audits/2026-09-22-triregex-nesting-budget-hold.md`).
+  Scan `csf_e79c558f745535f0e23cab14` PARTIAL_THIS_TREE.
+- [x] `fs.write*` refuses dangling symlinks under `GALERINA_FS_ROOT` via
+  `readlinkSync` before `writeFile`. Tests `fs-root-symlink-refuse.test.mjs`
+  **2/2**. Independent scoped PASS `01a0cb97`
+  (`docs/independent-audits/2026-09-22-fs-root-dangling-symlink-hold.md`).
+  Residual: TOCTOU between readlink and writeFile. Scan
+  `csf_87352346f8708fa965b75642` PARTIAL_THIS_TREE.
+- [x] BCrypt rounds 10..12 and async hash/compare (no hashSync). Tests
+  `bcrypt-rounds-bound.test.mjs` **3/3**. Independent scoped PASS `01a0cb9f`
+  (`docs/independent-audits/2026-09-22-bcrypt-rounds-hold.md`). Scan
+  `csf_7a6508dbb21c910a7648d293` PARTIAL_THIS_TREE.
+- [x] JWT HS* refuses PEM, SPKI DER, PKCS#1 DER, and JWK public keys as HMAC
+  secrets. Bearer tests **30/30**. Independent scoped PASS `01a0cbae`
+  (`docs/independent-audits/2026-09-22-jwt-hmac-pubkey-hold.md`). Scan
+  `csf_5740f1c66d778367a4f731d6` PARTIAL_THIS_TREE.
+- [x] Photonic packed-trit decode refuses count>1Mi, short buffers,
+  offset+count overflow, and 2^35 word-index wrap. Bridge tests **16/16**.
+  Independent scoped PASS `01a0cbb4`
+  (`docs/independent-audits/2026-09-22-photonic-decode-capacity-hold.md`).
+  Scan `csf_02156b5c510ca60c2a2637f7` PARTIAL_THIS_TREE.
+- [x] Photonic partition decider refuses kernel n outside 1..4096 before
+  allocating. Tests include n=1e9. Independent scoped PASS `01a0cbc0`
+  (`docs/independent-audits/2026-09-22-partition-kernel-n-hold.md`). Scan
+  `csf_fb5b3bf4d8124b5a9ea9f1e9` PARTIAL_THIS_TREE.
+- [x] Myco `saveGraph` refuses dangling `.myco/index.json` symlink via
+  `readlink`. Store tests include that case. Independent scoped PASS
+  `01a0cbc9` (`docs/independent-audits/2026-09-22-myco-index-symlink-hold.md`).
+  Residual: TOCTOU between readlink and rename. Scan
+  `csf_018f73bf926a34658d55adfc` PARTIAL_THIS_TREE.
+- [x] Stub ternary packed-trit decode refuses count>1Mi, short buffers,
+  overflow, and 2^35 wrap. Bridge tests **10/10**. Independent scoped PASS
+  `01a0cbd2` (`docs/independent-audits/2026-09-22-stub-ternary-decode-hold.md`).
+  Scan `csf_0a13165351fee2628f4fc557` PARTIAL_THIS_TREE.
+- [x] AI-guide write contained under build dir; `..` and dangling symlink
+  refused. Independent review `01a0cbe1` HOLD: `fail()` after `readlinkSync`
+  was swallowed by bare `catch {}`. Repair: `pathIsSymlink` + ancestor walk;
+  `fail()` is outside that catch. Tests `ai-guide-path.test.mjs` **5/5**.
+  Independent scoped PASS `01a0cbec`
+  (`docs/independent-audits/2026-09-22-ai-guide-path-rereview-hold.md`).
+  Residual: TOCTOU; `O_NOFOLLOW` absent on win32; build-dir root as a
+  symlink is not walked. Scan `csf_ecf2128fafd9c3efdffc7611`
+  PARTIAL_THIS_TREE.
+- [x] Hybrid-engine `#admittedBridges` bind (HEAD `e1bb4a4f4`): substitution
+  test pass. Scan `csf_f282dd36883a0c39f717e72d` PARTIAL_THIS_TREE.
+- [x] Lexer FUNGI-LEX-005 on EOF and block-comment newlines. Tests
+  `lexer-line-bounds.test.mjs` **4/4**. Independent scoped PASS `01a0cbf0`
+  (`docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md`). Residual:
+  LEX-005 is a warning; typed content-block internal lines still skip the
+  check. Scan `csf_554dd888b982b37741c01b17` PARTIAL_THIS_TREE.
+- [x] TPL `#block` + frozen pool `Block` so generation forge and `_block`
+  retarget cannot alias a reused allocation. Tests `tpl.test.mjs` **10/10**.
+  Independent scoped PASS `01a0cc00`
+  (`docs/independent-audits/2026-09-22-tpl-uaf-hold.md`). Residual: a
+  cached `pool.i32` view still aliases bytes after free. Scan
+  `csf_cc6db185bcfb679e18ea482a` PARTIAL_THIS_TREE.
+- [x] Deno WebGPU spawn is argv + `shell: false` (`denoWebGpuSpawnSpec`).
+  Hostile metacharacters stay one argv element. Tests
+  `deno-spawn-spec.test.mjs` **3/3**. Independent scoped PASS `01a0cc05`
+  (`docs/independent-audits/2026-09-22-deno-spawn-spec-hold.md`). Residual:
+  `resolveDenoBin` still uses `execSync("where deno")` for discovery. Scan
+  `csf_d87a999abe6e43db3197cc1f` PARTIAL_THIS_TREE.
+- [x] Cold-boot persists an HMAC `rollback-floor` snapshot; a fresh
+  orchestrator refuses an older authentic checkpoint after a later tick.
+  Tests `cold-boot.test.mjs` include that hostile. Independent scoped PASS
+  `01a0cc0d` (`docs/independent-audits/2026-09-22-cold-boot-rollback-floor-hold.md`).
+  Residual: replacing both the user snapshot and the floor with a consistent
+  older pair still rolls back. Scan `csf_aee31b6185becb47f883b0d7`
+  PARTIAL_THIS_TREE.
+- [x] Hybrid `checkBridgeAttestation` coalesces an in-flight promise so a
+  concurrent infer cannot observe a null denial as success. Tests include
+  concurrent infer. Independent scoped PASS `01a0cc19-604f`
+  (`docs/independent-audits/2026-09-22-bridge-attestation-inflight-hold.md`).
+  Residual: photonicCertifiedChecked is still set before await. Scan
+  `csf_04b1ca56fd9143e13de6b0d2` PARTIAL_THIS_TREE.
+- [x] Linked registry publication refuses an admit-only durability profile
+  (`isReleasedRegistryDurabilityProfile`). Hostile in
+  `registry-generation.test.mjs`. Independent scoped PASS `01a0cc19-ec23`
+  (`docs/independent-audits/2026-09-22-owner-release-gate-hold.md`). Residual:
+  WeakSet identity is the runtime brand. Scan `csf_4531c31d96dd7d2291a4d57c`
+  PARTIAL_THIS_TREE.
+- [x] Production/deterministic run requires host `grantedEffects` when the
+  flow declares effects (`FUNGI-RUNTIME-GRANT-REQUIRED`). CapabilityHost
+  intersects grants with declared. Tests `capability-host.test.mjs`.
+  Independent scoped PASS `01a0cc28-0800`
+  (`docs/independent-audits/2026-09-22-production-granted-effects-hold.md`).
+  Residual: development still authorizes declared-only. Scan
+  `csf_97aa94f1a74c506b55bcb1a1` PARTIAL_THIS_TREE.
+- [x] `StateSerializer` refuses missing, all-zero, and short HMAC keys
+  (`LSS-KEY-001`). Tests `strict-key.test.mjs` **4/4**. Independent scoped
+  PASS `01a0cc28-07fc`
+  (`docs/independent-audits/2026-09-22-hmac-all-zero-key-hold.md`). Scan
+  `csf_44ad57ee61239f80ba431e63` PARTIAL_THIS_TREE.
+- [x] `parseJsonValue` counts UTF-8 document bytes without
+  `encoder.encode` of the whole string; UTF-16 length under the ceiling
+  still refuses oversize UTF-8. Tests `json-document-bytes.test.mjs` **3/3**.
+  Independent scoped PASS `01a0cc32-f9a6`
+  (`docs/independent-audits/2026-09-22-json-document-bytes-hold.md`). Scan
+  `csf_6c6ebe8f17bfb2ad895b1f30` PARTIAL_THIS_TREE.
+- [x] Native benchmark compile is argv + `shell: false`
+  (`nativeCompileSpawnSpec`). Hostile metacharacters stay one argv element.
+  Tests `native-compile-spawn.test.mjs` **3/3**. Independent scoped PASS
+  `01a0cc32-f9ba`
+  (`docs/independent-audits/2026-09-22-native-compile-spawn-hold.md`). Scan
+  `csf_231c9774990ce1458711c40d` PARTIAL_THIS_TREE.
+- [x] Package-graph `stripComments` copies string/regex/template contents
+  verbatim so `//` or `/*` in a literal cannot hide a real import. Tests
+  include same-line `"foo // bar"; import "same-line-dep"`. Independent
+  scoped PASS `01a0cc3c-1489`
+  (`docs/independent-audits/2026-09-22-comment-hidden-imports-hold.md`).
+  Scan `csf_bc2637b129881b6961435a97` PARTIAL_THIS_TREE.
+- [x] Secret-checker `normaliseKey` splits camelCase before lowercase.
+  `apiKey` / `accessToken` / `clientSecret` / `refreshToken` flag.
+  Independent scoped PASS `01a0cc3c-149b`
+  (`docs/independent-audits/2026-09-22-camelcase-secret-keys-hold.md`).
+  Residual: `XApiKey` does not become `api_key`. Scan
+  `csf_19dd3815a61cb9705e944b71` PARTIAL_THIS_TREE.
+- [x] Freivalds refuses Inf/NaN products (`isFinite` on matrix entries and
+  probe products). Tests include that hostile. Independent scoped PASS
+  `01a0cc46-14b9`
+  (`docs/independent-audits/2026-09-22-freivalds-nonfinite-hold.md`). Scan
+  `csf_758d92313370e633b8bc394d` PARTIAL_THIS_TREE.
+- [x] Pinned revocation: missing or unsigned/replaced registry throws.
+  `loadTrustedRevocationSnapshot` refuses an unsigned empty replacement.
+  Independent scoped PASS `01a0cc46-14c4`
+  (`docs/independent-audits/2026-09-22-revocation-pin-missing-hold.md`).
+  Residual: no pin still allows missing registry as empty revoke set
+  (legacy). Scan `csf_ca7eb6675543b7214745b057` PARTIAL_THIS_TREE.
+- [x] Hybrid `#admitOpClasses` admits length 1..6 and STANDARD membership
+  before `planFor`; oversized/unknown `opClasses` trap
+  `ERR_PLAN_NOT_PREFLIGHTED`. Tests `plan-memoization.test.mjs` **5/5**.
+  Independent scoped PASS `01a0cc57-2cfd`
+  (`docs/independent-audits/2026-09-22-inference-plan-admit-hold.md`).
+  Residual: trap receipt still `planFor(STANDARD_INFERENCE_OPS)`; repeats
+  of allowed names within length 6 still plan. Scan
+  `csf_ae1e06eae125bbb82c0c332a` PARTIAL_THIS_TREE.
+- [x] `loadProject` enforces files 4096 / file 10MiB / total 32MiB / depth
+  32; lstat skips symlinks. Tests `project-ingest-bounds.test.mjs` **3/3**.
+  Independent scoped PASS `01a0cc57-2d08`
+  (`docs/independent-audits/2026-09-22-project-ingest-bounds-hold.md`).
+  Residual: TOCTOU between lstat and read; file-count 4097 not exercised.
+  Scan `csf_d27f1685f1b406f9a3f55647` PARTIAL_THIS_TREE.
+- [x] `package.fungi.json` `name` must match `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`
+  and must not contain `..`; write path re-checks. Hostile `../evil` /
+  `foo..bar` refuse. Tests `tests/package-descriptor-name.test.mjs` **2/2**.
+  Independent scoped PASS `01a0cc5a-d829`
+  (`docs/independent-audits/2026-09-22-package-descriptor-name-hold.md`).
+  Residual: Windows `CON`/`NUL` still match the regex. Scan
+  `csf_1b4570816f7f2097d9cf405b` PARTIAL_THIS_TREE.
+- [x] Governed runtime copies `Uint8Array.from(bytes)` before hash, verify,
+  and instantiate. Mutating the source buffer after return cannot change
+  hashed or executed bytes. Tests `runtime-executor-composition.test.mjs`
+  include that hostile. Independent scoped PASS `01a0cc5a-d833`
+  (`docs/independent-audits/2026-09-22-runtime-artifact-copy-hold.md`).
+  Residual: SharedArrayBuffer views are not this copy. Scan
+  `csf_620c9e3a9501ebf19273ddd7` PARTIAL_THIS_TREE.
+- [x] `admitStorageSubstrate` refuses a revoked signer even with a valid
+  signature; overwrite requires `signerKeyId`+`revocationCheck`; identity
+  mismatch denies. Tests `substrate-erasure.test.mjs` **22/22**. Independent
+  scoped PASS `01a0cc5c-7cb9`
+  (`docs/independent-audits/2026-09-22-substrate-revocation-hold.md`).
+  Residual: crypto-only may omit revocation when neither
+  key id nor check is supplied. Scan `csf_37a9ad734f2294cf7eddf3e5`
+  PARTIAL_THIS_TREE.
+- [x] Requirement-launcher output admission uses `readlink` so dangling
+  and ancestor junctions are refused (`requirement-output-admission.mjs`).
+  Tests `requirement-output-admission.test.mjs` **4/4**. Independent scoped
+  PASS `01a0cc66-2bc3`
+  (`docs/independent-audits/2026-09-22-requirement-output-links-hold.md`).
+  Residual: TOCTOU between refuse and write. Scan
+  `csf_87678448ed0e81dd1e9b4a88` PARTIAL_THIS_TREE.
+- [x] Myco `globMatch` is a linear `*`/`?` matcher (no `RegExp`). Nested-star
+  miss finishes under 50ms; oversize ignore patterns are skipped.
+  Tests `walk.test.ts` **9/9**. Independent scoped PASS `01a0cc66-2bda`
+  (`docs/independent-audits/2026-09-22-myco-ignore-glob-hold.md`). Residual:
+  mid-path `**` is still not gitignore `**`. Scan
+  `csf_5272befa84a2050393d0f899` PARTIAL_THIS_TREE.
+- [x] `deploy-linux.sh` sourceHash reader takes the manifest path as
+  `process.argv[1]` (no basename interpolation into `node -e`). Tests
+  `deploy-linux-node-e.test.mjs` **2/2**. Independent scoped PASS
+  `01a0cc68-e823`
+  (`docs/independent-audits/2026-09-22-deploy-linux-node-e-hold.md`).
+  Residual: the bash wrapper is not executed on this Windows host. Scan
+  `csf_fbc2bfa6f90625ea0e399ec7` PARTIAL_THIS_TREE.
+- [x] `ZeroCopyMapper` copies `ownedSource` before `enforceBlock`/stage;
+  SharedArrayBuffer sources refuse. Hostile mutate-during-verify leaves
+  staged i32[0] at 10. Tests `zero-copy-mapper.test.mjs` **8/8**.
+  Independent scoped PASS `01a0cc68-e832`
+  (`docs/independent-audits/2026-09-22-zero-copy-mapper-hold.md`). Residual:
+  mapped views stay mutable after map. Scan `csf_78294e1131c5f50b6041a758`
+  PARTIAL_THIS_TREE.
+- [x] LocalSramBus channel read/write refuse outside the 2048-byte stride
+  (`LSM-PBI-003`). Overflowing write cannot mutate the next channel.
+  Tests `pbi.test.mjs` **8/8**. Independent scoped PASS `01a0cc70-16dd`
+  (`docs/independent-audits/2026-09-22-sram-channel-stride-hold.md`).
+  Residual: a real Int32Array with a shadowed `length` getter can still
+  disagree between the stride check and `set`. Scan
+  `csf_e5f6b2d8cd56326fcafa7f6f` PARTIAL_THIS_TREE.
+- [x] `admitPhotonicConfig` always requires `signerKeyId`+`revocationCheck`
+  together; omitting the check with a key id still denies. Tests
+  `photonic-admission.test.mjs` **13/13**. Independent scoped PASS
+  `01a0cc70-16e6`
+  (`docs/independent-audits/2026-09-22-photonic-admission-revocation-hold.md`).
+  Scan `csf_d76d15646ea7b5493277f60c` PARTIAL_THIS_TREE.
+- [x] Registry generation `chmod(0o444)` is on the `wx` staging handle, not
+  `fs.chmod(path)`. Tests include that source-shape hostile. Independent
+  scoped PASS `01a0cc73-59e3`
+  (`docs/independent-audits/2026-09-22-generation-handle-chmod-hold.md`).
+  Residual: TOCTOU between close and `link`. Scan
+  `csf_275271374b1b30b39c30222f` PARTIAL_THIS_TREE.
+- [x] Durability admission snapshots exact manifest shape then copies signed
+  fields; extra unsigned keys are `MANIFEST_REFUSED`. Tests
+  `registry-durability-production-admission.test.mjs` **8/8**. Independent
+  scoped PASS `01a0cc73-59f9`
+  (`docs/independent-audits/2026-09-22-durability-unsigned-fields-hold.md`).
+  Residual: derived `authenticated`/`authorityReleased` constants; WeakSet
+  is the brand. Scan `csf_6863d7f4897abd8b695edff4` PARTIAL_THIS_TREE.
+- [x] AtomicWriter `assertContained` keeps snapshot names under the storage
+  directory; reads/erasure use `MAX_SNAPSHOT_BYTES`. Q3 FIFO handle path is
+  a separate axis. Scans `csf_0492167ebb8e01c09ad5872c` and
+  `csf_f3401d9749e83f0b194b56df` PARTIAL_THIS_TREE.
+- [x] Compact `.spore` open is bounded (`MAX_SECTIONS` / hashed-bytes
+  ceiling). Scan `csf_51a46d204732d2c352ceb6f7` PARTIAL_THIS_TREE.
+- [x] 2026-09-23 documentation reconciliation: live programme docs cite
+  inventory **0 OPEN / 120 PARTIAL / 4 PATCHED** (124/124 IDs). Every
+  PARTIAL_THIS_TREE id is listed in
+  [scan-0f6063dd-disposition-2026-09-22.md](reports/scan-0f6063dd-disposition-2026-09-22.md)
+  and cited in this resolution continuation. Historical root TODO
+  checkboxes (~242+) remain HOLD (item 13). See
+  [documentation-reconciliation-2026-09-23.md](reports/documentation-reconciliation-2026-09-23.md).
+- [x] 2026-09-23 resolution prompt: four imported highs re-verified on
+  current source (rebuild `shell:false`, 404s do not exhaust mandatory
+  audit, path-shaped keyId refused, `//[` is 400). Tests 47/47 including
+  404-capacity hostile. Independent scoped PASS `01a0cd1e-52dc`
+  (`docs/independent-audits/2026-09-23-patched-highs-verify-hold.md`).
+  [patched-highs-verification-2026-09-23.md](reports/patched-highs-verification-2026-09-23.md).
+- [x] `galerina verify` prints `manifest verified` after signature and
+  revocation handling. Tests `verify-success-banner.test.mjs` **1/1**.
+  Independent scoped PASS `01a0cd1e-52ec`
+  (`docs/independent-audits/2026-09-23-verify-success-banner-hold.md`).
+- [x] Benchmark selection uses `benchmarkKindFromMainBody` after stripping
+  quoted strings; `admitBoundedInt` clamps Infinity/oversize. Tests
+  `benchmark-kind.test.mjs` **3/3**. Independent scoped PASS `01a0cd2a-0ccf`
+  (`docs/independent-audits/2026-09-23-benchmark-kind-hold.md`). Residual:
+  template literals and `/* */` comments still match. Scan
+  `csf_106c55f9ca064178e29347d0` PARTIAL_THIS_TREE.
+- [x] Snapshot `#ownSnapshot` copies `payloadJson` before HMAC/parse; a
+  swapping getter cannot deserialize `{a:9}`. Tests serializer getter
+  hostile. Independent scoped PASS `01a0cd2a-0cd2`
+  (`docs/independent-audits/2026-09-23-snapshot-own-and-links-hold.md`).
+  Scan `csf_44389b10328fc0b12408a84c` PARTIAL_THIS_TREE.
+- [x] AtomicWriter scrub/write/read refuse planted `.snap` links
+  (`LSS-LINK-001`) without overwriting the target. Independent scoped PASS
+  `01a0cd2a-0cd2`
+  (`docs/independent-audits/2026-09-23-snapshot-own-and-links-hold.md`).
+  Residual: hard links share an inode. Scan `csf_8b808c52eea585b85adaabc8`
+  PARTIAL_THIS_TREE.
+- [x] Build `generateManifest(source)` uses the `readUntrustedSource`
+  snapshot. Tests `build-source-snapshot.test.mjs` **1/1**. Independent
+  scoped PASS `01a0cd36-7028`
+  (`docs/independent-audits/2026-09-23-source-snapshot-and-event-dag-hold.md`).
+  Scan `csf_d612a71be9f290ce1b6f2c75` PARTIAL_THIS_TREE.
+- [x] `buildEventDAG` refuses >8192 events; continuation uses a `linked`
+  set; `builder.build()` once. Independent scoped PASS `01a0cd36-7028`
+  (`docs/independent-audits/2026-09-23-source-snapshot-and-event-dag-hold.md`).
+  Scan `csf_c12eac261f985af483ce61d8` PARTIAL_THIS_TREE.
+- [x] Rotation restore captures `payloadJson`/`hmac` once then MAC+parse.
+  Independent scoped PASS `01a0cd36-7030`
+  (`docs/independent-audits/2026-09-23-rotation-restore-payload-hold.md`).
+  Scan `csf_6955d450f0b42e29883196a8` PARTIAL_THIS_TREE.
+- [x] `Array.range` rejects non-finite/zero step, empty on wrong
+  direction, caps cardinality at 1e6. Tests domain-collections **69/69**.
+  Independent scoped PASS `01a0cd46-8323`
+  (`docs/independent-audits/2026-09-23-range-replay-import-hold.md`).
+  Residual: construction does not charge Interpreter `stepBudget`. Scan
+  `csf_03064225783c475027bf7f5b` PARTIAL_THIS_TREE.
+- [x] `MemoryReplayStore` entry/key-byte ceilings; prune-then-throw;
+  `claim` re-resolves after prune. Tests replay-store **13/13**.
+  Independent scoped PASS `01a0cd46-8323`. Residual: webhook claim before
+  kernel rate; no aggregate-byte limit; capacity maps to malformed/500.
+  Scan `csf_d5bf0279d3fa0e2679371071` PARTIAL_THIS_TREE.
+- [x] `resolveFileImports` memoizes completed modules; double-import
+  identity + 12-level chain. Tests import-traversal-h38 **11/11**.
+  Independent scoped PASS `01a0cd46-8323`. Residual: nested symbols
+  duplicate; no module/edge/depth caps. Scan
+  `csf_17fa05e63b8f227132fd6669` PARTIAL_THIS_TREE.
+- [x] Hybrid `verifyAttestationHybrid` snapshots inert manifest fields and
+  signature strings before classical verify, canonical preimage, and PQ
+  `await import`. Tests hybrid **10/10**. Independent scoped PASS
+  `01a0cd57-b0a5`
+  (`docs/independent-audits/2026-09-23-hybrid-runeval-intel-hold.md`).
+  Scan `csf_2f01f14cfd15ebcf53d39c71` PARTIAL_THIS_TREE.
+- [x] Prototype run-eval visiting set + depth 32 + steps 10000. Tests
+  `run-eval-bounds.test.mjs` **3/3**. Independent scoped PASS `01a0cd57-b0a5`.
+  Residual: regex runner; refusal is empty string. Scan
+  `csf_14ab43fde3a4875a5afe9810` PARTIAL_THIS_TREE.
+- [x] Intelligence indexer file/byte/depth/cache ceilings. Tests
+  `intel-bounds.test.mjs` **2/2**. Independent scoped PASS `01a0cd57-b0a5`.
+  Residual: 4096-file ceiling not live-exercised; oversize cache rebuilds.
+  Scan `csf_6cff52f9ec86bf43a69a0e0e` PARTIAL_THIS_TREE.
+- [x] `runBoundaryGate` FAILs `vacuous border` when `packageGraph.roots`
+  omits default src/host that still holds code. Tests package-graph **36/36**.
+  Independent scoped PASS `01a0cd65-becd`
+  (`docs/independent-audits/2026-09-23-scan-webhook-auditmac-hold.md`).
+  Residual: scanner can still return a narrowed graph. Scan
+  `csf_088de8906119ef06a0cc4fdf` PARTIAL_THIS_TREE.
+- [x] Webhook replay identity is the authenticated body MAC; rotating
+  event-id or Idempotency-Key with the same signed body is 409. Tests
+  webhook-admission **5/5**. Independent scoped PASS `01a0cd65-becd`.
+  Residual: kernel idempotency still keys the unsigned header. Scan
+  `csf_a29c2f0f698df064615df16d` PARTIAL_THIS_TREE.
+- [x] Audit-batch MAC is length-prefixed v2; merge and split hostiles
+  fail closed. Tests hmac-chain **7/7**. Independent scoped PASS
+  `01a0cd65-becd`. Residual: ZERO_KEY authenticates if hmacKey omitted.
+  Scan `csf_0f748088754ddb920ceb641f` PARTIAL_THIS_TREE.
+- [x] `Env.get` is a value-state secret source (`FUNGI-SECRET-001`); runtime
+  maps Env/env to `secret.read`. Tests value-state **100/100**. Independent
+  scoped PASS `01a0cd74-5201`
+  (`docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md`).
+  Residual: authorized `Env.get` still returns a plain string. Scan
+  `csf_f89b4b3e81e08121ebbdabed` PARTIAL_THIS_TREE.
+- [x] Typed-content interpolation is single-pass; 1 MiB / 4096 interpolation
+  ceilings. Tests typed-content-validation **8/8**. Independent scoped PASS
+  `01a0cd74-5201`. Residual: injection `locationAt` scans from 0 once. Scan
+  `csf_123a0c5bba057ae4781efcd9` PARTIAL_THIS_TREE.
+- [x] Cached admission rechecks signing-key and photonic coupon revocation
+  on each infer. Tests photonic-certified-admission **16/16**. Independent
+  scoped PASS `01a0cd74-5201`. Residual: capability grant mask cached once.
+  Scan `csf_f2a86f77b0c6d0e831e14640` PARTIAL_THIS_TREE.
+- [x] `ownSignedGrant` freezes grant fields and signatures; one preimage;
+  adopt `res.capabilityMask`. Tests rd0236-runtime-hardening **14/14**.
+  Independent scoped PASS `01a0cd83-ed46`
+  (`docs/independent-audits/2026-09-23-capability-grant-snapshot-hold.md`).
+  Residual: getters fire once during snapshot; grant mask cached once. Scan
+  `csf_6cf7a494a713c40efe8c5d2c` PARTIAL_THIS_TREE.
+- [x] `MemoryLogSink` drops oldest at 4096. Tests logger **22/22**.
+  Independent scoped PASS `01a0cd8e-6dfd`
+  (`docs/independent-audits/2026-09-23-logger-tpl-tmpscrub-hold.md`).
+  Residual: no aggregate byte/message ceiling. Scan
+  `csf_fd74b2a34bfe325906af1691` PARTIAL_THIS_TREE.
+- [x] Recycled TPL allocations initialise to packed-trit REJECT (0b00).
+  Tests tpl **11/11**. Independent scoped PASS `01a0cd8e-6dfd`. Residual:
+  Compute `free` still 0xFF-fills. Scan `csf_23eb306ca5b3cc0c49f1da9f`
+  PARTIAL_THIS_TREE.
+- [x] `AtomicWriter.scrub` zero-unlinks `.tmp` then `.snap`. Tests
+  atomic-writer + cold-boot. Independent scoped PASS `01a0cd8e-6dfd`.
+  Residual: crash between zero and unlink; no glob of all `*.tmp`. Scan
+  `csf_ba63b06905a1b2259c3cb1a4` PARTIAL_THIS_TREE.
+- [x] Non-finite thermal readings throw `LSP-READ-001`. Tests
+  power-governor **12/12**. Independent scoped PASS `01a0cd9a-5dc2`
+  (`docs/independent-audits/2026-09-23-thermal-git-poolview-hold.md`).
+  Residual: `read()` can still return a raw non-finite sensor value. Scan
+  `csf_e145f9dfd60df70053acdab4` PARTIAL_THIS_TREE.
+- [x] Git `--base` rejects dash-prefix; `rev-parse --verify` then hex SHA
+  to `git diff --no-ext-diff`. Tests git-changes **2/2**. Independent
+  scoped PASS `01a0cd9a-5dc2`. Residual: `--end-of-options` not used. Scan
+  `csf_e28e823a7e7a74767725c9db` PARTIAL_THIS_TREE.
+- [x] Pool `i32`/`u8` require live size and segment match. Tests pool
+  **14/14**. Independent scoped PASS `01a0cd9a-5dc2`. Residual: views still
+  ptr+length not WeakMap slice identity. Scan
+  `csf_ac73ec6448618999eb697045` PARTIAL_THIS_TREE.
+- [x] Semantic `reachable` uses an adjacency index and a visit cap. Tests
+  semantic-reachable **2/2**. Independent scoped PASS `01a0cda8-137d`
+  (`docs/independent-audits/2026-09-23-reachable-reportlinks-pci-hold.md`).
+  Residual: `graphFromJSON` unbounded parse; `callers` unindexed. Scan
+  `csf_b7c875ed001f66b8abedfc85` PARTIAL_THIS_TREE.
+- [x] `writeReportFiles` refuses output links. Tests ai-guide-path **5/5**.
+  Independent scoped PASS `01a0cda8-137d`. Residual: writeFileSync after
+  refuse is TOCTOU. Scan `csf_a0b09998cf446f5ab4abfa6b` PARTIAL_THIS_TREE.
+- [x] PCI TLS and authority.requires use the named-flow source span. Tests
+  pci **14/14**. Independent scoped PASS `01a0cda8-137d`. Residual: brace
+  matching ignores strings/comments. Scan `csf_c840efd6f4fca9794bafb11d`
+  PARTIAL_THIS_TREE.
+- [x] `admitScanRoot` refuses escaping/`../` scan roots. Tests
+  package-graph **36/36**. Independent scoped PASS `01a0cdb8-56d2`
+  (`docs/independent-audits/2026-09-23-scanroots-tasks-fmt-hold.md`).
+  Residual: `listSourceFiles` has no aggregate traversal budget. Scan
+  `csf_d6acd81d895092a4750e52bf` PARTIAL_THIS_TREE.
+- [x] Task loader 1 MiB + 4096-task ceilings; fail-closed `stat`. Tests
+  load-tasks **10/10**. Independent scoped PASS `01a0cdb8-56d2`. Residual:
+  `stat` follows symlinks. Scan `csf_cd736ac270a43e44766d688f`
+  PARTIAL_THIS_TREE.
+- [x] `fmt` lstat-refuses source symlinks and does not write on ENOENT.
+  Tests fmt-symlink **1/1**. Independent scoped PASS `01a0cdb8-56d2`.
+  Residual: TOCTOU between lstat and writeFileSync. Scan
+  `csf_231c2c91fe1c3bf4207683a3` PARTIAL_THIS_TREE.
+- [x] `admitWorkspaceDepName` restricts file: link names. Tests
+  relink-workspace **2/2**. Independent scoped PASS `01a0cdc3-aeae`
+  (`docs/independent-audits/2026-09-23-relink-verify-promote-hold.md`).
+  Residual: mkdirSync parents for scoped names. Scan
+  `csf_ddbb7e9eaad1d95ecfd447ee` PARTIAL_THIS_TREE.
+- [x] `verifyBuild` uses `normaliseBuildOutputPath` + lstat. Tests
+  ai-guide-path **5/5**. Independent scoped PASS `01a0cdc3-aeae`. Residual:
+  readFileSync after lstat TOCTOU. Scan `csf_6d57f5d985e3cf31042c6b60`
+  PARTIAL_THIS_TREE.
+- [x] `admitPromoteCandidate` + lstat candidate dir. Tests cec-do-promote
+  **2/2**. Independent scoped PASS `01a0cdc3-aeae`. Residual: write TOCTOU;
+  no list-file digest pin. Scan `csf_2341f6d5046d9f3ae2f276ef`
+  PARTIAL_THIS_TREE.
+- [x] `auditCorpusEffectNames` fail-closed on absent/empty/unread corpus.
+  Tests corpus-effect-names **7/7**. Independent scoped PASS `01a0cdd4-bd9d`
+  (`docs/independent-audits/2026-09-23-effect-dupkeys-signedmanifest-hold.md`).
+  Residual: self-hosted skip; regex; lstat/read TOCTOU. Scan
+  `csf_1c14fc61fe1e266650aea121` PARTIAL_THIS_TREE.
+- [x] `assertNoDuplicateJsonKeys` depth 32 / nodes 100000 / 8MiB. Tests
+  compiler-build-evidence **8/8**. Independent scoped PASS `01a0cdd4-bd9d`.
+  Residual: hand JSON walker; runners.ts reads evidence before the cap. Scan
+  `csf_5afc126460cedbd17c970337` PARTIAL_THIS_TREE.
+- [x] `findSignedPackageRoots` requires committed HEAD ceremony signature.
+  Tests fungi-scan **25/25**. Independent scoped PASS `01a0cdd4-bd9d`.
+  Residual: no Ed25519 verify; git show is the identity. Scan
+  `csf_322ab6f1302a5fe0ecac5b2c` PARTIAL_THIS_TREE.
+- [x] Missing flow metadata is public/untrusted, not internal. Tests
+  boundary-graph **13/13**. Independent scoped PASS `01a0cde3-a072`
+  (`docs/independent-audits/2026-09-23-boundary-gateinject-wasmref-hold.md`).
+  Residual: sibling boundary-graph copies. Scan
+  `csf_4ed0a2dce4f0a888cce874b7` PARTIAL_THIS_TREE.
+- [x] Gate-injection requires `revocationCheck` in each admit-call args.
+  Tests check-gate-injection **2/2** + `--self-test`. Independent scoped
+  PASS `01a0cde3-a072`. Residual: paren matcher ignores strings. Scan
+  `csf_f569fd828cde29e4e9f64660` PARTIAL_THIS_TREE.
+- [x] `wasmRefEscapes` refuses absolute/drive/UNC/`..`. Tests
+  verify-artifacts **3/3**. Independent scoped PASS `01a0cde3-a072`.
+  Residual: JSON visit unbounded. Scan `csf_2cb1c6d5f0b7c955766a9b48`
+  PARTIAL_THIS_TREE.
+- [x] `fs.readText`/`readBytes` open `O_RDONLY|O_NOFOLLOW` fd + fstat.
+  Tests fs-root-symlink-refuse **4/4**. Independent scoped PASS
+  `01a0cded-ac4f`
+  (`docs/independent-audits/2026-09-23-fsread-docwat-fusename-hold.md`).
+  Residual: `O_NOFOLLOW` undefined on this Windows Node. Scan
+  `csf_487865ffec641dbfe1b0b711` PARTIAL_THIS_TREE.
+- [x] `admitDocWatSource` + `isDirectRun`. Tests emit-doc-wat **2/2**.
+  Independent scoped PASS `01a0cded-ac4f`. Residual: read-after-admit
+  TOCTOU. Scan `csf_0a95c15113bc3d0743b38458` PARTIAL_THIS_TREE.
+- [x] `admitFusePackageName` before dist join. Tests fuse-loader **22/22**.
+  Independent scoped PASS `01a0cded-ac4f`. Residual: basename(dir)
+  fallback. Scan `csf_33d88401265b94e1efe460dc` PARTIAL_THIS_TREE.
+- [x] `collectFungiFiles` stays under the requested root. Tests
+  collect-fungi-files **2/2**. Independent scoped PASS `01a0cdfa-c64a`
+  (`docs/independent-audits/2026-09-23-fungicollect-wasmsweep-retirepath-hold.md`).
+  Residual: write TOCTOU. Scan `csf_37603f68f4f4bc0ad123cb61`
+  PARTIAL_THIS_TREE.
+- [x] `refuseVacuousWasmSweep` for absent/all-skip. Tests
+  audit-wasm-validate **3/3**. Independent scoped PASS `01a0cdfa-c64a`.
+  Residual: mixed SKIP+VALID still exits 0. Scan
+  `csf_bcefbf918290f4ae5f95fb54` PARTIAL_THIS_TREE.
+- [x] `admitRetirementPath` + contained read. Tests conversion-queue
+  **9/9**. Independent scoped PASS `01a0cdfa-c64a`. Residual: no fd
+  identity. Scan `csf_ad2941465d7416a0948f89da` PARTIAL_THIS_TREE.
+- [x] `readEgressBatches` verifies audit-batch.v2 HMAC. Tests PCI ledger
+  **13/13**. Independent scoped PASS `01a0ce08-1919`
+  (`docs/independent-audits/2026-09-23-pcihmac-mdescape-clockovf-hold.md`).
+  Residual: ZERO_KEY default. Scan `csf_9858ec158575ac1bc8012785`
+  PARTIAL_THIS_TREE.
+- [x] Benchmark `markdown()` escapes result-controlled markup. Tests
+  report-model **8/8**. Independent scoped PASS `01a0ce08-1919`. Scan
+  `csf_014ea5de2911424f2c64d2d6` PARTIAL_THIS_TREE.
+- [x] Logical clock `tick`/`advance` throw LST-OVF-001 at MAX_SAFE_INTEGER.
+  Tests logical-clock **9/9**. Independent scoped PASS `01a0ce08-1919`.
+  Scan `csf_dcb4cf46b657cc73883f5615` PARTIAL_THIS_TREE.
+- [x] Owner-release snapshots authorization before window/signature. Tests
+  registry-durability-production-admission **9/9**. Independent scoped PASS
+  `01a0ce15-8fbe`
+  (`docs/independent-audits/2026-09-23-release-snap-slidestage-graphlstat-hold.md`).
+  Residual: GOPD trap at snapshot time. Scan
+  `csf_844ae53189ccca7718b6024b` PARTIAL_THIS_TREE.
+- [x] SLIDE builder stages verified tool bytes then spawns the copy. Tests
+  receipt-bound-slide-build **6/6**. Independent scoped PASS `01a0ce15-8fbe`.
+  Residual: path-spawn, not fd-exec. Scan `csf_7e68290c158f93818c9dac5e`
+  PARTIAL_THIS_TREE.
+- [x] Graph collect `lstat` skips symlink roots. Tests graph-command **2/2**.
+  Independent scoped PASS `01a0ce15-8fbe`. Scan
+  `csf_1ebc84936ed0b9a02d25d724` PARTIAL_THIS_TREE.
+- [x] Private-doc-leak JSON/text exit 0/1; payload keeps exact count. Tests
+  audit-private-doc-leak **2/2** (0/1/255/256/257/512, win32 Node v24.18.0).
+  Independent scoped PASS `01a0ce80-aa32`
+  (`docs/independent-audits/2026-09-23-privatedoc-provcollect-mdintent-hold.md`).
+  Residual: Unix wrap NOT VERIFIABLE. Scan `csf_f1da2541c73e90978ac2095c`
+  PARTIAL_THIS_TREE.
+- [x] `collectFungiCorpus` + CLI audit/report exit 2 on incomplete. Tests
+  provenance-collect **2/2**. Independent scoped PASS `01a0ce80-aa32`.
+  Residual: lstat TOCTOU. Scan `csf_f8430446c39ce8e2ed571bab`
+  PARTIAL_THIS_TREE.
+- [x] Context receipt intent already `md()`-escaped; hostile markup test.
+  Tests context-markdown-escape **1/1**. Independent scoped PASS
+  `01a0ce80-aa32`. Residual: `renderFileReceiptsMarkdown` sourceFile.
+  Scan `csf_9897c60d1d1b4dc57fa81419` PARTIAL_THIS_TREE.
+- [x] Corpus scanner `MAX_CORPUS_FILE_BYTES` 1 MiB via lstat before read
+  and before lex; inline hosts same bound. Tests fungi-scan **28/28**.
+  Independent scoped PASS `01a0ce92-298e`
+  (`docs/independent-audits/2026-09-23-corpusbounds-clockfinite-addonpin-hold.md`).
+  Residual: lstat→read TOCTOU. Scan `csf_a77cdc8c16ffb066c41b81fd`
+  PARTIAL_THIS_TREE.
+- [x] SynchronizationGate refuses non-finite envelope/clock/drift
+  (`LST-SYNC-002`). Tests synchronization-gate **7/7**. Independent
+  scoped PASS `01a0ce92-298e`. Residual: `syncToPhysical` captures
+  `bootTick` from `now()` without a finite check there. Scan
+  `csf_ec4df379040fdca288ff057c` PARTIAL_THIS_TREE.
+- [x] Native addon pin hashes captured bytes then `require()`s an exclusive
+  staged copy. Tests addon-loader **8/8**. Independent scoped PASS
+  `01a0ce92-298e`. Residual: path-load not fd-exec; successful load may
+  leave temp. Scan `csf_b020bf3ce948fc9267d8e23d` PARTIAL_THIS_TREE.
+- [x] Pure-flow LRU keys on `canonicalHash(flowNode)` (batch 22) and
+  exact typed arguments (RD-1308). Tests pure-flow-source-cache **2/2**
+  and pure-flow-cache-identity **7/7**. Independent scoped PASSes
+  `01a0cea3-04b1` and `01a0ceda-70d7`
+  (`docs/independent-audits/2026-09-23-pureflow-exact-args-hold.md`).
+  Residual: `canonicalHash(flowNode)` omits imports; SHA-256 indexes the
+  LRU; process-wide `SESSION_CACHE` 1000. Scan
+  `csf_456107f3e63d6f916462d1bf` PARTIAL_THIS_TREE. Not PATCHED.
+- [x] WAT lowering unread/parse-skipped/empty corpus fail coverage.
+  Tests audit-wat-lowering **4/4**. Independent scoped PASS `01a0cea3-04b1`.
+  Residual: lstat→read TOCTOU. Scan `csf_ca20b261bd6e7c977a558785`
+  PARTIAL_THIS_TREE.
+- [x] rebrand-tmf-to-spore admits paths and `git mv --`. Tests
+  rebrand-tmf-to-spore **3/3**. Independent scoped PASS `01a0cea3-04b1`.
+  Residual: write-after-lstat TOCTOU. Scan `csf_96f8b6458988c6ce1208df0b`
+  PARTIAL_THIS_TREE.
+- [x] Webhook replay claim requires configured channel ALLOW. Tests
+  webhook-admission **6/6**. Independent scoped PASS `01a0ceb0-608e`.
+  Residual: no-resolver kernel 401 still claims. Scan
+  `csf_30936b039d064da89a8a7b01` PARTIAL_THIS_TREE.
+- [x] Registry `readBoundedRegularFile` uses `handle.read` cap. Tests
+  registry-bounded-read **2/2**. Independent scoped PASS `01a0ceb0-608e`.
+  Scan `csf_d61c1410698c885114d3b250` PARTIAL_THIS_TREE.
+- [x] fix-logicn-brand admits stdin paths. Tests **2/2**. Independent
+  scoped PASS `01a0ceb0-608e`. Scan `csf_6ea131d447cf245230cf6c2f`
+  PARTIAL_THIS_TREE.
+- [x] Tritsocket pack/batch dimension admit. Tests prefilter **13/13**.
+  Independent scoped PASS `01a0ceb6-d420`. Scan
+  `csf_38215fae09550ce4426e5ce1` PARTIAL_THIS_TREE.
+- [x] Provenance ignores comment/late gates. Tests provenance-gate-order
+  **3/3**. Independent scoped PASS `01a0ceb6-d420`. Residual: regex not
+  CFG. Scan `csf_5e50fd79deea0f1d7bfc1c84` PARTIAL_THIS_TREE.
+- [x] Conformance presence strips comments. Tests **1/1**. Independent
+  scoped PASS `01a0ceb6-d420`. Scan `csf_635ee1a63cbbdf28942f7abc`
+  PARTIAL_THIS_TREE.
+- [x] migrate-fungi refuses symlink rewrite. Tests **2/2**. Independent
+  scoped PASS `01a0ceb6-d420`. Scan `csf_ea1e5710b3b1a7fc3df7e589`
+  PARTIAL_THIS_TREE.
+- [x] Signed-root manifest name containment. Tests **1/1**. Independent
+  scoped PASS `01a0ceb6-d420`. Scan `csf_0e7d6b428bc9ca9bc291ea3d`
+  PARTIAL_THIS_TREE.
+- [x] Item-7 live-scan OPEN lows exhausted (0 OPEN / 120 PARTIAL / 4
+  PATCHED). Next programme prompt:
+  [PROMPT-grok-e01-rd1296-2026-09-23.md](reports/PROMPT-grok-e01-rd1296-2026-09-23.md).
+  E01 was not started under the item-7 prompt.
+- [x] Prepare a new Grok prompt after resolution, not as a substitute for it.
+  No blanket TODO closure, signing, or `.fungi` authority is granted here.
+
 ### Pre-.fungi work programme — 2026-09-22
 
 - [x] Reconciled the next-work catalogue into the linked
@@ -7,10 +656,11 @@
   not new implementation or an all-repository completion audit.
 - [x] W01: remaining unchecked rows are classified in
   [PRE-FUNGI-WORK-REGISTER-2026-09-22.md](PRE-FUNGI-WORK-REGISTER-2026-09-22.md).
-  C22 declaration TODOs are closed; FUNGI-TYPE-002/005–007, Option.zip,
-  JSON-fractions, OAuth/OpenAPI CLI, durable replay, WASM/native mapping,
-  photonic post-v1, C20 matcher, SLIDE/VOK/Lyth admission and PROJECT READY
-  remain open under their existing classes.
+  C22 declaration TODOs are closed; Option.zip `ZipPair` is implemented
+  (matrix **6/6**). FUNGI-TYPE-002/005–007, JSON-fractions, OAuth/OpenAPI CLI,
+  durable replay **backend**, WASM/native mapping, photonic post-v1, C20
+  matcher, SLIDE/VOK/Lyth admission and PROJECT READY remain open under
+  their existing classes.
 - [x] W02: C22 declaration slice — 16 previously refusing packages now
   PASS live boundary `--check`. Tower product entries declared; load-graph
   is an allowOrphan. Devtools escaping loadedAssets removed (fungi products
@@ -18,10 +668,10 @@
 - [x] W03: RD-1295 package surface — `/governance-v1`, composition consumers
   (photonic/registry/api-data/air-gap), isolation **36/36** + products **47/47**.
   Core-network runtime is `/governance` only. Package-dep extraction remains a proposal.
-- [!] W04–W11 remain open as CONTRACT_DECISION / DEFERRED_SCOPE: FUNGI-TYPE
-  unknown-form inference, Option.zip schema, JSON fractions, OAuth/OpenAPI
-  CLI/webhooks, C16 durable replay, WASM/native mapping, photonic post-v1.
-  No new semantics invented this session.
+- [x] Option.zip `ZipPair<T,U>` is a built-in named pair (`first`/`second`);
+  matrix **6/6**. Remaining W04–W11 are APPROVED_DEFERRED_SCOPE / CONTRACT_DECISION:
+  unknown-form inference, JSON fractions, OAuth/OpenAPI CLI/webhooks, C16 durable
+  replay backend, WASM/native mapping, photonic post-v1.
 - [x] W12: SLIDE/Lyth independent inventory found no ordinary TS/docs/tooling
   row without a Galerina subject / VOK / `.fungi`.
 - [x] W14 package-graph refresh after C22: `--check` 100/201 current.
@@ -29,14 +679,27 @@
 - [!] No .fungi authoring/modification/deletion, queue/overlay wave, corpus,
   signing or downstream admission follows from this documentation refresh.
   Physical/platform evidence remains outside the current core-work priority.
-- [!] Security continuation 2026-09-22: Q1/Q2 photonic coupon snapshot-before-verify
-  and cached coupon revalidation are in the dirty tree
-  ([report](reports/security-q1q2-continuation-2026-09-22.md)). Focused Tower tests
-  **24/24**. This does not close the 124-finding scan. Independent audit, KB SHA-pin,
-  production `grantedEffects` policy and remaining Q3 work-ceilings stay open.
-- [!] Governed Computing Constitution remains a **discussion draft** (not adopted,
-  no new RD). Next artefact is owner custody plus a §10 guarantee register.
-  Do not treat the draft as SECURITY.md, charter, or production admission.
+- [x] Approved-decision slice D1/D2/D8 plus Q3 spore work ceilings, FIFO
+  identity helper, WAT secret trap/early-return wipe, Option.zip exact tests,
+  Tower RD-1295 83/83. Independent audit still pending
+  ([report](reports/approved-decisions-implementation-2026-09-22.md)).
+- [x] Three-boundary hostile tests then repairs (2026-09-22):
+  Q1 capture-then-wipe + mixed-body tail zero + host cleanup after copy
+  **13/13**; Q2 empty durable admit-list **13/13**; Q3 WSL nonblock+handle
+  FIFO **15/15**. Deferred (not this register): Windows-native FIFO,
+  RD-1286 backend, JSON-Decimal, OAuth, 124-scan, constitution adoption.
+  Packet [security-three-boundaries-2026-09-22.md](reports/security-three-boundaries-2026-09-22.md).
+- [x] Easy-wins then nested-ownership batch (2026-09-22): data-json UTF-8
+  budget **40/40** (encoder preserved); secrets `promptNoEcho` restore **3/3**;
+  scan disposition **PARTIAL**; nested secret call **14** via owned-arena wipe;
+  host cleanup is guest `__fungi_wipe_owned` (heap global not exported).
+  Report [easy-wins-then-hard-2026-09-22.md](reports/easy-wins-then-hard-2026-09-22.md).
+  Flatten null-checks `$__fungi_heap_ret` and nested children against
+  HEAP_BASE before load. Independent review pending. Not production
+  admission.
+- [!] Governed Computing Constitution is a KB DISCUSSION_DRAFT / NOT_ADOPTED at
+  `reference/galerina/galerina-governed-computing-constitution.md`. Galerina
+  `docs/ARCHITECTURE.md` links it. Independent audit of the dirty candidate remains pending.
 
 ### Source-verified reconciliation — 2026-09-22
 
@@ -74,15 +737,15 @@
   report is historical and superseded, not a current red result.
 - [!] Residual classes (not all receipt blockers):
   C16 durable replay — **explicitly deferred feature**: process-local
-  `MemoryReplayStore` is implemented (`replay-store.ts`); a durable
-  multi-process store needs an owner-admitted adapter (`RD-1286`).
+  `MemoryReplayStore` and empty `isAdmittedDurableReplayStore` admit-list
+  are implemented; a durable multi-process store needs an owner-admitted
+  adapter (`RD-1286`).
   C20 captures/word-boundaries/`findAll` — **explicitly deferred feature**
   in the `RD-1292` refused profile.
   JSON fractions as Decimal — **missing owner decision**: `RD-1289` freeze
   refuses IEEE numbers and does not map fractions to Decimal.
-  Option.zip — **missing design**: runtime returns an anonymous
-  `{first,second}` record (`stdlib.ts`); no admitted named schema
-  (`type-checker.ts` inference boundary).
+  Option.zip — **implemented named pair** `ZipPair<T,U>` (`first`/`second`);
+  matrix **6/6**. Not general tuple, schema-export, or WAT-lowering clearance.
   Isolated Tower subpaths are not frozen profile/composition admission
   (air-gap, registry, api-data, full-lab, photonic=governance+photonic).
   Independent audit, signing, producer/GIR remain outside.

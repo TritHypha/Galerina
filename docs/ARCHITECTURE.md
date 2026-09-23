@@ -2,6 +2,10 @@
 
 ## Constellation Architecture (2026-07-22 — adopted)
 
+The Governed Computing Constitution is a **DISCUSSION_DRAFT / NOT_ADOPTED** KB document at
+`../ZTF-Knowledge-Bases/reference/galerina/galerina-governed-computing-constitution.md`.
+This repository does not keep a competing constitution.
+
 Galerina is structured as a **Core-first product constellation**. The full specification lives in:
 
 - **KB canonical spec:** `../ZTF-Knowledge-Bases/reference/galerina/galerina-constellation-architecture.md`
