@@ -6,7 +6,7 @@
  * import, re-export and string-literal dynamic import, resolves destinations,
  * and refuses edges it cannot establish.
  */
-import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type * as Ts from "typescript";
@@ -51,6 +51,10 @@ export type LoadGraphResult =
       readonly reason: string;
       readonly edge?: ImportEdge;
     };
+
+export const MAX_LOAD_GRAPH_FILES = 4096;
+export const MAX_LOAD_GRAPH_FILE_BYTES = 1_048_576;
+export const MAX_LOAD_GRAPH_EDGES = 16_384;
 
 const TOWER_BARREL = "@galerina/tower-citizen";
 const TOWER_SUBPATHS = new Set([
@@ -133,9 +137,14 @@ export function extractImportEdges(source: string, fromFile: string): ImportEdge
 }
 
 function tryRealFile(candidate: string): string | undefined {
-  if (!existsSync(candidate)) return undefined;
-  const st = statSync(candidate);
-  if (!st.isFile()) return undefined;
+  let st;
+  try {
+    st = lstatSync(candidate);
+  } catch {
+    return undefined;
+  }
+  if (st.isSymbolicLink() || !st.isFile()) return undefined;
+  if (!Number.isSafeInteger(st.size) || st.size > MAX_LOAD_GRAPH_FILE_BYTES) return undefined;
   return realpathSync.native(candidate);
 }
 
@@ -302,6 +311,9 @@ export async function walkLoadGraph(entry: string): Promise<LoadGraphResult> {
   while (queue.length > 0) {
     const file = queue.pop()!;
     if (files.has(file)) continue;
+    if (files.size >= MAX_LOAD_GRAPH_FILES) {
+      return { ok: false, reason: "load-graph-file-cap" };
+    }
     files.add(file);
     let source: string;
     try {
@@ -309,11 +321,17 @@ export async function walkLoadGraph(entry: string): Promise<LoadGraphResult> {
     } catch {
       return { ok: false, reason: `unreadable:${file}` };
     }
+    if (Buffer.byteLength(source, "utf8") > MAX_LOAD_GRAPH_FILE_BYTES) {
+      return { ok: false, reason: `file-too-large:${file}` };
+    }
     const extracted = extractImportEdges(source, file);
     if (!Array.isArray(extracted)) {
       return { ok: false, reason: extracted.reason, edge: { from: file, specifier: "", kind: "static", line: extracted.line } };
     }
     for (const edge of extracted) {
+      if (edges.length >= MAX_LOAD_GRAPH_EDGES) {
+        return { ok: false, reason: "load-graph-edge-cap", edge };
+      }
       edges.push(edge);
       if (isTowerRootBarrel(edge.specifier)) {
         return {
