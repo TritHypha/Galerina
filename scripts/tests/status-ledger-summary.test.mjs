@@ -72,3 +72,27 @@ test("status still refuses a file above 16384 bytes before parsing", () => {
   assert.match(result.stderr, /REFUSED: status ledger.*16,?384 bytes/);
   assert.equal(result.stdout, "");
 });
+
+test("status preserves ten bounded open gates", () => {
+  const value = fixture("Valid summary");
+  value.openGates = Array.from({ length: 10 }, (_, index) => ({
+    id: `GATE-${index + 1}`,
+    summary: `Gate ${index + 1} remains open`,
+    evidence: "docs/ROADMAP.md",
+  }));
+  const result = runLedger(value);
+  assert.equal(result.status, 0, result.stderr);
+  for (const gate of value.openGates) assert.ok(result.stdout.includes(gate.summary));
+});
+
+test("status refuses more than twelve open gates", () => {
+  const value = fixture("Valid summary");
+  value.openGates = Array.from({ length: 13 }, (_, index) => ({
+    id: `GATE-${index + 1}`,
+    summary: `Gate ${index + 1} remains open`,
+    evidence: "docs/ROADMAP.md",
+  }));
+  const result = runLedger(value);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /at most 12 entries/);
+});

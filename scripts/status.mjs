@@ -117,7 +117,7 @@ const validateStatusLedger = (value) => {
   if (typeof value.asOf !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(value.asOf)) return "asOf is not an ISO date";
   if (!isBoundedLine(value.milestone, 240)) return "milestone is empty, oversized, or multiline";
   if (!admittedDocPath(value.roadmap)) return "roadmap is not an existing repository docs/*.md path";
-  if (!Array.isArray(value.openGates) || value.openGates.length > 8) return "openGates must be an array with at most 8 entries";
+  if (!Array.isArray(value.openGates) || value.openGates.length > 12) return "openGates must be an array with at most 12 entries";
   const ids = new Set();
   for (const gate of value.openGates) {
     if (!isRecord(gate) || !hasExactKeys(gate, ["id", "summary", "evidence"])) return "each gate must contain exactly id, summary, and evidence";
