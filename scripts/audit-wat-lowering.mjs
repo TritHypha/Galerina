@@ -21,7 +21,7 @@
 //   node scripts/audit-wat-lowering.mjs --json          → machine-readable
 //   node scripts/audit-wat-lowering.mjs --update-baseline → recapture the baseline from the current corpus
 // =============================================================================
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync, lstatSync } from "node:fs";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -48,7 +48,7 @@ function loweredWasm(base) { if (!base) return "?"; try { return L.galerinaTypeT
 function splitNameType(v) { const i = v.indexOf(":"); return i < 0 ? { name: v.trim(), type: "" } : { name: v.slice(0, i).trim(), type: v.slice(i + 1).trim() }; }
 
 // ── collect every type-annotation site (record field / flow param / return / local) from one source ──
-function collectSites(src, rel) {
+export function collectSites(src, rel) {
   let prog;
   try { prog = L.parseProgram(src, rel); } catch { return { sites: [], parseError: true }; }
   const perr = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
@@ -78,7 +78,8 @@ function collectSites(src, rel) {
     if (typeof f.returnType === "string" && f.returnType.trim())
       push("flow-return", f.name ?? "?", "return", f.returnType, f.location ? f.location.line : 0);
   }
-  return { sites, parseError: false, hadTypeError: perr.length > 0 };
+  const parseError = perr.length > 0 && sites.length === 0;
+  return { sites, parseError, hadTypeError: perr.length > 0 };
 }
 
 // ── leg extraction ────────────────────────────────────────────────────────────
@@ -92,33 +93,85 @@ const keyC = (s) => `${s.rel}::${s.kind}::${s.container}.${s.name}::${s.type}`;
 const IGNORED_CORPUS_DIRECTORIES = new Set(["node_modules", ".git", ".worktrees", "dist", "build"]);
 function shouldSkipDirectory(name) { return IGNORED_CORPUS_DIRECTORIES.has(name); }
 
-function fungiFiles(root) {
-  const out = [];
-  (function walk(d) {
-    let ents; try { ents = readdirSync(d); } catch { return; }
-    for (const e of ents) {
-      if (shouldSkipDirectory(e)) continue;
-      const p = join(d, e); let st; try { st = statSync(p); } catch { continue; }
-      if (st.isDirectory()) walk(p);
-      else if (e.endsWith(".fungi")) out.push(p);
+export const MAX_WAT_CORPUS_FILE_BYTES = 1_048_576;
+export const MAX_WAT_CORPUS_FILES = 8192;
+export const MAX_WAT_WALK_DEPTH = 32;
+
+export function fungiFiles(root) {
+  const files = [];
+  const refused = [];
+  (function walk(d, depth) {
+    if (depth > MAX_WAT_WALK_DEPTH) {
+      refused.push({ path: d, why: "depth" });
+      return;
     }
-  })(root);
-  return out;
+    let ents;
+    try { ents = readdirSync(d, { withFileTypes: true }); } catch {
+      refused.push({ path: d, why: "unreadable-dir" });
+      return;
+    }
+    for (const e of ents) {
+      if (shouldSkipDirectory(e.name)) continue;
+      const p = join(d, e.name);
+      if (e.isSymbolicLink()) {
+        refused.push({ path: p, why: "symlink" });
+        continue;
+      }
+      if (e.isDirectory()) walk(p, depth + 1);
+      else if (e.name.endsWith(".fungi")) {
+        if (files.length >= MAX_WAT_CORPUS_FILES) {
+          refused.push({ path: p, why: "cap" });
+          return;
+        }
+        files.push(p);
+      }
+    }
+  })(root, 0);
+  return { files, refused };
 }
 
-function scanCorpus() {
+export function coverageProblems(scan) {
+  const problems = [];
+  if (!Number.isSafeInteger(scan.scanned) || scan.scanned <= 0) problems.push("absent or unread corpus");
+  if (scan.parseErr > 0) problems.push(`${scan.parseErr} parse-skipped`);
+  if (scan.unread > 0) problems.push(`${scan.unread} unread`);
+  if (Array.isArray(scan.refused) && scan.refused.length > 0) problems.push(`${scan.refused.length} refused`);
+  return problems;
+}
+
+export function scanFungiCorpus(root = ROOT) {
   const aSites = [], cSites = [];
-  let scanned = 0, parseErr = 0;
-  for (const f of fungiFiles(ROOT)) {
-    let src; try { src = readFileSync(f, "utf8"); } catch { continue; }
+  let scanned = 0, parseErr = 0, unread = 0;
+  const { files, refused } = fungiFiles(root);
+  for (const f of files) {
+    let src;
+    try {
+      const st = lstatSync(f);
+      if (st.isSymbolicLink() || !st.isFile() || st.size > MAX_WAT_CORPUS_FILE_BYTES) {
+        unread++;
+        continue;
+      }
+      src = readFileSync(f, "utf8");
+      if (Buffer.byteLength(src, "utf8") > MAX_WAT_CORPUS_FILE_BYTES) {
+        unread++;
+        continue;
+      }
+    } catch {
+      unread++;
+      continue;
+    }
     scanned++;
-    const rel = relative(ROOT, f).replace(/\\/g, "/");
+    const rel = relative(root, f).replace(/\\/g, "/");
     const { sites, parseError } = collectSites(src, rel);
     if (parseError) { parseErr++; continue; }
     aSites.push(...legA(sites));
     cSites.push(...legC(sites));
   }
-  return { aSites, cSites, scanned, parseErr };
+  return { aSites, cSites, scanned, parseErr, unread, refused };
+}
+
+function scanCorpus() {
+  return scanFungiCorpus(ROOT);
 }
 
 // ── existence-checked root-cause anchors (the `why` cannot rot) ───────────────
@@ -189,6 +242,9 @@ function selfTest() {
   const violations = fabricated.filter((s) => !emptyBaseA.has(keyA(s)));
   ok(violations.length > 0, "FIRES: a new off-baseline Leg-A site is flagged as a violation");
 
+  ok(coverageProblems({ scanned: 0, parseErr: 0, unread: 0, refused: [] }).length > 0, "FIRES: unread/empty corpus is not a clean result");
+  ok(coverageProblems({ scanned: 1, parseErr: 1, unread: 0, refused: [] }).some((p) => /parse-skipped/.test(p)), "FIRES: parse-skipped corpus is not a clean result");
+
   // anchors self-check
   const anc = checkAnchors();
   ok(anc.decWasm === "f64", "ANCHOR: the decimal-wart is still present (galerinaTypeToWAT(Decimal)=f64)");
@@ -200,55 +256,71 @@ function selfTest() {
   process.exit(fail === 0 ? 0 : 1);
 }
 
-// ── main ───────────────────────────────────────────────────────────────────────
-if (SELF_TEST) selfTest();
-
-const { aSites, cSites, scanned, parseErr } = scanCorpus();
-const anchors = checkAnchors();
-
-if (UPDATE) {
-  writeFileSync(BASELINE, JSON.stringify(currentBaselineShape(aSites, cSites), null, 2) + "\n");
-  console.log(`audit-wat-lowering: baseline recaptured → ${relative(ROOT, BASELINE).replace(/\\/g, "/")} (Leg A ${new Set(aSites.map(keyA)).size} · Leg C ${new Set(cSites.map(keyC)).size})`);
-  process.exit(0);
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
 }
 
-const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : { legA_record_fields: [], legC_decimal_occurrences: [] };
-const baseA = new Set(baseline.legA_record_fields ?? []);
-const baseC = new Set(baseline.legC_decimal_occurrences ?? []);
-const curAkeys = new Set(aSites.map(keyA));
-const curCkeys = new Set(cSites.map(keyC));
+function runAudit() {
+  if (SELF_TEST) selfTest();
 
-const newA = [...curAkeys].filter((k) => !baseA.has(k)).sort();
-const newC = [...curCkeys].filter((k) => !baseC.has(k)).sort();
-const staleA = [...baseA].filter((k) => !curAkeys.has(k)).sort();   // fixed/removed since baseline (shrink)
-const staleC = [...baseC].filter((k) => !curCkeys.has(k)).sort();
+  const { aSites, cSites, scanned, parseErr, unread, refused } = scanCorpus();
+  const anchors = checkAnchors();
+  const coverage = coverageProblems({ scanned, parseErr, unread, refused });
 
-const violations = newA.length + newC.length + anchors.problems.length;
+  if (UPDATE) {
+    if (coverage.length > 0) {
+      console.error(`audit-wat-lowering: refusing --update-baseline (${coverage.join("; ")})`);
+      process.exit(1);
+    }
+    writeFileSync(BASELINE, JSON.stringify(currentBaselineShape(aSites, cSites), null, 2) + "\n");
+    console.log(`audit-wat-lowering: baseline recaptured → ${relative(ROOT, BASELINE).replace(/\\/g, "/")} (Leg A ${new Set(aSites.map(keyA)).size} · Leg C ${new Set(cSites.map(keyC)).size})`);
+    process.exit(0);
+  }
 
-if (JSON_OUT) {
-  console.log(JSON.stringify({ scanned, parseErr,
-    legA: { total: curAkeys.size, new: newA, stale: staleA },
-    legC: { total: curCkeys.size, new: newC, stale: staleC },
-    rootCauses: { "slot-width": aSites.filter((s) => rootCauseOf(s) === "slot-width").length, "decimal-f64-wart": aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length + cSites.length },
-    anchors, violations }, null, 2));
-  process.exit(violations);
+  const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : { legA_record_fields: [], legC_decimal_occurrences: [] };
+  const baseA = new Set(baseline.legA_record_fields ?? []);
+  const baseC = new Set(baseline.legC_decimal_occurrences ?? []);
+  const curAkeys = new Set(aSites.map(keyA));
+  const curCkeys = new Set(cSites.map(keyC));
+
+  const newA = [...curAkeys].filter((k) => !baseA.has(k)).sort();
+  const newC = [...curCkeys].filter((k) => !baseC.has(k)).sort();
+  const staleA = [...baseA].filter((k) => !curAkeys.has(k)).sort();   // fixed/removed since baseline (shrink)
+  const staleC = [...baseC].filter((k) => !curCkeys.has(k)).sort();
+
+  const violations = newA.length + newC.length + anchors.problems.length + coverage.length;
+  const exitCode = violations > 0 ? 1 : 0;
+
+  if (JSON_OUT) {
+    console.log(JSON.stringify({ scanned, parseErr, unread, refused: refused.length,
+      coverage, legA: { total: curAkeys.size, new: newA, stale: staleA },
+      legC: { total: curCkeys.size, new: newC, stale: staleC },
+      rootCauses: { "slot-width": aSites.filter((s) => rootCauseOf(s) === "slot-width").length, "decimal-f64-wart": aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length + cSites.length },
+      anchors, violations, exitCode }, null, 2));
+    process.exit(exitCode);
+  }
+
+  console.log(`audit-wat-lowering — WAT record-field-layout fault class`);
+  console.log(`  scanned ${scanned} .fungi · ${parseErr} parse-skipped · ${unread} unread`);
+  console.log(`\n  Leg A — record fields without a faithful WAT representation: ${curAkeys.size}`);
+  for (const s of aSites.sort((a, b) => keyA(a).localeCompare(keyA(b))))
+    console.log(`    ${s.rel}:${s.line}  record ${s.container}.${s.name}: ${s.type} → ${s.wasm}  [${rootCauseOf(s)}]`);
+  console.log(`\n  Leg C — every Decimal occurrence (fields + params + returns + locals): ${curCkeys.size}`);
+  for (const s of cSites.sort((a, b) => keyC(a).localeCompare(keyC(b))))
+    console.log(`    ${s.rel}:${s.line}  ${s.kind} ${s.container}.${s.name}: ${s.type}`);
+  console.log(`\n  Root causes:`);
+  console.log(`    missing f32 lane (#132)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f32-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
+  console.log(`    decimal-f64-wart (#137)— galerinaTypeToWAT("Decimal")="${anchors.decWasm}"; ${aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length} field(s) + ${cSites.length} occurrence(s)`);
+  for (const n of anchors.notes) console.log(`  ⚠ note: ${n}`);
+  for (const c of coverage) console.log(`  ✗ COVERAGE: ${c}`);
+  if (staleA.length || staleC.length) console.log(`\n  ✎ baseline can shrink (fixed/removed): Leg A ${staleA.length} · Leg C ${staleC.length} — run --update-baseline`);
+  if (newA.length) { console.log(`\n  ✗ NEW off-baseline Leg-A record field(s):`); for (const k of newA) console.log(`      ${k}`); }
+  if (newC.length) { console.log(`\n  ✗ NEW off-baseline Leg-C Decimal occurrence(s):`); for (const k of newC) console.log(`      ${k}`); }
+  for (const p of anchors.problems) console.log(`  ✗ ANCHOR: ${p}`);
+  console.log(`\n  VIOLATIONS: ${violations}${violations === 0 ? "  ✅" : "  (a NEW affected site, missing coverage, or a missing anchor — fix it or, if intended, run --update-baseline)"}`);
+  process.exit(exitCode);
 }
 
-console.log(`audit-wat-lowering — WAT record-field-layout fault class`);
-console.log(`  scanned ${scanned} .fungi · ${parseErr} parse-skipped`);
-console.log(`\n  Leg A — record fields without a faithful WAT representation: ${curAkeys.size}`);
-for (const s of aSites.sort((a, b) => keyA(a).localeCompare(keyA(b))))
-  console.log(`    ${s.rel}:${s.line}  record ${s.container}.${s.name}: ${s.type} → ${s.wasm}  [${rootCauseOf(s)}]`);
-console.log(`\n  Leg C — every Decimal occurrence (fields + params + returns + locals): ${curCkeys.size}`);
-for (const s of cSites.sort((a, b) => keyC(a).localeCompare(keyC(b))))
-  console.log(`    ${s.rel}:${s.line}  ${s.kind} ${s.container}.${s.name}: ${s.type}`);
-console.log(`\n  Root causes:`);
-console.log(`    missing f32 lane (#132)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f32-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
-console.log(`    decimal-f64-wart (#137)— galerinaTypeToWAT("Decimal")="${anchors.decWasm}"; ${aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length} field(s) + ${cSites.length} occurrence(s)`);
-for (const n of anchors.notes) console.log(`  ⚠ note: ${n}`);
-if (staleA.length || staleC.length) console.log(`\n  ✎ baseline can shrink (fixed/removed): Leg A ${staleA.length} · Leg C ${staleC.length} — run --update-baseline`);
-if (newA.length) { console.log(`\n  ✗ NEW off-baseline Leg-A record field(s):`); for (const k of newA) console.log(`      ${k}`); }
-if (newC.length) { console.log(`\n  ✗ NEW off-baseline Leg-C Decimal occurrence(s):`); for (const k of newC) console.log(`      ${k}`); }
-for (const p of anchors.problems) console.log(`  ✗ ANCHOR: ${p}`);
-console.log(`\n  VIOLATIONS: ${violations}${violations === 0 ? "  ✅" : "  (a NEW affected site or a missing anchor — fix it or, if intended, run --update-baseline)"}`);
-process.exit(violations);
+if (isDirectRun()) runAudit();

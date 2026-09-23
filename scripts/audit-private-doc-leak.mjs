@@ -22,17 +22,40 @@
 //
 // Usage:
 //   node scripts/audit-private-doc-leak.mjs --self-test   # prove the detector fires (run first in CI)
-//   node scripts/audit-private-doc-leak.mjs               # enforce: exit = violation count
-//   node scripts/audit-private-doc-leak.mjs --json
+//   node scripts/audit-private-doc-leak.mjs               # enforce: exit 1 if any violation, 0 if clean
+//   node scripts/audit-private-doc-leak.mjs --json        # JSON payload carries exact counts; exit is still 0/1
+//   node scripts/audit-private-doc-leak.mjs --root <dir>  # git -C <dir> ls-files (tests)
 // =============================================================================
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-// Spawn git directly, NO shell (args as an array — no shell-injection surface). Same idiom as audit-path-leak.
-const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", windowsHide: true });
+const HERE = dirname(fileURLToPath(import.meta.url));
+const DEFAULT_ROOT = resolve(HERE, "..");
+
+export function exitCodeFromViolationCount(n) {
+  if (!Number.isSafeInteger(n) || n < 0) return 1;
+  return n > 0 ? 1 : 0;
+}
+
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+function repoRootFromArgv(argv) {
+  const i = argv.indexOf("--root");
+  if (i !== -1 && typeof argv[i + 1] === "string" && argv[i + 1].length > 0) {
+    return resolve(argv[i + 1]);
+  }
+  return DEFAULT_ROOT;
+}
+
+function git(root, ...a) {
+  return execFileSync("git", a, { cwd: root, encoding: "utf8", windowsHide: true });
+}
 
 // A reference to an ACTUAL never-public doc FILENAME: a filename stem (>=1 word char) then the `-PRIVATE.md`
 // tag. Case-INSENSITIVE (the convention is CAPS but a mis-cased ref still leaks the title). The leading `\w`
@@ -47,7 +70,7 @@ const PRIVATE_REF = /\w[\w.-]*-PRIVATE\.md/gi;
 // leak must never be allowlisted — fix the reference (or untrack the file), never add it here.
 const SELF = "scripts/audit-private-doc-leak.mjs";
 
-function scanText(text, file) {
+export function scanText(text, file) {
   const hits = [];
   const lines = text.split("\n");
   for (let i = 0; i < lines.length; i++) {
@@ -86,25 +109,32 @@ function selfTest() {
   process.exit(0);
 }
 
-// ── main ─────────────────────────────────────────────────────────────────────
+export function runPrivateDocLeakAudit(root) {
+  const files = git(root, "ls-files").split("\n").map((s) => s.trim()).filter(Boolean);
+  const violations = [];
+  let scanned = 0, skippedBinary = 0;
+  for (const f of files) {
+    if (f === SELF) continue;
+    let text;
+    try { text = readFileSync(join(root, f), "utf8"); } catch { continue; }
+    if (/[\x00-\x08\x0E-\x1F]/.test(text)) { skippedBinary++; continue; }
+    scanned++;
+    for (const h of scanText(text, f)) violations.push(h);
+  }
+  const exitCode = exitCodeFromViolationCount(violations.length);
+  return { scanned, skippedBinary, violations, exitCode };
+}
+
+if (isDirectRun()) {
 const asJson = process.argv.includes("--json");
 if (process.argv.includes("--self-test")) selfTest();
 
-const files = git("ls-files").split("\n").map((s) => s.trim()).filter(Boolean);
-const violations = [];
-let scanned = 0, skippedBinary = 0;
-for (const f of files) {
-  if (f === SELF) continue; // use-vs-mention: this tool defines the pattern
-  let text;
-  try { text = readFileSync(join(ROOT, f), "utf8"); } catch { continue; } // deleted/unreadable — not our concern
-  if (/[\x00-\x08\x0E-\x1F]/.test(text)) { skippedBinary++; continue; } // control bytes => binary; the tag is a text filename, never in a blob // binary — the tag is a text filename, never in a blob
-  scanned++;
-  for (const h of scanText(text, f)) violations.push(h);
-}
+const ROOT = repoRootFromArgv(process.argv);
+const { scanned, skippedBinary, violations, exitCode } = runPrivateDocLeakAudit(ROOT);
 
 if (asJson) {
-  console.log(JSON.stringify({ scanned, skippedBinary, violations }, null, 2));
-  process.exit(violations.length);
+  console.log(JSON.stringify({ scanned, skippedBinary, violations, exitCode }, null, 2));
+  process.exit(exitCode);
 }
 
 console.log(`\n  private-doc-leak — does any TRACKED public file name a never-public -PRIVATE.md KB doc?\n`);
@@ -120,4 +150,5 @@ if (violations.length) {
 }
 console.log(`VIOLATIONS: ${violations.length}`);
 console.log(`TOTAL: ${violations.length} private-doc-leak violation(s) · ${scanned} tracked text file(s) scanned`);
-process.exit(violations.length > 0 ? 1 : 0);
+process.exit(exitCode);
+}

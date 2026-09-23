@@ -27,7 +27,7 @@
  * Exit code: 0 = clean, 1 = at least one BROKEN/STALE artifact found.
  */
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative, sep, dirname, basename, resolve } from "node:path";
+import { join, relative, sep, dirname, basename, resolve, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { assertRegistryTrustworthy } from "../governance/revocation-registry.mjs";
@@ -152,6 +152,14 @@ function classify(cur) {
   return { rel, status: "changed", note: "payload changed (unsigned manifest)" };
 }
 
+function wasmRefEscapes(wasmRef) {
+  if (typeof wasmRef !== "string" || wasmRef.length === 0 || wasmRef.includes("\0")) return true;
+  if (wasmRef.startsWith("/") || wasmRef.startsWith("\\") || isAbsolute(wasmRef) || /^[A-Za-z]:/.test(wasmRef)) {
+    return true;
+  }
+  return wasmRef.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..");
+}
+
 // ── manifest -> wasm sha256 cross-check ──────────────────────────────────────
 function wasmCrossCheck(cur) {
   const findings = [];
@@ -167,11 +175,7 @@ function wasmCrossCheck(cur) {
     const wasmRef = node.wasm ?? node.wasmPath;
     const shaRef = node.sha256 ?? node.wasmSha256;
     if (typeof wasmRef === "string" && typeof shaRef === "string") {
-      const pathRefused =
-        wasmRef.includes("\0")
-        || wasmRef.split(/[\\/]/).includes("..")
-        || wasmRef.startsWith("/")
-        || /^[A-Za-z]:/.test(wasmRef);
+      const pathRefused = wasmRefEscapes(wasmRef);
       if (pathRefused) {
         findings.push({
           rel: relative(REPO, cur),
@@ -205,7 +209,7 @@ function wasmCrossCheck(cur) {
   return findings;
 }
 
-export { wasmCrossCheck };
+export { wasmCrossCheck, wasmRefEscapes };
 
 // ── crypto wire-format string scan (compiler source) ─────────────────────────
 function wireScan() {

@@ -30,6 +30,28 @@ const HASH = /^[0-9a-f]{40}$/u;
 const SYMBOL = /^[A-Za-z_$][A-Za-z0-9_$]*$/u;
 const EVIDENCE_PREFIX = "build/fungi-corpus-check/evidence/";
 
+export function admitRetirementPath(path) {
+  return typeof path === "string"
+    && path.length > 0
+    && !path.includes("\0")
+    && !path.includes("\\")
+    && path.split("/").every((part) => part !== "" && part !== "." && part !== "..")
+    && !path.startsWith("/")
+    && !/^[A-Za-z]:/.test(path);
+}
+
+function readAdmittedRetirementFile(root, path) {
+  if (!admitRetirementPath(path)) {
+    throw new Error(`retirement metadata path is not admitted: ${path}`);
+  }
+  const abs = resolve(root, ...path.split("/"));
+  const rel = relative(resolve(root), abs).split(sep).join("/");
+  if (rel !== path || rel.startsWith("..") || isAbsolute(rel)) {
+    throw new Error(`retirement metadata path escapes the repository: ${path}`);
+  }
+  return readFileSync(abs);
+}
+
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -232,7 +254,7 @@ function loadInputs(root) {
 function deriveQueue(root, projectEvidence) {
   const { retirement, decisions, retirementBytes, decisionsBytes } = loadInputs(root);
   const paths = retirement.allTrackedExecutablePaths;
-  if (paths.some((path) => typeof path !== "string")
+  if (paths.some((path) => typeof path !== "string" || !admitRetirementPath(path))
       || new Set(paths).size !== paths.length
       || paths.some((path, index) => retirement.retirementLedger[index]?.path !== path)) {
     throw new Error("retirement ledger path identity is not exact");
@@ -307,7 +329,7 @@ function deriveQueue(root, projectEvidence) {
         package: ledger.package,
         file: decision.path,
         symbol,
-        sourceContentDigest: `sha256:${sha256(readFileSync(join(root, ...decision.path.split("/"))))}`,
+        sourceContentDigest: `sha256:${sha256(readAdmittedRetirementFile(root, decision.path))}`,
         reason: decision.reason,
         evidenceDigest: decision.evidenceDigest,
       };
@@ -364,9 +386,17 @@ function main() {
   console.log(`conversion-queue: ${queue.counts.total}/${queue.counts.total} classified; ${queue.counts.CANDIDATE} whole-file candidates; ${queue.scopedCandidateCount} scoped candidates; ${queue.counts.BLOCKED} blocked`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`REFUSED: ${error instanceof Error ? error.message : "unknown conversion queue failure"}`);
-  process.exit(1);
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+if (isDirectRun()) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`REFUSED: ${error instanceof Error ? error.message : "unknown conversion queue failure"}`);
+    process.exit(1);
+  }
 }

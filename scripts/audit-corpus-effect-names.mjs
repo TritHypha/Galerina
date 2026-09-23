@@ -22,15 +22,13 @@
 // Usage: node scripts/audit-corpus-effect-names.mjs [--root <dir>] [--json]
 // Exit 0 = corpus clean · 1 = blocking finding in the teaching corpus.
 // =============================================================================
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, dirname, relative } from "node:path";
+import { lstatSync, readFileSync, readdirSync } from "node:fs";
+import { join, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const rootIdx = process.argv.indexOf("--root");
-const ROOT = rootIdx !== -1 ? process.argv[rootIdx + 1] : join(HERE, "..");
-const wantJson = process.argv.includes("--json");
-const EFFECT_CHECKER = join(ROOT, "packages-ts/galerina-core-compiler/src/effect-checker.ts");
+const MAX_FUNGI_FILES = 8192;
+const MAX_WALK_DEPTH = 32;
 
 // ── table extraction (same regex-over-source approach as audit-effect-canonicality) ──
 function sliceBlock(src, declName) {
@@ -52,27 +50,32 @@ function sliceBlock(src, declName) {
 const quoted = (block) => block ? [...block.matchAll(/"([a-zA-Z][\w.]*)"/g)].map((m) => m[1]) : [];
 const mapKeys = (block) => block ? [...block.matchAll(/\[\s*"([^"]+)"\s*,/g)].map((m) => m[1]) : [];
 
-const checkerSrc = readFileSync(EFFECT_CHECKER, "utf8");
-const CANONICAL = new Set(quoted(sliceBlock(checkerSrc, "const CANONICAL_EFFECTS")));
-const ALIASES = new Set(mapKeys(sliceBlock(checkerSrc, "const EFFECT_NAME_ALIASES")));
-const BROAD = new Set(quoted(sliceBlock(checkerSrc, "const BROAD_EFFECT_ALIASES")));
-// DENY_ONLY_EFFECTS is optional (added 2026-07-02); absent table → empty set.
-const DENY_ONLY = new Set(quoted(sliceBlock(checkerSrc, "const DENY_ONLY_EFFECTS")));
-if (CANONICAL.size === 0) {
-  console.error("❌ could not extract CANONICAL_EFFECTS from effect-checker.ts — refusing to audit against an empty vocabulary (fail-closed).");
-  process.exit(1);
-}
-
-// ── corpus walk ────────────────────────────────────────────────────────────────
 const SKIP_DIRS = new Set(["node_modules", "dist", "build", ".git", ".galerina", ".graph"]);
-function walkFungi(dir, acc) {
+
+function walkFungi(dir, acc, errors, depth = 0) {
+  if (depth > MAX_WALK_DEPTH) {
+    errors.push({ path: dir, reason: "walk depth exceeded" });
+    return acc;
+  }
   let entries;
-  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return acc; }
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch (err) {
+    errors.push({ path: dir, reason: err instanceof Error ? err.message : String(err) });
+    return acc;
+  }
   for (const e of entries) {
     if (e.name.startsWith(".") && e.name !== ".") continue;
     const p = join(dir, e.name);
-    if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) walkFungi(p, acc); }
-    else if (e.isFile() && e.name.endsWith(".fungi")) acc.push(p);
+    if (e.isDirectory()) {
+      if (!SKIP_DIRS.has(e.name)) walkFungi(p, acc, errors, depth + 1);
+    } else if (e.name.endsWith(".fungi") && (e.isFile() || e.isSymbolicLink())) {
+      if (acc.length >= MAX_FUNGI_FILES) {
+        errors.push({ path: p, reason: "fungi file ceiling exceeded" });
+        return acc;
+      }
+      acc.push(p);
+    }
   }
   return acc;
 }
@@ -114,58 +117,158 @@ const ASPIRATIONAL_ALLOWLIST = new Map([
   ["examples/aerospace/updateFlightPath.fungi", new Set(["navigation.compute", "flight_control.propose"])],
 ]);
 
-const files = walkFungi(ROOT, []);
-const findings = []; // {file, name, class, blocking}
-for (const f of files) {
-  const rel = relative(ROOT, f).replace(/\\/g, "/");
-  // Stage-B self-hosted compiler source manipulates effect syntax AS DATA
-  // (parser fixtures like `effects { e1 e2 }` inside parser.fungi) — compiler
-  // internals, not teaching corpus. Skip entirely.
-  if (rel.includes("/self-hosted/")) continue;
-  const inTests = /(^|\/)tests?\//.test(rel);
-  let src;
-  try { src = readFileSync(f, "utf8"); } catch { continue; }
-  for (const name of declaredEffectNames(src)) {
-    if (CANONICAL.has(name) && !DENY_ONLY.has(name)) continue;
-    let cls, blocking;
-    if (DENY_ONLY.has(name)) {
-      // Deny-only names are normally BLOCK (never grantable, any profile). EXCEPTION: a
-      // NEGATIVE example that deliberately declares one to TEACH the deny — and says so
-      // in-file via `/// expected_diagnostics: … FUNGI-EFFECT-006` — is legitimate (the
-      // curriculum analogue of the report-only negative fixtures under tests/; e.g.
-      // example 182, RD-0358 H-6 / RD-0360 Q2). Fail-closed: ONLY an explicit
-      // expected-deny header exempts it; any other deny-only declaration still BLOCKS.
-      const declaresDeny = /\/\/\/\s*expected_diagnostics:[^\n]*\bFUNGI-EFFECT-006\b/.test(src);
-      cls = declaresDeny ? "deny-only-demonstration" : "deny-only";
-      blocking = !declaresDeny;
-    }
-    else if (BROAD.has(name)) { cls = "broad-alias"; blocking = false; }
-    else if (ALIASES.has(name)) { cls = "alias"; blocking = true; }
-    else if (ASPIRATIONAL_ALLOWLIST.get(rel)?.has(name)) { cls = "allowlisted-aspirational"; blocking = false; }
-    else { cls = "unknown"; blocking = true; }
-    findings.push({ file: rel, name, class: cls, blocking: blocking && !inTests, reportOnly: inTests });
+export function auditCorpusEffectNames(root) {
+  if (typeof root !== "string" || root.length === 0) {
+    return { ok: false, reason: "corpus root is missing", files: 0, canonical: 0, findings: [] };
   }
+  let rootStat;
+  try {
+    rootStat = lstatSync(root);
+  } catch {
+    return { ok: false, reason: `corpus root is absent or unreadable: ${root}`, files: 0, canonical: 0, findings: [] };
+  }
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+    return { ok: false, reason: "corpus root is not a regular directory", files: 0, canonical: 0, findings: [] };
+  }
+
+  const effectChecker = join(root, "packages-ts/galerina-core-compiler/src/effect-checker.ts");
+  let checkerSrc;
+  try {
+    checkerSrc = readFileSync(effectChecker, "utf8");
+  } catch {
+    return { ok: false, reason: "could not read effect-checker.ts — refusing to audit against an absent vocabulary", files: 0, canonical: 0, findings: [] };
+  }
+  const CANONICAL = new Set(quoted(sliceBlock(checkerSrc, "const CANONICAL_EFFECTS")));
+  const ALIASES = new Set(mapKeys(sliceBlock(checkerSrc, "const EFFECT_NAME_ALIASES")));
+  const BROAD = new Set(quoted(sliceBlock(checkerSrc, "const BROAD_EFFECT_ALIASES")));
+  const DENY_ONLY = new Set(quoted(sliceBlock(checkerSrc, "const DENY_ONLY_EFFECTS")));
+  if (CANONICAL.size === 0) {
+    return { ok: false, reason: "could not extract CANONICAL_EFFECTS from effect-checker.ts — refusing to audit against an empty vocabulary (fail-closed).", files: 0, canonical: 0, findings: [] };
+  }
+
+  const walkErrors = [];
+  const files = walkFungi(root, [], walkErrors);
+  const findings = [];
+  for (const err of walkErrors) {
+    findings.push({
+      file: relative(root, err.path).replace(/\\/g, "/") || err.path,
+      name: "",
+      class: "unreadable",
+      blocking: true,
+      reportOnly: false,
+      reason: err.reason,
+    });
+  }
+  for (const f of files) {
+    const rel = relative(root, f).replace(/\\/g, "/");
+    if (rel.includes("/self-hosted/")) continue;
+    const inTests = /(^|\/)tests?\//.test(rel);
+    let src;
+    try {
+      const st = lstatSync(f);
+      if (st.isSymbolicLink() || !st.isFile()) {
+        throw new Error("corpus file is not a regular file");
+      }
+      src = readFileSync(f, "utf8");
+    } catch (err) {
+      findings.push({
+        file: rel,
+        name: "",
+        class: "unreadable",
+        blocking: true,
+        reportOnly: false,
+        reason: err instanceof Error ? err.message : String(err),
+      });
+      continue;
+    }
+    for (const name of declaredEffectNames(src)) {
+      if (CANONICAL.has(name) && !DENY_ONLY.has(name)) continue;
+      let cls, blocking;
+      if (DENY_ONLY.has(name)) {
+        const declaresDeny = /\/\/\/\s*expected_diagnostics:[^\n]*\bFUNGI-EFFECT-006\b/.test(src);
+        cls = declaresDeny ? "deny-only-demonstration" : "deny-only";
+        blocking = !declaresDeny;
+      }
+      else if (BROAD.has(name)) { cls = "broad-alias"; blocking = false; }
+      else if (ALIASES.has(name)) { cls = "alias"; blocking = true; }
+      else if (ASPIRATIONAL_ALLOWLIST.get(rel)?.has(name)) { cls = "allowlisted-aspirational"; blocking = false; }
+      else { cls = "unknown"; blocking = true; }
+      findings.push({ file: rel, name, class: cls, blocking: blocking && !inTests, reportOnly: inTests });
+    }
+  }
+
+  if (files.length === 0 && !findings.some((x) => x.class === "unreadable")) {
+    findings.push({
+      file: ".",
+      name: "",
+      class: "empty-corpus",
+      blocking: true,
+      reportOnly: false,
+      reason: "absent corpus input is not a clean sweep",
+    });
+  }
+
+  const blocking = findings.filter((x) => x.blocking);
+  return {
+    ok: blocking.length === 0,
+    files: files.length,
+    canonical: CANONICAL.size,
+    aliases: ALIASES.size,
+    denyOnly: DENY_ONLY.size,
+    findings,
+    blocking,
+    demos: findings.filter((x) => x.class === "deny-only-demonstration"),
+    warns: findings.filter((x) => !x.blocking && !x.reportOnly && x.class !== "deny-only-demonstration"),
+    testOnly: findings.filter((x) => x.reportOnly),
+  };
 }
 
-const blocking = findings.filter((x) => x.blocking);
-const demos = findings.filter((x) => x.class === "deny-only-demonstration");
-const warns = findings.filter((x) => !x.blocking && !x.reportOnly && x.class !== "deny-only-demonstration");
-const testOnly = findings.filter((x) => x.reportOnly);
-
-if (wantJson) {
-  console.log(JSON.stringify({ files: files.length, canonical: CANONICAL.size, findings }, null, 2));
-} else {
-  console.log(`=== corpus effect-name audit (SoT: effect-checker.ts CANONICAL_EFFECTS) ===`);
-  console.log(`   .fungi files: ${files.length} | canonical: ${CANONICAL.size} | aliases: ${ALIASES.size} | deny-only: ${DENY_ONLY.size}`);
-  for (const x of blocking) console.log(`   ❌ [${x.class}] ${x.file}: effects { ${x.name} } — production compile rejects this name`);
-  for (const x of demos) console.log(`   ✅ [${x.class}] ${x.file}: effects { ${x.name} } — deliberate deny demonstration (declares expected FUNGI-EFFECT-006), not a corpus defect`);
-  for (const x of warns) console.log(`   ⚠️  [${x.class}] ${x.file}: effects { ${x.name} } — accepted with a nudge; prefer the canonical name`);
-  if (testOnly.length > 0) console.log(`   ℹ️  ${testOnly.length} non-canonical name(s) under tests/ (negative fixtures — report-only)`);
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
 }
 
-if (blocking.length > 0) {
-  if (!wantJson) console.log(`\n=== ${blocking.length} blocking corpus finding(s) — the corpus teaches names production rejects ===`);
-  process.exit(1);
+function reportAndExit(root, wantJson) {
+  const result = auditCorpusEffectNames(root);
+  if (wantJson) {
+    console.log(JSON.stringify({
+      files: result.files,
+      canonical: result.canonical,
+      findings: result.findings,
+      reason: result.reason,
+    }, null, 2));
+  } else {
+    console.log(`=== corpus effect-name audit (SoT: effect-checker.ts CANONICAL_EFFECTS) ===`);
+    if (result.reason && result.files === 0 && result.canonical === 0) {
+      console.error(`❌ ${result.reason}`);
+    } else {
+      console.log(`   .fungi files: ${result.files} | canonical: ${result.canonical} | aliases: ${result.aliases} | deny-only: ${result.denyOnly}`);
+      for (const x of result.blocking) {
+        if (x.class === "unreadable" || x.class === "empty-corpus") {
+          console.log(`   ❌ [${x.class}] ${x.file}: ${x.reason ?? "unread or absent corpus input"}`);
+        } else {
+          console.log(`   ❌ [${x.class}] ${x.file}: effects { ${x.name} } — production compile rejects this name`);
+        }
+      }
+      for (const x of result.demos) console.log(`   ✅ [${x.class}] ${x.file}: effects { ${x.name} } — deliberate deny demonstration (declares expected FUNGI-EFFECT-006), not a corpus defect`);
+      for (const x of result.warns) console.log(`   ⚠️  [${x.class}] ${x.file}: effects { ${x.name} } — accepted with a nudge; prefer the canonical name`);
+      if (result.testOnly.length > 0) console.log(`   ℹ️  ${result.testOnly.length} non-canonical name(s) under tests/ (negative fixtures — report-only)`);
+    }
+  }
+  if (!result.ok) {
+    if (!wantJson && result.blocking.length > 0) {
+      console.log(`\n=== ${result.blocking.length} blocking corpus finding(s) — unread, absent, or non-production names ===`);
+    }
+    process.exit(1);
+  }
+  if (!wantJson) console.log(`   ✅ teaching corpus declares only production-compilable effect names`);
+  process.exit(0);
 }
-if (!wantJson) console.log(`   ✅ teaching corpus declares only production-compilable effect names`);
-process.exit(0);
+
+if (isDirectRun()) {
+  const rootIdx = process.argv.indexOf("--root");
+  const ROOT = rootIdx !== -1 ? process.argv[rootIdx + 1] : join(HERE, "..");
+  const wantJson = process.argv.includes("--json");
+  reportAndExit(ROOT, wantJson);
+}

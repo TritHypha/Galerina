@@ -4,17 +4,19 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import {
-  copyFileSync,
   existsSync,
   lstatSync,
-  mkdirSync,
   readFileSync,
   realpathSync,
   statSync,
-  writeFileSync,
 } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative } from "node:path";
+import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  admitOutputDir as admitOutputDirAt,
+  copyOutputFile as copyOutputFileAt,
+  writeOutputFile as writeOutputFileAt,
+} from "./lib/requirement-output-admission.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CRATE = join(ROOT, "scripts", "native", "requirement-launcher");
@@ -140,44 +142,15 @@ function packageGraphDigest(workerDigest, protocolDigest) {
 }
 
 function admitOutputDir(dir, code) {
-  const fromRoot = relative(ROOT, dir);
-  if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) {
-    throw new Error(`${code}_OUTSIDE_ROOT`);
-  }
-  mkdirSync(dir, { recursive: true });
-  if (lstatSync(dir).isSymbolicLink() || !statSync(dir).isDirectory()) {
-    throw new Error(`${code}_LINKED`);
-  }
-  const resolved = realpathSync.native(dir);
-  const root = realpathSync.native(ROOT);
-  const rel = relative(root, resolved);
-  if (rel.startsWith("..") || isAbsolute(rel) || !rel.replace(/\\/g, "/").startsWith("build/")) {
-    throw new Error(`${code}_ESCAPED`);
-  }
-  return resolved;
-}
-
-function refuseLinkedPath(path, code) {
-  let current = path;
-  for (;;) {
-    if (existsSync(current) && lstatSync(current).isSymbolicLink()) {
-      throw new Error(`${code}_LINKED`);
-    }
-    const parent = dirname(current);
-    if (parent === current) break;
-    current = parent;
-    if (relative(ROOT, current) === "" || relative(ROOT, current).startsWith("..")) break;
-  }
+  return admitOutputDirAt(dir, code, ROOT);
 }
 
 function writeOutputFile(path, content, code) {
-  refuseLinkedPath(path, code);
-  writeFileSync(path, content);
+  writeOutputFileAt(path, content, code, ROOT);
 }
 
 function copyOutputFile(from, to, code) {
-  refuseLinkedPath(to, code);
-  copyFileSync(from, to);
+  copyOutputFileAt(from, to, code, ROOT);
 }
 
 function regularFile(path, code) {

@@ -24,7 +24,7 @@
  * EXIT: 0 clean · 1 a NEW off-baseline INVALID (or a self-test failure)
  */
 import { readdirSync, readFileSync, statSync, writeFileSync, existsSync } from "node:fs";
-import { join, relative, dirname } from "node:path";
+import { join, relative, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -142,8 +142,24 @@ async function classify(src, file) {
   return declines(wat) ? { k: "DECLINES", why: "valid module, fail-closed trap in a flow body" } : { k: "VALID", why: "" };
 }
 
+export function refuseVacuousWasmSweep(fileCount, skipCount, assessedCount) {
+  if (!Number.isFinite(fileCount) || fileCount <= 0) {
+    return { ok: false, reason: "absent corpus is not a clean sweep" };
+  }
+  if (!Number.isFinite(assessedCount) || assessedCount <= 0) {
+    return { ok: false, reason: "entire sweep skipped or unassessed is not a clean sweep" };
+  }
+  return { ok: true, reason: null };
+}
+
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
 // ── self-test: the gate must FIRE on known-bad and stay quiet on known-good ──
-if (process.argv.includes("--self-test")) {
+if (isDirectRun() && process.argv.includes("--self-test")) {
   const good = `pure flow f(a: Int, b: Int) -> Int\ncontract { effects {} }\n{ return a + b }`;
   const bad = `pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\ncontract { effects {} }\n{ let r: Decimal = revenue / cost\n  return r }`;
   const g = await classify(good, "good.fungi");
@@ -168,6 +184,9 @@ if (process.argv.includes("--self-test")) {
   process.exit(ok ? 0 : 1);
 }
 
+if (!isDirectRun()) {
+  // imported as a library — do not walk the corpus
+} else {
 const files = SCAN_DIRS.flatMap((d) => walk(join(ROOT, d))).sort();
 const buckets = { VALID: [], DECLINES: [], INVALID: [], "CHECK-REJECT": [], SKIP: [] };
 for (const abs of files) {
@@ -175,6 +194,12 @@ for (const abs of files) {
   let src; try { src = readFileSync(abs, "utf8"); } catch (e) { buckets.SKIP.push([rel, "read " + e.code]); continue; }
   const r = await classify(src, rel);
   buckets[r.k].push([rel, r.why]);
+}
+const assessedCount = buckets.VALID.length + buckets.DECLINES.length + buckets.INVALID.length + buckets["CHECK-REJECT"].length;
+const vacuous = refuseVacuousWasmSweep(files.length, buckets.SKIP.length, assessedCount);
+if (!vacuous.ok) {
+  console.error(`audit-wasm-validate: ${vacuous.reason}`);
+  process.exit(1);
 }
 
 const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : { invalid: [] };
@@ -240,3 +265,4 @@ if (fresh.length) {
   process.exit(1);
 }
 console.log(`\nVIOLATIONS: 0  (${known.size} baselined)`);
+}

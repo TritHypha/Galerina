@@ -192,7 +192,7 @@ async function fixture() {
 function successRunner(fixtureValue, mutate = () => undefined, successorRegistry = null) {
   return async ({ command, args }) => {
     assert.equal(command, process.execPath);
-    assert.equal(args[0], join(fixtureValue.toolRoot, "src", "checked-fungi-package-manifest-cli.mjs"));
+    assert.match(args[0], /slide-pinned-tool-.*checked-fungi-package-manifest-cli\.mjs$/);
     const output = fixtureValue.outputDirectory;
     await mkdir(output);
     const packageIdentity = "@galerina/test";

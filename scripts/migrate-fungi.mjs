@@ -25,8 +25,8 @@
 //   node scripts/migrate-fungi.mjs --ops --apply      # migrate &&/|| (lexer-guided)
 // =============================================================================
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { join, dirname, relative } from "node:path";
+import { lstatSync, readFileSync, writeFileSync } from "node:fs";
+import { join, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -68,6 +68,21 @@ const isSignedFrozen = (abs) => {
 const compilerPkg = join(ROOT, "packages-ts", "galerina-core-compiler", "dist", "index.js");
 const { lex } = await import(new URL(`file:///${compilerPkg.replace(/\\/g, "/")}`).href);
 
+export function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+export function admitMigrateTarget(abs) {
+  try {
+    const st = lstatSync(abs);
+    return !st.isSymbolicLink() && st.isFile();
+  } catch {
+    return false;
+  }
+}
+
 const args = process.argv.slice(2);
 const APPLY = args.includes("--apply");
 const DO_STAMP = args.includes("--stamp");
@@ -75,11 +90,14 @@ const DO_OPS = args.includes("--ops");
 const DO_GATE = args.includes("--gate-stamp");
 const BOM = "﻿";
 
-if (!DO_STAMP && !DO_OPS && !DO_GATE && !args.includes("--check")) {
+if (isDirectRun() && !DO_STAMP && !DO_OPS && !DO_GATE && !args.includes("--check")) {
   console.log("migrate-fungi: pick a mode: --stamp | --ops | --gate-stamp | --check   (dry-run unless --apply)");
   process.exit(2);
 }
 
+if (!isDirectRun()) {
+  /* imported as a library — do not walk or rewrite the tree */
+} else {
 const { fungi, gate } = discoverCorpus(ROOT);
 const rel = (p) => relative(ROOT, p).replace(/\\/g, "/");
 
@@ -99,6 +117,7 @@ for (const abs of fungi) {
     console.log(`  ⛔ signed-frozen (CG-7 — migrate at the re-sign ceremony only): ${rel(abs)}`);
     continue;
   }
+  if (!admitMigrateTarget(abs)) continue;
   let src;
   try {
     src = readFileSync(abs, "utf8");
@@ -163,6 +182,7 @@ if (DO_GATE) {
       console.log(`  ⛔ signed-frozen .gate (ceremony only): ${rel(abs)}`);
       continue;
     }
+    if (!admitMigrateTarget(abs)) continue;
     let src;
     try {
       src = readFileSync(abs, "utf8");
@@ -195,4 +215,5 @@ console.log(
 );
 if (!APPLY && (stamped > 0 || opsFiles > 0)) {
   console.log("  re-run with --apply to write. Verify after with: node packages-ts/galerina-devtools-fungi-scan/dist/cli.js");
+}
 }

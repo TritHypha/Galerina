@@ -20,7 +20,7 @@
 //   node scripts/emit-doc-wat.mjs --write        # regenerate excerpts in place
 //   node scripts/emit-doc-wat.mjs --self-test    # prove extraction + drift detection work
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname, resolve, relative } from "node:path";
+import { join, dirname, resolve, relative, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -44,12 +44,19 @@ export function extractFunc(wat, name) {
   return null;
 }
 
+export function admitDocWatSource(sourceRel) {
+  return typeof sourceRel === "string"
+    && sourceRel.length > 0
+    && !sourceRel.includes("\0")
+    && !sourceRel.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
+    && !sourceRel.startsWith("/")
+    && !sourceRel.startsWith("\\")
+    && !isAbsolute(sourceRel)
+    && !/^[A-Za-z]:/.test(sourceRel);
+}
+
 async function generateExcerpt(L, sourceRel, flowNames) {
-  if (typeof sourceRel !== "string"
-      || sourceRel.includes("\0")
-      || sourceRel.split(/[\\/]/).some((part) => part === "" || part === "." || part === "..")
-      || sourceRel.startsWith("/")
-      || /^[A-Za-z]:/.test(sourceRel)) {
+  if (!admitDocWatSource(sourceRel)) {
     throw new Error(`emit-doc-wat source '${sourceRel}' is not an admitted repository-relative path`);
   }
   const absSource = resolve(ROOT, sourceRel);
@@ -94,10 +101,16 @@ async function processDoc(L, docRel) {
   return { docRel, missing: false, drifted, updated: updated === original ? null : updated };
 }
 
-const mode = process.argv.includes("--write") ? "write" : process.argv.includes("--self-test") ? "self-test" : "check";
-const L = await loadCompiler();
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
 
-if (mode === "self-test") {
+const mode = process.argv.includes("--write") ? "write" : process.argv.includes("--self-test") ? "self-test" : "check";
+const L = isDirectRun() ? await loadCompiler() : null;
+
+if (isDirectRun() && mode === "self-test") {
   const ok = (c, m) => { console.log(`  ${c ? "✅" : "❌"} ${m}`); if (!c) process.exitCode = 1; };
   const TWIN = "packages-ts/galerina-core-sentinel-time/src/self-hosted/synchronization-gate.fungi";
   const excerpt = await generateExcerpt(L, TWIN, ["syncGateVerdict", "driftGateVerdict"]);
@@ -112,7 +125,11 @@ if (mode === "self-test") {
 }
 
 let driftCount = 0;
-for (const docRel of DOCS) {
+if (!isDirectRun()) {
+  // imported as a library — do not walk docs
+} else if (mode === "self-test") {
+  /* handled above */
+} else for (const docRel of DOCS) {
   const r = await processDoc(L, docRel);
   if (r.missing) { console.error(`  ❌ emit-doc-wat: ${docRel} missing (listed in DOCS)`); driftCount++; continue; }
   if (mode === "write") {
@@ -123,7 +140,7 @@ for (const docRel of DOCS) {
     for (const d of r.drifted) console.error(`  ❌ ${docRel}: quoted WAT drifted from the emitter (source=${d.sourceRel} flows=${d.flows})`);
   }
 }
-if (mode === "check") {
+if (isDirectRun() && mode === "check") {
   if (driftCount > 0) {
     console.error(`\n  Fix: node scripts/emit-doc-wat.mjs --write  (the doc never hand-carries WAT — regenerate it).`);
     process.exit(1);

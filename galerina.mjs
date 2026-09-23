@@ -20,7 +20,7 @@
  * This WASM path:                                  ~1,880,000 ops/sec  (588×)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, lstatSync, appendFileSync } from "node:fs";
 import { join, basename, dirname, resolve, sep, relative, isAbsolute } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -35,6 +35,42 @@ import { totalmem, freemem } from "node:os";
 // caller exits on a main path, continues on a batch path), so an oversized/unreadable file is rejected
 // before the allocation it would otherwise exhaust the host with.
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the lexer's FUNGI-LEX-004 constant
+
+/** Recursively collect .fungi files under root; refuse symlink roots and paths that escape root. */
+export function collectFungiFiles(root) {
+  const SKIP = new Set(["node_modules", "dist", "build", ".git", ".galerina"]);
+  const out = [];
+  let rootAbs;
+  try {
+    const st = lstatSync(root);
+    if (st.isSymbolicLink()) return out;
+    rootAbs = resolve(root);
+  } catch {
+    return out;
+  }
+  const contained = (p) => {
+    const rel = relative(rootAbs, resolve(p));
+    return !rel.startsWith("..") && !isAbsolute(rel);
+  };
+  const walk = (dir) => {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.name.startsWith(".")) continue;
+      const p = join(dir, e.name);
+      if (e.isSymbolicLink() || !contained(p)) continue;
+      if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(p); }
+      else if (e.isFile() && e.name.endsWith(".fungi")) out.push(p);
+    }
+  };
+  try {
+    const st = lstatSync(rootAbs);
+    if (st.isFile()) {
+      if (rootAbs.endsWith(".fungi")) out.push(rootAbs);
+    } else if (st.isDirectory()) walk(rootAbs);
+  } catch { /* missing root → no files */ }
+  return out;
+}
 
 async function productionOrDevRevocation(rootDir = ".") {
   const { resolveSigningProfileWarned } = await import("./governance/profile.mjs");
@@ -921,26 +957,7 @@ Baseline comparison (governance-cost):
   // Recursively collect every .fungi source under a root (skipping build/vendor dirs), then run a
   // CROSS-FILE flow analysis so USES/USEDBY/IMPACT span files (a flow called from another file is
   // never mislabelled "safe to delete"). Returns per-file rewrite results; `write:true` persists them.
-  const collectFungiFiles = (root) => {
-    const SKIP = new Set(["node_modules", "dist", "build", ".git", ".galerina"]);
-    const out = [];
-    const walk = (dir) => {
-      let entries;
-      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
-      for (const e of entries) {
-        if (e.name.startsWith(".")) continue;
-        const p = join(dir, e.name);
-        if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(p); }
-        else if (e.isFile() && e.name.endsWith(".fungi")) out.push(p);
-      }
-    };
-    try {
-      const st = statSync(root);
-      if (st.isFile()) { if (root.endsWith(".fungi")) out.push(root); }
-      else walk(root);
-    } catch { /* missing root → no files */ }
-    return out;
-  };
+
   // ── signed-package write guard (cascade fix, owner-directed 2026-07-01) ──────
   // A fusable package whose dist/<name>.lmanifest.json carries a REAL signature
   // (object governanceSignature with string keyId + signature — mirrors
@@ -1010,7 +1027,9 @@ Baseline comparison (governance-cost):
       // `blocked` = would change, but the file lives in a SIGNED fusable package
       // (see guard above) — never written, reported instead.
       const blocked = changed && isUnderSignedPackage(file);
-      if (write && changed && !blocked) writeFileSync(file, after);
+      const fromRoot = relative(resolve(root), resolve(file));
+      const escapesRoot = fromRoot.startsWith("..") || isAbsolute(fromRoot);
+      if (write && changed && !blocked && !escapesRoot) writeFileSync(file, after);
       results.push({ file, flows: genMap.size, changed, blocked, genMap });
     }
     return { results, parseErrors, parsedCount: files.length };
@@ -1802,13 +1821,6 @@ Baseline comparison (governance-cost):
 
       const proofCount = manifest.proofObligations?.length ?? 0;
       const constraintCount = manifest.derivedConstraints?.length ?? 0;
-      console.log(`✅ ${fungiFile}: manifest verified`);
-      console.log(`   Source hash:         ${actualHash.slice(0, 30)}...`);
-      console.log(`   CBOR size:           ${manifestBytes.length}B (canonical ✅)`);
-      console.log(`   Schema version:      ${manifest.schemaVersion}`);
-      console.log(`   Flow count:          ${manifest.flowCount}`);
-      console.log(`   Proof obligations:   ${proofCount}`);
-      console.log(`   Derived constraints: ${constraintCount}`);
 
       // ── Signature verification (#109) ────────────────────────────────────────
       // Stage A: Ed25519-SHA256 (Node.js native crypto)
@@ -1822,13 +1834,33 @@ Baseline comparison (governance-cost):
       const { resolveSigningProfileWarned } = await import("./governance/profile.mjs");
       const requireSigned = resolveSigningProfileWarned().profile === "production";
       const jsonManifestPath = `build/${name}.lmanifest.json`;
+      let jsonSidecar = null;
       if (existsSync(jsonManifestPath)) {
         try {
-          const jsonManifestRaw = readFileSync(jsonManifestPath, "utf-8");
-          const jsonManifest = JSON.parse(jsonManifestRaw);
-
-          if (jsonManifest.governanceSignature && typeof jsonManifest.governanceSignature === "object") {
-            const sig = jsonManifest.governanceSignature;
+          jsonSidecar = JSON.parse(readFileSync(jsonManifestPath, "utf-8"));
+        } catch (err) {
+          if (requireSigned) {
+            console.error(`❌ FUNGI-MANIFEST-INVALID: could not read ${jsonManifestPath} — fail-closed: ${err.message}`);
+            process.exit(1);
+          }
+          console.warn(`   ⚠️  Could not read .lmanifest.json: ${err.message}`);
+        }
+      }
+      const { selectManifestAuthSubject } = await import("./governance/manifest-subject-auth.mjs");
+      const subject = selectManifestAuthSubject(manifest, jsonSidecar);
+      if (subject.refuse) {
+        console.error(`❌ ${subject.refuse}`);
+        process.exit(1);
+      }
+      if (subject.unsigned) {
+        if (requireSigned) {
+          console.error(`❌ FUNGI-MANIFEST-UNSIGNED: checked CBOR subject is unsigned but GALERINA_PROFILE=production requires a signature — fail-closed. Run: galerina keygen && galerina build`);
+          process.exit(1);
+        }
+        console.log(`   ℹ️  Checked CBOR manifest is unsigned. Run: galerina keygen && galerina build`);
+      } else {
+          const sig = subject.sig;
+          const signedBody = subject.body;
 
             // ── 0102 / #34: HYBRID (v2) manifest signature branch — dispatch on the signature's OWN fields ──
             // A v2 sig is self-describing: sigAlgorithm "fungi.gov.sig.v2" OR algorithm "Ed25519+ML-DSA-65" OR a
@@ -1868,17 +1900,15 @@ Baseline comparison (governance-cost):
                 // RE-DERIVE bodyHash from the actual body over the SIGNER's canon — NEVER trust sig.bodyHash as
                 // the signed input (Adv-1 #8). The recomputed hash is what goes into the reconstructed
                 // envelope, so the signature only validates if it matches what was signed.
-                const { governanceSignature: _sigH, ...manifestWithoutSig } = jsonManifest;
-                const bodyHash = createHash("sha256").update(Buffer.from(manifestSigningInput(manifestWithoutSig, manifestSigCanon(sig)))).digest("hex");
+                const bodyHash = createHash("sha256").update(Buffer.from(manifestSigningInput(signedBody, manifestSigCanon(sig)))).digest("hex");
                 // Defence-in-depth: the explicit bodyHash field must match the recomputed body.
                 if (sig.bodyHash !== `sha256:${bodyHash}`) {
                   console.error(`❌ FUNGI-MANIFEST-TAMPER: v2 manifest bodyHash mismatch (declared ${sig.bodyHash} vs computed sha256:${bodyHash}) — fail-closed.`);
                   process.exit(1);
                 }
                 // Reconstruct the EXACT envelope the signer bound via the SAME shared helper (no drift).
-                // generatedAt & evidence are excluded from the signed payload, so any value verifies;
-                // jsonManifest.generatedAt is used for fidelity.
-                const envelope = cc.makeManifestEnvelope(bodyHash, jsonManifest.generatedAt);
+                // generatedAt & evidence are excluded from the signed payload, so any value verifies.
+                const envelope = cc.makeManifestEnvelope(bodyHash, signedBody.generatedAt);
                 // Attach the persisted v2 signature in the ProofGraph-layer shape (algorithm + signature are the
                 // only fields verifyGovernanceSignatureHybrid reads; proof-graph.ts:786-789).
                 envelope.governanceSignature = { algorithm: "fungi.gov.sig.v2", signerKeyId: sig.keyId, signature: sig.signature, signedAt: sig.signedAt };
@@ -1888,12 +1918,7 @@ Baseline comparison (governance-cost):
                 const mlPubRaw = new Uint8Array(Buffer.from(readFileSync(mlPubPath, "utf-8").trim(), "base64"));
                 const valid = await cc.verifyGovernanceSignatureHybrid(envelope, edPubDer, mlPubRaw);
                 if (valid) {
-                  if (jsonManifest.sourceHash !== manifest.sourceHash
-                      || jsonManifest.schemaVersion !== manifest.schemaVersion) {
-                    console.error(`❌ FUNGI-MANIFEST-TAMPER: signed JSON sidecar does not bind the checked CBOR subject`);
-                    process.exit(1);
-                  }
-                  console.log(`   🔐🛡️  Hybrid signature verified (Ed25519+ML-DSA-65, keyId: ${sig.keyId.slice(0, 8)}...) — both halves`);
+                  console.log(`   🔐🛡️  Hybrid signature verified (Ed25519+ML-DSA-65, keyId: ${sig.keyId.slice(0, 8)}...) — both halves over CBOR subject`);
                 } else {
                   console.error(`❌ FUNGI-MANIFEST-TAMPER: hybrid signature verification FAILED (both halves required) — manifest may be tampered or PQ-downgraded.`);
                   process.exit(1);
@@ -1936,19 +1961,13 @@ Baseline comparison (governance-cost):
                   // Reconstruct the EXACT signed bytes by stripping the signature and re-canonicalizing
                   // in the format named by the signature (`canon`: RFC 8785 JCS for new sigs, pretty-JSON
                   // "legacy" for older ones). One shared helper keeps signer + verifier from drifting.
-                  const { governanceSignature: _sig, ...manifestWithoutSig } = jsonManifest;
-                  const manifestForVerification = manifestSigningInput(manifestWithoutSig, manifestSigCanon(sig));
+                  const manifestForVerification = manifestSigningInput(signedBody, manifestSigCanon(sig));
 
                   // Ed25519 uses deterministic signing — pass null as algorithm (per RFC 8032)
                   const valid = cryptoVerify(null, Buffer.from(manifestForVerification), publicKey, Buffer.from(sig.signature, "base64"));
 
                   if (valid) {
-                    if (jsonManifest.sourceHash !== manifest.sourceHash
-                        || jsonManifest.schemaVersion !== manifest.schemaVersion) {
-                      console.error(`❌ FUNGI-MANIFEST-TAMPER: signed JSON sidecar does not bind the checked CBOR subject`);
-                      process.exit(1);
-                    }
-                    console.log(`   🔐 Signature verified (${sig.algorithm}, keyId: ${sig.keyId.slice(0, 8)}...)`);
+                    console.log(`   🔐 Signature verified (${sig.algorithm}, keyId: ${sig.keyId.slice(0, 8)}...) over CBOR subject`);
                   } else {
                     console.error(`❌ FUNGI-MANIFEST-TAMPER: Signature verification FAILED — manifest may be tampered`);
                     process.exit(1);
@@ -1976,39 +1995,15 @@ Baseline comparison (governance-cost):
               }
               console.warn(`   ⚠️  Manifest signature object is incomplete — treated as unsigned.`);
             }
-          } else if (jsonManifest.governanceSignature === "placeholder") {
-            // An unsigned (placeholder) manifest is fine for dev; under GALERINA_PROFILE=production a
-            // signature is REQUIRED — fail-closed (mirrors #178 fail-closed-in-prod).
-            if (requireSigned) {
-              console.error(`❌ FUNGI-MANIFEST-UNSIGNED: manifest is unsigned (placeholder) but GALERINA_PROFILE=production requires a signature — fail-closed. Run: galerina keygen && galerina build`);
-              process.exit(1);
-            }
-            console.log(`   ℹ️  Manifest is unsigned (placeholder). Run: galerina keygen && galerina build`);
-          } else {
-            // No signature field at all, or an unexpected scalar — treat as unsigned.
-            if (requireSigned) {
-              console.error(`❌ FUNGI-MANIFEST-UNSIGNED: manifest carries no signature but GALERINA_PROFILE=production requires one — fail-closed.`);
-              process.exit(1);
-            }
-            console.log(`   ℹ️  Manifest has no signature field — treated as unsigned.`);
-          }
-        } catch (err) {
-          // In production a signature MUST be confirmable; an unreadable signature copy means it cannot
-          // be — fail-closed rather than warn-and-pass.
-          if (requireSigned) {
-            console.error(`❌ FUNGI-MANIFEST-INVALID: could not read ${jsonManifestPath} for the required signature check under GALERINA_PROFILE=production — fail-closed: ${err.message}`);
-            process.exit(1);
-          }
-          console.warn(`   ⚠️  Could not read .lmanifest.json for signature check: ${err.message}`);
-        }
-      } else {
-        // No signed-manifest copy at all. Dev = skip; production = deny (signature required).
-        if (requireSigned) {
-          console.error(`❌ FUNGI-MANIFEST-UNSIGNED: no ${jsonManifestPath} present but GALERINA_PROFILE=production requires a signed manifest — fail-closed.`);
-          process.exit(1);
-        }
-        console.log(`   ℹ️  No .lmanifest.json found — signature check skipped`);
       }
+
+      console.log(`✅ ${fungiFile}: manifest verified`);
+      console.log(`   Source hash:         ${actualHash.slice(0, 30)}...`);
+      console.log(`   CBOR size:           ${manifestBytes.length}B (canonical ✅)`);
+      console.log(`   Schema version:      ${manifest.schemaVersion}`);
+      console.log(`   Flow count:          ${manifest.flowCount}`);
+      console.log(`   Proof obligations:   ${proofCount}`);
+      console.log(`   Derived constraints: ${constraintCount}`);
     } catch (e) {
       console.error(`❌ FUNGI-MANIFEST-INVALID: Failed to parse manifest — ${e.message}`);
       process.exit(1);
@@ -2991,4 +2986,12 @@ Baseline comparison (governance-cost):
   process.exit(1);
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+if (isDirectRun()) {
+  main().catch(e => { console.error(e.message); process.exit(1); });
+}

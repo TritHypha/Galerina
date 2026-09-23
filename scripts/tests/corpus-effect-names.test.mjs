@@ -5,7 +5,7 @@
 // keyword forms (`allow X`), tests/-scoped negative fixtures (report-only).
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -85,4 +85,39 @@ test("a non-broad alias in the teaching corpus BLOCKS (production rejects it)", 
   const r = run();
   assert.equal(r.status, 1, "non-broad alias must block");
   rmSync(join(tmp, "examples", "bad-alias.fungi"));
+});
+
+test("hostile: absent root is not a clean sweep", () => {
+  const r = spawnSync("node", [join(SCRIPTS, "audit-corpus-effect-names.mjs"), "--root", join(tmp, "missing-root"), "--json"],
+    { encoding: "utf8", timeout: 60_000, shell: false });
+  assert.equal(r.status, 1);
+});
+
+test("hostile: empty teaching corpus is not a clean sweep", () => {
+  const empty = mkdtempSync(join(tmpdir(), "fungi-corpus-empty-"));
+  after(() => { try { rmSync(empty, { recursive: true, force: true }); } catch { /* best effort */ } });
+  mkdirSync(join(empty, "packages-ts", "galerina-core-compiler", "src"), { recursive: true });
+  writeFileSync(join(empty, "packages-ts", "galerina-core-compiler", "src", "effect-checker.ts"), [
+    `const CANONICAL_EFFECTS = new Set(["good.effect"]);`,
+    `const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([]);`,
+    `const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set([]);`,
+    `const DENY_ONLY_EFFECTS: ReadonlySet<string> = new Set([]);`,
+  ].join("\n"));
+  const r = spawnSync("node", [join(SCRIPTS, "audit-corpus-effect-names.mjs"), "--root", empty, "--json"],
+    { encoding: "utf8", timeout: 60_000, shell: false });
+  assert.equal(r.status, 1, "empty corpus must block");
+  const out = JSON.parse(r.stdout);
+  assert.ok(out.findings.some((f) => f.class === "empty-corpus"));
+});
+
+test("hostile: unread .fungi symlink is not skipped as clean", () => {
+  const dangling = join(tmp, "examples", "unread.fungi");
+  mkdirSync(join(tmp, "examples"), { recursive: true });
+  try { rmSync(dangling, { force: true }); } catch { /* absent */ }
+  symlinkSync(join(tmp, "examples", "missing-target.fungi"), dangling);
+  const r = run();
+  assert.equal(r.status, 1, "unread corpus file must block");
+  const out = JSON.parse(r.stdout);
+  assert.ok(out.findings.some((f) => f.class === "unreadable" && f.file.endsWith("unread.fungi")));
+  rmSync(dangling, { force: true });
 });

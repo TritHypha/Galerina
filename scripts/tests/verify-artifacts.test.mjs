@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { wasmCrossCheck } from "../verify-artifacts.mjs";
+import { wasmCrossCheck, wasmRefEscapes } from "../verify-artifacts.mjs";
 
 const REPO = join(fileURLToPath(new URL("../..", import.meta.url)));
 
@@ -29,6 +29,28 @@ test("hostile wasm path with .. is refused and does not skip sibling subjects", 
     const findings = wasmCrossCheck(manifest);
     assert.ok(findings.some((f) => f.status === "WASM-PATH-REFUSED" && String(f.wasm).includes("..")));
     assert.equal(findings.filter((f) => f.status === "WASM-PATH-REFUSED").length >= 1, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("hostile: absolute, drive, and UNC wasm refs are refused", () => {
+  assert.equal(wasmRefEscapes("../secret.wasm"), true);
+  assert.equal(wasmRefEscapes("/etc/passwd.wasm"), true);
+  assert.equal(wasmRefEscapes("C:/Windows/a.wasm"), true);
+  assert.equal(wasmRefEscapes("\\\\server\\share\\a.wasm"), true);
+  assert.equal(wasmRefEscapes("ok.wasm"), false);
+  assert.equal(wasmRefEscapes("dist/ok.wasm"), false);
+
+  const dir = mkdtempSync(join(tmpdir(), "verify-art-abs-"));
+  try {
+    const manifest = join(dir, "pkg.lmanifest.json");
+    writeFileSync(manifest, JSON.stringify({
+      wasm: "C:/Windows/a.wasm",
+      sha256: "a".repeat(64),
+    }));
+    const findings = wasmCrossCheck(manifest);
+    assert.ok(findings.some((f) => f.status === "WASM-PATH-REFUSED"));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

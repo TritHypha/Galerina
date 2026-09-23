@@ -2,10 +2,15 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { createRequire } from "node:module";
 import {
   lstat,
+  mkdir,
+  mkdtemp,
   open,
   readdir,
   realpath,
+  rm,
+  writeFile,
 } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import {
   basename,
   dirname,
@@ -476,6 +481,7 @@ async function inspectTool(toolRoot, manifestBytes) {
   ) return null;
   const inventory = await toolInventory(toolRoot);
   if (JSON.stringify(paths) !== JSON.stringify(inventory.map((file) => file.path))) return null;
+  const files = [];
   for (let index = 0; index < records.length; index += 1) {
     const record = records[index];
     if (
@@ -487,8 +493,19 @@ async function inspectTool(toolRoot, manifestBytes) {
     ) return null;
     const bytes = await stableRegularFile(inventory[index].absolute, 1, TOOL_FILE_BYTES);
     if (bytes === null || bytes.length !== record.byteLength || !equalText(sha256(bytes), record.sha256)) return null;
+    files.push({ path: record.path, bytes });
   }
-  return { entrypointPath: join(toolRoot, ...ENTRYPOINT.split("/")), fileCount: records.length };
+  return { files, fileCount: records.length };
+}
+
+async function stageVerifiedTool(files) {
+  const stagingRoot = await mkdtemp(join(tmpdir(), "slide-pinned-tool-"));
+  for (const file of files) {
+    const dest = join(stagingRoot, ...file.path.split("/"));
+    await mkdir(dirname(dest), { recursive: true });
+    await writeFile(dest, file.bytes, { flag: "wx" });
+  }
+  return stagingRoot;
 }
 
 function inspectBundle(bytes) {
@@ -1005,21 +1022,32 @@ export async function buildReceiptBoundSlidePackage(candidate, options = {}) {
     if (runtimeDigest === "" || !equalText(runtimeDigest, request.expectedRuntimeDigest)) return refusal();
     const runOwnedProcess = options.runOwnedProcess ?? defaultRunOwnedProcess;
     if (typeof runOwnedProcess !== "function") return refusal();
-    const childResult = await runOwnedProcess({
-      command: runtimePath,
-      args: [
-        tool.entrypointPath,
-        "--root", root,
-        "--manifest", sourceManifestPath,
-        "--out", outputDirectory,
-      ],
-      cwd: root,
-      env: minimalEnvironment(),
-      timeoutMs: 120_000,
-      cleanupGraceMs: 1_000,
-      maxOutputBytes: MANIFEST_BYTES,
-      windowsHide: true,
-    });
+    let stagingRoot = "";
+    let childResult;
+    try {
+      stagingRoot = await stageVerifiedTool(tool.files);
+      childResult = await runOwnedProcess({
+        command: runtimePath,
+        args: [
+          join(stagingRoot, ...ENTRYPOINT.split("/")),
+          "--root", root,
+          "--manifest", sourceManifestPath,
+          "--out", outputDirectory,
+        ],
+        cwd: root,
+        env: minimalEnvironment(),
+        timeoutMs: 120_000,
+        cleanupGraceMs: 1_000,
+        maxOutputBytes: MANIFEST_BYTES,
+        windowsHide: true,
+      });
+    } catch {
+      return refusal();
+    } finally {
+      if (stagingRoot !== "") {
+        try { await rm(stagingRoot, { recursive: true, force: true }); } catch { /* best effort */ }
+      }
+    }
     if (
       childResult === null
       || typeof childResult !== "object"

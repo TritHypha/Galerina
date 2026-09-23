@@ -128,6 +128,18 @@ test("v2: pinned root + UNSIGNED registry → fail closed", () => {
   assert.throws(() => assertRegistryTrustworthy(d), /UNSIGNED.*pinned|pinned.*requires a signed/i);
 });
 
+test("hostile: production snapshot refuses a replaced unsigned empty registry under a pin", () => {
+  const d = pinnedRoot("rootkey");
+  writeFileSync(
+    join(d, "governance", "revocations.json"),
+    JSON.stringify({ schemaVersion: 1, appendOnly: true, revoked: [] }, null, 2),
+  );
+  assert.throws(
+    () => loadTrustedRevocationSnapshot(d),
+    /UNSIGNED.*pinned|pinned.*requires a signed|not a pinned/i,
+  );
+});
+
 test("v2: malformed trust-anchor.json → fail closed (does not silently drop pinning)", () => {
   const d = mkdtempSync(join(tmpdir(), "fungi-anchor-bad-"));
   mkdirSync(join(d, "governance"), { recursive: true });

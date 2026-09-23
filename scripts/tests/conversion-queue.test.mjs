@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { aggregateCorpusReceipts } from "../lib/fungi-corpus-receipt.mjs";
 import { deriveCorpusShards } from "../lib/fungi-corpus-shards.mjs";
+import { admitRetirementPath } from "../conversion-queue.mjs";
 
 const TOOL = join(import.meta.dirname, "..", "conversion-queue.mjs");
 const digest = "a".repeat(64);
@@ -180,6 +181,25 @@ test("missing, stale, wrong-profile, product-mismatched and non-PASS corpus evid
     if (mutate !== null) writeProjectEvidence(root, request, mutate);
     assert.equal(run(root, "--write", path ?? undefined).status, 1);
   }
+});
+
+test("admitRetirementPath accepts repo-relative sources", () => {
+  assert.equal(admitRetirementPath("packages/a/src/a.ts"), true);
+  assert.equal(admitRetirementPath("../secret.ts"), false);
+  assert.equal(admitRetirementPath("/etc/passwd"), false);
+  assert.equal(admitRetirementPath("C:/Windows/a.ts"), false);
+});
+
+test("hostile: retirement path with .. is refused", () => {
+  const root = makeRoot();
+  const retirementPath = join(root, "build", "ts-retirement", "ts-retirement.json");
+  const retirement = JSON.parse(readFileSync(retirementPath, "utf8"));
+  retirement.allTrackedExecutablePaths[3] = "../secret.ts";
+  retirement.retirementLedger[3].path = "../secret.ts";
+  writeFileSync(retirementPath, `${JSON.stringify(retirement)}\n`);
+  const r = run(root, "--write");
+  assert.equal(r.status, 1);
+  assert.match(`${r.stderr}${r.stdout}`, /not exact|not admitted|escapes|REFUSED/i);
 });
 
 test("invalid, incomplete, duplicate and digest-mismatched PROJECT evidence refuses", () => {

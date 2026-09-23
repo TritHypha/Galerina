@@ -67,6 +67,32 @@ function isPopulated(p) {
   return existsSync(join(p, "package.json"));
 }
 
+/** One unscoped name, or one @scope/name pair. No dots, slashes, or NUL. */
+export function admitWorkspaceDepName(name) {
+  if (typeof name !== "string" || name.length === 0 || name.includes("\0") || /[\\]/.test(name)) {
+    return false;
+  }
+  const parts = name.split("/");
+  if (parts.some((part) => part === "" || part === "." || part === "..")) return false;
+  const token = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+  if (parts.length === 1) return token.test(parts[0]);
+  if (parts.length === 2 && parts[0].startsWith("@")) {
+    return token.test(parts[0].slice(1)) && token.test(parts[1]);
+  }
+  return false;
+}
+
+function isDirectRun() {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== "string" || argv1.length === 0) return false;
+  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+}
+
+if (isDirectRun()) {
+relinkMain();
+}
+
+function relinkMain() {
 const report = { ok: 0, recreated: [], created: [], missingTarget: [], leftCopy: [] };
 
 const pkgJsons = findPackageJsons(join(ROOT, "packages-ts"))
@@ -85,7 +111,7 @@ for (const pj of pkgJsons) {
   };
   for (const [name, spec] of Object.entries(deps)) {
     if (typeof spec !== "string" || !spec.startsWith("file:")) continue;
-    if (typeof name !== "string" || name.includes("\0") || name.split("/").some((part) => part === "" || part === "." || part === "..")) continue;
+    if (!admitWorkspaceDepName(name)) continue;
     const targetRel = spec.slice("file:".length);
     const target = resolve(pkgDir, targetRel);
     const targetFromRoot = relative(ROOT, target);
@@ -131,3 +157,4 @@ if (JSON_OUT) {
 }
 
 process.exit(0);
+}
