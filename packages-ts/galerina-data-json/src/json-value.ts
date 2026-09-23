@@ -322,6 +322,36 @@ class Scanner {
   }
 }
 
+function utf8ByteLength(text: string): number {
+  let n = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c <= 0x7f) n += 1;
+    else if (c <= 0x7ff) n += 2;
+    else if (c >= 0xd800 && c <= 0xdbff) {
+      const next = text.charCodeAt(i + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        n += 4;
+        i += 1;
+      } else {
+        n += 3;
+      }
+    } else if (c >= 0xdc00 && c <= 0xdfff) {
+      n += 3;
+    } else {
+      n += 3;
+    }
+  }
+  return n;
+}
+
+function documentExceedsMaxBytes(source: string | Uint8Array, maxBytes: number): boolean {
+  if (typeof source !== "string") return source.byteLength > maxBytes;
+  if (source.length > maxBytes) return true;
+  if (source.length * 3 <= maxBytes) return false;
+  return utf8ByteLength(source) > maxBytes;
+}
+
 function sourceText(
   source: string | Uint8Array,
 ): { readonly ok: true; readonly text: string } | { readonly ok: false; readonly diagnostic: JsonDiagnostic } {
@@ -345,11 +375,7 @@ export function parseJsonValue(
     return { ok: false, diagnostic: memoryErrors[0] };
   }
   const maxBytes = options.memory.maxDocumentBytes;
-  if (typeof source !== "string") {
-    if (source.byteLength > maxBytes) {
-      return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
-    }
-  } else if (source.length > maxBytes) {
+  if (documentExceedsMaxBytes(source, maxBytes)) {
     return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
   }
   const decoded = sourceText(source);
@@ -357,10 +383,6 @@ export function parseJsonValue(
   const text = decoded.text;
   if (text.charCodeAt(0) === 0xFEFF) {
     return err(FUNGI_JSON_INVALID_TOKEN, "JSON value source must not start with a UTF-8 BOM.");
-  }
-  const bytes = typeof source === "string" ? encoder.encode(text).byteLength : source.byteLength;
-  if (bytes > maxBytes) {
-    return err(FUNGI_JSON_BOUND, "JSON value exceeds maxDocumentBytes.");
   }
   const taint: JsonTaint = options.taint === "tainted" ? "tainted" : "clean";
   try {
@@ -373,19 +395,31 @@ export function parseJsonValue(
   }
 }
 
-function encodeString(value: string): string {
+function takeEncodeBytes(budget: { remaining: number }, bytes: number): boolean {
+  if (bytes > budget.remaining) return false;
+  budget.remaining -= bytes;
+  return true;
+}
+
+function encodeString(value: string, budget: { remaining: number }): string | undefined {
+  // UTF-16 length is only a lower bound. Refuse before copying even that much.
+  if (value.length + 2 > budget.remaining || !takeEncodeBytes(budget, 2)) return undefined;
   let out = "\"";
   for (const unit of value) {
     const code = unit.charCodeAt(0);
-    if (unit === "\"") out += "\\\"";
-    else if (unit === "\\") out += "\\\\";
-    else if (unit === "\b") out += "\\b";
-    else if (unit === "\f") out += "\\f";
-    else if (unit === "\n") out += "\\n";
-    else if (unit === "\r") out += "\\r";
-    else if (unit === "\t") out += "\\t";
-    else if (code < 0x20) out += `\\u${code.toString(16).padStart(4, "0")}`;
-    else out += unit;
+    let encoded = unit;
+    if (unit === "\"") encoded = "\\\"";
+    else if (unit === "\\") encoded = "\\\\";
+    else if (unit === "\b") encoded = "\\b";
+    else if (unit === "\f") encoded = "\\f";
+    else if (unit === "\n") encoded = "\\n";
+    else if (unit === "\r") encoded = "\\r";
+    else if (unit === "\t") encoded = "\\t";
+    else if (code < 0x20) encoded = `\\u${code.toString(16).padStart(4, "0")}`;
+    const bytes = encoded !== unit ? encoded.length
+      : unit.length === 2 ? 4 : code < 0x80 ? 1 : code < 0x800 ? 2 : 3;
+    if (!takeEncodeBytes(budget, bytes)) return undefined;
+    out += encoded;
   }
   return `${out}"`;
 }
@@ -407,23 +441,30 @@ function encodeNode(
   if (budget.nodes > MAX_ENCODE_NODES) {
     return encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode node count exceeds the host bound.", path);
   }
+  const boundError = () => encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode output exceeds the host bound.", path);
+  const scalar = (text: string) => takeEncodeBytes(budget, text.length)
+    ? { text, taint: value.taint } : boundError();
   switch (value.kind) {
     case "null":
-      return { text: "null", taint: value.taint };
+      return scalar("null");
     case "bool":
-      return { text: value.value ? "true" : "false", taint: value.taint };
-    case "string":
-      return { text: encodeString(value.value), taint: value.taint };
+      return scalar(value.value ? "true" : "false");
+    case "string": {
+      const text = encodeString(value.value, budget);
+      return text === undefined ? boundError() : { text, taint: value.taint };
+    }
     case "int": {
       if (!Number.isSafeInteger(value.value) || Object.is(value.value, -0)) {
         return encodeErr(FUNGI_JSON_NUMBER_NOT_INT, "JSON int is not a safe integer.", path);
       }
-      return { text: String(value.value), taint: value.taint };
+      return scalar(String(value.value));
     }
     case "array": {
+      if (!takeEncodeBytes(budget, 2)) return boundError();
       const parts: string[] = [];
       let taint = value.taint;
       for (const [index, item] of value.items.entries()) {
+        if (index > 0 && !takeEncodeBytes(budget, 1)) return boundError();
         const childPath = path === "" ? `/${index}` : `${path}/${index}`;
         const encoded = encodeNode(item, childPath, depth + 1, budget);
         if ("ok" in encoded) return encoded;
@@ -433,6 +474,7 @@ function encodeNode(
       return { text: `[${parts.join(",")}]`, taint };
     }
     case "object": {
+      if (!takeEncodeBytes(budget, 2)) return boundError();
       const seen = new Set<string>();
       const parts: string[] = [];
       let taint = value.taint;
@@ -441,10 +483,13 @@ function encodeNode(
           return encodeErr(FUNGI_JSON_DUPLICATE_KEY, `JSON object has duplicate key "${field.name}".`, path);
         }
         seen.add(field.name);
+        if (!takeEncodeBytes(budget, parts.length > 0 ? 2 : 1)) return boundError();
+        const name = encodeString(field.name, budget);
+        if (name === undefined) return boundError();
         const childPath = path === "" ? `/${field.name}` : `${path}/${field.name}`;
         const encoded = encodeNode(field.value, childPath, depth + 1, budget);
         if ("ok" in encoded) return encoded;
-        parts.push(`${encodeString(field.name)}:${encoded.text}`);
+        parts.push(`${name}:${encoded.text}`);
         taint = joinJsonTaint(taint, encoded.taint);
       }
       return { text: `{${parts.join(",")}}`, taint };
@@ -458,7 +503,7 @@ export function encodeJsonValue(value: JsonValue): JsonEncodeResult {
   const budget = { remaining: MAX_ENCODE_BYTES, nodes: 0 };
   const encoded = encodeNode(value, "", 1, budget);
   if ("ok" in encoded) return encoded;
-  if (encoded.text.length > MAX_ENCODE_BYTES) {
+  if (encoder.encode(encoded.text).byteLength > MAX_ENCODE_BYTES) {
     return encodeErr(FUNGI_JSON_ENCODE_REFUSED, "JSON encode output exceeds the host bound.", "");
   }
   return { ok: true, text: encoded.text, taint: encoded.taint };
