@@ -2,6 +2,13 @@
 
 ## Custody and roadmap refresh — 2026-09-23
 
+Git custody checkpoint: `main` and `origin/main` matched at `bf1071f24`
+when this refresh began. The security source, tooling, and tracker checkpoints
+are backed up there; committing them did not supply independent production
+admission. Untracked audit reports, two edited `.fungi` overlays, the TriRegex
+mirror, and generated outputs remain outside that commit. Recheck Git before
+using this checkpoint as current state.
+
 Historical checkpoint: HEAD was `ed4a1359…` when this section was drafted
 (`fix(status): preserve ten bounded ledger gates`; parent `91b4dec0…`).
 Recheck Git for current custody; this is not an exact-head receipt. The item-7
@@ -17,8 +24,11 @@ The 242 open `docs/TODO.md` boxes remain HOLD, not completed conversion. The
 live status ledger retains all ten named gates; its reader admits up to
 twelve bounded gates and refuses any larger set.
 
-The registered SVG generator's `--check` refused on dirty provenance,
-starting with `docs/ARCHITECTURE.md`. Consequently
+The registered SVG generator's latest `--check` refused on dirty provenance,
+starting with the untracked independent-audit report
+`docs/independent-audits/2026-09-22-admit-instantiate-snapshot-hold.md`.
+An earlier refusal began with `docs/ARCHITECTURE.md`, before that file was
+committed. Consequently
 `build/roadmap/roadmap.svg` and the generated region below are stale, not
 regenerated. Do not use either as an exact-head receipt. Cleanly account for
 and integrate relevant source inputs before running the generator's `--write`
