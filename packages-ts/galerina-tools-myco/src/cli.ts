@@ -197,11 +197,6 @@ function noteSaveOutcome(saved: SaveOutcome): void {
     );
     return;
   }
-  process.stdout.write(
-    `myco: note — index NOT cached: ${saved.edges.toLocaleString()} term edges `
-      + `exceeds the ${saved.limit.toLocaleString()} ceiling. Results are correct, `
-      + `but every run re-indexes from scratch. Index a narrower root to restore caching.\n`,
-  );
 }
 
 async function cmdStatus(root: string): Promise<number> {
@@ -216,7 +211,7 @@ async function cmdStatus(root: string): Promise<number> {
   if (outcome.status === "rejected") {
     process.stderr.write(
       `index at ${path.join(root, ".myco")} exists but was REFUSED `
-        + `(over a contract limit, corrupt, or an incompatible format) — `
+        + `(malformed or incompatible format) — `
         + `delete it and run: myco index\n`,
     );
     return 2;
@@ -496,7 +491,7 @@ async function cmdSearch(
       if (prior.status === "rejected") {
         process.stdout.write(
           `myco: existing index at ${path.join(path.resolve(root), ".myco")} was REFUSED `
-            + `(over a contract limit, corrupt, or an incompatible format) — re-indexing…\n`,
+          + `(malformed or incompatible format) — re-indexing…\n`,
         );
       }
       if (prior.status === "absent") {

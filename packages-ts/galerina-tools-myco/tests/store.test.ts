@@ -193,29 +193,13 @@ test("name-only content-skip tags round-trip (k=b / k=l) and refuse polluted row
   }
 });
 
-test("index collection budgets are enforced by the structural validator", () => {
+test("per-file term budget remains enforced by the structural validator", () => {
   assert.equal(
     validateStoredIndex(validIndex(), {
-      maxFiles: 0,
       maxTermsPerFile: 0,
-      maxTermEdges: 0,
-    } as never),
+    }),
     null,
   );
-});
-
-test("index bytes are bounded before JSON parsing", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "myco-index-bytes-"));
-  try {
-    await writeIndex(root, validIndex());
-    assert.equal(
-      await loadGraph(root, { maxIndexBytes: 16 } as never),
-      null,
-      "a caller may tighten, but never raise, the fixed byte ceiling",
-    );
-  } finally {
-    await fs.rm(root, { recursive: true, force: true });
-  }
 });
 
 test("a symlinked index directory cannot redirect cache reads outside the root", async (t) => {

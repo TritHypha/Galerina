@@ -15,8 +15,6 @@ import * as path from "node:path";
 
 import {
   DEFAULT_INDEX_LIMITS,
-  MAX_INDEX_BYTES,
-  MAX_INDEX_TERM_EDGES,
   validateStoredIndex,
 } from "./index-contract.ts";
 import type { StoredFile, StoredIndex } from "./index-contract.ts";
@@ -35,33 +33,6 @@ export interface IndexMeta {
   filesWithOmittedOverlongTerms: number;
 }
 
-export interface LoadGraphOptions {
-  /** Tests may tighten this ceiling; callers cannot raise the fixed maximum. */
-  maxIndexBytes?: number;
-}
-
-export interface SaveGraphOptions {
-  /** Tests may tighten this ceiling; callers cannot raise the fixed maximum. */
-  maxTermEdges?: number;
-}
-
-// Resolve a caller-supplied term-edge ceiling against the fixed contract
-// maximum. A request to RAISE the ceiling is not honoured and not an error —
-// it silently clamps — because the persisted format's limit is the reader's
-// guarantee, and a writer that could lift it would put files on disk that no
-// reader will accept. Tightening is allowed so tests can exercise the refusal
-// without building a multi-million-edge fixture.
-export function clampTermEdgeCeiling(requested: number | undefined): number {
-  if (
-    requested === undefined
-    || !Number.isSafeInteger(requested)
-    || requested < 0
-  ) {
-    return MAX_INDEX_TERM_EDGES;
-  }
-  return Math.min(requested, MAX_INDEX_TERM_EDGES);
-}
-
 function indexPath(root: string): string {
   return path.join(root, INDEX_DIR, INDEX_FILE);
 }
@@ -70,33 +41,19 @@ function compareCodeUnits(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-// Why a save can decline to write. `ok` is the normal path; `term-edge-ceiling`
-// means the graph is larger than the reader will ever accept back.
+// A structurally invalid payload is the only graph-contract refusal. There is
+// no fixed aggregate file, edge, or serialized-byte budget.
 export type SaveOutcome =
   | { written: true }
-  | { written: false; reason: "term-edge-ceiling"; edges: number; limit: number }
   | { written: false; reason: "invalid-payload" }
   | { written: false; reason: "unsafe-path" };
 
 // Write the graph to <root>/.myco/index.json (creating the dir if needed).
 //
-// The writer enforces the SAME ceiling the reader enforces. Without this the
-// two halves of the contract disagree: `saveGraph` would happily persist an
-// index that `validateStoredIndex` rejects on sight, so every later run would
-// discard the cache, rebuild it, and write the identical rejected file again —
-// a cache that can never hit, costing a full re-index forever with nothing said
-// out loud. Declining to write is the honest outcome: the caller is told, and
-// no poisoned artifact is left on disk pretending to be a usable cache.
 export async function saveGraph(
   root: string,
   graph: SearchGraph,
-  options: SaveGraphOptions = {},
 ): Promise<SaveOutcome> {
-  const limit = clampTermEdgeCeiling(options.maxTermEdges);
-  const edges = graph.termEdgeCount();
-  if (edges > limit) {
-    return { written: false, reason: "term-edge-ceiling", edges, limit };
-  }
   const files: StoredFile[] = [];
   for (const rec of graph.files()) {
     const counts = graph.forwardOf(rec.id);
@@ -115,10 +72,7 @@ export async function saveGraph(
   }
   files.sort((left, right) => compareCodeUnits(left.p, right.p));
   const payload: StoredIndex = { format: FORMAT, createdAt: Date.now(), files };
-  const validated = validateStoredIndex(payload, {
-    ...DEFAULT_INDEX_LIMITS,
-    maxTermEdges: limit,
-  });
+  const validated = validateStoredIndex(payload, DEFAULT_INDEX_LIMITS);
   if (validated === null) {
     return { written: false, reason: "invalid-payload" };
   }
@@ -196,13 +150,8 @@ async function admitCacheDirectory(root: string): Promise<string | null> {
   return dir;
 }
 
-// Why a load produced no graph. `absent` = nothing to read (a genuine first
-// run); `rejected` = an index EXISTS on disk but failed the contract.
-//
-// These are different facts and must not share a signal. Collapsing them to
-// `null` is what let an over-ceiling index report itself as "first run" on
-// every invocation: a refusal rendering as an absence, so the user sees a slow
-// tool rather than a stated reason and has nothing to act on.
+// Why a load produced no graph. `absent` = nothing to read; `rejected` = a malformed
+// index EXISTS on disk. These facts must not share a signal.
 export type LoadStatus = "ok" | "absent" | "rejected" | "unsafe";
 
 // Load the graph from disk, or null if there is no (compatible) index yet.
@@ -210,9 +159,8 @@ export type LoadStatus = "ok" | "absent" | "rejected" | "unsafe";
 // that can tell "no index" apart from "index refused".
 export async function loadGraph(
   root: string,
-  options: LoadGraphOptions = {},
 ): Promise<{ graph: SearchGraph; meta: IndexMeta } | null> {
-  const outcome = await loadGraphOutcome(root, options);
+  const outcome = await loadGraphOutcome(root);
   return outcome.status === "ok"
     ? { graph: outcome.graph, meta: outcome.meta }
     : null;
@@ -221,19 +169,10 @@ export async function loadGraph(
 // Load the graph and SAY WHY when there is none.
 export async function loadGraphOutcome(
   root: string,
-  options: LoadGraphOptions = {},
 ): Promise<
   | { status: "ok"; graph: SearchGraph; meta: IndexMeta }
   | { status: "absent" | "rejected" | "unsafe" }
 > {
-  const maxIndexBytes = options.maxIndexBytes ?? MAX_INDEX_BYTES;
-  if (
-    !Number.isSafeInteger(maxIndexBytes)
-    || maxIndexBytes < 1
-    || maxIndexBytes > MAX_INDEX_BYTES
-  ) {
-    return { status: "rejected" };
-  }
   let text: string;
   try {
     const requestedIndex = indexPath(root);
@@ -265,9 +204,6 @@ export async function loadGraphOutcome(
     const stat = await fs.lstat(requestedIndex);
     if (stat.isSymbolicLink() || !stat.isFile()) {
       return { status: "unsafe" };
-    }
-    if (stat.size > maxIndexBytes) {
-      return { status: "rejected" };
     }
     text = await fs.readFile(requestedIndex, "utf8");
   } catch (error: unknown) {

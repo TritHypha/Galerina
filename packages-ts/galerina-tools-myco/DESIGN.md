@@ -150,7 +150,7 @@ myco reads files and writes only `./.myco/`. Notable choices:
   the root is derived from where `.myco/` sits. The artifact is portable and
   never embeds a machine path.
 - **The persisted graph is untrusted.** Loading requires an exact closed shape,
-  bounded bytes/files/term edges, canonical non-empty POSIX-relative paths,
+  per-file term bounds, canonical non-empty POSIX-relative paths,
   positive counts and unique file/term identities. Windows/POSIX absolute,
   backslash, empty, dot and parent segments refuse the complete index.
 - **The writer validates before writing.** A programmatic graph that violates
@@ -199,8 +199,10 @@ forward/inverted split already supports adding a second edge type.
 ## 10. Known limitations (honest)
 
 - **In-memory JSON index.** Fine for typical repos; a very large tree will want a
-  columnar/binary store and streaming. The current decoder refuses beyond its
-  declared byte and collection ceilings before constructing a graph.
+  columnar/binary store and streaming. There is no fixed aggregate file, edge,
+  or serialized-byte rejection threshold: indexing and loading remain bounded
+  by available process, disk, and operating-system resources. A resource failure
+  is not converted into a smaller or incomplete successful index.
 - **Metadata freshness is not content proof.** Size+mtime preserves the repeat
   search advantage but cannot support an authority-sensitive absence claim.
   A future strict mode must hash source bytes and emit a replayable evidence

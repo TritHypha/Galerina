@@ -68,9 +68,14 @@
     "snapshotStatus": {
       "kind": "PARTIAL_FORK",
       "upstreamFileCount": 16,
-      "exactFileCount": 13,
+      "exactFileCount": 8,
       "divergentPaths": [
         "src/cli.ts",
+        "src/graph/index-contract.ts",
+        "src/graph/model.ts",
+        "src/graph/store.ts",
+        "src/ingest/indexer.ts",
+        "src/ingest/walk.ts",
         "src/query/path-filter.ts",
         "src/query/regex-guard.ts"
       ],
@@ -81,6 +86,11 @@
     },
     "divergenceReasons": {
       "src/cli.ts": "Galerina retains the local Markdown-link command and imports the local-only links module.",
+      "src/graph/index-contract.ts": "Local candidate removes aggregate whole-index file, term-edge, and serialized-byte ceilings while retaining per-file and path validation; public Myco owner synchronization has not occurred.",
+      "src/graph/model.ts": "The local comment reflects aggregate term-edge limits no longer being a persistence contract; executable accounting remains for metrics and tests.",
+      "src/graph/store.ts": "Galerina retains unsafe cache-path containment and atomic replacement; local candidate removes aggregate index ceilings. Public Myco owner synchronization has not occurred.",
+      "src/ingest/indexer.ts": "Local candidate removes the aggregate term-edge refusal; per-file/path validation and visible content skips remain. Public Myco owner synchronization has not occurred.",
+      "src/ingest/walk.ts": "Galerina retains its local ignore-rule parser and glob matching implementation; keep this fork explicit until separately reviewed against the public source owner.",
       "src/query/path-filter.ts": "Comments use the active Galerina packages-ts root; executable behavior remains source-owner compatible.",
       "src/query/regex-guard.ts": "Owner-requested 120-second total search budget, synchronized with the public source owner's local working copy. The pinned upstream snapshot still has five seconds; advance the snapshot only after the upstream change is committed. The 250 ms regex-operation deadline is unchanged.",
       "src/query/links.ts": "Galerina-only Markdown-link classification and repair extension."

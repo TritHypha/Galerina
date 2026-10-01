@@ -13,8 +13,8 @@
 |---|---|
 | Files | 16 |
 | Internal edges | 33 |
-| External dependencies | 4 |
-| ├─ Node core | 4 |
+| External dependencies | 5 |
+| ├─ Node core | 5 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,6 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
+- `node:crypto`
 - `node:fs`
 - `node:path`
 - `node:util`
@@ -44,6 +45,9 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/index.ts`
 
 ## Loaded Assets
+_none declared_
+
+## Product Assets
 _none declared_
 
 ## Allowed Orphans
