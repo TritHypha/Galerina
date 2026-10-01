@@ -6,11 +6,19 @@ export interface CliContext {
   readonly args: readonly string[];
 }
 
+/** Structured, operator-safe CLI error: never echoes raw user input. */
+export interface CliError {
+  readonly code: string;
+  readonly safeMessage: string;
+  readonly suggestedFix: string;
+}
+
 export interface CliResult {
   readonly ok: boolean;
   readonly code: number;
   readonly message: string;
   readonly details?: readonly string[];
+  readonly error?: CliError;
 }
 
 export interface CliCommand {

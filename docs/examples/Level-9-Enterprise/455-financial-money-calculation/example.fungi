@@ -8,5 +8,5 @@
 
 pure flow calculateTax(amount: Money<GBP>, rate: Decimal) -> Money<GBP>
 {
-  return amount * rate
+  return amount.multiply(rate, "halfEven")
 }

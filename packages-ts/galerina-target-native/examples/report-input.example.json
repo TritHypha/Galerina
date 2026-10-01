@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    {
+      "schema": "fungi.native.artifact.v1",
+      "path": "out/native/app",
+      "target": {
+        "triple": "x86_64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "x86_64",
+        "abi": "c",
+        "executionMode": "future-native-executable"
+      },
+      "format": "executable",
+      "digest": "e94466faac02d08efbb3109dbe52d0c13c5a53859e328d50dbeb2e6f0ee89871",
+      "bytesHex": "7f454c4602010100",
+      "vok": {
+        "receiptId": "vok-receipt-example",
+        "subjectDigest": "e94466faac02d08efbb3109dbe52d0c13c5a53859e328d50dbeb2e6f0ee89871",
+        "state": "current"
+      }
+    }
+  ],
+  "machineProfileBridge": {
+    "enabled": true,
+    "capabilityProfilePath": "profiles/machine-capability.json",
+    "selectedAbi": "c"
+  }
+}

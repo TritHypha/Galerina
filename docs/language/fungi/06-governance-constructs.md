@@ -234,7 +234,7 @@ import plugin safe "./plugins/payment-gateway.fungi" as Pay {
 
 ## `step` — DWI isolate invocation (parses today; full isolation is later)
 
-`step call(...)` invokes a function inside a shared-nothing DWI isolate (hard-erased after). From
+`step call(...)` is intended to run a function inside a shared-nothing DWI isolate (hard-erased after). Stage A simulates this: the nested Interpreter shares the enforcer, capability host and step budget. From
 `hardened-border-plugin.fungi:59`:
 
 ```fungi

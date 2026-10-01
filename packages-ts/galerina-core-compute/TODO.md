@@ -43,13 +43,13 @@ active v1 runtime target.
 [ ] Implement estimateOpticalNeed(workload): OpticalNeed
 [ ] Implement buildOpticalPlan(workload): OpticalPlan
 [ ] Create photonic/ dir: photonic-planner.ts, optical-routing.ts, distributed-graph.ts, optical-runtime.ts, photonic-audit.ts
-[ ] Upgrade WasmTarget: sandboxed, allowedEffects, runtime (browser|wasi|edge|node-wasm|unknown), forbiddenEffects[]
-[ ] Define DEFAULT_WASM_FORBIDDEN_EFFECTS: filesystem, process, shell, native, gpu
-[ ] Define BROWSER_WASM_FORBIDDEN_EFFECTS: DEFAULT + database, secret
-[ ] Implement validateWasmEffect(effect, target): ComputeDiagnostic[]
-[ ] Implement validateWasmTarget(target): ComputeDiagnostic[]
-[ ] Create wasm/ dir: wasm-emitter.ts, wasm-runtime.ts, wasm-bindings.ts, wasm-sandbox.ts
-[ ] Define FUNGI-WASM-001 through FUNGI-WASM-004 diagnostic codes
+[x] SUPERSEDED (galerina-target-wasm, see note W1) Upgrade WasmTarget: sandboxed, allowedEffects, runtime (browser|wasi|edge|node-wasm|unknown), forbiddenEffects[]
+[x] SUPERSEDED (galerina-target-wasm, see note W2) Define DEFAULT_WASM_FORBIDDEN_EFFECTS: filesystem, process, shell, native, gpu
+[x] SUPERSEDED (galerina-target-wasm, see note W2) Define BROWSER_WASM_FORBIDDEN_EFFECTS: DEFAULT + database, secret
+[x] SUPERSEDED (galerina-target-wasm, see note W3) Implement validateWasmEffect(effect, target): ComputeDiagnostic[]
+[x] SUPERSEDED (galerina-target-wasm, see note W3) Implement validateWasmTarget(target): ComputeDiagnostic[]
+[x] SUPERSEDED (package split, see note W4) Create wasm/ dir: wasm-emitter.ts, wasm-runtime.ts, wasm-bindings.ts, wasm-sandbox.ts
+[x] SUPERSEDED (galerina-target-wasm, see note W5) Define FUNGI-WASM-001 through FUNGI-WASM-004 diagnostic codes
 [ ] Define CompatibilityLevel: full|partial|degraded|incompatible
 [ ] Define CompatibilityBlocker: reason, diagnosticCode
 [ ] Define CompatibilityWarning: message, diagnosticCode
@@ -66,3 +66,28 @@ active v1 runtime target.
 [x] Add examples
 [x] Add tests
 ```
+
+### WASM rows superseded (2026-09-29, Grok Bot, owner-approved; AGENTS session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md)
+
+WASM target ownership moved to `packages-ts/galerina-target-wasm` (see its
+TODO.md). These rows are closed by cross-reference, not by code in this package;
+the shipped design differs in places:
+
+- W1: `WasmTarget` is `{ runtime: browser|edge|server|standalone, features }`
+  in target-wasm `src/index.ts`. There are no `sandboxed`/`allowedEffects`
+  fields, and the runtime vocabulary differs from `browser|wasi|edge|node-wasm|unknown`
+  (reconciled with compute via `wasmRuntime`, `FUNGI-WASM-028`). Sandbox limits
+  live on the artefact (`WasmSandboxLimits`).
+- W2: target-wasm `FORBIDDEN_EFFECTS` is keyed by runtime. `browser` =
+  filesystem, process, shell, native, gpu, database, secret (matches the BROWSER
+  row). `edge` and `standalone` = filesystem, process, shell, native (no `gpu`,
+  unlike the DEFAULT row). `server` = none.
+- W3: effect and runtime checks run inside `validateWasmArtefact`
+  (`FUNGI-WASM-017` effect forbidden, `FUNGI-WASM-005` runtime invalid); there
+  are no standalone `validateWasmEffect`/`validateWasmTarget` functions.
+- W4: emission is in `galerina-core-compiler` (`src/wat-emitter.ts`), runtime in
+  `galerina-core-runtime-wasm`, contracts in `galerina-target-wasm`; there is no
+  core-compute `wasm/` dir.
+- W5: the registry is `FUNGI-WASM-001`..`FUNGI-WASM-030`
+  (`WASM_DIAGNOSTIC_REGISTRY`); its meanings do not match this package README's
+  `FUNGI-WASM-001`..`005` list.

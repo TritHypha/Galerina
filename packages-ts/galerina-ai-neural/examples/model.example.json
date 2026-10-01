@@ -1,0 +1,19 @@
+{
+  "name": "ImageClassifier",
+  "task": "classification",
+  "inputs": [
+    { "elementType": "Float32", "shape": { "dimensions": [1, 3, 224, 224] } }
+  ],
+  "outputs": [
+    { "elementType": "Float32", "shape": { "dimensions": [1, 1000] } }
+  ],
+  "layers": [
+    {
+      "name": "classifier",
+      "kind": "dense",
+      "input": { "elementType": "Float32", "shape": { "dimensions": [1, 512] } },
+      "output": { "elementType": "Float32", "shape": { "dimensions": [1, 1000] } },
+      "activation": "softmax"
+    }
+  ]
+}

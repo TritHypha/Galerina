@@ -54,7 +54,7 @@
 <text x="310" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">no ASCII math — it's a value, not a verdict</text>
 <rect x="404" y="324" width="164" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>
 <text x="486" y="346" text-anchor="middle" font-size="11" font-weight="600" fill="#2c2c2a">WASM toolchain</text>
-<text x="486" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">wabt · wat-wasm</text>
+<text x="486" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">wabt</text>
 <text x="486" y="378" text-anchor="middle" font-size="9.3" fill="#5f5e5a">.fungi → .wasm assembler</text>
 <text x="486" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">the build floor (retires w/ .ts)</text>
 <rect x="580" y="324" width="150" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>

@@ -126,8 +126,17 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
 [x] Effect checker — FUNGI-EFFECT-001..006 + canonical effects registry
 [x] Governance verifier — FUNGI-GOV-001..024 + FUNGI-INV-001..004 + FUNGI-CONTEXT-001
 [x] GIR emitter (Governed Intermediate Representation)
-[x] WAT emitter (~89% lowered; unreachable trap for unlowered stubs)
+[x] WAT emitter (measured L1 187/190 = 98 after J8; leftover parked type-checker flows `checkMatchArms`, `checkBinding`, `checkStepExpr`; unreachable trap for remaining unlowered stubs)
 [x] Runtime interpreter (Stage-A tree-walker, diagnostic tier)
+    Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+    the measured Runtime interpreter figure (K1 three-engine ladder, walker ==
+    WASM == sync fast path) is 14/14 = 100. The sync fast path now carries a
+    statement-position Int `match`, Decimal `+` and `d.divide(b, scale, mode)`
+    with the walker's own dispatch/stdlib; anything outside that shape still
+    declines to the governed walker (zero-trust defaults, owner may revisit).
+    The 14-rung charter is small: 100 means "every charter rung agrees", not
+    full language coverage. Not committed, not reviewed. See the Grok Bot
+    rounding REPORT §10.
 [x] Bytecode VM (fast path for hot pure flows)
 [x] WASM assembler (wabt integration)
 [x] Manifest generator (.lmanifest CBOR + .lmanifest.json)
@@ -208,8 +217,10 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     `tests/type-checker-generic-assignment.test.mjs:168-198` (11/11 in the
     file); the focused combined route is **34/34**. The last full package run
     before the Set slice was **6,784/6,784** at
-    `e67db0ce0`; `map`/`reduce`/`filter` remain deferred:
-    callback/closure typing is not admitted by this bounded inference lane.
+    `e67db0ce0`; at that pin `map`/`reduce`/`filter` remained deferred:
+    callback/closure typing was not admitted by that bounded inference lane.
+    After HOF jobs + RD-1277, capture-free named `map`/`filter`/`reduce` lower
+    to `$fungi_array_*` helpers; measured L1 after J8 is **187/190 = 98**.
     Unknown receiver or element types remain conservative rather than being
     invented.
 
@@ -303,10 +314,19 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     tests/rd-0120-governed-flow-valuestate.test.mjs and
     tests/tier-floor-fungi-tier-001.test.mjs.
 
-[x] WAT emitter — C02 Decimal host ABI and capture-free map/filter (RD-1276)
+[x] WAT emitter — C02 Decimal host ABI and capture-free map/filter/reduce (RD-1276 / RD-1277)
     Decimal is an i32 host handle (`__decimal_*`), never f64.
-    Named unary `map`/`filter` emit `$fungi_array_*` helpers. `reduce` and
-    Decimal division remain `(unreachable)`. Evidence:
+    Capture-free named `map`/`filter`/`reduce` emit `$fungi_array_*` helpers.
+    Decimal division may remain `(unreachable)` where still accurate.
+    Follow-up (2026-09-30, not done): K4 (D6), queued after R1-R12, replaces
+    that `(unreachable)` with a named compile-time refusal pointing at
+    `divide(b, scale, mode)` / `remainder(b)`. R2 adds the Money-operator
+    refusal and R3 the divide/remainder argument typing first.
+    Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+    R2, R3 and K4 are implemented there; Decimal `/`/`%` is now a named
+    FUNGI-WAT-DECIMAL-001 refusal, not `(unreachable)`. See
+    the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
+    Measured L1 after J8 is **187/190 = 98**. Evidence:
     `tests/wat-c02-decimal-hof.test.mjs` and `tests/wat-decimal-decline.test.mjs`.
 
 [x] C19-A Stage-B type-code identity (`RD-1288`)

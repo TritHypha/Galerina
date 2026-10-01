@@ -39,9 +39,23 @@ owner-gated build — not a per-boundary gap.
 
 - **I1** `UNIT_REGISTRY` (fiat active set + metals + curated crypto; hash-pinned, never hand-typed).
 - **I2** JPY-0dp example (needs the registry so `moneyDecimals` returns real per-currency dp).
+  Rounding plan link (2026-09-30, not done): the owner R11 decision (refuse
+  Money amounts with more decimals than the currency allows) makes this
+  finishable in job R11a (constructor scale refusal, for example `100.5` JPY
+  refused).
+  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  R11a implemented there. Money constructors admit at most the currency's
+  minor units, pad shorter amounts and never round (`100.5` JPY refused); the
+  full UNIT_REGISTRY (I1) is still open. See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
 - **I5** `Commodity<XAU>` / `Crypto<T>` value types. **I6** `Rate<A,B>`.
 - Hallmark `decimals` / `sign` schema fields parse + capture today but their quantity-algebra
   enforcement joins this registry work.
+  Rounding plan link (2026-09-30, not done): job R12 (hygiene) either
+  enforces or refuses hallmark `decimals:`.
+  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  R12 chose refusal. Hallmark `decimals:` and `sign:` are rejected with
+  FUNGI-HALLMARK-006 (HALLMARK_SCHEMA_FIELD_NOT_ENFORCED) until enforcement
+  lands. See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
 
 ## 4. Owner-gated (surfaced, not done)
 

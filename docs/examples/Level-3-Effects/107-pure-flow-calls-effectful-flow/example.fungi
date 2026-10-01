@@ -36,5 +36,5 @@ contract {
 }
 {
   let rate = fetchRate("GBP")?
-  return Money.gbp("100.00") * rate
+  return Money.gbp("100.00").multiply(rate, "halfEven")
 }

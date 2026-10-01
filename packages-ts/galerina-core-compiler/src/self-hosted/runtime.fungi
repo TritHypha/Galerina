@@ -379,7 +379,7 @@ contract { intent { "Evaluate a GIR binop with fail-closed Int32 arithmetic." } 
 pure flow lookupFlow(flows: Array<FlowEntry>, name: String) -> FlowEntry
 contract { intent { "Return the flow-table entry whose name matches, or an empty sentinel entry." } }
 {
-  mut result: FlowEntry = FlowEntry { name: "", params: Array.empty(), body: Array.empty() }
+  mut result: FlowEntry = FlowEntry { name: "", params: Array.empty(), body: Array.empty(), qualifier: "", paramTypes: Array.empty(), returnType: "", effects: Array.empty() }
   mut i: Int = 0
   while i < flows.count() {
     let eOpt = flows.get(i)
@@ -1145,7 +1145,7 @@ contract { intent { "Run a flow-table program from an entry flow with positional
   // this guard, a missing binding could later resolve through the legacy Int(0)
   // sentinel and surplus evidence would be silently discarded.
   trap params.count() != args.count() : ERR_ARGUMENT_COUNT
-  mut env: Array<Binding> = Array.empty()
+  mut scopeEnv: Array<Binding> = Array.empty()
   mut i: Int = 0
   while i < params.count() and i < args.count() {
     let pOpt = params.get(i)
@@ -1153,7 +1153,7 @@ contract { intent { "Run a flow-table program from an entry flow with positional
     match pOpt {
       Some(pName) => {
         match vOpt {
-          Some(v) => { env = envBind(env, pName, v) }
+          Some(v) => { scopeEnv = envBind(scopeEnv, pName, v) }
           None => {}
           _ => {}
         }
@@ -1163,6 +1163,6 @@ contract { intent { "Run a flow-table program from an entry flow with positional
     }
     i = i + 1
   }
-  let res: ExecResult = execGIRBody(entry.body, env, flows)
+  let res: ExecResult = execGIRBody(entry.body, scopeEnv, flows)
   return { retVal: res.retVal, auditLog: res.auditLog }
 }

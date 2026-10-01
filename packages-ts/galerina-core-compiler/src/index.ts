@@ -1338,6 +1338,17 @@ export {
   type WATSIMDInstruction,
 } from "./wat-emitter.js";
 
+export {
+  CHECKED_PROGRAM_KIND,
+  FUNGI_WAT_CHECKED_001,
+  assertCheckedProgram,
+  buildWATFromCheckedProgram,
+  checkProgram,
+  isCheckedProgram,
+  type CheckedProgram,
+  type CheckProgramResult,
+} from "./checked-program.js";
+
 // Security Policy — Anti-abuse architecture (Phase 25D+)
 export {
   ANTI_ABUSE_EFFECTS,

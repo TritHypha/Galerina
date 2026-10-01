@@ -10,10 +10,8 @@ hallmark CustomerRef of String {
 }
 
 hallmark LoyaltyPoints of Decimal {
-  decimals: 0
-  sign:     non-negative
   ops:      { add, subtract, scale, compare }   // the CLOSED algebra for this type
-  gate:     flow assayPoints
+  gate:     flow assayPoints                    // "whole, never negative" is checked in the gate
 }
 ```
 
@@ -26,12 +24,18 @@ the assay, strike a protected mark, prosecute counterfeits*:
 | the assay (must be able to fail) | the mandatory gate + the redness test |
 | the struck mark, travelling with the metal | the schema (pinned across packages under B4, owner-gated) |
 | protected marks | the reserved-name gate (`FUNGI-HALLMARK-001`) + non-ASCII refusal |
-| fineness standards (925, 999.9) | the schema — decimals · sign · ops |
+| fineness standards (925, 999.9) | the schema's closed `ops {}` + the gate's own checks (whole, non-negative) |
 | no hallmark → not sellable as sterling | no gate → not a hallmark (`FUNGI-HALLMARK-003`) |
 
 **Reused machinery:** construction-only is `FUNGI-TYPE-003` (a hallmark is a *declared*
 branded type); cross-type non-unification is `FUNGI-TYPE-004`; declare-or-reject is
-`FUNGI-TYPE-001`. The hallmark-specific gates are `FUNGI-HALLMARK-001..005`.
+`FUNGI-TYPE-001`. The hallmark-specific gates are `FUNGI-HALLMARK-001..006`.
+
+**2026-09-30 (R12, zero-trust default, owner may revisit):** the schema fields `decimals:` and `sign:`
+used to be parsed and then ignored by every checker and runtime, so "whole, never negative" was a promise
+nothing kept. They are now refused (`FUNGI-HALLMARK-006`, pending KB registration); the gate checks them.
+The gate also compares with `Decimal("0")` rather than `0.0` — a Decimal never meets a Float
+(`FUNGI-NUMERIC-OP-003`).
 
 See also: 095 (ops deny-by-default), 096 (reserved names), 097 (construction only through
 the gate), 098 (minting is taint-transparent).

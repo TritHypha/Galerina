@@ -104,3 +104,16 @@ Canonical ownership (2026-09-22 reconciliation):
 The v0.2 section above is retained as historical planning. Every row remains
 unimplemented and held by the decisions above.
 Independent audit remains pending.
+
+### Consistency note (2026-09-29, Grok Bot, owner-approved; AGENTS session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md)
+
+This file currently disagrees with itself. The ticked 2026-09-22 reconciliation
+rows at the top (PhotonicMode canonical; OpticalTransportMode not admitted;
+FUNGI-PHOTONIC-001..006 = the C10 diagnostic table; the ownership split) read
+as settling HOLD-PHOTONIC-TRANSPORT, -DIAGNOSTICS and -BOUNDARY. The 2026-09-21
+HOLD groups above still say the cross-package adjudication receipt is missing.
+The 09-22 decision is recorded only in this file, not in core-vector,
+core-compute or target-photonic, and README.md "Coverage Reconciliation
+Status" still describes the conflict as open. HOLD-PHOTONIC-BOUNDARY's
+"row 9 above" pointer is also stale (line 9 is now prose). The HOLDs are left in
+place until the owner confirms whether the 09-22 rows are the receipt.

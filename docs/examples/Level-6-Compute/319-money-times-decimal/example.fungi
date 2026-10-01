@@ -1,16 +1,16 @@
 @version 1
 /// example: 319-money-times-decimal
 /// level: 6
-/// concept: Money<C> * Decimal is valid scaling
+/// concept: Money<C> scaled by a Decimal with an explicit rounding mode
 /// expected_diagnostics: none
 /// test_status: stable
-/// ai_rule: Money<C> * Decimal produces Money<C>. Decimal is the correct type for rates/percentages.
+/// ai_rule: m.multiply(rate, mode) produces Money<C>. Decimal is the correct type for rates/percentages; the bare * is refused.
 
 pure flow calculateVat(price: Money<GBP>) -> Money<GBP> {
-  return price * Decimal("0.20")
+  return price.multiply(Decimal("0.20"), "halfEven")
 }
 
 pure flow calculateDiscount(price: Money<GBP>, discountRate: Decimal) -> Money<GBP> {
-  let discount = price * discountRate
+  let discount = price.multiply(discountRate, "halfEven")
   return price - discount
 }

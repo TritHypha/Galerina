@@ -74,7 +74,7 @@ test("decDiv negative operands round symmetrically for the half modes", () => {
 
 test("decDiv fails closed on divide-by-zero and bad scale", () => {
   assert.ok(isDecTrap(decDiv("1", "0", 2, "halfEven")));
-  assert.equal(decDiv("1", "0", 2, "halfEven"), "DivideByZero");
+  assert.equal(decDiv("1", "0", 2, "halfEven"), "DivisionByZero"); // R6: the core label IS the propagating trap label
   assert.ok(isDecTrap(decDiv("1", "0.0", 2, "halfEven")));
   assert.ok(isDecTrap(decDiv("x", "3", 2, "halfEven")));   // malformed
   assert.ok(isDecTrap(decDiv("1", "3", -1, "halfEven")));  // negative scale
@@ -85,7 +85,7 @@ test("decRem is exact (no rounding needed) and fails closed on /0", () => {
   assert.equal(decRem("0.30", "0.12"), "0.06");  // 0.30 = 2*0.12 + 0.06
   assert.equal(decRem("-10", "3"), "-1");        // truncate toward zero
   assert.equal(decRem("7.5", "2.5"), "0.0");
-  assert.equal(decRem("5", "0"), "DivideByZero");
+  assert.equal(decRem("5", "0"), "DivisionByZero"); // R6: the core label IS the propagating trap label
 });
 
 test("isRoundMode gates the policy string", () => {
@@ -151,8 +151,12 @@ test("Decimal '%' redirects to a.remainder(b)", () => {
   assert.equal(d.suggestedCode, "total.remainder(qty)");
 });
 
-test("Money / Decimal is NOT redirected (legitimate scaling, not a partial Decimal op)", () => {
-  assert.ok(!tcDiags('gbp("100.00") / Decimal("3")', "Money").some((x) => x.code === "FUNGI-NUMERIC-OP-001"));
+test("Money / Decimal is not a partial-Decimal redirect (OP-001) — R11 redirects it to divideBy (OP-002)", () => {
+  const diags = tcDiags('gbp("100.00") / Decimal("3")', "Money");
+  assert.ok(!diags.some((x) => x.code === "FUNGI-NUMERIC-OP-001"));
+  const d = diags.find((x) => x.code === "FUNGI-NUMERIC-OP-002");
+  assert.ok(d, "Money '/' must name the explicit-mode method form");
+  assert.equal(d.suggestedCode, 'amount.divideBy(n, "halfEven")');
 });
 
 test("a.divide(b, scale, mode) computes the exact rounded result end-to-end", async () => {
@@ -177,7 +181,7 @@ test("a.divide(b, …) by zero fails closed with the propagating DivisionByZero 
 test("a.divide(b, …) with an unknown rounding mode fails closed", async () => {
   const r = await runDecimal('Decimal("1").divide(Decimal("3"), 2, "nearest")');
   assert.equal(r.value.__tag, "runtimeError");
-  assert.match(r.value.message, /unknown rounding mode/);
+  assert.equal(r.value.message, "UnknownRoundMode"); // R5/R6: the named label, no prose drift
 });
 
 test("interpreter: Decimal - Decimal exact", async () => {

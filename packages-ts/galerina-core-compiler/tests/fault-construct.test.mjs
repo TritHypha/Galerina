@@ -86,8 +86,9 @@ describe("T2.2 fault — WASM tier is fail-closed until lowered (no parity fail-
     const p = L.parseProgram(FLOW(`fault "boom"`, "pure flow f(v: Int) -> Void"), "t.fungi");
     let flow = null;
     (function w(n) { if (!n || typeof n !== "object") return; if (/FlowDecl$/.test(n.kind ?? "")) flow = n; for (const c of n.children ?? []) w(c); })(p.ast);
-    const wat = L.emitWATFromFlowAST(flow, ["v"]);
-    assert.equal(typeof wat, "string");
+    const watL = L.emitWATFromFlowAST(flow, ["v"]);
+    assert.equal(watL.kind, "found");
+    const wat = watL.value;
     assert.match(wat, /unsupported-in-WASM:\s*faultStmt|unreachable/, "fault must fail-CLOSED in WASM, never silently skip the raise");
   });
 });

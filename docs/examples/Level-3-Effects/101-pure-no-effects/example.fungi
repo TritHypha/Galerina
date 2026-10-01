@@ -14,5 +14,5 @@ contract {
   }
 }
 {
-  return price * Decimal("0.20")
+  return price.multiply(Decimal("0.20"), "halfEven")
 }

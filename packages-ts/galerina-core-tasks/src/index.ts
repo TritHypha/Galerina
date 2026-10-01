@@ -3,6 +3,14 @@ export { resolveTaskDependencies } from "./dependency-graph.js";
 export { createDryRunPlan, dryRunTask } from "./dry-run.js";
 export { loadTasks, parseTasksSource, MAX_TASK_SOURCE_BYTES, MAX_TASK_BLOCKS } from "./load-tasks.js";
 export { runTask } from "./run-task.js";
+export {
+  checkTaskOperations,
+  parseTaskRunBlock,
+  MAX_TASK_OPERATIONS,
+  MAX_TASK_OPERATION_ARGS,
+  MAX_TASK_OPERATION_LINE_LENGTH,
+  TASK_OPERATION_NAMES
+} from "./task-operations.js";
 export { createTaskReport, createTaskRunReport } from "./task-report.js";
 export type {
   TaskDependencyPlan
@@ -25,7 +33,12 @@ export type {
   TaskDefinition,
   TaskEffect,
   TaskError,
+  TaskOperation,
+  TaskOperationIssue,
+  TaskOperationIssueCode,
+  TaskOperationName,
   TaskPermission,
   TaskResult,
+  TaskRunBlock,
   TaskStatus
 } from "./types.js";

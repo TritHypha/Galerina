@@ -669,3 +669,131 @@ export function isBenchmarkReportShareable(
     p.projectPath === "not_included"
   );
 }
+
+// ── target detection (Phase 4, first slice) ──────────────────────────────────
+// Pure and injectable: the caller supplies raw OS facts (for example
+// `process.platform`, `process.arch`, `os.availableParallelism()`), so this
+// package keeps its node-core border unchanged. Output is a closed vocabulary
+// or a coarse bucket, never a raw probe string: no hostname, username, CPU
+// model, serial or path can pass through. RAM detection is deliberately absent.
+
+export type BenchmarkOsFamily = "linux" | "macos" | "windows" | "android" | "bsd" | "other" | "unknown";
+
+export type BenchmarkArchitecture =
+  | "x64" | "arm64" | "arm" | "ia32" | "riscv64" | "ppc64" | "s390x" | "loong64" | "other" | "unknown";
+
+export type BenchmarkCpuCoresBucket = "1" | "2" | "4" | "8" | "16" | "32" | "64" | "128+" | "unknown";
+
+export interface BenchmarkSystemProbe {
+  /** A Node.js `process.platform` value. */
+  readonly platform?: unknown;
+  /** A Node.js `process.arch` value. */
+  readonly arch?: unknown;
+  /** Logical core count, e.g. `os.availableParallelism()`. */
+  readonly logicalCores?: unknown;
+}
+
+export interface BenchmarkSystemDetection {
+  readonly osFamily: BenchmarkOsFamily;
+  readonly architecture: BenchmarkArchitecture;
+  readonly cpuCoresBucket: BenchmarkCpuCoresBucket;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+const BENCHMARK_PROBE_KEYS = ["platform", "arch", "logicalCores"] as const;
+
+const OS_FAMILY_BY_PLATFORM: ReadonlyMap<string, BenchmarkOsFamily> = new Map([
+  ["linux", "linux"],
+  ["darwin", "macos"],
+  ["win32", "windows"],
+  ["cygwin", "windows"],
+  ["android", "android"],
+  ["freebsd", "bsd"],
+  ["openbsd", "bsd"],
+  ["netbsd", "bsd"],
+  ["aix", "other"],
+  ["sunos", "other"],
+  ["haiku", "other"],
+]);
+
+const ARCHITECTURE_BY_ARCH: ReadonlyMap<string, BenchmarkArchitecture> = new Map([
+  ["x64", "x64"],
+  ["arm64", "arm64"],
+  ["arm", "arm"],
+  ["ia32", "ia32"],
+  ["riscv64", "riscv64"],
+  ["ppc64", "ppc64"],
+  ["s390x", "s390x"],
+  ["loong64", "loong64"],
+  ["mips", "other"],
+  ["mipsel", "other"],
+  ["ppc", "other"],
+  ["s390", "other"],
+]);
+
+/** Largest power of two not above `count`, capped at "128+". Exposes only a coarse bucket. */
+export function bucketLogicalCores(count: unknown): BenchmarkCpuCoresBucket {
+  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1) return "unknown";
+  if (count >= 128) return "128+";
+  let bucket = 1;
+  while (bucket * 2 <= count) bucket *= 2;
+  return String(bucket) as BenchmarkCpuCoresBucket;
+}
+
+/**
+ * Map injected OS facts to report-safe system fields (osFamily, architecture,
+ * cpuCoresBucket). Fail-closed: a non-record probe, accessor, unknown key or
+ * unrecognised value yields "unknown" plus a warning, never the raw input.
+ * Unknown probe keys (e.g. a hostname or CPU model) are refused unread.
+ */
+export function detectBenchmarkSystem(probe: unknown): BenchmarkSystemDetection {
+  const diagnostics: BenchmarkDiagnostic[] = [];
+  let platform: unknown;
+  let arch: unknown;
+  let logicalCores: unknown;
+
+  if (!isRecord(probe)) {
+    diagnostics.push(createBenchmarkDiagnostic(
+      "Galerina_BENCHMARK_PROBE_RECORD_REQUIRED",
+      "warning",
+      "Benchmark system probe must be a plain data record; system fields reported as unknown.",
+      "probe",
+    ));
+  } else {
+    const allowed = new Set<string>(BENCHMARK_PROBE_KEYS);
+    for (const key of Reflect.ownKeys(probe)) {
+      if (typeof key !== "string" || !allowed.has(key)) {
+        diagnostics.push(createBenchmarkDiagnostic(
+          "Galerina_BENCHMARK_PROBE_FIELD_UNKNOWN",
+          "warning",
+          "Benchmark system probe contains an unknown or symbolic field; it was ignored unread.",
+          "probe.<unknown>",
+        ));
+      }
+    }
+    platform = readOwnData(probe, "platform", "probe", diagnostics);
+    arch = readOwnData(probe, "arch", "probe", diagnostics);
+    logicalCores = readOwnData(probe, "logicalCores", "probe", diagnostics);
+  }
+
+  const osFamily = typeof platform === "string" ? OS_FAMILY_BY_PLATFORM.get(platform) ?? "unknown" : "unknown";
+  const architecture = typeof arch === "string" ? ARCHITECTURE_BY_ARCH.get(arch) ?? "unknown" : "unknown";
+  const cpuCoresBucket = bucketLogicalCores(logicalCores);
+
+  if (osFamily === "unknown") {
+    diagnostics.push(createBenchmarkDiagnostic("Galerina_BENCHMARK_PROBE_OS_UNKNOWN", "warning", "Operating system family could not be determined.", "probe.platform"));
+  }
+  if (architecture === "unknown") {
+    diagnostics.push(createBenchmarkDiagnostic("Galerina_BENCHMARK_PROBE_ARCH_UNKNOWN", "warning", "CPU architecture could not be determined.", "probe.arch"));
+  }
+  if (cpuCoresBucket === "unknown") {
+    diagnostics.push(createBenchmarkDiagnostic("Galerina_BENCHMARK_PROBE_CORES_UNKNOWN", "warning", "Logical core count must be a positive safe integer.", "probe.logicalCores"));
+  }
+
+  return Object.freeze({
+    osFamily,
+    architecture,
+    cpuCoresBucket,
+    diagnostics: Object.freeze(diagnostics),
+  });
+}

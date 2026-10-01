@@ -29,15 +29,24 @@ describe("host stub oracle: Money currency constructors (__money_*)", () => {
     ["__money_hkd", "HKD"],
   ];
 
-  it("each constructor tags its exact ISO code and carries the amount string", () => {
+  it("each constructor tags its exact ISO code and stores the amount padded to its minor units", () => {
+    // R11 (D-M1): "12" is admissible at every scale; it is stored at EXACTLY the minor units (JPY 0).
     for (const [name, code] of CASES) {
       const { rt, fn } = host();
-      const amt = rt.internString("12.34");
+      const amt = rt.internString("12");
       const h = fn[name](amt);
       assert.ok(h >= 0, `${name} must return a non-negative Money handle, got ${h}`);
-      assert.deepEqual(rt.readMoney(h), { currency: code, amountStr: "12.34" },
-        `${name} must store { ${code}, "12.34" }`);
+      const expected = code === "JPY" ? "12" : "12.00";
+      assert.deepEqual(rt.readMoney(h), { currency: code, amountStr: expected },
+        `${name} must store { ${code}, "${expected}" }`);
     }
+  });
+
+  it("R11: an amount beyond the minor units is refused by name, never rounded", () => {
+    const { rt, fn } = host();
+    assert.throws(() => fn.__money_jpy(rt.internString("12.34")), /MoneyScaleExceedsMinorUnits/);
+    assert.throws(() => fn.__money_gbp(rt.internString("0.125")), /MoneyScaleExceedsMinorUnits/);
+    assert.throws(() => fn.__money_gbp(rt.internString("1e3")), /MalformedMoneyAmount/);
   });
 
   it("handles are fresh and distinct across constructions (registry indices)", () => {
@@ -51,10 +60,9 @@ describe("host stub oracle: Money currency constructors (__money_*)", () => {
     assert.deepEqual(rt.readMoney(c), { currency: "GBP", amountStr: "3.00" });
   });
 
-  it("fail-safe: an unknown amount handle yields '0.00', never a crash", () => {
-    const { rt, fn } = host();
-    const h = fn.__money_usd(9999); // no such string handle
-    assert.deepEqual(rt.readMoney(h), { currency: "USD", amountStr: "0.00" });
+  it("fail-closed: an unknown amount handle is the named MalformedMoneyAmount refusal (no '0.00' default)", () => {
+    const { fn } = host();
+    assert.throws(() => fn.__money_usd(9999), /MalformedMoneyAmount/); // no such string handle
   });
 });
 

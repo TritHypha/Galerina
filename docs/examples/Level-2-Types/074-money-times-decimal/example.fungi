@@ -4,9 +4,9 @@
 /// concept: Money<GBP> multiplied by Decimal
 /// expected_diagnostics: none
 /// test_status: stable
-/// ai_rule: Money<GBP> * Decimal is valid and scales the monetary amount.
+/// ai_rule: Scale Money<GBP> by a Decimal with m.multiply(rate, mode); the bare * is refused (no default rounding mode).
 
 pure flow example(price: Money<GBP>) -> Money<GBP> {
-  let vat: Money<GBP> = price * Decimal("0.20")
+  let vat: Money<GBP> = price.multiply(Decimal("0.20"), "halfEven")
   return vat
 }

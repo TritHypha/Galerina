@@ -54,6 +54,7 @@ import {
 } from "./type-registry.js";
 import { KNOWN_DOMAIN_TYPES } from "./package-type-registry.js";
 import { MONEY_UNIT_TAGS } from "./unit-registry.generated.js";
+import { ROUND_MODES } from "./decimal-arith.js";
 import {
   IMPORTED_TYPE_CONTEXT_KIND,
   type ImportedRecordSchema,
@@ -65,7 +66,7 @@ import {
   FUNGI_REQUIREMENT_009,
 } from "./requirement-diagnostics.js";
 import { proveRequirementHandlerTerminality } from "./requirement-terminality.js";
-import { checkMethodChain, knownReceiverTypeName } from "./method-chain-checker.js";
+import { checkMethodChain, knownReceiverTypeName, type MethodReceiverOrigin } from "./method-chain-checker.js";
 import { validateTypedContentBlock } from "./typed-content-block.js";
 
 // RD-0349 I1: the pinned ISO-4217 currency set — the SAME generated table the runtime `Money.of`
@@ -467,6 +468,15 @@ const BINARY_FLOAT_TYPES: ReadonlySet<string> = new Set(["Float", "Float64", "Do
  * sides carry arguments, however, every corresponding argument must be
  * compatible, including nested generic arguments and numeric widening.
  */
+/**
+ * The text of a string-literal node without its source quotes. A literal carrying an escape or any other
+ * shape is returned verbatim, so it never matches a closed set (mode names, ISO codes) — fail closed.
+ */
+function stringLiteralText(n: AstNode): string {
+  const v = n.value ?? "";
+  return v.length >= 2 && v.startsWith('"') && v.endsWith('"') && !v.includes("\\") ? v.slice(1, -1) : v;
+}
+
 function genericArgumentsCompatible(
   declared: readonly string[],
   inferred: readonly string[],
@@ -695,6 +705,8 @@ class TypeChecker {
   private currentFlowEffects: readonly string[] = [];
   /** Name of the flow currently being walked (for TYPE-014 messages). */
   private currentFlowName = "";
+  /** Method-call nodes already classified by an outermost `checkMethodPipeline`. */
+  private readonly methodPipelineCovered = new WeakSet<AstNode>();
 
   /** Structural record-literal adoption (shared by the return- and let-positions).
    *  When a `#record` literal meets a DECLARED record type: field-check it against the
@@ -1259,6 +1271,66 @@ class TypeChecker {
     return joined.kind === "homogeneous" ? `Array<${joined.type}>` : undefined;
   }
 
+  private typeBaseName(type: string | undefined): string | undefined {
+    if (type === undefined || type === "") return undefined;
+    const base = parseTypeString(type).base.trim();
+    return base === "" ? undefined : base;
+  }
+
+  private methodReceiverFacts(recv: AstNode | undefined): {
+    readonly origin: MethodReceiverOrigin;
+    readonly type: string | undefined;
+  } {
+    if (recv === undefined) return { origin: "Unknown", type: undefined };
+    if (recv.kind === "identifier") {
+      const inferred = this.inferType(recv);
+      if (inferred !== undefined && inferred !== "") {
+        return { origin: "Value", type: inferred };
+      }
+      const ctor = this.constructorReceiverType(recv.value ?? "");
+      if (ctor !== undefined && ctor !== "") {
+        return { origin: "TypeName", type: ctor };
+      }
+      return { origin: "Unknown", type: undefined };
+    }
+    const inferred = this.inferType(recv);
+    if (inferred !== undefined && inferred !== "") {
+      return { origin: "Value", type: inferred };
+    }
+    return { origin: "Unknown", type: undefined };
+  }
+
+  private isUfcsAdmitted(methodName: string, receiverType: string | undefined): boolean {
+    if (methodName === "") return false;
+    const params = this.flowParamTypes.get(methodName);
+    if (params === undefined || params.length < 1) return false;
+    const first = params[0];
+    if (first === undefined || first === "") return false;
+    const recvBase = this.typeBaseName(receiverType);
+    const firstBase = this.typeBaseName(first);
+    if (recvBase === undefined || firstBase === undefined) return false;
+    return recvBase === firstBase;
+  }
+
+  private knownFieldName(receiverType: string | undefined, method: string): string | undefined {
+    if (receiverType === undefined || receiverType === "" || method === "") return undefined;
+    const schema = this.lookupRecordSchema(receiverType);
+    if (schema === undefined) return undefined;
+    return schema.has(method) ? method : undefined;
+  }
+
+  private markMethodPipelineCovered(outer: AstNode): void {
+    let current: AstNode | undefined = outer;
+    while (
+      current !== undefined
+      && current.kind === "callExpr"
+      && (current as AstNode & { callStyle?: string }).callStyle === "method"
+    ) {
+      this.methodPipelineCovered.add(current);
+      current = current.children?.[0];
+    }
+  }
+
   private checkMethodPipeline(outer: AstNode): void {
     const stack: AstNode[] = [];
     let current: AstNode | undefined = outer;
@@ -1276,35 +1348,237 @@ class TypeChecker {
       const stageNode = stack.pop()!;
       const method = stageNode.value ?? "";
       const recv = stageNode.children?.[0];
-      let recvType = recv === undefined ? undefined : this.inferType(recv);
-      if (recvType === undefined && recv?.kind === "identifier") {
-        recvType = this.constructorReceiverType(recv.value ?? "");
-      }
+      const facts = this.methodReceiverFacts(recv);
+      const fieldName = this.knownFieldName(facts.type, method);
       stages.push({
         methodName: method,
-        receiverType: recvType,
+        receiverType: facts.type,
         argumentTypes: (stageNode.children ?? []).slice(1).map((child) => this.inferType(child) ?? ""),
         returnType: this.inferType(stageNode),
         effects: undefined,
         location: stageNode.location,
         resultConsumed: false,
+        receiverOrigin: facts.origin,
+        ufcsAdmitted: this.isUfcsAdmitted(method, facts.type),
+        ...(fieldName === undefined ? {} : { fieldName }),
       });
     }
     const rootName = root?.kind === "identifier" ? (root.value ?? "") : "<expr>";
-    let rootType = root === undefined ? undefined : this.inferType(root);
-    if (rootType === undefined && root?.kind === "identifier") {
-      rootType = this.constructorReceiverType(root.value ?? "");
-    }
+    const rootFacts = this.methodReceiverFacts(root);
     const bindingKind = root?.kind === "identifier" ? this.lookupBindingKind(root.value ?? "") : undefined;
     const diags = checkMethodChain({
       receiver: rootName,
-      receiverType: rootType,
+      receiverType: rootFacts.type,
       receiverBindingKind: bindingKind,
       declaredEffects: this.currentFlowEffects,
       calls: stages,
       location: outer.location ?? { file: "", line: 0, column: 0 },
+      receiverOrigin: rootFacts.origin,
     });
     this.diagnostics.push(...diags);
+  }
+
+  /**
+   * R5 / R8 / R11 (Grok Bot rounding work, 2026-09-30) — the exact-numeric method contracts, checked at
+   * compile time so the tree-walker and the WASM backend refuse the SAME programs:
+   *   Decimal: divide(Decimal|Int, Int, "<mode>") · remainder(Decimal|Int) · round(Int, "<mode>") ·
+   *            toFixed(Int, "<mode>") · floor(Int) · ceil(Int) · abs() · sign()
+   *   Money:   multiply(Decimal|Int, "<mode>") · divideBy(Decimal|Int, "<mode>") ·
+   *            divideBy(Money<same>, Int, "<mode>") · add/subtract(Money<same>)
+   *   Money.of(amount, "<ISO code literal>") · Decimal.fromInt(Int)
+   * Zero-trust default (owner may revisit): the rounding mode must be a STRING LITERAL naming one of
+   * ROUND_MODES — no default, no computed mode — and a Float operand is never admitted (it is inexact).
+   * An operand whose type cannot be inferred is left to the runtime, which fails closed by name.
+   */
+  private checkExactNumericMethod(node: AstNode): void {
+    const method = node.value ?? "";
+    const recvNode = node.children?.[0];
+    if (recvNode === undefined) return;
+    const args = (node.children ?? []).slice(1);
+    const loc = node.location;
+    const arity = (want: number, form: string): boolean => {
+      if (args.length === want) return true;
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-007",
+        "INVALID_ARGUMENT_COUNT",
+        `'${method}' expects ${want} argument${want === 1 ? "" : "s"} but received ${args.length} — the exact form is ${form}.`,
+        loc,
+        `Call ${form}.`,
+      ));
+      return false;
+    };
+    const typeOf = (n: AstNode | undefined): string | undefined => {
+      if (n === undefined) return undefined;
+      const t = this.inferType(n);
+      return t === undefined || t === "" || t === "Auto" ? undefined : t;
+    };
+    const baseOf = (t: string | undefined): string | undefined =>
+      t === undefined ? undefined : parseTypeString(t).base;
+    const requireExact = (n: AstNode | undefined, position: number, form: string): void => {
+      const b = baseOf(typeOf(n));
+      if (b === undefined || b === "Decimal" || b === "Int") return;
+      if (BINARY_FLOAT_TYPES.has(b) || b.startsWith("Float")) {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-NUMERIC-OP-003",
+          "INEXACT_OPERAND_REFUSED",
+          `Argument ${position} to '${method}' is '${b}' — a binary float is inexact and is never admitted into Decimal/Money arithmetic.`,
+          n?.location ?? loc,
+          `Pass a Decimal (Decimal("0.20")) or an Int — ${form}.`,
+        ));
+        return;
+      }
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-005",
+        "INVALID_CALL_ARG_TYPE",
+        `Argument ${position} to '${method}' expects Decimal or Int but received '${b}'.`,
+        n?.location ?? loc,
+        `Pass a Decimal or an Int — ${form}.`,
+      ));
+    };
+    const requireInt = (n: AstNode | undefined, position: number, what: string): void => {
+      const b = baseOf(typeOf(n));
+      if (b === undefined || b === "Int") return;
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-005",
+        "INVALID_CALL_ARG_TYPE",
+        `Argument ${position} to '${method}' (${what}) expects Int but received '${b}'.`,
+        n?.location ?? loc,
+        `Pass an Int ${what}.`,
+      ));
+    };
+    const requireMode = (n: AstNode | undefined, position: number): void => {
+      const text = n?.kind === "stringLiteral" ? stringLiteralText(n) : "";
+      if (n?.kind === "stringLiteral" && (ROUND_MODES as readonly string[]).includes(text)) return;
+      const got = n?.kind === "stringLiteral" ? `the unknown mode "${text}"` : "a non-literal expression";
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-NUMERIC-OP-004",
+        "ROUND_MODE_REQUIRED",
+        `Argument ${position} to '${method}' must be a rounding-mode string literal, but received ${got}. There is no default rounding mode.`,
+        n?.location ?? loc,
+        `Name the mode explicitly: one of ${ROUND_MODES.map((m) => `"${m}"`).join(" | ")}.`,
+      ));
+    };
+    const missingMode = (form: string): void => {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-NUMERIC-OP-004",
+        "ROUND_MODE_REQUIRED",
+        `'${method}' rounds, so it needs an explicit rounding mode — there is no default (a silent default rounding on money is a fail-open).`,
+        loc,
+        `Call ${form} with one of ${ROUND_MODES.map((m) => `"${m}"`).join(" | ")}.`,
+      ));
+    };
+
+    // Static forms.
+    if (recvNode.kind === "identifier" && !this.hasLexicalBinding(recvNode.value ?? "")) {
+      if (recvNode.value === "Money" && method === "of") {
+        if (!arity(2, 'Money.of(amount, "GBP")')) return;
+        const codeNode = args[1];
+        if (codeNode?.kind !== "stringLiteral") {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-NUMERIC-OP-005",
+            "MONEY_CODE_NOT_LITERAL",
+            "Money.of needs its currency code as a string LITERAL so the currency is part of the type (Money<CODE>); a computed code cannot be checked.",
+            codeNode?.location ?? loc,
+            'Write the code literally, e.g. Money.of("9.99", "CHF"), or use the constructor Money.chf("9.99").',
+          ));
+        } else {
+          this.checkMoneyCurrencyTag(stringLiteralText(codeNode), codeNode.location ?? loc);
+        }
+        return;
+      }
+      if (recvNode.value === "Decimal" && method === "fromInt") {
+        if (arity(1, "Decimal.fromInt(n)")) requireInt(args[0], 1, "value");
+        return;
+      }
+    }
+
+    const recvType = typeOf(recvNode);
+    const recvBase = baseOf(recvType);
+    if (recvBase === "Decimal") {
+      switch (method) {
+        case "divide":
+          if (args.length === 2) { missingMode('a.divide(b, scale, "halfEven")'); return; }
+          if (!arity(3, 'a.divide(b, scale, "halfEven")')) return;
+          requireExact(args[0], 1, 'a.divide(b, scale, "halfEven")');
+          requireInt(args[1], 2, "scale");
+          requireMode(args[2], 3);
+          return;
+        case "remainder":
+          if (arity(1, "a.remainder(b)")) requireExact(args[0], 1, "a.remainder(b)");
+          return;
+        case "round":
+        case "toFixed":
+          if (args.length === 1) { missingMode(`d.${method}(places, "halfEven")`); return; }
+          if (!arity(2, `d.${method}(places, "halfEven")`)) return;
+          requireInt(args[0], 1, "places");
+          requireMode(args[1], 2);
+          return;
+        case "floor":
+        case "ceil":
+          if (arity(1, `d.${method}(places)`)) requireInt(args[0], 1, "places");
+          return;
+        case "abs":
+        case "sign":
+          arity(0, `d.${method}()`);
+          return;
+        default:
+          return;
+      }
+    }
+    if (recvBase === "Money") {
+      switch (method) {
+        case "add":
+        case "subtract": {
+          if (!arity(1, `m.${method}(other)`)) return;
+          const otherType = typeOf(args[0]);
+          const otherBase = baseOf(otherType);
+          if (otherBase === undefined) return;
+          if (otherBase !== "Money" || (recvType !== undefined && otherType !== undefined && !isAssignmentCompatible(recvType, otherType))) {
+            this.diagnostics.push(makeTCDiag(
+              "FUNGI-TYPE-004",
+              "INVALID_BINARY_OPERATION",
+              `'${method}' on '${recvType ?? "Money"}' needs Money of the same currency but received '${otherType}'.`,
+              args[0]?.location ?? loc,
+              "Pass a Money value of the same currency (use fx.convert() first for another currency).",
+            ));
+          }
+          return;
+        }
+        case "multiply":
+          if (args.length === 1) { missingMode('m.multiply(factor, "halfEven")'); return; }
+          if (!arity(2, 'm.multiply(factor, "halfEven")')) return;
+          requireExact(args[0], 1, 'm.multiply(factor, "halfEven")');
+          requireMode(args[1], 2);
+          return;
+        case "divideBy": {
+          const firstType = typeOf(args[0]);
+          if (baseOf(firstType) === "Money") {
+            if (recvType !== undefined && firstType !== undefined && !isAssignmentCompatible(recvType, firstType)) {
+              this.diagnostics.push(makeTCDiag(
+                "FUNGI-TYPE-004",
+                "INVALID_BINARY_OPERATION",
+                `Cannot divide '${recvType}' by '${firstType}'. A Money ratio requires the same currency.`,
+                loc,
+                "Use fx.convert() first, or divide same-currency values.",
+              ));
+              return;
+            }
+            if (args.length === 1) { missingMode('m.divideBy(other, scale, "halfEven")'); return; }
+            if (!arity(3, 'm.divideBy(other, scale, "halfEven")')) return;
+            requireInt(args[1], 2, "scale");
+            requireMode(args[2], 3);
+            return;
+          }
+          if (args.length === 1) { missingMode('m.divideBy(n, "halfEven")'); return; }
+          if (!arity(2, 'm.divideBy(n, "halfEven")')) return;
+          requireExact(args[0], 1, 'm.divideBy(n, "halfEven")');
+          requireMode(args[1], 2);
+          return;
+        }
+        default:
+          return;
+      }
+    }
   }
 
   private checkHomogeneousCollection(elements: readonly AstNode[], origin: string): void {
@@ -1461,8 +1735,23 @@ class TypeChecker {
             : `Result<Auto, ${payloadType}>`;
         }
         if (method === "Decimal")                return "Decimal";
-        // Money constructors (receiver = Money)
-        if (method === "gbp" || method === "usd" || method === "eur" || method === "jpy") return "Money";
+        // Money constructors (receiver = Money). R11 (F13): a constructor carries its currency in the
+        // type — Money.gbp(..) is Money<GBP>, never a bare wildcard Money. Money.of(amount, "CHF") is
+        // Money<CHF> only for a LITERAL admitted code; any other form stays unparameterised and is refused
+        // by checkExactNumericMethod (FUNGI-NUMERIC-OP-005).
+        {
+          const ctorRecv = node.children?.[0];
+          const ctorIsMethod = (node as AstNode & { callStyle?: string }).callStyle === "method";
+          const onMoney = ctorIsMethod && ctorRecv?.kind === "identifier" && ctorRecv.value === "Money";
+          const upper = method.toUpperCase();
+          if (onMoney && method === method.toLowerCase() && MONEY_UNIT_SET.has(upper)) return `Money<${upper}>`;
+          if (!ctorIsMethod && (method === "gbp" || method === "usd" || method === "eur" || method === "jpy")) return `Money<${upper}>`;
+          if (onMoney && method === "of") {
+            const codeNode = node.children?.[2];
+            const code = codeNode?.kind === "stringLiteral" ? stringLiteralText(codeNode) : "";
+            return MONEY_UNIT_SET.has(code) ? `Money<${code}>` : "Money";
+          }
+        }
         // Record literal { field: value }
         if (method === "#record") return "Record";
 
@@ -1578,6 +1867,25 @@ class TypeChecker {
 
         // Decimal partial-operator method forms (#53/#54): a.divide(b, scale, mode) / a.remainder(b) → Decimal.
         if (receiverType === "Decimal" && (method === "divide" || method === "remainder")) return "Decimal";
+        // R9/R11: the exact-numeric method surface (the same set stdlib.ts implements).
+        if (receiverType === "Decimal") {
+          if (method === "abs" || method === "round" || method === "floor" || method === "ceil") return "Decimal";
+          if (method === "toFixed" || method === "toString" || method === "toText") return "String";
+          if (method === "sign") return "Int";
+        }
+        if (receiverNode?.kind === "identifier" && receiverNode.value === "Decimal" && method === "fromInt" &&
+            !receiverIsLexicallyBound) return "Decimal";
+        if (receiverType !== undefined && parseTypeString(receiverType).base === "Money") {
+          if (method === "amount") return "Decimal";
+          if (method === "currency" || method === "toString") return "String";
+          if (method === "add" || method === "subtract" || method === "multiply") return receiverType;
+          if (method === "divideBy") {
+            const firstArg = node.children?.[1];
+            const firstType = firstArg === undefined ? undefined : this.inferType(firstArg);
+            if (firstType !== undefined && parseTypeString(firstType).base === "Money") return "Decimal";
+            return receiverType;
+          }
+        }
 
         // R5C: Validation gates — validate.<field>(raw) → "protected <Field>"
         // e.g. validate.email(raw) → "protected Email"
@@ -2226,13 +2534,11 @@ class TypeChecker {
         // Skip arity/type checking for method calls (receiver.method(args)).
         // These are external library calls, not user-defined flow calls.
         if ((node as AstNode & { callStyle?: string }).callStyle === "method") {
-          const methodReceiver = node.children?.[0];
-          const nestedMethod = methodReceiver !== undefined
-            && methodReceiver.kind === "callExpr"
-            && (methodReceiver as AstNode & { callStyle?: string }).callStyle === "method";
-          if (!nestedMethod) {
+          if (!this.methodPipelineCovered.has(node)) {
             this.checkMethodPipeline(node);
+            this.markMethodPipelineCovered(node);
           }
+          this.checkExactNumericMethod(node);
           if (flowName === "of") {
             const arrayReceiver = node.children?.[0];
             if (arrayReceiver?.kind === "identifier" && arrayReceiver.value === "Array") {
@@ -2813,6 +3119,20 @@ class TypeChecker {
       else if (c.kind === "identifier" && c.value) {
         if (c.value.startsWith("gate:")) gate = c.value.slice("gate:".length).trim();
         else if (c.value.startsWith("ops:")) opsRaw = c.value.slice("ops:".length);
+        else if (c.value.startsWith("decimals:") || c.value.startsWith("sign:")) {
+          // R12 (Grok Bot rounding work, 2026-09-30) — zero-trust default, owner may revisit: `decimals:` and
+          // `sign:` are parsed but NOTHING enforces them (no checker, walker or WASM rule reads them), so a
+          // schema that says "whole numbers, never negative" would silently admit 1.5 or -3. An unenforced
+          // guarantee is refused rather than trusted; enforce it in the gate flow instead.
+          const field = c.value.slice(0, c.value.indexOf(":"));
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-HALLMARK-006",
+            "HALLMARK_SCHEMA_FIELD_NOT_ENFORCED",
+            `Hallmark schema field '${field}:' is not enforced by the compiler or either runtime, so it would be a promise nothing keeps. It is refused rather than silently ignored.`,
+            c.location ?? node.location,
+            `Remove '${field}:' and check it in the gate flow (e.g. return Err(...) when the value breaks it).`,
+          ));
+        }
       }
     }
     const hasName = name !== "" && name !== "<unknown>";
@@ -2914,7 +3234,7 @@ class TypeChecker {
         ));
         return;
       }
-      if (op === "/" && leftType !== rightType) {
+      if (op === "/" && leftType !== rightType && isAssignmentCompatible(leftType, rightType) === false) {
         // Money<GBP> / Money<USD> is invalid (ratio requires same currency)
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
@@ -2925,7 +3245,49 @@ class TypeChecker {
         ));
         return;
       }
-      return; // Money<C> / Money<C> → Decimal ratio, valid
+      if (op === "/" || op === "%") {
+        // R11 (F12): a same-currency Money ratio is a Decimal that must be rounded to SOME scale by SOME
+        // mode — the bare operator has neither, so it redirects to the obligation-carrying method form.
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-NUMERIC-OP-002",
+          "MONEY_OPERATOR_NEEDS_MODE",
+          `Operator '${op}' is not available between two Money values — a ratio needs an explicit scale and rounding mode (there is no default).`,
+          location,
+          'Use a.divideBy(b, scale, mode) — e.g. spent.divideBy(budget, 4, "halfEven").',
+          'spent.divideBy(budget, 4, "halfEven")',
+        ));
+        return;
+      }
+      return; // same-currency comparisons are valid
+    }
+
+    // ── R11: Money with a bare number ────────────────────────────────────────
+    // `m + 1` has no exact meaning (MoneyOperandNotExact at runtime) and `m * rate` / `m / n` must round
+    // to the minor units by an EXPLICIT mode — both are refused at compile time and redirected.
+    if ((leftBase === "Money") !== (rightBase === "Money") &&
+        NUMERIC_TYPES.has(leftBase === "Money" ? rightBase : leftBase)) {
+      if (op === "+" || op === "-") {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-TYPE-004",
+          "INVALID_BINARY_OPERATION",
+          `Operator '${op}' cannot combine '${leftBase === "Money" ? leftType : rightType}' with a bare '${leftBase === "Money" ? rightType : leftType}' — Money adds only to Money of the same currency.`,
+          location,
+          'Add a Money value of the same currency, e.g. total + Money.gbp("1.00").',
+        ));
+        return;
+      }
+      if (op === "*" || op === "/" || op === "%") {
+        const form = op === "*" ? 'amount.multiply(rate, "halfEven")' : 'amount.divideBy(n, "halfEven")';
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-NUMERIC-OP-002",
+          "MONEY_OPERATOR_NEEDS_MODE",
+          `Operator '${op}' on Money must round the result to the currency's minor units, and the bare operator names no rounding mode (there is no default).`,
+          location,
+          `Use the method form ${form}. Modes: ${ROUND_MODES.join("|")}.`,
+          form,
+        ));
+        return;
+      }
     }
 
     // ── RD-0353 — Hallmark open types: nominal, closed-algebra operands ───────
@@ -3006,12 +3368,34 @@ class TypeChecker {
       }
     }
 
+    // ── R8: mixed Decimal × Int/Float is refused (MixedDecimalOperand at runtime) ──
+    // A Decimal never meets a binary float (inexact) and never silently widens an Int. The Int path is
+    // explicit (Decimal.fromInt(n)); a Float has no exact conversion at all. Zero-trust default, owner may
+    // revisit: this covers arithmetic, ordering and equality alike.
+    if ((leftBase === "Decimal") !== (rightBase === "Decimal") &&
+        NUMERIC_TYPES.has(leftBase === "Decimal" ? rightBase : leftBase) &&
+        (["+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="].includes(op))) {
+      const other = leftBase === "Decimal" ? rightBase : leftBase;
+      const isFloat = other.startsWith("Float") || BINARY_FLOAT_TYPES.has(other);
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-NUMERIC-OP-003",
+        "MIXED_DECIMAL_OPERAND",
+        `Operator '${op}' mixes Decimal with '${other}'. ${isFloat ? "A binary float is inexact and never meets Decimal." : "An Int is never silently widened into Decimal."}`,
+        location,
+        isFloat
+          ? 'Use a Decimal value on both sides, e.g. Decimal("0.0").'
+          : "Convert explicitly with Decimal.fromInt(n).",
+        isFloat ? 'Decimal("0.0")' : "Decimal.fromInt(n)",
+      ));
+      return;
+    }
+
     // ── Decimal partial-operator REDIRECT (#53/#54) ──────────────────────────
     // `/` and `%` on a Decimal are PARTIAL: exact decimal division is non-terminating (1/3 = 0.333…) and
     // needs an EXPLICIT rounding policy + scale. A silent default-rounding on money is itself a fail-open, so
     // the bare operator is a compile-reject that REDIRECTS to the obligation-carrying method form (the owner's
-    // "turn no into yes, this way"). Money/Decimal scaling is valid (handled above / by moneyBinary) → exclude
-    // any Money operand here.
+    // "turn no into yes, this way"). Money operands never reach here: R11 refuses every Money operator
+    // except same-currency +/- and comparisons above (FUNGI-NUMERIC-OP-002 names the method form).
     if ((leftBase === "Decimal" || rightBase === "Decimal") &&
         leftBase !== "Money" && rightBase !== "Money" &&
         (op === "/" || op === "%")) {
@@ -3097,8 +3481,6 @@ class TypeChecker {
       // Invalid: string + int, bool + int, etc.
       if (!NUMERIC_TYPES.has(leftType) || !NUMERIC_TYPES.has(rightType)) {
         // Allow Money<C> * Decimal (Decimal is numeric, Money is not in NUMERIC_TYPES)
-        if (leftBase === "Money" && NUMERIC_TYPES.has(rightType)) return;  // Money * Decimal: valid
-        if (rightBase === "Money" && NUMERIC_TYPES.has(leftType)) return;  // Decimal * Money: valid
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
           "INVALID_BINARY_OPERATION",

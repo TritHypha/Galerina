@@ -194,6 +194,17 @@ export async function assembleWAT(
 
   // Fallback: Phase 25 minimal binary encoder (wabt not installed).
   // This path is only reached when wabt is NOT present (wabtError === null AND wabtModule === null).
+  // R4 (Grok Bot rounding work, 2026-09-30): the minimal encoder has no import section, so a module that
+  // DECLARES host imports (every Decimal / Money / String module) cannot be encoded faithfully — a
+  // "valid" stub would silently drop the very calls under test. Refuse such a module (valid:false).
+  if (/\(import\s/.test(watSource)) {
+    return {
+      wasm: new Uint8Array(0),
+      sourceWAT: watSource,
+      valid: false,
+      diagnostics: [{ message: "wabt not available and this module declares host imports — the minimal encoder cannot encode imports, so it refuses rather than emit a stub (fail-closed; install the wabt npm package)" }],
+    };
+  }
   try {
     const binary = encodeMinimalWASM(watSource);
     const valid = binary.length > 8

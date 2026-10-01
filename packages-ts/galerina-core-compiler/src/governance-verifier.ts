@@ -200,6 +200,36 @@ function makeGovDiag(
   return base;
 }
 
+export type FaultHandlerDiagMeta =
+  | { readonly kind: "found"; readonly name: string; readonly hint: string }
+  | { readonly kind: "none"; readonly reason: string };
+
+/** Explicit FAULT-001/003/006 name+hint map. Unknown codes return kind none (no else-fallthrough). */
+export function faultHandlerDiagMeta(code: string): FaultHandlerDiagMeta {
+  if (code === "FUNGI-FAULT-003") {
+    return {
+      kind: "found",
+      name: "FAULT_HANDLER_FAIL_OPEN",
+      hint: "Replace 'log' with 'halt' or 'quarantine' (log is fail-open; only on_rotation_fault may opt in).",
+    };
+  }
+  if (code === "FUNGI-FAULT-001") {
+    return {
+      kind: "found",
+      name: "FAULT_HANDLER_MONOTONICITY",
+      hint: "Replace 'retry' with 'halt', 'quarantine', or 'fallback <flow>' for on_denial_fault.",
+    };
+  }
+  if (code === "FUNGI-FAULT-006") {
+    return {
+      kind: "found",
+      name: "DECLARED_HANDLER_NOT_EXECUTED",
+      hint: "Replace the declared action with 'halt', or remove the handler until the handler tier is admitted.",
+    };
+  }
+  return { kind: "none", reason: "unknown-fault-code" };
+}
+
 // ---------------------------------------------------------------------------
 // Diagnostic constants
 // ---------------------------------------------------------------------------
@@ -2497,20 +2527,22 @@ class GovernanceVerifier {
       }
     }
 
-    // ── FUNGI-FAULT-001/003: first-class fault-handler governance (0017) ──
+    // ── FUNGI-FAULT-001/003/006: first-class fault-handler governance (0017 + Q7 K5 + Q9 recode) ──
     // A declared on_*_fault handler that fails open (log outside on_rotation_fault) or violates deny-only
-    // monotonicity (on_denial_fault retry) is rejected. The inferred secure default (halt) never violates.
+    // monotonicity (on_denial_fault retry) is rejected. Q9: any declared action other than halt is
+    // FUNGI-FAULT-006 (handlers are not executed; runtime halt/audit/deny). The inferred secure default
+    // (halt) never violates. Unknown FAULT codes are skipped (no else-fallthrough name/hint).
     if (flowNode !== undefined) {
       for (const v of checkFaultHandlerViolations(flowNode)) {
+        const meta = faultHandlerDiagMeta(v.code);
+        if (meta.kind === "none") continue;
         this.diagnostics.push(makeGovDiag(
           v.code,
-          v.code === "FUNGI-FAULT-003" ? "FAULT_HANDLER_FAIL_OPEN" : "FAULT_HANDLER_MONOTONICITY",
+          meta.name,
           "error",
           v.message,
           loc,
-          v.code === "FUNGI-FAULT-003"
-            ? "Replace 'log' with 'halt' or 'quarantine' (log is fail-open; only on_rotation_fault may opt in)."
-            : "Replace 'retry' with 'halt', 'quarantine', or 'fallback <flow>' for on_denial_fault.",
+          meta.hint,
         ));
       }
     }

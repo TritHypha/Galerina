@@ -52,7 +52,8 @@ describe("Phase 26A: wasm-standalone build emits WAT + valid WASM", () => {
 
     const eff = checkEffects(p.flows, p.ast);
     const gir = emitGIR(p.ast, p.flows, eff);
-    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone");
+    // J-R5: supply AST so BODY-001 stays fail-closed (no identity/default guess).
+    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", p.ast);
     const wat = renderWAT(watModule);
 
     assert.ok(wat.startsWith("(module"), `WAT should start with (module, got: ${wat.slice(0, 50)}`);
@@ -65,7 +66,7 @@ describe("Phase 26A: wasm-standalone build emits WAT + valid WASM", () => {
     const p = parseProgram(source, "greet.fungi");
     const eff = checkEffects(p.flows, p.ast);
     const gir = emitGIR(p.ast, p.flows, eff);
-    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone");
+    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", p.ast);
     const wat = renderWAT(watModule);
 
     const result = await assembleWAT(wat);
@@ -99,7 +100,7 @@ describe("Phase 26A: wasm-standalone build emits WAT + valid WASM", () => {
     const p = parseProgram(source, "greet.fungi");
     const eff = checkEffects(p.flows, p.ast);
     const gir = emitGIR(p.ast, p.flows, eff);
-    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone");
+    const watModule = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", p.ast);
 
     // Pure flows should have zero imports (no host:* needed)
     assert.equal(

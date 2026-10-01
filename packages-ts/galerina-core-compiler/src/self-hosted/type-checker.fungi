@@ -875,7 +875,7 @@ contract {
 // FUNGI-TYPE-021 (NonExhaustiveMatch) is SUPERSEDED by the mandatory wildcard in Stage-A and has NO
 // emit site there — so the twin deliberately does NOT emit it (mirroring it would be a false
 // differential). Verified against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
-pure flow checkMatchArms(flowName: String, arms: Array<Auto>) -> Array<Auto>
+pure flow checkMatchArms(flowName: String, arms: Array<Stmt>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-022/023 for a match arm set: a missing mandatory wildcard, or an unreachable arm after the first wildcard." }
 }
@@ -883,6 +883,7 @@ contract {
   mut diags: Array<Auto> = Array.empty()
 
   // Locate the FIRST wildcard arm (if any) — its index bounds the reachable arms.
+  // Pattern text lives in Stmt.name (parser parseMatchArms stores mpat there). Empty name is not a wildcard.
   mut hasWildcard: Bool = false
   mut wildcardIdx: Int = 0 - 1
   mut i: Int = 0
@@ -890,7 +891,7 @@ contract {
     let aOpt = arms.get(i)
     match aOpt {
       Some(a) => {
-        if isWildcardPat(a.pattern) {
+        if isWildcardPat(a.name) {
           if hasWildcard == false {
             hasWildcard = true
             wildcardIdx = i
@@ -918,7 +919,7 @@ contract {
     let bOpt = arms.get(j)
     match bOpt {
       Some(b) => {
-        let msg22: String = "pattern '" + b.pattern + "' is unreachable — the wildcard arm already covers all remaining cases (flow '" + flowName + "', FUNGI-TYPE-022)"
+        let msg22: String = "pattern '" + b.name + "' is unreachable — the wildcard arm already covers all remaining cases (flow '" + flowName + "', FUNGI-TYPE-022)"
         diags = diags.append({ code: "FUNGI-TYPE-022", message: msg22, flowName: flowName })
       }
       None => {}
@@ -1214,17 +1215,14 @@ contract {
             diags = diags.append({ code: "FUNGI-TYPE-002", message: msg2, flowName: flowName })
           }
         }
-        // FUNGI-TYPE-024 (INT_LITERAL_I32_OVERFLOW, warning): an Int literal outside the i32 range
-        // [-2147483648, 2147483647] wraps silently when lowered to WASM i32. The range decision is a
-        // PRE-PARSED input (`litI32Overflow`): the twin itself runs on i32 Ints and cannot hold the
-        // overflowing value to test it — the parser lane determines it, exactly as the tensor shape is
-        // pre-parsed. Absent-safe boolean gate (never a `!= ""` compare — see the isTensor lesson).
-        // Fires standalone here (an in-range Int literal is clean; the type matches so no 002). Verified
-        // vs a raw-diagnostics probe: overflow in a binding -> 024 alone. (Tranche B, RD-0412 §4.)
-        if rhs.litI32Overflow {
-          let msg24: String = "integer literal on binding '" + stmt.name + "' is outside the 32-bit Int range and wraps silently in WASM i32 (FUNGI-TYPE-024)"
-          diags = diags.append({ code: "FUNGI-TYPE-024", message: msg24, flowName: flowName })
-        }
+      }
+      // FUNGI-TYPE-024 (INT_LITERAL_I32_OVERFLOW): an Int literal outside the i32 range
+      // [-2147483648, 2147483647] wraps silently when lowered to WASM i32. The range decision is a
+      // PRE-PARSED Stmt.litI32Overflow (parser digit-string compare, including unary neg and
+      // scientific e/E). Absent-safe boolean gate. Fires for lit and unary-neg initializers.
+      if stmt.litI32Overflow {
+        let msg24: String = "integer literal on binding '" + stmt.name + "' is outside the 32-bit Int range and wraps silently in WASM i32 (FUNGI-TYPE-024)"
+        diags = diags.append({ code: "FUNGI-TYPE-024", message: msg24, flowName: flowName })
       }
       // FUNGI-TYPE-002 + FUNGI-TYPE-025 (SILENT_NULL_DENIED): a `null`/`undefined` initializer. These are
       // two INDEPENDENT Stage-A conditions that co-occur (verified vs raw diagnostics — `let x: Int = null`
@@ -2045,40 +2043,4 @@ contract {
 // compiler (registry emits=0, no def). The former `checkTrapDecl` (never wired into any check path)
 // emitted 027 — a FALSE DIFFERENTIAL — and was removed.
 
-// ── 5. step Expressions ───────────────────────────────────────
-//
-// A step expression isolates a flow call into a separate DWI isolate.
-// Shape: { kind: "step", target: Expr }
-// where target.kind must be "call" and target.value must be non-empty.
-// FUNGI-TYPE-007 — step target must be a valid flow call (not a literal/param).
 
-// FUNGI-TYPE-007: step target must be a flow call expression, not a literal or parameter reference.
-pure flow checkStepExpr(expr: Array<Auto>, env: Array<Auto>) -> Array<Auto>
-contract {
-  intent { "FUNGI-TYPE-007: step target must be a flow call expression, not a literal or parameter reference." }
-}
-{
-  mut diags: Array<Auto> = Array.empty()
-  mut i: Int = 0
-  while i < expr.count() {
-    let eOpt = expr.get(i)
-    match eOpt {
-      Some(e) => {
-        if e.kind == "step" {
-          if e.target.kind != "call" {
-            let msg: String = "step target must be a flow call, found kind '" + e.target.kind + "' (FUNGI-TYPE-007)"
-            diags = diags.append({ code: "FUNGI-TYPE-007", message: msg, flowName: "step" })
-          }
-          if e.target.value == "" {
-            let msg: String = "step target call has no callee name (FUNGI-TYPE-007)"
-            diags = diags.append({ code: "FUNGI-TYPE-007", message: msg, flowName: "step" })
-          }
-        }
-      }
-      None => {}
-      _ => {}
-    }
-    i = i + 1
-  }
-  return diags
-}

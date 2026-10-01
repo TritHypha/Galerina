@@ -110,7 +110,9 @@ describe("T2.4 prefilter — WASM tier is fail-closed until lowered", () => {
     const p = L.parseProgram(src, "t.fungi");
     let flow = null;
     (function w(n) { if (!n || typeof n !== "object") return; if (/FlowDecl$/.test(n.kind ?? "")) flow = n; for (const c of n.children ?? []) w(c); })(p.ast);
-    const wat = L.emitWATFromFlowAST(flow, ["v"]);
+    const watL = L.emitWATFromFlowAST(flow, ["v"]);
+    assert.equal(watL.kind, "found");
+    const wat = watL.value;
     assert.match(wat, /unsupported-in-WASM:\s*prefilterExpr|unreachable/);
   });
 });

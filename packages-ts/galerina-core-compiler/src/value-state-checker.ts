@@ -459,6 +459,42 @@ function isProtectedValueExpression(node: AstNode): boolean {
   return false;
 }
 
+const SECRET_NS = new Set(["secret", "secrets", "vault", "kms", "env"]);
+
+/**
+ * Source-only receiver classification (DESIGN-02 / Q1b).
+ * Sinks keep using `receiverSegment`. This function never returns null/undefined/NaN.
+ * `callStyle === "method"` → method receiver (today).
+ * `callStyle === undefined` → plain call; children[0] is an argument, not a namespace accessor.
+ * anything else → Unclassified (today's receiverSegment, fail closed).
+ */
+type SourceReceiver =
+  | { readonly tag: "Receiver"; readonly seg: string }
+  | { readonly tag: "PlainCall" }
+  | { readonly tag: "Unclassified" };
+
+function sourceLastSegment(node: AstNode): string {
+  let receiver = node.children?.[0];
+  while (receiver?.kind === "errorPropagation") {
+    receiver = receiver.children?.[0];
+  }
+  if (receiver === undefined) return "";
+  const name = receiver.kind === "identifier" ? (receiver.value ?? "") : getNodeName(receiver);
+  const seg = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : name;
+  return seg.toLowerCase();
+}
+
+function sourceReceiverSegment(node: AstNode): SourceReceiver {
+  const style: string | undefined = node.callStyle;
+  if (style === "method") {
+    return { tag: "Receiver", seg: sourceLastSegment(node) };
+  }
+  if (style === undefined) {
+    return { tag: "PlainCall" };
+  }
+  return { tag: "Unclassified" };
+}
+
 /**
  * Returns true when the node reads a value out of a `secrets {}`-declared credential —
  * a secret SOURCE. A binding initialised from such a source is treated as a secret
@@ -473,9 +509,19 @@ function isSecretSourceExpression(node: AstNode): boolean {
     return inner !== undefined && isSecretSourceExpression(inner);
   }
   if (node.kind !== "callExpr") return false;
-  // VSC-003: handle memberExpr receivers (e.g. app.vault.read, ctx.secrets.get) via last segment.
-  const ns = receiverSegment(node);
-  return ns === "secret" || ns === "secrets" || ns === "vault" || ns === "kms" || ns === "env";
+  const classified = sourceReceiverSegment(node);
+  switch (classified.tag) {
+    case "Receiver":
+      return SECRET_NS.has(classified.seg);
+    case "PlainCall":
+      return false;
+    case "Unclassified":
+      return SECRET_NS.has(receiverSegment(node));
+    default: {
+      const _unused: never = classified;
+      return SECRET_NS.has(receiverSegment(node));
+    }
+  }
 }
 
 /**
@@ -542,8 +588,12 @@ function derivesFromSecret(
 
   switch (node.kind) {
     case "identifier": {
-      const binding = lookupBinding(node.value ?? "");
-      return binding?.typeName === "SecureString";
+      const name = node.value ?? "";
+      const binding = lookupBinding(name);
+      if (binding?.typeName === "SecureString") return true;
+      // Constraint 3: a secret-namespace identifier with no local/param binding is a namespace escape.
+      if (binding === undefined && SECRET_NS.has(name.toLowerCase())) return true;
+      return false;
     }
     case "memberExpr": {
       const receiver = node.children?.[0];

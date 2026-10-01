@@ -895,7 +895,16 @@ if (OPTIONS.mode === "self-test") {
   process.exit(process.exitCode ?? 0);
 }
 
-if (
+export function liveRoadmapSvg() {
+  const derived = model();
+  return renderSVG(derived.value);
+}
+
+const IS_MAIN = process.argv[1] !== undefined
+  && process.argv[1].replace(/\\/g, "/").endsWith("scripts/gen-roadmap.mjs");
+if (!IS_MAIN) {
+  // imported as a library (J8 dirty-tree SVG regen). CLI modes stay behind IS_MAIN.
+} else if (
   (OPTIONS.mode === "write" || OPTIONS.mode === "check")
   && ROADMAP_BUILD_POINT.kind === "dirty"
 ) {
@@ -905,6 +914,7 @@ if (
   process.exit(1);
 }
 
+if (IS_MAIN) {
 const derived = model();
 const m = derived.value;
 const block = renderBlock(m);
@@ -991,3 +1001,4 @@ if (OPTIONS.mode === "write") {
 }
 
 console.log(block);
+}

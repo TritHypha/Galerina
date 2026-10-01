@@ -24,6 +24,10 @@ policy belongs in `galerina-framework-app-kernel`.
 [x] Add examples
 [ ] Wire network reports into compiler/runtime reports
 [ ] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
+    (2026-09-29 correction: the live union at src/index.ts:5-12 is
+    https|http|tls|tcp|udp|websocket|rawSocket. It has no `grpc` and does have `tls` and
+    `rawSocket`, so adding `quic` alone does not produce the union above. Whether
+    `grpc` belongs here is an open decision.)
 [ ] Upgrade NetworkDestinationReference: add provider, category, dataCategories
 [ ] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits
 [x] Implement frozen current-schema productionNetworkPolicy with SSRF-safe deny list, HTTPS/443-only egress, and runtime-guard regression (declarative policy does not itself dial or resolve DNS)
@@ -48,7 +52,8 @@ policy belongs in `galerina-framework-app-kernel`.
     unprotected read-then-write pair
 [ ] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]>
 [ ] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[]
-[ ] Define NetworkDiagnostic: code, message, severity, destination?
+[x] Define NetworkDiagnostic: code, message, severity, destination? (exists at src/index.ts:29-34
+    as { code, severity, message, path? }; `path` is used in place of `destination`. Ticked 2026-09-29, Grok Bot)
 [ ] Define NetworkPolicyReport with schemaVersion "galerina.network.report.v1"
 [ ] Define FUNGI-NETWORK-001 through FUNGI-NETWORK-008 diagnostic codes
 [ ] Create internal dir: policy/, runtime/, webhook/, reports/, diagnostics/

@@ -1,12 +1,11 @@
 {
   "note": "type-position `| null` per file; see source-hygiene-null-ratchet.test.mjs",
-  "total": 255,
+  "total": 237,
   "files": {
     "packages-ts/galerina-auth/src/bearer.ts": 1,
     "packages-ts/galerina-core-cli/src/core-command.ts": 1,
     "packages-ts/galerina-core-compiler/src/bytecode-vm.ts": 6,
     "packages-ts/galerina-core-compiler/src/cli.ts": 8,
-    "packages-ts/galerina-core-compiler/src/decimal-arith.ts": 1,
     "packages-ts/galerina-core-compiler/src/economics-inference.ts": 3,
     "packages-ts/galerina-core-compiler/src/execution-graph.ts": 5,
     "packages-ts/galerina-core-compiler/src/gate-dispatch.ts": 1,
@@ -32,7 +31,6 @@
     "packages-ts/galerina-core-compiler/src/value-state-checker.ts": 1,
     "packages-ts/galerina-core-compiler/src/verified-loop-envelope.ts": 5,
     "packages-ts/galerina-core-compiler/src/wat-assembler.ts": 2,
-    "packages-ts/galerina-core-compiler/src/wat-emitter.ts": 17,
     "packages-ts/galerina-core-network/src/egress-guard.ts": 3,
     "packages-ts/galerina-core-runtime-wasm/src/seam-adapters.ts": 1,
     "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts": 4,

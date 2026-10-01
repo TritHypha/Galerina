@@ -177,26 +177,52 @@ const unlowerable64Cache = new WeakMap<AstNode, boolean>();
 export function flowDeclaresUnlowerable64(flowNode: AstNode): boolean {
   const cached = unlowerable64Cache.get(flowNode);
   if (cached !== undefined) return cached;
-  const result = scanFlowFor64(flowNode);
+  const result = scanFlowForScalars(flowNode, FAST_TIER_UNLOWERABLE_SCALAR, FAST_TIER_UNLOWERABLE_SCALAR);
   unlowerable64Cache.set(flowNode, result);
   return result;
 }
 
-function scanFlowFor64(flowNode: AstNode): boolean {
+/**
+ * The scalars the SYNC fast path (SyncInterpreter) cannot carry in a flow SIGNATURE (param / return).
+ * Narrower than FAST_TIER_UNLOWERABLE_SCALAR by exactly one entry: `Decimal`. The sync path does not
+ * store numbers in an i32 slot — it carries the walker's own exact `{ __tag: "decimal", value: string }`
+ * value and evaluates Decimal `+ - *` / comparisons through the SAME `BINARY_DISPATCH` entries and
+ * `a.divide(...)` / `a.remainder(...)` through the SAME stdlib `numericMethod` as the tree-walker, so it
+ * cannot drift from it. The bytecode VM and the WASM f64 path still bail on Decimal (they keep the
+ * FAST set). Int64/UInt64 stay here: the sync path parses int literals via parseInt into JS numbers.
+ *
+ * Zero-trust default, owner may revisit (Grok Bot, 2026-10-01): a Decimal-typed BINDING
+ * (`let d: Decimal = …`) still bails — `bindingSet` below keeps the full FAST set — because the sync
+ * path ignores binding annotations and must not guess a literal's exact-decimal coercion.
+ */
+export const SYNC_TIER_UNLOWERABLE_SIGNATURE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt64"]);
+
+const syncTierUnlowerableCache = new WeakMap<AstNode, boolean>();
+
+/** Sync-fast-path analogue of `flowDeclaresUnlowerable64`: admits Decimal params/return, nothing else. */
+export function flowDeclaresSyncTierUnlowerable(flowNode: AstNode): boolean {
+  const cached = syncTierUnlowerableCache.get(flowNode);
+  if (cached !== undefined) return cached;
+  const result = scanFlowForScalars(flowNode, SYNC_TIER_UNLOWERABLE_SIGNATURE_SCALAR, FAST_TIER_UNLOWERABLE_SCALAR);
+  syncTierUnlowerableCache.set(flowNode, result);
+  return result;
+}
+
+function scanFlowForScalars(flowNode: AstNode, signatureSet: ReadonlySet<string>, bindingSet: ReadonlySet<string>): boolean {
   for (const c of flowNode.children ?? []) {
     // Return type = a direct typeRef child of the flow.
-    if (c.kind === "typeRef" && typeof c.value === "string" && FAST_TIER_UNLOWERABLE_SCALAR.has(numericBaseType(c.value))) return true;
+    if (c.kind === "typeRef" && typeof c.value === "string" && signatureSet.has(numericBaseType(c.value))) return true;
     // Param type = the typeRef nested in a paramDecl.
     if (c.kind === "paramDecl") {
       const tr = (c.children ?? []).find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
-      if (typeof tr?.value === "string" && FAST_TIER_UNLOWERABLE_SCALAR.has(numericBaseType(tr.value))) return true;
+      if (typeof tr?.value === "string" && signatureSet.has(numericBaseType(tr.value))) return true;
     }
   }
   // Bindings anywhere in the body.
   let found = false;
   const visit = (n: AstNode | undefined): void => {
     if (n === undefined || found) return;
-    if (NUMERIC_BIND_KINDS.has(n.kind) && typeof n.value === "string" && FAST_TIER_UNLOWERABLE_SCALAR.has(bindingDeclaredBase(n.value))) {
+    if (NUMERIC_BIND_KINDS.has(n.kind) && typeof n.value === "string" && bindingSet.has(bindingDeclaredBase(n.value))) {
       found = true;
       return;
     }

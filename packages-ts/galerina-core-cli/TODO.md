@@ -75,3 +75,15 @@
 [x] Add report summary output
 [x] Add tests
 ```
+
+Environment-mode note (2026-09-29, Grok Bot, owner-approved; see AGENTS
+session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md): the `--env`
+fail-open is fixed. `parseEnvironment` (src/cli.ts) now defaults to
+`development` only when `--env` is absent and refuses an unknown value
+(FUNGI-CLI-ENV-001, e.g. `--env prodution`), a missing value (FUNGI-CLI-ENV-002)
+or a repeated flag (FUNGI-CLI-ENV-003) with a structured `CliError`
+{code, safeMessage, suggestedFix} (src/types.ts) that never echoes raw input;
+`--env=<value>` is also accepted. Tests: tests/cli-environment.test.mjs. The two
+rows above stay open: no environment config file is loaded yet, and only the
+`--env` path uses `CliError` (unknown-command and command errors are still
+plain messages).

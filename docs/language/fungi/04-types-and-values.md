@@ -185,10 +185,8 @@ hallmark CustomerRef of String {
 }
 
 hallmark LoyaltyPoints of Decimal {
-  decimals: 0
-  sign:     non-negative
   ops:      { add, subtract, scale, compare }      // the CLOSED algebra — deny-by-default
-  gate:     flow assayPoints
+  gate:     flow assayPoints                       // "whole, never negative" is checked HERE, in the gate
 }
 ```
 
@@ -206,6 +204,7 @@ to fail, the name is a *protected mark*. Everything about a hallmark is fail-clo
 | `ops {}` may only draw from `{ add, subtract, scale, ratio, compare }` — never an effect | `FUNGI-HALLMARK-004` |
 | an undeclared op (`points / points` when `ratio` isn't declared) | `FUNGI-HALLMARK-005` |
 | **minting is not sanitizing** — a gate does not untaint | `FUNGI-VALUESTATE-004` / `-001` |
+| a schema field nothing enforces (`decimals:` / `sign:`) is refused, not silently ignored — check it in the gate | `FUNGI-HALLMARK-006` (pending KB registration) |
 
 Worked examples: `docs/examples/Level-2-Types/094-hallmark-declaration` (the mint) and `095`–`098` (ops
 deny-by-default · reserved names · construction-only · taint-transparency). Cross-package schema
@@ -218,13 +217,29 @@ hallmark type is package-local.
 `Decimal`. Note that *currency-literal* forms like `GBP0.00` are **not** general expression syntax —
 see "Literals" below.
 
-**Money arithmetic is exact** (RD-0349 I3). `add` / `subtract` / `multiply` / `divideBy` compute on a
-BigInt fixed-point core — the decimal string goes straight in, with **no `parseFloat`, no `toFixed`, no
-`1/x` float reciprocal** — so an 18-decimal amount (crypto precision) survives byte-exact, and division
-fails closed on a zero divisor. Cross-currency `Money<A> + Money<B>` is a compile error
-(`FUNGI-TYPE-004`; convert first with `fx.convert`), and `Money<C> * Money<C>` is dimensionally rejected
-(scale by a `Decimal`, not another `Money`). *(Per-currency minor units — JPY 0dp, BHD 3dp, crypto 8/18dp
-— arrive with the currency registry; until then every currency rounds at 2dp.)*
+**Money arithmetic is exact** (RD-0349 I3). `add` / `subtract` / `multiply` / `divideBy` compute on the
+one canonical BigInt decimal core — the decimal string goes straight in, with **no `parseFloat`, no
+`toFixed`, no `1/x` float reciprocal** — and division fails closed on a zero divisor (`DivisionByZero`).
+Cross-currency `Money<A> + Money<B>` is a compile error (`FUNGI-TYPE-004`; convert first with
+`fx.convert`), and `Money<C> * Money<C>` is dimensionally rejected.
+
+**Rounding is always explicit** (R5/R11, 2026-09-30 — zero-trust defaults, owner may revisit):
+
+- A Money amount is admitted only at **at most** its currency's ISO-4217 minor units (GBP 2, JPY 0,
+  BHD 3) and is stored at exactly that scale: `Money.gbp("0.125")` and `Money.jpy("100.5")` are refused
+  (`MoneyScaleExceedsMinorUnits`), never rounded. A Float amount is refused (`InexactOperandRefused`).
+- Anything that has to round names its mode — a string literal from
+  `halfEven | halfUp | halfDown | up | down | ceiling | floor`; there is **no default mode**:
+  `m.multiply(rate, "halfEven")`, `m.divideBy(n, "halfUp")`, `a.divideBy(b, scale, mode)` (a Decimal
+  ratio), `d.divide(e, scale, mode)`, `d.round(places, mode)`, `d.toFixed(places, mode)`.
+  `d.floor(places)` / `d.ceil(places)` carry their direction as the mode.
+- The bare operators `Money * x`, `Money / x` and `Money % x` are compile errors that name the method form
+  (`FUNGI-NUMERIC-OP-002`); `Money + 1` is `FUNGI-TYPE-004`. `Decimal / Decimal` and `Decimal % Decimal`
+  redirect to `divide` / `remainder` (`FUNGI-NUMERIC-OP-001`).
+- Decimal never mixes with Int or Float under an operator (`FUNGI-NUMERIC-OP-003`): convert an Int
+  explicitly with `Decimal.fromInt(n)`; a Float has no exact conversion.
+- `a.remainder(b)` is exact and **truncated**: the result takes the sign of the dividend
+  (`Decimal("-10").remainder(Decimal("3"))` is `-1`; `Decimal("10").remainder(Decimal("-3"))` is `1`).
 
 ## Value-state qualifiers on a type
 

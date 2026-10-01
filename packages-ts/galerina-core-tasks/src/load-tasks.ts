@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { parseTaskRunBlock } from "./task-operations.js";
 import type { TaskDefinition } from "./types.js";
 
 export const MAX_TASK_SOURCE_BYTES = 1_048_576;
@@ -79,6 +80,10 @@ function parseTaskBlock(block: TaskBlock): TaskDefinition {
   const reason = readStringProperty(block.body, "reason");
   const description = readStringProperty(block.body, "description");
   const timeoutMs = readNumberProperty(block.body, "timeoutMs") ?? readNumberProperty(block.body, "timeout");
+  const runBody = readNamedBlock(block.body, "run");
+  const run = runBody === undefined
+    ? undefined
+    : parseTaskRunBlock(runBody, (block.body.match(/\brun\s*\{/g) ?? []).length);
 
   return {
     name: block.name,
@@ -88,7 +93,8 @@ function parseTaskBlock(block: TaskBlock): TaskDefinition {
     depends: readListProperty(block.body, "depends"),
     effects: readEffects(block.body),
     permissions: readPermissions(block.body),
-    ...(timeoutMs === undefined ? {} : { timeoutMs })
+    ...(timeoutMs === undefined ? {} : { timeoutMs }),
+    ...(run === undefined ? {} : { run })
   };
 }
 

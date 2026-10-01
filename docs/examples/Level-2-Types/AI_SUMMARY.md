@@ -16,7 +16,7 @@
 ```fungi
 // Money: currency-parameterised, exact decimal arithmetic
 let price: Money<GBP> = Money.gbp("100.00")
-let vat: Money<GBP>   = price * Decimal("0.20")
+let vat: Money<GBP>   = price.multiply(Decimal("0.20"), "halfEven")   // explicit mode; bare * is refused
 
 // Cross-currency is a compile error
 // let bad = Money.gbp("10.00") + Money.usd("10.00")  -- FUNGI-TYPE-004

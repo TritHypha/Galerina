@@ -164,7 +164,7 @@ describe("Phase 25A: buildWATModule emits correct host:* imports for effectful f
     const p = parseProgram(src, "t.fungi");
     const eff = checkEffects(p.flows, p.ast);
     const gir = emitGIR(p.ast, p.flows, eff);
-    const mod = buildWATModule(gir.gir, STDLIB_CAPABILITY_MAP);
+    const mod = buildWATModule({ ...gir.gir, ast: p.ast }, STDLIB_CAPABILITY_MAP);
     const wat = renderWAT(mod);
 
     const importLines = wat.split("\n").filter((l) => l.trim().startsWith("(import"));

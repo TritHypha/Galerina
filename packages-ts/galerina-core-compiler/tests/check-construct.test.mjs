@@ -107,8 +107,9 @@ describe("T2.2 check — WAT lowering is real and retains a malformed-trit trap"
     const p = L.parseProgram(src, "t.fungi");
     let flow = null;
     (function w(n) { if (!n || typeof n !== "object") return; if (/FlowDecl$/.test(n.kind ?? "")) flow = n; for (const c of n.children ?? []) w(c); })(p.ast);
-    const wat = L.emitWATFromFlowAST(flow, ["v"]);
-    assert.equal(typeof wat, "string");
+    const watL = L.emitWATFromFlowAST(flow, ["v"]);
+    assert.equal(watL.kind, "found");
+    const wat = watL.value;
     assert.doesNotMatch(wat, /unsupported-in-WASM:\s*checkExpr/);
     assert.match(wat, /i32\.const -1/);
     assert.match(wat, /i32\.const 0/);

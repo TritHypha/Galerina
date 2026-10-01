@@ -8,5 +8,5 @@
 
 pure flow calculateVat(price: Money<GBP>) -> Money<GBP>
 {
-  return price * Decimal("0.20")
+  return price.multiply(Decimal("0.20"), "halfEven")
 }

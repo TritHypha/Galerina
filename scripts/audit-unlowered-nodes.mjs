@@ -99,30 +99,77 @@ const strip = (p) => {
   return s.replace(/^@version 1\s*/m, "");
 };
 
-// Render a full source string to WAT (parse -> effects -> GIR -> WAT). Stops BEFORE assembly/admission —
-// the un-lowered marker lives in the WAT text (a comment on the `unreachable`), so no run is needed.
+// Render a full source string to WAT through the same CheckedProgram front door as
+// production WASM (resolve → types → effects → governance). Stops BEFORE assembly.
+// A gate refusal is a structured error row — never an un-lowered count on a program
+// production would reject.
 function renderWat(L, source, label) {
-  const prog = L.parseProgram(source, label);
-  const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
-  if (errs.length) return { error: `parse:${errs[0].code}`, wat: "" };
-  const fx = L.checkEffects(prog.flows, prog.ast);
-  const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
-  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, label, prog.ast, true));
+  const checked = L.checkProgram(source, label);
+  if (!checked.ok) {
+    const family = typeof checked.family === "string" && checked.family.length > 0 ? checked.family : "gate";
+    const code = typeof checked.code === "string" && checked.code.length > 0 ? checked.code : "FUNGI-WAT-CHECKED-001";
+    return { error: `${family}:${code}`, wat: "" };
+  }
+  const wat = L.renderWAT(L.buildWATFromCheckedProgram(checked.program, L.STDLIB_CAPABILITY_MAP, "wasm-standalone", true));
   return { wat };
+}
+
+// Slice one `record Name { … }` from a .fungi source (brace-matched). Used so runtime
+// composition reuses gir-emitter.fungi's exact field offsets instead of a second copy.
+function extractRecordDecl(src, name) {
+  const re = new RegExp(`(^|\\n)record\\s+${name}\\b`);
+  const m = re.exec(src);
+  if (!m) throw new Error(`audit-unlowered-nodes: missing record ${name} in gir-emitter.fungi`);
+  const start = m.index + (m[1] ? m[1].length : 0);
+  const brace = src.indexOf("{", start);
+  if (brace < 0) throw new Error(`audit-unlowered-nodes: record ${name} has no body`);
+  let depth = 0;
+  for (let i = brace; i < src.length; i++) {
+    const c = src[i];
+    if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth === 0) return src.slice(start, i + 1);
+    }
+  }
+  throw new Error(`audit-unlowered-nodes: unclosed record ${name}`);
+}
+
+// J7 / E2d: runtime.fungi walks GIRNode/GIRExprNode/GIRModule/GIRExpr/GIRStmt/FlowEntry
+// declared only in gir-emitter.fungi. Audit previously rendered runtime as lexer+parser+runtime
+// (this file ~116-119), so those layouts were absent and every expr.value/.kids/.body was
+// #128. Option (b) stage-declaration: prepend the six record bodies from gir-emitter.fungi
+// (single source of truth; no wat-emitter.ts layout teaching). Full gir-emitter flows are
+// NOT concatenated here — duplicate flow names would mix gir-emitter's un-lowered count
+// into the runtime row. p9-100-site-mapper.mjs already models the 4-stage intent.
+const RUNTIME_GIR_RECORDS = [
+  "GIRNode",
+  "GIRExprNode",
+  "GIRModule",
+  "GIRExpr",
+  "GIRStmt",
+  "FlowEntry",
+];
+function girRecordsForRuntime() {
+  const src = strip("gir-emitter.fungi");
+  return RUNTIME_GIR_RECORDS.map((n) => extractRecordDecl(src, n)).join("\n\n");
 }
 
 // A stage is rendered as lexer + parser + stage (one module per stage — the stages cannot be concatenated,
 // #107). parser needs nothing extra; every later stage is appended to the lexer+parser base it references.
+// runtime additionally receives the six GIR record declarations it consumes (J7 option b).
 function stageSource(file) {
-  const extra = file === "parser.fungi" ? "" : "\n" + strip(file);
-  return "@version 1\n" + strip("lexer.fungi") + "\n" + strip("parser.fungi") + extra;
+  // lexer.fungi is already the base; appending it again duplicated the lexer
+  // (lexer+parser+lexer) and produced dishonest redefinition rows.
+  const extra = (file === "lexer.fungi" || file === "parser.fungi") ? "" : "\n" + strip(file);
+  const girDecls = file === "runtime.fungi" ? "\n" + girRecordsForRuntime() : "";
+  return "@version 1\n" + strip("lexer.fungi") + "\n" + strip("parser.fungi") + girDecls + extra;
 }
 
 // ── the corpus: the seven self-hosted stages ─────────────────────────────────
-// EVERY stage carries un-lowered nodes when rendered module-wide — even lexer and parser (1 each: a helper
-// flow the emitter can't fully lower, off the R2 run-path, which is why R2 still shows them RUN). The heavy
-// ones are type-checker / governance-verifier / runtime. runtime is included even though R2 excludes it: R2
-// is a RUN-time sweep and runtime traps at execution, but its un-lowered NODES are visible at EMIT time here.
+// MEASURED 2026-10-01 Q2 BUILD. All seven stages 0 module-wide and 0 run-path.
+// runtime stays in the corpus so a regression that reintroduces emit-time stubs
+// is visible here, not only when someone runs the stage.
 const STAGES = [
   { file: "lexer.fungi", entry: "tokenize" },
   { file: "parser.fungi", entry: "parseFlows" },
@@ -133,26 +180,27 @@ const STAGES = [
   { file: "runtime.fungi", entry: "runProgram" },
 ];
 
-// ★ MEASURED, not assumed. R&D's grounding expected this to be roughly "the #100 sites". Running it
-// falsified that: it is 385, module-wide, ALL #128 (unresolved member/name/op/node) — the WAT emitter's
-// TOTAL partial-lowering debt across the seven stages, of which the #100 field-reads are an INDISTINGUISHABLE
-// subset (they surface as the same #128 "unresolved member" marker as every other node the emitter declines).
-// This counts nodes in EVERY flow of each module, not only the flow R2 drives — module-wide coverage, not the
-// run-path. Deterministic across runs. Shrink-only: a RISE = a new un-lowerable construct (fix the node); a
-// FALL = real lowering progress (lower the number to lock it in). Fixing #100 removes only its subset.
-const UNLOWERED_BASELINE = 132;
+// ★ MEASURED 2026-10-01 Q2 BUILD (`audit-unlowered-nodes.mjs --json`). Module-wide un-lowered
+// count across the seven stages is 0. Q1-B measured 7, all #128 in type-checker parked flows
+// (checkMatchArms .pattern, checkStepExpr .target, checkBinding litI32Overflow). Q2 cleared those
+// sites (Array<Stmt>+.name, stmt.litI32Overflow, delete checkStepExpr). Shrink-only: a RISE = a
+// new un-lowerable construct (fix the node); a FALL = real lowering progress (lower the number
+// to lock it in). Never raise.
+const UNLOWERED_BASELINE = 0;
 
-// ★ RUN-PATH baseline — un-lowered nodes REACHABLE from each stage's R2 entry (a subset of module-wide: most
-// un-lowered nodes sit in funcs the entry never calls). Shrink-only, MEASURED. The (run-path, module-wide)
-// pair per stage is R&D's R2->R3 bridge: run-path>0 ⇒ the entry reaches a node the emitter declined (an R2
-// trap, latent or live); module-wide>0 ⇒ won't byte-parity at R3 even where run-path is 0.
-const RUNPATH_BASELINE = 74; // MEASURED. Per stage: lexer 0 · parser 1 · type-checker 0 · effect-checker 4 · governance-verifier 0 · gir-emitter 0 · runtime 69. lexer(0,>0) is the pure "runs but won't byte-parity" row; the 132-74=58 gap is un-lowered nodes in funcs unreachable from the entries.
+// ★ RUN-PATH baseline — un-lowered nodes REACHABLE from each stage's R2 entry (a subset of module-wide).
+// MEASURED 2026-10-01 Q2 BUILD: 0. Shrink-only.
+const RUNPATH_BASELINE = 0; // MEASURED Q2. Per stage: lexer 0 · parser 0 · type-checker 0 · effect-checker 0 · governance-verifier 0 · gir-emitter 0 · runtime 0.
 
 // ── #2-law self-test fixtures — generated from ONE template, element type the only variable ──────────────
 const mkFixture = (elemType, flowName) => `@version 1
 record Item {
   name: String
   size: Int
+}
+record Other {
+  size: Int
+  tag: String
 }
 pure flow ${flowName}(items: Array<${elemType}>) -> Int
 contract { intent { "read a record field off an Array<${elemType}> payload" } }
@@ -169,14 +217,18 @@ contract { intent { "read a record field off an Array<${elemType}> payload" } }
   }
   return total
 }`;
-const FIRE = mkFixture("Auto", "getAutoField");     // erased element type — a field read must NOT lower
-const CONTROL = mkFixture("Item", "getTypedField"); // concrete element type — the same read must lower
+// J4–J6c unique-layout teaching interned a UNIQUE Array<Auto> field set (lone Item + it.size).
+// FIRE keeps the original read (`it.size`) but adds sibling Other {size, tag} so {size} is
+// ambiguous (Alpha/Beta equal-shape fail-closed). CONTROL is the same source with Array<Item>.
+const FIRE = mkFixture("Auto", "getAutoField");     // Auto + ambiguous {size} — a field read must NOT lower
+const CONTROL = mkFixture("Item", "getTypedField"); // concrete Item — the same read must lower
 
 // ── run-path #2 control fixture: two entries — one REACHES a trapping helper, one only a clean helper —
 // both in a module whose module-wide un-lowered count is >0. Proves run-path is a strict subset, with its OWN
 // control (not the module-wide fixture) because the property under test changed (R&D's note).
 const RP_FIXTURE = `@version 1
 record Item { name: String  size: Int }
+record Other { size: Int  tag: String }
 pure flow trapHelper(items: Array<Auto>) -> Int
 contract { intent { "an Array<Auto> field read leaves an un-lowered node" } }
 { mut t: Int = 0  let e = items.get(0)  match e { Some(it) => { t = it.size } _ => { t = 0 } }  return t }
@@ -192,6 +244,17 @@ contract { intent { "calls only the clean helper" } }
 
 async function selfTest(L) {
   const checks = [];
+  const TYPE_FAIL = `@version 1
+pure flow bad() -> Int {
+  return "nope"
+}`;
+  const typeFail = renderWat(L, TYPE_FAIL, "ul-typefail");
+  checks.push(["type-failing program is a structured gate error, not an un-lowered count",
+    typeof typeFail.error === "string" && typeFail.error.startsWith("type:") && typeFail.wat === ""]);
+  const lexerSrc = stageSource("lexer.fungi");
+  const lexerBody = strip("lexer.fungi");
+  const lexerCopies = lexerSrc.split(lexerBody).length - 1;
+  checks.push(["lexer.fungi is composed once (not lexer+parser+lexer)", lexerCopies === 1]);
   const fire = renderWat(L, FIRE, "ul-fire");
   const control = renderWat(L, CONTROL, "ul-control");
   checks.push(["both fixtures render to WAT (no parse/emit error) — a fixture that fails to build tests nothing",
@@ -289,7 +352,7 @@ if (violations.length) {
   console.error("");
 } else {
   console.log(`  ✅ unlowered-nodes: run-path ${runPathTotal} (baseline ${RUNPATH_BASELINE}) · module-wide ${total} (baseline ${UNLOWERED_BASELINE}) un-lowered node(s) across ${STAGES.length} stages.`);
-  console.log(`     ★ R2->R3 BRIDGE (run-path, module-wide): run-path = nodes REACHABLE from the stage's R2 entry (a live/latent R2 trap); module-wide = every flow's nodes (the R3 byte-parity precondition). run-path ⊆ module-wide; the ${total - runPathTotal}-node gap is un-lowered nodes in funcs the entry never calls — dead from R2, still emitted, so they block R3. A (0, >0) stage RUNS but won't byte-parity (today: lexer).`);
+  console.log(`     ★ R2->R3 BRIDGE (run-path, module-wide): run-path = nodes REACHABLE from the stage's R2 entry (a live/latent R2 trap); module-wide = every flow's nodes (the R3 byte-parity precondition). run-path ⊆ module-wide; the ${total - runPathTotal}-node gap is un-lowered nodes in funcs the entry never calls — dead from R2, still emitted, so they block R3. A (0, >0) stage RUNS but won't byte-parity (today: type-checker parked 7).`);
   console.log(`     by task tag: ${Object.entries(byKind).map(([k, n]) => `#${k}×${n}`).join(" · ") || "none"} — ALL #128 (unresolved member/name/op/node). #100's field-reads are an INDISTINGUISHABLE subset, NOT the bulk.`);
   console.log(`     surface: EMIT-time, MODULE-WIDE — every flow's un-lowered nodes, not the R2 run-path (audit-stage-execution.mjs). This is the WAT emitter's total partial-lowering debt over the self-hosted stages; fixing #100 removes only its subset.`);
 }

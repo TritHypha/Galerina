@@ -20,6 +20,10 @@ native executable report format
 native target constraints
 ```
 
+Examples: `examples/target.example.json`, `examples/artifact.example.json`,
+`examples/report-input.example.json` (illustrative; validated by
+`tests/native-examples.test.mjs`).
+
 ## Boundary
 
 `galerina-target-native` should consume checked IR, compute plans and machine

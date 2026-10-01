@@ -1,3 +1,5 @@
+import { MONEY_UNIT_TAGS } from "./unit-registry.generated.js";
+
 interface SourceLocation {
   readonly file: string;
   readonly line: number;
@@ -13,6 +15,8 @@ interface CompilerDiagnostic {
   readonly suggestedFix?: string;
 }
 
+export type MethodReceiverOrigin = "Value" | "TypeName" | "Unknown";
+
 export interface MethodChainStage {
   readonly methodName: string;
   readonly receiverType: string | undefined;
@@ -21,6 +25,9 @@ export interface MethodChainStage {
   readonly effects: readonly string[] | undefined;
   readonly location: SourceLocation | undefined;
   readonly resultConsumed: boolean | undefined;
+  readonly receiverOrigin?: MethodReceiverOrigin;
+  readonly ufcsAdmitted?: boolean;
+  readonly fieldName?: string;
 }
 
 export interface MethodChainInput {
@@ -30,6 +37,7 @@ export interface MethodChainInput {
   readonly declaredEffects: readonly string[] | undefined;
   readonly calls: readonly { readonly methodName: string }[] | readonly MethodChainStage[];
   readonly location: SourceLocation;
+  readonly receiverOrigin?: MethodReceiverOrigin;
 }
 
 const RESULT_CONSUMERS = new Set(["map", "mapErr", "flatMap", "unwrapOr", "isOk", "isErr", "isSome", "isNone"]);
@@ -47,7 +55,8 @@ const METHODS_BY_RECEIVER: Readonly<Record<string, ReadonlySet<string>>> = {
   Option: new Set(["sequence", "fromNullable", "isSome", "isNone", "unwrapOr", "map", "flatMap", "zip"]),
   Result: new Set(["sequence", "fromNullable", "all", "ok", "isOk", "isErr", "unwrapOr", "map", "mapErr", "flatMap"]),
   String: new Set(["length", "charCount", "concat", "trim", "slice", "split", "startsWith", "endsWith", "contains", "includes", "indexOf", "toString", "toStr", "toLower", "toUpper", "charAt", "encode", "toInt", "parse"]),
-  Decimal: new Set(["parse", "fromInt", "divide", "remainder", "toString", "toStr"]),
+  // R9 (Grok Bot rounding work, 2026-09-30): exactly the Decimal surface stdlib/interpreter implement.
+  Decimal: new Set(["parse", "fromInt", "divide", "remainder", "toString", "toStr", "toText", "abs", "round", "floor", "ceil", "toFixed", "sign"]),
   Map: new Set(["empty", "size", "length", "has", "isEmpty", "get", "keys", "values", "entries", "set", "delete", "remove", "merge", "insert"]),
   Set: new Set(["empty", "from", "size", "length", "contains", "isEmpty", "toList", "toArray", "add", "remove", "union", "intersection", "difference"]),
   Bytes: new Set(["empty", "of", "from", "fromHex", "length", "size", "isEmpty", "get", "getInt", "append", "slice", "toHex", "toBase64", "sha256Hex", "sha256", "decode", "toString", "encode"]),
@@ -57,7 +66,13 @@ const METHODS_BY_RECEIVER: Readonly<Record<string, ReadonlySet<string>>> = {
   Float: new Set(["toString", "toStr", "abs", "floor", "ceil", "round", "isFinite", "isPositive"]),
   Char: new Set(["isDigit", "isLetter", "codePoint", "toInt", "toString", "fromCode"]),
   Duration: new Set(["ofMs", "ofSeconds", "ofHours", "ofMinutes", "add", "subtract", "toString"]),
-  Money: new Set(["gbp", "usd", "eur", "jpy", "of", "fromInt", "money", "multiply", "add", "subtract", "toString"]),
+  // R9: the generated per-currency constructors (one per ISO table tag — the same set stdlib's moneyStatic
+  // admits) + Money.of + the instance surface. The old "fromInt"/"money" entries had no runtime
+  // implementation (they could only ever trap), so they are no longer admitted.
+  Money: new Set([
+    ...MONEY_UNIT_TAGS.map((tag) => tag.toLowerCase()), "of",
+    "amount", "currency", "toString", "add", "subtract", "multiply", "divideBy",
+  ]),
   File: new Set(["readText", "readBytes", "writeText", "writeBytes", "read", "write"]),
   FileSystem: new Set(["readText", "readBytes", "writeText", "writeBytes", "read", "write"]),
   fs: new Set(["readText", "readBytes", "writeText", "writeBytes", "read", "write"]),
@@ -144,10 +159,24 @@ function isResultType(type: string | undefined): boolean {
   return base === "Result";
 }
 
+function stageOrigin(
+  stage: { readonly methodName: string } | MethodChainStage,
+  index: number,
+  input: MethodChainInput,
+): MethodReceiverOrigin {
+  if ("receiverOrigin" in stage && stage.receiverOrigin !== undefined) return stage.receiverOrigin;
+  if (index === 0 && input.receiverOrigin !== undefined) return input.receiverOrigin;
+  return "Unknown";
+}
+
 /**
  * Owner-frozen C03 pipeline checker. Missing receiver type defers 002-005.
  * Method names that are not in the stdlib catalog still refuse as PIPELINE-001
  * so an empty `[]` cannot masquerade as a valid unknown chain.
+ *
+ * Uncatalogued receivers are classified by origin tag (inferType path vs
+ * constructorReceiverType fallback vs neither). GLOBAL_METHODS applies only
+ * to Unknown origin. Value receivers of user types refuse unless UFCS matches.
  */
 export function checkMethodChain(input: MethodChainInput): readonly CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
@@ -162,6 +191,11 @@ export function checkMethodChain(input: MethodChainInput): readonly CompilerDiag
     const stageLoc = "location" in stage ? stage.location ?? input.location : input.location;
     const stageType = "receiverType" in stage ? stage.receiverType ?? currentType : currentType;
     const catalog = knownMethodsFor(stageType);
+    const origin = stageOrigin(stage, i, input);
+    const ufcsAdmitted = "ufcsAdmitted" in stage && stage.ufcsAdmitted === true;
+    const fieldName = "fieldName" in stage && stage.fieldName !== undefined && stage.fieldName !== ""
+      ? stage.fieldName
+      : undefined;
 
     if (catalog === "open") {
       // validate.<gate> is admitted by type-checker as protected Field; this
@@ -175,8 +209,8 @@ export function checkMethodChain(input: MethodChainInput): readonly CompilerDiag
           stageLoc,
         ));
       }
-    } else if (!GLOBAL_METHODS.has(method)) {
-      if (stageType === undefined || stageType === "") {
+    } else if (origin === "Unknown") {
+      if (!GLOBAL_METHODS.has(method)) {
         out.push(diag(
           "FUNGI-PIPELINE-001",
           "UNKNOWN_PIPELINE_METHOD",
@@ -184,10 +218,26 @@ export function checkMethodChain(input: MethodChainInput): readonly CompilerDiag
           stageLoc,
         ));
       }
-      // A named receiver type with no stdlib catalog is a user type constructor
-      // or variant (ApiError.notFound). Missing catalogs defer 001 here so C03
-      // cannot forbid declared type construction. Unknown value receivers still
-      // refuse above.
+    } else if (origin === "TypeName") {
+      // Named type-constructor / variant (ApiError.notFound). Missing catalogs
+      // defer 001 so C03 cannot forbid declared type construction.
+    } else if (ufcsAdmitted) {
+      // Declared flow, ≥1 param, first-param base equals receiver base.
+    } else if (fieldName !== undefined) {
+      out.push(diag(
+        "FUNGI-PIPELINE-001",
+        "UNKNOWN_PIPELINE_METHOD",
+        `Field '${fieldName}' of receiver type '${stageType}' cannot be called as a method.`,
+        stageLoc,
+      ));
+    } else {
+      const typeLabel = stageType === undefined || stageType === "" ? "unknown" : stageType;
+      out.push(diag(
+        "FUNGI-PIPELINE-001",
+        "UNKNOWN_PIPELINE_METHOD",
+        `Unknown method '${method}' on receiver type '${typeLabel}'.`,
+        stageLoc,
+      ));
     }
 
     const next = input.calls[i + 1];

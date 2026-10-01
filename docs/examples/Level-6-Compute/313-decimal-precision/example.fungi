@@ -8,5 +8,5 @@
 
 pure flow splitEqually(total: Money<GBP>, n: Int) -> Money<GBP>
 {
-  return total / Decimal(n.toString())
+  return total.divideBy(n, "halfEven")
 }

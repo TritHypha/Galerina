@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, NodeFlags } from "./parser.js";
-import { callStdlib, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider } from "./stdlib.js";
+import { callStdlib, callStdlibPureSync, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider } from "./stdlib.js";
 import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
@@ -23,11 +23,11 @@ import { compileToBytecode, runBytecode } from "./bytecode-vm.js";
 import { canonicalHash } from "./runtime/canonicalHash.js";
 import { requireFixedGalerinaProductContext } from "./product-cli.js";
 import type { ProductArtifactContext } from "./product-artifact-identity.js";
-import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, isI32Trap, type I32Result } from "./i32-arith.js";
+import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, i32AbsChecked, i32FromIntegralChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
 import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
-import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, isRoundMode, type DecResult } from "./decimal-arith.js";
-import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresUnlowerable64 } from "./numeric-lowering.js";
+import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
+import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresSyncTierUnlowerable } from "./numeric-lowering.js";
 import { foldRequirementValues } from "./requirement-semantics.js";
 import { compareUtf16CodeUnits } from "@galerina/core-runtime-wasm";
 import { isProxy as isNodeProxy } from "node:util/types";
@@ -105,30 +105,41 @@ function u64R(r: U64Result): GalerinaValue {
   return isU64Trap(r) ? { __tag: "runtimeError", message: r } : { __tag: "uint64", value: r as bigint };
 }
 
-/** Map an exact-decimal result to a GalerinaValue: the canonical string → decimal; malformed → fail-closed. */
+/** A named Decimal/Money trap VALUE. The message is exactly the shared trap label (R6: one vocabulary in
+ * the interpreter, stdlib and WASM host), and isCheckedTrap propagates it up the expression. */
+function decTrap(label: string): GalerinaValue {
+  return { __tag: "runtimeError", message: label };
+}
+
+/** Map an exact-decimal result to a GalerinaValue: canonical text → decimal; any trap → that named trap. */
 function decimalR(r: DecResult): GalerinaValue {
-  return isDecTrap(r) ? { __tag: "runtimeError", message: `Malformed decimal operand` } : { __tag: "decimal", value: r as string };
+  return isDecTrap(r) ? decTrap(r) : { __tag: "decimal", value: r };
 }
 
-/** Like decimalR, but maps a DivideByZero trap to the PROPAGATING "DivisionByZero" (whitelisted in
- * isCheckedTrap) so `a.divide(b, …)` by zero fails closed up the expression, exactly like integer /0. */
+/** Same mapping for the method forms (`divide` / `remainder`); `/0` is the propagating DivisionByZero. */
 function decDivR(r: DecResult): GalerinaValue {
-  if (!isDecTrap(r)) return { __tag: "decimal", value: r };
-  return { __tag: "runtimeError", message: r === "DivideByZero" ? "DivisionByZero" : "Malformed decimal operand" };
+  return decimalR(r);
 }
 
-/** Coerce a numeric arg (decimal / int / float) to a canonical decimal STRING for exact decimal methods. */
-function toDecimalString(v: GalerinaValue | undefined): string | null {
-  if (v === undefined) return null;
-  if (v.__tag === "decimal") return v.value;
-  if (v.__tag === "int" || v.__tag === "float") return String(v.value);
-  return null;
+type ExactOperand = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly trap: string };
+
+/** R8: the ONLY admitted Decimal operands are a Decimal or an Int (through the exact Int→Decimal). A Float
+ * is refused (no binary float ever reaches a Decimal); anything else is a named refusal, never a default. */
+function toExactDecimalOperand(v: GalerinaValue | undefined): ExactOperand {
+  if (v === undefined) return { ok: false, trap: "WrongArity" };
+  if (v.__tag === "decimal") return { ok: true, text: v.value };
+  if (v.__tag === "int") {
+    const r = decFromInt(v.value);
+    return isDecTrap(r) ? { ok: false, trap: r } : { ok: true, text: r };
+  }
+  if (v.__tag === "float") return { ok: false, trap: "InexactOperandRefused" };
+  return { ok: false, trap: "DecimalOperandRequired" };
 }
 
-/** Decimal ordering comparison → Bool, fail-closed: a malformed operand traps (never a silent `false`). */
+/** Decimal comparison → Bool by VALUE, fail-closed: a malformed operand traps (never a silent `false`). */
 function decCmp(a: GalerinaValue, b: GalerinaValue, f: (c: number) => boolean): GalerinaValue {
   const c = decCompare((a as { value: string }).value, (b as { value: string }).value);
-  return isDecTrap(c) ? { __tag: "runtimeError", message: `Malformed decimal operand` } : { __tag: "bool", value: f(c as number) };
+  return isDecTrap(c) ? decTrap(c) : { __tag: "bool", value: f(c) };
 }
 
 /**
@@ -305,10 +316,31 @@ export function dispatchKey(leftTag: string, op: string, rightTag: string): numb
   // galerinaValuesEqual fallback (interpreter ~:2254). DELIBERATELY leaves verdict/unresolved/enum at 0
   // — the self-hosted twins' `tok.kind` compares depend on that shared wildcard matching their WASM twin
   // under the R3 parity gate; changing it is the coordinated interp+emitter arc (bridge 0097), not this.
-  const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : leftTag  === "int64" ? 5 : leftTag  === "uint64" ? 6 : leftTag  === "record" ? 9 : leftTag  === "list" ? 10 : 0;
-  const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : rightTag === "int64" ? 5 : rightTag === "uint64" ? 6 : rightTag === "record" ? 9 : rightTag === "list" ? 10 : 0;
+  //
+  // R1 (rounding audit F1, 2026-09-30): `decimal` (7) and `char` (8) get their OWN ids. At 0 they collided
+  // with the verdict wildcard, so `Decimal("0.10") == Decimal("0.1")` was a STRING compare (false, while
+  // WASM said true) and Char `+`/`<` ran the Decimal entries. verdict/unresolved stay at 0 (bridge 0097).
+  const l = dispatchTagId(leftTag);
+  const r = dispatchTagId(rightTag);
   const o = OP_IDS[op] ?? 0;
   return (l << 8) | (o << 4) | r;
+}
+
+/** Tag → dispatch id. Every id is distinct except the deliberate 0 wildcard (verdict/unresolved/other). */
+export function dispatchTagId(tag: string): number {
+  switch (tag) {
+    case "int": return 1;
+    case "float": return 2;
+    case "string": return 3;
+    case "bool": return 4;
+    case "int64": return 5;
+    case "uint64": return 6;
+    case "decimal": return 7;
+    case "char": return 8;
+    case "record": return 9;
+    case "list": return 10;
+    default: return 0;
+  }
 }
 
 // The dispatch lambdas receive values already narrowed by the key — the
@@ -466,11 +498,12 @@ export const BINARY_DISPATCH = new Map<number, _DispatchFn>([
   [dispatchKey("uint64", "!=", "int"),   (a, b) => boolVal((a.value as bigint) !== BigInt(b.value as number))],
   [dispatchKey("int",    "!=", "uint64"), (a, b) => boolVal(BigInt(a.value as number) !== (b.value as bigint))],
 
-  // --- Decimal × Decimal — EXACT base-10 fixed-point (no float; the "wrong VAT" fix completed). Shared
-  // source of truth = decimal-arith.ts. Divergence-free: the WASM emitter DECLINES Decimal (14682d1) and the
-  // fast tiers BAIL (FAST_TIER_UNLOWERABLE += Decimal), so the tree-walker is the SOLE executor of decimal
-  // arithmetic — no tier disagreement. `/` and `%` stay unsupported (exact decimal division needs a rounding
-  // policy → fail-closed trap); `==`/`!=` keep the existing whole-value equality path.
+  // --- Decimal × Decimal — EXACT base-10 fixed-point (no float). Single source of truth = the canonical
+  // core (decimal-core.ts in @galerina/core-runtime-wasm, re-exported by decimal-arith.ts), which the WASM
+  // host's `__decimal_*` imports use too (C02 / RD-1276/1277), so both tiers compute the same bytes. The fast
+  // tiers still BAIL on Decimal. `==`/`!=` compare by VALUE (R1). Bare `/` and `%` are a NAMED refusal
+  // (K4 / D6: no default rounding — use `divide(b, scale, mode)` / `remainder(b)`). Decimal mixed with Int or
+  // Float is refused (R8: no implicit promotion/coercion; use Decimal.fromInt for an exact Int).
   [dispatchKey("decimal", "+", "decimal"), (a, b) => decimalR(decAdd(a.value as string, b.value as string))],
   [dispatchKey("decimal", "-", "decimal"), (a, b) => decimalR(decSub(a.value as string, b.value as string))],
   [dispatchKey("decimal", "*", "decimal"), (a, b) => decimalR(decMul(a.value as string, b.value as string))],
@@ -478,7 +511,30 @@ export const BINARY_DISPATCH = new Map<number, _DispatchFn>([
   [dispatchKey("decimal", "<=", "decimal"), (a, b) => decCmp(a, b, (c) => c <= 0)],
   [dispatchKey("decimal", ">",  "decimal"), (a, b) => decCmp(a, b, (c) => c > 0)],
   [dispatchKey("decimal", ">=", "decimal"), (a, b) => decCmp(a, b, (c) => c >= 0)],
+  [dispatchKey("decimal", "==", "decimal"), (a, b) => decCmp(a, b, (c) => c === 0)],
+  [dispatchKey("decimal", "!=", "decimal"), (a, b) => decCmp(a, b, (c) => c !== 0)],
+  [dispatchKey("decimal", "/",  "decimal"), () => decTrap("PartialDecimalOperator")],
+  [dispatchKey("decimal", "%",  "decimal"), () => decTrap("PartialDecimalOperator")],
+  ...mixedDecimalRefusals(),
+
+  // --- Char × Char — equality by code point (R1: Char no longer shares the Decimal/verdict id). Char has
+  // no arithmetic or ordering operators (FUNGI-TYPE-004); those keys stay absent → the named fallback.
+  [dispatchKey("char", "==", "char"), (a, b) => boolVal((a.value as string) === (b.value as string))],
+  [dispatchKey("char", "!=", "char"), (a, b) => boolVal((a.value as string) !== (b.value as string))],
 ]);
+
+/** R8/K4: every operator between Decimal and Int/Float is a named refusal (never an implicit promotion). */
+function mixedDecimalRefusals(): [number, _DispatchFn][] {
+  const ops = ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!="];
+  const out: [number, _DispatchFn][] = [];
+  for (const other of ["int", "float"]) {
+    for (const op of ops) {
+      out.push([dispatchKey("decimal", op, other), () => decTrap("MixedDecimalOperand")]);
+      out.push([dispatchKey(other, op, "decimal"), () => decTrap("MixedDecimalOperand")]);
+    }
+  }
+  return out;
+}
 
 /**
  * Fast path for Int × Int binary operations.
@@ -635,9 +691,11 @@ const DEFAULT_MAX_STEPS = 1_000_000_000;
 // SyncInterpreter removes that overhead by evaluating pure flows without any
 // async machinery. The same BINARY_DISPATCH map is used; scope is a flat Map.
 //
-// Coverage: numberLiteral, boolLiteral, identifier, binaryExpr, unaryExpr,
-//   letDecl, mutDecl, assignStmt, returnStmt, ifStmt, whileStmt, block, callExpr
-//   (intra-module calls only — stdlib calls fall back to async).
+// Coverage: numberLiteral, boolLiteral, stringLiteral, identifier, binaryExpr, unaryExpr,
+//   letDecl, mutDecl, assignStmt, returnStmt, ifStmt, whileStmt, block, callExpr,
+//   statement-position Int `match` (K1, 2026-10-01), Decimal params/return with `+ - *` / compare
+//   and `d.divide(…)` / `d.remainder(…)` (K1, 2026-10-01 — same dispatch / stdlib as the walker)
+//   (intra-module pure calls + SYNC_PURE_STDLIB_STATIC / SYNC_PURE_STDLIB_METHODS).
 //
 // Fallback: if any unsupported node is encountered, throws SyncNotSupported
 //   and the caller falls through to the full async Interpreter.
@@ -686,7 +744,9 @@ class SyncInterpreter {
     // FAIL-CLOSED (verified i64 plan, R1 sync analogue): this fast path evaluates int literals via
     // parseInt (lossy >2^53) and stores into JS numbers — it cannot carry an Int64 faithfully. A flow
     // declaring any unlowerable 64-bit scalar bails to the async tree-walker (the int64-bigint tier).
-    if (flowDeclaresUnlowerable64(flowNode)) throw new SyncNotSupported("flow declares a 64-bit scalar (Int64/UInt64) — defer to the tree-walker");
+    // K1 fast-path rounding (2026-10-01): the sync-specific scan admits Decimal params/return (exact
+    // string-carried, same dispatch as the walker) but still bails Int64/UInt64 and Decimal-typed bindings.
+    if (flowDeclaresSyncTierUnlowerable(flowNode)) throw new SyncNotSupported("flow declares a 64-bit scalar (Int64/UInt64) or a Decimal binding — defer to the tree-walker");
 
     // Set parameters in scope
     const paramNodes = (flowNode.children ?? []).filter(c => c.kind === "paramDecl");
@@ -741,6 +801,11 @@ class SyncInterpreter {
         const rawName = node.value ?? "";
         const varName = (rawName.split(":")[0] ?? rawName).trim();
         const init = node.children?.[0] ? this.evalExprS(node.children[0]) : FUNGI_VOID;
+        // Zero-trust default, owner may revisit: the sync path ignores binding annotations, so a Decimal
+        // value bound under ANY annotation defers to the walker (which owns annotation semantics).
+        if (init.__tag === "decimal" && rawName.includes(":")) {
+          throw new SyncNotSupported("Decimal value into an annotated binding — defer to the tree-walker");
+        }
         this.scope.set(varName, init);
         return FUNGI_VOID;
       }
@@ -748,6 +813,9 @@ class SyncInterpreter {
       case "assignStmt": {
         const varName = (node.value ?? "").trim();
         const val = node.children?.[0] ? this.evalExprS(node.children[0]) : FUNGI_VOID;
+        // Zero-trust default, owner may revisit: re-assigning a Decimal is left to the walker (the target's
+        // declared annotation is not tracked here).
+        if (val.__tag === "decimal") throw new SyncNotSupported("Decimal re-assignment — defer to the tree-walker");
         this.scope.set(varName, val);
         return FUNGI_VOID;
       }
@@ -760,7 +828,10 @@ class SyncInterpreter {
       case "ifStmt": {
         const [condNode, thenBlock, elseBlock] = node.children ?? [];
         const cond = condNode ? this.evalExprS(condNode) : FUNGI_VOID;
-        const branch = cond.__tag === "bool" ? cond.value : cond.__tag === "int" ? cond.value !== 0 : false;
+        // Zero-trust (2026-10-01): a condition that is neither Bool nor Int (e.g. a Decimal or a trap value)
+        // is never coerced to `false` here — defer to the walker, which owns that refusal.
+        if (cond.__tag !== "bool" && cond.__tag !== "int") throw new SyncNotSupported(`if condition of type ${cond.__tag}`);
+        const branch = cond.__tag === "bool" ? cond.value : cond.value !== 0;
         // FAIL-CLOSED (2026-06-19): do NOT swallow non-SyncReturn throws here (same bug as whileStmt).
         // SyncReturn propagates naturally to run()'s handler; SyncNotSupported / runtimeErrors must
         // propagate so tryPureFlowSync falls back to the trapping async tree-walker rather than
@@ -792,7 +863,8 @@ class SyncInterpreter {
             throw new SyncNotSupported(`while loop exceeded ${this.maxIterations} iterations — defer to the bounded tree-walker`);
           }
           const cond = condNode ? this.evalExprS(condNode) : FUNGI_VOID;
-          const running = cond.__tag === "bool" ? cond.value : cond.__tag === "int" ? cond.value !== 0 : false;
+          if (cond.__tag !== "bool" && cond.__tag !== "int") throw new SyncNotSupported(`while condition of type ${cond.__tag}`);
+          const running = cond.__tag === "bool" ? cond.value : cond.value !== 0;
           if (!running) break;
           if (bodyBlock !== undefined) this.execBlock(bodyBlock);
         }
@@ -808,6 +880,10 @@ class SyncInterpreter {
       case "requireStmt":
         throw new SyncNotSupported("require statement requires governed execution");
 
+      case "matchExpr":
+        // Statement-position `match` only (a `match` used as a VALUE still declines via evalExprS).
+        return this.execMatchStmt(node);
+
       case "block":
         // FAIL-CLOSED (2026-06-19): propagate non-SyncReturn throws (was swallowed → fail-open).
         return this.execBlock(node);
@@ -816,6 +892,45 @@ class SyncInterpreter {
         // Expression statement — evaluate and discard
         return this.evalExprS(node);
     }
+  }
+
+  /**
+   * K1 fast-path rounding (Grok Bot, 2026-10-01): an Int `match` in statement position. Zero-trust
+   * default, owner may revisit — the admitted shape is deliberately the narrowest one the walker
+   * (evalMatch + matchPattern) and the WASM backend agree on:
+   *   - every arm is a plain `matchArm` whose ONLY child is a `{ … }` block (no guard, no binding);
+   *   - every pattern is a single integer literal (`/^-?\d+$/`, the walker's own test) or `_`;
+   *   - a `_` arm is present (no silent fall-through past an un-matched subject);
+   *   - the subject evaluates to an Int (any other tag defers);
+   *   - the taken arm RETURNS — an arm that completes normally defers (the walker's void-continue /
+   *     value-as-result rule for a non-returning arm is not modelled here).
+   * Anything else throws SyncNotSupported, so the caller falls back to the governed walker.
+   */
+  private execMatchStmt(node: AstNode): GalerinaValue {
+    const [subjectNode, ...arms] = node.children ?? [];
+    if (subjectNode === undefined || arms.length === 0) throw new SyncNotSupported("match without a subject or arms");
+    let hasWildcard = false;
+    for (const arm of arms) {
+      const armChildren = arm.children ?? [];
+      const body = armChildren[0];
+      if (arm.kind !== "matchArm" || armChildren.length !== 1 || body === undefined || body.kind !== "block" || body.value === "(expr)") {
+        throw new SyncNotSupported("match arm shape (guard / binding / expression body)");
+      }
+      const pattern = arm.value ?? "";
+      if (pattern === "_") hasWildcard = true;
+      else if (!SYNC_INT_MATCH_PATTERN.test(pattern)) throw new SyncNotSupported(`match pattern '${pattern}'`);
+    }
+    if (!hasWildcard) throw new SyncNotSupported("match without a `_` arm");
+    const subject = this.evalExprS(subjectNode);
+    if (subject.__tag !== "int") throw new SyncNotSupported(`match subject of type ${subject.__tag}`);
+    for (const arm of arms) {
+      const pattern = arm.value ?? "";
+      if (pattern !== "_" && subject.value !== parseInt(pattern, 10)) continue;
+      const body = (arm.children ?? [])[0];
+      if (body !== undefined) this.execBlock(body);
+      throw new SyncNotSupported("match arm completed without a return");
+    }
+    throw new SyncNotSupported("match: no arm taken");
   }
 
   private evalExprS(node: AstNode): GalerinaValue {
@@ -838,6 +953,9 @@ class SyncInterpreter {
 
       case "boolLiteral":
         return boolVal(node.value === "true");
+
+      case "stringLiteral":
+        return { __tag: "string", value: stripStringQuotes(node.value ?? "") };
 
       case "identifier": {
         const name = node.value ?? "";
@@ -910,22 +1028,90 @@ class SyncInterpreter {
       }
 
       case "callExpr": {
-        // Intra-module pure flow call only — stdlib calls not supported
         const name = node.value ?? "";
-        const flowMeta = this.knownFlows.find(f => f.name === name);
-        if (flowMeta === undefined || flowMeta.qualifier !== "pure") {
-          throw new SyncNotSupported(`call to non-pure or external: ${name}`);
+        const children = node.children ?? [];
+
+        if (name === "Ok" || name === "Err" || name === "Some") {
+          const payload = children[0] !== undefined ? this.evalExprS(children[0]) : FUNGI_VOID;
+          if (isCheckedTrap(payload)) return payload;
+          if (name === "Ok") return { __tag: "ok", value: payload };
+          if (name === "Err") return { __tag: "err", error: payload };
+          return { __tag: "some", value: payload };
         }
-        // Build args map from positional children
-        const paramNames = this.getParamNames(name);
-        const argMap = new Map<string, GalerinaValue>();
-        (node.children ?? []).forEach((child, i) => {
-          const pname = paramNames[i] ?? `p${i}`;
-          argMap.set(pname, this.evalExprS(child));
-        });
-        // Create a sub-interpreter with the same flows
-        const sub = new SyncInterpreter(this.ast, this.knownFlows);
-        return sub.run(name, argMap);
+
+        const flowMeta = this.knownFlows.find(f => f.name === name);
+        if (flowMeta !== undefined && flowMeta.qualifier === "pure") {
+          const paramNames = this.getParamNames(name);
+          const argMap = new Map<string, GalerinaValue>();
+          children.forEach((child, i) => {
+            const pname = paramNames[i] ?? `p${i}`;
+            argMap.set(pname, this.evalExprS(child));
+          });
+          const sub = new SyncInterpreter(this.ast, this.knownFlows, this.maxIterations, this.maxSteps);
+          return sub.run(name, argMap);
+        }
+
+        const receiverFromSyntax = getReceiver(node);
+        let receiverLookup: { readonly kind: "found"; readonly value: AstNode } | { readonly kind: "none"; readonly reason: string } =
+          { kind: "none", reason: "receiver-absent" };
+        if (receiverFromSyntax) {
+          receiverLookup = { kind: "found", value: receiverFromSyntax };
+        } else if (!flowMeta && STD_METHOD_NAMES.has(name) && children.length > 0) {
+          const firstChild = children[0];
+          if (firstChild) receiverLookup = { kind: "found", value: firstChild };
+        }
+        const argNodes = receiverLookup.kind === "none" ? children : children.slice(1);
+        const typeRecv = receiverLookup.kind === "found" && isSyncTypeReceiver(receiverLookup.value, this.scope);
+        const qualifiedName =
+          receiverLookup.kind === "found" && typeRecv
+            ? `${syncReceiverName(receiverLookup.value)}.${name}`
+            : name;
+
+        if (resolveCapabilityEffect(qualifiedName) !== undefined) {
+          throw new SyncNotSupported(`governed stdlib: ${qualifiedName}`);
+        }
+
+        if (typeRecv) {
+          if (!SYNC_PURE_STDLIB_STATIC.has(qualifiedName)) {
+            throw new SyncNotSupported(`stdlib not admitted on sync: ${qualifiedName}`);
+          }
+          const evaluatedArgs = argNodes.map((child) => this.evalExprS(child));
+          if (evaluatedArgs.some((a) => a.__tag === "decimal")) throw new SyncNotSupported(`Decimal argument to ${qualifiedName}`);
+          const result = callStdlibPureSync(qualifiedName, undefined, evaluatedArgs);
+          if (result === undefined) throw new SyncNotSupported(`stdlib miss: ${qualifiedName}`);
+          return result;
+        }
+
+        if (receiverLookup.kind === "found") {
+          // K1 fast-path rounding (2026-10-01): `d.divide(b, scale, mode)` / `d.remainder(b)` are admitted
+          // ONLY on a Decimal receiver, and a Decimal receiver admits ONLY those two — both routed through
+          // the same stdlib `numericMethod` → `decimalNumericMethod` the walker's callStdlib reaches, so the
+          // value AND every named trap (DivisionByZero, MissingRoundMode, …) are the walker's own.
+          const exactDecimalMethod = SYNC_DECIMAL_EXACT_METHODS.has(name);
+          if (!SYNC_PURE_STDLIB_METHODS.has(name) && !exactDecimalMethod) {
+            throw new SyncNotSupported(`stdlib method not admitted on sync: ${name}`);
+          }
+          const evaluatedReceiver = this.evalExprS(receiverLookup.value);
+          if (exactDecimalMethod !== (evaluatedReceiver.__tag === "decimal")) {
+            throw new SyncNotSupported(`method ${name} on ${evaluatedReceiver.__tag} — defer to the tree-walker`);
+          }
+          const evaluatedArgs = argNodes.map((child) => this.evalExprS(child));
+          if (evaluatedArgs.some((a) => a.__tag === "runtimeError")) throw new SyncNotSupported(`trap argument to ${name}`);
+          if (!exactDecimalMethod && evaluatedArgs.some((a) => a.__tag === "decimal")) throw new SyncNotSupported(`Decimal argument to ${name}`);
+          const result = callStdlibPureSync(name, evaluatedReceiver, evaluatedArgs);
+          if (result === undefined) throw new SyncNotSupported(`stdlib miss: ${name}`);
+          return result;
+        }
+
+        if (SYNC_PURE_STDLIB_STATIC.has(name)) {
+          const evaluatedArgs = argNodes.map((child) => this.evalExprS(child));
+          if (evaluatedArgs.some((a) => a.__tag === "decimal")) throw new SyncNotSupported(`Decimal argument to ${name}`);
+          const result = callStdlibPureSync(name, undefined, evaluatedArgs);
+          if (result === undefined) throw new SyncNotSupported(`stdlib miss: ${name}`);
+          return result;
+        }
+
+        throw new SyncNotSupported(`call to non-pure or external: ${name}`);
       }
 
       case "block":
@@ -1133,6 +1319,37 @@ const STD_METHOD_NAMES = new Set([
   "isZero", "isNeg", "abs",
   // Numeric
   "toFixed", "toPlaces", "floor", "ceil", "round", "clamp", "sign",
+]);
+
+/** Static/module stdlib names admitted on SyncInterpreter (proveably pure; no I/O, host, HOF, or governance). */
+const SYNC_PURE_STDLIB_STATIC = new Set([
+  "Math.abs", "Math.min", "Math.max", "Math.floor", "Math.ceil", "Math.round",
+  "Math.pow", "Math.sqrt", "Math.clamp", "Math.sign",
+  "Math.log", "Math.log2", "Math.sin", "Math.cos", "Math.tan", "Math.PI",
+  "Int.parse", "Int.bitAnd", "Int.bitOr", "Int.bitXor", "Int.bitNot",
+  "Int.bitShiftLeft", "Int.bitShiftRight",
+  "Float.parse", "Float.isFinite", "Float.isPositive",
+  "String.fromChar", "String.fromChars", "String.repeat",
+  "Array.empty", "Array.of",
+  "Char.fromCode",
+]);
+
+/** Value-receiver methods admitted on SyncInterpreter. HOF / Money / regex / secret stay deferred. */
+/** K1 (2026-10-01): the Decimal method forms the sync path admits — only on a Decimal receiver. */
+const SYNC_DECIMAL_EXACT_METHODS: ReadonlySet<string> = new Set(["divide", "remainder"]);
+
+/** The walker's own integer-literal match-arm test (matchPattern), shared so the two cannot drift. */
+const SYNC_INT_MATCH_PATTERN = /^-?\d+$/;
+
+const SYNC_PURE_STDLIB_METHODS = new Set([
+  "length", "charCount", "toLower", "toUpper", "trim", "trimStart", "trimEnd",
+  "toString", "toText", "isEmpty", "startsWith", "endsWith", "contains", "includes",
+  "split", "replace", "replaceAll", "slice", "charAt", "indexOf", "lastIndexOf",
+  "padStart", "padEnd", "repeat", "toInt", "toFloat",
+  "abs", "floor", "ceil", "round", "clamp", "sign", "toFixed",
+  "first", "last", "get", "sum", "reverse", "join",
+  "isSome", "isNone", "unwrapOr", "isOk", "isErr",
+  "codePoint", "isDigit", "isLetter", "isUpper", "isLower", "isWhitespace",
 ]);
 
 class Interpreter {
@@ -2977,7 +3194,7 @@ class Interpreter {
     if (this.flowIndex.has(methodName)) {
       // Regular flow-to-flow call: evaluate args in current scope, then call on THIS interpreter.
       // Do NOT create a new Interpreter — that breaks recursive flows and wastes memory.
-      // Only step:* DWI calls create a new Interpreter (for shared-nothing isolation).
+      // step:* creates a nested Interpreter; isolation is SIMULATED in Stage A (shared enforcer, capability host and step budget); see :2850.
       //
       // FAIL-CLOSED recursion-depth guard (2026-06-18, hazard fix): because a recursive flow re-enters
       // runFlow on THIS interpreter, unbounded recursion grows the async-frame heap until V8 OOM-kills
@@ -3035,8 +3252,13 @@ class Interpreter {
         case "toStr":
         case "toString": return { __tag: "string", value: String(n) };
         case "toFloat":  return { __tag: "float", value: n };
-        case "toInt":    return { __tag: "some" as const, value: intVal(Math.trunc(n)) };
-        case "abs":      return receiver.__tag === "int" ? intVal(Math.abs(n)) : { __tag: "float" as const, value: Math.abs(n) };
+        // R10 (F11): toInt is an Option — a value that is not a finite i32 after truncation is None (a
+        // defined "no Int"), never an out-of-domain Int. abs stays in the checked i32 domain (abs(-2^31) traps).
+        case "toInt": {
+          const t = i32FromIntegralChecked(Math.trunc(n));
+          return isI32Trap(t) ? FUNGI_NONE : { __tag: "some" as const, value: intVal(t) };
+        }
+        case "abs":      return receiver.__tag === "int" ? i32R(i32AbsChecked(n)) : mkFloat(Math.abs(n));
       }
     }
 
@@ -3046,19 +3268,22 @@ class Interpreter {
     if (receiver.__tag === "decimal") {
       switch (method) {
         case "divide": {
-          const divisor = toDecimalString(args[0]);
-          const scaleV = args[1];
-          const modeV = args[2];
-          if (divisor === null) return { __tag: "runtimeError", message: "Decimal.divide: divisor must be a Decimal/Int/Float" };
-          if (scaleV?.__tag !== "int") return { __tag: "runtimeError", message: "Decimal.divide: scale must be an Int (the number of fractional digits)" };
-          const mode = modeV?.__tag === "string" ? modeV.value : "halfEven";
-          if (!isRoundMode(mode)) return { __tag: "runtimeError", message: `Decimal.divide: unknown rounding mode '${mode}' (use halfEven/halfUp/halfDown/up/down/ceiling/floor)` };
-          return decDivR(decDiv(receiver.value, divisor, scaleV.value as number, mode));
+          // R5 (F4): exactly (divisor, scale, mode). There is NO default mode: a missing mode is
+          // MissingRoundMode, a non-String or unknown one UnknownRoundMode (never a silent halfEven).
+          if (args.length !== 3) return decTrap(args.length === 2 ? "MissingRoundMode" : "WrongArity");
+          const divisor = toExactDecimalOperand(args[0]);
+          if (!divisor.ok) return decTrap(divisor.trap);
+          const scaleV = args[1]!;
+          if (scaleV.__tag !== "int") return decTrap("ScaleOutOfRange");
+          const modeV = args[2]!;
+          if (modeV.__tag !== "string") return decTrap("UnknownRoundMode");
+          return decDivR(decDiv(receiver.value, divisor.text, scaleV.value, modeV.value));
         }
         case "remainder": {
-          const divisor = toDecimalString(args[0]);
-          if (divisor === null) return { __tag: "runtimeError", message: "Decimal.remainder: divisor must be a Decimal/Int/Float" };
-          return decDivR(decRem(receiver.value, divisor));
+          if (args.length !== 1) return decTrap("WrongArity");
+          const divisor = toExactDecimalOperand(args[0]);
+          if (!divisor.ok) return decTrap(divisor.trap);
+          return decDivR(decRem(receiver.value, divisor.text));
         }
         case "toStr":
         case "toString": return { __tag: "string", value: receiver.value };
@@ -3562,6 +3787,24 @@ function getReceiver(node: AstNode): AstNode | undefined {
   return undefined;
 }
 
+function syncReceiverName(node: AstNode): string {
+  if (node.kind === "identifier") return node.value ?? "";
+  if (node.kind === "memberExpr") {
+    const parent = node.children?.[0];
+    const parentName = parent !== undefined ? syncReceiverName(parent) : "";
+    return parentName !== "" ? `${parentName}.${node.value ?? ""}` : node.value ?? "";
+  }
+  if (node.kind === "callExpr") return node.value ?? "";
+  return "";
+}
+
+function isSyncTypeReceiver(node: AstNode, scope: ReadonlyMap<string, GalerinaValue>): boolean {
+  if (node.kind !== "identifier") return false;
+  const value = node.value ?? "";
+  if (scope.has(value)) return false;
+  return STD_RECEIVERS.has(value) || /^[A-Z]/.test(value);
+}
+
 function secureComparable(value: GalerinaValue): string {
   if (value.__tag === "secure") return value.value;
   if (value.__tag === "string") return value.value;
@@ -3599,6 +3842,7 @@ function isCheckedTrap(value: GalerinaValue): boolean {
   // The liveness traps are THROWN, then a nested flow's runFlow catch wraps them as a value with a
   // "[Flow 'name'] " prefix — so match by substring, not prefix.
   return m === "IntegerOverflow" || m === "DivisionByZero" ||
+    isExactTrapLabel(m) ||                             // R6: the shared Decimal/Money trap vocabulary
     m === FLOAT_NONFINITE_TRAP ||                      // non-finite float (NaN/±Inf) — FUNGI-FLOAT-NAN-001
     m.includes("FUNGI-INV-000 trap") ||               // named `trap COND : ERROR_CODE` firing
     m.includes("Compute budget exceeded") ||         // global compute-step cap (maxSteps)
@@ -4195,7 +4439,10 @@ export async function executeFlow(
     // Eliminates ~6μs async/await overhead per call.
     // Falls back to the async Interpreter if sync can't handle the pattern.
     const syncResult = tryPureFlowSync(ast, knownFlows ?? [], flowName, args, runtimeOptions?.maxIterations ?? 100_000, runtimeOptions?.maxSteps ?? DEFAULT_MAX_STEPS);
-    if (syncResult !== null) {
+    // Zero-trust default, owner may revisit (2026-10-01): a sync result that IS a trap/runtimeError is not
+    // reported from this tier (it would carry audit result "ok" and no diagnostics) — the governed walker
+    // below re-runs the pure flow and records the failure. Values are unchanged (same evaluator semantics).
+    if (syncResult !== null && syncResult.__tag !== "runtimeError") {
       const now = new Date().toISOString();
       const syncAuditResult = {
         value: syncResult,
@@ -4215,8 +4462,8 @@ export async function executeFlow(
           result: "ok" as const,
         } satisfies ExecutionAuditRecord,
       } satisfies FlowExecutionResult;
-      // Cache the sync result too
-      if (syncResult.__tag !== "runtimeError" && cacheIdentity !== null) {
+      // Cache the sync result too (a runtimeError never reaches here — see the guard above)
+      if (cacheIdentity !== null) {
         setCachedPureFlow(cacheIdentity.key, syncResult, cacheIdentity.exact);
       }
       return syncAuditResult;

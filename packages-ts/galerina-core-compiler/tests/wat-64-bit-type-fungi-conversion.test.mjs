@@ -22,7 +22,7 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(HERE, "..");
 const SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "wat-64-bit-type.fungi");
-const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "wat-emitter.ts");
+const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "wat-emitter-binary.ts");
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
 const VECTORS = Object.freeze([
   Object.freeze(["Int64", true]),
@@ -88,11 +88,11 @@ describe("compiler package-owned Fungi WAT 64-bit type decision", () => {
     assert.ok(packageJson.packageGraph.loadedAssets.includes("src/self-hosted/wat-64-bit-type.fungi"));
     assert.ok(existsSync(SOURCE));
     const reference = readFileSync(REFERENCE_SOURCE, "utf8").replace(/^\uFEFF/u, "");
-    assert.match(reference, /const INT64_WAT_TYPES = new Set<string>\(\["Int64"\]\);/u);
-    assert.match(reference, /const UINT64_WAT_TYPES = new Set<string>\(\["UInt64"\]\);/u);
+    assert.match(reference, /(?:export )?const INT64_WAT_TYPES = new Set<string>\(\["Int64"\]\);/u);
+    assert.match(reference, /(?:export )?const UINT64_WAT_TYPES = new Set<string>\(\["UInt64"\]\);/u);
     assert.match(
       reference,
-      /const is64BitWatType = \(base: string\): boolean => INT64_WAT_TYPES\.has\(base\) \|\| UINT64_WAT_TYPES\.has\(base\);/u,
+      /(?:export )?const is64BitWatType = \(base: string\): boolean => INT64_WAT_TYPES\.has\(base\) \|\| UINT64_WAT_TYPES\.has\(base\);/u,
     );
   });
 

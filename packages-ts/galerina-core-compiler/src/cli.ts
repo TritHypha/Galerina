@@ -47,7 +47,8 @@ import { checkProductionReadiness } from "./production-check.js";
 import { runProductionSecurityGate, productionGateBlocks } from "./security-gate.js";
 import { buildAiGraph, emitGIR } from "./gir-emitter.js";
 import { generateManifest, serializeManifest } from "./manifest-generator.js";
-import { buildWATModuleFromGIR, renderWAT, astHasParamAdmission } from "./wat-emitter.js";
+import { renderWAT, astHasParamAdmission } from "./wat-emitter.js";
+import { buildWATFromCheckedProgram, checkProgram } from "./checked-program.js";
 import { assembleWAT } from "./wat-assembler.js";
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import { EFFECT_REGISTRY } from "./effect-checker.js";
@@ -1124,43 +1125,12 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
       continue;
     }
 
-    const parseResult = parseProgram(source, filePath, { requireVersionHeader: true });
-    const importResult = gatherFileImports(parseResult.ast, resolvePath(filePath));
-    const importedTypeContext = buildImportedTypeContext(importResult);
-    const effectResults = checkEffects(parseResult.flows, parseResult.ast);
-
-    // BK-5 / H1 / M1 (fail-closed): the WASM target MUST NOT skip the front-end. Run the full gate —
-    // type-check + production governance verify + the ONE authoritative production security gate
-    // (runProductionSecurityGate, the same gate the signing path uses) — and REFUSE to lower/emit an
-    // ungoverned or type-unsafe binary. A whole build target silently skipping the governance verifier
-    // was the H1 total-bypass; emitting a .wasm after a gate failure was M1; reaching codegen without
-    // checkTypes was BK-5. Any error, or a gate block, refuses the aggregate build — no artifact is written.
-    const gateErrors = importResult.diagnostics.map((d) => `${d.code}: ${d.message}`);
-    for (const d of checkTypes(parseResult.ast, importedTypeContext).diagnostics) {
-      if (d.severity === "error") gateErrors.push(`${d.code}: ${d.message}`);
-    }
-    const policyResult = evaluateGalerinaGovernance(
-      parseResult.ast,
-      parseResult.flows,
-      effectResults,
-      "production",
-      filePath,
-    );
-    if (!policyResult.ok) {
-      gateErrors.push(`${policyResult.code}: ${PRODUCT_POLICY_REFUSAL_MESSAGE}`);
-    }
-    for (const d of policyResult.diagnostics) {
-      if (d.severity === "error") gateErrors.push(`${d.code}: ${d.message}`);
-    }
-    const gateBlocks = productionGateBlocks(
-      runProductionSecurityGate(parseResult.ast, parseResult.flows, source, filePath),
-    );
-    if (gateErrors.length > 0 || gateBlocks) {
+    const checked = checkProgram(source, filePath);
+    if (!checked.ok) {
       inputWasBlocked = true;
       process.stderr.write(
         `[error] ${filePath}: refusing to emit WASM — the production gate blocked it (BK-5/H1/M1 fail-closed).\n` +
-        (gateBlocks ? "  - production security gate: BLOCKED\n" : "") +
-        gateErrors.map((e) => `  - ${e}\n`).join(""),
+        checked.diagnostics.map((d) => `  - ${d.code}: ${d.message}\n`).join(""),
       );
       continue; // do NOT lower / write an ungoverned artifact
     }
@@ -1168,7 +1138,7 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
     // Flagship (0119 item 2, bridge 0155): a parameter `where` admission is a Verdict-ALLOW-only ENTRY gate
     // enforced by the interpreter and NOT lowered to WAT — a raw WASM run would BYPASS it. Refuse per-file,
     // fail-closed (the emitter also throws as a backstop; this gives a clean message + per-file granularity).
-    if (astHasParamAdmission(parseResult.ast)) {
+    if (astHasParamAdmission(checked.program.ast)) {
       inputWasBlocked = true;
       process.stderr.write(
         `[error] ${filePath}: refusing to emit WASM — a flow carries a parameter admission (\`where <predicate>\`) ` +
@@ -1178,10 +1148,6 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
       continue; // do NOT lower / write a module whose entry gate WASM cannot enforce
     }
 
-    const girResult = emitGIR(parseResult.ast, parseResult.flows, effectResults);
-    // #140: pass ast so the emitter can use real flow bodies instead of the Phase-25 fallback walker.
-    // exportAllPure is deliberately omitted (default false) — that is a separate design decision.
-    //
     // A CAPABILITY REFUSAL IS A DIAGNOSTIC, NOT A CRASH. The lowering guards
     // (FUNGI-LAYOUT-001 and its siblings) signal an unsupported representation
     // by THROWING, and this call site let the throw escape the CLI as a raw
@@ -1194,7 +1160,7 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
     // and if every input is refused `watParts` is empty and nothing is written.
     let watText: string;
     try {
-      const watModule = buildWATModuleFromGIR(girResult.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", parseResult.ast);
+      const watModule = buildWATFromCheckedProgram(checked.program, STDLIB_CAPABILITY_MAP, "wasm-standalone");
       watText = renderWAT(watModule);
     } catch (error) {
       inputWasBlocked = true;

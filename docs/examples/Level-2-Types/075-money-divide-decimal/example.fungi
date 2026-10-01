@@ -4,9 +4,9 @@
 /// concept: Money<GBP> divided by Decimal
 /// expected_diagnostics: none
 /// test_status: stable
-/// ai_rule: Money<GBP> / Decimal is valid and yields Money<GBP>.
+/// ai_rule: Divide Money<GBP> by a Decimal with m.divideBy(n, mode); it yields Money<GBP>. The bare / is refused.
 
 pure flow example(total: Money<GBP>) -> Money<GBP> {
-  let share: Money<GBP> = total / Decimal("4")
+  let share: Money<GBP> = total.divideBy(Decimal("4"), "halfEven")
   return share
 }

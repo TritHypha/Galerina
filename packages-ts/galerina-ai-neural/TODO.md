@@ -11,7 +11,10 @@
 [ ] Define inference result and confidence policy contracts
 [ ] Define training data policy contracts
 [ ] Define model verification and loading contracts
-[ ] Define neural report examples
-[ ] Add examples
+[x] Define neural report examples (`examples/report.example.json` = exact
+    `createNeuralReport` output for `examples/model.example.json`)
+[x] Add examples (`examples/model.example.json`; validated by
+    `tests/neural-examples.test.mjs`; 2026-09-29, Grok Bot, owner-approved; AGENTS
+    session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md)
 [x] Add tests
 ```

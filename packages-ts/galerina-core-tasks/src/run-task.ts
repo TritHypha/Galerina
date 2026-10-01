@@ -1,5 +1,6 @@
 import { checkTaskPermissions } from "./check-permissions.js";
 import { dryRunTask } from "./dry-run.js";
+import { checkTaskOperations } from "./task-operations.js";
 import type { TaskDefinition, TaskResult } from "./types.js";
 
 export interface RunTaskOptions {
@@ -16,6 +17,18 @@ export async function runTask(task: TaskDefinition, options: RunTaskOptions = {}
       durationMs: 0,
       warnings: [],
       error: permissionError
+    };
+  }
+
+  const operationError = checkTaskOperations(task);
+
+  if (operationError !== undefined) {
+    return {
+      task: task.name,
+      status: "failed",
+      durationMs: 0,
+      warnings: [],
+      error: operationError
     };
   }
 

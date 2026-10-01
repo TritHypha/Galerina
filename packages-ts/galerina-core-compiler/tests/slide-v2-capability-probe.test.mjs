@@ -97,9 +97,17 @@ test("SLIDE G1 negative probe: emitted GIR cannot reproduce the body without the
   // Deliberately invoke the JS surface without the TypeScript-required AST.
   // This records the present boundary; SLIDE must replace it with a hard refusal
   // or complete executable GIR, never rely on this legacy identity fallback.
-  const detachedWat = L.renderWAT(
-    L.buildWATModuleFromGIR(gir, new Map(), "wasm-standalone", undefined, true),
-  );
-  assert.doesNotMatch(detachedWat, /fungi_checked_add_i32/);
-  assert.match(detachedWat, /local\.get \$p0/);
+  // J3: missing AST is FUNGI-WAT-BODY-001, not a guessed identity body.
+  let producedWat = "";
+  let refusalText = "";
+  try {
+    producedWat = L.renderWAT(
+      L.buildWATModuleFromGIR(gir, new Map(), "wasm-standalone", undefined, true),
+    );
+  } catch (err) {
+    refusalText = String(err && err.message ? err.message : err);
+  }
+  assert.match(refusalText, /FUNGI-WAT-BODY-001/);
+  assert.doesNotMatch(producedWat, /local\.get \$p0/);
+  assert.doesNotMatch(producedWat, /fungi_checked_add_i32/);
 });

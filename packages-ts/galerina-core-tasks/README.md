@@ -84,6 +84,14 @@ Dependency resolution is deterministic and rejects missing or circular task
 dependencies before execution. Current execution can dry-run task plans and
 perform permission checks; built-in operation execution is still future work.
 
+`run { ... }` blocks are parsed into typed operations (one built-in call per
+line, double-quoted string arguments) and checked before a dry-run or run: an
+unknown operation (including `shell.exec`), a missing effect, wrong arity, or a
+filesystem path outside the task's `read`/`write` permissions fails the task.
+`schemas.generateJson()`, `openapi.generate()` and `tests.run()` are recognised
+but refused until their effect mapping is decided. Operations are never executed
+yet.
+
 ## Permission Checks
 
 Dry-run and execution both validate permissions before a task is accepted.

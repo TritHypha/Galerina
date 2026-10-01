@@ -158,7 +158,7 @@ describe("FINANCIAL — calculateVAT", () => {
 pure flow calculateVAT(net: String, rateStr: String) -> String {
   let money = Money.gbp(net)
   let rate = Decimal(rateStr)
-  let vat = money.multiply(rate)
+  let vat = money.multiply(rate, "halfEven")
   return vat.toString()
 }
 `;
@@ -194,7 +194,7 @@ pure flow calculateVAT(net: String, rateStr: String) -> String {
     const SOURCE2 = `
 pure flow currencyCheck(amount: String) -> String {
   let money = Money.gbp(amount)
-  let scaled = money.multiply(Decimal("1.00"))
+  let scaled = money.multiply(Decimal("1.00"), "halfEven")
   return scaled.currency()
 }
 `;
@@ -221,7 +221,7 @@ type ConvertCurrencyResult = Result<String, String>
 pure flow convertCurrency(amountStr: String, fxRate: String) -> ConvertCurrencyResult {
   let gbp = Money.gbp(amountStr)
   let rate = Decimal(fxRate)
-  let converted = gbp.multiply(rate)
+  let converted = gbp.multiply(rate, "halfEven")
   return Ok(converted.toString())
 }
 `;

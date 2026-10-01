@@ -2,6 +2,11 @@
 
 ```text
 [ ] Treat vector photonic governance notes as proposal-only until galerina-core-photonic reconciles ownership
+    (2026-09-29 note: core-photonic TODO.md records a 2026-09-22 reconciliation.
+    PhotonicMode is canonical, OpticalTransportMode is not admitted, and core-photonic
+    owns concepts/diagnostics while compute owns target selection. But its own
+    HOLD groups still say the adjudication receipt is missing. Left open pending an
+    owner ruling; see AGENTS session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md.)
 [x] Create /packages-ts/galerina-core-vector
 [x] Document package boundary
 [x] Add package metadata

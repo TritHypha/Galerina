@@ -46,24 +46,51 @@
 ## Phase 4: Target Detection
 
 ```text
-[ ] Detect CPU architecture
-[ ] Detect logical core count
+[x] Detect CPU architecture
+[x] Detect logical core count
 [ ] Detect RAM bucket
 [ ] Detect vector features where possible
 [ ] Detect GPU backend availability
 [ ] Detect low-bit backend availability
 ```
 
+Phase 4 note (2026-09-29, Grok Bot, owner-approved; see AGENTS session-exchange
+grok-bot-pkg-todo-work-20260929/LEDGER.md): `detectBenchmarkSystem(probe)` and
+`bucketLogicalCores(count)` in src/index.ts are pure and take injected OS facts
+(`platform`, `arch`, `logicalCores`). They return closed-vocabulary `osFamily` /
+`architecture` and a power-of-two `cpuCoresBucket` (`1`..`64`, `128+`), or
+`unknown` plus a warning, and never pass raw probe strings (hostname, CPU model)
+through. Unknown probe keys are refused unread. The package border is unchanged
+(no `node:os` import); a runner wires in the real probe. Tests:
+tests/system-detection.test.mjs. The RAM bucket is left out on purpose
+(memory-adjacent), and vector/GPU/low-bit detection needs hardware probing.
+
 ## Phase 5: Reports
 
 ```text
 [ ] Write benchmark-report.json
-[ ] Add report schema version
-[ ] Add privacy section
-[ ] Add fallback section
-[ ] Add skipped tests section
-[ ] Add score section
+[x] Add report schema version
+[x] Add privacy section
+[x] Add fallback section
+[x] Add skipped tests section
+[x] Add score section
 ```
+
+Phase 5 locators (2026-09-29, Grok Bot, owner-approved; see AGENTS
+session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md):
+
+- Schema version: `BenchmarkReport.schema` = `Galerina.benchmark.report.v1`
+  (src/index.ts:189), refused otherwise by `validateBenchmarkReport` (:353).
+- Privacy section: `BenchmarkReport.privacy` (:199-206); `containsPersonalData`
+  must be false and machineId/hostname/username/projectPath `not_included`
+  (:419-427).
+- Fallback section: per-target `summary` status `fallback` (:196, :378), per-test
+  `fallback`/`backend`/`reason` (:162-172, :413-415) and the
+  `fallbackReliability` score (:183).
+- Skipped tests section: `skipped` / `skipped_timeout` statuses with a bounded
+  `reason` (:19-25, :410, :414).
+- Score section: `BenchmarkScores` with required `overall` (:174-186, :382-390).
+- Still open: `Write benchmark-report.json` (nothing writes the file yet).
 
 ## Phase 6: Major Version Trigger
 
@@ -86,6 +113,15 @@
 [ ] Add Galerina benchmark submit placeholder
 [ ] Add opt-in confirmation
 ```
+
+Phase 7 notes (2026-09-29, Grok Bot): rows stay open. What exists today is
+fail-closed refusal, not removal: the report shape is exact-key (unknown fields
+such as a hostname or env var are refused, src/index.ts:352, :366), and
+`isBenchmarkReportShareable` (:655) needs `privacy.allowSubmit === true`
+(default false) plus a valid PII-free privacy block. There is no
+shareable-report generator or scrubber, and no interactive opt-in prompt.
+`BenchmarkSubmitPayload` (:209-220, schema `Galerina.benchmark.submit.v1`)
+is a type only; there is no `benchmark submit` command placeholder in core-cli.
 
 ## Phase 8: Full Benchmarks
 

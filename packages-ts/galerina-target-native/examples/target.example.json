@@ -1,0 +1,7 @@
+{
+  "triple": "x86_64-unknown-linux-gnu",
+  "os": "linux",
+  "architecture": "x86_64",
+  "abi": "c",
+  "executionMode": "future-native-executable"
+}

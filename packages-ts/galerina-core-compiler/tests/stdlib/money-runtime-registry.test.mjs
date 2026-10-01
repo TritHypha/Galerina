@@ -54,7 +54,9 @@ describe("RD-0349 I4 — Money runtime unit table (G2/G5)", () => {
 
   it("G5 closed: EVERY table currency has a generated constructor (incl. the 3 that were missing)", async () => {
     for (const tag of MONEY_UNIT_TAGS) {
-      const v = await run(`Money.${tag.toLowerCase()}("12.34")`);
+      // "12" is admissible at every minor-unit scale (JPY 0 … BHD 3); "12.34" is refused for a
+      // zero-decimal currency under R11 (MoneyScaleExceedsMinorUnits, never rounded).
+      const v = await run(`Money.${tag.toLowerCase()}("12")`);
       assert.equal(v.__tag, "string", `Money.${tag.toLowerCase()} must construct — got ${v.__tag}: ${v.message ?? ""}`);
       assert.ok(v.value.startsWith(`${tag} `), `constructor tag mismatch: ${v.value}`);
     }

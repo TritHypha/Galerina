@@ -28,13 +28,21 @@ loading/durability evidence are separate obligations.
     tests `tests/native-contracts.test.mjs:91-165,167-280`).
 [x] Define machine profile bridge handoff rules (`src/index.ts:292-335,511-633`;
     tests `tests/native-contracts.test.mjs:168-213`).
-[ ] Add examples (optional deferred; no contract blocker)
+[x] Add examples: `examples/target.example.json`,
+    `examples/artifact.example.json` (real SHA-256 of its bytes, VOK subject
+    bound) and `examples/report-input.example.json`, validated by
+    `tests/native-examples.test.mjs` through `validateNativeTarget`,
+    `validateNativeArtifact` and `createNativeTargetReport`, with tamper
+    refusals. The examples are illustrative: `vok-receipt-example` is not a real
+    VOK receipt (2026-09-29, Grok Bot, owner-approved; AGENTS session-exchange
+    grok-bot-pkg-todo-work-20260929/LEDGER.md).
 [x] Add tests
 [x] Add the bounded fail-closed runtime own-data decoder and detached immutable
     report snapshot; hostile records, arrays and retained-alias controls pass
     in `src/index.ts:103-189`, `:191-290`, `:337-384`, `:511-633` and
     `tests/native-contracts.test.mjs:41-89`, `:167-280`.
-[x] Current bounded package verification is **24/24** with clean typecheck/build.
+[x] Current bounded package verification is **28/28** with clean typecheck/build
+    (24 contract tests + 4 example tests, 2026-09-29).
 [x] C09 `fungi.native.artifact.v1` binds relative locator, bytes digest, VOK
     subject, ABI/profile (`RD-1281`). Identity tests cover escape locators,
     empty bytes, empty VOK receipt, digest/VOK mismatch, stale VOK, ABI

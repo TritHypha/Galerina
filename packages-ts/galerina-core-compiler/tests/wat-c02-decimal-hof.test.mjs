@@ -115,7 +115,8 @@ contract { effects {} }
     const { gir } = L.emitGIR(parsed.ast, parsed.flows, fx);
     const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "c02-inst", parsed.ast, true));
     const asm = await L.assembleWAT(wat);
-    assert.ok(asm.valid, JSON.stringify(asm.diagnostics));
+    // R4: a stub from the minimal encoder carries a diagnostic — a faithful compile has none.
+    assert.ok(asm.valid && asm.diagnostics.length === 0, JSON.stringify(asm.diagnostics));
     const host = L.createHostRuntime();
     const kp = L.generateRunnerKeypair();
     const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");

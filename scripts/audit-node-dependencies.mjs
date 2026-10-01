@@ -52,7 +52,6 @@ const NODE_FLOOR = new Map([
   ['bcryptjs', 'crypto floor: bcrypt password hashing'],
   ['snarkjs', 'ZK floor: Groth16/PLONK zk-SNARK proving, bridged by the OPTIONAL ext-proof-snarkjs extension'],
   ['wabt', 'WASM toolchain: wat->wasm assembler for the build path (pin required for RD-0345 golden hash)'],
-  ['wat-wasm', 'WASM toolchain: wat assembler'],
 ]);
 
 // Build-time toolchain (retires with the .ts sources, #143) — NOT a runtime primitive, so

@@ -73,3 +73,18 @@ export function i32ModChecked(a: number, b: number): I32Result {
 export function i32NegChecked(a: number): I32Result {
   return i32SubChecked(0, a);
 }
+
+/** R10 (rounding audit F11): absolute value in the checked i32 domain — `abs(-2^31)` traps. */
+export function i32AbsChecked(a: number): I32Result {
+  return a < 0 ? i32NegChecked(a) : i32AddChecked(a, 0);
+}
+
+/**
+ * R10: admit an already-integral JS number (e.g. the result of Math.round/floor/ceil/trunc or a power) into
+ * the checked i32 domain (owner Fork A = TRAP). A non-finite, non-integral or out-of-range value is
+ * `IntegerOverflow` — never a silently wrapped, rounded or oversized "Int".
+ */
+export function i32FromIntegralChecked(n: number): I32Result {
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return "IntegerOverflow";
+  return n < I32_MIN || n > I32_MAX ? "IntegerOverflow" : n | 0;
+}

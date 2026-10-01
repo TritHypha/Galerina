@@ -6,10 +6,8 @@
 //   24A. emitWATBody emits (i32.const 0) for pure flows with no params
 //   24A. emitWATBody emits unreachable for capabilityCall steps (both spellings)
 //   24A. validateParam and capabilityCall steps: validateParam is a no-op
-//   24B. buildWATModule emits WAT with local.get for a parametrised pure flow
-//   24B. assembleWAT produces a valid WASM binary (magic 0x00 0x61) from WAT with local.get
-//   24B. assembleWAT produces a valid WASM binary for a no-param pure flow
-//   24C. GIR pipeline: parseProgram → checkEffects → emitGIR → buildWATModule → renderWAT → assembleWAT
+//   24B. buildWATModule refuses guessed identity/default for no-AST pure flows
+//   24C. no-AST GIR pipeline: parseProgram → checkEffects → emitGIR → buildWATModuleFromGIR refuses
 // =============================================================================
 
 import assert from "node:assert/strict";
@@ -22,7 +20,6 @@ import {
   buildWATModule,
   buildWATModuleFromGIR,
   renderWAT,
-  assembleWAT,
   emitWATBody,
   STDLIB_CAPABILITY_MAP,
 } from "../dist/index.js";
@@ -32,76 +29,39 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("Phase 24A: emitWATBody produces real WAT instructions", () => {
-  it("emits (local.get $p0) for a pure flow with params and a return step", () => {
+  it("refuses (local.get $p0) identity for a pure flow with params and a return step", () => {
     const plan = { steps: [{ kind: "return" }] };
-    const body = emitWATBody(plan, 1);
-    assert.ok(
-      body.includes("local.get $p0"),
-      `Expected 'local.get $p0' in body, got: ${body}`,
-    );
-    assert.ok(
-      !body.includes("unreachable") || body.includes(";;"),
-      "Body should not be a bare unreachable",
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 1), "emitWATBody");
   });
 
-  it("emits (local.get $p0) for multiple params (returns first)", () => {
+  it("refuses (local.get $p0) identity for multiple params", () => {
     const plan = { steps: [{ kind: "return" }] };
-    const body = emitWATBody(plan, 3);
-    assert.ok(
-      body.includes("local.get $p0"),
-      `Expected 'local.get $p0' in body, got: ${body}`,
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 3), "emitWATBody");
   });
 
-  it("emits (i32.const 0) for a pure flow with no params and a return step", () => {
+  it("refuses (i32.const 0) default for a pure flow with no params and a return step", () => {
     const plan = { steps: [{ kind: "return" }] };
-    const body = emitWATBody(plan, 0);
-    assert.ok(
-      body.includes("i32.const 0"),
-      `Expected 'i32.const 0' in body, got: ${body}`,
-    );
-    assert.ok(
-      !body.includes("local.get"),
-      "Body should not include local.get for zero-param flow",
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 0), "emitWATBody");
   });
 
-  it("emits (i32.const 0) for response step with no params", () => {
+  it("refuses (i32.const 0) default for response step with no params", () => {
     const plan = { steps: [{ kind: "response" }] };
-    const body = emitWATBody(plan, 0);
-    assert.ok(
-      body.includes("i32.const 0"),
-      `Expected 'i32.const 0' in body, got: ${body}`,
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 0), "emitWATBody");
   });
 
-  it("emits local.get for response step with params", () => {
+  it("refuses local.get identity for response step with params", () => {
     const plan = { steps: [{ kind: "response" }] };
-    const body = emitWATBody(plan, 2);
-    assert.ok(
-      body.includes("local.get $p0"),
-      `Expected 'local.get $p0' in body, got: ${body}`,
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 2), "emitWATBody");
   });
 
-  it("validateParam steps are no-ops in WAT (erased at compile time)", () => {
-    // validateParam steps must not block real instruction emission.
+  it("validateParam + return still refuses guessed identity (J-R4 public helper)", () => {
     const plan = { steps: [{ kind: "validateParam" }, { kind: "return" }] };
-    const body = emitWATBody(plan, 1);
-    assert.ok(
-      body.includes("local.get $p0"),
-      `validateParam should be erased, expected local.get $p0, got: ${body}`,
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 1), "emitWATBody");
   });
 
-  it("validate_param steps (snake_case) are also no-ops in WAT", () => {
+  it("validate_param + return still refuses guessed identity (J-R4 public helper)", () => {
     const plan = { steps: [{ kind: "validate_param" }, { kind: "return" }] };
-    const body = emitWATBody(plan, 1);
-    assert.ok(
-      body.includes("local.get $p0"),
-      `validate_param should be erased, expected local.get $p0, got: ${body}`,
-    );
+    assertBodyRefusal(() => emitWATBody(plan, 1), "emitWATBody");
   });
 
   it("emits unreachable for capabilityCall steps (camelCase)", () => {
@@ -132,13 +92,27 @@ describe("Phase 24A: emitWATBody produces real WAT instructions", () => {
   });
 });
 
+function assertBodyRefusal(fn, flowName) {
+  assert.throws(fn, (err) => {
+    const msg = String(err && err.message ? err.message : err);
+    assert.ok(msg.includes("FUNGI-WAT-BODY-001"), `expected FUNGI-WAT-BODY-001, got: ${msg}`);
+    assert.ok(msg.includes(`pure flow '${flowName}'`), `expected named flow '${flowName}', got: ${msg}`);
+    assert.ok(
+      !msg.includes("(local.get $p0)") || msg.includes("refuses"),
+      "refusal must not succeed with a guessed identity body",
+    );
+    return true;
+  });
+}
+
 // ---------------------------------------------------------------------------
-// 24B — buildWATModule + assembleWAT: valid binary output
+// 24B — buildWATModule no-AST identity/default is a compile-time refusal
 // ---------------------------------------------------------------------------
 
-describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces valid binary", () => {
-  it("buildWATModule emits WAT with local.get $p0 for a parametrised pure flow", () => {
+describe("Phase 24B: buildWATModule refuses guessed identity/default without AST", () => {
+  it("buildWATModule refuses local.get $p0 for a no-AST parametrised pure flow", () => {
     const watInput = {
+      schemaVersion: "fungi.gir.v1",
       flows: [{
         name: "identity",
         qualifier: "pure",
@@ -148,20 +122,12 @@ describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces vali
       }],
       entryPoints: ["identity"],
     };
-    const mod = buildWATModule(watInput, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-    assert.ok(
-      wat.includes("local.get"),
-      `Expected 'local.get' in WAT, got:\n${wat}`,
-    );
-    assert.ok(
-      !wat.split("\n").every((l) => !l.includes("local.get") || l.trim().startsWith(";;")),
-      "local.get must appear as a real instruction (not just in comments)",
-    );
+    assertBodyRefusal(() => buildWATModule(watInput, STDLIB_CAPABILITY_MAP), "identity");
   });
 
-  it("buildWATModule emits (i32.const 0) body for a no-param pure flow", () => {
+  it("buildWATModule refuses (i32.const 0) body for a no-AST no-param pure flow", () => {
     const watInput = {
+      schemaVersion: "fungi.gir.v1",
       flows: [{
         name: "zero",
         qualifier: "pure",
@@ -171,16 +137,26 @@ describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces vali
       }],
       entryPoints: ["zero"],
     };
-    const mod = buildWATModule(watInput, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-    assert.ok(
-      wat.includes("i32.const 0"),
-      `Expected 'i32.const 0' in WAT, got:\n${wat}`,
-    );
+    assertBodyRefusal(() => buildWATModule(watInput, STDLIB_CAPABILITY_MAP), "zero");
   });
 
-  it("assembleWAT produces a valid WASM binary (magic 0x00 0x61) for a no-param pure flow", async () => {
+  it("buildWATModule refuses guessed identity when only paramTypes are supplied (no AST, no plan)", () => {
     const watInput = {
+      schemaVersion: "fungi.gir.v1",
+      flows: [{
+        name: "identity",
+        qualifier: "pure",
+        declaredEffects: [],
+        paramTypes: ["Int"],
+      }],
+      entryPoints: ["identity"],
+    };
+    assertBodyRefusal(() => buildWATModule(watInput, STDLIB_CAPABILITY_MAP), "identity");
+  });
+
+  it("assembleWAT is not reached for a no-AST no-param pure flow (compile-time refusal)", () => {
+    const watInput = {
+      schemaVersion: "fungi.gir.v1",
       flows: [{
         name: "zero",
         qualifier: "pure",
@@ -189,18 +165,12 @@ describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces vali
       }],
       entryPoints: ["zero"],
     };
-    const mod = buildWATModule(watInput, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-    const result = await assembleWAT(wat);
-    assert.equal(result.valid, true, `Expected valid WASM binary. Diagnostics: ${JSON.stringify(result.diagnostics)}`);
-    assert.equal(result.wasm[0], 0x00, "WASM magic byte 0 should be 0x00");
-    assert.equal(result.wasm[1], 0x61, "WASM magic byte 1 should be 0x61");
-    assert.equal(result.wasm[2], 0x73, "WASM magic byte 2 should be 0x73 (s)");
-    assert.equal(result.wasm[3], 0x6d, "WASM magic byte 3 should be 0x6d (m)");
+    assertBodyRefusal(() => buildWATModule(watInput, STDLIB_CAPABILITY_MAP), "zero");
   });
 
-  it("assembleWAT produces a valid WASM binary for a parametrised pure flow with local.get", async () => {
+  it("assembleWAT is not reached for a no-AST parametrised pure flow (compile-time refusal)", () => {
     const watInput = {
+      schemaVersion: "fungi.gir.v1",
       flows: [{
         name: "identity",
         qualifier: "pure",
@@ -210,18 +180,7 @@ describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces vali
       }],
       entryPoints: ["identity"],
     };
-    const mod = buildWATModule(watInput, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-
-    assert.ok(
-      wat.includes("local.get"),
-      `WAT must include local.get for parametrised pure flow, got:\n${wat}`,
-    );
-
-    const result = await assembleWAT(wat);
-    assert.equal(result.valid, true, `Expected valid WASM binary. Diagnostics: ${JSON.stringify(result.diagnostics)}`);
-    assert.equal(result.wasm[0], 0x00, "WASM magic byte 0 should be 0x00");
-    assert.equal(result.wasm[1], 0x61, "WASM magic byte 1 should be 0x61");
+    assertBodyRefusal(() => buildWATModule(watInput, STDLIB_CAPABILITY_MAP), "identity");
   });
 });
 
@@ -229,30 +188,16 @@ describe("Phase 24B: buildWATModule produces real WAT; assembleWAT produces vali
 // 24C — Full pipeline: parseProgram → emitGIR → buildWATModuleFromGIR → assembleWAT
 // ---------------------------------------------------------------------------
 
-describe("Phase 24C: full pipeline from Galerina source to valid WASM binary", () => {
-  it("pure flow add(a: Int, b: Int) -> Int compiles to WAT with local.get and valid binary", async () => {
+describe("Phase 24C: no-AST FromGIR pipeline refuses guessed identity/default", () => {
+  it("pure flow add without AST refuses FUNGI-WAT-BODY-001 rather than guessed local.get", () => {
     const src = `pure flow add(a: Int, b: Int) -> Int { return a }`;
     const parsed = parseProgram(src, "t.fungi");
     const eff = checkEffects(parsed.flows, parsed.ast);
     const gir = emitGIR(parsed.ast, parsed.flows, eff);
-
-    const mod = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-
-    assert.ok(
-      wat.includes("local.get"),
-      `WAT should contain local.get for parametrised pure flow, got:\n${wat.slice(0, 400)}`,
-    );
-
-    const assembled = await assembleWAT(wat);
-    assert.equal(
-      assembled.wasm[0] === 0x00 && assembled.wasm[1] === 0x61,
-      true,
-      "WASM magic header should be valid (0x00 0x61 ...)",
-    );
+    assertBodyRefusal(() => buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP), "add");
   });
 
-  it("pure flow greet(name: String) -> String compiles to WAT with local.get", async () => {
+  it("pure flow greet without AST refuses FUNGI-WAT-BODY-001 rather than guessed local.get", () => {
     const src = `
 pure flow greet(name: String) -> String
 contract { intent { "Return a greeting." } effects {} }
@@ -261,43 +206,28 @@ contract { intent { "Return a greeting." } effects {} }
     const parsed = parseProgram(src, "greet.fungi");
     const eff = checkEffects(parsed.flows, parsed.ast);
     const gir = emitGIR(parsed.ast, parsed.flows, eff);
-
-    const mod = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-
-    assert.ok(
-      wat.includes("local.get"),
-      `WAT should contain local.get for greet flow, got:\n${wat.slice(0, 400)}`,
-    );
-
-    const assembled = await assembleWAT(wat);
-    assert.equal(
-      assembled.wasm[0] === 0x00 && assembled.wasm[1] === 0x61,
-      true,
-      "WASM magic header should be valid for greet flow",
-    );
+    assertBodyRefusal(() => buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP), "greet");
   });
 
-  it("pure flow with no params emits (i32.const 0) and valid binary", async () => {
+  it("pure flow with no params and no executionPlan keeps walker unreachable (not guessed i32.const 0)", () => {
     const src = `pure flow constant() -> Int { return 42 }`;
     const parsed = parseProgram(src, "t.fungi");
     const eff = checkEffects(parsed.flows, parsed.ast);
     const gir = emitGIR(parsed.ast, parsed.flows, eff);
+    assert.equal(gir.gir.flows[0]?.executionPlan, undefined);
+    const wat = renderWAT(buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP));
+    assert.ok(wat.includes("unreachable"), wat.slice(0, 400));
+    assert.ok(!wat.includes("i32.const 0"), "must not guess a default i32.const 0 body");
+    assert.ok(!wat.includes("local.get"), wat.slice(0, 400));
+  });
 
-    const mod = buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP);
-    const wat = renderWAT(mod);
-
-    // No-param flow should not have local.get but should have a real body.
-    assert.ok(
-      !wat.includes("local.get"),
-      `No-param flow should not have local.get, got:\n${wat.slice(0, 400)}`,
-    );
-
-    const assembled = await assembleWAT(wat);
-    assert.equal(
-      assembled.wasm[0] === 0x00 && assembled.wasm[1] === 0x61,
-      true,
-      "WASM magic header should be valid for no-param flow",
-    );
+  it("same no-param flow with AST lowers the real body instead of identity/default", () => {
+    const src = `pure flow constant() -> Int { return 42 }`;
+    const parsed = parseProgram(src, "t.fungi");
+    const eff = checkEffects(parsed.flows, parsed.ast);
+    const gir = emitGIR(parsed.ast, parsed.flows, eff);
+    const wat = renderWAT(buildWATModuleFromGIR(gir.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", parsed.ast));
+    assert.ok(wat.includes("i32.const 42"), wat.slice(0, 400));
+    assert.ok(!wat.includes("unreachable") || wat.includes(";;"), wat.slice(0, 400));
   });
 });

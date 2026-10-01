@@ -16,7 +16,7 @@ contract {
 {
 
   fn calculateVat(value: Money<GBP>) -> Money<GBP> {
-    return value * Decimal("0.20")
+    return value.multiply(Decimal("0.20"), "halfEven")
   }
 
   return price + calculateVat(price)

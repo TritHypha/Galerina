@@ -53,10 +53,15 @@ describe("S2/A: per-operand static elision (Tri-Fuse min-chain)", () => {
     assert.match(gates[0], /i32\.lt_s/, "x < 100 kept");
   });
 
-  it("all-unknown conjunction is byte-identical (nothing to elide): `x > 0 && y > 0` keeps the full i32.and", () => {
+  it("all-unknown conjunction is byte-identical (nothing to elide): `x > 0 && y > 0` keeps both runtime operands under the accepted J-R3 if/else lowering", () => {
     const gates = ensureGates(compileWAT(`pure flow g(x: Int, y: Int) -> Int\ncontract { invariant { ensure x > 0 && y > 0 } effects {} }\n{ return x }`));
-    assert.equal(gates.length, 1);
-    assert.match(gates[0], /i32\.and/, "the whole conjunction is gated unchanged");
+    assert.equal(gates.length, 1, `one gate expected: ${gates}`);
+    const jr3Gate =
+      "(if (result i32) (i32.gt_s (local.get $p0) (i32.const 0)) (then (i32.gt_s (local.get $p1) (i32.const 0))) (else (i32.const 0)))";
+    assert.ok(
+      gates[0].includes(jr3Gate),
+      `both runtime operands stay; accepted J-R3 lowering is byte-identical. Got: ${gates[0]}`,
+    );
     assert.match(gates[0], /;; ensure x > 0 && y > 0$/);
   });
 

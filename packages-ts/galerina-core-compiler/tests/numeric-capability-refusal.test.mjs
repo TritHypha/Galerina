@@ -126,7 +126,7 @@ test("the refused set is tied to the enforcement point's own stated reasoning", 
   // the guard; if a type leaves the refused list because its lane landed, the
   // comment there and this list must move together — and a list that agreed
   // with nothing but itself would be a list nobody maintains.
-  const guard = readFileSync(resolve(import.meta.dirname, "..", "src", "wat-emitter.ts"), "utf8");
+  const guard = readFileSync(resolve(import.meta.dirname, "..", "src", "wat-emitter-layouts.ts"), "utf8");
   assert.match(guard, /Float16\/Float32 remain\s*\n?\s*\*?\s*refused until the scalar f32 expression lane is faithful/,
     "the guard must still state WHY Float16/32 are refused");
   assert.match(guard, /Decimal record fields lower as/,

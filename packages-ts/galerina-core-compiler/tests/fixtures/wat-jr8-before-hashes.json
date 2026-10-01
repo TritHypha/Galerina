@@ -1,0 +1,32 @@
+[
+  {
+    "name": "add",
+    "watSha256": "29d7d6fa053a3e9c7b6ee0cf0d534e94090027beef5218b09d6bd84944c858d2",
+    "watBytes": 693,
+    "wasmSha256": "8f972a45918dcbe022e0117dbfd6f9411bca52b3566cc5864753516a88fbefac",
+    "wasmBytes": 91,
+    "wasmResult": 5,
+    "interpResult": 5,
+    "want": 5
+  },
+  {
+    "name": "max",
+    "watSha256": "77223dfb16af17ef688d138fc0a843b561e9026a5b158ac19137e46ef8c607d5",
+    "watBytes": 299,
+    "wasmSha256": "09d16dda08cb7536cd6dac2c3a7a2a9e1bfbb2447277da292d988c0c2898db60",
+    "wasmBytes": 65,
+    "wasmResult": 5,
+    "interpResult": 5,
+    "want": 5
+  },
+  {
+    "name": "sumTo",
+    "watSha256": "2e10014470205e4bdfd17d27e104775fe494f18520e04a2508804b9d801b4fff",
+    "watBytes": 1306,
+    "wasmSha256": "50d607baaf8525edbac2a8e90dc6678ff93ab818d9c6162cd0d33c002d7de090",
+    "wasmBytes": 153,
+    "wasmResult": 55,
+    "interpResult": 55,
+    "want": 55
+  }
+]

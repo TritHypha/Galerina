@@ -19,8 +19,6 @@ hallmark CustomerRef of String {
 // never negative, and ONLY the four declared ops exist (ratio is undeclared, so
 // points / points will not compile — see 095-hallmark-ops-deny).
 hallmark LoyaltyPoints of Decimal {
-  decimals: 0
-  sign:     non-negative
   ops:      { add, subtract, scale, compare }
   gate:     flow assayPoints
 }
@@ -34,7 +32,8 @@ pure flow assayCustomerRef(raw: String) -> Result<CustomerRef, ValidationError> 
 
 pure flow assayPoints(raw: Decimal) -> Result<LoyaltyPoints, ValidationError> {
   contract { intent "Admit a whole, non-negative loyalty-points balance." }
-  if raw < 0.0 { return Err(ValidationError("points cannot be negative")) }
+  if raw < Decimal("0") { return Err(ValidationError("points cannot be negative")) }
+  if raw.floor(0) != raw { return Err(ValidationError("points must be a whole number")) }
   return Ok(LoyaltyPoints(raw))
 }
 

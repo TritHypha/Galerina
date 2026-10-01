@@ -374,10 +374,11 @@ export function checkResilienceViolations(
 
 // ---------------------------------------------------------------------------
 // Fault-handler governance checks (0017): FUNGI-FAULT-001 / FUNGI-FAULT-003
+// Q7 K5 interim: FUNGI-FAULT-006 DECLARED_HANDLER_NOT_EXECUTED (error).
 // ---------------------------------------------------------------------------
 
 export interface FaultHandlerViolation {
-  readonly code: "FUNGI-FAULT-001" | "FUNGI-FAULT-003";
+  readonly code: "FUNGI-FAULT-001" | "FUNGI-FAULT-003" | "FUNGI-FAULT-006";
   readonly message: string;
 }
 
@@ -387,8 +388,11 @@ export interface FaultHandlerViolation {
  *    back-compat opt-in is fail-OPEN (it keeps serving past the fault) — rejected. Use halt/quarantine.
  *  - **FUNGI-FAULT-001** (monotonicity): `on_denial_fault retry` is rejected — retrying a capability denial
  *    attempts a re-grant, colliding with deny-only monotonicity (FUNGI-MONO-001). Use halt/quarantine/fallback.
- * The matrix itself already coerces these to `halt` (fail-closed); this surfaces the author error instead of
+ *  - **FUNGI-FAULT-006** (Q7 interim): any declared action other than `halt` is not executed
+ *    (raise-only MVP). Error, not warning. Runtime will halt, audit and deny instead.
+ * The matrix itself already coerces illegal actions to `halt` (fail-closed); this surfaces the author error instead of
  * silently overriding it.
+ * FUNGI-FAULT-006 — KB registration is an owner/KB step before carry.
  */
 export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViolation[] {
   const violations: FaultHandlerViolation[] = [];
@@ -407,6 +411,15 @@ export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViol
         message:
           `Fault handler 'on_denial_fault retry' is rejected: retrying a capability denial attempts a ` +
           `re-grant, colliding with deny-only monotonicity (FUNGI-MONO-001). Use 'halt', 'quarantine', or 'fallback <flow>'.`,
+      });
+    }
+    if (d.action !== "halt") {
+      const shown = d.target !== undefined ? `${d.action} ${d.target}` : d.action;
+      violations.push({
+        code: "FUNGI-FAULT-006",
+        message:
+          `FUNGI-FAULT-006 DECLARED_HANDLER_NOT_EXECUTED: fault handler '${signal} ${shown}' is declared ` +
+          `but not executed. Runtime will halt, audit and deny instead; handlers are not executed.`,
       });
     }
   }

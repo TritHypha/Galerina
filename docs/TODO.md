@@ -1024,8 +1024,27 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   `Map.entries()` is `MapEntry<K,V>`; algebraic `map`/`mapErr` reconstruct
   payloads. Focused type-checker routes **115/115** and **92/92**.
 - [x] C02 Decimal WAT ABI frozen as i32 host handles, never f64 (`RD-1276`).
-  Capture-free named `map`/`filter` emit helpers. `reduce` and Decimal
-  division remain refused. WAT tests **11/11**; runtime-wasm **27/27**.
+  As of that receipt, capture-free named `map`/`filter` emitted helpers and
+  `reduce` plus Decimal division remained refused. After HOF jobs + RD-1277,
+  capture-free named `reduce` also lowers to `$fungi_array_*`; Decimal
+  division may remain refused where still accurate. Measured L1 after J8 is
+  **187/190 = 98**. WAT tests **11/11**; runtime-wasm **27/27**.
+  Decimal division follow-up (2026-09-30, not done): job K4 (D6), queued after
+  R1-R12, turns the remaining refusal into a named compile-time refusal that
+  points at `divide(b, scale, mode)` / `remainder(b)`.
+  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  K4 and R2/R3 implemented. Decimal `/`/`%`, mixed Decimal operands, any other
+  Decimal method and every Money form except a one-argument constructor are
+  named WASM refusals (FUNGI-WAT-DECIMAL-001 / FUNGI-WAT-MONEY-001), not
+  `(unreachable)`. `divide`/`remainder` lower with typed arguments and a
+  literal mode; the 77-case seven-mode matrix agrees oracle == interpreter ==
+  WASM. Not committed, not reviewed; KB code registration pending. See
+  the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
+  Update (2026-10-01 ~02:20 BST): the 7 codes are now registered in the KB
+  (ZTF-Knowledge-Bases f661953e). The sync fast path now also agrees with the
+  walker and WASM on Int `match`, Decimal `+` and Decimal `divide`, so the
+  measured Runtime interpreter ladder is 14/14 (REPORT §10). Still uncommitted
+  in Galerina.
 - [!] `Option.zip` stays unknown (no named schema). C03 `checkMethodChain`,
   C04 WASM digest, C08–C09, C10 schema, C12, C14–C20 remain. No `.fungi`,
   queue, signing, or SLIDE/VOK admission.
@@ -1604,6 +1623,19 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   refusal control is in `tests/wat-phase25-arithmetic.test.mjs`. The remaining
   Decimal/HOF traps stay unchanged. See
   the private adjudication record for RD-1233.
+  Rounding plan link (2026-09-30, not done): the Decimal half of this hold is
+  now finishable by the queued rounding jobs R3 (WASM `divide`/`remainder`
+  argument typing plus the 77-case seven-mode parity matrix), R5 (explicit
+  rounding mode required), R6 (one exact decimal core with frozen limits, the
+  resource contract), then K4 last (D6: named refusal plus explicit
+  `divide(b, scale, mode)`/`remainder(b)`, no default rounding for `/` or `%`).
+  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  the Decimal half (R3, R5, R6, K4) is implemented and tested in that
+  worktree; the HOF/closure half is unchanged and this hold stays open until
+  review and commit. See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
+  Source: 2026-09-30 decimal/rounding audit and WAT PLAN addendum
+  2026-09-30 22:55. The callback/closure half is unchanged. Stays `[!]` until
+  K4 is ACCEPTED.
 
 - [!] `RD-1234` records one complete non-authorizing Grok attempt and an
   independent Astra review of the empty pipeline-checker seam. The result is
@@ -12064,7 +12096,7 @@ Full-auto loop (main). 3 commits, none pushed. Verified green this session: runt
   **`Observer.onOutput`** (the governed, auditable sink — DSS audit-output seam), console.log dev-fallback
   only; the old comment overpromised "observer capture" while only console.log'ing → fixed. Added
   **`readMoney`** accessor (the money handle was write-only). New oracle
-  `wat-host-stdlib-stubs-oracle.test.mjs` (11 cases). Decimal/map/reduce/filter stay fail-closed `(unreachable)`.
+  `wat-host-stdlib-stubs-oracle.test.mjs` (11 cases). At that receipt Decimal/map/reduce/filter stayed fail-closed `(unreachable)`. After HOF jobs + RD-1277, capture-free named `map`/`filter`/`reduce` lower to `$fungi_array_*`; measured L1 after J8 is **187/190 = 98**. Decimal division may remain refused where still accurate.
 - **EXOR question answered — NO exclusive trit-or is needed** (owner asked). `xorTrit` = `sumTrit` =
   arithmetic balanced-ternary SUM (the AXOR), correct and quarantined from governance by the Verdict/Trit
   brand + machine-checked in `tools/verify-governance-algebra.mjs` SUITE 3 + `governance-algebra-binding.test.mjs`.

@@ -302,7 +302,7 @@ describe("Financial — VAT calculation", () => {
   it("calculates VAT at 20% on a GBP price", async () => {
     const result = await parseAndRun(`
 pure flow calculateVat(price: Money<GBP>, vatRate: Decimal) -> Money<GBP> {
-  return price.multiply(vatRate)
+  return price.multiply(vatRate, "halfEven")
 }
 `, "calculateVat", new Map([
       ["price", { __tag: "record", fields: new Map([
@@ -324,7 +324,7 @@ pure flow calculateVat(price: Money<GBP>, vatRate: Decimal) -> Money<GBP> {
 pure flow grossPrice() -> String {
   let net = Money.gbp("100.00")
   let vatRate: Decimal = Decimal("0.20")
-  let vat = net.multiply(vatRate)
+  let vat = net.multiply(vatRate, "halfEven")
   let gross = net.add(vat)
   return gross.toString()
 }
@@ -336,7 +336,7 @@ pure flow grossPrice() -> String {
   it("type checker accepts Money<GBP> * Decimal (vatRate flow signature)", () => {
     const result = parseAndCheck(`
 pure flow applyVat(price: Money<GBP>, rate: Decimal) -> Money<GBP> {
-  return price.multiply(rate)
+  return price.multiply(rate, "halfEven")
 }
 `);
     const errors = result.diagnostics.filter((d) => d.severity === "error");
@@ -351,7 +351,7 @@ describe("Financial — salary flow with Decimal precision", () => {
     const result = await parseAndRun(`
 pure flow monthlySalary() -> String {
   let annual = Money.gbp("60000.00")
-  let monthly = annual.divideBy(12)
+  let monthly = annual.divideBy(12, "halfEven")
   return monthly.toString()
 }
 `, "monthlySalary");
@@ -363,7 +363,7 @@ pure flow monthlySalary() -> String {
     const result = await parseAndRun(`
 pure flow withRaise() -> String {
   let base = Money.gbp("50000.00")
-  let raise = base.multiply(Decimal("0.10"))
+  let raise = base.multiply(Decimal("0.10"), "halfEven")
   let newSalary = base.add(raise)
   return newSalary.toString()
 }
@@ -378,8 +378,8 @@ pure flow takeHome() -> String {
   let gross = Money.gbp("4000.00")
   let pensionRate: Decimal = Decimal("0.05")
   let taxRate: Decimal = Decimal("0.20")
-  let pension = gross.multiply(pensionRate)
-  let tax = gross.multiply(taxRate)
+  let pension = gross.multiply(pensionRate, "halfEven")
+  let tax = gross.multiply(taxRate, "halfEven")
   let afterPension = gross.subtract(pension)
   let takeHome = afterPension.subtract(tax)
   return takeHome.toString()
@@ -823,7 +823,7 @@ pure flow getAmount() -> Decimal {
     const result = await parseAndRun(`
 pure flow thirdOf() -> String {
   let price = Money.usd("99.99")
-  let third = price.divideBy(3)
+  let third = price.divideBy(3, "halfEven")
   return third.toString()
 }
 `, "thirdOf");

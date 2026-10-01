@@ -27,11 +27,14 @@ import {
   FUNGI_STDLIB_001,
   renderWAT,
   buildWATModule,
+  buildWATModuleFromGIR,
   emitWATBody,
   getWATImportsForEffects,
   DEFAULT_WAT_MEMORY,
   DEFAULT_WASM_SIMD,
   parseProgram,
+  checkEffects,
+  emitGIR,
   callStdlib,
   FUNGI_VOID,
   toFlatTokenStream,
@@ -50,6 +53,17 @@ import { assembleWAT } from "../../dist/wat-assembler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+function compileWatFromSource(source, filename, targetName) {
+  const parsed = parseProgram(source, filename);
+  const errors = parsed.diagnostics.filter((d) => d.severity === "error");
+  assert.equal(errors.length, 0, JSON.stringify(errors.map((d) => d.message)));
+  const effects = checkEffects(parsed.flows, parsed.ast);
+  const { gir } = emitGIR(parsed.ast, parsed.flows, effects);
+  assert.equal(gir.schemaVersion, "fungi.gir.v1", "emitGIR stamps fungi.gir.v1");
+  const mod = buildWATModuleFromGIR(gir, STDLIB_CAPABILITY_MAP, targetName, parsed.ast, true);
+  return { parsed, gir, mod, wat: renderWAT(mod) };
+}
 
 // ---------------------------------------------------------------------------
 // STDLIB_CAPABILITY_MAP
@@ -296,21 +310,21 @@ describe("FUNGI_STDLIB_001: constant shape", () => {
 
 describe("WAT emitter: renderWAT produces valid skeleton", () => {
   it("output starts with (module and ends with )", () => {
-    const mod = buildWATModule(
-      { flows: [], entryPoints: [], girHash: "abc", sourceHash: "def" },
-      STDLIB_CAPABILITY_MAP,
+    const { wat } = compileWatFromSource(
+      "pure flow dummy() -> Int { return 0 }\n",
+      "dummy.fungi",
+      "dummy",
     );
-    const wat = renderWAT(mod);
     assert.ok(wat.startsWith("(module"), "WAT must start with (module");
     assert.ok(wat.trimEnd().endsWith(")"), "WAT must end with )");
   });
 
   it("output contains (memory with correct page counts", () => {
-    const mod = buildWATModule(
-      { flows: [], entryPoints: [], girHash: "abc", sourceHash: "def" },
-      STDLIB_CAPABILITY_MAP,
+    const { wat } = compileWatFromSource(
+      "pure flow dummy() -> Int { return 0 }\n",
+      "dummy.fungi",
+      "dummy",
     );
-    const wat = renderWAT(mod);
     assert.ok(wat.includes("(memory"), "WAT must contain (memory");
     // DEFAULT_WAT_MEMORY is 2 min, 2048 max
     assert.ok(
@@ -320,31 +334,35 @@ describe("WAT emitter: renderWAT produces valid skeleton", () => {
   });
 
   it("pure flow has no imports; effectful flow emits import with valid identifier", () => {
-    const pureMod = buildWATModule(
-      {
-        flows: [{ name: "computeScore", qualifier: "pure", declaredEffects: [] }],
-        entryPoints: ["computeScore"],
-      },
-      STDLIB_CAPABILITY_MAP,
+    const { wat: pureWat } = compileWatFromSource(
+      "pure flow computeScore() -> Int { return 0 }\n",
+      "computeScore.fungi",
+      "computeScore",
     );
-    const pureWat = renderWAT(pureMod);
     assert.ok(!pureWat.includes("(import "), "Pure flow must not emit any imports");
     assert.ok(pureWat.includes("(func $computeScore"), "Pure flow must emit function definition");
     assert.ok(pureWat.includes('(export "computeScore"'), "Entry point must be exported");
 
-    const effectfulMod = buildWATModule(
-      {
-        flows: [{ name: "readFile", qualifier: "flow", declaredEffects: ["storage.read"] }],
-        entryPoints: [],
-      },
-      STDLIB_CAPABILITY_MAP,
+    const { wat: effectfulWat } = compileWatFromSource(
+      "flow readFile() -> Int\ncontract { effects { storage.read } }\n{ return 0 }\n",
+      "readFile.fungi",
+      "readFile",
     );
-    const effectfulWat = renderWAT(effectfulMod);
     assert.ok(effectfulWat.includes("(import "), "Effectful flow must emit imports");
     // WAT identifiers must not contain "." — check the func $id part has underscores
     const importMatch = effectfulWat.match(/\(import "[^"]*" "[^"]*" \(func (\$[^\s)]+)/);
     assert.ok(importMatch !== null, "Import must have (func $id) form");
     assert.ok(!importMatch[1].includes("."), "WAT identifier must not contain '.'");
+  });
+
+  it("missing GIR schemaVersion is a named refusal", () => {
+    assert.throws(
+      () => buildWATModule(
+        { flows: [], entryPoints: [], girHash: "abc", sourceHash: "def" },
+        STDLIB_CAPABILITY_MAP,
+      ),
+      (err) => /buildWATModule: MISSING GIR schemaVersion/.test(String(err)),
+    );
   });
 });
 
@@ -369,28 +387,10 @@ describe("DEFAULT_WASM_SIMD: Phase 22A SIMD capability descriptor", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildWATModule: pure flow produces real WAT body", () => {
-  // A pure flow that takes an Int and returns an Int — built with paramTypes + executionPlan.
-  const purePlan = {
-    steps: [
-      { kind: "validate_param" },  // ignored at WAT level
-      { kind: "return" },
-    ],
-  };
-
-  const pureFlowMod = buildWATModule(
-    {
-      flows: [
-        {
-          name: "identityInt",
-          qualifier: "pure",
-          declaredEffects: [],
-          paramTypes: ["Int"],
-          executionPlan: purePlan,
-        },
-      ],
-      entryPoints: ["identityInt"],
-    },
-    STDLIB_CAPABILITY_MAP,
+  const { mod: pureFlowMod, wat: identityWat } = compileWatFromSource(
+    "pure flow identityInt(n: Int) -> Int { return n }\n",
+    "identityInt.fungi",
+    "identityInt",
   );
 
   it("pure flow WAT body does NOT contain 'unreachable'", () => {
@@ -412,21 +412,20 @@ describe("buildWATModule: pure flow produces real WAT body", () => {
   });
 
   it("renderWAT of a pure flow compiles to a string starting with '(module'", () => {
-    const wat = renderWAT(pureFlowMod);
     assert.ok(
-      wat.startsWith("(module"),
-      `renderWAT must start with '(module'. Got: ${wat.slice(0, 50)}`,
+      identityWat.startsWith("(module"),
+      `renderWAT must start with '(module'. Got: ${identityWat.slice(0, 50)}`,
     );
     // The rendered WAT must also contain the local.get instruction in the output.
     assert.ok(
-      wat.includes("(local.get"),
+      identityWat.includes("(local.get"),
       "Rendered WAT must contain '(local.get' for pure flow parameter access",
     );
     // And must not produce unreachable for this pure flow.
     // (Note: other non-pure flows in the same module might have unreachable —
     // but this module has only identityInt which is pure, so none expected.)
     assert.ok(
-      !wat.includes("unreachable"),
+      !identityWat.includes("unreachable"),
       "Rendered WAT for a pure-only module must not contain 'unreachable'",
     );
   });
@@ -438,14 +437,11 @@ describe("buildWATModule: pure flow produces real WAT body", () => {
 
 describe("WAT imports from effect declarations", () => {
   it("flow with storage.read effect produces WAT containing (import \"host\"", () => {
-    const mod = buildWATModule(
-      {
-        flows: [{ name: "readFile", qualifier: "flow", declaredEffects: ["storage.read"] }],
-        entryPoints: [],
-      },
-      STDLIB_CAPABILITY_MAP,
+    const { wat } = compileWatFromSource(
+      "flow readFile() -> Int\ncontract { effects { storage.read } }\n{ return 0 }\n",
+      "readFile.fungi",
+      "readFile",
     );
-    const wat = renderWAT(mod);
     assert.ok(
       wat.includes('(import "host"'),
       `WAT for a flow with storage.read must contain (import "host". Got:\n${wat}`,
@@ -453,14 +449,11 @@ describe("WAT imports from effect declarations", () => {
   });
 
   it("pure flow with no effects produces WAT with no imports", () => {
-    const mod = buildWATModule(
-      {
-        flows: [{ name: "computeSum", qualifier: "pure", declaredEffects: [] }],
-        entryPoints: [],
-      },
-      STDLIB_CAPABILITY_MAP,
+    const { wat } = compileWatFromSource(
+      "pure flow computeSum() -> Int { return 0 }\n",
+      "computeSum.fungi",
+      "computeSum",
     );
-    const wat = renderWAT(mod);
     assert.ok(
       !wat.includes("(import "),
       `Pure flow WAT must not contain any imports. Got:\n${wat}`,

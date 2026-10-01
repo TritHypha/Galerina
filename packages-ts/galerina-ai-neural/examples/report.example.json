@@ -1,0 +1,8 @@
+{
+  "model": "ImageClassifier",
+  "task": "classification",
+  "inferencePlans": [],
+  "trainingPlans": [],
+  "diagnostics": [],
+  "warnings": []
+}

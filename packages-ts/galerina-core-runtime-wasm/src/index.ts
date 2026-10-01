@@ -23,3 +23,12 @@ export {
   hashArtifact, serializeAttestation, parseAttestation,
   createWasmAdmissionVerifier, createLowLevelWasmExecutor, createBorderSafeRuntimeDeps,
 } from "./seam-adapters.js";
+
+// R6 (rounding audit): the ONE canonical exact Decimal/Money core, shared by the interpreter, stdlib and host.
+export {
+  DEC_TRAP_KINDS, MONEY_TRAP_KINDS, MAX_DECIMAL_SCALE, MAX_DECIMAL_DIGITS, ROUND_MODES, HOST_MONEY_MINOR_UNITS,
+  isRoundMode, isDecTrap, isExactTrapLabel, parseDec, isCanonicalDecimal, formatDec, checkRoundMode,
+  decAdd, decSub, decMul, decNeg, decAbs, decCompare, decDiv, decRem, decQuantize, decRescaleExact,
+  decScale, decFromInt, decIsZero, admitMoneyAmount,
+} from "./decimal-core.js";
+export type { DecTrapKind, MoneyTrapKind, DecResult, DecCompare, RoundMode, Dec, DecParse, MoneyAmount } from "./decimal-core.js";

@@ -30,6 +30,11 @@ import {
 // #143 (RD-0361 R4): record-abi is now a sibling module IN this border-safe package — imported locally,
 // so the TCB carries no cross-package import for its own layout.
 import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
+// R6: the one canonical exact Decimal/Money core (shared with the interpreter and stdlib).
+import {
+  HOST_MONEY_MINOR_UNITS, admitMoneyAmount, isExactTrapLabel, parseDec,
+  decAdd, decSub, decMul, decNeg, decCompare, decDiv, decRem, decFromInt,
+} from "./decimal-core.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Attestation (Ed25519 over the raw .wasm binary)
@@ -239,37 +244,15 @@ export function compareUtf16CodeUnits(left: string, right: string): -1 | 0 | 1 {
   return left < right ? -1 : 1;
 }
 
-/** Exact base-10 host Decimal (mirrors compiler decimal-arith.ts; no IEEE-754). */
-function parseHostDecimal(text: string): { unscaled: bigint; scale: number } | null {
-  const match = /^([+-]?)(\d*)(?:\.(\d*))?$/.exec(text.trim());
-  if (!match) return null;
-  const sign = match[1] === "-" ? -1n : 1n;
-  const intPart = match[2] ?? "";
-  const fracPart = match[3] ?? "";
-  if (intPart === "" && fracPart === "") return null;
-  const digits = intPart + fracPart;
-  return { unscaled: sign * BigInt(digits === "" ? "0" : digits), scale: fracPart.length };
-}
-
-function formatHostDecimal(unscaled: bigint, scale: number): string {
-  const neg = unscaled < 0n;
-  let digits = (neg ? -unscaled : unscaled).toString();
-  if (scale === 0) return (neg ? "-" : "") + digits;
-  while (digits.length <= scale) digits = "0" + digits;
-  return (neg ? "-" : "") + digits.slice(0, digits.length - scale) + "." + digits.slice(digits.length - scale);
-}
-
-function alignHostDecimal(
-  left: { unscaled: bigint; scale: number },
-  right: { unscaled: bigint; scale: number },
-): { ua: bigint; ub: bigint; scale: number } {
-  const scale = Math.max(left.scale, right.scale);
-  const pow = (n: number): bigint => 10n ** BigInt(n);
-  return {
-    ua: left.unscaled * pow(scale - left.scale),
-    ub: right.unscaled * pow(scale - right.scale),
-    scale,
-  };
+/**
+ * Exact base-10 host Decimal: the SAME canonical core the interpreter and stdlib use (R6). The host keeps
+ * no parser, formatter or rounding of its own, so the tiers cannot drift. A trap is thrown as an Error whose
+ * message is exactly the shared trap label (`MalformedDecimal`, `DivisionByZero`, `ScaleOutOfRange`,
+ * `UnknownRoundMode`, `MissingRoundMode`, `DecimalLimitExceeded`, `UnknownDecimalHandle`, and the Money labels).
+ */
+function hostDecOrThrow(r: string): string {
+  if (isExactTrapLabel(r)) throw new Error(r);
+  return r;
 }
 
 /**
@@ -306,6 +289,28 @@ export function createHostRuntime(
   const moneys: { currency: string; amountStr: string }[] = [];
   const decimals: string[] = [];
   let memory: WebAssembly.Memory | null = null;
+  // R6/R11 host value helpers. An unknown handle is a named trap, never "" / "0.00" / a default.
+  const decimalAt = (h: number): string => {
+    const text = decimals[h];
+    if (text === undefined) throw new Error("UnknownDecimalHandle");
+    return text;
+  };
+  const pushDecimal = (text: string): number => {
+    const id = decimals.length;
+    decimals.push(text);
+    return id;
+  };
+  const moneyCtor = (currency: string, name: string, h: number): number => {
+    const text = strings[h];
+    if (text === undefined) throw new Error("MalformedMoneyAmount");
+    const minor = HOST_MONEY_MINOR_UNITS.get(currency);
+    if (minor === undefined) throw new Error("UnknownCurrency");
+    const admitted = admitMoneyAmount(text, minor);
+    if (!admitted.ok) throw new Error(admitted.trap);
+    const id = moneys.length;
+    moneys.push({ currency, amountStr: admitted.amount });
+    return tap(name, [h], id) as number;
+  };
   // RD-0389: host bump pointer for records STAGED to pass in (allocRecord), based at the same
   // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
   // scenario resets it, and it never overlaps a heap-free consuming flow (which makes no allocations).
@@ -542,21 +547,20 @@ export function createHostRuntime(
     },
 
     // ── Money currency constructors (ISO 4217) ───────────────────────────────
-    // Each accepts a string handle (the amount) and returns a Money handle (i32
-    // index into the moneys registry). The host stores { currency, amountStr } so
-    // WASM code can pass the handle back to a method or to the observer.
-    // NOTE: `strings[amountStrHandle]` retrieves the amount; an unknown handle
-    // yields "0.00" (fail-safe). The observer receives the handle, not the currency.
-    __money_gbp: (h: number) => { const id = moneys.length; moneys.push({ currency: "GBP", amountStr: strings[h] ?? "0.00" }); return tap("__money_gbp", [h], id) as number; },
-    __money_eur: (h: number) => { const id = moneys.length; moneys.push({ currency: "EUR", amountStr: strings[h] ?? "0.00" }); return tap("__money_eur", [h], id) as number; },
-    __money_usd: (h: number) => { const id = moneys.length; moneys.push({ currency: "USD", amountStr: strings[h] ?? "0.00" }); return tap("__money_usd", [h], id) as number; },
-    __money_chf: (h: number) => { const id = moneys.length; moneys.push({ currency: "CHF", amountStr: strings[h] ?? "0.00" }); return tap("__money_chf", [h], id) as number; },
-    __money_jpy: (h: number) => { const id = moneys.length; moneys.push({ currency: "JPY", amountStr: strings[h] ?? "0.00" }); return tap("__money_jpy", [h], id) as number; },
-    __money_cad: (h: number) => { const id = moneys.length; moneys.push({ currency: "CAD", amountStr: strings[h] ?? "0.00" }); return tap("__money_cad", [h], id) as number; },
-    __money_aud: (h: number) => { const id = moneys.length; moneys.push({ currency: "AUD", amountStr: strings[h] ?? "0.00" }); return tap("__money_aud", [h], id) as number; },
-    __money_nzd: (h: number) => { const id = moneys.length; moneys.push({ currency: "NZD", amountStr: strings[h] ?? "0.00" }); return tap("__money_nzd", [h], id) as number; },
-    __money_sgd: (h: number) => { const id = moneys.length; moneys.push({ currency: "SGD", amountStr: strings[h] ?? "0.00" }); return tap("__money_sgd", [h], id) as number; },
-    __money_hkd: (h: number) => { const id = moneys.length; moneys.push({ currency: "HKD", amountStr: strings[h] ?? "0.00" }); return tap("__money_hkd", [h], id) as number; },
+    // Each accepts a string handle (the amount) and returns a Money handle (i32 index into the moneys
+    // registry). R11 (zero-trust): the amount must be canonical Decimal text with at most the currency's
+    // minor units (JPY 0). It is stored padded to exactly the minor units. An unknown string handle, a
+    // malformed amount or excess scale is a named trap: never a "0.00" default and never a rounding.
+    __money_gbp: (h: number) => moneyCtor("GBP", "__money_gbp", h),
+    __money_eur: (h: number) => moneyCtor("EUR", "__money_eur", h),
+    __money_usd: (h: number) => moneyCtor("USD", "__money_usd", h),
+    __money_chf: (h: number) => moneyCtor("CHF", "__money_chf", h),
+    __money_jpy: (h: number) => moneyCtor("JPY", "__money_jpy", h),
+    __money_cad: (h: number) => moneyCtor("CAD", "__money_cad", h),
+    __money_aud: (h: number) => moneyCtor("AUD", "__money_aud", h),
+    __money_nzd: (h: number) => moneyCtor("NZD", "__money_nzd", h),
+    __money_sgd: (h: number) => moneyCtor("SGD", "__money_sgd", h),
+    __money_hkd: (h: number) => moneyCtor("HKD", "__money_hkd", h),
 
     // ── I/O ──────────────────────────────────────────────────────────────────
     // print(strHandle) / println(strHandle): emit the interned string to the
@@ -603,109 +607,43 @@ export function createHostRuntime(
 
     __decimal_from_str: (h: number) => {
       const text = strings[h];
-      if (text === undefined || parseHostDecimal(text) === null) {
-        throw new Error("MalformedDecimal");
-      }
+      if (text === undefined) throw new Error("MalformedDecimal");
+      const parsed = parseDec(text);
+      if (!parsed.ok) throw new Error(parsed.trap);
       const id = decimals.length;
       decimals.push(text);
       return tap("__decimal_from_str", [h], id) as number;
     },
     __decimal_to_str: (h: number) => {
-      const text = decimals[h];
-      if (text === undefined) throw new Error(`unknown Decimal handle ${h} (fail-closed)`);
+      const text = decimalAt(h);
       const id = strings.length;
       strings.push(text);
       return tap("__decimal_to_str", [h], id) as number;
     },
-    __decimal_add: (a: number, b: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
-      if (!left || !right) throw new Error("MalformedDecimal");
-      const { ua, ub, scale } = alignHostDecimal(left, right);
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(ua + ub, scale));
-      return tap("__decimal_add", [a, b], id) as number;
-    },
-    __decimal_sub: (a: number, b: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
-      if (!left || !right) throw new Error("MalformedDecimal");
-      const { ua, ub, scale } = alignHostDecimal(left, right);
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(ua - ub, scale));
-      return tap("__decimal_sub", [a, b], id) as number;
-    },
-    __decimal_mul: (a: number, b: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
-      if (!left || !right) throw new Error("MalformedDecimal");
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(left.unscaled * right.unscaled, left.scale + right.scale));
-      return tap("__decimal_mul", [a, b], id) as number;
-    },
-    __decimal_neg: (h: number) => {
-      const parsed = parseHostDecimal(decimals[h] ?? "");
-      if (!parsed) throw new Error("MalformedDecimal");
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(-parsed.unscaled, parsed.scale));
-      return tap("__decimal_neg", [h], id) as number;
-    },
+    __decimal_add: (a: number, b: number) =>
+      tap("__decimal_add", [a, b], pushDecimal(hostDecOrThrow(decAdd(decimalAt(a), decimalAt(b))))) as number,
+    __decimal_sub: (a: number, b: number) =>
+      tap("__decimal_sub", [a, b], pushDecimal(hostDecOrThrow(decSub(decimalAt(a), decimalAt(b))))) as number,
+    __decimal_mul: (a: number, b: number) =>
+      tap("__decimal_mul", [a, b], pushDecimal(hostDecOrThrow(decMul(decimalAt(a), decimalAt(b))))) as number,
+    __decimal_neg: (h: number) =>
+      tap("__decimal_neg", [h], pushDecimal(hostDecOrThrow(decNeg(decimalAt(h))))) as number,
     __decimal_compare: (a: number, b: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
-      if (!left || !right) throw new Error("MalformedDecimal");
-      const { ua, ub } = alignHostDecimal(left, right);
-      const cmp = ua < ub ? -1 : ua > ub ? 1 : 0;
+      const cmp = decCompare(decimalAt(a), decimalAt(b));
+      if (typeof cmp !== "number") throw new Error(cmp);
       return tap("__decimal_compare", [a, b], cmp) as number;
     },
     __decimal_div: (a: number, b: number, scale: number, modeHandle: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
       const mode = strings[modeHandle];
-      if (!left || !right || !Number.isInteger(scale) || scale < 0 || scale > 100) {
-        throw new Error("MalformedDecimal");
-      }
-      if (right.unscaled === 0n) throw new Error("DivideByZero");
-      const modes = new Set(["halfEven", "halfUp", "halfDown", "up", "down", "ceiling", "floor"]);
-      if (mode === undefined || !modes.has(mode)) throw new Error("MalformedDecimal");
-      const exp = scale + right.scale - left.scale;
-      let num = left.unscaled;
-      let den = right.unscaled;
-      const pow = (n: number): bigint => 10n ** BigInt(n);
-      if (exp >= 0) num *= pow(exp);
-      else den *= pow(-exp);
-      if (den < 0n) { num = -num; den = -den; }
-      const q = num / den;
-      const r = num - q * den;
-      let rounded = q;
-      if (r !== 0n) {
-        const neg = num < 0n;
-        const twiceAbsR = (r < 0n ? -r : r) * 2n;
-        let roundAway = false;
-        if (mode === "up") roundAway = true;
-        else if (mode === "down") roundAway = false;
-        else if (mode === "floor") roundAway = neg;
-        else if (mode === "ceiling") roundAway = !neg;
-        else if (mode === "halfUp") roundAway = twiceAbsR >= den;
-        else if (mode === "halfDown") roundAway = twiceAbsR > den;
-        else roundAway = twiceAbsR > den || (twiceAbsR === den && (q % 2n) !== 0n);
-        if (roundAway) rounded = neg ? q - 1n : q + 1n;
-      }
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(rounded, scale));
-      return tap("__decimal_div", [a, b, scale, modeHandle], id) as number;
+      if (mode === undefined) throw new Error("MissingRoundMode");
+      const r = hostDecOrThrow(decDiv(decimalAt(a), decimalAt(b), scale, mode));
+      return tap("__decimal_div", [a, b, scale, modeHandle], pushDecimal(r)) as number;
     },
-    __decimal_rem: (a: number, b: number) => {
-      const left = parseHostDecimal(decimals[a] ?? "");
-      const right = parseHostDecimal(decimals[b] ?? "");
-      if (!left || !right) throw new Error("MalformedDecimal");
-      if (right.unscaled === 0n) throw new Error("DivideByZero");
-      const { ua, ub, scale } = alignHostDecimal(left, right);
-      const q = ua / ub;
-      const id = decimals.length;
-      decimals.push(formatHostDecimal(ua - q * ub, scale));
-      return tap("__decimal_rem", [a, b], id) as number;
-    },
+    __decimal_rem: (a: number, b: number) =>
+      tap("__decimal_rem", [a, b], pushDecimal(hostDecOrThrow(decRem(decimalAt(a), decimalAt(b))))) as number,
+    // R9: exact Int -> Decimal (scale 0). An i32 is always a safe integer, so this never rounds.
+    __decimal_from_int: (n: number) =>
+      tap("__decimal_from_int", [n], pushDecimal(hostDecOrThrow(decFromInt(n)))) as number,
   };
 
   // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-
@@ -728,7 +666,8 @@ export function createHostRuntime(
     readMoney(handle: number) { return moneys[handle]; },
     readDecimal(handle: number) { return decimals[handle]; },
     internDecimal(text: string): number {
-      if (parseHostDecimal(text) === null) throw new Error("MalformedDecimal");
+      const parsed = parseDec(text);
+      if (!parsed.ok) throw new Error(parsed.trap);
       const id = decimals.length;
       decimals.push(text);
       return id;

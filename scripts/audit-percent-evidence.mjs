@@ -43,6 +43,8 @@ import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { twinParityLadder } from "./lib/twin-parity-ladder.mjs";
+import { watLoweringLadder } from "./lib/wat-lowering-ladder.mjs";
+import { interpreterParityLadder } from "./lib/interpreter-parity-ladder.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -64,10 +66,11 @@ const ASSERTED_BASELINE = Object.freeze([
   "Stage-B self-hosting — interpreter parity",
   // "Type checker / Effect checker" LEFT the baseline 2026-07-18 (#122): it now derives its pct from
   // a real twin diagnostic-code-parity ladder. Per the ratchet, it can never return here.
-  // "WAT emitter" LEFT the asserted baseline 2026-09-12: component-health now
-  // derives its percentage from the live RD-0529 construct matrix and carries
-  // a word when that audit cannot run.
-  "Runtime interpreter",
+  // "WAT emitter" LEFT the baseline 2026-09-29 (J8): it now derives its pct from
+  // the L1 self-hosted per-flow lowering ladder. Per the ratchet, it can never return here.
+  // "Runtime interpreter" LEFT the baseline 2026-09-30 (K1, D10 option A): it now derives its pct from
+  // the three-way executor-agreement ladder (scripts/lib/interpreter-parity-ladder.mjs). Per the
+  // ratchet, it can never return here.
   "Application-framework layer",
   "Post-Quantum & Hardware Security",
   "Passive Execution Plans & Target Bridges",
@@ -194,7 +197,11 @@ const audit = JSON.parse(raw).percentAudit;
 // ladder row to check and the empty mirrored set is never consulted.
 let mirrored = new Set();
 try { mirrored = twinParityLadder().mirrored; } catch { /* row degraded to a word upstream — nothing to check */ }
-const checkRung = (code) => mirrored.has(code);
+let watLowered = new Set();
+try { watLowered = watLoweringLadder().lowered; } catch { /* WAT row degraded to a word upstream — nothing to check */ }
+let rtAgreed = new Set();
+try { rtAgreed = interpreterParityLadder().agreed; } catch { /* Runtime interpreter row degraded to a word upstream — nothing to check */ }
+const checkRung = (code) => mirrored.has(code) || watLowered.has(code) || rtAgreed.has(code);
 const { violations, assertedSeen } = auditRows(audit.sections, ASSERTED_BASELINE, checkRung);
 const stale = staleBaseline(ASSERTED_BASELINE, assertedSeen);
 

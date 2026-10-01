@@ -323,17 +323,22 @@ describe("Phase 25 integration: real WAT arithmetic", () => {
     assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
-  it("Phase 24A fallback (no ast) still avoids unreachable", () => {
+  it("Phase 24A fallback (no ast) is a FUNGI-WAT-BODY-001 refusal, not guessed identity", () => {
     const prog = parseProgram(
       "pure flow add(a: Int, b: Int) -> Int contract { effects {} } { return a + b }",
       "test.fungi"
     );
     const fx = checkEffects(prog.flows, prog.ast);
     const { gir } = emitGIR(prog.ast, prog.flows, fx);
-    // Call WITHOUT ast — falls back to Phase 24A
-    const wat = renderWAT(buildWATModuleFromGIR(gir, undefined, "wasm-standalone"));
-    assert.ok(!wat.includes("unreachable"), "Phase 24A must not use unreachable");
-    assert.ok(wat.includes("local.get"), "Phase 24A uses local.get for identity");
+    assert.throws(
+      () => buildWATModuleFromGIR(gir, undefined, "wasm-standalone"),
+      (err) => {
+        const msg = String(err && err.message ? err.message : err);
+        assert.ok(msg.includes("FUNGI-WAT-BODY-001"), msg);
+        assert.ok(msg.includes("pure flow 'add'"), msg);
+        return true;
+      },
+    );
   });
 
   it("generated WAT has correct module structure", () => {

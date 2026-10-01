@@ -5,6 +5,8 @@ export interface DryRunPlan {
   readonly dependencyOrder: readonly string[];
   readonly effects: TaskDefinition["effects"];
   readonly permissions: TaskDefinition["permissions"];
+  /** Operations that would run (from the run block); empty when none. */
+  readonly operations: NonNullable<TaskDefinition["run"]>["operations"];
 }
 
 export function createDryRunPlan(task: TaskDefinition, dependencyOrder: readonly string[] = []): DryRunPlan {
@@ -12,7 +14,8 @@ export function createDryRunPlan(task: TaskDefinition, dependencyOrder: readonly
     task: task.name,
     dependencyOrder,
     effects: task.effects,
-    permissions: task.permissions
+    permissions: task.permissions,
+    operations: task.run?.operations ?? []
   };
 }
 

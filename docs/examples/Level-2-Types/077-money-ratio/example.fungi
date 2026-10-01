@@ -7,6 +7,6 @@
 /// ai_rule: Dividing Money<GBP> by Money<GBP> produces a dimensionless Decimal ratio.
 
 pure flow example(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal {
-  let ratio: Decimal = revenue / cost
+  let ratio: Decimal = revenue.divideBy(cost, 4, "halfEven")
   return ratio
 }

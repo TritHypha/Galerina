@@ -1,13 +1,12 @@
 // =============================================================================
 // Galerina Standard Library — Stage 1
 //
-// DECIMAL PRECISION NOTE (Stage 1):
-//   Decimal arithmetic uses JavaScript parseFloat() internally.
-//   This is NOT suitable for financial/money calculations requiring exact
-//   decimal arithmetic. Money<C> * Decimal is marked experimental at this stage.
-//
-//   Stage 2 will replace with arbitrary-precision decimal arithmetic before
-//   Money<C> arithmetic is considered production-valid.
+// DECIMAL / MONEY NOTE (R6/R11, 2026-09-30):
+//   Decimal and Money amounts never touch a binary float. Every parse, format, compare and rounding goes
+//   through the ONE canonical exact core (`decimal-core.ts` in @galerina/core-runtime-wasm, re-exported by
+//   ./decimal-arith.ts), which the interpreter and the WASM host use too. Money constructors refuse an
+//   amount with more fractional digits than the currency's ISO-4217 minor units; add/subtract are exact;
+//   multiply/divideBy take an explicit rounding mode. Failures are the shared named traps.
 //
 //   Decision: ../ZTF-Knowledge-Bases/galerina-architecture-layers.md
 // =============================================================================
@@ -54,135 +53,57 @@ function pathIsAbsolute(p: string): boolean {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _proc = process as any;
 
-// =============================================================================
-// BigInt-based decimal arithmetic helpers (Phase 9A-3)
-//
-// Replaces parseFloat() for Money and Decimal arithmetic to avoid IEEE-754
-// rounding errors in financial calculations.
-//
-// Strategy: represent a decimal string as (scaled_bigint, scale) where
-//   value = scaled_bigint / 10^scale
-//
-// e.g. "19.99" → { n: 1999n, scale: 2 }
-//      "0.1"   → { n: 1n,    scale: 1 }
-// =============================================================================
+// Exact Decimal / Money arithmetic (R6): the canonical core. The Phase 9A-3 BigInt helpers that lived here
+// (a laxer parser that accepted "--1", "_", "" and whitespace, half-up-only rounding, and the lossy
+// `bigIntDecimalMulNumber` / unused `moneyAmount`) were deleted: they were a third, divergent copy.
+import {
+  admitMoneyAmount, decAdd, decSub, decMul, decDiv, decRem, decAbs, decCompare, decQuantize, decRescaleExact,
+  decFromInt, isCanonicalDecimal, isDecTrap, parseDec,
+} from "./decimal-arith.js";
+import { i32FromIntegralChecked, i32AbsChecked, isI32Trap } from "./i32-arith.js";
 
-interface ScaledDecimal { n: bigint; scale: number }
+/** A named, propagating Decimal/Money/Int trap value (the shared R6 vocabulary). */
+function exactTrap(label: string): GalerinaValue {
+  return { __tag: "runtimeError", message: label };
+}
 
-function decimalToBigInt(s: string): ScaledDecimal {
-  const clean = (s ?? "0").toString().trim().replace(/_/g, "");
-  const neg = clean.startsWith("-");
-  const abs = neg ? clean.slice(1) : clean;
-  const dotIdx = abs.indexOf(".");
-  if (dotIdx === -1) {
-    const n = BigInt(abs || "0");
-    return { n: neg ? -n : n, scale: 0 };
+/** R10: an integral JS number admitted into the checked i32 domain, or the IntegerOverflow trap. */
+function checkedInt(n: number): GalerinaValue {
+  const r = i32FromIntegralChecked(n);
+  return isI32Trap(r) ? exactTrap(r) : { __tag: "int", value: r };
+}
+
+type ExactText = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly trap: string };
+
+/** The only admitted exact operands: a Decimal, or an Int through the exact Int→Decimal. Float is refused. */
+function exactOperand(v: GalerinaValue | undefined): ExactText {
+  if (v === undefined) return { ok: false, trap: "WrongArity" };
+  if (v.__tag === "decimal") return { ok: true, text: v.value };
+  if (v.__tag === "int") {
+    const r = decFromInt(v.value);
+    return isDecTrap(r) ? { ok: false, trap: r } : { ok: true, text: r };
   }
-  const intPart = abs.slice(0, dotIdx) || "0";
-  const fracPart = abs.slice(dotIdx + 1);
-  const combined = intPart + fracPart;
-  const n = BigInt(combined || "0");
-  return { n: neg ? -n : n, scale: fracPart.length };
+  if (v.__tag === "float") return { ok: false, trap: "InexactOperandRefused" };
+  return { ok: false, trap: "DecimalOperandRequired" };
 }
 
-function bigIntToDecimalStr(n: bigint, scale: number): string {
-  if (scale === 0) return n.toString();
-  const neg = n < BigInt(0);
-  const abs = neg ? -n : n;
-  const str = abs.toString().padStart(scale + 1, "0");
-  const intPart = str.slice(0, str.length - scale) || "0";
-  const fracPart = str.slice(str.length - scale);
-  const result = `${intPart}.${fracPart}`;
-  return neg ? `-${result}` : result;
+/** Map a canonical-core result to a Decimal value or its named trap. */
+function decimalOrTrap(r: string): GalerinaValue {
+  return isDecTrap(r) ? exactTrap(r) : { __tag: "decimal", value: r };
 }
 
-/** Normalise two ScaledDecimals to the same scale. */
-function alignScale(a: ScaledDecimal, b: ScaledDecimal): [bigint, bigint, number] {
-  const scale = Math.max(a.scale, b.scale);
-  const ten = BigInt(10);
-  const na = a.n * (ten ** BigInt(scale - a.scale));
-  const nb = b.n * (ten ** BigInt(scale - b.scale));
-  return [na, nb, scale];
+/** R7: canonical Decimal text or the named MalformedDecimal/DecimalLimitExceeded refusal (no defaults). */
+function admitDecimalText(text: string): GalerinaValue {
+  const p = parseDec(text);
+  return p.ok ? { __tag: "decimal", value: text } : exactTrap(p.trap);
 }
 
-export function bigIntDecimalAdd(a: string, b: string): string {
-  const [na, nb, scale] = alignScale(decimalToBigInt(a), decimalToBigInt(b));
-  return bigIntToDecimalStr(na + nb, scale);
-}
-
-export function bigIntDecimalSub(a: string, b: string): string {
-  const [na, nb, scale] = alignScale(decimalToBigInt(a), decimalToBigInt(b));
-  return bigIntToDecimalStr(na - nb, scale);
-}
-
-export function bigIntDecimalCmp(a: string, b: string): number {
-  const [na, nb] = alignScale(decimalToBigInt(a), decimalToBigInt(b));
-  return na < nb ? -1 : na > nb ? 1 : 0;
-}
-
-/**
- * @deprecated (RD-0349 I3) — LOSSY: the `number` factor + `toFixed(10)` truncates beyond 10 dp and cannot
- * represent an 18-dp crypto amount exactly. The money flow no longer uses it (see bigIntDecimalMul). Kept only
- * for any external caller; prefer the exact decimal-string form below.
- */
-export function bigIntDecimalMulNumber(a: string, factor: number): string {
-  const factorStr = factor.toFixed(10).replace(/0+$/, "").replace(/\.$/, "");
-  const pa = decimalToBigInt(a);
-  const pf = decimalToBigInt(factorStr);
-  const scale = pa.scale + pf.scale;
-  return bigIntToDecimalStr(pa.n * pf.n, scale);
-}
-
-/**
- * Exact decimal multiply (RD-0349 I3) — BOTH operands as decimal strings, straight into the BigInt core: no
- * `parseFloat`, no `toFixed`, no float bridge. The product scale is the sum of the operand scales (exact); the
- * caller rounds to the target currency decimals. An 18-dp factor survives byte-exact.
- */
-export function bigIntDecimalMul(a: string, b: string): string {
-  const pa = decimalToBigInt(a);
-  const pb = decimalToBigInt(b);
-  return bigIntToDecimalStr(pa.n * pb.n, pa.scale + pb.scale);
-}
-
-/**
- * Exact decimal divide to `places` fractional digits with half-up rounding (RD-0349 I3) — decimal strings
- * straight into the BigInt core: NO `1/x` float reciprocal. Non-terminating division (1/3 = 0.333…) is made
- * exact by dividing at the requested scale and rounding the guard digit. Throws "division by zero" (the caller
- * maps it to Err). `places` may be 0 (a zero-decimal currency).
- */
-export function bigIntDecimalDiv(a: string, b: string, places: number): string {
-  const pa = decimalToBigInt(a);
-  const pb = decimalToBigInt(b);
-  if (pb.n === BigInt(0)) throw new Error("division by zero");
-  const ten = BigInt(10);
-  // (pa.n / 10^pa.scale) / (pb.n / 10^pb.scale) to `places` dp
-  //   = pa.n * 10^(pb.scale + places) / (pb.n * 10^pa.scale)
-  const num = pa.n * (ten ** BigInt(pb.scale + places));
-  const den = pb.n * (ten ** BigInt(pa.scale));
-  const neg = (num < BigInt(0)) !== (den < BigInt(0));
-  const an = num < BigInt(0) ? -num : num;
-  const ad = den < BigInt(0) ? -den : den;
-  let q = an / ad;
-  if ((an % ad) * BigInt(2) >= ad) q += BigInt(1); // half-up on the guard digit
-  return bigIntToDecimalStr(neg ? -q : q, places);
-}
-
-/** Round a decimal string to N decimal places. */
-export function bigIntDecimalRound(a: string, places: number): string {
-  const pa = decimalToBigInt(a);
-  if (pa.scale <= places) {
-    // Already has fewer decimal places than requested — just pad
-    return bigIntToDecimalStr(pa.n * (BigInt(10) ** BigInt(places - pa.scale)), places);
-  }
-  const diff = pa.scale - places;
-  const ten = BigInt(10);
-  const divisor = ten ** BigInt(diff);
-  // Round half-up
-  const abs = pa.n < BigInt(0) ? -pa.n : pa.n;
-  const half = divisor / BigInt(2);
-  const rounded = (abs + half) / divisor;
-  const result = pa.n < BigInt(0) ? -rounded : rounded;
-  return bigIntToDecimalStr(result, places);
+/** R10: canonical base-10 Int text (`-?(0|[1-9][0-9]*)`) inside the i32 domain. */
+function parseCanonicalInt(text: string): GalerinaValue {
+  if (!/^-?(0|[1-9][0-9]*)$/.test(text) || text === "-0") return err("ParseError: not a valid integer");
+  const n = Number(text);
+  const r = i32FromIntegralChecked(n);
+  return isI32Trap(r) ? err("ParseError: integer is outside the Int (i32) range") : ok({ __tag: "int", value: r });
 }
 
 // The dist is ESM ("type":"module"), where the CommonJS `require` is NOT defined at runtime. Several node:
@@ -461,19 +382,15 @@ function stringMethod(receiver: GalerinaValue, method: string, args: readonly Ga
       const n = Math.max(0, numVal(args[0] ?? { __tag: "int", value: 0 }));
       return { __tag: "string", value: s.repeat(n) };
     }
-    case "toInt": {
-      const n = parseInt(s, 10);
-      return isNaN(n) ? err("ParseError: not a valid integer") : ok({ __tag: "int", value: n });
-    }
+    case "toInt": return parseCanonicalInt(s); // R10: canonical text, i32 range (no "12abc", no 3e9)
     case "toFloat": {
       const n = parseFloat(s);
       // #55: reject NON-finite too — parseFloat("Infinity")/"1e400" → ±Inf, which isNaN() lets through.
       return !Number.isFinite(n) ? err("ParseError: not a valid finite float") : ok({ __tag: "float", value: n });
     }
-    case "toDecimal": {
-      const n = parseFloat(s);
-      return !Number.isFinite(n) ? err("ParseError: not a valid decimal") : ok({ __tag: "decimal", value: s });
-    }
+    case "toDecimal":
+      // R7: validated by the canonical parser — "12abc", "0x10", "1e5", " 5 ", ".5", "5." are refused.
+      return isCanonicalDecimal(s) ? ok({ __tag: "decimal", value: s }) : err("ParseError: not a valid decimal");
 
     case "matchesPattern": {
       const pattern = strVal(args[0] ?? { __tag: "string", value: "" });
@@ -975,15 +892,10 @@ export function isMoney(v: GalerinaValue): boolean {
   return flag?.__tag === "bool" && flag.value;
 }
 
-function moneyAmount(v: GalerinaValue): number {
+/** The stored amount text. A Money record without a Decimal amount is malformed (never a "0" default). */
+function moneyAmountStr(v: GalerinaValue): ExactText {
   const amount = v.__tag === "record" ? v.fields.get("__amount") : undefined;
-  // Use parseFloat only for display/comparison — arithmetic now uses BigInt
-  return amount?.__tag === "decimal" ? parseFloat(amount.value) : 0;
-}
-
-function moneyAmountStr(v: GalerinaValue): string {
-  const amount = v.__tag === "record" ? v.fields.get("__amount") : undefined;
-  return amount?.__tag === "decimal" ? amount.value : "0";
+  return amount?.__tag === "decimal" ? { ok: true, text: amount.value } : { ok: false, trap: "MalformedMoneyAmount" };
 }
 
 function moneyCurrency(v: GalerinaValue): string {
@@ -1014,13 +926,14 @@ function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaVa
   // Generated constructors: Money.gbp(...) … Money.aud(...) — one per table tag, no hand-list.
   const asCtor = method.toUpperCase();
   if (method === method.toLowerCase() && MONEY_UNIT_SET.has(asCtor)) {
-    return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), asCtor);
+    if (args.length !== 1) return exactTrap("WrongArity"); // R11: no "0.00" default for a missing amount
+    return admitMoney(args[0]!, asCtor);
   }
   if (method === "of") {
     // Deny-by-default (parse-don't-validate): the code must be a KNOWN tag, exact-codepoint.
     // No silent "GBP" default — an unnamed unit is the G2 bug class, not a convenience.
     const codeArg = args[1];
-    const code = codeArg === undefined ? "" : strVal(codeArg);
+    const code = codeArg?.__tag === "string" ? codeArg.value : "";
     if (!MONEY_UNIT_SET.has(code)) {
       return {
         __tag: "runtimeError",
@@ -1028,9 +941,35 @@ function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaVa
           `(exact-codepoint uppercase; the unit table grows with the pinned ISO snapshot, RD-0349 I1)`,
       };
     }
-    return makeMoney(args[0]?.__tag === "decimal" ? args[0].value : strVal(args[0] ?? { __tag: "string", value: "0.00" }), code);
+    if (args.length !== 2) return exactTrap("WrongArity");
+    return admitMoney(args[0]!, code);
   }
   return undefined;
+}
+
+/**
+ * R11 (owner decision D-M1, 2026-09-30): a Money amount is admitted ONLY as canonical Decimal text (a
+ * String or Decimal) or an exact Int, with AT MOST the currency's ISO-4217 minor units of fractional digits
+ * (GBP 2, JPY 0). It is stored padded to exactly the minor units, so add/subtract are exact and equality is
+ * by value. `gbp("0.125")` and `jpy("100.5")` are refused (MoneyScaleExceedsMinorUnits), never rounded.
+ */
+function admitMoney(v: GalerinaValue, currency: string): GalerinaValue {
+  const dp = moneyDecimals(currency);
+  if (dp === undefined) return exactTrap("UnknownCurrency");
+  let text: string;
+  if (v.__tag === "string" || v.__tag === "decimal") {
+    text = v.value;
+  } else if (v.__tag === "int") {
+    const r = decFromInt(v.value);
+    if (isDecTrap(r)) return exactTrap(r);
+    text = r;
+  } else if (v.__tag === "float") {
+    return exactTrap("InexactOperandRefused");
+  } else {
+    return exactTrap("MalformedMoneyAmount");
+  }
+  const admitted = admitMoneyAmount(text, dp);
+  return admitted.ok ? makeMoney(admitted.amount, currency) : exactTrap(admitted.trap);
 }
 
 /**
@@ -1046,12 +985,8 @@ function moneyDecimals(currency: string): number | undefined {
   return MONEY_MINOR_UNITS.get(currency);
 }
 
-/** Scale for a Money<C> / Money<C> ratio (a Decimal, not Money): crypto-grade precision, exact (I3), never float. */
-const MONEY_RATIO_DECIMALS = 18;
-
 function moneyMethod(receiver: GalerinaValue, method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
   if (!isMoney(receiver)) return undefined;
-  const amountStr = moneyAmountStr(receiver);
   const currency = moneyCurrency(receiver);
   const dp = moneyDecimals(currency); // RD-0349 I2: registry-driven scale, including valid zero
   if (dp === undefined) {
@@ -1060,77 +995,104 @@ function moneyMethod(receiver: GalerinaValue, method: string, args: readonly Gal
       message: `Money.${method}: currency '${currency}' has no admitted minor-unit scale — refused (RD-0349 I2)`,
     };
   }
+  const stored = moneyAmountStr(receiver);
+  if (!stored.ok) return exactTrap(stored.trap);
+  // The stored amount is at exactly `dp` digits (admitMoney); re-checking keeps a foreign record honest.
+  const amountStr = decRescaleExact(stored.text, dp);
+  if (isDecTrap(amountStr)) return exactTrap(amountStr === "ScaleOutOfRange" ? "MoneyScaleExceedsMinorUnits" : amountStr);
+  const moneyOf = (r: string): GalerinaValue => {
+    if (isDecTrap(r)) return exactTrap(r);
+    const exact = decRescaleExact(r, dp);
+    return isDecTrap(exact) ? exactTrap(exact) : makeMoney(exact, currency);
+  };
+  const sameCurrencyOther = (): ExactText => {
+    const other = args[0];
+    if (args.length < 1 || other === undefined || !isMoney(other)) return { ok: false, trap: "MoneyOperandNotExact" };
+    if (moneyCurrency(other) !== currency) return { ok: false, trap: "CurrencyMismatch" };
+    const o = moneyAmountStr(other);
+    return o.ok ? { ok: true, text: o.text } : o;
+  };
   switch (method) {
     case "amount":
-      return { __tag: "decimal", value: bigIntDecimalRound(amountStr, dp) };
+      return { __tag: "decimal", value: amountStr };
     case "currency":
       return { __tag: "string", value: currency };
     case "toString":
-      return { __tag: "string", value: `${currency} ${bigIntDecimalRound(amountStr, dp)}` };
+      return { __tag: "string", value: `${currency} ${amountStr}` };
     case "add": {
-      const other = args[0];
-      if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.add requires Money argument" };
-      if (moneyCurrency(other) !== currency) return err(`Cannot add ${currency} and ${moneyCurrency(other)}`);
-      // exact BigInt arithmetic — no floating-point rounding
-      return makeMoney(bigIntDecimalRound(bigIntDecimalAdd(amountStr, moneyAmountStr(other)), dp), currency);
+      if (args.length !== 1) return exactTrap("WrongArity");
+      const o = sameCurrencyOther();
+      return o.ok ? moneyOf(decAdd(amountStr, o.text)) : exactTrap(o.trap); // exact: both are at `dp`
     }
     case "subtract": {
-      const other = args[0];
-      if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.subtract requires Money argument" };
-      if (moneyCurrency(other) !== currency) return err(`Cannot subtract ${moneyCurrency(other)} from ${currency}`);
-      return makeMoney(bigIntDecimalRound(bigIntDecimalSub(amountStr, moneyAmountStr(other)), dp), currency);
+      if (args.length !== 1) return exactTrap("WrongArity");
+      const o = sameCurrencyOther();
+      return o.ok ? moneyOf(decSub(amountStr, o.text)) : exactTrap(o.trap);
     }
     case "multiply": {
-      // Money<C> * Decimal|Int — scale by an EXACT decimal-string factor (RD-0349 I3: no parseFloat/toFixed).
-      const factorArg = args[0];
-      const factorStr = factorArg?.__tag === "decimal" ? factorArg.value
-                      : factorArg?.__tag === "int" || factorArg?.__tag === "float"
-                        ? factorArg.value.toString()
-                        : "1";
-      return makeMoney(bigIntDecimalRound(bigIntDecimalMul(amountStr, factorStr), dp), currency);
+      // R11: m.multiply(factor, mode) — the product is rounded to the currency's minor units by the
+      // CALLER's explicit mode. No default mode, no Float factor, no "1" identity default.
+      if (args.length === 1) return exactTrap("MissingRoundMode");
+      if (args.length !== 2) return exactTrap("WrongArity");
+      const f = exactOperand(args[0]);
+      if (!f.ok) return exactTrap(f.trap);
+      const modeV = args[1]!;
+      if (modeV.__tag !== "string") return exactTrap("UnknownRoundMode");
+      const product = decMul(amountStr, f.text);
+      if (isDecTrap(product)) return exactTrap(product);
+      return moneyOf(decQuantize(product, dp, modeV.value));
     }
     case "divideBy": {
       const rhs = args[0];
-      if (rhs === undefined) return err("Division by zero");
-      if (isMoney(rhs)) {
-        // Money<C> / Money<C> → EXACT Decimal ratio (RD-0349 I3: no float division).
-        const rhsCurrency = moneyCurrency(rhs);
-        if (moneyDecimals(rhsCurrency) === undefined) {
-          return err(`Money.divideBy: currency '${rhsCurrency}' has no admitted minor-unit scale — refused (RD-0349 I2)`);
-        }
-        if (decimalToBigInt(moneyAmountStr(rhs)).n === BigInt(0)) return err("Division by zero");
-        return { __tag: "decimal", value: bigIntDecimalDiv(amountStr, moneyAmountStr(rhs), MONEY_RATIO_DECIMALS) };
+      if (rhs !== undefined && isMoney(rhs)) {
+        // R11 (F12): m.divideBy(other, scale, mode) — a same-currency EXACT ratio (Decimal) at the caller's
+        // scale and mode. A currency mismatch is refused at runtime too (CurrencyMismatch).
+        if (args.length !== 3) return exactTrap(args.length === 1 ? "MissingRoundMode" : "WrongArity");
+        const o = sameCurrencyOther();
+        if (!o.ok) return exactTrap(o.trap);
+        const scaleV = args[1]!;
+        const modeV = args[2]!;
+        if (scaleV.__tag !== "int") return exactTrap("ScaleOutOfRange");
+        if (modeV.__tag !== "string") return exactTrap("UnknownRoundMode");
+        return decimalOrTrap(decDiv(amountStr, o.text, scaleV.value, modeV.value));
       }
-      // Money<C> / Decimal|Int → Money, EXACT to the currency decimals (RD-0349 I3: no 1/x float reciprocal).
-      const divisorStr = rhs.__tag === "decimal" ? rhs.value
-                       : rhs.__tag === "int" || rhs.__tag === "float" ? rhs.value.toString()
-                       : "0";
-      if (decimalToBigInt(divisorStr).n === BigInt(0)) return err("Division by zero");
-      return makeMoney(bigIntDecimalDiv(amountStr, divisorStr, dp), currency);
+      // R11: m.divideBy(n, mode) — Money / Decimal|Int, rounded to the minor units by the explicit mode.
+      if (args.length === 1) return exactTrap("MissingRoundMode");
+      if (args.length !== 2) return exactTrap("WrongArity");
+      const d = exactOperand(rhs);
+      if (!d.ok) return exactTrap(d.trap);
+      const modeV = args[1]!;
+      if (modeV.__tag !== "string") return exactTrap("UnknownRoundMode");
+      return moneyOf(decDiv(amountStr, d.text, dp, modeV.value));
     }
     default:
       return undefined;
   }
 }
 
+/**
+ * Bare Money operators. `+` / `-` are exact (same currency, else CurrencyMismatch). `*` and `/` would
+ * have to round, and R11 forbids an implicit mode, so they are the named MissingRoundMode refusal (the
+ * type checker refuses them at compile time with FUNGI-NUMERIC-OP-002 and names the method form).
+ */
 export function moneyBinary(left: GalerinaValue, op: string, right: GalerinaValue): GalerinaValue | undefined {
-  if (isMoney(left) && isMoney(right)) {
+  const lm = isMoney(left);
+  const rm = isMoney(right);
+  if (!lm && !rm) return undefined;
+  if (lm && rm) {
     if (op === "+") return moneyMethod(left, "add", [right]);
     if (op === "-") return moneyMethod(left, "subtract", [right]);
-    if (op === "/") return moneyMethod(left, "divideBy", [right]);
   }
-  if (isMoney(left) && (right.__tag === "decimal" || right.__tag === "int" || right.__tag === "float")) {
-    if (op === "*") return moneyMethod(left, "multiply", [right]);
-    if (op === "/") return moneyMethod(left, "divideBy", [right]);
-  }
+  if (op === "*" || op === "/" || op === "%") return exactTrap("MissingRoundMode");
+  if ((op === "+" || op === "-") && lm !== rm) return exactTrap("MoneyOperandNotExact");
   return undefined;
 }
 
 function numericStatic(receiver: string, method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
   switch (`${receiver}.${method}`) {
     case "Int.parse": {
-      const n = parseInt(strVal(args[0] ?? FUNGI_VOID), 10);
-      return Number.isNaN(n) ? err("ParseError: not a valid integer") : ok({ __tag: "int", value: n });
+      const a = args[0];
+      return a?.__tag === "string" ? parseCanonicalInt(a.value) : err("ParseError: not a valid integer");
     }
     case "Int.bitAnd": {
       // Bitwise AND for bitmask operations (e.g. V_DPM capability checks).
@@ -1198,14 +1160,23 @@ function numericStatic(receiver: string, method: string, args: readonly Galerina
       return { __tag: "bool", value: value.value > 0 };
     }
     case "Decimal.parse": {
-      const s = strVal(args[0] ?? FUNGI_VOID);
-      const n = parseFloat(s);
-      return !Number.isFinite(n) ? err("ParseError: not a valid decimal") : ok({ __tag: "decimal", value: s });
+      const a = args[0];
+      return a?.__tag === "string" && isCanonicalDecimal(a.value)
+        ? ok({ __tag: "decimal", value: a.value })
+        : err("ParseError: not a valid decimal");
+    }
+    case "Decimal.fromInt": {
+      // R9 (F10): the EXACT Int → Decimal (scale 0). Only an Int is admitted; never a Float.
+      if (args.length !== 1) return exactTrap("WrongArity");
+      const a = args[0]!;
+      if (a.__tag !== "int") return exactTrap(a.__tag === "float" ? "InexactOperandRefused" : "DecimalOperandRequired");
+      return decimalOrTrap(decFromInt(a.value));
     }
     case "Math.abs": {
-      const n = numVal(args[0] ?? FUNGI_VOID);
-      const v = args[0] ?? { __tag: "int", value: 0 };
-      return v.__tag === "float" ? { __tag: "float", value: Math.abs(n) } : { __tag: "int", value: Math.abs(n) };
+      const v = args[0];
+      if (v?.__tag === "float") return floatVal(Math.abs(v.value));
+      if (v?.__tag === "int") return i32OrTrap(i32AbsChecked(v.value)); // R10: abs(-2^31) traps
+      return exactTrap("IntegerOverflow");
     }
     case "Math.min": {
       const a = numVal(args[0] ?? FUNGI_VOID);
@@ -1219,12 +1190,15 @@ function numericStatic(receiver: string, method: string, args: readonly Galerina
       const isFloat = args[0]?.__tag === "float" || args[1]?.__tag === "float";
       return isFloat ? { __tag: "float", value: Math.max(a, b) } : { __tag: "int", value: Math.max(a, b) };
     }
+    // R10 (F11): Float → Int helpers produce an Int only inside the checked i32 domain (3e9 / 1e301 trap).
+    // Math.round is FROZEN as round-half-away-from-zero (-2.5 → -3, 2.5 → 3), the documented rule; JS
+    // Math.round (half toward +∞, -2.5 → -2) is not used.
     case "Math.floor":
-      return { __tag: "int", value: Math.floor(numVal(args[0] ?? FUNGI_VOID)) };
+      return checkedInt(Math.floor(numVal(args[0] ?? FUNGI_VOID)));
     case "Math.ceil":
-      return { __tag: "int", value: Math.ceil(numVal(args[0] ?? FUNGI_VOID)) };
+      return checkedInt(Math.ceil(numVal(args[0] ?? FUNGI_VOID)));
     case "Math.round":
-      return { __tag: "int", value: Math.round(numVal(args[0] ?? FUNGI_VOID)) };
+      return checkedInt(roundHalfAwayFromZero(numVal(args[0] ?? FUNGI_VOID)));
     case "Math.log":
       return floatVal(Math.log(numVal(args[0] ?? FUNGI_VOID)));  // #55: log(0)→-Inf, log(neg)→NaN ⇒ fail-closed
     case "Math.log2":
@@ -1242,8 +1216,26 @@ function numericStatic(receiver: string, method: string, args: readonly Galerina
   }
 }
 
+/** R7 (F7): `Decimal(text)` admits ONLY canonical text (or an existing Decimal); no "0" default, no Float. */
 function decimalConstructor(args: readonly GalerinaValue[]): GalerinaValue {
-  return { __tag: "decimal", value: strVal(args[0] ?? { __tag: "string", value: "0" }) };
+  if (args.length !== 1) return exactTrap("WrongArity");
+  const a = args[0]!;
+  if (a.__tag === "decimal") return admitDecimalText(a.value);
+  if (a.__tag === "string") return admitDecimalText(a.value);
+  if (a.__tag === "float") return exactTrap("InexactOperandRefused");
+  return exactTrap("MalformedDecimal");
+}
+
+function i32OrTrap(r: number | string): GalerinaValue {
+  return typeof r === "string" ? exactTrap(r) : { __tag: "int", value: r };
+}
+
+/** R10: the frozen Float → Int rounding rule for Math.round / Float.round: half away from zero. */
+function roundHalfAwayFromZero(n: number): number {
+  if (!Number.isFinite(n)) return n;
+  const t = Math.trunc(n);
+  const frac = Math.abs(n - t);
+  return frac >= 0.5 ? t + Math.sign(n) : t;
 }
 
 function validateValue(gateName: string, value: GalerinaValue): boolean {
@@ -1883,7 +1875,7 @@ export function galerinaValuesEqual(a: GalerinaValue, b: GalerinaValue): boolean
   // is an owner policy decision (promote-and-compare vs same-tag-only) deferred per the verified plan.
   if (a.__tag === "int64" && b.__tag === "int64") return a.value === b.value;
   if (a.__tag === "float" && b.__tag === "float") return a.value === b.value;
-  if (a.__tag === "decimal" && b.__tag === "decimal") return bigIntDecimalCmp(a.value, b.value) === 0;
+  if (a.__tag === "decimal" && b.__tag === "decimal") return decCompare(a.value, b.value) === 0; // by value; malformed is never equal
   if (a.__tag === "bool" && b.__tag === "bool") return a.value === b.value;
   if (a.__tag === "char" && b.__tag === "char") return a.value === b.value;
   if (a.__tag === "none" && b.__tag === "none") return true;
@@ -1955,6 +1947,192 @@ function statisticsModule(method: string, args: readonly GalerinaValue[]): Galer
     default:
       return undefined;
   }
+}
+
+function listMethodPureSync(
+  receiver: GalerinaValue,
+  method: string,
+  args: readonly GalerinaValue[],
+): GalerinaValue | undefined {
+  if (receiver.__tag !== "list") return undefined;
+  const items = receiver.items;
+  switch (method) {
+    case "length":
+      return { __tag: "int", value: items.length };
+    case "isEmpty":
+      return { __tag: "bool", value: items.length === 0 };
+    case "first":
+      return items.length > 0 ? mkSome(items[0] ?? FUNGI_VOID) : FUNGI_NONE;
+    case "last":
+      return items.length > 0 ? mkSome(items[items.length - 1] ?? FUNGI_VOID) : FUNGI_NONE;
+    case "get": {
+      const idx = numVal(args[0] ?? { __tag: "int", value: -1 });
+      const item = items[idx];
+      return item === undefined ? FUNGI_NONE : mkSome(item);
+    }
+    case "sum": {
+      if (items.length === 0) return { __tag: "int", value: 0 };
+      const isFloat = items.some((i) => i.__tag === "float");
+      const total = items.reduce((acc, item) => acc + numVal(item), 0);
+      return isFloat ? { __tag: "float", value: total } : { __tag: "int", value: total };
+    }
+    case "contains":
+      return { __tag: "bool", value: items.some((item) => galerinaValuesEqual(item, args[0] ?? FUNGI_VOID)) };
+    case "reverse":
+      return { __tag: "list", items: [...items].reverse() };
+    case "slice": {
+      const start = numVal(args[0] ?? { __tag: "int", value: 0 });
+      const end = args[1] !== undefined ? numVal(args[1]) : undefined;
+      return { __tag: "list", items: end === undefined ? items.slice(start) : items.slice(start, end) };
+    }
+    case "join":
+      return { __tag: "string", value: items.map((i) => strVal(i)).join(strVal(args[0] ?? { __tag: "string", value: "" })) };
+    default:
+      return undefined;
+  }
+}
+
+function optionMethodPureSync(
+  receiver: GalerinaValue,
+  method: string,
+  args: readonly GalerinaValue[],
+): GalerinaValue | undefined {
+  if (receiver.__tag !== "some" && receiver.__tag !== "none") return undefined;
+  switch (method) {
+    case "unwrapOr":
+      return receiver.__tag === "some" ? receiver.value : (args[0] ?? FUNGI_VOID);
+    case "isSome":
+      return { __tag: "bool", value: receiver.__tag === "some" };
+    case "isNone":
+      return { __tag: "bool", value: receiver.__tag === "none" };
+    case "value":
+    case "get":
+      return receiver.__tag === "some" ? receiver.value : FUNGI_NONE;
+    default:
+      return undefined;
+  }
+}
+
+function resultMethodPureSync(
+  receiver: GalerinaValue,
+  method: string,
+  args: readonly GalerinaValue[],
+): GalerinaValue | undefined {
+  if (receiver.__tag !== "ok" && receiver.__tag !== "err") return undefined;
+  switch (method) {
+    case "unwrapOr":
+      return receiver.__tag === "ok" ? receiver.value : (args[0] ?? FUNGI_VOID);
+    case "isOk":
+      return { __tag: "bool", value: receiver.__tag === "ok" };
+    case "isErr":
+      return { __tag: "bool", value: receiver.__tag === "err" };
+    case "value":
+    case "get":
+      return receiver.__tag === "ok" ? mkSome(receiver.value) : FUNGI_NONE;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Synchronous subset of callStdlib for proveably-pure names.
+ * Returns undefined for anything that would await, touch I/O, host, HOF, Money, regex, or secrets.
+ */
+export function callStdlibPureSync(
+  fullName: string,
+  receiver: GalerinaValue | undefined,
+  args: readonly GalerinaValue[],
+): GalerinaValue | undefined {
+  if (
+    fullName === "print" || fullName === "println" ||
+    fullName === "Array.range" ||
+    fullName.startsWith("Money.") ||
+    fullName.startsWith("Decimal.") ||
+    fullName.startsWith("Time.") ||
+    fullName.startsWith("Timestamp.") ||
+    fullName.startsWith("Runtime.") ||
+    fullName.startsWith("Hash.") ||
+    fullName.startsWith("Crypto.") ||
+    fullName.startsWith("BCrypt.") ||
+    fullName.startsWith("Password.") ||
+    fullName.startsWith("Argon2.") ||
+    fullName.startsWith("Env.") ||
+    fullName.startsWith("File.") ||
+    fullName.startsWith("http.") ||
+    fullName.startsWith("https.") ||
+    fullName.startsWith("fs.")
+  ) {
+    return undefined;
+  }
+
+  if (receiver === undefined) {
+    if (fullName === "Math.pow") {
+      const base = numVal(args[0] ?? { __tag: "int", value: 0 });
+      const exp = numVal(args[1] ?? { __tag: "int", value: 0 });
+      const result = Math.pow(base, exp);
+      // R10: an Int ** Int result is an Int ONLY inside the checked i32 domain (pow(2,40) traps), and only
+      // when both operands are Int VALUES (not integral floats). Otherwise the Float path (non-finite traps).
+      return args[0]?.__tag === "int" && args[1]?.__tag === "int" && exp >= 0
+        ? checkedInt(result)
+        : floatVal(result);
+    }
+    if (fullName === "Math.sqrt") {
+      return floatVal(Math.sqrt(numVal(args[0] ?? { __tag: "int", value: 0 })));
+    }
+    if (fullName === "Math.clamp") {
+      const n = numVal(args[0] ?? { __tag: "int", value: 0 });
+      const lo = numVal(args[1] ?? { __tag: "int", value: 0 });
+      const hi = numVal(args[2] ?? { __tag: "int", value: 100 });
+      return { __tag: "int", value: Math.min(Math.max(n, lo), hi) };
+    }
+    if (fullName === "Math.sign") {
+      const n = numVal(args[0] ?? { __tag: "int", value: 0 });
+      return { __tag: "int", value: n > 0 ? 1 : n < 0 ? -1 : 0 };
+    }
+    if (fullName === "Array.empty") return { __tag: "list", items: [] };
+    if (fullName === "Array.of") return { __tag: "list", items: [...args] };
+    if (fullName === "Char.fromCode") {
+      const code = numVal(args[0] ?? { __tag: "int", value: 0 });
+      return { __tag: "char", value: String.fromCodePoint(code) };
+    }
+
+    const dotIdx = fullName.lastIndexOf(".");
+    if (dotIdx !== -1) {
+      const receiverName = fullName.slice(0, dotIdx);
+      const method = fullName.slice(dotIdx + 1);
+      if (receiverName === "String") return stringStaticMethod(method, args);
+      const numeric = numericStatic(receiverName, method, args);
+      if (numeric !== undefined) return numeric;
+    }
+    return undefined;
+  }
+
+  if (receiver.__tag === "unresolved" || receiver.__tag === "function") {
+    return callStdlibPureSync(fullName, undefined, args);
+  }
+
+  const method = fullName.includes(".") ? fullName.slice(fullName.lastIndexOf(".") + 1) : fullName;
+  if (method === "matchesPattern" || method === "extractGroups" || method === "replacePattern") {
+    return undefined;
+  }
+  if (method === "map" || method === "flatMap" || method === "filter" || method === "reduce" ||
+      method === "find" || method === "any" || method === "every" || method === "mapErr") {
+    return undefined;
+  }
+
+  const option = optionMethodPureSync(receiver, method, args);
+  if (option !== undefined) return option;
+  const resultM = resultMethodPureSync(receiver, method, args);
+  if (resultM !== undefined) return resultM;
+  const string = stringMethod(receiver, method, args);
+  if (string !== undefined) return string;
+  const list = listMethodPureSync(receiver, method, args);
+  if (list !== undefined) return list;
+  const char = charMethod(receiver, method, args);
+  if (char !== undefined) return char;
+  const num = numericMethod(receiver, method, args);
+  if (num !== undefined) return num;
+  return undefined;
 }
 
 export async function callStdlib(
@@ -2137,8 +2315,10 @@ export async function callStdlib(
       const base = numVal(args[0] ?? { __tag: "int", value: 0 });
       const exp  = numVal(args[1] ?? { __tag: "int", value: 0 });
       const result = Math.pow(base, exp);
-      return Number.isInteger(result) && Number.isInteger(base) && Number.isInteger(exp)
-        ? { __tag: "int", value: result }
+      // R10: an Int ** Int result is an Int ONLY inside the checked i32 domain (pow(2,40) traps), and only
+      // when both operands are Int VALUES (not integral floats). Otherwise the Float path (non-finite traps).
+      return args[0]?.__tag === "int" && args[1]?.__tag === "int" && exp >= 0
+        ? checkedInt(result)
         : floatVal(result);  // #55: overflow→+Inf, pow(neg,frac)→NaN, pow(0,-1)→+Inf ⇒ fail-closed
     }
     if (fullName === "Math.sqrt") {
@@ -2774,32 +2954,32 @@ function numericMethod(
 ): GalerinaValue | undefined {
   if (receiver.__tag !== "int" && receiver.__tag !== "float" && receiver.__tag !== "decimal") return undefined;
 
+  // R9 (F9): Decimal receivers have their OWN exact branch — never parseFloat / numVal (which returned 0).
+  if (receiver.__tag === "decimal") return decimalNumericMethod(receiver.value, method, args);
+
   switch (method) {
     case "toString":
     case "toText": {
-      if (receiver.__tag === "int") return { __tag: "string", value: receiver.value.toString() };
-      if (receiver.__tag === "float") return { __tag: "string", value: receiver.value.toString() };
-      return { __tag: "string", value: receiver.value };  // decimal already string
+      return { __tag: "string", value: receiver.value.toString() }; // Int / Float (Decimal is handled above)
     }
     case "toFixed": {
-      const places = numVal(args[0] ?? { __tag: "int", value: 2 });
-      const n = receiver.__tag === "decimal" ? parseFloat(receiver.value) : (receiver.value as number);
-      return { __tag: "string", value: n.toFixed(places) };
+      // R10: `places` must be an Int in 0..100 (toFixed(2.7) is refused); the Float→text rendering is
+      // JS toFixed, which is documented as a DISPLAY conversion of the binary float (not exact decimal).
+      const p = args[0];
+      if (args.length !== 1 || p?.__tag !== "int" || p.value < 0 || p.value > 100) return exactTrap("ScaleOutOfRange");
+      return { __tag: "string", value: (receiver.value as number).toFixed(p.value) };
     }
-    case "toPlaces": {
-      const places = numVal(args[0] ?? { __tag: "int", value: 2 });
-      const n = receiver.__tag === "decimal" ? parseFloat(receiver.value) : (receiver.value as number);
-      return { __tag: "decimal", value: n.toFixed(places) };
-    }
+    case "toPlaces":
+      // R8: a Float never becomes a Decimal implicitly (use Decimal("…") text, or Decimal.fromInt).
+      return exactTrap("InexactOperandRefused");
     case "abs": {
-      if (receiver.__tag === "int")     return { __tag: "int",     value: Math.abs(receiver.value) };
-      if (receiver.__tag === "float")   return { __tag: "float",   value: Math.abs(receiver.value) };
-      if (receiver.__tag === "decimal") return { __tag: "decimal", value: Math.abs(parseFloat(receiver.value)).toString() };
-      return receiver;
+      if (receiver.__tag === "int")     return i32OrTrap(i32AbsChecked(receiver.value));
+      return floatVal(Math.abs(receiver.value as number));
     }
-    case "floor":   return { __tag: "int", value: Math.floor(numVal(receiver)) };
-    case "ceil":    return { __tag: "int", value: Math.ceil(numVal(receiver)) };
-    case "round":   return { __tag: "int", value: Math.round(numVal(receiver)) };
+    // R10: Float → Int helpers stay in the checked i32 domain; round is half away from zero (frozen).
+    case "floor":   return checkedInt(Math.floor(numVal(receiver)));
+    case "ceil":    return checkedInt(Math.ceil(numVal(receiver)));
+    case "round":   return checkedInt(roundHalfAwayFromZero(numVal(receiver)));
     case "clamp": {
       const lo = numVal(args[0] ?? { __tag: "int", value: 0 });
       const hi = numVal(args[1] ?? { __tag: "int", value: 100 });
@@ -2812,6 +2992,84 @@ function numericMethod(
       return { __tag: "int", value: n > 0 ? 1 : n < 0 ? -1 : 0 };
     }
     default: return undefined;
+  }
+}
+
+/**
+ * R9: exact Decimal numeric methods. `abs` keeps the scale; `round`/`floor`/`ceil`/`toFixed` re-scale through
+ * the canonical `decQuantize` with an EXPLICIT scale and (for round/toFixed) an explicit mode — floor/ceil are
+ * the modes themselves. Anything else is `UnsupportedDecimalMethod`. No parseFloat, no Infinity, no 0 default.
+ */
+function decimalNumericMethod(value: string, method: string, args: readonly GalerinaValue[]): GalerinaValue {
+  const scaleArg = (i: number): number | string => {
+    const a = args[i];
+    return a?.__tag === "int" ? a.value : "ScaleOutOfRange";
+  };
+  const modeArg = (i: number): string => {
+    const a = args[i];
+    if (a === undefined) return "MissingRoundMode";
+    return a.__tag === "string" ? a.value : "UnknownRoundMode";
+  };
+  switch (method) {
+    case "toString":
+    case "toText":
+      return { __tag: "string", value: value };
+    case "abs":
+      if (args.length !== 0) return exactTrap("WrongArity");
+      return decimalOrTrap(decAbs(value));
+    case "divide": {
+      // R5 (F4): a.divide(divisor, scale, mode) — the same contract as the interpreter's pure path:
+      // no default mode (MissingRoundMode), a non-String mode is UnknownRoundMode, Float is refused.
+      if (args.length !== 3) return exactTrap(args.length === 2 ? "MissingRoundMode" : "WrongArity");
+      const d = exactOperand(args[0]);
+      if (!d.ok) return exactTrap(d.trap);
+      const sc = scaleArg(1);
+      if (typeof sc === "string") return exactTrap(sc);
+      const mode = modeArg(2);
+      if (mode === "MissingRoundMode" || mode === "UnknownRoundMode") return exactTrap(mode);
+      return decimalOrTrap(decDiv(value, d.text, sc, mode));
+    }
+    case "remainder": {
+      // a.remainder(divisor): exact, truncated (sign of the dividend); /0 is DivisionByZero.
+      if (args.length !== 1) return exactTrap("WrongArity");
+      const d = exactOperand(args[0]);
+      if (!d.ok) return exactTrap(d.trap);
+      return decimalOrTrap(decRem(value, d.text));
+    }
+    case "round": {
+      // d.round(scale, mode)
+      if (args.length !== 2) return exactTrap(args.length === 1 ? "MissingRoundMode" : "WrongArity");
+      const sc = scaleArg(0);
+      if (typeof sc === "string") return exactTrap(sc);
+      const mode = modeArg(1);
+      if (mode === "MissingRoundMode" || mode === "UnknownRoundMode") return exactTrap(mode);
+      return decimalOrTrap(decQuantize(value, sc, mode));
+    }
+    case "floor":
+    case "ceil": {
+      // d.floor(scale) / d.ceil(scale): the direction IS the mode.
+      if (args.length !== 1) return exactTrap("WrongArity");
+      const sc = scaleArg(0);
+      if (typeof sc === "string") return exactTrap(sc);
+      return decimalOrTrap(decQuantize(value, sc, method === "floor" ? "floor" : "ceiling"));
+    }
+    case "toFixed": {
+      // d.toFixed(places, mode) → String
+      if (args.length !== 2) return exactTrap(args.length === 1 ? "MissingRoundMode" : "WrongArity");
+      const sc = scaleArg(0);
+      if (typeof sc === "string") return exactTrap(sc);
+      const mode = modeArg(1);
+      if (mode === "MissingRoundMode" || mode === "UnknownRoundMode") return exactTrap(mode);
+      const q = decQuantize(value, sc, mode);
+      return isDecTrap(q) ? exactTrap(q) : { __tag: "string", value: q };
+    }
+    case "sign": {
+      if (args.length !== 0) return exactTrap("WrongArity");
+      const c = decCompare(value, "0");
+      return typeof c === "number" ? { __tag: "int", value: c } : exactTrap(c);
+    }
+    default:
+      return exactTrap("UnsupportedDecimalMethod");
   }
 }
 

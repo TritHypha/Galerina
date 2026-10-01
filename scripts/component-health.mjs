@@ -27,6 +27,8 @@ import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { twinParityLadder } from "./lib/twin-parity-ladder.mjs";
+import { watLoweringLadder } from "./lib/wat-lowering-ladder.mjs";
+import { interpreterParityLadder } from "./lib/interpreter-parity-ladder.mjs";
 import {
   generatedOutputMatches,
   provenance as generatedProvenance,
@@ -331,6 +333,17 @@ summary.todos = todos;
 // tool's "never throws" contract while honouring RULING-1's "no evidence ⇒ no number".
 let TCE;
 try { TCE = twinParityLadder(); } catch { TCE = undefined; }
+// J8 RULING-1: WAT emitter % is DERIVED from L1 per-flow lowering coverage
+// (scripts/lib/wat-lowering-ladder.mjs). Fail-closed but NON-FATAL: if the ladder
+// can't be computed we carry a WORD (never the old hand-typed 89). Tagged found/none
+// so a failed measurement is not a null/undefined result.
+let WAT = { kind: "none", reason: "not-run" };
+try { WAT = { kind: "found", value: watLoweringLadder() }; } catch { WAT = { kind: "none", reason: "ladder-unavailable" }; }
+// K1 (D10 option A): Runtime interpreter % is DERIVED from three-way executor agreement
+// (scripts/lib/interpreter-parity-ladder.mjs: walker == WASM == sync fast path, per feature rung).
+// Fail-closed but NON-FATAL: if it can't be measured the row carries the WORD "unmeasured", never 87.
+let RT = { kind: "none", reason: "not-run" };
+try { RT = { kind: "found", value: interpreterParityLadder() }; } catch { RT = { kind: "none", reason: "ladder-unavailable" }; }
 const compilerRecordedCount = rows.find((row) => row.dir === "galerina-core-compiler")?.recordedCount;
 const compilerStatus = Number.isInteger(compilerRecordedCount) && compilerRecordedCount > 0
   ? `✅ shipped — complete compiler ${fmt(compilerRecordedCount)}/${fmt(compilerRecordedCount)}; all 7 self-hosted stages are authoritative and byte-pinned`
@@ -362,8 +375,12 @@ const BUILD_PROGRESS = [
   TCE
     ? { layer: "Type checker / Effect checker", pct: TCE.pct }
     : { layer: "Type checker / Effect checker", status: "twin-parity ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
-  { layer: "WAT emitter", pct: 89 },
-  { layer: "Runtime interpreter", pct: 87 },
+  WAT.kind === "found"
+    ? { layer: "WAT emitter", pct: WAT.value.pct }
+    : { layer: "WAT emitter", status: "wat-lowering ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
+  RT.kind === "found"
+    ? { layer: "Runtime interpreter", pct: RT.value.pct }
+    : { layer: "Runtime interpreter", status: "unmeasured — interpreter-parity ladder unavailable (fail-closed: no number without evidence)" },
   { layer: "Application-framework layer", pct: 72 },
   { layer: "Post-Quantum & Hardware Security", pct: 40 },
   { layer: "Passive Execution Plans & Target Bridges", pct: 35 },
@@ -512,8 +529,8 @@ const EVIDENCE = {
   // the TYPE-* ∪ EFFECT-* charter mirrored today; the 1 open rung is FUNGI-TYPE-032). When the ladder
   // can't be computed the row above carries a WORD, so no `asserted` fallback number is ever published.
   "Type checker / Effect checker": TCE ? { ladder: TCE.ladder } : { asserted: "twin-parity ladder temporarily unavailable — carrying a word, not a stale number" },
-  "WAT emitter": { asserted: "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung" },
-  "Runtime interpreter": { asserted: "no countable ladder defined" },
+  "WAT emitter": WAT.kind === "found" ? { ladder: WAT.value.ladder } : { asserted: "wat-lowering ladder temporarily unavailable — carrying a word, not a stale number" },
+  "Runtime interpreter": RT.kind === "found" ? { ladder: RT.value.ladder } : { asserted: "interpreter-parity ladder unavailable — carrying a word, not a stale number" },
   "Application-framework layer": { asserted: "candidate ladder = servable api-server · example-app · signed registry index" },
   "Post-Quantum & Hardware Security": { asserted: "NO ladder — custody ladder + HW signer are post-v1/hardware. Fail-closed reading: this should become a WORD" },
   "Passive Execution Plans & Target Bridges": { asserted: "countable P1-P4, but P2 is R&D-blocked (RD-0311) — convert once each rung has a check" },

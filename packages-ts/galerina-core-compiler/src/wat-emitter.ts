@@ -27,10 +27,90 @@
 // exact Decimal arithmetic, higher-order collection operations and the
 // legacy hash-only entry point remain separate gates; they must never be
 // represented as a silent placeholder.
+//
+// Optional-field reads (`x !== undefined` on TS optional AST fields) are not
+// results. Results and module state use Lookup<T> / found / none. Codex
+// RD-0873 zones Z1/Z2/Z3 are hash-locked and must not be edited here.
 // =============================================================================
 
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import type { AstNode } from "./parser.js";
+import {
+  internString,
+  renderStringTableComments,
+  resetStringTable,
+  getInternedStrings,
+} from "./wat-emitter-intern.js";
+import {
+  found,
+  none,
+  galerinaTypeToWAT,
+  DEFAULT_WAT_MEMORY,
+  DEFAULT_WASM_SIMD,
+  WAT_SIMD_OPS,
+  type Found,
+  type None,
+  type Lookup,
+  type WASMSIMDCapability,
+  type WATSIMDInstruction,
+  type WATFuncType,
+  type WATValType,
+  type WATImport,
+  type WATExport,
+  type WATParamDef,
+  type FlattenStep,
+  type WATFunction,
+  type WATMemory,
+  type WATModule,
+  type WATEmitResult,
+  type WATRecordFieldLayout,
+  type WATRecordLayout,
+  type WATFlowInput,
+  type WATGIRInput,
+  type ArrayHofHelper,
+  type InformalShape,
+  type WatJobCacheState,
+} from "./wat-emitter-types.js";
+import {
+  refuseHofCapture,
+  refuseHofShadowed,
+  refusePureFlowRequiresAstBody,
+  refuseUnadmittedPublicWAT,
+  astHasParamAdmission,
+  isMoneyWatType,
+  refuseMoneyWat,
+  refuseDecimalWat,
+  refuseUnknownMethodWat,
+  refuseMixed64BitWat,
+  refusePatternWat,
+  refuseGovernedOrClosureStmtWat,
+  refuseEffectfulEntryWat,
+} from "./wat-emitter-refusals.js";
+import { ROUND_MODES } from "./decimal-arith.js";
+
+export { renderStringTableComments, resetStringTable, getInternedStrings } from "./wat-emitter-intern.js";
+export {
+  galerinaTypeToWAT,
+  DEFAULT_WAT_MEMORY,
+  DEFAULT_WASM_SIMD,
+  WAT_SIMD_OPS,
+  type WASMSIMDCapability,
+  type WATSIMDInstruction,
+  type WATFuncType,
+  type WATValType,
+  type WATImport,
+  type WATExport,
+  type WATParamDef,
+  type WATFunction,
+  type WATMemory,
+  type WATModule,
+  type WATEmitResult,
+  type WATRecordFieldLayout,
+  type WATRecordLayout,
+  type WATFlowInput,
+  type WATGIRInput,
+} from "./wat-emitter-types.js";
+export { astHasParamAdmission } from "./wat-emitter-refusals.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { numericBaseType } from "./numeric-lowering.js";
 // The record-layout ABI is the ONE contract shared with the WASM runtime TCB. It now lives in the
@@ -42,256 +122,33 @@ import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "@galerina/core-runtime-wasm";
 // two can never drift about what is a proven-constant governance operand (single witness, KB f86155b).
 import { flattenGovernanceConjunction, foldStaticVerdict } from "./invariant-discharge.js";
 
-// ---------------------------------------------------------------------------
-// Phase 22A — WASM SIMD capability types
-// ---------------------------------------------------------------------------
-
-/**
- * Describes the WASM SIMD (v128) capability available on the target platform.
- * Used by the kernel fusion planner to select SIMD vs scalar code paths.
- *
- * laneWidth is always 128 (per WASM SIMD spec: v128 = 128-bit vector).
- */
-export interface WASMSIMDCapability {
-  readonly available: boolean;
-  readonly supportedOps: readonly ("v128.add" | "v128.mul" | "f32x4.add" | "f32x4.mul" | "i8x16.add")[];
-  readonly laneWidth: 128;
-}
-
-/**
- * Default WASM SIMD capability — disabled until the runtime feature-detects
- * v128 support. Phase 22A: override with buildWATModule options.
- */
-export const DEFAULT_WASM_SIMD: WASMSIMDCapability = {
-  available: false,
-  supportedOps: [],
-  laneWidth: 128,
-} as const;
-
-/**
- * All WASM SIMD instructions that the Galerina compiler may emit.
- * Phase 22A: type definition. Phase 22B: used by kernel fusion emitter.
- */
-export type WATSIMDInstruction =
-  | "f32x4.add"
-  | "f32x4.mul"
-  | "f32x4.sqrt"
-  | "i8x16.add"
-  | "v128.load"
-  | "v128.store";
-
-// ---------------------------------------------------------------------------
-// Phase 27D — WASM SIMD opcode string constants
-//
-// Typed map of the WASM SIMD instructions emitted for Tensor.dot and related
-// Float32 tensor operations. Used by the kernel-fusion emitter and the WAT
-// renderer to ensure instruction strings are spelled correctly and never
-// hand-edited as bare strings.
-//
-// Architecture rule: WASM governs, native accelerates.
-// These opcodes are emitted only for the WASM-side fast path (wasm-hybrid
-// target, SIMD capability confirmed). The native path goes through
-// NativeCapabilityId.NpuInference ("host.npu.inference").
-// ---------------------------------------------------------------------------
-
-/**
- * WASM SIMD instruction strings for Float32 tensor operations.
- *
- * Phase 27: used by the TypedArray lowering path and the WAT body emitter.
- * Phase 28+: kernel fusion emitter will select from this map per flow.
- *
- * All values are valid WASM SIMD text-format instructions (WASM SIMD MVP,
- * standardised in the WASM 2.0 spec).
- */
-export const WAT_SIMD_OPS = {
-  f32x4_add:   "f32x4.add",
-  f32x4_mul:   "f32x4.mul",
-  v128_load:   "v128.load",
-  v128_store:  "v128.store",
-} as const;
-
-export type WAT_SIMD_OPS = typeof WAT_SIMD_OPS;
-
-// ---------------------------------------------------------------------------
-// WAT module types
-// ---------------------------------------------------------------------------
-
-/** A WebAssembly function type (parameter and result types). */
-export interface WATFuncType {
-  readonly params: readonly WATValType[];
-  readonly results: readonly WATValType[];
-}
-
-/** WebAssembly value types. */
-export type WATValType = "i32" | "i64" | "f32" | "f64" | "externref" | "funcref";
-
-/** A WebAssembly import (effectful stdlib calls → host imports). */
-export interface WATImport {
-  readonly module: string;    // e.g. "host"
-  readonly name: string;      // e.g. "fs.readText"
-  readonly type: WATFuncType;
-  /** The Galerina effect this import corresponds to. */
-  readonly effect: string;    // e.g. "storage.read"
-}
-
-/** A WebAssembly export (flow entry points). */
-export interface WATExport {
-  readonly name: string;
-  readonly index: number;
-}
-
-/**
- * A named WAT parameter — carries both the $identifier and the value type.
- * Phase 22: used by emitWATBody to emit (local.get $p0) instructions.
- */
-export interface WATParamDef {
-  readonly name: string;    // e.g. "$p0"
-  readonly type: WATValType;
-}
-
-/** A WAT function definition. */
-export interface WATFunction {
-  readonly name: string;
-  readonly type: WATFuncType;
-  /**
-   * WAT instructions as text.
-   * Phase 19: stub bodies use "unreachable".
-   * Phase 22: pure flows use real instructions emitted by emitWATBody.
-   */
-  readonly body: string;
-  /** Whether this function is a pure Galerina flow (zero imports). */
-  readonly isPure: boolean;
-  /** Whether this function is exported as a WASM entry point. */
-  readonly isEntryPoint: boolean;
-  /**
-   * B2b (R&D 0055): true when this flow's contract carries a `privacy {}` or `secrets {}` block, so its
-   * heap allocations may hold secret-derived bytes. Since the WASM module EXPORTS its linear memory, a
-   * reclaimed-but-unzeroed arena is host-readable remanence — a secret-containing module zeroes on reset.
-   */
-  readonly handlesSecrets?: boolean;
-  /** The flow's Galerina return type name (e.g. "Int", "Bool", "String", a record name). Used by the B2b
-   *  zero-on-EXIT path to apply eager secret-zeroing ONLY to flows that return a non-heap PRIMITIVE. */
-  readonly returnType?: string;
-  /** Flattened i32 words in a heap-pointer return (nested records inlined). */
-  readonly returnWordCount?: number;
-  readonly flattenPlan?: readonly FlattenStep[];
-  /**
-   * Named parameters for this function.
-   * Phase 22: present for pure flows; enables emitWATBody to reference locals.
-   * When absent, renderWAT falls back to index-based $p0, $p1, … names.
-   */
-  readonly namedParams?: readonly WATParamDef[];
-}
-
-/** A WAT memory declaration (from contract.memory { arena ... }). */
-export interface WATMemory {
-  /** Minimum pages (1 page = 64KB). */
-  readonly minPages: number;
-  /** Maximum pages. Enforces runtime policy memory limits. */
-  readonly maxPages: number | null;
-}
-
-/** A complete WAT module ready for rendering to text or passing to wat2wasm. */
-export interface WATModule {
-  readonly schemaVersion: "fungi.wat.v1";
-  readonly sourceHash: string;
-  readonly girHash: string;
-  readonly imports: readonly WATImport[];
-  readonly exports: readonly WATExport[];
-  readonly functions: readonly WATFunction[];
-  readonly memory: WATMemory;
-  /** Target variant: standalone (WASI) or hybrid (JS+WASM). */
-  readonly target: "wasm-standalone" | "wasm-hybrid";
-}
-
-export interface WATEmitResult {
-  readonly module: WATModule;
-  /** The rendered .wat text, ready for wat2wasm. */
-  readonly wat: string;
-  readonly diagnostics: readonly { code: string; message: string }[];
-}
-
-// ---------------------------------------------------------------------------
-// WATValType mapping from Galerina TypeId
-// ---------------------------------------------------------------------------
-
-/**
- * Maps Galerina primitive type names to WASM value types.
- * Used when generating function signatures.
- *
- * Phase 19: covers primitive numeric types.
- * Phase 22: adds struct/array encoding for record types.
- */
-export function galerinaTypeToWAT(typeName: string): WATValType {
-  switch (typeName) {
-    // W5a K3: Verdict is an i32 trit {-1,0,+1} (DENY < UNKNOWN < ALLOW).
-    case "Bool": case "Verdict": case "Int": case "Int8": case "Int16": case "Int32": case "Byte": return "i32";
-    case "Int64": case "UInt64": return "i64";
-    case "Float16": case "Float32": return "f32";
-    // #165: scalar `Float` is f64 (double) — matches the f64.const literal emission; the old
-    // Float→f32 mapping was the inconsistency that made every float scalar flow an invalid module.
-    case "Float64": case "Double": case "Float": return "f64";
-    // C02 / RD-1276: Decimal is an exact base-10 host handle, never f64.
-    case "Decimal": return "i32";
-    // P9.2: String and all complex types (Array, Record, Option, Result, Char, Tensor)
-    // are represented as opaque i32 handles in the Stage B self-hosted compiler.
-    // String parameters in flows like scanWord/scanOperator are passed as integer indices
-    // into the host string table — they never carry GC references at the WASM boundary.
-    // Using i32 keeps the WASM type stack consistent: function bodies already emit
-    // all local variables as (local $x i32), so parameters must match.
-    // Phase 22B (full linear-memory string layout) will revisit this when the host
-    // string table and char-access intrinsics are wired into the WASM import table.
-    default: {
-      // BK-2 (50yr "no implicit coercion on unknown"): String / Char / a user record or enum / a generic
-      // (Array<…>/Option<…>/Result<…>/Tensor<…>) all lower to an opaque i32 handle — valid, and guaranteed
-      // valid once type-checking has run. But an EMPTY or non-identifier-shaped name means a MALFORMED type
-      // reached codegen (an upstream gap — e.g. the WASM-standalone path skipping checkTypes, BK-5). Fail
-      // CLOSED rather than silently coerce garbage to a 32-bit handle.
-      if (typeName.trim() === "" || !/^[A-Za-z_]/.test(typeName)) {
-        throw new Error(
-          `galerinaTypeToWAT: refusing to lower malformed type name ${JSON.stringify(typeName)} to i32 — ` +
-          `FAIL CLOSED (BK-2; a malformed type reached codegen — ensure type-checking ran before emit).`,
-        );
-      }
-      return "i32"; // opaque handle — String/Char/record/enum/generic (post-checkTypes: guaranteed valid)
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Default memory config from runtime policy
-// ---------------------------------------------------------------------------
-
-/**
- * Default WASM memory limits derived from runtime policy.
- * 1 page = 64KB. Default: 2 pages min (128KB), 2048 pages max (128MB).
- */
-export const DEFAULT_WAT_MEMORY: WATMemory = {
-  minPages: 2,
-  maxPages: 2048, // 128MB — matches runtime policy default
-};
+// Public WAT types, SIMD constants, galerinaTypeToWAT, and DEFAULT_WAT_MEMORY
+// live in wat-emitter-types.ts and are re-exported from this facade.
 
 /** 1 MB / 64 KB = 16 WASM pages per declared arena megabyte. */
 const PAGES_PER_MB = (1024 * 1024) / 65536;
 
 /**
- * Read the `contract.memory { arena N mb }` limit from a flow AST node, in MB, or undefined if undeclared.
+ * Read the `contract.memory { arena N mb }` limit from a flow AST node, in MB.
  * Mirrors governance-verifier.extractArenaLimitMB — kept LOCAL so the emitter stays import-cycle-free; the
  * arena-decl AST shape (contractDecl → `memory:block` → `decl:arena N mb`) is a stable grammar feature.
+ * Unparsed / non-finite / non-positive arena tokens skip to the next child (same as the old NaN continue).
  */
-function arenaMbOfFlow(flowNode: AstNode): number | undefined {
+function arenaMbOfFlow(flowNode: AstNode): Lookup<number> {
   const contractDecl = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
   const memoryBlock = (contractDecl?.children ?? []).find(
     (c) => c.kind === "identifier" && c.value === "memory:block",
   );
   for (const child of memoryBlock?.children ?? []) {
     if (child.kind === "identifier" && child.value?.startsWith("decl:arena")) {
-      const m = child.value.match(/decl:arena\s+(\d+(?:\.\d+)?)\s*mb/i);
-      const mb = m?.[1] !== undefined ? Number(m[1]) : NaN;
-      if (Number.isFinite(mb) && mb > 0) return mb;
+      const groups = [...child.value.matchAll(/decl:arena\s+(\d+(?:\.\d+)?)\s*mb/ig)][0];
+      if (groups === undefined || groups[1] === undefined) continue;
+      const mb = Number(groups[1]);
+      if (!Number.isFinite(mb)) continue;
+      if (mb > 0) return found(mb);
     }
   }
-  return undefined;
+  return none("arena-undeclared");
 }
 
 /**
@@ -332,14 +189,14 @@ export function deriveArenaWATMemory(
   ast: AstNode | undefined,
   flows: readonly WATFlowInput[],
 ): WATMemory {
-  const defaultMax = DEFAULT_WAT_MEMORY.maxPages ?? 2048;
+  const defaultMax = DEFAULT_WAT_MEMORY.maxPages;
   if (ast === undefined || flows.length === 0) return DEFAULT_WAT_MEMORY;
   let maxPages = 0;
   for (const f of flows) {
     const node = findFlowNodeInAST(ast, f.name);
-    const mb = node !== undefined ? arenaMbOfFlow(node) : undefined;
-    const pages = mb !== undefined
-      ? Math.min(defaultMax, Math.max(2, Math.ceil(mb * PAGES_PER_MB)))   // declared → tighten (clamped)
+    const mb = node !== undefined ? arenaMbOfFlow(node) : none("flow-node-missing");
+    const pages = mb.kind === "found"
+      ? Math.min(defaultMax, Math.max(2, Math.ceil(mb.value * PAGES_PER_MB)))   // declared → tighten (clamped)
       : defaultMax;                                                        // undeclared → keep the ceiling
     if (pages > maxPages) maxPages = pages;
   }
@@ -366,10 +223,10 @@ export { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE };
  * the body and clears it after; the `#record` case in emitWATExpr appends a unique
  * `(local …)` decl here (so nested records and record-returning calls each get their
  * OWN base local — no shared-global clobbering) and references the `$__fungi_heap`
- * pointer. null outside a flow-body walk → records fall back to the i32.const 0
+ * pointer. absent outside a flow-body walk → records fall back to the i32.const 0
  * placeholder (preserving every non-WAT-emitter code path unchanged).
  */
-let recordCtx: { localDecls: string[]; counter: { n: number } } | null = null;
+let recordCtx: Lookup<{ localDecls: string[]; counter: { n: number } }> = none("recordCtx:unset");
 
 /**
  * Fail-closed loop fuel cap emitted INTO the WAT for every `while` loop (#22 / RD-0314).
@@ -382,34 +239,15 @@ let recordCtx: { localDecls: string[]; counter: { n: number } } | null = null;
 const WAT_LOOP_FUEL_CAP = 100_000;
 
 /** typeName → ordered field names, built once per module from `record` decls.
- *  Used to compute field byte offsets for `r.field` loads. null → field access
+ *  Used to compute field byte offsets for `r.field` loads. absent → field access
  *  falls back to the placeholder. */
-let recordLayouts: ReadonlyMap<string, readonly string[]> | null = null;
+let recordLayouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("recordLayouts:unset");
 /** #160 str_eq: recordTypeName → (fieldName → declared type), so a memberExpr `a.s` infers to its
  *  field's type (e.g. "String"). Without it, `field == field` (both operands memberExprs, no string
  *  LITERAL operand to key off) falls through to i32.eq on string HANDLES instead of host___str_eq —
  *  a silent wrong answer for equal-valued heap strings. Module-level, built once per module emit
  *  (mirrors flowReturnTypes), consumed by inferExprType. */
-let recordFieldTypes: Map<string, Map<string, string>> | null = null;
-export interface WATRecordFieldLayout {
-  readonly name: string;
-  readonly type: string;
-  readonly watType: "i32" | "i64" | "f64";
-  readonly offset: number;
-  readonly size: 4 | 8;
-}
-export interface WATRecordLayout {
-  readonly fields: readonly WATRecordFieldLayout[];
-  readonly size: number;
-  readonly alignment: 4 | 8;
-}
-
-interface FlattenStep {
-  readonly srcOffset: number;
-  readonly nested?: readonly FlattenStep[];
-  readonly zero?: true;
-}
-
+let recordFieldTypes: Lookup<Map<string, Map<string, string>>> = none("recordFieldTypes:unset");
 const MAX_FLATTEN_DEPTH = 8;
 
 /** One closed expansion of a recursive field: nested records become zeros, scalars copy.
@@ -418,9 +256,9 @@ const MAX_FLATTEN_DEPTH = 8;
 function flattenClosedRecursivePlan(
   typeName: string,
   layouts: ReadonlyMap<string, WATRecordLayout>,
-): FlattenStep[] | undefined {
+): Lookup<FlattenStep[]> {
   const layout = layouts.get(typeName);
-  if (layout === undefined) return undefined;
+  if (layout === undefined) return none("flatten-closed:no-layout");
   const steps: FlattenStep[] = [];
   for (const field of layout.fields) {
     if (field.watType === "i32" && layouts.has(field.type)) {
@@ -432,7 +270,7 @@ function flattenClosedRecursivePlan(
       steps.push({ srcOffset: field.offset });
     }
   }
-  return steps;
+  return found(steps);
 }
 
 function flattenPlanFor(
@@ -440,10 +278,10 @@ function flattenPlanFor(
   layouts: ReadonlyMap<string, WATRecordLayout>,
   ancestors: ReadonlySet<string> = new Set(),
   depth = 0,
-): FlattenStep[] | undefined {
-  if (depth > MAX_FLATTEN_DEPTH) return undefined;
+): Lookup<FlattenStep[]> {
+  if (depth > MAX_FLATTEN_DEPTH) return none("flatten:depth");
   const layout = layouts.get(typeName);
-  if (layout === undefined) return undefined;
+  if (layout === undefined) return none("flatten:no-layout");
   const next = new Set(ancestors);
   next.add(typeName);
   const steps: FlattenStep[] = [];
@@ -451,11 +289,11 @@ function flattenPlanFor(
     if (field.watType === "i32" && layouts.has(field.type)) {
       if (next.has(field.type)) {
         const closed = flattenClosedRecursivePlan(field.type, layouts);
-        steps.push(closed !== undefined ? { srcOffset: field.offset, nested: closed } : { srcOffset: field.offset, zero: true });
+        steps.push(closed.kind === "found" ? { srcOffset: field.offset, nested: closed.value } : { srcOffset: field.offset, zero: true });
         continue;
       }
       const nested = flattenPlanFor(field.type, layouts, next, depth + 1);
-      steps.push(nested !== undefined ? { srcOffset: field.offset, nested } : { srcOffset: field.offset, zero: true });
+      steps.push(nested.kind === "found" ? { srcOffset: field.offset, nested: nested.value } : { srcOffset: field.offset, zero: true });
     } else if (field.size === 8) {
       steps.push({ srcOffset: field.offset });
       steps.push({ srcOffset: field.offset + 4 });
@@ -463,7 +301,7 @@ function flattenPlanFor(
       steps.push({ srcOffset: field.offset });
     }
   }
-  return steps;
+  return found(steps);
 }
 
 function flattenWordCount(steps: readonly FlattenStep[]): number {
@@ -581,23 +419,22 @@ function emitFlattenStores(
   return lines;
 }
 /** Canonical, naturally aligned record layout for the module currently being emitted. */
-let watRecordLayouts: ReadonlyMap<string, WATRecordLayout> | null = null;
+let watRecordLayouts: Lookup<ReadonlyMap<string, WATRecordLayout>> = none("watRecordLayouts:unset");
 /** varName → record typeName for the flow currently being emitted (reset per flow).
  *  Populated from `let r: T = …` annotations, `let r = T{…}` literal types, and
  *  record-typed flow params. Lets `r.field` resolve to an i32.load at the slot offset. */
-let recordVarTypes: Map<string, string> | null = null;
+let recordVarTypes: Lookup<Map<string, string>> = none("recordVarTypes:unset");
 /** enumTypeName → ordered variant names (declaration order = i32 tag). #144: lets
  *  `EnumType.Variant` lower to its stable i32 tag instead of an `(i32.const 0)`
  *  placeholder. The tag is an internal convention; the host runtime (#145) maps the
- *  i32 back to the variant name for byte-parity comparison. null → placeholder. */
-let enumVariants: ReadonlyMap<string, readonly string[]> | null = null;
+ *  i32 back to the variant name for byte-parity comparison. absent → placeholder. */
+let enumVariants: Lookup<ReadonlyMap<string, readonly string[]>> = none("enumVariants:unset");
 /** flowName → declared return type (e.g. "makeKeywordTable" → "Array<String>"). #160:
  *  lets `let xs = makeKeywordTable()` carry a type so `xs.contains(s)` lowers to the
- *  value-based __array_contains_str bridge. null/absent → no inference (placeholder). */
-let flowReturnTypes: ReadonlyMap<string, string> | null = null;
+ *  value-based __array_contains_str bridge. absent/absent → no inference (placeholder). */
+let flowReturnTypes: Lookup<ReadonlyMap<string, string>> = none("flowReturnTypes:unset");
 
 /** C02 capture-free array HOF helpers requested while emitting a module. */
-type ArrayHofHelper = { readonly kind: "map" | "filter" | "reduce"; readonly fnName: string };
 let arrayHofHelpers: ArrayHofHelper[] = [];
 
 /** Step 3g (return-literal): the base type the CURRENT flow returns, so a bare `return <Int64 literal>`
@@ -609,157 +446,136 @@ let currentReturnBase = "";
  *  (`callee(x, 1000000000000)`) emits `(i64.const …)` instead of an out-of-i32-range `(i32.const …)` —
  *  which wabt rejects → the assembleWAT minimal-encoder stub → an UNfaithful WASM tier (the lift-blocker
  *  the worker's cross-flow spot-check found). Same shape as the bare-return-literal fix (3bf120a). */
-let flowParamBases: ReadonlyMap<string, readonly string[]> | null = null;
+let flowParamBases: Lookup<ReadonlyMap<string, readonly string[]>> = none("flowParamBases:unset");
+function emptyWatJobCaches(): WatJobCacheState {
+  return {
+    hofProgramAst: none("no-program-ast"),
+    internedLayouts: none("interned-layouts-uninitialized"),
+    internedFieldTypes: none("interned-field-types-uninitialized"),
+    autoAppendShapes: none("auto-append-shapes-uncomputed"),
+    informalShapes: none("informal-shapes-uncomputed"),
+    autoSomeBindMemberFields: none("auto-some-bind-fields-uncomputed"),
+  };
+}
+function resetWatJobCachesForModule(ast: Lookup<AstNode>): WatJobCacheState {
+  return {
+    hofProgramAst: ast,
+    internedLayouts: found(new Map()),
+    internedFieldTypes: found(new Map()),
+    autoAppendShapes: none("reset-for-module"),
+    informalShapes: none("reset-for-module"),
+    autoSomeBindMemberFields: none("reset-for-module"),
+  };
+}
+let watJobCaches: WatJobCacheState = emptyWatJobCaches();
+/** Parser-absent members — intern would invent AST fields (NOT Y). */
+const INFORMAL_DENY_FIELDS = new Set(["pattern", "target", "litI32Overflow"]);
 
 /** Build the flowName → return-type registry from a program AST's flow decls.
  *  Flow node shape (parser): value = name; children = [...paramDecls, retTypeNode, …].
  *  The return-type node sits immediately after the parameter decls; its `value` is the
  *  type string (e.g. "Array<String>"). */
-export function buildFlowReturnTypes(ast: AstNode | undefined): Map<string, string> {
-  const out = new Map<string, string>();
-  if (ast === undefined) return out;
+import {
+  buildFlowReturnTypes,
+  buildFlowParamBases,
+  buildEnumVariants,
+  buildRecordLayouts,
+  buildRecordFieldTypes,
+  isWATRecordFieldTypeSupported,
+  buildWATRecordLayouts,
+} from "./wat-emitter-layouts.js";
+export {
+  buildFlowReturnTypes,
+  buildFlowParamBases,
+  buildEnumVariants,
+  buildRecordLayouts,
+  isWATRecordFieldTypeSupported,
+  buildWATRecordLayouts,
+} from "./wat-emitter-layouts.js";
+
+function findNamedFlowDecl(ast: Lookup<AstNode>, fnName: string): Lookup<AstNode> {
+  if (ast.kind === "none") return none(`find-named-flow:no-ast:${fnName}`);
+  if (fnName === "") return none("find-named-flow:empty-name");
+  let hit: Lookup<AstNode> = none(`find-named-flow:not-found:${fnName}`);
   const walk = (n: AstNode): void => {
-    if (n.kind === "pureFlowDecl" || n.kind === "flowDecl" || n.kind === "secureFlowDecl") {
-      const name = (n.value ?? "").trim();
-      const children = n.children ?? [];
-      const numParams = children.filter((c) => c.kind === "paramDecl").length;
-      const retNode = children[numParams];
-      const rt = retNode?.value;
-      if (name !== "" && typeof rt === "string" && rt.trim() !== "") out.set(name, rt.trim());
+    if (hit.kind === "found") return;
+    if ((n.kind === "pureFlowDecl" || n.kind === "flowDecl" || n.kind === "secureFlowDecl") && (n.value ?? "").trim() === fnName) {
+      hit = found(n);
+      return;
     }
     for (const c of n.children ?? []) walk(c);
   };
-  walk(ast);
-  return out;
+  walk(ast.value);
+  return hit;
 }
 
-/** 0115: Build the flowName → [param base type, …] registry. Same flow-node shape as
- *  buildFlowReturnTypes; each paramDecl.value is "name: Type". Each entry is the numericBaseType
- *  of the declared parameter type, so a call site can detect an Int64/UInt64 parameter and thread it
- *  as the argument's expectedType (only 64-bit params change anything — every other arg is unchanged). */
-export function buildFlowParamBases(ast: AstNode | undefined): Map<string, string[]> {
-  const out = new Map<string, string[]>();
-  if (ast === undefined) return out;
+function hofBindingName(raw: string): string {
+  const nameBeforeColon = raw.split(":")[0]?.trim() ?? raw;
+  return nameBeforeColon.replace(/^(?:unsafe|safe)\s+/, "");
+}
+
+/** Bindings local to the named callback (lets, loop vars, match arm binds). Not outer. */
+function collectHofLocalBindings(n: AstNode, into: Set<string>): void {
+  if (n.kind === "letDecl" || n.kind === "mutDecl" || n.kind === "readonlyDecl") {
+    const nm = hofBindingName(n.value ?? "");
+    if (nm !== "") into.add(nm);
+  } else if (n.kind === "forEachStmt") {
+    const nm = hofBindingName(n.value ?? "item");
+    if (nm !== "") into.add(nm);
+  } else if (n.kind === "staticDecl") {
+    const nm = (n.value ?? "").trim();
+    if (nm !== "") into.add(nm);
+  } else if (n.kind === "fnDecl") {
+    const nm = (n.value ?? "").trim();
+    if (nm !== "") into.add(nm);
+    return; // nested helper is not this callback; do not harvest its params into the outer set
+  } else if (n.kind === "matchArm") {
+    for (const c of n.children ?? []) {
+      if (c.kind === "identifier") {
+        const nm = (c.value ?? "").trim();
+        if (nm !== "") into.add(nm);
+      }
+    }
+  }
+  for (const c of n.children ?? []) collectHofLocalBindings(c, into);
+}
+
+/** True when the named callback flow body uses an identifier that is not a parameter
+ *  of that flow, not a local binding, not another flow name, and not a compile-time constant. */
+function namedFlowCapturesOuter(fnName: string, ast: Lookup<AstNode>, consts: ReadonlyMap<string, number>): boolean {
+  const flow = findNamedFlowDecl(ast, fnName);
+  if (flow.kind === "none") return true;
+  const children = flow.value.children ?? [];
+  const allowed = new Set<string>(["None"]);
+  for (const p of children.filter((c) => c.kind === "paramDecl")) {
+    const pname = hofBindingName(p.value ?? "");
+    if (pname !== "") allowed.add(pname);
+  }
+  for (const c of children) collectHofLocalBindings(c, allowed);
+  for (const name of (flowReturnTypes.kind === "found" ? flowReturnTypes.value.keys() : []) ?? []) allowed.add(name);
+  for (const name of consts.keys()) allowed.add(name);
+  let captures = false;
   const walk = (n: AstNode): void => {
-    if (n.kind === "pureFlowDecl" || n.kind === "flowDecl" || n.kind === "secureFlowDecl") {
+    if (captures) return;
+    if (n.kind === "fnDecl" || n.kind === "paramDecl" || n.kind === "typeRef" || n.kind === "contractDecl") return;
+    if (n.kind === "identifier") {
       const name = (n.value ?? "").trim();
-      const bases = (n.children ?? [])
-        .filter((c) => c.kind === "paramDecl")
-        .map((c) => {
-          const raw = c.value ?? "";
-          const ty = raw.includes(":") ? raw.split(":")[1]!.trim() : "";
-          return numericBaseType(ty);
-        });
-      if (name !== "") out.set(name, bases);
+      if (name === "" || name === "true" || name === "false") return;
+      if (/^[A-Z]/.test(name)) return; // type / constructor / enum receivers
+      if (!allowed.has(name)) captures = true;
+      return;
     }
     for (const c of n.children ?? []) walk(c);
   };
-  walk(ast);
-  return out;
+  for (const c of children) {
+    if (c.kind === "paramDecl" || c.kind === "typeRef" || c.kind === "contractDecl") continue;
+    walk(c);
+  }
+  return captures;
 }
 
 /** Build the enumTypeName → variant-name-list registry from a program AST's `enum` decls. */
-export function buildEnumVariants(ast: AstNode | undefined): Map<string, string[]> {
-  const out = new Map<string, string[]>();
-  for (const node of ast?.children ?? []) {
-    if (node.kind === "enumDecl" && node.value) {
-      const variants = (node.children ?? [])
-        .filter((c) => c.kind === "enumVariant")
-        .map((c) => c.value ?? "")
-        .filter((n) => n.length > 0);
-      out.set(node.value, variants);
-    }
-  }
-  return out;
-}
 
-/** Build the typeName → field-name-list registry from a program AST's `record` decls. */
-export function buildRecordLayouts(ast: AstNode | undefined): Map<string, string[]> {
-  const out = new Map<string, string[]>();
-  for (const node of ast?.children ?? []) {
-    if (node.kind === "recordDecl" && node.value) {
-      const fields = (node.children ?? [])
-        .filter((c) => c.kind === "paramDecl")
-        .map((c) => (c.value ?? "").split(":")[0]!.trim())
-        .filter((n) => n.length > 0);
-      out.set(node.value, fields);
-    }
-  }
-  return out;
-}
-
-/** Build the typeName → (fieldName → declared type) registry from a program AST's `record` decls.
- *  Sibling to buildRecordLayouts — the paramDecl value is "name: Type", so this keeps the type half
- *  that layouts discards. Powers memberExpr type inference for #160 str_eq on `a.s == b.s`. */
-export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map<string, string>> {
-  const out = new Map<string, Map<string, string>>();
-  for (const node of ast?.children ?? []) {
-    if (node.kind === "recordDecl" && node.value) {
-      const fields = new Map<string, string>();
-      for (const c of node.children ?? []) {
-        if (c.kind !== "paramDecl") continue;
-        const raw = c.value ?? "";
-        const colon = raw.indexOf(":");
-        if (colon < 0) continue;
-        const name = raw.slice(0, colon).trim();
-        const type = raw.slice(colon + 1).trim();
-        if (name.length > 0 && type.length > 0) fields.set(name, type);
-      }
-      out.set(node.value, fields);
-    }
-  }
-  return out;
-}
-
-/**
- * True only when the WAT emitter has a faithful scalar representation and expression lane for a
- * record field. Decimal is an i32 host handle (C02). Float16/Float32 stay refused
- * until the scalar f32 lane is complete.
- */
-export function isWATRecordFieldTypeSupported(typeName: string): boolean {
-  const base = numericBaseType(typeName.trim());
-  if (base === "Float16" || base === "Float32") return false;
-  const watType = galerinaTypeToWAT(typeName.trim());
-  return watType === "i32" || watType === "i64" || watType === "f64";
-}
-
-function alignRecordOffset(offset: number, alignment: 4 | 8): number {
-  return Math.ceil(offset / alignment) * alignment;
-}
-
-/** Build the canonical natural-alignment layout used by every record load, store, copy and size. */
-export function buildWATRecordLayouts(ast: AstNode | undefined): Map<string, WATRecordLayout> {
-  const out = new Map<string, WATRecordLayout>();
-  for (const [recordName, fields] of buildRecordFieldTypes(ast)) {
-    const slots: WATRecordFieldLayout[] = [];
-    let cursor = 0;
-    let recordAlignment: 4 | 8 = 4;
-    for (const [name, type] of fields) {
-      if (!isWATRecordFieldTypeSupported(type)) continue;
-      const lowered = galerinaTypeToWAT(type);
-      if (lowered !== "i32" && lowered !== "i64" && lowered !== "f64") continue;
-      const size: 4 | 8 = lowered === "i32" ? 4 : 8;
-      cursor = alignRecordOffset(cursor, size);
-      slots.push({ name, type, watType: lowered, offset: cursor, size });
-      cursor += size;
-      if (size === 8) recordAlignment = 8;
-    }
-    out.set(recordName, {
-      fields: slots,
-      size: alignRecordOffset(cursor, recordAlignment),
-      alignment: recordAlignment,
-    });
-  }
-  return out;
-}
-
-/**
- * #132 fail-closed guard after typed natural-alignment support. i32 handles retain their compact
- * four-byte slots; i64 and f64 fields use naturally aligned eight-byte slots. Float16/Float32 remain
- * refused until the scalar f32 expression lane is faithful. Decimal record fields lower as
- * i32 host handles (C02). The predicate is shared with the corpus audit so new unsupported
- * representations cannot enter silently.
- */
 function assertLowerableRecordFields(ast: AstNode | undefined): void {
   const offenders: string[] = [];
   for (const [recName, fields] of buildRecordFieldTypes(ast)) {
@@ -784,15 +600,15 @@ function assertLowerableRecordFields(ast: AstNode | undefined): void {
 
 /** The record type a `let`/param binding refers to, or undefined. `raw` is the
  *  binding's `value` (e.g. "r: TokenizeResult"); `initNode` is its initialiser. */
-function recordTypeOfBinding(raw: string, initNode: AstNode | undefined): string | undefined {
-  if (recordLayouts === null) return undefined;
+function recordTypeOfBinding(raw: string, initNode: AstNode | undefined): Lookup<string> {
+  if (recordLayouts.kind === "none") return none("record-type:no-layouts");
   const anno = raw.includes(":") ? raw.split(":")[1]!.trim() : "";
-  if (anno && recordLayouts.has(anno)) return anno;
+  if (anno && recordLayouts.value.has(anno)) return found(anno);
   if (initNode?.kind === "callExpr" && initNode.value === "#record") {
     const tn = (initNode as { typeName?: string }).typeName;
-    if (tn && recordLayouts.has(tn)) return tn;
+    if (tn && recordLayouts.value.has(tn)) return found(tn);
   }
-  return undefined;
+  return none("record-type:unresolved");
 }
 
 // ---------------------------------------------------------------------------
@@ -966,7 +782,7 @@ export function renderWAT(module: WATModule): string {
   if (emittedImports > 0) lines.push("");
 
   // Memory — after imports, before functions.
-  const maxStr = module.memory.maxPages !== null ? ` ${module.memory.maxPages}` : "";
+  const maxStr = ` ${module.memory.maxPages}`;
   lines.push(`  (memory ${module.memory.minPages}${maxStr})`);
   lines.push(`  (export "memory" (memory 0))`);
   lines.push("");
@@ -979,7 +795,7 @@ export function renderWAT(module: WATModule): string {
   }
 
   // P9.4b: record bump-allocator heap pointer — only emitted when a body constructs
-  // a record. Records allocate above WAT_HEAP_BASE; the low region stays null/scratch.
+  // a record. Records allocate above WAT_HEAP_BASE; the low region stays absent/scratch.
   if (usesHeap) {
     lines.push(`  ;; P9.4b: bump-allocator heap pointer for record struct layout`);
     lines.push(`  (global $__fungi_heap (mut i32) (i32.const ${WAT_HEAP_BASE}))`);
@@ -1020,12 +836,13 @@ export function renderWAT(module: WATModule): string {
   // CALLS would wipe the caller's still-live allocations mid-computation. (A returned heap handle stays
   // valid until the next top-level call — the per-invocation arena contract.)
   const flowReferenced = new Set<string>();
-  for (const a of module.functions) {
-    for (const b of module.functions) {
-      if (a.name === b.name) continue;
-      if (b.body.includes(`(call $${a.name} `) || b.body.includes(`(call $${a.name})`)) {
-        flowReferenced.add(a.name);
-      }
+  const callRe = /\(call \$([^\s)]+)/g;
+  for (const b of module.functions) {
+    const body = b.body ?? "";
+    callRe.lastIndex = 0;
+    for (const m of body.matchAll(callRe)) {
+      const callee = m[1]!;
+      if (callee !== b.name) flowReferenced.add(callee);
     }
   }
   // B2b (R&D 0055): zero the reclaimed arena on the per-flow reset ONLY when the module contains a
@@ -1228,7 +1045,7 @@ export function renderWAT(module: WATModule): string {
         for (const rl of resetBlock) lines.push(rl);
       }
     } else {
-      lines.push(`    unreachable`);
+      lines.push(`    unreachable ;; emitter cannot lower`);
     }
     lines.push(`  )`);
     if (fn.isEntryPoint) {
@@ -1245,68 +1062,6 @@ export function renderWAT(module: WATModule): string {
 // Phase 25 — AST-based WAT code generator for pure flows
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// String intern table — maps string value → i32 ID (opaque handle)
-//
-// The host registers interned strings with the WASM instance at load time.
-// The WASM guest uses the ID (i32) everywhere as an opaque string handle.
-// 0 is reserved for the empty string "".
-// ---------------------------------------------------------------------------
-
-const _stringTable = new Map<string, number>();
-let _nextStringId = 1; // 0 reserved for ""
-
-/**
- * Interns a string literal value and returns its i32 ID.
- * Strips surrounding quotes if present. Returns 0 for the empty string.
- */
-function internString(value: string): number {
-  if (value === "" || value === '""') return 0;
-  // Strip surrounding double-quotes if present
-  const stripped = value.startsWith('"') && value.endsWith('"') && value.length >= 2
-    ? value.slice(1, -1) : value;
-  if (stripped === "") return 0;
-  const existing = _stringTable.get(stripped);
-  if (existing !== undefined) return existing;
-  const id = _nextStringId++;
-  _stringTable.set(stripped, id);
-  return id;
-}
-
-/**
- * Renders the current string intern table as WAT comment lines.
- * The host reconstructs this mapping to register strings at WASM load time.
- */
-export function renderStringTableComments(): string {
-  const lines: string[] = [";; String intern table (for host reconstruction):", ";; 0 = \"\""];
-  for (const [str, id] of _stringTable) {
-    lines.push(`;; ${id} = "${str}"`);
-  }
-  return lines.join("\n");
-}
-
-/**
- * Resets the string intern table. Call before emitting a new module to avoid
- * IDs leaking across compilation units.
- */
-export function resetStringTable(): void {
-  _stringTable.clear();
-  _nextStringId = 1;
-}
-
-/**
- * #145: expose the current string-intern table as handle → literal value, so a host
- * runtime can SEED its string registry at the exact i32 handles the emitted WASM uses
- * (handle 0 is always ""). Call AFTER the module is rendered (the table is populated
- * during emission). The host then registers any runtime input string at the next free
- * handle (≥ maxHandle+1) to avoid colliding with a literal.
- */
-export function getInternedStrings(): Array<{ handle: number; value: string }> {
-  const out: Array<{ handle: number; value: string }> = [{ handle: 0, value: "" }];
-  for (const [str, id] of _stringTable) out.push({ handle: id, value: str });
-  return out;
-}
-
 /**
  * Maps a binary operator string to its WAT i32 instruction.
  * Arithmetic, comparison, and logical ops — all operating on i32.
@@ -1315,382 +1070,29 @@ export function getInternedStrings(): Array<{ handle: number; value: string }> {
  * not tokenize them (bit-level math lives in the engine/extension layer — the
  * crypto-on-core boundary), so they can never reach this map. Adding them back would
  * be dead code (they were unreachable entries until 2026-06-16; removed per dogfooding
- * GAP-4). `&&`/`||` stay — those are the live logical-and/or operators.
+ * GAP-4). Bool `&&`/`||` are live but are NOT in this map: they emit `if`
+ * short-circuit in binaryExpr (J-R3). Eager i32.and / i32.or evaluated a
+ * trapping RHS (e.g. 1/0) that the interpreter skips.
  */
-const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
-  // +,-,* lower to strict-trapping checked helpers (owner Fork A=TRAP, 2026-06-18): native i32.add/
-  // sub/mul wrap silently, so signed overflow → `unreachable` (LOAD→TRAP→ERASE) via the helpers
-  // below. /,% stay native and match i32-arith.ts exactly: i32.div_s traps on /0 AND INT32_MIN/-1
-  // (overflow); i32.rem_s traps on /0 ONLY — INT32_MIN % -1 returns 0 (no trap), exactly like
-  // i32ModChecked. So div traps the overflow edge, rem returns 0 there — both byte-exact with the VM/walker.
-  ["+",  "call $fungi_checked_add_i32"],
-  ["-",  "call $fungi_checked_sub_i32"],
-  ["*",  "call $fungi_checked_mul_i32"],
-  ["/",  "i32.div_s"],
-  ["%",  "i32.rem_s"],
-  ["<",  "i32.lt_s"],
-  [">",  "i32.gt_s"],
-  ["<=", "i32.le_s"],
-  [">=", "i32.ge_s"],
-  ["==", "i32.eq"],
-  ["!=", "i32.ne"],
-  ["&&", "i32.and"],
-  ["||", "i32.or"],
-]);
+import {
+  BINARY_OP_TO_WAT,
+  FLOAT_WAT_TYPES,
+  FLOAT_OPTION_WAT_TYPES,
+  FLOAT_ARITH_WAT,
+  FLOAT_CMP_WAT,
+  INT64_WAT_TYPES,
+  INT64_ARITH_WAT,
+  INT64_CMP_WAT,
+  UINT64_WAT_TYPES,
+  UINT64_ARITH_WAT,
+  UINT64_CMP_WAT,
+  is64BitWatType,
+  watStackType,
+  ALL_CHECKED_HELPERS,
+  STDLIB_HOST_MAP,
+  STDLIB_HOST_CALL_MAP,
+} from "./wat-emitter-binary.js";
 
-// #165: native f64 lowering for float operands. All floats are treated as f64 (matching the f64.const
-// literal emission, wat-emitter §numberLiteral). Without these, a float `+ - * /`/comparison emitted an
-// i32 checked helper over f64 operands → an invalid module (WASM tier declined → walker fallback).
-const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
-// Decimal remains exact and is deliberately excluded from the Float64 Option ABI.
-const FLOAT_OPTION_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
-const FLOAT_ARITH_WAT: Readonly<Record<string, string>> = { "+": "f64.add", "-": "f64.sub", "*": "f64.mul", "/": "f64.div" };
-const FLOAT_CMP_WAT: Readonly<Record<string, string>> = { "==": "f64.eq", "!=": "f64.ne", "<": "f64.lt", ">": "f64.gt", "<=": "f64.le", ">=": "f64.ge" };
-
-// Int64 — the lifted 64-bit signed width (verified i64 plan, Steps 3a/4c). `+`/`-`/`*` route to the
-// strict-trapping checked i64 helpers (Fork A=TRAP); `/`/`%` use native i64.div_s/rem_s (div_s traps /0
-// AND INT64_MIN/-1; rem_s traps /0 only). Comparisons yield an i32 bool. UInt64 is NOT here — unsigned
-// needs i64.div_u/lt_u + its own helpers and stays fail-closed under FUNGI-NUMERIC-001.
-const INT64_WAT_TYPES = new Set<string>(["Int64"]);
-const INT64_ARITH_WAT: Readonly<Record<string, string>> = { "+": "call $fungi_checked_add_i64", "-": "call $fungi_checked_sub_i64", "*": "call $fungi_checked_mul_i64", "/": "i64.div_s", "%": "i64.rem_s" };
-const INT64_CMP_WAT: Readonly<Record<string, string>> = { "==": "i64.eq", "!=": "i64.ne", "<": "i64.lt_s", ">": "i64.gt_s", "<=": "i64.le_s", ">=": "i64.ge_s" };
-
-// UInt64 — the lifted 64-bit UNSIGNED width (#52). Same i64 storage, but UNSIGNED semantics: `+`/`-`/`*`
-// route to strict-trapping checked u64 helpers (overflow > 2^64-1 / underflow < 0 TRAP — no silent 2^64
-// wrap); `/`/`%` use native i64.div_u/rem_u (trap /0; unsigned has no INT_MIN/-1 overflow case);
-// comparisons are UNSIGNED (i64.lt_u/…). Byte-exact with the tree-walker's u64-arith. Lowered ONLY for
-// uint64×uint64 — a mixed UInt64×Int operand declines to the walker (the sign promotion is subtle).
-const UINT64_WAT_TYPES = new Set<string>(["UInt64"]);
-const UINT64_ARITH_WAT: Readonly<Record<string, string>> = { "+": "call $fungi_checked_add_u64", "-": "call $fungi_checked_sub_u64", "*": "call $fungi_checked_mul_u64", "/": "i64.div_u", "%": "i64.rem_u" };
-const UINT64_CMP_WAT: Readonly<Record<string, string>> = { "==": "i64.eq", "!=": "i64.ne", "<": "i64.lt_u", ">": "i64.gt_u", "<=": "i64.le_u", ">=": "i64.ge_u" };
-
-/** True for a 64-bit WAT-i64 numeric base (Int64 OR UInt64) — both store as i64 (galerinaTypeToWAT), so a
- * literal/local in either context emits i64.const / an i64 local. The SIGNEDNESS differs only in the op. */
-const is64BitWatType = (base: string): boolean => INT64_WAT_TYPES.has(base) || UINT64_WAT_TYPES.has(base);
-
-/**
- * #165: the WASM stack type a fully-emitted expression string leaves on the stack, read from its
- * leading opcode. Used to declare a `let`/`mut` local with the SAME type as its initialiser — an
- * f64 value (f64.mul/add/const/convert…) MUST go in an f64 local or the store is a type error.
- * Float COMPARISONS (f64.lt/eq/…) yield an i32 bool, so they are i32. Anything we can't classify
- * (records, strings, `(block …)`, `(local.get …)`, calls) defaults to i32 — the SAFE default: a
- * wrong guess yields an invalid module → walker fallback (correct, just slower), never a wrongly
- * typed but "valid" store that would compute garbage.
- */
-function watStackType(expr: string): WATValType {
-  const t = expr.trimStart();
-  // Step 3d: a checked-i64 helper call leaves an i64 on the stack. The generic match below requires a `.`
-  // after the head, so `(call $…` falls through to the i32 default — correct for the i32 helpers, WRONG
-  // for the i64 ones (an Int64 local declared from it would get an i32 valtype → a truncating/invalid store).
-  if (/^\(call \$fungi_checked_(add|sub|mul)_(i64|u64)\b/.test(t)) return "i64";
-  // #55: the float finiteness guard returns its f64 argument — a `let x = a / b` local declared from it
-  // must be f64, not the i32 default (which would mistype the store).
-  if (/^\(call \$fungi_assert_finite_f64\b/.test(t)) return "f64";
-  // Float64 Option payload bridges return an f64 value even though the Option itself is an i32 handle.
-  if (/^\(call \$host___(?:option_value_f64_v2|unwrap_or_f64_v2)\b/.test(t)) return "f64";
-  const m = t.match(/^\(([a-z0-9]+)\.([a-z0-9_]+)/);
-  if (m === null) return "i32";
-  const prefix = m[1]!, op = m[2]!;
-  if (/^(eq|ne|lt|gt|le|ge)/.test(op)) return "i32"; // f64/f32/i64 comparisons → i32 bool
-  if (prefix === "f64") return "f64";
-  if (prefix === "f32") return "f32";
-  if (prefix === "i64") return "i64";
-  return "i32";
-}
-
-/**
- * i32 strict-trapping arithmetic helpers (owner Fork A=TRAP, 2026-06-18). Native WASM i32.add/sub/mul
- * wrap mod 2^32 — a lying abstraction in a governed system. These harden the WASM-i32 reference so
- * signed overflow is a TRAP (`unreachable` = LOAD→TRAP→ERASE), byte-identical to the tree-walker +
- * bytecode VM (the single source of truth is i32-arith.ts; these mirror its predicates exactly).
- * `+`/`-`/`*` lower to `call` these; `/`/`%` use native i32.div_s/rem_s — div_s traps on /0 AND
- * INT32_MIN/-1; rem_s traps on /0 ONLY (INT32_MIN % -1 = 0, no trap), matching i32ModChecked.
- * Emitted into a module only when a flow body actually references them.
- */
-const I32_CHECKED_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_checked_add_i32: [
-    "(func $fungi_checked_add_i32 (param $a i32) (param $b i32) (result i32)",
-    "  (local $r i32)",
-    "  (local.set $r (i32.add (local.get $a) (local.get $b)))",
-    "  ;; signed overflow iff (a^r) & (b^r) < 0",
-    "  (if (i32.lt_s (i32.and (i32.xor (local.get $a) (local.get $r)) (i32.xor (local.get $b) (local.get $r))) (i32.const 0)) (then unreachable))",
-    "  (local.get $r))",
-  ].join("\n"),
-  $fungi_checked_sub_i32: [
-    "(func $fungi_checked_sub_i32 (param $a i32) (param $b i32) (result i32)",
-    "  (local $r i32)",
-    "  (local.set $r (i32.sub (local.get $a) (local.get $b)))",
-    "  ;; signed overflow iff (a^b) & (a^r) < 0",
-    "  (if (i32.lt_s (i32.and (i32.xor (local.get $a) (local.get $b)) (i32.xor (local.get $a) (local.get $r))) (i32.const 0)) (then unreachable))",
-    "  (local.get $r))",
-  ].join("\n"),
-  $fungi_checked_mul_i32: [
-    "(func $fungi_checked_mul_i32 (param $a i32) (param $b i32) (result i32)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.mul (i64.extend_i32_s (local.get $a)) (i64.extend_i32_s (local.get $b))))",
-    "  ;; overflow iff the exact i64 product leaves [-2^31, 2^31-1]",
-    "  (if (i32.or (i64.lt_s (local.get $r) (i64.const -2147483648)) (i64.gt_s (local.get $r) (i64.const 2147483647))) (then unreachable))",
-    "  (i32.wrap_i64 (local.get $r)))",
-  ].join("\n"),
-};
-
-/**
- * i64 strict-trapping arithmetic helpers (Fork A=TRAP, carried to 64-bit; verified i64 plan Step 4a). Mirror
- * of i32-arith.ts / I32_CHECKED_HELPERS, matching i64-arith.ts byte-for-byte: `+`/`-`/`*` lower to `call`
- * these and TRAP on signed overflow; `/`/`%` use native i64.div_s/rem_s (div_s traps /0 AND INT64_MIN/-1;
- * rem_s traps /0 only). `*` can't use a wider-type intermediate (none is wider than i64), so it detects
- * overflow by dividing the product back — the div is GUARDED in a NESTED `if a!=0` so it is never reached at
- * a==0 (a flat `i32.and` would still evaluate both args = a spurious div-by-zero trap). div_s(INT64_MIN,-1)
- * traps natively, so the one product-overflow edge (e.g. -1 * INT64_MIN) traps correctly. Emitted into a
- * module only when a flow body actually references them. NOT YET REFERENCED — the i64 binary-op routing
- * (Step 4c) that calls them is the next 2b increment; until then this is inert, and the gate stays closed.
- */
-const INT64_CHECKED_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_checked_add_i64: [
-    "(func $fungi_checked_add_i64 (param $a i64) (param $b i64) (result i64)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.add (local.get $a) (local.get $b)))",
-    "  ;; signed overflow iff (a^r) & (b^r) < 0",
-    "  (if (i64.lt_s (i64.and (i64.xor (local.get $a) (local.get $r)) (i64.xor (local.get $b) (local.get $r))) (i64.const 0)) (then unreachable))",
-    "  (local.get $r))",
-  ].join("\n"),
-  $fungi_checked_sub_i64: [
-    "(func $fungi_checked_sub_i64 (param $a i64) (param $b i64) (result i64)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.sub (local.get $a) (local.get $b)))",
-    "  ;; signed overflow iff (a^b) & (a^r) < 0",
-    "  (if (i64.lt_s (i64.and (i64.xor (local.get $a) (local.get $b)) (i64.xor (local.get $a) (local.get $r))) (i64.const 0)) (then unreachable))",
-    "  (local.get $r))",
-  ].join("\n"),
-  $fungi_checked_mul_i64: [
-    "(func $fungi_checked_mul_i64 (param $a i64) (param $b i64) (result i64)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.mul (local.get $a) (local.get $b)))",
-    "  ;; no type is wider than i64 → detect overflow by dividing the product back; nested if guards a!=0.",
-    "  (if (i64.ne (local.get $a) (i64.const 0))",
-    "    (then (if (i64.ne (i64.div_s (local.get $r) (local.get $a)) (local.get $b)) (then unreachable))))",
-    "  (local.get $r))",
-  ].join("\n"),
-};
-
-/**
- * UInt64 strict-trapping arithmetic helpers (#52). Mirror of the i64 helpers but UNSIGNED — no silent 2^64
- * wrap. add: overflow iff the sum wraps below `a` (r <_u a). sub: underflow iff a <_u b. mul: no wider type,
- * so detect overflow by dividing the product back UNSIGNED (i64.div_u), guarded by a!=0. `/`/`%` use native
- * i64.div_u/rem_u (trap /0; unsigned has no INT_MIN/-1 case). Emitted only when a body references one.
- */
-const UINT64_CHECKED_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_checked_add_u64: [
-    "(func $fungi_checked_add_u64 (param $a i64) (param $b i64) (result i64)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.add (local.get $a) (local.get $b)))",
-    "  ;; unsigned overflow iff the sum wrapped below a  →  r <_u a",
-    "  (if (i64.lt_u (local.get $r) (local.get $a)) (then unreachable))",
-    "  (local.get $r))",
-  ].join("\n"),
-  $fungi_checked_sub_u64: [
-    "(func $fungi_checked_sub_u64 (param $a i64) (param $b i64) (result i64)",
-    "  ;; unsigned underflow iff a <_u b (the result would be negative)",
-    "  (if (i64.lt_u (local.get $a) (local.get $b)) (then unreachable))",
-    "  (i64.sub (local.get $a) (local.get $b)))",
-  ].join("\n"),
-  $fungi_checked_mul_u64: [
-    "(func $fungi_checked_mul_u64 (param $a i64) (param $b i64) (result i64)",
-    "  (local $r i64)",
-    "  (local.set $r (i64.mul (local.get $a) (local.get $b)))",
-    "  ;; no type is wider than i64 → detect overflow by dividing the product back UNSIGNED; nested if guards a!=0.",
-    "  (if (i64.ne (local.get $a) (i64.const 0))",
-    "    (then (if (i64.ne (i64.div_u (local.get $r) (local.get $a)) (local.get $b)) (then unreachable))))",
-    "  (local.get $r))",
-  ].join("\n"),
-};
-
-/**
- * Float finiteness guard (#55 / FUNGI-FLOAT-NAN-001). WASM f64.div/add/sub/mul SILENTLY produce NaN (0/0) or
- * ±Inf (x/0, overflow) — a non-finite that passes EVERY range compare (every NaN compare is false) and could
- * be signed into a manifest. This makes the WASM tier fail-closed IDENTICALLY to the tree-walker's mkFloat:
- * `(v - v)` is 0 for a finite v but NaN for NaN/±Inf, so `f64.ne (v - v) 0` traps (unreachable) on any
- * non-finite value. Wrapped around every f64 arithmetic RESULT and every ordering-compare OPERAND. Emitted
- * only when a flow body references it (usage-gated → wasmHash stays a deterministic function of the bodies).
- */
-const FLOAT_CHECKED_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_assert_finite_f64: [
-    "(func $fungi_assert_finite_f64 (param $v f64) (result f64)",
-    "  ;; (v - v) = 0 for a finite v but NaN for NaN/±Inf → f64.ne(…,0) traps on any non-finite value",
-    "  (if (f64.ne (f64.sub (local.get $v) (local.get $v)) (f64.const 0)) (then unreachable))",
-    "  (local.get $v))",
-  ].join("\n"),
-};
-
-/**
- * Raw Float64 ingress classifier. Unlike the checked arithmetic/comparison
- * helper above, this deliberately does not trap: it reports whether one
- * already-received f64 is finite before ordinary Fungi validation performs an
- * ordering operation. The argument is evaluated once by the call site and no
- * non-finite value is constructed as an ordinary language value.
- */
-const FLOAT_CLASSIFIER_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_is_finite_f64: [
-    "(func $fungi_is_finite_f64 (param $v f64) (result i32)",
-    "  ;; NaN fails equality with itself; abs(±Inf) is greater than the largest finite f64.",
-    "  (i32.and",
-    "    (f64.eq (local.get $v) (local.get $v))",
-    "    (f64.le (f64.abs (local.get $v)) (f64.const 1.7976931348623157e+308)))",
-    ")",
-  ].join("\n"),
-  $fungi_is_positive_f64: [
-    "(func $fungi_is_positive_f64 (param $v f64) (result i32)",
-    "  ;; Raw IEEE-754 greater-than: +Inf is positive; NaN, -Inf, and both zeroes are not.",
-    "  (f64.gt (local.get $v) (f64.const 0))",
-    ")",
-  ].join("\n"),
-};
-
-// W5a K3 verdict helpers (2026-07-08): lattice min/max over i32 trits.
-// Lattice: DENY(-1) < UNKNOWN(0) < ALLOW(+1).
-//
-// P2 (2026-07-21): The 2-operand fast path inlines the same select pattern as
-// the helpers, but without the function-call overhead.  `left`/`right` in the
-// binary-op emitter and `acc`/`next` in k3FoldExpr are fully-evaluated WAT
-// expression strings — there is NO duplication risk (the original "one evaluation"
-// concern was about inlining raw *source* sub-expressions, not pre-emitted WAT
-// strings).  The helpers remain in ALL_CHECKED_HELPERS as the fallback for indirect
-// call paths and the ≥3-operand chain tail (after the first step is inlined).
-//
-// Inline form:
-//   K3 AND:  (select L R (i32.lt_s L R))  — L if L < R, else R  (= signed min)
-//   K3 OR:   (select L R (i32.gt_s L R))  — L if L > R, else R  (= signed max)
-//
-// Correctness: identical truth-table to $fungi_k3_min / $fungi_k3_max (proven in
-// proofs/k3-truth-tables-proof.mjs over all 9 trit pairs).
-// Wabt note: i32.min_s / i32.max_s are NOT in the baseline WASM spec and are
-// rejected by the wabt version in this workspace — use select explicitly.
-const K3_HELPERS: Readonly<Record<string, string>> = {
-  $fungi_k3_min: [
-    "(func $fungi_k3_min (param $a i32) (param $b i32) (result i32)",
-    "  ;; K3 `and`/all{}: lattice min — DENY absorbs, UNKNOWN never upgrades",
-    "  (select (local.get $a) (local.get $b) (i32.lt_s (local.get $a) (local.get $b))))",
-  ].join("\n"),
-  $fungi_k3_max: [
-    "(func $fungi_k3_max (param $a i32) (param $b i32) (result i32)",
-    "  ;; K3 `or`/any{}: lattice max — ALLOW absorbs; two non-allows never manufacture one",
-    "  (select (local.get $a) (local.get $b) (i32.gt_s (local.get $a) (local.get $b))))",
-  ].join("\n"),
-};
-
-// All strict-trapping checked helpers (i32 + i64 overflow, f64 non-finite), injected on-demand when a flow
-// body references one.
-const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...UINT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS, ...FLOAT_CLASSIFIER_HELPERS, ...K3_HELPERS };
-
-// ---------------------------------------------------------------------------
-// P9.3 — Stdlib method → host import bridge
-//
-// The self-hosted lexer (lexer.fungi) calls stdlib methods like `s.charAt(i)`,
-// `arr.append(x)`, `c.isLetter()`, `opt.unwrapOr(d)`. These parse as method-style
-// callExpr nodes (value = method name, callStyle = "method", children = [receiver, ...args]).
-//
-// At the WASM boundary every value is an opaque i32 handle (see galerinaTypeToWAT),
-// so each stdlib method maps to a host import with signature (param i32…)(result i32).
-// We emit `(call $host___<name> <receiver> <args…>)`; the host (galerina.mjs
-// hostRuntime) supplies the real implementation. renderWAT usage-gates the host
-// imports on whether `$host___<name>` appears in a body, so emitting the call
-// string is sufficient to pull in the matching import.
-//
-// Only the EXACT method names below are intercepted. Everything else (flow→flow
-// calls like scanWord(...), record constructors) falls through unchanged.
-// ---------------------------------------------------------------------------
-
-/**
- * Stdlib method name → host import id (the `$host___…` WAT identifier).
- *
- * Receiver-passing rule: the receiver is emitted as the FIRST argument followed
- * by the call's own arguments — `s.charAt(i)` → `(call $host___str_char_at s i)`,
- * `n.toString()` → `(call $host___int_to_str n)`.
- *
- * P9.3 ambiguities (resolved pragmatically; do not block wat2wasm assembly):
- *   - `length`: String.length vs Array.length — both host funcs share the
- *     (param i32)(result i32) signature; default to str_length. (Array.length → P9.4)
- *   - `toString`: Int.toString vs Char.toString — same signature; default to
- *     int_to_str. Char/Int discrimination needs type info → P9.4.
- *   - `Array.empty()` is handled specially in emitWATExpr (zero-arg host call).
- */
-const STDLIB_HOST_MAP: Record<string, string> = {
-  charAt:   "$host___str_char_at_option_v2",
-  charCount: "$host___str_count",   // String.charCount() → length (#145 lexer link)
-  length:   "$host___str_length",   // String.length / Array.length (shared sig)
-  toInt:    "$host___str_to_int_option_v2",
-  toStr:    "$host___int_to_str",
-  toString: "$host___int_to_str",   // Int.toString (Char.toString → P9.4)
-  concat:   "$host___str_concat",
-  // #162: String-only methods (no Char/Array equivalent that conflicts by name).
-  startsWith: "$host___str_starts_with",
-  endsWith: "$host___str_ends_with",
-  trim:     "$host___str_trim",
-  indexOf:  "$host___str_index_of",
-  slice:    "$host___str_slice",     // String.slice(start, end) — Array.slice → type-directed follow-on
-  isLetter: "$host___char_is_letter",
-  isDigit:  "$host___char_is_digit",
-  // #169: Char classifiers — Char-only (String has no isUpper/isLower/isWhitespace),
-  // so the name→host mapping is unambiguous. toUpper/toLower are String-ambiguous and
-  // are routed type-directed under #162 instead of mapped here.
-  isUpper:  "$host___char_is_upper",
-  isLower:  "$host___char_is_lower",
-  isWhitespace: "$host___char_is_whitespace",
-  append:   "$host___array_append",
-  get:      "$host___array_get_option_v2",
-  count:    "$host___array_length",  // #161: Array.count() → length (reuses the array_length import)
-  contains: "$host___array_contains",
-  // `includes` is the source-level spelling used by converted JavaScript/TypeScript
-  // collection checks. Keep it an exact alias of `contains` so it cannot fall
-  // through to a dangling `$includes` call in the standalone WAT module.
-  includes: "$host___array_contains",
-  first:    "$host___array_first_option_v2",
-  last:     "$host___array_last_option_v2",
-  unwrapOr: "$host___unwrap_or_v2",
-  isSome:   "$host___option_is_some_v2",
-  isNone:   "$host___option_is_none_v2",
-};
-
-/** Plain (non-method) stdlib calls — constructors mapped to host imports. */
-const STDLIB_HOST_CALL_MAP: Record<string, string> = {
-  Some: "$host___option_some_v2",
-  Ok:   "$host___result_ok",   // Result.Ok(x)  (#145 lexer link)
-  Err:  "$host___result_err",  // Result.Err(x) (#145 lexer link)
-  // None is an identifier (no call); resolves via the host_none import at link time.
-
-  // Money currency constructors (ISO 4217) — lowered to host-side tagged handles.
-  // Each returns an i32 Money handle. The amount arg is a string handle (intern first).
-  gbp: "$host___money_gbp",
-  eur: "$host___money_eur",
-  usd: "$host___money_usd",
-  chf: "$host___money_chf",
-  jpy: "$host___money_jpy",
-  cad: "$host___money_cad",
-  aud: "$host___money_aud",
-  nzd: "$host___money_nzd",
-  sgd: "$host___money_sgd",
-  hkd: "$host___money_hkd",
-
-  // I/O — print(strHandle) emits to the host console; returns 0 (void).
-  print:   "$host___print",
-  println: "$host___println",
-
-  // Privacy — redact(strHandle) returns a redacted-sentinel handle.
-  redact: "$host___redact",
-
-  // Collection — range(lo, hi) returns an Array<Int> handle.
-  range: "$host___range",
-
-  // C02: exact Decimal constructor. Argument is a string handle.
-  Decimal: "$host___decimal_from_str",
-};
-
-/**
- * Resolves a char-literal token value to its concrete string (handles the same
- * escapes as the interpreter's resolveCharEscape, kept in lockstep). Used to lower
- * `'A'`/`'\n'` to their code point for WAT. Local to the emitter — the interpreter
- * owns the canonical copy; this mirror avoids a cross-module import cycle.
- */
 function resolveCharEscapeWAT(value: string): string {
   if (value.length === 2 && value[0] === "\\") {
     switch (value[1]) {
@@ -1718,44 +1120,638 @@ function resolveCharEscapeWAT(value: string): string {
  * otherwise fall back to a reverse lookup across all enums, accepting it only when every
  * matching enum agrees on the same index (else ambiguous → undefined).
  */
-function enumVariantTag(pattern: string, subjectNode: AstNode | undefined): number | undefined {
-  if (enumVariants === null) return undefined;
+function enumVariantTag(pattern: string, subjectNode: AstNode | undefined): Lookup<number> {
+  if (enumVariants.kind === "none") return none("enum-tag:no-variants");
   // 1. Subject is an enum-typed identifier → use that enum's variant order.
   if (subjectNode?.kind === "identifier") {
-    const t = recordVarTypes?.get(subjectNode.value ?? "");
-    if (t !== undefined && enumVariants.has(t)) {
-      const idx = (enumVariants.get(t) ?? []).indexOf(pattern);
-      return idx >= 0 ? idx : undefined;
+    const t = (recordVarTypes.kind === "found" ? recordVarTypes.value.get(subjectNode.value ?? "") : undefined);
+    if (t !== undefined && enumVariants.value.has(t)) {
+      const idx = (enumVariants.value.get(t) ?? []).indexOf(pattern);
+      return idx >= 0 ? found(idx) : none("enum-tag:pattern-missing");
     }
   }
   // 2. Reverse lookup across all enums; accept only an unambiguous index.
   const indices = new Set<number>();
-  for (const variants of enumVariants.values()) {
+  for (const variants of enumVariants.value.values()) {
     const idx = variants.indexOf(pattern);
     if (idx >= 0) indices.add(idx);
   }
-  return indices.size === 1 ? [...indices][0] : undefined;
+  return indices.size === 1 ? found([...indices][0]!) : none("enum-tag:ambiguous-or-missing");
 }
 
 /** Inner type of an `Option<T>` / `Result<T, …>` annotation (e.g. "Option<Char>" → "Char"). */
-function optionInnerType(t: string | undefined): string | undefined {
-  if (t === undefined) return undefined;
+function optionInnerType(t: string | undefined): Lookup<string> {
+  if (t === undefined) return none("option-inner:missing-type");
   const m = /^(?:Option|Result)<\s*([^,>]+?)\s*[,>]/.exec(t);
-  return m ? m[1] : undefined;
+  return m && m[1] !== undefined ? found(m[1]) : none("option-inner:no-match");
 }
 
 /** The payload lane for a typed Option/Result handle. Only binary floating-point
  * options use the f64 registry ABI; exact Decimal and unsupported f32 lanes stay
  * on the existing i32/opaque path and therefore cannot be silently narrowed. */
-function optionPayloadWatType(t: string | undefined): WATValType | undefined {
+function optionPayloadWatType(t: string | undefined): Lookup<WATValType> {
   const inner = optionInnerType(t);
-  if (inner === undefined) return undefined;
-  if (FLOAT_OPTION_WAT_TYPES.has(inner)) return "f64";
-  return "i32";
+  if (inner.kind === "none") return none(inner.reason);
+  if (FLOAT_OPTION_WAT_TYPES.has(inner.value)) return found("f64");
+  return found("i32");
 }
 
 function isFloatOptionType(t: string | undefined): boolean {
-  return optionPayloadWatType(t) === "f64";
+  const payload = optionPayloadWatType(t);
+  return payload.kind === "found" && payload.value === "f64";
+}
+
+/** `bind.field` member names under `node` (match-arm reconstruction for Auto receivers). */
+function memberFieldsOnBind(bind: string, node: AstNode | undefined): Set<string> {
+  const out = new Set<string>();
+  if (bind === "" || node === undefined) return out;
+  const walk = (n: AstNode): void => {
+    if (n.kind === "memberExpr") {
+      const recv = n.children?.[0];
+      if (recv?.kind === "identifier" && recv.value === bind && n.value) out.add(n.value);
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(node);
+  return out;
+}
+
+function isArrayAutoType(ty: string): boolean {
+  return /^Array<\s*Auto\s*>$/.test(ty.trim());
+}
+
+function flowParamType(flow: AstNode, name: string): Lookup<string> {
+  for (const c of flow.children ?? []) {
+    if (c.kind !== "paramDecl") continue;
+    const raw = c.value ?? "";
+    const nm = (raw.split(":")[0] ?? "").trim();
+    if (nm === name && raw.includes(":")) return found(raw.slice(raw.indexOf(":") + 1).trim());
+  }
+  return none(`flow-param-type-missing:${name}`);
+}
+
+function fieldTypeOf(typeName: string, field: string): Lookup<string> {
+  const interned = watJobCaches.internedFieldTypes;
+  if (interned.kind === "found") {
+    const row = interned.value.get(typeName);
+    if (row !== undefined) {
+      const ft = row.get(field);
+      if (ft !== undefined) return found(ft);
+    }
+  }
+  const recRow = recordFieldTypes.kind === "found" ? recordFieldTypes.value.get(typeName) : undefined;
+  if (recRow !== undefined) {
+    const ft = recRow.get(field);
+    if (ft !== undefined) return found(ft);
+  }
+  return none(`field-type-missing:${typeName}.${field}`);
+}
+
+function hasRecordLayout(typeName: string): boolean {
+  const interned = watJobCaches.internedLayouts;
+  if (interned.kind === "found" && interned.value.has(typeName)) return true;
+  return (recordLayouts.kind === "found" && recordLayouts.value.has(typeName)) === true;
+}
+
+function layoutOf(typeName: string): Lookup<readonly string[]> {
+  const interned = watJobCaches.internedLayouts;
+  if (interned.kind === "found") {
+    const layout = interned.value.get(typeName);
+    if (layout !== undefined) return found(layout);
+  }
+  const rec = recordLayouts.kind === "found" ? recordLayouts.value.get(typeName) : undefined;
+  if (rec !== undefined) return found(rec);
+  return none(`layout-missing:${typeName}`);
+}
+
+const ABSENT_CHILD: AstNode = { kind: "block", value: "", children: [] };
+
+function lastChild(ch: readonly AstNode[]): Lookup<AstNode> {
+  if (ch.length < 1) return none("last-child:empty");
+  const node = ch[ch.length - 1];
+  if (node) return found(node);
+  return none("last-child:absent");
+}
+
+function exprIsArrayAuto(node: AstNode | undefined, autoArr: ReadonlySet<string>, flow?: AstNode): boolean {
+  if (node === undefined) return false;
+  if (node.kind === "identifier") {
+    if (autoArr.has(node.value ?? "")) return true;
+    const paramTy = flow !== undefined ? flowParamType(flow, node.value ?? "") : none("expr-array-auto:no-flow");
+    const ty = paramTy.kind === "found" ? paramTy.value : (recordVarTypes.kind === "found" ? recordVarTypes.value.get(node.value ?? "") : undefined);
+    return ty !== undefined && isArrayAutoType(ty);
+  }
+  if (node.kind === "memberExpr") {
+    const field = node.value ?? "";
+    const recv = node.children?.[0];
+    let recvTy: Lookup<string> = none("recv-ty:unresolved");
+    if (recv?.kind === "identifier") {
+      const paramTy = flow !== undefined ? flowParamType(flow, recv.value ?? "") : none("expr-array-auto-recv:no-flow");
+      if (paramTy.kind === "found") {
+        recvTy = paramTy;
+      } else {
+        const fromVars = (recordVarTypes.kind === "found" ? recordVarTypes.value.get(recv.value ?? "") : undefined);
+        recvTy = typeof fromVars === "string" ? found(fromVars) : none("recv-ty:no-var");
+      }
+    } else {
+      const inferred = inferExprType(recv);
+      recvTy = typeof inferred === "string" ? found(inferred) : none("recv-ty:uninferred");
+    }
+    if (recvTy.kind === "none" || recvTy.value === "Auto") return false;
+    const ft = fieldTypeOf(recvTy.value, field);
+    return ft.kind === "found" && isArrayAutoType(ft.value);
+  }
+  return false;
+}
+
+function isGetOnAutoArray(node: AstNode | undefined, autoArr: ReadonlySet<string>, flow?: AstNode): boolean {
+  if (node?.kind !== "callExpr" || node.callStyle !== "method" || node.value !== "get") return false;
+  return exprIsArrayAuto(node.children?.[0], autoArr, flow);
+}
+
+/** Array<Auto> parameters plus locals assigned from `.get` on those arrays (Option<Auto>). */
+function collectAutoArrayIdents(flow: AstNode): Set<string> {
+  const ids = new Set<string>();
+  for (const c of flow.children ?? []) {
+    if (c.kind !== "paramDecl") continue;
+    const raw = c.value ?? "";
+    const name = (raw.split(":")[0] ?? "").trim();
+    const ty = raw.includes(":") ? raw.slice(raw.indexOf(":") + 1).trim() : "";
+    if (name !== "" && isArrayAutoType(ty)) ids.add(name);
+  }
+  const walk = (n: AstNode): void => {
+    if (n.kind === "letDecl" || n.kind === "mutDecl") {
+      const nm = ((n.value ?? "").split(":")[0] ?? "").trim();
+      if (nm !== "" && isGetOnAutoArray(n.children?.[0], ids, flow)) ids.add(nm);
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(flow);
+  return ids;
+}
+
+const AUTO_APPEND_FLOW_KINDS = new Set([
+  "pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl", "governedFlowDecl",
+]);
+
+/** Field orders of `#record` literals appended onto Array<Auto> (existing positional store ABI). */
+function collectArrayAutoAppendShapes(ast: Lookup<AstNode>): string[][] {
+  const cached = watJobCaches.autoAppendShapes;
+  if (cached.kind === "found") return cached.value;
+  const shapes: string[][] = [];
+  watJobCaches.autoAppendShapes = found(shapes);
+  if (ast.kind === "none") return shapes;
+  const program = ast.value;
+  const seen = new Set<string>();
+  for (const flow of program.children ?? []) {
+    if (!AUTO_APPEND_FLOW_KINDS.has(flow.kind)) continue;
+    const autoIdents = collectAutoArrayIdents(flow);
+    const walk = (n: AstNode): void => {
+      if (n.kind === "letDecl" || n.kind === "mutDecl") {
+        const nm = ((n.value ?? "").split(":")[0] ?? "").trim();
+        const ty = (n.value ?? "").includes(":") ? (n.value ?? "").slice((n.value ?? "").indexOf(":") + 1).trim() : "";
+        if (nm !== "" && isArrayAutoType(ty)) autoIdents.add(nm);
+      }
+      if (n.kind === "callExpr" && n.callStyle === "method" && n.value === "append") {
+        const recv = n.children?.[0];
+        const arg = n.children?.[1];
+        if (exprIsArrayAuto(recv, autoIdents, flow) && arg?.kind === "callExpr" && arg.value === "#record") {
+          const fields = (arg.children ?? []).map((c) => c.value ?? "").filter((f) => f.length > 0);
+          const key = fields.join("\0");
+          if (fields.length > 0 && !seen.has(key)) {
+            seen.add(key);
+            shapes.push(fields);
+          }
+        }
+      }
+      for (const c of n.children ?? []) walk(c);
+    };
+    walk(flow);
+  }
+  watJobCaches.autoAppendShapes = found(shapes);
+  return shapes;
+}
+
+function internAnonLayout(fields: readonly string[], fieldTypes?: ReadonlyMap<string, string>): string {
+  const name = `__anon_${fields.join("_")}`;
+  const layouts = watJobCaches.internedLayouts;
+  if (layouts.kind === "found" && !layouts.value.has(name)) {
+    layouts.value.set(name, [...fields]);
+    const ft = new Map<string, string>();
+    for (const f of fields) ft.set(f, fieldTypes?.get(f) ?? "String");
+    if (watJobCaches.internedFieldTypes.kind === "none") {
+      watJobCaches.internedFieldTypes = found(new Map());
+    }
+    const fts = watJobCaches.internedFieldTypes;
+    if (fts.kind === "found") fts.value.set(name, ft);
+  } else if (layouts.kind === "found" && fieldTypes !== undefined) {
+    const fts = watJobCaches.internedFieldTypes;
+    if (fts.kind === "found") {
+      const ft = fts.value.get(name);
+      if (ft !== undefined) {
+        for (const [k, v] of fieldTypes) {
+          if (v === "Array<Auto>") ft.set(k, v);
+        }
+      }
+    }
+  }
+  return name;
+}
+
+/**
+ * Unique Array<Auto> append shape for which `fields` is a prefix (set-equal to the
+ * shape's first N names) and every matching shape agrees on offsets. Fail-closed
+ * when two append shapes would load the same field at different slots.
+ */
+function uniqueAnonPrefixLayout(fields: ReadonlySet<string>): Lookup<string> {
+  if (fields.size === 0) return none("anon-prefix:empty-fields");
+  const matches: string[][] = [];
+  for (const shape of collectArrayAutoAppendShapes(watJobCaches.hofProgramAst)) {
+    if (shape.length < fields.size) continue;
+    const prefix = shape.slice(0, fields.size);
+    if (prefix.every((f) => fields.has(f)) && [...fields].every((f) => prefix.includes(f))) {
+      matches.push(shape);
+    }
+  }
+  if (matches.length === 0) return none("anon-prefix:no-shape");
+  const offsetOf = (shape: string[], f: string): number => shape.indexOf(f);
+  for (const f of fields) {
+    const off = offsetOf(matches[0]!, f);
+    if (off < 0) return none(`anon-prefix:field-absent:${f}`);
+    for (let i = 1; i < matches.length; i++) {
+      if (offsetOf(matches[i]!, f) !== off) return none(`anon-prefix:offset-conflict:${f}`);
+    }
+  }
+  matches.sort((a, b) => a.length - b.length);
+  return found(internAnonLayout(matches[0]!));
+}
+
+/** `bind.field` names in first-occurrence order (informal decl intern order). */
+function memberFieldsOnBindInOrder(bind: string, node: AstNode | undefined): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  if (bind === "" || node === undefined) return out;
+  const walk = (n: AstNode): void => {
+    if (n.kind === "memberExpr") {
+      const recv = n.children?.[0];
+      if (recv?.kind === "identifier" && recv.value === bind && n.value && !seen.has(n.value)) {
+        seen.add(n.value);
+        out.push(n.value);
+      }
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(node);
+  return out;
+}
+
+/** Fields of `bind` used as `.count()` / `.get()` / `.append()` receivers (Array<Auto>). */
+function arrayFieldsOnBind(bind: string, node: AstNode | undefined): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  if (bind === "" || node === undefined) return out;
+  const walk = (n: AstNode): void => {
+    if (n.kind === "callExpr" && n.callStyle === "method") {
+      const meth = n.value ?? "";
+      if (meth === "get" || meth === "count" || meth === "append" || meth === "length") {
+        const recv = n.children?.[0];
+        if (
+          recv?.kind === "memberExpr" &&
+          recv.children?.[0]?.kind === "identifier" &&
+          recv.children[0]!.value === bind &&
+          recv.value &&
+          !seen.has(recv.value)
+        ) {
+          seen.add(recv.value);
+          out.push(recv.value);
+        }
+      }
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(node);
+  return out;
+}
+
+function pushInformalShape(shapes: InformalShape[], fields: readonly string[], arrayFields: readonly string[]): void {
+  if (fields.length < 2) return;
+  if (fields.some((f) => INFORMAL_DENY_FIELDS.has(f))) return;
+  const key = fields.join("\0") + "#" + arrayFields.join("\0");
+  if (shapes.some((s) => s.fields.join("\0") + "#" + s.arrayFields.join("\0") === key)) return;
+  shapes.push({ fields: [...fields], arrayFields: [...arrayFields] });
+}
+
+function collectNestedInformalShapes(bind: string, body: AstNode | undefined, shapes: InformalShape[]): void {
+  if (bind === "" || body === undefined) return;
+  const getLocals = new Map<string, string>();
+  const walk = (n: AstNode): void => {
+    if ((n.kind === "letDecl" || n.kind === "mutDecl") && n.children?.[0]?.kind === "callExpr") {
+      const call = n.children[0]!;
+      if (call.callStyle === "method" && call.value === "get") {
+        const recv = call.children?.[0];
+        if (
+          recv?.kind === "memberExpr" &&
+          recv.children?.[0]?.kind === "identifier" &&
+          recv.children[0]!.value === bind &&
+          recv.value
+        ) {
+          const nm = ((n.value ?? "").split(":")[0] ?? "").trim();
+          if (nm !== "") getLocals.set(nm, recv.value);
+        }
+      }
+    }
+    if (n.kind === "matchExpr") {
+      const subject = n.children?.[0];
+      let nested = false;
+      if (subject?.kind === "identifier" && getLocals.has(subject.value ?? "")) nested = true;
+      else if (subject?.kind === "callExpr" && subject.callStyle === "method" && subject.value === "get") {
+        const recv = subject.children?.[0];
+        if (
+          recv?.kind === "memberExpr" &&
+          recv.children?.[0]?.kind === "identifier" &&
+          recv.children[0]!.value === bind
+        ) nested = true;
+      }
+      if (nested) {
+        for (const arm of (n.children ?? []).slice(1)) {
+          if (arm.kind !== "matchArm" || arm.value !== "Some") continue;
+          const ch = arm.children ?? [];
+          const inner = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value ?? "" : "";
+          const innerBody = lastChild(ch);
+          if (innerBody.kind === "found") {
+            pushInformalShape(shapes, memberFieldsOnBindInOrder(inner, innerBody.value), arrayFieldsOnBind(inner, innerBody.value));
+          } else {
+            pushInformalShape(shapes, memberFieldsOnBindInOrder(inner, ABSENT_CHILD), arrayFieldsOnBind(inner, ABSENT_CHILD));
+          }
+        }
+      }
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(body);
+}
+
+/**
+ * Informal Array<Auto> param / get-local Some-bind field orders (buildStaticEnv
+ * `{kind,name,value,typeName}`, buildBitfieldEnv `{kind,fields,register}` + nested
+ * `{name,mask}`) plus Auto-param `stmt: Auto` field orders (J6c: checkGenericBinding
+ * `{typeBase,typeArgs,name}`, checkTensorBinding tensor fields + `name`). Shapes that
+ * name parser-absent fields are dropped (no invented `.pattern` / `.target`).
+ */
+function collectInformalAutoParamShapes(ast: Lookup<AstNode>): InformalShape[] {
+  const cached = watJobCaches.informalShapes;
+  if (cached.kind === "found") return cached.value;
+  const shapes: InformalShape[] = [];
+  watJobCaches.informalShapes = found(shapes);
+  if (ast.kind === "none") return shapes;
+  const program = ast.value;
+  for (const flow of program.children ?? []) {
+    if (!AUTO_APPEND_FLOW_KINDS.has(flow.kind)) continue;
+    for (const c of flow.children ?? []) {
+      if (c.kind !== "paramDecl") continue;
+      const raw = c.value ?? "";
+      const name = (raw.split(":")[0] ?? "").trim();
+      const ty = raw.includes(":") ? raw.slice(raw.indexOf(":") + 1).trim() : "";
+      if (name === "" || ty !== "Auto") continue;
+      pushInformalShape(shapes, memberFieldsOnBindInOrder(name, flow), arrayFieldsOnBind(name, flow));
+    }
+    const autoIdents = collectAutoArrayIdents(flow);
+    const walk = (n: AstNode): void => {
+      if (n.kind === "letDecl" || n.kind === "mutDecl") {
+        const nm = ((n.value ?? "").split(":")[0] ?? "").trim();
+        const ty = (n.value ?? "").includes(":") ? (n.value ?? "").slice((n.value ?? "").indexOf(":") + 1).trim() : "";
+        if (nm !== "" && isArrayAutoType(ty)) autoIdents.add(nm);
+      }
+      if (n.kind === "matchExpr") {
+        const subject = n.children?.[0];
+        const fromAuto =
+          (subject?.kind === "identifier" && autoIdents.has(subject.value ?? "")) ||
+          isGetOnAutoArray(subject, autoIdents, flow);
+        if (fromAuto) {
+          for (const arm of (n.children ?? []).slice(1)) {
+            if (arm.kind !== "matchArm" || arm.value !== "Some") continue;
+            const ch = arm.children ?? [];
+            const bind = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value ?? "" : "";
+            const body = lastChild(ch);
+            if (body.kind === "found") {
+              pushInformalShape(shapes, memberFieldsOnBindInOrder(bind, body.value), arrayFieldsOnBind(bind, body.value));
+              collectNestedInformalShapes(bind, body.value, shapes);
+            } else {
+              pushInformalShape(shapes, memberFieldsOnBindInOrder(bind, ABSENT_CHILD), arrayFieldsOnBind(bind, ABSENT_CHILD));
+            }
+          }
+        }
+      }
+      for (const c of n.children ?? []) walk(c);
+    };
+    walk(flow);
+  }
+  watJobCaches.informalShapes = found(shapes);
+  return shapes;
+}
+
+/**
+ * Reconstruct an Auto-param (`stmt: Auto`) from members used on that param.
+ * Named unique layouts win (existing i32.load ABI); else exact unique informal intern.
+ * Denylisted parser-absent fields stay untyped.
+ */
+function refineAutoParamType(paramName: string, flow: AstNode): Lookup<string> {
+  const fields = memberFieldsOnBind(paramName, flow);
+  if (fields.size === 0) return none(`refine-auto-param:no-fields:${paramName}`);
+  if ([...fields].some((f) => INFORMAL_DENY_FIELDS.has(f))) return none(`refine-auto-param:denied-field:${paramName}`);
+  const named = uniqueRecordTypeForFields(fields);
+  if (named.kind === "found") return named;
+  return uniqueInformalLayout(fields);
+}
+
+/**
+ * Exact unique informal field-set (not a prefix, not a default type). Conflicting
+ * offsets stay unresolved. Array-used fields intern as Array<Auto> so nested `.get` works.
+ */
+function uniqueInformalLayout(fields: ReadonlySet<string>): Lookup<string> {
+  if (fields.size < 2) return none("informal-layout:too-few-fields");
+  if ([...fields].some((f) => INFORMAL_DENY_FIELDS.has(f))) return none("informal-layout:denied-field");
+  const matches: InformalShape[] = [];
+  for (const shape of collectInformalAutoParamShapes(watJobCaches.hofProgramAst)) {
+    if (shape.fields.length === fields.size && [...fields].every((f) => shape.fields.includes(f))) {
+      matches.push(shape);
+    }
+  }
+  if (matches.length === 0) return none("informal-layout:no-shape");
+  const offsetOf = (shape: InformalShape, f: string): number => shape.fields.indexOf(f);
+  for (const f of fields) {
+    const off = offsetOf(matches[0]!, f);
+    if (off < 0) return none(`informal-layout:field-absent:${f}`);
+    for (let i = 1; i < matches.length; i++) {
+      if (offsetOf(matches[i]!, f) !== off) return none(`informal-layout:offset-conflict:${f}`);
+    }
+  }
+  const shape = matches[0]!;
+  const ft = new Map<string, string>();
+  for (const af of shape.arrayFields) ft.set(af, "Array<Auto>");
+  return found(internAnonLayout(shape.fields, ft));
+}
+
+/**
+ * Union of `bind.field` names on Some-arms whose subject is Array<Auto>.get (or a
+ * local holding that Option). J5 uses this only when the local arm's field set is
+ * a strict subset — findPolicyExists's `pol.name` shares the policies array with
+ * effectIsPermitted's `{name, permittedEffects}`. Empty-field Auto binds (string
+ * elements) are not collected, so they stay untyped.
+ */
+function collectAutoSomeBindMemberFields(ast: Lookup<AstNode>): Set<string> {
+  const cached = watJobCaches.autoSomeBindMemberFields;
+  if (cached.kind === "found") return cached.value;
+  const out = new Set<string>();
+  watJobCaches.autoSomeBindMemberFields = found(out);
+  if (ast.kind === "none") return out;
+  const program = ast.value;
+  const FLOW_KINDS = new Set([
+    "pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl", "governedFlowDecl",
+  ]);
+  for (const flow of program.children ?? []) {
+    if (!FLOW_KINDS.has(flow.kind)) continue;
+    const autoIdents = collectAutoArrayIdents(flow);
+    if (autoIdents.size === 0) continue;
+    const walk = (n: AstNode): void => {
+      if (n.kind === "matchExpr") {
+        const subject = n.children?.[0];
+        const fromAuto =
+          (subject?.kind === "identifier" && autoIdents.has(subject.value ?? "")) ||
+          isGetOnAutoArray(subject, autoIdents, flow);
+        if (fromAuto) {
+          for (const arm of (n.children ?? []).slice(1)) {
+            if (arm.kind !== "matchArm" || arm.value !== "Some") continue;
+            const ch = arm.children ?? [];
+            const bind = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value ?? "" : "";
+            const body = lastChild(ch);
+            if (body.kind === "found") {
+              for (const f of memberFieldsOnBind(bind, body.value)) out.add(f);
+            }
+          }
+        }
+      }
+      for (const c of n.children ?? []) walk(c);
+    };
+    walk(flow);
+  }
+  return out;
+}
+
+function fieldTypesAgree(typeA: string, typeB: string, fields: ReadonlySet<string>): boolean {
+  const a = (recordFieldTypes.kind === "found" ? recordFieldTypes.value.get(typeA) : undefined);
+  const b = (recordFieldTypes.kind === "found" ? recordFieldTypes.value.get(typeB) : undefined);
+  if (a === undefined || b === undefined) return false;
+  for (const f of fields) {
+    if (a.get(f) === undefined || a.get(f) !== b.get(f)) return false;
+  }
+  return true;
+}
+
+/**
+ * Unique record in `recordLayouts` that contains every field in `fields`.
+ * Empty or ambiguous sibling shapes → undefined (fail-closed; never a default type).
+ * J5: a prefix-family (PolicyDecl ⊏ GuardDecl) is unique when every candidate
+ * shape has one type, the ordered field lists form a prefix chain, and the
+ * shortest shape already owns every requested field with agreeing field types.
+ * Alpha `{name}` vs Beta `{name}` stays fail-closed (same shape, two types).
+ */
+function uniqueRecordTypeForFields(fields: ReadonlySet<string>): Lookup<string> {
+  if (recordLayouts.kind === "none") return none("unique-record:no-layouts");
+  if (fields.size === 0) return none("unique-record:empty-fields");
+  const layouts = recordLayouts.value;
+  const candidates: string[] = [];
+  for (const [typeName, layout] of layouts) {
+    let hasAll = true;
+    for (const f of fields) {
+      if (!layout.includes(f)) { hasAll = false; break; }
+    }
+    if (hasAll) candidates.push(typeName);
+  }
+  if (candidates.length === 0) return none("unique-record:no-candidate");
+  if (candidates.length === 1) return found(candidates[0]!);
+  // J6a: a unique exact field-set (RecordFieldDecl `{name, typeName}`) wins over
+  // longer containers (FlowParam, Stmt). Equal-shape Alpha/Beta still has two exacts
+  // and falls through to the fail-closed sibling check.
+  const exact: string[] = [];
+  for (const t of candidates) {
+    const layout = layouts.get(t) ?? [];
+    if (layout.length === fields.size && [...fields].every((f) => layout.includes(f))) exact.push(t);
+  }
+  if (exact.length === 1) return found(exact[0]!);
+
+  const shapeOf = (t: string): string => (layouts.get(t) ?? []).join("\0");
+  const byShape = new Map<string, string[]>();
+  for (const t of candidates) {
+    const s = shapeOf(t);
+    const arr = byShape.get(s) ?? [];
+    arr.push(t);
+    byShape.set(s, arr);
+  }
+  for (const types of byShape.values()) {
+    if (types.length !== 1) return none("unique-record:ambiguous-shape");
+  }
+  const shapes = [...byShape.keys()].sort((a, b) => a.split("\0").filter((x) => x.length > 0).length - b.split("\0").filter((x) => x.length > 0).length);
+  for (let i = 1; i < shapes.length; i++) {
+    const prev = shapes[i - 1]!.split("\0").filter((x) => x.length > 0);
+    const next = shapes[i]!.split("\0").filter((x) => x.length > 0);
+    if (prev.length >= next.length) return none("unique-record:not-prefix-family");
+    for (let j = 0; j < prev.length; j++) {
+      if (prev[j] !== next[j]) return none("unique-record:prefix-mismatch");
+    }
+  }
+  const shortestFields = shapes[0]!.split("\0").filter((x) => x.length > 0);
+  for (const f of fields) {
+    if (!shortestFields.includes(f)) return none(`unique-record:field-outside-shortest:${f}`);
+  }
+  const shortestType = byShape.get(shapes[0]!)![0]!;
+  for (const t of candidates) {
+    if (t !== shortestType && !fieldTypesAgree(shortestType, t, fields)) return none("unique-record:field-type-disagree");
+  }
+  return found(shortestType);
+}
+
+/** Keep a concrete layout type; reconstruct Auto/unknown from member uses in the arm body. */
+function refineAutoRecordType(
+  bind: string,
+  body: AstNode | undefined,
+  current: string | undefined,
+): Lookup<string> {
+  if (current !== undefined && current !== "Auto" && hasRecordLayout(current)) return found(current);
+  const local = memberFieldsOnBind(bind, body);
+  const reconstructed = uniqueRecordTypeForFields(local);
+  if (reconstructed.kind === "found") return reconstructed;
+  // J5: a local subset (findPolicyExists `pol.name`) reconstructs from the module's
+  // Array<Auto> Some-bind field union when that union uniquely identifies a prefix family.
+  const union = collectAutoSomeBindMemberFields(watJobCaches.hofProgramAst);
+  if (local.size > 0 && union.size > local.size && [...local].every((f) => union.has(f))) {
+    const widened = uniqueRecordTypeForFields(union);
+    if (widened.kind === "found") return widened;
+  }
+  // J6a: Array<Auto> append-shape prefix (lookupQualifiedType `{name,typeName}`,
+  // StaticEnv.entries `{name,value}` ⊏ `{name,value,typeName}`, BitfieldEnv.entries).
+  const anon = uniqueAnonPrefixLayout(local);
+  if (anon.kind === "found") return anon;
+  // J6b: informal Array<Auto> param decls (no append shape) + nested get→Some.
+  // J6c: Auto-param `stmt: Auto` intern shares this exact unique field-set path.
+  const informal = uniqueInformalLayout(local);
+  if (informal.kind === "found") return informal;
+  return current !== undefined ? found(current) : none("refine-auto-record:unresolved");
+}
+
+/**
+ * Record type of a member receiver. Concrete inferred layouts win; Auto/unknown
+ * receivers resolve only when exactly one layout owns `fieldName`.
+ */
+function resolveRecordReceiverType(receiverNode: AstNode | undefined, fieldName: string): Lookup<string> {
+  const inferred = inferExprType(receiverNode);
+  if (inferred !== undefined && inferred !== "Auto" && hasRecordLayout(inferred)) return found(inferred);
+  if (fieldName === "") {
+    return inferred !== undefined ? found(inferred) : none("receiver-type:empty-field");
+  }
+  const byField = uniqueRecordTypeForFields(new Set([fieldName]));
+  if (byField.kind === "found") return byField;
+  return inferred !== undefined ? found(inferred) : none("receiver-type:unresolved");
 }
 
 /**
@@ -1776,7 +1772,7 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       return raw.includes(".") || raw.includes("e") || raw.includes("E") ? "Float" : "Int";
     }
     case "boolLiteral": return "Bool";
-    case "identifier":  return recordVarTypes?.get(node.value ?? "");
+    case "identifier":  return (recordVarTypes.kind === "found" ? recordVarTypes.value.get(node.value ?? "") : undefined);
     // W5a K3: Verdict producers/operators. LOAD-BEARING for soundness — without
     // these, `Verdict.Deny && Verdict.Allow` would fall to the Bool lane and lower
     // as bitwise i32.and(-1,1)=1 = ALLOW (a fail-open); K3 min is DENY.
@@ -1789,11 +1785,12 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       // #160 str_eq: resolve `a.s` to its field's declared type, so `a.s == b.s` (neither operand a
       // literal) is detected as a String comparison → host___str_eq, not i32.eq on handles. Recursive
       // via inferExprType(recv), so it also types `a.b.c` chains (receiver's field type is a record).
-      const recvType = inferExprType(recv);
+      // Auto match-binds reconstruct a unique layout (J4); ambiguous fields stay undefined.
       const fieldName = node.value;
-      if (recvType !== undefined && fieldName !== undefined) {
-        const ft = recordFieldTypes?.get(recvType)?.get(fieldName);
-        if (ft !== undefined) return ft;
+      const recvType = resolveRecordReceiverType(recv, fieldName ?? "");
+      if (recvType.kind === "found" && fieldName !== undefined) {
+        const ft = fieldTypeOf(recvType.value, fieldName);
+        if (ft.kind === "found") return ft.value;
       }
       return undefined;
     }
@@ -1834,6 +1831,15 @@ function inferExprType(node: AstNode | undefined): string | undefined {
     case "callExpr": {
       const name = node.value ?? "";
       if (node.callStyle === "method") {
+        // R2: Money is typed (Money<CCY>) so every non-constructor Money form is refused by name, never
+        // lowered as i32 handle arithmetic. Constructors: Money.gbp(..) → Money<GBP>; Money.of → Money.
+        const recv0 = node.children?.[0];
+        if (recv0?.kind === "identifier" && recv0.value === "Money") {
+          if ((STDLIB_HOST_CALL_MAP[name] ?? "").startsWith("$host___money_")) return `Money<${name.toUpperCase()}>`;
+          if (name === "of") return "Money";
+        }
+        if (recv0?.kind === "identifier" && recv0.value === "Decimal" && name === "fromInt") return "Decimal";
+        if (isMoneyWatType(inferExprType(recv0))) return name === "amount" ? "Decimal" : "Money";
         if (name === "toString" || name === "toStr" || name === "concat" ||
             name === "trim" || name === "padStart" || name === "padEnd" || name === "repeat" ||
             name === "slice") return "String";
@@ -1852,13 +1858,13 @@ function inferExprType(node: AstNode | undefined): string | undefined {
         // integer literal (numeric widening is legal in the source language).
         if (name === "unwrapOr") {
           const inner = optionInnerType(inferExprType(node.children?.[0]));
-          if (inner !== undefined && FLOAT_OPTION_WAT_TYPES.has(inner)) return inner;
+          if (inner.kind === "found" && FLOAT_OPTION_WAT_TYPES.has(inner.value)) return inner.value;
           return inferExprType(node.children?.[1]);
         }
         // first()/last() on an Array<T> → Option<T>; get(i) likewise.
         if (name === "first" || name === "last" || name === "get") {
           const inner = optionInnerType(inferExprType(node.children?.[0])?.replace(/^Array</, "Option<"));
-          return inner !== undefined ? `Option<${inner}>` : undefined;
+          return inner.kind === "found" ? `Option<${inner.value}>` : undefined;
         }
         if (name === "map" || name === "filter") {
           return inferExprType(node.children?.[0]);
@@ -1877,7 +1883,8 @@ function inferExprType(node: AstNode | undefined): string | undefined {
         return inner !== undefined ? `Option<${inner}>` : "Option";
       }
       if (name === "Decimal") return "Decimal";
-      return flowReturnTypes?.get(name);
+      if ((STDLIB_HOST_CALL_MAP[name] ?? "").startsWith("$host___money_")) return `Money<${name.toUpperCase()}>`;
+      return (flowReturnTypes.kind === "found" ? flowReturnTypes.value.get(name) : undefined);
     }
     default: return undefined;
   }
@@ -1939,14 +1946,14 @@ export function emitWATExpr(
           if (memberName === "Deny")    return `(i32.const -1) (; Verdict.Deny ;)`;
           if (memberName === "Unknown") return `(i32.const 0) (; Verdict.Unknown ;)`;
           if (memberName === "Allow")   return `(i32.const 1) (; Verdict.Allow ;)`;
-          return `(unreachable) (; unknown Verdict member '${memberName}' — fail-closed ;)`;
+          return `(unreachable) (; unknown Verdict member '${memberName}' — fail-closed (emitter cannot lower) ;)`;
         }
 
         // P9.4d (#144): enum-variant access — EnumType.Variant → its declaration-order
         // i32 tag. NO trailing ;; comment — this is used INLINE (e.g. inside i32.store),
         // and a line comment would swallow the enclosing S-expression's closing paren.
-        if (enumVariants !== null) {
-          const variants = enumVariants.get(receiverName);
+        if (enumVariants.kind === "found") {
+          const variants = enumVariants.value.get(receiverName);
           if (variants) {
             const vIdx = variants.indexOf(memberName);
             if (vIdx >= 0) return `(i32.const ${vIdx})`;
@@ -1958,17 +1965,18 @@ export function emitWATExpr(
       // Resolve the receiver expression's declared type, including nested records
       // and record-returning calls. The type inference already follows a.b.c;
       // lowering must use the same layout at each step instead of requiring a
-      // developer-created local for every intermediate record.
-      const recType = inferExprType(receiverNode);
-      if (receiverNode !== undefined && recType !== undefined && recordLayouts !== null) {
-        const fields = recordLayouts.get(recType);
-        const idx = fields ? fields.indexOf(memberName) : -1;
+      // developer-created local for every intermediate record. Auto match-binds
+      // (J4 checkFlowEffects) reconstruct a unique layout; unknown stays trapped.
+      const recType = resolveRecordReceiverType(receiverNode, memberName);
+      if (receiverNode !== undefined && recType.kind === "found" && (recordLayouts.kind === "found" || watJobCaches.internedLayouts.kind === "found")) {
+        const fields = layoutOf(recType.value);
+        const idx = fields.kind === "found" ? fields.value.indexOf(memberName) : -1;
         if (idx >= 0) {
           if (receiverNode.kind === "identifier" && !vars.has(receiverNode.value ?? "")) {
             // A missing record base must trap, never read reserved scratch memory.
             return `(unreachable) (; unresolved record base: ${receiverNode.value ?? ""} — fail-closed (emitter cannot lower; #163) ;)`;
           }
-          const slot = watRecordLayouts?.get(recType)?.fields.find((field) => field.name === memberName);
+          const slot = (watRecordLayouts.kind === "found" ? watRecordLayouts.value.get(recType.value) : undefined)?.fields.find((field) => field.name === memberName);
           const off = slot?.offset ?? idx * WAT_REC_FIELD_SIZE;
           const load = slot === undefined ? "i32.load" : `${slot.watType}.load`;
           // Emit the receiver exactly once. Unsupported inner expressions retain
@@ -2015,14 +2023,14 @@ export function emitWATExpr(
       const wantI64 = expectedType !== undefined && INT64_WAT_TYPES.has(numericBaseType(expectedType));
       // AOT #1 (R&D 0036): const-expression folding — if both operands are compile-time int constants
       // and the arithmetic doesn't trap, emit the folded literal instead of the runtime op. foldToInt
-      // returns null for non-int / string / comparison operands and for any TRAPPING const op (so those
+      // returns absent for non-int / string / comparison operands and for any TRAPPING const op (so those
       // fall through unchanged and stay fail-closed).
       // Step 4d (R2): do NOT fold an Int64-context expression in 32-bit space — foldToInt uses i32
       // arithmetic + emits an i32.const, which truncates / mismatches an i64 result. Skip folding when the
       // context wants i64; the runtime i64 op below stays exact (BigInt-equivalent, traps on overflow).
       if (!wantI64) {
         const foldedConst = foldToInt(node, staticConsts);
-        if (foldedConst !== null) return `(i32.const ${foldedConst})`;
+        if (foldedConst.kind === "found") return `(i32.const ${foldedConst.value})`;
       }
       const watOp = BINARY_OP_TO_WAT.get(op);
       const children = node.children ?? [];
@@ -2033,6 +2041,8 @@ export function emitWATExpr(
       // (equal-valued strings can have different handles).
       const lty = inferExprType(children[0]);
       const rty = inferExprType(children[1]);
+      // R2: no Money operator is in the host ABI (an i32 op on two handles is a silent wrong answer).
+      if (isMoneyWatType(lty) || isMoneyWatType(rty)) refuseMoneyWat(`operator '${op}'`);
       const stringOperand = lty === "String" || rty === "String";
       if (op === "+" && stringOperand) {
         return `(call $host___str_concat ${left} ${right})`;
@@ -2074,7 +2084,9 @@ export function emitWATExpr(
       // (matching the f64.const literal emission). Comparisons yield i32 0/1 (the bool), as in WASM.
       if (lty === "Decimal" || rty === "Decimal") {
         if (lty !== "Decimal" || rty !== "Decimal") {
-          return `(unreachable) (; mixed Decimal '${op}' is not admitted — fail-closed C02 ;)`;
+          // K4b / R8: compile-time refusal (was a deferred `(unreachable)` trap); the type checker names
+          // the same program FUNGI-NUMERIC-OP-003 and the walker traps MixedDecimalOperand.
+          refuseDecimalWat(`mixed Decimal '${op}' with '${lty === "Decimal" ? (rty ?? "unknown") : (lty ?? "unknown")}' is not admitted (use Decimal.fromInt(n) for an Int; a Float never meets Decimal)`);
         }
         if (op === "+") return `(call $host___decimal_add ${left} ${right})`;
         if (op === "-") return `(call $host___decimal_sub ${left} ${right})`;
@@ -2086,7 +2098,8 @@ export function emitWATExpr(
         if (op === ">") return `(i32.gt_s ${cmp} (i32.const 0))`;
         if (op === "<=") return `(i32.le_s ${cmp} (i32.const 0))`;
         if (op === ">=") return `(i32.ge_s ${cmp} (i32.const 0))`;
-        return `(unreachable) (; Decimal '${op}' is not in the C02 host ABI ;)`;
+        // K4b: `/` and `%` are partial on Decimal (FUNGI-NUMERIC-OP-001 redirects them to the method forms).
+        refuseDecimalWat(`Decimal operator '${op}' is not in the C02 host ABI (use a.divide(b, scale, "halfEven") or a.remainder(b))`);
       }
       const lFloat165 = FLOAT_WAT_TYPES.has(lty ?? "");
       const rFloat165 = FLOAT_WAT_TYPES.has(rty ?? "");
@@ -2112,7 +2125,7 @@ export function emitWATExpr(
         // f64 lowering. Falling through to the `watOp` path below would emit an i32 op
         // (e.g. i32.rem_s) over f64 operands — a wrong-typed module / wrong value
         // (CWE-704). Fail-closed TRAP instead (inline-safe block comment).
-        return `(unreachable) (; #165: i32-only op over float operand — fail-closed ;)`;
+        return `(unreachable) (; #165: i32-only op over float operand — fail-closed (emitter cannot lower) ;)`;
       }
       // #52: faithful UNSIGNED-64 lowering. `+`/`-`/`*` route to the strict-trapping checked u64 helpers
       // (overflow/underflow TRAP — no silent 2^64 wrap), `/`/`%` use native i64.div_u/rem_u (trap /0),
@@ -2123,7 +2136,7 @@ export function emitWATExpr(
       const rU64 = numericBaseType(rty ?? "") === "UInt64";
       if (lU64 || rU64) {
         if (!lU64 || !rU64) {
-          return `(unreachable) (; mixed UInt64×non-UInt64 '${op}' — emitter declines the sign promotion; the walker handles it (#52) ;)`;
+          return refuseMixed64BitWat(op, `mixed UInt64×non-UInt64; sign promotion is not lowered`);
         }
         const uOp = UINT64_ARITH_WAT[op] ?? UINT64_CMP_WAT[op];
         if (uOp !== undefined) {
@@ -2132,7 +2145,7 @@ export function emitWATExpr(
           return `(${uOp} ${Lx} ${Rx})`;
         }
         // an i32-only op (bitwise) over a UInt64 operand has no u64 lowering — fail-closed.
-        return `(unreachable) (; i32-only op over UInt64 operand — fail-closed (#52) ;)`;
+        return refuseMixed64BitWat(op, `i32-only op over UInt64 operand`);
       }
       // Step 4c: native i64 lowering for Int64 operands — AFTER the float check (so an Int64+Float type
       // error infers Float → invalid module → walker fallback, fail-SAFE). `+`/`-`/`*` trap via the checked
@@ -2161,7 +2174,17 @@ export function emitWATExpr(
           return `(${iOp} ${L} ${R})`;
         }
         // an i32-only op (e.g. bitwise) over an Int64 operand has no i64 lowering here — fail-closed.
-        return `(unreachable) (; i32-only op over Int64 operand — fail-closed ;)`;
+        return refuseMixed64BitWat(op, `i32-only op over Int64 operand`);
+      }
+      // J-R3: Bool && / || match interpreter short-circuit (evalExprS / evalBinary).
+      // && skips RHS when LHS is false; || skips RHS when LHS is true.
+      // Verdict lattice min/max already returned above (select). Eager i32.and /
+      // i32.or evaluated a trapping RHS (safeRatio(0) / 1/0) that interp skips.
+      if (op === "&&") {
+        return `(if (result i32) ${left} (then ${right}) (else (i32.const 0)))`;
+      }
+      if (op === "||") {
+        return `(if (result i32) ${left} (then (i32.const 1)) (else ${right}))`;
       }
       if (watOp !== undefined) {
         return `(${watOp} ${left} ${right})`;
@@ -2188,6 +2211,7 @@ export function emitWATExpr(
         const innerI64 = childInt64 ? inner : `(i64.extend_i32_s ${inner})`;
         return `(call $fungi_checked_sub_i64 (i64.const 0) ${innerI64})`;
       }
+      if (isMoneyWatType(childType)) refuseMoneyWat(`unary '${op}'`);
       if (op === "-" && childType === "Decimal") {
         // C02: exact host negation. Decimal is not in FLOAT_WAT_TYPES; nesting this
         // under the f64 lane previously fell through to i32 handle arithmetic.
@@ -2264,9 +2288,9 @@ export function emitWATExpr(
       // falls back (it needs a base copy — a follow-on).
       if (name === "#record") {
         const fields = node.children ?? [];
-        if (recordCtx !== null && fields.length > 0) {
-          const recLocal = `$__fungi_rec_${recordCtx.counter.n++}`;
-          recordCtx.localDecls.push(`(local ${recLocal} i32)`);
+        if (recordCtx.kind === "found" && fields.length > 0) {
+          const recLocal = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+          recordCtx.value.localDecls.push(`(local ${recLocal} i32)`);
           // #32 fail-open fix: store each field at its DECLARED-layout offset — the SAME map the read uses
           // (recordLayouts, line ~1183) — NOT the literal child index. An out-of-declared-order literal
           // (`Pair { b: …, a: … }` for `record Pair { a, b }`) otherwise wrote b's value to a's slot, so a
@@ -2279,16 +2303,16 @@ export function emitWATExpr(
           // re-opened (walker by-name = 11, WASM by-position = 20). Size on the DECLARED length so a
           // reordered/short literal can't under-allocate.
           const declaredTypeName = (node as { typeName?: string }).typeName
-            ?? (expectedType !== undefined && recordLayouts?.has(expectedType) ? expectedType : undefined);
-          const declaredLayout = declaredTypeName ? recordLayouts?.get(declaredTypeName) : undefined;
-          const declaredWATLayout = declaredTypeName ? watRecordLayouts?.get(declaredTypeName) : undefined;
+            ?? (expectedType !== undefined && (recordLayouts.kind === "found" && recordLayouts.value.has(expectedType)) ? expectedType : undefined);
+          const declaredLayout = declaredTypeName ? (recordLayouts.kind === "found" ? recordLayouts.value.get(declaredTypeName) : undefined) : undefined;
+          const declaredWATLayout = declaredTypeName ? (watRecordLayouts.kind === "found" ? watRecordLayouts.value.get(declaredTypeName) : undefined) : undefined;
           // A field name foreign to a KNOWN declared layout = a malformed/ill-typed literal (the type-checker
           // should have rejected it). Fail CLOSED rather than silently store it by position — matches the read
           // side's fail-closed posture (line ~1191); never a silent wrong-slot write.
           if (declaredLayout) {
             const foreign = fields.find((f) => !declaredLayout.includes(f.value ?? ""));
             if (foreign) {
-              return `(unreachable) (; #record: field .${foreign.value ?? "?"} not in declared layout of ${declaredTypeName} — fail-closed (#32) ;)`;
+              return `(unreachable) (; #record: field .${foreign.value ?? "?"} not in declared layout of ${declaredTypeName} — fail-closed (#32) (emitter cannot lower) ;)`;
             }
           }
           const size = declaredWATLayout?.size ?? (declaredLayout?.length ?? fields.length) * WAT_REC_FIELD_SIZE;
@@ -2320,13 +2344,13 @@ export function emitWATExpr(
         const spreadBase = updChildren.find(c => c.value === "#spread")?.children?.[0];
         const updates = updChildren.filter(c => c.value !== "#spread");
         const baseType = spreadBase !== undefined ? inferExprType(spreadBase) : undefined;
-        const layout = (baseType !== undefined && recordLayouts !== null) ? recordLayouts.get(baseType) : undefined;
-        const watLayout = baseType !== undefined ? watRecordLayouts?.get(baseType) : undefined;
-        if (recordCtx !== null && spreadBase !== undefined && layout !== undefined) {
-          const recLocal  = `$__fungi_rec_${recordCtx.counter.n++}`;
-          const baseLocal = `$__fungi_rec_${recordCtx.counter.n++}`;
-          recordCtx.localDecls.push(`(local ${recLocal} i32)`);
-          recordCtx.localDecls.push(`(local ${baseLocal} i32)`);
+        const layout = (baseType !== undefined && recordLayouts.kind === "found") ? recordLayouts.value.get(baseType) : undefined;
+        const watLayout = baseType !== undefined ? (watRecordLayouts.kind === "found" ? watRecordLayouts.value.get(baseType) : undefined) : undefined;
+        if (recordCtx.kind === "found" && spreadBase !== undefined && layout !== undefined) {
+          const recLocal  = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+          const baseLocal = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+          recordCtx.value.localDecls.push(`(local ${recLocal} i32)`);
+          recordCtx.value.localDecls.push(`(local ${baseLocal} i32)`);
           const size = watLayout?.size ?? layout.length * WAT_REC_FIELD_SIZE;
           const baseWat = emitWATExpr(spreadBase, vars, staticConsts);
           const parts: string[] = [`(block (result i32)`];
@@ -2357,10 +2381,10 @@ export function emitWATExpr(
         }
         // #163: INSIDE an emission walk (recordCtx active) but we could not lower the
         // update (un-inferable base type / missing layout) → fail CLOSED with a trap,
-        // never a silent null record handle (downstream would read it as a wrong-but-
+        // never a silent absent record handle (downstream would read it as a wrong-but-
         // plausible value instead of trapping). OUTSIDE an emission walk (recordCtx ===
-        // null) keep the placeholder so analysis-only pipeline callers are unchanged.
-        if (recordCtx !== null) {
+        // absent) keep the placeholder so analysis-only pipeline callers are unchanged.
+        if (recordCtx.kind === "found") {
           return `(unreachable) (; #record-update: base type unknown — fail-closed (emitter cannot lower; #163) ;)`;
         }
         return `(i32.const 0)`;
@@ -2389,6 +2413,22 @@ export function emitWATExpr(
           recvName0 === "Float" || recvName0 === "Float64" || recvName0 === "Double";
         const realReceiver = isTypeRecv0 ? argNodes[0] : receiverNode;
 
+        // R2: only the per-currency Money constructors are lowered (one amount argument); Money.of, any
+        // other Money static, and every method on a Money value are named compile-time refusals.
+        if (recvName0 === "Money" && !vars.has("Money")) {
+          if (!(STDLIB_HOST_CALL_MAP[name] ?? "").startsWith("$host___money_")) refuseMoneyWat(`Money.${name}(…)`);
+          if (argNodes.length !== 1) refuseMoneyWat(`constructor Money.${name} with ${argNodes.length} arguments`);
+        } else if (realReceiver !== undefined && isMoneyWatType(inferExprType(realReceiver))) {
+          refuseMoneyWat(`method '.${name}()'`);
+        }
+        // R3: Decimal.fromInt(n) is the only lowered Decimal static besides the Decimal("…") constructor.
+        if (recvName0 === "Decimal" && !vars.has("Decimal")) {
+          if (name === "fromInt" && argNodes.length === 1 && inferExprType(argNodes[0]) === "Int") {
+            return `(call $host___decimal_from_int ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
+          }
+          refuseDecimalWat(`Decimal.${name}(…) with these arguments is not lowered to the host ABI (Decimal.fromInt takes one Int)`);
+        }
+
         // A raw Float64 ingress may be non-finite even though ordinary Fungi
         // float construction and ordering are fail-closed. Classify it before
         // any guarded comparison so validators can project a typed diagnostic.
@@ -2400,7 +2440,7 @@ export function emitWATExpr(
         if (name === "isPositive" &&
             (recvName0 === "Float" || recvName0 === "Float64" || recvName0 === "Double") &&
             (vars.has(recvName0) || staticConsts.has(recvName0))) {
-          return `(unreachable) (; isPositive namespace shadowed by lexical binding — fail closed ;)`;
+          return `(unreachable) (; isPositive namespace shadowed by lexical binding — fail closed (emitter cannot lower) ;)`;
         }
         if (name === "isPositive" &&
             (recvName0 === "Float" || recvName0 === "Float64" || recvName0 === "Double") &&
@@ -2509,12 +2549,33 @@ export function emitWATExpr(
         }
 
         if (realReceiver !== undefined && inferExprType(realReceiver) === "Decimal") {
-          if (name === "divide" && argNodes.length === 3) {
-            return `(call $host___decimal_div ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)} ${emitWATExpr(argNodes[1]!, vars, staticConsts)} ${emitWATExpr(argNodes[2]!, vars, staticConsts)})`;
+          // R3: the arguments must TYPE as (Decimal|Int divisor, Int scale, literal mode ∈ ROUND_MODES) —
+          // an Int divisor goes through the exact __decimal_from_int; anything else is refused by name
+          // (never an i32 handle confusion, never a default mode).
+          const exactOperandWat = (n: AstNode, what: string): string => {
+            const t = inferExprType(n);
+            if (t === "Decimal") return emitWATExpr(n, vars, staticConsts);
+            if (t === "Int") return `(call $host___decimal_from_int ${emitWATExpr(n, vars, staticConsts)})`;
+            return refuseDecimalWat(`${what} must be a Decimal or an Int, not '${t ?? "an untyped expression"}'`);
+          };
+          if (name === "divide") {
+            if (argNodes.length !== 3) refuseDecimalWat(`a.divide needs (divisor, scale, mode) — got ${argNodes.length} argument(s); there is no default mode`);
+            const divisorWat = exactOperandWat(argNodes[0]!, "the divide divisor");
+            if (inferExprType(argNodes[1]) !== "Int") refuseDecimalWat("the divide scale must be an Int");
+            const modeNode = argNodes[2]!;
+            const modeRaw = modeNode.value ?? "";
+            const modeText = modeRaw.length >= 2 && modeRaw.startsWith('"') && modeRaw.endsWith('"') ? modeRaw.slice(1, -1) : modeRaw;
+            if (modeNode.kind !== "stringLiteral" || !(ROUND_MODES as readonly string[]).includes(modeText)) {
+              refuseDecimalWat(`the divide rounding mode must be a string literal naming one of ${ROUND_MODES.join("|")}`);
+            }
+            return `(call $host___decimal_div ${emitWATExpr(realReceiver, vars, staticConsts)} ${divisorWat} ${emitWATExpr(argNodes[1]!, vars, staticConsts)} ${emitWATExpr(modeNode, vars, staticConsts)})`;
           }
-          if (name === "remainder" && argNodes.length === 1) {
-            return `(call $host___decimal_rem ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
+          if (name === "remainder") {
+            if (argNodes.length !== 1) refuseDecimalWat(`a.remainder needs exactly one divisor — got ${argNodes.length}`);
+            return `(call $host___decimal_rem ${emitWATExpr(realReceiver, vars, staticConsts)} ${exactOperandWat(argNodes[0]!, "the remainder divisor")})`;
           }
+          // K4b: no other Decimal method has a host lowering (abs/round/floor/ceil/toFixed/sign run on the walker).
+          refuseDecimalWat(`Decimal method '.${name}()' is not lowered to the C02 host ABI`);
         }
 
         const hostFn = STDLIB_HOST_MAP[name];
@@ -2531,44 +2592,91 @@ export function emitWATExpr(
           const operandWats = operandNodes.map((c) => emitWATExpr(c, vars, staticConsts));
           return `(call ${hostFn} ${operandWats.join(" ")})`.trimEnd();
         }
+        // #163-A2: static constructors written as methods — Money.gbp("12.34"),
+        // Array.range(2, 7), Result.Ok(x) — share STDLIB_HOST_CALL_MAP with the
+        // bare-call form. Drop a capitalised type receiver so the host import
+        // sees only the constructor arguments. Without this branch those names
+        // hit the unknown-method `(unreachable)` and never pull a host import.
+        const ctorHostFn = STDLIB_HOST_CALL_MAP[name];
+        if (ctorHostFn !== undefined) {
+          const recvName = receiverNode?.kind === "identifier" ? (receiverNode.value ?? "") : "";
+          const recvLead = recvName.charAt(0);
+          const typeReceiver = recvLead >= "A" && recvLead <= "Z";
+          const operandNodes = typeReceiver ? argNodes : children;
+          const operandWats = operandNodes.map((c) => emitWATExpr(c, vars, staticConsts));
+          return `(call ${ctorHostFn} ${operandWats.join(" ")})`.trimEnd();
+        }
         if ((name === "map" || name === "filter") && realReceiver !== undefined && argNodes.length === 1) {
           const callback = argNodes[0];
           const fnName = callback?.kind === "identifier" ? (callback.value ?? "") : "";
-          const paramBases = fnName === "" ? undefined : flowParamBases?.get(fnName);
-          if (fnName !== "" && flowReturnTypes?.has(fnName) && paramBases?.length === 1) {
+          if (fnName !== "" && vars.has(fnName)) refuseHofShadowed(name, fnName);
+          const paramBases = fnName === "" ? undefined : (flowParamBases.kind === "found" ? flowParamBases.value.get(fnName) : undefined);
+          if (fnName !== "" && (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName)) && paramBases?.length === 1) {
+            if (namedFlowCapturesOuter(fnName, watJobCaches.hofProgramAst, staticConsts)) refuseHofCapture(name, fnName);
             arrayHofHelpers.push({ kind: name, fnName });
             return `(call $fungi_array_${name}_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)})`;
           }
-          return `(unreachable) (; C02: '${name}' requires a capture-free named unary flow ;)`;
+          // FUNGI-WAT-HOF-001 — pending KB registration in compiler-diagnostics.md.
+          const diag = { code: "FUNGI-WAT-HOF-001", name: "ARRAY_HOF_REQUIRES_NAMED_FLOW", severity: "error" } as const;
+          const reason = fnName === ""
+            ? "callback is not a capture-free named unary flow identifier"
+            : (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName))
+              ? `named flow '${fnName}' is not unary`
+              : `named flow '${fnName}' is not a known capture-free unary flow`;
+          throw new Error(
+            `${diag.code}: ${name} ${reason}. Required form: a capture-free named unary flow identifier. ` +
+            `WAT emission refuses rather than emit a C02 (unreachable) stub (fail-closed).`,
+          );
         }
         if (name === "reduce" && realReceiver !== undefined && argNodes.length === 2) {
           const callback = argNodes[1];
           const fnName = callback?.kind === "identifier" ? (callback.value ?? "") : "";
-          const paramBases = fnName === "" ? undefined : flowParamBases?.get(fnName);
-          if (fnName !== "" && flowReturnTypes?.has(fnName) && paramBases?.length === 2) {
+          if (fnName !== "" && vars.has(fnName)) refuseHofShadowed("reduce", fnName);
+          const paramBases = fnName === "" ? undefined : (flowParamBases.kind === "found" ? flowParamBases.value.get(fnName) : undefined);
+          if (fnName !== "" && (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName)) && paramBases?.length === 2) {
+            if (namedFlowCapturesOuter(fnName, watJobCaches.hofProgramAst, staticConsts)) refuseHofCapture("reduce", fnName);
             arrayHofHelpers.push({ kind: "reduce", fnName });
             return `(call $fungi_array_reduce_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
           }
-          return `(unreachable) (; C02: reduce requires a capture-free named binary flow ;)`;
+          const diag = { code: "FUNGI-WAT-HOF-001", name: "ARRAY_HOF_REQUIRES_NAMED_FLOW", severity: "error" } as const;
+          const reason = fnName === ""
+            ? "callback is not a capture-free named binary flow identifier"
+            : (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName))
+              ? `named flow '${fnName}' is not binary`
+              : `named flow '${fnName}' is not a known capture-free binary flow`;
+          throw new Error(
+            `${diag.code}: reduce ${reason}. Required form: a capture-free named binary flow identifier. ` +
+            `WAT emission refuses rather than emit a C02 (unreachable) stub (fail-closed).`,
+          );
         }
 
-        // C20: matchesPattern has a compile-time PatternCapability identity in
-        // TypeScript. There is no admitted WAT ABI; do not emit an undefined
-        // host callee. Dynamic patterns are refused the same way.
-        if (name === "matchesPattern") {
-          if (argNodes[0]?.kind === "stringLiteral") {
-            return `(unreachable) (; C20: matchesPattern WAT ABI is not admitted; compile-time PatternCapability is interpreter-only ;)`;
+        // D4: PatternCapability is interpreter-only. WASM refuses
+        // matchesPattern / extractGroups / replacePattern at emit
+        // (FUNGI-WAT-PATTERN-001). No host callee is emitted.
+        if (name === "matchesPattern" || name === "extractGroups" || name === "replacePattern") {
+          if (name === "matchesPattern" && argNodes[0]?.kind !== "stringLiteral") {
+            return refusePatternWat(name, "dynamic");
           }
-          return `(unreachable) (; C20: dynamic matchesPattern refused ;)`;
+          return refusePatternWat(name, "literal");
         }
 
-        // Unknown method — fail closed. A method call is not a user-flow call;
-        // emitting a bare `$${name}` creates an undefined WAT callee and lets a
-        // later assembler/adapter decide what to do with an unsupported form.
-        // Keep the refusal in the emitter so unsupported method syntax cannot
-        // become an apparently executable target before C03 freezes the
-        // context-rich method-chain checker (RD-1234).
-        return `(unreachable) (; unknown method '${name}' — fail-closed WAT refusal; C03/RD-1234 ;)`;
+        // Unknown method — fail closed at compile time. A method call is not a
+        // user-flow call; emitting a bare `$${name}` or an (unreachable) stub
+        // would let an unsupported form look executable. FUNGI-WAT-METHOD-001.
+        const recvTypeForMethod = realReceiver === undefined ? undefined : inferExprType(realReceiver);
+        const optionZip =
+          name === "zip" && (
+            recvName0 === "Option"
+            || recvTypeForMethod === "Option"
+            || (recvTypeForMethod !== undefined && recvTypeForMethod.startsWith("Option<"))
+          );
+        if (optionZip) {
+          return refuseUnknownMethodWat(
+            "zip",
+            "Option.zip has no WASM lowering in this job (ZipPair allocation is parked); run the flow through the governed interpreter.",
+          );
+        }
+        return refuseUnknownMethodWat(name);
       }
 
       // #163-A2: redact(x) ALWAYS returns the -2 "redacted" sentinel (galerina-core-runtime-wasm
@@ -2605,17 +2713,20 @@ export function emitWATExpr(
       // The correct failure mode is `(unreachable)` — a loud WASM trap, not a silent deletion.
       // The full fix is to define/import these as host functions; until then, emit fail-closed.
       //
-      // Remaining unlowered set (after wiring Money, print, println, redact, range above):
-      //   - Decimal: intentionally fail-closed (bignum; f64 would be silently wrong — #137)
-      //   - map/reduce/filter: need HOF/closure support in WAT (not in scope)
+      // Remaining unlowered set (after wiring Money, print, println, range, Decimal):
+      //   - redact: inlined to i32 -2 above (no host import)
+      //   - map/reduce/filter: named-flow HOF path or FUNGI-WAT-HOF-001 refusal
+      // Every former A2 constructor name is either in STDLIB_HOST_CALL_MAP (and
+      // HOST_RUNTIME_IMPORTS), inlined, or refused. This set stays empty because
+      // a listed name that is also mapped would never reach here.
       //
       // NOTE: `flowReturnTypes` will not contain these names (they are not user flows), so
-      // the lookup below will be null — meaning they WOULD fall through to the bare call.
+      // the lookup below will be absent — meaning they WOULD fall through to the bare call.
       // Instead, fail closed here explicitly.
       const UNLOWERED_STDLIB_CONSTRUCTORS = new Set<string>([]);
-      if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && flowReturnTypes?.get(name) === undefined) {
+      if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && (flowReturnTypes.kind === "found" ? flowReturnTypes.value.get(name) : undefined) === undefined) {
         // Inline block comment (safe in any expression position — no `;;` that swallows parens).
-        return `(unreachable) (; A2: '${name}' is a stdlib/Money constructor not yet lowered to a host import — fail-closed (task #163-A2) ;)`;
+        return `(unreachable) (; A2: '${name}' is a stdlib/Money constructor not yet lowered to a host import — fail-closed (task #163-A2) (emitter cannot lower) ;)`;
       }
 
       // Flow-to-flow calls within pure flows.
@@ -2624,7 +2735,7 @@ export function emitWATExpr(
       // instead of an out-of-i32-range `(i32.const …)` (which wabt rejects → the assembleWAT stub → an
       // UNfaithful WASM tier). Only LITERAL-BEARING args to a genuinely 64-bit param thread a type — an
       // identifier (already an i64 local) and every non-64-bit param are unchanged (zero behaviour drift).
-      const paramBases = flowParamBases?.get(name);
+      const paramBases = (flowParamBases.kind === "found" ? flowParamBases.value.get(name) : undefined);
       const args = children.map((c, i) => {
         const pb = paramBases?.[i];
         const literalBearing = c.kind === "numberLiteral" || c.kind === "binaryExpr" || c.kind === "unaryExpr";
@@ -2722,25 +2833,29 @@ export function emitWATExpr(
       const subjectWat = emitWATExpr(subject, vars, staticConsts);
 
       // Body is the LAST child; a leading identifier child is the Some/Ok binding.
-      const armBodyExpr = (arm: AstNode): AstNode | undefined =>
-        arm.children?.[arm.children.length - 1];
+      const armBodyExpr = (arm: AstNode): Lookup<AstNode> => {
+        const body = arm.children?.[arm.children.length - 1];
+        return body !== undefined ? found(body) : none("arm-body:missing");
+      };
 
       // ── Option<T> match-as-value: registry-handle dispatch ──
       // None is the sole -1 wire value; Some is a handle whose payload is read through the
       // host registry. This keeps a present negative i32 payload distinct from absence.
       const noneArm = arms.find(a => a.value === "None");
       const someArm = arms.find(a => a.value === "Some");
-      if ((noneArm !== undefined || someArm !== undefined) && recordCtx !== null) {
-        const scratch = `$__fungi_match_${recordCtx.counter.n++}`;
-        const valueLocal = `$__fungi_match_${recordCtx.counter.n++}`;
-        const payloadWatType = optionPayloadWatType(inferExprType(subject)) ?? "i32";
+      if ((noneArm !== undefined || someArm !== undefined) && recordCtx.kind === "found") {
+        const scratch = `$__fungi_match_${recordCtx.value.counter.n++}`;
+        const valueLocal = `$__fungi_match_${recordCtx.value.counter.n++}`;
+        const payloadWatType = ((t) => t.kind === "found" ? t.value : "i32")(optionPayloadWatType(inferExprType(subject)));
         const matchResultWatType: WATValType = FLOAT_WAT_TYPES.has(currentReturnBase) ? "f64" : "i32";
-        recordCtx.localDecls.push(`(local ${scratch} i32)`);
-        recordCtx.localDecls.push(`(local ${valueLocal} ${payloadWatType})`);
-        const someBind = ((): string | undefined => {
+        recordCtx.value.localDecls.push(`(local ${scratch} i32)`);
+        recordCtx.value.localDecls.push(`(local ${valueLocal} ${payloadWatType})`);
+        const someBindL = ((): Lookup<string> => {
           const ch = someArm?.children ?? [];
-          return ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+          const v = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+          return v !== undefined && v !== "" ? found(v) : none("some-bind:missing");
         })();
+        const someBind = someBindL.kind === "found" ? someBindL.value : undefined;
         // A missing constructor arm falls to the match's wildcard (`_`/`else`) arm —
         // for Option the wildcard IS the complement (`Some(x) + _` ⇒ `_` ≡ None). A
         // missing side with NO wildcard is non-exhaustive (FUNGI-MATCH-001 rejects it
@@ -2751,24 +2866,29 @@ export function emitWATExpr(
         });
         const noneSrc = noneArm ?? wildcardArm;
         const someSrc = someArm ?? wildcardArm;
-        const noneBody = noneSrc !== undefined ? armBodyExpr(noneSrc) : undefined;
-        const someBody = someSrc !== undefined ? armBodyExpr(someSrc) : undefined;
-        const noneWat = noneBody !== undefined ? emitWATExpr(noneBody, vars, staticConsts)
+        const noneBody = noneSrc !== undefined ? armBodyExpr(noneSrc) : none("match:no-none-src");
+        const someBody = someSrc !== undefined ? armBodyExpr(someSrc) : none("match:no-some-src");
+        const noneWat = noneBody.kind === "found" ? emitWATExpr(noneBody.value, vars, staticConsts)
           : "(unreachable) (; RD-0240: Option match missing None arm and wildcard — fail-closed ;)";
         const someVars: ReadonlyMap<string, string> = someBind !== undefined
           ? new Map([...vars, [someBind, valueLocal]]) : vars;
         // #160: scope the Some binding's type (Option<T> inner) while emitting the arm.
-        const someBindType = optionInnerType(inferExprType(subject));
-        const hadType = someBind !== undefined && recordVarTypes !== null && recordVarTypes.has(someBind);
-        const prevType = someBind !== undefined ? recordVarTypes?.get(someBind) : undefined;
-        if (someBind !== undefined && recordVarTypes !== null && someBindType !== undefined) {
-          recordVarTypes.set(someBind, someBindType);
+        // J4: Auto inners reconstruct a unique record layout from `bind.field` uses in the arm.
+        const someBindType = refineAutoRecordType(
+          someBind ?? "",
+          someBody.kind === "found" ? someBody.value : undefined,
+          ((t) => t.kind === "found" ? t.value : undefined)(optionInnerType(inferExprType(subject))),
+        );
+        const hadType = someBind !== undefined && recordVarTypes.kind === "found" && recordVarTypes.value.has(someBind);
+        const prevType = someBind !== undefined ? (recordVarTypes.kind === "found" ? recordVarTypes.value.get(someBind) : undefined) : undefined;
+        if (someBind !== undefined && recordVarTypes.kind === "found" && someBindType.kind === "found") {
+          recordVarTypes.value.set(someBind, someBindType.value);
         }
-        const someWat = someBody !== undefined ? emitWATExpr(someBody, someVars, staticConsts)
+        const someWat = someBody.kind === "found" ? emitWATExpr(someBody.value, someVars, staticConsts)
           : "(unreachable) (; RD-0240: Option match missing Some arm and wildcard — fail-closed ;)";
-        if (someBind !== undefined && recordVarTypes !== null) {
-          if (hadType) recordVarTypes.set(someBind, prevType!);
-          else recordVarTypes.delete(someBind);
+        if (someBind !== undefined && recordVarTypes.kind === "found") {
+          if (hadType) recordVarTypes.value.set(someBind, prevType!);
+          else recordVarTypes.value.delete(someBind);
         }
         return [
           `(block (result ${matchResultWatType})`,
@@ -2789,7 +2909,7 @@ export function emitWATExpr(
         const arm = arms[armIdx]!;
         const pattern = arm.value ?? "_";
         const body = armBodyExpr(arm);
-        const bodyWat = body ? emitWATExpr(body, vars, staticConsts) : "(i32.const 0)";
+        const bodyWat = body.kind === "found" ? emitWATExpr(body.value, vars, staticConsts) : "(i32.const 0)";
 
         if (pattern === "_" || pattern === "else" || pattern === "None" || pattern === "default") {
           // Wildcard / default arm — no condition needed
@@ -2820,8 +2940,8 @@ export function emitWATExpr(
         // #168: a user-enum variant pattern compares against its i32 tag.
         const enumTag = enumVariantTag(pattern, subject);
         const rest = buildMatchChain(armIdx + 1);
-        if (enumTag !== undefined) {
-          return `(if (result i32) (i32.eq ${subjectWat} (i32.const ${enumTag}))\n  (then ${bodyWat})\n  (else ${rest})\n)`;
+        if (enumTag.kind === "found") {
+          return `(if (result i32) (i32.eq ${subjectWat} (i32.const ${enumTag.value}))\n  (then ${bodyWat})\n  (else ${rest})\n)`;
         }
 
         // Otherwise a constructor name (e.g. "Some") — opaque interned-id comparison (legacy).
@@ -2845,13 +2965,13 @@ export function emitWATExpr(
       // with a trap rather than guess (RD-0240) — the prior behaviour was this same trap
       // for every `?`; now the Result/Option cases actually lower.
       const inner = node.children?.[0];
-      if (inner === undefined || recordCtx === null) {
+      if (inner === undefined || recordCtx.kind === "none") {
         return `(unreachable) (; RD-0240: '?' with no operand or outside a flow-body scratch context — fail-closed ;)`;
       }
       const innerWat = emitWATExpr(inner, vars, staticConsts);
       const innerType = inferExprType(inner);
-      const scratch = `$__fungi_try_${recordCtx.counter.n++}`;
-      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      const scratch = `$__fungi_try_${recordCtx.value.counter.n++}`;
+      recordCtx.value.localDecls.push(`(local ${scratch} i32)`);
       if (innerType === "Result" || innerType?.startsWith("Result<")) {
         // tag 1 = Err ⇒ (return <the Err handle>); tag 0 = Ok ⇒ unwrap via __result_value.
         return [
@@ -2870,7 +2990,7 @@ export function emitWATExpr(
         // early `return None` remains the enclosing Option-handle (i32) result.
         // This is valid only for an Option-returning flow; a Float64-returning
         // flow cannot propagate an i32 None and is left on the fail-closed path.
-        const payloadWatType = optionPayloadWatType(innerType) ?? "i32";
+        const payloadWatType = ((t) => t.kind === "found" ? t.value : "i32")(optionPayloadWatType(innerType));
         if (payloadWatType === "f64" && currentReturnBase !== "Option") {
           return `(unreachable) (; RD-0240: Float64 Option '?' requires an Option-returning flow — fail-closed ;)`;
         }
@@ -2899,12 +3019,12 @@ export function emitWATExpr(
     case "checkExpr": {
       const subjectNode = node.children?.[0];
       const arms = (node.children ?? []).slice(1).filter((c) => c.kind === "checkArm");
-      if (subjectNode === undefined || recordCtx === null) {
+      if (subjectNode === undefined || recordCtx.kind === "none") {
         return `(unreachable) (; check{}: no subject or outside flow body — fail-closed ;)`;
       }
       const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
-      const scratch = `$__fungi_chk_${recordCtx.counter.n++}`;
-      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      const scratch = `$__fungi_chk_${recordCtx.value.counter.n++}`;
+      recordCtx.value.localDecls.push(`(local ${scratch} i32)`);
       const getArm = (label: string): string => {
         const arm = arms.find((a) => a.value === label);
         const body = arm?.children?.[0];
@@ -2942,12 +3062,12 @@ export function emitWATExpr(
     case "prefilterExpr": {
       const subjectNode = node.children?.[0];
       const arms = (node.children ?? []).slice(1).filter((c) => c.kind === "prefilterArm");
-      if (subjectNode === undefined || recordCtx === null) {
+      if (subjectNode === undefined || recordCtx.kind === "none") {
         return `(unreachable) (; prefilter{}: no subject or outside flow body — fail-closed ;)`;
       }
       const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
-      const scratch = `$__fungi_pflt_${recordCtx.counter.n++}`;
-      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      const scratch = `$__fungi_pflt_${recordCtx.value.counter.n++}`;
+      recordCtx.value.localDecls.push(`(local ${scratch} i32)`);
       const getArm = (label: string): string => {
         const arm = arms.find((a) => a.value === label); // perf-allow: loop-array-find — arms has ≤2 elements (deny/maybe); O(1) in practice
         const body = arm?.children?.[0];
@@ -2994,7 +3114,7 @@ export function emitWATExpr(
  * Inversion: flip lt_s↔gt_s, le_s↔ge_s, eq↔ne.
  * Unknown ops: wrap in (i32.eqz ...)
  */
-function negateBinaryOp(op: string): string | null {
+function negateBinaryOp(op: string): Lookup<string> {
   const NEG: ReadonlyMap<string, string> = new Map([
     ["<",  "i32.ge_s"],
     [">",  "i32.le_s"],
@@ -3003,7 +3123,8 @@ function negateBinaryOp(op: string): string | null {
     ["==", "i32.ne"],
     ["!=", "i32.eq"],
   ]);
-  return NEG.get(op) ?? null;
+  const flipped = NEG.get(op);
+  return flipped !== undefined ? found(flipped) : none("negate-unknown-op");
 }
 
 /**
@@ -3044,6 +3165,8 @@ export function emitBlockLastExpr(
  * Handles:
  *   Phase 25: letDecl (new + rebind), returnStmt, callExpr
  *   Phase 26: ifStmt (with and without else), whileStmt (bounded + unbounded)
+ *   readonlyDecl (plain types): same local-binding pattern as letDecl.
+ *   readonlyDecl with protected/redacted/secret type prefix: fail-closed trap.
  */
 function emitBlockStatements(
   blockNode: AstNode,
@@ -3064,14 +3187,29 @@ function emitBlockStatements(
     const isLast = si === stmts.length - 1;
 
     switch (stmt.kind) {
+      case "readonlyDecl":
       case "mutDecl":
       case "letDecl": {
-        // mutDecl/letDecl value is like "total: Int" or "unsafe rawPatientId: String".
+        // mutDecl/letDecl/readonlyDecl value is like "total: Int" or "unsafe rawPatientId: String".
         // Strip the type annotation first, then strip any leading binding modifier
         // (unsafe / safe) so the WAT local name is never "$unsafe rawPatientId" (a name
         // containing a space makes WAT read "$unsafe" as the identifier and "rawPatientId"
         // as a stray token → invalid local index: 0). A3 fix.
         const rawName  = stmt.value ?? `_anon${localDecls.length}`;
+        // PLAN row 5 C-slice: plain readonlyDecl lowers with letDecl. protected /
+        // redacted / secret type prefixes stay fail-closed — never a silent skip.
+        if (stmt.kind === "readonlyDecl") {
+          const colon = rawName.indexOf(":");
+          const typeSection = colon === -1 ? "" : rawName.slice(colon + 1).trim();
+          let governedMarker = "";
+          if (/^protected\b/i.test(typeSection)) governedMarker = "protected";
+          else if (/^redacted\b/i.test(typeSection)) governedMarker = "redacted";
+          else if (/^secret\b/i.test(typeSection)) governedMarker = "secret";
+          if (governedMarker !== "") {
+            bodyLines.push(`(unreachable) ;; readonlyDecl+governed ${governedMarker} — fail-closed trap, not lowered to WAT (emitter cannot lower)`);
+            break;
+          }
+        }
         const nameBeforeColon = rawName.split(":")[0]?.trim() ?? rawName;
         // Strip "unsafe " / "safe " prefix (the binding trust-level modifier).
         const varName  = nameBeforeColon.replace(/^(?:unsafe|safe)\s+/, "");
@@ -3081,14 +3219,14 @@ function emitBlockStatements(
         // accesses lower to an i32.load at the field offset.
         // #160: also track scalar/builtin types (String/Char/Int/Option<…>) so later
         // `+` and `.toString()` lower type-directed. Annotation wins; else infer from init.
-        if (recordVarTypes !== null) {
+        if (recordVarTypes.kind === "found") {
           const recType = recordTypeOfBinding(rawName, initNode);
-          if (recType !== undefined) {
-            recordVarTypes.set(varName, recType);
+          if (recType.kind === "found") {
+            recordVarTypes.value.set(varName, recType.value);
           } else {
             const anno = rawName.includes(":") ? rawName.split(":")[1]!.trim() : "";
             const ty = anno !== "" ? anno : inferExprType(initNode);
-            if (ty !== undefined && ty !== "") recordVarTypes.set(varName, ty);
+            if (ty !== undefined && ty !== "") recordVarTypes.value.set(varName, ty);
           }
         }
         // Step 3g: thread the binding's declared type so an Int64 literal init emits i64.const (an i32.const
@@ -3123,7 +3261,7 @@ function emitBlockStatements(
         const watLocal = vars.get(varName) ?? `$${varName}`;
         const exprNode = stmt.children?.[0];
         // Step 3g: thread the assigned binding's declared type so `total = <Int64 literal>` emits i64.const.
-        const exprStr  = exprNode ? emitWATExpr(exprNode, vars, staticConsts, recordVarTypes?.get(varName)) : "(i32.const 0)";
+        const exprStr  = exprNode ? emitWATExpr(exprNode, vars, staticConsts, (recordVarTypes.kind === "found" ? recordVarTypes.value.get(varName) : undefined)) : "(i32.const 0)";
         if (!vars.has(varName)) {
           // Declare it now if somehow not in scope (defensive). #165: match the assigned value's
           // stack type so a float assignment to an undeclared local is f64, not a mistyped i32.
@@ -3155,15 +3293,15 @@ function emitBlockStatements(
         if (is64BitWatType(currentReturnBase) && watStackType(exprStr) === "i32") {
           // Check if the expr is a `(local.get $name)` where $name is already an i64 local.
           // localDecls entries look like: `(local $name i64)` or `(local $name i32)`.
-          const localGetMatch = exprStr.match(/^\(local\.get \$([^\s)]+)\)/);
-          const isAlreadyI64 = localGetMatch !== null
-            ? localDecls.some((d) => d.includes(`$${localGetMatch[1]}`) && d.endsWith(" i64)"))
+          const localGetGroups = [...exprStr.matchAll(/^\(local\.get \$([^\s)]+)\)/g)][0];
+          const isAlreadyI64 = localGetGroups !== undefined
+            ? localDecls.some((d) => d.includes(`${localGetGroups[1]}`) && d.endsWith(" i64)"))
             : false;
           // Also check: is it a parameter access? Parameters are not in localDecls — check recordVarTypes.
           // A param typed "Int64" or "UInt64" in recordVarTypes is already i64.
-          const varName = exprNode?.kind === "identifier" ? (exprNode.value ?? "") : null;
-          const paramTypeIs64 = varName !== null
-            ? is64BitWatType(numericBaseType(recordVarTypes?.get(varName) ?? ""))
+          const varName = exprNode?.kind === "identifier" ? (exprNode.value ?? "") : "";
+          const paramTypeIs64 = exprNode?.kind === "identifier"
+            ? is64BitWatType(numericBaseType((recordVarTypes.kind === "found" ? recordVarTypes.value.get(varName) : undefined) ?? ""))
             : false;
           // Step 4e cross-flow fix (0115): a `return callee(...)` where `callee` is a user flow
           // that returns Int64/UInt64 already leaves i64 on the stack — the `(call $callee …)`
@@ -3172,7 +3310,7 @@ function emitBlockStatements(
           // a non-method callExpr whose callee return type is 64-bit, skip the extend.
           const calleeReturnIs64 =
             exprNode?.kind === "callExpr" && exprNode.callStyle !== "method"
-              ? is64BitWatType(numericBaseType(flowReturnTypes?.get(exprNode.value ?? "") ?? ""))
+              ? is64BitWatType(numericBaseType((flowReturnTypes.kind === "found" ? flowReturnTypes.value.get(exprNode.value ?? "") : undefined) ?? ""))
               : false;
           if (!isAlreadyI64 && !paramTypeIs64 && !calleeReturnIs64) {
             exprStr = `(i64.extend_i32_s ${exprStr})`;
@@ -3201,8 +3339,8 @@ function emitBlockStatements(
         // Arms are emitted with nested=true, so any `return` becomes an explicit `(return …)` — valid at
         // any position (no stack imbalance), exactly as the un-folded `(if (then …))` arms already do.
         const foldedCond = foldToBool(condNode, staticConsts);
-        if (foldedCond !== null) {
-          const takenArm = foldedCond ? thenBlock : elseBlock;
+        if (foldedCond.kind === "found") {
+          const takenArm = foldedCond.value ? thenBlock : elseBlock;
           if (takenArm !== undefined) {
             if (takenArm.kind === "ifStmt") {
               // `else if` chain: re-process the taken ifStmt as a synthetic block statement.
@@ -3289,10 +3427,10 @@ function emitBlockStatements(
         let exitCondExpr: string;
         if (condNode?.kind === "binaryExpr") {
           const negOp = negateBinaryOp(condNode.value ?? "");
-          if (negOp !== null) {
+          if (negOp.kind === "found") {
             const left  = condNode.children?.[0] ? emitWATExpr(condNode.children[0], vars, staticConsts) : "(i32.const 0)";
             const right = condNode.children?.[1] ? emitWATExpr(condNode.children[1], vars, staticConsts) : "(i32.const 0)";
-            exitCondExpr = `(${negOp} ${left} ${right})`;
+            exitCondExpr = `(${negOp.value} ${left} ${right})`;
           } else {
             exitCondExpr = `(i32.eqz ${condNode ? emitWATExpr(condNode, vars, staticConsts) : "(i32.const 1)"})`;
           }
@@ -3362,46 +3500,59 @@ function emitBlockStatements(
         const noneArm = matchArms.find(a => a.value === "None"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         const someArm = matchArms.find(a => a.value === "Some"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         if (noneArm !== undefined || someArm !== undefined) {
-          const armBodyNode = (arm: AstNode): AstNode | undefined =>
-            arm.children?.[arm.children.length - 1];
-          const someBind = ((): string | undefined => {
+          const armBodyNode = (arm: AstNode): Lookup<AstNode> => {
+            const body = arm.children?.[arm.children.length - 1];
+            return body !== undefined ? found(body) : none("arm-body-node:missing");
+          };
+          const someBindL = ((): Lookup<string> => {
             const ch = someArm?.children ?? [];
-            return ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+            const v = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+            return v !== undefined && v !== "" ? found(v) : none("some-bind-stmt:missing");
           })();
+          const someBind = someBindL.kind === "found" ? someBindL.value : undefined;
           // #160: the Some binding's scalar type = the subject's Option<T> inner type
           // (e.g. `match opt:Option<Char>` ⇒ c is Char), so `c.toString()` in the arm
           // lowers to __char_to_string and `… + c` concatenates correctly.
-          const someBindType = optionInnerType(inferExprType(matchSubject));
+          // J4: Array<Auto>.get → Option<Auto> → Some(fd) reconstructs FlowDecl (etc.)
+          // from the unique layout that owns every `fd.field` use in this arm.
+          // J5: PolicyDecl ⊏ GuardDecl prefix-family + Auto Some-bind field-union widening.
+          const someArmBody = someArm !== undefined ? armBodyNode(someArm) : none("some-arm:missing");
+          const someBindType = refineAutoRecordType(
+            someBind ?? "",
+            someArmBody.kind === "found" ? someArmBody.value : undefined,
+            ((t) => t.kind === "found" ? t.value : undefined)(optionInnerType(inferExprType(matchSubject))),
+          );
 
           // Evaluate the subject once into a scratch local so it can be both tested
           // and bound. Presence is explicit; a negative payload is still Some.
           const scratch = `$__fungi_match_${labelCounter.n++}`;
           const valueLocal = `$__fungi_match_${labelCounter.n++}`;
-          const payloadWatType = optionPayloadWatType(inferExprType(matchSubject)) ?? "i32";
+          const payloadWatType = ((t) => t.kind === "found" ? t.value : "i32")(optionPayloadWatType(inferExprType(matchSubject)));
           localDecls.push(`(local ${scratch} i32)`);
           localDecls.push(`(local ${valueLocal} ${payloadWatType})`);
           bodyLines.push(`(local.set ${scratch} ${subjectWat})`);
 
           const emitArm = (arm: AstNode | undefined, bind?: string): string[] => {
             const lines: string[] = [];
-            const body = arm ? armBodyNode(arm) : undefined;
-            if (body === undefined) return lines;
+            const bodyL = arm ? armBodyNode(arm) : none("emit-arm:no-arm");
+            if (bodyL.kind === "none") return lines;
+            const body = bodyL.value;
             // Scope the Some binding (value + type) to this arm body only (save/restore).
             const hadBind = bind !== undefined && vars.has(bind);
             const prevBind = bind !== undefined ? vars.get(bind) : undefined;
-            const hadType = bind !== undefined && recordVarTypes !== null && recordVarTypes.has(bind);
-            const prevType = bind !== undefined ? recordVarTypes?.get(bind) : undefined;
+            const hadType = bind !== undefined && recordVarTypes.kind === "found" && recordVarTypes.value.has(bind);
+            const prevType = bind !== undefined ? (recordVarTypes.kind === "found" ? recordVarTypes.value.get(bind) : undefined) : undefined;
             if (bind !== undefined) {
               vars.set(bind, valueLocal);
-              if (recordVarTypes !== null && someBindType !== undefined) recordVarTypes.set(bind, someBindType);
+              if (recordVarTypes.kind === "found" && someBindType.kind === "found") recordVarTypes.value.set(bind, someBindType.value);
             }
             emitBlockStatements(body, vars, localDecls, lines, labelCounter, true, staticConsts);
             if (bind !== undefined) {
               if (hadBind) vars.set(bind, prevBind!);
               else vars.delete(bind);
-              if (recordVarTypes !== null) {
-                if (hadType) recordVarTypes.set(bind, prevType!);
-                else recordVarTypes.delete(bind);
+              if (recordVarTypes.kind === "found") {
+                if (hadType) recordVarTypes.value.set(bind, prevType!);
+                else recordVarTypes.value.delete(bind);
               }
             }
             return lines;
@@ -3433,12 +3584,14 @@ function emitBlockStatements(
         const okArm = matchArms.find(a => a.value === "Ok"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         const errArm = matchArms.find(a => a.value === "Err"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         if (okArm !== undefined || errArm !== undefined) {
-          const resBindOf = (arm: AstNode | undefined): string | undefined => {
+          const resBindOf = (arm: AstNode | undefined): Lookup<string> => {
             const ch = arm?.children ?? [];
-            return ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+            const v = ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
+            return v !== undefined && v !== "" ? found(v) : none("res-bind:missing");
           };
           // #164: the Ok binding's scalar type = the Result's first type arg (Result<T,E> ⇒ T).
-          const okBindType = optionInnerType(inferExprType(matchSubject));
+          const okBindInner = optionInnerType(inferExprType(matchSubject));
+          const okBindType = okBindInner.kind === "found" ? okBindInner.value : undefined;
           const scratch = `$__fungi_match_${labelCounter.n++}`;
           const valLocal = `$__fungi_match_${labelCounter.n++}`;
           localDecls.push(`(local ${scratch} i32)`);
@@ -3455,24 +3608,26 @@ function emitBlockStatements(
               : { kind: "block", children: [body], ...(body.location !== undefined ? { location: body.location } : {}) };
             const hadBind = bind !== undefined && vars.has(bind);
             const prevBind = bind !== undefined ? vars.get(bind) : undefined;
-            const hadType = bind !== undefined && recordVarTypes !== null && recordVarTypes.has(bind);
-            const prevType = bind !== undefined ? recordVarTypes?.get(bind) : undefined;
+            const hadType = bind !== undefined && recordVarTypes.kind === "found" && recordVarTypes.value.has(bind);
+            const prevType = bind !== undefined ? (recordVarTypes.kind === "found" ? recordVarTypes.value.get(bind) : undefined) : undefined;
             if (bind !== undefined) {
               vars.set(bind, valLocal);
-              if (recordVarTypes !== null && bindType !== undefined) recordVarTypes.set(bind, bindType);
+              if (recordVarTypes.kind === "found" && bindType !== undefined) recordVarTypes.value.set(bind, bindType);
             }
             emitBlockStatements(bodyBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
             if (bind !== undefined) {
               if (hadBind) vars.set(bind, prevBind!); else vars.delete(bind);
-              if (recordVarTypes !== null) { if (hadType) recordVarTypes.set(bind, prevType!); else recordVarTypes.delete(bind); }
+              if (recordVarTypes.kind === "found") { if (hadType) recordVarTypes.value.set(bind, prevType!); else recordVarTypes.value.delete(bind); }
             }
             return lines;
           };
           const okSrc = okArm ?? ctorWildcardArm;
           const errSrc = errArm ?? ctorWildcardArm;
-          const okLines = okSrc !== undefined ? emitResArm(okSrc, resBindOf(okArm), okBindType)
+          const okBind = resBindOf(okArm);
+          const errBind = resBindOf(errArm);
+          const okLines = okSrc !== undefined ? emitResArm(okSrc, okBind.kind === "found" ? okBind.value : undefined, okBindType)
             : ["(unreachable) (; RD-0240: Result match missing Ok arm and wildcard — fail-closed ;)"];
-          const errLines = errSrc !== undefined ? emitResArm(errSrc, resBindOf(errArm), undefined)
+          const errLines = errSrc !== undefined ? emitResArm(errSrc, errBind.kind === "found" ? errBind.value : undefined, undefined)
             : ["(unreachable) (; RD-0240: Result match missing Err arm and wildcard — fail-closed ;)"];
 
           bodyLines.push(`(if (i32.eq (call $host___result_tag (local.get ${scratch})) (i32.const 0))`);
@@ -3540,7 +3695,7 @@ function emitBlockStatements(
               ? `(call $host___str_eq ${subjectWat} (i32.const ${internString(pattern)}))`
               : !isNaN(asInt)
                 ? `(i32.eq ${subjectWat} (i32.const ${asInt}))`
-                : `(i32.eq ${subjectWat} (i32.const ${enumTag !== undefined ? enumTag : internString(pattern)}))`;
+                : `(i32.eq ${subjectWat} (i32.const ${enumTag.kind === "found" ? enumTag.value : internString(pattern)}))`;
 
           bodyLines.push(`(if ${condWat}`);
           bodyLines.push(`  (then`);
@@ -3764,6 +3919,11 @@ function emitBlockStatements(
         break;
       }
 
+      case "requireStmt":
+        refuseGovernedOrClosureStmtWat("requireStmt");
+      case "fnDecl":
+        refuseGovernedOrClosureStmtWat("fnDecl");
+
       default:
         // FAIL-CLOSED (task #128 · audit-phase1-2026-06-16). An unhandled statement
         // kind must NEVER lower to a silent `(i32.const 0)` no-op: that is fail-OPEN.
@@ -3777,7 +3937,7 @@ function emitBlockStatements(
         // skipping the construct. Mirrors the ensure/trapDecl gates above and the
         // flow-body stub discipline (~L413-435). Part (b) — real `forEachStmt` lowering
         // — is the follow-up; until then any unsupported kind fails closed here.
-        bodyLines.push(`(unreachable) ;; unsupported-in-WASM: ${stmt.kind} — fail-closed trap (task #128), not yet lowered to WAT`);
+        bodyLines.push(`(unreachable) ;; unsupported-in-WASM: ${stmt.kind} — fail-closed trap (task #128), not yet lowered to WAT (emitter cannot lower)`);
         break;
     }
   }
@@ -3802,15 +3962,15 @@ function emitBlockStatements(
  *
  * @param flowNode   - The pureFlowDecl / flowDecl AstNode for this flow.
  * @param paramNames - Ordered parameter names extracted from paramDecl children.
- * @returns WAT body string, or null if the body cannot be lowered.
+ * @returns WAT body string, or absent if the body cannot be lowered.
  */
 export function emitWATFromFlowAST(
   flowNode: AstNode,
   paramNames: readonly string[],
   staticConsts: ReadonlyMap<string, number> = new Map(),
-  layouts: ReadonlyMap<string, readonly string[]> | null = null,
-  enums: ReadonlyMap<string, readonly string[]> | null = null,
-): string | null {
+  layouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("layouts:unset"),
+  enums: Lookup<ReadonlyMap<string, readonly string[]>> = none("enums:unset"),
+): Lookup<string> {
   // Build variable map: Galerina name → WAT local name.
   // Params are $p0, $p1, … — immutable (parameters are passed by value in WAT).
   const vars = new Map<string, string>();
@@ -3824,10 +3984,11 @@ export function emitWATFromFlowAST(
   const prevEnums = enumVariants;
   const prevReturnBase = currentReturnBase;
   recordLayouts = layouts;
-  recordVarTypes = new Map<string, string>();
+  const varTypes = new Map<string, string>();
+  recordVarTypes = found(varTypes);
   enumVariants = enums;
   // Step 3g: the flow's declared return base, so a bare `return <Int64 literal>` emits i64.const.
-  currentReturnBase = numericBaseType(flowReturnTypes?.get(flowNode.value ?? "") ?? "");
+  currentReturnBase = numericBaseType((flowReturnTypes.kind === "found" ? flowReturnTypes.value.get(flowNode.value ?? "") : undefined) ?? "");
   // Seed parameter types (e.g. `flow f(r: TokenizeResult, s: String)`). Record types
   // enable `r.field` lowering; scalar types (#160) enable type-directed `+` / toString.
   {
@@ -3836,7 +3997,14 @@ export function emitWATFromFlowAST(
       const raw = pd.value ?? "";
       const nm = raw.split(":")[0]!.trim();
       const ty = raw.includes(":") ? raw.split(":")[1]!.trim() : "";
-      if (ty && vars.has(nm)) recordVarTypes!.set(nm, ty);
+      if (ty && vars.has(nm)) {
+        if (ty === "Auto") {
+          const refined = refineAutoParamType(nm, flowNode);
+          varTypes.set(nm, refined.kind === "found" ? refined.value : ty);
+        } else {
+          varTypes.set(nm, ty);
+        }
+      }
     });
   }
 
@@ -3844,7 +4012,7 @@ export function emitWATFromFlowAST(
   const blockNode = (flowNode.children ?? []).find((c) => c.kind === "block"); // perf-allow: loop-array-find — bounded N over a flow node's children (find body block)
   if (blockNode === undefined) {
     recordLayouts = prevLayouts; recordVarTypes = prevVarTypes; enumVariants = prevEnums; currentReturnBase = prevReturnBase; // restore on early exit
-    return null;
+    return none("emit-flow:no-block");
   }
 
   // 0040/#70: output post-conditions (`invariant { ensure result … }`). For a STRAIGHT-LINE flow
@@ -3857,7 +4025,7 @@ export function emitWATFromFlowAST(
   const singleExit = resultPosts.length > 0;
   if (singleExit && bodyHasNestedReturn(blockNode)) {
     recordLayouts = prevLayouts; recordVarTypes = prevVarTypes; enumVariants = prevEnums; currentReturnBase = prevReturnBase; // restore
-    return null; // cannot capture-the-tail past an early return → interpreter enforces it
+    return none("emit-flow:nested-return-post"); // cannot capture-the-tail past an early return → interpreter enforces it
   }
   const RESULT_LOCAL = "$galerina_result";
   if (singleExit) vars.set("result", RESULT_LOCAL);
@@ -3917,7 +4085,7 @@ export function emitWATFromFlowAST(
   // function (WASM requires all locals before instructions). Cleared in finally so
   // a thrown body never leaks scratch into the next flow.
   const prevRecordCtx = recordCtx;
-  recordCtx = { localDecls, counter: { n: 0 } };
+  recordCtx = found({ localDecls, counter: { n: 0 } });
   try {
     emitBlockStatements(blockNode, vars, localDecls, bodyLines, labelCounter, false, staticConsts);
   } finally {
@@ -3954,8 +4122,8 @@ export function emitWATFromFlowAST(
     bodyLines.push(`(unreachable) ;; #160: all match/while arms return — implicit [i32] tail`);
   }
 
-  if (localDecls.length === 0 && bodyLines.length === 0) return null;
-  return [...localDecls, ...bodyLines].join("\n");
+  if (localDecls.length === 0 && bodyLines.length === 0) return none("emit-flow:empty-body");
+  return found([...localDecls, ...bodyLines].join("\n"));
 }
 
 /**
@@ -4213,11 +4381,10 @@ export function findFlowNodeInAST(ast: AstNode, flowName: string): AstNode | und
 export function emitWATBody(
   plan: { readonly steps: ReadonlyArray<{ readonly kind: string }> },
   paramCount: number,
+  flowName = "emitWATBody",
 ): string {
   const instructions: string[] = [];
 
-  // A pure flow that takes parameters and returns one: get the first parameter.
-  // Phase 22B: walk typed expression tree to emit arithmetic/string ops.
   const hasReturn = plan.steps.some(
     (s) => s.kind === "return" || s.kind === "response",
   );
@@ -4227,30 +4394,21 @@ export function emitWATBody(
     (s) => s.kind === "capability_call" || s.kind === "capabilityCall",
   );
 
-  // "validateParam" and "validate_param" steps are compile-time proofs —
-  // they are no-ops at the WAT level and generate no instructions.
-  // "validateContext" / "validate_context" are similarly erased.
-  // "emitEvent" / "emit_event" are erased in pure flows (no I/O).
-
   if (hasCapabilityCall) {
     // Capability calls must not appear in pure flows — guard with unreachable.
-    // Phase 25: real capability dispatch via WASM imports.
-    instructions.push("unreachable ;; capability call — Phase 25");
+    instructions.push("unreachable ;; capability call — Phase 25 (emitter cannot lower)");
     return instructions.join("\n");
   }
 
-  if (hasReturn && paramCount > 0) {
-    // Identity-return: get the first parameter and return it.
-    // Phase 22B: full expression lowering replaces this with the actual body.
-    instructions.push("(local.get $p0) ;; return first param");
-  } else if (hasReturn && paramCount === 0) {
-    // Return a constant i32 zero when there are no parameters.
-    instructions.push("(i32.const 0) ;; default return");
-  } else {
-    // No return step — unreachable (should not happen for well-formed plans).
-    instructions.push("unreachable");
+  if (hasReturn) {
+    // J-R4: the public helper must not emit a guessed Phase-24A identity
+    // (`local.get $p0`) or default (`i32.const 0`) body. Typed Phase-22B
+    // emission stays on emitWATFromFlowAST / buildWATModule with an AST.
+    void paramCount;
+    refusePureFlowRequiresAstBody(flowName);
   }
 
+  instructions.push("unreachable ;; emitter cannot lower");
   return instructions.join("\n");
 }
 
@@ -4262,64 +4420,6 @@ export function emitWATBody(
  * Minimal GIR flow shape required by buildWATModule.
  * Matches the GIRFlow interface subset needed for WAT lowering.
  */
-export interface WATFlowInput {
-  readonly name: string;
-  /** "pure" flows need no imports. Other qualifiers may have effects. */
-  readonly qualifier: string;
-  /**
-   * Declared effect strings — flat array form (WATFlowInput native).
-   * When passing GIRFlow directly, use effects.declared instead.
-   * The builder accepts either form.
-   */
-  readonly declaredEffects?: readonly string[];
-  /**
-   * GIR-native nested effects object. Accepted alongside declaredEffects.
-   * buildWATModule resolves: declaredEffects ?? effects?.declared ?? []
-   */
-  readonly effects?: { readonly declared: readonly string[] };
-  /**
-   * Parameter type names, e.g. ["Int", "String"].
-   * Phase 22: used to build named WAT params ($p0, $p1, …) and for emitWATBody.
-   * Optional — absent flows get a default (i32) parameter signature.
-   */
-  readonly paramTypes?: readonly string[];
-  /**
-   * Pre-built PassiveExecutionPlan for this flow.
-   * When present for a pure flow, emitWATBody is called to produce real instructions.
-   * When absent, the body falls back to "unreachable".
-   */
-  readonly executionPlan?: { readonly steps: ReadonlyArray<{ readonly kind: string }> };
-  /**
-   * Tensor binding metadata from GIRFlow.tensors.
-   * Phase 27: used by buildWATModule to detect Float32 tensor flows and emit
-   * TypedArray lowering comments and Tensor.dot memory region hints.
-   */
-  readonly tensors?: readonly { readonly elementType: string }[];
-}
-
-/**
- * Minimal GIR program shape for buildWATModule.
- * Avoids a hard import cycle with gir-emitter.ts.
- */
-export interface WATGIRInput {
-  readonly flows: readonly WATFlowInput[];
-  readonly entryPoints: readonly string[];
-  readonly girHash?: string;
-  readonly sourceHash?: string;
-  /**
-   * Phase 25: original program AST, used by emitWATFromFlowAST to generate
-   * real arithmetic bodies for pure flows.
-   * When absent, the emitter falls back to Phase 24A identity bodies.
-   */
-  readonly ast?: AstNode;
-  /**
-   * Phase 27: when true, export all pure flows (not just entryPoints).
-   * Enables WebAssembly.instantiate callers to invoke any pure flow by name.
-   * Default: false (only entryPoints are exported).
-   */
-  readonly exportAllPure?: boolean;
-}
-
 /**
  * Maps a STDLIB_CAPABILITY_MAP wasmImport string ("host:fs.readText") to a
  * WATImport. The wasmImport format is "<module>:<name>".
@@ -4327,48 +4427,8 @@ export interface WATGIRInput {
  * All effectful host functions are typed as (param i32 i32) (result i32) in
  * Phase 19. Phase 22 will carry real type signatures from the GIR type table.
  */
-function wasmImportStringToWATImport(wasmImport: string, effect: string): WATImport | null {
-  const colonIdx = wasmImport.indexOf(":");
-  if (colonIdx === -1) return null;
-  const module = wasmImport.slice(0, colonIdx);
-  const name = wasmImport.slice(colonIdx + 1);
-  return {
-    module,
-    name,
-    effect,
-    type: { params: ["i32", "i32"], results: ["i32"] },
-  };
-}
-
-/**
- * Returns WATImport entries for the given declared effect names, resolved
- * through STDLIB_CAPABILITY_MAP.
- *
- * For each declared effect, scans all STDLIB_CAPABILITY_MAP entries whose
- * requiredEffects include that effect and have a wasmImport field.
- * Results are deduplicated by wasmImport key.
- *
- * All effectful host functions are typed as (param i32 i32) (result i32) in
- * Phase 19. Phase 22 will carry real type signatures from the GIR type table.
- *
- * @param effects - Declared effect names, e.g. ["storage.read", "audit.write"].
- * @returns Deduplicated WATImport array derived from STDLIB_CAPABILITY_MAP.
- */
-export function getWATImportsForEffects(effects: readonly string[]): WATImport[] {
-  const importsByKey = new Map<string, WATImport>();
-  for (const effect of effects) {
-    for (const [, entry] of STDLIB_CAPABILITY_MAP) {
-      if (entry.requiredEffects.includes(effect) && entry.wasmImport) {
-        const key = entry.wasmImport;
-        if (!importsByKey.has(key)) {
-          const imp = wasmImportStringToWATImport(entry.wasmImport, effect);
-          if (imp) importsByKey.set(key, imp);
-        }
-      }
-    }
-  }
-  return Array.from(importsByKey.values());
-}
+export { getWATImportsForEffects } from "./wat-emitter-gir.js";
+import { getWATImportsForEffects } from "./wat-emitter-gir.js";
 
 /**
  * Builds a WATModule from GIR program data.
@@ -4407,7 +4467,7 @@ function collectStaticConsts(ast: AstNode | undefined): ReadonlyMap<string, numb
       const valueExpr = node.children?.[0];
       if (name !== "" && valueExpr !== undefined) {
         const n = foldToInt(valueExpr, consts);
-        if (n !== null) consts.set(name, n);
+        if (n.kind === "found") consts.set(name, n.value);
       }
     } else if (node.kind === "bitfieldDecl") {
       const registerName = node.value ?? "";
@@ -4430,51 +4490,51 @@ function collectStaticConsts(ast: AstNode | undefined): ReadonlyMap<string, numb
 /**
  * Attempts to fold an AST expression to a plain JavaScript integer.
  * Used by collectStaticConsts to resolve static initializers.
- * Returns null for non-constant or non-integer expressions.
+ * Returns absent for non-constant or non-integer expressions.
  */
 function foldToInt(
   expr: AstNode,
   consts: ReadonlyMap<string, number>,
-): number | null {
+): Lookup<number> {
   if (expr.kind === "numberLiteral") {
     const raw = (expr.value ?? "0").replace(/_/g, "");
-    if (raw.includes(".")) return null; // float — not an integer
+    if (raw.includes(".")) return none("fold-float");
     const n = parseInt(raw, 10);
-    return Number.isFinite(n) ? n : null;
+    return Number.isFinite(n) ? found(n) : none("fold-nonfinite");
   }
   if (expr.kind === "identifier") {
     const name = expr.value ?? "";
     const v = consts.get(name);
-    return v !== undefined ? v : null;
+    return v !== undefined ? found(v) : none("fold-unbound");
   }
   // Constant-EXPRESSION folding (AOT #1, R&D 0036): fold `const <op> const` arithmetic at build time using
   // the SAME checked i32 ops as runtime, so the result is identical to executing it. CRITICAL (Fork-A=TRAP /
-  // 0038): if the constant op would TRAP (overflow / div0 / mod0), return null — do NOT fold — so the
+  // 0038): if the constant op would TRAP (overflow / div0 / mod0), return absent — do NOT fold — so the
   // runtime checked op is emitted and fails closed exactly as if it ran. Only arithmetic folds here;
   // comparisons fold to bool (branch-folding = AOT #2, not done here).
   if (expr.kind === "binaryExpr") {
     const a = expr.children?.[0];
     const b = expr.children?.[1];
-    if (a === undefined || b === undefined) return null;
+    if (a === undefined || b === undefined) return none("fold-missing-operand");
     const l = foldToInt(a, consts);
     const r = foldToInt(b, consts);
-    if (l === null || r === null) return null;
+    if (l.kind === "none" || r.kind === "none") return none("fold-operand");
     let res: I32Result;
     switch (expr.value ?? "") {
-      case "+": res = i32AddChecked(l, r); break;
-      case "-": res = i32SubChecked(l, r); break;
-      case "*": res = i32MulChecked(l, r); break;
-      case "/": res = i32DivChecked(l, r); break;
-      case "%": res = i32ModChecked(l, r); break;
-      default: return null; // comparisons / bitwise / && / || — not folded here
+      case "+": res = i32AddChecked(l.value, r.value); break;
+      case "-": res = i32SubChecked(l.value, r.value); break;
+      case "*": res = i32MulChecked(l.value, r.value); break;
+      case "/": res = i32DivChecked(l.value, r.value); break;
+      case "%": res = i32ModChecked(l.value, r.value); break;
+      default: return none("fold-non-arith"); // comparisons / bitwise / && / || — not folded here
     }
-    return isI32Trap(res) ? null : res; // trap ⇒ don't fold (emit the runtime op → fails closed)
+    return isI32Trap(res) ? none("fold-trap") : found(res); // trap ⇒ don't fold (emit the runtime op → fails closed)
   }
-  return null;
+  return none("fold-unhandled");
 }
 
 /**
- * AOT #2 (R&D 0036): fold a compile-time-constant boolean condition to `true` / `false`, else null.
+ * AOT #2 (R&D 0036): fold a compile-time-constant boolean condition to `true` / `false`, else absent.
  * Drives branch-folding + dead-arm DCE at the `ifStmt` site — when the condition is a known constant
  * the taken arm is deterministic, so the WAT emitter emits ONLY that arm (the dead arm + its locals
  * are never emitted). Semantics-preserving: the interpreter evaluates the same constant condition and
@@ -4482,45 +4542,45 @@ function foldToInt(
  *
  * Folds: bool literals; `!expr`; comparisons (>,<,>=,<=,==,!=) of two foldable int constants (reuses
  * foldToInt); and `&&`/`||` ONLY when BOTH operands fold (conservative — never reasons about a
- * non-constant operand's side effects). Returns null for anything else → the runtime `(if …)` is
+ * non-constant operand's side effects). Returns absent for anything else → the runtime `(if …)` is
  * emitted unchanged (no behaviour change).
  */
 function foldToBool(
   expr: AstNode | undefined,
   consts: ReadonlyMap<string, number>,
-): boolean | null {
-  if (expr === undefined) return null;
-  if (expr.kind === "boolLiteral") return expr.value === "true";
+): Lookup<boolean> {
+  if (expr === undefined) return none("fold-bool:missing-expr");
+  if (expr.kind === "boolLiteral") return found(expr.value === "true");
   if (expr.kind === "unaryExpr" && (expr.value ?? "") === "!") {
     const inner = foldToBool(expr.children?.[0], consts);
-    return inner === null ? null : !inner;
+    return inner.kind === "none" ? inner : found(!inner.value);
   }
   if (expr.kind === "binaryExpr") {
     const op = expr.value ?? "";
     if (op === "&&" || op === "||") {
       // Conservative: fold only when BOTH operands are constant booleans (const-fold context has no
-      // side effects). A non-foldable operand ⇒ null ⇒ emit the runtime op (which short-circuits itself).
+      // side effects). A non-foldable operand ⇒ absent ⇒ emit the runtime op (which short-circuits itself).
       const l = foldToBool(expr.children?.[0], consts);
       const r = foldToBool(expr.children?.[1], consts);
-      if (l === null || r === null) return null;
-      return op === "&&" ? (l && r) : (l || r);
+      if (l.kind === "none" || r.kind === "none") return none("fold-bool:operand");
+      return found(op === "&&" ? (l.value && r.value) : (l.value || r.value));
     }
     const a = expr.children?.[0];
     const b = expr.children?.[1];
-    const l = a ? foldToInt(a, consts) : null;
-    const r = b ? foldToInt(b, consts) : null;
-    if (l === null || r === null) return null;
+    const l = a !== undefined ? foldToInt(a, consts) : none("fold-bool:missing-left");
+    const r = b !== undefined ? foldToInt(b, consts) : none("fold-bool:missing-right");
+    if (l.kind === "none" || r.kind === "none") return none("fold-bool:int-operand");
     switch (op) {
-      case ">":  return l > r;
-      case "<":  return l < r;
-      case ">=": return l >= r;
-      case "<=": return l <= r;
-      case "==": return l === r;
-      case "!=": return l !== r;
-      default: return null; // bitwise / arithmetic — not a boolean
+      case ">":  return found(l.value > r.value);
+      case "<":  return found(l.value < r.value);
+      case ">=": return found(l.value >= r.value);
+      case "<=": return found(l.value <= r.value);
+      case "==": return found(l.value === r.value);
+      case "!=": return found(l.value !== r.value);
+      default: return none("fold-bool:non-cmp"); // bitwise / arithmetic — not a boolean
     }
   }
-  return null;
+  return none("fold-bool:unhandled");
 }
 
 export function buildWATModule(
@@ -4528,6 +4588,7 @@ export function buildWATModule(
   _capabilityMap: ReadonlyMap<string, { readonly wasmImport?: string; readonly requiredEffects: readonly string[] }>,
   target: "wasm-standalone" | "wasm-hybrid" = "wasm-standalone",
 ): WATModule {
+  refuseUnadmittedPublicWAT(gir.schemaVersion, gir.ast, "buildWATModule");
   // Collect compile-time constants from `static NAME = EXPR` and `bitfield NAME { ... }`
   // top-level declarations in the AST. These are folded to (i32.const N) at every use site.
   arrayHofHelpers = [];
@@ -4640,6 +4701,23 @@ export function buildWATModule(
     { module: "host", name: "__decimal_compare",  effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
     { module: "host", name: "__decimal_div",      effect: "stdlib.decimal", type: { params: ["i32", "i32", "i32", "i32"], results: ["i32"] } },
     { module: "host", name: "__decimal_rem",      effect: "stdlib.decimal", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__decimal_from_int", effect: "stdlib.decimal", type: { params: ["i32"], results: ["i32"] } },
+    // #163-A2 Money / I/O / range — usage-gated with the rest of the bridge.
+    // `redact` is lowered inline to i32 -2 (no `$host___redact` call), so it is
+    // intentionally absent here.
+    { module: "host", name: "__money_gbp", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_eur", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_usd", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_chf", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_jpy", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_cad", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_aud", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_nzd", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_sgd", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__money_hkd", effect: "stdlib.money", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__print",     effect: "stdlib.io",    type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__println",   effect: "stdlib.io",    type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__range",     effect: "stdlib.array", type: { params: ["i32", "i32"], results: ["i32"] } },
   ];
   // NOTE: HOST_RUNTIME_IMPORTS are merged AFTER function bodies are built (below),
   // and only the bridge functions actually referenced by a body are added. Pure
@@ -4647,7 +4725,8 @@ export function buildWATModule(
   // the minimal JS assembler to resolve local indices correctly.
 
   // Build function definitions.
-  // Pure flows (qualifier === "pure", no declaredEffects) get real WAT bodies via emitWATBody.
+  // Pure flows (qualifier === "pure", no declaredEffects) get real WAT bodies from AST lowering.
+  // Missing-AST identity/default is a compile-time refusal, not emitWATBody.
   // All other flows get "unreachable" stub bodies (Phase 22 effectful emission TBD).
   // Phase 27: when exportAllPure is set, all pure flows are entry points for export.
   // P9.4c: a flow is WASM-exportable when it has a real (non-effectful) body — a
@@ -4659,6 +4738,11 @@ export function buildWATModule(
   const entrySet = gir.exportAllPure === true
     ? new Set(gir.flows.filter(isWasmExportable).map(f => f.name))
     : new Set(gir.entryPoints);
+  for (const flow of gir.flows) {
+    if (!isWasmExportable(flow) && entrySet.has(flow.name)) {
+      refuseEffectfulEntryWat(flow.name);
+    }
+  }
 
   // P9.4b: record-type → field-name layout, built once for `r.field` offset lowering.
   const recordLayoutRegistry = buildRecordLayouts(gir.ast);
@@ -4666,21 +4750,23 @@ export function buildWATModule(
   // inexact Decimal fields remain an early fail-closed refusal.
   assertLowerableRecordFields(gir.ast);
   const prevWATRecordLayouts = watRecordLayouts;
-  watRecordLayouts = buildWATRecordLayouts(gir.ast);
+  watRecordLayouts = found(buildWATRecordLayouts(gir.ast));
   // P9.4d (#144): enum-type → variant-name list, for `EnumType.Variant` → i32 tag.
   const enumVariantRegistry = buildEnumVariants(gir.ast);
   // #160: flowName → return type, so `let xs = makeKeywordTable()` carries a type for
   // type-directed `.contains` / `+` lowering. Module-level for inferExprType; restored below.
   const prevFlowReturnTypes = flowReturnTypes;
-  flowReturnTypes = buildFlowReturnTypes(gir.ast);
+  flowReturnTypes = found(buildFlowReturnTypes(gir.ast));
   // #160 str_eq: recordType → field → declared type, so `a.s == b.s` (two String fields) is a String
   // comparison → host___str_eq, not i32.eq on handles. Module-level for inferExprType; restored below.
   const prevRecordFieldTypes = recordFieldTypes;
-  recordFieldTypes = buildRecordFieldTypes(gir.ast);
+  recordFieldTypes = found(buildRecordFieldTypes(gir.ast));
   // 0115: flowName → param base types, so a call site threads a callee's Int64 param as the arg's
   // expectedType (cross-flow Int64 literal-arg faithfulness). Module-level; restored below.
   const prevFlowParamBases = flowParamBases;
-  flowParamBases = buildFlowParamBases(gir.ast);
+  flowParamBases = found(buildFlowParamBases(gir.ast));
+  const prevWatJobCaches = watJobCaches;
+  watJobCaches = resetWatJobCachesForModule(gir.ast !== undefined ? found(gir.ast) : none("gir-ast-missing"));
   // P9.4 adoption gate (the "FULLY succeeds" check, implemented — 2026-07-16): a guarded body is
   // adoptable ONLY when (a) it carries NO fail-closed lowering placeholder — "#128-sibling" is the
   // shared marker every partial-lowering stub embeds — and (b) it references no positional param
@@ -4714,42 +4800,44 @@ export function buildWATModule(
     // Emit a real body for pure flows.
     //
     // Phase 25 progression (AST-based emission):
-    //   1. gir.ast present → Phase 25 real emission from AST body (arithmetic, let, return)
-    //   2. executionPlan present → Phase 24A identity body from PassiveExecutionPlan steps
-    //   3. paramTypes present → identity body (local.get $p0)
-    //   4. No info available → minimal constant body (i32.const 0)
+    //   1. gir.ast present and the flow AST node lowers → Phase 25 real body
+    //   2. otherwise a pure flow that would have received a guessed Phase-24A
+    //      identity (`local.get $p0`) or default (`i32.const 0`) body is a
+    //      compile-time refusal (FUNGI-WAT-BODY-001). emitWATBody is not a
+    //      silent success path for missing AST.
     //
     // Non-pure flows stay as unreachable until Phase 22 effectful emission.
-    let body = "unreachable";
+    // D8-1: effectful stubs keep the trap and carry a named marker comment.
+    let body = (!isPureFlow && flowDeclaredEffects.length > 0)
+      ? "unreachable ;; effectful flow not lowered (D8) — fail-closed"
+      : "unreachable";
     if (isPureFlow && gir.ast !== undefined) {
       // Phase 25: find the flow's AST node and emit real arithmetic instructions.
       const flowAstNode = findFlowNodeInAST(gir.ast, flow.name);
       if (flowAstNode !== undefined) {
         const paramNames = extractFlowParamNames(flowAstNode);
-        const phase25Body = emitWATFromFlowAST(flowAstNode, paramNames, staticConsts, recordLayoutRegistry, enumVariantRegistry);
-        if (phase25Body !== null) {
-          body = phase25Body;
+        const phase25Body = emitWATFromFlowAST(flowAstNode, paramNames, staticConsts, found(recordLayoutRegistry), found(enumVariantRegistry));
+        if (phase25Body.kind === "found") {
+          body = phase25Body.value;
         } else if (flow.executionPlan !== undefined) {
-          body = emitWATBody(flow.executionPlan, namedParams.length);
+          refusePureFlowRequiresAstBody(flow.name);
         } else {
-          body = "(unreachable) ;; Phase 25: empty body — fail-closed (cannot lower → falls back to walker)";
+          body = "(unreachable) ;; Phase 25: empty body — fail-closed (emitter cannot lower → falls back to walker)";
         }
       } else if (flow.executionPlan !== undefined) {
-        body = emitWATBody(flow.executionPlan, namedParams.length);
+        refusePureFlowRequiresAstBody(flow.name);
       } else if (rawParamTypes.length > 0) {
-        body = emitWATBody({ steps: [{ kind: "return" }] }, namedParams.length);
+        refusePureFlowRequiresAstBody(flow.name);
       } else {
-        body = "(unreachable) ;; Phase 25: no AST node found — fail-closed (cannot lower → falls back to walker)";
+        body = "(unreachable) ;; Phase 25: no AST node found — fail-closed (emitter cannot lower → falls back to walker)";
       }
     } else if (isPureFlow && flow.executionPlan !== undefined) {
-      // Phase 24A: use PassiveExecutionPlan steps (identity body)
-      body = emitWATBody(flow.executionPlan, namedParams.length);
+      refusePureFlowRequiresAstBody(flow.name);
     } else if (isPureFlow && rawParamTypes.length > 0) {
-      // Phase 24A: paramTypes supplied — emit identity body (return first param)
-      body = emitWATBody({ steps: [{ kind: "return" }] }, namedParams.length);
+      refusePureFlowRequiresAstBody(flow.name);
     } else if (isPureFlow) {
-      // Fallback: no param info.
-      body = "(unreachable) ;; Phase 25: no body info available — fail-closed (cannot lower → falls back to walker)";
+      // No AST, no plan, no params: keep the existing walker-fallback stub.
+      body = "(unreachable) ;; Phase 25: no body info available — fail-closed (emitter cannot lower → falls back to walker)";
     } else if (flow.qualifier === "guarded" && flowDeclaredEffects.length === 0 && gir.ast !== undefined) {
       // P9.4: a `guarded` flow is pure computation wrapped in DAG-edge governance —
       // its body has no real side effects, so it can be lowered exactly like a pure
@@ -4759,9 +4847,9 @@ export function buildWATModule(
       const guardedAstNode = findFlowNodeInAST(gir.ast, flow.name);
       if (guardedAstNode !== undefined) {
         const guardedParamNames = extractFlowParamNames(guardedAstNode);
-        const guardedBody = emitWATFromFlowAST(guardedAstNode, guardedParamNames, staticConsts, recordLayoutRegistry, enumVariantRegistry);
-        if (guardedBody !== null && isAdoptableGuardedBody(guardedBody, namedParams.length)) {
-          body = guardedBody;
+        const guardedBody = emitWATFromFlowAST(guardedAstNode, guardedParamNames, staticConsts, found(recordLayoutRegistry), found(enumVariantRegistry));
+        if (guardedBody.kind === "found" && isAdoptableGuardedBody(guardedBody.value, namedParams.length)) {
+          body = guardedBody.value;
         }
       }
     }
@@ -4844,7 +4932,7 @@ export function buildWATModule(
     // flow — without this the `(result i32)` mismatches the i64 body → invalid module. Both 64-bit widths
     // (Int64 AND UInt64, #52) map the function result to i64 — they store as i64 (galerinaTypeToWAT); Float32
     // stays i32 (unchanged).
-    const declaredReturn = flowReturnTypes?.get(flow.name);
+    const declaredReturn = (flowReturnTypes.kind === "found" ? flowReturnTypes.value.get(flow.name) : undefined);
     // A1 fix: a Void-returning flow must emit `(func $name ...)` with NO `(result …)`.
     // Previously every flow unconditionally got `results: ["i32"]`, so a Void flow's body
     // (which ends on a local.set with nothing on the stack) was invalid — the signature
@@ -4857,9 +4945,10 @@ export function buildWATModule(
       declaredReturn !== undefined && is64BitWatType(numericBaseType(declaredReturn)) ? "i64" :
       "i32";
     const resultTypes: readonly WATValType[] = isVoidReturn ? [] : [resultVal];
-    const flattenPlan = declaredReturn !== undefined && watRecordLayouts !== null
-      ? flattenPlanFor(declaredReturn, watRecordLayouts)
-      : undefined;
+    const flattenPlanL = declaredReturn !== undefined && watRecordLayouts.kind === "found"
+      ? flattenPlanFor(declaredReturn, watRecordLayouts.value)
+      : none("flatten:skip");
+    const flattenPlan = flattenPlanL.kind === "found" ? flattenPlanL.value : undefined;
     const returnWordCount = flattenPlan !== undefined
       ? flattenWordCount(flattenPlan)
       : undefined;
@@ -4947,12 +5036,11 @@ export function buildWATModule(
   const exportedNames = gir.exportAllPure === true
     ? gir.flows.filter(isWasmExportable).map(f => f.name) // P9.4c: pure + guarded-no-effect
     : gir.entryPoints;
-  const exports: WATExport[] = exportedNames
-    .map((name) => {
-      const idx = flowIndexMap.get(name);
-      return idx !== undefined ? { name, index: idx } : null;
-    })
-    .filter((e): e is WATExport => e !== null);
+  const exports: WATExport[] = [];
+  for (const name of exportedNames) {
+    const idx = flowIndexMap.get(name);
+    if (idx !== undefined) exports.push({ name, index: idx });
+  }
 
   // Usage-gated merge of the stdlib runtime bridge (__array_*, __str_*, __char_*,
   // __option_*, __unwrap_or). Only add a bridge import if some function body
@@ -4970,6 +5058,7 @@ export function buildWATModule(
   recordFieldTypes = prevRecordFieldTypes;
   watRecordLayouts = prevWATRecordLayouts;
   flowParamBases = prevFlowParamBases;   // 0115: restore
+  watJobCaches = prevWatJobCaches;
 
   return {
     schemaVersion: "fungi.wat.v1",
@@ -4992,16 +5081,6 @@ export function buildWATModule(
  * flows (the admission entry gate is not yet lowered to WAT, so a raw run would bypass it). Exported so the
  * `galerina build` standalone path can refuse per-file gracefully before reaching the emitter's hard throw.
  */
-export function astHasParamAdmission(node: AstNode | undefined | null): boolean {
-  // Null-safe: some (untyped JS) callers reach the emitter without an AST. `ast` is TS-required on the real
-  // security surfaces (cli raw-WASM paths), so a missing AST here means a caller that structurally has no
-  // admission clause to see — return false rather than crash (the crash masked the greet-flow lowering test).
-  if (node === undefined || node === null) return false;
-  if (node.kind === "paramAdmissionDecl") return true;
-  for (const c of node.children ?? []) if (astHasParamAdmission(c)) return true;
-  return false;
-}
-
 // ---------------------------------------------------------------------------
 // GIRProgram overload — buildWATModuleFromGIR
 // ---------------------------------------------------------------------------
@@ -5013,7 +5092,7 @@ export function astHasParamAdmission(node: AstNode | undefined | null): boolean 
  * It extracts the WATGIRInput shape from GIRProgram and delegates to
  * buildWATModule, passing through:
  *   - flow names, qualifiers, and declared effects
- *   - executionPlan from GIRFlow.executionPlan (used by emitWATBody for pure flows)
+ *   - executionPlan from GIRFlow.executionPlan (not a silent identity fallback)
  *   - entryPoints from GIRProgram.entryPoints
  *   - girHash and sourceHash from GIRProgram
  *
@@ -5116,6 +5195,7 @@ export function buildWATModuleFromGIR(
       return base;
     }),
     entryPoints: gir.entryPoints,
+    schemaVersion: gir.schemaVersion,
     ...(gir.girHash !== undefined ? { girHash: gir.girHash } : {}),
     ...(gir.sourceHash !== undefined ? { sourceHash: gir.sourceHash } : {}),
     ...(ast !== undefined ? { ast } : {}),

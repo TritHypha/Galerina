@@ -93,20 +93,32 @@ describe("C20 compile-time PatternCapability", () => {
     assert.equal(veto?.__tag, "err");
   });
 
-  it("emits a named C20 WAT trap for a compile-time literal, not an undefined callee", () => {
-    const wat = compileWAT(`pure flow hasMatch(s: String) -> Bool
+  it("refuses a compile-time literal at WAT emit with FUNGI-WAT-PATTERN-001", () => {
+    let thrown = "";
+    try {
+      compileWAT(`pure flow hasMatch(s: String) -> Bool
 contract { effects {} }
 { return s.matchesPattern("^[a-z]+$") }`);
-    assert.ok(wat.includes("C20: matchesPattern WAT ABI is not admitted"), wat);
-    assert.ok(!wat.includes("$matchesPattern"), wat);
-    assert.ok(!wat.includes("$host___matchesPattern"), wat);
+    } catch (e) {
+      thrown = String(e && e.message ? e.message : e);
+    }
+    assert.match(thrown, /FUNGI-WAT-PATTERN-001/);
+    assert.match(thrown, /C20: matchesPattern WAT ABI is not admitted/);
+    assert.equal(thrown.includes("$matchesPattern"), false);
+    assert.equal(thrown.includes("$host___matchesPattern"), false);
   });
 
-  it("emits a named C20 WAT trap for a dynamic pattern", () => {
-    const wat = compileWAT(`pure flow hasMatch(s: String, p: String) -> Bool
+  it("refuses a dynamic pattern at WAT emit with FUNGI-WAT-PATTERN-001", () => {
+    let thrown = "";
+    try {
+      compileWAT(`pure flow hasMatch(s: String, p: String) -> Bool
 contract { effects {} }
 { return s.matchesPattern(p) }`);
-    assert.ok(wat.includes("C20: dynamic matchesPattern refused"), wat);
-    assert.ok(!wat.includes("$matchesPattern"), wat);
+    } catch (e) {
+      thrown = String(e && e.message ? e.message : e);
+    }
+    assert.match(thrown, /FUNGI-WAT-PATTERN-001/);
+    assert.match(thrown, /C20: dynamic matchesPattern refused/);
+    assert.equal(thrown.includes("$matchesPattern"), false);
   });
 });
