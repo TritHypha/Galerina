@@ -31,7 +31,10 @@ import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, f
 import { foldRequirementValues } from "./requirement-semantics.js";
 import { executableFaultHandlers } from "./resilience-inference.js";
 import { bodyLocalInvariantPlan, flowHasBodyLocalInvariants, isBodyLocalEnsure, type BodyLocalInvariant } from "./body-local-invariants.js";
-import { FUNGI_FAULT_007, FUNGI_FAULT_008, FUNGI_INV_005, FUNGI_INV_006, governedControlMessage } from "./governed-control-diagnostics.js";
+import {
+  FUNGI_FAULT_001, FUNGI_FAULT_007, FUNGI_FAULT_008, FUNGI_INV_000, FUNGI_INV_001, FUNGI_INV_002, FUNGI_INV_005,
+  FUNGI_INV_006, governedControlMessage,
+} from "./governed-control-diagnostics.js";
 import { compareUtf16CodeUnits } from "@galerina/core-runtime-wasm";
 import { isProxy as isNodeProxy } from "node:util/types";
 import { runInNewContext } from "node:vm";
@@ -1721,12 +1724,12 @@ class Interpreter {
     // `invariant { ensure … }` that does NOT reference `result` is a parameter pre-condition; it is
     // evaluated here, before ANY body work, fail-closed — mirroring the WAT entry gate (ensureDecl) so
     // Stage-A matches production. A violated (or non-evaluable) pre-condition means the body NEVER runs.
-    // FUNGI-INV-001 — the dynamic counterpart of the static PRE_CONDITION_STATICALLY_FALSE check,
+    // FUNGI-INV-001 — the dynamic counterpart of the static PRECONDITION_VIOLATED check (KB name; was PRE_CONDITION_STATICALLY_FALSE),
     // exactly as FUNGI-INV-002 is used for both static and runtime postcondition violations.
     {
       const violation = await this.checkInputPreconditions(flowNode, flowName, args);
       if (violation !== undefined) {
-        this.diagnostics.push({ code: "FUNGI-INV-001", message: violation });
+        this.diagnostics.push({ code: FUNGI_INV_001.code, message: violation });
         const value: GalerinaValue = { __tag: "runtimeError", message: violation };
         return this.buildResult(flowName, qualifier, startedAt, value, violation);
       }
@@ -1834,19 +1837,19 @@ class Interpreter {
       if (error instanceof EarlyReturn) {
         returnValue = error.value;
       } else if (error instanceof TrapSignal) {
-        const message = `[Flow '${flowName}'] FUNGI-INV-000 trap '${error.errorCode}' fired`;
+        const message = `[Flow '${flowName}'] ${FUNGI_INV_000.code} trap '${error.errorCode}' fired`;
         runtimeError = message;
         this.auditEntries.push({
           event: "trap",
           fields: {
-            code: "FUNGI-INV-000",
+            code: FUNGI_INV_000.code,
             flowId: flowName,
             trapKind: error.errorCode,
           },
           timestamp: new Date().toISOString(),
         });
         this.diagnostics.push({
-          code: "FUNGI-INV-000",
+          code: FUNGI_INV_000.code,
           message: `Named trap '${error.errorCode}' fired in flow '${flowName}'`,
         });
         returnValue = { __tag: "runtimeError", message };
@@ -1872,7 +1875,7 @@ class Interpreter {
         const message = `[Flow '${flowName}'] fault: ${error.reason}`;
         runtimeError = message;
         this.auditEntries.push({ event: "fault", fields: { reason: error.reason }, timestamp: new Date().toISOString() });
-        this.diagnostics.push({ code: "FUNGI-FAULT-001", message: `Audited fault raised in flow '${flowName}': ${error.reason}` });
+        this.diagnostics.push({ code: FUNGI_FAULT_001.code, message: `Audited fault raised in flow '${flowName}': ${error.reason}` });
         returnValue = { __tag: "runtimeError", message };
       } else {
         const causeMessage = error instanceof Error ? error.message : String(error);
@@ -1946,7 +1949,7 @@ class Interpreter {
       const violation = await this.checkOutputPostconditions(flowNode, flowName, args, returnValue);
       if (violation !== undefined) {
         runtimeError = violation;
-        this.diagnostics.push({ code: "FUNGI-INV-002", message: violation });
+        this.diagnostics.push({ code: FUNGI_INV_002.code, message: violation });
         returnValue = { __tag: "runtimeError", message: violation };
       }
     }
@@ -2069,13 +2072,13 @@ class Interpreter {
         try {
           val = await this.evalExpr(expr);
         } catch {
-          return `[Flow '${flowName}'] pre-condition 'ensure ${describeEnsureExpr(expr)}' could not be evaluated — fail-closed (FUNGI-INV-001).`;
+          return `[Flow '${flowName}'] pre-condition 'ensure ${describeEnsureExpr(expr)}' could not be evaluated — fail-closed (${FUNGI_INV_001.code}).`;
         }
         const holds =
           (val.__tag === "bool" && val.value === true) ||
           (val.__tag === "int" && val.value !== 0);
         if (!holds) {
-          return `[Flow '${flowName}'] violated pre-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (FUNGI-INV-001).`;
+          return `[Flow '${flowName}'] violated pre-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (${FUNGI_INV_001.code}).`;
         }
       }
       return undefined;
@@ -2156,7 +2159,7 @@ class Interpreter {
     // only an explicit `return` or a tail `match` yields a value) cannot be checked. Replace the MISLEADING
     // "violated post-condition" (which falsely blamed the predicate) with a clear pointer to the missing return.
     if (result.__tag === "void") {
-      return `[Flow '${flowName}'] declares an output post-condition ('ensure ${describeEnsureExpr(ensures[0]!)}') but produced NO return value — add an explicit \`return <expr>\` (a bare tail expression / tail \`if\` is not returned). Fail-closed (FUNGI-INV-002).`;
+      return `[Flow '${flowName}'] declares an output post-condition ('ensure ${describeEnsureExpr(ensures[0]!)}') but produced NO return value — add an explicit \`return <expr>\` (a bare tail expression / tail \`if\` is not returned). Fail-closed (${FUNGI_INV_002.code}).`;
     }
     this.pushScope();
     try {
@@ -2167,13 +2170,13 @@ class Interpreter {
         try {
           val = await this.evalExpr(expr);
         } catch {
-          return `[Flow '${flowName}'] output post-condition 'ensure ${describeEnsureExpr(expr)}' could not be evaluated — fail-closed (FUNGI-INV-002).`;
+          return `[Flow '${flowName}'] output post-condition 'ensure ${describeEnsureExpr(expr)}' could not be evaluated — fail-closed (${FUNGI_INV_002.code}).`;
         }
         const holds =
           (val.__tag === "bool" && val.value === true) ||
           (val.__tag === "int" && val.value !== 0);
         if (!holds) {
-          return `[Flow '${flowName}'] violated output post-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (FUNGI-INV-002).`;
+          return `[Flow '${flowName}'] violated output post-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (${FUNGI_INV_002.code}).`;
         }
       }
       return undefined;
@@ -4030,7 +4033,7 @@ function isCheckedTrap(value: GalerinaValue): boolean {
   return m === "IntegerOverflow" || m === "DivisionByZero" ||
     isExactTrapLabel(m) ||                             // R6: the shared Decimal/Money trap vocabulary
     m === FLOAT_NONFINITE_TRAP ||                      // non-finite float (NaN/±Inf) — FUNGI-FLOAT-NAN-001
-    m.includes("FUNGI-INV-000 trap") ||               // named `trap COND : ERROR_CODE` firing
+    m.includes(`${FUNGI_INV_000.code} trap`) ||               // named `trap COND : ERROR_CODE` firing
     m.includes("Compute budget exceeded") ||         // global compute-step cap (maxSteps)
     m.includes("Loop exceeded maximum iteration") ||  // per-loop cap (maxIterations)
     m.includes("Recursion depth exceeded");           // call-depth cap (maxCallDepth)

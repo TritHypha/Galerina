@@ -262,8 +262,16 @@ export {
 } from "./requirement-diagnostics.js";
 
 export {
+  FUNGI_FAULT_001,
+  FUNGI_FAULT_003,
+  FUNGI_FAULT_006,
   FUNGI_FAULT_007,
   FUNGI_FAULT_008,
+  FUNGI_INV_000,
+  FUNGI_INV_001,
+  FUNGI_INV_002,
+  FUNGI_INV_003,
+  FUNGI_INV_004,
   FUNGI_INV_005,
   FUNGI_INV_006,
   FUNGI_FAULT_DIAGNOSTICS,
@@ -271,7 +279,29 @@ export {
   governedControlMessage,
   type GovernedControlDiagnosticDefinition,
 } from "./governed-control-diagnostics.js";
-export { FUNGI_WAT_FAULT_001, FUNGI_WAT_INV_001, FUNGI_WAT_DIAGNOSTICS } from "./wat-emitter-refusals.js";
+export {
+  FUNGI_WAT_BODY_001,
+  FUNGI_WAT_DECIMAL_001,
+  FUNGI_WAT_EFFECT_001,
+  FUNGI_WAT_FAULT_001,
+  FUNGI_WAT_HOF_001,
+  FUNGI_WAT_INT64_001,
+  FUNGI_WAT_INV_001,
+  FUNGI_WAT_METHOD_001,
+  FUNGI_WAT_MONEY_001,
+  FUNGI_WAT_PATTERN_001,
+  FUNGI_WAT_STMT_001,
+  FUNGI_WAT_DIAGNOSTICS,
+  createWatRefusalDiagnostic,
+  type WatDiagnosticDefinition,
+} from "./wat-emitter-refusals.js";
+export {
+  FUNGI_HALLMARK_006,
+  FUNGI_NUMERIC_OP_005,
+  FUNGI_NUMERIC_OP_DIAGNOSTICS,
+  type TypeCheckDiagnosticDefinition,
+} from "./numeric-hallmark-diagnostics.js";
+import { FUNGI_HALLMARK_006 as HALLMARK_006_DEF } from "./numeric-hallmark-diagnostics.js";
 
 export {
   liftRequirementValue,
@@ -938,6 +968,16 @@ export const FUNGI_HALLMARK_005 = {
   message: "This operator needs an algebra operation that the hallmark type's ops {} schema does not declare. Undeclared operations are denied by default.",
   suggestedFix: "Add the operation to the hallmark's ops {} schema, or avoid this operator on that type.",
 } as const;
+
+/** FUNGI-HALLMARK-* family (2026-10-02 diag-constants): 001..005 above; 006 is defined beside the type checker. */
+export const FUNGI_HALLMARK_DIAGNOSTICS = Object.freeze([
+  FUNGI_HALLMARK_001,
+  FUNGI_HALLMARK_002,
+  FUNGI_HALLMARK_003,
+  FUNGI_HALLMARK_004,
+  FUNGI_HALLMARK_005,
+  HALLMARK_006_DEF,
+] as const);
 
 /** FUNGI-VALUESTATE-006: A protected value was assigned to a plain (unprotected) binding. */
 export const FUNGI_VALUESTATE_006 = {

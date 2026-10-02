@@ -37,6 +37,10 @@ FUNGI-PATTERN-001
 FUNGI-WAT-HOF-001
 # 2026-09-29: J3 pure-flow missing-AST body refusal. KB compiler-diagnostics.md is read-only in this job.
 FUNGI-WAT-BODY-001
+# 2026-10-02 diag-constants: FUNGI-WAT-CHECKED-001 CHECKED_PROGRAM_REQUIRED (pre-existing J-R4 CheckedProgram gate, ID and
+# meaning unchanged). It is now a `code:` constant in FUNGI_WAT_DIAGNOSTICS, so this scan sees it for the first time; the KB
+# compiler-diagnostics.md has no row for it yet (owner/KB step).
+FUNGI-WAT-CHECKED-001
 # 2026-10-01: the 7 Grok Bot rounding codes (FUNGI-NUMERIC-OP-002..005, FUNGI-WAT-MONEY-001,
 # FUNGI-WAT-DECIMAL-001, FUNGI-HALLMARK-006) are now registered in the KB compiler-diagnostics.md and are
 # no longer pending (owner go-ahead 01:36 BST).

@@ -191,7 +191,8 @@ describe("T6 trap stay-green", () => {
   it("TrapSignal / FUNGI-INV-000 remain separate from FaultSignal", () => {
     const i = interpSrc();
     assert.equal(i.includes("class TrapSignal"), true);
-    assert.equal(i.includes("FUNGI-INV-000"), true);
+    // 2026-10-02 diag-constants: interpreter emits INV-000 through the FUNGI_INV_000 constant (no inline literal).
+    assert.equal(i.includes("FUNGI_INV_000.code"), true);
     assert.equal(i.includes("class FaultSignal"), true);
   });
 });
@@ -238,10 +239,10 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3127 / :3937 still trap (re-pinned on main 0d06d6c1, +26)", () => {
+  it("live stacked lines :3129 / :3939 still trap (re-pinned on main 0d06d6c1, +26; +2 diag-constants import 2026-10-02)", () => {
     const lines = emitterSrc().split("\n");
-    assert.equal(lines[3126].includes("case \"faultStmt\""), true, lines[3126]);
-    assert.equal(lines[3936].includes("case \"faultStmt\""), true, lines[3936]);
+    assert.equal(lines[3128].includes("case \"faultStmt\""), true, lines[3128]);
+    assert.equal(lines[3938].includes("case \"faultStmt\""), true, lines[3938]);
     assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
   });
 });
@@ -279,7 +280,9 @@ describe("T11 pending omits FAULT-006 + source pins", () => {
     assert.equal(resSrc().includes("FUNGI-FAULT-004"), false);
     assert.equal(govSrc().includes("FUNGI-FAULT-004"), false);
     assert.equal(resSrc().includes("DECLARED_HANDLER_NOT_EXECUTED"), true);
-    assert.equal(govSrc().includes("DECLARED_HANDLER_NOT_EXECUTED"), true);
+    // 2026-10-02 diag-constants: the verifier takes the name from the FUNGI_FAULT_006 constant.
+    assert.equal(govSrc().includes("FUNGI_FAULT_006.name"), true);
+    assert.equal(readFileSync(join(SRC, "governed-control-diagnostics.ts"), "utf8").includes("DECLARED_HANDLER_NOT_EXECUTED"), true);
     assert.equal(interpSrc().includes("declared-not-executed"), false);
     assert.equal(resSrc().includes("d.action !== \"halt\""), true);
   });

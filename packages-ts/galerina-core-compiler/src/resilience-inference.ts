@@ -21,6 +21,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta } from "./parser.js";
+import { FUNGI_FAULT_001, FUNGI_FAULT_003, FUNGI_FAULT_006 } from "./governed-control-diagnostics.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -408,7 +409,7 @@ export function checkResilienceViolations(
 // ---------------------------------------------------------------------------
 
 export interface FaultHandlerViolation {
-  readonly code: "FUNGI-FAULT-001" | "FUNGI-FAULT-003" | "FUNGI-FAULT-006";
+  readonly code: typeof FUNGI_FAULT_001.code | typeof FUNGI_FAULT_003.code | typeof FUNGI_FAULT_006.code;
   readonly message: string;
 }
 
@@ -431,7 +432,7 @@ export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViol
   for (const [signal, d] of extractDeclaredFaultHandlers(flowNode)) {
     if (d.action === "log" && signal !== "on_rotation_fault") {
       violations.push({
-        code: "FUNGI-FAULT-003",
+        code: FUNGI_FAULT_003.code,
         message:
           `Fault handler '${signal} log' is fail-OPEN: 'log' keeps serving past the fault and is permitted ` +
           `only on on_rotation_fault. Use 'halt' (fail-closed) or 'quarantine'.`,
@@ -439,7 +440,7 @@ export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViol
     }
     if (d.action === "retry" && signal === "on_denial_fault") {
       violations.push({
-        code: "FUNGI-FAULT-001",
+        code: FUNGI_FAULT_001.code,
         message:
           `Fault handler 'on_denial_fault retry' is rejected: retrying a capability denial attempts a ` +
           `re-grant, colliding with deny-only monotonicity (FUNGI-MONO-001). Use 'halt', 'quarantine', or 'fallback <flow>'.`,
@@ -448,9 +449,9 @@ export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViol
     if (d.action !== "halt" && !isExecutableFaultHandler(signal, d.action)) {
       const shown = d.target !== undefined ? `${d.action} ${d.target}` : d.action;
       violations.push({
-        code: "FUNGI-FAULT-006",
+        code: FUNGI_FAULT_006.code,
         message:
-          `FUNGI-FAULT-006 DECLARED_HANDLER_NOT_EXECUTED: fault handler '${signal} ${shown}' is declared ` +
+          `${FUNGI_FAULT_006.code} ${FUNGI_FAULT_006.name}: fault handler '${signal} ${shown}' is declared ` +
           `but not executed. Runtime will halt, audit and deny instead; handlers are not executed.`,
       });
     }

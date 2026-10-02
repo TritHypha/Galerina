@@ -12,24 +12,61 @@ const DEFAULT_ENVIRONMENT: CliEnvironment = "development";
 const VALID_ENVIRONMENT_LIST = [...VALID_ENVIRONMENTS].join(", ");
 const VALID_ENVIRONMENT_CHOICES = [...VALID_ENVIRONMENTS].join("|");
 
+// 2026-10-02 diag-constants (Phillip 16:35 BST order): each FUNGI-CLI-ENV-* code is ONE exported constant
+// { code, name, severity, message, suggestedFix } in FUNGI_CLI_ENV_DIAGNOSTICS, and every emit references it.
+// IDs and emitted text are unchanged; the names are new (the KB has no CLI-ENV rows yet - proposed for the KB).
+export interface CliDiagnosticDefinition {
+  readonly code: `FUNGI-CLI-${string}`;
+  readonly name: string;
+  readonly severity: "error";
+  readonly message: string;
+  readonly suggestedFix: string;
+}
+
+const ENVIRONMENT_FIX = `Pass --env <${VALID_ENVIRONMENT_CHOICES}>, or omit --env to use ${DEFAULT_ENVIRONMENT}.`;
+
 /** --env was given a value outside the closed environment vocabulary (e.g. a typo). */
-export const FUNGI_CLI_ENV_001 = "FUNGI-CLI-ENV-001";
+export const FUNGI_CLI_ENV_001 = {
+  code: "FUNGI-CLI-ENV-001",
+  name: "ENVIRONMENT_UNKNOWN",
+  severity: "error",
+  message: `--env value is not a known environment (expected one of: ${VALID_ENVIRONMENT_LIST}).`,
+  suggestedFix: ENVIRONMENT_FIX,
+} as const satisfies CliDiagnosticDefinition;
 /** --env was given without a value. */
-export const FUNGI_CLI_ENV_002 = "FUNGI-CLI-ENV-002";
+export const FUNGI_CLI_ENV_002 = {
+  code: "FUNGI-CLI-ENV-002",
+  name: "ENVIRONMENT_VALUE_MISSING",
+  severity: "error",
+  message: "--env was given without a value.",
+  suggestedFix: ENVIRONMENT_FIX,
+} as const satisfies CliDiagnosticDefinition;
 /** --env was given more than once. */
-export const FUNGI_CLI_ENV_003 = "FUNGI-CLI-ENV-003";
+export const FUNGI_CLI_ENV_003 = {
+  code: "FUNGI-CLI-ENV-003",
+  name: "ENVIRONMENT_REPEATED",
+  severity: "error",
+  message: "--env was given more than once; the environment is ambiguous.",
+  suggestedFix: ENVIRONMENT_FIX,
+} as const satisfies CliDiagnosticDefinition;
+
+export const FUNGI_CLI_ENV_DIAGNOSTICS = Object.freeze([
+  FUNGI_CLI_ENV_001,
+  FUNGI_CLI_ENV_002,
+  FUNGI_CLI_ENV_003,
+] as const);
 
 export type EnvironmentResolution =
   | { readonly ok: true; readonly env: CliEnvironment }
   | { readonly ok: false; readonly error: CliError };
 
-function environmentError(code: string, safeMessage: string): EnvironmentResolution {
+function createEnvironmentDiagnostic(diag: CliDiagnosticDefinition): EnvironmentResolution {
   return Object.freeze({
     ok: false as const,
     error: Object.freeze({
-      code,
-      safeMessage,
-      suggestedFix: `Pass --env <${VALID_ENVIRONMENT_CHOICES}>, or omit --env to use ${DEFAULT_ENVIRONMENT}.`
+      code: diag.code,
+      safeMessage: diag.message,
+      suggestedFix: diag.suggestedFix
     })
   });
 }
@@ -59,18 +96,15 @@ export function parseEnvironment(args: readonly string[]): EnvironmentResolution
     return Object.freeze({ ok: true as const, env: DEFAULT_ENVIRONMENT });
   }
   if (values.length > 1) {
-    return environmentError(FUNGI_CLI_ENV_003, "--env was given more than once; the environment is ambiguous.");
+    return createEnvironmentDiagnostic(FUNGI_CLI_ENV_003);
   }
 
   const value = values[0];
   if (value === undefined) {
-    return environmentError(FUNGI_CLI_ENV_002, "--env was given without a value.");
+    return createEnvironmentDiagnostic(FUNGI_CLI_ENV_002);
   }
   if (!VALID_ENVIRONMENTS.has(value as CliEnvironment)) {
-    return environmentError(
-      FUNGI_CLI_ENV_001,
-      `--env value is not a known environment (expected one of: ${VALID_ENVIRONMENT_LIST}).`
-    );
+    return createEnvironmentDiagnostic(FUNGI_CLI_ENV_001);
   }
   return Object.freeze({ ok: true as const, env: value as CliEnvironment });
 }

@@ -74,6 +74,8 @@ import {
 import {
   refuseHofCapture,
   refuseHofShadowed,
+  FUNGI_WAT_HOF_001,
+  createWatRefusalDiagnostic,
   refusePureFlowRequiresAstBody,
   refuseUnadmittedPublicWAT,
   astHasParamAdmission,
@@ -2643,13 +2645,13 @@ export function emitWATExpr(
             return `(call $fungi_array_${name}_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)})`;
           }
           // FUNGI-WAT-HOF-001 — pending KB registration in compiler-diagnostics.md.
-          const diag = { code: "FUNGI-WAT-HOF-001", name: "ARRAY_HOF_REQUIRES_NAMED_FLOW", severity: "error" } as const;
+          const diag = FUNGI_WAT_HOF_001;
           const reason = fnName === ""
             ? "callback is not a capture-free named unary flow identifier"
             : (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName))
               ? `named flow '${fnName}' is not unary`
               : `named flow '${fnName}' is not a known capture-free unary flow`;
-          throw new Error(
+          throw createWatRefusalDiagnostic(FUNGI_WAT_HOF_001,
             `${diag.code}: ${name} ${reason}. Required form: a capture-free named unary flow identifier. ` +
             `WAT emission refuses rather than emit a C02 (unreachable) stub (fail-closed).`,
           );
@@ -2664,13 +2666,13 @@ export function emitWATExpr(
             arrayHofHelpers.push({ kind: "reduce", fnName });
             return `(call $fungi_array_reduce_${fnName} ${emitWATExpr(realReceiver, vars, staticConsts)} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
           }
-          const diag = { code: "FUNGI-WAT-HOF-001", name: "ARRAY_HOF_REQUIRES_NAMED_FLOW", severity: "error" } as const;
+          const diag = FUNGI_WAT_HOF_001;
           const reason = fnName === ""
             ? "callback is not a capture-free named binary flow identifier"
             : (flowReturnTypes.kind === "found" && flowReturnTypes.value.has(fnName))
               ? `named flow '${fnName}' is not binary`
               : `named flow '${fnName}' is not a known capture-free binary flow`;
-          throw new Error(
+          throw createWatRefusalDiagnostic(FUNGI_WAT_HOF_001,
             `${diag.code}: reduce ${reason}. Required form: a capture-free named binary flow identifier. ` +
             `WAT emission refuses rather than emit a C02 (unreachable) stub (fail-closed).`,
           );

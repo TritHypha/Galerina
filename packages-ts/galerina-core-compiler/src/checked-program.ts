@@ -18,9 +18,12 @@ import { buildImportedTypeContext, gatherFileImports } from "./module-registry.j
 import { emitGIR } from "./gir-emitter.js";
 import { buildWATModuleFromGIR, type WATModule } from "./wat-emitter.js";
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
+import { FUNGI_WAT_CHECKED_001, createWatRefusalDiagnostic } from "./wat-emitter-refusals.js";
 
 export const CHECKED_PROGRAM_KIND = "galerina.checked-program.v1" as const;
-export const FUNGI_WAT_CHECKED_001 = "FUNGI-WAT-CHECKED-001";
+// FUNGI-WAT-CHECKED-001 is a constant { code, name, severity, message, suggestedFix } in FUNGI_WAT_DIAGNOSTICS
+// (wat-emitter-refusals.ts); re-exported here so the existing import path keeps working.
+export { FUNGI_WAT_CHECKED_001 };
 
 export type CheckedProgram = {
   readonly kind: typeof CHECKED_PROGRAM_KIND;
@@ -57,14 +60,14 @@ function fail(
   diagnostics: readonly CheckProgramDiagnostic[],
 ): CheckProgramFailure {
   const frozen = diagnostics.map((d) => Object.freeze({
-    code: typeof d.code === "string" && d.code.length > 0 ? d.code : "FUNGI-WAT-CHECKED-001",
+    code: typeof d.code === "string" && d.code.length > 0 ? d.code : FUNGI_WAT_CHECKED_001.code,
     severity: typeof d.severity === "string" && d.severity.length > 0 ? d.severity : "error",
     message: typeof d.message === "string" && d.message.length > 0 ? d.message : "checked-program refused",
   }));
   return Object.freeze({
     ok: false,
     family,
-    code: typeof code === "string" && code.length > 0 ? code : "FUNGI-WAT-CHECKED-001",
+    code: typeof code === "string" && code.length > 0 ? code : FUNGI_WAT_CHECKED_001.code,
     diagnostics: Object.freeze(frozen),
   });
 }
@@ -85,10 +88,10 @@ export function isCheckedProgram(value: unknown): value is CheckedProgram {
 
 export function assertCheckedProgram(value: unknown): asserts value is CheckedProgram {
   if (typeof value === "number" && Number.isNaN(value)) {
-    throw new Error(`${FUNGI_WAT_CHECKED_001}: WAT emission requires a CheckedProgram`);
+    throw createWatRefusalDiagnostic(FUNGI_WAT_CHECKED_001, `${FUNGI_WAT_CHECKED_001.code}: WAT emission requires a CheckedProgram`);
   }
   if (!isCheckedProgram(value)) {
-    throw new Error(`${FUNGI_WAT_CHECKED_001}: WAT emission requires a CheckedProgram`);
+    throw createWatRefusalDiagnostic(FUNGI_WAT_CHECKED_001, `${FUNGI_WAT_CHECKED_001.code}: WAT emission requires a CheckedProgram`);
   }
 }
 
@@ -106,9 +109,9 @@ function firstErrorCode(diags: readonly { readonly code?: string; readonly sever
  */
 export function checkProgram(source: string, filePath: string): CheckProgramResult {
   if (typeof source !== "string" || typeof filePath !== "string" || source.length === 0 || filePath.length === 0) {
-    return fail("parse", FUNGI_WAT_CHECKED_001, [{
-      code: FUNGI_WAT_CHECKED_001,
-      severity: "error",
+    return fail("parse", FUNGI_WAT_CHECKED_001.code, [{
+      code: FUNGI_WAT_CHECKED_001.code,
+      severity: FUNGI_WAT_CHECKED_001.severity,
       message: "checkProgram requires a source string and filePath string",
     }]);
   }

@@ -45,6 +45,7 @@
 
 import { type AstNode, type SourceLocation } from "./parser.js";
 import { decodeFlowDecl } from "./flow-name.js";
+import { FUNGI_HALLMARK_006, FUNGI_NUMERIC_OP_005 } from "./numeric-hallmark-diagnostics.js";
 import {
   resolveTypeId,
   TypeId,
@@ -1534,11 +1535,11 @@ class TypeChecker {
         const codeNode = args[1];
         if (codeNode?.kind !== "stringLiteral") {
           this.diagnostics.push(makeTCDiag(
-            "FUNGI-NUMERIC-OP-005",
-            "MONEY_CODE_NOT_LITERAL",
-            "Money.of needs its currency code as a string LITERAL so the currency is part of the type (Money<CODE>); a computed code cannot be checked.",
+            FUNGI_NUMERIC_OP_005.code,
+            FUNGI_NUMERIC_OP_005.name,
+            FUNGI_NUMERIC_OP_005.message,
             codeNode?.location ?? loc,
-            'Write the code literally, e.g. Money.of("9.99", "CHF"), or use the constructor Money.chf("9.99").',
+            FUNGI_NUMERIC_OP_005.suggestedFix,
           ));
         } else {
           this.checkMoneyCurrencyTag(stringLiteralText(codeNode), codeNode.location ?? loc);
@@ -3197,8 +3198,8 @@ class TypeChecker {
           // guarantee is refused rather than trusted; enforce it in the gate flow instead.
           const field = c.value.slice(0, c.value.indexOf(":"));
           this.diagnostics.push(makeTCDiag(
-            "FUNGI-HALLMARK-006",
-            "HALLMARK_SCHEMA_FIELD_NOT_ENFORCED",
+            FUNGI_HALLMARK_006.code,
+            FUNGI_HALLMARK_006.name,
             `Hallmark schema field '${field}:' is not enforced by the compiler or either runtime, so it would be a promise nothing keeps. It is refused rather than silently ignored.`,
             c.location ?? node.location,
             `Remove '${field}:' and check it in the gate flow (e.g. return Err(...) when the value breaks it).`,

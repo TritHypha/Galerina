@@ -31,8 +31,8 @@
 //   FUNGI-TERM-001 TERMINATION_ANNOTATION_MISSING (recursive strict/deterministic flow, no decreases)
 //
 // DRCM Phase 2 — invariant {} block (task #36):
-//   FUNGI-INV-001  PRE_CONDITION_STATICALLY_FALSE  ensure expr constant-folds to false
-//   FUNGI-INV-002  POST_CONDITION_VIOLATED          (future: post-body invariant violation)
+//   FUNGI-INV-001  PRECONDITION_VIOLATED           ensure expr constant-folds to false (KB name; was PRE_CONDITION_STATICALLY_FALSE)
+//   FUNGI-INV-002  POSTCONDITION_VIOLATED          runtime output post-condition violation (interpreter)
 //   FUNGI-INV-003  INVARIANT_BLOCK_EMPTY            invariant {} with no ensure statements
 //   FUNGI-INV-004  SYMBOL_UNRESOLVED_IN_INVARIANT   ensure references a name not in parameter scope
 // =============================================================================
@@ -40,6 +40,9 @@
 
 import { type AstNode, type AstNodeKind, type FlowMeta, type SourceLocation } from "./parser.js";
 import { decodeFlowDecl } from "./flow-name.js";
+import {
+  FUNGI_FAULT_001, FUNGI_FAULT_003, FUNGI_FAULT_006, FUNGI_INV_001, FUNGI_INV_003, FUNGI_INV_004,
+} from "./governed-control-diagnostics.js";
 import {
   KNOWN_SIGNALS, KNOWN_FLOORS, normaliseFloor, KNOWN_CAPABILITIES,
   ADMISSION_CAPABILITIES, normalizeCapability,
@@ -207,26 +210,14 @@ export type FaultHandlerDiagMeta =
 
 /** Explicit FAULT-001/003/006 name+hint map. Unknown codes return kind none (no else-fallthrough). */
 export function faultHandlerDiagMeta(code: string): FaultHandlerDiagMeta {
-  if (code === "FUNGI-FAULT-003") {
-    return {
-      kind: "found",
-      name: "FAULT_HANDLER_FAIL_OPEN",
-      hint: "Replace 'log' with 'halt' or 'quarantine' (log is fail-open; only on_rotation_fault may opt in).",
-    };
+  if (code === FUNGI_FAULT_003.code) {
+    return { kind: "found", name: FUNGI_FAULT_003.name, hint: FUNGI_FAULT_003.suggestedFix };
   }
-  if (code === "FUNGI-FAULT-001") {
-    return {
-      kind: "found",
-      name: "FAULT_HANDLER_MONOTONICITY",
-      hint: "Replace 'retry' with 'halt', 'quarantine', or 'fallback <flow>' for on_denial_fault.",
-    };
+  if (code === FUNGI_FAULT_001.code) {
+    return { kind: "found", name: FUNGI_FAULT_001.name, hint: FUNGI_FAULT_001.suggestedFix };
   }
-  if (code === "FUNGI-FAULT-006") {
-    return {
-      kind: "found",
-      name: "DECLARED_HANDLER_NOT_EXECUTED",
-      hint: "Replace the declared action with 'halt', or remove the handler until the handler tier is admitted.",
-    };
+  if (code === FUNGI_FAULT_006.code) {
+    return { kind: "found", name: FUNGI_FAULT_006.name, hint: FUNGI_FAULT_006.suggestedFix };
   }
   return { kind: "none", reason: "unknown-fault-code" };
 }
@@ -2937,9 +2928,9 @@ class GovernanceVerifier {
       const unresolvedNames = collectUnresolvedIdentifiers(exprNode, isPostcondition ? scopeNames : preScopeNames);
       for (const name of unresolvedNames) {
         this.diagnostics.push(makeGovDiag(
-          "FUNGI-INV-004",
-          "SYMBOL_UNRESOLVED_IN_INVARIANT",
-          "error",
+          FUNGI_INV_004.code,
+          FUNGI_INV_004.name,
+          FUNGI_INV_004.severity,
           `Flow '${flow.name}': invariant 'ensure ${this.describeExpr(exprNode)}' references ` +
           `'${name}' which is not a parameter of this flow. ` +
           `Available parameters: [${[...paramNames].join(", ") || "none"}].`,
@@ -2954,9 +2945,9 @@ class GovernanceVerifier {
       if (staticResult === false) {
         // FUNGI-INV-001: statically proved FALSE → invariant can NEVER be satisfied
         this.diagnostics.push(makeGovDiag(
-          "FUNGI-INV-001",
-          "PRE_CONDITION_STATICALLY_FALSE",
-          "error",
+          FUNGI_INV_001.code,
+          FUNGI_INV_001.name,
+          FUNGI_INV_001.severity,
           `Flow '${flow.name}': invariant 'ensure ${this.describeExpr(exprNode)}' can never be satisfied ` +
           `(statically evaluated to false). This flow would always trap at runtime.`,
           loc,
@@ -2986,9 +2977,9 @@ class GovernanceVerifier {
     // If the invariant block exists but is empty, warn
     if (invariantCount === 0) {
       this.diagnostics.push(makeGovDiag(
-        "FUNGI-INV-003",
-        "INVARIANT_BLOCK_EMPTY",
-        "warning",
+        FUNGI_INV_003.code,
+        FUNGI_INV_003.name,
+        FUNGI_INV_003.severity,
         `Flow '${flow.name}' declares an invariant {} block with no 'ensure' statements. ` +
         `Add at least one 'ensure expr' or remove the block.`,
         loc,

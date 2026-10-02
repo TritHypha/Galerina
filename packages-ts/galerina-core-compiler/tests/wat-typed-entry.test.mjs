@@ -31,15 +31,15 @@ describe("typed CheckedProgram WAT front door", () => {
     assert.equal(isCheckedProgram(result.program), false);
     assert.throws(
       () => buildWATFromCheckedProgram({ kind: "not-checked" }),
-      new RegExp(FUNGI_WAT_CHECKED_001),
+      new RegExp(FUNGI_WAT_CHECKED_001.code),
     );
     assert.throws(
       () => buildWATFromCheckedProgram(null),
-      new RegExp(FUNGI_WAT_CHECKED_001),
+      new RegExp(FUNGI_WAT_CHECKED_001.code),
     );
     assert.throws(
       () => buildWATFromCheckedProgram(Number.NaN),
-      new RegExp(FUNGI_WAT_CHECKED_001),
+      new RegExp(FUNGI_WAT_CHECKED_001.code),
     );
   });
 
