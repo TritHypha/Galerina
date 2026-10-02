@@ -85,7 +85,9 @@ import {
   refusePatternWat,
   refuseGovernedOrClosureStmtWat,
   refuseEffectfulEntryWat,
+  refuseNarrowFloatWat,
 } from "./wat-emitter-refusals.js";
+import { type NarrowFloatWidth, narrowFloatWidthOf, narrowFloatTypeName, roundToNarrowFloat } from "./narrow-float.js";
 import { ROUND_MODES } from "./decimal-arith.js";
 
 export { renderStringTableComments, resetStringTable, getInternedStrings } from "./wat-emitter-intern.js";
@@ -599,7 +601,7 @@ function assertLowerableRecordFields(ast: AstNode | undefined): void {
       let watType;
       try { watType = galerinaTypeToWAT(ftype.trim()); }
       catch { continue; } // malformed type name → not this guard's concern (BK-2 fails closed at lowering)
-      if (!isWATRecordFieldTypeSupported(ftype)) offenders.push(`${recName}.${fname}: ${ftype} (→ wasm ${watType})`);
+      if (!isWATRecordFieldTypeSupported(ftype)) offenders.push(`${recName}.${fname}: ${ftype} (→ wasm ${numericBaseType(ftype.trim()) === "Float16" ? "f16, no slot" : watType})`);
     }
   }
   if (offenders.length > 0) {
@@ -607,8 +609,8 @@ function assertLowerableRecordFields(ast: AstNode | undefined): void {
     // is the form the diagnostic-namespace registration test discovers, so this code stays machine-checked.
     const diag = { code: "FUNGI-LAYOUT-001", name: "UNSUPPORTED_RECORD_LAYOUT", severity: "error" } as const;
     throw new Error(
-      `${diag.code}: a record field has no faithful WAT record representation. Float16/Float32 require ` +
-      `the unfinished scalar f32 lane. Refusing rather than emit an invalid or silently rounded value ` +
+      `${diag.code}: a record field has no faithful WAT record representation. Float16 has no 2-byte ` +
+      `WAT record slot yet (E5 admits Float32 as a 4-byte f32 slot). Refusing rather than emit an invalid or silently re-laid-out value ` +
       `(fail-closed). Offending field(s): ${offenders.join(", ")}.`,
     );
   }
@@ -1104,6 +1106,7 @@ import {
   UINT64_CMP_WAT,
   is64BitWatType,
   watStackType,
+  emitNarrowRound,
   ALL_CHECKED_HELPERS,
   STDLIB_HOST_MAP,
   STDLIB_HOST_CALL_MAP,
@@ -1800,6 +1803,83 @@ function resolveRecordReceiverType(receiverNode: AstNode | undefined, fieldName:
   return inferred !== undefined ? found(inferred) : none("receiver-type:unresolved");
 }
 
+// ── E5 (PROVISIONAL, narrow-float.ts): the Float32/Float16 f64-carrier lane ─────────────────────────────
+/** A numeric literal operand (`0.1`, `2`, `-0.5`) — it adopts a narrow-float context (mirrors the walker). */
+function isNumericLiteralWat(node: AstNode | undefined): boolean {
+  if (node === undefined) return false;
+  if (node.kind === "numberLiteral") return true;
+  return node.kind === "unaryExpr" && node.value === "-" && node.children?.[0]?.kind === "numberLiteral";
+}
+
+/** The exact source value of a numeric literal operand (sign folded in). */
+function numericLiteralValueWat(node: AstNode): number {
+  if (node.kind === "unaryExpr") return -Number((node.children?.[0]?.value ?? "0").replace(/_/g, ""));
+  return Number((node.value ?? "0").replace(/_/g, ""));
+}
+
+/** An f64.const spelling that round-trips exactly (String() is the shortest round-trip form; keep -0). */
+function f64ConstWat(v: number): string {
+  return `(f64.const ${Object.is(v, -0) ? "-0" : String(v)})`;
+}
+
+/** A literal rounded to a narrow width as an f64-carrier constant, or a fail-closed trap on overflow. */
+function narrowLiteralWat(value: number, width: NarrowFloatWidth, raw: string): string {
+  const r = roundToNarrowFloat(value, width);
+  if (!Number.isFinite(r)) {
+    return `(unreachable) (; literal '${raw}' overflows ${narrowFloatTypeName(width)} to ±Inf — fail-closed (#55/FUNGI-FLOAT-NAN-001) ;)`;
+  }
+  return f64ConstWat(r);
+}
+
+/**
+ * The narrow width a binary float op runs at — the SAME rule as the walker's narrowBinaryWidth: narrow when
+ * at least one operand is Float32/Float16 and the other is narrow or a literal; any Float/Float64/Int
+ * variable operand promotes the op to f64 (undefined).
+ */
+function narrowWatBinaryWidth(lNode: AstNode | undefined, lty: string | undefined, rNode: AstNode | undefined, rty: string | undefined): NarrowFloatWidth | undefined {
+  const w = (n: AstNode | undefined, t: string | undefined): NarrowFloatWidth | "flex" | 64 =>
+    isNumericLiteralWat(n) ? "flex" : (narrowFloatWidthOf(numericBaseType(t ?? "")) ?? 64);
+  const wl = w(lNode, lty);
+  const wr = w(rNode, rty);
+  if (wl === 64 || wr === 64) return undefined;
+  if (wl === "flex" && wr === "flex") return undefined;
+  const nl = wl === "flex" ? 0 : wl;
+  const nr = wr === "flex" ? 0 : wr;
+  return (nl >= nr ? nl : nr) as NarrowFloatWidth;
+}
+
+const WAT_I32_INT_TYPES: ReadonlySet<string> = new Set(["Int", "Int8", "Int16", "Int32", "Byte"]);
+
+/**
+ * Coerce an emitted expression into a declared Float32/Float16 slot (let/mut, assignment, return): the
+ * walker's coerceToDeclaredNumeric rounds there, so WASM rounds too. A value that is already that width (or
+ * a narrower Float16 into Float32) passes through; Float/Float64 and i32 integers are rounded; anything whose
+ * type the emitter cannot see is refused (FUNGI-WAT-FLOAT32-001) rather than guessed.
+ */
+function coerceToNarrowWat(exprStr: string, exprNode: AstNode | undefined, width: NarrowFloatWidth, where: string): string {
+  const t = numericBaseType(inferExprType(exprNode) ?? "");
+  const tw = narrowFloatWidthOf(t);
+  if (tw !== undefined && tw <= width) return exprStr;
+  if (exprNode?.kind === "numberLiteral") return exprStr; // emitted already rounded (expectedType threading)
+  if (WAT_I32_INT_TYPES.has(t) && watStackType(exprStr) === "i32") return emitNarrowRound(width, `(f64.convert_i32_s ${exprStr})`);
+  if (FLOAT_WAT_TYPES.has(t) || (t === "" && watStackType(exprStr) === "f64")) return emitNarrowRound(width, exprStr);
+  return refuseNarrowFloatWat(`${where}: a ${t === "" ? "value of unknown type" : t} into a ${narrowFloatTypeName(width)} slot`);
+}
+
+/**
+ * E5: the value stored into a Float32 (f32) record slot. Only a statically Float32/Float16 value is admitted
+ * — it is already binary32-exact, so f32.demote_f64 is lossless and equals what the walker stores. A literal
+ * or an f64 value is REFUSED: the walker's record literal carries no field types, so it would store that
+ * value unrounded while WASM rounded it (a silent tier divergence).
+ */
+function narrowSlotStoreValueWat(valWat: string, valNode: AstNode | undefined, where: string): string {
+  const tw = narrowFloatWidthOf(numericBaseType(inferExprType(valNode) ?? ""));
+  if (valNode === undefined || tw === undefined || isNumericLiteralWat(valNode)) {
+    refuseNarrowFloatWat(`record slot ${where} stores ${valNode === undefined ? "nothing" : isNumericLiteralWat(valNode) ? "a literal" : `a ${inferExprType(valNode) ?? "value of unknown type"}`}; bind it to a Float32 first (let v: Float32 = …)`);
+  }
+  return `(f32.demote_f64 ${valWat})`;
+}
+
 /**
  * #160: best-effort scalar/builtin type inference for the WAT lowering. Used to pick
  * type-directed host bridges: String `+` → __str_concat (vs i32.add), Char.toString →
@@ -1865,7 +1945,11 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       // (f64). Without this, nested float arith like `(x * 2) + 1` infers Int, so the outer op takes the
       // i32 checked-helper path over an f64 operand (invalid module) OR wraps an already-f64 operand in
       // f64.convert_i32_s (reinterprets the bits → garbage). This is the fix for both nested-mixed bugs.
-      if (FLOAT_WAT_TYPES.has(l ?? "") || FLOAT_WAT_TYPES.has(r ?? "")) return "Float";
+      if (FLOAT_WAT_TYPES.has(l ?? "") || FLOAT_WAT_TYPES.has(r ?? "")) {
+        // E5: a Float32/Float16 op keeps its narrow type (the walker's mixing rule); else f64 Float.
+        const nw = narrowWatBinaryWidth(node.children?.[0], l, node.children?.[1], r);
+        return nw !== undefined ? narrowFloatTypeName(nw) : "Float";
+      }
       // Step 3c: Int64 is contagious — AFTER the float check, so a (type-error) Int64+Float still infers
       // Float → invalid module → walker fallback (fail-SAFE). Mixed Int+Int64 → Int64, matching the
       // interpreter's int64 dispatch promotion. Only fires when an operand already infers Int64 (an Int64
@@ -2034,6 +2118,8 @@ export function emitWATExpr(
           // Emit the receiver exactly once. Unsupported inner expressions retain
           // their trap; neither a missing type nor field receives a default value.
           const base = emitWATExpr(receiverNode, vars, staticConsts);
+          // E5: an f32 (Float32) slot is promoted back into the f64 carrier lane (exact).
+          if (slot?.watType === "f32") return `(f64.promote_f32 (f32.load (i32.add ${base} (i32.const ${off}))))`;
           return `(${load} (i32.add ${base} (i32.const ${off})))`;
         }
       }
@@ -2043,6 +2129,9 @@ export function emitWATExpr(
     case "numberLiteral": {
       const raw = node.value ?? "0";
       const isFloat = raw.includes(".") || raw.includes("e") || raw.includes("E");
+      // E5: a literal in a declared Float32/Float16 context is the rounded binary32/binary16 constant.
+      const narrowExpected = narrowFloatWidthOf(numericBaseType(expectedType ?? ""));
+      if (narrowExpected !== undefined) return narrowLiteralWat(Number(raw.replace(/_/g, "")), narrowExpected, raw);
       const expectedWatType = expectedType === undefined || expectedType.trim() === ""
         ? undefined
         : galerinaTypeToWAT(expectedType);
@@ -2156,10 +2245,26 @@ export function emitWATExpr(
       const lFloat165 = FLOAT_WAT_TYPES.has(lty ?? "");
       const rFloat165 = FLOAT_WAT_TYPES.has(rty ?? "");
       if (lFloat165 || rFloat165) {
-        const L = lFloat165 ? left : `(f64.convert_i32_s ${left})`;
-        const R = rFloat165 ? right : `(f64.convert_i32_s ${right})`;
+        // E5 (PROVISIONAL): Float32/Float16 run at their binary width — a literal operand is the rounded
+        // constant, an arithmetic result is re-rounded ($fungi_round_f32 = f32.demote_f64, $fungi_round_f16),
+        // which also traps an overflow to ±Inf. A narrow operand next to an operand of UNKNOWN type is refused
+        // (the walker might see a narrow value there; the emitter cannot tell).
+        const lNarrow = narrowFloatWidthOf(numericBaseType(lty ?? ""));
+        const rNarrow = narrowFloatWidthOf(numericBaseType(rty ?? ""));
+        if ((lNarrow !== undefined && rty === undefined && !isNumericLiteralWat(children[1])) ||
+            (rNarrow !== undefined && lty === undefined && !isNumericLiteralWat(children[0]))) {
+          refuseNarrowFloatWat(`operator '${op}' mixes ${narrowFloatTypeName((lNarrow ?? rNarrow)!)} with an operand of unknown type`);
+        }
+        const nw = narrowWatBinaryWidth(children[0], lty, children[1], rty);
+        const L = nw !== undefined && isNumericLiteralWat(children[0])
+          ? narrowLiteralWat(numericLiteralValueWat(children[0]!), nw, describeASTExpr(children[0]!))
+          : lFloat165 ? left : `(f64.convert_i32_s ${left})`;
+        const R = nw !== undefined && isNumericLiteralWat(children[1])
+          ? narrowLiteralWat(numericLiteralValueWat(children[1]!), nw, describeASTExpr(children[1]!))
+          : rFloat165 ? right : `(f64.convert_i32_s ${right})`;
         const arithOp = FLOAT_ARITH_WAT[op];
         if (arithOp !== undefined) {
+          if (nw !== undefined) return emitNarrowRound(nw, `(${arithOp} ${L} ${R})`);
           // #55: trap a non-finite RESULT (NaN from 0/0, ±Inf from x/0 or overflow) — fail-closed, byte-for-byte
           // with the tree-walker's mkFloat. Without this WASM silently produced a NaN/Inf that passed range
           // guards or was signed into a manifest. (FUNGI-FLOAT-NAN-001.)
@@ -2378,7 +2483,8 @@ export function emitWATExpr(
             const slot = declaredWATLayout?.fields.find((candidate) => candidate.name === (f.value ?? ""));
             const off = slot?.offset ?? (declIdx >= 0 ? declIdx : i) * WAT_REC_FIELD_SIZE;
             const store = slot === undefined ? "i32.store" : `${slot.watType}.store`;
-            const valWat = valNode ? emitWATExpr(valNode, vars, staticConsts, slot?.type) : "(i32.const 0)";
+            const valWat0 = valNode ? emitWATExpr(valNode, vars, staticConsts, slot?.type) : "(i32.const 0)";
+            const valWat = slot?.watType === "f32" ? narrowSlotStoreValueWat(valWat0, valNode, `${declaredTypeName ?? "record"}.${f.value ?? ""}`) : valWat0;
             parts.push(`  (${store} (i32.add (local.get ${recLocal}) (i32.const ${off})) ${valWat}) ;; .${f.value ?? `f${i}`}`);
           });
           parts.push(`  (local.get ${recLocal})`);
@@ -2423,7 +2529,8 @@ export function emitWATExpr(
             const slot = watLayout?.fields.find((candidate) => candidate.name === (u.value ?? ""));
             const off = slot?.offset ?? idx * WAT_REC_FIELD_SIZE;
             const valNode = u.children?.[0];
-            const valWat = valNode ? emitWATExpr(valNode, vars, staticConsts, slot?.type) : "(i32.const 0)";
+            const valWat0 = valNode ? emitWATExpr(valNode, vars, staticConsts, slot?.type) : "(i32.const 0)";
+            const valWat = slot?.watType === "f32" ? narrowSlotStoreValueWat(valWat0, valNode, `${baseType}.${u.value ?? ""}`) : valWat0;
             const store = slot === undefined ? "i32.store" : `${slot.watType}.store`;
             parts.push(`  (${store} (i32.add (local.get ${recLocal}) (i32.const ${off})) ${valWat}) ;; set .${u.value}`);
           }
@@ -3329,7 +3436,12 @@ function emitBlockStatements(
         // Step 3g: thread the binding's declared type so an Int64 literal init emits i64.const (an i32.const
         // would be invalid for a >2^31 literal / a silent truncation). Non-Int64 annotations are inert here.
         const bindAnnoType = rawName.includes(":") ? (rawName.split(":")[1] ?? "").trim() : "";
-        const initExpr = initNode ? emitWATExpr(initNode, vars, staticConsts, bindAnnoType) : "(i32.const 0)";
+        const initExpr0 = initNode ? emitWATExpr(initNode, vars, staticConsts, bindAnnoType) : "(i32.const 0)";
+        // E5: a declared Float32/Float16 binding rounds its initialiser (the walker's coerceToDeclaredNumeric).
+        const bindNarrow = narrowFloatWidthOf(numericBaseType(bindAnnoType));
+        const initExpr = bindNarrow !== undefined && initNode !== undefined
+          ? coerceToNarrowWat(initExpr0, initNode, bindNarrow, `binding '${varName}'`)
+          : initExpr0;
 
         if (vars.has(varName)) {
           // Variable already declared — this is a mutation (e.g. let x = x + 1 inside a loop).
@@ -3358,7 +3470,13 @@ function emitBlockStatements(
         const watLocal = vars.get(varName) ?? `$${varName}`;
         const exprNode = stmt.children?.[0];
         // Step 3g: thread the assigned binding's declared type so `total = <Int64 literal>` emits i64.const.
-        const exprStr  = exprNode ? emitWATExpr(exprNode, vars, staticConsts, (recordVarTypes.kind === "found" ? recordVarTypes.value.get(varName) : undefined)) : "(i32.const 0)";
+        const assignedType = recordVarTypes.kind === "found" ? recordVarTypes.value.get(varName) : undefined;
+        const exprStr0 = exprNode ? emitWATExpr(exprNode, vars, staticConsts, assignedType) : "(i32.const 0)";
+        // E5: assigning into a Float32/Float16 binding rounds to its width (the walker's assignStmt coercion).
+        const assignNarrow = narrowFloatWidthOf(numericBaseType(assignedType ?? ""));
+        const exprStr = assignNarrow !== undefined && exprNode !== undefined
+          ? coerceToNarrowWat(exprStr0, exprNode, assignNarrow, `assignment to '${varName}'`)
+          : exprStr0;
         if (!vars.has(varName)) {
           // Declare it now if somehow not in scope (defensive). #165: match the assigned value's
           // stack type so a float assignment to an undeclared local is f64, not a mistyped i32.
@@ -3375,6 +3493,9 @@ function emitBlockStatements(
         let exprStr = exprNode !== undefined
           ? emitWATExpr(exprNode, vars, staticConsts, currentReturnBase)
           : "(i32.const 0) ;; return void";
+        // E5: a Float32/Float16-returning flow returns a binary32/binary16 value (the walker rounds at exit).
+        const retNarrow = narrowFloatWidthOf(currentReturnBase);
+        if (retNarrow !== undefined && exprNode !== undefined) exprStr = coerceToNarrowWat(exprStr, exprNode, retNarrow, "return");
 
         // Step 4e (Int→Int64 widening): if the declared return is i64 but the expression leaves
         // i32 on the stack (e.g. `return n` where n: Int), widen with i64.extend_i32_s.
@@ -4173,6 +4294,12 @@ export function emitWATFromFlowAST(
     resultPostGates.push(`  (if (i32.eqz ${condWAT}) (then unreachable)) ;; post: ensure ${describeASTExpr(p)} (output)`);
   }
 
+  // E5 (PROVISIONAL): a Float32/Float16 parameter arrives as an f64 and is rounded to binary32/binary16 at
+  // entry (traps on overflow) — the walker's parameter admission, and what a Float32Array store would do.
+  paramNames.forEach((name, i) => {
+    const w = narrowFloatWidthOf(numericBaseType(varTypes.get(name) ?? ""));
+    if (w !== undefined) bodyLines.push(`  (local.set $p${i} ${emitNarrowRound(w, `(local.get $p${i})`)}) ;; E5 ${narrowFloatTypeName(w)} param '${name}'`);
+  });
   if (preGates.length > 0) {
     bodyLines.push(`  ;; --- invariant pre-conditions (FUNGI-INV-001 gate) ---`);
     bodyLines.push(...preGates);

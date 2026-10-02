@@ -65,6 +65,22 @@ export function refuseMixed64BitWat(op: string, detail: string): never {
 }
 
 /**
+ * E5 (PROVISIONAL, narrow-float.ts): a Float32/Float16 form the provisional narrow-float WASM lane does not
+ * lower faithfully — e.g. a Float32 record slot fed a value that is not statically Float32/Float16 (a literal
+ * or an f64 Float, which the walker cannot round because a record literal carries no field types), a
+ * narrow-float operand mixed with an operand of unknown type, or a narrow slot fed an Int64. Refused at emit
+ * rather than risk a value that differs from the tree-walker. Interpreter unchanged.
+ * FUNGI-WAT-FLOAT32-001 — KB registration is an owner/KB step before carry (pending-registration fixture).
+ */
+export function refuseNarrowFloatWat(detail: string): never {
+  const diag = { code: "FUNGI-WAT-FLOAT32-001", name: "NARROW_FLOAT_FORM_NOT_LOWERED", severity: "error" } as const;
+  throw new Error(
+    `${diag.code}: Float32/Float16 form is not lowered to WASM (${detail}). WAT emission refuses rather ` +
+    `than emit a value that could differ from the interpreter's binary32/binary16 rounding (fail-closed).`,
+  );
+}
+
+/**
  * D4: an admitted literal matchesPattern lowers to a bounded pure in-Wasm
  * matcher (wat-emitter-pattern.ts). Everything else - a dynamic pattern, a
  * literal the capability does not admit or that exceeds the in-Wasm automaton
