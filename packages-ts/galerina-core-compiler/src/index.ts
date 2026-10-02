@@ -1292,6 +1292,7 @@ export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
   invokeAdmittedExport, finalizeSecretExportResult,
+  WASM_EFFECT_GRANT_ABI, FUNGI_WASM_GRANT_001,
 } from "@galerina/core-runtime-wasm";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
