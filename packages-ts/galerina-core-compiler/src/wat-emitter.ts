@@ -1348,6 +1348,36 @@ function collectArrayAutoAppendShapes(ast: Lookup<AstNode>): string[][] {
   return shapes;
 }
 
+/** ZipPair (Codex GO 2026-10-02): payload types whose Option handle carries the value through the i32
+ *  `__option_value_v2` lane unchanged. Float/Int64/Decimal/Money/records/protected payloads keep METHOD-001. */
+const ZIP_PAIR_I32_PAYLOADS: ReadonlySet<string> = new Set(["Int", "Bool", "Char", "String"]);
+
+/** Option.zip operands -> interned comma-free ZipPair layout name (`__zip_<T>_<U>`, fields first/second at
+ *  offsets 0/4, i32 lanes), or the named reason the pair cannot be lowered faithfully. */
+function zipPairLayoutFor(aNode: AstNode | undefined, bNode: AstNode | undefined): Lookup<string> {
+  const rawA = inferExprType(aNode);
+  const rawB = inferExprType(bNode);
+  if (rawA === undefined || rawB === undefined || !rawA.startsWith("Option<") || !rawB.startsWith("Option<")) {
+    return none(`operand Option payload type not statically known (${rawA ?? "unknown"}, ${rawB ?? "unknown"})`);
+  }
+  const ta = optionInnerType(rawA);
+  const tb = optionInnerType(rawB);
+  if (ta.kind === "none" || tb.kind === "none") return none(`operand Option payload type not resolvable (${rawA}, ${rawB})`);
+  if (!ZIP_PAIR_I32_PAYLOADS.has(ta.value) || !ZIP_PAIR_I32_PAYLOADS.has(tb.value)) {
+    return none(`payload types ${ta.value}/${tb.value} are outside the i32 lane set Int|Bool|Char|String`);
+  }
+  const name = `__zip_${ta.value}_${tb.value}`;
+  const layouts = watJobCaches.internedLayouts;
+  if (layouts.kind === "none") return none("ZipPair layout table not initialised for this module");
+  if (!layouts.value.has(name)) {
+    layouts.value.set(name, ["first", "second"]);
+    if (watJobCaches.internedFieldTypes.kind === "none") watJobCaches.internedFieldTypes = found(new Map());
+    const fts = watJobCaches.internedFieldTypes;
+    if (fts.kind === "found") fts.value.set(name, new Map([["first", ta.value], ["second", tb.value]]));
+  }
+  return found(name);
+}
+
 function internAnonLayout(fields: readonly string[], fieldTypes?: ReadonlyMap<string, string>): string {
   const name = `__anon_${fields.join("_")}`;
   const layouts = watJobCaches.internedLayouts;
@@ -1890,6 +1920,12 @@ function inferExprType(node: AstNode | undefined): string | undefined {
         }
         if (name === "divide" || name === "remainder") {
           return inferExprType(node.children?.[0]) === "Decimal" ? "Decimal" : undefined;
+        }
+        if (name === "zip") {
+          const zipRecv = node.children?.[0];
+          const zipStatic = zipRecv?.kind === "identifier" && zipRecv.value === "Option";
+          const zipT = zipStatic ? zipPairLayoutFor(node.children?.[1], node.children?.[2]) : zipPairLayoutFor(zipRecv, node.children?.[1]);
+          return zipT.kind === "found" ? `Option<${zipT.value}>` : undefined;
         }
         return undefined;
       }
@@ -2700,9 +2736,41 @@ export function emitWATExpr(
             || (recvTypeForMethod !== undefined && recvTypeForMethod.startsWith("Option<"))
           );
         if (optionZip) {
+          // ZipPair (Codex GO 2026-10-02): Some({first, second}) | None, matching stdlib Option.zip. Both
+          // operands are evaluated exactly once (left to right, as the interpreter does); the pair is an
+          // 8-byte bump allocation in the per-invocation arena (same allocator and reset as `#record`).
+          const zipIsStatic = recvName0 === "Option" && !vars.has("Option");
+          const zipA = zipIsStatic ? argNodes[0] : realReceiver;
+          const zipB = zipIsStatic ? argNodes[1] : argNodes[0];
+          const zipArityOk = zipIsStatic ? argNodes.length === 2 : argNodes.length === 1;
+          const zipLayout: Lookup<string> = !zipArityOk
+            ? none(`expected ${zipIsStatic ? "Option.zip(a, b)" : "a.zip(b)"} arity`)
+            : recordCtx.kind === "none"
+              ? none("no flow-body allocation context")
+              : zipPairLayoutFor(zipA, zipB);
+          if (zipLayout.kind === "found" && recordCtx.kind === "found" && zipA !== undefined && zipB !== undefined) {
+            const zA = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+            const zB = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+            const zP = `$__fungi_rec_${recordCtx.value.counter.n++}`;
+            recordCtx.value.localDecls.push(`(local ${zA} i32)`, `(local ${zB} i32)`, `(local ${zP} i32)`);
+            return [
+              `(block (result i32) ;; Option.zip -> ${zipLayout.value}`,
+              `  (local.set ${zA} ${emitWATExpr(zipA, vars, staticConsts)})`,
+              `  (local.set ${zB} ${emitWATExpr(zipB, vars, staticConsts)})`,
+              `  (if (result i32) (i32.or (call $host___option_is_none_v2 (local.get ${zA})) (call $host___option_is_none_v2 (local.get ${zB})))`,
+              `    (then (call $host___option_none_v2))`,
+              `    (else`,
+              `      (local.set ${zP} (global.get $__fungi_heap))`,
+              `      (global.set $__fungi_heap (i32.add (global.get $__fungi_heap) (i32.const ${2 * WAT_REC_FIELD_SIZE})))`,
+              `      (i32.store (local.get ${zP}) (call $host___option_value_v2 (local.get ${zA}))) ;; .first`,
+              `      (i32.store (i32.add (local.get ${zP}) (i32.const ${WAT_REC_FIELD_SIZE})) (call $host___option_value_v2 (local.get ${zB}))) ;; .second`,
+              `      (call $host___option_some_v2 (local.get ${zP}))))`,
+              `)`,
+            ].join("\n");
+          }
           return refuseUnknownMethodWat(
             "zip",
-            "Option.zip has no WASM lowering in this job (ZipPair allocation is parked); run the flow through the governed interpreter.",
+            `Option.zip (ZipPair) is lowered only for Option<Int|Bool|Char|String> operands: ${zipLayout.kind === "none" ? zipLayout.reason : "operand missing"}; run the flow through the governed interpreter.`,
           );
         }
         return refuseUnknownMethodWat(name);

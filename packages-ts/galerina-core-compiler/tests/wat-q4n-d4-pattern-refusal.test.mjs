@@ -152,7 +152,8 @@ const REPLACE = `pure flow repl(s: String) -> String
 contract { effects {} }
 { return s.replacePattern("a", "b") }
 `;
-const OPTION_ZIP = `pure flow z(a: Option<Int>) -> Option<Int>
+// ZipPair GO 2026-10-02: Option<Int> zip now lowers; a Float payload is outside the i32 lane set and keeps METHOD-001.
+const OPTION_ZIP = `pure flow z(a: Option<Float>) -> Option<Float>
 contract { effects {} }
 { return a.zip(a) }
 `;
@@ -198,7 +199,7 @@ describe("T3 extractGroups / replacePattern → PATTERN-001; Option.zip stays ME
     assert.match(r.error, new RegExp(CODE));
     assert.equal(r.error.includes("FUNGI-WAT-METHOD-001"), false);
   });
-  it("Option.zip stays METHOD-001", () => {
+  it("Option.zip outside the i32 lane set stays METHOD-001", () => {
     const r = tryCompileWAT(OPTION_ZIP, "t3z.fungi");
     assert.equal("error" in r, true, "expected METHOD-001 throw");
     assert.match(r.error, /FUNGI-WAT-METHOD-001/);
