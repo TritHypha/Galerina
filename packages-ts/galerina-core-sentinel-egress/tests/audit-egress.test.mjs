@@ -11,6 +11,7 @@ import {
 // Kernel-unique scratch dir per test (mkdtemp): a recycled PID or concurrent run
 // can never append to a stale ledger. Tracked + removed after the run so nothing
 // accumulates. (Was a relative `build/<pid>-<n>` dir — flaky under load.)
+const DEV_KEY = new Uint8Array(32);
 const createdDirs = [];
 function freshDir() {
   const dir = mkdtempSync(join(tmpdir(), "galerina-egress-"));
@@ -40,7 +41,7 @@ test("batchSize <= 0 throws EGR-CFG-001", () => {
 
 test("pushing batchSize records auto-flushes exactly one batch to disk", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 4 });
+  const eg = new AuditEgress({ dir, batchSize: 4, hmacKey: DEV_KEY });
   eg.push("e0");
   eg.push("e1");
   eg.push("e2");
@@ -60,7 +61,7 @@ test("pushing batchSize records auto-flushes exactly one batch to disk", () => {
 
 test("manual flush of a partial buffer writes a batch; chainHead advances", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 10 });
+  const eg = new AuditEgress({ dir, batchSize: 10, hmacKey: DEV_KEY });
   eg.push("a");
   eg.push("b");
   assert.equal(eg.pendingCount(), 2);
@@ -75,7 +76,7 @@ test("manual flush of a partial buffer writes a batch; chainHead advances", () =
 
 test("flush() with nothing buffered returns null and writes no file content", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 5 });
+  const eg = new AuditEgress({ dir, batchSize: 5, hmacKey: DEV_KEY });
   assert.equal(eg.flush(), null);
   const path = join(dir, "audit-egress.jsonl");
   // either no file, or an empty file -> readEgressLedger yields []
@@ -94,7 +95,7 @@ test("readEgressLedger on a missing dir returns []", () => {
 
 test("seq increments monotonically across multiple flushed batches", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2 });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
   eg.push("a"); eg.push("b"); // flush -> seq 0
   eg.push("c"); eg.push("d"); // flush -> seq 1
   eg.push("e"); eg.flush();   // flush -> seq 2

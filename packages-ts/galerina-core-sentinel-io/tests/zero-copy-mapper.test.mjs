@@ -138,3 +138,122 @@ test("hostile: mutating source during enforceBlock cannot change staged bytes", 
   assert.equal(nums.i32()[0], 10);
   assert.equal(source[0], 0xff);
 });
+
+test("map() wipes its private source snapshot after successful staging", () => {
+  const { manifest, source } = makeFixture();
+  const mon = new IntegrityMonitor();
+  const enforceBlock = mon.enforceBlock.bind(mon);
+  const observedSnapshots = [];
+  mon.enforceBlock = (bytes, expectedHex, blockId) => {
+    observedSnapshots.push(bytes);
+    enforceBlock(bytes, expectedHex, blockId);
+  };
+
+  const mapper = new ZeroCopyMapper();
+  const blocks = mapper.map(manifest, source, mon);
+
+  assert.equal(blocks.length, 2);
+  assert.equal(observedSnapshots.length, 2);
+  assert.ok(observedSnapshots.every((view) => [...view].every((byte) => byte === 0)));
+  assert.equal(new TextDecoder().decode(blocks.find((block) => block.id === "tag").view()), "TAGTAGTA");
+});
+
+test("map() wipes its private source snapshot when integrity verification refuses", () => {
+  const { manifest, source } = makeFixture();
+  source[16] ^= 0xff; // Let the first block pass, then fail on the second.
+  const mon = new IntegrityMonitor();
+  const enforceBlock = mon.enforceBlock.bind(mon);
+  const observedSnapshots = [];
+  mon.enforceBlock = (bytes, expectedHex, blockId) => {
+    observedSnapshots.push(bytes);
+    enforceBlock(bytes, expectedHex, blockId);
+  };
+
+  const mapper = new ZeroCopyMapper();
+  assert.throws(
+    () => mapper.map(manifest, source, mon),
+    (error) => error instanceof HardenedBorderViolation && error.code === "LSIO-INTEGRITY-001",
+  );
+
+  assert.equal(observedSnapshots.length, 2);
+  assert.ok(observedSnapshots.every((view) => [...view].every((byte) => byte === 0)));
+});
+
+test("a successful remap wipes the previous backing and invalidates its block handles", () => {
+  const { manifest, source } = makeFixture();
+  const mon = new IntegrityMonitor();
+  const mapper = new ZeroCopyMapper();
+  const firstBlocks = mapper.map(manifest, source, mon);
+  const previousBuffer = mapper.buffer;
+  assert.notEqual(new Uint8Array(previousBuffer).every((byte) => byte === 0), true);
+
+  const secondBlocks = mapper.map(manifest, source, mon);
+
+  assert.ok([...new Uint8Array(previousBuffer)].every((byte) => byte === 0));
+  assert.throws(() => firstBlocks[0].view(), /expired/i);
+  assert.equal(secondBlocks[0].view().buffer, mapper.buffer);
+  assert.equal(mapper.status, "ACTIVE");
+});
+
+test("dispose() wipes the active backing and refuses stale or future mappings", () => {
+  const { manifest, source } = makeFixture();
+  const mon = new IntegrityMonitor();
+  const mapper = new ZeroCopyMapper({ shared: true });
+  const blocks = mapper.map(manifest, source, mon);
+  const previousBuffer = mapper.buffer;
+
+  mapper.dispose();
+
+  assert.ok([...new Uint8Array(previousBuffer)].every((byte) => byte === 0));
+  assert.equal(mapper.status, "DISPOSED");
+  assert.throws(() => blocks[0].view(), /expired/i);
+  assert.throws(() => mapper.map(manifest, source, mon), /disposed/i);
+});
+
+test("dispose() reports a cleanup failure instead of claiming a zeroed mapping", () => {
+  const { manifest, source } = makeFixture();
+  const mapper = new ZeroCopyMapper();
+  mapper.map(manifest, source, new IntegrityMonitor());
+  const backing = mapper.buffer;
+  structuredClone(backing, { transfer: [backing] });
+
+  assert.throws(() => mapper.dispose(), /cleanup.*failed/i);
+  assert.equal(mapper.status, "CLEANUP_FAILED");
+  assert.throws(() => mapper.map(manifest, source, new IntegrityMonitor()), /cleanup.*failed/i);
+});
+
+test("map() wipes its private source snapshot when candidate backing allocation fails", () => {
+  const { manifest, source } = makeFixture();
+  const mapper = new ZeroCopyMapper();
+  const NativeArrayBuffer = globalThis.ArrayBuffer;
+  const NativeUint8Array = globalThis.Uint8Array;
+  let observedSnapshot;
+
+  globalThis.Uint8Array = new Proxy(NativeUint8Array, {
+    construct(target, args, newTarget) {
+      const view = Reflect.construct(target, args, newTarget);
+      if (args[0] === source.byteLength) observedSnapshot = view;
+      return view;
+    },
+  });
+  globalThis.ArrayBuffer = new Proxy(NativeArrayBuffer, {
+    construct(target, args, newTarget) {
+      if (args[0] === manifest.totalBytes) {
+        throw new RangeError("synthetic candidate backing allocation failure");
+      }
+      return Reflect.construct(target, args, newTarget);
+    },
+  });
+
+  try {
+    assert.throws(
+      () => mapper.map(manifest, source, new IntegrityMonitor()),
+      /synthetic candidate backing allocation failure/,
+    );
+    assert.ok(observedSnapshot, "the source snapshot must have been allocated");
+    assert.ok([...observedSnapshot].every((byte) => byte === 0));
+  } finally {
+    globalThis.ArrayBuffer = NativeArrayBuffer;
+    globalThis.Uint8Array = NativeUint8Array;
+  }
+});

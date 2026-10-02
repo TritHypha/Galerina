@@ -49,7 +49,7 @@ const EGRESS_LEDGER_FILE = "audit-egress.jsonl";
 /** Genesis chain head for the compliance report: 64 hex zeros (SHA-256 width). */
 const GENESIS = "0".repeat(64);
 
-/** Same all-zero development key AuditEgress uses when hmacKey is omitted. */
+/** Named all-zero development key identity (explicit AuditEgress writer mode). */
 const ZERO_KEY = new Uint8Array(32);
 
 function computeEgressBatchHash(

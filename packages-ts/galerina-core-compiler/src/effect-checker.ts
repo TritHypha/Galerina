@@ -228,7 +228,7 @@ export function buildModuleAliasMap(flowNode: AstNode): ReadonlyMap<string, stri
  *    the capitalised `Env.get` house spelling is never suppressed by a lowercase local, and
  *    binding a stdlib name while also calling that module in one flow is pathological.
  */
-const BINDING_DECL_KINDS = new Set<string>(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl", "fnDecl"]);
+const BINDING_DECL_KINDS = new Set<string>(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl", "governedFlowDecl", "fnDecl"]);
 
 export function collectLocalBindings(flowNode: AstNode): ReadonlySet<string> {
   const names = new Set<string>();

@@ -18,7 +18,7 @@ import {
   isRestoredRegistryRotationState,
   registryRotationKeyCommit,
   type RegistryRotationState,
-} from "@galerina/tower-citizen";
+} from "@galerina/tower-citizen/custody";
 import {
   loadRegistryRuntimeHostFloor,
   loadTrustedRevocationAuthorityHostFloor,

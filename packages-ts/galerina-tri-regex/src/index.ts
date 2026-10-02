@@ -88,15 +88,19 @@ export function compile(pattern: string, opts: CompileOptions = {}): CompileOk |
     };
   }
   const supplied = opts.budget ?? {};
+  const hostNesting = 32;
+  const maxNesting = supplied.maxNesting ?? hostNesting;
   const budget: Budget = {
     maxInstructions: supplied.maxInstructions ?? DEFAULT_BUDGET.maxInstructions,
     maxPatternLength: supplied.maxPatternLength ?? DEFAULT_BUDGET.maxPatternLength,
     maxRepetition: supplied.maxRepetition ?? DEFAULT_BUDGET.maxRepetition,
+    maxNesting,
   };
   for (const [name, value, minimum] of [
     ["maxInstructions", budget.maxInstructions, 1],
     ["maxPatternLength", budget.maxPatternLength, 0],
     ["maxRepetition", budget.maxRepetition, 0],
+    ["maxNesting", maxNesting, 1],
   ] as const) {
     if (!Number.isSafeInteger(value) || value < minimum) {
       return {
@@ -106,6 +110,14 @@ export function compile(pattern: string, opts: CompileOptions = {}): CompileOk |
         reason: `budget.${name} must be a finite safe integer >= ${minimum}`,
       };
     }
+  }
+  if (maxNesting > hostNesting) {
+    return {
+      ok: false,
+      verdict: -1,
+      code: "TPRX-BUDGET",
+      reason: `budget.maxNesting exceeds the host ceiling (${hostNesting})`,
+    };
   }
   const parsed = parsePattern(pattern, budget);
   if (!parsed.ok) return parsed;

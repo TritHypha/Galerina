@@ -37,9 +37,9 @@ import type { SecretsProvider } from "./secret-gate.js";
 import { resolvePosture } from "@galerina/core-config";
 import type { SecurityPosture, ResolvedPosture, EnvironmentMode } from "@galerina/core-config";
 // K3 boundary collapse for channel/identity admission — the TLSTP S1 cert-gate verdict folds in
-// here. @galerina/tower-citizen is a file: dependency; "." export resolves to dist/index.js.
-import { decideAtBoundary } from "@galerina/tower-citizen";
-import type { Verdict } from "@galerina/tower-citizen";
+// here. Import the kernel-free cli-check subpath, not the Tower root barrel.
+import { decideAtBoundary } from "@galerina/tower-citizen/governance";
+import type { Verdict } from "@galerina/tower-citizen/governance";
 
 /** Normalised inbound request the pipeline operates on. */
 export interface GalerinaKernelRequest {

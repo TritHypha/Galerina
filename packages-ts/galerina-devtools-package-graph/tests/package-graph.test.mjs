@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scanPackage, buildGraph, runBoundaryGate } from "../dist/index.js";
+import { scanPackage, buildGraph, runBoundaryGate, MAX_SCAN_FILES, MAX_SCAN_DEPTH, MAX_SCAN_FILE_BYTES } from "../dist/index.js";
 
 const CLI = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const REPO_ROOT = fileURLToPath(new URL("../../../", import.meta.url));
@@ -706,4 +706,52 @@ test("explicit missing or escaping scan roots are refused", () => {
   });
   assert.throws(() => scanPackage(escaping), /canonical|inside the package|\.\./);
   rmSync(escaping, { recursive: true, force: true });
+});
+
+test("positive: a small source tree stays inside the scan budget", () => {
+  const root = makeFixture({
+    "src/index.ts": `export const n = 1;\n`,
+    "src/nested/a.ts": `export const a = 2;\n`,
+  });
+  const scan = scanPackage(root);
+  assert.ok(scan.files.length >= 2);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("hostile: more than MAX_SCAN_FILES source files refuse closed", () => {
+  const root = makeFixture({ "src/seed.ts": "export {};\n" });
+  for (let i = 0; i < MAX_SCAN_FILES; i++) {
+    writeFileSync(join(root, "src", `f${i}.ts`), "export {};\n");
+  }
+  assert.throws(() => scanPackage(root), /host file bound/);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("hostile: nesting above MAX_SCAN_DEPTH refuses closed", () => {
+  const root = makeFixture({ "src/seed.ts": "export {};\n" });
+  let dir = join(root, "src");
+  for (let i = 0; i < MAX_SCAN_DEPTH + 1; i++) {
+    dir = join(dir, `d${i}`);
+    mkdirSync(dir);
+  }
+  writeFileSync(join(dir, "deep.ts"), "export {};\n");
+  assert.throws(() => scanPackage(root), /host depth bound/);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("positive: a small source file stays inside the byte budget", () => {
+  const root = makeFixture({
+    "src/index.ts": `export const n = 1;\n`,
+  });
+  const scan = scanPackage(root);
+  assert.equal(scan.files.some((f) => f.path === "src/index.ts"), true);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("hostile: a source file above MAX_SCAN_FILE_BYTES refuses closed", () => {
+  const root = makeFixture({
+    "src/huge.ts": `${"x".repeat(MAX_SCAN_FILE_BYTES + 1)}\n`,
+  });
+  assert.throws(() => scanPackage(root), /host file-byte bound/);
+  rmSync(root, { recursive: true, force: true });
 });

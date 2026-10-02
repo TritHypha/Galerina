@@ -2,8 +2,8 @@
   "generatedBy": "scripts/component-health.mjs --audit-html",
   "provenance": {
     "available": true,
-    "branch": "codex/rd-0858-unit4-process-root",
-    "sha": "7521abdb3",
+    "branch": "main",
+    "sha": "0f24ca30e",
     "detached": false,
     "dirty": true
   },
@@ -36,7 +36,7 @@
         {
           "label": "Packages",
           "pct": 98,
-          "note": "◑ signed hybrid admission and flat-package rules are built; the live retirement ledger still records 537 tracked package TypeScript paths, 2551 unexecuted .fungi sources, 57 unowned host boundaries, 95 node_modules trees and 1 nested native identity",
+          "note": "◑ signed hybrid admission and flat-package rules are built; the live retirement ledger still records 565 tracked package TypeScript paths, 2544 unexecuted .fungi sources, 57 unowned host boundaries, 95 node_modules trees and 1 nested native identity",
           "evidence": {
             "asserted": "signed admission is built, while conversion and retirement are measured separately by the exact retirement ledger"
           }
@@ -122,7 +122,7 @@
         {
           "kind": "percent",
           "label": "Type checker / Effect checker",
-          "pct": 94,
+          "pct": 100,
           "live": false,
           "evidence": {
             "ladder": [
@@ -281,7 +281,7 @@
         {
           "item": "Contract Registry (RD-0359)",
           "state": "shipped",
-          "detail": "generated authority is current at 3,939 contracts across 2975 .fungi sources; parser-authoritative flow list + intent extraction; self-test and freshness check are CI-wired"
+          "detail": "generated authority is current at 3,991 contracts across 2992 .fungi sources; parser-authoritative flow list + intent extraction; self-test and freshness check are CI-wired"
         },
         {
           "item": "DSS decision core + optional Wasm oracle",
@@ -331,7 +331,7 @@
         {
           "item": "Execution-cutover (RD-0361)",
           "state": "building",
-          "detail": "104/104 governed twins checker-clean; 0 shadow · 75 differential · 29 authoritative. Authority counts are derived from the fail-closed governed ledger."
+          "detail": "103/103 governed twins checker-clean; 0 shadow · 74 differential · 29 authoritative. Authority counts are derived from the fail-closed governed ledger."
         },
         {
           "item": "Independent SLIDE backend",
@@ -341,7 +341,7 @@
         {
           "item": "Package retirement",
           "state": "building",
-          "detail": "537 tracked package TypeScript paths · 2551/2551 .fungi sources unexecuted · 0/57 host bridges owned · 95 node_modules trees · 1 nested native identity. All exact debts must reach zero before terminal retirement authority."
+          "detail": "565 tracked package TypeScript paths · 2544/2544 .fungi sources unexecuted · 0/57 host bridges owned · 95 node_modules trees · 1 nested native identity. All exact debts must reach zero before terminal retirement authority."
         },
         {
           "item": "Value-unit types (RD-0349)",

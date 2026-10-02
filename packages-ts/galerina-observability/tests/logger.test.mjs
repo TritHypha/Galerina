@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createLogger, MemoryLogSink, JsonLineSink, safeStringify } from "../dist/index.js";
+import { createLogger, MemoryLogSink, JsonLineSink, safeStringify, MAX_LOG_MESSAGE_CHARS, MAX_LOG_LINE_CHARS } from "../dist/index.js";
 
 test("emits structured records to the sink with an injected clock", () => {
   const sink = new MemoryLogSink();
@@ -31,6 +31,33 @@ test("the default logger MemoryLogSink retains at most 4096 records", () => {
   assert.equal(recs.length, 4096);
   assert.equal(recs[0].msg, "n1");
   assert.equal(recs[4095].msg, "n4096");
+});
+
+test("positive: a short message is retained in full", () => {
+  const sink = new MemoryLogSink();
+  createLogger({ sink, clock: () => 1 }).info("ok");
+  assert.equal(sink.records()[0].msg, "ok");
+  assert.equal(sink.records()[0].msg.length, 2);
+});
+
+test("hostile: oversize messages are truncated to MAX_LOG_MESSAGE_CHARS", () => {
+  const sink = new MemoryLogSink();
+  const huge = "x".repeat(MAX_LOG_MESSAGE_CHARS + 50);
+  createLogger({ sink, clock: () => 1 }).info(huge);
+  const [rec] = sink.records();
+  assert.equal(rec.msg.length, MAX_LOG_MESSAGE_CHARS);
+  assert.equal(rec.msg, "x".repeat(MAX_LOG_MESSAGE_CHARS));
+});
+
+test("hostile: MemoryLogSink drops oldest records to stay under the byte ceiling", () => {
+  const sink = new MemoryLogSink(100, 200);
+  sink.write({ level: "info", msg: "a".repeat(80), at: 1 });
+  sink.write({ level: "info", msg: "b".repeat(80), at: 2 });
+  sink.write({ level: "info", msg: "c".repeat(80), at: 3 });
+  const recs = sink.records();
+  assert.ok(recs.length >= 1 && recs.length < 3);
+  assert.equal(recs[recs.length - 1].msg[0], "c");
+  assert.equal(recs.some((r) => r.msg.startsWith("a")), false);
 });
 
 test("a retained records snapshot cannot inject a record into the sink", () => {
@@ -190,6 +217,28 @@ test("JsonLineSink writes one JSON line per record to the supplied writer (no am
   const parsed = JSON.parse(lines[0]);
   assert.equal(parsed.msg, "line");
   assert.equal(parsed.at, 7);
+  assert.equal(parsed.fields.k, "v");
+});
+
+test("hostile: JsonLineSink never emits a line longer than MAX_LOG_LINE_CHARS", () => {
+  const lines = [];
+  const sink = new JsonLineSink((l) => lines.push(l));
+  const huge = "x".repeat(MAX_LOG_MESSAGE_CHARS);
+  const fields = { blob: "y".repeat(MAX_LOG_MESSAGE_CHARS) };
+  sink.write({ level: "info", msg: huge, at: 1, fields });
+  assert.equal(lines.length, 1);
+  assert.ok(lines[0].length <= MAX_LOG_LINE_CHARS, `line length ${lines[0].length}`);
+  const parsed = JSON.parse(lines[0]);
+  assert.equal(parsed.msg, "log line exceeded MAX_LOG_LINE_CHARS");
+});
+
+test("positive: JsonLineSink small records stay under MAX_LOG_LINE_CHARS as JSON", () => {
+  const lines = [];
+  const sink = new JsonLineSink((l) => lines.push(l));
+  sink.write({ level: "info", msg: "ok", at: 7, fields: { k: "v" } });
+  assert.ok(lines[0].length <= MAX_LOG_LINE_CHARS);
+  const parsed = JSON.parse(lines[0]);
+  assert.equal(parsed.msg, "ok");
   assert.equal(parsed.fields.k, "v");
 });
 

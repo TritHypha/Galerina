@@ -128,11 +128,20 @@ test("non-finite setReading and sensor results refuse instead of selecting NOMIN
   );
   const nanSensor = new PowerGovernor(AEROSPACE_ENVELOPE, { sensor: () => Number.NaN });
   assert.throws(
+    () => nanSensor.read(),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+  assert.throws(
     () => nanSensor.evaluate(),
     (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
   );
   assert.throws(
     () => nanSensor.assertWithinEnvelope(),
+    (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
+  );
+  const infSensor = new PowerGovernor(AEROSPACE_ENVELOPE, { sensor: () => Number.POSITIVE_INFINITY });
+  assert.throws(
+    () => infSensor.read(),
     (err) => err instanceof PowerFault && err.code === "LSP-READ-001",
   );
 });

@@ -40,6 +40,12 @@
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
 
+export const MAX_SCAN_FILES = 4096;
+export const MAX_SCAN_DIRS = 4096;
+export const MAX_SCAN_DEPTH = 32;
+export const MAX_SCAN_FILE_BYTES = 1_048_576;
+export const MAX_SCAN_TOTAL_BYTES = 32 * 1_048_576;
+
 export type EdgeKind = "internal" | "node_core" | "workspace" | "thirdparty";
 
 export interface FileImport {
@@ -174,8 +180,26 @@ function isRealSpecifier(spec: string, m: RegExpExecArray, src: string): boolean
   return true;
 }
 
+interface ScanBudget {
+  files: number;
+  dirs: number;
+  bytes: number;
+}
+
 /** Recursively list source files under `dir` matching `extensions` (skipping node_modules/dist and .d.ts). */
-function listSourceFiles(dir: string, extensions: readonly string[]): string[] {
+function listSourceFiles(
+  dir: string,
+  extensions: readonly string[],
+  budget: ScanBudget,
+  depth = 0,
+): string[] {
+  if (depth > MAX_SCAN_DEPTH) {
+    throw new Error("packageGraph scan exceeds the host depth bound");
+  }
+  budget.dirs += 1;
+  if (budget.dirs > MAX_SCAN_DIRS) {
+    throw new Error("packageGraph scan exceeds the host directory bound");
+  }
   const out: string[] = [];
   let entries: string[];
   try { entries = readdirSync(dir); } catch { return out; }
@@ -186,8 +210,20 @@ function listSourceFiles(dir: string, extensions: readonly string[]): string[] {
     if (s.isSymbolicLink()) continue;
     if (s.isDirectory()) {
       if (name === "node_modules" || name === "dist" || name === ".myco") continue;
-      out.push(...listSourceFiles(full, extensions));
+      out.push(...listSourceFiles(full, extensions, budget, depth + 1));
     } else if (isSourceFile(name, extensions)) {
+      const size = s.size;
+      if (!Number.isSafeInteger(size) || size < 0 || size > MAX_SCAN_FILE_BYTES) {
+        throw new Error("packageGraph scan exceeds the host file-byte bound");
+      }
+      budget.bytes += size;
+      if (budget.bytes > MAX_SCAN_TOTAL_BYTES) {
+        throw new Error("packageGraph scan exceeds the host total-byte bound");
+      }
+      budget.files += 1;
+      if (budget.files > MAX_SCAN_FILES) {
+        throw new Error("packageGraph scan exceeds the host file bound");
+      }
       out.push(full);
     }
   }
@@ -637,12 +673,16 @@ export function scanPackage(scopePath: string): ScanResult {
   const roots = meta.roots
     .map((root) => admitScanRoot(scopePath, root, meta.rootsExplicit))
     .filter((root): root is string => root !== null);
-  const sourceFiles = roots.flatMap((r) => listSourceFiles(join(scopePath, r), meta.extensions));
+  const budget: ScanBudget = { files: 0, dirs: 0, bytes: 0 };
+  const sourceFiles = roots.flatMap((r) => listSourceFiles(join(scopePath, r), meta.extensions, budget));
   const pkgCache = new Map<string, OwningPackage | null>();
 
   const files: ScannedFile[] = sourceFiles.map((abs) => {
     const isFungi = abs.endsWith(".fungi");
     const raw = stripComments(readFileSync(abs, "utf-8"), isFungi); // perf-allow: loop-sync-io — one-shot package source-tree scan, reads a different file each iteration (N = source file count)
+    if (raw.length > MAX_SCAN_FILE_BYTES) {
+      throw new Error("packageGraph scan exceeds the host file-byte bound");
+    }
     const relPath = relative(scopePath, abs).split(sep).join("/");
 
     const imports: FileImport[] = [];

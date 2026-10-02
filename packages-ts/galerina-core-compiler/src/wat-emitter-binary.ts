@@ -289,12 +289,9 @@ export const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CH
  * by the call's own arguments — `s.charAt(i)` → `(call $host___str_char_at s i)`,
  * `n.toString()` → `(call $host___int_to_str n)`.
  *
- * P9.3 ambiguities (resolved pragmatically; do not block wat2wasm assembly):
- *   - `length`: String.length vs Array.length — both host funcs share the
- *     (param i32)(result i32) signature; default to str_length. (Array.length → P9.4)
- *   - `toString`: Int.toString vs Char.toString — same signature; default to
- *     int_to_str. Char/Int discrimination needs type info → P9.4.
- *   - `Array.empty()` is handled specially in emitWATExpr (zero-arg host call).
+ * P9.3/P9.4: `length` and `toString` are type-directed in emitWATExpr (String vs
+ * Array/List; Char vs Int vs Float vs Decimal). `Array.empty()` is handled
+ * specially in emitWATExpr (zero-arg host call).
  */
 export const STDLIB_HOST_MAP: Record<string, string> = {
   charAt:   "$host___str_char_at_option_v2",

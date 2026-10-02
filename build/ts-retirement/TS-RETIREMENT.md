@@ -1,19 +1,19 @@
-# Executable-family retirement graph (1624 tracked package paths; 546 .ts-family)
+# Executable-family retirement graph (1662 tracked package paths; 565 .ts-family)
 
 Regenerate: `node scripts/ts-retirement-graph.mjs` (graph-all 7/7). The % audit reads these numbers LIVE.
 
 | Retirement path | Count | Deletes via |
 |---|--:|---|
 | Twinned (.fungi beside it) | 30 | → #143 R4 authority ledger (checked .fungi authority or retained .ts differential oracle) |
-| Compiler core | 130 | → bootstrap fixpoint (the .fungi stages are compiled BY this .ts — retires last, post-v1) |
-| Bounded-TCB floor | 17 | → post-beta admitted SLIDE replacement (bounded bootstrap TCB until equivalent crypto/host/algorithm evidence exists) |
-| Migration program | 336 | → the #38 migration codemod program (owner-gated re-sign ceremony) |
+| Compiler core | 136 | → bootstrap fixpoint (the .fungi stages are compiled BY this .ts — retires last, post-v1) |
+| Bounded-TCB floor | 18 | → post-beta admitted SLIDE replacement (bounded bootstrap TCB until equivalent crypto/host/algorithm evidence exists) |
+| Migration program | 341 | → the #38 migration codemod program (owner-gated re-sign ceremony) |
 
 Authority ledgers: 7 compiler + 29 governed = 36 authoritative twins.
 
-Complete executable family: 530 .ts source · 16 .d.ts · 0 .mts · 0 .cts · 1066 .mjs · 12 .js · 0 .cjs.
+Complete executable family: 543 .ts source · 22 .d.ts · 1 .mts · 0 .cts · 1084 .mjs · 12 .js · 0 .cjs.
 
-Terminal physical retirement: OPEN — 1624 tracked package executable-family paths remain.
+Terminal physical retirement: OPEN — 1662 tracked package executable-family paths remain.
 
 Post-SLIDE authority: OPEN — 0 non-authorizing candidate(s); 0/2544 production Fungi sources cryptographically admitted; 0/57 host boundaries owned; 95 node_modules trees.
 

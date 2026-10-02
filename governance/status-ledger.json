@@ -1,6 +1,6 @@
 {
   "schema": "galerina.status-ledger.v1",
-  "asOf": "2026-09-23",
+  "asOf": "2026-09-28",
   "milestone": "Bounded pre-.fungi implementation closure before receipt-bound Galerina-to-SLIDE execution",
   "roadmap": "docs/ROADMAP.md",
   "openGates": [
@@ -41,8 +41,13 @@
     },
     {
       "id": "PRE-FUNGI-NON-EVIDENCE-CLOSURE",
-      "summary": "HOLD at dirty candidate HEAD 91b4dec08fe4376febc9494a8023bd02912b8695. E01/RD-1296 load-graph bounds are implemented with 86/86 focused checks; composition snapshot and evidence-packet slices 3-4 remain, as does lstat-to-read replacement risk. The 242 open boxes in docs/TODO.md are HOLDs, not completed conversion. Example-app signing, independent completion audit, physical/production receipts, SLIDE/VOK re-admission, corpus, queue and .fungi assurance remain held. No clean-head or production claim follows from this ledger.",
+      "summary": "HOLD. The historical dirty 91b4dec0 checkpoint covered Tower RD-1295 load-graph bounds (formerly E01/RD-1296) with 86/86 focused checks; composition/evidence-packet and lstat-to-read risks remain. The separate RD-1296 compiler/guest-byte route is not closed. The current docs/TODO.md recount is 238 open boxes; these are holds, not completed conversion. Example-app signing, independent completion audit, physical/production receipts, SLIDE/VOK re-admission, corpus, queue and .fungi assurance remain held. This update does not rerun older gates or claim a clean HEAD.",
       "evidence": "docs/reports/outstanding-and-blockers-2026-09-23.md"
+    },
+    {
+      "id": "MEMORY-SECURITY-INTEGRATION",
+      "summary": "HOLD PRODUCT_NON_AUTHORIZING. RD-1413 incoming protected access, RD-1414 transient cleanup and RD-1415 outgoing release have isolated/synthetic evidence, not one wired real application operation on this Galerina checkout. A public loopback test of ignored emitted API-server dist observed duplicate object/version query keys reach the handler with later values. An isolated source-copied SuperGrok adapter candidate refused repeated decoded names before the public fixture handler (independent replay 10/10), but it is not integrated, changes unrelated public-query behavior, and lacks closed compiler-input and loaded-runtime graphs; protected-route refusal remains unproved. The original RD-1414 extra suite remains 4/5 with an ANSWER/manifest count conflict; a separate isolated correction replayed corrected pins 2/2, baseline/candidate discriminators 3/3, SecretGate 7/7 and GCM 3/3, without fresh full-package build provenance or product adoption. Fixture release 7/7 also remains non-authorizing. Require the authenticated caller, object/version grant, protected provider/key owner, recipient, product cleanup, actual release/recovery and independent composed security review before scoped main integration. RD-1296 was split, not solved; original A-E obligations need explicit disposition. Older ledger gates retain dated evidence, not recertification.",
+      "evidence": "docs/TODO.md"
     },
     {
       "id": "SECURITY-SCAN-CONTINUATION",

@@ -1,4 +1,5 @@
 build/target-cache/
+build/roadmap/roadmap-preview.svg
 # RD-0858 Unit 4 native launcher build/check outputs and evidence receipt.
 build/rd0858-requirement-launcher/
 scripts/native/requirement-launcher/target/
@@ -176,3 +177,4 @@ build/ts-to-fungi-sandbox/
 # Name-based backstop for the heavy sqlite index dump, in case the directory rule above is ever narrowed.
 **/graph.db.zst
 **/node_modules
+/docs/reports/receipts

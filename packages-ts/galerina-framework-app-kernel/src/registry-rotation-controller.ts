@@ -1,5 +1,9 @@
 import {
   Verdict,
+  decideAtBoundary,
+  type GovernanceDiagnostic,
+} from "@galerina/tower-citizen/governance";
+import {
   activeEpoch,
   buildRegistryRotationTransition,
   checkReadiness,
@@ -7,7 +11,6 @@ import {
   confirmDrain,
   confirmTripleVerify,
   createRegistryRotationContext,
-  decideAtBoundary,
   fallbackToOldEpoch,
   isRestoredRegistryRotationState,
   registryRotationKeyCommit,
@@ -16,7 +19,6 @@ import {
   retireOldEpoch,
   switchEpoch,
   type DrainEvidence,
-  type GovernanceDiagnostic,
   type PhaseOutcome,
   type ReadinessEvidence,
   type RegistryRotationCustody,
@@ -27,7 +29,7 @@ import {
   type RotationProcess,
   type SignerVote,
   type VerifyEvidence,
-} from "@galerina/tower-citizen";
+} from "@galerina/tower-citizen/custody";
 import {
   isAdmittedRegistryRotationCandidate,
   isAdmittedRegistryRotationIndex,

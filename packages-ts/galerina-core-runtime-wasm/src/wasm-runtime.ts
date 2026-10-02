@@ -36,6 +36,12 @@ import {
   decAdd, decSub, decMul, decNeg, decCompare, decDiv, decRem, decFromInt,
 } from "./decimal-core.js";
 
+export const MAX_WASM_ARRAYS = 4096;
+export const MAX_WASM_ARRAY_ITEMS = 1_000_000;
+export const MAX_WASM_STRINGS = 4096;
+export const MAX_WASM_STRING_CHARS = 1_048_576;
+export const MAX_WASM_HOST_RECORDS = 4096;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Attestation (Ed25519 over the raw .wasm binary)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -213,6 +219,19 @@ export interface HostRuntime {
    */
   internArray(items: readonly number[]): number;
   /**
+   * Typed consumer: copy each interned array element's guest record fields.
+   * Snapshots the handle list first, then copies `fieldCount` i32 words from
+   * each aligned heap pointer. Guest mutation after return does not change the
+   * snapshot. Incomplete copies refuse with no partial success.
+   */
+  copyArrayRecords(handle: number, fieldCount: number): readonly (readonly number[])[];
+  /**
+   * Schema-directed copy: nested `record` fields are owned inner rows, not
+   * leftover guest pointers. Omitted nested pointers (`< WAT_HEAP_BASE`)
+   * become zeros in the layout shape. Cycles and over-depth refuse.
+   */
+  copyArrayRecordsLayout(handle: number, fields: readonly RecordCopyField[]): readonly unknown[];
+  /**
    * RD-0389 (ARG direction): stage a record in the module's OWN exported linear memory — write each
    * field (one i32 slot) contiguously from a host bump pointer based at `WAT_HEAP_BASE`, returning
    * the base ptr — the counterpart of `readRecordField`. The module reads a field with
@@ -229,6 +248,79 @@ export interface HostRuntime {
 
 type OptionKind = "i32" | "f64";
 type OptionEntry = { readonly kind: OptionKind; readonly value: number };
+
+/** Schema for one record field when copying array-of-record values. Nested
+ *  `record` fields occupy one i32 pointer slot and recurse. */
+export type RecordCopyField =
+  | { readonly kind: "i32" }
+  | { readonly kind: "record"; readonly fields: readonly RecordCopyField[] };
+
+export const MAX_RECORD_COPY_DEPTH = 8;
+export const MAX_RECORD_COPY_NODES = 4096;
+
+function refuseHostCopy(detail: string): never {
+  throw new Error(`FUNGI-WASM-HOST-001: ${detail}`);
+}
+
+function admitCopyFields(fields: readonly RecordCopyField[], depth: number): void {
+  if (!Array.isArray(fields) || fields.length < 1 || fields.length > 64) {
+    refuseHostCopy(`layout fieldCount=${Array.isArray(fields) ? String(fields.length) : "invalid"}`);
+  }
+  if (depth > MAX_RECORD_COPY_DEPTH) {
+    refuseHostCopy(`nested record copy exceeded depth ${MAX_RECORD_COPY_DEPTH}`);
+  }
+  for (const field of fields) {
+    if (field === null || typeof field !== "object") refuseHostCopy("invalid layout field");
+    if (field.kind === "i32") continue;
+    if (field.kind === "record") {
+      admitCopyFields(field.fields, depth + 1);
+      continue;
+    }
+    refuseHostCopy("invalid layout kind");
+  }
+}
+
+function zeroCopyShape(fields: readonly RecordCopyField[]): unknown[] {
+  return fields.map((field) => (field.kind === "i32" ? 0 : zeroCopyShape(field.fields)));
+}
+
+function freezeCopyRow(row: readonly unknown[]): readonly unknown[] {
+  return Object.freeze(row.map((cell) => (Array.isArray(cell) ? freezeCopyRow(cell) : cell)));
+}
+
+function copyGuestRecord(
+  view: Int32Array,
+  ptr: number,
+  fields: readonly RecordCopyField[],
+  depth: number,
+  visiting: Set<number>,
+  nodes: { count: number },
+): unknown[] {
+  if (depth > MAX_RECORD_COPY_DEPTH) {
+    refuseHostCopy(`nested record copy exceeded depth ${MAX_RECORD_COPY_DEPTH}`);
+  }
+  nodes.count += 1;
+  if (nodes.count > MAX_RECORD_COPY_NODES) {
+    refuseHostCopy(`nested record copy exceeded node bound ${MAX_RECORD_COPY_NODES}`);
+  }
+  if (!Number.isSafeInteger(ptr) || ptr < WAT_HEAP_BASE) return zeroCopyShape(fields);
+  if ((ptr & 3) !== 0) refuseHostCopy(`record pointer ${String(ptr)} is not an aligned heap record`);
+  if (visiting.has(ptr)) refuseHostCopy("cyclic record pointer");
+  const start = ptr >>> 2;
+  if (start < 0 || view.length - start < fields.length) {
+    refuseHostCopy("short memory for nested record copy");
+  }
+  visiting.add(ptr);
+  const row: unknown[] = [];
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i]!;
+    const word = view[start + i]!;
+    if (field.kind === "i32") row.push(word);
+    else row.push(copyGuestRecord(view, word, field.fields, depth + 1, visiting, nodes));
+  }
+  visiting.delete(ptr);
+  return row;
+}
 
 /**
  * Deterministic String ordering used by the interpreter and the WASM host.
@@ -280,6 +372,31 @@ export function createHostRuntime(
 ): HostRuntime {
   const strings: string[] = [];
   const arrays: number[][] = [];
+  const internArrayItems = (items: number[]): number => {
+    if (arrays.length >= MAX_WASM_ARRAYS) {
+      throw new Error("Array store exceeds the host bound");
+    }
+    if (items.length > MAX_WASM_ARRAY_ITEMS) {
+      throw new Error("Array cardinality exceeds the host bound");
+    }
+    const id = arrays.length;
+    arrays.push(items.slice());
+    return id;
+  };
+  const internStringValue = (s: string): number => {
+    if (typeof s !== "string") {
+      throw new Error("String intern requires a string");
+    }
+    if (s.length > MAX_WASM_STRING_CHARS) {
+      throw new Error("String intern exceeds the host char bound");
+    }
+    if (strings.length >= MAX_WASM_STRINGS) {
+      throw new Error("String store exceeds the host bound");
+    }
+    const id = strings.length;
+    strings.push(s);
+    return id;
+  };
   const results: { tag: "ok" | "err"; value: number }[] = [];
   // Option values need their own registry. A raw i32 payload cannot carry presence: -1 is a
   // perfectly valid Int, so the old `Some(v) = v / None = -1` convention made Some(-1) absent.
@@ -288,6 +405,38 @@ export function createHostRuntime(
   const options: OptionEntry[] = [];
   const moneys: { currency: string; amountStr: string }[] = [];
   const decimals: string[] = [];
+  const internResult = (entry: { tag: "ok" | "err"; value: number }): number => {
+    if (results.length >= MAX_WASM_HOST_RECORDS) {
+      throw new Error("Result store exceeds the host bound");
+    }
+    const id = results.length;
+    results.push({ tag: entry.tag, value: entry.value });
+    return id;
+  };
+  const internOption = (entry: OptionEntry): number => {
+    if (options.length >= MAX_WASM_HOST_RECORDS) {
+      throw new Error("Option store exceeds the host bound");
+    }
+    const id = options.length;
+    options.push({ kind: entry.kind, value: entry.value });
+    return id;
+  };
+  const internMoney = (currency: string, amountStr: string): number => {
+    if (moneys.length >= MAX_WASM_HOST_RECORDS) {
+      throw new Error("Money store exceeds the host bound");
+    }
+    const id = moneys.length;
+    moneys.push({ currency, amountStr });
+    return id;
+  };
+  const internDecimalValue = (text: string): number => {
+    if (decimals.length >= MAX_WASM_HOST_RECORDS) {
+      throw new Error("Decimal store exceeds the host bound");
+    }
+    const id = decimals.length;
+    decimals.push(text);
+    return id;
+  };
   let memory: WebAssembly.Memory | null = null;
   // R6/R11 host value helpers. An unknown handle is a named trap, never "" / "0.00" / a default.
   const decimalAt = (h: number): string => {
@@ -295,11 +444,7 @@ export function createHostRuntime(
     if (text === undefined) throw new Error("UnknownDecimalHandle");
     return text;
   };
-  const pushDecimal = (text: string): number => {
-    const id = decimals.length;
-    decimals.push(text);
-    return id;
-  };
+  const pushDecimal = (text: string): number => internDecimalValue(text);
   const moneyCtor = (currency: string, name: string, h: number): number => {
     const text = strings[h];
     if (text === undefined) throw new Error("MalformedMoneyAmount");
@@ -307,8 +452,7 @@ export function createHostRuntime(
     if (minor === undefined) throw new Error("UnknownCurrency");
     const admitted = admitMoneyAmount(text, minor);
     if (!admitted.ok) throw new Error(admitted.trap);
-    const id = moneys.length;
-    moneys.push({ currency, amountStr: admitted.amount });
+    const id = internMoney(currency, admitted.amount);
     return tap(name, [h], id) as number;
   };
   // RD-0389: host bump pointer for records STAGED to pass in (allocRecord), based at the same
@@ -359,11 +503,21 @@ export function createHostRuntime(
 
   const host: Record<string, (...a: number[]) => number | void> = {
     __array_create: () => {
-      const id = arrays.length; arrays.push([]);
+      const id = internArrayItems([]);
       return tap("__array_create", [], id) as number;
     },
     __array_append: (id: number, item: number) => {
-      (arrays[id] ?? (arrays[id] = [])).push(item);
+      if (!Number.isInteger(id) || id < 0 || id >= arrays.length) {
+        throw new Error(`unknown array handle ${id} (fail-closed)`);
+      }
+      const arr = arrays[id];
+      if (arr === undefined) {
+        throw new Error(`unknown array handle ${id} (fail-closed)`);
+      }
+      if (arr.length >= MAX_WASM_ARRAY_ITEMS) {
+        throw new Error("Array cardinality exceeds the host bound");
+      }
+      arr.push(item);
       // #145a: return the array handle so `arr = arr.append(x)` lowers cleanly.
       return tap("__array_append", [id, item], id) as number;
     },
@@ -381,20 +535,20 @@ export function createHostRuntime(
       return tap("__str_count", [strHandle], n) as number;
     },
     __int_to_str: (n: number) => {
-      const id = strings.length; strings.push(String(n | 0));
+      const id = internStringValue(String(n | 0));
       return tap("__int_to_str", [n], id) as number;
     },
     __float_to_str: (n: number) => {
       if (!Number.isFinite(n)) throw new Error("NonFiniteFloat");
-      const id = strings.length; strings.push(String(n));
+      const id = internStringValue(String(n));
       return tap("__float_to_str", [n], id) as number;
     },
     __result_ok: (value: number) => {
-      const id = results.length; results.push({ tag: "ok", value });
+      const id = internResult({ tag: "ok", value });
       return tap("__result_ok", [value], id) as number;
     },
     __result_err: (value: number) => {
-      const id = results.length; results.push({ tag: "err", value });
+      const id = internResult({ tag: "err", value });
       return tap("__result_err", [value], id) as number;
     },
     // #164 — read a Result handle's discriminant + payload, so `match r { Ok(v) => …,
@@ -407,7 +561,7 @@ export function createHostRuntime(
     // Raw array access remains a separate bridge because for-in lowering needs element values,
     // including negative integers, rather than an Option wrapper.
     __str_concat: (a: number, b: number) => {
-      const id = strings.length; strings.push((strings[a] ?? "") + (strings[b] ?? ""));
+      const id = internStringValue((strings[a] ?? "") + (strings[b] ?? ""));
       return tap("__str_concat", [a, b], id) as number;
     },
     __str_length: (h: number) => tap("__str_length", [h], [...(strings[h] ?? "")].length) as number, // #170: code-point length (consistent with __str_count/__str_char_at)
@@ -427,10 +581,10 @@ export function createHostRuntime(
     __str_ends_with: (h: number, p: number) => tap("__str_ends_with", [h, p], (strings[h] ?? "").endsWith(strings[p] ?? "") ? 1 : 0) as number,
     __str_contains: (h: number, p: number) => tap("__str_contains", [h, p], (strings[h] ?? "").includes(strings[p] ?? "") ? 1 : 0) as number,
     __str_index_of: (h: number, p: number) => tap("__str_index_of", [h, p], (strings[h] ?? "").indexOf(strings[p] ?? "")) as number,
-    __str_to_lower: (h: number) => { const id = strings.length; strings.push((strings[h] ?? "").toLowerCase()); return tap("__str_to_lower", [h], id) as number; },
-    __str_to_upper: (h: number) => { const id = strings.length; strings.push((strings[h] ?? "").toUpperCase()); return tap("__str_to_upper", [h], id) as number; },
-    __str_trim: (h: number) => { const id = strings.length; strings.push((strings[h] ?? "").trim()); return tap("__str_trim", [h], id) as number; },
-    __str_slice: (h: number, start: number, end: number) => { const id = strings.length; strings.push((strings[h] ?? "").slice(start, end)); return tap("__str_slice", [h, start, end], id) as number; },
+    __str_to_lower: (h: number) => { const id = internStringValue((strings[h] ?? "").toLowerCase()); return tap("__str_to_lower", [h], id) as number; },
+    __str_to_upper: (h: number) => { const id = internStringValue((strings[h] ?? "").toUpperCase()); return tap("__str_to_upper", [h], id) as number; },
+    __str_trim: (h: number) => { const id = internStringValue((strings[h] ?? "").trim()); return tap("__str_trim", [h], id) as number; },
+    __str_slice: (h: number, start: number, end: number) => { const id = internStringValue((strings[h] ?? "").slice(start, end)); return tap("__str_slice", [h, start, end], id) as number; },
     // #162/#169 — Char.toUpper/toLower return a Char (code point), not a String handle.
     __char_to_upper: (code: number) => tap("__char_to_upper", [code], code >= 0 ? (String.fromCodePoint(code).toUpperCase().codePointAt(0) ?? code) : code) as number,
     __char_to_lower: (code: number) => tap("__char_to_lower", [code], code >= 0 ? (String.fromCodePoint(code).toLowerCase().codePointAt(0) ?? code) : code) as number,
@@ -440,7 +594,7 @@ export function createHostRuntime(
     },
     __str_to_int_option_v2: (h: number) => {
       const n = parseInt(strings[h] ?? "", 10);
-      const option = Number.isNaN(n) ? -1 : options.push({ kind: "i32", value: n | 0 }) - 1;
+      const option = Number.isNaN(n) ? -1 : internOption({ kind: "i32", value: n | 0 });
       return tap("__str_to_int_option_v2", [h], option) as number;
     },
     // Char.fromCode (RD-0528 step 1) — Int -> Char. A Char IS its code point i32, so the VALUE is
@@ -473,7 +627,7 @@ export function createHostRuntime(
     __char_is_whitespace: (code: number) =>
       tap("__char_is_whitespace", [code], code >= 0 && /\s/.test(String.fromCodePoint(code)) ? 1 : 0) as number,
     __char_to_string: (code: number) => {
-      const id = strings.length; strings.push(code >= 0 ? String.fromCodePoint(code) : "");
+      const id = internStringValue(code >= 0 ? String.fromCodePoint(code) : "");
       return tap("__char_to_string", [code], id) as number;
     },
     // Array ops — raw handles/indexing. Out-of-range / empty ⇒ -1 for the legacy raw bridge.
@@ -495,23 +649,23 @@ export function createHostRuntime(
     // Option-producing array accessors keep a present negative element distinct from absence.
     __array_get_option_v2: (id: number, i: number) => {
       const a = arrays[id] ?? [];
-      const option = i >= 0 && i < a.length ? options.push({ kind: "i32", value: a[i]! | 0 }) - 1 : -1;
+      const option = i >= 0 && i < a.length ? internOption({ kind: "i32", value: a[i]! | 0 }) : -1;
       return tap("__array_get_option_v2", [id, i], option) as number;
     },
     __array_first_option_v2: (id: number) => {
       const a = arrays[id] ?? [];
-      const option = a.length > 0 ? options.push({ kind: "i32", value: a[0]! | 0 }) - 1 : -1;
+      const option = a.length > 0 ? internOption({ kind: "i32", value: a[0]! | 0 }) : -1;
       return tap("__array_first_option_v2", [id], option) as number;
     },
     __array_last_option_v2: (id: number) => {
       const a = arrays[id] ?? [];
-      const option = a.length > 0 ? options.push({ kind: "i32", value: a[a.length - 1]! | 0 }) - 1 : -1;
+      const option = a.length > 0 ? internOption({ kind: "i32", value: a[a.length - 1]! | 0 }) : -1;
       return tap("__array_last_option_v2", [id], option) as number;
     },
     __str_char_at_option_v2: (strHandle: number, idx: number) => {
       const cps = [...(strings[strHandle] ?? "")];
       const code = idx >= 0 && idx < cps.length ? (cps[idx]!.codePointAt(0) ?? -1) : -1;
-      const option = code >= 0 ? options.push({ kind: "i32", value: code | 0 }) - 1 : -1;
+      const option = code >= 0 ? internOption({ kind: "i32", value: code | 0 }) : -1;
       return tap("__str_char_at_option_v2", [strHandle, idx], option) as number;
     },
     // Legacy Option helpers retain the original raw-sentinel ABI for already-built modules.
@@ -522,7 +676,7 @@ export function createHostRuntime(
     // import names are an ABI binding: a pre-repair module cannot accidentally run against this layout.
     __unwrap_or_v2: (opt: number, def: number) => tap("__unwrap_or_v2", [opt, def], opt === -1 ? def : typedOptionEntry(opt, "i32").value) as number,
     __option_some_v2: (x: number) => {
-      const handle = options.push({ kind: "i32", value: x | 0 }) - 1;
+      const handle = internOption({ kind: "i32", value: x | 0 });
       return tap("__option_some_v2", [x], handle) as number;
     },
     __option_none_v2: () => tap("__option_none_v2", [], -1) as number,
@@ -533,7 +687,7 @@ export function createHostRuntime(
     // names so an i32 Option handle cannot be read through the wrong ABI lane.
     __option_some_f64_v2: (x: number) => {
       if (!Number.isFinite(x)) throw new Error("NonFiniteFloat");
-      const handle = options.push({ kind: "f64", value: x }) - 1;
+      const handle = internOption({ kind: "f64", value: x });
       return tap("__option_some_f64_v2", [x], handle) as number;
     },
     __option_value_f64_v2: (opt: number) => tap(
@@ -583,12 +737,17 @@ export function createHostRuntime(
       if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to)) {
         throw new Error("Array.range: bounds are not a finite progressing interval");
       }
+      if (arrays.length >= MAX_WASM_ARRAYS) {
+        throw new Error("Array store exceeds the host bound");
+      }
       if (to <= from) {
-        const id = arrays.length;
-        arrays.push([]);
+        const id = internArrayItems([]);
         return tap("__range", [lo, hi], id) as number;
       }
       const count = to - from;
+      if (!Number.isSafeInteger(count) || count < 0 || count > MAX_WASM_ARRAY_ITEMS) {
+        throw new Error("Array.range: cardinality exceeds the host bound");
+      }
       const guestWords = memory !== null
         ? Math.floor(memory.buffer.byteLength / 4)
         : UNBOUND_GUEST_WORDS;
@@ -598,10 +757,10 @@ export function createHostRuntime(
       if (count > rangeFuel) {
         throw new Error("Array.range: fuel exhausted");
       }
-      rangeFuel -= count;
       const items: number[] = [];
       for (let i = from; i < to; i++) items.push(i);
-      const id = arrays.length; arrays.push(items);
+      const id = internArrayItems(items);
+      rangeFuel -= count;
       return tap("__range", [lo, hi], id) as number;
     },
 
@@ -610,14 +769,12 @@ export function createHostRuntime(
       if (text === undefined) throw new Error("MalformedDecimal");
       const parsed = parseDec(text);
       if (!parsed.ok) throw new Error(parsed.trap);
-      const id = decimals.length;
-      decimals.push(text);
+      const id = internDecimalValue(text);
       return tap("__decimal_from_str", [h], id) as number;
     },
     __decimal_to_str: (h: number) => {
       const text = decimalAt(h);
-      const id = strings.length;
-      strings.push(text);
+      const id = internStringValue(text);
       return tap("__decimal_to_str", [h], id) as number;
     },
     __decimal_add: (a: number, b: number) =>
@@ -656,21 +813,46 @@ export function createHostRuntime(
   return {
     imports: { host },
     internString(s: string): number {
-      const id = strings.length; strings.push(s); return id;
+      return internStringValue(s);
     },
-    seedString(handle: number, s: string): void { strings[handle] = s; },
+    seedString(handle: number, s: string): void {
+      if (!Number.isInteger(handle) || handle < 0 || handle >= MAX_WASM_STRINGS) {
+        throw new Error(`unknown string handle ${handle} (fail-closed)`);
+      }
+      if (typeof s !== "string") {
+        throw new Error("String intern requires a string");
+      }
+      if (s.length > MAX_WASM_STRING_CHARS) {
+        throw new Error("String intern exceeds the host char bound");
+      }
+      while (strings.length < handle) {
+        strings.push("");
+      }
+      if (handle === strings.length) {
+        strings.push(s);
+      } else {
+        strings[handle] = s;
+      }
+    },
     readString(handle: number) { return strings[handle]; },
-    readArray(handle: number) { return arrays[handle]; },
-    readResult(handle: number) { return results[handle]; },
+    readArray(handle: number) {
+      const stored = arrays[handle];
+      return stored === undefined ? undefined : Object.freeze(stored.slice());
+    },
+    readResult(handle: number) {
+      const stored = results[handle];
+      return stored === undefined ? undefined : { tag: stored.tag, value: stored.value };
+    },
     readOption(handle: number) { return handle === -1 ? { tag: "none" } : { tag: "some", value: optionEntry(handle).value }; },
-    readMoney(handle: number) { return moneys[handle]; },
+    readMoney(handle: number) {
+      const stored = moneys[handle];
+      return stored === undefined ? undefined : { currency: stored.currency, amountStr: stored.amountStr };
+    },
     readDecimal(handle: number) { return decimals[handle]; },
     internDecimal(text: string): number {
       const parsed = parseDec(text);
       if (!parsed.ok) throw new Error(parsed.trap);
-      const id = decimals.length;
-      decimals.push(text);
-      return id;
+      return internDecimalValue(text);
     },
     bindMemory(m: WebAssembly.Memory) {
       memory = m;
@@ -681,7 +863,61 @@ export function createHostRuntime(
       return new Int32Array(memory.buffer)[(ptr >>> 2) + slot] ?? 0;
     },
     internArray(items: readonly number[]): number {
-      const id = arrays.length; arrays.push(items.map((x) => x | 0)); return id;
+      if (items.length > MAX_WASM_ARRAY_ITEMS) {
+        throw new Error("Array cardinality exceeds the host bound");
+      }
+      return internArrayItems(items.map((x) => x | 0));
+    },
+    copyArrayRecords(handle: number, fieldCount: number): readonly (readonly number[])[] {
+      if (memory === null) {
+        throw new Error("FUNGI-WASM-HOST-001: copyArrayRecords before bindMemory");
+      }
+      if (!Number.isInteger(fieldCount) || fieldCount < 1 || fieldCount > MAX_COPIED_RECORD_WORDS) {
+        throw new Error(`FUNGI-WASM-HOST-001: fieldCount=${String(fieldCount)}`);
+      }
+      const stored = arrays[handle];
+      if (stored === undefined || !Number.isInteger(handle) || handle < 0) {
+        throw new Error(`FUNGI-WASM-HOST-001: unknown array handle ${String(handle)}`);
+      }
+      const ptrs = stored.slice();
+      const totalWords = ptrs.length * fieldCount;
+      if (totalWords > MAX_WASM_ARRAY_ITEMS) {
+        throw new Error(`FUNGI-WASM-HOST-001: copied words ${totalWords} exceed host bound`);
+      }
+      const view = new Int32Array(memory.buffer);
+      for (const ptr of ptrs) {
+        if (!Number.isSafeInteger(ptr) || ptr < WAT_HEAP_BASE || (ptr & 3) !== 0) {
+          throw new Error(`FUNGI-WASM-HOST-001: record pointer ${String(ptr)} is not an aligned heap record`);
+        }
+        const start = ptr >>> 2;
+        if (start < 0 || view.length - start < fieldCount) {
+          throw new Error("FUNGI-WASM-HOST-001: short memory for array-of-record copy");
+        }
+      }
+      const out: number[][] = [];
+      for (const ptr of ptrs) {
+        const start = ptr >>> 2;
+        const fields: number[] = [];
+        for (let i = 0; i < fieldCount; i++) fields.push(view[start + i]!);
+        out.push(fields);
+      }
+      return Object.freeze(out.map((row) => Object.freeze(row)));
+    },
+    copyArrayRecordsLayout(handle: number, fields: readonly RecordCopyField[]): readonly unknown[] {
+      if (memory === null) refuseHostCopy("copyArrayRecordsLayout before bindMemory");
+      admitCopyFields(fields, 0);
+      const stored = arrays[handle];
+      if (stored === undefined || !Number.isInteger(handle) || handle < 0) {
+        refuseHostCopy(`unknown array handle ${String(handle)}`);
+      }
+      const ptrs = stored.slice();
+      const view = new Int32Array(memory.buffer);
+      const nodes = { count: 0 };
+      const out: unknown[] = [];
+      for (const ptr of ptrs) {
+        out.push(copyGuestRecord(view, ptr, fields, 0, new Set(), nodes));
+      }
+      return Object.freeze(out.map((row) => freezeCopyRow(row as unknown[])));
     },
     allocRecord(fields: readonly number[]): number {
       if (memory === null) throw new Error("allocRecord before bindMemory — instantiate the module first (fail-closed)");
@@ -737,6 +973,8 @@ export async function admitAndInstantiate(opts: {
   policy: AdmissionPolicy;
   host: HostRuntime;
   observe?: Observer;
+  /** Optional per-export nested return layout for wrapped secret finalize. */
+  returnLayouts?: Readonly<Record<string, readonly RecordCopyField[]>>;
 }): Promise<AdmissionResult> {
   const wasm = snapshotWasmBytes(opts.wasm);
   const verdict = verifyWasm(wasm, opts.attestation, opts.policy);
@@ -767,7 +1005,7 @@ export async function admitAndInstantiate(opts: {
     ?? (wasmResult as WebAssembly.Instance);
   const mem = (instance.exports as Record<string, unknown>)["memory"];
   if (mem instanceof WebAssembly.Memory) opts.host.bindMemory(mem);
-  return { instance: wrapAdmittedExports(instance), host: opts.host, hash: verdict.hash };
+  return { instance: wrapAdmittedExports(instance, opts.returnLayouts), host: opts.host, hash: verdict.hash };
 }
 
 const SECRET_HELPER_EXPORTS = new Set([
@@ -778,12 +1016,35 @@ const SECRET_HELPER_EXPORTS = new Set([
 ]);
 const RAW_ADMITTED_INSTANCES = new WeakMap<WebAssembly.Instance, WebAssembly.Instance>();
 
-function wrapAdmittedExports(instance: WebAssembly.Instance): WebAssembly.Instance {
+function wrapAdmittedExports(
+  instance: WebAssembly.Instance,
+  returnLayouts?: Readonly<Record<string, readonly RecordCopyField[]>>,
+): WebAssembly.Instance {
   const wrappedExports: Record<string, unknown> = Object.create(null);
   for (const [name, value] of Object.entries(instance.exports)) {
     if (typeof value === "function" && !SECRET_HELPER_EXPORTS.has(name)) {
-      wrappedExports[name] = (...args: unknown[]) =>
-        finalizeSecretExportResult(instance, (value as (...a: unknown[]) => unknown)(...args));
+      const layout = returnLayouts?.[name];
+      wrappedExports[name] = (...args: unknown[]) => {
+        const cleanup = createCleanupAttempt();
+        try {
+          const result = (value as (...a: unknown[]) => unknown)(...args);
+          return finalizeSecretExportResultWithAttempt(
+            instance,
+            result,
+            layout,
+            cleanup,
+          );
+        } catch (err) {
+          if (!cleanup.attempted) {
+            try {
+              wipeOwnedSecrets(instance.exports as Record<string, unknown>, cleanup);
+            } catch (cleanupErr) {
+              throw combineCleanupFailure(err, cleanupErr);
+            }
+          }
+          throw err;
+        }
+      };
     } else {
       wrappedExports[name] = value;
     }
@@ -800,50 +1061,124 @@ function wrapAdmittedExports(instance: WebAssembly.Instance): WebAssembly.Instan
 
 const MAX_COPIED_RECORD_WORDS = 64;
 
+interface CleanupAttempt {
+  attempted: boolean;
+  failed: boolean;
+  failure?: unknown;
+}
+
+function createCleanupAttempt(): CleanupAttempt {
+  return { attempted: false, failed: false };
+}
+
+function wipeOwnedSecrets(exports: Record<string, unknown>, attempt: CleanupAttempt): void {
+  if (attempt.attempted) {
+    if (attempt.failed) throw attempt.failure;
+    return;
+  }
+  attempt.attempted = true;
+  const wipe = exports["__fungi_wipe_owned"];
+  if (typeof wipe !== "function") return;
+  try {
+    (wipe as () => void)();
+  } catch (cause) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    const failure = new Error(`FUNGI-WASM-CLEANUP-001: owned-memory cleanup failed (${detail})`);
+    Object.defineProperty(failure, "cause", { value: cause, configurable: true });
+    attempt.failed = true;
+    attempt.failure = failure;
+    throw failure;
+  }
+}
+
+function combineCleanupFailure(primary: unknown, cleanup: unknown): AggregateError {
+  return new AggregateError(
+    [primary, cleanup],
+    `FUNGI-WASM-CLEANUP-001: cleanup failed while handling ${primary instanceof Error ? primary.message : String(primary)}`,
+  );
+}
+
+function refuseIncompleteSecretCopy(detail: string): never {
+  throw new Error(`FUNGI-WASM-RET-001: incomplete secret return copy (${detail})`);
+}
+
 /**
  * After a guest export returns, copy `returnWordCount` i32 words from the
  * pointer when the guest tagged a heap result, then wipe
  * `[WAT_HEAP_BASE, $__fungi_heap)`. One word stays a number (numeric-fold ABI);
  * several words become a frozen array. Modules without `__fungi_wipe_owned`
- * are unchanged.
+ * are unchanged. Incomplete copies (oversize tag, zero/negative tag, short
+ * memory) refuse rather than returning a truncated success.
  */
 export function finalizeSecretExportResult(
   instance: WebAssembly.Instance,
   result: unknown,
+  layout?: readonly RecordCopyField[],
+): unknown {
+  return finalizeSecretExportResultWithAttempt(instance, result, layout, createCleanupAttempt());
+}
+
+function finalizeSecretExportResultWithAttempt(
+  instance: WebAssembly.Instance,
+  result: unknown,
+  layout: readonly RecordCopyField[] | undefined,
+  cleanup: CleanupAttempt,
 ): unknown {
   const exports = instance.exports as Record<string, unknown>;
   const wipe = exports["__fungi_wipe_owned"];
   if (typeof wipe !== "function") return result;
-  const heapResult = exports["__fungi_ret_is_heap_get"];
-  const resultIsHeapPointer = typeof heapResult === "function" && (heapResult as () => number)() === 1;
-  if (
-    resultIsHeapPointer
-    && typeof result === "number"
-    && Number.isSafeInteger(result)
-    && result >= WAT_HEAP_BASE
-    && (result & 3) === 0
-  ) {
-    const memory = exports["memory"];
-    if (memory instanceof WebAssembly.Memory) {
-      const view = new Int32Array(memory.buffer);
-      const start = result >>> 2;
-      const wordsGet = exports["__fungi_ret_words_get"];
-      const taggedWords = typeof wordsGet === "function" ? (wordsGet as () => number)() : 1;
-      const count = Math.min(
-        MAX_COPIED_RECORD_WORDS,
-        Math.max(1, Number.isSafeInteger(taggedWords) ? taggedWords : 1),
-        Math.max(0, view.length - start),
-      );
-      if (count > 0 && start < view.length) {
-        const words: number[] = [];
-        for (let i = 0; i < count; i++) words.push(view[start + i]!);
-        (wipe as () => void)();
-        return words.length === 1 ? words[0]! : Object.freeze(words);
+  let finalized = result;
+  let copyFailure: unknown;
+  let copyFailed = false;
+  try {
+    const heapResult = exports["__fungi_ret_is_heap_get"];
+    const resultIsHeapPointer = typeof heapResult === "function" && (heapResult as () => number)() === 1;
+    if (
+      resultIsHeapPointer
+      && typeof result === "number"
+      && Number.isSafeInteger(result)
+      && result >= WAT_HEAP_BASE
+      && (result & 3) === 0
+    ) {
+      const memory = exports["memory"];
+      if (memory instanceof WebAssembly.Memory) {
+        const view = new Int32Array(memory.buffer);
+        if (layout !== undefined) {
+          admitCopyFields(layout, 0);
+          const copied = copyGuestRecord(view, result, layout, 0, new Set(), { count: 0 });
+          finalized = freezeCopyRow(copied);
+        } else {
+          const start = result >>> 2;
+          const wordsGet = exports["__fungi_ret_words_get"];
+          const taggedWords = typeof wordsGet === "function" ? (wordsGet as () => number)() : 1;
+          if (!Number.isSafeInteger(taggedWords) || taggedWords <= 0) {
+            refuseIncompleteSecretCopy(`taggedWords=${String(taggedWords)}`);
+          }
+          if (taggedWords > MAX_COPIED_RECORD_WORDS) {
+            refuseIncompleteSecretCopy(`taggedWords=${taggedWords} max=${MAX_COPIED_RECORD_WORDS}`);
+          }
+          const remaining = view.length - start;
+          if (start < 0 || remaining < taggedWords) {
+            refuseIncompleteSecretCopy(`short memory remaining=${remaining} taggedWords=${taggedWords}`);
+          }
+          const words: number[] = [];
+          for (let i = 0; i < taggedWords; i++) words.push(view[start + i]!);
+          finalized = words.length === 1 ? words[0]! : Object.freeze(words);
+        }
       }
     }
+  } catch (err) {
+    copyFailed = true;
+    copyFailure = err;
   }
-  (wipe as () => void)();
-  return result;
+  try {
+    wipeOwnedSecrets(exports, cleanup);
+  } catch (cleanupErr) {
+    if (copyFailed) throw combineCleanupFailure(copyFailure, cleanupErr);
+    throw cleanupErr;
+  }
+  if (copyFailed) throw copyFailure;
+  return finalized;
 }
 
 /** Call an admitted export then apply guest-owned secret finalize. */
@@ -851,16 +1186,25 @@ export function invokeAdmittedExport(
   instance: WebAssembly.Instance,
   exportName: string,
   args: readonly number[],
+  layout?: readonly RecordCopyField[],
 ): { readonly ok: true; readonly result: unknown } | { readonly ok: false; readonly reason: string } {
   const raw = RAW_ADMITTED_INSTANCES.get(instance) ?? instance;
   const fn = (raw.exports as Record<string, unknown>)[exportName];
   if (typeof fn !== "function") {
     return { ok: false, reason: `export '${exportName}' is not a callable function of the module` };
   }
+  const cleanup = createCleanupAttempt();
   try {
     const value = (fn as (...a: number[]) => unknown)(...args);
-    return { ok: true, result: finalizeSecretExportResult(raw, value) };
+    return { ok: true, result: finalizeSecretExportResultWithAttempt(raw, value, layout, cleanup) };
   } catch (err) {
+    if (!cleanup.attempted) {
+      try {
+        wipeOwnedSecrets(raw.exports as Record<string, unknown>, cleanup);
+      } catch (cleanupErr) {
+        err = combineCleanupFailure(err, cleanupErr);
+      }
+    }
     return {
       ok: false,
       reason: `trap during '${exportName}': ${err instanceof Error ? err.message : String(err)}`,

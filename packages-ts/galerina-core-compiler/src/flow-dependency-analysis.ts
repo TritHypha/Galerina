@@ -14,6 +14,7 @@
 // =============================================================================
 
 import type { AstNode } from "./parser.js";
+import { declaredFlowName } from "./flow-name.js";
 import { findNodes } from "./gir-emitter.js";
 
 export interface FlowDependencies {
@@ -25,19 +26,18 @@ export interface FlowDependencies {
   readonly impact: number;
 }
 
-const FLOW_KINDS = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
-
 /**
  * Build the per-flow dependency map (USES / USEDBY / IMPACT) for a program AST.
  * Self-calls (recursion) are excluded (a flow does not "use" itself).
+ * Names come from {@link declaredFlowName} so a governed flow
+ * (`governed:<floor>:<name>`) is indexed by its declared name, not the encoding.
  */
 export function analyzeFlowDependencies(ast: AstNode): Map<string, FlowDependencies> {
   // 1. Collect top-level flow declarations by name.
   const flowNodes = new Map<string, AstNode>();
   for (const child of ast.children ?? []) {
-    if (FLOW_KINDS.has(child.kind) && (child.value ?? "") !== "") {
-      flowNodes.set(child.value as string, child);
-    }
+    const name = declaredFlowName(child);
+    if (name !== undefined) flowNodes.set(name, child);
   }
   const names = [...flowNodes.keys()];
 
@@ -109,9 +109,10 @@ export function analyzeProgramFlowDependencies(files: readonly ProgramFile[]): P
   const fileByFlow = new Map<string, string>();
   for (const { file, ast } of files) {
     for (const child of ast.children ?? []) {
-      if (FLOW_KINDS.has(child.kind) && (child.value ?? "") !== "") {
+      const name = declaredFlowName(child);
+      if (name !== undefined) {
         mergedChildren.push(child);
-        if (!fileByFlow.has(child.value as string)) fileByFlow.set(child.value as string, file);
+        if (!fileByFlow.has(name)) fileByFlow.set(name, file);
       }
     }
   }

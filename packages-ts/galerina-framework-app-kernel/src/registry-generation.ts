@@ -2,7 +2,7 @@ import {
   createRegistryPublicVerifiers,
   type RegistryRotationHybridSignature,
   type RegistryRotationPublicBundle,
-} from "@galerina/tower-citizen";
+} from "@galerina/tower-citizen/custody";
 import { canonicalJson } from "./fuse-loader.js";
 import {
   signRegistryIndexHybrid,

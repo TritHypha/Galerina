@@ -139,7 +139,16 @@ export interface StdlibContext {
    * closed. Native KDF bindings are not loaded by this module.
    */
   readonly cryptoProvider?: CryptoProvider;
+  /**
+   * Charge `n` interpreter compute steps before a stdlib allocation.
+   * Interpreter supplies the shared budget. Direct callStdlib without this
+   * still refuses Array.range above MAX_UNMETERED_ARRAY_RANGE.
+   */
+  readonly chargeSteps?: (n: number) => void;
 }
+
+/** Direct `callStdlib("Array.range")` without `chargeSteps` refuses above this cardinality. */
+export const MAX_UNMETERED_ARRAY_RANGE = 4096;
 
 function safeDisplay(v: GalerinaValue): string {
   switch (v.__tag) {
@@ -2263,6 +2272,11 @@ export async function callStdlib(
       const count = Math.floor((to - from) / step);
       if (!Number.isSafeInteger(count) || count < 0 || count > MAX_RANGE) {
         throw new Error("Array.range: cardinality exceeds the host bound");
+      }
+      if (ctx.chargeSteps !== undefined) {
+        ctx.chargeSteps(count);
+      } else if (count > MAX_UNMETERED_ARRAY_RANGE) {
+        throw new Error("Array.range: unmetered cardinality exceeds the host bound");
       }
       const items: GalerinaValue[] = [];
       for (let i = from, n = 0; n < count; i += step, n++) items.push({ __tag: "int", value: i });

@@ -14,6 +14,7 @@
 
 import { createHash } from "node:crypto";
 import type { AstNode, FlowMeta } from "../parser.js";
+import { isFlowDeclNamed } from "../flow-name.js";
 import { EFFECT_TO_CAPABILITY } from "../gir-emitter.js";
 import type { CapabilityHost } from "./capabilityHost.js";
 import type { RuntimeContext } from "./runtimeContext.js";
@@ -140,12 +141,10 @@ function collectEmitEvents(node: AstNode): string[] {
   return events;
 }
 
-/** Find a flow AST node by name. */
+/** Find a flow AST node by declared name, including governedFlowDecl. */
 function findFlowNode(ast: AstNode, name: string): AstNode | undefined {
-  const FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
-
   function walk(node: AstNode): AstNode | undefined {
-    if (FLOW_KINDS.has(node.kind) && node.value === name) return node;
+    if (isFlowDeclNamed(node, name)) return node;
     for (const child of node.children ?? []) {
       const found = walk(child);
       if (found !== undefined) return found;

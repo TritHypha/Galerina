@@ -1,5 +1,12 @@
 # Galerina Core Network TODO
 
+## Package-install boundary — 2026-09-26
+
+The runtime imports `/governance`, but extracting this package's Tower
+installation remains an RD-1295 architecture HOLD. A subpath import is not
+proof that the dependency or its package graph can be removed. No package
+split or production admission is claimed by this TODO refresh.
+
 ## Graph integration follow-up — 2026-09-22
 
 - [x] Admitted `@galerina/tower-citizen/governance` (not the barrel).

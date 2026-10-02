@@ -801,21 +801,16 @@ function isGateCallName(fullName: string, userGates?: ReadonlySet<string>): bool
 
 /**
  * Phase 4.3: Walk the AST and collect user-defined flow names.
- * Includes flowDecl, secureFlowDecl, pureFlowDecl, guardedFlowDecl kinds.
+ * All five declaration kinds, including governedFlowDecl via decodeFlowDecl.
  * Used for inter-flow call-site taint warnings.
  */
 function collectUserFlows(ast: AstNode): Set<string> {
   const flows = new Set<string>();
 
   function walk(node: AstNode): void {
-    if (
-      node.kind === "flowDecl" ||
-      node.kind === "secureFlowDecl" ||
-      node.kind === "pureFlowDecl" ||
-      node.kind === "guardedFlowDecl"
-    ) {
-      const flowName = node.value ?? "";
-      if (flowName !== "") flows.add(flowName);
+    const decoded = decodeFlowDecl(node);
+    if (decoded !== undefined && !("error" in decoded) && decoded.name !== "") {
+      flows.add(decoded.name);
     }
     for (const child of node.children ?? []) walk(child);
   }
@@ -2557,7 +2552,7 @@ class ValueStateChecker {
 // NOTE the gate set (BACKEND_UNLOWERABLE_SCALAR, consulted here) is now a STRICT SUBSET of the
 // fast-tier bail set (FAST_TIER_UNLOWERABLE_SCALAR, consulted by flowDeclaresUnlowerable64): post-lift
 // Int64 is admitted HERE but still routes off the i32-only bytecode-VM / sync fast-path to the walker.
-const NUMERIC_FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
+const NUMERIC_FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl", "governedFlowDecl"]);
 const NUMERIC_BIND_KINDS = new Set(["letDecl", "mutDecl", "readonlyDecl"]);
 
 // numericBaseType (base type id from an annotation string) is now shared in ./numeric-lowering.ts

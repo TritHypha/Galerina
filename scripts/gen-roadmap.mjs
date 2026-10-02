@@ -16,15 +16,20 @@
 //   node scripts/gen-roadmap.mjs               # print the markdown block to stdout
 //   node scripts/gen-roadmap.mjs --write       # write the canonical document region + artifacts
 //   node scripts/gen-roadmap.mjs --check       # exit 1 if any owned output is stale (the gate)
+//   node scripts/gen-roadmap.mjs --preview     # write a visibly non-authoritative local SVG, even when dirty
 //   node scripts/gen-roadmap.mjs --self-test   # DRIVE the generator with synthetic bad inputs
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
+  closeSync,
   readFileSync,
   writeFileSync,
   existsSync,
   lstatSync,
   mkdirSync,
+  openSync,
   realpathSync,
+  renameSync,
+  unlinkSync,
 } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, dirname, relative, resolve } from "node:path";
@@ -49,7 +54,7 @@ function parseArgs(argv) {
       rootSeen = true;
       continue;
     }
-    if (arg === "--write" || arg === "--check" || arg === "--self-test") {
+    if (arg === "--write" || arg === "--check" || arg === "--preview" || arg === "--self-test") {
       if (modeSeen) throw new Error("roadmap: select exactly one mode");
       mode = arg.slice(2);
       modeSeen = true;
@@ -67,6 +72,7 @@ const END = "<!-- ROADMAP:END -->";
 // One canonical living document carries the generated roadmap region.
 const TARGETS = ["docs/ROADMAP.md"];
 const SVG_OUT = join(ROOT, "build", "roadmap", "roadmap.svg");
+const PREVIEW_OUT = join(ROOT, "build", "roadmap", "roadmap-preview.svg");
 const PROVENANCE_OUT = join(ROOT, "build", "roadmap", "provenance.json");
 const TOOL = "gen-roadmap";
 const DESCRIPTOR_PATH = "governance/assurance-evidence-dependencies.json";
@@ -306,7 +312,7 @@ function station(x, y, colour, filled, measured) {
   return `<circle cx="${x}" cy="${y}" r="6.5" fill="${filled ? colour : "var(--paper)"}" stroke="${colour}" stroke-width="2.75"${dash}/>`;
 }
 
-export function renderSVG({ stages, thesis, build, kernel, meta, assurance }) {
+export function renderSVG({ stages, thesis, build, kernel, meta, assurance }, preview = undefined) {
   // The current labels are materially longer than the original July map.
   // Keep a real label gutter and a right evidence gutter so neither the
   // longest layer name nor the asserted marker is clipped in the SVG itself.
@@ -425,7 +431,11 @@ export function renderSVG({ stages, thesis, build, kernel, meta, assurance }) {
     ["dashed ring", "the number is ASSERTED (hand-typed), not measured"],
   ].map(([k, v], i) => `<text x="${PAD_L}" y="${H - 54 + i * 15}" class="sub"><tspan class="stn">${esc(k)}</tspan> — ${esc(v)}</text>`).join("");
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Galerina graph-owned roadmap">
+  const previewHeight = preview === undefined ? 0 : 46;
+  const previewBanner = preview === undefined ? "" : `<rect x="0" y="0" width="${W}" height="${previewHeight}" fill="#904800"/>
+<text x="20" y="29" style="fill:#fff;font-size:18px;font-weight:700">PREVIEW ONLY · NON-AUTHORITATIVE · HEAD ${esc(preview.head)} · ${preview.dirtyCount} relevant dirty input${preview.dirtyCount === 1 ? "" : "s"}</text>
+<g transform="translate(0 ${previewHeight})">`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H + previewHeight}" width="${W}" height="${H + previewHeight}" role="img" aria-label="Galerina graph-owned roadmap${preview === undefined ? "" : " non-authoritative preview"}">
 <style>
   :root { --paper:#fbfaf7; --ink:#1b1a17; --rule:#c9c4ba; }
   @media (prefers-color-scheme: dark) { :root { --paper:#16181c; --ink:#e8e6e1; --rule:#3a3f47; } }
@@ -438,12 +448,14 @@ export function renderSVG({ stages, thesis, build, kernel, meta, assurance }) {
   .title { font-size: 19px; font-weight: 700; }
 </style>
 <rect width="100%" height="100%" fill="var(--paper)"/>
+${previewBanner}
 <text x="${PAD_L - 18}" y="34" text-anchor="end" class="title">Where the project is</text>
 <text x="${PAD_L}" y="34" class="sub">${esc(meta.caption)}</text>
 <text x="${PAD_L}" y="50" class="sub">${esc(meta.provenance)}</text>
 <text x="${PAD_L}" y="66" class="stn">Assurance DAG: ${esc(assurance.state)} · root ${esc(assurance.rootDigest)} · non-authorizing</text>
 ${out.join("\n")}
 ${legend}
+${preview === undefined ? "" : "</g>"}
 </svg>
 `;
 }
@@ -918,7 +930,14 @@ if (IS_MAIN) {
 const derived = model();
 const m = derived.value;
 const block = renderBlock(m);
-const svg = renderSVG(m);
+const previewHead = OPTIONS.mode === "preview" ? git(["rev-parse", "HEAD"]).trim() : undefined;
+if (previewHead !== undefined && !GIT_IDENTITY.test(previewHead)) {
+  throw new Error("roadmap preview: Git returned a malformed HEAD");
+}
+const svg = renderSVG(m, previewHead === undefined ? undefined : {
+  head: previewHead,
+  dirtyCount: ROADMAP_BUILD_POINT.dirty.length,
+});
 const authoritativeDigest = authoritativeInputsDigest(derived);
 const provenanceText = JSON.stringify(
   {
@@ -997,6 +1016,28 @@ if (OPTIONS.mode === "write") {
     }
   }
   console.log(`  roadmap: wrote SVG + provenance and updated ${wrote} doc(s)`);
+  process.exit(0);
+}
+
+if (OPTIONS.mode === "preview") {
+  mkdirSync(dirname(PREVIEW_OUT), { recursive: true });
+  const temporary = join(dirname(PREVIEW_OUT), `.roadmap-preview-${randomUUID()}.tmp`);
+  let created = false;
+  try {
+    const fd = openSync(temporary, "wx", 0o600);
+    created = true;
+    try {
+      writeFileSync(fd, svg);
+    } finally {
+      closeSync(fd);
+    }
+    // Rename replaces the preview directory entry, not bytes in a pre-existing
+    // symlink or hard link. Canonical roadmap files are never output targets.
+    renameSync(temporary, PREVIEW_OUT);
+  } finally {
+    if (created && existsSync(temporary)) unlinkSync(temporary);
+  }
+  console.log("  roadmap: wrote NON-AUTHORITATIVE preview to build/roadmap/roadmap-preview.svg; canonical outputs untouched");
   process.exit(0);
 }
 

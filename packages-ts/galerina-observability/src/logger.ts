@@ -39,22 +39,59 @@ export interface LogSink {
   write(record: LogRecord): void;
 }
 
+function recordStoredBytes(record: LogRecord): number {
+  let n = RECORD_BYTE_OVERHEAD + utf8.encode(record.msg).length;
+  if (record.logger !== undefined) n += utf8.encode(record.logger).length;
+  if (record.fields !== undefined) {
+    try {
+      n += utf8.encode(JSON.stringify(record.fields) ?? "").length;
+    } catch {
+      n += RECORD_BYTE_OVERHEAD;
+    }
+  }
+  return n;
+}
+
+function admitLogMessage(msg: unknown): string {
+  const s = typeof msg === "string" ? msg : String(msg);
+  if (s.length <= MAX_LOG_MESSAGE_CHARS) return s;
+  return s.slice(0, MAX_LOG_MESSAGE_CHARS);
+}
+
 /** Default sink: keep records in memory. No I/O, no ambient authority. Ideal for tests + embedding. */
 export class MemoryLogSink implements LogSink {
   readonly #records: LogRecord[] = [];
+  readonly #byteSizes: number[] = [];
   readonly #maxRecords: number;
-  constructor(maxRecords = 4096) {
+  readonly #maxBytes: number;
+  #totalBytes = 0;
+  constructor(maxRecords = 4096, maxBytes = DEFAULT_MAX_MEMORY_LOG_BYTES) {
     this.#maxRecords = Number.isSafeInteger(maxRecords) && maxRecords > 0 ? maxRecords : 4096;
+    this.#maxBytes = Number.isSafeInteger(maxBytes) && maxBytes > 0 ? maxBytes : DEFAULT_MAX_MEMORY_LOG_BYTES;
   }
   write(record: LogRecord): void {
-    if (this.#records.length >= this.#maxRecords) this.#records.shift();
+    const size = recordStoredBytes(record);
+    if (!Number.isSafeInteger(size) || size < 0 || size > this.#maxBytes) return;
+    while (
+      this.#records.length > 0 &&
+      (this.#records.length >= this.#maxRecords || this.#totalBytes + size > this.#maxBytes)
+    ) {
+      this.#records.shift();
+      const dropped = this.#byteSizes.shift();
+      if (dropped !== undefined) this.#totalBytes -= dropped;
+    }
+    if (this.#totalBytes + size > this.#maxBytes) return;
     this.#records.push(record);
+    this.#byteSizes.push(size);
+    this.#totalBytes += size;
   }
   records(): readonly LogRecord[] {
     return [...this.#records];
   }
   clear(): void {
     this.#records.length = 0;
+    this.#byteSizes.length = 0;
+    this.#totalBytes = 0;
   }
 }
 
@@ -70,7 +107,11 @@ export class JsonLineSink implements LogSink {
   }
   write(record: LogRecord): void {
     try {
-      this.#writeLine(safeStringify(record));
+      let line = safeStringify(record);
+      if (line.length > MAX_LOG_LINE_CHARS) {
+        line = LOG_LINE_OVERFLOW;
+      }
+      this.#writeLine(line);
     } catch {
       // The LogSink contract is non-throwing. Isolate the caller-supplied
       // writer here; do not retry, buffer, claim delivery, or alter the
@@ -89,6 +130,15 @@ export const DEFAULT_REDACT_KEYS: readonly string[] = [
 const REDACTED = "[redacted]";
 const MAX_REDACTION_DEPTH = 8;
 const MAX_REDACTION_NODES = 256;
+/** Admitted log `msg` length. Longer messages are truncated, never thrown. */
+export const MAX_LOG_MESSAGE_CHARS = 4096;
+/** Admitted JsonLineSink serialized line length. Oversize lines are replaced, never emitted. */
+export const MAX_LOG_LINE_CHARS = 4096;
+const LOG_LINE_OVERFLOW = '{"level":"error","msg":"log line exceeded MAX_LOG_LINE_CHARS","at":0}';
+/** Default MemoryLogSink aggregate UTF-8 budget across retained records. */
+export const DEFAULT_MAX_MEMORY_LOG_BYTES = 1_048_576;
+const RECORD_BYTE_OVERHEAD = 64;
+const utf8 = new TextEncoder();
 
 interface RedactionState {
   readonly seen: WeakSet<object>;
@@ -228,7 +278,7 @@ export class Logger {
       const stamped = this.#safeNow();
       const record: LogRecord = {
         level,
-        msg: typeof msg === "string" ? msg : String(msg),
+        msg: admitLogMessage(msg),
         at: stamped.at,
         atSource: stamped.source,
         ...(this.#name !== undefined ? { logger: this.#name } : {}),

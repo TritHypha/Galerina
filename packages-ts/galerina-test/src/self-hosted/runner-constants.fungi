@@ -24,25 +24,25 @@ contract { intent { "Return the exact R6 parity-test path." } }
 pure flow fidelityDifferential() -> String
 contract { intent { "Return the exact fidelity-differential test path." } }
 {
-  return "packages-galerina/galerina-core-compiler/tests/fidelity-differential.test.mjs"
+  return "packages-ts/galerina-core-compiler/tests/fidelity-differential.test.mjs"
 }
 
 pure flow compilerDist() -> String
 contract { intent { "Return the exact compiler distribution path." } }
 {
-  return "packages-galerina/galerina-core-compiler/dist/index.js"
+  return "packages-ts/galerina-core-compiler/dist/index.js"
 }
 
 pure flow compilerBuildEvidence() -> String
 contract { intent { "Return the exact compiler build-evidence path." } }
 {
-  return "packages-galerina/galerina-core-compiler/dist/build-evidence.json"
+  return "packages-ts/galerina-core-compiler/dist/build-evidence.json"
 }
 
 pure flow compilerPackage() -> String
 contract { intent { "Return the exact compiler package path." } }
 {
-  return "packages-galerina/galerina-core-compiler"
+  return "packages-ts/galerina-core-compiler"
 }
 
 pure flow galerinaCli() -> String
@@ -54,5 +54,5 @@ contract { intent { "Return the exact Galerina CLI path." } }
 pure flow compilerEvidenceSchema() -> String
 contract { intent { "Return the exact compiler evidence schema identifier." } }
 {
-  return "galerina.compiler-build-evidence.v1"
+  return "fungi.compiler.build-evidence.v1"
 }

@@ -7,7 +7,12 @@ import { RingBuffer } from "./ring-buffer.js";
 /** Genesis chain head: 64 hex zeros (SHA-256 width). */
 const GENESIS = "0".repeat(64);
 
-/** Default HMAC key when none is injected: an all-zero 32-byte key. */
+/**
+ * Named development HMAC key identity: explicit all-zero 32 bytes.
+ * Not a constructor default. Callers who want this mode must pass
+ * `new Uint8Array(32)` (or an equivalent all-zero buffer). `strictKey`
+ * refuses it (`EGR-KEY-001`).
+ */
 const ZERO_KEY = new Uint8Array(32);
 
 /** Ledger file name written under the configured egress directory. */
@@ -45,14 +50,18 @@ export interface AuditEgressOptions {
   /** Fixed ring capacity. Defaults to `batchSize * 4`. */
   ringCapacity?: number;
   /**
-   * HMAC key for the chain. PRODUCTION MUST INJECT A REAL KEY — if omitted, a
-   * fixed all-zero 32-byte key is used, which is attestable but not secret.
+   * HMAC key for the chain. Required. Omission throws `EGR-KEY-002`; it is
+   * not a development default. Explicit {@link ZERO_KEY} (`new Uint8Array(32)`)
+   * is the named non-secret development key and is refused when
+   * {@link AuditEgressOptions.strictKey} is true. PRODUCTION MUST inject a
+   * real non-zero key.
    */
-  hmacKey?: Uint8Array;
+  hmacKey: Uint8Array;
   /**
-   * Certified/P9 strictness. When true, the constructor FAILS CLOSED if the HMAC
-   * key is absent or all-zero (the development key) — a zero audit key is a
-   * certification blocker. Default false.
+   * Certified/P9 strictness. When true, the constructor FAILS CLOSED if the
+   * HMAC key is all-zero (the named development key) — a zero audit key is a
+   * certification blocker. Omission is refused even when this flag is false.
+   * Default false.
    */
   strictKey?: boolean;
   /**
@@ -127,6 +136,12 @@ export class AuditEgress {
         `AuditEgress batchSize must be a positive integer, got ${String(opts.batchSize)}`,
       );
     }
+    if (opts.hmacKey === undefined) {
+      throw new SecurityTrap(
+        "EGR-KEY-002",
+        "AuditEgress requires an explicit hmacKey; omission is not a development default",
+      );
+    }
     if (opts.strictKey && isWeakKey(opts.hmacKey)) {
       throw new SecurityTrap(
         "EGR-KEY-001",
@@ -143,7 +158,7 @@ export class AuditEgress {
     this.#dir = opts.dir;
     this.#ledgerPath = join(opts.dir, LEDGER_FILE);
     this.#batchSize = opts.batchSize;
-    this.#hmacKey = opts.hmacKey ?? ZERO_KEY;
+    this.#hmacKey = opts.hmacKey;
     this.#epochId = opts.epochId;
     this.#ring = new RingBuffer<string>(ringCapacity);
     mkdirSync(opts.dir, { recursive: true });
@@ -258,7 +273,10 @@ export class AuditEgress {
    * @returns `true` iff the chain is intact (tamper-evident).
    */
   static verifyChain(batches: AuditBatch[], hmacKey?: Uint8Array): boolean {
-    const key = hmacKey ?? ZERO_KEY;
+    if (hmacKey === undefined) {
+      return false;
+    }
+    const key = hmacKey;
     let expectedPrev = GENESIS;
     for (let i = 0; i < batches.length; i++) {
       const b = batches[i];

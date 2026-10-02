@@ -38,6 +38,7 @@ const DIST = join(PKG, "dist");
 const FIX = join(here, "fixtures", "rd-1295-graph");
 const RESOLVE_FIX = join(here, "fixtures", "rd-1295-resolve");
 const NETWORK_DIST = resolve(here, "..", "..", "galerina-core-network", "dist");
+const APP_KERNEL_DIST = resolve(here, "..", "..", "galerina-framework-app-kernel", "dist");
 
 function real(p) {
   return realpathSync.native(p);
@@ -493,6 +494,28 @@ test("Q3: core-network barrel loads extra network modules but only cli-check Tow
   const networkFiles = graph.files.filter((f) => f.replace(/\\/g, "/").includes("/galerina-core-network/dist/"));
   assert.ok(networkFiles.some((f) => f.replace(/\\/g, "/").endsWith("/egress-guard.js")));
   assert.ok(networkFiles.some((f) => f.replace(/\\/g, "/").endsWith("/cert-gate.js")));
+  assert.equal(
+    graph.files.some((f) => f.replace(/\\/g, "/").endsWith("/hybrid-engine.js")),
+    false,
+  );
+});
+
+test("Q3: app-kernel kernel.js loads only cli-check Tower, not the barrel", async () => {
+  const kernel = real(join(APP_KERNEL_DIST, "kernel.js"));
+  const graph = await walkLoadGraph(kernel);
+  assert.equal(graph.ok, true, graph.ok ? "" : graph.reason);
+  const towerAllowed = new Set(cliCheckAllowedFiles(PKG));
+  const towerFiles = graph.files.filter((f) => f.replace(/\\/g, "/").includes("/galerina-tower-citizen/"));
+  assert.deepEqual(
+    towerFiles.filter((f) => !towerAllowed.has(f)),
+    [],
+    `app-kernel kernel loaded extra Tower files:\n${towerFiles.join("\n")}`,
+  );
+  assert.ok(graph.files.includes(real(join(DIST, "governance.js"))));
+  assert.equal(
+    graph.files.some((f) => f.replace(/\\/g, "/").includes("/galerina-tower-citizen/dist/index.js")),
+    false,
+  );
   assert.equal(
     graph.files.some((f) => f.replace(/\\/g, "/").endsWith("/hybrid-engine.js")),
     false,

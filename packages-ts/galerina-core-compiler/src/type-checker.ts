@@ -708,12 +708,28 @@ class TypeChecker {
   /** Method-call nodes already classified by an outermost `checkMethodPipeline`. */
   private readonly methodPipelineCovered = new WeakSet<AstNode>();
 
-  /** Structural record-literal adoption (shared by the return- and let-positions).
+  /**
+   * Bound on nested `#record` adoption. Finite source trees decrease height at
+   * each child; this cap refuses cyclic or hostile ASTs instead of treating an
+   * in-progress type-name revisit as success.
+   */
+  private static readonly MAX_RECORD_LITERAL_ADOPTION_DEPTH = 32;
+
+  /** Schema map name for a declared type, if one is registered. */
+  private recordSchemaName(declaredType: string): string | undefined {
+    const resolved = this.resolveTypeAliases(declaredType);
+    const base = parseTypeString(resolved).base;
+    return this.recordFieldTypes.has(base) ? base : undefined;
+  }
+
+  /** Structural record-literal adoption (return, let, call-arg, constructor payload).
    *  When a `#record` literal meets a DECLARED record type: field-check it against the
-   *  declaration. Full match → the literal IS that record type (returns true, no diagnostic).
-   *  Mismatch → emits ONE precise diagnostic (missing/unknown/badly-typed fields) under the
-   *  caller's code/name and returns true (handled). Not a record literal, or not a declared
-   *  record → returns false (caller falls back to its generic diagnostic). */
+   *  declaration, including nested record literals under their field schemas.
+   *  Full match → the literal IS that record type (returns true, no diagnostic).
+   *  Mismatch → emits a precise diagnostic and returns true (handled, not valid).
+   *  Not a record literal, or not a declared record → returns false.
+   *  Returning true never means the literal is valid. Opaque `Record` inference
+   *  is not compatibility. */
   private tryRecordLiteralAdoption(
     declaredBase: string,
     expr: AstNode | undefined,
@@ -721,17 +737,42 @@ class TypeChecker {
     diagCode: string,
     diagName: string,
     contextLabel: string,
+    depth = 0,
+    visiting: Set<AstNode> = new Set(),
   ): boolean {
     if (expr === undefined || expr.kind !== "callExpr" || expr.value !== "#record") return false;
-    const declFields = this.recordFieldTypes.get(declaredBase);
+    const schemaName = this.recordSchemaName(declaredBase) ?? parseTypeString(this.resolveTypeAliases(declaredBase)).base;
+    const declFields = this.recordFieldTypes.get(schemaName);
     if (declFields === undefined) return false;
+
+    if (depth > TypeChecker.MAX_RECORD_LITERAL_ADOPTION_DEPTH) {
+      this.diagnostics.push(makeTCDiag(
+        diagCode,
+        diagName,
+        `Record literal does not match ${contextLabel}: nested record adoption exceeded depth ${TypeChecker.MAX_RECORD_LITERAL_ADOPTION_DEPTH}.`,
+        location,
+        `Reduce nested record depth, or split the literal.`,
+      ));
+      return true;
+    }
+    if (visiting.has(expr)) {
+      this.diagnostics.push(makeTCDiag(
+        diagCode,
+        diagName,
+        `Record literal does not match ${contextLabel}: the same literal is already being checked (cyclic AST).`,
+        location,
+        `Use a finite nested literal; cyclic record values are not admitted here.`,
+      ));
+      return true;
+    }
+    visiting.add(expr);
 
     // A named literal carries nominal intent. It may never be structurally
     // adopted as another record merely because the field schemas happen to
     // match. Anonymous literals remain eligible for exact contextual adoption.
     const literalTypeName = expr.typeName?.trim();
     const nominalMismatch = literalTypeName !== undefined &&
-      literalTypeName !== "" && literalTypeName !== declaredBase;
+      literalTypeName !== "" && literalTypeName !== schemaName;
 
     const litFields = new Map<string, AstNode | undefined>();
     const duplicateFields: string[] = [];
@@ -751,16 +792,34 @@ class TypeChecker {
     for (const [fname, fval] of litFields) {
       const declType = declFields.get(fname);
       if (declType === undefined || declType === "" || fval === undefined) continue;
+      const nestedSchema = this.recordSchemaName(declType);
+      if (nestedSchema !== undefined) {
+        const nestedHandled = this.tryRecordLiteralAdoption(
+          nestedSchema,
+          fval,
+          fval.location ?? location,
+          diagCode,
+          diagName,
+          `field '${fname}' of ${contextLabel}`,
+          depth + 1,
+          visiting,
+        );
+        if (nestedHandled) continue;
+      }
       const fInferred = this.inferType(fval);
-      const fDeclBase = declType.split("<")[0]?.trim() ?? declType;
-      if (fInferred !== undefined && fInferred !== "Record" &&
-          !isAssignmentCompatible(fDeclBase, fInferred)) {
+      // Opaque Record is not evidence of field validity. Nested literals of a
+      // known record schema were handled above; remaining Record forms defer.
+      if (fInferred === undefined || fInferred === "" || fInferred === "Record") continue;
+      const resolvedDecl = this.resolveTypeAliases(declType);
+      const fDeclBase = parseTypeString(resolvedDecl).base;
+      if (!isAssignmentCompatible(resolvedDecl, fInferred) && !isAssignmentCompatible(fDeclBase, fInferred)) {
         badTypes.push(`${fname}: declared '${declType}', got '${fInferred}'`);
       }
     }
+    visiting.delete(expr);
     if (nominalMismatch || duplicateFields.length > 0 || missing.length > 0 || unknown.length > 0 || badTypes.length > 0) {
       const detail = [
-        nominalMismatch ? `literal names record '${literalTypeName}' but ${contextLabel} requires '${declaredBase}'` : "",
+        nominalMismatch ? `literal names record '${literalTypeName}' but ${contextLabel} requires '${schemaName}'` : "",
         duplicateFields.length ? `duplicate field(s): ${duplicateFields.join(", ")}` : "",
         missing.length ? `missing field(s): ${missing.join(", ")}` : "",
         unknown.length ? `unknown field(s): ${unknown.join(", ")}` : "",
@@ -771,7 +830,7 @@ class TypeChecker {
         diagName,
         `Record literal does not match ${contextLabel}: ${detail}.`,
         location,
-        `Make the literal's fields match the 'record ${declaredBase}' declaration exactly.`,
+        `Make the literal's fields match the 'record ${schemaName}' declaration exactly.`,
       ));
     }
     return true; // handled: adopted silently, or the precise diagnostic above
@@ -2660,6 +2719,18 @@ class TypeChecker {
               const expectedType = paramTypes[i];
               if (argNode === undefined || !expectedType) continue;
               const inferredArgType = this.inferType(argNode);
+              const expectedBase = parseTypeString(this.resolveTypeAliases(expectedType)).base;
+              const adoptedArg = this.tryRecordLiteralAdoption(
+                expectedBase,
+                argNode,
+                argNode.location,
+                "FUNGI-TYPE-005",
+                "INVALID_CALL_ARG_TYPE",
+                `argument ${i + 1} of '${flowName}' (type '${expectedType}')`,
+              );
+              if (adoptedArg) {
+                continue;
+              }
               if (inferredArgType !== undefined && !isAssignmentCompatible(expectedType, inferredArgType)) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-005",

@@ -3510,7 +3510,7 @@ class GovernanceVerifier {
           FUNGI_HARDEN_008.code, FUNGI_HARDEN_008.name, "warning",
           `Flow '${flowName}': ${FUNGI_HARDEN_008.message}`,
           hardeningNode.location,
-          "Wait for #143 to land (mlock/VirtualLock enforcement), or relax the ceiling to `no_swap` which is enforced today via mlock_posix."));
+          "Wait for #143 to provide runtime enforcement evidence, or use only a host profile whose capability is currently proven; the `mlock_posix` label alone does not prove `no_swap`."));
       }
     }
 

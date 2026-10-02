@@ -174,10 +174,24 @@ export function callers(
   nodeId: string,
 ): readonly SemanticNode[] {
   const nodeMap = new Map(graph.nodes.map((n) => [n.id, n]));
-  return graph.edges
-    .filter((e) => e.to === nodeId && e.kind === "calls")
-    .map((e) => nodeMap.get(e.from))
-    .filter((n): n is SemanticNode => n !== undefined);
+  const incoming = new Map<string, string[]>();
+  for (const edge of graph.edges) {
+    if (edge.kind !== "calls") continue;
+    const list = incoming.get(edge.to);
+    if (list === undefined) incoming.set(edge.to, [edge.from]);
+    else list.push(edge.from);
+  }
+  const result: SemanticNode[] = [];
+  const seen = new Set<string>();
+  const maxResults = graph.nodes.length;
+  for (const from of incoming.get(nodeId) ?? []) {
+    if (seen.has(from)) continue;
+    seen.add(from);
+    const source = nodeMap.get(from);
+    if (source !== undefined) result.push(source);
+    if (result.length >= maxResults) break;
+  }
+  return result;
 }
 
 /**
@@ -187,9 +201,24 @@ export function effectsOf(
   graph: SemanticGraph,
   flowId: string,
 ): readonly string[] {
-  return graph.edges
-    .filter((e) => e.from === flowId && e.kind === "declaresEffect")
-    .map((e) => e.label ?? e.to);
+  const outgoing = new Map<string, string[]>();
+  for (const edge of graph.edges) {
+    if (edge.kind !== "declaresEffect") continue;
+    const effect = edge.label ?? edge.to;
+    const list = outgoing.get(edge.from);
+    if (list === undefined) outgoing.set(edge.from, [effect]);
+    else list.push(effect);
+  }
+  const result: string[] = [];
+  const seen = new Set<string>();
+  const maxResults = graph.edges.length;
+  for (const effect of outgoing.get(flowId) ?? []) {
+    if (seen.has(effect)) continue;
+    seen.add(effect);
+    result.push(effect);
+    if (result.length >= maxResults) break;
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -200,10 +229,82 @@ export function graphToJSON(graph: SemanticGraph): string {
   return JSON.stringify(graph, null, 2);
 }
 
-export function graphFromJSON(json: string): SemanticGraph {
-  const parsed = JSON.parse(json) as SemanticGraph;
-  if (parsed.schemaVersion !== "1.0") {
-    throw new Error(`Unsupported SemanticGraph schemaVersion: ${parsed.schemaVersion}`);
+export const MAX_SEMANTIC_GRAPH_JSON_BYTES = 1_048_576;
+export const MAX_SEMANTIC_GRAPH_JSON_DEPTH = 32;
+export const MAX_SEMANTIC_GRAPH_WALK_NODES = 100_000;
+export const MAX_SEMANTIC_GRAPH_NODES = 16_384;
+export const MAX_SEMANTIC_GRAPH_EDGES = 65_536;
+
+function utf8ByteLength(text: string): number {
+  let bytes = 0;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (cp === undefined) continue;
+    if (cp <= 0x7f) bytes += 1;
+    else if (cp <= 0x7ff) bytes += 2;
+    else if (cp <= 0xffff) bytes += 3;
+    else bytes += 4;
   }
-  return parsed;
+  return bytes;
+}
+
+function walkBound(value: unknown, depth: number, state: { n: number }): void {
+  if (depth > MAX_SEMANTIC_GRAPH_JSON_DEPTH) {
+    throw new Error("SemanticGraph JSON exceeds the host depth bound");
+  }
+  if (state.n >= MAX_SEMANTIC_GRAPH_WALK_NODES) {
+    throw new Error("SemanticGraph JSON exceeds the host node bound");
+  }
+  state.n += 1;
+  if (value === null || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    if (value.length > MAX_SEMANTIC_GRAPH_EDGES) {
+      throw new Error("SemanticGraph JSON array exceeds the host bound");
+    }
+    for (const item of value) walkBound(item, depth + 1, state);
+    return;
+  }
+  for (const key of Object.keys(value)) {
+    walkBound((value as Record<string, unknown>)[key], depth + 1, state);
+  }
+}
+
+function admitSemanticGraph(value: unknown): SemanticGraph {
+  walkBound(value, 0, { n: 0 });
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("SemanticGraph JSON must be an object");
+  }
+  const rec = value as Record<string, unknown>;
+  if (rec.schemaVersion !== "1.0") {
+    throw new Error(`Unsupported SemanticGraph schemaVersion: ${String(rec.schemaVersion)}`);
+  }
+  if (!Array.isArray(rec.nodes)) {
+    throw new Error("SemanticGraph nodes must be an array");
+  }
+  if (!Array.isArray(rec.edges)) {
+    throw new Error("SemanticGraph edges must be an array");
+  }
+  if (rec.nodes.length > MAX_SEMANTIC_GRAPH_NODES) {
+    throw new Error("SemanticGraph node count exceeds the host bound");
+  }
+  if (rec.edges.length > MAX_SEMANTIC_GRAPH_EDGES) {
+    throw new Error("SemanticGraph edge count exceeds the host bound");
+  }
+  return rec as unknown as SemanticGraph;
+}
+
+export function graphFromJSON(json: string): SemanticGraph {
+  if (typeof json !== "string") {
+    throw new Error("SemanticGraph JSON must be a string");
+  }
+  if (json.length > MAX_SEMANTIC_GRAPH_JSON_BYTES || utf8ByteLength(json) > MAX_SEMANTIC_GRAPH_JSON_BYTES) {
+    throw new Error("SemanticGraph JSON exceeds the host byte bound");
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json) as unknown;
+  } catch {
+    throw new Error("SemanticGraph JSON is not parseable");
+  }
+  return admitSemanticGraph(parsed);
 }

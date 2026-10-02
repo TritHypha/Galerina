@@ -322,11 +322,24 @@ function planHasNested(steps: readonly FlattenStep[]): boolean {
   return steps.some((step) => step.nested !== undefined || step.zero === true);
 }
 
+/** True when the flatten plan cannot be a contiguous copy from the original record pointer.
+ *  Nested/zero steps need packing; so do flat padded layouts whose srcOffsets skip alignment holes
+ *  (e.g. `[i32,i64,i32]` at `[0,8,16]`). */
+function planNeedsPack(steps: readonly FlattenStep[]): boolean {
+  if (planHasNested(steps)) return true;
+  let expected = 0;
+  for (const step of steps) {
+    if (step.srcOffset !== expected) return true;
+    expected += 4;
+  }
+  return false;
+}
+
 function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: string[]; body: string[] } {
   const plan = fn.flattenPlan;
   const words = fn.returnWordCount ?? 1;
   const byteLen = words * 4;
-  const nested = plan !== undefined && planHasNested(plan);
+  const nested = plan !== undefined && planNeedsPack(plan);
   const temps = nested
     ? Array.from({ length: flattenNeedsTemps(plan) }, (_, i) => `$__fungi_n${i}`)
     : [];
@@ -2521,6 +2534,19 @@ export function emitWATExpr(
             ? (isChar ? "$host___char_to_upper" : "$host___str_to_upper")
             : (isChar ? "$host___char_to_lower" : "$host___str_to_lower");
           return `(call ${fn} ${emitWATExpr(realReceiver, vars, staticConsts)})`;
+        }
+
+        // P9.4: type-directed `length`. Array/List → __array_length; String (or
+        // unknown) → __str_length. The shared i32 signature made a silent wrong
+        // host call when an array used `.length()`.
+        if (name === "length" && realReceiver !== undefined) {
+          const recvType = isTypeRecv0 ? recvName0 : inferExprType(realReceiver);
+          const recvWat = emitWATExpr(realReceiver, vars, staticConsts);
+          if (recvType === "Array" || recvType === "List" ||
+              (recvType !== undefined && (/^(Array|List)\s*</.test(recvType)))) {
+            return `(call $host___array_length ${recvWat})`;
+          }
+          return `(call $host___str_length ${recvWat})`;
         }
 
         // #160/#162: type-directed `contains`. String → __str_contains (substring),

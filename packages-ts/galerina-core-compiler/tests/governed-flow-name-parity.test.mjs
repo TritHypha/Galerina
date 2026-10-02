@@ -17,7 +17,7 @@ import { describe, it } from "node:test";
 import { NodeFlags, parseProgram } from "../dist/index.js";
 import * as flowNameModule from "../dist/flow-name.js";
 
-const { decodeFlowDecl, isFlowDeclNamed, FLOW_DECL_KINDS } = flowNameModule;
+const { decodeFlowDecl, isFlowDeclNamed, declaredFlowName, FLOW_DECL_KINDS } = flowNameModule;
 
 /** Depth-first find of the first node of a given kind. */
 function findByKind(node, kind) {
@@ -67,6 +67,7 @@ describe("Q1 — governed flow is found by its declared name", () => {
     const node = findByKind(p.ast, "governedFlowDecl");
     assert.equal(OLD_SHAPE(node, "moveit"), false, "control: the old lookup misses governed 'moveit'");
     assert.equal(isFlowDeclNamed(node, "moveit"), true, "the fix: the decoder finds governed 'moveit'");
+    assert.equal(declaredFlowName(node), "moveit", "declaredFlowName returns the bare name, not the encoding");
   });
 
   it("the four non-governed tiers are found by both old and new (fix changes nothing for them)", () => {

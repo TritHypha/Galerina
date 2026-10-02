@@ -1,4 +1,5 @@
 import { type AstNode } from "./parser.js";
+import { isFlowDeclNamed } from "./flow-name.js";
 
 export type LoopEnvelopeTrit = -1 | 0;
 
@@ -81,7 +82,6 @@ const BOUND = 1000000 as const;
 const MIN_BOUND = 1 as const;
 const MAXIMUM_ACCESS_INDEX = 999999 as const;
 const CONTRACT_PERMISSION = "verified_native_checked_read_loop_v1" as const;
-const FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
 
 function children(node: AstNode | undefined): readonly AstNode[] {
   return node?.children ?? [];
@@ -406,7 +406,7 @@ export function analyzeMillionReadLoopEnvelope(
   ast: AstNode,
   flowName: string,
 ): VerifiedLoopEnvelopeProposal {
-  const flow = children(ast).find((node) => FLOW_KINDS.has(node.kind) && node.value === flowName);
+  const flow = children(ast).find((node) => isFlowDeclNamed(node, flowName));
   if (flow === undefined) {
     return proposal(flowName, emptyFacts(), Object.freeze(["FLOW_NOT_FOUND"]));
   }
@@ -509,7 +509,7 @@ export function analyzeBoundedReadLoopEnvelope(
   ast: AstNode,
   flowName: string,
 ): BoundedReadLoopProposal {
-  const flow = children(ast).find((node) => FLOW_KINDS.has(node.kind) && node.value === flowName);
+  const flow = children(ast).find((node) => isFlowDeclNamed(node, flowName));
   if (flow === undefined) {
     return boundedProposal(flowName, 0, emptyFacts(), Object.freeze(["FLOW_NOT_FOUND"]));
   }

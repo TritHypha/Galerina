@@ -1,4 +1,4 @@
-export { scanPackage, scanOmitsCoveredDefaultRoots, DEFAULT_ROOTS } from "./scanner.js";
+export { scanPackage, scanOmitsCoveredDefaultRoots, DEFAULT_ROOTS, MAX_SCAN_FILES, MAX_SCAN_DIRS, MAX_SCAN_DEPTH, MAX_SCAN_FILE_BYTES, MAX_SCAN_TOTAL_BYTES } from "./scanner.js";
 export type {
   ScanResult,
   ScannedFile,

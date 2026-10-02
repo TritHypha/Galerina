@@ -40,6 +40,22 @@ test("deep group nesting is a budget veto", () => {
   veto("(".repeat(40) + "a" + ")".repeat(40), "TPRX-BUDGET");
 });
 
+test("hostile: caller maxNesting is the work-budget, not a dropped field", () => {
+  const ok = compile("((a))", { budget: { maxNesting: 2 } });
+  assert.equal(ok.ok, true, "depth 2 must fit maxNesting 2");
+  const r = compile("(((a)))", { budget: { maxNesting: 2 } });
+  assert.equal(r.ok, false, "depth 3 must not ignore maxNesting 2");
+  assert.equal(r.code, "TPRX-BUDGET");
+});
+
+test("hostile: Infinity maxNesting cannot disable the host nesting ceiling", () => {
+  const r = compile("(".repeat(40) + "a" + ")".repeat(40), {
+    budget: { maxNesting: Number.POSITIVE_INFINITY },
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.code, "TPRX-BUDGET");
+});
+
 test("malformed patterns are parse refusals", () => {
   veto("(ab", "TPRX-PARSE");
   veto("ab)", "TPRX-PARSE");

@@ -39,7 +39,7 @@ const FIXED_TS = "2026-06-14T00:00:00.000Z";
 describe("end-to-end: consumes a real audit-egress ledger", () => {
   it("reads AuditEgress batches and emits one entry per record", () => {
     const dir = freshDir("e2e");
-    const eg = new AuditEgress({ dir, batchSize: 2 });
+    const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: new Uint8Array(32) });
     eg.push(JSON.stringify({ who: "alice", action: "charge", effect: "database.write", decision: "allow", ts: "2026-06-14T10:00:00.000Z" }));
     eg.push(JSON.stringify({ who: "bob", action: "refund", effect: "audit.write", decision: "deny", ts: "2026-06-14T10:01:00.000Z" }));
     eg.push(JSON.stringify({ who: "carol", action: "settle", effect: "network.outbound", decision: "allow", ts: "2026-06-14T10:02:00.000Z" }));

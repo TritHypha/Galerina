@@ -1,15 +1,17 @@
 import {
-  createRegistryPublicVerifiers,
   decideAtBoundary,
+  Verdict,
+  type GovernanceDiagnostic,
+} from "@galerina/tower-citizen/governance";
+import {
+  createRegistryPublicVerifiers,
   registryRotationKeyCommit,
   registryRotationPublicKeyFingerprints,
   stageCandidate,
-  Verdict,
-  type GovernanceDiagnostic,
   type PhaseOutcome,
   type RotationProcess,
   type RegistryRotationPublicBundle,
-} from "@galerina/tower-citizen";
+} from "@galerina/tower-citizen/custody";
 import {
   verifyRegistryAuthorityDelegation,
   type RegistryAuthorityDelegation,

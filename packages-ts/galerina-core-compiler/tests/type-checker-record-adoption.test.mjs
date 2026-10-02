@@ -23,10 +23,14 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import * as L from "../dist/index.js";
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 const check = (src) => {
   const prog = L.parseProgram(`@version 1\n${src}`, "record-adoption.fungi");
@@ -185,6 +189,117 @@ pure flow make() -> Int {
   });
 });
 
+describe("RD-1296 nested contextual record admission", () => {
+  const nestedDecls = `
+record Sec { a: Int }
+record Outer { inner: Sec, n: Int }
+`;
+
+  it("hostile: nested Sec missing required field a is TYPE-008 (return)", () => {
+    const errs = check(`${nestedDecls}
+pure flow pick() -> Outer {
+  return Outer { inner: Sec { }, n: 1 }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /missing field\(s\): a/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("hostile: anonymous nested record missing child is TYPE-008", () => {
+    const errs = check(`${nestedDecls}
+pure flow pick() -> Outer {
+  return { inner: { }, n: 1 }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /missing field\(s\): a/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("positive: complete Outer/Sec adopts with no diagnostic", () => {
+    const errs = check(`${nestedDecls}
+pure flow pick() -> Outer {
+  return Outer { inner: Sec { a: 7 }, n: 99 }
+}`);
+    assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
+  });
+
+  it("hostile: nested let-binding missing field is TYPE-002", () => {
+    const errs = check(`${nestedDecls}
+pure flow mk() -> Int {
+  let o: Outer = Outer { inner: Sec { }, n: 1 }
+  return 1
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-002"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /missing field\(s\): a/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("positive: complete nested let-binding adopts", () => {
+    const errs = check(`${nestedDecls}
+pure flow mk() -> Int {
+  let o: Outer = Outer { inner: Sec { a: 7 }, n: 99 }
+  return 1
+}`);
+    assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
+  });
+
+  it("hostile: call argument with nested missing field is TYPE-005", () => {
+    const errs = check(`${nestedDecls}
+pure flow take(o: Outer) -> Int { return o.n }
+pure flow drive() -> Int {
+  return take(Outer { inner: Sec { }, n: 1 })
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-005"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /missing field\(s\): a/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("positive: call argument with complete nested record adopts", () => {
+    const errs = check(`${nestedDecls}
+pure flow take(o: Outer) -> Int { return o.n }
+pure flow drive() -> Int {
+  return take(Outer { inner: Sec { a: 7 }, n: 99 })
+}`);
+    assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
+  });
+
+  it("hostile: nested nominal mismatch is TYPE-008", () => {
+    const errs = check(`
+record Alpha { value: Int }
+record Beta { value: Int }
+record Wrap { inner: Beta }
+pure flow pick() -> Wrap {
+  return Wrap { inner: Alpha { value: 1 } }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /names record 'Alpha'/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("hostile: nested duplicate field is TYPE-008", () => {
+    const errs = check(`${nestedDecls}
+pure flow pick() -> Outer {
+  return Outer { inner: Sec { a: 1, a: 2 }, n: 1 }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /duplicate field\(s\): a/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("hostile: repeated Node type still checks a later nested literal (missing inner child)", () => {
+    const errs = check(`
+record Node { child: Node, n: Int }
+pure flow pick() -> Node {
+  return Node { child: Node { n: 1 }, n: 7 }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+    assert.ok(errs.some((e) => /missing field\(s\): child/.test(e.message)), JSON.stringify(errs));
+  });
+
+  it("Q1 omitted-inner-Node fixture is TYPE-008 on checkTypes (not a runtime-cycle witness)", () => {
+    const errs = check(`
+record Node { child: Node, n: Int }
+pure flow h(s: Int) -> Node {
+  return Node { child: Node { n: 1 }, n: s }
+}`);
+    assert.ok(errs.some((e) => e.code === "FUNGI-TYPE-008"), JSON.stringify(errs));
+  });
+});
+
 describe("member inference: Auto receivers and record schemas", () => {
   it("Auto receiver: `entry.body` is UNKNOWN, never String-guessed (no TYPE-005)", () => {
     const errs = check(`
@@ -215,5 +330,58 @@ pure flow drive(d: TierDecision) -> String {
   return wantStr(d.tier)
 }`);
     assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
+  });
+});
+
+describe("RD-1296 nested record CLI consumer", () => {
+  const nestedMissing = `@version 1
+record Sec { a: Int }
+record Outer { inner: Sec, n: Int }
+pure flow pick() -> Outer {
+  return Outer { inner: Sec { }, n: 1 }
+}
+`;
+  const nestedComplete = `@version 1
+record Sec { a: Int }
+record Outer { inner: Sec, n: Int }
+pure flow pick() -> Outer {
+  return Outer { inner: Sec { a: 7 }, n: 99 }
+}
+`;
+
+  function runCheck(src, extra = []) {
+    const dir = join(tmpdir(), `galerina-nested-cli-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    mkdirSync(dir, { recursive: true });
+    const file = join(dir, "nested.fungi");
+    writeFileSync(file, src, "utf8");
+    try {
+      const r = spawnSync(process.execPath, ["galerina.mjs", "check", file, ...extra], {
+        cwd: REPO_ROOT,
+        encoding: "utf-8",
+        timeout: 120000,
+        env: { ...process.env },
+      });
+      return { status: r.status, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("plain check keeps nested TYPE-008 advisory (exit 0)", () => {
+    const r = runCheck(nestedMissing);
+    assert.match(r.out, /FUNGI-TYPE-008|advisory/, r.out);
+    assert.equal(r.status, 0, r.out);
+  });
+
+  it("--strict-types refuses nested missing field (exit 1)", () => {
+    const r = runCheck(nestedMissing, ["--strict-types"]);
+    assert.match(r.out, /FUNGI-TYPE-008/, r.out);
+    assert.equal(r.status, 1, r.out);
+  });
+
+  it("--strict-types admits complete Outer/Sec (exit 0)", () => {
+    const r = runCheck(nestedComplete, ["--strict-types"]);
+    assert.doesNotMatch(r.out, /FUNGI-TYPE-008/, r.out);
+    assert.equal(r.status, 0, r.out);
   });
 });

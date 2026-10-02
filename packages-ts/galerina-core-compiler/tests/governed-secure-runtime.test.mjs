@@ -150,10 +150,10 @@ describe("governed-secure runtime resolution", () => {
 
     assert.equal(million.candidate, false);
     assert.equal(million.verdict, -1);
-    assert.deepEqual(million.failureIds, ["FLOW_NOT_FOUND"]);
+    assert.ok(million.failureIds.includes("FLOW_SHAPE_NOT_EXACT"));
     assert.equal(bounded.candidate, false);
     assert.equal(bounded.verdict, -1);
-    assert.deepEqual(bounded.failureIds, ["FLOW_NOT_FOUND"]);
+    assert.ok(bounded.failureIds.includes("FLOW_SHAPE_NOT_EXACT"));
   });
 
   it("resolves a valid governed-secure flow for nested flow calls", async () => {

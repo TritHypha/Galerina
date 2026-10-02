@@ -1,5 +1,13 @@
 # Galerina Compiler TODO
 
+## RD-1296 custody check — 2026-09-26
+
+RD-1296 record/return/host-registry work is present in the dirty RD-0873
+worktree and catalogued in `../../docs/TODO.md` with scoped receipts.
+Those receipts are not a clean-HEAD compiler ABI or production admission.
+Keep the remaining schema, nested-secret, copy-bound, and independent
+admission questions open; no `.fungi` conversion is authorized here.
+
 Current sequencing and classification: [pre-.fungi work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md),
 W04-W07/W13. Existing bounded results below do not close residual inference,
 schema or lowering semantics, or authorize .fungi changes.
@@ -126,16 +134,16 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
 [x] Effect checker — FUNGI-EFFECT-001..006 + canonical effects registry
 [x] Governance verifier — FUNGI-GOV-001..024 + FUNGI-INV-001..004 + FUNGI-CONTEXT-001
 [x] GIR emitter (Governed Intermediate Representation)
-[x] WAT emitter (measured L1 187/190 = 98 after J8; leftover parked type-checker flows `checkMatchArms`, `checkBinding`, `checkStepExpr`; unreachable trap for remaining unlowered stubs)
+[x] WAT emitter (measured L1 **200/200 = 100**, refused 0, on main `05eb5c29` (2026-10-01, `node scripts/lib/wat-lowering-ladder.mjs --self-test`); was 187/190 = 98 after J8. The parked type-checker flows `checkMatchArms`, `checkBinding`, `checkStepExpr` now lower (Q2). L1 counts the 200 self-hosted flows only; the parked ABI items (D4 pattern ABI, D8 host-import ABI, E5 Float32 + secure wipe, ZipPair) stay named compile-time refusals outside L1)
 [x] Runtime interpreter (Stage-A tree-walker, diagnostic tier)
-    Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+    Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
     the measured Runtime interpreter figure (K1 three-engine ladder, walker ==
     WASM == sync fast path) is 14/14 = 100. The sync fast path now carries a
     statement-position Int `match`, Decimal `+` and `d.divide(b, scale, mode)`
     with the walker's own dispatch/stdlib; anything outside that shape still
     declines to the governed walker (zero-trust defaults, owner may revisit).
     The 14-rung charter is small: 100 means "every charter rung agrees", not
-    full language coverage. Not committed, not reviewed. See the Grok Bot
+    full language coverage. Committed in `05eb5c29` and re-measured 14/14 = 100 on main; not independently reviewed. See the Grok Bot
     rounding REPORT §10.
 [x] Bytecode VM (fast path for hot pure flows)
 [x] WASM assembler (wabt integration)
@@ -220,7 +228,7 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     `e67db0ce0`; at that pin `map`/`reduce`/`filter` remained deferred:
     callback/closure typing was not admitted by that bounded inference lane.
     After HOF jobs + RD-1277, capture-free named `map`/`filter`/`reduce` lower
-    to `$fungi_array_*` helpers; measured L1 after J8 is **187/190 = 98**.
+    to `$fungi_array_*` helpers; measured L1 after J8 was **187/190 = 98**; on main `05eb5c29` it is **200/200 = 100**.
     Unknown receiver or element types remain conservative rather than being
     invented.
 
@@ -322,11 +330,11 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     that `(unreachable)` with a named compile-time refusal pointing at
     `divide(b, scale, mode)` / `remainder(b)`. R2 adds the Money-operator
     refusal and R3 the divide/remainder argument typing first.
-    Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+    Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
     R2, R3 and K4 are implemented there; Decimal `/`/`%` is now a named
     FUNGI-WAT-DECIMAL-001 refusal, not `(unreachable)`. See
     the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
-    Measured L1 after J8 is **187/190 = 98**. Evidence:
+    Measured L1 after J8 was **187/190 = 98**; on main `05eb5c29` it is **200/200 = 100**. Evidence:
     `tests/wat-c02-decimal-hof.test.mjs` and `tests/wat-decimal-decline.test.mjs`.
 
 [x] C19-A Stage-B type-code identity (`RD-1288`)

@@ -349,10 +349,10 @@ contract { intent { "q1 null child" } privacy { contains PII } }
   assert.deepEqual(words, [0, 0, 7], "omitted recursive child zeros one closed layout then copies n");
 });
 
-test("Q1 production executor does not copy a cyclic nested child pointer", async () => {
+test("Q1 flatten of a finite nested Node with omitted inner child zeros one closed layout (not a runtime-cycle witness)", async () => {
   const src = `record Node { child: Node, n: Int }
 pure flow h(s: Int) -> Node
-contract { intent { "q1 cyclic node" } privacy { contains PII } }
+contract { intent { "q1 omitted inner child" } privacy { contains PII } }
 { return Node { child: Node { n: 1 }, n: s } }
 `;
   const { wasm } = await build(src, "cyclic-node.fungi");

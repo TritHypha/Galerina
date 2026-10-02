@@ -651,3 +651,51 @@ fn malformed_execution_and_context_drift_are_terminal() {
     assert_eq!(error.failure_id(), "VOK_CONTEXT_MISMATCH");
     assert_eq!(drift_table.live_len(), 0);
 }
+
+#[test]
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "64",
+    any(target_arch = "x86_64", target_arch = "aarch64")
+))]
+#[ignore = "requires a memfd_secret-enabled 64-bit Linux kernel; run explicitly on the target"]
+fn secret_arena_refuses_access_before_allocation_and_keeps_status_total() {
+    const RESERVED: usize = 4097;
+    let mut arena = SecretArena::reserve(RESERVED).expect("supported Linux secretmem");
+    assert_eq!(arena.status(), MemoryStatus::Reserved);
+    assert_eq!(arena.unresolved_bytes(), RESERVED);
+    assert_eq!(arena.allocated_bytes(), 0);
+    assert_eq!(
+        arena.with_bytes_mut(|bytes| bytes[0] = 7),
+        Err(SecretArenaError::NotAllocated)
+    );
+    assert_eq!(arena.status(), MemoryStatus::Reserved);
+}
+
+#[test]
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "64",
+    any(target_arch = "x86_64", target_arch = "aarch64")
+))]
+#[ignore = "requires a memfd_secret-enabled 64-bit Linux kernel; run explicitly on the target"]
+fn secret_arena_callback_panic_cleans_and_consumes_the_arena() {
+    use std::panic::{catch_unwind, AssertUnwindSafe};
+
+    let mut arena = SecretArena::reserve(4097).expect("supported Linux secretmem");
+    arena
+        .allocate_pages()
+        .expect("secret pages must be faulted in");
+
+    let panic = catch_unwind(AssertUnwindSafe(|| {
+        let _ = arena.with_bytes_mut(|bytes| {
+            bytes[0] = 0xA5;
+            panic!("simulated verifier failure");
+        });
+    }));
+
+    assert!(panic.is_err());
+    assert_eq!(arena.status(), MemoryStatus::Cleaned);
+    assert_eq!(arena.unresolved_bytes(), 0);
+    assert_eq!(arena.allocate_pages(), Err(SecretArenaError::NotActive));
+}

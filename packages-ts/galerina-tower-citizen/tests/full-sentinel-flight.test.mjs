@@ -61,7 +61,7 @@ test("all six sentinels compose into one governed, recoverable flight", () => {
   // ── LST + Egress: governed, cycle-indexed audit channel ──
   const clock = new LogicalClock(0);
   const egDir = dir();
-  const egress = new AuditEgress({ dir: egDir, batchSize: 8 });
+  const egress = new AuditEgress({ dir: egDir, batchSize: 8, hmacKey: new Uint8Array(32) });
   const logger = new AuditLogger(null, { tickSource: () => clock.tick(), egress });
 
   // ── PREFLIGHT (fail-fast): LSM stage + LSIO integrity gate + lock ──
@@ -105,7 +105,7 @@ test("all six sentinels compose into one governed, recoverable flight", () => {
   assert.ok(events.every((e) => typeof e.logicalTick === "number"), "every event carries an LST LogicalTick");
   const batches = readEgressLedger(egDir);
   assert.ok(batches.reduce((n, b) => n + b.count, 0) >= 3, "all audit records reached the governed egress ledger");
-  assert.equal(AuditEgress.verifyChain(batches), true, "egress HMAC chain verifies (dev/zero key — chain integrity, not a secret-keyed MAC)");
+  assert.equal(AuditEgress.verifyChain(batches, new Uint8Array(32)), true, "egress HMAC chain verifies when the development key is supplied");
   // PROVE tamper-evidence: corrupting a batch's records must FAIL verifyChain (the recomputed
   // batchHash no longer matches the stored one). NB: under a public/zero key a key-knowing attacker
   // could re-forge — this proves CORRUPTION-DETECTION, not secrecy (a real deployment sets a secret hmacKey).

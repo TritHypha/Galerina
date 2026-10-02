@@ -41,18 +41,18 @@ Provides:
 Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.
 
 Provides:
+- COMPILER_BUILD_EVIDENCE_SCHEMA
+- CONSUMED_COMPILER_OUTPUTS
+- BuildEvidenceFileRecord
+- CompilerBuildEvidence
+- assertNoDuplicateJsonKeys
+- createBuildEvidence
+- writeBuildEvidence
+- verifyBuildEvidence
 - ArtifactOwner
 - ArtifactKind
 - Sha256Digest
 - ARTIFACT_REFERENCE_SCHEMA
-- COMPUTE_TRANSFER_SCHEMA
-- MAX_ARTIFACT_BYTES
-- ArtifactReferenceV1
-- ComputeTransferV1
-- OwnedArtifactRepository
-- ArtifactReferenceRefusal
-- decodeArtifactReference
-- createArtifactReference
 
 ## galerina-core-runtime
 
@@ -95,18 +95,18 @@ Provides:
 Reusable Galerina security primitives, redaction helpers, permission models and security report contracts.
 
 Provides:
+- CRYPTO_PROVIDER_SCHEMA
+- PasswordKdfAlgorithm
+- CryptoProviderRequest
+- CryptoProviderResult
+- CryptoProvider
+- FUNGI_CRYPTO_PROVIDER_REQUIRED
+- FUNGI_CRYPTO_PROVIDER_THREW
+- FUNGI_CRYPTO_PROVIDER_MALFORMED
+- FUNGI_CRYPTO_PROVIDER_SCHEMA
 - DAGEdgeResult
 - DSSState
 - DWIHandle
-- EmergencyTransitionResult
-- EpilogueReceipt
-- MMCPEntry
-- AuditEvent
-- TrapSignal
-- PluginEvictionSignal
-- SecuritySeverity
-- SecretClassification
-- PermissionEffect
 
 ## galerina-core-config
 
@@ -711,11 +711,11 @@ Provides:
 - OpticalChannel
 - PhotonicMapping
 - PhotonicMode
+- PHOTONIC_DIAGNOSTIC_SCHEMA
 - PhotonicDiagnosticSeverity
 - PhotonicDiagnostic
+- PhotonicDiagnosticDecode
 - PhotonicPlan
-- PhotonicReport
-- defineOpticalSignal
 
 ## galerina-target-cpu
 
@@ -758,8 +758,10 @@ Provides:
 Galerina future native executable and ABI target planning concepts.
 
 Provides:
+- NATIVE_ARTIFACT_SCHEMA
 - NativeAbi
 - NativeTarget
+- NativeVokBinding
 - NativeArtifact
 - NativeTargetReport
 - NativeDiagnosticSeverity
@@ -767,6 +769,7 @@ Provides:
 - validateNativeTarget
 - validateNativeArtifact
 - createNativeTargetReport
+- createHash
 
 ## galerina-target-js
 
@@ -791,13 +794,18 @@ Provides:
 Galerina WebAssembly target planning and output contracts.
 
 Provides:
+- WASM_ARTEFACT_SCHEMA
 - WasmTarget
+- WasmSectionKind
+- WasmSectionExport
+- WasmSectionImport
+- WasmSandboxLimits
+- WasmArtefactAttestation
 - WasmArtefact
+- WasmRefusedArtefact
 - WasmTargetReport
 - WasmDiagnosticSeverity
 - WasmDiagnostic
-- validateWasmArtefact
-- createWasmTargetReport
 
 ## galerina-target-gpu
 
@@ -811,6 +819,7 @@ Provides:
 - GpuDiagnostic
 - validateGpuKernelPlan
 - createGpuTargetReport
+- isProxy
 
 ## galerina-target-ai-accelerator
 
@@ -879,8 +888,10 @@ Provides:
 - PrincipalResolution
 - ApiServerTlsOptions
 - CreateApiServerOptions
+- ApiServerWebhookOptions
 - createApiServer
 - listen
+- MemoryReplayStoreOptions
 
 ## galerina-auth
 
@@ -907,13 +918,13 @@ Provides:
 - Reference
 - SchemaOrRef
 - SchemaObject
+- ContractSchemaExport
 - MediaTypeObject
 - RequestBodyObject
 - ResponseObject
 - ParameterLocation
 - ParameterObject
 - SecurityRequirementObject
-- HttpOperationKey
 
 ## galerina-core-cli
 
@@ -1004,10 +1015,10 @@ Provides:
 - DEFAULT_E2E_EXAMPLES
 - SpawnOutcome
 - DEFAULT_TIMEOUT_MS
+- DEFAULT_OUTPUT_LIMIT_BYTES
 - runNode
 - CheckKind
 - CheckScope
-- CheckResultKind
 
 ## galerina-devtools-graph-project
 
@@ -1051,11 +1062,14 @@ Reference REST protocol-adapter (L3): /src governed flow → fusable .wasm, fuse
 Pure substrate-noise math shared by the governance layer: per-lane error probability + von Neumann NMR (N-modular-redundancy) closed form. Zero runtime deps. Single source of truth for the NMR calculus used by both galerina-tower-citizen (substrate-model) and galerina-core-compiler (substrate-inference).
 
 Provides:
+- SubstrateMathErrorCode
 - SubstrateMathError
 - SubstrateNoiseParams
+- MAX_NMR_N
 - flipProbability
 - singleLaneErrorProbability
 - nmrFailureProbability
+- isProxy
 
 ## galerina-inference-bridge-contract
 
@@ -1213,8 +1227,9 @@ Provides:
 - ExecutionRouter
 - createExecutionRouter
 - TriPipeOptions
-- TriPipeEngine
+- TriPipeProposal
 - createTriPipeEngine
+- dispatchTriPipeEngine
 
 ## galerina-tri-regex
 
@@ -1231,8 +1246,8 @@ Provides:
 - VERSION
 - CompileOptions
 - CompileOk
-- compile
-- normalizeRanges
+- PatternCapability
+- CompileCapabilityOk
 
 ## galerina-ext-spore
 

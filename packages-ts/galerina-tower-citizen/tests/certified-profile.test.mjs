@@ -174,10 +174,15 @@ test("max_tokens budget is enforced (over-budget request traps)", async () => {
   assert.equal(r.trapCode, "ERR_AI_TOKEN_BUDGET");
 });
 
+test("AuditEgress omitted hmacKey throws EGR-KEY-002", () => {
+  const err = caught(() => new AuditEgress({ dir: dir(), batchSize: 4 }));
+  assert.ok(err);
+  assert.match(String(err.code ?? err.message), /EGR-KEY-002/);
+});
+
 test("AuditEgress strictKey rejects the all-zero development key", () => {
-  const err = caught(() => new AuditEgress({ dir: dir(), batchSize: 4, strictKey: true })); // no key → zero
+  const err = caught(() => new AuditEgress({ dir: dir(), batchSize: 4, strictKey: true, hmacKey: new Uint8Array(32) }));
   assert.ok(err);
   assert.match(String(err.code ?? err.message), /EGR-KEY-001/);
-  // a real key is accepted
   assert.doesNotThrow(() => new AuditEgress({ dir: dir(), batchSize: 4, strictKey: true, hmacKey: realKey }));
 });

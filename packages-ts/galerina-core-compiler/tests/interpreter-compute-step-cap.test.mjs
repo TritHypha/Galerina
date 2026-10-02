@@ -11,7 +11,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { executeFlow, parseProgram } from "../dist/index.js";
+import { executeFlow, parseProgram, callStdlib, MAX_UNMETERED_ARRAY_RANGE } from "../dist/index.js";
 
 // Two NESTED loops, each only `n` iterations — far below the 100k per-loop maxIterations cap. The total
 // work (n²) is what a global budget must bound; the per-loop cap never fires here.
@@ -82,5 +82,77 @@ describe("interpreter global compute-step cap: SHARED across the call tree + cle
   it("the liveness trap surfaces as the BUDGET trap through arithmetic, NOT 'operator not supported'", async () => {
     const r = await runRec(80);
     assert.doesNotMatch(r.value.message ?? "", /not supported/);
+  });
+});
+
+describe("Array.range charges Interpreter stepBudget", () => {
+  const SRC = `pure flow span() -> Int contract { effects {} } {
+  let xs = Array.range(0, 100)
+  return xs.length()
+}`;
+  const runSpan = (maxSteps) => {
+    const p = parseProgram(SRC, "span.fungi");
+    return executeFlow("span", new Map(), p.ast, p.flows, undefined, undefined, { maxSteps }, undefined, undefined);
+  };
+
+  it("positive: a short range under the budget returns its length", async () => {
+    const r = await runSpan(10_000);
+    assert.equal(r.value.__tag, "int");
+    assert.equal(r.value.value, 100);
+  });
+
+  it("hostile: cardinality above maxSteps traps instead of allocating the list", async () => {
+    const r = await runSpan(20);
+    assert.equal(r.value.__tag, "runtimeError");
+    assert.match(r.value.message ?? "", /Compute budget exceeded \(20 steps\)/);
+  });
+
+  it("empty range does not debit the budget as a false trap", async () => {
+    const empty = `pure flow none() -> Int contract { effects {} } {
+  let xs = Array.range(3, 3)
+  return xs.length()
+}`;
+    const p = parseProgram(empty, "none.fungi");
+    const r = await executeFlow("none", new Map(), p.ast, p.flows, undefined, undefined, { maxSteps: 50 }, undefined, undefined);
+    assert.equal(r.value.__tag, "int");
+    assert.equal(r.value.value, 0);
+  });
+});
+
+describe("direct callStdlib Array.range meters without double-charging", () => {
+  const ctx = {
+    recordEffect: () => {},
+    resolveIdentifier: () => undefined,
+    callFlow: async () => ({ __tag: "void" }),
+    applyFn: async (_fn, arg) => arg,
+  };
+  const n = (v) => ({ __tag: "int", value: v });
+
+  it("positive: a short unmetered range still allocates", async () => {
+    const r = await callStdlib("Array.range", undefined, [n(0), n(5)], ctx);
+    assert.equal(r.__tag, "list");
+    assert.equal(r.items.length, 5);
+  });
+
+  it("hostile: unmetered range above MAX_UNMETERED_ARRAY_RANGE refuses before allocate", async () => {
+    await assert.rejects(
+      () => callStdlib("Array.range", undefined, [n(0), n(MAX_UNMETERED_ARRAY_RANGE + 1)], ctx),
+      /unmetered cardinality exceeds the host bound/,
+    );
+  });
+
+  it("chargeSteps is the only debit: one call for count, no unmetered refuse", async () => {
+    let charged = 0;
+    const metered = {
+      ...ctx,
+      chargeSteps: (k) => {
+        charged += 1;
+        assert.equal(k, 100);
+      },
+    };
+    const r = await callStdlib("Array.range", undefined, [n(0), n(100)], metered);
+    assert.equal(r.__tag, "list");
+    assert.equal(r.items.length, 100);
+    assert.equal(charged, 1);
   });
 });

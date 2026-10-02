@@ -61,6 +61,8 @@ class BytecodeUnsupported {
 // Compiler — AST → bytecode
 // ---------------------------------------------------------------------------
 
+// Intentionally omits governedFlowDecl: the i32 bytecode fast path must not
+// compile a Tower-floor entry. Missing name → null (fail-closed skip).
 const FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
 
 const BINOP_TO_OP: ReadonlyMap<string, Op> = new Map<string, Op>([

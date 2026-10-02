@@ -46,7 +46,7 @@ test("component health counts the benchmark package's governed test/ surface", (
   assert.ok(benchmark, "benchmark package must be in the reconciled workspace");
   assert.equal(benchmark.testScript, true);
   assert.equal(benchmark.hasTestsDir, true);
-  assert.equal(benchmark.testFiles, 25);
+  assert.equal(benchmark.testFiles, 27);
   assert.deepEqual(benchmark.gaps, []);
 
   const tracking = report.percentAudit.sections.find(
@@ -103,12 +103,21 @@ test("component health counts the benchmark package's governed test/ surface", (
     ["Verified affected-scope planner", "shipped"],
     ["Memory retention audit and bounded caches", "building"],
     ["Pre-conversion security closure", "building"],
-    [".gate v4 ADR-002 synthesize-only experiment", "build-pending"],
-    [".gate v3", "building"],
+    [".gate v4 — current programme (HOLD: final phase)", "post-v1"],
   ];
   for (const [item, state] of expectedRegistryRows) {
     const row = tracking.rows.find((candidate) => candidate.item === item);
     assert.ok(row, `${item} must remain in the tracking registry`);
     assert.equal(row.state, state);
   }
+  const gateV4 = tracking.rows.find(
+    (row) => row.item === ".gate v4 — current programme (HOLD: final phase)",
+  );
+  assert.match(gateV4.detail, /current programme.*HOLD.*final phase/i);
+  assert.match(gateV4.detail, /product.*not (?:built|admitted)/i);
+  assert.equal(
+    tracking.rows.some((row) => row.item === ".gate v3"),
+    false,
+    "the superseded v3 track must not appear as active roadmap work",
+  );
 });

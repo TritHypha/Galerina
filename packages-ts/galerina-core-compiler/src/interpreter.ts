@@ -32,7 +32,7 @@ import { foldRequirementValues } from "./requirement-semantics.js";
 import { compareUtf16CodeUnits } from "@galerina/core-runtime-wasm";
 import { isProxy as isNodeProxy } from "node:util/types";
 import { runInNewContext } from "node:vm";
-import { decodeFlowDecl, decodeFlowPosture } from "./flow-name.js";
+import { decodeFlowDecl, decodeFlowPosture, isFlowDeclNamed } from "./flow-name.js";
 
 export type GalerinaValue =
   | { readonly __tag: "int";       readonly value: number }
@@ -1392,10 +1392,21 @@ class Interpreter {
 
   /** Charge one compute step against the SHARED budget; TRAP (deny-by-default) when exhausted. */
   private chargeStep(): void {
+    this.chargeSteps(1);
+  }
+
+  /** Charge `n` steps in one debit so Array.range cannot allocate past maxSteps. */
+  private chargeSteps(n: number): void {
+    if (!Number.isSafeInteger(n) || n < 0) {
+      throw new Error("Compute budget charge is not a finite non-negative integer");
+    }
+    if (n === 0) return;
     const cap = this.runtimeOptions.maxSteps ?? DEFAULT_MAX_STEPS;
-    if (++this.stepBudget.count > cap) {
+    if (n > cap || this.stepBudget.count > cap - n) {
+      this.stepBudget.count = cap + 1;
       throw new Error(`Compute budget exceeded (${cap} steps) — fail-closed (bounds TOTAL compute across the whole call tree; nested bounded loops + deep nesting cannot run unboundedly).`);
     }
+    this.stepBudget.count += n;
   }
 
   constructor(
@@ -1506,6 +1517,7 @@ class Interpreter {
   private makeStdlibContext() {
     return {
       recordEffect: (effect: string) => this.effectsObserved.add(effect),
+      chargeSteps: (n: number) => this.chargeSteps(n),
       resolveIdentifier: (name: string) => this.lookup(name)?.value,
       callFlow: async (name: string, fnArgs: ReadonlyMap<string, GalerinaValue>) => {
         const sub = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
@@ -2419,6 +2431,21 @@ class Interpreter {
 
         let iterations = 0;
         const MAX_ITERATIONS = this.runtimeOptions.maxIterations ?? 100_000;
+
+        const fastScope = snapshotIntScopeForWhile(conditionNode, bodyNode, (name) => this.lookup(name)?.value);
+        if (fastScope !== undefined) {
+          const ran = tryWhileFastPath(
+            conditionNode,
+            bodyNode,
+            fastScope,
+            (n) => this.chargeSteps(n),
+            MAX_ITERATIONS,
+          );
+          if (ran) {
+            for (const [name, value] of fastScope) this.assign(name, value);
+            return undefined;
+          }
+        }
 
         while (true) {
           if (iterations++ > MAX_ITERATIONS) {
@@ -4030,12 +4057,10 @@ function astContainsKind(node: AstNode, kind: AstNode["kind"]): boolean {
 
 function flowRequiresGovernedPath(ast: AstNode, flowName: string): boolean {
   let found = false;
-  const FLOW_KINDS = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
   function walk(node: AstNode): void {
     if (found) return;
     if (
-      FLOW_KINDS.has(node.kind) &&
-      node.value === flowName &&
+      isFlowDeclNamed(node, flowName) &&
       (extractOutputPostconditions(node).length > 0 || extractInputPreconditions(node).length > 0 ||
         extractParamAdmissions(node).length > 0 || astContainsKind(node, "trapDecl") ||
         astContainsKind(node, "requirementExpr") || astContainsKind(node, "requireStmt") ||
@@ -4657,12 +4682,185 @@ export class SlottedScope {
  * @param _bodyNode  The body AstNode of the while statement.
  * @param _scope     The current binding Map (Map<string, GalerinaValue>).
  */
+const WHILE_COMPARE_OPS = new Set(["<", ">", "<=", ">=", "==", "!="]);
+
+function parseFastIntLiteral(node: AstNode): number | undefined {
+  if (node.kind !== "numberLiteral") return undefined;
+  const raw = (node.value ?? "0").replace(/_/g, "");
+  if (raw.includes(".") || /[eE]/.test(raw) || raw.startsWith("0x") || raw.startsWith("0X") ||
+      raw.startsWith("0b") || raw.startsWith("0B") || raw.startsWith("0o") || raw.startsWith("0O")) {
+    return undefined;
+  }
+  const n = Number.parseInt(raw, 10);
+  return Number.isSafeInteger(n) ? n : undefined;
+}
+
+function parseFastWhileCond(node: AstNode): { name: string; op: string; lit: number } | undefined {
+  if (node.kind !== "binaryExpr") return undefined;
+  const op = node.value ?? "";
+  if (!WHILE_COMPARE_OPS.has(op)) return undefined;
+  const left = node.children?.[0];
+  const right = node.children?.[1];
+  if (left?.kind !== "identifier" || right === undefined) return undefined;
+  const name = left.value ?? "";
+  const lit = parseFastIntLiteral(right);
+  if (name === "" || lit === undefined) return undefined;
+  return { name, op, lit };
+}
+
+type FastWhileAssign =
+  | { readonly kind: "lit"; readonly name: string; readonly lit: number }
+  | { readonly kind: "copy"; readonly name: string; readonly src: string }
+  | { readonly kind: "binop"; readonly name: string; readonly src: string; readonly op: "+" | "-" | "*"; readonly lit: number };
+
+function parseFastWhileAssign(node: AstNode): FastWhileAssign | undefined {
+  if (node.kind !== "assignStmt") return undefined;
+  const name = node.value ?? "";
+  const rhs = node.children?.[0];
+  if (name === "" || rhs === undefined) return undefined;
+  if (rhs.kind === "numberLiteral") {
+    const lit = parseFastIntLiteral(rhs);
+    if (lit === undefined) return undefined;
+    return { kind: "lit", name, lit };
+  }
+  if (rhs.kind === "identifier") {
+    const src = rhs.value ?? "";
+    if (src === "") return undefined;
+    return { kind: "copy", name, src };
+  }
+  if (rhs.kind !== "binaryExpr") return undefined;
+  const op = rhs.value ?? "";
+  if (op !== "+" && op !== "-" && op !== "*") return undefined;
+  const left = rhs.children?.[0];
+  const right = rhs.children?.[1];
+  if (left?.kind !== "identifier" || right === undefined) return undefined;
+  const src = left.value ?? "";
+  const lit = parseFastIntLiteral(right);
+  if (src === "" || lit === undefined) return undefined;
+  return { kind: "binop", name, src, op, lit };
+}
+
+function parseFastWhileBody(body: AstNode): FastWhileAssign[] | undefined {
+  if (body.kind === "assignStmt") {
+    const one = parseFastWhileAssign(body);
+    return one === undefined ? undefined : [one];
+  }
+  if (body.kind !== "block") return undefined;
+  const assigns: FastWhileAssign[] = [];
+  for (const child of body.children ?? []) {
+    const parsed = parseFastWhileAssign(child);
+    if (parsed === undefined) return undefined;
+    assigns.push(parsed);
+  }
+  return assigns;
+}
+
+function evalFastWhileCond(value: number, op: string, lit: number): boolean {
+  switch (op) {
+    case "<": return value < lit;
+    case ">": return value > lit;
+    case "<=": return value <= lit;
+    case ">=": return value >= lit;
+    case "==": return value === lit;
+    case "!=": return value !== lit;
+    default: return false;
+  }
+}
+
+function applyFastWhileOp(left: number, op: "+" | "-" | "*", lit: number): I32Result {
+  if (op === "+") return i32AddChecked(left, lit);
+  if (op === "-") return i32SubChecked(left, lit);
+  return i32MulChecked(left, lit);
+}
+
+function snapshotIntScopeForWhile(
+  condNode: AstNode,
+  bodyNode: AstNode,
+  lookup: (name: string) => GalerinaValue | undefined,
+): Map<string, GalerinaValue> | undefined {
+  const cond = parseFastWhileCond(condNode);
+  const assigns = parseFastWhileBody(bodyNode);
+  if (cond === undefined || assigns === undefined) return undefined;
+  const names = new Set<string>([cond.name]);
+  for (const a of assigns) {
+    names.add(a.name);
+    if (a.kind !== "lit") names.add(a.src);
+  }
+  const scope = new Map<string, GalerinaValue>();
+  for (const name of names) {
+    const value = lookup(name);
+    if (value === undefined || value.__tag !== "int") return undefined;
+    scope.set(name, value);
+  }
+  return scope;
+}
+
+/**
+ * Attempt to execute a while loop via a native JS fast-path, bypassing the
+ * async AST tree-walker.
+ *
+ * Eligibility criteria (all must hold):
+ *   - Condition is a simple binary expression: identifier op intLiteral
+ *   - Body contains only simple Int assignment statements (no calls, no
+ *     capability invocations, no audit events)
+ *
+ * Returns true when the fast-path ran the loop to completion.
+ * Returns false when the loop is not eligible; the caller must fall through
+ * to the standard tree-walker. After this function returns true, or throws,
+ * the caller must not re-run the walker on the same loop.
+ *
+ * @param condNode  The condition AstNode of the while statement.
+ * @param bodyNode  The body AstNode of the while statement.
+ * @param scope     The current binding Map (Map<string, GalerinaValue>).
+ */
 export function tryWhileFastPath(
-  _condNode: AstNode,
-  _bodyNode: AstNode,
-  _scope: Map<string, GalerinaValue>,
+  condNode: AstNode,
+  bodyNode: AstNode,
+  scope: Map<string, GalerinaValue>,
+  charge: (n: number) => void = () => undefined,
+  maxIterations = 100_000,
 ): boolean {
-  // Stub — detection and native-JS execution not yet implemented.
-  // Return false so the interpreter always falls through to the tree-walker.
-  return false;
+  const cond = parseFastWhileCond(condNode);
+  const assigns = parseFastWhileBody(bodyNode);
+  if (cond === undefined || assigns === undefined) return false;
+  const names = new Set<string>([cond.name]);
+  for (const a of assigns) {
+    names.add(a.name);
+    if (a.kind !== "lit") names.add(a.src);
+  }
+  for (const name of names) {
+    const value = scope.get(name);
+    if (value === undefined || value.__tag !== "int") return false;
+  }
+
+  let iterations = 0;
+  while (true) {
+    if (iterations++ > maxIterations) {
+      throw new Error(`Loop exceeded maximum iteration count (${maxIterations}) — fail-closed`);
+    }
+    charge(1);
+    const counter = scope.get(cond.name);
+    if (counter === undefined || counter.__tag !== "int") {
+      throw new Error("while fast-path lost an Int binding — fail-closed");
+    }
+    if (!evalFastWhileCond(counter.value, cond.op, cond.lit)) break;
+    for (const assign of assigns) {
+      charge(1);
+      let next: I32Result;
+      if (assign.kind === "lit") {
+        next = assign.lit | 0;
+      } else {
+        const srcVal = scope.get(assign.src);
+        if (srcVal === undefined || srcVal.__tag !== "int") {
+          throw new Error("while fast-path lost an Int binding — fail-closed");
+        }
+        next = assign.kind === "copy" ? srcVal.value : applyFastWhileOp(srcVal.value, assign.op, assign.lit);
+      }
+      if (isI32Trap(next)) {
+        throw new Error(next);
+      }
+      scope.set(assign.name, { __tag: "int", value: next });
+    }
+  }
+  return true;
 }

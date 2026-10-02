@@ -10,11 +10,13 @@ export { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
 export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
+  MAX_WASM_ARRAYS, MAX_WASM_ARRAY_ITEMS, MAX_WASM_STRINGS, MAX_WASM_STRING_CHARS, MAX_WASM_HOST_RECORDS,
+  MAX_RECORD_COPY_DEPTH, MAX_RECORD_COPY_NODES,
   finalizeSecretExportResult, invokeAdmittedExport,
 } from "./wasm-runtime.js";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
-  Observer, HostRuntime, AdmissionResult,
+  Observer, HostRuntime, AdmissionResult, RecordCopyField,
 } from "./wasm-runtime.js";
 
 // The injectable seam adapters — what core-runtime's createGovernedRuntimeExecutor INJECTS (never imports) to

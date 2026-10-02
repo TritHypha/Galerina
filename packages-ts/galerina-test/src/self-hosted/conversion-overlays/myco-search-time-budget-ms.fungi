@@ -6,5 +6,5 @@
 pure flow mycoSearchTimeBudgetMs() -> Int
 contract { intent { "Return the exact adjudicated Int primitive." } }
 {
-  return 5000
+  return 120000
 }

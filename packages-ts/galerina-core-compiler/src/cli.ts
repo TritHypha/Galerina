@@ -21,6 +21,7 @@ import {
 } from "node:fs";
 import { execSync, spawnSync } from "node:child_process";
 import { parseProgram, type AstNode, type FlowMeta } from "./parser.js";
+import { isFlowDeclNamed } from "./flow-name.js";
 import { diffGovernance, renderGovernanceDiff } from "./governance-diff.js";
 import { excludeGitIgnored } from "./git-ignore-filter.js";
 import { resolveSymbols } from "./symbol-resolver.js";
@@ -1383,12 +1384,7 @@ function runCostAnalysis(targetDir: string): void {
       }
 
       function walkForContract(node: unknown): void {
-        const k = nodeKind(node);
-        if (
-          (k === "flowDecl" || k === "secureFlowDecl" ||
-           k === "pureFlowDecl" || k === "guardedFlowDecl") &&
-          nodeValue(node) === flow.name
-        ) {
+        if (isFlowDeclNamed(node as AstNode, flow.name)) {
           for (const child of nodeChildren(node)) {
             if (nodeKind(child) === "contractDecl") {
               for (const subBlock of nodeChildren(child)) {

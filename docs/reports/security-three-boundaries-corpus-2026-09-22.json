@@ -1,0 +1,56 @@
+{
+  "schema": "galerina.security.three-boundaries.corpus.v1",
+  "asOf": "2026-09-22",
+  "head": "91b4dec08fe4376febc9494a8023bd02912b8695",
+  "bound": "digest-bound-enumerated-sources",
+  "not": "full-fungi-corpus-assurance",
+  "files": [
+    {
+      "path": "packages-ts/galerina-core-compiler/src/wat-emitter.ts",
+      "sha256": "d92045ca648945d09bcbf736bb458b54413131e59fd5e8deb24ec5b5c681400a",
+      "lane": "Q1"
+    },
+    {
+      "path": "packages-ts/galerina-framework-api-server/src/index.ts",
+      "sha256": "009c7b0f0ee4be815d8e0a3e3e568f57afb6e1878f418ca8e90dcab51e9fc784",
+      "lane": "Q2"
+    },
+    {
+      "path": "packages-ts/galerina-framework-api-server/src/replay-store.ts",
+      "sha256": "dbf3519f56e4ccb68428bb031b94d7a7dbc751de49925fb3211acc556af887a2",
+      "lane": "Q2"
+    },
+    {
+      "path": "packages-ts/galerina-core-sentinel-state/src/atomic-writer.ts",
+      "sha256": "1f093d3e4ed2a207dcf0c61fa8a12c4018609de9e0e38394858b3a36e7c70dc8",
+      "lane": "Q3"
+    },
+    {
+      "path": "packages-ts/galerina-framework-app-kernel/src/registry-generation-store.ts",
+      "sha256": "fcdcfa5f0903b199e09d3a99b7caf535da3813c3c59cfd9d3f74a3d27a956842",
+      "lane": "Q3"
+    },
+    {
+      "path": "examples/ai-inference/classifyMessage.fungi",
+      "sha256": "2d6d75d13d3a2b1af987fc4e3b2cd3144542a7c0196bd9621eba8d80131c6a32",
+      "lane": "Q1-consumer-lead",
+      "expectedClassification": "not-applicable"
+    },
+    {
+      "path": "examples/auth-service/verifyPassword.fungi",
+      "sha256": "5ffede3a2a1f66284c4b77677d47006d763a906a2b3d4372248692e449c0ef8c",
+      "lane": "Q1-consumer-lead",
+      "expectedClassification": "not-applicable"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "packages-ts/**/*.fungi",
+      "reason": "full compiler/self-hosted .fungi corpus is outside this three-gate scan"
+    },
+    {
+      "path": "build/**",
+      "reason": "generated"
+    }
+  ]
+}

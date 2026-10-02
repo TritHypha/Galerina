@@ -1041,9 +1041,9 @@ locator is not sufficient evidence of a blocker or of completion.
   Rounding plan link (2026-09-30, not done): K4 (D6, queued last after R1-R12)
   keeps this fail-closed but replaces the Decimal `/`/`%` trap with a named
   compile-time refusal. R2 adds the named WASM refusal for Money operators.
-  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
   K4 and R2 implemented there (FUNGI-WAT-DECIMAL-001 / FUNGI-WAT-MONEY-001
-  named refusals; no `(unreachable)` for Decimal `/`/`%`). Not committed. See
+  named refusals; no `(unreachable)` for Decimal `/`/`%`). Committed in `05eb5c29`. See
   the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
 - **RD-1233 residual WAT-lowering adjudication:** the single governed Grok
   attempt is preserved as `REFUSED` with `Max turns reached`, and Astra's
@@ -1069,7 +1069,7 @@ locator is not sufficient evidence of a blocker or of completion.
   explicit rounding mode for Money multiply/divide). The jobs are R3, R5 and
   R6 (exact core plus frozen limits), then K4 last. The HOF/closure half is
   unchanged.
-  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
   R3, R5, R6, R11 and K4 are implemented and tested there; the HOF/closure
   half is unchanged and this clearance is NOT claimed. See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
 - **Galerina test-package conversion-overlay drift:** the bounded TypeScript

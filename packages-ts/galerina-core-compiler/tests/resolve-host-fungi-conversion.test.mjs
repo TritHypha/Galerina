@@ -103,6 +103,13 @@ describe("compiler package-owned Fungi host resolution", () => {
         resolveHost(name),
         `resolveHost(${String(name)})`,
       );
+      if (name === "mlock_posix") {
+        assert.equal(
+          unwrapRecord(interpreted.value).canNoSwap,
+          false,
+          "the Fungi host profile must not claim no-swap without runtime enforcement evidence",
+        );
+      }
     }
   });
 
@@ -130,5 +137,18 @@ describe("compiler package-owned Fungi host resolution", () => {
         );
       }
     }
+    const noSwap = await executeFlow(
+      "canHonourFungi",
+      new Map([
+        ["ceiling", { __tag: "string", value: "no_swap" }],
+        ["canRegisterPin", { __tag: "bool", value: false }],
+        ["canNoDramSpill", { __tag: "bool", value: false }],
+        ["canNoSwap", { __tag: "bool", value: false }],
+        ["canNoDisk", { __tag: "bool", value: true }],
+      ]),
+      program.ast,
+      program.flows,
+    );
+    assert.deepEqual(noSwap.value, { __tag: "bool", value: false });
   });
 });

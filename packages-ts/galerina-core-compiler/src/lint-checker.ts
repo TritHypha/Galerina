@@ -17,6 +17,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, type SourceLocation } from "./parser.js";
+import { declaredFlowName } from "./flow-name.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic constant
@@ -108,11 +109,10 @@ export function checkLint(
   const ERR_REPEAT_THRESHOLD = 3;
 
   const diagnostics: LintDiagnostic[] = [];
-  const FLOW_KINDS = new Set(["pureFlowDecl", "guardedFlowDecl", "secureFlowDecl", "flowDecl"]);
 
   for (const c of ast.children ?? []) {
-    if (!FLOW_KINDS.has(c.kind)) continue;
-    const flowName = c.value ?? "";
+    const flowName = declaredFlowName(c);
+    if (flowName === undefined) continue;
     if (!flows.some(f => f.name === flowName)) continue;
 
     // The body is the last block child of the flow declaration
@@ -166,7 +166,7 @@ export interface UnusedBindingDiagnostic {
 const LOCAL_BINDING_KINDS = new Set<string>(["letDecl", "mutDecl", "readonlyDecl"]);
 
 /** Flow declaration kinds (a binding's scope is its enclosing flow). */
-const UB_FLOW_KINDS = new Set<string>(["pureFlowDecl", "guardedFlowDecl", "secureFlowDecl", "flowDecl", "fnDecl"]);
+const UB_FLOW_KINDS = new Set<string>(["pureFlowDecl", "guardedFlowDecl", "secureFlowDecl", "flowDecl", "governedFlowDecl", "fnDecl"]);
 
 /** A binding site pending a use-check: its name, source node (for location), and kind label. */
 interface BindingSite {
@@ -248,9 +248,9 @@ export function checkUnusedBindings(ast: AstNode, flows: readonly FlowMeta[]): U
 
   for (const flow of ast.children ?? []) {
     if (!UB_FLOW_KINDS.has(flow.kind)) continue;
-    const flowName = flow.value ?? "";
+    const flowName = flow.kind === "fnDecl" ? (flow.value ?? "") : (declaredFlowName(flow) ?? "");
     // Only real, registered flows (mirrors checkLint's guard against stray decls).
-    if (!flows.some((f) => f.name === flowName)) continue;
+    if (flowName === "" || !flows.some((f) => f.name === flowName)) continue;
 
     const bindings: BindingSite[] = [];
     const patternNodes = new Set<AstNode>();

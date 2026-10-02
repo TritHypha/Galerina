@@ -74,9 +74,10 @@ test("HV3: showDerived is deterministic and names the trigger + every dimension"
 });
 
 // ── (e) H-2 / HV5 / H-6: the host-seam honour check, fail-closed ────────────────────────────────────
-test("H-2/HV5: mlock_posix honours no_swap but CANNOT honour register_only (→ FUNGI-HARDEN-005)", () => {
+test("H-2/HV5: mlock_posix without an active lock attestation refuses no_swap and register_only", () => {
   const host = L.resolveHost("mlock_posix");
-  assert.equal(L.canHonour("no_swap", host).ok, true);
+  assert.equal(L.canHonour("no_swap", host).ok, false);
+  assert.equal(L.canHonour("no_swap", host).rejection.code, "FUNGI-HARDEN-005");
   const reg = L.canHonour("register_only", host);
   assert.equal(reg.ok, false);
   assert.equal(reg.rejection.code, "FUNGI-HARDEN-005");

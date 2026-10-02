@@ -1,5 +1,13 @@
 # Galerina App Kernel TODO
 
+## Tower import boundary — 2026-09-26
+
+The RD-0873 dirty worktree retargets the app-kernel request path to Tower
+`/governance` and registry paths to `/custody`; the focused result is
+recorded in `../../docs/TODO.md`. This does not close the contract-spec
+backlog below, the core-network package-install HOLD, or production
+admission. No fresh tests were run for this TODO refresh.
+
 > Note (2026-06-16): the App-Kernel **P1 implementation shipped** — `src/{types,route-defaults,kernel,fuse-loader,index}.ts`
 > (the fail-closed request pipeline + fuse-loader), **38 tests**, and **3 `.fungi` examples**
 > (`typed-api-boundary`, `security-policy`, `job`). The unchecked `Define …` items below are the

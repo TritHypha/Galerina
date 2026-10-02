@@ -36124,13 +36124,13 @@
         "returnStmt": 1,
         "typeRef": 1
       },
-      "byteLength": 384,
+      "byteLength": 386,
       "diagnosticCodes": [],
       "flowCount": 1,
       "memberCalls": {},
       "operators": {},
       "path": "packages-ts/galerina-test/src/self-hosted/conversion-overlays/myco-search-time-budget-ms.fungi",
-      "sourceSha256": "sha256:d134a1239fa2c0853576b363323256681ba48eb506c0b925e3a6319618893956",
+      "sourceSha256": "sha256:daa91d0e47569a1c9fb436cbeae66c4e8f3f8eaa07fff55c53cd5c50ca410c93",
       "typeRefs": {
         "Int": 1
       }
@@ -66124,13 +66124,13 @@
         "stringLiteral": 8,
         "typeRef": 9
       },
-      "byteLength": 1703,
+      "byteLength": 1676,
       "diagnosticCodes": [],
       "flowCount": 9,
       "memberCalls": {},
       "operators": {},
       "path": "packages-ts/galerina-test/src/self-hosted/runner-constants.fungi",
-      "sourceSha256": "sha256:6279aca47d920ca18f88853859f3b92cfddd58d78ea8671e6a17b54d9889d6d2",
+      "sourceSha256": "sha256:1ebd43cb649d02f0bf4d9061c1782cf0632b36403ee71bac6b241047dece2f23",
       "typeRefs": {
         "Int": 1,
         "String": 8
@@ -66715,7 +66715,7 @@
       "unaryExpr": 300,
       "whileStmt": 347
     },
-    "bytes": 8350868,
+    "bytes": 8350843,
     "files": 2544,
     "flows": 3294,
     "memberCalls": {

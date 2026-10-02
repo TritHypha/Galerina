@@ -7,6 +7,10 @@ use std::rc::Rc;
 
 #[allow(unsafe_code)]
 mod native;
+#[allow(unsafe_code)]
+mod secret_arena;
+
+pub use secret_arena::{MemoryStatus, SecretArena, SecretArenaError};
 
 pub const MAX_AUTHORITY_TAG_BYTES: usize = 96;
 pub const MAX_TABLE_CAPACITY: usize = 65_536;

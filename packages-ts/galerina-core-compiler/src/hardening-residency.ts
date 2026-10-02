@@ -364,8 +364,9 @@ export const UNKNOWN_HOST: HostResidencyCapability = Object.freeze({
  * TPM protocols or create quotes; that remains a native/platform responsibility behind the seam.
  */
 const HOST_PROFILE_MAP = new Map<string, HostResidencyCapability>([
-  // POSIX mlock: guarantees no-swap + no-disk; cannot pin to registers or forbid DRAM.
-  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: true, canNoDisk: true, keyCustody: "env-spore" }],
+  // The profile name alone does not prove a live mlock hook is registered and succeeds.
+  // Keep no-swap false until the runtime supplies current enforcement evidence.
+  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
   // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
   // keyCustody: "hardware-signer" because a register-pinned target implies an HSM for key ops.
   ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true, keyCustody: "hardware-signer" }],

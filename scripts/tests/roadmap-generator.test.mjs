@@ -6,6 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   existsSync,
+  linkSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -262,6 +263,58 @@ test("roadmap admits declared package graph output dirt but refuses source dirt"
     const sourceDirt = run(harness, selected, ["--write"]);
     assert.notEqual(sourceDirt.status, 0);
     assert.match(sourceDirt.stderr, /relevant provenance input is dirty/i);
+  } finally {
+    rmSync(harness, { recursive: true, force: true });
+  }
+});
+
+test("dirty roadmap preview is visibly non-authoritative and leaves canonical outputs untouched", () => {
+  const { harness, selected } = fixture();
+  const canonicalSvg = join(selected, "build/roadmap/roadmap.svg");
+  const canonicalProvenance = join(selected, "build/roadmap/provenance.json");
+  const canonicalDoc = join(selected, "docs/ROADMAP.md");
+  const previewSvg = join(selected, "build/roadmap/roadmap-preview.svg");
+  try {
+    const initial = run(harness, selected, ["--write"]);
+    assert.equal(initial.status, 0, `${initial.stdout}\n${initial.stderr}`);
+    const before = [canonicalSvg, canonicalProvenance, canonicalDoc]
+      .map((path) => readFileSync(path, "utf8"));
+    const head = spawnSync("git", ["rev-parse", "HEAD"], {
+      cwd: selected,
+      encoding: "utf8",
+    }).stdout.trim();
+    write(selected, "packages-ts/fixture/src/index.ts", "export const authority = 2;\n");
+
+    const preview = run(harness, selected, ["--preview"]);
+    assert.equal(preview.status, 0, `${preview.stdout}\n${preview.stderr}`);
+    const image = readFileSync(previewSvg, "utf8");
+    assert.match(image, /PREVIEW ONLY.*NON-AUTHORITATIVE/u);
+    assert.match(image, new RegExp(head, "u"));
+    assert.match(image, /1 relevant dirty input/u);
+    assert.deepEqual(
+      [canonicalSvg, canonicalProvenance, canonicalDoc].map((path) => readFileSync(path, "utf8")),
+      before,
+    );
+    const canonicalCheck = run(harness, selected, ["--check"]);
+    assert.notEqual(canonicalCheck.status, 0);
+    assert.match(canonicalCheck.stderr, /relevant provenance input is dirty/u);
+  } finally {
+    rmSync(harness, { recursive: true, force: true });
+  }
+});
+
+test("preview publication cannot overwrite a hard-linked canonical document", () => {
+  const { harness, selected } = fixture();
+  const canonicalDoc = join(selected, "docs/ROADMAP.md");
+  const previewSvg = join(selected, "build/roadmap/roadmap-preview.svg");
+  try {
+    const before = readFileSync(canonicalDoc, "utf8");
+    mkdirSync(dirname(previewSvg), { recursive: true });
+    linkSync(canonicalDoc, previewSvg);
+    const result = run(harness, selected, ["--preview"]);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.equal(readFileSync(canonicalDoc, "utf8"), before);
+    assert.match(readFileSync(previewSvg, "utf8"), /PREVIEW ONLY.*NON-AUTHORITATIVE/u);
   } finally {
     rmSync(harness, { recursive: true, force: true });
   }

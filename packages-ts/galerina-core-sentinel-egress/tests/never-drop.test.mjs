@@ -32,7 +32,7 @@ after(() => {
 test("pushing more than ringCapacity records never drops an audit record", () => {
   const dir = freshDir();
   // small ring so we cross full repeatedly; batchSize smaller than total
-  const eg = new AuditEgress({ dir, batchSize: 4, ringCapacity: 4 });
+  const eg = new AuditEgress({ dir, batchSize: 4, ringCapacity: 4, hmacKey: new Uint8Array(32) });
 
   const total = 50; // >> ringCapacity
   for (let i = 0; i < total; i++) {
@@ -41,7 +41,7 @@ test("pushing more than ringCapacity records never drops an audit record", () =>
   eg.flush(); // drain any tail
 
   const batches = readEgressLedger(dir);
-  assert.equal(AuditEgress.verifyChain(batches), true);
+  assert.equal(AuditEgress.verifyChain(batches, new Uint8Array(32)), true);
 
   // every record present, in order, across all batches
   const all = batches.flatMap((b) => [...b.records]);
@@ -57,7 +57,7 @@ test("pushing more than ringCapacity records never drops an audit record", () =>
 
 test("ringCapacity defaults to batchSize*4 and still loses nothing", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 5 }); // ring = 20
+  const eg = new AuditEgress({ dir, batchSize: 5, hmacKey: new Uint8Array(32) }); // ring = 20
   const total = 23;
   for (let i = 0; i < total; i++) eg.push(`d-${i}`);
   eg.flush();

@@ -33,12 +33,12 @@ contract { intent { "Handle a secret." } privacy { contains PII }
     assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
   });
 
-  it("residency no_swap on mlock_posix (which honours it) → clean, no FUNGI-HARDEN code", () => {
+  it("residency no_swap on mlock_posix without runtime proof → FUNGI-HARDEN-005 + 007", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII }
   hardening { residency no_swap host mlock_posix } }
 { return 1 }`;
-    assert.deepEqual(hardenCodes(gov(src)), []);
+    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
   });
 
   it("register_only WITH a register_pinned host (which honours it) → FUNGI-HARDEN-008 warning (runtime enforcement gap, BOB-M1)", () => {

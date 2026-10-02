@@ -1317,9 +1317,9 @@
       "inCadence": true,
       "cadenceDisposition": "scheduled",
       "concerns": [
-        "signing/fusion",
         "governance",
         "teaching-corpus",
+        "source-hygiene",
         "doc-drift",
         "graph/index"
       ]
@@ -2035,7 +2035,7 @@
       "purpose": "the NIGHTLY / RELEASE stage of the retention gate.",
       "selfTest": true,
       "inCadence": true,
-      "cadenceDisposition": "self-test-transitive",
+      "cadenceDisposition": "scheduled",
       "concerns": [
         "diagnostics"
       ]
@@ -4024,7 +4024,6 @@
       "audit-code-catalog-coverage.mjs",
       "audit-compiler-stage-hashes.mjs",
       "audit-conversion-report-commit.mjs",
-      "audit-conversion-slice-close.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-effect-canonicality.mjs",
@@ -4263,6 +4262,7 @@
       "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
       "audit-codes-full.mjs",
+      "audit-conversion-slice-close.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-generator-contract.mjs",
@@ -5486,7 +5486,7 @@
       "via": [],
       "cadences": [],
       "lifecycle": "not-applicable",
-      "disposition": "self-test-transitive"
+      "disposition": "scheduled"
     },
     {
       "tool": "audit-route-overlap.mjs",

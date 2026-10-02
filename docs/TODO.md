@@ -1,12 +1,78 @@
 # TODO
 
+## Current checkout check — 2026-09-26
+
+- [x] The RD-0873 worktree is dirty `main` at
+  `e8f1b68235daeb6a0ec08f3639bd7e1b69af2de7`, ahead one of
+  `origin/main`. This file contained **242** open Markdown
+  checkboxes at the start of this reconciliation. Four historical
+  RD-0234/0234b duplicate findings below are now checked, leaving **238**
+  open Markdown checkboxes. The count was re-derived; implementation gates, the scan
+  inventory, and the full `.fungi` corpus were not rerun in this check.
+- [!] The RD-1295 / RD-1296 source slices and historical focused receipts
+  below do not close their owner or independent-admission gates. Keep the
+  238 remaining open rows, signing, conversion, hardware, and SLIDE/VOK authority
+  on HOLD until exact-head evidence and the relevant owner decisions exist.
+
+## Memory-security product-adoption holds — 2026-09-28, route rechecked 2026-10-02
+
+The KB's RD-1413–1415 isolated packets and synthetic tests are research evidence,
+not a real, loaded protected-data operation. There is a declared Fungi
+`POST /auth/verify` fixture route and a Node-host test, but the Deno adapter still
+returns 503, the service uses a fixture password hash, and the passing tests
+import ignored `dist/` output without a fresh source/build receipt. This is
+login-demo evidence, not the missing caller/object-version/Signet/provider
+operation. The dated checkbox counts above precede these hold markers. Reopen
+the three private RD owners and verify exact product source and loaded tests
+before changing any status.
+
+- [!] **RD-1413 incoming access:** select and wire one real authenticated
+  application operation with an object/version grant, protected provider/key
+  owner, quota and permitted recipient. Prove duplicate object/version query-key
+  and invalid-version refusals before protected acquisition on the actual
+  loaded server path. Current product `parseUrl` overwrites repeated keys. A
+  fresh loopback probe on dirty `main` HEAD `6d5fa5a` against the existing
+  API-server `dist` sent `version=public&version=protected`; the kernel received
+  only `version: "protected"` and the adapter returned HTTP 200. The current
+  source SHA-256 `925ac951…` and ignored `dist` SHA-256 `5e19b23e…` match the
+  pinned KB control **“RD-1413 public-route duplicate-query compatibility.”**
+  That control shows an adapter-wide duplicate refusal changes existing public
+  behavior (baseline 200/handler called; candidate 400/handler not called).
+  This new probe is not a protected-route test or a source-built receipt. Keep
+  the fail-closed one-decoded-value-per-key contract, but inventory and test
+  real callers before adoption; intentional multi-value inputs need an explicit
+  schema and separately reviewed boundary, never silent last-value-wins.
+  An isolated source-copied SuperGrok candidate refused duplicate decoded
+  names before a public fixture handler (Codex replay 10/10), but its complete
+  compiler inputs and Node-loaded dependencies are not frozen, generic refusal
+  changes unrelated public-query behavior, and no protected application route
+  was tested. Keep this box open.
+- [!] **RD-1414 transient ownership:** apply and independently verify the
+  package-level SecretGate return contract, GCM update-buffer cleanup and
+  copy/alias accounting. A wiped handed view is not proof that handler-created
+  copies or immutable strings were erased; unresolved storage stays charged.
+  The current `secret-gate.fungi` source explicitly marks itself NOT
+  build-wired and leaves plaintext `has/use` in the host provider seam; it is
+  a decision twin, not proof of Fungi-owned secret bytes.
+- [!] **RD-1415 outgoing release:** bind an actual consumer, revoker and output
+  inventory; prove release policy, authenticated storage/graph recovery and
+  revocation against the same issued source. Synthetic field-challenge and
+  in-process recovery tests do not establish durable delivery.
+- [!] **Composed adoption and publication:** independently security-review the
+  exact RD-1413→1414→1415 product route and disposition every inherited
+  RD-1296 A–E obligation. Only after the wired route and its checks pass may
+  the owner-authorized scoped commit, push and merge into `main` proceed;
+  preserve unrelated dirty changes and do not claim production clearance.
+
 Current outstanding and blockers:
 [outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
-Historical checkpoint HEAD `ed4a1359…` (parent `91b4dec0…`); recheck Git
-for current custody. This document is not an exact-head receipt.
-Scan `0f6063dd` is 124/124 IDs inventoried, **0 OPEN**.
-GROK-CODING-BATCH-READY Phase A+B complete. Items 1–15 remain
-INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
+The `e8f1b682…` head and scan details in this 2026-09-26 checkpoint are historical, not a
+current-head receipt. Registered `main` is now at `05eb5c29be9592a42cdd48baaeb027279ff5299d`
+and dirty. Historical
+checkpoints `ed4a1359…` / `91b4dec0…` are earlier on this branch. This
+document is not an exact-head receipt. Scan `0f6063dd` is 124/124 IDs
+inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
+1–15 remain INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
 
 ## Open-checkbox census — 2026-09-23
 
@@ -16,11 +82,227 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   boxes are not a work queue.
 - [x] Scan `0f6063dd` live inventory remains **0 OPEN / 120 PARTIAL / 4
   PATCHED**. Item-7 OPEN lows are exhausted.
-- [x] E01/RD-1296 slice 2 (load-graph bounds): `lstat` refuse symlink,
+- [x] Tower RD-1295 load-graph bounds (formerly labelled E01/RD-1296):
+  `lstat` refuses symlinks;
   `MAX_LOAD_GRAPH_FILES` 4096, `MAX_LOAD_GRAPH_FILE_BYTES` 1 MiB,
   `MAX_LOAD_GRAPH_EDGES` 16384. Tests load-graph-bounds **3/3** plus
   RD-1295 isolation/products **83/83** (**86/86** combined). Residual:
   lstat→read TOCTOU.
+- [x] Tower RD-1295 composition/load identity challenge at HEAD `e8f1b682`:
+  Q1 NO_DEFECT (frozen `TOWER_COMPOSITION_IDS` / `COMPOSITION_CLUSTERS`);
+  Q2 NOT VERIFIABLE as production check-then-load (`cert-gate` imports
+  `/governance` directly). Focused **86/86**. No snapshot added. RD-1295
+  not closed.
+- [x] App-kernel Tower imports retargeted off the root barrel: `kernel.ts`
+  uses `/governance`; registry modules use `/custody` (and `/governance`
+  for trit fold). Tests tower-subpath-imports + kernel/registry **46/46**;
+  Tower focused **87/87**. Independent scoped PASS `01a0cf3f-d35d`
+  (`docs/independent-audits/2026-09-23-appkernel-tower-subpath-hold.md`).
+  Residual: core-network still installs the Tower package.
+- [x] `Array.range` charges Interpreter `stepBudget` (`chargeSteps(count)`)
+  before allocation. Tests interpreter-compute-step-cap **9/9** plus
+  domain-collections Array.range hostiles (**78/78** combined). Independent
+  scoped PASS `01a0cf4a-ee43`
+  (`docs/independent-audits/2026-09-23-array-range-step-budget-hold.md`).
+  Scan `csf_03064225783c475027bf7f5b` stays PARTIAL_THIS_TREE. Residual:
+  later metered at `MAX_UNMETERED_ARRAY_RANGE` 4096 (`01a0d06a-3160`).
+- [x] MemoryLogSink aggregate UTF-8 ceiling 1 MiB plus
+  `MAX_LOG_MESSAGE_CHARS` 4096 truncate. Tests logger **25/25**. Independent
+  scoped PASS `01a0cf52-5c21`
+  (`docs/independent-audits/2026-09-23-logger-byte-ceiling-hold.md`). Scan
+  `csf_fd74b2a34bfe325906af1691` stays PARTIAL_THIS_TREE. Residual:
+  later JsonLineSink line cap `01a0d061-70c5`; MemoryLogSink still retains
+  large field JSON.
+- [x] `PowerGovernor.read()` throws `LSP-READ-001` on a non-finite sensor
+  value. Tests power-governor **12/12** plus thermal-envelope **6/6**
+  (**18/18**). Independent scoped PASS `01a0cf57-56af`
+  (`docs/independent-audits/2026-09-23-thermal-read-finite-hold.md`). Scan
+  `csf_e145f9dfd60df70053acdab4` stays PARTIAL_THIS_TREE. Residual:
+  throwing sensor still propagates unwrapped.
+- [x] `graphFromJSON` admits 1 MiB / depth 32 / 16384 nodes / 65536 edges
+  before parse return. Tests semantic-graph-json **4/4** plus reachable
+  **2/2** (**6/6**). Independent scoped PASS `01a0cf5e-7f5b`
+  (`docs/independent-audits/2026-09-23-semantic-graph-json-hold.md`). Scan
+  `csf_b7c875ed001f66b8abedfc85` stays PARTIAL_THIS_TREE. Residual:
+  `callers` unindexed; no duplicate-key scan.
+- [x] `callers()` reverse-adjacency index for `calls` edges, result cap
+  `nodes.length`. Tests semantic-callers **2/2** plus prior semantic **6/6**
+  (**8/8**). Independent scoped PASS `01a0cf6c-807f`
+  (`docs/independent-audits/2026-09-23-semantic-callers-index-hold.md`).
+  Scan `csf_b7c875ed001f66b8abedfc85` stays PARTIAL_THIS_TREE. Residual:
+  index is per-call not cached; `effectsOf` still scans.
+- [x] `effectsOf()` adjacency index for `declaresEffect`, unique labels.
+  Tests semantic-effects **2/2** plus prior semantic **8/8** (**10/10**).
+  Scan `csf_b7c875ed001f66b8abedfc85` stays PARTIAL_THIS_TREE. Independent
+  scoped PASS `01a0cf73-278c`
+  (`docs/independent-audits/2026-09-23-semantic-effects-index-hold.md`).
+  Residual: indexes rebuilt per call; no duplicate-key scan.
+- [x] `listSourceFiles` shared scan budget: files 4096, dirs 4096, depth 32.
+  Tests package-graph **39/39**. Independent scoped PASS `01a0cf66-5ef3`
+  (`docs/independent-audits/2026-09-23-scan-traversal-budget-hold.md`). Scan
+  `csf_d6acd81d895092a4750e52bf` stays PARTIAL_THIS_TREE. Residual: readdir
+  failure still skips; lstat→read TOCTOU.
+- [x] Package scan `MAX_SCAN_FILE_BYTES` 1 MiB and `MAX_SCAN_TOTAL_BYTES`
+  32 MiB from `lstat` size before read. Tests package-graph **41/41**.
+  Scan `csf_d6acd81d895092a4750e52bf` stays PARTIAL_THIS_TREE. Independent
+  scoped PASS `01a0cf79-5f45`
+  (`docs/independent-audits/2026-09-23-scan-source-byte-cap-hold.md`).
+  Residual: lstat→read TOCTOU; 32 MiB total cap not live-exercised.
+- [x] WASM host array store: `MAX_WASM_ARRAYS` 4096,
+  `MAX_WASM_ARRAY_ITEMS` 1e6; unknown `__array_append` refuses.
+  Tests wasm-runtime **15/15**. Independent scoped PASS `01a0cf81-7e2b`
+  (`docs/independent-audits/2026-09-23-wasm-array-store-hold.md`). Scan
+  `csf_e3409dfe75ff7adda18f556a` stays PARTIAL_THIS_TREE. Residual:
+  `internString` unbounded.
+- [x] WASM `internString` / host string pushes: `MAX_WASM_STRINGS` 4096,
+  `MAX_WASM_STRING_CHARS` 1 MiB; `seedString` handle/length capped.
+  Tests wasm-runtime **19/19**. Independent scoped PASS `01a0cf88-96de`
+  (`docs/independent-audits/2026-09-23-wasm-string-store-hold.md`). Scan
+  `csf_e3409dfe75ff7adda18f556a` stays PARTIAL_THIS_TREE. Residual:
+  results/options/moneys/decimals unbounded.
+- [x] WASM results/options/moneys/decimals: `MAX_WASM_HOST_RECORDS` 4096.
+  Tests wasm-runtime **24/24**. Independent scoped PASS `01a0cf90-336d`
+  (`docs/independent-audits/2026-09-23-wasm-host-records-hold.md`). Scan
+  `csf_e3409dfe75ff7adda18f556a` stays PARTIAL_THIS_TREE. Residual:
+  `seedString` still sparse-fills holes under MAX.
+- [x] `AuditEgress.verifyChain` returns false when `hmacKey` is omitted.
+  Tests hmac-chain + never-drop **10/10**. Scan
+  `csf_0f748088754ddb920ceb641f` stays PARTIAL_THIS_TREE. Independent
+  scoped PASS `01a0cf97-20cf`
+  (`docs/independent-audits/2026-09-23-verifychain-omitted-key-hold.md`).
+  Writer omission later refused (`EGR-KEY-002`, next row).
+- [x] `AuditEgress` constructor throws `EGR-KEY-002` on omitted `hmacKey`;
+  explicit `Uint8Array(32)` is the named development key (`strictKey` →
+  `EGR-KEY-001`). Options `hmacKey` is required. Tests egress **32/32**
+  plus Tower/PCI consumers **46/46**. Independent scoped PASS
+  `01a0d003-1eab`
+  (`docs/independent-audits/2026-09-23-auditegress-writer-key-hold.md`).
+  Scan `csf_0f748088754ddb920ceb641f` stays PARTIAL_THIS_TREE. Residual:
+  PCI `readEgressBatches` still defaults ZERO_KEY; empty `Uint8Array` is
+  HMAC-equivalent to 32 zeros without `strictKey`.
+- [x] RD-1296 nested contextual record admission: `tryRecordLiteralAdoption`
+  recursively checks nested `#record` literals against the field schema.
+  Opaque `Record` is not validity. Return TYPE-008, let TYPE-002, call-arg
+  TYPE-005. Tests type-checker-record-adoption **29/29**. Independent scoped
+  PASS `01a0d00e-6950`
+  (`docs/independent-audits/2026-09-23-rd1296-nested-record-admission-hold.md`).
+  `--strict-types` refuses nested missing fields; plain check stays advisory.
+  Q1 flatten helper still bypasses `checkTypes`. Full RD-1296 ABI
+  (array-of-record deep copy, generation reuse) stays open.
+- [x] RD-1296 exact typed return copy: `FUNGI-WASM-RET-001` refuses 65-word,
+  zero/negative tags, and short memory; `invokeAdmittedExport` wipes after
+  trap; `planNeedsPack` packs padded `[i32,i64,i32]`. Tests
+  rd-1296-return-copy **7/7**; Q1 **27/27**. Independent scoped PASS
+  `01a0d019-1a67`
+  (`docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md`).
+  Wrap trap wipe and host-registry snapshots landed in the next row.
+- [x] RD-1296 host-registry typed identity: `readArray` frozen snapshot;
+  interned arrays `items.slice()`; `readResult`/`readMoney` owned copies;
+  `wrapAdmittedExports` wipes on trap then rethrows. Tests wasm-runtime
+  **27/27** plus rd-1296-host-registry **2/2**. Independent scoped PASS
+  `01a0d021-6244`
+  (`docs/independent-audits/2026-09-23-rd1296-host-registry-hold.md`).
+  internResult/internOption intern-by-copy landed in the next row. Residual:
+  array-of-record deep copy, generation reuse, secret-flow reachability.
+- [x] RD-1296 internResult/internOption intern-by-copy: stores `{ tag, value }`
+  / `{ kind, value }` field copies. Mutating `readResult`/`readOption` copies
+  or an `internArray` input after intern leaves the store. Tests wasm-runtime
+  **30/30**. Independent scoped PASS `01a0d02a-a373`
+  (`docs/independent-audits/2026-09-23-rd1296-intern-copy-hold.md`).
+  Array-of-record copy landed in the next row.
+- [x] RD-1296 array-of-record copy: `copyArrayRecords` snapshots interned
+  pointers then copies guest i32 fields; `FUNGI-WASM-HOST-001` refuses
+  incomplete copies. Tests wasm-runtime **35/35**. Independent scoped PASS
+  `01a0d034-251d`
+  (`docs/independent-audits/2026-09-23-rd1296-array-record-copy-hold.md`).
+  Nested layout copy landed in the next row. Residual: generation reuse;
+  secret-flow reachability.
+- [x] RD-1296 schema-directed nested record copy: `copyArrayRecordsLayout`
+  owns inner rows (`[[[7],99]]`); omitted nested ptr zeros; cyclic/depth>8
+  refuse `FUNGI-WASM-HOST-001`. Tests wasm-runtime **39/39**. Independent
+  scoped PASS `01a0d03f-69a6`
+  (`docs/independent-audits/2026-09-23-rd1296-nested-record-copy-hold.md`).
+  Secret nested layout copy landed in the next row. Residual: generation
+  reuse; `MAX_RECORD_COPY_NODES` not live-exhausted.
+- [x] RD-1296 secret-return nested layout copy: `finalizeSecretExportResult`
+  optional `layout` owns inner rows then wipes; without layout, live nested
+  pointers stay flat tagged words. Tests rd-1296-return-copy **10/10**; Q1
+  **27/27**. Independent scoped PASS `01a0d049-36a5`
+  (`docs/independent-audits/2026-09-23-rd1296-secret-nested-copy-hold.md`).
+  `MAX_RECORD_COPY_NODES` live exhaustion landed in the next row. Residual:
+  wrapAdmittedExports cannot take a layout; generation reuse.
+- [x] RD-1296 live `MAX_RECORD_COPY_NODES` exhaustion: exported 4096;
+  layout copy admits 4096 and refuses 4097 with `FUNGI-WASM-HOST-001` and
+  no partial success. Tests wasm-runtime **41/41**. Independent scoped PASS
+  `01a0d04f-f67a`
+  (`docs/independent-audits/2026-09-23-rd1296-copy-node-bound-hold.md`).
+  Wrap `returnLayouts` landed in the next row. Residual: generation reuse
+  (intern/alloc monotone).
+- [x] RD-1296 wrap `returnLayouts`: `admitAndInstantiate` passes per-export
+  layouts into `wrapAdmittedExports`; wrapped `h()` owns `[[7],99]` then
+  wipes; omit layouts stays `[1024,99]`. Tests rd-1296-host-registry **4/4**.
+  Independent scoped PASS `01a0d059-f944`
+  (`docs/independent-audits/2026-09-23-rd1296-wrap-return-layouts-hold.md`).
+  Residual: generation reuse (intern/alloc monotone). Default wrap without
+  `returnLayouts` stays flat. Full RD-1296 ABI stays PARTIAL.
+- [x] JsonLineSink whole-line bound: `MAX_LOG_LINE_CHARS` 4096; oversize
+  lines become a JSON overflow marker. Tests logger **27/27**. Independent
+  scoped PASS `01a0d061-70c5`
+  (`docs/independent-audits/2026-09-23-jsonlinesink-line-cap-hold.md`).
+  Scan `csf_fd74b2a34bfe325906af1691` stays PARTIAL_THIS_TREE. Residual:
+  MemoryLogSink still retains large field JSON.
+- [x] Direct `callStdlib("Array.range")` meters without double-charging:
+  missing `chargeSteps` refuses above `MAX_UNMETERED_ARRAY_RANGE` 4096;
+  supplied `chargeSteps` is one debit. Tests compute-step-cap **12/12**.
+  Independent scoped PASS `01a0d06a-3160`
+  (`docs/independent-audits/2026-09-23-array-range-callstdlib-meter-hold.md`).
+  Scan `csf_03064225783c475027bf7f5b` stays PARTIAL_THIS_TREE. Residual:
+  unmetered path still allocates up to 4096; sync fast-path remains
+  separate. WASM `__range` meter-before-allocate landed (`01a0e2ba-599c`).
+- [x] `seedString` densely fills holes with `""` so intern ids stay
+  contiguous. Tests wasm-runtime **43/43**. Independent scoped PASS
+  `01a0d074-2833`
+  (`docs/independent-audits/2026-09-23-seedstring-dense-holes-hold.md`).
+  Residual: intern/alloc still monotone (no generation reuse).
+- [x] WASM `__range` meters store, cardinality, guest words, and fuel
+  before allocating the JS items array; fuel debit after intern.
+  Tests wasm-runtime **45/45**. Independent scoped PASS `01a0e2ba-599c`
+  (`docs/independent-audits/2026-09-23-wasm-range-preallocate-hold.md`).
+  Scan `csf_e3409dfe75ff7adda18f556a` stays PARTIAL_THIS_TREE. Residual:
+  ranges still live in host JS arrays, not guest linear memory. Empty
+  `__range` store pre-check landed in the next row.
+- [x] Empty WASM `__range` (`to <= from`) refuses a full intern store
+  before `internArrayItems([])`. Tests wasm-runtime **47/47**. Independent
+  scoped PASS `01a0e2ce-444e`
+  (`docs/independent-audits/2026-09-27-wasm-range-empty-store-hold.md`).
+  Scan `csf_e3409dfe75ff7adda18f556a` stays PARTIAL_THIS_TREE. Residual:
+  ranges still live in host JS arrays.
+- [x] Live recount 2026-09-27 at dirty HEAD `e8f1b682`. This file now has
+  **238** open Markdown checkboxes (`[ ]`), matching the 2026-09-26
+  checkout check. Latest residual row is empty `__range` store pre-check
+  (`01a0e2ce-444e`). This refresh did not commit.
+- [x] WAT P9.4 type-directed `length`: Array/List → `__array_length`, String →
+  `__str_length`. Tests wat-array-length-lowering **3/3** plus string-methods
+  and fail-closed stmt **10/10** combined. Independent scoped PASS
+  `01a0cfaa-6cec` (`docs/independent-audits/2026-09-23-wat-array-length-hold.md`).
+  WAT emitter is not closed: Decimal stays fail-closed; C20 `matchesPattern`
+  interpreter-only; remaining stmt kinds trap.
+- [x] Interpreter `tryWhileFastPath` runs simple Int counted loops (identifier
+  op literal; Int assigns only), charges `stepBudget`, traps on iteration cap
+  and i32 overflow. Tests interpreter-while-fastpath **4/4** plus step-cap
+  **13/13** combined. Independent scoped PASS `01a0cfb6-5079`
+  (`docs/independent-audits/2026-09-23-interpreter-while-fastpath-hold.md`).
+  Interpreter is not closed: Decimal `/` `%` stay unsupported; sync path
+  still defers stdlib; ineligible loops stay on the walker.
+- [x] Live recount 2026-09-23 at HEAD `e8f1b682`
+  (`docs(roadmap): clarify committed checkpoint and SVG hold`). Checkbox
+  census still **2043** open boxes in **88** files; `docs/TODO.md` **242**.
+  Inventory still **0 OPEN / 120 PARTIAL / 4 PATCHED**. This refresh did
+  not commit.
+- [!] RD-0361 / RD-0349 / RD-0363 / RD-0364 / RD-0365 completion requests
+  stay HOLD. WAT emitter and runtime interpreter are not closed (Decimal,
+  C20, signing, vault/TPM, BitNet pin, R4). Checking those `[!]` rows
+  would fake completion.
 - [x] RD-1308 exact typed argument encoding for the pure-flow LRU:
   `encodePureFlowArgs` + `admitPureFlowCacheIdentity` + exact-mismatch
   miss + owned copies. Tests pure-flow-cache-identity **7/7**. Independent
@@ -32,12 +314,12 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   **2043** open boxes in **88** files; `docs/TODO.md` **242**. Inventory
   still **0 OPEN / 120 PARTIAL / 4 PATCHED**. This session did not create
   `ed4a1359`. Remaining dirty paths include the RD-1308 candidate.
-- [!] The **242** `docs/TODO.md` `[ ]` rows stay **HOLD**: `.fungi` pause,
+- [!] The **238** `docs/TODO.md` `[ ]` rows stay **HOLD**: `.fungi` pause,
   conversion, commit, Decimal/OAuth, durable backend, constitution, signing,
   hardware, bulk TypeScript retirement, SLIDE/VOK admission, Myco/graph
-  owners. Checking them would fake completion. E01 slices 3–4, PARTIAL
-  residuals, and PATCHED highs remain open engineering, not checkbox
-  closure.
+  owners. Checking them would fake completion. Tower RD-1295 composition
+  identity is Q1 NO_DEFECT / Q2 NOT VERIFIABLE; compiler RD-1296, PARTIAL
+  residuals, and PATCHED highs remain separate open engineering.
 - [!] Items 1–15 remain BLOCKED/HOLD/EXCLUDED as inventoried. No commit,
   pin bump, or production admission from this census.
 
@@ -51,7 +333,8 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   ([disposition](reports/scan-0f6063dd-disposition-2026-09-22.md),
   [json](reports/scan-0f6063dd-inventory-2026-09-22.json)).
   **0** remain OPEN_ON_SCAN_SNAPSHOT (4 PATCHED_AUDIT_PENDING, 120
-  PARTIAL_THIS_TREE). Remaining work is PARTIAL residuals and E01/RD-1296, listed in
+  PARTIAL_THIS_TREE). Remaining work is PARTIAL residuals, Tower RD-1295
+  source verification, and separate compiler RD-1296, listed in
   [outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
   Cluster-level repair is not full closure.
 - [!] JSON v1 encoder byte-budget repair implemented; focused **7/7** and
@@ -1027,24 +1310,24 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   As of that receipt, capture-free named `map`/`filter` emitted helpers and
   `reduce` plus Decimal division remained refused. After HOF jobs + RD-1277,
   capture-free named `reduce` also lowers to `$fungi_array_*`; Decimal
-  division may remain refused where still accurate. Measured L1 after J8 is
-  **187/190 = 98**. WAT tests **11/11**; runtime-wasm **27/27**.
+  division may remain refused where still accurate. Measured L1 after J8 was
+  **187/190 = 98**; on main `05eb5c29` it is **200/200 = 100**. WAT tests **11/11**; runtime-wasm **27/27**.
   Decimal division follow-up (2026-09-30, not done): job K4 (D6), queued after
   R1-R12, turns the remaining refusal into a named compile-time refusal that
   points at `divide(b, scale, mode)` / `remainder(b)`.
-  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
   K4 and R2/R3 implemented. Decimal `/`/`%`, mixed Decimal operands, any other
   Decimal method and every Money form except a one-argument constructor are
   named WASM refusals (FUNGI-WAT-DECIMAL-001 / FUNGI-WAT-MONEY-001), not
   `(unreachable)`. `divide`/`remainder` lower with typed arguments and a
   literal mode; the 77-case seven-mode matrix agrees oracle == interpreter ==
-  WASM. Not committed, not reviewed; KB code registration pending. See
+  WASM. Committed in `05eb5c29`; not independently reviewed; KB code registrations are written but uncommitted in the KB. See
   the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
   Update (2026-10-01 ~02:20 BST): the 7 codes are now registered in the KB
   (ZTF-Knowledge-Bases f661953e). The sync fast path now also agrees with the
   walker and WASM on Int `match`, Decimal `+` and Decimal `divide`, so the
-  measured Runtime interpreter ladder is 14/14 (REPORT §10). Still uncommitted
-  in Galerina.
+  measured Runtime interpreter ladder is 14/14 (REPORT §10). Committed
+  in Galerina main `05eb5c29` (re-measured 14/14 there).
 - [!] `Option.zip` stays unknown (no named schema). C03 `checkMethodChain`,
   C04 WASM digest, C08–C09, C10 schema, C12, C14–C20 remain. No `.fungi`,
   queue, signing, or SLIDE/VOK admission.
@@ -1629,10 +1912,10 @@ INCOMPLETE_NON_AUTHORITATIVE. This refresh did not commit.
   rounding mode required), R6 (one exact decimal core with frozen limits, the
   resource contract), then K4 last (D6: named refusal plus explicit
   `divide(b, scale, mode)`/`remainder(b)`, no default rounding for `/` or `%`).
-  Update (2026-10-01, uncommitted, branch `grok/wat-integration-20260930`):
+  Update (2026-10-01; committed to main in `05eb5c29`, not pushed; first written uncommitted on `grok/wat-integration-20260930`):
   the Decimal half (R3, R5, R6, K4) is implemented and tested in that
   worktree; the HOF/closure half is unchanged and this hold stays open until
-  review and commit. See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
+  review (the Decimal half is committed in `05eb5c29`). See the Grok Bot rounding REPORT (AGENTS/coordination/session-exchange/reports/grok-bot-rounding-work-20260930/REPORT.md).
   Source: 2026-09-30 decimal/rounding audit and WAT PLAN addendum
   2026-09-30 22:55. The callback/closure half is unchanged. Stays `[!]` until
   K4 is ACCEPTED.
@@ -12670,20 +12953,26 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
 
 <details><summary>Original RD-0234/0234b finding detail (all resolved above unless marked residual)</summary>
 
+The prose below preserves the original finding/reproduction at discovery time; a
+checked row is not a claim that its described fail-open still exists. The
+2026-09-26 reconciliation checked only four narrowly verified duplicate rows.
+Unmarked rows remain open for separate evidence review; later RD-0234c
+residuals and production admission are not cleared here.
+
 ### RD-0234 — `.fungi` prod audit (owner-gated fixes; prod read-only; build-staging; RED-bench-first)
 > `../ZTF-Knowledge-Bases/research/rd-legacy/galerina-rd-0234-fungi-50yr-mistake-audit.md` — 19 confirmed, 0 false; **`.fungi`
 > shares `.gate`'s core disease: a passing `build --production` does NOT currently mean the file honours its
 > guarantees.** GNG-01 + VD-1 **re-verified live on prod 2026-07-02** (root-cause below). These are the
 > highest-severity items in this file — a dead security pass mints SIGNED manifests for SQLi. All fixes
 > owner-gated (prod). Fix each behind a RED-bench (repro test) first.
-- [ ] **GNG-01 (BLOCKER): wire the DEAD OWASP taint pass.** `checkTaint` is imported (`index.ts:807`) + defined
+- [x] **GNG-01 (historical finding, resolved for the pinned taint-to-sink route): wire the DEAD OWASP taint pass.** `checkTaint` is imported (`index.ts:807`) + defined
       (`taint-checker.ts:264`) but has **ZERO call sites** — SQLi/shell/XSS from `request` input builds
       `--production` clean **+ mints a signed `.lmanifest`**. Invoke `checkTaint` in the compile/CLI pipeline;
       reconcile its capitalized sink names (`Shell.exec`) with the wired lowercase value-state list (VD-4).
-- [ ] **VD-1 (MAJOR): case-drift fail-open.** `SINK_REQUIREMENTS`/`isGovernedSink` (`value-state-checker.ts:179+`)
+- [x] **VD-1 (historical finding, case-insensitive sink lookup verified): case-drift fail-open.** `SINK_REQUIREMENTS`/`isGovernedSink` (`value-state-checker.ts:179+`)
       hardlist **lowercase-exact** (`match:"exact"`), so tainted `req.body → Shell.exec(x)` PASSES+signs while
       `shell.exec(x)` fires `FUNGI-VALUESTATE-003`. Case-normalize / single-source the sink match.
-- [ ] **GNG-03 (BLOCKER): `privacy { deny protected X to response.body }` is purely DECLARATIVE — enforces
+- [x] **GNG-03 (historical finding, resolved for documented response targets): `privacy { deny protected X to response.body }` is purely DECLARATIVE — enforces
       NOTHING** (a raw `protected` PII return admits; the terser `response{denies}` IS enforced). Resolve the
       declared deny against the typed flow, or reject the block as unimplemented — never silently accept a
       security directive that does nothing. (This is the SOUND backstop `.gate` posture-B defers to.)
@@ -12725,7 +13014,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       fires at **`AuditLog.write` only** — protected PII via `http.post`/`EmailService` egresses clean (MAJOR).
       (iii) `FUNGI-PASSPORT-002`/`AFFINE-001` skipped for any **non-bare-identifier** sink arg (record/interp
       wrapper mints a signed manifest). **Fix:** single-source the sink/egress lists; enforce at ALL sinks.
-- [ ] **CLASS D — parse-time governance ESCAPE HATCH (worst).** `@experimental_profile(...) { … }` — and any
+- [x] **CLASS D (historical finding, resolved for covered attribute forms) — parse-time governance ESCAPE HATCH (worst).** `@experimental_profile(...) { … }` — and any
       `@name { }` attribute directive — has its wrapped block **erased from the AST** by `skipBalancedBraces`
       BEFORE any checker runs → secret-exfil / `eval` / undeclared-effect inside it is unconditionally invisible
       and the file signs (BLOCKER, both hunts). **Fix:** attribute directives must NOT drop governed code;

@@ -1213,7 +1213,7 @@ export {
   // Optimization A: binding slot array
   assignSlots,
   SlottedScope,
-  // Optimization B: while loop fast-path stub
+  // Optimization B: while loop Int counted-loop fast-path
   tryWhileFastPath,
   tryPureFlowSync,
   executeFlowSync,
@@ -1392,6 +1392,7 @@ export {
   callStdlib,
   jsObjectToGalerina,
   galerinaValuesEqual,
+  MAX_UNMETERED_ARRAY_RANGE,
   type CryptoProvider,
   type StdlibContext,
 } from "./stdlib.js";

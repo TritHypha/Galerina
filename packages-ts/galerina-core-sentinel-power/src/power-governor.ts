@@ -77,7 +77,11 @@ export class PowerGovernor {
 
   /** Current temperature: the injected sensor if present, else the last set reading. */
   read(): number {
-    return this.sensor !== undefined ? this.sensor() : this.lastReading;
+    const tempC = this.sensor !== undefined ? this.sensor() : this.lastReading;
+    if (!Number.isFinite(tempC)) {
+      throw new PowerFault("LSP-READ-001", "temperature reading must be a finite number");
+    }
+    return tempC;
   }
 
   /** Map the current temperature onto its {@link PowerState}. */

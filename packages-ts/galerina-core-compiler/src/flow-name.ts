@@ -118,3 +118,14 @@ export function isFlowDeclNamed(node: AstNode, name: string): boolean {
   const decoded = decodeFlowDecl(node);
   return decoded !== undefined && !("error" in decoded) && decoded.name === name;
 }
+
+/**
+ * Declared flow name for any of the five declaration kinds.
+ * `undefined` for non-flow nodes and for a malformed governed value (surface
+ * that as a diagnostic elsewhere; never treat it as a real name).
+ */
+export function declaredFlowName(node: AstNode): string | undefined {
+  const decoded = decodeFlowDecl(node);
+  if (decoded === undefined || "error" in decoded || decoded.name === "") return undefined;
+  return decoded.name;
+}

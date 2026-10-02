@@ -15,7 +15,7 @@ const CLI = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 
 function makeEgressDir() {
   const dir = mkdtempSync(join(tmpdir(), "fungi-ledger-"));
-  const eg = new AuditEgress({ dir, batchSize: 8 });
+  const eg = new AuditEgress({ dir, batchSize: 8, hmacKey: new Uint8Array(32) });
   eg.push(JSON.stringify({ who: "svc-a", what: "charge", effect: "Network", decision: "allow", timestamp: "2026-06-15T10:00:00Z" }));
   eg.push(JSON.stringify({ who: "svc-b", what: "refund", effect: "Network", decision: "deny", timestamp: "2026-06-15T10:01:00Z" }));
   eg.push("opaque-non-json-record"); // undeterminable → must fail closed to deny

@@ -40,7 +40,7 @@ test("RD-0365: UNKNOWN_HOST.keyCustody defaults to env-spore (L1 baseline)", () 
     "UNKNOWN_HOST must default to env-spore (the shipped L1 baseline)");
 });
 
-test("RD-0365: mlock_posix → env-spore (POSIX swap protection, no HSM)", () => {
+test("RD-0365: mlock_posix → env-spore (no hardware custody or proven swap lock)", () => {
   const { HOST_PROFILES } = L;
   if (!(HOST_PROFILES instanceof Map)) return;
   const p = HOST_PROFILES.get("mlock_posix");

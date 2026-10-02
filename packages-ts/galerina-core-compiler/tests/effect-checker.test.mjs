@@ -274,6 +274,20 @@ ${kind} flow loadOrder(order: Order) -> Result<Order, OrderError>
       );
     });
   }
+
+  it("governed floor_2 flow with an undeclared effect emits FUNGI-EFFECT-001", () => {
+    const { effectResults } = parseAndCheck(`
+governed floor_2 flow loadOrder(order: Order) -> Result<Order, OrderError>
+  contract { intent { "s" } effects {  } }
+{
+  return Ok(OrdersDB.find(order.id)?)
+}
+`);
+    assert.ok(
+      hasEffectDiag(effectResults, "FUNGI-EFFECT-001"),
+      "Expected FUNGI-EFFECT-001 for an undeclared effect on a governed flow — findFlowNode must decode governed:<floor>:<name>",
+    );
+  });
 });
 
 describe("Effect Checker — effectResultsToDiagnostics", () => {

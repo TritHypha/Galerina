@@ -1,5 +1,64 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Memory-security dependency checkpoint — 2026-09-28
+
+The former RD-1296 combined memory programme was split, not solved. Product
+adoption now has three ordered boundaries: RD-1413 governed incoming access,
+RD-1414 transient ownership and cleanup, then RD-1415 authorized output and
+live release. The KB owners accept bounded isolated/synthetic evidence; this
+checkout does not yet contain a wired real protected application operation.
+The four explicit product holds are in [docs/TODO.md](TODO.md). Do not infer
+integration from an AGENTS candidate packet or turn the original guest-byte
+Wasm obligations into a host-only PASS without an explicit disposition.
+
+The next core checkpoint is one source-bound application request with a real
+caller/grant/provider and permitted recipient, followed by product package
+cleanup, release-sink and recovery checks, and an independent security review
+of the same issued-source route. A separate SuperGrok follow-on produced
+isolated package tests **7/7** and **3/3** and a fixture release test **7/7**;
+Codex's extra RD-1414 replay was **4/5**, because the pin test targets a
+nonexistent path. A later isolated correction gave **2/2** corrected-pin and
+**3/3** baseline/candidate discriminator checks, with focused SecretGate
+**7/7** and GCM **3/3** replay; it did not make the original 4/5 packet green
+or prove a fresh full-package build from pinned source. The original
+ANSWER/manifest count disagreement is retained in the private RD owners, not
+converted into a product PASS. Grok-Bot's transcript queue is separate. A
+public loopback red control on the loaded API
+adapter observed duplicate object/version query keys returning 200 and reaching
+the handler with the later value; the emitted `dist` is ignored, so this is not
+a source-bound protected-route test. A separate isolated source-copied adapter
+candidate passed an independent 10/10 replay: repeated decoded keys return 400
+before its public fixture handler, while wrong-module controls remain last-wins.
+That candidate is not integrated. Its full compiler-input and actual loaded
+dependency graphs remain unproved, generic duplicate refusal changes unrelated
+public-query behavior, and the real protected route is still absent. RD-1413
+requires refusal before provider entry on that route. The ledger's
+memory-security gate records this HOLD.
+Existing release, SLIDE/VOK, signing and corpus gates remain independent.
+This text is a roadmap locator, not a regenerated SVG or production receipt.
+
+## Live visual preview — 2026-09-23
+
+Run `node scripts/gen-roadmap.mjs --preview` from the Galerina root and open
+`build/roadmap/roadmap-preview.svg`. This ignored local SVG is visibly marked
+**PREVIEW ONLY · NON-AUTHORITATIVE** and displays the current HEAD and count of
+relevant dirty inputs. It does not replace the tracked `roadmap.svg`, its
+provenance, or the generated region below. The canonical `--write` and
+`--check` routes still refuse dirty provenance.
+
+The active `.gate` programme is **v4**, on **HOLD until the final phase**;
+v3 is a frozen compatibility baseline, not a parallel active workstream.
+The v4 programme's own build receipt does not establish a Galerina product
+dialect or production admission. The preview shows this as a held workstream,
+not a completed implementation.
+
+**Tracked SVG refresh remains open:** after the relevant sources and generator
+are committed on a clean HEAD, run `node scripts/gen-roadmap.mjs --write`, then
+`node scripts/gen-roadmap.mjs --check`. Verify the regenerated
+`build/roadmap/roadmap.svg` and `build/roadmap/provenance.json` against that
+exact HEAD before treating the tracked diagram as current. Do not substitute
+the local preview or bypass the dirty-input refusal. `.gate` stays HOLD.
+
 ## Custody and roadmap refresh — 2026-09-23
 
 Git custody checkpoint: `main` and `origin/main` matched at `bf1071f24`
@@ -14,8 +73,10 @@ Historical checkpoint: HEAD was `ed4a1359…` when this section was drafted
 Recheck Git for current custody; this is not an exact-head receipt. The item-7
 inventory has 0 OPEN_ON_SCAN_SNAPSHOT, 120 PARTIAL_THIS_TREE,
 and 4 PATCHED_AUDIT_PENDING of 124 findings. This is not security clearance.
-E01/RD-1296 load-graph bounds are implemented with 86/86 focused tests;
-composition snapshot and evidence-packet slices 3–4 remain. RD-1308 exact
+Tower RD-1295 load-graph bounds (formerly labelled E01/RD-1296) are
+implemented with 86/86 focused tests; composition and evidence-packet
+obligations remain. The separate RD-1296 compiler/guest-byte programme is
+not closed by that Tower result. RD-1308 exact
 typed argument encoding is implemented on this dirty tree (identity tests
 7/7; independent PASS `01a0ceda-70d7`); finding
 `csf_456107f3e63d6f916462d1bf` stays PARTIAL_THIS_TREE (flowNode hash still

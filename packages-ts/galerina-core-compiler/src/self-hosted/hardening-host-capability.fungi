@@ -19,7 +19,8 @@ contract { intent { "Resolve only exact declared host profiles and fail closed t
       name: "mlock_posix"
       canRegisterPin: false
       canNoDramSpill: false
-      canNoSwap: true
+      // A profile label cannot prove the lock hook is registered or succeeds.
+      canNoSwap: false
       canNoDisk: true
       keyCustody: "env-spore"
     }
