@@ -29,6 +29,9 @@ import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModCheck
 import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
 import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresSyncTierUnlowerable } from "./numeric-lowering.js";
 import { foldRequirementValues } from "./requirement-semantics.js";
+import { executableFaultHandlers } from "./resilience-inference.js";
+import { bodyLocalInvariantPlan, flowHasBodyLocalInvariants, isBodyLocalEnsure, type BodyLocalInvariant } from "./body-local-invariants.js";
+import { FUNGI_FAULT_007, FUNGI_FAULT_008, FUNGI_INV_005, FUNGI_INV_006, governedControlMessage } from "./governed-control-diagnostics.js";
 import { compareUtf16CodeUnits } from "@galerina/core-runtime-wasm";
 import { isProxy as isNodeProxy } from "node:util/types";
 import { runInNewContext } from "node:vm";
@@ -1189,6 +1192,41 @@ class TrapSignal {
   constructor(readonly errorCode: string) {}
 }
 
+/**
+ * Real I3 (R-I3-4, zero-trust default, owner may revisit): thrown when a body-local invariant is
+ * violated or cannot be evaluated to exactly Bool true. runFlow turns it into FUNGI-INV-005 + deny
+ * (FUNGI-INV-006 when the flow exits before the check point is ever reached).
+ * `index` is the ensure's position in the invariant block; no bound value is carried.
+ */
+/**
+ * Closed classification of a body-local invariant failure (SuperGrok review NB-1, zero-trust default,
+ * owner may revisit): the INV-005 message carries ONLY this fixed label, never an evaluation exception
+ * string, a bound value or a parameter value.
+ */
+type BodyInvariantFailureClass = "EVALUATION_FAILED" | "NOT_BOOL" | "FALSE";
+
+class BodyInvariantSignal {
+  constructor(readonly index: number, readonly classification: BodyInvariantFailureClass) {}
+}
+
+/** Real I3: the body-local invariant frame of one runFlow invocation (stacked, so re-entry is safe). */
+interface BodyInvariantFrame {
+  readonly plan: readonly BodyLocalInvariant[];
+  readonly checked: Set<number>;
+}
+
+/**
+ * Real I2 (R-I2-5, zero-trust default, owner may revisit): flows quarantined by an executed
+ * `on_timeout_fault quarantine` handler, per call tree. Keyed on the call tree's SHARED step-budget
+ * object (every nested Interpreter already inherits that reference), so quarantine spans exactly one
+ * top-level execution and needs no new plumbing. No reset inside the call tree; a new top-level
+ * execution starts clean. Host-level persistence / the DPM posture-bit write are parked.
+ */
+const QUARANTINED_FLOWS = new WeakMap<object, Set<string>>();
+
+/** Exact shape of the contract enforcer's in-body deadline fault (runtime/contractEnforcer.ts). */
+const TIMEOUT_FAULT_MESSAGE = /^\[FUNGI-TIMEOUT\] flow "[^"]*" exceeded deadline$/;
+
 /** Best-effort human-facing text for a fault reason value (String → its text). */
 function faultReasonText(v: GalerinaValue): string {
   if (v.__tag === "string") return v.value;
@@ -1372,6 +1410,8 @@ class Interpreter {
   private auditWriteCalled = false;
   /** R4C: the name of the currently executing flow (for governed-value access checks). */
   private currentFlowName: string | undefined;
+  /** Real I3: stacked body-local invariant frames (top = the flow whose body is running). */
+  private readonly bodyInvariantFrames: BodyInvariantFrame[] = [];
   /** Step 3g: the base type the current flow returns, so a bare `return <Int64 literal>` (no binding)
    *  evaluates via the i64 type-directed path. Set per flow at runFlow entry. */
   private flowReturnBase = "";
@@ -1599,6 +1639,23 @@ class Interpreter {
       this.flowReturnBase = typeof rt === "string" ? numericBaseType(rt) : "";
     }
 
+    // Real I2 (R-I2-5): a flow quarantined earlier in THIS call tree is denied before every other
+    // gate (deadline, admission, body). The body never runs; the audit carries no argument values.
+    {
+      const quarantined = QUARANTINED_FLOWS.get(this.stepBudget);
+      if (quarantined !== undefined && quarantined.has(flowName)) {
+        const message = governedControlMessage(FUNGI_FAULT_008, flowName, FUNGI_FAULT_008.message);
+        this.auditEntries.push({
+          event: "quarantine-deny",
+          fields: { code: FUNGI_FAULT_008.code, flowId: flowName },
+          timestamp: new Date().toISOString(),
+        });
+        this.diagnostics.push({ code: FUNGI_FAULT_008.code, message });
+        const value: GalerinaValue = { __tag: "runtimeError", message };
+        return this.buildResult(flowName, qualifier, startedAt, value, message);
+      }
+    }
+
     // Step 2A: Check deadline before doing any work — emit FUNGI-RUNTIME-006
     if (this.enforcer !== undefined) {
       try {
@@ -1763,6 +1820,10 @@ class Interpreter {
     let returnValue: GalerinaValue = FUNGI_VOID;
     let runtimeError: string | undefined;
 
+    // Real I3 (R-I3-2): this invocation's body-local invariant frame, checked right after each trigger `let`.
+    const bodyInvariantFrame: BodyInvariantFrame = { plan: bodyLocalInvariantPlan(flowNode), checked: new Set<number>() };
+    this.bodyInvariantFrames.push(bodyInvariantFrame);
+
     try {
       for (const child of flowNode.children ?? []) {
         if (child.kind === "block") {
@@ -1789,6 +1850,18 @@ class Interpreter {
           message: `Named trap '${error.errorCode}' fired in flow '${flowName}'`,
         });
         returnValue = { __tag: "runtimeError", message };
+      } else if (error instanceof BodyInvariantSignal) {
+        // Real I3 (R-I3-4): a violated / non-evaluable body-local invariant DENIES. The audit records
+        // the code, flow and ensure index only - never a bound value.
+        const message = governedControlMessage(FUNGI_INV_005, flowName, `invariant #${error.index} classification ${error.classification} - fail-closed`);
+        runtimeError = message;
+        this.auditEntries.push({
+          event: "invariant",
+          fields: { code: FUNGI_INV_005.code, flowId: flowName, index: String(error.index) },
+          timestamp: new Date().toISOString(),
+        });
+        this.diagnostics.push({ code: FUNGI_INV_005.code, message });
+        returnValue = { __tag: "runtimeError", message };
       } else if (error instanceof FaultSignal) {
         // W5b T2.2 (RD-0266 A10): an unhandled fault HALTS + AUDITS + DENIES.
         // Fail-closed — no value is produced (returnValue is a runtimeError, so
@@ -1808,9 +1881,39 @@ class Interpreter {
         runtimeError = message;
         this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message: `Runtime exception in flow '${flowName}': ${causeMessage}` });
         returnValue = { __tag: "runtimeError", message };
+        // Real I2 (R-I2-1/5/6): an in-body wall-clock deadline fault is the ONE classified, handleable
+        // fault in this tier. The flow has already halted + audited + denied above; a declared
+        // `on_timeout_fault quarantine` then ALSO quarantines it for the rest of this call tree.
+        if (error instanceof Error && TIMEOUT_FAULT_MESSAGE.test(error.message)) {
+          this.runTimeoutFaultHandlers(flowNode, flowName);
+        }
       }
     } finally {
       this.popScope();
+      this.bodyInvariantFrames.pop();
+    }
+
+    // Real I3 (R-I3-2): a successful exit (return or fall-through) before a body-local invariant was
+    // ever established fails closed - the invariant must hold on every path that produces a value.
+    if (runtimeError === undefined && !isRuntimeError(returnValue)) {
+      const pending = bodyInvariantFrame.plan.filter((inv) => !bodyInvariantFrame.checked.has(inv.index));
+      const first = pending[0];
+      if (first !== undefined) {
+        // One code = one failure mode: never reaching the check point is INV-006, not INV-005.
+        const message = governedControlMessage(
+          FUNGI_INV_006,
+          flowName,
+          `invariant #${first.index} was never established (the flow exited before its binding ran) - fail-closed`,
+        );
+        runtimeError = message;
+        this.auditEntries.push({
+          event: "invariant",
+          fields: { code: FUNGI_INV_006.code, flowId: flowName, index: String(first.index) },
+          timestamp: new Date().toISOString(),
+        });
+        this.diagnostics.push({ code: FUNGI_INV_006.code, message });
+        returnValue = { __tag: "runtimeError", message };
+      }
     }
 
     // R1A: Check request_time limit at flow exit — add warning diagnostic if exceeded
@@ -1900,6 +2003,57 @@ class Interpreter {
    * holds. Ensures referencing names outside parameter scope are refused statically (FUNGI-INV-004), so
    * a non-evaluable predicate here is unexpected and treated as a violation, never skipped.
    */
+  /**
+   * Real I2 (R-I2-5/6): run the executable handlers for an in-body timeout fault. Only
+   * `on_timeout_fault quarantine` exists in this tier. Audit order: (the RUNTIME-003 fault diagnostic
+   * already pushed) -> `fault-handler` audit -> FUNGI-FAULT-007. No fault reason, payload or argument
+   * value is recorded.
+   */
+  private runTimeoutFaultHandlers(flowNode: AstNode, flowName: string): void {
+    for (const h of executableFaultHandlers(flowNode)) {
+      if (h.signal !== "on_timeout_fault") continue;
+      this.auditEntries.push({
+        event: "fault-handler",
+        fields: { signal: h.signal, action: h.action, flowId: flowName, postureBit: h.postureBit },
+        timestamp: new Date().toISOString(),
+      });
+      const registry = QUARANTINED_FLOWS.get(this.stepBudget) ?? new Set<string>();
+      registry.add(flowName);
+      QUARANTINED_FLOWS.set(this.stepBudget, registry);
+      this.diagnostics.push({
+        code: FUNGI_FAULT_007.code,
+        message: governedControlMessage(
+          FUNGI_FAULT_007,
+          flowName,
+          `${FUNGI_FAULT_007.message} (posture bit ${h.postureBit}: recorded, not written)`,
+        ),
+      });
+    }
+  }
+
+  /**
+   * Real I3 (R-I3-2/4): after a top-level `let` executes, check every body-local invariant whose LAST
+   * referenced local it binds. Exactly Bool true passes; false, any other value, or an evaluation
+   * error throws BodyInvariantSignal (FUNGI-INV-005). Runs before the next statement, so no later
+   * effect can observe a state that violates the invariant.
+   */
+  private async checkBodyInvariantTriggers(letNode: AstNode): Promise<void> {
+    const frame = this.bodyInvariantFrames[this.bodyInvariantFrames.length - 1];
+    if (frame === undefined) return;
+    for (const inv of frame.plan) {
+      if (inv.trigger !== letNode) continue;
+      let v: GalerinaValue;
+      try {
+        v = await this.evalExpr(inv.expr);
+      } catch (e: unknown) {
+        throw new BodyInvariantSignal(inv.index, "EVALUATION_FAILED");
+      }
+      if (v.__tag !== "bool") throw new BodyInvariantSignal(inv.index, "NOT_BOOL");
+      if (v.value !== true) throw new BodyInvariantSignal(inv.index, "FALSE");
+      frame.checked.add(inv.index);
+    }
+  }
+
   private async checkInputPreconditions(
     flowNode: AstNode,
     flowName: string,
@@ -2216,6 +2370,8 @@ class Interpreter {
           tagGovernedValue(wrappedVal, rawType.startsWith("protected ") ? "protected" : "redacted");
         }
         this.declare(name, wrappedVal, safetyPrefix === "unsafe", typeName);
+        // Real I3 (R-I3-2): check any body-local invariant this binding completes, before the next statement.
+        await this.checkBodyInvariantTriggers(node);
         return undefined;
       }
 
@@ -2440,6 +2596,9 @@ class Interpreter {
             fastScope,
             (n) => this.chargeSteps(n),
             MAX_ITERATIONS,
+            // R-I2-12: same per-iteration wall-clock deadline check as the walker below (0032 bound),
+            // so an eligible CPU loop still raises [FUNGI-TIMEOUT] and the I2 handler runs.
+            () => this.enforcer?.checkDeadline(),
           );
           if (ran) {
             for (const [name, value] of fastScope) this.assign(name, value);
@@ -4020,7 +4179,9 @@ function extractInputPreconditions(flowNode: AstNode): AstNode[] {
   for (const child of invariantBlock.children ?? []) {
     if (child.kind !== "ensureDecl") continue;
     const expr = child.children?.[0];
-    if (expr !== undefined && !exprReferencesResult(expr)) out.push(expr);
+    // Real I3: a body-local invariant is NOT an entry pre-condition (its locals are unbound at entry);
+    // it is enforced right after its binding (checkBodyInvariantTriggers).
+    if (expr !== undefined && !exprReferencesResult(expr) && !isBodyLocalEnsure(flowNode, expr)) out.push(expr);
   }
   return out;
 }
@@ -4064,6 +4225,7 @@ function flowRequiresGovernedPath(ast: AstNode, flowName: string): boolean {
       (extractOutputPostconditions(node).length > 0 || extractInputPreconditions(node).length > 0 ||
         extractParamAdmissions(node).length > 0 || astContainsKind(node, "trapDecl") ||
         astContainsKind(node, "requirementExpr") || astContainsKind(node, "requireStmt") ||
+        flowHasBodyLocalInvariants(node) || executableFaultHandlers(node).length > 0 ||
         (node.children ?? []).some((child) =>
           child.kind === "paramDecl" &&
           (bindingTypeName(child.value ?? "") === "Bool" || bindingTypeName(child.value ?? "") === "Verdict")))
@@ -4812,6 +4974,9 @@ function snapshotIntScopeForWhile(
  * @param condNode  The condition AstNode of the while statement.
  * @param bodyNode  The body AstNode of the while statement.
  * @param scope     The current binding Map (Map<string, GalerinaValue>).
+ * @param checkDeadline Called once per iteration, before the condition, exactly where the tree-walker
+ *                  calls enforcer.checkDeadline(); it throws [FUNGI-TIMEOUT] when the deadline passed
+ *                  (R-I2-12, zero-trust default: the deadline is honoured at the same granularity).
  */
 export function tryWhileFastPath(
   condNode: AstNode,
@@ -4819,6 +4984,7 @@ export function tryWhileFastPath(
   scope: Map<string, GalerinaValue>,
   charge: (n: number) => void = () => undefined,
   maxIterations = 100_000,
+  checkDeadline: () => void = () => undefined,
 ): boolean {
   const cond = parseFastWhileCond(condNode);
   const assigns = parseFastWhileBody(bodyNode);
@@ -4838,6 +5004,7 @@ export function tryWhileFastPath(
     if (iterations++ > maxIterations) {
       throw new Error(`Loop exceeded maximum iteration count (${maxIterations}) — fail-closed`);
     }
+    checkDeadline();
     charge(1);
     const counter = scope.get(cond.name);
     if (counter === undefined || counter.__tag !== "int") {

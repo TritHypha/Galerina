@@ -146,7 +146,13 @@ describe("T2 fallback compile error FAULT-006", () => {
 });
 
 describe("T3 quarantine/retry compile error FAULT-006", () => {
-  for (const line of ["on_timeout_fault quarantine", "on_timeout_fault retry"]) {
+  // 2026-10-02 real I2 (R-I2-1, zero-trust default, owner may revisit): `on_timeout_fault quarantine` is now
+  // EXECUTED (FUNGI-FAULT-007/008, tests/interpreter-i2-i3.test.mjs), so it is no longer FAULT-006. Retry stays.
+  it("on_timeout_fault quarantine is executed, so no longer FAULT-006", () => {
+    const { g } = gov(HANDLER_SRC("on_timeout_fault quarantine"), "t3q.fungi");
+    assert.equal(has(g, CODE), false, g.diagnostics.map((d) => d.code).join(","));
+  });
+  for (const line of ["on_timeout_fault retry"]) {
     it(line + " is FAULT-006", () => {
       const { g } = gov(HANDLER_SRC(line), "t3.fungi");
       assert.equal(has(g, CODE), true, g.diagnostics.map((d) => d.code).join(","));
@@ -191,7 +197,10 @@ describe("T6 trap stay-green", () => {
 });
 
 describe("T7 body-local ensure is INV-004", () => {
-  it("ensure naming a body-local let is FUNGI-INV-004", () => {
+  // 2026-10-02 real I3 (R-I3-1, zero-trust default, owner may revisit): a top-level immutable single-bound
+  // non-protected `let` is now an ADMITTED body-local invariant (checked at runtime, FUNGI-INV-005), so it is
+  // no longer INV-004. `readonly` and every other ineligible local below stay INV-004.
+  it("ensure naming an eligible body-local let is admitted (no FUNGI-INV-004)", () => {
     const src = `pure flow t(amount: Int) -> Int
 contract {
   intent { "body-local pin." }
@@ -200,7 +209,7 @@ contract {
 { let k: Int = 1
   return amount }`;
     const { g } = gov(src, "t7.fungi");
-    assert.equal(has(g, "FUNGI-INV-004"), true, g.diagnostics.map((d) => d.code + ":" + d.message).join(" | "));
+    assert.equal(has(g, "FUNGI-INV-004"), false, g.diagnostics.map((d) => d.code + ":" + d.message).join(" | "));
   });
   it("ensure naming a body-local readonly is FUNGI-INV-004", () => {
     const src = `pure flow t(amount: Int) -> Int
@@ -229,10 +238,10 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3101 / :3911 still trap", () => {
+  it("live stacked lines :3127 / :3937 still trap (re-pinned on main 0d06d6c1, +26)", () => {
     const lines = emitterSrc().split("\n");
-    assert.equal(lines[3100].includes("case \"faultStmt\""), true, lines[3100]);
-    assert.equal(lines[3910].includes("case \"faultStmt\""), true, lines[3910]);
+    assert.equal(lines[3126].includes("case \"faultStmt\""), true, lines[3126]);
+    assert.equal(lines[3936].includes("case \"faultStmt\""), true, lines[3936]);
     assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
   });
 });

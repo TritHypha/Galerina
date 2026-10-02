@@ -262,6 +262,18 @@ export {
 } from "./requirement-diagnostics.js";
 
 export {
+  FUNGI_FAULT_007,
+  FUNGI_FAULT_008,
+  FUNGI_INV_005,
+  FUNGI_INV_006,
+  FUNGI_FAULT_DIAGNOSTICS,
+  FUNGI_INV_DIAGNOSTICS,
+  governedControlMessage,
+  type GovernedControlDiagnosticDefinition,
+} from "./governed-control-diagnostics.js";
+export { FUNGI_WAT_FAULT_001, FUNGI_WAT_INV_001, FUNGI_WAT_DIAGNOSTICS } from "./wat-emitter-refusals.js";
+
+export {
   liftRequirementValue,
   foldRequirementValues,
   type RequirementVerdict,

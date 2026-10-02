@@ -84,7 +84,7 @@ import {
   refuseMixed64BitWat,
   refusePatternWat,
   refuseGovernedOrClosureStmtWat,
-  refuseEffectfulEntryWat,
+  refuseEffectfulEntryWat, refuseInterpreterOnlyFlowWat,
 } from "./wat-emitter-refusals.js";
 import { ROUND_MODES } from "./decimal-arith.js";
 
@@ -3997,6 +3997,7 @@ export function emitWATFromFlowAST(
   layouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("layouts:unset"),
   enums: Lookup<ReadonlyMap<string, readonly string[]>> = none("enums:unset"),
 ): Lookup<string> {
+  refuseInterpreterOnlyFlowWat(flowNode); // Real I2/I3 (R-I2-9 / R-I3-6): refuse by name before any per-flow state.
   // Build variable map: Galerina name → WAT local name.
   // Params are $p0, $p1, … — immutable (parameters are passed by value in WAT).
   const vars = new Map<string, string>();

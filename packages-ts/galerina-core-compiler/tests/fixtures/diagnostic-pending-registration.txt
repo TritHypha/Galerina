@@ -40,3 +40,6 @@ FUNGI-WAT-BODY-001
 # 2026-10-01: the 7 Grok Bot rounding codes (FUNGI-NUMERIC-OP-002..005, FUNGI-WAT-MONEY-001,
 # FUNGI-WAT-DECIMAL-001, FUNGI-HALLMARK-006) are now registered in the KB compiler-diagnostics.md and are
 # no longer pending (owner go-ahead 01:36 BST).
+# 2026-10-02: the 6 real I2/I3 codes (FUNGI-FAULT-007/008, FUNGI-INV-005/006, FUNGI-WAT-FAULT-001, FUNGI-WAT-INV-001)
+# are now registered in the KB compiler-diagnostics.md and galerina-governance-rules.md and are no longer pending
+# (owner decision, Phillip Booth, 13:41 BST: keep INV-005/006; the INV-* reservation is widened to governed runtime invariants).

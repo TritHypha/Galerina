@@ -174,6 +174,36 @@ const FAULT_SIGNALS: readonly FaultSignal[] = [
 /** The fail-closed secure default applied to every undeclared fault class. */
 const SECURE_DEFAULT_FAULT_ACTION: FaultAction = "halt";
 
+/**
+ * Real I2 (Grok Bot 2026-10-02; R-I2-1 / R-I2-10 zero-trust defaults, owner may revisit): the ONLY
+ * declared handler this tier EXECUTES is `on_timeout_fault quarantine` - an in-body wall-clock
+ * deadline fault halts + audits + denies exactly like `halt`, and the flow is then quarantined for
+ * the rest of its call tree. Every other non-halt combination stays refused by FUNGI-FAULT-006:
+ * fallback (no budget widening), retry (max 0), log (rotation = secrets, parked), and any handler on
+ * a signal no runtime source raises yet (denial / substrate / rotation).
+ */
+export function isExecutableFaultHandler(signal: FaultSignal, action: string): boolean {
+  return signal === "on_timeout_fault" && action === "quarantine";
+}
+
+export interface ExecutableFaultHandler {
+  readonly signal: FaultSignal;
+  readonly action: "quarantine";
+  /** Declared `on_quarantine set_posture_bit X`, recorded in the audit and never written (R-I2-5); else "none". */
+  readonly postureBit: string;
+}
+
+/** The handlers a flow declares that this tier executes (empty for the secure default). */
+export function executableFaultHandlers(flowNode: AstNode): readonly ExecutableFaultHandler[] {
+  const out: ExecutableFaultHandler[] = [];
+  for (const [signal, d] of extractDeclaredFaultHandlers(flowNode)) {
+    if (!isExecutableFaultHandler(signal, d.action)) continue;
+    const bit = extractOnQuarantine(flowNode);
+    out.push({ signal, action: "quarantine", postureBit: bit === "" ? "none" : bit });
+  }
+  return out;
+}
+
 /** Scan the resilience:block for `decl:on_*_fault <action> [<flowIdent>]` lines; returns the RAW
  *  declared action (validated/coerced later) keyed by signal. Last declaration of a signal wins. */
 function extractDeclaredFaultHandlers(
@@ -390,6 +420,8 @@ export interface FaultHandlerViolation {
  *    attempts a re-grant, colliding with deny-only monotonicity (FUNGI-MONO-001). Use halt/quarantine/fallback.
  *  - **FUNGI-FAULT-006** (Q7 interim): any declared action other than `halt` is not executed
  *    (raise-only MVP). Error, not warning. Runtime will halt, audit and deny instead.
+ *    Real I2 (2026-10-02) lifts it for exactly ONE combination, `on_timeout_fault quarantine`,
+ *    which the interpreter now executes (isExecutableFaultHandler).
  * The matrix itself already coerces illegal actions to `halt` (fail-closed); this surfaces the author error instead of
  * silently overriding it.
  * FUNGI-FAULT-006 — KB registration is an owner/KB step before carry.
@@ -413,7 +445,7 @@ export function checkFaultHandlerViolations(flowNode: AstNode): FaultHandlerViol
           `re-grant, colliding with deny-only monotonicity (FUNGI-MONO-001). Use 'halt', 'quarantine', or 'fallback <flow>'.`,
       });
     }
-    if (d.action !== "halt") {
+    if (d.action !== "halt" && !isExecutableFaultHandler(signal, d.action)) {
       const shown = d.target !== undefined ? `${d.action} ${d.target}` : d.action;
       violations.push({
         code: "FUNGI-FAULT-006",

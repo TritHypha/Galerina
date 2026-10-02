@@ -50,6 +50,7 @@ import { GovernanceFlags, type GovernanceFlagsMask, type RuntimeManifest } from 
 import { buildProofGraphCached, computeExecutionSignature, generateEpilogueReceipt, type EpilogueFailureAction, type EpilogueProofStrategy, type ProofGraph, type ProofObligation, FUNGI_HW_001, FUNGI_HW_002, FUNGI_HW_003, FUNGI_HW_004, TAMPER_RESPONSE_STRATEGIES } from "./proof-graph.js";
 import { HARDWARE_TRUST_PROFILES, ProofLevel } from "./type-registry.js";
 import { checkResilienceViolations, checkFaultHandlerViolations } from "./resilience-inference.js";
+import { bodyLocalInvariantNames, isBodyLocalEnsure } from "./body-local-invariants.js";
 // S2 fuller-A (RD-0456): the ONE static-discharge oracle, shared with the WAT emitter so the recorded
 // `statically_verified` obligation and the emitter's gate elision are proven off the same fold (KB f86155b).
 import { foldStaticVerdict } from "./invariant-discharge.js";
@@ -2916,6 +2917,10 @@ class GovernanceVerifier {
     // it is enforced fail-closed by the interpreter (interpreter.checkOutputPostconditions),
     // and the WAT tier declines such flows to that interpreter until single-exit lowering lands.
     const scopeNames = new Set<string>([...paramNames, "result"]);
+    // Real I3 (R-I3-1 / R-I3-5, zero-trust default, owner may revisit): a NON-`result` ensure may ALSO
+    // name an eligible body-local (top-level, immutable, singly-bound, non-governed `let`). A `result`
+    // post-condition may not - mixing stays FUNGI-INV-004. Typos and every ineligible local still fail.
+    const preScopeNames = new Set<string>([...scopeNames, ...bodyLocalInvariantNames(flowNode)]);
 
     // Scan children for ensureDecl nodes
     let invariantCount = 0;
@@ -2929,7 +2934,7 @@ class GovernanceVerifier {
 
       // FUNGI-INV-004: every identifier in the ensure expr must be in scope — a flow parameter,
       // or `result` for an output post-condition. Unknown names (typos) are still rejected.
-      const unresolvedNames = collectUnresolvedIdentifiers(exprNode, scopeNames);
+      const unresolvedNames = collectUnresolvedIdentifiers(exprNode, isPostcondition ? scopeNames : preScopeNames);
       for (const name of unresolvedNames) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-INV-004",
@@ -2964,6 +2969,10 @@ class GovernanceVerifier {
         // 0040/#70: output post-condition — enforced fail-closed against the return value at
         // the single flow exit by the interpreter (and any tier with single-exit lowering).
         this.proofObligations.push(`invariant_postcondition:${flow.name}:ensure ${exprDesc}:runtime-postcondition`);
+      } else if (isBodyLocalEnsure(flowNode, exprNode)) {
+        // Real I3 (R-I3-3): dynamic only - no fold or solver result skips the check; the interpreter
+        // enforces it right after the binding (FUNGI-INV-005), and WASM refuses (FUNGI-WAT-INV-001).
+        this.proofObligations.push(`invariant_body_local:${flow.name}:ensure ${exprDesc}:runtime-body-local`);
       } else if (staticResult === true) {
         // Statically verified — no WAT gate, no runtime overhead (Goal A)
         this.proofObligations.push(`invariant_static:${flow.name}:ensure ${exprDesc}:statically_verified`);

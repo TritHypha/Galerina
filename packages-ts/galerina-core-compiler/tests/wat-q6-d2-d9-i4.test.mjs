@@ -428,8 +428,9 @@ describe("T7 honesty pin nested Interpreter shares host state", () => {
   it("step:* wording is SIMULATED; runNestedFlow shares enforcer/capabilityHost/runtimeOptions/stepBudget; drcm.dwi_allocated; stdlib :1512/:1557", () => {
     const src = interpSrc();
     const ls = linesOf(src);
-    assert.equal(ls[3196].includes("isolation is SIMULATED"), true, ls[3196]);
-    assert.equal(ls[3196].includes("shared enforcer, capability host and step budget"), true, ls[3196]);
+    // 2026-10-02: line indices moved by the real I2/I3 interpreter hunks (+156 / +40 lines, incl. the 2026-10-02 code-conformance import and the SuperGrok NB-1 classification type; re-pinned again after the replay onto main 0d06d6c1, and +3 for the R-I2-12 fast-path deadline check); content unchanged.
+    assert.equal(ls[3382].includes("isolation is SIMULATED"), true, ls[3382]);
+    assert.equal(ls[3382].includes("shared enforcer, capability host and step budget"), true, ls[3382]);
     const stepBlock = src.slice(src.indexOf("`step:flowName(args)`"), src.indexOf("`step:flowName(args)`") + 900);
     assert.equal(stepBlock.includes("isolation is simulated"), true);
     assert.equal(stepBlock.includes("drcm.dwi_allocated"), true);
@@ -437,8 +438,8 @@ describe("T7 honesty pin nested Interpreter shares host state", () => {
     const nested = src.slice(src.indexOf("private async runNestedFlow"), src.indexOf("private async runNestedFlow") + 1800);
     assert.equal(nested.includes("new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions"), true);
     assert.equal(nested.includes("nested.stepBudget = this.stepBudget"), true);
-    assert.equal(ls[1511].includes("sub.stepBudget = this.stepBudget"), true, ls[1511]);
-    assert.equal(ls[1556].includes("sub.stepBudget = this.stepBudget"), true, ls[1556]);
+    assert.equal(ls[1563].includes("sub.stepBudget = this.stepBudget"), true, ls[1563]);
+    assert.equal(ls[1608].includes("sub.stepBudget = this.stepBudget"), true, ls[1608]);
   });
 });
 

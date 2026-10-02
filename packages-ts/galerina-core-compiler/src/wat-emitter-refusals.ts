@@ -1,4 +1,6 @@
 import type { AstNode } from "./parser.js";
+import { executableFaultHandlers } from "./resilience-inference.js";
+import { flowHasBodyLocalInvariants } from "./body-local-invariants.js";
 
 /** True for `Money` and `Money<CCY>` (the WAT emitter's inferred Money types). */
 export function isMoneyWatType(t: string | undefined): boolean {
@@ -113,6 +115,81 @@ export function refuseEffectfulEntryWat(flowName: string): never {
   );
 }
 
+/**
+ * Real I2 (R-I2-9, zero-trust default, owner may revisit): executable fault handlers are
+ * interpreter-only. WASM has no handler ABI (ties into the parked D8 host-import ABI), so a flow
+ * declaring one is refused by name instead of shipping with its handler silently dropped.
+ * FUNGI-WAT-FAULT-001 - KB registration is an owner/KB step before carry.
+ */
+export const FUNGI_WAT_FAULT_001 = {
+  code: "FUNGI-WAT-FAULT-001",
+  name: "EXECUTABLE_FAULT_HANDLER_NOT_LOWERED",
+  severity: "error",
+  message:
+    "declares an executable fault handler (on_timeout_fault quarantine) that is not lowered to WASM. WAT " +
+    "emission refuses rather than ship the flow with its handler silently dropped (fail-closed).",
+  suggestedFix: "Run the flow through the governed interpreter; there is no WASM handler ABI.",
+} as const;
+
+export function refuseExecutableFaultHandlerWat(flowName: string): never {
+  // §5: the code is a structured field on the thrown error (not only free text), referencing the constant.
+  throw Object.assign(
+    new Error(`${FUNGI_WAT_FAULT_001.code} ${FUNGI_WAT_FAULT_001.name}: flow '${flowName}' ${FUNGI_WAT_FAULT_001.message}`),
+    { code: FUNGI_WAT_FAULT_001.code, diagnosticName: FUNGI_WAT_FAULT_001.name },
+  );
+}
+
+/**
+ * Real I3 (R-I3-6, zero-trust default, owner may revisit): body-local invariants are checked by the
+ * governed interpreter right after their binding; the WAT entry gate cannot see body locals, so WASM
+ * refuses by name rather than lower an unbound reference.
+ * FUNGI-WAT-INV-001 - KB registration is an owner/KB step before carry.
+ */
+export const FUNGI_WAT_INV_001 = {
+  code: "FUNGI-WAT-INV-001",
+  name: "BODY_LOCAL_INVARIANT_NOT_LOWERED",
+  severity: "error",
+  message:
+    "declares a body-local invariant (an ensure over a body local) that is not lowered to WASM. WAT emission " +
+    "refuses rather than lower an unbound reference (fail-closed).",
+  suggestedFix: "Run the flow through the governed interpreter, which checks the invariant after its binding.",
+} as const;
+
+/**
+ * FUNGI-WAT-* constants that use the §5 constant pattern. Only the two I2/I3 refusals are migrated here;
+ * the other WAT-* refusals above still use local `diag` objects (pre-existing, not changed; follow-up).
+ */
+export const FUNGI_WAT_DIAGNOSTICS = Object.freeze([
+  FUNGI_WAT_FAULT_001,
+  FUNGI_WAT_INV_001,
+] as const);
+
+export function refuseBodyLocalInvariantWat(flowName: string): never {
+  // §5: the code is a structured field on the thrown error (not only free text), referencing the constant.
+  throw Object.assign(
+    new Error(`${FUNGI_WAT_INV_001.code} ${FUNGI_WAT_INV_001.name}: flow '${flowName}' ${FUNGI_WAT_INV_001.message}`),
+    { code: FUNGI_WAT_INV_001.code, diagnosticName: FUNGI_WAT_INV_001.name },
+  );
+}
+
+const FLOW_DECL_KINDS: ReadonlySet<string> = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
+
+/** Per-flow: refuse (by name) a flow carrying interpreter-only I2/I3 governed control. */
+export function refuseInterpreterOnlyFlowWat(flowNode: AstNode): void {
+  if (executableFaultHandlers(flowNode).length > 0) refuseExecutableFaultHandlerWat(flowNode.value ?? "");
+  if (flowHasBodyLocalInvariants(flowNode)) refuseBodyLocalInvariantWat(flowNode.value ?? "");
+}
+
+/** Module-wide: refuse (by name) any flow in the AST carrying interpreter-only I2/I3 governed control. */
+export function refuseInterpreterOnlyGovernedControl(ast: AstNode | undefined): void {
+  if (ast === undefined) return;
+  const walk = (node: AstNode): void => {
+    if (FLOW_DECL_KINDS.has(node.kind)) refuseInterpreterOnlyFlowWat(node);
+    for (const c of node.children ?? []) walk(c);
+  };
+  walk(ast);
+}
+
 export function refuseHofCapture(method: string, fnName: string): never {
   const diag = { code: "FUNGI-WAT-HOF-001", name: "ARRAY_HOF_REQUIRES_NAMED_FLOW", severity: "error" } as const;
   throw new Error(
@@ -159,6 +236,9 @@ export function refuseUnadmittedPublicWAT(
       `unrecognised GIR version is refused, never best-effort lowered).`,
     );
   }
+  // Real I2/I3 (R-I2-9 / R-I3-6): module-wide, before any lowering - every flow in the AST, not only
+  // the ones that reach the per-flow body emitter (an impure flow may never get there).
+  refuseInterpreterOnlyGovernedControl(ast);
   if (astHasParamAdmission(ast)) {
     throw new Error(
       `${caller}: refusing to lower a flow carrying a parameter admission (\`where <predicate>\`) ` +

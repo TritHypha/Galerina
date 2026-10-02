@@ -11,6 +11,7 @@
 
 import { type AstNode, type SourceLocation } from "./parser.js";
 import { resolveImportedTypes } from "./package-type-registry.js";
+import { bodyLocalInvariantNames, exprIdentifierNames, isBodyLocalEnsure } from "./body-local-invariants.js";
 
 export interface SymbolDiagnostic {
   readonly code: string;
@@ -212,6 +213,10 @@ class SymbolResolver {
 
   // Track whether we are currently inside a flow body (not a param) for NAME-003
   private insideFlowScope = false;
+  // Real I3 (R-I3-1): the enclosing flow node, so an admitted body-local `ensure` resolves the
+  // eligible body-local names it references (exactly as the governance verifier admits them).
+  // An empty program node means "no enclosing flow" - never undefined.
+  private currentFlowNode: AstNode = { kind: "program", children: [] };
 
   constructor(importedNames: readonly string[] = []) {
     this.importedNames = new Set(importedNames);
@@ -438,11 +443,14 @@ class SymbolResolver {
           if (child.kind === "paramDecl") this.walkNode(child, "normal");
         }
         const wasInsideFlow = this.insideFlowScope;
+        const outerFlowNode = this.currentFlowNode;
         this.insideFlowScope = true;
+        this.currentFlowNode = node;
         for (const child of node.children ?? []) {
           if (child.kind !== "paramDecl") this.walkNode(child, "normal");
         }
         this.insideFlowScope = wasInsideFlow;
+        this.currentFlowNode = outerFlowNode;
         this.popScope();
         return;
       }
@@ -542,6 +550,18 @@ class SymbolResolver {
         // scope, the body is unaffected, and genuine typos are still flagged FUNGI-NAME-001.
         this.pushScope();
         this.declareInCurrentScope("result", node);
+        {
+          // Real I3 (R-I3-1): an ADMITTED body-local ensure (top-level immutable single-bound
+          // non-protected lets only, no `result`) sees exactly the eligible names it references.
+          // Every other name - an ineligible local, a typo - still flags FUNGI-NAME-001.
+          const ensureExpr = node.children?.[0];
+          if (ensureExpr !== undefined && isBodyLocalEnsure(this.currentFlowNode, ensureExpr)) {
+            const eligible = bodyLocalInvariantNames(this.currentFlowNode);
+            for (const name of exprIdentifierNames(ensureExpr)) {
+              if (eligible.has(name)) this.declareInCurrentScope(name, node);
+            }
+          }
+        }
         this.walkChildren(node, "normal");
         this.popScope();
         return;
