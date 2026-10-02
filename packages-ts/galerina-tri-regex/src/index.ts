@@ -17,7 +17,7 @@ export {
 export type {
   TriVerdict, Budget, CostCertificate, CompileVeto, EngineStats, MatchOutcome,
 } from "./types.ts";
-export type { TriStream } from "./engine.ts";
+export type { TriStream, AutomatonTables } from "./engine.ts";
 export { TriMatcher } from "./engine.ts";
 
 export interface CompileOptions {

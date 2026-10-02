@@ -113,6 +113,7 @@ export {
 export { astHasParamAdmission } from "./wat-emitter-refusals.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { numericBaseType } from "./numeric-lowering.js";
+import { planPatternMatchWat, type WatPatternHelper } from "./wat-emitter-pattern.js";
 // The record-layout ABI is the ONE contract shared with the WASM runtime TCB. It now lives in the
 // border-safe package @galerina/core-runtime-wasm (RD-0361 R4 / #143), so the emitter imports the layout
 // FROM the border-safe home (compiler → border-safe home, the ALLOWED direction) and the TCB knows its
@@ -449,6 +450,8 @@ let flowReturnTypes: Lookup<ReadonlyMap<string, string>> = none("flowReturnTypes
 
 /** C02 capture-free array HOF helpers requested while emitting a module. */
 let arrayHofHelpers: ArrayHofHelper[] = [];
+/** D4 bounded in-Wasm matchesPattern helpers requested while emitting a module. */
+let patternHelpers: WatPatternHelper[] = [];
 
 /** Step 3g (return-literal): the base type the CURRENT flow returns, so a bare `return <Int64 literal>`
  *  (no binding) emits i64.const. Module-level (mirrors recordVarTypes); set per flow in emitWATFromFlowAST. */
@@ -2676,14 +2679,14 @@ export function emitWATExpr(
           );
         }
 
-        // D4: PatternCapability is interpreter-only. WASM refuses
-        // matchesPattern / extractGroups / replacePattern at emit
-        // (FUNGI-WAT-PATTERN-001). No host callee is emitted.
+        // D4: an admitted literal matchesPattern lowers to a bounded pure in-Wasm matcher
+        // (wat-emitter-pattern.ts). Dynamic / non-admitted / extractGroups / replacePattern
+        // keep FUNGI-WAT-PATTERN-001. No pattern host callee is emitted.
         if (name === "matchesPattern" || name === "extractGroups" || name === "replacePattern") {
-          if (name === "matchesPattern" && argNodes[0]?.kind !== "stringLiteral") {
-            return refusePatternWat(name, "dynamic");
-          }
-          return refusePatternWat(name, "literal");
+          if (name === "matchesPattern" && argNodes[0]?.kind !== "stringLiteral") return refusePatternWat(name, "dynamic");
+          const plan = name === "matchesPattern" && realReceiver !== undefined && argNodes.length === 1 ? planPatternMatchWat(argNodes[0]!.value ?? "") : undefined;
+          if (plan?.ok === true && realReceiver !== undefined) { patternHelpers.push(plan.helper); return `(call $${plan.helper.helperName} ${emitWATExpr(realReceiver, vars, staticConsts)})`; }
+          return refusePatternWat(name, "literal", plan?.ok === false ? plan.reason : undefined);
         }
 
         // Unknown method — fail closed at compile time. A method call is not a
@@ -4618,6 +4621,7 @@ export function buildWATModule(
   // Collect compile-time constants from `static NAME = EXPR` and `bitfield NAME { ... }`
   // top-level declarations in the AST. These are folded to (i32.const N) at every use site.
   arrayHofHelpers = [];
+  patternHelpers = [];
   const staticConsts = collectStaticConsts(gir.ast);
 
   // Build deduped import list from effectful flows using getWATImportsForEffects.
@@ -5052,6 +5056,22 @@ export function buildWATModule(
         `(local.get $out)`,
       ].join("\n"),
       namedParams: [{ name: "$xs", type: "i32" }],
+    });
+  }
+
+  // D4: one bounded pure matcher per distinct admitted literal pattern.
+  const seenPattern = new Set<string>();
+  for (const helper of patternHelpers) {
+    if (seenPattern.has(helper.helperName)) continue;
+    seenPattern.add(helper.helperName);
+    functions.push({
+      name: helper.helperName,
+      isPure: true,
+      isEntryPoint: false,
+      handlesSecrets: false,
+      type: { params: ["i32"], results: ["i32"] },
+      body: helper.body,
+      namedParams: [{ name: "$s", type: "i32" }],
     });
   }
 

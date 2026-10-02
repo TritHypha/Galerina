@@ -157,15 +157,21 @@ contract { effects {} }
 { return a.zip(a) }
 `;
 
-describe("T1 literal matchesPattern → FUNGI-WAT-PATTERN-001", () => {
-  it("throws PATTERN-001; no WAT unreachable; no $matchesPattern callee", () => {
+describe("T1 literal matchesPattern: admitted lowers (D4 GO 2026-10-02); non-admitted → FUNGI-WAT-PATTERN-001", () => {
+  it("admitted literal lowers to the bounded helper; no $matchesPattern / host pattern callee", () => {
     const r = tryCompileWAT(LITERAL, "t1.fungi");
+    assert.equal("error" in r, false, r.error);
+    assert.match(r.wat, /\(call \$fungi_pattern_match_[0-9a-f]{16} /);
+    assert.equal(r.wat.includes("$host___matchesPattern"), false);
+    assert.equal(/\(call \$matchesPattern\b/.test(r.wat), false);
+  });
+  it("non-admitted literal throws PATTERN-001; no $matchesPattern callee", () => {
+    const r = tryCompileWAT(LITERAL.replace('"^[a-z]+$"', '"(a)"'), "t1b.fungi");
     assert.equal("error" in r, true, "expected build-time throw, got WAT");
     assert.match(r.error, new RegExp(CODE));
-    assert.match(r.error, /C20: matchesPattern WAT ABI is not admitted/);
+    assert.match(r.error, /literal pattern not admitted: FUNGI-PATTERN-002/);
     assert.equal(r.error.includes("$matchesPattern"), false);
     assert.equal(r.error.includes("$host___matchesPattern"), false);
-    assert.equal((r.wat ?? "").includes("(unreachable)"), false);
   });
 });
 

@@ -1295,7 +1295,7 @@ const STD_METHOD_NAMES = new Set([
   "startsWith", "endsWith", "contains", "includes", "split", "replace", "replaceAll",
   "slice", "encode", "encodedLength", "codePoints", "isEmpty", "toString", "toStr", "toText",
   "charAt", "indexOf", "lastIndexOf", "padStart", "padEnd", "repeat", "toChars",
-  "toInt", "toFloat", "toDecimal",
+  "toInt", "toFloat", "toDecimal", "matchesPattern", // D4: certified pattern method form (stdlib.ts); extract/replace stay unwired
   // Int / Float / Bool methods
   "abs",
   // Decimal partial-operator method forms (#53/#54): the obligation-carrying `/` and `%`
