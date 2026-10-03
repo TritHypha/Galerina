@@ -183,16 +183,47 @@ export function refuseMixed64BitWat(op: string, detail: string): never {
 }
 
 /**
- * D4 PatternCapability is interpreter-only. WASM refuses matchesPattern /
- * extractGroups / replacePattern at emit rather than a run-time (unreachable)
- * stub or an undefined host callee. No pattern host ABI is added.
+ * E5 (PROVISIONAL, narrow-float.ts): a Float32/Float16 form the provisional narrow-float WASM lane does not
+ * lower faithfully — e.g. a Float32 record slot fed a value that is not statically Float32/Float16 (a literal
+ * or an f64 Float, which the walker cannot round because a record literal carries no field types), a
+ * narrow-float operand mixed with an operand of unknown type, or a narrow slot fed an Int64. Refused at emit
+ * rather than risk a value that differs from the tree-walker. Interpreter unchanged.
+ * FUNGI-WAT-FLOAT32-001 — KB registration is an owner/KB step before carry (pending-registration fixture).
+ */
+export const FUNGI_WAT_FLOAT32_001 = {
+  code: "FUNGI-WAT-FLOAT32-001",
+  name: "NARROW_FLOAT_FORM_NOT_LOWERED",
+  severity: "error",
+  message:
+    "a Float32/Float16 form the provisional narrow-float WASM lane does not lower faithfully reached WAT emission; " +
+    "WAT emission refuses rather than emit a value that could differ from the interpreter's binary32/binary16 rounding (fail-closed).",
+  suggestedFix: "Feed Float32/Float16 slots and operands statically narrow values, or run the flow through the governed interpreter.",
+} as const satisfies WatDiagnosticDefinition;
+
+export function refuseNarrowFloatWat(detail: string): never {
+  const diag = FUNGI_WAT_FLOAT32_001;
+  throw createWatRefusalDiagnostic(FUNGI_WAT_FLOAT32_001,
+    `${diag.code}: Float32/Float16 form is not lowered to WASM (${detail}). WAT emission refuses rather ` +
+    `than emit a value that could differ from the interpreter's binary32/binary16 rounding (fail-closed).`,
+  );
+}
+
+/**
+ * D4: an admitted literal matchesPattern lowers to a bounded pure in-Wasm
+ * matcher (wat-emitter-pattern.ts). Everything else - a dynamic pattern, a
+ * literal the capability does not admit or that exceeds the in-Wasm automaton
+ * bound, extractGroups, replacePattern - is refused at emit rather than a
+ * run-time (unreachable) stub or an undefined host callee. No pattern host ABI
+ * is added.
  * FUNGI-WAT-PATTERN-001 — KB registration is an owner/KB step before carry.
  */
-export function refusePatternWat(method: string, kind: "literal" | "dynamic" = "literal"): never {
+export function refusePatternWat(method: string, kind: "literal" | "dynamic" = "literal", detail: string = ""): never {
   const diag = FUNGI_WAT_PATTERN_001;
   const identity = kind === "dynamic"
     ? "C20: dynamic matchesPattern refused"
-    : `C20: ${method} WAT ABI is not admitted; compile-time PatternCapability is interpreter-only`;
+    : detail !== ""
+      ? `C20: ${method} literal is not lowered to the bounded in-Wasm matcher; ${detail}`
+      : `C20: ${method} WAT ABI is not admitted; compile-time PatternCapability is interpreter-only`;
   throw createWatRefusalDiagnostic(FUNGI_WAT_PATTERN_001,
     `${diag.code}: method '${method}' is not lowered to WASM (${identity}). WAT emission refuses rather ` +
     `than emit an (unreachable) stub or an undefined callee (fail-closed).`,
@@ -281,6 +312,7 @@ export const FUNGI_WAT_DIAGNOSTICS = Object.freeze([
   FUNGI_WAT_DECIMAL_001,
   FUNGI_WAT_EFFECT_001,
   FUNGI_WAT_FAULT_001,
+  FUNGI_WAT_FLOAT32_001,
   FUNGI_WAT_HOF_001,
   FUNGI_WAT_INT64_001,
   FUNGI_WAT_INV_001,

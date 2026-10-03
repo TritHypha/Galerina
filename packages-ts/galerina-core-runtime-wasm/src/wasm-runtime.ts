@@ -258,6 +258,41 @@ export type RecordCopyField =
 export const MAX_RECORD_COPY_DEPTH = 8;
 export const MAX_RECORD_COPY_NODES = 4096;
 
+/**
+ * D8 item 3 (Codex GO 2026-10-02, relatedCommit 0d06d6c1): the explicit, CLOSED host-import
+ * ABI a host may grant to an admitted module for a declared effect. Non-secret effects only;
+ * deny by default. Each entry is the import module ("host"), the exact import name the WAT
+ * emitter derives from STDLIB_CAPABILITY_MAP `wasmImport`, the declaring effect, and the fixed
+ * signature (i32, i32) -> i32. Any other grant name - secret.read, env.get, vault.read,
+ * crypto.*, password.*, argon2.*, bcrypt.*, random.bytes, a stdlib bridge name, or anything
+ * unknown - is refused at host construction with FUNGI-WASM-GRANT-001. Ungranted imports stay
+ * outside the closed set and fail admission (CRITICAL_SECURITY_VIOLATION), as before.
+ * Extending this table is an owner decision, never a caller option.
+ */
+export interface WasmEffectGrantAbiEntry {
+  readonly module: "host";
+  readonly name: string;
+  readonly effect: string;
+  readonly params: readonly ["i32", "i32"];
+  readonly results: readonly ["i32"];
+}
+
+export const WASM_EFFECT_GRANT_ABI: readonly WasmEffectGrantAbiEntry[] = Object.freeze([
+  Object.freeze({ module: "host", name: "audit.write", effect: "audit.write", params: Object.freeze(["i32", "i32"] as const), results: Object.freeze(["i32"] as const) }),
+  Object.freeze({ module: "host", name: "audit.log", effect: "audit.write", params: Object.freeze(["i32", "i32"] as const), results: Object.freeze(["i32"] as const) }),
+]);
+
+export const FUNGI_WASM_GRANT_001 = {
+  code: "FUNGI-WASM-GRANT-001",
+  name: "EFFECT_GRANT_NOT_ALLOWLISTED",
+  severity: "error",
+} as const;
+Object.freeze(FUNGI_WASM_GRANT_001);
+
+function makeEffectGrantDiag(diag: typeof FUNGI_WASM_GRANT_001, detail: string): Error {
+  return new Error(`${diag.code}: ${detail} (deny-by-default; fail-closed)`);
+}
+
 function refuseHostCopy(detail: string): never {
   throw new Error(`FUNGI-WASM-HOST-001: ${detail}`);
 }
@@ -805,7 +840,13 @@ export function createHostRuntime(
 
   // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-
   // default. The stdlib bridge can never be shadowed by a grant — bridge names win.
+  // D8 item 3: every grant must name an entry of the closed WASM_EFFECT_GRANT_ABI.
+  const grantAbiNames = new Set(WASM_EFFECT_GRANT_ABI.map((entry) => entry.name));
   for (const [effect, fn] of Object.entries(grants?.effectHandlers ?? {})) {
+    if (!grantAbiNames.has(effect)) {
+      throw makeEffectGrantDiag(FUNGI_WASM_GRANT_001, `effect grant '${effect}' is not in the closed non-secret WASM effect-grant ABI [${[...grantAbiNames].join(", ")}]`);
+    }
+    if (typeof fn !== "function") throw makeEffectGrantDiag(FUNGI_WASM_GRANT_001, `effect grant '${effect}' handler is not a function`);
     if (Object.prototype.hasOwnProperty.call(host, effect)) continue;
     host[effect] = (a: number, b: number) => tap(effect, [a, b], fn(a, b)) as number;
   }
@@ -993,7 +1034,18 @@ export async function admitAndInstantiate(opts: {
   // LinkError that a caller might mistake for an ordinary runtime fault (#105).
   let wasmResult: unknown;
   try {
-    wasmResult = await WebAssembly.instantiate(wasm, opts.host.imports);
+    // snapshotWasmBytes returned a fresh, exclusively owned ArrayBuffer-backed copy.
+    const compiled = await WebAssembly.compile(wasm as Uint8Array<ArrayBuffer>);
+    // D8 item 3: name every import outside the closed host set BEFORE linking, so an unknown
+    // module namespace is classified exactly like an unknown import name (deny-by-default).
+    const provided = opts.host.imports as unknown as Record<string, Record<string, unknown>>;
+    for (const imp of WebAssembly.Module.imports(compiled)) {
+      const ns = Object.prototype.hasOwnProperty.call(provided, imp.module) ? provided[imp.module] : undefined;
+      if (ns === undefined || !Object.prototype.hasOwnProperty.call(ns, imp.name)) {
+        throw new WebAssembly.LinkError(`import ${imp.module}.${imp.name} (${imp.kind}) is not provided`);
+      }
+    }
+    wasmResult = await WebAssembly.instantiate(compiled, opts.host.imports);
   } catch (err) {
     const reason = err instanceof WebAssembly.LinkError
       ? `disallowed host import (module requires an import outside the closed host set): ${err.message}`

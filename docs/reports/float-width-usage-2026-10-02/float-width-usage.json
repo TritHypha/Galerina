@@ -1,0 +1,864 @@
+{
+  "schema": "galerina.symbol-usage-search.v1",
+  "patterns": [
+    "Float32Array",
+    "Float16Array",
+    "Math\\.fround",
+    "Math\\.f16round"
+  ],
+  "fileSource": "git",
+  "totals": {
+    "filesListed": 10776,
+    "filesScanned": 10129,
+    "filesMatched": 39,
+    "matches": 101
+  },
+  "skipped": {
+    "excluded": 590,
+    "binary": 57,
+    "tooLarge": 0,
+    "unreadable": 0
+  },
+  "byKind": {
+    "comment": 3,
+    "data": 56,
+    "documentation": 2,
+    "other": 12,
+    "rounding-call": 3,
+    "string-literal": 8,
+    "type-reference": 3,
+    "typed-array-construct": 14
+  },
+  "byArea": {
+    "benchmark": 65,
+    "docs": 4,
+    "script": 4,
+    "source": 4,
+    "test": 24
+  },
+  "byExtension": {
+    "csv": 2,
+    "json": 54,
+    "md": 2,
+    "mjs": 36,
+    "ts": 7
+  },
+  "packages": [
+    {
+      "package": "docs",
+      "matches": 2,
+      "files": [
+        {
+          "path": "docs/examples/gir/365-ai-summary-flow.gir.json",
+          "area": "docs",
+          "matches": [
+            {
+              "line": 95,
+              "kind": "data",
+              "text": "\"jsTypedArray\": \"Float32Array\""
+            }
+          ]
+        },
+        {
+          "path": "docs/examples/gir/465-enterprise-summary.gir.json",
+          "area": "docs",
+          "matches": [
+            {
+              "line": 110,
+              "kind": "data",
+              "text": "\"jsTypedArray\": \"Float32Array\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "examples",
+      "matches": 2,
+      "files": [
+        {
+          "path": "examples/ai-inference/GOVERNANCE_PROOF.md",
+          "area": "docs",
+          "matches": [
+            {
+              "line": 51,
+              "kind": "documentation",
+              "text": "2. WASM tokenizer maps `protected MessageText` → `Float32Array` (no strings cross the boundary)"
+            },
+            {
+              "line": 70,
+              "kind": "documentation",
+              "text": "What crosses is an anonymous `Float32Array` — no strings, no PII, no semantic content that can be exfiltrated."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "galerina-core-compiler",
+      "matches": 10,
+      "files": [
+        {
+          "path": "packages-ts/galerina-core-compiler/src/lowering-plan.ts",
+          "area": "source",
+          "matches": [
+            {
+              "line": 23,
+              "kind": "string-literal",
+              "text": "readonly jsTypedArray: \"Float32Array\" | \"Float64Array\" | \"Int8Array\" | \"Int16Array\" | \"Int32Array\";"
+            },
+            {
+              "line": 35,
+              "kind": "string-literal",
+              "text": "[\"Float32\", \"Float32Array\"],"
+            },
+            {
+              "line": 64,
+              "kind": "string-literal",
+              "text": "const validTypedArrays = [\"Float32Array\", \"Float64Array\", \"Int8Array\", \"Int16Array\", \"Int32Array\"] as const;"
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-core-compiler/src/wat-emitter.ts",
+          "area": "source",
+          "matches": [
+            {
+              "line": 5011,
+              "kind": "type-reference",
+              "text": "\";; TypedArray lowering: Float32Array for Tensor<Float32,...>\","
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-core-compiler/tests/type-registry/lowering-plan.test.mjs",
+          "area": "test",
+          "matches": [
+            {
+              "line": 30,
+              "kind": "other",
+              "text": "it(\"maps Float32 → Float32Array and Float64 → Float64Array\", () => {"
+            },
+            {
+              "line": 31,
+              "kind": "string-literal",
+              "text": "assert.equal(ELEMENT_TYPE_TO_TYPED_ARRAY.get(\"Float32\"), \"Float32Array\");"
+            },
+            {
+              "line": 53,
+              "kind": "other",
+              "text": "it(\"maps Float32 tensors to Float32Array entries\", () => {"
+            },
+            {
+              "line": 63,
+              "kind": "string-literal",
+              "text": "assert.equal(plan.entries[0].jsTypedArray, \"Float32Array\");"
+            },
+            {
+              "line": 241,
+              "kind": "string-literal",
+              "text": "it(\"loweringPlan.entries[0].jsTypedArray === 'Float32Array' for Tensor<Float32,[768]>\", () => {"
+            },
+            {
+              "line": 250,
+              "kind": "string-literal",
+              "text": "assert.equal(flow.typedArrayLoweringPlan.entries[0].jsTypedArray, \"Float32Array\");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "galerina-devtools-benchmarks",
+      "matches": 65,
+      "files": [
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/benchmarks/hardware-targets/node.mjs",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 3,
+              "kind": "comment",
+              "text": "// Float32Array dot product — uses V8's auto-SIMD (typically SSE4 or AVX2 internally)"
+            },
+            {
+              "line": 8,
+              "kind": "typed-array-construct",
+              "text": "const a = new Float32Array(VEC_SIZE);"
+            },
+            {
+              "line": 9,
+              "kind": "typed-array-construct",
+              "text": "const b = new Float32Array(VEC_SIZE);"
+            },
+            {
+              "line": 55,
+              "kind": "other",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/bench-deno-webgpu.ts",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 22,
+              "kind": "typed-array-construct",
+              "text": "const aData = new Float32Array(n * n);"
+            },
+            {
+              "line": 23,
+              "kind": "typed-array-construct",
+              "text": "const bData = new Float32Array(n * n);"
+            },
+            {
+              "line": 96,
+              "kind": "typed-array-construct",
+              "text": "const result = new Float32Array(readBuffer.getMappedRange().slice(0));"
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/node.mjs",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 5,
+              "kind": "typed-array-construct",
+              "text": "const A = new Float32Array(n * n);"
+            },
+            {
+              "line": 6,
+              "kind": "typed-array-construct",
+              "text": "const B = new Float32Array(n * n);"
+            },
+            {
+              "line": 13,
+              "kind": "typed-array-construct",
+              "text": "const C = new Float32Array(n * n);"
+            },
+            {
+              "line": 50,
+              "kind": "other",
+              "text": "notes: [\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\"],"
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-06-17_extended/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1558,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2227,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-04_post-perf-sweep/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1672,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2341,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_endphase-2026-07-12/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1820,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2478,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_posthardening/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1820,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2478,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-21_post-wat-lowering/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-25_2026-07-25-close/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1880,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2555,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/archive/2026-08-02_galerina-wasm-before-slide/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1880,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2555,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/benchmark-sheet-latest.csv",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 72,
+              "kind": "data",
+              "text": "hardware-targets,nodejs,cpu-throughput,iterationsPerSecond,921437.16,,PASS,\"Float32Array dot product — 1024 elements × N iterations | V8 auto-SIMD: typically SSE4 or AVX2 depending on host CPU | Measu..."
+            },
+            {
+              "line": 96,
+              "kind": "data",
+              "text": "matrix-multiply,nodejs,cpu-throughput,normThroughput,623247360,mul-adds/s,PASS,Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2"
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-16.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1451,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2034,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-19.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1512,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2181,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16-night.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1820,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2478,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1820,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2478,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/latest.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T17-19-05-632Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-19-54-748Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-54-33-352Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-05-352Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-20-127Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-17-34-605Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T20-57-50-457Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T21-14-08-756Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-00-09-654Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1851,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2526,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-28-217Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-29-152Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-24T15-48-05-620Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-10T14-42-30-685Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        },
+        {
+          "path": "packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-13T17-52-26-150Z/results.json",
+          "area": "benchmark",
+          "matches": [
+            {
+              "line": 1926,
+              "kind": "data",
+              "text": "\"Float32Array dot product — 1024 elements × N iterations\","
+            },
+            {
+              "line": 2601,
+              "kind": "data",
+              "text": "\"Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "scripts",
+      "matches": 22,
+      "files": [
+        {
+          "path": "scripts/audit-arithmetic-conformance.mjs",
+          "area": "script",
+          "matches": [
+            {
+              "line": 142,
+              "kind": "rounding-call",
+              "text": "{ id: \"f32-add-must-be-32bit\", expect: \"value\", want: Math.fround(Math.fround(0.1) + Math.fround(0.2)), args: [0.1, 0.2], wrap: F,"
+            }
+          ]
+        },
+        {
+          "path": "scripts/symbol-usage-search.mjs",
+          "area": "script",
+          "matches": [
+            {
+              "line": 3,
+              "kind": "comment",
+              "text": "// package -> file -> kind of use. Built 2026-10-02 (Grok Bot, for Phillip Booth) for the E5 Float32Array /"
+            },
+            {
+              "line": 4,
+              "kind": "comment",
+              "text": "// Float16Array / Math.fround audit, when an editor search with file-type exclusions proved incomplete."
+            },
+            {
+              "line": 27,
+              "kind": "string-literal",
+              "text": "\"float-width\": [\"Float32Array\", \"Float16Array\", \"Math\\\\.fround\", \"Math\\\\.f16round\"],"
+            }
+          ]
+        },
+        {
+          "path": "scripts/tests/symbol-usage-search.test.mjs",
+          "area": "test",
+          "matches": [
+            {
+              "line": 17,
+              "kind": "typed-array-construct",
+              "text": "put(\"packages-ts/pkg-a/src/a.ts\", \"const v = new Float32Array(4);\\nconst r = Math.fround(0.1);\\n\");"
+            },
+            {
+              "line": 18,
+              "kind": "other",
+              "text": "put(\"packages-ts/pkg-a/README.md\", \"Float32Array storage is binary32\\n\");"
+            },
+            {
+              "line": 19,
+              "kind": "other",
+              "text": "put(\"packages-ts/pkg-b/plan.json\", \"{ \\\"jsTypedArray\\\": \\\"Float32Array\\\" }\\n\");"
+            },
+            {
+              "line": 20,
+              "kind": "other",
+              "text": "put(\"examples/x.fungi\", \"// Float16Array is not used here\\n\");"
+            },
+            {
+              "line": 21,
+              "kind": "other",
+              "text": "put(\"examples/y.wat\", \";; f32 Math.f16round reference\\n\");"
+            },
+            {
+              "line": 22,
+              "kind": "typed-array-construct",
+              "text": "put(\"node_modules/dep/index.js\", \"new Float32Array(1)\\n\");"
+            },
+            {
+              "line": 23,
+              "kind": "typed-array-construct",
+              "text": "put(\"packages-ts/pkg-a/dist/a.js\", \"new Float32Array(1)\\n\");"
+            },
+            {
+              "line": 24,
+              "kind": "other",
+              "text": "put(\"build/out.json\", \"\\\"Float32Array\\\"\\n\");"
+            },
+            {
+              "line": 30,
+              "kind": "typed-array-construct",
+              "text": "assert.equal(classifyUse(\"a.ts\", \"const v = new Float32Array(4);\"), \"typed-array-construct\");"
+            },
+            {
+              "line": 31,
+              "kind": "rounding-call",
+              "text": "assert.equal(classifyUse(\"a.ts\", \"return Math.fround(x);\"), \"rounding-call\");"
+            },
+            {
+              "line": 32,
+              "kind": "other",
+              "text": "assert.equal(classifyUse(\"a.ts\", \"  [\\\"Float32\\\", \\\"Float32Array\\\"],\"), \"string-literal\");"
+            },
+            {
+              "line": 33,
+              "kind": "other",
+              "text": "assert.equal(classifyUse(\"a.ts\", \"// Float32Array note\"), \"comment\");"
+            },
+            {
+              "line": 34,
+              "kind": "typed-array-construct",
+              "text": "assert.equal(classifyUse(\"a.md\", \"new Float32Array()\"), \"documentation\");"
+            },
+            {
+              "line": 35,
+              "kind": "other",
+              "text": "assert.equal(classifyUse(\"r.json\", \"\\\"Float32Array\\\"\"), \"data\");"
+            },
+            {
+              "line": 36,
+              "kind": "type-reference",
+              "text": "assert.equal(classifyUse(\"a.ts\", \"if (x instanceof Float32Array) {\"), \"type-reference\");"
+            },
+            {
+              "line": 62,
+              "kind": "type-reference",
+              "text": "\"# Query: Float32Array\", \"\","
+            },
+            {
+              "line": 64,
+              "kind": "typed-array-construct",
+              "text": "\"  1: const v = new Float32Array(4);\","
+            },
+            {
+              "line": 89,
+              "kind": "rounding-call",
+              "text": "writeFileSync(join(root, \"examples\", \"z.mjs\"), \"Math.fround(1)\\n\");"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "vscodeExportComparison": {
+    "exportPaths": 8,
+    "excludedGeneratedInExport": 9,
+    "onlyInExport": [
+      ".myco/index.json.refused-20260930.bak",
+      "private/.myco/index.json.pre-refresh-20260930.bak",
+      "research/.myco/index.json.pre-refresh-20260930.bak",
+      "research/.myco/index.json.refused-concurrent-refresh-20260930.bak"
+    ],
+    "onlyInScan": [
+      "docs/examples/gir/365-ai-summary-flow.gir.json",
+      "docs/examples/gir/465-enterprise-summary.gir.json",
+      "examples/ai-inference/GOVERNANCE_PROOF.md",
+      "packages-ts/galerina-core-compiler/tests/type-registry/lowering-plan.test.mjs",
+      "packages-ts/galerina-devtools-benchmarks/benchmarks/hardware-targets/node.mjs",
+      "packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/node.mjs",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-06-17_extended/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-04_post-perf-sweep/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_endphase-2026-07-12/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_posthardening/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-21_post-wat-lowering/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-25_2026-07-25-close/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/archive/2026-08-02_galerina-wasm-before-slide/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-16.json",
+      "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-19.json",
+      "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16-night.json",
+      "packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16.json",
+      "packages-ts/galerina-devtools-benchmarks/results/latest.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T17-19-05-632Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-19-54-748Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-54-33-352Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-05-352Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-20-127Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-17-34-605Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T20-57-50-457Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T21-14-08-756Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-00-09-654Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-28-217Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-29-152Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-24T15-48-05-620Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-10T14-42-30-685Z/results.json",
+      "packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-13T17-52-26-150Z/results.json",
+      "scripts/audit-arithmetic-conformance.mjs",
+      "scripts/symbol-usage-search.mjs",
+      "scripts/tests/symbol-usage-search.test.mjs"
+    ]
+  }
+}

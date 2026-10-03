@@ -175,9 +175,9 @@ contract { effects {} }
     assert.equal(res?.value?.value, 0, JSON.stringify(res));
   });
 
-  it("WASM METHOD-001 with Option.zip-specific message, no stub", () => {
+  it("WASM METHOD-001 with Option.zip-specific message, no stub (Float payload; Int lowers since ZipPair GO 2026-10-02)", () => {
     assert.throws(
-      () => compileWAT(src),
+      () => compileWAT(src.replace(/\bInt\b/g, "Float")),
       (err) => {
         const msg = String(err && err.message ? err.message : err);
         assert.match(msg, /FUNGI-WAT-METHOD-001/);

@@ -1,0 +1,89 @@
+symbol-usage-search: 101 matches in 39 files (10129 scanned of 10776 listed via git)
+  skipped: {"excluded":590,"binary":57,"tooLarge":0,"unreadable":0}
+  by kind: {"comment":3,"data":56,"documentation":2,"other":12,"rounding-call":3,"string-literal":8,"type-reference":3,"typed-array-construct":14}
+  by area: {"benchmark":65,"docs":4,"script":4,"source":4,"test":24}
+  by extension: {"csv":2,"json":54,"md":2,"mjs":36,"ts":7}
+  [docs] 2
+    docs/examples/gir/365-ai-summary-flow.gir.json (docs): 95:data
+    docs/examples/gir/465-enterprise-summary.gir.json (docs): 110:data
+  [examples] 2
+    examples/ai-inference/GOVERNANCE_PROOF.md (docs): 51:documentation, 70:documentation
+  [galerina-core-compiler] 10
+    packages-ts/galerina-core-compiler/src/lowering-plan.ts (source): 23:string-literal, 35:string-literal, 64:string-literal
+    packages-ts/galerina-core-compiler/src/wat-emitter.ts (source): 5011:type-reference
+    packages-ts/galerina-core-compiler/tests/type-registry/lowering-plan.test.mjs (test): 30:other, 31:string-literal, 53:other, 63:string-literal, 241:string-literal, 250:string-literal
+  [galerina-devtools-benchmarks] 65
+    packages-ts/galerina-devtools-benchmarks/benchmarks/hardware-targets/node.mjs (benchmark): 3:comment, 8:typed-array-construct, 9:typed-array-construct, 55:other
+    packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/bench-deno-webgpu.ts (benchmark): 22:typed-array-construct, 23:typed-array-construct, 96:typed-array-construct
+    packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/node.mjs (benchmark): 5:typed-array-construct, 6:typed-array-construct, 13:typed-array-construct, 50:other
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-06-17_extended/results.json (benchmark): 1558:data, 2227:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-04_post-perf-sweep/results.json (benchmark): 1672:data, 2341:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_endphase-2026-07-12/results.json (benchmark): 1820:data, 2478:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_posthardening/results.json (benchmark): 1820:data, 2478:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-21_post-wat-lowering/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-25_2026-07-25-close/results.json (benchmark): 1880:data, 2555:data
+    packages-ts/galerina-devtools-benchmarks/results/archive/2026-08-02_galerina-wasm-before-slide/results.json (benchmark): 1880:data, 2555:data
+    packages-ts/galerina-devtools-benchmarks/results/benchmark-sheet-latest.csv (benchmark): 72:data, 96:data
+    packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-16.json (benchmark): 1451:data, 2034:data
+    packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-19.json (benchmark): 1512:data, 2181:data
+    packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16-night.json (benchmark): 1820:data, 2478:data
+    packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16.json (benchmark): 1820:data, 2478:data
+    packages-ts/galerina-devtools-benchmarks/results/latest.json (benchmark): 1926:data, 2601:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T17-19-05-632Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-19-54-748Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-54-33-352Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-05-352Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-20-127Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-17-34-605Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T20-57-50-457Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T21-14-08-756Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-00-09-654Z/results.json (benchmark): 1851:data, 2526:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-28-217Z/results.json (benchmark): 1926:data, 2601:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-29-152Z/results.json (benchmark): 1926:data, 2601:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-24T15-48-05-620Z/results.json (benchmark): 1926:data, 2601:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-10T14-42-30-685Z/results.json (benchmark): 1926:data, 2601:data
+    packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-13T17-52-26-150Z/results.json (benchmark): 1926:data, 2601:data
+  [scripts] 22
+    scripts/audit-arithmetic-conformance.mjs (script): 142:rounding-call
+    scripts/symbol-usage-search.mjs (script): 3:comment, 4:comment, 27:string-literal
+    scripts/tests/symbol-usage-search.test.mjs (test): 17:typed-array-construct, 18:other, 19:other, 20:other, 21:other, 22:typed-array-construct, 23:typed-array-construct, 24:other, 30:typed-array-construct, 31:rounding-call, 32:other, 33:other, 34:typed-array-construct, 35:other, 36:type-reference, 62:type-reference, 64:typed-array-construct, 89:rounding-call
+  vs export: 8 export paths; only in export 4; only in scan 35
+    only-in-export .myco/index.json.refused-20260930.bak
+    only-in-export private/.myco/index.json.pre-refresh-20260930.bak
+    only-in-export research/.myco/index.json.pre-refresh-20260930.bak
+    only-in-export research/.myco/index.json.refused-concurrent-refresh-20260930.bak
+    only-in-scan docs/examples/gir/365-ai-summary-flow.gir.json
+    only-in-scan docs/examples/gir/465-enterprise-summary.gir.json
+    only-in-scan examples/ai-inference/GOVERNANCE_PROOF.md
+    only-in-scan packages-ts/galerina-core-compiler/tests/type-registry/lowering-plan.test.mjs
+    only-in-scan packages-ts/galerina-devtools-benchmarks/benchmarks/hardware-targets/node.mjs
+    only-in-scan packages-ts/galerina-devtools-benchmarks/benchmarks/matrix-multiply/node.mjs
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-06-17_extended/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-04_post-perf-sweep/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_endphase-2026-07-12/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-12_posthardening/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-21_post-wat-lowering/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-07-25_2026-07-25-close/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/archive/2026-08-02_galerina-wasm-before-slide/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-16.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-06-19.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16-night.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/full-suite-2026-07-16.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/latest.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T17-19-05-632Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-19-54-748Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T18-54-33-352Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-05-352Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-09-20-127Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T19-17-34-605Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T20-57-50-457Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T21-14-08-756Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-00-09-654Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-28-217Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-12T22-35-29-152Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-08-24T15-48-05-620Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-10T14-42-30-685Z/results.json
+    only-in-scan packages-ts/galerina-devtools-benchmarks/results/runs/2026-09-13T17-52-26-150Z/results.json
+    only-in-scan scripts/audit-arithmetic-conformance.mjs
+    only-in-scan scripts/symbol-usage-search.mjs
+    only-in-scan scripts/tests/symbol-usage-search.test.mjs

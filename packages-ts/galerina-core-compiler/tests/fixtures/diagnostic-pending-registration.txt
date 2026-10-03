@@ -47,3 +47,5 @@ FUNGI-WAT-CHECKED-001
 # 2026-10-02: the 6 real I2/I3 codes (FUNGI-FAULT-007/008, FUNGI-INV-005/006, FUNGI-WAT-FAULT-001, FUNGI-WAT-INV-001)
 # are now registered in the KB compiler-diagnostics.md and galerina-governance-rules.md and are no longer pending
 # (owner decision, Phillip Booth, 13:41 BST: keep INV-005/006; the INV-* reservation is widened to governed runtime invariants).
+# 2026-10-02: E5 provisional narrow-float lane refusal (Grok Bot, branch grok/wat-parked-memory-20261002). KB registration is an owner/KB step before carry.
+FUNGI-WAT-FLOAT32-001
