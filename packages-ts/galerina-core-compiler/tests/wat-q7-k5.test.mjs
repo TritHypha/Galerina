@@ -239,10 +239,10 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3307 / :4131 still trap (re-pinned on main 0d06d6c1, +26; +2 diag-constants import 2026-10-02; +178/+192 wat-parked D4/ZipPair/E5 merge 2026-10-03)", () => {
+  it("live stacked lines :3327 / :4151 still trap (re-pinned on main 0d06d6c1, +26; +2 diag-constants import 2026-10-02; +178/+192 wat-parked D4/ZipPair/E5 merge 2026-10-03; +20 no-undefined cleanup 2026-10-03)", () => {
     const lines = emitterSrc().split("\n");
-    assert.equal(lines[3306].includes("case \"faultStmt\""), true, lines[3306]);
-    assert.equal(lines[4130].includes("case \"faultStmt\""), true, lines[4130]);
+    assert.equal(lines[3326].includes("case \"faultStmt\""), true, lines[3326]);
+    assert.equal(lines[4150].includes("case \"faultStmt\""), true, lines[4150]);
     assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
   });
 });

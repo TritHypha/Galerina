@@ -25,7 +25,7 @@ function simulate(t, input) {
     }
     const nxt = new Array(t.words).fill(0);
     for (let s = 0; s < t.slots; s++) {
-      if (!bit(cur, s) || t.charRanges[s] === null || !inRanges(cp, t.charRanges[s])) continue;
+      if (!bit(cur, s) || !inRanges(cp, t.charRanges[s])) continue;
       for (let w = 0; w < t.words; w++) nxt[w] = (nxt[w] | t.rows[s][w]) >>> 0;
       if (t.matchOnConsume[s]) matched = true;
     }

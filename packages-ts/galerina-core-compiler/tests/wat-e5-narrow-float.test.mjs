@@ -54,8 +54,8 @@ async function threeWay(label, src, args, want) {
   const w = await wasmRun(fn, args);
   const i = await interp(src, args);
   if (want === "trap") {
-    assert.ok(w.trap !== undefined, `${label}: WASM must trap, got ${w.value}`);
-    assert.ok(i.trap !== undefined, `${label}: walker must trap, got ${i.value}`);
+    assert.ok("trap" in w, `${label}: WASM must trap, got ${w.value}`);
+    assert.ok("trap" in i, `${label}: walker must trap, got ${i.value}`);
     return;
   }
   assert.ok(Object.is(w.value, want), `${label}: WASM ${w.value} !== truth ${want}${w.trap ? " (trap " + w.trap + ")" : ""}`);

@@ -113,7 +113,7 @@ describe("FUNGI-CLI-ENV-* diagnostic constants (2026-10-02 diag-constants)", () 
     for (const args of [["check"], ["check", "--env", "production"], ["check", "--env=test"]]) {
       const result = parseEnvironment(args);
       assert.equal(result.ok, true);
-      assert.equal(result.error, undefined);
+      assert.equal("error" in result, false);
     }
   });
 

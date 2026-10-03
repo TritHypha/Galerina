@@ -186,6 +186,7 @@ function gov(source) {
   return verifyGovernance(parsed.ast, parsed.flows, effects, "dev");
 }
 const findDiag = (r, code) => r.diagnostics.find((d) => d.code === code);
+const hasDiag = (r, code) => r.diagnostics.some((d) => d.code === code);
 
 describe("diag-constants migration: governance FAULT / INV emits use the constants", () => {
   it("faultHandlerDiagMeta returns the constant name and suggestedFix for FAULT-001/003/006, none otherwise", () => {
@@ -209,10 +210,10 @@ contract {
   return Ok(r)
 }`;
     const d = findDiag(gov(flow("on_denial_fault retry")), FUNGI_FAULT_001.code);
-    assert.ok(d !== undefined);
+    assert.equal(typeof d, "object");
     assert.equal(d.name, FUNGI_FAULT_001.name);
     assert.equal(d.suggestedFix, FUNGI_FAULT_001.suggestedFix);
-    assert.equal(findDiag(gov(flow("on_denial_fault halt")), FUNGI_FAULT_001.code), undefined);
+    assert.equal(hasDiag(gov(flow("on_denial_fault halt")), FUNGI_FAULT_001.code), false);
   });
 
   it("INV-001 static diagnostic uses the KB name PRECONDITION_VIOLATED; a true ensure is clean", () => {
@@ -223,10 +224,10 @@ contract {
 }
 { return x }`;
     const d = findDiag(gov(flow("false")), FUNGI_INV_001.code);
-    assert.ok(d !== undefined);
+    assert.equal(typeof d, "object");
     assert.equal(d.name, FUNGI_INV_001.name);
     assert.equal(d.severity, FUNGI_INV_001.severity);
-    assert.equal(findDiag(gov(flow("5 > 0")), FUNGI_INV_001.code), undefined);
+    assert.equal(hasDiag(gov(flow("5 > 0")), FUNGI_INV_001.code), false);
   });
 
   it("INV-003 empty invariant block is a warning named by the constant; a non-empty block is clean", () => {
@@ -237,10 +238,10 @@ contract {
 }
 { return x }`;
     const d = findDiag(gov(flow("")), FUNGI_INV_003.code);
-    assert.ok(d !== undefined);
+    assert.equal(typeof d, "object");
     assert.equal(d.name, FUNGI_INV_003.name);
     assert.equal(d.severity, "warning");
-    assert.equal(findDiag(gov(flow(" ensure x >= 0; ")), FUNGI_INV_003.code), undefined);
+    assert.equal(hasDiag(gov(flow(" ensure x >= 0; ")), FUNGI_INV_003.code), false);
   });
 
   it("INV-004 unresolved symbol is named by the constant; a parameter reference is clean", () => {
@@ -251,9 +252,9 @@ contract {
 }
 { return x }`;
     const d = findDiag(gov(flow("nope > 0")), FUNGI_INV_004.code);
-    assert.ok(d !== undefined);
+    assert.equal(typeof d, "object");
     assert.equal(d.name, FUNGI_INV_004.name);
-    assert.equal(findDiag(gov(flow("x > 0")), FUNGI_INV_004.code), undefined);
+    assert.equal(hasDiag(gov(flow("x > 0")), FUNGI_INV_004.code), false);
   });
 });
 
@@ -268,7 +269,7 @@ describe("diag-constants migration: NUMERIC-OP-005 and HALLMARK-006 type-checker
   it("NUMERIC-OP-005 positive: a computed currency code emits the constant (code, name, message, fix)", () => {
     const d = tcErrors('pure flow probe(code: String) -> Money {\n  return Money.of("9.99", code)\n}')
       .find((x) => x.code === FUNGI_NUMERIC_OP_005.code);
-    assert.ok(d !== undefined);
+    assert.equal(typeof d, "object");
     assert.equal(d.name, FUNGI_NUMERIC_OP_005.name);
     assert.equal(d.message, FUNGI_NUMERIC_OP_005.message);
     assert.equal(d.suggestedFix, FUNGI_NUMERIC_OP_005.suggestedFix);
@@ -276,7 +277,7 @@ describe("diag-constants migration: NUMERIC-OP-005 and HALLMARK-006 type-checker
 
   it("NUMERIC-OP-005 negative: a literal currency code does not emit it", () => {
     const ds = tcErrors('pure flow probe() -> Money {\n  return Money.of("9.99", "CHF")\n}');
-    assert.equal(ds.find((x) => x.code === FUNGI_NUMERIC_OP_005.code), undefined);
+    assert.equal(ds.some((x) => x.code === FUNGI_NUMERIC_OP_005.code), false);
   });
 
   const hallmark = (extra) => `@version 1
@@ -294,7 +295,7 @@ pure flow assayPoints(raw: Decimal) -> Result<LoyaltyPoints, ValidationError> {
     for (const field of ["decimals: 0", "sign: non-negative"]) {
       const d = checkTypes(parseProgram(hallmark(`  ${field}\n`), "h.fungi").ast).diagnostics
         .find((x) => x.code === FUNGI_HALLMARK_006.code);
-      assert.ok(d !== undefined, `expected ${FUNGI_HALLMARK_006.code} for ${field}`);
+      assert.equal(typeof d, "object", `expected ${FUNGI_HALLMARK_006.code} for ${field}`);
       assert.equal(d.name, FUNGI_HALLMARK_006.name);
       assert.equal(d.severity, FUNGI_HALLMARK_006.severity);
       assert.ok(d.message.includes(`'${field.slice(0, field.indexOf(":"))}:'`), d.message);
@@ -303,6 +304,6 @@ pure flow assayPoints(raw: Decimal) -> Result<LoyaltyPoints, ValidationError> {
 
   it("HALLMARK-006 negative: a schema without decimals:/sign: does not emit it", () => {
     const r = checkTypes(parseProgram(hallmark(""), "h.fungi").ast);
-    assert.equal(r.diagnostics.find((x) => x.code === FUNGI_HALLMARK_006.code), undefined);
+    assert.equal(r.diagnostics.some((x) => x.code === FUNGI_HALLMARK_006.code), false);
   });
 });

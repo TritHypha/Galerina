@@ -27,9 +27,9 @@ function compile(src) {
   return { parsed, diags, codes: diags.map((d) => String(d.code)) };
 }
 function flowNode(parsed, name) {
-  const found = (parsed.ast.children ?? []).find((c) => c.value === name);
-  if (found === undefined) throw new Error(`test fixture has no flow '${name}'`);
-  return found;
+  const matches = (parsed.ast.children ?? []).filter((c) => c.value === name);
+  if (matches.length === 0) throw new Error(`test fixture has no flow '${name}'`);
+  return matches[0];
 }
 async function exec(src, flow, args = [], deadlineAheadMs = 0) {
   const { parsed } = compile(src);
@@ -73,10 +73,15 @@ const SPIN_FAST_BODY = `{\n  mut i = 0\n  while i < 2000000000 {\n    i = i + 1\
 const QUARANTINE_FAST_SRC = HANDLER("on_timeout_fault quarantine", SPIN_FAST_BODY);
 const OUTER_FAST_SRC = `${QUARANTINE_FAST_SRC}flow outer() -> Int\ncontract { effects {} }\n{\n  let a = spin(1)\n  let b = spin(2)\n  return 7\n}\n`;
 const COUNT_SRC = (cond) => `flow count() -> Int\ncontract { effects {} }\n{\n  mut i = 0\n  while ${cond} {\n    i = i + 1\n  }\n  return i\n}\n`;
+/** Every whileStmt in document order (an explicit list: empty means none). */
+function whileStmts(node) {
+  if (node.kind === "whileStmt") return [node];
+  return (node.children ?? []).flatMap((c) => whileStmts(c));
+}
 function findWhile(node) {
-  if (node.kind === "whileStmt") return node;
-  for (const c of node.children ?? []) { const f = findWhile(c); if (f !== undefined) return f; }
-  return undefined;
+  const all = whileStmts(node);
+  if (all.length === 0) throw new Error("test fixture has no whileStmt");
+  return all[0];
 }
 async function runCount(cond, maxSteps, deadlineAheadMs) {
   const { parsed } = compile(COUNT_SRC(cond));
@@ -131,18 +136,18 @@ describe("I2 T3 - a quarantined flow is denied on re-entry in the same call tree
 describe("I2 T2f - an ELIGIBLE fast-path loop times out and runs the quarantine handler (R-I2-12)", () => {
   it("the spin loop is fast-path eligible and the fast path calls the deadline check every iteration", () => {
     const w = findWhile(compile(QUARANTINE_FAST_SRC).parsed.ast);
-    assert.ok(w !== undefined);
+    assert.equal(w.kind, "whileStmt");
     let calls = 0;
     const scope = new Map([["i", int(0)]]);
     assert.throws(
-      () => L.tryWhileFastPath(w.children[0], w.children[1], scope, () => undefined, 1_000_000_000, () => { calls += 1; if (calls === 3) throw new Error("[FUNGI-TIMEOUT] probe"); }),
+      () => L.tryWhileFastPath(w.children[0], w.children[1], scope, () => {}, 1_000_000_000, () => { calls += 1; if (calls === 3) throw new Error("[FUNGI-TIMEOUT] probe"); }),
       /FUNGI-TIMEOUT/,
     );
     assert.equal(calls, 3);
     assert.equal(scope.get("i")?.value ?? -1, 2); // exactly two iterations ran before the third check threw
     const small = findWhile(compile(COUNT_SRC("i < 10")).parsed.ast);
     let n = 0;
-    assert.equal(L.tryWhileFastPath(small.children[0], small.children[1], new Map([["i", int(0)]]), () => undefined, 100, () => { n += 1; }), true);
+    assert.equal(L.tryWhileFastPath(small.children[0], small.children[1], new Map([["i", int(0)]]), () => {}, 100, () => { n += 1; }), true);
     assert.equal(n, 11); // one check per iteration plus the exiting condition test, as on the walker
   });
   it("runtimeError + RUNTIME-003 [FUNGI-TIMEOUT] + fault-handler audit + FAULT-007 (not the compute budget)", async () => {
@@ -484,7 +489,7 @@ describe("T24 code conformance - every I2/I3 code is one exported constant in it
   for (const [constName, code, name, arrayName] of EXPECTED) {
     it(`${code} ${name}`, () => {
       const c = L[constName];
-      assert.equal(typeof c === "object" && c !== null, true, `${constName} is not exported`);
+      assert.equal(c instanceof Object && typeof c === "object", true, `${constName} is not exported`);
       assert.deepEqual(Object.keys(c).slice(0, 4), ["code", "name", "severity", "message"]);
       assert.equal(c.code, code);
       assert.equal(c.name, name);
