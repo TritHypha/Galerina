@@ -29,7 +29,8 @@ const AUTH_MODES: ReadonlySet<string> = new Set(["required", "public"]);
 /** "strip" is declared in the type but NOT implemented, so it is refused until it is. */
 const UNKNOWN_FIELDS_MODES: ReadonlySet<string> = new Set(["deny", "allow"]);
 const DUPLICATE_KEYS_MODES: ReadonlySet<string> = new Set(["deny", "lastWins"]);
-const ON_DUPLICATE_MODES: ReadonlySet<string> = new Set(["reject", "replay"]);
+/** "replay" is declared in the type but NOT implemented (a duplicate is always 409), so it is refused until it is. */
+const ON_DUPLICATE_MODES: ReadonlySet<string> = new Set(["reject"]);
 const RESOLVED_POSTURES: ReadonlySet<string> = new Set(["off", "on"]);
 /** Largest delay a host timer honours; above it Node fires after 1 ms. */
 const MAX_TIMER_MS = 2_147_483_647;
@@ -136,6 +137,9 @@ export function assertRouteDeclaration(route: RouteDeclaration): void {
         refuseRoute(route, "'idempotency.header' must be a valid HTTP header name.");
       }
       checkPositiveFinite(route, "idempotency.ttlSeconds", o.ttlSeconds);
+      if (o.onDuplicate === "replay") {
+        refuseRoute(route, "'idempotency.onDuplicate: replay' is not implemented; use 'reject'.");
+      }
       checkEnum(route, "idempotency.onDuplicate", o.onDuplicate, ON_DUPLICATE_MODES);
     }
   }

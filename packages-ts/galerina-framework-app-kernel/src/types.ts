@@ -44,6 +44,7 @@ export interface IdempotencyPolicy {
   readonly enabled: boolean;
   readonly header: string;
   readonly ttlSeconds: number;
+  /** "replay" is reserved and not implemented: route admission refuses it (a duplicate key is always 409). */
   readonly onDuplicate: "reject" | "replay";
 }
 
