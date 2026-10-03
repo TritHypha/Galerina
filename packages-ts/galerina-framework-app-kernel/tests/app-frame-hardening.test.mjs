@@ -98,7 +98,7 @@ test("S2 refuses a wrong-case or unknown method", () => {
 for (const [name, block, value, msg] of [
   ["body.unknownFields", { body: { unknownFields: "Deny" } }, "Deny", /'body\.unknownFields' must be one of deny, allow/],
   ["body.duplicateKeys", { body: { duplicateKeys: "lastwins" } }, "lastwins", /'body\.duplicateKeys' must be one of deny, lastWins/],
-  ["idempotency.onDuplicate", { method: "POST", idempotency: { onDuplicate: "Reject" } }, "Reject", /'idempotency\.onDuplicate' must be one of reject, replay/],
+  ["idempotency.onDuplicate", { method: "POST", idempotency: { onDuplicate: "Reject" } }, "Reject", /'idempotency\.onDuplicate' must be one of reject(?!, replay)/],
   ["idempotency.enabled", { method: "POST", idempotency: { enabled: 1 } }, 1, /'idempotency\.enabled' must be a boolean/],
   ["idempotency.header", { method: "POST", idempotency: { header: "Bad Header" } }, "Bad Header", /'idempotency\.header' must be a valid HTTP header name/],
   ["audit.runtimeReport", { audit: { runtimeReport: "false" } }, "false", /'audit\.runtimeReport' must be a boolean/],
@@ -236,4 +236,27 @@ test("S9 a truthy non-boolean registry verdict refuses the fuse", async () => {
 test("S9 a literal true registry verdict still admits (control)", async () => {
   const component = await fusePackage(DEMO_DIR, { allowUnsigned: true, warn: () => {}, registryCheck: () => ({ ok: true }) });
   assert.equal(component.name, "my-custom-api-rest");
+});
+
+// ── S8b: onDuplicate 'replay' is refused until implemented (the kernel only ever rejects a duplicate) ──
+const REPLAY_REFUSED = /'idempotency\.onDuplicate: replay' is not implemented/;
+test("S8b refuses idempotency.onDuplicate 'replay' (not implemented)", () => {
+  assert.throws(() => kernel({ method: "POST", requestType: "T", idempotency: { enabled: true, onDuplicate: "replay" } }), REPLAY_REFUSED);
+});
+test("S8b refuses 'replay' even on a disabled idempotency block (a declaration must not lie)", () => {
+  assert.throws(() => kernel({ method: "POST", requestType: "T", idempotency: { enabled: false, onDuplicate: "replay" } }), REPLAY_REFUSED);
+});
+test("S8b resolveEffectiveRoutePolicy refuses 'replay' directly too", () => {
+  assert.throws(
+    () => resolveEffectiveRoutePolicy({ method: "POST", path: "/r", handler: "h", requestType: "T", idempotency: { onDuplicate: "replay" } }),
+    REPLAY_REFUSED,
+  );
+});
+test("S8b 'reject' still admits and a duplicate key is 409; the default resolves to 'reject' (control)", async () => {
+  const k = kernel({ method: "POST", requestType: "T", idempotency: { enabled: true, onDuplicate: "reject" } });
+  const send = () => post(enc.encode(JSON.stringify({ a: 1 })), { headers: { "content-type": "application/json", "idempotency-key": "k-1" } });
+  assert.equal((await k.handle(send())).status, 200);
+  assert.equal((await k.handle(send())).status, 409);
+  const resolved = resolveEffectiveRoutePolicy({ method: "POST", path: "/r", handler: "h", requestType: "T", idempotency: { enabled: true } });
+  assert.equal(resolved.idempotency.onDuplicate, "reject");
 });
