@@ -3514,9 +3514,9 @@
     "severities": [],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3976",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2501",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2499",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:1906",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3946"
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3966"
     ]
   },
   {
@@ -3844,7 +3844,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2190"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2188"
     ],
     "tests": 6,
     "refs": 1,
@@ -3852,8 +3852,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2190",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2191",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2188",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2189",
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:32",
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:43",
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:53",
@@ -3871,7 +3871,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2176"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2174"
     ],
     "tests": 0,
     "refs": 2,
@@ -3879,9 +3879,9 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2157",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2176",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2177"
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2155",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2174",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2175"
     ]
   },
   {
@@ -6293,9 +6293,9 @@
       "emit packages-ts/galerina-core-compiler/src/parser.ts:2002",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2003",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:4126",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3221",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3238",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4040",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3241",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3258",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4060",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:7",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:55",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:59",
@@ -9692,7 +9692,7 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:75"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1930",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1929",
       "packages-ts/galerina-core-compiler/src/resilience-inference.ts:443"
     ],
     "tests": 16,
@@ -9709,9 +9709,9 @@
       "ref packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:10",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:75",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1222",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1925",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1930",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2596",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1924",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1929",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2594",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2165",
       "ref packages-ts/galerina-core-compiler/src/resilience-inference.ts:407",
       "ref packages-ts/galerina-core-compiler/src/resilience-inference.ts:420",
@@ -9725,9 +9725,9 @@
       "test packages-ts/galerina-core-compiler/tests/fault-handlers-0017.test.mjs:80",
       "test packages-ts/galerina-core-compiler/tests/fault-handlers-0017.test.mjs:96",
       "test packages-ts/galerina-core-compiler/tests/fault-handlers-0017.test.mjs:98",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:215",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:288",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:401",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:220",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:293",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:406",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:115",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:174",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:183",
@@ -9827,10 +9827,10 @@
       "ref packages-ts/galerina-core-compiler/src/resilience-inference.ts:428",
       "emit packages-ts/galerina-core-compiler/src/resilience-inference.ts:452",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:64",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:94",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:96",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:203",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:207",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:99",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:101",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:208",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:212",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:3",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:22",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:123",
@@ -9848,7 +9848,7 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:29"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2088"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2086"
     ],
     "tests": 12,
     "refs": 2,
@@ -9862,19 +9862,19 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:9",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:29",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2073",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2088",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:105",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:115",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:122",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:153",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:160",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:216",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:227",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:256",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:477",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:527",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:537",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2071",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2086",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:110",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:120",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:127",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:158",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:165",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:221",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:232",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:261",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:482",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:532",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:542",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:150"
     ]
   },
@@ -9888,8 +9888,8 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:40"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1692",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1695"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1691",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1694"
     ],
     "tests": 6,
     "refs": 0,
@@ -9902,14 +9902,14 @@
     ],
     "allSites": [
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:40",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1692",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1695",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:123",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:161",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:190",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:478",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:527",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:537"
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1691",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1694",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:128",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:166",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:195",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:483",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:532",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:542"
     ]
   },
   {
@@ -9951,10 +9951,10 @@
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:414",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1051",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1567",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2789",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3090",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3115",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4128",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2787",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3091",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3116",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4129",
       "ref packages-ts/galerina-core-compiler/src/narrow-float.ts:17",
       "ref packages-ts/galerina-core-compiler/src/runtime/canonicalHash.ts:69",
       "emit packages-ts/galerina-core-compiler/src/runtime/canonicalHash.ts:75",
@@ -9963,10 +9963,10 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-binary.ts:217",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-binary.ts:228",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-binary.ts:241",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:1831",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2143",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2151",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2272",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:1841",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2159",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2167",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2288",
       "test packages-ts/galerina-core-compiler/tests/canonical-hash.test.mjs:79",
       "test packages-ts/galerina-core-compiler/tests/float-nonfinite-failopen.test.mjs:27",
       "test packages-ts/galerina-core-compiler/tests/float-nonfinite-wasm-parity.test.mjs:2"
@@ -14082,9 +14082,9 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:105"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1897",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1904",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:3953"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1896",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1903",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:3973"
     ],
     "tests": 18,
     "refs": 2,
@@ -14099,9 +14099,9 @@
       "ref packages-ts/galerina-core-compiler/src/capability-types.ts:171",
       "ref packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:11",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:105",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1897",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1904",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:3953",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1896",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1903",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:3973",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:2",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:65",
       "test packages-ts/galerina-core-compiler/tests/governance/trap-decl.test.mjs:318",
@@ -14112,8 +14112,8 @@
       "test packages-ts/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:52",
       "test packages-ts/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:59",
       "test packages-ts/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:60",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:223",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:226",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:228",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:231",
       "test packages-ts/galerina-core-compiler/tests/slide-r1-selfhost-k3.test.mjs:231",
       "test packages-ts/galerina-core-compiler/tests/slide-r1-selfhost-k3.test.mjs:238",
       "test packages-ts/galerina-core-compiler/tests/slide-r1-selfhost-k3.test.mjs:248",
@@ -14150,8 +14150,8 @@
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:2947",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1784",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4307"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1783",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4327"
     ],
     "tests": 17,
     "refs": 15,
@@ -14172,15 +14172,15 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2974",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3001",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:114",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1779",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1784",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2065",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1778",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1783",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2063",
       "ref packages-ts/galerina-core-compiler/src/invariant-discharge.ts:27",
       "ref packages-ts/galerina-core-compiler/src/invariant-discharge.ts:49",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:5768",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4307",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4445",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4467",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4327",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4465",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4487",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:66",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1535",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1546",
@@ -14194,8 +14194,8 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1688",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1689",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1690",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:397",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:400",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:402",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:405",
       "test packages-ts/galerina-core-compiler/tests/invariant-discharge.test.mjs:86",
       "test packages-ts/galerina-core-compiler/tests/wat-tri-fuse-a-elision.test.mjs:5",
       "doc packages-ts/galerina-core-compiler/TODO.md:135",
@@ -14214,9 +14214,9 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:125"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2013",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4328",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4336"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2011",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4348",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4356"
     ],
     "tests": 5,
     "refs": 4,
@@ -14230,11 +14230,11 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:35",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:125",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1780",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2006",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2013",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4328",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4336",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1779",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2004",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2011",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4348",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4356",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:67",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1596",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:7",
@@ -14304,7 +14304,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/body-local-invariants.ts:7",
       "ref packages-ts/galerina-core-compiler/src/body-local-invariants.ts:15",
-      "ref packages-ts/galerina-core-compiler/src/body-local-invariants.ts:96",
+      "ref packages-ts/galerina-core-compiler/src/body-local-invariants.ts:98",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:37",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:695",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:1558",
@@ -14314,9 +14314,9 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2926",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:2930",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:143",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2067",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4265",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4263",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2065",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4266",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4283",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:69",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1613",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1622",
@@ -14330,12 +14330,12 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1662",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1666",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1672",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:265",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:269",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:366",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:381",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:383",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:392",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:270",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:274",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:371",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:386",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:388",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:397",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:12",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:102",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:105",
@@ -14356,8 +14356,8 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:50"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1915",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1918"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1914",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1917"
     ],
     "tests": 18,
     "refs": 5,
@@ -14374,26 +14374,26 @@
       "ref packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:9",
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:50",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1239",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1915",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1918",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2101",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:277",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:286",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:292",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:300",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:312",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:321",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:324",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:327",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:343",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:346",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:347",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:355",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1914",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1917",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2099",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:282",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:291",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:297",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:305",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:317",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:326",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:329",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:332",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:348",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:351",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:352",
       "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:360",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:362",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:479",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:527",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:537",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:365",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:367",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:484",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:532",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:542",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:202"
     ]
   },
@@ -14407,8 +14407,8 @@
       "packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:61"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1966",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1969"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1964",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1967"
     ],
     "tests": 6,
     "refs": 1,
@@ -14422,14 +14422,14 @@
     "allSites": [
       "def packages-ts/galerina-core-compiler/src/governed-control-diagnostics.ts:61",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1240",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1966",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1969",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:306",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1964",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1967",
       "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:311",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:314",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:480",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:527",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:537"
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:316",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:319",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:485",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:532",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:542"
     ]
   },
   {
@@ -14942,9 +14942,9 @@
     ],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:462",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3007",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3014",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3032",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3008",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3015",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:3033",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3653",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3654",
       "test packages-ts/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:185",
@@ -14987,7 +14987,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2872",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2870",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3842",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3843",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3852",
@@ -15025,7 +15025,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2916",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2917",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3866",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3867",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:66",
@@ -16516,8 +16516,8 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:4391",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:4402",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:4403",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3067",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3707",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3087",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3727",
       "test packages-ts/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:179",
       "test packages-ts/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:2",
       "test packages-ts/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:25",
@@ -17091,13 +17091,13 @@
       "test packages-ts/galerina-core-compiler/tests/import-resolver.test.mjs:431",
       "test packages-ts/galerina-core-compiler/tests/import-resolver.test.mjs:439",
       "test packages-ts/galerina-core-compiler/tests/import-resolver.test.mjs:440",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:462",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:464",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:465",
       "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:467",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:468",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:469",
       "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:470",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:471",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:472",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:473",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:475",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:476",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:12",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:102",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:104",
@@ -17822,7 +17822,7 @@
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3476",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3484",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3485",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2244",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2260",
       "test packages-ts/galerina-core-compiler/tests/decimal-arith.test.mjs:141",
       "test packages-ts/galerina-core-compiler/tests/decimal-arith.test.mjs:142",
       "test packages-ts/galerina-core-compiler/tests/decimal-arith.test.mjs:143",
@@ -17906,7 +17906,7 @@
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:1482",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3452",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3453",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2231",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2247",
       "test packages-ts/galerina-core-compiler/tests/rounding-exact-numeric-type-checks.test.mjs:49",
       "test packages-ts/galerina-core-compiler/tests/rounding-exact-numeric-type-checks.test.mjs:57",
       "test packages-ts/galerina-core-compiler/tests/rounding-exact-numeric-type-checks.test.mjs:60",
@@ -20190,8 +20190,8 @@
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2191",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:2218",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2219",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3281",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4095",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3301",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4115",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:11",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:57",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:58",
@@ -20223,7 +20223,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2608",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2606",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2192",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3799",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3800",
@@ -21803,8 +21803,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1717",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:3510"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1716",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:3511"
     ],
     "tests": 4,
     "refs": 0,
@@ -21812,8 +21812,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1717",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:3510",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1716",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:3511",
       "test packages-ts/galerina-core-compiler/tests/governed-secure-runtime.test.mjs:53",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-lexer.test.mjs:340",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-lexer.test.mjs:341",
@@ -21828,11 +21828,11 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1741",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1754",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1765",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1839",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1937"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1740",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1753",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1764",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1838",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1936"
     ],
     "tests": 12,
     "refs": 0,
@@ -21840,18 +21840,18 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1741",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1754",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1765",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1839",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1937",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1740",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1753",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1764",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1838",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1936",
       "test packages-ts/galerina-core-compiler/tests/domain-loops-runtime.test.mjs:576",
       "test packages-ts/galerina-core-compiler/tests/domain-loops-runtime.test.mjs:577",
       "test packages-ts/galerina-core-compiler/tests/domain-loops-runtime.test.mjs:609",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:104",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:115",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:126",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:151",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:109",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:120",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:131",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:156",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase12.test.mjs:133",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase12.test.mjs:134",
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:120",
@@ -21867,7 +21867,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2645"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2643"
     ],
     "tests": 2,
     "refs": 0,
@@ -21875,7 +21875,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2645",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2643",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase12.test.mjs:64",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase12.test.mjs:66"
     ]
@@ -21890,7 +21890,7 @@
       "packages-ts/galerina-core-compiler/src/interpreter.ts:670"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:2841"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:2839"
     ],
     "tests": 9,
     "refs": 3,
@@ -21904,8 +21904,8 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:668",
       "def packages-ts/galerina-core-compiler/src/interpreter.ts:670",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2832",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2841",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2830",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:2839",
       "ref packages-ts/galerina-core-compiler/src/production-check.ts:35",
       "test packages-ts/galerina-core-compiler/tests/domain-loops-runtime.test.mjs:14",
       "test packages-ts/galerina-core-compiler/tests/domain-loops-runtime.test.mjs:559",
@@ -21928,9 +21928,9 @@
       "packages-ts/galerina-core-compiler/src/security-policy.ts:115"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1709",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1981",
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:3242"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1708",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1979",
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:3243"
     ],
     "tests": 24,
     "refs": 14,
@@ -21944,10 +21944,10 @@
     ],
     "allSites": [
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:119",
-      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1701",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1709",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1981",
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:3242",
+      "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1700",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1708",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1979",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:3243",
       "ref packages-ts/galerina-core-compiler/src/runtime/capabilityHost.ts:179",
       "ref packages-ts/galerina-core-compiler/src/runtime/capabilityHost.ts:191",
       "ref packages-ts/galerina-core-compiler/src/runtime/capabilityHost.ts:204",
@@ -21957,8 +21957,8 @@
       "test packages-ts/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:429",
       "test packages-ts/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:454",
       "test packages-ts/galerina-core-compiler/tests/governed-secure-runtime.test.mjs:193",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:125",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:162",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:130",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:167",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase16.test.mjs:8",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase16.test.mjs:307",
       "test packages-ts/galerina-core-compiler/tests/interpreter-phase16.test.mjs:310",
@@ -21996,7 +21996,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/interpreter.ts:1991"
+      "packages-ts/galerina-core-compiler/src/interpreter.ts:1989"
     ],
     "tests": 3,
     "refs": 1,
@@ -22004,7 +22004,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1991",
+      "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1989",
       "ref packages-ts/galerina-core-compiler/src/production-check.ts:37",
       "test packages-ts/galerina-core-compiler/tests/r4-r6-enforcement.test.mjs:191",
       "test packages-ts/galerina-core-compiler/tests/r4-r6-enforcement.test.mjs:209",
@@ -27733,7 +27733,7 @@
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:1225",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3816",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3817",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2395",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2411",
       "test packages-ts/galerina-core-compiler/tests/int-literal-range.test.mjs:2",
       "test packages-ts/galerina-core-compiler/tests/int-literal-range.test.mjs:24",
       "test packages-ts/galerina-core-compiler/tests/int-literal-range.test.mjs:27",
@@ -30422,8 +30422,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1138",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1147"
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1143",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1152"
     ],
     "tests": 0,
     "refs": 2,
@@ -30431,10 +30431,10 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1138",
-      "ref packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1138",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1147",
-      "ref packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1149"
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1143",
+      "ref packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1143",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1152",
+      "ref packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1154"
     ]
   },
   {
@@ -30447,9 +30447,9 @@
       "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:286"
     ],
     "emits": [
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:292",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:847",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:849"
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:296",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:851",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:853"
     ],
     "tests": 1,
     "refs": 1,
@@ -30464,9 +30464,9 @@
       "test packages-ts/galerina-core-compiler/tests/wasm-effect-grant-abi.test.mjs:11",
       "ref packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:268",
       "def packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:286",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:292",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:847",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:849"
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:296",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:851",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:853"
     ]
   },
   {
@@ -30477,14 +30477,14 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:293",
       "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:297",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:914",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:917",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:301",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:918",
       "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:921",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:926",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:931",
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:935"
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:925",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:930",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:935",
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:939"
     ],
     "tests": 7,
     "refs": 0,
@@ -30493,14 +30493,14 @@
     "severities": [],
     "allSites": [
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:230",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:293",
       "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:297",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:914",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:917",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:301",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:918",
       "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:921",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:926",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:931",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:925",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:930",
       "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:935",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:939",
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:221",
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:228",
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:235",
@@ -30528,7 +30528,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1154"
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1159"
     ],
     "tests": 6,
     "refs": 0,
@@ -30542,7 +30542,7 @@
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:88",
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:102",
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:117",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1154",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1159",
       "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:21",
       "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:31",
       "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:43",
@@ -30559,7 +30559,7 @@
       "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:108"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:371"
+      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:370"
     ],
     "tests": 13,
     "refs": 1,
@@ -30572,8 +30572,8 @@
     ],
     "allSites": [
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:108",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:371",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:5034",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:370",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:5054",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:70",
       "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:100",
       "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:110",
@@ -30723,11 +30723,11 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:269",
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:272",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:285",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:233",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:235",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:246",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:481",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:528"
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:238",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:240",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:251",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:486",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:533"
     ]
   },
   {
@@ -30755,7 +30755,7 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:191",
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:194",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:205",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:1859",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:1872",
       "test packages-ts/galerina-core-compiler/tests/wat-e5-narrow-float.test.mjs:6",
       "test packages-ts/galerina-core-compiler/tests/wat-e5-narrow-float.test.mjs:168",
       "test packages-ts/galerina-core-compiler/tests/wat-e5-narrow-float.test.mjs:171"
@@ -30771,10 +30771,10 @@
       "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:98"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:353",
-      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:362",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2800",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2821"
+      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:352",
+      "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:361",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2816",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2837"
     ],
     "tests": 33,
     "refs": 2,
@@ -30787,12 +30787,12 @@
     ],
     "allSites": [
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:98",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:353",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:362",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2793",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2800",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2821",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2924",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:352",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:361",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2809",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2816",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2837",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2944",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:74",
       "test packages-ts/galerina-core-compiler/tests/wat-c02-hof-capture-refusal.test.mjs:3",
       "test packages-ts/galerina-core-compiler/tests/wat-c02-hof-capture-refusal.test.mjs:44",
@@ -30889,11 +30889,11 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:293",
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:296",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:329",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:406",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:408",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:415",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:482",
-      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:528"
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:411",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:413",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:420",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:487",
+      "test packages-ts/galerina-core-compiler/tests/interpreter-i2-i3.test.mjs:533"
     ]
   },
   {
@@ -30921,7 +30921,7 @@
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:48",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:160",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:165",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2839",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2859",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:76",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:121",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:133",
@@ -31003,7 +31003,7 @@
       "def packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:68",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:218",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:227",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2829",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2845",
       "test packages-ts/galerina-core-compiler/tests/diag-constants-migration.test.mjs:78",
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:96",
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:105",
@@ -31064,7 +31064,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:5551"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:5571"
     ],
     "tests": 0,
     "refs": 0,
@@ -31072,7 +31072,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:5551"
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:5571"
     ]
   },
   {
