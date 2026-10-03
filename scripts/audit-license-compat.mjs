@@ -33,6 +33,8 @@ import { readdirSync, readFileSync, existsSync, lstatSync, mkdtempSync, mkdirSyn
 import { join, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 // ── Classifier (ported verbatim from tools/license-census.mjs — keep in lockstep) ──
 const PERMISSIVE = new Set([
@@ -77,6 +79,8 @@ export function classify(expr) {
 // ── The one measured, sanctioned GPL container (RD-0355 F1). GPL is allowed to live
 //    ONLY inside these opt-in extensions; anywhere else it is a §3 breach. ────────────
 const SANCTIONED_GPL_EXTENSIONS = new Set(["@galerina/ext-proof-snarkjs"]);
+/** Read-only export for scripts/audit-pkg-standard.mjs (one sanctioned list, not a copy). */
+export const SANCTIONED_GPL_EXTENSION_NAMES = Object.freeze([...SANCTIONED_GPL_EXTENSIONS]);
 const GPL_EXTENSION_EXPECTED_LICENSE = new Set(["GPL-3.0-ONLY", "GPL-3.0", "GPL-3.0-OR-LATER"]);
 
 const LICENSE_FILENAMES = ["LICENSE", "LICENSE.BSD", "LICENSE.md", "LICENSE.txt", "LICENCE", "license", "license.txt", "COPYING"];
@@ -245,8 +249,14 @@ function selfTest() {
 }
 
 // ── CLI ────────────────────────────────────────────────────────────────────────────────
+// Guarded so the classifier can be imported (scripts/audit-pkg-standard.mjs) without running the audit.
+const isMain = (() => {
+  try { return process.argv[1] !== undefined && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]); } catch { return false; }
+})();
 const args = process.argv.slice(2);
-if (args.includes("--self-test")) {
+if (!isMain) {
+  // imported as a library: no CLI side effects
+} else if (args.includes("--self-test")) {
   selfTest();
 } else {
   const root = process.cwd();
