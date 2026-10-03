@@ -79,7 +79,7 @@ export function planPatternMatchWat(rawLiteral: string): WatPatternPlan {
     return { ok: false, reason: `automaton has ${t.slots} slots; the in-Wasm bound is ${WAT_PATTERN_MAX_SLOTS}` };
   }
   let totalRanges = 0;
-  for (const r of t.charRanges) totalRanges += r === null ? 0 : r.length;
+  for (const r of t.charRanges) totalRanges += r.length;
   if (totalRanges > WAT_PATTERN_MAX_RANGES) {
     return { ok: false, reason: `automaton has ${totalRanges} char ranges; the in-Wasm bound is ${WAT_PATTERN_MAX_RANGES}` };
   }
@@ -139,8 +139,8 @@ export function planPatternMatchWat(rawLiteral: string): WatPatternPlan {
   }
   for (let w = 0; w < W; w++) L.push(`    (local.set $x${w} (i32.const 0))`);
   for (let s = 0; s < t.slots; s++) {
-    const ranges = t.charRanges[s];
-    if (ranges === null || ranges === undefined || ranges.length === 0) continue;
+    const ranges = t.charRanges[s] ?? [];
+    if (ranges.length === 0) continue;
     const row = t.rows[s] ?? [];
     const acts: string[] = [];
     for (let w = 0; w < W; w++) {

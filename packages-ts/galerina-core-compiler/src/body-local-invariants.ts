@@ -47,17 +47,18 @@ function isGovernedType(typeText: string): boolean {
 }
 
 function ensureExprsOf(flowNode: AstNode): AstNode[] {
-  const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
-  if (contractNode === undefined) return [];
-  const invariantBlock = (contractNode.children ?? []).find(
-    (c) => c.kind === "identifier" && c.value === "invariant:block",
-  );
-  if (invariantBlock === undefined) return [];
+  // First match only (as Array.find), as an explicit 0-or-1 list: no absent value is ever produced.
   const out: AstNode[] = [];
-  for (const child of invariantBlock.children ?? []) {
-    if (child.kind !== "ensureDecl") continue;
-    const expr = child.children?.[0];
-    if (expr !== undefined) out.push(expr);
+  for (const contractNode of (flowNode.children ?? []).filter((c) => c.kind === "contractDecl").slice(0, 1)) {
+    const blocks = (contractNode.children ?? []).filter(
+      (c) => c.kind === "identifier" && c.value === "invariant:block",
+    ).slice(0, 1);
+    for (const invariantBlock of blocks) {
+      for (const child of invariantBlock.children ?? []) {
+        if (child.kind !== "ensureDecl") continue;
+        for (const expr of (child.children ?? []).slice(0, 1)) out.push(expr);
+      }
+    }
   }
   return out;
 }
@@ -76,8 +77,9 @@ export function exprIdentifierNames(node: AstNode): ReadonlySet<string> {
   return out;
 }
 
-function topLevelBlock(flowNode: AstNode): AstNode | undefined {
-  return (flowNode.children ?? []).find((c) => c.kind === "block");
+/** The flow's first top-level block as a 0-or-1 list (the explicit form of Array.find). */
+function topLevelBlocks(flowNode: AstNode): readonly AstNode[] {
+  return (flowNode.children ?? []).filter((c) => c.kind === "block").slice(0, 1);
 }
 
 function parameterNames(flowNode: AstNode): ReadonlySet<string> {
@@ -97,8 +99,9 @@ function parameterNames(flowNode: AstNode): ReadonlySet<string> {
  */
 function eligibleLets(flowNode: AstNode): ReadonlyMap<string, { readonly node: AstNode; readonly stmtIndex: number }> {
   const out = new Map<string, { readonly node: AstNode; readonly stmtIndex: number }>();
-  const block = topLevelBlock(flowNode);
-  if (block === undefined) return out;
+  const blocks = topLevelBlocks(flowNode);
+  if (blocks.length === 0) return out;
+  const block = blocks[0]!;
   const params = parameterNames(flowNode);
   const candidates = new Map<string, { readonly node: AstNode; readonly stmtIndex: number }>();
   const rejected = new Set<string>();
@@ -117,8 +120,7 @@ function eligibleLets(flowNode: AstNode): ReadonlyMap<string, { readonly node: A
   const walk = (n: AstNode): void => {
     if (n.kind !== "identifier" && !LITERAL_KINDS.has(n.kind)) {
       const nm = bindingNameOf(n.value ?? "");
-      const cand = candidates.get(nm);
-      if (cand !== undefined && cand.node !== n) rejected.add(nm);
+      if (candidates.has(nm) && candidates.get(nm)!.node !== n) rejected.add(nm);
     }
     for (const c of n.children ?? []) walk(c);
   };
@@ -151,8 +153,8 @@ export function bodyLocalInvariantPlan(flowNode: AstNode): readonly BodyLocalInv
     if (ids.has("result")) return;
     let trigger: { readonly node: AstNode; readonly stmtIndex: number } | "none" = "none";
     for (const id of ids) {
-      const entry = lets.get(id);
-      if (entry === undefined) continue;
+      if (!lets.has(id)) continue;
+      const entry = lets.get(id)!;
       if (trigger === "none" || entry.stmtIndex > trigger.stmtIndex) trigger = entry;
     }
     if (trigger !== "none") out.push({ expr, index, trigger: trigger.node });

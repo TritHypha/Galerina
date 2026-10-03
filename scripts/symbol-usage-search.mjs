@@ -160,9 +160,9 @@ export function parseVsCodeExport(text) {
   const out = new Set();
   for (const raw of text.split(/\r?\n/)) {
     if (!/:\s*$/.test(raw) || /^\s/.test(raw) || raw.startsWith("#")) continue;
-    const m = raw.replace(/\\/g, "/").match(/Galerina\/(.+?):\s*$/);
-    if (m === null) continue;
-    const p = m[1].replace(/^\.worktrees\/[^/]+\/(?:Galerina\/)?/, "");
+    const unix = raw.replace(/\\/g, "/");
+    if (!/Galerina\/(.+?):\s*$/.test(unix)) continue;
+    const p = unix.replace(/^.*?Galerina\/(.+?):\s*$/, "$1").replace(/^\.worktrees\/[^/]+\/(?:Galerina\/)?/, "");
     out.add(p);
   }
   return [...out].sort();
@@ -181,7 +181,8 @@ export function compareWithExport(report, exportPaths) {
 }
 
 function parseArgs(argv) {
-  const o = { root: process.cwd(), patterns: [], json: false, out: undefined, check: undefined, vscodeExport: undefined };
+  // "" = option not given (explicit sentinel; resolve() never returns "").
+  const o = { root: process.cwd(), patterns: [], json: false, out: "", check: "", vscodeExport: "" };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const val = () => {
@@ -192,9 +193,8 @@ function parseArgs(argv) {
     else if (a === "--pattern") o.patterns.push(val());
     else if (a === "--preset") {
       const name = val();
-      const p = PRESETS[name];
-      if (p === undefined) throw new Error(`symbol-usage-search: unknown preset ${name} (known: ${Object.keys(PRESETS).join(", ")})`);
-      o.patterns.push(...p);
+      if (!Object.prototype.hasOwnProperty.call(PRESETS, name)) throw new Error(`symbol-usage-search: unknown preset ${name} (known: ${Object.keys(PRESETS).join(", ")})`);
+      o.patterns.push(...PRESETS[name]);
     } else if (a === "--json") o.json = true;
     else if (a === "--out") o.out = resolve(val());
     else if (a === "--check") o.check = resolve(val());
@@ -209,13 +209,13 @@ function main() {
   let o;
   try { o = parseArgs(process.argv.slice(2)); } catch (e) { process.stderr.write(`${e.message}\n`); process.exit(2); }
   const report = scan(o.root, o.patterns);
-  if (o.vscodeExport !== undefined) {
+  if (o.vscodeExport !== "") {
     if (!existsSync(o.vscodeExport)) { process.stderr.write(`symbol-usage-search: no such export ${o.vscodeExport}\n`); process.exit(2); }
     report.vscodeExportComparison = compareWithExport(report, parseVsCodeExport(readFileSync(o.vscodeExport, "utf8")));
   }
   const json = `${JSON.stringify(report, null, 2)}\n`;
-  if (o.out !== undefined) writeFileSync(o.out, json);
-  if (o.check !== undefined) {
+  if (o.out !== "") writeFileSync(o.out, json);
+  if (o.check !== "") {
     const prev = existsSync(o.check) ? readFileSync(o.check, "utf8").replace(/\r\n/g, "\n") : "";
     if (prev !== json) { process.stderr.write(`symbol-usage-search: --check FAILED, report differs from ${o.check}\n`); process.exit(1); }
     process.stdout.write(`symbol-usage-search: --check OK (${report.totals.matches} matches)\n`);
@@ -234,7 +234,7 @@ function main() {
     lines.push(`  [${p.package}] ${p.matches}`);
     for (const f of p.files) lines.push(`    ${f.path} (${f.area}): ${f.matches.map((m) => `${m.line}:${m.kind}`).join(", ")}`);
   }
-  if (report.vscodeExportComparison !== undefined) {
+  if ("vscodeExportComparison" in report) {
     const c = report.vscodeExportComparison;
     lines.push(`  vs export: ${c.exportPaths} export paths; only in export ${c.onlyInExport.length}; only in scan ${c.onlyInScan.length}`);
     for (const p of c.onlyInExport) lines.push(`    only-in-export ${p}`);
@@ -243,4 +243,4 @@ function main() {
   process.stdout.write(`${lines.join("\n")}\n`);
 }
 
-if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (typeof process.argv[1] === "string" && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

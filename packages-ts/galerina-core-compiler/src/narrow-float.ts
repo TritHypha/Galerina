@@ -19,11 +19,14 @@
 
 export type NarrowFloatWidth = 16 | 32;
 
-/** 16 / 32 for a Float16 / Float32 base type, otherwise undefined. */
-export function narrowFloatWidthOf(base: string | undefined): NarrowFloatWidth | undefined {
+/** Fail-closed sentinel: 0 = not a narrow float type (the ordinary f64 / int path). Never a width. */
+export type NarrowFloatWidthOrNone = NarrowFloatWidth | 0;
+
+/** 16 / 32 for a Float16 / Float32 base type, otherwise 0 (not narrow). */
+export function narrowFloatWidthOf(base: string): NarrowFloatWidthOrNone {
   if (base === "Float32") return 32;
   if (base === "Float16") return 16;
-  return undefined;
+  return 0;
 }
 
 /** The Galerina base type name for a narrow width. */
@@ -61,13 +64,14 @@ export function softF16Round(x: number): number {
   return x < 0 ? -signed : signed;
 }
 
-const hostF16Round: ((x: number) => number) | undefined =
+/** The host's Math.f16round when present, otherwise the bit-identical software rounding. */
+const f16Round: (x: number) => number =
   typeof (Math as unknown as { f16round?: unknown }).f16round === "function"
     ? (Math as unknown as { f16round: (x: number) => number }).f16round
-    : undefined;
+    : softF16Round;
 
 /** Round `x` to the nearest value of the given width (ties-to-even). May return ±Infinity on overflow. */
 export function roundToNarrowFloat(x: number, width: NarrowFloatWidth): number {
   if (width === 32) return Math.fround(x);
-  return hostF16Round !== undefined ? hostF16Round(x) : softF16Round(x);
+  return f16Round(x);
 }

@@ -339,8 +339,7 @@ export function refuseInterpreterOnlyFlowWat(flowNode: AstNode): void {
 }
 
 /** Module-wide: refuse (by name) any flow in the AST carrying interpreter-only I2/I3 governed control. */
-export function refuseInterpreterOnlyGovernedControl(ast: AstNode | undefined): void {
-  if (ast === undefined) return;
+export function refuseInterpreterOnlyGovernedControl(ast: AstNode): void {
   const walk = (node: AstNode): void => {
     if (FLOW_DECL_KINDS.has(node.kind)) refuseInterpreterOnlyFlowWat(node);
     for (const c of node.children ?? []) walk(c);
@@ -396,7 +395,7 @@ export function refuseUnadmittedPublicWAT(
   }
   // Real I2/I3 (R-I2-9 / R-I3-6): module-wide, before any lowering - every flow in the AST, not only
   // the ones that reach the per-flow body emitter (an impure flow may never get there).
-  refuseInterpreterOnlyGovernedControl(ast);
+  if (typeof ast === "object") refuseInterpreterOnlyGovernedControl(ast);
   if (astHasParamAdmission(ast)) {
     throw new Error(
       `${caller}: refusing to lower a flow carrying a parameter admission (\`where <predicate>\`) ` +

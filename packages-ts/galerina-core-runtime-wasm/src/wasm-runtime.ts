@@ -286,6 +286,10 @@ export const FUNGI_WASM_GRANT_001 = {
   code: "FUNGI-WASM-GRANT-001",
   name: "EFFECT_GRANT_NOT_ALLOWLISTED",
   severity: "error",
+  message:
+    "an effect grant outside the closed non-secret WASM effect-grant ABI (or a grant whose handler is not a " +
+    "function) was refused at host construction (deny-by-default; fail-closed).",
+  suggestedFix: "Grant only an ABI-listed effect (audit.write / audit.log) with a function handler, or run the flow through the governed interpreter.",
 } as const;
 Object.freeze(FUNGI_WASM_GRANT_001);
 
@@ -1040,8 +1044,9 @@ export async function admitAndInstantiate(opts: {
     // module namespace is classified exactly like an unknown import name (deny-by-default).
     const provided = opts.host.imports as unknown as Record<string, Record<string, unknown>>;
     for (const imp of WebAssembly.Module.imports(compiled)) {
-      const ns = Object.prototype.hasOwnProperty.call(provided, imp.module) ? provided[imp.module] : undefined;
-      if (ns === undefined || !Object.prototype.hasOwnProperty.call(ns, imp.name)) {
+      const linked = Object.prototype.hasOwnProperty.call(provided, imp.module)
+        && Object.prototype.hasOwnProperty.call(provided[imp.module], imp.name);
+      if (!linked) {
         throw new WebAssembly.LinkError(`import ${imp.module}.${imp.name} (${imp.kind}) is not provided`);
       }
     }

@@ -554,8 +554,8 @@ class SymbolResolver {
           // Real I3 (R-I3-1): an ADMITTED body-local ensure (top-level immutable single-bound
           // non-protected lets only, no `result`) sees exactly the eligible names it references.
           // Every other name - an ineligible local, a typo - still flags FUNGI-NAME-001.
-          const ensureExpr = node.children?.[0];
-          if (ensureExpr !== undefined && isBodyLocalEnsure(this.currentFlowNode, ensureExpr)) {
+          for (const ensureExpr of (node.children ?? []).slice(0, 1)) {
+            if (!isBodyLocalEnsure(this.currentFlowNode, ensureExpr)) continue;
             const eligible = bodyLocalInvariantNames(this.currentFlowNode);
             for (const name of exprIdentifierNames(ensureExpr)) {
               if (eligible.has(name)) this.declareInCurrentScope(name, node);

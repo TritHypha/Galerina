@@ -28,7 +28,7 @@ import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModCheck
 import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
 import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
 import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresSyncTierUnlowerable } from "./numeric-lowering.js";
-import { type NarrowFloatWidth, narrowFloatWidthOf, roundToNarrowFloat } from "./narrow-float.js";
+import { type NarrowFloatWidth, type NarrowFloatWidthOrNone, narrowFloatWidthOf, roundToNarrowFloat } from "./narrow-float.js";
 import { foldRequirementValues } from "./requirement-semantics.js";
 import { executableFaultHandlers } from "./resilience-inference.js";
 import { bodyLocalInvariantPlan, flowHasBodyLocalInvariants, isBodyLocalEnsure, type BodyLocalInvariant } from "./body-local-invariants.js";
@@ -217,7 +217,7 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
   // E5 (PROVISIONAL): a declared Float32/Float16 slot holds a binary32/binary16 value — round on entry
   // (Math.fround / f16round, ties-to-even). Overflow to ±Inf is the non-finite trap, never a silent Inf.
   const narrow = narrowFloatWidthOf(declaredBase);
-  if (narrow !== undefined && (value.__tag === "float" || value.__tag === "int")) return mkNarrowFloat(value.value, narrow);
+  if (narrow !== 0 && (value.__tag === "float" || value.__tag === "int")) return mkNarrowFloat(value.value, narrow);
   return value;
 }
 
@@ -302,20 +302,20 @@ function isNumericLiteralNode(node: AstNode): boolean {
 }
 
 /**
- * E5 (PROVISIONAL, narrow-float.ts mixing rule): the narrow width a binary float op runs at, or undefined
- * for the ordinary f64/int path. Narrow when at least one operand is a Float32/Float16 value and every other
+ * E5 (PROVISIONAL, narrow-float.ts mixing rule): the narrow width a binary float op runs at, or 0 (the
+ * fail-closed sentinel) for the ordinary f64/int path. Narrow when at least one operand is a Float32/Float16 value and every other
  * operand is a narrow value or a literal; a Float/Float64/Int VARIABLE operand promotes the op to f64.
  */
-function narrowBinaryWidth(left: GalerinaValue, leftNode: AstNode, right: GalerinaValue, rightNode: AstNode): NarrowFloatWidth | undefined {
-  const w = (v: GalerinaValue, n: AstNode): NarrowFloatWidth | "flex" | 64 | undefined => {
+function narrowBinaryWidth(left: GalerinaValue, leftNode: AstNode, right: GalerinaValue, rightNode: AstNode): NarrowFloatWidthOrNone {
+  const w = (v: GalerinaValue, n: AstNode): NarrowFloatWidth | "flex" | 64 | "none" => {
     if (v.__tag === "float") return v.width ?? (isNumericLiteralNode(n) ? "flex" : 64);
     if (v.__tag === "int") return isNumericLiteralNode(n) ? "flex" : 64;
-    return undefined;
+    return "none";
   };
   const wl = w(left, leftNode);
   const wr = w(right, rightNode);
-  if (wl === undefined || wr === undefined || wl === 64 || wr === 64) return undefined;
-  if (wl === "flex" && wr === "flex") return undefined;
+  if (wl === "none" || wr === "none" || wl === 64 || wr === 64) return 0;
+  if (wl === "flex" && wr === "flex") return 0;
   const nl = wl === "flex" ? 0 : wl;
   const nr = wr === "flex" ? 0 : wr;
   return (nl >= nr ? nl : nr) as NarrowFloatWidth;
@@ -1684,8 +1684,7 @@ class Interpreter {
     // Real I2 (R-I2-5): a flow quarantined earlier in THIS call tree is denied before every other
     // gate (deadline, admission, body). The body never runs; the audit carries no argument values.
     {
-      const quarantined = QUARANTINED_FLOWS.get(this.stepBudget);
-      if (quarantined !== undefined && quarantined.has(flowName)) {
+      if (QUARANTINED_FLOWS.get(this.stepBudget)?.has(flowName) === true) {
         const message = governedControlMessage(FUNGI_FAULT_008, flowName, FUNGI_FAULT_008.message);
         this.auditEntries.push({
           event: "quarantine-deny",
@@ -1758,7 +1757,7 @@ class Interpreter {
       // E5 (PROVISIONAL): a Float32/Float16 parameter admits the nearest binary32/binary16 value (exactly what
       // a Float32Array/Float16Array store or the WASM entry rounding does); an overflow fails closed.
       const narrowParam = narrowFloatWidthOf(numericBaseType(paramType));
-      if (narrowParam !== undefined && (argVal.__tag === "float" || argVal.__tag === "int")) {
+      if (narrowParam !== 0 && (argVal.__tag === "float" || argVal.__tag === "int")) {
         const coerced = mkNarrowFloat(argVal.value, narrowParam);
         if (coerced.__tag === "runtimeError") {
           const message = `Flow '${flowName}' received non-finite ${paramType} argument '${paramName}' after rounding; fail-closed`;
@@ -1950,10 +1949,9 @@ class Interpreter {
 
     // Real I3 (R-I3-2): a successful exit (return or fall-through) before a body-local invariant was
     // ever established fails closed - the invariant must hold on every path that produces a value.
-    if (runtimeError === undefined && !isRuntimeError(returnValue)) {
+    if (typeof runtimeError !== "string" && !isRuntimeError(returnValue)) {
       const pending = bodyInvariantFrame.plan.filter((inv) => !bodyInvariantFrame.checked.has(inv.index));
-      const first = pending[0];
-      if (first !== undefined) {
+      for (const first of pending.slice(0, 1)) {
         // One code = one failure mode: never reaching the check point is INV-006, not INV-005.
         const message = governedControlMessage(
           FUNGI_INV_006,
@@ -1995,11 +1993,11 @@ class Interpreter {
 
     // E5 (PROVISIONAL): a Float32/Float16-returning flow returns a binary32/binary16 value (rounded once at
     // the flow exit, matching the WASM return lane). Read from this flow's own node, not shared state.
-    if (runtimeError === undefined && flowNode !== undefined && (returnValue.__tag === "float" || returnValue.__tag === "int")) {
+    if (typeof runtimeError !== "string" && typeof flowNode === "object" && (returnValue.__tag === "float" || returnValue.__tag === "int")) {
       const kids = flowNode.children ?? [];
       const rt = kids[kids.filter((c) => c.kind === "paramDecl").length]?.value;
       const narrowRet = narrowFloatWidthOf(typeof rt === "string" ? numericBaseType(rt) : "");
-      if (narrowRet !== undefined) returnValue = mkNarrowFloat(returnValue.value, narrowRet);
+      if (narrowRet !== 0) returnValue = mkNarrowFloat(returnValue.value, narrowRet);
     }
 
     // 0040/#70: output post-conditions — evaluate `invariant { ensure result … }` against the
@@ -2102,8 +2100,7 @@ class Interpreter {
    * effect can observe a state that violates the invariant.
    */
   private async checkBodyInvariantTriggers(letNode: AstNode): Promise<void> {
-    const frame = this.bodyInvariantFrames[this.bodyInvariantFrames.length - 1];
-    if (frame === undefined) return;
+    for (const frame of this.bodyInvariantFrames.slice(-1)) {
     for (const inv of frame.plan) {
       if (inv.trigger !== letNode) continue;
       let v: GalerinaValue;
@@ -2115,6 +2112,7 @@ class Interpreter {
       if (v.__tag !== "bool") throw new BodyInvariantSignal(inv.index, "NOT_BOOL");
       if (v.value !== true) throw new BodyInvariantSignal(inv.index, "FALSE");
       frame.checked.add(inv.index);
+    }
     }
   }
 
@@ -2636,7 +2634,7 @@ class Interpreter {
         const rawValue = await this.evalExpr(rhsNode);
         // E5 (PROVISIONAL): assigning into a declared Float32/Float16 binding rounds to its width.
         const targetBase = numericBaseType(this.lookup(targetName)?.typeName ?? "");
-        const newValue = isCheckedTrap(rawValue) || narrowFloatWidthOf(targetBase) === undefined
+        const newValue = isCheckedTrap(rawValue) || narrowFloatWidthOf(targetBase) === 0
           ? rawValue
           : coerceToDeclaredNumeric(targetBase, rawValue, rhsNode);
         if (isCheckedTrap(newValue)) return newValue; // 0038 fail-closed: don't assign + discard a checked trap
@@ -2879,7 +2877,10 @@ class Interpreter {
         if (op === "-" && operand.__tag === "int64") return i64R(i64NegChecked(operand.value));
         if (op === "-" && operand.__tag === "uint64") return u64R(u64NegChecked(operand.value)); // unsigned: traps for any x>0
         // E5 (PROVISIONAL): negation is exact, so a Float32/Float16 value keeps its width.
-        if (op === "-" && operand.__tag === "float") return operand.width !== undefined ? mkNarrowFloat(-operand.value, operand.width) : mkFloat(-operand.value);
+        if (op === "-" && operand.__tag === "float") {
+          const ow: NarrowFloatWidthOrNone = operand.width ?? 0;
+          return ow !== 0 ? mkNarrowFloat(-operand.value, ow) : mkFloat(-operand.value);
+        }
         return { __tag: "runtimeError", message: `Unary '${op}' not valid for ${operand.__tag}` };
       }
 
@@ -3059,8 +3060,8 @@ class Interpreter {
     // the WASM lane's f32.demote_f64 / $fungi_round_f16. Comparisons compare the rounded operands.
     const narrowW = (left.__tag === "float" || left.__tag === "int") && (right.__tag === "float" || right.__tag === "int")
       ? narrowBinaryWidth(left, leftNode, right, rightNode)
-      : undefined;
-    if (narrowW !== undefined && (left.__tag === "float" || left.__tag === "int") && (right.__tag === "float" || right.__tag === "int")) {
+      : 0;
+    if (narrowW !== 0 && (left.__tag === "float" || left.__tag === "int") && (right.__tag === "float" || right.__tag === "int")) {
       const a = mkNarrowFloat(left.value, narrowW);
       if (a.__tag !== "float") return a;
       const b = mkNarrowFloat(right.value, narrowW);
@@ -5080,7 +5081,7 @@ export function tryWhileFastPath(
   scope: Map<string, GalerinaValue>,
   charge: (n: number) => void = () => undefined,
   maxIterations = 100_000,
-  checkDeadline: () => void = () => undefined,
+  checkDeadline: () => void = () => {},
 ): boolean {
   const cond = parseFastWhileCond(condNode);
   const assigns = parseFastWhileBody(bodyNode);
