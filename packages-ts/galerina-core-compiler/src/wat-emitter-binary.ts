@@ -23,7 +23,10 @@ export const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
 // #165: native f64 lowering for float operands. All floats are treated as f64 (matching the f64.const
 // literal emission, wat-emitter §numberLiteral). Without these, a float `+ - * /`/comparison emitted an
 // i32 checked helper over f64 operands → an invalid module (WASM tier declined → walker fallback).
-export const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
+// E5 (PROVISIONAL, narrow-float.ts): Float32/Float16 join the f64 lane as a CARRIER — the value is always an
+// exact binary32/binary16 value held in an f64, re-rounded after every arithmetic op by $fungi_round_f32 /
+// $fungi_round_f16 (see emitNarrowRound). They are NOT in FLOAT_OPTION_WAT_TYPES (no narrow Option ABI).
+export const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double", "Float32", "Float16"]);
 // Decimal remains exact and is deliberately excluded from the Float64 Option ABI.
 export const FLOAT_OPTION_WAT_TYPES = new Set<string>(["Float", "Float64", "Double"]);
 export const FLOAT_ARITH_WAT: Readonly<Record<string, string>> = { "+": "f64.add", "-": "f64.sub", "*": "f64.mul", "/": "f64.div" };
@@ -68,6 +71,9 @@ export function watStackType(expr: string): WATValType {
   // #55: the float finiteness guard returns its f64 argument — a `let x = a / b` local declared from it
   // must be f64, not the i32 default (which would mistype the store).
   if (/^\(call \$fungi_assert_finite_f64\b/.test(t)) return "f64";
+  // E5: the narrow-float rounding helpers return their (rounded) f64 carrier.
+  if (/^\(call \$fungi_round_f(?:32|16)\b/.test(t)) return "f64";
+  if (/^\(f64\.promote_f32\b/.test(t)) return "f64";
   // Float64 Option payload bridges return an f64 value even though the Option itself is an i32 handle.
   if (/^\(call \$host___(?:option_value_f64_v2|unwrap_or_f64_v2)\b/.test(t)) return "f64";
   const groups = [...t.matchAll(/^\(([a-z0-9]+)\.([a-z0-9_]+)/g)][0];
@@ -205,6 +211,45 @@ const FLOAT_CHECKED_HELPERS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * E5 (PROVISIONAL, narrow-float.ts) narrow-float rounding helpers. Each takes an f64 carrier and returns the
+ * nearest binary32 / binary16 value (round-to-nearest, ties-to-even) as an f64, TRAPPING (unreachable) when the
+ * input is non-finite or the rounded value overflows to ±Inf — byte-for-byte with the walker's mkNarrowFloat
+ * (Math.fround / Math.f16round + the FUNGI-FLOAT-NAN-001 trap).
+ *   f32: f32.demote_f64 IS IEEE binary32 round-to-nearest-even (the Float32Array store / Math.fround rounding).
+ *   f16: WASM has no f16 type. |v| is scaled by its binary16 quantum q (a power of two, so the division is
+ *        exact), f64.nearest rounds ties-to-even, and the product is scaled back — the softF16Round algorithm.
+ *        q = 2^-24 below the smallest normal 2^-14, else 2^(e-10) for the unbiased exponent e of |v|.
+ */
+const NARROW_FLOAT_HELPERS: Readonly<Record<string, string>> = {
+  $fungi_round_f32: [
+    "(func $fungi_round_f32 (param $v f64) (result f64)",
+    "  (local $r f64)",
+    "  (local.set $r (f64.promote_f32 (f32.demote_f64 (local.get $v))))",
+    "  ;; non-finite in, or rounded past binary32 max → trap (FUNGI-FLOAT-NAN-001)",
+    "  (if (f64.ne (f64.sub (local.get $r) (local.get $r)) (f64.const 0)) (then unreachable))",
+    "  (local.get $r))",
+  ].join("\n"),
+  $fungi_round_f16: [
+    "(func $fungi_round_f16 (param $v f64) (result f64)",
+    "  (local $a f64) (local $q f64) (local $r f64)",
+    "  (if (f64.ne (f64.sub (local.get $v) (local.get $v)) (f64.const 0)) (then unreachable))",
+    "  (local.set $a (f64.abs (local.get $v)))",
+    "  (if (f64.lt (local.get $a) (f64.const 0.00006103515625))",
+    "    (then (local.set $q (f64.const 5.9604644775390625e-8)))",
+    "    (else (local.set $q (f64.reinterpret_i64 (i64.shl (i64.add (i64.sub (i64.and (i64.shr_u (i64.reinterpret_f64 (local.get $a)) (i64.const 52)) (i64.const 2047)) (i64.const 1023)) (i64.const 1013)) (i64.const 52))))))",
+    "  (local.set $r (f64.mul (f64.nearest (f64.div (local.get $a) (local.get $q))) (local.get $q)))",
+    "  ;; rounded past binary16 max 65504 → +Inf in binary16 → trap (FUNGI-FLOAT-NAN-001)",
+    "  (if (f64.gt (local.get $r) (f64.const 65504)) (then unreachable))",
+    "  (f64.copysign (local.get $r) (local.get $v)))",
+  ].join("\n"),
+};
+
+/** E5: wrap an f64-carrier expression so it is rounded to the narrow width (and traps on overflow). */
+export function emitNarrowRound(width: 16 | 32, expr: string): string {
+  return `(call $fungi_round_f${width} ${expr})`;
+}
+
+/**
  * Raw Float64 ingress classifier. Unlike the checked arithmetic/comparison
  * helper above, this deliberately does not trap: it reports whether one
  * already-received f64 is finite before ordinary Fungi validation performs an
@@ -262,7 +307,7 @@ const K3_HELPERS: Readonly<Record<string, string>> = {
 
 // All strict-trapping checked helpers (i32 + i64 overflow, f64 non-finite), injected on-demand when a flow
 // body references one.
-export const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...UINT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS, ...FLOAT_CLASSIFIER_HELPERS, ...K3_HELPERS };
+export const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...UINT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS, ...FLOAT_CLASSIFIER_HELPERS, ...NARROW_FLOAT_HELPERS, ...K3_HELPERS };
 
 // ---------------------------------------------------------------------------
 // P9.3 — Stdlib method → host import bridge

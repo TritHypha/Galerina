@@ -24,6 +24,29 @@ export interface TriStream {
   stats(): EngineStats;
 }
 
+/**
+ * Read-only snapshot of a compiled automaton, for ahead-of-time lowering
+ * (e.g. a bounded in-Wasm Boolean matcher). Every array is a fresh frozen
+ * copy: the matcher's own tables are never exposed or aliased, and the
+ * snapshot carries no input, span or capture data.
+ */
+export interface AutomatonTables {
+  readonly slots: number;
+  readonly words: number;
+  /** per resting slot: the char ranges if the slot consumes a char, else null */
+  readonly charRanges: readonly (readonly (readonly [number, number])[] | null)[];
+  /** per resting slot: true for an end-of-line assertion slot */
+  readonly eolSlot: readonly boolean[];
+  /** per resting slot: closure row after consuming (u32 words; empty for eol slots) */
+  readonly rows: readonly (readonly number[])[];
+  readonly matchOnConsume: readonly boolean[];
+  readonly initStart: { readonly bits: readonly number[]; readonly matched: boolean };
+  readonly initMid: { readonly bits: readonly number[]; readonly matched: boolean };
+  readonly anchoredStart: boolean;
+  readonly eolResolves: readonly boolean[];
+  readonly endFreshMatches: readonly [boolean, boolean];
+}
+
 export class TriMatcher {
   private readonly c: Compiled;
   private readonly uniformScan: boolean;
@@ -38,6 +61,41 @@ export class TriMatcher {
     s.feed(input);
     const out = s.end();
     return { ...out, stats: s.stats() };
+  }
+
+  /** Frozen copy of the automaton tables (see AutomatonTables). */
+  tables(): AutomatonTables {
+    const c = this.c;
+    const charRanges: (readonly (readonly [number, number])[] | null)[] = [];
+    const eolSlot: boolean[] = [];
+    const rows: (readonly number[])[] = [];
+    const matchOnConsume: boolean[] = [];
+    const eolResolves: boolean[] = [];
+    for (let s = 0; s < c.slots; s++) {
+      const instr = c.prog[c.slotToInstr[s]!]!;
+      charRanges.push(
+        instr.op === "char"
+          ? Object.freeze(instr.ranges.map((r) => Object.freeze([r[0], r[1]] as const)))
+          : null,
+      );
+      eolSlot.push(instr.op === "eol");
+      rows.push(Object.freeze(Array.from(c.rows[s] ?? new Uint32Array(0))));
+      matchOnConsume.push((c.matchOnConsume[s] ?? 0) !== 0);
+      eolResolves.push((c.eolResolves[s] ?? 0) !== 0);
+    }
+    return Object.freeze({
+      slots: c.slots,
+      words: c.words,
+      charRanges: Object.freeze(charRanges),
+      eolSlot: Object.freeze(eolSlot),
+      rows: Object.freeze(rows),
+      matchOnConsume: Object.freeze(matchOnConsume),
+      initStart: Object.freeze({ bits: Object.freeze(Array.from(c.initStart.bits)), matched: c.initStart.matched }),
+      initMid: Object.freeze({ bits: Object.freeze(Array.from(c.initMid.bits)), matched: c.initMid.matched }),
+      anchoredStart: c.anchoredStart,
+      eolResolves: Object.freeze(eolResolves),
+      endFreshMatches: Object.freeze([c.endFreshMatches[0], c.endFreshMatches[1]] as const),
+    });
   }
 
   stream(): TriStream {

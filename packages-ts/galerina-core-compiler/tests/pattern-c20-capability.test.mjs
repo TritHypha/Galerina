@@ -93,19 +93,28 @@ describe("C20 compile-time PatternCapability", () => {
     assert.equal(veto?.__tag, "err");
   });
 
-  it("refuses a compile-time literal at WAT emit with FUNGI-WAT-PATTERN-001", () => {
+  it("refuses a non-admitted compile-time literal at WAT emit with FUNGI-WAT-PATTERN-001", () => {
     let thrown = "";
     try {
       compileWAT(`pure flow hasMatch(s: String) -> Bool
 contract { effects {} }
-{ return s.matchesPattern("^[a-z]+$") }`);
+{ return s.matchesPattern("(a)") }`);
     } catch (e) {
       thrown = String(e && e.message ? e.message : e);
     }
     assert.match(thrown, /FUNGI-WAT-PATTERN-001/);
-    assert.match(thrown, /C20: matchesPattern WAT ABI is not admitted/);
+    assert.match(thrown, /C20: matchesPattern literal is not lowered to the bounded in-Wasm matcher; literal pattern not admitted: FUNGI-PATTERN-002/);
     assert.equal(thrown.includes("$matchesPattern"), false);
     assert.equal(thrown.includes("$host___matchesPattern"), false);
+  });
+
+  it("D4: an admitted compile-time literal lowers to the bounded in-Wasm matcher", () => {
+    const wat = compileWAT(`pure flow hasMatch(s: String) -> Bool
+contract { effects {} }
+{ return s.matchesPattern("^[a-z]+$") }`);
+    assert.match(wat, /\(call \$fungi_pattern_match_[0-9a-f]{16} /);
+    assert.equal(wat.includes("$host___matchesPattern"), false);
+    assert.equal(wat.includes("FUNGI-WAT-PATTERN-001"), false);
   });
 
   it("refuses a dynamic pattern at WAT emit with FUNGI-WAT-PATTERN-001", () => {
