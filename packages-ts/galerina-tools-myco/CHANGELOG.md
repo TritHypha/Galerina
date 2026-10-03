@@ -14,10 +14,13 @@ that the silence was the defect, not the narrowing.
 
 ### Security
 
-- Enforce the fixed term-edge ceiling symmetrically while building and saving,
-  not only while reading. An over-ceiling tree now fails early with
-  `MYCO-INDEX-TOO-LARGE`, names the narrower-root remedy, and cannot leave an
-  index the reader must reject.
+- Sync the shared index contract with Myco `4f544ee`: remove fixed aggregate
+  file-count, term-edge, and serialized-byte ceilings while retaining
+  per-file term, path, and term-length validation. Persist validated indexes
+  through a unique staging file and atomic replacement.
+- Record overlong-term omissions per file and directly verify marked files for
+  word/substring searches, preventing omitted postings from creating false
+  negatives; report paths and counts without exposing term text.
 - Distinguish an absent index from an existing rejected index. Status and search
   no longer misreport corrupt, incompatible or over-limit cache artifacts as a
   reassuring first run.
@@ -29,9 +32,9 @@ that the silence was the defect, not the narrowing.
 - Close the demonstrated `--no-refresh` path escape in which a crafted
   `.myco/index.json` could make search read and return matching content outside
   the indexed root.
-- Treat the decoded cache as hostile: exact record keys, bounded bytes/files/
-  term edges, unique file and term identities, finite metadata and positive
-  counts are required before graph construction.
+- Treat the decoded cache as hostile: exact record keys, bounded per-file term
+  counts and path/term lengths, unique file and term identities, finite
+  metadata and positive counts are required before graph construction.
 - Refuse a direct index symlink or a symlinked `.myco` directory whose resolved
   index escapes the search root.
 - Repeat the canonical-path invariant in `SearchGraph.setFile()` so

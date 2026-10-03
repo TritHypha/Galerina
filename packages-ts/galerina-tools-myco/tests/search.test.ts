@@ -13,6 +13,7 @@ import {
 } from "../src/index.ts";
 import type { Match, SearchOptions } from "../src/index.ts";
 import { summaryLine } from "../src/output.ts";
+import { MAX_INDEX_TERM_LENGTH } from "../src/graph/index-contract.ts";
 
 const FIXTURES: Record<string, string> = {
   "a.txt": "the cat sat\nconcatenate the category\n",
@@ -76,6 +77,20 @@ test("word search matches whole words only (the precision claim)", async () => {
     // adds concatenate, category, CATALOG
     assert.equal(sub.length, 5);
     assert.ok(sub.length > word.length, "substring is a superset of word");
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("substring search directly verifies files whose overlong terms were omitted", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "myco-overlong-search-"));
+  const hidden = `${"a".repeat(Math.floor(MAX_INDEX_TERM_LENGTH / 2) + 1)}needle${"b".repeat(Math.floor(MAX_INDEX_TERM_LENGTH / 2) + 1)}`;
+  try {
+    await fs.writeFile(path.join(dir, "a.txt"), `keep ${hidden}`, "utf8");
+    const hits = await run(dir, "needle", { mode: "substring" });
+    assert.equal(hits.length, 1);
+    assert.equal(hits[0]?.path, "a.txt");
+    assert.ok(hits[0]?.text.includes(hidden));
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }

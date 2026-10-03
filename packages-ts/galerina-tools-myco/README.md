@@ -155,19 +155,28 @@ Two phases, and that is the whole performance story:
 2. **Verify** — read only those candidate files and confirm real matches with a
    precise matcher (word boundary / substring / regex).
 
+Terms up to and including 4,096 UTF-16 code units enter the graph. Longer terms
+are omitted rather than truncated; the index records a bounded omission count
+on each affected file. Word and substring searches directly verify marked
+files, so omission cannot create a false negative. `myco index` lists affected
+root-relative paths and `myco status` reports counts without exposing term
+bodies.
+
 The index lives in `.myco/index.json` at the root you search. Only the *forward*
 index (each file → its term counts) is written; the inverted and filename
 indexes are rebuilt in memory on load, which is what makes incremental
-re-indexing cheap. The file is untrusted input: Myco bounds its bytes and
-collections, requires a closed record shape and canonical root-relative paths,
-rejects duplicate identities, and refuses a symlinked index that resolves
-outside the root. See [DESIGN.md](DESIGN.md) for the full model.
+re-indexing cheap. The file is untrusted input: Myco requires a closed record
+shape and canonical root-relative paths, bounds each file's term list and path
+and term lengths, rejects duplicate identities, and refuses a symlinked index
+that resolves outside the root. There is no fixed aggregate file-count,
+term-edge, or serialized-index-byte ceiling; actual memory, disk, and operating
+system resource limits still apply. See [DESIGN.md](DESIGN.md) for the full
+model.
 
-The writer and reader enforce the same fixed term-edge ceiling. A root that is
-too broad exits with `MYCO-INDEX-TOO-LARGE` and asks for a narrower root instead
-of writing a cache that can never be read back. `myco status` distinguishes “no
-index exists” from “an index exists but was refused”; callers must preserve that
-distinction and exit status `2`.
+`myco status` distinguishes “no index exists” from “an index exists but was
+refused”; callers must preserve that distinction and exit status `2`. A large
+index is not silently treated as absent. Malformed structure and filesystem
+failures remain refusals.
 
 Only an `ENOENT` filesystem result means that the index is absent. Permission,
 invalid-path and other I/O failures are refused rather than treated as a first

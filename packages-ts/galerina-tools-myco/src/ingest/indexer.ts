@@ -8,7 +8,7 @@
 import { promises as fs } from "node:fs";
 
 import { SearchGraph } from "../graph/model.ts";
-import { clampTermEdgeCeiling, loadGraph, saveGraph } from "../graph/store.ts";
+import { loadGraph, saveGraph } from "../graph/store.ts";
 import type { SaveOutcome } from "../graph/store.ts";
 import { looksBinary } from "../util/binary.ts";
 import { countTerms } from "./tokenize.ts";
@@ -18,8 +18,6 @@ export interface IndexOptions {
   maxFileSize: number;
   useGitignore: boolean;
   includeVendored?: boolean; // descend into node_modules (default false; skips reported)
-  /** Tests may tighten this ceiling; callers cannot raise the fixed maximum. */
-  maxTermEdges?: number;
 }
 
 export interface IndexStats {
@@ -31,6 +29,8 @@ export interface IndexStats {
   skippedBinary: number; // detected as binary and skipped
   skippedLarge: number; // skipped for exceeding maxFileSize (reported, never silent)
   skippedVendored: number; // vendored dirs (node_modules) pruned by default (reported, never silent)
+  omittedOverlongTerms: number; // overlong token occurrences omitted from term edges
+  filesWithOmittedOverlongTerms: number; // files retained with omission metadata
 }
 
 export const DEFAULT_INDEX_OPTIONS: IndexOptions = {
@@ -47,10 +47,10 @@ export async function buildIndex(
   saved: SaveOutcome; // whether the cache actually persisted, and why not
   skippedLargePaths: string[];
   skippedVendoredDirs: string[];
+  omittedOverlongTermPaths: string[];
 }> {
   const prior = await loadGraph(root);
   const graph = prior?.graph ?? new SearchGraph();
-  const termEdgeCeiling = clampTermEdgeCeiling(opts.maxTermEdges);
 
   const stats: IndexStats = {
     files: 0,
@@ -61,6 +61,8 @@ export async function buildIndex(
     skippedBinary: 0,
     skippedLarge: 0,
     skippedVendored: 0,
+    omittedOverlongTerms: 0,
+    filesWithOmittedOverlongTerms: 0,
   };
 
   const skippedLargePaths: string[] = [];
@@ -120,26 +122,18 @@ export async function buildIndex(
       continue;
     }
 
-    graph.setFile(meta.relPath, meta.mtimeMs, meta.size, countTerms(buf.toString("utf8")));
+    const tokenizeReport = { omittedOverlongTerms: 0 };
+    graph.setFile(
+      meta.relPath,
+      meta.mtimeMs,
+      meta.size,
+      countTerms(buf.toString("utf8"), tokenizeReport),
+      undefined,
+      tokenizeReport.omittedOverlongTerms,
+    );
     if (existing) stats.updated++;
     else stats.added++;
 
-    // Stop the moment the graph passes the ceiling the persisted format allows.
-    // Carrying on would build a structure that cannot be saved and, at the sizes
-    // this triggers on, exhausts the heap while serialising — the process dies
-    // with an abort and no diagnosis. Refusing here costs the user a message
-    // instead of a crash, and the message names the remedy: index a narrower
-    // root. A tree too big for the contract is a scope mistake, not a bug to
-    // absorb silently.
-    if (graph.termEdgeCount() > termEdgeCeiling) {
-      throw new Error(
-        `MYCO-INDEX-TOO-LARGE: ${root} exceeds the index ceiling of `
-          + `${termEdgeCeiling.toLocaleString()} term edges `
-          + `(reached at ${stats.added + stats.updated + stats.unchanged} files). `
-          + `Index a narrower root — e.g. a single repository rather than a `
-          + `directory of repositories.`,
-      );
-    }
   }
 
   // Drop files that were indexed before but are gone (or now ignored) now.
@@ -153,9 +147,23 @@ export async function buildIndex(
   stats.skippedLarge = skippedLargePaths.length;
   stats.skippedVendored = skippedVendoredDirs.length;
   stats.files = graph.fileCount();
+  const omittedOverlongTermPaths = [...graph.files()]
+    .filter((file) => (file.omittedOverlongTerms ?? 0) > 0)
+    .map((file) => file.path)
+    .sort();
+  stats.filesWithOmittedOverlongTerms = omittedOverlongTermPaths.length;
+  stats.omittedOverlongTerms = [...graph.files()]
+    .reduce((sum, file) => sum + (file.omittedOverlongTerms ?? 0), 0);
   // The save may decline (see saveGraph). Hand the outcome back rather than
   // discarding it: a cache that did not persist is a fact the caller must be
   // able to report, otherwise the next run repeats the work with no explanation.
-  const saved = await saveGraph(root, graph, { maxTermEdges: termEdgeCeiling });
-  return { graph, stats, saved, skippedLargePaths, skippedVendoredDirs };
+  const saved = await saveGraph(root, graph);
+  return {
+    graph,
+    stats,
+    saved,
+    skippedLargePaths,
+    skippedVendoredDirs,
+    omittedOverlongTermPaths,
+  };
 }

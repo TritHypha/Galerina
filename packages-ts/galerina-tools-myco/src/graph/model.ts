@@ -33,6 +33,8 @@ export interface FileRecord {
   size: number;
   /** Absent/undefined ⇒ content is indexed. Set ⇒ name-only. */
   contentSkip?: ContentSkip;
+  /** Count of overlong content terms omitted from the persisted term graph. */
+  omittedOverlongTerms?: number;
 }
 
 // term -> occurrence count within a single file (the forward edge weight).
@@ -54,8 +56,8 @@ export class SearchGraph {
   private readonly names = new Map<string, Set<FileId>>();
 
   // Running total of forward (file -> term) edges. Kept incrementally because
-  // the index contract caps this number, and a cap you can only measure by
-  // walking every file is a cap you will check too late to act on.
+  // there is no aggregate contract ceiling, but the metric is useful to callers
+  // and tests without requiring another walk of every file.
   private edges = 0;
 
   private nextId: FileId = 0;
@@ -75,9 +77,17 @@ export class SearchGraph {
     size: number,
     counts: TermCounts,
     contentSkip?: ContentSkip,
+    omittedOverlongTerms = 0,
   ): FileId {
     if (!isCanonicalIndexPath(path)) {
       throw new Error("MYCO-INDEX-PATH: file path must be canonical and root-relative");
+    }
+    if (
+      !Number.isSafeInteger(omittedOverlongTerms)
+      || omittedOverlongTerms < 0
+      || (contentSkip !== undefined && omittedOverlongTerms !== 0)
+    ) {
+      throw new Error("MYCO-INDEX-OMISSION: omitted-term count is invalid");
     }
     const existing = this.idByPath.get(path);
     if (existing !== undefined) this.removeFile(path);
@@ -87,7 +97,9 @@ export class SearchGraph {
     const termCounts: TermCounts = contentSkip ? new Map() : counts;
     const record: FileRecord = contentSkip
       ? { id, path, mtimeMs, size, contentSkip }
-      : { id, path, mtimeMs, size };
+      : omittedOverlongTerms > 0
+        ? { id, path, mtimeMs, size, omittedOverlongTerms }
+        : { id, path, mtimeMs, size };
     this.filesById.set(id, record);
     this.idByPath.set(path, id);
     this.forward.set(id, termCounts);
@@ -170,9 +182,7 @@ export class SearchGraph {
     return this.inverted.size;
   }
 
-  // Total forward (file -> term) edges — the quantity MAX_INDEX_TERM_EDGES
-  // bounds. O(1) so an indexer can check the ceiling after every file rather
-  // than discovering it only once the graph is already too big to hold.
+  // Total forward (file -> term) edges, maintained for metrics and tests.
   termEdgeCount(): number {
     return this.edges;
   }

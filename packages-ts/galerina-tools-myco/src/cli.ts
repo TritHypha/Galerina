@@ -134,7 +134,13 @@ async function cmdIndex(root: string, index: IndexOptions): Promise<number> {
     return 2;
   }
   const started = process.hrtime.bigint();
-  const { stats, saved, skippedLargePaths, skippedVendoredDirs } = await buildIndex(root, index);
+  const {
+    stats,
+    saved,
+    skippedLargePaths,
+    skippedVendoredDirs,
+    omittedOverlongTermPaths,
+  } = await buildIndex(root, index);
   const ms = Number(process.hrtime.bigint() - started) / 1e6;
   // Informational output → stdout. stderr is reserved for real errors (which all
   // exit non-zero), so a consumer can treat any stderr output — or a non-zero exit —
@@ -147,6 +153,14 @@ async function cmdIndex(root: string, index: IndexOptions): Promise<number> {
       `in ${ms.toFixed(0)}ms\n`,
   );
   noteSaveOutcome(saved);
+  if (stats.omittedOverlongTerms > 0) {
+    process.stdout.write(
+      `  ${stats.omittedOverlongTerms} overlong term(s) omitted from the term graph `
+        + `in ${stats.filesWithOmittedOverlongTerms} file(s); `
+        + `those files are directly verified during content search:\n`,
+    );
+    for (const p of omittedOverlongTermPaths) process.stdout.write(`    ${p}\n`);
+  }
   // No silent caps: name the files that fell outside the index, so a search that
   // returns nothing is never mistaken for "not present" (DESIGN §8/§10).
   if (skippedLargePaths.length > 0) {
@@ -170,9 +184,8 @@ async function cmdIndex(root: string, index: IndexOptions): Promise<number> {
 function noteSaveOutcome(saved: SaveOutcome): void {
   if (saved.written) return;
   process.stdout.write(
-    `myco: note — index NOT cached: ${saved.edges.toLocaleString()} term edges `
-      + `exceeds the ${saved.limit.toLocaleString()} ceiling. Results are correct, `
-      + `but every run re-indexes from scratch. Index a narrower root to restore caching.\n`,
+    "myco: note — index NOT cached: generated graph violates the stored-index contract. "
+      + "Results are correct, but the cache was refused before writing.\n",
   );
 }
 
@@ -181,7 +194,7 @@ async function cmdStatus(root: string): Promise<number> {
   if (outcome.status === "rejected") {
     process.stderr.write(
       `index at ${path.join(root, ".myco")} exists but was REFUSED `
-        + `(over a contract limit, corrupt, or an incompatible format) — `
+        + `(malformed or incompatible format) — `
         + `delete it and run: myco index\n`,
     );
     return 2;
@@ -201,6 +214,8 @@ async function cmdStatus(root: string): Promise<number> {
   process.stdout.write(
     `files:  ${loaded.meta.fileCount}\n` +
       `terms:  ${loaded.meta.termCount}\n` +
+      `omitted overlong terms:  ${loaded.meta.omittedOverlongTerms}\n` +
+      `files requiring direct verification:  ${loaded.meta.filesWithOmittedOverlongTerms}\n` +
       `index:  ${(bytes / 1024).toFixed(1)} KiB\n` +
       `built:  ${when}\n`,
   );
@@ -452,7 +467,7 @@ async function cmdSearch(
       if (prior.status === "rejected") {
         process.stdout.write(
           `myco: existing index at ${path.join(path.resolve(root), ".myco")} was REFUSED `
-            + `(over a contract limit, corrupt, or an incompatible format) — re-indexing…\n`,
+            + `(malformed or incompatible format) — re-indexing…\n`,
         );
       }
       if (prior.status === "absent") {

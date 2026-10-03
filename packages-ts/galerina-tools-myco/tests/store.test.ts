@@ -164,29 +164,13 @@ test("name-only content-skip tags round-trip (k=b / k=l) and refuse polluted row
   }
 });
 
-test("index collection budgets are enforced by the structural validator", () => {
+test("per-file term budget remains enforced by the structural validator", () => {
   assert.equal(
     validateStoredIndex(validIndex(), {
-      maxFiles: 0,
       maxTermsPerFile: 0,
-      maxTermEdges: 0,
-    } as never),
+    }),
     null,
   );
-});
-
-test("index bytes are bounded before JSON parsing", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "myco-index-bytes-"));
-  try {
-    await writeIndex(root, validIndex());
-    assert.equal(
-      await loadGraph(root, { maxIndexBytes: 16 } as never),
-      null,
-      "a caller may tighten, but never raise, the fixed byte ceiling",
-    );
-  } finally {
-    await fs.rm(root, { recursive: true, force: true });
-  }
 });
 
 test("a symlinked index directory cannot redirect cache reads outside the root", async (t) => {
@@ -221,6 +205,48 @@ test("programmatic graph construction repeats the canonical path gate", () => {
     () => graph.setFile("../outside.txt", 1, 1, new Map([["needle", 1]])),
     /MYCO-INDEX-PATH/,
   );
+});
+
+test("saveGraph atomically replaces the persisted index and leaves no staging file", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "myco-index-atomic-"));
+  try {
+    const oldGraph = new SearchGraph();
+    oldGraph.setFile("old.ts", 1, 3, new Map([["oldterm", 1]]));
+    assert.deepEqual(await saveGraph(root, oldGraph), { written: true });
+
+    const newGraph = new SearchGraph();
+    newGraph.setFile("new.ts", 2, 3, new Map([["newterm", 1]]));
+    assert.deepEqual(await saveGraph(root, newGraph), { written: true });
+
+    const loaded = await loadGraph(root);
+    assert.ok(loaded);
+    assert.deepEqual([...loaded.graph.files()].map((file) => file.path), ["new.ts"]);
+    assert.deepEqual(
+      (await fs.readdir(path.join(root, ".myco"))).sort(),
+      ["index.json"],
+    );
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("saveGraph leaves an obstructed index destination intact and removes its staging file", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "myco-index-atomic-failure-"));
+  const directory = path.join(root, ".myco");
+  const destination = path.join(directory, "index.json");
+  try {
+    await fs.mkdir(destination, { recursive: true });
+    await fs.writeFile(path.join(destination, "sentinel"), "preserve", "utf8");
+    const graph = new SearchGraph();
+    graph.setFile("new.ts", 1, 1, new Map([["newterm", 1]]));
+
+    await assert.rejects(saveGraph(root, graph));
+
+    assert.equal(await fs.readFile(path.join(destination, "sentinel"), "utf8"), "preserve");
+    assert.deepEqual(await fs.readdir(directory), ["index.json"]);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
 });
 
 test("saved index ordering is canonical apart from observational createdAt", async () => {

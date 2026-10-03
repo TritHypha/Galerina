@@ -94,6 +94,8 @@ Two phases:
    - *substring*: for each token, union of every dictionary term that contains it,
      then intersect across tokens (still index-driven).
    - *regex*: no reliable prune → scan all indexed files (documented cost).
+   - *omission fallback*: word/substring modes also consider every file marked
+     with omitted overlong terms; those files require direct verification.
 2. **Verify** — read only the candidate files and confirm real matches. Word and
    substring modes use the local precise matcher. Raw regex operations execute in
    a killable worker with a per-operation deadline, plus whole-search and input
@@ -145,9 +147,12 @@ myco reads files and writes only `./.myco/`. Notable choices:
   the root is derived from where `.myco/` sits. The artifact is portable and
   never embeds a machine path.
 - **The persisted graph is untrusted.** Loading requires an exact closed shape,
-  bounded bytes/files/term edges, canonical non-empty POSIX-relative paths,
-  positive counts and unique file/term identities. Windows/POSIX absolute,
-  backslash, empty, dot and parent segments refuse the complete index.
+  bounded per-file term counts and bounded path/term lengths, canonical
+  non-empty POSIX-relative paths, positive counts and unique file/term
+  identities. There is no fixed aggregate file-count, term-edge, or serialized
+  index-byte ceiling. Windows/POSIX absolute, backslash, empty, dot and parent
+  segments refuse the complete index; memory, disk, and OS resource failures
+  still fail the operation rather than certify an incomplete index.
 - **Containment is re-derived.** A symlinked `.myco` directory whose real index
   resolves outside the search root refuses. `SearchGraph.setFile()` repeats the
   canonical-path invariant so a programmatic graph cannot bypass the loader.
@@ -157,6 +162,10 @@ myco reads files and writes only `./.myco/`. Notable choices:
 - **Symlinks are not followed** during the walk — avoids cycles and escaping the
   root.
 - **No code execution, no network.** Pure Node built-ins; nothing is `eval`'d.
+- **Overlong terms are explicit, not truncated.** A bounded per-file marker
+  records how many terms exceeded the admitted term length. Index output names
+  affected relative paths; status reports aggregate counts without term bodies.
+  Word/substring queries directly verify marked files.
 - **Binary + size caps** bound memory and avoid junk terms — and the size cap is
   **visible, never silent**: over-size skips are counted in the index stats,
   named one-per-line by `myco index`, and flagged with a one-line note on the
@@ -185,9 +194,10 @@ forward/inverted split already supports adding a second edge type.
 
 ## 10. Known limitations (honest)
 
-- **In-memory JSON index.** Fine for typical repos; a very large tree will want a
-  columnar/binary store and streaming. The current decoder refuses beyond its
-  declared byte and collection ceilings before constructing a graph.
+- **In-memory JSON index.** Fine for typical repos; a very large tree will want
+  a columnar/binary store and streaming. The decoder has no fixed aggregate
+  byte, file-count, or term-edge ceiling, so very large indexes can require
+  substantial memory; ordinary process and OS resource failures still apply.
 - **Metadata freshness is not content proof.** Size+mtime preserves the repeat
   search advantage but cannot support an authority-sensitive absence claim.
   A future strict mode must hash source bytes and emit a replayable evidence
@@ -199,13 +209,9 @@ forward/inverted split already supports adding a second edge type.
   termination makes it pre-emptible, and every incomplete result is surfaced,
   but a compatible certified-linear TriRegex find-all backend is still pending.
 - **Ignore is a subset**, not full gitignore (§7).
-- **Content-skipped files are name-invisible too.** A binary or over-size file
-  gets no file node at all, so `-f` filename search cannot find it either —
-  the same "miss reads as absent" failure the over-size reporting now guards
-  on the content side (over-size paths are at least listed by `myco index`).
-  Candidate fix: index content-skipped files with an empty term set, so the
-  name index still sees them; the prune phase would never surface them for
-  content queries (no terms), so content search semantics are unchanged.
+- **Content-skipped files are name-only.** Binary and over-size files remain
+  findable by `-f`, but their contents are not searched. `myco index` reports
+  over-size paths; include vendored directories explicitly when they are needed.
 
 ## 11. Testing
 

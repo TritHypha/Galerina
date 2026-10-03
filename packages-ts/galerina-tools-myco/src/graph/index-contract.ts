@@ -2,21 +2,14 @@ import * as path from "node:path";
 
 export const MAX_INDEX_PATH_LENGTH = 4096;
 export const MAX_INDEX_TERM_LENGTH = 4096;
-export const MAX_INDEX_FILES = 250_000;
 export const MAX_INDEX_TERMS_PER_FILE = 100_000;
-export const MAX_INDEX_TERM_EDGES = 2_000_000;
-export const MAX_INDEX_BYTES = 64 * 1024 * 1024;
 
 export interface IndexLimits {
-  maxFiles: number;
   maxTermsPerFile: number;
-  maxTermEdges: number;
 }
 
 export const DEFAULT_INDEX_LIMITS: Readonly<IndexLimits> = Object.freeze({
-  maxFiles: MAX_INDEX_FILES,
   maxTermsPerFile: MAX_INDEX_TERMS_PER_FILE,
-  maxTermEdges: MAX_INDEX_TERM_EDGES,
 });
 
 /** Optional content-skip tag on a stored file (format 1, additive).
@@ -30,6 +23,8 @@ export interface StoredFile {
   t: Array<[string, number]>;
   /** Name-only: content was not tokenized (DESIGN §10). */
   k?: StoredContentSkip;
+  /** Count of overlong terms omitted while retaining other searchable terms. */
+  o?: number;
 }
 
 export interface StoredIndex {
@@ -78,15 +73,9 @@ export function validateStoredIndex(
   limits: Readonly<IndexLimits> = DEFAULT_INDEX_LIMITS,
 ): StoredIndex | null {
   if (
-    !Number.isSafeInteger(limits.maxFiles)
-    || limits.maxFiles < 0
-    || limits.maxFiles > MAX_INDEX_FILES
-    || !Number.isSafeInteger(limits.maxTermsPerFile)
+    !Number.isSafeInteger(limits.maxTermsPerFile)
     || limits.maxTermsPerFile < 0
     || limits.maxTermsPerFile > MAX_INDEX_TERMS_PER_FILE
-    || !Number.isSafeInteger(limits.maxTermEdges)
-    || limits.maxTermEdges < 0
-    || limits.maxTermEdges > MAX_INDEX_TERM_EDGES
     || !isRecord(value)
     || !hasExactKeys(value, ["format", "createdAt", "files"])
     || value.format !== 1
@@ -94,15 +83,12 @@ export function validateStoredIndex(
     || !Number.isFinite(value.createdAt)
     || value.createdAt < 0
     || !Array.isArray(value.files)
-    || value.files.length > limits.maxFiles
   ) {
     return null;
   }
 
   const paths = new Set<string>();
   const files: StoredFile[] = [];
-  let termEdges = 0;
-
   for (const candidate of value.files) {
     if (
       !isRecord(candidate)
@@ -122,13 +108,22 @@ export function validateStoredIndex(
     // Closed shape: required p/m/s/t; optional k ∈ {b,l} for name-only nodes.
     // Unknown keys still refuse (hostile cache). Exact {p,m,s,t} remains valid.
     const keys = Object.keys(candidate).sort().join(",");
-    if (keys !== "m,p,s,t" && keys !== "k,m,p,s,t") return null;
+    if (keys !== "m,p,s,t" && keys !== "k,m,p,s,t" && keys !== "m,o,p,s,t") return null;
     let contentSkip: StoredContentSkip | undefined;
     if (keys === "k,m,p,s,t") {
       if (candidate.k !== "b" && candidate.k !== "l") return null;
       contentSkip = candidate.k;
       // Name-only files must not carry term postings (would re-open content paths).
       if (candidate.t.length !== 0) return null;
+    }
+    let omittedOverlongTerms: number | undefined;
+    if (keys === "m,o,p,s,t") {
+      if (
+        !Number.isSafeInteger(candidate.o)
+        || (candidate.o as number) <= 0
+        || (candidate.o as number) > MAX_INDEX_TERMS_PER_FILE
+      ) return null;
+      omittedOverlongTerms = candidate.o as number;
     }
     paths.add(candidate.p);
 
@@ -152,8 +147,6 @@ export function validateStoredIndex(
       }
       terms.add(entry[0]);
       storedTerms.push([entry[0], entry[1]]);
-      termEdges += 1;
-      if (termEdges > limits.maxTermEdges) return null;
     }
 
     const stored: StoredFile = {
@@ -163,6 +156,7 @@ export function validateStoredIndex(
       t: storedTerms,
     };
     if (contentSkip) stored.k = contentSkip;
+    if (omittedOverlongTerms) stored.o = omittedOverlongTerms;
     files.push(stored);
   }
 

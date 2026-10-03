@@ -63,16 +63,16 @@
   "license": "Apache-2.0",
   "galerinaVendor": {
     "publicSourceOwner": "https://github.com/TritHypha/myco",
-    "upstreamSnapshotCommit": "c4ff2ca3c53e8c8cb8b5f6a7a589a096d85a1fd6",
-    "syncedAt": "2026-08-28",
+    "upstreamSnapshotCommit": "4f544ee4e263952ffd571a6e7991a1d3b6f358e6",
+    "syncedAt": "2026-10-01",
     "snapshotStatus": {
       "kind": "PARTIAL_FORK",
       "upstreamFileCount": 16,
       "exactFileCount": 13,
       "divergentPaths": [
         "src/cli.ts",
-        "src/query/path-filter.ts",
-        "src/query/regex-guard.ts"
+        "src/graph/model.ts",
+        "src/query/path-filter.ts"
       ],
       "missingPaths": [],
       "localOnlyPaths": [
@@ -81,8 +81,8 @@
     },
     "divergenceReasons": {
       "src/cli.ts": "Galerina retains the local Markdown-link command and imports the local-only links module.",
+      "src/graph/model.ts": "Clarifies that aggregate edge count is a metric; the current shared index contract has no aggregate edge ceiling.",
       "src/query/path-filter.ts": "Comments use the active Galerina packages-ts root; executable behavior remains source-owner compatible.",
-      "src/query/regex-guard.ts": "Owner-requested 120-second total search budget, synchronized with the public source owner's local working copy. The pinned upstream snapshot still has five seconds; advance the snapshot only after the upstream change is committed. The 250 ms regex-operation deadline is unchanged.",
       "src/query/links.ts": "Galerina-only Markdown-link classification and repair extension."
     },
     "rule": "The public Myco repository owns shared code. Galerina divergence must remain explicit, tested and reproduced by audit; never overwrite either owner while claiming byte identity."
