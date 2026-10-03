@@ -51,7 +51,7 @@ test("production profile is honestly RED for unsigned, WASM-less packages (011/0
 
 test("a committed source change after generation is caught (006)", async () => {
   await withGenerated(async (root) => {
-    writeFileSync(join(root, "packages-ts/galerina-alpha/src/index.ts"), "export const alpha = 3;\n");
+    writeFileSync(join(root, "packages-ts/galerina-alpha/src/index.fungi"), "flow alpha() { 3 }\n");
     execFileSync("git", ["-C", root, "add", "-A"]);
     assert.ok(codesOf(await auditRoot(root, "development")).has("FUNGI-PKGSTD-006"));
   });
@@ -85,4 +85,32 @@ test("unknown profile and unknown arguments are refused", async () => {
 test("self-test passes", async () => {
   const r = await main(["--self-test"]);
   assert.equal(r.code, 0);
+});
+
+test("section 2: shipped .ts source is RED (015); a .fungi-only package is not", async () => {
+  await withGenerated(async (root) => {
+    assert.ok(!codesOf(await auditRoot(root, "development")).has("FUNGI-PKGSTD-015"));
+  });
+  await withGenerated(async (root) => {
+    const codes = codesOf(await auditRoot(root, "development"));
+    assert.ok(codes.has("FUNGI-PKGSTD-015"));
+  }, (files) => {
+    files["packages-ts/galerina-alpha/src/legacy.ts"] = "export const x = 1;\n";
+  });
+});
+
+test("section 2: a tracked node_modules/ tree is RED (016); an ignored one is not shipped", async () => {
+  await withGenerated(async (root) => {
+    writeFileSync(join(root, ".gitignore"), "node_modules/\n");
+    execFileSync("git", ["-C", root, "add", ".gitignore"]);
+    const { mkdirSync } = await import("node:fs");
+    mkdirSync(join(root, "packages-ts/galerina-alpha/node_modules/leftpad"), { recursive: true });
+    writeFileSync(join(root, "packages-ts/galerina-alpha/node_modules/leftpad/index.js"), "module.exports = 1;\n");
+    assert.ok(!codesOf(await auditRoot(root, "development")).has("FUNGI-PKGSTD-016"));
+  });
+  await withGenerated(async (root) => {
+    assert.ok(codesOf(await auditRoot(root, "development")).has("FUNGI-PKGSTD-016"));
+  }, (files) => {
+    files["packages-ts/galerina-alpha/node_modules/leftpad/index.js"] = "module.exports = 1;\n";
+  });
 });

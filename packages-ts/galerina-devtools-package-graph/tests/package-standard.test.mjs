@@ -37,7 +37,7 @@ function manifest(over = {}) {
   };
 }
 
-const SOURCES = [{ path: "package.json", sha256: HEX64 }, { path: "src/index.ts", sha256: "c".repeat(64) }];
+const SOURCES = [{ path: "package.json", sha256: HEX64 }, { path: "src/index.fungi", sha256: "c".repeat(64) }];
 const AGG = "d".repeat(64);
 
 function buildManifest(over = {}) {
@@ -100,6 +100,7 @@ function input(over = {}) {
     classifyLicense,
     sanctionedGplPackages: [],
     licenseOverrides: [],
+    vettedNativeFloorSources: [],
     ...over,
   };
 }
@@ -158,7 +159,7 @@ test("FUNGI-PKGSTD-005 positive: invalid build manifest", () => {
 test("FUNGI-PKGSTD-005 negative: valid build manifest", () => silent("FUNGI-PKGSTD-005", auditPackage(input())));
 
 test("FUNGI-PKGSTD-006 positive: source hash or file set changed", () => {
-  fires("FUNGI-PKGSTD-006", auditPackage(input({ observedSources: [SOURCES[0], { path: "src/index.ts", sha256: "e".repeat(64) }] })));
+  fires("FUNGI-PKGSTD-006", auditPackage(input({ observedSources: [SOURCES[0], { path: "src/index.fungi", sha256: "e".repeat(64) }] })));
   fires("FUNGI-PKGSTD-006", auditPackage(input({ observedSources: [...SOURCES, { path: "src/new.ts", sha256: HEX64 }] })));
   fires("FUNGI-PKGSTD-006", auditPackage(input({ observedAggregateSha256: "f".repeat(64) })));
 });
@@ -239,9 +240,9 @@ test("FUNGI-PKGSTD-014 negative: identical document (CRLF checkout tolerated)", 
 });
 
 test("every code is registered once with a unique UPPER_SNAKE name and error severity", () => {
-  assert.equal(PACKAGE_STANDARD_CODES.length, 14);
-  assert.equal(new Set(PACKAGE_STANDARD_CODES.map((c) => c.code)).size, 14);
-  assert.equal(new Set(PACKAGE_STANDARD_CODES.map((c) => c.name)).size, 14);
+  assert.equal(PACKAGE_STANDARD_CODES.length, 16);
+  assert.equal(new Set(PACKAGE_STANDARD_CODES.map((c) => c.code)).size, 16);
+  assert.equal(new Set(PACKAGE_STANDARD_CODES.map((c) => c.name)).size, 16);
   PACKAGE_STANDARD_CODES.forEach((c, i) => {
     assert.equal(c.code, `FUNGI-PKGSTD-${String(i + 1).padStart(3, "0")}`);
     assert.match(c.name, /^PKG_STD_[A-Z0-9_]+$/);
@@ -255,4 +256,52 @@ test("diagnostics carry no null, undefined, or NaN and are sorted", () => {
   for (const d of diags) for (const v of Object.values(d)) assert.equal(typeof v, "string");
   const keys = diags.map((d) => `${d.packageDir}\0${d.code}\0${d.file}\0${d.detail}`);
   assert.deepEqual(keys, [...keys].sort());
+});
+
+// Section 2 structural prohibitions. A tree change must be mirrored in the build manifest,
+// so these tests swap observed sources and the declared file list together.
+function withTree(files, over = {}) {
+  const sorted = [...files].sort((a, b) => (a.path < b.path ? -1 : 1));
+  return input({
+    observedSources: sorted,
+    buildManifest: { present: true, text: text(buildManifest({ sources: { aggregateSha256: AGG, algorithm: "sha256", files: sorted } })) },
+    ...over,
+  });
+}
+const TS_FILE = { path: "src/legacy.ts", sha256: "1".repeat(64) };
+const NM_FILE = { path: "node_modules/leftpad/index.js", sha256: "2".repeat(64) };
+
+test("FUNGI-PKGSTD-015 positive: .ts/.tsx/.mts/.cts/.d.ts source shipped", () => {
+  for (const path of ["src/legacy.ts", "src/view.tsx", "src/x.mts", "src/y.cts", "types/index.d.ts", "tools/gen.ts"]) {
+    fires("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, { path, sha256: "1".repeat(64) }])));
+  }
+});
+test("FUNGI-PKGSTD-015 positive: native-floor without a vetted entry, or with a mismatched hash", () => {
+  const nf = { manifest: { present: true, text: text(manifest({ archetype: { source: "inferred-from-name", value: "native-floor" } })) } };
+  fires("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, TS_FILE], nf)));
+  fires("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, TS_FILE], { ...nf, vettedNativeFloorSources: [{ path: TS_FILE.path, sha256: "9".repeat(64) }] })));
+});
+test("FUNGI-PKGSTD-015 positive: a vetted entry does not exempt a non-native-floor package or a missing manifest", () => {
+  fires("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, TS_FILE], { vettedNativeFloorSources: [TS_FILE] })));
+  fires("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, TS_FILE], { vettedNativeFloorSources: [TS_FILE], manifest: { present: false } })));
+});
+test("FUNGI-PKGSTD-015 negative: .fungi/.gate only; vetted hash-pinned native-floor .ts; tsconfig.json is not source", () => {
+  silent("FUNGI-PKGSTD-015", auditPackage(input()));
+  silent("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, { path: "src/flow.gate", sha256: "3".repeat(64) }, { path: "tsconfig.json", sha256: "4".repeat(64) }])));
+  const nf = { manifest: { present: true, text: text(manifest({ archetype: { source: "inferred-from-name", value: "native-floor" } })) }, vettedNativeFloorSources: [TS_FILE] };
+  silent("FUNGI-PKGSTD-015", auditPackage(withTree([...SOURCES, TS_FILE], nf)));
+});
+
+test("FUNGI-PKGSTD-016 positive: tracked node_modules/ at any depth", () => {
+  fires("FUNGI-PKGSTD-016", auditPackage(withTree([...SOURCES, NM_FILE])));
+  fires("FUNGI-PKGSTD-016", auditPackage(withTree([...SOURCES, { path: "vendor/x/node_modules/y/a.js", sha256: "5".repeat(64) }])));
+});
+test("FUNGI-PKGSTD-016 negative: no node_modules segment (a name merely containing it is not one)", () => {
+  silent("FUNGI-PKGSTD-016", auditPackage(input()));
+  silent("FUNGI-PKGSTD-016", auditPackage(withTree([...SOURCES, { path: "docs/node_modules-notes.md", sha256: "6".repeat(64) }])));
+});
+test("a .ts file inside node_modules/ is reported once, as 016", () => {
+  const diags = auditPackage(withTree([...SOURCES, { path: "node_modules/a/index.d.ts", sha256: "7".repeat(64) }]));
+  fires("FUNGI-PKGSTD-016", diags);
+  silent("FUNGI-PKGSTD-015", diags);
 });

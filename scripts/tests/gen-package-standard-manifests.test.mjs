@@ -43,7 +43,7 @@ test("two runs over the same index are byte-identical and contain no forbidden t
 test("output does not depend on the working tree (index content only)", async () => {
   await withRepo(fixtureFiles(), (root) => {
     const before = generateAll(root).packages.map((p) => p.docs);
-    writeFileSync(join(root, "packages-ts/galerina-alpha/src/index.ts"), "export const alpha = 2;\n");
+    writeFileSync(join(root, "packages-ts/galerina-alpha/src/index.fungi"), "flow alpha() { 2 }\n");
     assert.deepEqual(generateAll(root).packages.map((p) => p.docs), before);
     execFileSync("git", ["-C", root, "add", "-A"]);
     assert.notDeepEqual(generateAll(root).packages.map((p) => p.docs), before);

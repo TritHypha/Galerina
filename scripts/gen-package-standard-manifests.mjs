@@ -364,6 +364,8 @@ export async function licensePolicy(root) {
     classifyLicense: lic.classify,
     sanctionedGplPackages: [...lic.SANCTIONED_GPL_EXTENSION_NAMES],
     licenseOverrides: overrides.map((o) => `${o.package}@${o.version}`),
+    // Section 7 vetted native-floor TypeScript ledger: none exists yet, so nothing is exempt.
+    vettedNativeFloorSources: [],
   };
 }
 
@@ -419,7 +421,7 @@ export function fixtureFiles() {
     "packages-ts/galerina-core-compiler/package.json": pj("@galerina/core-compiler"),
     "packages-ts/galerina-alpha/package.json": pj("@galerina/alpha", { dependencies: { "@galerina/core-compiler": "file:../galerina-core-compiler", leftpad: "^1.0.0" } }),
     "packages-ts/galerina-alpha/package-lock.json": `${JSON.stringify({ lockfileVersion: 3, packages: { "node_modules/leftpad": { version: "1.0.2", integrity: `sha512-${Buffer.alloc(64, 7).toString("base64")}`, license: "MIT" } } }, null, 2)}\n`,
-    "packages-ts/galerina-alpha/src/index.ts": "export const alpha = 1;\r\n",
+    "packages-ts/galerina-alpha/src/index.fungi": "flow alpha() {}\r\n",
   };
 }
 

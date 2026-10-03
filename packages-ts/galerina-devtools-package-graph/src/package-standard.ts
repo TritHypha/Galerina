@@ -19,7 +19,7 @@
 // It reads the files, derives the observed source hashes from the git index,
 // and injects the RD-0355 licence classifier, so there is one classifier.
 //
-// Codes: FUNGI-PKGSTD-001..014. Each code is emitted at exactly one kind of
+// Codes: FUNGI-PKGSTD-001..016 (015/016: the section 2 structural prohibitions). Each code is emitted at exactly one kind of
 // site and has a positive and a negative test in
 // tests/package-standard.test.mjs.
 
@@ -126,6 +126,20 @@ export const FUNGI_PKGSTD_014 = {
   message: "A committed package-standard document differs from the generator output.",
 } as const;
 
+export const FUNGI_PKGSTD_015 = {
+  code: "FUNGI-PKGSTD-015",
+  name: "PKG_STD_TS_SOURCE_SHIPPED",
+  severity: "error",
+  message: "Package ships TypeScript source; authored source is .fungi/.gate only (Package Standard v1 section 2).",
+} as const;
+
+export const FUNGI_PKGSTD_016 = {
+  code: "FUNGI-PKGSTD-016",
+  name: "PKG_STD_NODE_MODULES_SHIPPED",
+  severity: "error",
+  message: "Package ships a node_modules/ tree; dependencies arrive vendored and pinned (Package Standard v1 section 2).",
+} as const;
+
 export interface PackageStandardCode {
   readonly code: string;
   readonly name: string;
@@ -137,7 +151,7 @@ export const PACKAGE_STANDARD_CODES: readonly PackageStandardCode[] = [
   FUNGI_PKGSTD_001, FUNGI_PKGSTD_002, FUNGI_PKGSTD_003, FUNGI_PKGSTD_004,
   FUNGI_PKGSTD_005, FUNGI_PKGSTD_006, FUNGI_PKGSTD_007, FUNGI_PKGSTD_008,
   FUNGI_PKGSTD_009, FUNGI_PKGSTD_010, FUNGI_PKGSTD_011, FUNGI_PKGSTD_012,
-  FUNGI_PKGSTD_013, FUNGI_PKGSTD_014,
+  FUNGI_PKGSTD_013, FUNGI_PKGSTD_014, FUNGI_PKGSTD_015, FUNGI_PKGSTD_016,
 ];
 
 export interface PackageStandardDiagnostic {
@@ -183,6 +197,13 @@ export interface PackageStandardInput {
   readonly sanctionedGplPackages: readonly string[];
   /** Evidenced `name@version` licence overrides (governance/license-overrides.json). */
   readonly licenseOverrides: readonly string[];
+  /**
+   * Section 7 exception ledger: vetted, hash-pinned TypeScript files of a native-floor package.
+   * A `.ts` file is exempt from FUNGI-PKGSTD-015 only when the manifest archetype is
+   * native-floor AND the file's path and sha256 both match an entry here. No ledger exists
+   * yet, so the CLI passes an empty list and every shipped `.ts` file is a violation.
+   */
+  readonly vettedNativeFloorSources: readonly ObservedSourceFile[];
 }
 
 // ---------------------------------------------------------------------------
@@ -385,6 +406,7 @@ function field(obj: Obj, key: string): Json | undefined {
 const SEMVER_EXACT = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 interface ParsedManifest {
+  readonly archetype: string;
   readonly name: string;
   readonly version: string;
   readonly signatureStatus: string;
@@ -401,7 +423,7 @@ function checkManifest(doc: Json, shape: Shape): ParsedManifest {
   const name = shape.string(field(m, "name"), "name");
   const version = shape.string(field(m, "version"), "version");
   const archetype = shape.object(field(m, "archetype"), "archetype", ["source", "value"]);
-  shape.literal(field(archetype, "value"), "archetype.value", ["fungi", "gate", "native-floor"]);
+  const archetypeValue = shape.literal(field(archetype, "value"), "archetype.value", ["fungi", "gate", "native-floor"]);
   shape.literal(field(archetype, "source"), "archetype.source", ["inferred-from-name", "package.fungi.json"]);
   shape.sortedStrings(field(m, "boundaries"), "boundaries");
   shape.sortedStrings(field(m, "capabilities"), "capabilities");
@@ -443,7 +465,7 @@ function checkManifest(doc: Json, shape: Shape): ParsedManifest {
     signatureStatus = shape.literal(field(s, "status"), "signature.status", ["UNSIGNED"]);
     shape.literal(field(s, "publisher"), "signature.publisher", ["none"]);
   }
-  return { name, version, signatureStatus, buildStatus };
+  return { archetype: archetypeValue, name, version, signatureStatus, buildStatus };
 }
 
 interface ParsedBuildManifest {
@@ -665,6 +687,29 @@ export function auditPackage(input: PackageStandardInput): PackageStandardDiagno
     if (denied.length > 0) {
       out.push(makePackageStandardDiag(FUNGI_PKGSTD_010, dir, "sbom.json", denied.join(", ")));
     }
+  }
+
+  // Section 2 structural prohibitions, over the tracked package tree (the shipped content).
+  // They do not depend on the manifest: a missing or invalid manifest grants no exception.
+  const TS_SOURCE = /\.(?:ts|tsx|mts|cts)$/;
+  const nativeFloor = manifest !== undefined && manifest.archetype === "native-floor";
+  const vetted = new Set(input.vettedNativeFloorSources.map((f) => `${f.path} ${f.sha256}`));
+  const tsShipped = input.observedSources
+    .filter((f) => TS_SOURCE.test(f.path) && !f.path.split("/").includes("node_modules"))
+    .filter((f) => !(nativeFloor && vetted.has(`${f.path} ${f.sha256}`)))
+    .map((f) => f.path)
+    .sort();
+  if (tsShipped.length > 0) {
+    const shown = tsShipped.slice(0, 5).join(", ");
+    out.push(makePackageStandardDiag(FUNGI_PKGSTD_015, dir, ".", `${tsShipped.length} TypeScript file(s): ${shown}${tsShipped.length > 5 ? ", ..." : ""}`));
+  }
+  const nodeModules = input.observedSources
+    .filter((f) => f.path.split("/").includes("node_modules"))
+    .map((f) => f.path)
+    .sort();
+  if (nodeModules.length > 0) {
+    const shown = nodeModules.slice(0, 5).join(", ");
+    out.push(makePackageStandardDiag(FUNGI_PKGSTD_016, dir, "node_modules", `${nodeModules.length} tracked file(s): ${shown}${nodeModules.length > 5 ? ", ..." : ""}`));
   }
 
   if (input.profile === "production" && manifest !== undefined) {
