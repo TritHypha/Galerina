@@ -1,7 +1,7 @@
 {
   "schema": "galerina.status-ledger.v1",
-  "asOf": "2026-08-12",
-  "milestone": "Receipt-bound Galerina-to-SLIDE package execution before terminal TypeScript and dependency retirement",
+  "asOf": "2026-09-21",
+  "milestone": "Unpushed worktree reconciliation before bounded pre-.fungi implementation closure",
   "roadmap": "docs/ROADMAP.md",
   "openGates": [
     {
@@ -32,6 +32,11 @@
     {
       "id": "PLATFORM-MATRIX",
       "summary": "The seven-OS digest-pinned release gate and public receipt workflow are implemented; return Windows 10, Windows 11, Ubuntu, Debian, Fedora, Linux Mint and macOS receipts without inferring untested hosts.",
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "PRE-FUNGI-NON-EVIDENCE-CLOSURE",
+      "summary": "The primary checkout does not contain the unpushed implementation. Keep C12/C18, signing custody, independent audit, remaining semantic scope and physical/production receipts open; do not infer corpus, queue, signing, SLIDE/VOK or .fungi assurance.",
       "evidence": "docs/ROADMAP.md"
     }
   ]
