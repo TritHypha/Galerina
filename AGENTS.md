@@ -292,6 +292,20 @@ node packages-ts\galerina-core-cli\dist\index.js graph --out build\graph
 
 ## Coding Rules
 
+- When a code task has an all-path explicit-result/refusal obligation, pass the
+  `REQUIREEXIT` authoring rule to every coding agent. Use the marker only to name
+  the symbol, condition, and required terminal outcomes—not as decoration or as
+  enforcement. It is a comment convention, not Fungi/TS/JS syntax or a compiler
+  gate unless current build/check source and tests prove that wiring exists.
+- Use the target language's verified comment syntax; for `.fungi`, confirm the
+  grammar/examples and do not invent syntax. Implement the contract in executable
+  control flow and test both expected success and controlled refusal/failure
+  paths. Cover missing, invalid, unknown, malformed, unsupported, exception,
+  cancellation/timeout, and cleanup-failure outcomes where applicable; no
+  implicit fallthrough or default success.
+- For work split between `.fungi` and TypeScript/JavaScript, give every builder
+  the same named invariant, allowed outcomes, and failure cases. Prove parity with
+  tests; a marker or one-language guard alone does not prove it.
 - Use strict TypeScript (`strict: true`, `noUncheckedIndexedAccess: true`).
 - Handle `undefined` explicitly — no implicit index access.
 - Use `readonly` on all data structures that must not change after construction.
