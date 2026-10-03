@@ -2,6 +2,114 @@
 
 **Status:** active working queue; non-authorizing
 
+### 2026-09-21 Tower Citizen note
+
+Worktree `RD-1295` is the modular product-line architecture freeze
+candidate. Export-map split is not implemented.
+
+### 2026-09-21 C18 note
+
+Worktree `RD-1294` aligns the two stale C18 overlay twins with live
+TypeScript. Nothing committed.
+
+### 2026-09-21 C12 live producer note
+
+Worktree `RD-1293` produced C12 evidence after staging compiler
+`src/`/`tests/`. Nothing committed.
+
+### 2026-09-21 C20 note
+
+C20 remains linked to existing `RD-0795`. Worktree implementation of the
+bounded compiler identity is `RD-1292`.
+
+### 2026-09-21 primary/worktree reconciliation — RD-1291
+
+- [x] Reconciled the unpushed implementation worktree against the primary
+  checkout and focused tests.
+- [!] Keep the rows for C12/C18, signing custody, independent audit and
+  physical/production evidence until the exact source set is committed and
+  reverified. RD-1267 is absent; its exact query is `STALE`.
+
+### 2026-09-21 C19-C note
+
+C19-C was unlinked. Worktree implementation is `RD-1290`.
+
+### 2026-09-21 C19-B note
+
+C19-B was unlinked. Worktree implementation is `RD-1289`. C19-C remains
+open.
+
+### 2026-09-21 C19-A note
+
+C19 was unlinked. Worktree implementation of C19-A is `RD-1288`. C19-B
+and C19-C remain open. WASM byte-parity remains outside this freeze.
+
+### 2026-09-21 C17 note
+
+C17 was unlinked. Worktree implementation is `RD-1287`. Nested records and
+Option/Result remain outside the export.
+
+### 2026-09-21 C16 note
+
+C16 was unlinked. Worktree implementation is `RD-1286`. Durable/multi-process
+storage remains excluded.
+
+### 2026-09-21 C15 note
+
+C15 was unlinked. Worktree implementation is `RD-1285`. Handoff
+`EnvironmentConfig` remains the unversioned snapshot.
+
+### 2026-09-21 C14 note
+
+C14 was unlinked. Worktree implementation is `RD-1284`. HTML/DOM/CSS
+structure validation remains Stage 2.
+
+### 2026-09-21 C12 note
+
+`M-RD-014` / `RD-1244` now has worktree implementation `RD-1283`. Keep the
+missing-RD row until merge and independent audit. The runner-constants
+`.fungi` twin still aliases the legacy schema string.
+
+### 2026-09-21 C10 note
+
+`M-RD-012` / `RD-1242` now has worktree implementation `RD-1282` for the
+shared diagnostic schema (amplitude was `RD-1273`). Keep the missing-RD row
+until merge and independent audit. Registry codes and hardware are still not
+owned here.
+
+### 2026-09-21 C09 note
+
+`M-RD-011` / `RD-1241` now has worktree implementation `RD-1281`. Keep the
+missing-RD row until merge and independent audit. Physical open and VOK
+receipt verification are still not owned here.
+
+### 2026-09-21 C08 note
+
+`RD-1240` now has worktree implementation `RD-1280`. Keep the missing-RD row
+until merge and independent audit.
+
+### 2026-09-21 C04 note
+
+`M-RD-006` / `RD-1236` now has a worktree implementation record `RD-1279`.
+Keep this missing-RD row until the worktree is merged and independently
+audited. Signature verification is still not owned here.
+
+### 2026-09-21 C02/C03 note
+
+C02 residual and C03 are not missing RDs: `RD-1277` and `RD-1278` record the
+worktree implementations. C04 WASM artefact admission (`M-RD-006` / `RD-1236`)
+remains the next missing-contract row.
+
+### 2026-09-21 session note
+
+C01 (`RD-1232` + satellites) and C02 (`RD-1233`) are **not missing RDs**.
+Bounded implementations are `RD-1275` and `RD-1276` in the private KB, on
+the `rd-0873-native-fungi-bootstrap-implementation` worktree. Direct-sink
+and logger-clock owner contracts (`M-RD-007`/`M-RD-008`) have implementation
+slices `RD-1269`/`RD-1270`; production durability remains excluded. Do not
+remove those missing-RD rows until the worktree is merged and independently
+audited.
+
 **Purpose:** record only the questions that cannot be completed from the current
 source, tests, existing R&D, or ordinary engineering deduction. A missing item is
 not a stop signal: complete the bounded implementation around it, record the
@@ -985,9 +1093,9 @@ locator is not sufficient evidence of a blocker or of completion.
   kernel publishes an owned contract-type export and the docs package adds
   source-backed schema and negative validation tests.
 - **Galerina compiler architecture items:**
-  The remaining Stage-B parity, governed JSON codec, and crypto-provider move
-  are tracked at `packages-ts/galerina-core-compiler/TODO.md:67-79`; they need
-  cross-package contracts and are not bounded edits in the current pass.
+  `[x] Bounded C19-A type-code identity (`RD-1288`) and C19-B JsonValue
+  codec (`RD-1289`), and C19-C CryptoProvider (`RD-1290`) live in the
+  worktree. This primary checkout is not the implementation worktree.
 - **Galerina runner evidence residual:** the typed process-provenance slice is
   now implemented and focused-tested: `packages-ts/galerina-test/src/types.ts:35-39`
   defines `SpawnInvocation`, `packages-ts/galerina-test/src/spawn.ts:54-60`
