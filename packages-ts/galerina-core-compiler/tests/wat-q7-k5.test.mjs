@@ -1,5 +1,5 @@
 /**
- * Q9 recode — K5 I2 FAULT-006 error + I3 INV-004 body-local pin.
+ * Q9 recode â€” K5 I2 FAULT-006 error + I3 INV-004 body-local pin.
  * Owner 2026-10-01: DECLARED_HANDLER_NOT_EXECUTED moves to unused FUNGI-FAULT-006.
  * Replay: node --test --test-reporter=tap tests/wat-q7-k5.test.mjs
  */
@@ -239,10 +239,10 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3129 / :3939 still trap (re-pinned on main 0d06d6c1, +26; +2 diag-constants import 2026-10-02)", () => {
+  it("live stacked lines :3307 / :4131 still trap (re-pinned on main 0d06d6c1, +26; +2 diag-constants import 2026-10-02; +178/+192 wat-parked D4/ZipPair/E5 merge 2026-10-03)", () => {
     const lines = emitterSrc().split("\n");
-    assert.equal(lines[3128].includes("case \"faultStmt\""), true, lines[3128]);
-    assert.equal(lines[3938].includes("case \"faultStmt\""), true, lines[3938]);
+    assert.equal(lines[3306].includes("case \"faultStmt\""), true, lines[3306]);
+    assert.equal(lines[4130].includes("case \"faultStmt\""), true, lines[4130]);
     assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
   });
 });

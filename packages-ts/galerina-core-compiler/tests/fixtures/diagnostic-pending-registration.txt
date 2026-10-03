@@ -40,7 +40,6 @@ FUNGI-WAT-BODY-001
 # 2026-10-02 diag-constants: FUNGI-WAT-CHECKED-001 CHECKED_PROGRAM_REQUIRED (pre-existing J-R4 CheckedProgram gate, ID and
 # meaning unchanged). It is now a `code:` constant in FUNGI_WAT_DIAGNOSTICS, so this scan sees it for the first time; the KB
 # compiler-diagnostics.md has no row for it yet (owner/KB step).
-FUNGI-WAT-CHECKED-001
 # 2026-10-01: the 7 Grok Bot rounding codes (FUNGI-NUMERIC-OP-002..005, FUNGI-WAT-MONEY-001,
 # FUNGI-WAT-DECIMAL-001, FUNGI-HALLMARK-006) are now registered in the KB compiler-diagnostics.md and are
 # no longer pending (owner go-ahead 01:36 BST).
@@ -48,4 +47,5 @@ FUNGI-WAT-CHECKED-001
 # are now registered in the KB compiler-diagnostics.md and galerina-governance-rules.md and are no longer pending
 # (owner decision, Phillip Booth, 13:41 BST: keep INV-005/006; the INV-* reservation is widened to governed runtime invariants).
 # 2026-10-02: E5 provisional narrow-float lane refusal (Grok Bot, branch grok/wat-parked-memory-20261002). KB registration is an owner/KB step before carry.
-FUNGI-WAT-FLOAT32-001
+# 2026-10-03: FUNGI-WAT-CHECKED-001, FUNGI-WAT-FLOAT32-001 are now registered in the KB compiler-diagnostics.md (ZTF-Knowledge-Bases 9874de49,
+# Phillip Booth order 10:43 BST) and are no longer pending.
