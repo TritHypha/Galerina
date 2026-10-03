@@ -239,7 +239,8 @@ describe("T1 classification table (stacked 52 → after-product)", () => {
     assert.equal(loopFuel.includes(MARKER), false);
     const binary = readFileSync(join(SRC, "wat-emitter-binary.ts"), "utf8");
     const thenUnreach = [...binary.matchAll(/\(then unreachable\)/g)];
-    assert.equal(thenUnreach.length, 10);
+    // E5 (PROVISIONAL): +3 for the narrow-float rounding helpers ($fungi_round_f32: 1, $fungi_round_f16: 2).
+    assert.equal(thenUnreach.length, 13);
     const renderFallback = emitLines.find((l) => l.includes("unreachable ;; emitter cannot lower") && l.includes("lines.push"));
     assert.equal(typeof renderFallback, "string");
   });

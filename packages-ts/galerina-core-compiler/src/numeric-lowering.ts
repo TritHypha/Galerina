@@ -25,8 +25,8 @@ import { type AstNode } from "./parser.js";
  * bigint — proven byte-exact, walker ≡ WASM, over the full (2^53,2^63) corpus (wat-i64-differential). So
  * the gate no longer rejects Int64. UInt64 was held back next (faithful *unsigned* 64-bit arithmetic —
  * u64 div/compare/overflow differ from the signed i64.* ops — had no layer yet) but has SINCE been lifted
- * too — see "NOW EMPTY" below, so the gate set is empty. Int8/Int16 widen to i32 and Float32 widens to f64
- * (no value loss) — deliberately NOT here.
+ * too — see "NOW EMPTY" below, so the gate set is empty. Int8/Int16 widen to i32 and Float32/Float16 values
+ * are carried in an f64 lane (no value loss; E5 rounds them to binary32/binary16) — deliberately NOT here.
  *
  * DELIBERATELY SPLIT from FAST_TIER_UNLOWERABLE_SCALAR below: the two concerns diverged at the lift. The
  * GATE asks "can the pipeline as a whole carry this width?" The fast-tier bail asks "can the *i32-only* fast
@@ -55,7 +55,10 @@ export const BACKEND_UNLOWERABLE_SCALAR: ReadonlySet<string> = new Set([]);
 // `Decimal` is here too (but NOT in the gate set — Decimal is a valid type, it must still compile): the
 // fast i32-only tiers and the WASM f64 path cannot represent exact base-10 money, so a Decimal flow must
 // bail to the tree-walker. Without this the WASM tier silently computed f64 money (0.1+0.2=0.30000…004).
-export const FAST_TIER_UNLOWERABLE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt64", "Decimal"]);
+// E5 (PROVISIONAL, narrow-float.ts): Float32/Float16 are here too. The tree-walker rounds them to binary32 /
+// binary16 at every declared slot and op; the bytecode VM and the sync fast path carry plain JS numbers
+// and do not, so a flow declaring either width bails to the walker rather than silently computing at f64.
+export const FAST_TIER_UNLOWERABLE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt64", "Decimal", "Float32", "Float16"]);
 
 /**
  * Base type identifier from a type-annotation string: strips leading governance/safety qualifiers
@@ -195,7 +198,7 @@ export function flowDeclaresUnlowerable64(flowNode: AstNode): boolean {
  * (`let d: Decimal = …`) still bails — `bindingSet` below keeps the full FAST set — because the sync
  * path ignores binding annotations and must not guess a literal's exact-decimal coercion.
  */
-export const SYNC_TIER_UNLOWERABLE_SIGNATURE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt64"]);
+export const SYNC_TIER_UNLOWERABLE_SIGNATURE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt64", "Float32", "Float16"]); // E5: narrow floats round on the walker only
 
 const syncTierUnlowerableCache = new WeakMap<AstNode, boolean>();
 

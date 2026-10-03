@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Integration
+
+- Adds read-only `TriMatcher.tables()` (type `AutomatonTables`): a frozen,
+  non-aliasing copy of the compiled automaton for ahead-of-time lowering
+  (Galerina D4 bounded in-Wasm `matchesPattern`). No matching behaviour
+  changes; `tests/tables.test.mjs` pins a Boolean re-simulation from the
+  snapshot against `test()`.
+
 ## 0.1.1 — 2026-07-28
 
 ### Security
