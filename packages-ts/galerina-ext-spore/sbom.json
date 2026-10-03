@@ -1,0 +1,100 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40noble/ciphers@2.2.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "67aa63219ffc2097021b36f64bfd0fc7927cd728a3f39c404ae935b5e2cd7a0ef96df4f4ecc5776bf3b632d9f5236b1ee37937964544705691d7437872041c64"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "@noble/ciphers",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^2.2.0"
+        }
+      ],
+      "purl": "pkg:npm/%40noble/ciphers@2.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "fa9a2b9ab0d9c23470d3953c0032b82691de8e8f3bfa005dfa6b91041fe8cf3b47e728432cc0c5e231d058ddcd41002cbb5cc134f5931b4670548d02476f47d0"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "@noble/post-quantum",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^0.6.1"
+        }
+      ],
+      "purl": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.6.1"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40noble/ciphers@2.2.0",
+        "pkg:npm/%40noble/post-quantum@0.6.1"
+      ],
+      "ref": "pkg:npm/%40galerina/ext-spore@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/ext-spore@1.0.0-beta.2",
+      "name": "@galerina/ext-spore",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

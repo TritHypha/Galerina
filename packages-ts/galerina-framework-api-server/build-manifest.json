@@ -1,0 +1,139 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/framework-api-server",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "551c34938482cedb5ebc82221c204c4c0c22517a80926043af8aee14e40ca285",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "ac928bcafb8d55f0454d919ca2501db24efa2fc8dc2d435cfc9a3faed680595a"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "c6a8679b930aacb481159c5daf34e71d01aee0692f6049dd762a105f8f01f8a7"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "eb21385f2636f777b96cf3d76d16737dd23998bdcd405cc188dfee2667778c9d"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "87bdcc3165497622a345f81b36e76bc38227de12b0fd409a731fd8cb63107981"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "cef0f877b69f903203aba38e7ca11e9bc3509fc0ff5aa0638f76d0a991d41afb"
+      },
+      {
+        "path": "package.json",
+        "sha256": "a4b7f69a9dab77545aba6e5818fb01ac397190955ac832e0872ec02bf99d44ea"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "2569f150684d557917868d56fcf4e7018ecfc4af2e9c4e120a112baa2537692e"
+      },
+      {
+        "path": "src/replay-store.ts",
+        "sha256": "b1fd94a12565877553459955578ba4a40ae77b311a6f1aebd01297c502eb0b76"
+      },
+      {
+        "path": "src/self-hosted/default-idle-timeout-ms.fungi",
+        "sha256": "1338563cda79081df84549e8433a03c7eccdb3bdab37c2574cfeab87a56f2411"
+      },
+      {
+        "path": "src/self-hosted/default-max-body-bytes.fungi",
+        "sha256": "5d301e27ae1588d853bdfba48298c0762e87ce63a34fa88eae6490f37914ff51"
+      },
+      {
+        "path": "src/self-hosted/max-principal-scopes.fungi",
+        "sha256": "fba169de6918ea32ed6ecb655215a4e3f282d05f84b34d24986dcb83260bfe06"
+      },
+      {
+        "path": "src/webhook-admission.ts",
+        "sha256": "25a2d2c712e941dfce02b1a9b0660179f4102ac39da98c8f7496c77abf435eb1"
+      },
+      {
+        "path": "tests/api-server-tls.test.mjs",
+        "sha256": "35dc443fda48bfbfdb43261e0eb13464d673fbeda0b1c6071b9690c934181cd5"
+      },
+      {
+        "path": "tests/api-server.test.mjs",
+        "sha256": "8703ba989d902140771280029a3b9a66d7fa062255a52ba2cb811845c73ed571"
+      },
+      {
+        "path": "tests/fixtures/tls/README.md",
+        "sha256": "4e8a0faa7a03f23cc519e09ea7e759fdaf8a869b81708243968ef15ebbad8b0f"
+      },
+      {
+        "path": "tests/fixtures/tls/TEST-ONLY-client-good.key",
+        "sha256": "ddb973fba2c419d6d35ea3b0f6a1ca30606e3a5c441f24012956bdc9a5f3c3b4"
+      },
+      {
+        "path": "tests/fixtures/tls/TEST-ONLY-client-untrusted.key",
+        "sha256": "c5685ce9259f9d962a70064ba4a62e262ac6e06b6831ccab2312d97340622f53"
+      },
+      {
+        "path": "tests/fixtures/tls/TEST-ONLY-server.key",
+        "sha256": "e7a19da5f3ff79782020e4bc318591c773e8f3e714bcd5ffc7ba493e7f8d3d5a"
+      },
+      {
+        "path": "tests/fixtures/tls/ca.crt",
+        "sha256": "55bc06294ef2af7d9facea9a56507ec2ec609a1bddefb49adc66bd8db4a9d154"
+      },
+      {
+        "path": "tests/fixtures/tls/client-good.crt",
+        "sha256": "5284fedee7013cd990e3f927dff41f038a12d20e7849dcca463a5235ef7605ac"
+      },
+      {
+        "path": "tests/fixtures/tls/client-untrusted.crt",
+        "sha256": "1b12d2acaa34166153c42f7ec7d4fdb2efadbb8347d50d721ed349be15853a03"
+      },
+      {
+        "path": "tests/fixtures/tls/gen-certs.sh",
+        "sha256": "c6114f64f2f1229246a9e941c27bd5b2188500fbbb81e6664e787e4012140cf1"
+      },
+      {
+        "path": "tests/fixtures/tls/server.crt",
+        "sha256": "898821657e734a3511745fac04ddf3a286b98eac5185c7d11b09edcb2a64b2c6"
+      },
+      {
+        "path": "tests/q2-durable-replay-admission.test.mjs",
+        "sha256": "0345f558b81597b4d4c46f05a34f5b46043cb28041ed0345ce60fbb9b7107ab4"
+      },
+      {
+        "path": "tests/replay-store.test.mjs",
+        "sha256": "b9d88c309950054f7f04346338fcbecf89ae6385a026c1013fb810d0b5a38223"
+      },
+      {
+        "path": "tests/webhook-admission.test.mjs",
+        "sha256": "f5f78a7431dfd61fb9598176d3e2e66b8e7c47e0afabb54904327a087a9a9f26"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "be813e8877232993602c01ecfb420114b77990ae83abfa1de858101d44e58870"
+      }
+    ]
+  }
+}

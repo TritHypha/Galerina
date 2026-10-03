@@ -1,0 +1,100 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a1b7dbed4ea79c96de94c4a2aed56c565bedb0dde0bc5b27b8ab77f7621faf4d"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-network",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-network"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/tower-citizen@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0e5b8f811377ad7610212d377980e79955457826d234d7c8dac16e5908828184"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/tower-citizen",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-tower-citizen"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/tower-citizen@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+        "pkg:npm/%40galerina/tower-citizen@1.0.0-beta.2"
+      ],
+      "ref": "pkg:npm/%40galerina/auth@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/auth@1.0.0-beta.2",
+      "name": "@galerina/auth",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

@@ -1,0 +1,107 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/docs",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "2950980dbd853ce3963ef41e2822fd38a8b04a8f99ab6b3d399072be229c3023",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "2ab9407ee3845f080c17fe4c4c5f0a387e8edee81f920a8a4ec04755b16595d0"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "675b45de8eeb6ac28c3040d59d7740d17ec7c64608dfaf50eab7fbfe808667cf"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "7cbc1ad89b712fe833329b2c429e65d0593661740b0985e848c2700c865a7c1b"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "c23f67ea07447fa252477e4c66648aeeff00385a7101b142f2fd355d0009a3ed"
+      },
+      {
+        "path": "examples/orders-api.mjs",
+        "sha256": "3d2eb34ee7200a7c1c7f20fe38d1c2685c57efce5a3706265cca901801cde11d"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "9d2333cc0092f3c3ee9ab84c88b980771c6a74a8a648e8ca2b19799626e5839a"
+      },
+      {
+        "path": "package.json",
+        "sha256": "0bdd0c98c231f0f69324554e555d5259fed821213c0f6b6a325f81363b7ae258"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "90bbd93ad73eaae1ecde41b67026370531a97ca77311ba9abf674e20421bd7b8"
+      },
+      {
+        "path": "src/openapi.ts",
+        "sha256": "3a4d22e69f00235cbdaae26597e6499292b5a72bb7dbb26b0310227fd32e950e"
+      },
+      {
+        "path": "src/self-hosted/bearer-scheme.fungi",
+        "sha256": "f58d3c2b6d650f72aa0d67cc1f784e3ff4026ab4aa2eea67112e6aa9a1e3ba78"
+      },
+      {
+        "path": "src/self-hosted/default-version.fungi",
+        "sha256": "59f9a4e67bace1862944f097f23a97acbaa4e9c7864dace67ef2efcae8f78045"
+      },
+      {
+        "path": "src/self-hosted/error-schema.fungi",
+        "sha256": "2801311600215808f69c4b86718daf86f3c107043e2093c0a4788a01754c5a6a"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "6dd2c9c77d2f4bd4910c8c15c403ca6e6eb952f9c86653438c7659bc8bb8ada0"
+      },
+      {
+        "path": "src/validate.ts",
+        "sha256": "cdfbf4ca566f65d86e12caade7c4e827c676d2dc38679e4ace592f4296422e0c"
+      },
+      {
+        "path": "tests/compiler-contract-export.test.mjs",
+        "sha256": "6a96569044c4517b9cfce2492e24d65278051034f94e5c77831c48e7a1f38466"
+      },
+      {
+        "path": "tests/generate.test.mjs",
+        "sha256": "f0402d2501847dcb27706296946551b325e17b8b78b3e29a60b57ad2d03d57de"
+      },
+      {
+        "path": "tests/nested-contracts.test.mjs",
+        "sha256": "385c0ec704a565651545b43d8ef2bd1a4f7d6c406d4b5952b7f525c29d50b96d"
+      },
+      {
+        "path": "tests/validate.test.mjs",
+        "sha256": "6563968945f13f449faf2a20d4912050badae1e2257ac31f2513c25f7263440a"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "be813e8877232993602c01ecfb420114b77990ae83abfa1de858101d44e58870"
+      }
+    ]
+  }
+}

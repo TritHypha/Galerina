@@ -1,0 +1,163 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-graph-algorithms",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "4e46174b67b200277a0e6b7a5b913464f43c5fc42c91b46b8cb3f216a42c8fd3",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "59757dc4f7634c1b906196ea6c256e51c0eef9f204aae0edc87398a2131b9fc2"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "52dba9b129fa3d67c675c17474fe3f91f68873ad9c23370f5898f6d659967a81"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "48f506e8a8df0769e52e083e6675300126f367de9d10069ab90733c30818915c"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "c11c730a91143bb98b77d6be55a94005da3aa93727052d0b8d197a7605a6aa13"
+      },
+      {
+        "path": "package.json",
+        "sha256": "52cbc843b6c6cad7962ae410d611a69c6068d41efea4b21b0095a55cf47a9e7c"
+      },
+      {
+        "path": "src/algorithms/bfs.ts",
+        "sha256": "1b0a2682901264ca9b8763c9bbe8e6b02c0db24156bd3da173cc5806e44fcd70"
+      },
+      {
+        "path": "src/algorithms/dfs.ts",
+        "sha256": "0c9b323757b41b2a90178771c0ff064e974eb1978e52d1e839c52b7fca50f4c3"
+      },
+      {
+        "path": "src/algorithms/reach.ts",
+        "sha256": "1bd3a110b4e41dc98eff33f850e77eed87c67e5a446a3bd89da6d9203f2742cf"
+      },
+      {
+        "path": "src/algorithms/topo.ts",
+        "sha256": "e1b785df3faf61d17c8720e32f9866d76f1c05f59e00bce295c1f95c54729bb0"
+      },
+      {
+        "path": "src/core/builder.ts",
+        "sha256": "d916c1630eb5d0eb10ea3eef80be692a879fcbc6ba9c5dc3c694d7fd453eae0d"
+      },
+      {
+        "path": "src/core/graph.ts",
+        "sha256": "927eb5fadc9e4acf49b9a3b0a34d50a4322b9d1a1f1d4122959aa57c1fd84719"
+      },
+      {
+        "path": "src/core/types.ts",
+        "sha256": "2108ed3ae48da245755a9afb4e75858ae35a3f9d06cf7d2416b2efc1799a3663"
+      },
+      {
+        "path": "src/graphs/boundary-graph.ts",
+        "sha256": "2395d634d54df430a891efce667936e498594eed848ba9acd5dd1612e7b7eb84"
+      },
+      {
+        "path": "src/graphs/call-graph.ts",
+        "sha256": "3c1529a749f6a0a67a1a1d165fc94567ebf4724ec7022e23f3ee6e1548368e8c"
+      },
+      {
+        "path": "src/graphs/capability-graph.ts",
+        "sha256": "d4ed6d01d4187643a639760ebad9322ceceb7efe324cc15b4152fa2c663e9218"
+      },
+      {
+        "path": "src/graphs/effect-graph.ts",
+        "sha256": "a3cdc9da35f8c4ec940f545cc1e7423a395a63dfbffa1d23dcb9a247eb19d626"
+      },
+      {
+        "path": "src/graphs/wasm-module-graph.ts",
+        "sha256": "da388e82c69cf0fe8cd7669ee01bae43c4da9516f74adf6fa6c021d4fbbca08f"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "d325f412841615965070ebf0e9bb2894c98057302f5b5ff315c80e99d86be7df"
+      },
+      {
+        "path": "src/self-hosted/binary-dispatch-size.fungi",
+        "sha256": "903844a569193b4a9bbaa12fa187c585e3cc2339a440af2c38187793fdd7fedb"
+      },
+      {
+        "path": "src/self-hosted/boundary-crossing.fungi",
+        "sha256": "201ed336fbd75d736e783e757ffba980ed1a567e445c2c74a95027d1d57cc707"
+      },
+      {
+        "path": "src/semantic/SemanticGraph.ts",
+        "sha256": "023c243a0b5da6aaf30ff335fc8e89c7a92b75d416b2f02625026370d4815339"
+      },
+      {
+        "path": "src/semantic/flag-queries.ts",
+        "sha256": "c789bf88bc817e0a9ae4c7795c63929f77813478febc2265133fe7060980c042"
+      },
+      {
+        "path": "tests/algorithms.test.mjs",
+        "sha256": "06541bcccca7fddb130b244cc24af5f2a2f4a071b3dd8c2dd508cb52c552ad2f"
+      },
+      {
+        "path": "tests/boundary-crossing-fungi-conversion.test.mjs",
+        "sha256": "4c33f35f43bd7e3f409b1f56d371192c06c81c9e1e7d643901a73011f85137a7"
+      },
+      {
+        "path": "tests/boundary-graph.test.mjs",
+        "sha256": "8db4cf10c00ee506713db9b19c57f6c217322a0ed1af5f8ff1d360065a4d8804"
+      },
+      {
+        "path": "tests/core.test.mjs",
+        "sha256": "71eaf4a852598bd41b05852466bcaa1fb3b5142d3e2a5bc1f1ba411290e1f400"
+      },
+      {
+        "path": "tests/graphs.test.mjs",
+        "sha256": "4b77049de91470a0f241370c7279045affba969cf3124351bd3615197784e55e"
+      },
+      {
+        "path": "tests/semantic-callers.test.mjs",
+        "sha256": "1293d83fd74a6b0999800497815db48a9969551ae38799c1890aef380e19e386"
+      },
+      {
+        "path": "tests/semantic-effects.test.mjs",
+        "sha256": "b99da52e47fcb758d544c240d6bfde0e1c7e45e1b0198b825dedd9fd81531d45"
+      },
+      {
+        "path": "tests/semantic-graph-json.test.mjs",
+        "sha256": "63274c0e6328e35cf1f54934e716c851f5de775d6494c2a8732ade57d939899b"
+      },
+      {
+        "path": "tests/semantic-reachable.test.mjs",
+        "sha256": "14de0614ae523f0cdd748fcd72e3ab48ed977df050e90764b2ca8b71c3af6c40"
+      },
+      {
+        "path": "tests/wasm-module-graph.test.mjs",
+        "sha256": "9fd5418447774b44a5e2ec762aa89af6424032617e5234778e21426e282ec640"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "04b2cfa3fcfdde24e82950dbf0c0f7a65e9c5bd22d2d0ba95b317e4b0f8c6b15"
+      }
+    ]
+  }
+}

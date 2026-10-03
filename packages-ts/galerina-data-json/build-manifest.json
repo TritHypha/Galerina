@@ -1,0 +1,75 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/data-json",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "4b99e2930f4d5eaf460d713fb325445b2dc42d64f9d5a95d364b2d372faaafaa",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "984da82b4957e307c44ecc5bc041bdca023c9b48cc9c9c710777db1dd66ab4f1"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "afae421878eb79376257af0584144c2a4232432a9d7d03361791152e2a6a14e8"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "ee0769c216c8efc6adfef5daf15b8e7044b4aa555b9ea553f9ba4e282e631532"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "fd0deb016b2c891550fd46fd223683ad25dfe66a721822a70540359deb0af3dc"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cbf8b6e25561bd253ca98bd3c5c6cddcb1bfedbeb8fa730d0e2d7be45d2bfbb7"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "eef2039c3eef899cead2d6bc801672ad469dd7f2f0715d08519ede8f1089cd4d"
+      },
+      {
+        "path": "src/json-value.ts",
+        "sha256": "1fd747d707ce9855f443d2b49c26225eaaca6a1f4a4b923f60cacaaff12f46bc"
+      },
+      {
+        "path": "tests/json-contracts.test.mjs",
+        "sha256": "cd4b74dd7c43b670821249c700c7805931a1c47a5334da11fb4a3e7f4c5e8eac"
+      },
+      {
+        "path": "tests/json-document-bytes.test.mjs",
+        "sha256": "51868c5b8e6997115853550bc3015f01e1a939f901a391dabf604af919f8873c"
+      },
+      {
+        "path": "tests/json-encode-budget.test.mjs",
+        "sha256": "c69c8bb93eb9ed14dd98942bca406b7f44f1091001ef848226f3eaef84757320"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

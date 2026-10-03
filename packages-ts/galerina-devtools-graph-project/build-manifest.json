@@ -1,0 +1,75 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-graph-project",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "9a48ec30873a7cc480d1a0abb83e8fbd8dd8212236e7df8f70ddd2bb9ab87024",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "6cd6019228973359324e8a9b8b5a0fa61c027cbbee96030b055b8a3d2021d8d0"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "80c04e715ec2faad2f7455021d5d462ae345973628bdb27dd93be18e4949a40a"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "b65e3dbf31317dd6fe7899044ab184737f5b9841c2263c337832c78a00b9ecfb"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "ef4815488b0b80d866c3c49e68a575d82d58a35775e1f36478a44a9b5e95339d"
+      },
+      {
+        "path": "examples/galerina-devtools-project-graph.json",
+        "sha256": "c8005ef4944f683cec4096b87eac8acff6bf3b9a8c3ea1c52362cf6c60179a9b"
+      },
+      {
+        "path": "examples/graph-build-plan.json",
+        "sha256": "55a5ad86d91533fa512ab14b37412c1ae0635d2b802074613e393c678e3883ba"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "08ad24faabdf5b183e0e950b8dcce7f35cf6e9572e8112888a78936eff2c7cb7"
+      },
+      {
+        "path": "package.json",
+        "sha256": "6a51f931a5cab1ab9fb6e3efb06577b3a7d87406149da5ac2d1451ba0cac5987"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "2136df21b3d4e3c36204453776b6ed5157887d96544ab1dede4e806cafef7922"
+      },
+      {
+        "path": "tests/project-graph-contracts.test.mjs",
+        "sha256": "363fd8a0fdfc52086a8cca7a915c74cc1dbdb5757159b3c528c8c19ac81ce7db"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

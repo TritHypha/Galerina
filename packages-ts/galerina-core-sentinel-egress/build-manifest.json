@@ -1,0 +1,103 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-egress",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "f390e1bdac3b3687609efc614ee97a5c39232802c38337d3636d52839b4011e5",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "abff5fa06700127ef9f3f935f9b0d694a62bf740bb6c399ee687557d75848aab"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "edcacb22ad4f7b3893313f3e1e28adccf6812e01c2881bf9a1e5502d3d5b9b51"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "4170f2f112bd5434ecaaf90d4fea0898ad0c7871bd55d0750977fa423bdb1bb4"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "8bcd147ddb7f2df40f2594317eb5b83be7ac0f70927f68c966bd6653988ca395"
+      },
+      {
+        "path": "package.json",
+        "sha256": "2feefbbfb8cf042125ba38433fd84cbc31e6879c801d3812378691f67d89131c"
+      },
+      {
+        "path": "src/audit-egress.ts",
+        "sha256": "afd6ca5d898ed970e682e3177ce8e6dc47a851db5771fd50d3a366453a891132"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "e3c2d94d9a1290137e3a24c5b6af0c00ad69e1f55aba3cbbe7ce75f34b413b06"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "91246114a6c68fdca66e683682b26f4ba2d390a93b48e6c8f8d9edb12b8f64d6"
+      },
+      {
+        "path": "src/ring-buffer.ts",
+        "sha256": "2df1d9e02a14247aa6719d00dbd91a5b2a1dfdd5f8877cde0c455c54c7d59483"
+      },
+      {
+        "path": "src/self-hosted/audit-egress.fungi",
+        "sha256": "d600b5d81ba27f9fe476034ed889f466feb5030b4726f3f30a785cc8fea20392"
+      },
+      {
+        "path": "src/self-hosted/ledger-file.fungi",
+        "sha256": "eb767250eae4b4b60ae165994b8b6eca738e0438430246dde43e96f3d810cff0"
+      },
+      {
+        "path": "tests/audit-egress.test.mjs",
+        "sha256": "8c980870e86a23caa1ce67028dc9b3aa971d371c477a072a1f3be0eea9bb5ea8"
+      },
+      {
+        "path": "tests/epoch-rotation.test.mjs",
+        "sha256": "f433fc5411e6e403e00e57a0f9acd428c4ad044d58115816d62c730258eaa062"
+      },
+      {
+        "path": "tests/hmac-chain.test.mjs",
+        "sha256": "999134d056ea0902aff73f7405ca59e660d384fc8a80f81f1b1c8d0c7ea98234"
+      },
+      {
+        "path": "tests/never-drop.test.mjs",
+        "sha256": "9b433a238133c0f8b015309bd9c84e3fe3eb9c6ee4f35da23a94b27b173fc243"
+      },
+      {
+        "path": "tests/rd0361-audit-egress-execution.test.mjs",
+        "sha256": "701f7c15f69c30a93057a2fcb8fcba8eb96a3dbc7b8e56fe644c3778f1295f35"
+      },
+      {
+        "path": "tests/ring-buffer.test.mjs",
+        "sha256": "066812b1acbb21e88671f3a0d453f27fb99c79719aa78e2da0e4ddd4a8b346de"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "5e6dfdaed284cc82464515a705f42e2c8be798ba16249f3f5de5ffb15724d4e8"
+      }
+    ]
+  }
+}

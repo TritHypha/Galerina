@@ -1,0 +1,85 @@
+{
+  "archetype": {
+    "source": "inferred-from-name",
+    "value": "fungi"
+  },
+  "boundaries": [],
+  "build": {
+    "manifest": "build-manifest.json",
+    "status": "NO_WASM_ARTIFACT"
+  },
+  "capabilities": [],
+  "dependencies": [],
+  "effects": {
+    "declares": [],
+    "evidence": "NOT_OBSERVED",
+    "transitive": []
+  },
+  "exports": [
+    {
+      "condition": "import",
+      "specifier": ".",
+      "target": "./dist/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": ".",
+      "target": "./dist/index.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./bool-boundary",
+      "target": "./dist/bool-boundary/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./bool-boundary",
+      "target": "./dist/bool-boundary/index.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./decision",
+      "target": "./dist/decision/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./decision",
+      "target": "./dist/decision/index.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./omni",
+      "target": "./dist/omni/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./omni",
+      "target": "./dist/omni/index.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./tri",
+      "target": "./dist/tri/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./tri",
+      "target": "./dist/tri/index.d.ts"
+    }
+  ],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "governance": {
+    "allowedProfiles": [
+      "development"
+    ],
+    "requiresAudit": false
+  },
+  "name": "@galerina/core-logic",
+  "sbom": "sbom.json",
+  "schemaVersion": "fungi.package.manifest.v1",
+  "signature": {
+    "publisher": "none",
+    "status": "UNSIGNED"
+  },
+  "version": "1.0.0-beta.2"
+}

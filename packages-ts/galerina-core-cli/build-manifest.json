@@ -1,0 +1,131 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-cli",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "7c22414a5b64b92902264789a6b518de931ead12b8bfce202474bc6e94e87441",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "dfc4f2f2ea54a0fbd2f763ea92f552c676082fcfaffd4b2dbb1224f5100fb06e"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "defc47448b43a09d1a449c756f1174114c3d786a2c1368efc09b90fa93fd6057"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "3a38514a5025eba04679aa023ddd740487241553df87df5fafa09743265c3963"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "bc0c807c7dff60df817fd14d722e0ddf6906064f1b47e8827b9a226e921c28bf"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "6bd7b8144bfe99a4d0c069737649bb99f7e575d1affcb1b3bc1fe330ea017e86"
+      },
+      {
+        "path": "package.json",
+        "sha256": "de3404d2ae627abceba6e1987d9c49b6d897bea14c0116e29837f7d3945465b9"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "7e466e192d5ac60b18d5450a7bc286505b6eda749c0a8684dcaebdd57a5c478d"
+      },
+      {
+        "path": "src/commands.ts",
+        "sha256": "f8f0eeff1b4f53267198265370029312c592eeaa68e48864959814aba7931c71"
+      },
+      {
+        "path": "src/core-command.ts",
+        "sha256": "e9ef1315c8720abf7fad99f4bbe6e2fa923171147b8d8542e5d5a7379621486c"
+      },
+      {
+        "path": "src/graph-command.ts",
+        "sha256": "5d91d7849b934c796acc6ac738a20b97834c2e46dcbf791a6b0c35aa83c76f5b"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "f919ee5ae2c8a7e077eae90156cee536bee62c6ebe3d01c8a79127c31f92d77a"
+      },
+      {
+        "path": "src/node-globals.d.ts",
+        "sha256": "253c6afc9e2062fca5c4ba0daf921e7975783e9e33affb1f623f560e876e49cd"
+      },
+      {
+        "path": "src/output.ts",
+        "sha256": "8ed0c105ee63c1d49eabe838066d5937adb8e66e71d5069721e47f20e96debe1"
+      },
+      {
+        "path": "src/security.ts",
+        "sha256": "fb6db86ee5c1ed067bcfcf0d67a805d1261a64ee313c140f0bb47f7394a06dc5"
+      },
+      {
+        "path": "src/self-hosted/fungi-cli-redact-001.fungi",
+        "sha256": "a1e02e9c950975769273cbf2e58b8c42fb947ab6184a1bdbac6fb99ee50ffe87"
+      },
+      {
+        "path": "src/self-hosted/redaction.fungi",
+        "sha256": "fa45e4de02ba2cca73b711b081742c8da72a0fcc8f129ae32dfcc746c1d3d247"
+      },
+      {
+        "path": "src/task-command.ts",
+        "sha256": "f7a247aab3b53e6690161d709ce9f17273fc9f415e4fa8495450157e1986f4c7"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "d020ccc000861e3108fa90702d63a664d8617913499366e4d0b63d2f786dabc3"
+      },
+      {
+        "path": "tests/app-scaffold.test.mjs",
+        "sha256": "dd6aeb425f384424938c4e1db3e8e46d3ccf01496039cb78d26833b1c5000240"
+      },
+      {
+        "path": "tests/cli-environment.test.mjs",
+        "sha256": "e4ba1ad6372c77d10944f68ea475441bb51142a7ab9eb71d28e05233a7f3914e"
+      },
+      {
+        "path": "tests/core-command.test.mjs",
+        "sha256": "3ab59bc8f6be43440eb66459fe87e2e729d797fed562c4c7aea22606a49615bb"
+      },
+      {
+        "path": "tests/graph-command.test.mjs",
+        "sha256": "aea9a3c5347936d7dfc81953d6e679f3782c562eb1e94324036b7e1e773deaeb"
+      },
+      {
+        "path": "tests/security.test.mjs",
+        "sha256": "e1486c8a635ae4a7b5e9c016a5a79736a49cb89df8ac596ce27591f92be78d45"
+      },
+      {
+        "path": "tests/task-command.test.mjs",
+        "sha256": "308da18c035a69cdf7bed1d68fcba3345c6d368ae505a81f5147536f04f22b6e"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

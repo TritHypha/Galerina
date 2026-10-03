@@ -1,0 +1,87 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/hardware-tier",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "da177b46e5fc166c04bfb455c528f9b345dd1d485a73bc08420268026db6919d",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "e8b666e4e3f2d3c496661fd6f3c319e050652768905163eb8087ed9449e221d9"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "e484b037a4cc7e68a82bf20f1bbd71d4ae33adc26f19ddbd8f560588a70d80d9"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "f3121b06770b608313f96a2a3c3281cda5568e1369854decea5708df58e2c4db"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "f40f62684219f0d81084b818c9171a8f3795abed60c2fd6184a77e86eb7ebedb"
+      },
+      {
+        "path": "package.json",
+        "sha256": "4982facf725badaf9b058a3b183b9f5af5ef8369b046474422793ab8aa8bef49"
+      },
+      {
+        "path": "scripts/prove-hardware-tier.mjs",
+        "sha256": "af5b456b1f0b9f81e60659767e7027b9f3f5fc78147fddc0268599431c4db084"
+      },
+      {
+        "path": "src/hardware-directive.ts",
+        "sha256": "183e02ee2294b168f31b5f072e133eaaae9a1c533765a2319bcf6cfabdfb4b38"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "1af5a455813eab8491541efc40718419e03792efd1a23ba43ada9acc79d9be97"
+      },
+      {
+        "path": "src/tier-loader.ts",
+        "sha256": "65b92087e872d771c1b4916eb526af99ee399e797bfc1991efe31f545ff5c3dd"
+      },
+      {
+        "path": "src/trust-profiles.ts",
+        "sha256": "2fbb4450c7435b9a14a9e47c918e7af6f069721393458d1127a0342c0a94f0d7"
+      },
+      {
+        "path": "tests/hardware-directive.test.mjs",
+        "sha256": "dcf214f91a0014db979c3f0e1dab5198145e3fb6486a2a883ae22e7d5b6277be"
+      },
+      {
+        "path": "tests/orthogonality.test.mjs",
+        "sha256": "7f658bd416d2e01ae440ea91fb74d604e9ac3ca7418daadaf87cad35c91370cb"
+      },
+      {
+        "path": "tests/tier-loader.test.mjs",
+        "sha256": "4be50ec3d8f4514c59058563de58b22ee30bd88712714020c0403b2b9541859d"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "0bd92921a082ad9bfbe0559f4ed9c9c73e4f574d409af56a05a7f85515743bee"
+      }
+    ]
+  }
+}

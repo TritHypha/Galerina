@@ -1,0 +1,179 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-runtime",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "07f16be4f58b269facfc9cfae469e97de46bb3df5546b080f87ee06e208a95d0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "3f3b87540333939063edea1343d2ab36cb304c5b4aa96cfe1a0ed8c233e16ed5"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "4e35b7cf531d0fa85afbd0faac8b6fc785818f15e2f82e09d9ee805e13474c1f"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "a69ec8be85aab2b65e54dd07ddd4b6723867b73b5d9a94be4999506b78689196"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "547e21b7aa88f512ae272d00064c5e613a8cd51450a3287ae1077100202bdb6b"
+      },
+      {
+        "path": "examples/checked-runtime-context.json",
+        "sha256": "8a9a16e0f31b2e773c1264340ef07aa909c3b5b221b1901ddb665579bf00871b"
+      },
+      {
+        "path": "native/vok-authority/.gitignore",
+        "sha256": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368"
+      },
+      {
+        "path": "native/vok-authority/Cargo.lock",
+        "sha256": "aa00912dc75cd508aa862dc42e05aa6348bddc20c93ca173f1c1529cf79ff408"
+      },
+      {
+        "path": "native/vok-authority/Cargo.toml",
+        "sha256": "38e8572e1f101e15c9d122b926fff7a64a22312a112140b3ddb98842783b2e23"
+      },
+      {
+        "path": "native/vok-authority/deny.toml",
+        "sha256": "380b53906188937ad911754dfa27a6d7df245f379ec112364ca198c1c54e6aec"
+      },
+      {
+        "path": "native/vok-authority/src/bin/vok-benchmark.rs",
+        "sha256": "4594ff58fc2fd5b983368f0921274075e9b833911de96be62e10f7a3799dc0f7"
+      },
+      {
+        "path": "native/vok-authority/src/bin/vok-live-evidence.rs",
+        "sha256": "d85b1de8499f1bcc87dac228875002832ba08855cf76330561bcd6447679c04c"
+      },
+      {
+        "path": "native/vok-authority/src/bin/vok-vector-runner.rs",
+        "sha256": "3e0fbd135ddcaea9096bb5de49355b8fb9fa7760f40295dfd2af6ac5130fc9fe"
+      },
+      {
+        "path": "native/vok-authority/src/lib.rs",
+        "sha256": "c6c1dbd590183514105b7620110385c0db8e9e0d2df501314acbdeb365b80473"
+      },
+      {
+        "path": "native/vok-authority/src/native.rs",
+        "sha256": "ab710ee9f46983ad27bd9eb754bd0f8bd8776f85f1147f12662778494ca9b645"
+      },
+      {
+        "path": "native/vok-authority/src/native/platform.rs",
+        "sha256": "ab6bd6f6a38c66e2e9664c506545ad5d3da96832a3661576b3d52bb4370ab3b8"
+      },
+      {
+        "path": "native/vok-authority/src/secret_arena.rs",
+        "sha256": "589b8ff54923a4f3cccc69a1af4057d22a9187498ca57d8a1b9cbada90fe96a1"
+      },
+      {
+        "path": "native/vok-authority/src/tests.rs",
+        "sha256": "f5f2251ac09b376fbed45502606aad1aed0bef183f4817fb8575fb62c3d0a3c9"
+      },
+      {
+        "path": "native/vok-authority/tests/secret_arena.rs",
+        "sha256": "3de7defc2964aafb04ccbf6edd030ac32a045d5bc53bf3fe624b09bf78b796d9"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "15922e99516809b1c29375427cafd443a1b2770171a8cbedb33c8b1bc7baa98b"
+      },
+      {
+        "path": "package.json",
+        "sha256": "bf9b6e0defb708d0553233e6e2b0a9e73475413e1a53260e11b2b675f07f9798"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "fb333cd73b48a37e9a6c4e0a991d2d633ef6af84eb42d5c9e795da1881d6f62d"
+      },
+      {
+        "path": "src/self-hosted/governed-runtime-seam-version.fungi",
+        "sha256": "e18f0bea0fda787e59801eebea9aa0a77894bab7599083c170588cd24e27e3e7"
+      },
+      {
+        "path": "src/self-hosted/passive-plan-replay-admission.fungi",
+        "sha256": "7fcd30bdcdca9932024d2a124465c40f366987d16d9041b70d5b9b129a018752"
+      },
+      {
+        "path": "src/self-hosted/structured-await-plan-version.fungi",
+        "sha256": "182924fd21b20cf648086517d02a4a5b7be4bcb7f0796e7ccab65aa1a68be6a7"
+      },
+      {
+        "path": "src/self-hosted/vok-authority-admission.fungi",
+        "sha256": "133d8444e7f0e37acdc13e3b4fe056c451e663b93eac3df7f8f1371e6d3de10d"
+      },
+      {
+        "path": "src/structured-await.ts",
+        "sha256": "f25e514f34f409df8b3fe137269f1073444ea23971c76fec8d6e23fe4f15a0e7"
+      },
+      {
+        "path": "tests/rd0363-passive-plan-replay-execution.test.mjs",
+        "sha256": "1c662bd1262620a512f5e142454e839d8bc0ade017d1e0b514cc2371c0f589f8"
+      },
+      {
+        "path": "tests/runtime-contracts.test.mjs",
+        "sha256": "a62faa19c81e20768ee7ecea98f6fcdd79482e0954e557c70cf66525953cd4b1"
+      },
+      {
+        "path": "tests/runtime-executor-composition.test.mjs",
+        "sha256": "98ac672a784616766da1f824f7fcf054e01f2bb7a3ffc333fa518dade511c4d5"
+      },
+      {
+        "path": "tests/runtime-seam.test.mjs",
+        "sha256": "e278a82fb16c6b1748bba0092366b5f9ae9d68f558a6b9107c8d5942a4a7d076"
+      },
+      {
+        "path": "tests/structured-await-reducer.test.mjs",
+        "sha256": "622d6ab25accd4e24089587d7fb363c804e1b7c2742741a1475cb558b808e460"
+      },
+      {
+        "path": "tests/terminal-scope-fungi-conversion.test.mjs",
+        "sha256": "9ea6a016c1fcc7465136b811f6babecf96d7ad1724a26a53819190aca2ad11a3"
+      },
+      {
+        "path": "tests/vok-authority-admission-execution.test.mjs",
+        "sha256": "463eca43cff971e5c6d683f740a631726174fd91a335eb89674d25accaa68732"
+      },
+      {
+        "path": "tests/vok-authority-native-benchmark-contract.test.mjs",
+        "sha256": "2551968704ad4722f634aa039e0b133a01b6644f514749d7cffadbe5e5b4c074"
+      },
+      {
+        "path": "tests/vok-authority-native-parity.test.mjs",
+        "sha256": "8c3d5b844886e6b5e0304923d3cc5f304863b22e18d614ad3f8fe562e26b07ed"
+      },
+      {
+        "path": "tests/vok-native-authority-boundary.test.mjs",
+        "sha256": "8b2e09bb8303e15d0c96b39d43504205576d6bbee1e19649e386693c30d73b64"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

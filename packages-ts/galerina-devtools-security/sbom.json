@@ -1,0 +1,134 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-compiler@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "224641cbb3377648a6cf42cf087d265221c6445836763fcb6d66b63c8ad4ab2f"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-compiler",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-compiler"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-compiler@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-economics@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dfdde25f33f89f1bd7e7631ec9906ba67aad936db95826d32b179e5e60f619aa"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-economics",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-economics"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-economics@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/devtools-pci@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "57074c857f2c823ced2e1db2b9d9ae635dc14c25d324721143164cfa9119e835"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/devtools-pci",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-devtools-pci"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/devtools-pci@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/core-compiler@1.0.0-beta.2",
+        "pkg:npm/%40galerina/core-economics@1.0.0-beta.2",
+        "pkg:npm/%40galerina/devtools-pci@1.0.0-beta.2"
+      ],
+      "ref": "pkg:npm/%40galerina/devtools-security@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/devtools-security@1.0.0-beta.2",
+      "name": "@galerina/devtools-security",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

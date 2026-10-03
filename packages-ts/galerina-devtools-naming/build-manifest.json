@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-naming",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "299ef4d5128ca5906d13ef8581b1a6b5831d1ccec8e09402218af83e63dd4bc3",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "fa7db5d77492b0161a3136dcc4a7ff0ba5401f7ac83a1827bcc0691d03ca54e0"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "b387d3e8cdf807339377627d0849068dbe1f8edaf1c480c87cbae0c26c347c10"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "17ec419b51e720674ca8b4499340f1c4d6a5b1bd47b504f2d704e8c8b8523cda"
+      },
+      {
+        "path": "package.json",
+        "sha256": "e2395d616b4d445d658e5bbb816866afe59d6ddc09cdb029bcf5d69ae07acd2d"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "290e36071d88f03b9e9608a707fd70b1fa47a794237bbbb20f8b3d001e4b706d"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "7b212618ea71df88eddc94d66f9ed2df6ceeff20b4fbb7845c9b618cbb71c33d"
+      },
+      {
+        "path": "src/naming-checker.ts",
+        "sha256": "450d9de47a95d7eb9b3004f12b875acae8a491b89ad87ce2fe89c13cf50f990c"
+      },
+      {
+        "path": "src/naming-runner.ts",
+        "sha256": "5f5f8f719c15274b623a84a3be6937bd4a423807fdd60a1e4c79832730178afa"
+      },
+      {
+        "path": "src/self-hosted/generic-type-name.fungi",
+        "sha256": "734fcf9036cadb4d3e135a9da0784cbc01e6d4a3647523f5865240029adcdda2"
+      },
+      {
+        "path": "src/self-hosted/implicit-return-type.fungi",
+        "sha256": "fb92e90830245fa45636507274f79e3cfbf0d403ebc161639152b8bf3121bf2f"
+      },
+      {
+        "path": "src/webassembly-shim.d.ts",
+        "sha256": "b78be4183f5403502a767079289cfd258c0fca3bf0a345ed170570a7c96f7f14"
+      },
+      {
+        "path": "tests/generic-type-name-fungi-conversion.test.mjs",
+        "sha256": "dc2a686c5cf14a1383e1b4b2f9b3ac26bb94a2bd4217b48d2534efee17ac41bc"
+      },
+      {
+        "path": "tests/implicit-return-type-fungi-conversion.test.mjs",
+        "sha256": "46b13441b9ea9647f3a23c2ac43b69667cb3379252dd725ea201dce75618828f"
+      },
+      {
+        "path": "tests/naming.test.mjs",
+        "sha256": "01fd6fe05e57ca8aadd227382b3e3cab46bd877253cb13636bc2f6b78d65769a"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "486d2f7dade04e266c1594ca54368904d5f8db70663c681566b313561c174e1b"
+      }
+    ]
+  }
+}

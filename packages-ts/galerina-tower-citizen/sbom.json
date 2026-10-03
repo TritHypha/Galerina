@@ -1,0 +1,134 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/inference-bridge-contract@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2d2327befa9bb36b23b65f7eb5825b798d2c8aa31fb99b935a7054cd86cff88c"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/inference-bridge-contract",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-inference-bridge-contract"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/inference-bridge-contract@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2896855a97ef27656768f643034f5672b14994ca948d935e4e7c5af56af1830a"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/substrate-math",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-substrate-math"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "fa9a2b9ab0d9c23470d3953c0032b82691de8e8f3bfa005dfa6b91041fe8cf3b47e728432cc0c5e231d058ddcd41002cbb5cc134f5931b4670548d02476f47d0"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "@noble/post-quantum",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^0.6.1"
+        }
+      ],
+      "purl": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.6.1"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/inference-bridge-contract@1.0.0-beta.2",
+        "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+        "pkg:npm/%40noble/post-quantum@0.6.1"
+      ],
+      "ref": "pkg:npm/%40galerina/tower-citizen@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/tower-citizen@1.0.0-beta.2",
+      "name": "@galerina/tower-citizen",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

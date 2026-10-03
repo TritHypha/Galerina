@@ -1,0 +1,67 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/registry",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "d862a57b16499476b92c91715873581ca77f14d05381d4c4a611617e360c44e5",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "dbd01974d9fc207004e1599a71565bd93d6f39860dc9781825b751d6a9b568d2"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "5f9d1f1788bfa800dd165501884a867ebe01008e0a9da29a1138187f833e649c"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "2623dc7f680322d751c791cb3b96182806b5d0343237a2a7f3354056a0bad453"
+      },
+      {
+        "path": "candidates/@galerina/auth/package.galerina.yaml",
+        "sha256": "23e75f9304678ff21215db10bfa1e24cd988496105cb117d0c1781890b7b31a0"
+      },
+      {
+        "path": "generations/registry-generation-f3b432d31f10217006f88c0c39779ba5ae061e0728301b5021979af1cd63dbca.json",
+        "sha256": "790465aa6fcd9b9153ff7dd5aad3123e37248ea4212c537d9622128f8e547661"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "2ecdc8d937defec408ea81c6a6ac36164c7e296b5a944d2f61a5e3638c999a91"
+      },
+      {
+        "path": "package.json",
+        "sha256": "d4a7a34287fbf44010ffdbf5e1e94ebcf6c9f635cae95faffa3c2f1f19b2c225"
+      },
+      {
+        "path": "tests/registry-authority-cli.test.mjs",
+        "sha256": "3e314dc0749c70b4f6656d77acbb627875ea605b28635aa19808794c9180816c"
+      },
+      {
+        "path": "tests/registry-empty.test.mjs",
+        "sha256": "5417cb5b8697f8f77919ad290e5524e079ddd7d7d46398bd2855e73b6bbbe249"
+      }
+    ]
+  }
+}

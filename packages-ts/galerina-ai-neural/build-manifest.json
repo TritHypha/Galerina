@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ai-neural",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "1d21f1c48525629f7cf74c634322c950e271d42b3f789d6df21b42722839d277",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "53662b24de7aff3cf5ab7dd44342a03fb5623d766f11861ea2b8fd2af76c3038"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "32a3fdf56d48a2f2491b640920f6daca6bdced888c9628efba310f1705425f37"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "1b2e2cb1145aef20f2ade931c767301290de10791407bd631b77fe113f62148e"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "a671c74f15645ca4df2204138c213800d262ef3c648bd7951a94767873f211d0"
+      },
+      {
+        "path": "examples/model.example.json",
+        "sha256": "935214587074c8bfab9d3601aa0ac0dfd59639277b3e42c9609ccfdfc03607ed"
+      },
+      {
+        "path": "examples/report.example.json",
+        "sha256": "881337442f0ccd58683e13e785777c863b1823cfb3dea2f217323457da77498a"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "3cf8f019043f6af216fc849669504ddea1b68b2bc3ec7f6a4aff5cb3f1e8e978"
+      },
+      {
+        "path": "package.json",
+        "sha256": "8288de8846ddf760667a0baaca7bd791f8920e5289a9c0ee2da38016f6fe805f"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "e5195b7eb54e8c45bb3ddfc6f479707cd6701bd0babcdff470fc2855f9552419"
+      },
+      {
+        "path": "tests/neural-contracts.test.mjs",
+        "sha256": "dbf0e34997539338ebeb6f2a7295216af0513645ad4c99127ef73a3a4dc64468"
+      },
+      {
+        "path": "tests/neural-examples.test.mjs",
+        "sha256": "6d90a17a593e39d2773e93b2856f5cfc1119c6ca8f480a0c9596d9502660af10"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}
