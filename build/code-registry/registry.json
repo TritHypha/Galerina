@@ -1,11 +1,11 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1122,
+  "total": 1124,
   "counts": {
     "ref": 253,
     "inline": 421,
     "phantom": 110,
-    "live": 201,
+    "live": 203,
     "referenced": 120,
     "dead": 17
   },
@@ -9615,6 +9615,38 @@
       "defs": 1,
       "emits": 1,
       "tests": 6,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-015",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_TS_SOURCE_SHIPPED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 15,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-016",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_NODE_MODULES_SHIPPED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 9,
       "docs": 0
     },
     {

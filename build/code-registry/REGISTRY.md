@@ -13,7 +13,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 201 | emitted with an exported constant |
+| live | 203 | emitted with an exported constant |
 | inline | 421 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 120 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
@@ -1346,7 +1346,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PKG-005 | live | MISSING_SIGNATURE | warning |
 | FUNGI-PKG-006 | live | REVOKED_SIGNER | error |
 
-### PKGSTD (14)
+### PKGSTD (16)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1364,6 +1364,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PKGSTD-012 | live | PKG_STD_NO_WASM_IN_PRODUCTION | error |
 | FUNGI-PKGSTD-013 | live | PKG_STD_PACKAGE_SET_MISMATCH | error |
 | FUNGI-PKGSTD-014 | live | PKG_STD_ARTIFACT_DRIFT | error |
+| FUNGI-PKGSTD-015 | live | PKG_STD_TS_SOURCE_SHIPPED | error |
+| FUNGI-PKGSTD-016 | live | PKG_STD_NODE_MODULES_SHIPPED | error |
 
 ### PLAN (2)
 
