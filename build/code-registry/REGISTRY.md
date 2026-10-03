@@ -2,8 +2,8 @@
 
 The authoritative catalog of EVERY diagnostic/error code, GENERATED from the code-index (standard #10).
 Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-code-registry.mjs`.
-> **Coverage gate PASS:** 72 syntax-admitted descriptive identities are catalogued,
-> including 51 on the signing path; 0 are missing and 0 source tokens are ambiguous.
+> **Coverage gate PASS:** 75 syntax-admitted descriptive identities are catalogued,
+> including 53 on the signing path; 0 are missing and 0 source tokens are ambiguous.
 > Numeric-tail codes and descriptive identities share this catalog. Descriptive text only acquires identity
 > authority at a bounded diagnostic sink; comments, type positions, tests, and explicit
 > `code-catalog-reference` fixtures cannot mint entries. Counts are derived by
@@ -13,12 +13,12 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 183 | emitted with an exported constant |
-| inline | 384 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 99 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
-| dead | 13 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 112 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 205 | referenced only (no def/emit) |
+| live | 201 | emitted with an exported constant |
+| inline | 421 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 120 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
+| phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 253 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -33,16 +33,19 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 - `FUNGI-BYTE-005`
 - `FUNGI-CHAR-002`
 - `FUNGI-CHAR-004`
+- `FUNGI-CLI-ENV-001`
+- `FUNGI-CLI-ENV-002`
+- `FUNGI-CLI-ENV-003`
+- `FUNGI-JSON-001`
 - `FUNGI-STRING-003`
 - `FUNGI-STRING-004`
 
 ## Catalog (by family)
 
-### A (2)
+### A (1)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-A-001 | ref | — | — |
 | FUNGI-A-1 | ref | — | — |
 
 ### ACCESS (2)
@@ -192,7 +195,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-BINDING-005 | live | IMMUTABLE_BINDING_REASSIGNED | error |
 | FUNGI-BINDING-006 | referenced | MUT_TYPE_CHANGE | error |
 
-### BLOCK (4)
+### BLOCK (6)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -200,6 +203,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-BLOCK-002 | live | UNCLOSED_CONTENT_BLOCK | error |
 | FUNGI-BLOCK-003 | dead | MISMATCHED_CONTENT_BLOCK_MARKER | error |
 | FUNGI-BLOCK-004 | referenced | SECRET_IN_CONTENT_BLOCK | error |
+| FUNGI-BLOCK-005 | referenced | INVALID_CONTENT_INTERPOLATION | error |
+| FUNGI-BLOCK-006 | referenced | UNSAFE_CONTENT_CONSTRUCT | error |
 
 ### BOOL (5)
 
@@ -253,6 +258,13 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-BYTE-004 | referenced | RAW_BYTES_LOGGED | error |
 | FUNGI-BYTE-005 | dead | UNBOUNDED_BYTES_READ | error |
 
+### CACHE (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-CACHE-001 | inline | — | — |
+| FUNGI-CACHE-002 | inline | — | — |
+
 ### CAP (2)
 
 | code | status | name(s) | severity |
@@ -282,10 +294,13 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CHECK-001 | inline | NON_EXHAUSTIVE_CHECK | — |
 | FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | error |
 
-### CLI (1)
+### CLI (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
+| FUNGI-CLI-ENV-001 | dead | — | — |
+| FUNGI-CLI-ENV-002 | dead | — | — |
+| FUNGI-CLI-ENV-003 | dead | — | — |
 | FUNGI-CLI-REDACT-001 | referenced | — | — |
 
 ### COMMAND (2)
@@ -321,7 +336,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-COND-001 | ref | — | error |
 
-### CONFIG (30)
+### CONFIG (33)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -352,6 +367,9 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CONFIG-025 | ref | — | — |
 | FUNGI-CONFIG-026 | ref | — | — |
 | FUNGI-CONFIG-027 | ref | — | — |
+| FUNGI-CONFIG-028 | live | — | error |
+| FUNGI-CONFIG-029 | live | — | error |
+| FUNGI-CONFIG-030 | live | — | error |
 | FUNGI-CONFIG-GOV-001 | ref | — | — |
 | FUNGI-CONFIG-GOV-002 | ref | — | — |
 | FUNGI-CONFIG-GOV-003 | ref | — | — |
@@ -362,7 +380,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-CONTEXT-001 | live | REQUIRED_CONTEXT_NOT_ACCESSED | warning |
 
-### CONTRACT (7)
+### CONTRACT (12)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -373,11 +391,29 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CONTRACT-019 | inline | PERMISSION_ENTRY_NOT_EXACT | — |
 | FUNGI-CONTRACT-020 | inline | UNKNOWN_PERMISSION_ENTRY | — |
 | FUNGI-CONTRACT-021 | inline | PERMISSION_TARGET_REQUIRED | — |
+| FUNGI-CONTRACT-SCHEMA-001 | inline | — | — |
+| FUNGI-CONTRACT-SCHEMA-002 | inline | — | — |
+| FUNGI-CONTRACT-SCHEMA-003 | inline | — | — |
+| FUNGI-CONTRACT-SCHEMA-004 | inline | — | — |
+| FUNGI-CONTRACT-SCHEMA-005 | inline | — | — |
 
-### CRYPTO (1)
+### CPU (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
+| FUNGI-CPU-001 | inline | — | error |
+| FUNGI-CPU-002 | inline | — | error |
+| FUNGI-CPU-003 | inline | — | error |
+| FUNGI-CPU-004 | inline | — | error |
+
+### CRYPTO (5)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-CRYPTO-001 | referenced | — | — |
+| FUNGI-CRYPTO-002 | referenced | — | — |
+| FUNGI-CRYPTO-003 | referenced | — | — |
+| FUNGI-CRYPTO-004 | referenced | — | — |
 | FUNGI-CRYPTO-PQ-001 | live | SIGN_EFFECT_NOT_POST_QUANTUM | error |
 
 ### DAG (2)
@@ -466,11 +502,16 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EMIT-STUB | inline | — | — |
 
-### ERR_* (145)
+### ERR_* (158)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | ERR_ADDON_HASH_MISMATCH | ref | — | — |
+| ERR_ADDON_MISSING | inline | — | — |
+| ERR_ADDON_NOT_REGULAR | inline | — | — |
+| ERR_ADDON_SIZE_MISMATCH | inline | — | — |
+| ERR_ADDON_SYMLINK | inline | — | — |
+| ERR_ADDON_TOO_LARGE | inline | — | — |
 | ERR_ADDON_UNPINNED | ref | — | — |
 | ERR_AI | ref | — | — |
 | ERR_AI_CALL_BUDGET | inline | — | — |
@@ -483,12 +524,16 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_ARGUMENT_COUNT | ref | — | — |
 | ERR_ARTIFACT_HASH_MISMATCH | ref | — | — |
 | ERR_ASSERTION | ref | — | — |
+| ERR_BRAND_AUDIT_SHAPE | ref | — | — |
+| ERR_BRAND_AUDIT_SIZE | ref | — | — |
 | ERR_BRIDGE_DISPATCH_FAULT | inline | — | — |
+| ERR_BRIDGE_IDENTITY | inline | — | — |
 | ERR_BRIDGE_NO_MANIFEST | inline | — | — |
 | ERR_BRIDGE_UNATTESTED | inline | — | — |
 | ERR_CAPABILITY_DENIED | inline | — | — |
 | ERR_CERTIFIED | ref | — | — |
 | ERR_CERTIFIED_HOST_NATIVE_OPEN | inline | — | — |
+| ERR_CERTIFIED_INVALID_POLICY | inline | — | — |
 | ERR_CERTIFIED_NO_ALLOWLIST | inline | — | — |
 | ERR_CERTIFIED_NO_ATTESTATION | inline | — | — |
 | ERR_CERTIFIED_NO_COST_CEILING | inline | — | — |
@@ -509,7 +554,6 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_EMPTY_CURRENCY | ref | — | — |
 | ERR_EMPTY_CUSTOMER_ID | ref | — | — |
 | ERR_EMPTY_DATA | ref | — | — |
-| ERR_EMPTY_DOCUMENT | ref | — | — |
 | ERR_EMPTY_FLOW_ID | ref | — | — |
 | ERR_EMPTY_OPERATION | ref | — | — |
 | ERR_EMPTY_PAYLOAD | ref | — | — |
@@ -528,6 +572,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_I32_RANGE | ref | — | — |
 | ERR_INSUFFICIENT_FUNDS | ref | — | — |
 | ERR_INVALID_AMOUNT | ref | — | — |
+| ERR_INVALID_ARG_TYPE | phantom | — | — |
 | ERR_INVALID_ITERATIONS | ref | — | — |
 | ERR_INVALID_N | ref | — | — |
 | ERR_ITERATIONS_EXCEEDED | ref | — | — |
@@ -551,6 +596,9 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_PAYLOAD_EXCEEDS_DWI_CEILING | ref | — | — |
 | ERR_PAYLOAD_TOO_LARGE | phantom | — | — |
 | ERR_PLAN_NOT_PREFLIGHTED | inline | — | — |
+| ERR_PROFILE_CONTRADICTION | inline | — | — |
+| ERR_PROFILE_PHOTONIC_FORBIDDEN | inline | — | — |
+| ERR_REBRAND_PATH | ref | — | — |
 | ERR_REGISTRY | ref | — | — |
 | ERR_REGISTRY_DELEGATION_BAD_SIGNATURE | live | — | — |
 | ERR_REGISTRY_DELEGATION_KEY_MISMATCH | live | — | — |
@@ -601,6 +649,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_SOME_CODE | ref | — | — |
 | ERR_STRING_TOO_LONG | ref | — | — |
 | ERR_TOO_SHORT | ref | — | — |
+| ERR_TOWER_COMPOSITION_UNKNOWN | inline | — | — |
 | ERR_TOXIC_NEGATIVE | ref | — | — |
 | ERR_TOXIC_OVERFLOW | ref | — | — |
 | ERR_TRAP | ref | — | — |
@@ -637,7 +686,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-EXAMPLE-001 | ref | — | — |
+| FUNGI-EXAMPLE-001 | inline | — | — |
 
 ### EXPLAIN (2)
 
@@ -652,12 +701,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EXPR-001 | phantom | — | — |
 
-### FAULT (2)
+### FAULT (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-FAULT-001 | inline | — | — |
-| FUNGI-FAULT-003 | inline | FAULT_HANDLER_FAIL_OPEN | — |
+| FUNGI-FAULT-003 | inline | — | — |
+| FUNGI-FAULT-004 | ref | — | — |
+| FUNGI-FAULT-006 | inline | — | — |
+| FUNGI-FAULT-999 | ref | — | — |
 
 ### FLOAT (1)
 
@@ -677,12 +729,13 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-FUEL-001 | ref | — | — |
 
-### FUSE (34)
+### FUSE (36)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-FUSE-ACL-UNDERDECLARED | inline | — | — |
 | FUNGI-FUSE-BAD-DESCRIPTOR | inline | — | — |
+| FUNGI-FUSE-BAD-PACKAGE | inline | — | — |
 | FUNGI-FUSE-BAD-SIDECAR | inline | — | — |
 | FUNGI-FUSE-HASH-MISMATCH | inline | — | — |
 | FUNGI-FUSE-HYBRID-ERROR | inline | — | — |
@@ -700,6 +753,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-FUSE-NO-WASM | inline | — | — |
 | FUNGI-FUSE-PROVIDES-UNKNOWN | inline | — | — |
 | FUNGI-FUSE-REGISTRY-DENIED | inline | — | — |
+| FUNGI-FUSE-REVOCATION-REQUIRED | inline | — | — |
 | FUNGI-FUSE-REVOCATION-UNTRUSTED | inline | — | — |
 | FUNGI-FUSE-REVOCATION-UNVERIFIABLE | inline | — | — |
 | FUNGI-FUSE-SET-AMBIGUOUS | inline | — | — |
@@ -796,7 +850,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-GRAPH-005 | inline | MISSING_AUDIT_COVERAGE | warning |
 | FUNGI-GRAPH-006 | inline | UNBOUNDED_RETRY | warning |
 
-### HALLMARK (5)
+### HALLMARK (6)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -805,6 +859,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-HALLMARK-003 | live | HALLMARK_GATE_REQUIRED | error |
 | FUNGI-HALLMARK-004 | live | UNKNOWN_HALLMARK_OP | error |
 | FUNGI-HALLMARK-005 | live | UNDECLARED_HALLMARK_OP | error |
+| FUNGI-HALLMARK-006 | inline | HALLMARK_SCHEMA_FIELD_NOT_ENFORCED | error |
 
 ### HARDEN (9)
 
@@ -861,12 +916,13 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-INHERIT-001 | inline | PARENT_POLICY_NOT_FOUND | — |
 | FUNGI-INHERIT-002 | inline | CHILD_POLICY_EXCEEDS_PARENT | — |
 
-### INTEL (2)
+### INTEL (3)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-INTEL-001 | ref | — | — |
 | FUNGI-INTEL-002 | inline | — | — |
+| FUNGI-INTEL-003 | inline | — | — |
 
 ### INTENT (5)
 
@@ -887,6 +943,40 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-INV-002 | inline | — | — |
 | FUNGI-INV-003 | inline | INVARIANT_BLOCK_EMPTY | — |
 | FUNGI-INV-004 | inline | SYMBOL_UNRESOLVED_IN_INVARIANT | — |
+
+### JS (17)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-JS-001 | ref | — | — |
+| FUNGI-JS-002 | ref | — | — |
+| FUNGI-JS-003 | ref | — | — |
+| FUNGI-JS-004 | ref | — | — |
+| FUNGI-JS-005 | ref | — | — |
+| FUNGI-JS-006 | ref | — | — |
+| FUNGI-JS-007 | ref | — | — |
+| FUNGI-JS-008 | ref | — | — |
+| FUNGI-JS-009 | ref | — | — |
+| FUNGI-JS-010 | ref | — | — |
+| FUNGI-JS-011 | ref | — | — |
+| FUNGI-JS-012 | ref | — | — |
+| FUNGI-JS-013 | ref | — | — |
+| FUNGI-JS-014 | ref | — | — |
+| FUNGI-JS-015 | ref | — | — |
+| FUNGI-JS-016 | ref | — | — |
+| FUNGI-JS-017 | ref | — | — |
+
+### JSON (7)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-JSON-001 | dead | — | — |
+| FUNGI-JSON-002 | referenced | — | — |
+| FUNGI-JSON-003 | referenced | — | — |
+| FUNGI-JSON-004 | referenced | — | — |
+| FUNGI-JSON-005 | referenced | — | — |
+| FUNGI-JSON-006 | referenced | — | — |
+| FUNGI-JSON-007 | referenced | — | — |
 
 ### K3 (5)
 
@@ -1082,12 +1172,16 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-NETWORK-007 | phantom | — | — |
 | FUNGI-NETWORK-008 | phantom | — | — |
 
-### NUMERIC (2)
+### NUMERIC (6)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-NUMERIC-001 | inline | UNSUPPORTED_NUMERIC_WIDTH | error |
 | FUNGI-NUMERIC-OP-001 | inline | PARTIAL_DECIMAL_OPERATOR | error |
+| FUNGI-NUMERIC-OP-002 | inline | MONEY_OPERATOR_NEEDS_MODE | error |
+| FUNGI-NUMERIC-OP-003 | inline | INEXACT_OPERAND_REFUSED / MIXED_DECIMAL_OPERAND | error |
+| FUNGI-NUMERIC-OP-004 | inline | ROUND_MODE_REQUIRED | error |
+| FUNGI-NUMERIC-OP-005 | inline | MONEY_CODE_NOT_LITERAL | error |
 
 ### OBS (2)
 
@@ -1117,7 +1211,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PARSE-00 | ref | — | — |
-| FUNGI-PARSE-001 | inline | UNEXPECTED_TOKEN | — |
+| FUNGI-PARSE-001 | inline | CONTENT_BLOCK_TOKEN_INVALID / UNEXPECTED_TOKEN | error |
 | FUNGI-PARSE-002 | inline | EXPECTED_FLOW_KEYWORD | — |
 | FUNGI-PARSE-003 | ref | — | — |
 | FUNGI-PARSE-004 | ref | — | — |
@@ -1161,6 +1255,13 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PASSPORT-002 | inline | PASSPORT_STATE_SKIP | error |
+
+### PATTERN (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-PATTERN-001 | inline | — | — |
+| FUNGI-PATTERN-002 | inline | — | — |
 
 ### PCI (15)
 
@@ -1244,6 +1345,25 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PKG-004 | live | INSTALL_SCRIPT_DENIED | error |
 | FUNGI-PKG-005 | live | MISSING_SIGNATURE | warning |
 | FUNGI-PKG-006 | live | REVOKED_SIGNER | error |
+
+### PKGSTD (14)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-PKGSTD-001 | live | PKG_STD_MANIFEST_MISSING | error |
+| FUNGI-PKGSTD-002 | live | PKG_STD_MANIFEST_INVALID | error |
+| FUNGI-PKGSTD-003 | live | PKG_STD_IDENTITY_MISMATCH | error |
+| FUNGI-PKGSTD-004 | live | PKG_STD_BUILD_MANIFEST_MISSING | error |
+| FUNGI-PKGSTD-005 | live | PKG_STD_BUILD_MANIFEST_INVALID | error |
+| FUNGI-PKGSTD-006 | live | PKG_STD_SOURCE_HASH_STALE | error |
+| FUNGI-PKGSTD-007 | live | PKG_STD_SBOM_MISSING | error |
+| FUNGI-PKGSTD-008 | live | PKG_STD_SBOM_INVALID | error |
+| FUNGI-PKGSTD-009 | live | PKG_STD_SBOM_DEPENDENCY_UNPINNED | error |
+| FUNGI-PKGSTD-010 | live | PKG_STD_SBOM_LICENSE_DENIED | error |
+| FUNGI-PKGSTD-011 | live | PKG_STD_UNSIGNED_IN_PRODUCTION | error |
+| FUNGI-PKGSTD-012 | live | PKG_STD_NO_WASM_IN_PRODUCTION | error |
+| FUNGI-PKGSTD-013 | live | PKG_STD_PACKAGE_SET_MISMATCH | error |
+| FUNGI-PKGSTD-014 | live | PKG_STD_ARTIFACT_DRIFT | error |
 
 ### PLAN (2)
 
@@ -1451,7 +1571,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-ROUTE-002 | phantom | — | — |
 | FUNGI-ROUTE-003 | phantom | — | — |
 
-### RUNTIME (6)
+### RUNTIME (7)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1461,6 +1581,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-RUNTIME-005 | live | UNAUTHORIZED_GOVERNED_VALUE_ACCESS | error |
 | FUNGI-RUNTIME-006 | live | RATE_LIMIT_EXCEEDED / RateLimitExceeded | error |
 | FUNGI-RUNTIME-007 | inline | — | — |
+| FUNGI-RUNTIME-GRANT-REQUIRED | inline | — | — |
 
 ### SAFETY (6)
 
@@ -1668,7 +1789,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | GATE-TERM-003 | inline | GATE_V3_UNBOUNDED_CYCLE | — |
 | GATE-TERM-004 | inline | GATE_V3_UNPROVED_CYCLE | — |
 
-### TEST (6)
+### TEST (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1676,7 +1797,6 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-TEST-002 | ref | — | — |
 | FUNGI-TEST-003 | ref | — | — |
 | FUNGI-TEST-128 | ref | — | — |
-| FUNGI-TEST-777 | ref | — | — |
 | FUNGI-TEST-999 | ref | — | — |
 
 ### TIER (1)
@@ -1823,18 +1943,58 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-VIS-004 | phantom | — | — |
 | FUNGI-VIS-005 | phantom | — | — |
 
-### WASM (3)
+### WASM (33)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-WASM-001 | phantom | — | — |
-| FUNGI-WASM-004 | phantom | — | — |
-| FUNGI-WASM-005 | phantom | — | — |
+| FUNGI-WASM-001 | ref | — | — |
+| FUNGI-WASM-002 | ref | — | — |
+| FUNGI-WASM-003 | ref | — | — |
+| FUNGI-WASM-004 | ref | — | — |
+| FUNGI-WASM-005 | ref | — | — |
+| FUNGI-WASM-006 | ref | — | — |
+| FUNGI-WASM-007 | ref | — | — |
+| FUNGI-WASM-008 | ref | — | — |
+| FUNGI-WASM-009 | ref | — | — |
+| FUNGI-WASM-010 | ref | — | — |
+| FUNGI-WASM-011 | ref | — | — |
+| FUNGI-WASM-012 | ref | — | — |
+| FUNGI-WASM-013 | ref | — | — |
+| FUNGI-WASM-014 | ref | — | — |
+| FUNGI-WASM-015 | ref | — | — |
+| FUNGI-WASM-016 | ref | — | — |
+| FUNGI-WASM-017 | ref | — | — |
+| FUNGI-WASM-018 | ref | — | — |
+| FUNGI-WASM-019 | ref | — | — |
+| FUNGI-WASM-020 | ref | — | — |
+| FUNGI-WASM-021 | ref | — | — |
+| FUNGI-WASM-022 | ref | — | — |
+| FUNGI-WASM-023 | ref | — | — |
+| FUNGI-WASM-024 | ref | — | — |
+| FUNGI-WASM-025 | ref | — | — |
+| FUNGI-WASM-026 | ref | — | — |
+| FUNGI-WASM-027 | ref | — | — |
+| FUNGI-WASM-028 | ref | — | — |
+| FUNGI-WASM-029 | ref | — | — |
+| FUNGI-WASM-030 | ref | — | — |
+| FUNGI-WASM-CLEANUP-001 | inline | — | — |
+| FUNGI-WASM-HOST-001 | inline | — | — |
+| FUNGI-WASM-RET-001 | inline | — | — |
 
-### WAT (1)
+### WAT (11)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
+| FUNGI-WAT-BODY-001 | referenced | PURE_FLOW_REQUIRES_AST_BODY | error |
+| FUNGI-WAT-CHECKED-001 | live | — | error |
+| FUNGI-WAT-DECIMAL-001 | referenced | DECIMAL_FORM_NOT_LOWERED | error |
+| FUNGI-WAT-EFFECT-001 | referenced | EFFECTFUL_ENTRY_NOT_LOWERED | error |
+| FUNGI-WAT-HOF-001 | referenced | ARRAY_HOF_REQUIRES_NAMED_FLOW | error |
+| FUNGI-WAT-INT64-001 | referenced | MIXED_64BIT_OP_NOT_LOWERED | error |
+| FUNGI-WAT-METHOD-001 | referenced | UNKNOWN_METHOD_NOT_LOWERED | error |
+| FUNGI-WAT-MONEY-001 | referenced | MONEY_FORM_NOT_LOWERED | error |
+| FUNGI-WAT-PATTERN-001 | referenced | PATTERN_CAPABILITY_NOT_LOWERED | error |
+| FUNGI-WAT-STMT-001 | referenced | GOVERNED_OR_CLOSURE_STMT_NOT_LOWERED | error |
 | FUNGI-WAT-STUB | inline | — | — |
 
 ### WEB (14)

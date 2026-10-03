@@ -246,7 +246,7 @@ FUNGI-MEMORY-*    memory model (001–008 defined)
 ```
 
 See `../ZTF-Knowledge-Bases/reference/language/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
-for the LIVE generated catalog — <!-- registry:counts.live -->183 live codes of <!-- registry:counts.total -->996 total
+for the LIVE generated catalog — <!-- registry:counts.live -->201 live codes of <!-- registry:counts.total -->1122 total
 (auto-stamped by `gen-code-registry.mjs`; do NOT hand-edit these numbers — they regenerate from the registry). **Conventions are binding**
 (`galerina-diagnostic-code-conventions.md`): `name` is `UPPER_SNAKE`, `severity` is lowercase `error|warning|info`,
 one-code-one-fault, one owner per code, emit via an exported constant. Enforced by the umbrella gate

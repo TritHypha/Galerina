@@ -1,13 +1,13 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 996,
+  "total": 1122,
   "counts": {
-    "ref": 205,
-    "inline": 384,
-    "phantom": 112,
-    "live": 183,
-    "referenced": 99,
-    "dead": 13
+    "ref": 253,
+    "inline": 421,
+    "phantom": 110,
+    "live": 201,
+    "referenced": 120,
+    "dead": 17
   },
   "entries": [
     {
@@ -23,6 +23,66 @@
       "docs": 2
     },
     {
+      "code": "ERR_ADDON_MISSING",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "ERR_ADDON_NOT_REGULAR",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_ADDON_SIZE_MISMATCH",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "ERR_ADDON_SYMLINK",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_ADDON_TOO_LARGE",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "ERR_ADDON_UNPINNED",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -31,7 +91,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 4,
+      "tests": 5,
       "docs": 1
     },
     {
@@ -151,11 +211,35 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 1,
       "docs": 0
     },
     {
       "code": "ERR_ASSERTION",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_BRAND_AUDIT_SHAPE",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_BRAND_AUDIT_SIZE",
       "family": "ERR_*",
       "namespace": "ERR",
       "status": "ref",
@@ -179,6 +263,18 @@
       "docs": 0
     },
     {
+      "code": "ERR_BRIDGE_IDENTITY",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "ERR_BRIDGE_NO_MANIFEST",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -199,8 +295,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 8,
-      "docs": 2
+      "tests": 11,
+      "docs": 13
     },
     {
       "code": "ERR_CAPABILITY_DENIED",
@@ -211,8 +307,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 11,
-      "docs": 3
+      "tests": 13,
+      "docs": 10
     },
     {
       "code": "ERR_CERTIFIED",
@@ -234,8 +330,20 @@
       "names": [],
       "severities": [],
       "defs": 0,
+      "emits": 3,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "ERR_CERTIFIED_INVALID_POLICY",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -247,7 +355,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -259,7 +367,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 2,
+      "tests": 3,
       "docs": 0
     },
     {
@@ -271,7 +379,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -283,7 +391,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -295,7 +403,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -307,7 +415,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 2,
+      "tests": 3,
       "docs": 0
     },
     {
@@ -330,8 +438,8 @@
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 1,
-      "tests": 1,
+      "emits": 3,
+      "tests": 2,
       "docs": 2
     },
     {
@@ -476,18 +584,6 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "ERR_EMPTY_DOCUMENT",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
-      "tests": 1,
       "docs": 0
     },
     {
@@ -655,7 +751,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 4,
+      "tests": 5,
       "docs": 3
     },
     {
@@ -705,6 +801,18 @@
       "emits": 0,
       "tests": 2,
       "docs": 0
+    },
+    {
+      "code": "ERR_INVALID_ARG_TYPE",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
     },
     {
       "code": "ERR_INVALID_ITERATIONS",
@@ -979,8 +1087,44 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
+      "tests": 3,
+      "docs": 9
+    },
+    {
+      "code": "ERR_PROFILE_CONTRADICTION",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 3,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "ERR_PROFILE_PHOTONIC_FORBIDDEN",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
       "tests": 1,
       "docs": 0
+    },
+    {
+      "code": "ERR_REBRAND_PATH",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 3
     },
     {
       "code": "ERR_REGISTRY",
@@ -1583,6 +1727,18 @@
       "docs": 0
     },
     {
+      "code": "ERR_TOWER_COMPOSITION_UNKNOWN",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 2,
+      "docs": 2
+    },
+    {
       "code": "ERR_TOXIC_NEGATIVE",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -1639,7 +1795,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -1748,18 +1904,6 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "FUNGI-A-001",
-      "family": "A",
-      "namespace": "FUNGI",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
-      "tests": 3,
       "docs": 0
     },
     {
@@ -2013,7 +2157,7 @@
       "severities": [],
       "defs": 0,
       "emits": 5,
-      "tests": 14,
+      "tests": 16,
       "docs": 1
     },
     {
@@ -2025,7 +2169,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
+      "tests": 2,
       "docs": 1
     },
     {
@@ -2354,7 +2498,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 2,
-      "docs": 3
+      "docs": 9
     },
     {
       "code": "FUNGI-BF-001",
@@ -2509,7 +2653,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 2,
+      "tests": 3,
       "docs": 1
     },
     {
@@ -2541,8 +2685,40 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 0,
-      "docs": 0
+      "tests": 7,
+      "docs": 5
+    },
+    {
+      "code": "FUNGI-BLOCK-005",
+      "family": "BLOCK",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "INVALID_CONTENT_INTERPOLATION"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 4,
+      "docs": 9
+    },
+    {
+      "code": "FUNGI-BLOCK-006",
+      "family": "BLOCK",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "UNSAFE_CONTENT_CONSTRUCT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 5
     },
     {
       "code": "FUNGI-BOOL-BOUNDARY-001",
@@ -2923,6 +3099,30 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-CACHE-001",
+      "family": "CACHE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
+      "docs": 8
+    },
+    {
+      "code": "FUNGI-CACHE-002",
+      "family": "CACHE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-CAP-001",
       "family": "CAP",
       "namespace": "FUNGI",
@@ -3053,6 +3253,42 @@
       "emits": 1,
       "tests": 5,
       "docs": 4
+    },
+    {
+      "code": "FUNGI-CLI-ENV-001",
+      "family": "CLI",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-CLI-ENV-002",
+      "family": "CLI",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-CLI-ENV-003",
+      "family": "CLI",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
     },
     {
       "code": "FUNGI-CLI-REDACT-001",
@@ -3237,8 +3473,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
-      "docs": 10
+      "tests": 3,
+      "docs": 9
     },
     {
       "code": "FUNGI-CONFIG-002",
@@ -3249,8 +3485,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
-      "docs": 4
+      "tests": 3,
+      "docs": 3
     },
     {
       "code": "FUNGI-CONFIG-003",
@@ -3262,7 +3498,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-CONFIG-004",
@@ -3298,7 +3534,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 1
+      "docs": 0
     },
     {
       "code": "FUNGI-CONFIG-007",
@@ -3346,7 +3582,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-CONFIG-011",
@@ -3553,6 +3789,48 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-CONFIG-028",
+      "family": "CONFIG",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 2,
+      "tests": 2,
+      "docs": 8
+    },
+    {
+      "code": "FUNGI-CONFIG-029",
+      "family": "CONFIG",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 2,
+      "tests": 1,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-CONFIG-030",
+      "family": "CONFIG",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 0,
+      "docs": 1
+    },
+    {
       "code": "FUNGI-CONFIG-GOV-001",
       "family": "CONFIG",
       "namespace": "FUNGI",
@@ -3696,6 +3974,170 @@
       "defs": 0,
       "emits": 1,
       "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-001",
+      "family": "CONTRACT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-002",
+      "family": "CONTRACT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-003",
+      "family": "CONTRACT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 5,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-004",
+      "family": "CONTRACT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-005",
+      "family": "CONTRACT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CPU-001",
+      "family": "CPU",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 6,
+      "tests": 7,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-CPU-002",
+      "family": "CPU",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CPU-003",
+      "family": "CPU",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CPU-004",
+      "family": "CPU",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-CRYPTO-001",
+      "family": "CRYPTO",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CRYPTO-002",
+      "family": "CRYPTO",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-CRYPTO-003",
+      "family": "CRYPTO",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-CRYPTO-004",
+      "family": "CRYPTO",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -4021,7 +4463,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 81,
+      "tests": 89,
       "docs": 51
     },
     {
@@ -4121,7 +4563,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 20,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-EFFECT-008",
@@ -4287,11 +4729,11 @@
       "code": "FUNGI-EXAMPLE-001",
       "family": "EXAMPLE",
       "namespace": "FUNGI",
-      "status": "ref",
+      "status": "inline",
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 0,
+      "emits": 1,
       "tests": 3,
       "docs": 0
     },
@@ -4340,7 +4782,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 7,
+      "tests": 11,
       "docs": 2
     },
     {
@@ -4348,13 +4790,47 @@
       "family": "FAULT",
       "namespace": "FUNGI",
       "status": "inline",
-      "names": [
-        "FAULT_HANDLER_FAIL_OPEN"
-      ],
+      "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 2,
+      "emits": 1,
+      "tests": 9,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FAULT-004",
+      "family": "FAULT",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
       "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FAULT-006",
+      "family": "FAULT",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FAULT-999",
+      "family": "FAULT",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -4414,6 +4890,18 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-BAD-PACKAGE",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
       "tests": 0,
       "docs": 0
     },
@@ -4611,6 +5099,18 @@
     },
     {
       "code": "FUNGI-FUSE-REGISTRY-DENIED",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-REVOCATION-REQUIRED",
       "family": "FUSE",
       "namespace": "FUNGI",
       "status": "inline",
@@ -5362,8 +5862,8 @@
       ],
       "defs": 1,
       "emits": 2,
-      "tests": 38,
-      "docs": 13
+      "tests": 40,
+      "docs": 14
     },
     {
       "code": "FUNGI-GOV-3VL-003",
@@ -5610,6 +6110,22 @@
       "docs": 2
     },
     {
+      "code": "FUNGI-HALLMARK-006",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "HALLMARK_SCHEMA_FIELD_NOT_ENFORCED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 3
+    },
+    {
       "code": "FUNGI-HARDEN-00",
       "family": "HARDEN",
       "namespace": "FUNGI",
@@ -5698,7 +6214,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 7,
+      "tests": 9,
       "docs": 12
     },
     {
@@ -5730,7 +6246,7 @@
       ],
       "defs": 1,
       "emits": 2,
-      "tests": 6,
+      "tests": 7,
       "docs": 12
     },
     {
@@ -5760,8 +6276,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 33,
-      "docs": 14
+      "tests": 29,
+      "docs": 13
     },
     {
       "code": "FUNGI-HW-001",
@@ -6006,6 +6522,18 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-INTEL-003",
+      "family": "INTEL",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 5,
+      "tests": 2,
+      "docs": 7
+    },
+    {
       "code": "FUNGI-INTENT-001",
       "family": "INTENT",
       "namespace": "FUNGI",
@@ -6090,7 +6618,7 @@
       "severities": [],
       "defs": 0,
       "emits": 3,
-      "tests": 13,
+      "tests": 15,
       "docs": 8
     },
     {
@@ -6104,7 +6632,7 @@
       "severities": [],
       "defs": 0,
       "emits": 3,
-      "tests": 13,
+      "tests": 14,
       "docs": 3
     },
     {
@@ -6144,7 +6672,295 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 15,
+      "tests": 20,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-001",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 5,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JS-002",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-JS-003",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-004",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-005",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-006",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-007",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 3,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-JS-008",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JS-009",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JS-010",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-011",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-012",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-013",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-014",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JS-015",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JS-016",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-JS-017",
+      "family": "JS",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JSON-001",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JSON-002",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 12
+    },
+    {
+      "code": "FUNGI-JSON-003",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JSON-004",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-JSON-005",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JSON-006",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-JSON-007",
+      "family": "JSON",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -6345,7 +7161,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 12,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-LEX-003",
@@ -6392,8 +7208,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 9,
-      "docs": 0
+      "tests": 14,
+      "docs": 11
     },
     {
       "code": "FUNGI-LEX-006",
@@ -6409,7 +7225,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 0,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-LIMIT-001",
@@ -6953,7 +7769,7 @@
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 5,
+      "emits": 3,
       "tests": 0,
       "docs": 0
     },
@@ -7262,7 +8078,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 46,
+      "tests": 51,
       "docs": 8
     },
     {
@@ -7535,6 +8351,71 @@
       "defs": 0,
       "emits": 2,
       "tests": 8,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-002",
+      "family": "NUMERIC",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "MONEY_OPERATOR_NEEDS_MODE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 2,
+      "tests": 4,
+      "docs": 7
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-003",
+      "family": "NUMERIC",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "INEXACT_OPERAND_REFUSED",
+        "MIXED_DECIMAL_OPERAND"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 2,
+      "tests": 5,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-004",
+      "family": "NUMERIC",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "ROUND_MODE_REQUIRED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 2,
+      "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-005",
+      "family": "NUMERIC",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "MONEY_CODE_NOT_LITERAL"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -7677,12 +8558,15 @@
       "namespace": "FUNGI",
       "status": "inline",
       "names": [
+        "CONTENT_BLOCK_TOKEN_INVALID",
         "UNEXPECTED_TOKEN"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
-      "emits": 5,
-      "tests": 32,
+      "emits": 7,
+      "tests": 36,
       "docs": 13
     },
     {
@@ -7697,7 +8581,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 8,
-      "docs": 3
+      "docs": 1
     },
     {
       "code": "FUNGI-PARSE-003",
@@ -7744,7 +8628,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 17,
+      "tests": 18,
       "docs": 4
     },
     {
@@ -7773,7 +8657,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 6,
-      "docs": 5
+      "docs": 6
     },
     {
       "code": "FUNGI-PARSE-DEPTH-001",
@@ -7785,9 +8669,9 @@
       ],
       "severities": [],
       "defs": 0,
-      "emits": 2,
-      "tests": 8,
-      "docs": 0
+      "emits": 3,
+      "tests": 11,
+      "docs": 5
     },
     {
       "code": "FUNGI-PASSPORT-002",
@@ -7804,6 +8688,30 @@
       "emits": 1,
       "tests": 3,
       "docs": 3
+    },
+    {
+      "code": "FUNGI-PATTERN-001",
+      "family": "PATTERN",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PATTERN-002",
+      "family": "PATTERN",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 1,
+      "docs": 1
     },
     {
       "code": "FUNGI-PCI-000",
@@ -7850,8 +8758,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
-      "docs": 0
+      "tests": 3,
+      "docs": 4
     },
     {
       "code": "FUNGI-PCI-004",
@@ -7910,8 +8818,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 4,
-      "docs": 0
+      "tests": 7,
+      "docs": 1
     },
     {
       "code": "FUNGI-PCI-009",
@@ -8233,7 +9141,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 19
+      "docs": 27
     },
     {
       "code": "FUNGI-PHOTONIC-002",
@@ -8293,7 +9201,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 7
+      "docs": 6
     },
     {
       "code": "FUNGI-PII-001",
@@ -8322,8 +9230,8 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 0,
-      "docs": 2
+      "tests": 6,
+      "docs": 9
     },
     {
       "code": "FUNGI-PIPELINE-002",
@@ -8484,6 +9392,230 @@
       "emits": 1,
       "tests": 13,
       "docs": 1
+    },
+    {
+      "code": "FUNGI-PKGSTD-001",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_MANIFEST_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-002",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_MANIFEST_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-003",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_IDENTITY_MISMATCH"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-004",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_BUILD_MANIFEST_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-005",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_BUILD_MANIFEST_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-006",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SOURCE_HASH_STALE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-007",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-008",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-009",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_DEPENDENCY_UNPINNED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-010",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_LICENSE_DENIED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 8,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-011",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_UNSIGNED_IN_PRODUCTION"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-012",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_NO_WASM_IN_PRODUCTION"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-013",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_PACKAGE_SET_MISMATCH"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-014",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_ARTIFACT_DRIFT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 6,
+      "docs": 0
     },
     {
       "code": "FUNGI-PLAN-001",
@@ -8764,7 +9896,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 9,
+      "tests": 10,
       "docs": 0
     },
     {
@@ -9312,7 +10444,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 5,
+      "tests": 4,
       "docs": 0
     },
     {
@@ -9382,6 +10514,18 @@
       "defs": 0,
       "emits": 1,
       "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-RUNTIME-GRANT-REQUIRED",
+      "family": "RUNTIME",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
       "docs": 0
     },
     {
@@ -9577,8 +10721,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 45,
-      "docs": 31
+      "tests": 47,
+      "docs": 38
     },
     {
       "code": "FUNGI-SECRET-002",
@@ -9655,7 +10799,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 5,
+      "tests": 7,
       "docs": 0
     },
     {
@@ -10316,7 +11460,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 10,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-SYNTAX-BRACE",
@@ -10637,18 +11781,6 @@
       "docs": 0
     },
     {
-      "code": "FUNGI-TEST-777",
-      "family": "TEST",
-      "namespace": "FUNGI",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
-      "tests": 3,
-      "docs": 0
-    },
-    {
       "code": "FUNGI-TEST-999",
       "family": "TEST",
       "namespace": "FUNGI",
@@ -10657,7 +11789,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 6,
+      "tests": 1,
       "docs": 0
     },
     {
@@ -10822,8 +11954,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 253,
-      "docs": 24
+      "tests": 261,
+      "docs": 29
     },
     {
       "code": "FUNGI-TYPE-002",
@@ -10843,8 +11975,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 100,
-      "docs": 9
+      "tests": 137,
+      "docs": 16
     },
     {
       "code": "FUNGI-TYPE-003",
@@ -10874,9 +12006,9 @@
         "error"
       ],
       "defs": 0,
-      "emits": 16,
-      "tests": 137,
-      "docs": 19
+      "emits": 19,
+      "tests": 148,
+      "docs": 20
     },
     {
       "code": "FUNGI-TYPE-005",
@@ -10890,9 +12022,9 @@
         "error"
       ],
       "defs": 0,
-      "emits": 4,
-      "tests": 37,
-      "docs": 5
+      "emits": 8,
+      "tests": 53,
+      "docs": 9
     },
     {
       "code": "FUNGI-TYPE-006",
@@ -10918,9 +12050,9 @@
         "error"
       ],
       "defs": 0,
-      "emits": 2,
-      "tests": 15,
-      "docs": 2
+      "emits": 6,
+      "tests": 21,
+      "docs": 4
     },
     {
       "code": "FUNGI-TYPE-008",
@@ -10935,8 +12067,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 39,
-      "docs": 1
+      "tests": 76,
+      "docs": 4
     },
     {
       "code": "FUNGI-TYPE-009",
@@ -10952,7 +12084,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 99,
-      "docs": 16
+      "docs": 17
     },
     {
       "code": "FUNGI-TYPE-010",
@@ -10982,9 +12114,9 @@
         "error"
       ],
       "defs": 1,
-      "emits": 1,
-      "tests": 62,
-      "docs": 1
+      "emits": 2,
+      "tests": 70,
+      "docs": 3
     },
     {
       "code": "FUNGI-TYPE-012",
@@ -11158,7 +12290,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 12,
+      "tests": 17,
       "docs": 4
     },
     {
@@ -11174,7 +12306,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 20,
+      "tests": 25,
       "docs": 6
     },
     {
@@ -11190,7 +12322,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 9,
+      "tests": 16,
       "docs": 1
     },
     {
@@ -11223,7 +12355,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 14,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-027",
@@ -11251,7 +12383,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 6,
-      "docs": 4
+      "docs": 6
     },
     {
       "code": "FUNGI-TYPE-030",
@@ -11298,7 +12430,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 10,
+      "tests": 11,
       "docs": 0
     },
     {
@@ -11594,8 +12726,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 31,
-      "docs": 12
+      "tests": 33,
+      "docs": 11
     },
     {
       "code": "FUNGI-VALUESTATE-009",
@@ -11857,37 +12989,555 @@
       "code": "FUNGI-WASM-001",
       "family": "WASM",
       "namespace": "FUNGI",
-      "status": "phantom",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 4,
+      "docs": 8
+    },
+    {
+      "code": "FUNGI-WASM-002",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 3
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-003",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
     },
     {
       "code": "FUNGI-WASM-004",
       "family": "WASM",
       "namespace": "FUNGI",
-      "status": "phantom",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 1,
       "docs": 1
     },
     {
       "code": "FUNGI-WASM-005",
       "family": "WASM",
       "namespace": "FUNGI",
-      "status": "phantom",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 3,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-WASM-006",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
       "emits": 0,
       "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-007",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-008",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-009",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-010",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-011",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-012",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
       "docs": 1
+    },
+    {
+      "code": "FUNGI-WASM-013",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-014",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-015",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-016",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-017",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-WASM-018",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-019",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-020",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-021",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-022",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-023",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-024",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-025",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-026",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-027",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-028",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-WASM-029",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-WASM-030",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 4
+    },
+    {
+      "code": "FUNGI-WASM-CLEANUP-001",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WASM-HOST-001",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 7,
+      "tests": 7,
+      "docs": 11
+    },
+    {
+      "code": "FUNGI-WASM-RET-001",
+      "family": "WASM",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 6,
+      "docs": 4
+    },
+    {
+      "code": "FUNGI-WAT-BODY-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "PURE_FLOW_REQUIRES_AST_BODY"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 12,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-CHECKED-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 6,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-DECIMAL-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "DECIMAL_FORM_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-WAT-EFFECT-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "EFFECTFUL_ENTRY_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-HOF-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "ARRAY_HOF_REQUIRES_NAMED_FLOW"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 4,
+      "emits": 0,
+      "tests": 32,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-INT64-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "MIXED_64BIT_OP_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 6,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-METHOD-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "UNKNOWN_METHOD_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 11,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-MONEY-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "MONEY_FORM_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-WAT-PATTERN-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "PATTERN_CAPABILITY_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 10,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-WAT-STMT-001",
+      "family": "WAT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "GOVERNED_OR_CLOSURE_STMT_NOT_LOWERED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 7,
+      "docs": 0
     },
     {
       "code": "FUNGI-WAT-STUB",
