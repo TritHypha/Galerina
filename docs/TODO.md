@@ -1,5 +1,154 @@
 # TODO
 
+## Primary-checkout boundary — 2026-09-26
+
+- [x] This primary checkout is on `codex/rd-0858-unit4-process-root`
+  at `4cde8c5d80912e84a93407a73be21fd9d801bbb8` and is dirty.
+  Its `docs/TODO.md` still has **242** open Markdown checkboxes.
+- [!] This branch is not the RD-0873 implementation worktree. Its TODO
+  remains a navigation ledger: do not transfer dirty-worktree results,
+  test counts, conversion status, or production authority to this HEAD.
+
+### Tower Citizen modular product-line — 2026-09-21
+
+- [x] Worktree `RD-1295` reviews Tower Citizen and freezes versioned
+  module sets. This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+  Export-map split is not implemented.
+
+### C18 overlay threshold and path parity — 2026-09-21
+
+- [x] Worktree `RD-1294` aligns the two stale overlay twins with live
+  TypeScript. This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C12 live build-evidence after index accounting — 2026-09-21
+
+- [x] Worktree `RD-1293` staged compiler `src/`/`tests/` so C12 evidence
+  could be produced. This primary checkout is not the implementation
+  worktree. Nothing committed.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C20 compile-time PatternCapability — 2026-09-21
+
+- [x] Worktree `RD-1292` freezes `fungi.pattern.capability.v1` and a WAT
+  trap for `matchesPattern`. This primary checkout is not the
+  implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+  Word boundaries, captures, and SLIDE/VOK remain outside.
+
+## Unpushed worktree closure review — 2026-09-21
+
+- [x] The active implementation worktree contains the C01–C19 slices and
+  focused evidence, but they are not current evidence for this primary
+  checkout until owner-accounted and committed.
+- [!] Live review found C12 untracked-source refusal, C18 conversion-overlay
+  drift, a missing public key for the signed example-app fixture, and the
+  dependent Tower Citizen failure. Private `RD-1291` records the residuals.
+- [!] Keep conversion queues, signing, SLIDE/VOK admission, corpus scans and
+  full `.fungi` builds held. This checkout remains a navigation ledger, not a
+  claim that the worktree implementation has landed.
+
+### C19-C injected CryptoProvider — 2026-09-21
+
+- [x] Worktree `RD-1290` injects `CryptoProvider` for Password/BCrypt/Argon2.
+  This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C19-B governed JsonValue codec — 2026-09-21
+
+- [x] Worktree `RD-1289` freezes `Json.parse` as closed `fungi.json.value.v1`
+  and wires compiler `json.decode`. This primary checkout is not the
+  implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+  C19-C remains open.
+
+### C19-A Stage-B type-code identity — 2026-09-21
+
+- [x] Worktree `RD-1288` freezes host vs Stage-B unique type-code identity
+  for `FUNGI-TYPE-001`/`004`/`008`. This primary checkout is not the
+  implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+  C19-B and C19-C remain open.
+
+### C17 compiler contract schema export — 2026-09-21
+
+- [x] Worktree `RD-1287` exports `galerina.contract-types.v1` from compiler
+  `record` declarations into docs OpenAPI. This primary checkout is not the
+  implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C16 API replay/HMAC — 2026-09-21
+
+- [x] Worktree `RD-1286` wires HMAC-then-atomic-replay before kernel
+  decode/handler. This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+  Durable/multi-process storage remains excluded.
+
+### C15 EnvironmentConfig v2 — 2026-09-21
+
+- [x] Worktree `RD-1285` freezes `EnvironmentConfigV2`. This primary checkout
+  is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C14 typed-content validation — 2026-09-21
+
+- [x] Worktree `RD-1284` wires typed-content interpolations to the type
+  environment. This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge. Stage 2
+  HTML/JS/CSS structure validation remains open.
+
+### C12 build-evidence framing — 2026-09-21
+
+- [x] Worktree `RD-1283` freezes `fungi.compiler.build-evidence.v1`. This
+  primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge. The
+  runner-constants `.fungi` twin still aliases the legacy schema string.
+
+### C10 photonic diagnostic schema — 2026-09-21
+
+- [x] Worktree `RD-1282` freezes `fungi.photonic.diagnostic.v1`. This primary
+  checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge. Registry
+  codes and hardware remain outside the photonic packages.
+
+### C09 native path/digest/VOK — 2026-09-21
+
+- [x] Worktree `RD-1281` freezes `fungi.native.artifact.v1`. This primary
+  checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge. Physical
+  open and VOK verification remain outside the native target package.
+
+### C08 AI accelerator report binding — 2026-09-21
+
+- [x] Worktree `RD-1280`. This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C04 WASM artefact admission — 2026-09-21
+
+- [x] Worktree `RD-1279` freezes `fungi.wasm.artefact.v1`. This primary
+  checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge.
+
+### C02 remainder and C03 method-chain checker — 2026-09-21
+
+- [x] Worktree slices `RD-1277` (C02 divide/reduce/parity) and `RD-1278` (C03
+  pipeline checker). This primary checkout is not the implementation worktree.
+- [!] Do not treat this file as live source evidence until merge. C04+ remain
+  open. No `.fungi`, queue, or SLIDE/VOK admission.
+
+### C01 inference matrix and C02 Decimal/HOF WAT ABI — 2026-09-21
+
+- [x] Worktree
+  `.worktrees/rd-0873-native-fungi-bootstrap-implementation` implemented
+  `RD-1274`/`RD-1275` (C01) and `RD-1276` (C02). Decimal is an i32 host
+  handle (`__decimal_*`), never f64. Named unary `map`/`filter` lower;
+  `reduce` stays trapped.
+- [!] This primary checkout is not the implementation worktree. Do not treat
+  this file as live source evidence for those slices until the worktree is
+  merged. `Option.zip`, C03–C04, C08–C12 residual, and C14–C20 remain open.
+  No `.fungi`, queue, signing, or SLIDE/VOK admission.
+
 ### Current exact-head compiler batch — 2026-09-20
 
 - [x] The live Galerina compiler source head is
