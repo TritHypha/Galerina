@@ -360,12 +360,25 @@ function normaliseMethod(raw: string | undefined): HttpMethod {
   return upper as HttpMethod;
 }
 
+/** Headers on the adapter's own fail-closed refusals (S6): nosniff + no-store, like the kernel's. */
+const ERROR_HEADERS: Readonly<Record<string, string>> = Object.freeze({
+  "content-type": "application/json",
+  "x-content-type-options": "nosniff",
+  "cache-control": "no-store",
+});
+
 function writeResponse(
   res: http.ServerResponse,
   resp: GalerinaKernelResponse,
 ): void {
   if (res.headersSent || res.writableEnded) return;
-  res.writeHead(resp.status, { ...resp.headers });
+  // Defence in depth (S6): the kernel already validates status; never write an invalid one to the wire.
+  if (!Number.isSafeInteger(resp.status) || resp.status < 100 || resp.status > 599) {
+    res.writeHead(500, { ...ERROR_HEADERS });
+    res.end(INTERNAL_ERROR_BODY);
+    return;
+  }
+  res.writeHead(resp.status, { ...resp.headers, "x-content-type-options": "nosniff" });
   if (resp.body && resp.body.length > 0) {
     res.end(Buffer.from(resp.body));
   } else {
@@ -594,7 +607,7 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
       res,
     ).catch(() => {
       if (!res.headersSent && !res.writableEnded) {
-        res.writeHead(500, { "content-type": "application/json" });
+        res.writeHead(500, { ...ERROR_HEADERS });
         res.end(INTERNAL_ERROR_BODY);
       }
     });
@@ -723,7 +736,7 @@ async function handleRequest(
       // 413 + destroy the socket WITHOUT buffering further bytes. Never reaches the kernel.
       if (!res.headersSent && !res.writableEnded) {
         res.writeHead(413, {
-          "content-type": "application/json",
+          ...ERROR_HEADERS,
           connection: "close",
         });
         res.end(PAYLOAD_TOO_LARGE_BODY);
@@ -734,7 +747,7 @@ async function handleRequest(
     }
     // Transport error reading the body — fail closed, no leak.
     if (!res.headersSent && !res.writableEnded) {
-      res.writeHead(500, { "content-type": "application/json" });
+      res.writeHead(500, { ...ERROR_HEADERS });
       res.end(INTERNAL_ERROR_BODY);
     }
     return;
@@ -779,7 +792,7 @@ async function handleRequest(
   } catch (err) {
     if (err instanceof RequestTargetError || err instanceof TypeError) {
       if (!res.headersSent && !res.writableEnded) {
-        res.writeHead(400, { "content-type": "application/json" });
+        res.writeHead(400, { ...ERROR_HEADERS });
         res.end(JSON.stringify({ error: "bad_request", message: "Malformed request target." }));
       }
       return;
@@ -808,7 +821,7 @@ async function handleRequest(
     if (channelVerdict === Verdict.DENY
       || (resolveChannelVerdict !== undefined && channelVerdict !== Verdict.ALLOW)) {
       if (!res.headersSent && !res.writableEnded) {
-        res.writeHead(401, { "content-type": "application/json" });
+        res.writeHead(401, { ...ERROR_HEADERS });
         res.end(WEBHOOK_UNAUTHORIZED_BODY);
       }
       return;
@@ -830,7 +843,7 @@ async function handleRequest(
         const body = admitted.reason === "replay" ? WEBHOOK_REPLAY_BODY
           : admitted.reason === "hmac" ? WEBHOOK_UNAUTHORIZED_BODY
           : INTERNAL_ERROR_BODY;
-        res.writeHead(status, { "content-type": "application/json" });
+        res.writeHead(status, { ...ERROR_HEADERS });
         res.end(body);
       }
       return;
@@ -844,7 +857,7 @@ async function handleRequest(
   } catch {
     // Fail CLOSED — never leak the underlying error to the client.
     if (!res.headersSent && !res.writableEnded) {
-      res.writeHead(500, { "content-type": "application/json" });
+      res.writeHead(500, { ...ERROR_HEADERS });
       res.end(INTERNAL_ERROR_BODY);
     }
     return;
