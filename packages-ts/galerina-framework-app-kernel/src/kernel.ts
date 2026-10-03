@@ -22,7 +22,7 @@
  *   9.5 secrets           (a required secret absent/faulted/unresolved → 503, fail-closed)
  *   9.75 idempotency      (enabled + missing/duplicate key → 409)
  *   10 dispatch handler   (ONLY now is developer code reached)
- *   11 encode response
+ *   11 encode response    (typed contract: status 200-599, kernel-owned headers, nosniff + no-store defaults)
  *   12 audit placeholder
  */
 import type { HttpMethod, RouteDeclaration, EffectiveRoutePolicy } from "./types.js";
@@ -326,9 +326,73 @@ export type KernelErrorCode =
   | "audit_unavailable"
   | "internal_error";
 
+/** Headers on every kernel-built response. nosniff + no-store are the secure defaults (S6). */
 const JSON_HEADERS: Readonly<Record<string, string>> = Object.freeze({
   "content-type": "application/json",
+  "x-content-type-options": "nosniff",
+  "cache-control": "no-store",
 });
+
+// ── Typed response contract (app-frame review item 5 / S6) ──
+const HANDLER_STATUS_MIN = 200;
+const HANDLER_STATUS_MAX = 599;
+const HEADER_NAME_TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+/** CR, LF and NUL would let a handler split the response or inject headers. */
+const HEADER_VALUE_FORBIDDEN = /[\r\n\u0000]/;
+/** Headers a handler may never set: the security default and the transport's framing headers. */
+const KERNEL_OWNED_HEADERS: ReadonlySet<string> = new Set([
+  "x-content-type-options", "content-length", "transfer-encoding", "connection",
+]);
+/** Media types a handler may put on a RAW byte body. Active types (HTML, script, SVG, XML) are refused. */
+const PASSIVE_RAW_MEDIA_TYPES: ReadonlySet<string> = new Set(["application/json", "text/plain", "application/octet-stream"]);
+
+type ResponseAdmission =
+  | { readonly ok: true; readonly status: number; readonly headers: Readonly<Record<string, string>> }
+  | { readonly ok: false; readonly reason: string };
+
+/**
+ * Admit a handler's result against the response contract. Returns the status and the final header
+ * set, or a refusal reason that becomes a kernel 500. Never passes handler values into the reason.
+ */
+function admitHandlerResponse(result: unknown): ResponseAdmission {
+  if (typeof result !== "object" || result === null || Array.isArray(result)) {
+    return { ok: false, reason: "Handler returned no response object." };
+  }
+  const r = result as HandlerResult;
+  let status = HANDLER_STATUS_MIN;
+  if (r.status !== undefined) {
+    if (typeof r.status !== "number" || !Number.isSafeInteger(r.status) || r.status < HANDLER_STATUS_MIN || r.status > HANDLER_STATUS_MAX) {
+      return { ok: false, reason: "Handler returned an invalid status." };
+    }
+    status = r.status;
+  }
+  const rawBody = r.body instanceof Uint8Array;
+  const headers: Record<string, string> = { ...JSON_HEADERS };
+  if (r.headers !== undefined) {
+    if (typeof r.headers !== "object" || r.headers === null || Array.isArray(r.headers)) {
+      return { ok: false, reason: "Handler headers must be a plain object." };
+    }
+    const seen = new Set<string>();
+    for (const [name, value] of Object.entries(r.headers as Record<string, unknown>)) {
+      if (!HEADER_NAME_TOKEN.test(name)) return { ok: false, reason: "Handler returned an invalid header name." };
+      const lower = name.toLowerCase();
+      if (seen.has(lower)) return { ok: false, reason: "Handler returned a duplicate header." };
+      seen.add(lower);
+      if (typeof value !== "string" || HEADER_VALUE_FORBIDDEN.test(value)) {
+        return { ok: false, reason: "Handler returned an invalid header value." };
+      }
+      if (KERNEL_OWNED_HEADERS.has(lower)) return { ok: false, reason: "Handler set a kernel-owned header." };
+      if (lower === "content-type") {
+        if (!rawBody) return { ok: false, reason: "The kernel owns content-type for JSON bodies." };
+        if (!PASSIVE_RAW_MEDIA_TYPES.has(baseContentType(value))) {
+          return { ok: false, reason: "Raw response bodies may only use a passive media type." };
+        }
+      }
+      headers[lower] = value;
+    }
+  }
+  return { ok: true, status, headers: Object.freeze(headers) };
+}
 
 /**
  * Gate provenance (app-frame hardening S5). Every kernel-built refusal is recorded here with its
@@ -730,9 +794,14 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
       }
 
-      // ── 11 encode ──
-      const status = result.status ?? 200;
-      const headers: Record<string, string> = { ...JSON_HEADERS, ...(result.headers ?? {}) };
+      // ── 11 encode ── typed response contract (S6): an invalid status, a kernel-owned or invalid
+      // header, or an active media type on raw bytes becomes a kernel 500 (fail-closed).
+      const admitted = admitHandlerResponse(result);
+      if (admitted.ok === false) {
+        return { response: errorResponse(500, "internal_error", admitted.reason), policy };
+      }
+      const status = admitted.status;
+      const headers = admitted.headers;
       let body: Uint8Array | undefined;
       if (result.body === undefined) {
         body = undefined;
