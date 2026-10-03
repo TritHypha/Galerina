@@ -135,8 +135,8 @@ const CASES = [
   { id: "u64-mod-high-bit-unsigned", expect: "value", want: 5n, args: [18446744073709551615n, 10n], wrap: I,
     src: `pure flow f(a: UInt64, b: UInt64) -> UInt64\ncontract { effects {} }\n{ return a % b }` },
 
-  // ── 32-bit float: KNOWN-BROKEN today (emitter routes Float32 through the INTEGER path:
-  // `(param f32) (param f32) (result i32)` + fungi_checked_add_i32 => invalid module).
+  // ── 32-bit float: fixed by E5 option B (PROVISIONAL, 18419234f) - Float32/Float16 now round to
+  // binary32/binary16 in the interpreter and WASM; earlier the emitter routed Float32 through the integer path.
   // f32(0.1)+f32(0.2) rounded to f32 is 0.30000001192092896 — deliberately DIFFERENT from the
   // f64 answer, so this pin also proves the arithmetic is really being done at 32-bit width.
   { id: "f32-add-must-be-32bit", expect: "value", want: Math.fround(Math.fround(0.1) + Math.fround(0.2)), args: [0.1, 0.2], wrap: F,
