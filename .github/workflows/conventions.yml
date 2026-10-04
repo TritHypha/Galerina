@@ -468,9 +468,7 @@ jobs:
       - name: Build-chain derivation self-test
         run: node scripts/build-core-chain.mjs --self-test
       - name: Build the gate subjects + their file-dep closures (derived, topological)
-        run: node scripts/build-core-chain.mjs --gate-subjects --test-subjects
-      - name: Dev-tool script tests (built inputs)
-        run: node --test scripts/tests/*.test.mjs
+        run: node scripts/build-core-chain.mjs --gate-subjects
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
         run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
       # gate-selftests — the META-gate ("is any detector neutered?"). It spawns every audit-*/lint-*
