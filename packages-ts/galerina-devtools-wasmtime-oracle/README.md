@@ -37,7 +37,7 @@ application developers manual memory authority.
 ## Supply-chain boundary
 
 - `Cargo.lock` pins the exact crate graph.
-- Wasmtime is pinned to `47.0.2` until a separately reviewed update.
+- Wasmtime is pinned to `47.0.4` (security patch releases 47.0.3 of 2026-07-31: GHSA-hgjw-h833-99q9, GHSA-2hw9-mc66-jc2q, and 47.0.4 of 2026-08-20: GHSA-x84v-gj2h-g759, GHSA-vqjp-4c8c-hfgg; zero-trust default, owner-confirmed 2026-10-04). Further updates need a separate review.
 - `deny.toml` refuses yanked packages, wildcard versions, unknown registries,
   unknown Git sources, and non-admitted licences.
 - `target/`, generated fixtures, and Cargo registry sources are not Galerina
