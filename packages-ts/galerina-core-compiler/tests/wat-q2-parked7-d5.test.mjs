@@ -8,6 +8,7 @@ import { describe, it } from "node:test";
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import * as L from "../dist/index.js";
@@ -386,7 +387,7 @@ describe("T11 7-stage WAT hashes", () => {
       assert.equal(hashes[f].unlowered, 0, f);
     }
     writeFileSync(
-      join("C:/Users/phill/AppData/Local/Temp", "q2b-wat-hashes.json"),
+      join(tmpdir(), "q2b-wat-hashes.json"),
       JSON.stringify(hashes, null, 2) + "\n",
     );
     assert.equal(hashes["parser.fungi"].bytes > 0, true);
