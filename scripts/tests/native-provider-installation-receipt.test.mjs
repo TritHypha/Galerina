@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   buildNativeProviderInstallationReceipt,
   canonicalJson,
+  descriptorDigest,
   runCli,
 } from "../native-provider-installation-receipt.mjs";
 
@@ -49,12 +50,12 @@ function descriptor(overrides = {}) {
   };
 }
 
-function providerTree({ installed = true, manifestName = `@galerina/${IDENTITY}`, folder = IDENTITY, descriptorOverrides = {} } = {}) {
+function providerTree({ installed = true, manifestName = `@galerina/${IDENTITY}`, manifestVersion = "1.0.0", folder = IDENTITY, descriptorOverrides = {} } = {}) {
   const root = mkdtempSync(join(tmpdir(), "galerina-native-provider-"));
   const directory = join(root, folder);
   mkdirSync(directory);
-  writeFileSync(join(directory, "package.fungi.json"), `${JSON.stringify({ name: manifestName, version: "1.0.0" }, identityReplacer(), 2)}\n`);
-  writeFileSync(join(directory, "native-provider.descriptor.json"), canonicalJson(descriptor(descriptorOverrides)));
+  writeFileSync(join(directory, "package.fungi.json"), `${JSON.stringify({ name: manifestName, version: manifestVersion }, identityReplacer(), 2)}\n`);
+  writeFileSync(join(directory, "native-provider.descriptor.json"), canonicalJson(descriptor({ exactVersion: manifestVersion, ...descriptorOverrides })));
   if (installed) writeFileSync(join(directory, ".installed"), "installed by galerina providers add\n");
   return root;
 }
@@ -63,14 +64,24 @@ function identityReplacer() {
   return (key, value) => value;
 }
 
-const CONSENT = { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(`user approved ${IDENTITY} at prompt\n`, "utf8")) };
+function evidence(root, { providerIdentity = IDENTITY, exactVersion = "1.0.0", digest } = {}) {
+  const descriptorBytes = readFileSync(join(root, providerIdentity, "native-provider.descriptor.json"));
+  return Uint8Array.from(Buffer.from(canonicalJson({
+    schema: "galerina.native-provider-consent-evidence.v1",
+    providerIdentity,
+    exactVersion,
+    descriptorDigest: digest ?? descriptorDigest(descriptorBytes),
+    decision: "allow",
+  }), "utf8"));
+}
+const CONSENT = (root) => ({ mode: "explicit-consent", evidenceBytes: evidence(root) });
 const LOCAL = { ci: false, promptAttempted: false, broadYes: false };
 
 describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", () => {
   it("writes the exact canonical receipt SLIDE expects for explicit consent and project policy", () => {
     const root = providerTree();
     try {
-      const built = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT, environment: LOCAL });
+      const built = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT(root), environment: LOCAL });
       assert.equal(built.verdict, 1, JSON.stringify(built));
       const receipt = JSON.parse(Buffer.from(built.receiptBytes).toString("utf8"));
       assert.equal(canonicalJson(receipt), Buffer.from(built.receiptBytes).toString("utf8"));
@@ -81,7 +92,10 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
       assert.equal(receipt.ciPromptAttempted, false);
       assert.equal(receipt.broadYes, false);
       assert.equal(built.authorityReleased, false);
-      const policy = Uint8Array.from(Buffer.from(JSON.stringify({ schema: "galerina.native-provider-project-policy.v1", allowedProviders: [IDENTITY] }), "utf8"));
+      const policy = Uint8Array.from(Buffer.from(canonicalJson({
+        schema: "galerina.native-provider-project-policy.v1",
+        providers: [{ providerIdentity: IDENTITY, exactVersion: "1.0.0", descriptorDigest: descriptorDigest(readFileSync(join(root, IDENTITY, "native-provider.descriptor.json"))) }],
+      }), "utf8"));
       const viaPolicy = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: { mode: "project-policy", policyBytes: policy }, environment: { ...LOCAL, ci: true } });
       assert.equal(viaPolicy.verdict, 1, JSON.stringify(viaPolicy));
     } finally {
@@ -94,15 +108,18 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
     const cases = [
       ["no consent", { consent: { mode: "none" } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
       ["empty evidence", { consent: { mode: "explicit-consent", evidenceBytes: new Uint8Array(0) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
-      ["evidence for another provider", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from("approved galerina-time-calendar", "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS"],
-      ["policy omits provider", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(JSON.stringify({ schema: "galerina.native-provider-project-policy.v1", allowedProviders: [] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
+      ["unstructured evidence mentioning the provider", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(`approved ${IDENTITY}`, "utf8")) } }, "GALERINA-NATIVE-RECEIPT-MALFORMED"],
+      ["evidence bound to another provider", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-consent-evidence.v1", providerIdentity: "galerina-time-calendar", exactVersion: "1.0.0", descriptorDigest: D(1), decision: "allow" }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS"],
+      ["evidence bound to another version", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-consent-evidence.v1", providerIdentity: IDENTITY, exactVersion: "1.0.1", descriptorDigest: D(1), decision: "allow" }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS"],
+      ["policy binds a different version or digest", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v1", providers: [{ providerIdentity: IDENTITY, exactVersion: "1.0.1", descriptorDigest: D(5) }] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
+      ["policy omits provider", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v1", providers: [] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
       ["ci prompt", { environment: { ci: true, promptAttempted: true, broadYes: false } }, "GALERINA-NATIVE-RECEIPT-CI-PROMPT"],
       ["broad yes", { environment: { ci: false, promptAttempted: false, broadYes: true } }, "GALERINA-NATIVE-RECEIPT-BROAD-YES"],
       ["non-canonical identity", { providerIdentity: "numeric-bigfloat" }, "GALERINA-NATIVE-RECEIPT-IDENTITY"],
     ];
     try {
       for (const [label, overrides, failureId] of cases) {
-        const result = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT, environment: LOCAL, ...overrides });
+        const result = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT(root), environment: LOCAL, ...overrides });
         assert.equal(result.verdict, -1, label);
         assert.equal(result.failureId, failureId, label);
         assert.equal(result.receiptWritten, false, label);
@@ -117,7 +134,7 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
     ]) {
       const root2 = providerTree(tree);
       try {
-        const result = buildNativeProviderInstallationReceipt({ providersRoot: root2, providerIdentity: IDENTITY, consent: CONSENT, environment: LOCAL });
+        const result = buildNativeProviderInstallationReceipt({ providersRoot: root2, providerIdentity: IDENTITY, consent: CONSENT(root2), environment: LOCAL });
         assert.equal(result.failureId, failureId, label);
       } finally {
         rmSync(root2, { recursive: true, force: true });
@@ -129,7 +146,7 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
     const root = providerTree();
     try {
       const evidence = join(root, "consent.txt");
-      writeFileSync(evidence, CONSENT.evidenceBytes);
+      writeFileSync(evidence, CONSENT(root).evidenceBytes);
       const out = join(root, "receipt.json");
       const base = ["--providers-root", root, "--provider", IDENTITY, "--mode", "explicit-consent", "--evidence", evidence, "--out", out];
       assert.equal(runCli([...base, "--yes"], {}).code, 2);
@@ -150,7 +167,7 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
     const slide = await import(pathToFileURL(SLIDE_PACKS).href);
     const root = providerTree();
     try {
-      const built = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT, environment: LOCAL });
+      const built = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: CONSENT(root), environment: LOCAL });
       const inspected = slide.inspectNativeProviderDescriptor(built.descriptorBytes);
       assert.equal(inspected.verdict, 1, JSON.stringify(inspected));
       const verified = slide.verifyNativeProviderInstallationReceipt(built.receiptBytes, inspected);

@@ -16,6 +16,8 @@ import { pathToFileURL } from "node:url";
 
 export const RECEIPT_SCHEMA = "galerina.native-provider-installation-receipt.v1";
 export const DESCRIPTOR_SCHEMA = "slide.native-provider-descriptor.v1";
+export const CONSENT_EVIDENCE_SCHEMA = "galerina.native-provider-consent-evidence.v1";
+export const PROJECT_POLICY_SCHEMA = "galerina.native-provider-project-policy.v1";
 export const DESCRIPTOR_FILE = "native-provider.descriptor.json";
 export const MANIFEST_FILE = "package.fungi.json";
 export const INSTALLED_MARKER = ".installed";
@@ -23,6 +25,7 @@ export const INSTALLED_MARKER = ".installed";
 const PROVIDER_IDENTITY = /^galerina-[a-z][a-z0-9]{0,9}-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u;
 const VERSION = /^(?:0|[1-9][0-9]{0,8})\.(?:0|[1-9][0-9]{0,8})\.(?:0|[1-9][0-9]{0,8})$/u;
 const MAXIMUM_BYTES = 65_536;
+const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 
 function refusal(failureId) {
   return Object.freeze({ verdict: -1, status: "REFUSED", failureId, receiptWritten: false, authorityReleased: false });
@@ -44,6 +47,20 @@ export function descriptorDigest(descriptorBytes) {
   return `sha256:${createHash("sha256").update(`${DESCRIPTOR_SCHEMA}\0`, "utf8").update(descriptorBytes).digest("hex")}`;
 }
 
+function exactRecord(value, keys) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const expected = [...keys].sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
+
+function parseCanonicalRecord(bytes, keys) {
+  if (!(bytes instanceof Uint8Array) || bytes.length < 1 || bytes.length > MAXIMUM_BYTES) return undefined;
+  const text = Buffer.from(bytes).toString("utf8");
+  const value = JSON.parse(text);
+  return exactRecord(value, keys) && canonicalJson(value) === text ? value : undefined;
+}
+
 function readBounded(path) {
   const status = lstatSync(path);
   if (!status.isFile() || status.size < 1 || status.size > MAXIMUM_BYTES) return Buffer.alloc(0);
@@ -56,6 +73,8 @@ function readBounded(path) {
  *   consent: { mode: "explicit-consent", evidenceBytes } |
  *            { mode: "project-policy", policyBytes }
  *   environment: { ci, promptAttempted, broadYes }
+ * Consent evidence is caller-provided, canonical and artifact-bound; this tool does not authenticate
+ * the interactive UI or the policy author. The resulting receipt remains reference-only/non-authorizing.
  */
 export function buildNativeProviderInstallationReceipt(request) {
   try {
@@ -70,7 +89,8 @@ export function buildNativeProviderInstallationReceipt(request) {
 
     const folder = join(resolve(providersRoot), providerIdentity);
     if (!existsSync(folder) || !lstatSync(folder).isDirectory()) return refusal("GALERINA-NATIVE-RECEIPT-ABSENT");
-    if (!existsSync(join(folder, INSTALLED_MARKER))) return refusal("GALERINA-NATIVE-RECEIPT-SOURCE-PRESENT-NOT-INSTALLED");
+    const markerPath = join(folder, INSTALLED_MARKER);
+    if (!existsSync(markerPath) || !lstatSync(markerPath).isFile()) return refusal("GALERINA-NATIVE-RECEIPT-SOURCE-PRESENT-NOT-INSTALLED");
     const manifestBytes = readBounded(join(folder, MANIFEST_FILE));
     const descriptorBytes = readBounded(join(folder, DESCRIPTOR_FILE));
     if (manifestBytes.length === 0 || descriptorBytes.length === 0) return refusal("GALERINA-NATIVE-RECEIPT-FILES");
@@ -88,26 +108,35 @@ export function buildNativeProviderInstallationReceipt(request) {
       || descriptor.exactVersion !== manifest.version
     ) return refusal("GALERINA-NATIVE-RECEIPT-IDENTITY-DISAGREEMENT");
 
+    const exactDescriptorDigest = descriptorDigest(descriptorBytes);
     if (!(consent instanceof Object)) return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
     let evidenceDigest = "";
     if (consent.mode === "explicit-consent") {
-      if (!(consent.evidenceBytes instanceof Uint8Array) || consent.evidenceBytes.length < 1) {
+      const evidence = parseCanonicalRecord(consent.evidenceBytes, ["schema", "providerIdentity", "exactVersion", "descriptorDigest", "decision"]);
+      if (!evidence || evidence.schema !== CONSENT_EVIDENCE_SCHEMA || evidence.decision !== "allow" || !DIGEST.test(evidence.descriptorDigest)) {
         return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
       }
-      const evidence = Buffer.from(consent.evidenceBytes).toString("utf8");
-      if (!evidence.includes(providerIdentity)) return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS");
+      if (evidence.providerIdentity !== providerIdentity || evidence.exactVersion !== manifest.version || evidence.descriptorDigest !== exactDescriptorDigest) {
+        return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS");
+      }
       evidenceDigest = sha256(consent.evidenceBytes);
     } else if (consent.mode === "project-policy") {
-      if (!(consent.policyBytes instanceof Uint8Array) || consent.policyBytes.length < 1) {
-        return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
-      }
-      const policy = JSON.parse(Buffer.from(consent.policyBytes).toString("utf8"));
+      const policy = parseCanonicalRecord(consent.policyBytes, ["schema", "providers"]);
       if (
-        !(policy instanceof Object) || policy.schema !== "galerina.native-provider-project-policy.v1"
-        || !Array.isArray(policy.allowedProviders)
-        || policy.allowedProviders.some((entry) => typeof entry !== "string" || !PROVIDER_IDENTITY.test(entry))
-      ) return refusal("GALERINA-NATIVE-RECEIPT-POLICY");
-      if (!policy.allowedProviders.includes(providerIdentity)) return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
+        !policy || policy.schema !== PROJECT_POLICY_SCHEMA || !Array.isArray(policy.providers)
+        || policy.providers.length > 256
+        || policy.providers.some((entry) => !exactRecord(entry, ["providerIdentity", "exactVersion", "descriptorDigest"])
+          || typeof entry.providerIdentity !== "string" || !PROVIDER_IDENTITY.test(entry.providerIdentity)
+          || typeof entry.exactVersion !== "string" || !VERSION.test(entry.exactVersion)
+          || typeof entry.descriptorDigest !== "string" || !DIGEST.test(entry.descriptorDigest))
+      ) {
+        return refusal("GALERINA-NATIVE-RECEIPT-POLICY");
+      }
+      const identities = policy.providers.map((entry) => entry.providerIdentity);
+      if (new Set(identities).size !== identities.length) return refusal("GALERINA-NATIVE-RECEIPT-POLICY");
+      const approved = policy.providers.some((entry) => entry.providerIdentity === providerIdentity
+        && entry.exactVersion === manifest.version && entry.descriptorDigest === exactDescriptorDigest);
+      if (!approved) return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
       evidenceDigest = sha256(consent.policyBytes);
     } else {
       return refusal("GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT");
@@ -119,7 +148,7 @@ export function buildNativeProviderInstallationReceipt(request) {
       folderName: providerIdentity,
       manifestIdentity,
       exactVersion: manifest.version,
-      descriptorDigest: descriptorDigest(descriptorBytes),
+      descriptorDigest: exactDescriptorDigest,
       sourceState: "installed",
       authorisation: { mode: consent.mode, evidenceDigest, scope: [providerIdentity] },
       ciPromptAttempted: false,
@@ -153,7 +182,7 @@ export function runCli(argv, env) {
   const evidencePath = argument(argv, "--evidence");
   const outPath = argument(argv, "--out");
   if (outPath === "" || evidencePath === "") return { code: 2, result: refusal("GALERINA-NATIVE-RECEIPT-USAGE") };
-  const evidenceBytes = Uint8Array.from(readFileSync(evidencePath));
+  const evidenceBytes = Uint8Array.from(readBounded(evidencePath));
   const result = buildNativeProviderInstallationReceipt({
     providersRoot: argument(argv, "--providers-root"),
     providerIdentity: argument(argv, "--provider"),
