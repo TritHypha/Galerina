@@ -109,6 +109,30 @@ function computeBatchHash(
 }
 
 /**
+ * Structural guard for a batch read back from disk. The ledger is parsed with
+ * `JSON.parse`, so a corrupted or hostile line can be any JSON value; the chain
+ * verifiers refuse anything that is not exactly the shape {@link AuditEgress.flush}
+ * writes, rather than throwing on it or hashing a look-alike (a string `records`
+ * iterates like an array of characters).
+ */
+function isAuditBatchShape(b: unknown): b is AuditBatch {
+  if (typeof b !== "object" || b === null || Array.isArray(b)) {
+    return false;
+  }
+  const o = b as Record<string, unknown>;
+  const records = o["records"];
+  return (
+    Number.isSafeInteger(o["seq"]) &&
+    Number.isSafeInteger(o["count"]) &&
+    typeof o["prevHash"] === "string" &&
+    typeof o["batchHash"] === "string" &&
+    Array.isArray(records) &&
+    records.every((r) => typeof r === "string") &&
+    (o["epochId"] === undefined || typeof o["epochId"] === "number")
+  );
+}
+
+/**
  * The governed write path for the audit ledger.
  *
  * Records are staged in a fixed-capacity {@link RingBuffer} and egressed in
@@ -280,7 +304,7 @@ export class AuditEgress {
     let expectedPrev = GENESIS;
     for (let i = 0; i < batches.length; i++) {
       const b = batches[i];
-      if (b === undefined) {
+      if (!isAuditBatchShape(b)) {
         return false;
       }
       if (b.prevHash !== expectedPrev) {
@@ -328,7 +352,7 @@ export class AuditEgress {
     let lastEpoch = 0;
     for (let i = 0; i < batches.length; i++) {
       const b = batches[i];
-      if (b === undefined) {
+      if (!isAuditBatchShape(b)) {
         return false;
       }
       if (b.epochId === undefined || !Number.isInteger(b.epochId) || b.epochId < 1) {
