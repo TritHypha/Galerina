@@ -239,6 +239,24 @@ contract { intent { "drive the control shape" } }
   xs = xs.append(Item { name: "a", size: 1 })
   return getTypedField(xs)
 }
+
+/// FIRES: a violated postcondition lowers to an unreachable instruction, a real run-time trap the detector must see.
+pure flow mustBePositive(a: Int) -> Int
+contract { intent { "postcondition" } invariant { ensure result > 0 } }
+{
+  return a
+}
+pure flow driveEnsureBroken() -> Int
+contract { intent { "violate the postcondition" } }
+{
+  return mustBePositive(0)
+}
+/// CONTROL: the same postcondition, held: must RUN.
+pure flow driveEnsureHeld() -> Int
+contract { intent { "hold the postcondition" } }
+{
+  return mustBePositive(1)
+}
 `;
 
 async function selfTest(L) {
@@ -265,11 +283,18 @@ async function selfTest(L) {
       });
       checks.push(["…and #105-admits + exports (R1) — R0+R1 GREEN on code that does not run: the whole point", typeof instance.exports.driveAuto === "function"]);
 
-      let autoTrapped = false, typedRan = false, typedValue = null;
-      try { instance.exports.driveAuto(); } catch { autoTrapped = true; }
+      // #100 is paid on main (Array<Auto> element types are concretized), so the old repro no longer traps.
+      // The detector now fires on a different REAL trap (a violated ensure), and #100 is held as a regression.
+      let autoRan = false, autoValue = -1, typedRan = false, typedValue = -1;
+      let brokenTrapped = false, heldRan = false, heldValue = -1;
+      try { autoValue = instance.exports.driveAuto(); autoRan = true; } catch { /* a #100 regression */ }
       try { typedValue = instance.exports.driveTyped(); typedRan = true; } catch { /* control must not trap */ }
+      try { instance.exports.driveEnsureBroken(); } catch { brokenTrapped = true; }
+      try { heldValue = instance.exports.driveEnsureHeld(); heldRan = true; } catch { /* control must not trap */ }
 
-      checks.push(["★ the detector FIRES: Array<Auto>.get() + field read traps", autoTrapped]);
+      checks.push(["★ the detector FIRES on a real run-time trap: a violated ensure lowers to unreachable", brokenTrapped]);
+      checks.push(["★ the detector is SILENT on the held twin: the same ensure, satisfied, RUNS", heldRan && heldValue === 1]);
+      checks.push(["#100 stays paid: the Array<Auto>.get() + field read repro RUNS and reads the right value", autoRan && autoValue === 1]);
       checks.push(["★ the detector is SILENT on the control: the same read via a concrete type RUNS", typedRan && typedValue === 1]);
       // Without the control, "it traps" is indistinguishable from "everything traps" — the fires-case
       // alone would pass against a totally broken emitter and prove nothing about the discriminator.
@@ -284,7 +309,7 @@ async function selfTest(L) {
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
   if (!ok) { console.error("\n  ❌ stage-execution self-test FAILED — the R2 detector is neutered"); process.exit(1); }
-  console.log("\n  stage-execution self-test: fires on the real #100 trap, silent on the concrete-type control ✅");
+  console.log("\n  stage-execution self-test: fires on a real ensure trap, silent on its held twin and the concrete-type control; #100 held ✅");
   process.exit(0);
 }
 
