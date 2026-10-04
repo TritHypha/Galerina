@@ -22,7 +22,13 @@
   "engines": {
     "node": ">=18"
   },
+  "dependencies": {
+    "@galerina/devtools-project-graph": "file:../galerina-devtools-project-graph",
+    "@galerina/devtools-graph-project": "file:../galerina-devtools-graph-project",
+    "@galerina/core-tasks": "file:../galerina-core-tasks"
+  },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "typescript": "^5.5.0"
   }
 }
