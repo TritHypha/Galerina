@@ -188,7 +188,9 @@ export class AuditLogger {
     return this.append({
       phase: "TRAP", correlationId, artifactHash, engineId,
       severity: "ERROR", category: "RUNTIME_VIOLATION",
-      details: { violation, rollbackStatus: "clean", ...details },
+      // Logger-owned fields are written LAST so caller-supplied details can never rename, blank or
+      // forge the recorded violation / rollbackStatus (zero-trust default, owner may revisit).
+      details: { ...details, violation, rollbackStatus: "clean" },
       governancePass: false,
     });
   }
