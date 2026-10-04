@@ -1,0 +1,614 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-sentinel-egress/src/self-hosted",
+    "file": "audit-egress.fungi",
+    "module": "audit-egress",
+    "ledgerSha256": "ccd7e7c9dd3c439f26ccc435bb6321ac8c7724b47603633901e813373deda115"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-sentinel-egress/tests/rd0361-audit-egress-execution.test.mjs",
+    "capturedAtCommit": "ecf742ca87a9e73d5d1f325fd6e6f2cbdc56494d"
+  },
+  "exports": [
+    {
+      "name": "chainLinkVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "epochLinkVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "int"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "epochAdoptVerdict",
+      "params": [
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "configVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 52,
+  "casesSha256": "f32fc86272850f645405b50fffbaca5e2bf511401a9311950fe93fce23042797",
+  "cases": [
+    {
+      "id": "chain-0000",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0001",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0010",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0011",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0100",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0101",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0110",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-0111",
+      "export": "chainLinkVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1000",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1001",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1010",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1011",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1100",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1101",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1110",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "chain-1111",
+      "export": "chainLinkVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "epoch-000--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-000-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-000-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-001--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-001-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-001-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-010--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-010-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-010-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-011--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-011-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-011-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-100--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-100-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-100-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-101--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-101-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-101-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-110--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-110-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-110-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-111--1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "epoch-111-0",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "epoch-111-1",
+      "export": "epochLinkVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adopt-00",
+      "export": "epochAdoptVerdict",
+      "args": [
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adopt-01",
+      "export": "epochAdoptVerdict",
+      "args": [
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adopt-10",
+      "export": "epochAdoptVerdict",
+      "args": [
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adopt-11",
+      "export": "epochAdoptVerdict",
+      "args": [
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "config-000",
+      "export": "configVerdict",
+      "args": [
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-001",
+      "export": "configVerdict",
+      "args": [
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-010",
+      "export": "configVerdict",
+      "args": [
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-011",
+      "export": "configVerdict",
+      "args": [
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-100",
+      "export": "configVerdict",
+      "args": [
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-101",
+      "export": "configVerdict",
+      "args": [
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-110",
+      "export": "configVerdict",
+      "args": [
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "config-111",
+      "export": "configVerdict",
+      "args": [
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    }
+  ]
+}
