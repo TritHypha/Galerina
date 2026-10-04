@@ -514,6 +514,7 @@ export {
   canHonour,
   evaluateKeyCustody,
   resolveHost,
+  resolveHostKeyCustody,
   showDerived,
   fingerprint,
   canonicalize,
@@ -540,6 +541,7 @@ export {
   FUNGI_HARDEN_005,
   FUNGI_HARDEN_006,
   FUNGI_HARDEN_007,
+  FUNGI_HARDEN_009,
   type ResidencyTier,
   type EraseMode,
   type TimingDiscipline,
@@ -554,6 +556,7 @@ export {
   type KeyCustodyAttestation,
   type KeyCustodyDecision,
   type KeyCustodyVerifier,
+  type HostKeyCustodyResolution,
   type SpillOutcome,
   // RD-0365: KeyCustody type export so callers can reference the ladder rungs.
   type KeyCustody,

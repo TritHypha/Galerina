@@ -60,10 +60,10 @@ import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
 // enforcement. Auto-derivation (H-1) is record-only (surfaced by scripts/hardening-show-derived.mjs);
 // this validates the EXPLICIT opt-in block fail-closed (H-2/H-7/H-4). See hardening-residency.ts.
 import {
-  deriveAuto, reconcileExplicit, canHonour, resolveHost,
+  deriveAuto, reconcileExplicit, canHonour, resolveHost, resolveHostKeyCustody,
   VALID_RESIDENCY, VALID_ERASE, VALID_TIMING, VALID_SUBSTRATE,
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
-  FUNGI_HARDEN_008,
+  FUNGI_HARDEN_008, FUNGI_HARDEN_009,
   spillRetype,
   type ResidencyTier, type EraseMode, type TimingDiscipline, type Substrate, type ExplicitHardening,
 } from "./hardening-residency.js";
@@ -3511,6 +3511,21 @@ class GovernanceVerifier {
           `Flow '${flowName}': ${FUNGI_HARDEN_008.message}`,
           hardeningNode.location,
           "Wait for #143 to provide runtime enforcement evidence, or use only a host profile whose capability is currently proven; the `mlock_posix` label alone does not prove `no_swap`."));
+      }
+    }
+
+    // RD-0365 §3 (KV4) — key custody is a host-profile claim. Resolve the declared host by NAME and
+    // evaluate its custody claim. Compile time holds no attestation, so any rung above env-spore is
+    // denied fail-closed (effective custody = env-spore) and surfaced as an ADVISORY warning:
+    // keyCustody is a reserved v1 slot and never fails the build or grants a rung.
+    const custodyHostName = extractValue("host");
+    if (custodyHostName !== undefined) {
+      const custody = resolveHostKeyCustody(custodyHostName);
+      if (custody.claimed !== "env-spore" && custody.effective !== custody.claimed) {
+        this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_009.code, FUNGI_HARDEN_009.name, "warning",
+          `Flow '${flowName}': host "${custodyHostName}" claims keyCustody ${custody.claimed}, but ${custody.decision.reason}; effective custody is ${custody.effective}. ${FUNGI_HARDEN_009.message}`,
+          hardeningNode.location,
+          "Supply a current custody attestation to the admission boundary (evaluateKeyCustody with a native verifier), or declare a host profile whose claim is the env-spore baseline."));
       }
     }
 

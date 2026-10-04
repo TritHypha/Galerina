@@ -113,11 +113,29 @@ export const FUNGI_HARDEN_008 = {
     "after reviewing, or wait for #143 to land.",
 } as const;
 
+/**
+ * FUNGI-HARDEN-009 (RD-0365 §3, KV4): a `hardening { host <name> }` profile claims a key-custody
+ * rung above the env-spore baseline (L1), but no current attestation was verified for it. The
+ * claim is DENIED fail-closed — the effective custody is env-spore — and the build continues:
+ * keyCustody is advisory in v1 (a reserved profile slot, no execution), so this never fails a
+ * compile and never mints a rung. Elevated custody is admitted only by `evaluateKeyCustody` with
+ * a current attestation and an injected native verifier, at the admission boundary.
+ */
+export const FUNGI_HARDEN_009 = {
+  code: "FUNGI-HARDEN-009",
+  name: "KEY_CUSTODY_CLAIM_UNPROVEN",
+  severity: "warning" as const,
+  message:
+    "The declared host profile claims a key-custody rung above the env-spore baseline (L1), but no " +
+    "current custody attestation was verified for it. Fail-closed (RD-0365): the claim is denied and " +
+    "custody is treated as env-spore. Advisory only — keyCustody does not gate compilation.",
+} as const;
+
 /** Every hardening diagnostic constant — for registry tests + tooling. */
 export const HARDENING_DIAGNOSTICS = [
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003,
   FUNGI_HARDEN_004, FUNGI_HARDEN_005, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
-  FUNGI_HARDEN_008,
+  FUNGI_HARDEN_008, FUNGI_HARDEN_009,
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -489,6 +507,36 @@ export function evaluateKeyCustody(
     return { admitted: false, enforced: false, reason: "native custody verifier failed" };
   }
   return { admitted: true, enforced: true, reason: "attested custody verified" };
+}
+
+/** RD-0365 — what a consumer learns when it resolves a declared host name for key custody. */
+export interface HostKeyCustodyResolution {
+  /** The registry profile, or UNKNOWN_HOST for an undeclared name (H-6). */
+  readonly host: HostResidencyCapability;
+  /** The rung the profile label claims. A claim is never evidence by itself. */
+  readonly claimed: KeyCustody;
+  /** The rung the consumer may rely on: the claim only if attested and verified, else env-spore. */
+  readonly effective: KeyCustody;
+  readonly decision: KeyCustodyDecision;
+}
+
+/**
+ * RD-0365 §3 — resolve a host NAME to its profile and evaluate its custody claim in one step, so an
+ * authorization consumer never handles a caller-built profile object. Fail-closed: an undeclared
+ * host resolves to UNKNOWN_HOST, and any claim above env-spore that `evaluateKeyCustody` does not
+ * admit as enforced falls back to the env-spore baseline ("it may still operate at its proven
+ * lower rung"). This raises no authority: the result is a fact for the consumer to report.
+ */
+export function resolveHostKeyCustody(
+  name: string,
+  attestation?: KeyCustodyAttestation,
+  verifier?: KeyCustodyVerifier,
+  nowMs: number = Date.now(),
+): HostKeyCustodyResolution {
+  const host = resolveHost(name);
+  const decision = evaluateKeyCustody(host, attestation, verifier, nowMs);
+  const effective: KeyCustody = decision.admitted && decision.enforced ? host.keyCustody : "env-spore";
+  return { host, claimed: host.keyCustody, effective, decision };
 }
 
 /**
