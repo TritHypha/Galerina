@@ -14,11 +14,13 @@
  *   3  resolve effective policy (resolveEffectiveRoutePolicy, posture-aware)
  *   4  body size          (> maxSizeBytes → 413)
  *   5  content-type       (mismatch → 415)
- *   6  auth               (mode 'required' && no Authorization → 401)
- *   7  decode JSON        (invalid → 422)
- *   8  idempotency        (enabled + duplicate key → 409)
+ *   6  auth               (no verified channel verdict / principal → 401, missing scope → 403)
+ *   7  rate               (> rate per minute → 429; counted BEFORE decode, so malformed bodies are charged)
+ *   8  decode JSON        (invalid → 422)
+ *   8.5 memory budget     (body > memoryBytes → 503)
  *   9  concurrency        (> maxConcurrent → 429)
  *   9.5 secrets           (a required secret absent/faulted/unresolved → 503, fail-closed)
+ *   9.75 idempotency      (enabled + missing/duplicate key → 409)
  *   10 dispatch handler   (ONLY now is developer code reached)
  *   11 encode response
  *   12 audit placeholder
@@ -34,7 +36,7 @@ import type { SecretsProvider } from "./secret-gate.js";
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
 // the bare specifier resolves via the package's main entry (dist/index.js) which re-exports
 // posture.js via its barrel. Relative-dist paths removed — #155 / item #8 Bob review.
-import { resolvePosture } from "@galerina/core-config";
+import { resolvePosture, GALERINA_ENVIRONMENT_MODES } from "@galerina/core-config";
 import type { SecurityPosture, ResolvedPosture, EnvironmentMode } from "@galerina/core-config";
 // K3 boundary collapse for channel/identity admission — the TLSTP S1 cert-gate verdict folds in
 // here. Import the kernel-free cli-check subpath, not the Tower root barrel.
@@ -159,6 +161,9 @@ export interface AuditEvent {
   readonly status: number;
   /** Typed error code when the pipeline rejected; `undefined` on a handler success. */
   readonly errorCode: KernelErrorCode | undefined;
+  /** Who produced the response: a kernel gate (`"kernel"`) or the route handler (`"handler"`).
+   *  Handler bodies are never parsed for an `error` field, so a handler cannot forge a gate code. */
+  readonly origin: "kernel" | "handler";
   /** Resolved policy provenance — what was defaulted, what was relaxed. */
   readonly appliedDefaults: readonly string[];
   readonly relaxations: readonly string[];
@@ -325,14 +330,26 @@ const JSON_HEADERS: Readonly<Record<string, string>> = Object.freeze({
   "content-type": "application/json",
 });
 
+/**
+ * Gate provenance (app-frame hardening S5). Every kernel-built refusal is recorded here with its
+ * code. The audit reads the code from this table, never from a response body, so a handler that
+ * returns `{ error: "unauthorized" }` cannot pass itself off as a kernel refusal.
+ */
+const kernelRefusalCodes = new WeakMap<GalerinaKernelResponse, KernelErrorCode>();
+
 /** Build a safe, typed, fail-closed error response. Never carries handler output. */
 function errorResponse(status: number, code: KernelErrorCode, message: string): GalerinaKernelResponse {
-  return {
+  const response: GalerinaKernelResponse = {
     status,
     headers: JSON_HEADERS,
     body: new TextEncoder().encode(JSON.stringify({ error: code, message })),
   };
+  kernelRefusalCodes.set(response, code);
+  return response;
 }
+
+const KERNEL_POSTURES: ReadonlySet<string> = new Set(["off", "auto", "on"]);
+const KERNEL_ENVIRONMENTS: ReadonlySet<string> = new Set<string>([...GALERINA_ENVIRONMENT_MODES, "unknown"]);
 
 function routeKey(method: HttpMethod, path: string): string {
   return `${method} ${path}`;
@@ -404,6 +421,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // #195/#179 — resolve posture. 'auto' adapts fail-secure to `env`; explicit 'off'/'on' is
   // honored as-is (and 'off' stays the default), so existing callers are unchanged. When 'auto'
   // is used, the full resolution (effective + controls + rationale) is recorded per audit event.
+  // Unknown or wrong-case posture/env strings refuse; they never downgrade to 'off' (S3).
+  if (opts.posture !== undefined && (typeof opts.posture !== "string" || !KERNEL_POSTURES.has(opts.posture))) {
+    throw new Error(`Unknown security posture '${String(opts.posture)}'. Expected 'off', 'auto' or 'on'.`);
+  }
+  if (opts.env !== undefined && (typeof opts.env !== "string" || !KERNEL_ENVIRONMENTS.has(opts.env))) {
+    throw new Error(`Unknown environment '${String(opts.env)}'. Expected one of ${[...KERNEL_ENVIRONMENTS].join(", ")}.`);
+  }
   const requestedPosture: SecurityPosture | EffectivePosture = opts.posture ?? "off";
   const resolvedPosture: ResolvedPosture | undefined =
     requestedPosture === "auto" ? resolvePosture("auto", opts.env ?? "unknown") : undefined;
@@ -435,6 +459,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     if (methods === undefined) {
       methods = new Map<HttpMethod, EffectiveRoutePolicy>();
       byPath.set(route.path, methods);
+    }
+    // Two declarations for one method + path used to be silently last-wins (S4). Refuse instead.
+    if (methods.has(route.method)) {
+      throw new Error(`Duplicate route declaration for '${route.method} ${route.path}'.`);
     }
     methods.set(route.method, policy);
   }
@@ -534,7 +562,32 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       }
     }
 
-    // ── 7 decode JSON ── (only when a body is present)
+    // ── 7 rate ── counted BEFORE decode/validate (S7): a malformed or invalid body still uses up
+    // the route's rate budget, so a 422 flood cannot bypass the limiter.
+    const rk = routeKey(method, path);
+    const now = Date.now();
+    const rateLimit = ratesPerMinute.get(rk) as number;
+    const rateSubject = policy.auth.mode === "required" ? (req.principalId as string) : "public";
+    const rateKey = `${rk}\u0000${rateSubject}`;
+    const window = rateWindows.get(rateKey);
+    if (window === undefined || window.resetAt <= now) {
+      if (window !== undefined) rateWindows.delete(rateKey);
+      if (rateWindows.size >= maxRateWindows) {
+        for (const [key, candidate] of rateWindows) {
+          if (candidate.resetAt <= now) rateWindows.delete(key);
+        }
+      }
+      if (rateWindows.size >= maxRateWindows) {
+        return { response: errorResponse(429, "too_many_requests", "Rate-limit identity capacity reached."), policy };
+      }
+      rateWindows.set(rateKey, { count: 1, resetAt: now + 60_000 });
+    } else if (window.count >= rateLimit) {
+      return { response: errorResponse(429, "too_many_requests", `Rate limit ${rateLimit}/minute reached for '${rk}'.`), policy };
+    } else {
+      window.count += 1;
+    }
+
+    // ── 8 decode JSON ── (only when a body is present)
     let json: unknown;
     if (req.body.byteLength > 0) {
       let text: string;
@@ -576,30 +629,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       json = undefined;
     }
 
-    // ── 8 rate ──
-    const rk = routeKey(method, path);
-    const now = Date.now();
-    const rateLimit = ratesPerMinute.get(rk) as number;
-    const rateSubject = policy.auth.mode === "required" ? (req.principalId as string) : "public";
-    const rateKey = `${rk}\u0000${rateSubject}`;
-    const window = rateWindows.get(rateKey);
-    if (window === undefined || window.resetAt <= now) {
-      if (window !== undefined) rateWindows.delete(rateKey);
-      if (rateWindows.size >= maxRateWindows) {
-        for (const [key, candidate] of rateWindows) {
-          if (candidate.resetAt <= now) rateWindows.delete(key);
-        }
-      }
-      if (rateWindows.size >= maxRateWindows) {
-        return { response: errorResponse(429, "too_many_requests", "Rate-limit identity capacity reached."), policy };
-      }
-      rateWindows.set(rateKey, { count: 1, resetAt: now + 60_000 });
-    } else if (window.count >= rateLimit) {
-      return { response: errorResponse(429, "too_many_requests", `Rate limit ${rateLimit}/minute reached for '${rk}'.`), policy };
-    } else {
-      window.count += 1;
-    }
-
+    // ── 8.5 memory budget ──
     if (req.body.byteLength > policy.limits.memoryBytes) {
       return { response: errorResponse(503, "resource_limit_exceeded", "Request exceeds the route memory budget."), policy };
     }
@@ -731,21 +761,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   }
 
   /**
-   * Decode the typed error code (if any) out of a kernel error body so the audit
-   * record can carry it. Success responses carry no `error` field → undefined.
+   * The typed gate code for a response, read ONLY from the kernel's own refusal table (S5).
+   * A handler-produced response has no entry, so a handler body carrying `{ error: ... }` is never
+   * mistaken for a kernel refusal; success and handler responses resolve to no code.
    */
   function errorCodeOf(res: GalerinaKernelResponse): KernelErrorCode | undefined {
-    if (res.status < 400 || res.body === undefined) return undefined;
-    try {
-      const parsed: unknown = JSON.parse(new TextDecoder().decode(res.body));
-      if (parsed !== null && typeof parsed === "object" && "error" in parsed) {
-        const code = (parsed as { error: unknown }).error;
-        if (typeof code === "string") return code as KernelErrorCode;
-      }
-    } catch {
-      // Non-JSON body (e.g. a handler's raw bytes) — no typed code to report.
-    }
-    return undefined;
+    return kernelRefusalCodes.get(res);
   }
 
   /**
@@ -782,7 +803,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         method: req.method,
         path: req.path,
         status: response.status,
+        // Provenance comes from the kernel's own refusal table, never from the response body (S5).
         errorCode: errorCodeOf(response),
+        origin: kernelRefusalCodes.has(response) ? "kernel" : "handler",
         appliedDefaults: policy?.appliedDefaults ?? [],
         relaxations: policy?.relaxations ?? [],
         at: Date.now(),
