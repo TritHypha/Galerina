@@ -7,6 +7,8 @@
 // REAL registry-index.ts (verifyRegistryIndex v1 path, checkRegistryPolicy, admitFromRegistry). The 32
 // lookupVerdict cases are unchanged. Cases where the real .ts and the twin DISAGREE are not frozen: they are
 // listed by DISAGREEMENT_EXCLUDED below and reported (re-capturing over a disagreement is owner decision D-A).
+// S7 re-capture approved by Phillip 2026-10-04 15:10: the twin now denies an unknown maximum and an unknown
+// rating under a gate (matching PR #38), so the former D1 policy rows are frozen; see disagreementExcluded.
 // Re-capture: node scripts/rd0361-freeze-reference.mjs.
 import {
   RegistryIndexError, admitFromRegistry, checkRegistryPolicy, lookupCertifiedPackage, verifyRegistryIndex,
@@ -128,16 +130,18 @@ export const reference = Object.freeze({
 });
 
 // Real .ts vs twin DISAGREEMENTS (found by the S6b capture; not frozen, reported):
-//   D1 riskRank / policyVerdict on an UNKNOWN risk rating: the twin ranks it 99 (fail-closed DENY under any
-//      max); the real checkRegistryPolicy compares RISK_ORDER[unknown] (undefined) > n, which is false, so
-//      an unknown rating PASSES the risk gate (fail-open).
+//   D1 (RESOLVED in S7) policyVerdict on an unknown risk rating / unknown maximum. The real
+//      checkRegistryPolicy used to admit (RISK_ORDER[unknown] > n is false); PR #38 makes it deny, and the
+//      S7 twin change denies an unknown maximum or an unknown rating under a gate. These rows are frozen.
+//      S7 re-capture approved by Phillip 2026-10-04 15:10.
+//   rank-extreme: riskRank("extreme") is 99 in the twin; the reference rank derived from the real gates
+//      is 4 ("denied under every valid maximum"). Same meaning (above critical), different encoding: excluded.
 //   D2 signatureVerdict with an unsupported schema: the real verifyRegistryIndex refuses MALFORMED first;
 //      the twin reports the earlier signature gate's code (UNSIGNED / MALFORMED-canon / NO_KEY / BAD_SIGNATURE)
-//      and only reaches its schemaOk check after a good signature. Both refuse; the codes differ.
+//      and only reaches its schemaOk check after a good signature. Both refuse; the codes differ. Excluded.
 const RATINGS = [...LATTICE, "extreme"];
 export function disagreementExcluded(row) {
   if (row.export === "riskRank") return !LATTICE.includes(row.args[0]);
-  if (row.export === "policyVerdict") return row.args[0] && row.args[1] && !LATTICE.includes(row.args[2]);
   if (row.export === "signatureVerdict") {
     const [hasEd, nonEmpty, jcs, vr, schemaOk] = row.args;
     return !schemaOk && !(hasEd && nonEmpty && jcs && vr === "true");
@@ -167,7 +171,7 @@ export function cases() {
     if ((vc !== 1 || !kp) && !km) continue;
     rows.push({ id: `lookup-n${nc}-v${vc}-${b(hm)}${b(kp)}${b(km)}`, export: "lookupVerdict", args: [nc, vc, hm, kp, km] });
   }
-  // RD0361_PROBE_DISAGREEMENTS=1 re-includes the excluded rows, so `--check` reproduces the D1/D2 refusal.
+  // RD0361_PROBE_DISAGREEMENTS=1 re-includes the excluded rows, so `--check` reproduces the rank-extreme/D2 refusal.
   const probe = process.env.RD0361_PROBE_DISAGREEMENTS === "1";
   for (const row of candidateCases()) if (probe || !disagreementExcluded(row)) rows.push(row);
   return rows;
