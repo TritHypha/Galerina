@@ -1,11 +1,11 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1108,
+  "total": 1125,
   "counts": {
     "ref": 253,
-    "inline": 421,
+    "inline": 422,
     "phantom": 110,
-    "live": 187,
+    "live": 203,
     "referenced": 120,
     "dead": 17
   },
@@ -224,6 +224,18 @@
       "defs": 0,
       "emits": 0,
       "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_AUDIT_LEDGER_CORRUPT",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -751,7 +763,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 5,
+      "tests": 7,
       "docs": 3
     },
     {
@@ -919,7 +931,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 1,
+      "tests": 3,
       "docs": 0
     },
     {
@@ -6042,8 +6054,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 8,
-      "docs": 8
+      "tests": 10,
+      "docs": 9
     },
     {
       "code": "FUNGI-HALLMARK-002",
@@ -8094,8 +8106,8 @@
       ],
       "defs": 0,
       "emits": 9,
-      "tests": 59,
-      "docs": 3
+      "tests": 62,
+      "docs": 4
     },
     {
       "code": "FUNGI-NAME-003",
@@ -9394,6 +9406,262 @@
       "docs": 1
     },
     {
+      "code": "FUNGI-PKGSTD-001",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_MANIFEST_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-002",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_MANIFEST_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-003",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_IDENTITY_MISMATCH"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-004",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_BUILD_MANIFEST_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-005",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_BUILD_MANIFEST_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-006",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SOURCE_HASH_STALE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-007",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-008",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-009",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_DEPENDENCY_UNPINNED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-010",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_SBOM_LICENSE_DENIED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 8,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-011",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_UNSIGNED_IN_PRODUCTION"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-012",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_NO_WASM_IN_PRODUCTION"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-013",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_PACKAGE_SET_MISMATCH"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-014",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_ARTIFACT_DRIFT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 6,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-015",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_TS_SOURCE_SHIPPED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 15,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-PKGSTD-016",
+      "family": "PKGSTD",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "PKG_STD_NODE_MODULES_SHIPPED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 9,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-PLAN-001",
       "family": "PLAN",
       "namespace": "FUNGI",
@@ -10232,7 +10500,7 @@
       "severities": [],
       "defs": 0,
       "emits": 4,
-      "tests": 8,
+      "tests": 11,
       "docs": 0
     },
     {
@@ -11730,7 +11998,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 261,
+      "tests": 263,
       "docs": 29
     },
     {
@@ -12206,8 +12474,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 11,
-      "docs": 0
+      "tests": 15,
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-033",

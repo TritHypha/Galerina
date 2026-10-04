@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ext-proof-snarkjs",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "edecf9fc18226d71e165c702758b69c36cb0310724cd88ce4d1da4c441b8c29a",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "11b5329604fd801324af24b552fa3546d1029ef89d461848fba7d5a3cc45b8bb"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "19edd3cd195e306d5dc205c51bd618483d516e9e4780c422651bd67ce5ec3497"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "700f35e0b1f928baf69b70562f2537863498fd9702f43284ef96843e4f898985"
+      },
+      {
+        "path": "README.md",
+        "sha256": "f567cf7ec545fc7608578b6fc2c79f9d732d671a670749b038c463480fee1087"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "7825980521cf11961b7a0a73420cced44e9204dcd93b16847215ad76834405e3"
+      },
+      {
+        "path": "package.json",
+        "sha256": "fae7ad6b7ecf7c4d51c559857db3497ab3de740d7699566118026b1e5748aaaa"
+      },
+      {
+        "path": "src/circuit.ts",
+        "sha256": "fc2c59f18e3d0e751d9d1c9c8d4ac33e09fd1cea7f716eeab6b1595c72076114"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "84fc340fc89c22e4dda5a866497eaebf2f5875b6e7cfc0a5055351c0d4a2737f"
+      },
+      {
+        "path": "src/self-hosted/circuit-id.fungi",
+        "sha256": "5e92345047b626762f8fa950d94094ee19f73222ac1943c5ebbb721b7cb1a4b6"
+      },
+      {
+        "path": "src/self-hosted/vkey-material.fungi",
+        "sha256": "2be5b0b4da85936bde0132b7fca0a80323385fc07fa231cb596501de08f97d54"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "ce25ab4903a5dc2070430de920fd984e1340a4c04e6c15b03f8fda89cc183903"
+      },
+      {
+        "path": "tests/snarkjs.test.mjs",
+        "sha256": "bc7dd13b8fde4501907ed30affa19dcebf20a761d6a132938ac1de11a5deefdd"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

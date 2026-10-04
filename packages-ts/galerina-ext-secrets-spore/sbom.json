@@ -1,0 +1,100 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/ext-spore@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7d693734be73d73345ff00b11e9a9569fbef7139d396acd3e73d62dc328bf340"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/ext-spore",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-ext-spore"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/ext-spore@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40noble/hashes@2.2.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "218a831a24d769be859e20209d2759c2059ba26c69cbd16d62f2cab3bc0252cd9af119084c6f831463b50ccf5cafe137fd18000d1a458eb295689d73eac8ed12"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "@noble/hashes",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^2.2.0"
+        }
+      ],
+      "purl": "pkg:npm/%40noble/hashes@2.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.2.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/ext-spore@1.0.0-beta.2",
+        "pkg:npm/%40noble/hashes@2.2.0"
+      ],
+      "ref": "pkg:npm/%40galerina/ext-secrets-spore@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/ext-secrets-spore@1.0.0-beta.2",
+      "name": "@galerina/ext-secrets-spore",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

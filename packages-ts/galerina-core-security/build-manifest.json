@@ -1,0 +1,139 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-security",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "c6e2dc7fca82c453b265e8c49e0e2dfa500df7b2bd078d21ec9e31b3f0f4a08a",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "cd0a53ee56494b4580d8c93806f4f31deab7cfab03e0fe744e6901dd55442aa6"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "0d148fb8012b2e4ca7a986c18e13706fe63511e4b7ab4298868cc9b3c76f0fa9"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "8d38650515f298e045e6bd6af7b84e1146f18319604addc11eca02bd19400494"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "9a89e7ad9d5c0b2d731770e37186065d3a07d7b92fce4479c329c174b79b0170"
+      },
+      {
+        "path": "examples/security-report.json",
+        "sha256": "2f56eedae46fe1dce59742d4c4d835607c4b8321e320a34b4a9145ff2e85a971"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "cae022a4cc9d43c2f509dbe6baad56972097b82c2bde94b9e3b1833550d08410"
+      },
+      {
+        "path": "package.json",
+        "sha256": "82f022e0345405bacd210d0a07aa6edcef8ab08b0223a4a6299285cc1b202fd6"
+      },
+      {
+        "path": "src/crypto-provider.ts",
+        "sha256": "b992a2ac72319158d82587a0d597ffaadc058c031f70349c1ead105f77f5e1d0"
+      },
+      {
+        "path": "src/dss/capability-map.fungi",
+        "sha256": "e1325753b299282ca698fb8a2822c45d4f5f2de3fb28b81c47b73ee1b1d55557"
+      },
+      {
+        "path": "src/dss/dag-validator.fungi",
+        "sha256": "5e8eacc051a7882b5d93197c26b62a7a758542857ceba46ff5b02da935ee4508"
+      },
+      {
+        "path": "src/dss/dss-supervisor.fungi",
+        "sha256": "5bb13e96f49c5349472d18253ff552637a196d757601c58094794510aaa53661"
+      },
+      {
+        "path": "src/dss/dwi-allocator.fungi",
+        "sha256": "83347a0a1e3cbf8abd9fbd031b32db336f282d9a9e849981dfd77667094c4a2c"
+      },
+      {
+        "path": "src/dss/emergency-sm.fungi",
+        "sha256": "78a676d43a69f2122e1e8d867a182de5257e14a0ae832f5a3efe81a762eb8de2"
+      },
+      {
+        "path": "src/dss/epilogue-receipt.fungi",
+        "sha256": "6d12d51d4e8ce998712a063bc40d9be60b1faf0e59a8144e222e546fbe472c78"
+      },
+      {
+        "path": "src/dss/index.fungi",
+        "sha256": "a56826a9cd3d8218157fcca4e98e70179a54bb4d9964adf87a80e2b793e00555"
+      },
+      {
+        "path": "src/dss/mmcp-registry.fungi",
+        "sha256": "3912ac9fe7852c41d1ead1f0e0465ad65f54a0a1a9b0bc9d5caecde5c46cc721"
+      },
+      {
+        "path": "src/dss/trap-handler.fungi",
+        "sha256": "5c0e6a9bbcd02b6bb96e0da2a4a93d8d3bea3b0b14999b0dacc1d8cb5deaaca5"
+      },
+      {
+        "path": "src/dss/types/audit-event.fungi",
+        "sha256": "bc50640c145d00e202ffee39b3db0bea1fe8db6fc0238b71a55acc6b0707be7f"
+      },
+      {
+        "path": "src/dss/types/trap-signal.fungi",
+        "sha256": "389749b68ee4ba38ab43e03fb232f0c000e4c3839c2b314f6c2e340ca7ecfe0d"
+      },
+      {
+        "path": "src/dss/vdpm.fungi",
+        "sha256": "978c02039676ea1fbd5f827a07534e5ea186a03099161d5d0d014ae6dbff83fb"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "05af6bf39b40ca00599e7b2471b79d5bf42c9eb8440212ac6368b3eaa2690738"
+      },
+      {
+        "path": "src/interim.fungi",
+        "sha256": "876a33e5d328f144a19a1e4b9f40b43cd28ddd297c68b3ae9e0fc2a0c3f98a98"
+      },
+      {
+        "path": "tests/dss-audit-effects.test.mjs",
+        "sha256": "ace16f86208e50e41ec8737ca0c5d973db39fb0a4f82b831e1e1ca5a15778904"
+      },
+      {
+        "path": "tests/dss-supervisor-wasm-differential.test.mjs",
+        "sha256": "ab44ce4a506d9d541f26e57a7adc6117a82ba566961ce3dfa7c634da3a2270ba"
+      },
+      {
+        "path": "tests/repository-security-policy.test.mjs",
+        "sha256": "056c61d7e124d392c4a6ab4518855cc4eec7ed99eb046efa9804e3cb27faa823"
+      },
+      {
+        "path": "tests/security-contracts.test.mjs",
+        "sha256": "095e0895409a7d8e2c108becf588faacb7beb8b7ce4a17960ee703882b4a6a9c"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-hypha",
+    "version": "1.0.0-beta.1"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "a2d344e47959a8c38770b78f84179488313ef242a1d5ec9e7c9aefafe61caedf",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "108b81755bf9e5d0beb5402cd135f7e34190555e3446bd4c1863cd241fb6fc63"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "7e0a6985e840177857ded904f67d81d0f7ae87bd6ac02778ad11b5028e5e9229"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "7c9da1e0e0514278cb4a611ab3cd6da563fb67a827e6f3aeaac2a71f26a20e5f"
+      },
+      {
+        "path": "bin/galerina-hypha.mjs",
+        "sha256": "1001dd5fd3eff2d5c55bf30c114af210821fea9674b2fec051e7a285d3f613bb"
+      },
+      {
+        "path": "package.json",
+        "sha256": "b66313114f94db1bfc5410ad9d470b645c306b6d3c7a5be8fd1799929170c7d5"
+      },
+      {
+        "path": "scripts/vendor-extractor.mjs",
+        "sha256": "f93c548989ec2aaa8c3f84e60a1f116837c50c6af060db180a60ccf5175b7793"
+      },
+      {
+        "path": "src/callsites.mjs",
+        "sha256": "ea5ebc582c6e52b67f96625015fa8411707a48265f10b4a69cbc1b312106fe5c"
+      },
+      {
+        "path": "src/extract.mjs",
+        "sha256": "d8170724e6157f15ddc04423a920ef85726c77f185bd19ade39b0c4cf729d60a"
+      },
+      {
+        "path": "src/namesets.mjs",
+        "sha256": "2b6d40cce8b1b637eba1a1ef3881def15c8da3bd9ae694e5ad9bb5c218a735de"
+      },
+      {
+        "path": "src/provenance.json",
+        "sha256": "8b368ca4a3ed614c8dd98432ac10db5cc10b8aabacf0e39e48d3130627d4251f"
+      },
+      {
+        "path": "src/queries.mjs",
+        "sha256": "2fa7921123ac4091a56acad9e47b9fbb65de9e1217aefefe627844aa9473ecf6"
+      },
+      {
+        "path": "tests/hypha-devtool.test.mjs",
+        "sha256": "ca5e07b69177371d374dc825ab54925e81a1f9ae7bb55cd7e1c60c2cce5cbf24"
+      },
+      {
+        "path": "tests/vendor-extractor.test.mjs",
+        "sha256": "ece16accf9ba50e22de70c1d0c0c13cb724f7899763d63dcdbc50be4f8cc7eec"
+      }
+    ]
+  }
+}

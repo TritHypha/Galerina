@@ -1,0 +1,87 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-package-graph",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "592cd9d2d828c6e309d35ddf7155e99e4b073140577a4b12e934ecf99130ad8b",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "b5f946cb9bffa0091935a69381b78e3bbecb270f9f434799a81a5ac8c901be09"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "a7f9929dfdacf07f3c7b8139549a7c45440e53be7af8ad65005fde7131d5ded8"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "ce6622974c438c11a45712c00d65d6689beee354b243947aa7fe535f014e1b80"
+      },
+      {
+        "path": "package.json",
+        "sha256": "406128628f4d09d84cef8bba54d33d356d280188ac4201fc379b201baa1f024d"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "c2a9ae8d3027ec44010a013b2b1b78edd263290355b2a5135d1b876be2e6b534"
+      },
+      {
+        "path": "src/graph.ts",
+        "sha256": "702f903c114803be108ce751e7ac9af71a664f977ed0c308e2070a95c38f3c94"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "d770be09ba6b39dd31e60215498d33d6a5e69ef58cee5b92149aa1d769ac56b1"
+      },
+      {
+        "path": "src/package-standard.ts",
+        "sha256": "32d2d42c0f6ad8790c8d1dc5b4c3faafa07bdd5632486af26534c5af7c3a1705"
+      },
+      {
+        "path": "src/reporter.ts",
+        "sha256": "893b00ed6e0aa21cba7ca62556147373c732acc92a0c0afb52db70ffebc5c34f"
+      },
+      {
+        "path": "src/scanner.ts",
+        "sha256": "efa07132b35cfdc505d058dd3f0cb6c4744c0649fcfe913cb544eec8972f5d4b"
+      },
+      {
+        "path": "src/self-hosted/graph-dir.fungi",
+        "sha256": "54d42f1eaf9b84696471b3cdc7657b37ff0c899bad2e8198ff9caeabf10a4cae"
+      },
+      {
+        "path": "tests/package-graph.test.mjs",
+        "sha256": "457b4da914ee0e85f655a9d1165f9e793a8627a7a6d47f41435b9f8c7451ef66"
+      },
+      {
+        "path": "tests/package-standard.test.mjs",
+        "sha256": "7159e78e5d17e007e7a46b9ea7947acb55de63720f9fbfa156e64c7a852e7894"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "513f764dcce7fb3ab99b730139740fcda54885b8a55d1fa8ab512a655ac67340"
+      }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-power",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "fb0b244a18e7eed49594859187d8e1076128f754e8ff42723c1348ed58c41260",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "8fad31d5a82ddc9cad8090461200999db65df2ec156d9426f470c93a9c117b55"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "4dc3297245c31ea12fc77570bdf3d5e9b5d1cb5e3a95d8b7bbee4e36cf54f95b"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "a04ebc0b534e590cbfea7ec910cc657eeba1a8539b1ea78b2d09c011bd9c17dd"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "381b0cf23265589d2b4a74b5a361ce6eb7a5f99d9712f378912821a23c8f7991"
+      },
+      {
+        "path": "package.json",
+        "sha256": "ef651a99c13785bb4753bd70f1f7bb75c29ce0307236b86a22b5d9496e6a490d"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "90791abf6ac5eb90178852bb773343ced4ffb332bc5c9d8c62597833c14715e9"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "b3101fb276ade971dfc0bdb895b0d95cc7e74db4fec4d82f89e22ef739404fba"
+      },
+      {
+        "path": "src/power-governor.ts",
+        "sha256": "5def90754f8c70e56cff7eaa1cf87d403f66769879310465a3e7dcfbd2c731e6"
+      },
+      {
+        "path": "src/self-hosted/power-governor.fungi",
+        "sha256": "4dd4749857c5edff3b1948f10fefc84738cf35ba273ad41e4c24b4ebf6df7122"
+      },
+      {
+        "path": "src/thermal-envelope.ts",
+        "sha256": "ca3845f0f254da9c8dca26064514c099affce88a8189c01e14e17ee72fe0d4a1"
+      },
+      {
+        "path": "tests/power-governor.test.mjs",
+        "sha256": "a7433945d41cdbcfad1dca61f224221c8c77b6672c75d9daa2443e108193766f"
+      },
+      {
+        "path": "tests/rd0361-power-governor-execution.test.mjs",
+        "sha256": "a02af4217560dcebc7455b58eef2aa9684cc592d630c63ba43af17f3c182f227"
+      },
+      {
+        "path": "tests/thermal-envelope.test.mjs",
+        "sha256": "bb822853c85dfdae8b52745a88d7c78d630ce8101f166b6260f2b932d3f04ea9"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "87e38da6305e45db28e081d60d248be3f5ec96bd5cf23d553ae109d84cb63d5a"
+      }
+    ]
+  }
+}

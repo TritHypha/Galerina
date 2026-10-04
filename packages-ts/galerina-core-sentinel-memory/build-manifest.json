@@ -1,0 +1,155 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-memory",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "70c287539cbb190565fd5a6da63d55ff0d24f8a8a43b8234e0d6e7e4e342b2a8",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "1ec2130b4e86000544460063dedd2580ea10c8743d7ce2f3f3c4d33ffa39d26e"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "f4b5ab0b67368f1f86168f1ce7b2c8b2897964c1431cd65ea2be63858fdbfa74"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "277b08e15b55d2b2904f1b1344ec3c644391e8370677e781aa67be0309d78823"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "9f7720345b83664ce64af8f0c3d7a16c6577444546d21d7d3280654921271d1c"
+      },
+      {
+        "path": "package.json",
+        "sha256": "0069226543073ce6067ba44c05bc429f7515260558069d0dda02d26785fa9b50"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "adbd2ae10d71cbb36c106f620087758c505014045d1439255fa58a154e0e331c"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "8f8d235ea2e0915e9232d6562fbf6eaab59c6eea37ae40313416eecd228f335b"
+      },
+      {
+        "path": "src/memory-validator.ts",
+        "sha256": "1355cc54b57406b0c8c2c75a68578e717e34d927c0da5393dc75915ebe4f84ff"
+      },
+      {
+        "path": "src/photonic-bridge-interface.ts",
+        "sha256": "6023b675ad97eb0486db3d03d1fbc1c4939333a1e5236231ebb1a12b520d3194"
+      },
+      {
+        "path": "src/segmentation-controller.ts",
+        "sha256": "0f089021b0af107980038dbd3407152fadcc4827f2a6f5d8a4f64d53e1b53e7d"
+      },
+      {
+        "path": "src/self-hosted/channel-stride.fungi",
+        "sha256": "a7ed14cef160bbef5af78c0a0b3321cb55b8fb41cf95230525dfb829871a800c"
+      },
+      {
+        "path": "src/self-hosted/memory-validator.fungi",
+        "sha256": "e0d7d5b344035d638a0da6e79019ce124d319ac44f41dcc6e5a541d656cc659a"
+      },
+      {
+        "path": "src/self-hosted/pool-allocation-guard.fungi",
+        "sha256": "5e722227580563db3c36759009488dc28a4b4c18affce309bcb01db755a223ad"
+      },
+      {
+        "path": "src/self-hosted/pool-policy.fungi",
+        "sha256": "4712a08b14b14a91cb05b8be9c5717042e62161ebc68a7779de22f47e29165ee"
+      },
+      {
+        "path": "src/self-hosted/segmentation-guard.fungi",
+        "sha256": "e2ac53b5e0a903b65f1d7589b208a6b6137ebbdfa447564d6bc7542bc50ea616"
+      },
+      {
+        "path": "src/self-hosted/trit-buffer-guard.fungi",
+        "sha256": "a64ef0f1b943a4c3c99e56efff2bfe1afa44b3313d510b6d5023a6e8aaa327bf"
+      },
+      {
+        "path": "src/static-memory-pool.ts",
+        "sha256": "6e63f33f571eb6ec04f8c8d6c5831c168a1cf0cd6323e90e24bf97a16de704b8"
+      },
+      {
+        "path": "src/tpl-state-buffer.ts",
+        "sha256": "68a1cb9c8a4fda9ca77fc388abb17a4d5264798ea671d99f14e08cd6d28e90ac"
+      },
+      {
+        "path": "tests/_helpers.mjs",
+        "sha256": "ec396c29452af379783339a1bdda57effd05edd3a84bdf658d59875885754991"
+      },
+      {
+        "path": "tests/errors.test.mjs",
+        "sha256": "ee4662a0c032392b0a4e4ec077c6b76992b122646e975865a9d57237975ab779"
+      },
+      {
+        "path": "tests/pbi.test.mjs",
+        "sha256": "c7562a65c266b7df4901f1890eb8ba4dc503bff6dd07231611cf33149dd67edc"
+      },
+      {
+        "path": "tests/pool.test.mjs",
+        "sha256": "88cdb50a5b6587a5d9db5fd6eb68e9bfffd8d3e576dbf22df83e68555091f17f"
+      },
+      {
+        "path": "tests/rd0361-memory-validator-execution.test.mjs",
+        "sha256": "bb5ded1c0d2a30cbef7eb80cfc39c578efd42e3cffff667c07f28eb3926befa2"
+      },
+      {
+        "path": "tests/rd0361-pool-allocation-guard-execution.test.mjs",
+        "sha256": "d312ef1e68e55758e714e817f6550631095329000f829309b186d971bbc328cb"
+      },
+      {
+        "path": "tests/rd0361-pool-policy-execution.test.mjs",
+        "sha256": "3b55b57310eeb2e814568c9cb8aa91f0997a0296c8ab5f0e6149ed1370376b0c"
+      },
+      {
+        "path": "tests/rd0361-segmentation-guard-execution.test.mjs",
+        "sha256": "c2679fba7d8251d0d6ddacbb4b389e9fdb91c111d081d9745dacc480134404a4"
+      },
+      {
+        "path": "tests/rd0361-trit-buffer-guard-execution.test.mjs",
+        "sha256": "7689fb96c323b7dc2b26058b63cc30a9f71efdc2ce1902a5d4cc26d541b3e95e"
+      },
+      {
+        "path": "tests/segmentation.test.mjs",
+        "sha256": "c37b0251a63a3c68587bae2b6eac6f9234cae0cbcd99fa3206889a69be7c80f2"
+      },
+      {
+        "path": "tests/tpl.test.mjs",
+        "sha256": "14d60d871f236baa2f9993b15359018713e8d3ba2b4974ddca2573958024d1c8"
+      },
+      {
+        "path": "tests/validator.test.mjs",
+        "sha256": "91796c9326fc8ed570737536a7dcc4c617d8c4cb3f8b65d7f6d0f0a0b81ab404"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "486d2f7dade04e266c1594ca54368904d5f8db70663c681566b313561c174e1b"
+      }
+    ]
+  }
+}

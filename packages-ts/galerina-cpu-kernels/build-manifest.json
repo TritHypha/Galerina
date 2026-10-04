@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/cpu-kernels",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "493acd861d6156983c035feceed23471a42454cfe657b2502d031c935cb07b5a",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "deacfd63de451b9beaa286c8d585885f90366fe976d805c71e1d3c915492626c"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "c5c96049e2325aad7211c7c3e9213c931ddf07b6c8914795da57180c8454607f"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "e7e8089bed5576f7c5dbb9f71aadef86ab906f031912c8bcc500303f4419d2c2"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "e79d550ec392f08293eb68e04c440415b4917a2badc1793064b399ae4107ebc3"
+      },
+      {
+        "path": "examples/low-bit-kernel-report.json",
+        "sha256": "344af51e642d48fa5869a66b0c82d3d2c59aea39183183a6fb09d9c40b72f129"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "34ae7d5e353a4e25d29429c2d71a13501f125c39130e58a599bb80c8478f24d8"
+      },
+      {
+        "path": "package.json",
+        "sha256": "e8ada2f5fe8dba7e02120b65951fdcfc0aac7911c7aabe7d2590191d2783aa99"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "99c1a3cb4596a8b15dbd64c9d943eb65f19038f441b02a50427c49deff2a2df9"
+      },
+      {
+        "path": "src/self-hosted/low-bit-kernel-routing.fungi",
+        "sha256": "dba10804d96756dfd50c80549133db182d99cff738e211b01c194e17eadf267c"
+      },
+      {
+        "path": "tests/cpu-kernel-contracts.test.mjs",
+        "sha256": "7ac939ac26d8138896ea498f6683304812f22ee3c1f56387bd93627014426e81"
+      },
+      {
+        "path": "tests/low-bit-kernel-routing-fungi-conversion.test.mjs",
+        "sha256": "dfd27eb0357ac57bd7809582ecd51c6923712e54b125d5fa293f6db6d7153181"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

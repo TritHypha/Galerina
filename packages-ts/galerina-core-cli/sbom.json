@@ -1,0 +1,134 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-tasks@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6bd5a11bff358f4ff9aa366319d377d4d1e772c45e3be2cb1846e401da97eaad"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-tasks",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-tasks"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-tasks@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/devtools-graph-project@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6a51f931a5cab1ab9fb6e3efb06577b3a7d87406149da5ac2d1451ba0cac5987"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/devtools-graph-project",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-devtools-graph-project"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/devtools-graph-project@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/devtools-project-graph@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "03d7a124f8f7ced1ffdd6f9d247115556efec96bc356839388cc8bf4720b30b4"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/devtools-project-graph",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-devtools-project-graph"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/devtools-project-graph@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/core-tasks@1.0.0-beta.2",
+        "pkg:npm/%40galerina/devtools-graph-project@1.0.0-beta.2",
+        "pkg:npm/%40galerina/devtools-project-graph@1.0.0-beta.2"
+      ],
+      "ref": "pkg:npm/%40galerina/core-cli@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/core-cli@1.0.0-beta.2",
+      "name": "@galerina/core-cli",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

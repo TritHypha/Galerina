@@ -1,0 +1,40 @@
+{
+  "archetype": {
+    "source": "inferred-from-name",
+    "value": "fungi"
+  },
+  "boundaries": [],
+  "build": {
+    "manifest": "build-manifest.json",
+    "status": "NO_WASM_ARTIFACT"
+  },
+  "capabilities": [],
+  "dependencies": [],
+  "effects": {
+    "declares": [],
+    "evidence": "NOT_OBSERVED",
+    "transitive": []
+  },
+  "exports": [
+    {
+      "condition": "default",
+      "specifier": ".",
+      "target": "./dist/index.js"
+    }
+  ],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "governance": {
+    "allowedProfiles": [
+      "development"
+    ],
+    "requiresAudit": false
+  },
+  "name": "@galerina/target-ai-accelerator",
+  "sbom": "sbom.json",
+  "schemaVersion": "fungi.package.manifest.v1",
+  "signature": {
+    "publisher": "none",
+    "status": "UNSIGNED"
+  },
+  "version": "1.0.0-beta.2"
+}

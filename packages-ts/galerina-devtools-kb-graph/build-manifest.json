@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-kb-graph",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "2d750c3b5fc4b0eafd9c3a4b2638651fbc01095a70a095460978c3836fe7171e",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "518607da26184774d802737b785ae8f9fa600e7292be2ffc20e6c00782a58687"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "f4a4c5e481179193cafc9102dacef9f6ccaa4413992692abf3cd573d95c2beab"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "6bc1043e154030345b19f3f2e0d68337e6dd159eae866145baf0538c5db84655"
+      },
+      {
+        "path": "package.json",
+        "sha256": "90681b0e6dc9d0b899755fa51e857c251cd2a76ab0f00076ed458ce20a0e98ac"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "5c20267ea52d2974a6b59b23e801afb22c7ae11191c389deb871c331f75d3c4d"
+      },
+      {
+        "path": "src/graph.ts",
+        "sha256": "add1890e75e5782b51f272c10f7eeb5f03eb4c9921ffc8e233a0ffe181f88f66"
+      },
+      {
+        "path": "src/reporter.ts",
+        "sha256": "adb3df08f476968459b7b78d51f58996849ee1c958bf82a3370653a7cfa8788e"
+      },
+      {
+        "path": "src/scanner.ts",
+        "sha256": "baa9c3b4aee1667f653e7a6de22871d5f83243e10e74cdb20f5dacfec1e12b6c"
+      },
+      {
+        "path": "src/self-hosted/default-fill.fungi",
+        "sha256": "76146c896602b9881c320edcb23c65524f7d64ed98896082846bdaa49b131538"
+      },
+      {
+        "path": "src/self-hosted/ms-per-day.fungi",
+        "sha256": "d589dd74799408d623a1c678fb2644969dffa4ed2d09a3fe566cad4aedd2adb9"
+      },
+      {
+        "path": "tests/kb-graph.test.mjs",
+        "sha256": "66af769c542f079a26ae0950f60771b29e8189df42646987fe7f68a5f69033a3"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "513f764dcce7fb3ab99b730139740fcda54885b8a55d1fa8ab512a655ac67340"
+      }
+    ]
+  }
+}

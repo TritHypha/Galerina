@@ -1,0 +1,147 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ext-photonic-emulator",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "fb2fb89b57438afaa0db1fe1be915d892b710a1801caacadc4db4088441681c0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "8c12c2969679dd820beb802cf2805b656d4476650a0501b4ae7aaebdc1ae638c"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "154bddbf0576773c5cb18934a10578589789b783a0f09675dab82abd5018d743"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "54bb99ecd0a1fe710f00cff6e2d6f20cefd978dfee3e0a950c2d260220d41cf2"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "60b08ecbe1e917c8409e9bd608e5cf6b7d8e5a22c54fc0c38c5311fb5f760c8e"
+      },
+      {
+        "path": "package.json",
+        "sha256": "fc145e37e7b0cebcd0f2e5c8b7f4f0b42a1144ffc5129c154e8e1f58ecc14186"
+      },
+      {
+        "path": "scripts/prove-photonic-switch.mjs",
+        "sha256": "0760688d1c1c4d44b29695ff092604fcc3968c1fc20a15b502e81a4c41fb4de3"
+      },
+      {
+        "path": "scripts/prove-photonic.mjs",
+        "sha256": "373aefd4eaaeb00e20dca794ec611a035984b7d15165a4ed63516a5989c27db4"
+      },
+      {
+        "path": "src/digital-ecc.ts",
+        "sha256": "fedf68b3a2159a76ffddd9c9aaae06a4cdc94c09cdea518b12b7843b811a8dfa"
+      },
+      {
+        "path": "src/emulator.ts",
+        "sha256": "9b90e4c129fdbe2e5def55c4608affcdf6f50d99bceaaf3e84c61f1b2f783c42"
+      },
+      {
+        "path": "src/freivalds.ts",
+        "sha256": "3e75b36dd2662f45f5da8d9778f0b15f0c5c20648b22097d92230e3b1e826484"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "635f3fd63f5e73fa3ba1898798f1277f32c0570f155bc7dccfb4b382e655a21c"
+      },
+      {
+        "path": "src/parity-conformance.ts",
+        "sha256": "cdef385cbe4a81c704a6871817d00435d46413c434eef36a1e89f74dd64498c9"
+      },
+      {
+        "path": "src/partition-decider.ts",
+        "sha256": "cc911ee3beca17534072bc8434ececd71b9f97c74ad6d5e32eabe99aa044b316"
+      },
+      {
+        "path": "src/photonic-bridge.ts",
+        "sha256": "e840ebd7fb31302c59760579d1907bc86eeb73239f70cefd7c3c109535a4ca32"
+      },
+      {
+        "path": "src/photonic-switch.ts",
+        "sha256": "7b01a7dd9be2b55fe4efe970cbb442ec79e6f2aa255489a22d3e628a64b511bb"
+      },
+      {
+        "path": "src/runner.ts",
+        "sha256": "ad5b4cfb7ba7da22d03f30a2cd8fa0040eeaf71212f1f1c745f131bbf402e0f4"
+      },
+      {
+        "path": "src/self-hosted/act-max.fungi",
+        "sha256": "35f14dc0eba0db752e15fd8981054cc4053c1ee298468c7fa63aeb232b604848"
+      },
+      {
+        "path": "src/self-hosted/enob-ceiling.fungi",
+        "sha256": "d0e49e6792706d771b95074f2029153b3dc2992cd07e38efebba747aa6f23e97"
+      },
+      {
+        "path": "src/self-hosted/w-rep.fungi",
+        "sha256": "a1e61d7f16ce5943b91833b9e5d00a2d2f7e74b3d169d8928b18e030fa2ae7d6"
+      },
+      {
+        "path": "tests/calibrate-witness.test.mjs",
+        "sha256": "49083241652bba4cc067af76415bed6cea49448c040f419b74db096ca48c5216"
+      },
+      {
+        "path": "tests/digital-ecc.test.mjs",
+        "sha256": "6c0a0f55f7d7593e879b45719984b6778b517356988015cc30ab97da3f53b0ca"
+      },
+      {
+        "path": "tests/emulator.test.mjs",
+        "sha256": "82220bb38e6f9289072840909c85efbb27a7d0b13fdf26e59879b086f1efa72a"
+      },
+      {
+        "path": "tests/parity-conformance.test.mjs",
+        "sha256": "fb352d8fe1047eb64265cf7359a2e0c5717e6a866d6d6e2fce195c3696482519"
+      },
+      {
+        "path": "tests/partition-decider.test.mjs",
+        "sha256": "8ac3cb2e588cfcb8304abc6fb08917acc489f86e900f0ec8778ed065f6e246e9"
+      },
+      {
+        "path": "tests/photonic-bridge.test.mjs",
+        "sha256": "d0b1a1d3198829e86dffc4d8d52bfd1ec1ded492475cf3c0e00cc2fa0d243057"
+      },
+      {
+        "path": "tests/photonic-switch.test.mjs",
+        "sha256": "85bbe93cdff954584b30009e463fb03f96ae0eedb68df2d630decfd9a6cb7c8f"
+      },
+      {
+        "path": "tests/router-port.test.mjs",
+        "sha256": "afda1b7e591dea9364c5bad0114702c05fe553fa6b352f10fc41826c5fc066e6"
+      },
+      {
+        "path": "tests/runner.test.mjs",
+        "sha256": "c1e8672c48584bd041fa55c2448a9c94a2198c1c547ce03d380bb6ed97e65779"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "0bd92921a082ad9bfbe0559f4ed9c9c73e4f574d409af56a05a7f85515743bee"
+      }
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-pci",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "0e4ffefc326bcc9dd6030ea0134dfe31360b03656aea16a4c6109f4c4c678e0f",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "780060ca98bcc54efff09968ca8a7a3d623ec41ff689cf88eba502389ce83ee3"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "02862e07211f688451844c229817e7bde201c418937b57d13a2e30231a2e6f15"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "642305e7b640416dae206ad4480c5d3964913c1db113efe593ab16bbc9e8b143"
+      },
+      {
+        "path": "package.json",
+        "sha256": "57074c857f2c823ced2e1db2b9d9ae635dc14c25d324721143164cfa9119e835"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "2e05ade1056898359f1cfc9603ddd8f0e0b8fedafab5ab34055a40a5e8dce2a5"
+      },
+      {
+        "path": "src/compliance-ledger.ts",
+        "sha256": "fe032fa9f63bb9cba9fdbfddab16f449b9af57f9e30fcd6f25dba4e556685b59"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "498468b011d047a8eca4acb2933220257ee891269982ad65bb1107c92620f1dd"
+      },
+      {
+        "path": "src/pci-checker.ts",
+        "sha256": "7538793fbfa63720832b541827d8978c5f9c09c043ff176816b6b2842f0d9da5"
+      },
+      {
+        "path": "src/self-hosted/compliance-ledger-file.fungi",
+        "sha256": "68eb468be40144bf818674d1d916f4d4afbcc189a73b032cc6cdfc91bafc9743"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "47c014e9963f1c87943d5098703a6e47049cbd4f35b41a35ffd85ae773aace6e"
+      },
+      {
+        "path": "tests/cli-ledger.test.mjs",
+        "sha256": "ae33d002c2700e8311893a3e69d18dfbffaf4855d87c1d787501ceadfbff3c81"
+      },
+      {
+        "path": "tests/compliance-ledger.test.mjs",
+        "sha256": "62127a967608964e70dc99065c6c35932a421347e4c1a637e9f8dcbcd32b24f3"
+      },
+      {
+        "path": "tests/pci-indeterminate.test.mjs",
+        "sha256": "076e1e79716e8b0c04b0facd1ec9ac0ae0ef2c10aa2340c79bbfe7c5216d58f4"
+      },
+      {
+        "path": "tests/pci.test.mjs",
+        "sha256": "262efca82d7b5f7c6cd6c624e4400291f2e1f894157c2ce589ffee8c7722cbea"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "e143778bc6d49c726c8f5b56b3448be4a45771e20e0d057bd246617465220069"
+      }
+    ]
+  }
+}

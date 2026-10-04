@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/db-sqlite",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "ebc902a1ac37aed86888daa87b36efe3f2be17f7feab1533c0d7829218ca9a5c",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "014856352ec03972758106c3bd29cd8ec3e0a1a9276496e547f3c4cd58091f87"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "21d0197f091fce576e36044663bd2e2bd62eb02d913ca89a195bfa444373fadc"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "4d097bbbb453f442c1fe5bcd1012350981a1a98d820be471b526f3a2d0e4c1d7"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "91f55849df1845084166313d9607f8517e447b8ea3375300e84f7fcac948e346"
+      },
+      {
+        "path": "package.json",
+        "sha256": "2c2ba4230ffa8357c59f52e6a28956bdb0d9fdf09e73496c1dc9ca11805691e9"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "8a3a576538b454e4e443fe42ed9e6226fe1b436f0d56c9e26f629b142c7e8608"
+      },
+      {
+        "path": "tests/sqlite-contracts.test.mjs",
+        "sha256": "4673bb12012585e20ca6d7d41ee069cf957d041ce60439fe4a35989501e6b2dc"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

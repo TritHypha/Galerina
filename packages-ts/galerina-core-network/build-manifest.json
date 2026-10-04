@@ -1,0 +1,195 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-network",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "271b4f40f1c3b1d29030ad2e5b5cdb5c497ba13cb7902119612a9d1b3f6fd93e",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "04cf8f883226ab7ad86eaba6ac833eb83df45b2a9c04a96845a74a9383a4ea81"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "8b05a5f0e7e61bbb679334b68f20910b5d2587cc897d1faceec701538bc40a60"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "3f4375783491de1ca39ec51a8f73bcaffc1568e8a527ba070547e3849ed49760"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "1e091438c0685e1f68cb8a0e9fa3c8ef2a3448e80e9a90f96cb41a2a9c5162e9"
+      },
+      {
+        "path": "examples/secure-api-network-policy.json",
+        "sha256": "b768fb10bec6ba42007299f075d9c9de0b654c7c8dcfac0f48c040841bcf971d"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "f7f67001e8e762c40883cab155d3fe9a5c1456eaf80b5b06e4b2e7620cf02d26"
+      },
+      {
+        "path": "package.json",
+        "sha256": "a1b7dbed4ea79c96de94c4a2aed56c565bedb0dde0bc5b27b8ab77f7621faf4d"
+      },
+      {
+        "path": "scripts/prove-egress-guard.mjs",
+        "sha256": "aac56ab1bb7edf565b9a4708dd33b118f41cac45871f91cebd6450bf19ea3043"
+      },
+      {
+        "path": "scripts/prove-inbound-guard.mjs",
+        "sha256": "9ada5122789204dc5f2b2807c55dbbb3540c4dbd35720400901d475d991da62a"
+      },
+      {
+        "path": "src/admission-feedback.ts",
+        "sha256": "b6d0f951c0dc93fdbcd7cf5f68a330e68e45c92898c91dc1fb1ef26fedae0563"
+      },
+      {
+        "path": "src/cert-gate.ts",
+        "sha256": "839d8084bfed8ca2db5aeba046ddd73f05829717e6412ca79be45f5acdede94c"
+      },
+      {
+        "path": "src/cors-policy.ts",
+        "sha256": "9e6a65efa2386ffbf47b612dc5100ea18065ee2c15a9fdf0783bf59b31e65ce5"
+      },
+      {
+        "path": "src/defensive-controls.ts",
+        "sha256": "b9d27564accdba122b01e42be909991b1a014e1baa4436129c3e0c0381d14843"
+      },
+      {
+        "path": "src/egress-guard.ts",
+        "sha256": "2de70d9f9ae22185e3e0c9c29e88b4afdfbfd5004da1f482ccfc7bb6161b52e6"
+      },
+      {
+        "path": "src/inbound-guard.ts",
+        "sha256": "afd0e92d71071068b121c75410d7ad661e5486ca474e734135f9e8d314e046b9"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "9bc69e68ab5f167de66081a91fd4ef8d330279dfd9b5452460545631796ff30b"
+      },
+      {
+        "path": "src/self-hosted/admission-feedback.fungi",
+        "sha256": "6afb8a0101322fe4a1e8cb5007f2bf5105e2476f839c3ede92699526ae11149d"
+      },
+      {
+        "path": "src/self-hosted/b8-admission.fungi",
+        "sha256": "12dc7ed4eeaf05afd21de58d3f04247af357d9118a54c5bbaf4c3ecb15eb5504"
+      },
+      {
+        "path": "src/self-hosted/cert-gate.fungi",
+        "sha256": "a5a0eeaa01b5e9e89d681f4401b14ff1f7ac7cc035e03ded7773ba1819ee6e1d"
+      },
+      {
+        "path": "src/self-hosted/cors-policy.fungi",
+        "sha256": "bdfc10475647cf7824d95dd1c250a7e37cc26bf25a0b87b8a4fc23aaa62f3794"
+      },
+      {
+        "path": "src/self-hosted/defensive-controls.fungi",
+        "sha256": "e0d6067f6d32ee278227e256a25366af21139cf3d4dc3ef4f83686c425bd4a6a"
+      },
+      {
+        "path": "src/self-hosted/egress-guard.fungi",
+        "sha256": "1db5b398c82810aeb46eed5b24bb5dd62e5bef379d87494aa4e7f7989cb20e02"
+      },
+      {
+        "path": "src/self-hosted/inbound-guard.fungi",
+        "sha256": "8c80c5c60568c1f6e34fe071cf01c0ea2bce58c9b0c9041909485899b3c02457"
+      },
+      {
+        "path": "tests/admission-feedback.test.mjs",
+        "sha256": "e7f0d95f216f7d5be454d5552d74c157a140a0261e82df60905a69a98fe7e3b8"
+      },
+      {
+        "path": "tests/cert-gate.test.mjs",
+        "sha256": "be8ba3d8425b36f90b1ae8a151d1da5597e08e1eb615998ad89dee7d7c117fca"
+      },
+      {
+        "path": "tests/cors-policy.test.mjs",
+        "sha256": "33a7f46ffda66f5fffd80b5a415439d51258a6cc2ad8dfd7634ceb7f87c64d8e"
+      },
+      {
+        "path": "tests/defensive-controls.test.mjs",
+        "sha256": "37dab86cbc3d74cfa0d17514b82282a638672a46cf3471d942a1571d67d4aa2f"
+      },
+      {
+        "path": "tests/egress-guard.test.mjs",
+        "sha256": "eeae9e8b65a9efdefbc78c40714e2b1209ae6b283cb82672a027dfc7872132cb"
+      },
+      {
+        "path": "tests/egress-trailing-dot.test.mjs",
+        "sha256": "0f3a09238c291a4904c97ec766e4402062dd3e4ff1309bf59bd8fbde32c9fd75"
+      },
+      {
+        "path": "tests/inbound-guard.test.mjs",
+        "sha256": "f2783a823803336a62ad5a9b338a608b5024481fe3583d20130651373b02a31d"
+      },
+      {
+        "path": "tests/inbound-protocol-strict.test.mjs",
+        "sha256": "4760d4431916a908c7aa31a4f731fe51279d7390d16336d17aeb91016c43e317"
+      },
+      {
+        "path": "tests/network-contracts.test.mjs",
+        "sha256": "9558197af0d7c1d91453affb0871c96b05dd9d3a26b450aa6893869b9e3e0f0c"
+      },
+      {
+        "path": "tests/rd0361-admission-feedback-execution.test.mjs",
+        "sha256": "010fad8d3f9363443a8f11aba3e6130951a5f4c7b40914a4a27740c316582326"
+      },
+      {
+        "path": "tests/rd0361-b8-admission-execution.test.mjs",
+        "sha256": "86edb74d7298b6f53eb574a1a5510ecbd19d09e436815a5327acee143e6205e2"
+      },
+      {
+        "path": "tests/rd0361-cert-gate-execution.test.mjs",
+        "sha256": "5df341eebbacfbafc4ccf13086f1d0d5923a35b4e947154a074d9495c8de05d4"
+      },
+      {
+        "path": "tests/rd0361-cors-policy-execution.test.mjs",
+        "sha256": "41f3f655505cd85d3261c87e52d6d23f87544d380ccc72d29c8874162c0dd4fd"
+      },
+      {
+        "path": "tests/rd0361-defensive-controls-execution.test.mjs",
+        "sha256": "dcbbec001a7c335963b626a8810e2457d32bea544c5a16ddff7ac37c6ecd054b"
+      },
+      {
+        "path": "tests/rd0361-egress-guard-execution.test.mjs",
+        "sha256": "8bbf179bb99832af1646fe85c9064609063ad9056245f5dc027a51fe7126dd36"
+      },
+      {
+        "path": "tests/rd0361-inbound-guard-execution.test.mjs",
+        "sha256": "a417267c827a2b08023709484efa93e4265ae819e3779d553ee7e91b8f86bd2d"
+      },
+      {
+        "path": "tests/revocation-cadence.test.mjs",
+        "sha256": "5867b06420b029f3b3c7a095506b4904a79fc90b54bee8199e298c5eab753497"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

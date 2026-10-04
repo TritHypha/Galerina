@@ -1,0 +1,71 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-photonic",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "fd360129af25cdda1e016c51ab6058ed4d463f6dd3821e9a9e9967e444c71a86",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "b110fcb6b4d70f8c06a1b9f2eb023bd48f16c4f8c679d82b3bc55857ae2079a8"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "90005d9f12bc60c01402f7971ba4d17aba2cb068c784294db7dcd53fa543a9a5"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "cb57a073ed86859b4979fea09d7aaf73ef2c845a452aee4e5b502fe9e29ccf5b"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "a745b930574669185feb761b98f5b323e9bad0551fec0bcdc1837ce640deda99"
+      },
+      {
+        "path": "examples/tri-optical-mapping-plan.json",
+        "sha256": "b075d3c349661822b9fe21fb46368ffa5948bbd6fea90510710dd8f85fc3ab43"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "e2c217956594c53044a730c20dba1e36eae3b1705e8a18f3b05deda73417401e"
+      },
+      {
+        "path": "package.json",
+        "sha256": "b14f9b5452a21d1d5257cb6cff910b16d34952da9e30637f42cb777a20493cea"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "a1b92acb5c4812e6d4ae9e9c996d09f98f20c539156bab6b5066440e22d430cd"
+      },
+      {
+        "path": "tests/photonic-contracts.test.mjs",
+        "sha256": "1321020764a2b77d6493700eb04bb9deb44e8e401ab9bb23063f8896428285d1"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

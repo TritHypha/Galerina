@@ -1,0 +1,71 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ai-lowbit",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "92f34b76deee5ad6d29c64b44dcb3d263c572449bddbc53d46d9d086df420c85",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "42ad16aef937a7adff0d0ee263207a6cdae3a09495838af6bb1eb245bd761af1"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "729a8b93ed0c53d6545f16438584ca4c1fe33731386482d61e064bf0b462e25e"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "2323c397150886df26bbd07a43a21c22ec90469d0367331368da3f1c6c7201f5"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "62670a83a67083a9d905fafbbe2ee676ee3ca3e29c7dcc6d0ec1c005fef4c14a"
+      },
+      {
+        "path": "examples/lowbit-ai-backend-plan.json",
+        "sha256": "7316add2aa563ee2d57d641d614974c5b8093f738a734694f0324ae05f3cae03"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "d9cd0cf074004807e5632bdacf9a24c8e2649b5aa6ae063c6ca1446c1112e415"
+      },
+      {
+        "path": "package.json",
+        "sha256": "663ad15886129ffa38606db536264e24350cb4799cb2fcb97cba0737852c6061"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "42468c7aa5237664f15ee589bcdbe47a4ab95cda4909b87eb76fedfc206177d7"
+      },
+      {
+        "path": "tests/lowbit-ai-contracts.test.mjs",
+        "sha256": "3cae6c3971e32d1375cd5f8017c85fa1a5223a4c2b4d1cc53d1129fe12709ba1"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

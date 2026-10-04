@@ -13,8 +13,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 187 | emitted with an exported constant |
-| inline | 421 | emitted, NO exported constant (R4 — Stage F) |
+| live | 203 | emitted with an exported constant |
+| inline | 422 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 120 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
@@ -502,7 +502,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EMIT-STUB | inline | — | — |
 
-### ERR_* (158)
+### ERR_* (159)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -524,6 +524,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_ARGUMENT_COUNT | ref | — | — |
 | ERR_ARTIFACT_HASH_MISMATCH | ref | — | — |
 | ERR_ASSERTION | ref | — | — |
+| ERR_AUDIT_LEDGER_CORRUPT | inline | — | — |
 | ERR_BRAND_AUDIT_SHAPE | ref | — | — |
 | ERR_BRAND_AUDIT_SIZE | ref | — | — |
 | ERR_BRIDGE_DISPATCH_FAULT | inline | — | — |
@@ -1345,6 +1346,27 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PKG-004 | live | INSTALL_SCRIPT_DENIED | error |
 | FUNGI-PKG-005 | live | MISSING_SIGNATURE | warning |
 | FUNGI-PKG-006 | live | REVOKED_SIGNER | error |
+
+### PKGSTD (16)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-PKGSTD-001 | live | PKG_STD_MANIFEST_MISSING | error |
+| FUNGI-PKGSTD-002 | live | PKG_STD_MANIFEST_INVALID | error |
+| FUNGI-PKGSTD-003 | live | PKG_STD_IDENTITY_MISMATCH | error |
+| FUNGI-PKGSTD-004 | live | PKG_STD_BUILD_MANIFEST_MISSING | error |
+| FUNGI-PKGSTD-005 | live | PKG_STD_BUILD_MANIFEST_INVALID | error |
+| FUNGI-PKGSTD-006 | live | PKG_STD_SOURCE_HASH_STALE | error |
+| FUNGI-PKGSTD-007 | live | PKG_STD_SBOM_MISSING | error |
+| FUNGI-PKGSTD-008 | live | PKG_STD_SBOM_INVALID | error |
+| FUNGI-PKGSTD-009 | live | PKG_STD_SBOM_DEPENDENCY_UNPINNED | error |
+| FUNGI-PKGSTD-010 | live | PKG_STD_SBOM_LICENSE_DENIED | error |
+| FUNGI-PKGSTD-011 | live | PKG_STD_UNSIGNED_IN_PRODUCTION | error |
+| FUNGI-PKGSTD-012 | live | PKG_STD_NO_WASM_IN_PRODUCTION | error |
+| FUNGI-PKGSTD-013 | live | PKG_STD_PACKAGE_SET_MISMATCH | error |
+| FUNGI-PKGSTD-014 | live | PKG_STD_ARTIFACT_DRIFT | error |
+| FUNGI-PKGSTD-015 | live | PKG_STD_TS_SOURCE_SHIPPED | error |
+| FUNGI-PKGSTD-016 | live | PKG_STD_NODE_MODULES_SHIPPED | error |
 
 ### PLAN (2)
 

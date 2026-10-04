@@ -1,0 +1,66 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/snarkjs@0.7.6",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "e2e1f5c40e49cd55398da6964b67d77a3dfe442e8be44ae1afa20d4c9b54036eddbb81256e1e155c279e463078422c0be8deb2ed234a78fc39a6b4f1c847f866"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "GPL-3.0"
+        }
+      ],
+      "name": "snarkjs",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^0.7.0"
+        }
+      ],
+      "purl": "pkg:npm/snarkjs@0.7.6",
+      "scope": "required",
+      "type": "library",
+      "version": "0.7.6"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/snarkjs@0.7.6"
+      ],
+      "ref": "pkg:npm/%40galerina/ext-proof-snarkjs@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/ext-proof-snarkjs@1.0.0-beta.2",
+      "name": "@galerina/ext-proof-snarkjs",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

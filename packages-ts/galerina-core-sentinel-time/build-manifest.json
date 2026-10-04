@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-time",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "bd2f9f371e50d0a6457bbf279c6a5011b766970dfdc4e2f9d5783eb729a23797",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "3efe5be57244be91a1488647ae1558e6d8b2f59700fd702c78b40423ee4e6218"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "1e03d802a9150bc971b8b5815953e6751f514d4df2f6d4e6e929e39eb49bf0ab"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "c35ea1dc25f4ea1b4d979355ba5af874bee8e677a84f66070b8c55064120a68a"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "468f0e9223a113f73b578ef171348baee8ea49e6e5f068695c7a33760fb5da1b"
+      },
+      {
+        "path": "package.json",
+        "sha256": "227ac44d87162434e00c2b2d763dd465c6cd6964201a4576145b5b1e263c2f9e"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "66d7c39bcddfb5436c8382bbe50ed0295c63cace2232134a7e2361e1ef195121"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "18f3028742bc88c9a6ef7acc05fbf6047a0f0a0bc55f02d20d5043a2743a271f"
+      },
+      {
+        "path": "src/logical-clock.ts",
+        "sha256": "50cd9bdc43c2eae70951721c373754b1e921f1cc9a18201115f2fb9a5cf01698"
+      },
+      {
+        "path": "src/self-hosted/synchronization-gate.fungi",
+        "sha256": "f554b211560eafe4ff2d4931642b757cc4c891de7aea772cdb96ad8f501d4019"
+      },
+      {
+        "path": "src/synchronization-gate.ts",
+        "sha256": "d8a9eb15298d7a767c44b2807e9749e8bf5dfd31108fedf1cbec7ff019dd9abb"
+      },
+      {
+        "path": "tests/_helpers.mjs",
+        "sha256": "ec396c29452af379783339a1bdda57effd05edd3a84bdf658d59875885754991"
+      },
+      {
+        "path": "tests/logical-clock.test.mjs",
+        "sha256": "b9f9f9637775335ff468b1b8527de44074a61935551fa8b3d22bf521056e27ae"
+      },
+      {
+        "path": "tests/rd0361-execution-cutover.test.mjs",
+        "sha256": "42ee438a741ccb11832895f1265153e5bdcae243c3ea52d6ed17766257042c54"
+      },
+      {
+        "path": "tests/synchronization-gate.test.mjs",
+        "sha256": "fd8313e2cf9872214fd02c31e1c7b037c66c4da1d0883bf9152c9a8f5e92ced8"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "87e38da6305e45db28e081d60d248be3f5ec96bd5cf23d553ae109d84cb63d5a"
+      }
+    ]
+  }
+}

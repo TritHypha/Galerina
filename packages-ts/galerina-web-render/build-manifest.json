@@ -1,0 +1,67 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/web-render",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "9c0fd5e0d5d43a708e8dc670c1925d4a2f9a7506bc4adcb19d6eb94d057de032",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "3e47cb83a766c06449ea2cfb7bc94c1a1f7cae2537b60e110cbcfddb182e3c66"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "922cc5f53044bebe2e077dfff6a5432831dae31ba0fa193c3e62a1a09e842f01"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "9d571dad2baa54d5dc6ad19ec1e5a1fc20b93f5112c907440456398db110ce73"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "142aa6c78b9625ad7687bee1117658449f829c0c7f12d44ffb502af32efc4f96"
+      },
+      {
+        "path": "package.json",
+        "sha256": "a0f5d418ce52f1579df24ed335ba3bbc59451afecdc07d20b989f9ab48b6160f"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "b2f08891f20cdce3ed2fc000a12b692190374f9c39822bcff71f6c9f359280fd"
+      },
+      {
+        "path": "tests/web-render-contracts.test.mjs",
+        "sha256": "4126846bda9692df5b09bf7055a927de4a3a62faa8e1dec459c75ee4976c9f6e"
+      },
+      {
+        "path": "tests/web-render.failclosed.test.mjs",
+        "sha256": "722ab690bd880553ec9ce7e33ab11050dfe87bca020729c475eed542eb29fec3"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

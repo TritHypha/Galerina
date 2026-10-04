@@ -1,0 +1,279 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-logic",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "7353b25271871bacf1c09ad7954c489db27a024476665afb1749b3924bcbddcf",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "9ab1bcb2455ff52bf66cd63d6bd8bf3868b55ba85c3b9c5ce94b7f5187130443"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "89d5986acf2ac070987e05abbdd6f488db0aba00eb5c861cd2211305ce534cd0"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "f6711d5667e3a4cdae44dcc4046e0a59a2d182a4307fb60cb68cbca9f292c782"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "bf76cd7814cad81b64a93532f13c84f93a8445b0acaac6c50d149338cd840730"
+      },
+      {
+        "path": "examples/BENCHMARK-V2-README.md",
+        "sha256": "34ee0e8f9ce99791d8eb393a1637300146ebe4b221a0fc1a20adcdc295e9bce1"
+      },
+      {
+        "path": "examples/benchmark-runner.node.js",
+        "sha256": "c8e8bdcb6ecdb688790620998997f93a85661b6fbc2e22be9187c0014a1815f5"
+      },
+      {
+        "path": "examples/compute-mix-throughput-benchmark.fungi",
+        "sha256": "31ee369f31ccea4ef9ea299eda6f4d9606ddc61fe19846421765be9a638b3884"
+      },
+      {
+        "path": "examples/compute-mix-throughput-benchmark.node.js",
+        "sha256": "d030ea98666ee809c5430a769cb91a43e61af6275e8ebc8ec2df2b45c6179489"
+      },
+      {
+        "path": "examples/compute-mix-throughput-benchmark.py",
+        "sha256": "373b39cb163c0fefb853b931b80eb437812de7c9441ce787948e8382d4f1e7ce"
+      },
+      {
+        "path": "examples/decision-truth-table.json",
+        "sha256": "d2120c3f3e1fca9882529040ff31c3e2b7ff978cb0a3ed74518f42882658c682"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "64f3e2f78746d7f5cbb1518359d6165ac4b33956cbb68bafcd50cdb653140190"
+      },
+      {
+        "path": "package.json",
+        "sha256": "783c10e8eb07799eab1bf07f8bf9e584d316a0c8d8365f36a3f804655d46f007"
+      },
+      {
+        "path": "src/bool-boundary/bool-boundary-context.ts",
+        "sha256": "a36425efaaff7800cb8f6d27d09a0cf8b14f14ca18f3e87bcf5018a241822e8d"
+      },
+      {
+        "path": "src/bool-boundary/bool-boundary.ts",
+        "sha256": "792a5845a91d0adffc3f924f2cf161e54883791733bf2a3746d138f4e06f24df"
+      },
+      {
+        "path": "src/bool-boundary/bool-diagnostics.ts",
+        "sha256": "9902b52b0e471912bf0a86fd176cc9c7609f29b8880fe7b51971a6a5d2746787"
+      },
+      {
+        "path": "src/bool-boundary/bool-enforce.ts",
+        "sha256": "ae00594080799abea948ef9cf1bccefeefba1ed2a1673b259bc022344dd45bf2"
+      },
+      {
+        "path": "src/bool-boundary/index.ts",
+        "sha256": "65bc1c51484e304fefd66cbd54412d80293258ce4d0fb9d07ca9824cb57d76ed"
+      },
+      {
+        "path": "src/decision/decision-combine.ts",
+        "sha256": "cef875dbf6de579024e6f3a16d1bc5026b8c5fd82d8c5645da0af2228688c444"
+      },
+      {
+        "path": "src/decision/decision-constructors.ts",
+        "sha256": "49e9adf18c70eb5bdc5aafeb9dca55fa9b9e7f4f312de837f6dedae56b6b8cad"
+      },
+      {
+        "path": "src/decision/decision-diagnostics.ts",
+        "sha256": "7dc3a778a0fdb89e88bf45212b52a4a775328c335eff142659012f8d5407cbc8"
+      },
+      {
+        "path": "src/decision/decision-evaluate.ts",
+        "sha256": "e866e88697d16ba713003cada383d3fbe1ee1a035dc6d31b9e4e6fd77ac7dcdf"
+      },
+      {
+        "path": "src/decision/decision-state.ts",
+        "sha256": "5b7afd432061743d6c193db6c5e31726ad69530443dd1313650deb7fb69318e1"
+      },
+      {
+        "path": "src/decision/index.ts",
+        "sha256": "3b9e8631f13ea727285baeda3e12836616183e7c50926cd011a1bb1615600a30"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "3de2cce84ccb93d88171ad85f5828d38e1b6d0169d12ac0a7bfe294b5c73100c"
+      },
+      {
+        "path": "src/omni/index.ts",
+        "sha256": "1b835a7991af02b6979a5a1b92233dd604ab2f9674992e325d00f0c83e04b088"
+      },
+      {
+        "path": "src/omni/omni-diagnostics.ts",
+        "sha256": "4720b915da12a53417b078a935c93dc939540789a9622d6373119bc556c48caa"
+      },
+      {
+        "path": "src/omni/omni-state.ts",
+        "sha256": "dc3cb44074238f51f3c4dc678c01b80e7adfbf175dc494f25aa26b694c122e50"
+      },
+      {
+        "path": "src/omni/omni-to-decision.ts",
+        "sha256": "79c205e01916d35da52d3fac641d8c0f07d9853e8151a59eeb1942ef8fde6258"
+      },
+      {
+        "path": "src/self-hosted/fungi-bool-boundary-001-failed-closed.fungi",
+        "sha256": "507e6725905c6224e73e3ba674ed098ae2650baef5d49f6e022e6e68760184ed"
+      },
+      {
+        "path": "src/self-hosted/fungi-bool-boundary-002-unknown-reason.fungi",
+        "sha256": "9377e6e3476c35c957560ea1e48d6078e521056de4563bf2a087cd5903debab0"
+      },
+      {
+        "path": "src/self-hosted/fungi-bool-boundary-003-invalid-input.fungi",
+        "sha256": "b77b52ad7efaff15f2bbada3375e327f66ff36dbcec9563e49a35bb552ece367"
+      },
+      {
+        "path": "src/self-hosted/fungi-bool-boundary-004-missing-boundary-name.fungi",
+        "sha256": "ab38d03d2971b1738d9f77ee5248ed7332ad2ce6c437cffd3ea3134b883f66ae"
+      },
+      {
+        "path": "src/self-hosted/fungi-bool-boundary-005-result-misused.fungi",
+        "sha256": "e070e250f5d4e11ab75000c031e25e30e4e87c3cf5755bee26bdb870581ebe1d"
+      },
+      {
+        "path": "src/self-hosted/fungi-decision-001-invalid-decision.fungi",
+        "sha256": "1626c2e0d59cbda98600af5b012650d4dd2c0cf0336db8d36388caa4851c5445"
+      },
+      {
+        "path": "src/self-hosted/fungi-decision-002-empty-reason.fungi",
+        "sha256": "9ea63fb389601ab449c2592bd953382e2bfc4ceefef98346ad3788a2f0f4fca9"
+      },
+      {
+        "path": "src/self-hosted/fungi-decision-003-empty-unknown-reasons.fungi",
+        "sha256": "d5ccc224ee0501d00dc3aa886cf460f129596adf4666c31ea7bc0305e94d6be3"
+      },
+      {
+        "path": "src/self-hosted/fungi-decision-004-failed-closed.fungi",
+        "sha256": "f5c1d9ae3414ce87817790dc124501940c7677d93984b8f3e1225cb223c26ecc"
+      },
+      {
+        "path": "src/self-hosted/fungi-decision-005-empty-combine.fungi",
+        "sha256": "11f6144ea585e8543f4d33358d375dc1aaccc3ec59bfec0c38927dbe023da604"
+      },
+      {
+        "path": "src/self-hosted/fungi-omni-001-direct-boundary-use.fungi",
+        "sha256": "ac4acbcde786df00ad522ef726362ac8bd49b54d3706b633c1bf58b79ed490ea"
+      },
+      {
+        "path": "src/self-hosted/fungi-omni-002-advisory-only-violated.fungi",
+        "sha256": "0cab39e3349a7d64de2b7d86cf69d51573d7512af46d8bb8951185b030103e45"
+      },
+      {
+        "path": "src/self-hosted/fungi-omni-003-confidence-out-of-range.fungi",
+        "sha256": "2e68d2128f50c2a8e5f7d8d03ada04b181e76070822c47a33fd86248e8937f6b"
+      },
+      {
+        "path": "src/self-hosted/fungi-omni-004-malformed-evidence.fungi",
+        "sha256": "8d6046dce130d714c1e568a31686a8114699bf18aaf9b402f98b97946dd23a4a"
+      },
+      {
+        "path": "src/self-hosted/fungi-omni-005-invalid-state.fungi",
+        "sha256": "bf12ad4e4c2b8f30a8ed2b12f532e2bfa4c12c670d69ee03c5914ebd0374362d"
+      },
+      {
+        "path": "src/self-hosted/fungi-tri-001-invalid-tristate.fungi",
+        "sha256": "d93d7014b7bc084d2422f40ffe24f18b1e541d951bca87687cd12ff889bf1062"
+      },
+      {
+        "path": "src/self-hosted/fungi-tri-002-empty-unknown-reasons.fungi",
+        "sha256": "3d9c44714056043cdb9596abb517c9817108395294984c3803867ac63efdf2ad"
+      },
+      {
+        "path": "src/self-hosted/fungi-tri-003-invalid-operand.fungi",
+        "sha256": "1c81e94cd23152b4988ffc1659095c9ba5e40cab65f94712f6303944cd2e669b"
+      },
+      {
+        "path": "src/self-hosted/fungi-tri-004-unknown-leaked.fungi",
+        "sha256": "9f8ba90bf4f9052b8bff48338c9879e689309c3ed091c5676b7be32f96fb306e"
+      },
+      {
+        "path": "src/self-hosted/fungi-tri-005-malformed-unknown-reason.fungi",
+        "sha256": "c4e2de24389d563398e8d112cef9aa80d9976f27a3f35a2fb0548284f20bb8e9"
+      },
+      {
+        "path": "src/self-hosted/tri-ops.fungi",
+        "sha256": "974b3d2aea384d0e3c5fe15fc5c4407242392a706424a7319405878d3252c5d4"
+      },
+      {
+        "path": "src/tri/index.ts",
+        "sha256": "fdfde8503c016ba32959d93a4f2d0ea6ca30066f032b68f5d53f529cf248f01b"
+      },
+      {
+        "path": "src/tri/tri-diagnostics.ts",
+        "sha256": "6a55d6a0fc267b6455390539cac8eb9a178855e5fdc33214e6cc3351045f75ef"
+      },
+      {
+        "path": "src/tri/tri-ops.ts",
+        "sha256": "54ab74391aae78de38389717b3a364a8ea274f87c57741d396890b4049c5ef4c"
+      },
+      {
+        "path": "src/tri/tri-state.ts",
+        "sha256": "c8995a172930e4eb618e66aaa6dabc2c304f7d1091ce1bd92fba19f6296c671b"
+      },
+      {
+        "path": "src/tri/tri-unknown-reason.ts",
+        "sha256": "9ceb39026b0afcee8c6a73c3834fc3d4e2fd493eee659208a3fe03fe7733e69b"
+      },
+      {
+        "path": "tests/is-tri-fungi-conversion.test.mjs",
+        "sha256": "7f34bfddb15ffe085815aa44dd12ed625cbbe5ee3c02cc10ac56b5da69e32ff1"
+      },
+      {
+        "path": "tests/logic-contracts.test.mjs",
+        "sha256": "c8d813f15b725851c763bb4633e9272010e1fa224de60993d47bdf9e5dbf28d1"
+      },
+      {
+        "path": "tests/logic-v02-contracts.test.mjs",
+        "sha256": "f077f926962265dc0e98dbf89e21e940a8de01615c579d831c6ee6d257c0a835"
+      },
+      {
+        "path": "tests/omni-uncertain-fungi-conversion.test.mjs",
+        "sha256": "d76f65dc30dea87dd597c2ab6d0c55c1969ab60d3712c74e8e2b46a2f92fa752"
+      },
+      {
+        "path": "tests/omni-uncertain-mutation-contract.test.mjs",
+        "sha256": "4d5960c3624bc28384e21758ec90371544201c0a84709b05043d659b67bdd0b3"
+      },
+      {
+        "path": "tests/tri-ops-fungi-conversion.test.mjs",
+        "sha256": "10e50a664cdac76e32d6e484c13633cf23c9d90d6030fb7c2545fdc6202e7f60"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      },
+      {
+        "path": "tsconfig.tsbuildinfo",
+        "sha256": "932e55bbeeebcea8f5f2454ab2f5daaff5a8a0f9125bd9ee793805665e3be9b0"
+      }
+    ]
+  }
+}

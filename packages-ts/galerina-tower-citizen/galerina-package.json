@@ -1,0 +1,141 @@
+{
+  "archetype": {
+    "source": "inferred-from-name",
+    "value": "fungi"
+  },
+  "boundaries": [],
+  "build": {
+    "manifest": "build-manifest.json",
+    "status": "NO_WASM_ARTIFACT"
+  },
+  "capabilities": [],
+  "dependencies": [
+    {
+      "kind": "internal",
+      "name": "@galerina/inference-bridge-contract",
+      "specifier": "file:../galerina-inference-bridge-contract"
+    },
+    {
+      "kind": "internal",
+      "name": "@galerina/substrate-math",
+      "specifier": "file:../galerina-substrate-math"
+    },
+    {
+      "kind": "third-party",
+      "name": "@noble/post-quantum",
+      "specifier": "^0.6.1"
+    }
+  ],
+  "effects": {
+    "declares": [],
+    "evidence": "NOT_OBSERVED",
+    "transitive": []
+  },
+  "exports": [
+    {
+      "condition": "import",
+      "specifier": ".",
+      "target": "./dist/index.js"
+    },
+    {
+      "condition": "types",
+      "specifier": ".",
+      "target": "./dist/index.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./custody",
+      "target": "./dist/custody.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./custody",
+      "target": "./dist/custody.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./dataplane",
+      "target": "./dist/dataplane.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./dataplane",
+      "target": "./dist/dataplane.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./governance",
+      "target": "./dist/governance.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./governance",
+      "target": "./dist/governance.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./governance-v1",
+      "target": "./dist/governance-v1.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./governance-v1",
+      "target": "./dist/governance-v1.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./inference",
+      "target": "./dist/inference.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./inference",
+      "target": "./dist/inference.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./kernel",
+      "target": "./dist/kernel.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./kernel",
+      "target": "./dist/kernel.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./photonic",
+      "target": "./dist/photonic.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./photonic",
+      "target": "./dist/photonic.d.ts"
+    },
+    {
+      "condition": "import",
+      "specifier": "./tpl",
+      "target": "./dist/tpl.js"
+    },
+    {
+      "condition": "types",
+      "specifier": "./tpl",
+      "target": "./dist/tpl.d.ts"
+    }
+  ],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "governance": {
+    "allowedProfiles": [
+      "development"
+    ],
+    "requiresAudit": false
+  },
+  "name": "@galerina/tower-citizen",
+  "sbom": "sbom.json",
+  "schemaVersion": "fungi.package.manifest.v1",
+  "signature": {
+    "publisher": "none",
+    "status": "UNSIGNED"
+  },
+  "version": "1.0.0-beta.2"
+}
