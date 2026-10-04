@@ -4,9 +4,9 @@
     "packages": 100,
     "testBearing": 100,
     "tests": 9612,
-    "devTools": 186,
-    "auditTools": 92,
-    "toolsInCadence": 124,
+    "devTools": 192,
+    "auditTools": 94,
+    "toolsInCadence": 126,
     "proofs": 40
   },
   "packages": [
@@ -67,7 +67,7 @@
       "tests": 22,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 1,
+      "files": 2,
       "deps": []
     },
     {
@@ -300,11 +300,12 @@
       "tests": 6382,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 287,
+      "files": 293,
       "deps": [
         "@galerina/core-network",
         "@galerina/core-runtime-wasm",
         "@galerina/core-security",
+        "@galerina/data-json",
         "@galerina/devtools-graph-algorithms",
         "@galerina/substrate-math",
         "@galerina/tri-regex"
@@ -359,7 +360,7 @@
       "border": "PASS",
       "files": 14,
       "deps": [
-        "@galerina/tower-citizen"
+        "@galerina/tower-citizen/governance"
       ]
     },
     {
@@ -411,7 +412,7 @@
       "tests": 17,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 14,
+      "files": 15,
       "deps": []
     },
     {
@@ -503,7 +504,7 @@
       "tests": 507,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 53,
+      "files": 65,
       "deps": [
         "@galerina/inference-bridge-contract",
         "@galerina/substrate-math"
@@ -512,7 +513,7 @@
     {
       "name": "galerina-tri-pipe",
       "kind": "tri",
-      "description": "The Tri-Pipe capstone: createTriPipeEngine() composes the hardware() capability directive + the photonic backe",
+      "description": "Tri-Pipe proposal, routing and composition layer (RD-0855). createTriPipeEngine() proposes a digest-bound rout",
       "tests": 24,
       "hasTestScript": true,
       "border": "PASS",
@@ -541,7 +542,7 @@
       "tests": 26,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 4,
+      "files": 6,
       "deps": [
         "@galerina/core-network",
         "@galerina/framework-app-kernel",
@@ -1070,7 +1071,9 @@
       "hasTestScript": true,
       "border": "PASS",
       "files": 2210,
-      "deps": []
+      "deps": [
+        "@galerina/core-compiler"
+      ]
     },
     {
       "name": "galerina-docs",
@@ -1349,6 +1352,7 @@
       "inCadence": true,
       "cadenceDisposition": "scheduled",
       "concerns": [
+        "signing/fusion",
         "governance",
         "provenance",
         "gate-wiring",
@@ -1902,6 +1906,21 @@
       ]
     },
     {
+      "name": "audit-pkg-standard.mjs",
+      "category": "audit",
+      "purpose": "audit-pkg-standard.mjs: the `pkg-standard-audit` conformance gate (Package Standard v1",
+      "selfTest": true,
+      "inCadence": true,
+      "cadenceDisposition": "self-test-transitive",
+      "concerns": [
+        "signing/fusion",
+        "diagnostics",
+        "package-border",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "audit-private-doc-leak.mjs",
       "category": "audit",
       "purpose": "fail-CLOSED: no tracked file in this PUBLIC repo may name a never-public KB doc",
@@ -2254,6 +2273,19 @@
       ]
     },
     {
+      "name": "audit-three-security-boundaries.mjs",
+      "category": "audit",
+      "purpose": "audit-three-security-boundaries.mjs",
+      "selfTest": true,
+      "inCadence": true,
+      "cadenceDisposition": "self-test-transitive",
+      "concerns": [
+        "signing/fusion",
+        "mutation-testing",
+        "teaching-corpus"
+      ]
+    },
+    {
       "name": "audit-tier-boundary.mjs",
       "category": "audit",
       "purpose": "TASK 0056-ci-lint: cross-tier contamination guard (open-core \"B7\" lint).",
@@ -2422,7 +2454,6 @@
       "cadenceDisposition": "on-demand",
       "concerns": [
         "signing/fusion",
-        "diagnostics",
         "source-hygiene",
         "doc-drift",
         "brand",
@@ -2440,6 +2471,23 @@
         "effects",
         "signing/fusion",
         "governance"
+      ]
+    },
+    {
+      "name": "gen-package-standard-manifests.mjs",
+      "category": "generator",
+      "purpose": "gen-package-standard-manifests.mjs: deterministic generator for the three Package",
+      "selfTest": true,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "governance",
+        "diagnostics",
+        "source-hygiene",
+        "doc-drift",
+        "graph/index"
       ]
     },
     {
@@ -2473,7 +2521,6 @@
       "inCadence": true,
       "cadenceDisposition": "scheduled",
       "concerns": [
-        "signing/fusion",
         "provenance",
         "coverage",
         "graph/index"
@@ -2585,7 +2632,6 @@
       "cadenceDisposition": "on-demand",
       "concerns": [
         "signing/fusion",
-        "governance",
         "provenance",
         "coverage",
         "diagnostics",
@@ -2603,7 +2649,6 @@
       "cadenceDisposition": "scheduled",
       "concerns": [
         "signing/fusion",
-        "governance",
         "provenance",
         "diagnostics",
         "doc-drift",
@@ -3026,7 +3071,6 @@
       "concerns": [
         "signing/fusion",
         "diagnostics",
-        "package-border",
         "graph/index"
       ]
     },
@@ -3131,7 +3175,6 @@
         "signing/fusion",
         "naming",
         "provenance",
-        "diagnostics",
         "source-hygiene",
         "doc-drift",
         "graph/index"
@@ -3185,7 +3228,6 @@
       "cadenceDisposition": "scheduled",
       "concerns": [
         "gate-wiring",
-        "diagnostics",
         "source-hygiene",
         "graph/index"
       ]
@@ -3516,6 +3558,19 @@
       ]
     },
     {
+      "name": "rd0361-freeze-reference.mjs",
+      "category": "util",
+      "purpose": "rd0361-freeze-reference.mjs: RD-0361 SLIDE track, slice S2. Capture (or re-check) a hash-pinned frozen",
+      "selfTest": false,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": [
+        "signing/fusion",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "rebrand-tmf-to-spore.mjs",
       "category": "util",
       "purpose": "case-aware rename of the RETIRED format name \"tmf\" -> \"spore\" across every",
@@ -3561,6 +3616,15 @@
       "concerns": [
         "graph/index"
       ]
+    },
+    {
+      "name": "relink-workspace.test.mjs",
+      "category": "util",
+      "purpose": "(no header description)",
+      "selfTest": false,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": []
     },
     {
       "name": "rename-package.mjs",
@@ -3693,6 +3757,22 @@
         "web-stub",
         "graph/index"
       ]
+    },
+    {
+      "name": "write-three-boundaries-receipts.mjs",
+      "category": "util",
+      "purpose": "(no header description)",
+      "selfTest": true,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": [
+        "signing/fusion",
+        "secrets/privacy",
+        "teaching-corpus",
+        "source-hygiene",
+        "doc-drift",
+        "graph/index"
+      ]
     }
   ],
   "coverage": {
@@ -3762,6 +3842,7 @@
       "audit-package-border.mjs",
       "audit-path-leak.mjs",
       "audit-perf-hotpath.mjs",
+      "audit-pkg-standard.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
       "audit-reference-doc-drift.mjs",
@@ -3783,7 +3864,7 @@
       "audit-unlowered-nodes.mjs",
       "audit-wasm-validate.mjs",
       "audit-wat-emitter-mutation.mjs",
-      "fix-logicn-brand.mjs",
+      "gen-package-standard-manifests.mjs",
       "memory-graph.mjs",
       "ts-retirement-graph.mjs",
       "code-index.mjs",
@@ -3808,9 +3889,7 @@
       "build-core-chain.mjs",
       "build-process-tree-observer.mjs",
       "build-receipt-bound-slide-package.mjs",
-      "emit-doc-wat.mjs",
       "flat-package-root-lock.mjs",
-      "fungi-golden-probe.mjs",
       "galerina-source-origin-frame.mjs",
       "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
@@ -3841,9 +3920,9 @@
       "audit-import-governance.mjs",
       "audit-node-dependencies.mjs",
       "audit-package-border.mjs",
+      "audit-pkg-standard.mjs",
       "graph-all.mjs",
       "package-graph-generator.mjs",
-      "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "package-usage.mjs"
     ],
@@ -3880,6 +3959,7 @@
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
       "audit-perf-hotpath.mjs",
+      "audit-pkg-standard.mjs",
       "audit-private-doc-leak.mjs",
       "audit-product-package-boundaries.mjs",
       "audit-production-blockers.mjs",
@@ -3900,6 +3980,7 @@
       "audit-wasm-validate.mjs",
       "audit-wat-lowering.mjs",
       "fix-logicn-brand.mjs",
+      "gen-package-standard-manifests.mjs",
       "gen-status-blocks.mjs",
       "gen-assurance-semantic-graph.mjs",
       "graph-all.mjs",
@@ -3953,13 +4034,15 @@
       "package-usage.mjs",
       "phase-close-hook.mjs",
       "rd-absorb.mjs",
+      "rd0361-freeze-reference.mjs",
       "relink-workspace.mjs",
       "repoint-kb-refs.mjs",
       "subject-galerina-compile.mjs",
       "ts-to-fungi-sandbox.mjs",
       "verify-artifacts.mjs",
       "verify-slide-reference-evidence.mjs",
-      "wat-invalid-triage.mjs"
+      "wat-invalid-triage.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "sensitive-allowlist": [
       "audit-allowlist-sensitive.mjs",
@@ -4024,6 +4107,7 @@
       "audit-code-catalog-coverage.mjs",
       "audit-compiler-stage-hashes.mjs",
       "audit-conversion-report-commit.mjs",
+      "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-effect-canonicality.mjs",
@@ -4041,6 +4125,7 @@
       "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-perf-hotpath.mjs",
+      "audit-pkg-standard.mjs",
       "audit-private-doc-leak.mjs",
       "audit-product-package-boundaries.mjs",
       "audit-provenance.mjs",
@@ -4055,6 +4140,7 @@
       "audit-signing-refusal-recon.mjs",
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
+      "audit-three-security-boundaries.mjs",
       "audit-tier-boundary.mjs",
       "audit-tooling-contract.mjs",
       "audit-u2-version-floor.mjs",
@@ -4063,7 +4149,7 @@
       "audit-web-stub-guard.mjs",
       "fix-logicn-brand.mjs",
       "galerina-new.mjs",
-      "gen-assurance-semantic-graph.mjs",
+      "gen-package-standard-manifests.mjs",
       "kat-execution-graph-cache-bound.mjs",
       "measure-graph-cache-limits.mjs",
       "memory-graph.mjs",
@@ -4113,12 +4199,14 @@
       "migrate-fungi.mjs",
       "p9-100-site-mapper.mjs",
       "phase-close-hook.mjs",
+      "rd0361-freeze-reference.mjs",
       "rebuild-fusable-packages.mjs",
       "release-evidence-authority-cli.mjs",
       "ts-to-fungi-sandbox.mjs",
       "verify-artifacts.mjs",
       "verify-platform-durability-evidence.mjs",
-      "verify-slide-reference-evidence.mjs"
+      "verify-slide-reference-evidence.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "doc-drift": [
       "audit-artifact-drift.mjs",
@@ -4149,6 +4237,7 @@
       "audit-overclaim-phrases.mjs",
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
+      "audit-pkg-standard.mjs",
       "audit-private-doc-leak.mjs",
       "audit-provenance.mjs",
       "audit-reference-doc-drift.mjs",
@@ -4159,6 +4248,7 @@
       "audit-syntax-reference-links.mjs",
       "audit-wasm-validate.mjs",
       "fix-logicn-brand.mjs",
+      "gen-package-standard-manifests.mjs",
       "gen-roadmap.mjs",
       "code-index.mjs",
       "docs-index.mjs",
@@ -4176,14 +4266,17 @@
       "generate-sbom.mjs",
       "migrate-fungi.mjs",
       "rd-absorb.mjs",
+      "rd0361-freeze-reference.mjs",
       "rebrand-tmf-to-spore.mjs",
       "repoint-kb-refs.mjs",
-      "validate-workspace-pointers.mjs"
+      "validate-workspace-pointers.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "mutation-testing": [
       "audit-assurance-legacy-lifecycle.mjs",
       "audit-gate-selftests.mjs",
       "audit-mutation.mjs",
+      "audit-three-security-boundaries.mjs",
       "audit-tooling-contract.mjs",
       "audit-wat-emitter-mutation.mjs",
       "lint-conventions.mjs"
@@ -4228,11 +4321,10 @@
       "audit-wasm-validate.mjs",
       "audit-web-stub-guard.mjs",
       "galerina-new.mjs",
+      "gen-package-standard-manifests.mjs",
       "kb-graph-generator.mjs",
       "package-graph-generator.mjs",
       "project-graph-generator.mjs",
-      "ts-retirement-graph.mjs",
-      "code-index.mjs",
       "gen-contract-registry.mjs",
       "registry-authority-cli.mjs",
       "registry-generation-cli.mjs",
@@ -4275,6 +4367,7 @@
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
       "fix-logicn-brand.mjs",
+      "gen-package-standard-manifests.mjs",
       "graph-all.mjs",
       "kb-graph-generator.mjs",
       "memory-graph.mjs",
@@ -4300,7 +4393,8 @@
       "generate-rd0858-scalar-audit-map.mjs",
       "rd-absorb.mjs",
       "rename-package.mjs",
-      "validate-workspace-pointers.mjs"
+      "validate-workspace-pointers.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "proofs": [
       "audit-cast-hygiene.mjs",
@@ -4383,6 +4477,7 @@
       "audit-stdlib-gates-parity.mjs",
       "audit-twin-differential.mjs",
       "galerina-new.mjs",
+      "gen-package-standard-manifests.mjs",
       "measure-graph-cache-limits.mjs",
       "gen-contract-registry.mjs",
       "debug-compiler-globs.mjs",
@@ -4417,6 +4512,7 @@
       "audit-selfhosted-dead-flows.mjs",
       "audit-stage-execution.mjs",
       "audit-stdlib-gates-parity.mjs",
+      "audit-three-security-boundaries.mjs",
       "audit-twin-differential.mjs",
       "audit-wasm-validate.mjs",
       "audit-wasmtime-presence.mjs",
@@ -4431,7 +4527,8 @@
       "run-phase-close.mjs",
       "conversion-queue.mjs",
       "migrate-fungi.mjs",
-      "wat-invalid-triage.mjs"
+      "wat-invalid-triage.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "provenance": [
       "audit-coverage.mjs",
@@ -4474,7 +4571,8 @@
       "fungi-astshape.mjs",
       "fungi-source-capability-inventory.mjs",
       "hardening-show-derived.mjs",
-      "rename-package.mjs"
+      "rename-package.mjs",
+      "write-three-boundaries-receipts.mjs"
     ],
     "web-stub": [
       "audit-emitter-completeness.mjs",
@@ -5354,6 +5452,15 @@
       "disposition": "scheduled"
     },
     {
+      "tool": "audit-pkg-standard.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "self-test-transitive"
+    },
+    {
       "tool": "audit-private-doc-leak.mjs",
       "directEntryIds": [
         "private-doc-leak"
@@ -5670,6 +5777,15 @@
     },
     {
       "tool": "audit-syntax.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "self-test-transitive"
+    },
+    {
+      "tool": "audit-three-security-boundaries.mjs",
       "directEntryIds": [],
       "transitiveEntryIds": [],
       "via": [],
@@ -6228,6 +6344,15 @@
       "disposition": "on-demand"
     },
     {
+      "tool": "gen-package-standard-manifests.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
+    },
+    {
       "tool": "gen-roadmap.mjs",
       "directEntryIds": [
         "doc:roadmap-drift"
@@ -6741,6 +6866,15 @@
       "disposition": "on-demand"
     },
     {
+      "tool": "rd0361-freeze-reference.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
+    },
+    {
       "tool": "rebrand-tmf-to-spore.mjs",
       "directEntryIds": [],
       "transitiveEntryIds": [],
@@ -6805,6 +6939,15 @@
     },
     {
       "tool": "relink-workspace.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
+    },
+    {
+      "tool": "relink-workspace.test.mjs",
       "directEntryIds": [],
       "transitiveEntryIds": [],
       "via": [],
@@ -7104,6 +7247,15 @@
       ],
       "lifecycle": "active",
       "disposition": "scheduled"
+    },
+    {
+      "tool": "write-three-boundaries-receipts.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
     }
   ],
   "legacyConsumers": [
