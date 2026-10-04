@@ -87,13 +87,22 @@ contract {
 // The registry-policy DECISION: certification level must be allowed; risk must be within the max.
 pure flow policyVerdict(levelAllowed: Bool, gateOnRisk: Bool, riskRating: String, maxRiskRating: String) -> String
 contract {
-  intent { "Fold registry policy fail-closed: disallowed level or over-max risk -> denied, else 'ok'." }
+  intent { "Fold registry policy fail-closed: disallowed level, unknown max or rating under a gate, or over-max risk -> denied, else 'ok'." }
 }
 {
   if levelAllowed == false {
     return "ERR_REGISTRY_POLICY_DENIED"
   }
   if gateOnRisk == true {
+    // S7 (approved by Phillip 2026-10-04 15:10), matching registry-index.ts (PR #38): zero-trust default,
+    // owner may revisit. An unrecognised maximum, or an unrecognised entry rating under a gate, DENIES;
+    // without this, two unknowns rank 99 > 99 == false and an unknown maximum admits every rating.
+    if riskRank(maxRiskRating) == 99 {
+      return "ERR_REGISTRY_POLICY_DENIED"
+    }
+    if riskRank(riskRating) == 99 {
+      return "ERR_REGISTRY_POLICY_DENIED"
+    }
     if riskRank(riskRating) > riskRank(maxRiskRating) {
       return "ERR_REGISTRY_POLICY_DENIED"
     }

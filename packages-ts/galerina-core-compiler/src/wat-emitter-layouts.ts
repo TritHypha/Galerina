@@ -99,12 +99,15 @@ export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map
 
 /**
  * True only when the WAT emitter has a faithful scalar representation and expression lane for a
- * record field. Decimal is an i32 host handle (C02). Float16/Float32 stay refused
- * until the scalar f32 lane is complete.
+ * record field. Decimal is an i32 host handle (C02). E5 (PROVISIONAL): Float32 is admitted as a
+ * 4-byte, 4-aligned f32 slot (its binary32 value is stored exactly). Float16 stays REFUSED: a 4-byte
+ * f32 slot would hold the value exactly, but it would silently make a 2-byte binary-format / FFI field
+ * occupy 4 bytes, so the conservative choice is FUNGI-LAYOUT-001 until a 2-byte layout is ruled on.
  */
 export function isWATRecordFieldTypeSupported(typeName: string): boolean {
   const base = numericBaseType(typeName.trim());
-  if (base === "Float16" || base === "Float32") return false;
+  if (base === "Float16") return false;
+  if (base === "Float32") return true;
   const watType = galerinaTypeToWAT(typeName.trim());
   return watType === "i32" || watType === "i64" || watType === "f64";
 }
@@ -122,9 +125,10 @@ export function buildWATRecordLayouts(ast: AstNode | undefined): Map<string, WAT
     let recordAlignment: 4 | 8 = 4;
     for (const [name, type] of fields) {
       if (!isWATRecordFieldTypeSupported(type)) continue;
-      const lowered = galerinaTypeToWAT(type);
-      if (lowered !== "i32" && lowered !== "i64" && lowered !== "f64") continue;
-      const size: 4 | 8 = lowered === "i32" ? 4 : 8;
+      // E5: a Float32 field is a 4-byte f32 slot (the carrier value is binary32-exact, so demote is lossless).
+      const lowered: "i32" | "i64" | "f64" | "f32" = numericBaseType(type.trim()) === "Float32" ? "f32" : galerinaTypeToWAT(type) as "i32" | "i64" | "f64";
+      if (lowered !== "i32" && lowered !== "i64" && lowered !== "f64" && lowered !== "f32") continue;
+      const size: 4 | 8 = lowered === "i32" || lowered === "f32" ? 4 : 8;
       cursor = alignRecordOffset(cursor, size);
       slots.push({ name, type, watType: lowered, offset: cursor, size });
       cursor += size;
@@ -141,8 +145,8 @@ export function buildWATRecordLayouts(ast: AstNode | undefined): Map<string, WAT
 
 /**
  * #132 fail-closed guard after typed natural-alignment support. i32 handles retain their compact
- * four-byte slots; i64 and f64 fields use naturally aligned eight-byte slots. Float16/Float32 remain
- * refused until the scalar f32 expression lane is faithful. Decimal record fields lower as
+ * four-byte slots; i64 and f64 fields use naturally aligned eight-byte slots; an E5 Float32 field uses
+ * a four-byte f32 slot. Float16 remains refused (no 2-byte layout yet). Decimal record fields lower as
  * i32 host handles (C02). The predicate is shared with the corpus audit so new unsupported
  * representations cannot enter silently.
  */

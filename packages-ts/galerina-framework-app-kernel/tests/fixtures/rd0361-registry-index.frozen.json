@@ -1,0 +1,3164 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-framework-app-kernel/src/self-hosted",
+    "file": "registry-index.fungi",
+    "module": "registry-index",
+    "ledgerSha256": "edb82254d9eba5c2654121a76dd2620ec3653c4f47fbe2eb4636057d6ca7a466"
+  },
+  "oracle": {
+    "kind": "typescript-shadow-capture",
+    "source": "packages-ts/galerina-framework-app-kernel/src/registry-index.ts",
+    "capturedAtCommit": "4ddd77533b9356c0a867bf5d0d40dcfc48882078"
+  },
+  "exports": [
+    {
+      "name": "lookupVerdict",
+      "params": [
+        "int",
+        "int",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "string"
+    },
+    {
+      "name": "riskRank",
+      "params": [
+        "string"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "signatureVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "string",
+        "bool",
+        "bool"
+      ],
+      "returns": "string"
+    },
+    {
+      "name": "policyVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "string",
+        "string"
+      ],
+      "returns": "string"
+    },
+    {
+      "name": "admitVerdict",
+      "params": [
+        "string",
+        "string",
+        "string"
+      ],
+      "returns": "string"
+    }
+  ],
+  "caseCount": 274,
+  "casesSha256": "be3ce05502b8e238114588a8fbb87c7603113ac4f53f9c7c9982d76c748f67e2",
+  "cases": [
+    {
+      "id": "lookup-n0-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        0,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "lookup-n0-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        0,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n1-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n2-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n2-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v2-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        2,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n2-v2-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        2,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n3-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n3-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n3-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n3-v2-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        2,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v2-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        2,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v3-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        3,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v3-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        3,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "rank-low",
+      "export": "riskRank",
+      "args": [
+        "low"
+      ],
+      "expected": 0
+    },
+    {
+      "id": "rank-medium",
+      "export": "riskRank",
+      "args": [
+        "medium"
+      ],
+      "expected": 1
+    },
+    {
+      "id": "rank-high",
+      "export": "riskRank",
+      "args": [
+        "high"
+      ],
+      "expected": 2
+    },
+    {
+      "id": "rank-critical",
+      "export": "riskRank",
+      "args": [
+        "critical"
+      ],
+      "expected": 3
+    },
+    {
+      "id": "sig-000-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-000-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-001-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-010-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-011-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-100-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-101-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "sig-110-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "true",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-110-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-111-t-00",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "true",
+        false,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-111-t-01",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "true",
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "sig-111-t-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "true",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "sig-111-t-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "true",
+        true,
+        true
+      ],
+      "expected": "verified"
+    },
+    {
+      "id": "sig-111-f-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "false",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "sig-111-f-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "false",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "sig-111-nokey-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "no-key",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "sig-111-nokey-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "no-key",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "sig-111-yes-10",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "yes",
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "sig-111-yes-11",
+      "export": "signatureVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        "yes",
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "policy-00-low-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "low",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-low-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "low",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-low-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "low",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-low-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "low",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-low-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "low",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-medium-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "medium",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-medium-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "medium",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-medium-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "medium",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-medium-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "medium",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-medium-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "medium",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-high-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "high",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-high-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "high",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-high-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "high",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-high-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "high",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-high-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "high",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-critical-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "critical",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-critical-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "critical",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-critical-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "critical",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-critical-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "critical",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-critical-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "critical",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-extreme-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "extreme",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-extreme-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "extreme",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-extreme-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "extreme",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-extreme-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "extreme",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-00-extreme-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        false,
+        "extreme",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-low-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "low",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-low-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "low",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-low-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "low",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-low-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "low",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-low-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "low",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-medium-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "medium",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-medium-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "medium",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-medium-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "medium",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-medium-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "medium",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-medium-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "medium",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-high-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "high",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-high-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "high",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-high-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "high",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-high-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "high",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-high-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "high",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-critical-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "critical",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-critical-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "critical",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-critical-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "critical",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-critical-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "critical",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-critical-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "critical",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-extreme-low",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "extreme",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-extreme-medium",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "extreme",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-extreme-high",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "extreme",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-extreme-critical",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "extreme",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-01-extreme-extreme",
+      "export": "policyVerdict",
+      "args": [
+        false,
+        true,
+        "extreme",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-10-low-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "low",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-low-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "low",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-low-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "low",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-low-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "low",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-low-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "low",
+        "extreme"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-medium-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "medium",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-medium-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "medium",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-medium-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "medium",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-medium-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "medium",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-medium-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "medium",
+        "extreme"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-high-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "high",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-high-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "high",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-high-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "high",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-high-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "high",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-high-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "high",
+        "extreme"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-critical-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "critical",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-critical-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "critical",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-critical-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "critical",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-critical-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "critical",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-critical-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "critical",
+        "extreme"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-extreme-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "extreme",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-extreme-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "extreme",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-extreme-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "extreme",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-extreme-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "extreme",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-10-extreme-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        false,
+        "extreme",
+        "extreme"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-low-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "low",
+        "low"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-low-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "low",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-low-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "low",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-low-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "low",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-low-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "low",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-medium-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "medium",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-medium-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "medium",
+        "medium"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-medium-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "medium",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-medium-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "medium",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-medium-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "medium",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-high-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "high",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-high-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "high",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-high-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "high",
+        "high"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-high-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "high",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-high-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "high",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-critical-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "critical",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-critical-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "critical",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-critical-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "critical",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-critical-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "critical",
+        "critical"
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "policy-11-critical-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "critical",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "admit-ok-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ok",
+        "ok"
+      ],
+      "expected": "admitted"
+    },
+    {
+      "id": "admit-ok-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "admit-ok-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "admit-ok-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "admit-ok-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "admit-ok-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "admit-ok-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "admit-ok-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "admit-ok-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "admit-ok-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "admit-ok-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "admit-ok-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "verified",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "admit-unsigned-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ok",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-unsigned-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_UNSIGNED",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_UNSIGNED"
+    },
+    {
+      "id": "admit-malformed-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ok",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-malformed-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_MALFORMED",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_MALFORMED"
+    },
+    {
+      "id": "admit-nokey-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ok",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-nokey-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_NO_KEY",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_NO_KEY"
+    },
+    {
+      "id": "admit-badsig-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ok",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-badsig-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+    },
+    {
+      "id": "admit-stale-ok-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ok",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-ok-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ok",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-pkg-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-pkg-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_PACKAGE_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-ver-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-ver-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_VERSION_UNKNOWN",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-dup-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_DUPLICATE",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-dup-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_DUPLICATE",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-hash-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-hash-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_HASH_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-keyid-ok",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ok"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    },
+    {
+      "id": "admit-stale-keyid-denied",
+      "export": "admitVerdict",
+      "args": [
+        "ERR_REGISTRY_INDEX_STALE",
+        "ERR_REGISTRY_KEYID_MISMATCH",
+        "ERR_REGISTRY_POLICY_DENIED"
+      ],
+      "expected": "ERR_REGISTRY_INDEX_STALE"
+    }
+  ]
+}

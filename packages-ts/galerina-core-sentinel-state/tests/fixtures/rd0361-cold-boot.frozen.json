@@ -1,0 +1,65 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-sentinel-state/src/self-hosted",
+    "file": "cold-boot.fungi",
+    "module": "cold-boot",
+    "ledgerSha256": "19632e4aaadc65a1498daaba7bc61a86959a08621c4f577651b73a10be7ad093"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-sentinel-state/tests/rd0361-cold-boot-execution.test.mjs",
+    "capturedAtCommit": "ecf742ca87a9e73d5d1f325fd6e6f2cbdc56494d"
+  },
+  "exports": [
+    {
+      "name": "restoreVerdict",
+      "params": [
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 4,
+  "casesSha256": "f93b1bee5d0d73821cbed02872fbb38b2a19e99a307486777fdbc5c5a563afb1",
+  "cases": [
+    {
+      "id": "restore-00",
+      "export": "restoreVerdict",
+      "args": [
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "restore-01",
+      "export": "restoreVerdict",
+      "args": [
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "restore-10",
+      "export": "restoreVerdict",
+      "args": [
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "restore-11",
+      "export": "restoreVerdict",
+      "args": [
+        true,
+        true
+      ],
+      "expected": 1
+    }
+  ]
+}
