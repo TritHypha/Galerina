@@ -36,6 +36,10 @@ const REGISTER = Object.freeze({
     tier: "gate/G7",
     question: "is this statement ABOUT these exact artifacts? (bindings only — NOT whether anyone signed it)",
   },
+  computePlanAdmissionHash: {
+    tier: "runtime/execution-plan",
+    question: "what admission binding does this plan carry over planHash + generatedAt/maxAgeMs/targetBinding/planSignature? (unkeyed integrity for verifyPlanAdmission to recompute - NOT a signature and NOT an admission decision; RD-0363 P5)",
+  },
   verifyPlanAdmission: {
     tier: "runtime/execution-plan",
     question: "is this passive execution plan admissible — hash intact, fresh, target-bound? (K3; a missing signature is INDETERMINATE, never ALLOW)",

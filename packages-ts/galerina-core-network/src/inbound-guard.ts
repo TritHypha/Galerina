@@ -60,8 +60,9 @@ export function parseRateLimit(limit: string): { count: number; windowMs: number
 
 /**
  * Admit (or refuse) an inbound request against the declared policy. Deny-by-default:
- *   • an explicit inbound DENY rule whose port/protocol match always wins;
- *   • otherwise an inbound ALLOW rule that matches admits it;
+ *   • an explicit inbound DENY rule whose port/protocol match always wins (a request that omits its
+ *     protocol matches deny rules of every protocol);
+ *   • otherwise an inbound ALLOW rule that matches admits it — the request must STATE the rule's protocol;
  *   • otherwise the policy's defaultEffect decides (deny unless explicitly "allow").
  * A rule with no `ports` (or empty) matches every port (an unrestricted rule, as authored).
  */
@@ -75,11 +76,15 @@ export function guardInboundRequest(req: InboundRequest, policy: InboundGuardPol
   const protoMatches = (e: { protocol: InboundProtocol }) =>
     req.protocol === undefined || e.protocol === req.protocol;
   const matches = (e: { ports?: readonly number[]; protocol: InboundProtocol }) => portMatches(e) && protoMatches(e);
+  // Zero-trust default (owner may revisit): an ALLOW rule names a protocol, so it only admits a request
+  // that states that same protocol. A protocol-less request still matches DENY rules (via `matches`).
+  const allowMatches = (e: { ports?: readonly number[]; protocol: InboundProtocol }) =>
+    portMatches(e) && req.protocol !== undefined && e.protocol === req.protocol;
 
   if (inbound.some((e) => e.effect === "deny" && matches(e))) {
     return { allowed: false, reason: `inbound port ${req.port} matched an explicit deny rule`, code: "Galerina_NETWORK_INBOUND_DENIED" };
   }
-  if (inbound.some((e) => e.effect === "allow" && matches(e))) {
+  if (inbound.some((e) => e.effect === "allow" && allowMatches(e))) {
     return { allowed: true, reason: `inbound port ${req.port} admitted by an allow rule` };
   }
   if (policy.defaultEffect === "allow") {
