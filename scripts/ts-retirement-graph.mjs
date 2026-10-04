@@ -20,6 +20,7 @@
 //
 //   node scripts/ts-retirement-graph.mjs              # regenerate build/ts-retirement/ + summary line
 //   node scripts/ts-retirement-graph.mjs --self-test  # finder coverage + a known twin pair + sum check
+//   node scripts/ts-retirement-graph.mjs --help       # usage only; never writes (unknown flags refuse)
 import { createHash } from "node:crypto";
 import {
   lstatSync,
@@ -56,6 +57,46 @@ import { loadBetaV1ReleaseEvidenceAuthority } from "./beta-v1-release-admission.
 import { verifyPostSlideAuthorityLedgerEntries } from "./lib/post-slide-authority-ledger.mjs";
 import { parseStrictJsonObject } from "./lib/flat-package-root-lock.mjs";
 
+// Argument contract (zero-trust default, owner may revisit): `--help`/`-h` (alone, or with only
+// `--root <dir>`) prints usage and exits 0 WITHOUT writing; any unknown or repeated argument refuses
+// (exit 2) before any read or write. A generator owner must never treat an unrecognised flag as a
+// request to regenerate tracked output.
+const TS_RETIREMENT_USAGE = [
+  "usage: node scripts/ts-retirement-graph.mjs [--root <dir>] [--check] [--json] [--terminal-check] [--post-slide] [--self-test]",
+  "  (no mode flag)    regenerate build/ts-retirement/ and print the summary line",
+  "  --root <dir>      inventory <dir> instead of this repository",
+  "  --check           compare the generated output without writing; exit 1 on drift",
+  "  --json            print the JSON summary",
+  "  --terminal-check  terminal-retirement gate",
+  "  --post-slide      post-SLIDE authority-ledger gate",
+  "  --self-test       finder coverage + a known twin pair + sum check",
+  "  --help, -h        print this usage and exit 0 without writing",
+].join("\n");
+{
+  const args = process.argv.slice(2);
+  const refuse = (why) => {
+    console.error(`ts-retirement: REFUSED ${why}; nothing was written.\n${TS_RETIREMENT_USAGE}`);
+    process.exit(2);
+  };
+  const flags = new Set(["--check", "--json", "--terminal-check", "--post-slide", "--self-test"]);
+  const seen = new Set();
+  let help = false;
+  let other = false;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (seen.has(arg)) refuse(`repeated argument ${JSON.stringify(arg)}`);
+    seen.add(arg);
+    if (arg === "--root") { i++; continue; } // value presence is checked just below
+    if (arg === "--help" || arg === "-h") { help = true; continue; }
+    if (!flags.has(arg)) refuse(`unknown argument ${JSON.stringify(arg)}`);
+    other = true;
+  }
+  if (help && other) refuse("--help combined with a mode flag");
+  if (help) {
+    console.log(TS_RETIREMENT_USAGE);
+    process.exit(0);
+  }
+}
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT_INDEX = process.argv.indexOf("--root");
 if (
