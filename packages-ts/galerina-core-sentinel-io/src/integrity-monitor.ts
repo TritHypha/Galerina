@@ -16,7 +16,7 @@
  * fail integrity.
  */
 
-import { createHash, createHmac } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { HardenedBorderViolation } from "./errors.js";
 import { SecurityTrap } from "./errors.js";
 
@@ -25,6 +25,14 @@ export interface IntegrityResult {
   readonly ok: boolean;
   readonly expected: string;
   readonly actual: string;
+}
+
+/** Constant-time hex-string equality. Only the length check is variable-time (lengths are public). */
+function digestsEqual(actualHex: string, expectedHex: string): boolean {
+  if (typeof expectedHex !== "string") return false;
+  const a = Buffer.from(actualHex, "utf8");
+  const e = Buffer.from(expectedHex, "utf8");
+  return a.length === e.length && timingSafeEqual(a, e);
 }
 
 export class IntegrityMonitor {
@@ -62,7 +70,9 @@ export class IntegrityMonitor {
 
   /**
    * Compute the digest and compare against `expectedHex`. Returns the result;
-   * does NOT throw on mismatch.
+   * does NOT throw on mismatch. The comparison is constant-time: in keyed mode the
+   * expected hex is attacker-supplied, and a short-circuiting `===` would leak how
+   * much of a guessed MAC is right (a byte-at-a-time forgery oracle).
    */
   verifyBlock(
     bytes: Uint8Array,
@@ -72,7 +82,7 @@ export class IntegrityMonitor {
     const actual = this.digest(bytes);
     return {
       blockId,
-      ok: actual === expectedHex,
+      ok: digestsEqual(actual, expectedHex),
       expected: expectedHex,
       actual,
     };

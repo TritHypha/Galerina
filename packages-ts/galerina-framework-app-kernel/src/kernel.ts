@@ -26,7 +26,7 @@
  *   12 audit placeholder
  */
 import type { HttpMethod, RouteDeclaration, EffectiveRoutePolicy } from "./types.js";
-import { resolveEffectiveRoutePolicy, type EffectivePosture } from "./route-defaults.js";
+import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePosture } from "./route-defaults.js";
 // Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
@@ -55,7 +55,8 @@ export interface GalerinaKernelRequest {
   readonly receivedAt: number;
   /** Optional channel/identity verdict from the transport (e.g. the TLSTP S1 cert-gate K3 fold).
    *  When present it is collapsed FAIL-CLOSED at the auth gate: only ALLOW (+1) admits; an
-   *  INDETERMINATE (0) or DENY (−1) refuses. Absent → the header-presence check applies (legacy). */
+   *  INDETERMINATE (0) or DENY (−1) refuses. Absent on a `required`-auth route → 401; header
+   *  presence is never sufficient. */
   readonly channelVerdict?: Verdict;
   /** Exact scopes carried by the authenticated principal that produced `channelVerdict`. */
   readonly principalScopes?: readonly string[];
@@ -406,7 +407,7 @@ function hasDuplicateJsonKeys(text: string): boolean {
 }
 
 function parseRatePerMinute(rate: string): number {
-  const match = /^(\d+)\/minute$/.exec(rate);
+  const match = RATE_PER_MINUTE_FORM.exec(rate);
   if (match === null) throw new Error(`Unsupported route rate '${rate}'. Expected '<positive integer>/minute'.`);
   const value = Number(match[1]);
   if (!Number.isSafeInteger(value) || value < 1) throw new Error(`Invalid route rate '${rate}'.`);
