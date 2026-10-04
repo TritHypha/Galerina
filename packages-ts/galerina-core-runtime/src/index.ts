@@ -373,6 +373,22 @@ function denyVerdict(reason: string): GovernedRuntimeVerdict {
   return { outcome: "deny", reason };
 }
 
+const ignoreSettlement = (): void => {};
+
+/** Zero-trust default (owner may revisit): a capability that returns a native Promise has already failed the
+ *  synchronous contract and is DENIED; it is never awaited. Its eventual rejection is consumed here so a
+ *  rejected async provider cannot surface as a process-level unhandled rejection (which terminates Node by
+ *  default — host-wide availability loss). `Promise.prototype.then.call` brand-checks for a REAL promise
+ *  before any user code runs, so a hostile non-native thenable is never invoked; anything else throws a
+ *  TypeError, which is swallowed — the verdict is deny either way. */
+function consumeAsyncRejection(value: unknown): void {
+  try {
+    Promise.prototype.then.call(value as Promise<unknown>, ignoreSettlement, ignoreSettlement);
+  } catch {
+    // Not a native promise (or a hostile species constructor): nothing of ours to consume.
+  }
+}
+
 /** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
  *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
  *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) verify the
@@ -423,6 +439,7 @@ export function createGovernedRuntimeExecutor(
         return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
       }
       if (!(bytes instanceof Uint8Array)) {
+        consumeAsyncRejection(bytes);
         return denyVerdict("artifact source returned something other than bytes — deny (fail-closed).");
       }
       const ownedBytes = Uint8Array.from(bytes);
@@ -433,6 +450,7 @@ export function createGovernedRuntimeExecutor(
         return denyVerdict("artifact hash capability failed — deny (fail-closed).");
       }
       if (typeof computed !== "string" || computed !== request.artifactSha256) {
+        consumeAsyncRejection(computed);
         return denyVerdict(
           `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
         );
@@ -453,6 +471,7 @@ export function createGovernedRuntimeExecutor(
         attested = false;
       }
       if (attested !== true) {
+        consumeAsyncRejection(attested);
         return denyVerdict(
           `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
         );
@@ -468,6 +487,7 @@ export function createGovernedRuntimeExecutor(
         return denyVerdict("low-level execution failed — deny (fail-closed).");
       }
       if (typeof executed !== "object" || executed === null || (executed as { ok?: unknown }).ok !== true) {
+        consumeAsyncRejection(executed);
         const reason = typeof executed === "object" && executed !== null && typeof (executed as { reason?: unknown }).reason === "string"
           ? (executed as { reason: string }).reason
           : "the low-level executor did not return an exact { ok: true } result";
