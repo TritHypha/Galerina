@@ -21,8 +21,17 @@ import {
   provenance,
 } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 import { measureCoverageGap } from "./audit-code-catalog-coverage.mjs"; // derives the coverage caveat below
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/gen-code-registry.mjs [--check]\n  (no arguments)  regenerate build/code-registry/ from build/code-index/code-index.json\n  --check         compare without writing\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const ROOT = process.cwd();
+for (const [index, arg] of process.argv.slice(2).entries()) {
+  if (arg !== "--check" || process.argv.slice(2).indexOf(arg) !== index) {
+    console.error(`gen-code-registry: REFUSED unknown or repeated argument ${JSON.stringify(arg)}; nothing was written (see --help).`);
+    process.exit(2);
+  }
+}
 const CHECK = process.argv.includes("--check");
 const stableCompare = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 let arr;

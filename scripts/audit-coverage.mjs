@@ -19,8 +19,22 @@ import {
   generatedOutputMatches,
   provenance,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/audit-coverage.mjs [codes] [--json] [--check] [--soft]\n  codes      the only implemented dimension (default)\n  --json     print the JSON report\n  --check    compare without writing\n  --soft     report-only (exit 0)\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const ROOT = process.cwd();
+{
+  const seen = new Set();
+  for (const arg of process.argv.slice(2)) {
+    const known = arg === "--json" || arg === "--check" || arg === "--soft" || !arg.startsWith("-");
+    if (!known || seen.has(arg)) {
+      console.error(`audit-coverage: REFUSED unknown or repeated argument ${JSON.stringify(arg)}; nothing was written (see --help).`);
+      process.exit(2);
+    }
+    seen.add(arg);
+  }
+}
 const asJson = process.argv.includes("--json");
 const check = process.argv.includes("--check");
 const soft = process.argv.includes("--soft"); // report-only (exit 0) — for run-phase-close wiring

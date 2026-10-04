@@ -10,6 +10,9 @@ import { fileURLToPath } from "node:url";
 
 import { verifySlideReferenceEvidence } from "./lib/assurance-fabric/slide-reference-evidence.mjs";
 import { generatedOutputMatches } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/verify-slide-reference-evidence.mjs [--root <dir>] [--slide-root <dir>] [--check|--write]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 function parseArgs(argv) {
   const defaultRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");

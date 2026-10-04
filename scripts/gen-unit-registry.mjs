@@ -39,6 +39,9 @@ import {
   generatedOutputMatches,
   provenance,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/gen-unit-registry.mjs [--root <dir>] [--check|--self-test]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 /**
  * Parse one repository root and one mode. Every unknown, duplicate, or

@@ -18,6 +18,9 @@ import {
   parseStrictJsonObject,
   verifyFlatPackageRootLock,
 } from "./lib/flat-package-root-lock.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/flat-package-root-lock.mjs --check|--write [--json]\n  select exactly one of --check or --write\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const MAX_TRACKED_FILE_BYTES = 16 * 1024 * 1024;
 const PACKAGE_ROOT_NAME = "packages-ts";

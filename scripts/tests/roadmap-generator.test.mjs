@@ -158,6 +158,7 @@ function fixture() {
   write(harness, "package.json", '{"type":"module"}\n');
   write(harness, "scripts/gen-roadmap.mjs", readFileSync(SCRIPT, "utf8"));
   write(harness, "scripts/lib/provenance.mjs", readFileSync(PROVENANCE, "utf8"));
+  write(harness, "scripts/lib/cli-help.mjs", readFileSync(resolve("scripts/lib/cli-help.mjs"), "utf8"));
   write(harness, "scripts/lib/assurance-fabric/roadmap-evidence.mjs", readFileSync(ROADMAP_EVIDENCE, "utf8"));
   write(harness, "scripts/lib/assurance-fabric/generated-evidence.mjs", readFileSync(GENERATED_EVIDENCE, "utf8"));
   write(harness, "scripts/lib/assurance-fabric/evidence-dag.mjs", readFileSync(EVIDENCE_DAG, "utf8"));
