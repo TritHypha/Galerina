@@ -125,6 +125,29 @@ export function createWasmAdmissionVerifier(policy: AdmissionPolicy): GovernedAd
 export function createLowLevelWasmExecutor(): LowLevelWasmExecutor {
   return {
     seamVersion: RUNTIME_SEAM_VERSION,
+    /** Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). SYNCHRONOUS
+     *  admit step: compiles and INSPECTS the module but never instantiates it. Allows (exact `true`) only when
+     *  every arg is a finite number, the bytes compile, `exportName` is a function export, and every import is
+     *  a function the closed host set provides. Anything else denies, so instantiation is never reached. */
+    admitInstantiation({ artifactBytes, exportName, args }): boolean {
+      try {
+        for (const a of args) {
+          if (typeof a !== "number" || !Number.isFinite(a)) return false;
+        }
+        const mod = new WebAssembly.Module(artifactBytes as BufferSource);
+        if (!WebAssembly.Module.exports(mod).some((e) => e.name === exportName && e.kind === "function")) return false;
+        const closedImports = createHostRuntime().imports as Record<string, Record<string, unknown>>;
+        return WebAssembly.Module.imports(mod).every((imp) => {
+          if (imp.kind !== "function") return false;
+          if (!Object.prototype.hasOwnProperty.call(closedImports, imp.module)) return false;
+          const space = closedImports[imp.module];
+          if (typeof space !== "object") return false;
+          return Object.prototype.hasOwnProperty.call(space, imp.name) && typeof space[imp.name] === "function";
+        });
+      } catch {
+        return false;
+      }
+    },
     instantiateAndCall({ artifactBytes, exportName, args }) {
       for (const a of args) {
         if (typeof a !== "number" || !Number.isFinite(a)) {
