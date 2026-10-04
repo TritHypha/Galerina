@@ -19,14 +19,10 @@ export interface AuthPolicy {
   readonly mode: AuthMode;
   readonly scopes: readonly string[];
   /**
-   * Legacy escape hatch (default `false` = TIGHTENED / fail-closed). When a `required`-auth route
-   * receives NO `channelVerdict`, the kernel previously admitted on mere Authorization-HEADER PRESENCE —
-   * which is not a real verification of the token (any non-empty header passed). With this flag `false`
-   * (the default), header-presence alone NO LONGER admits: the route demands an actual channel/identity
-   * verdict, or it 401s. Set `true` ONLY to opt a route back into the weaker presence-only behaviour
-   * (e.g. a deployment whose token validation genuinely lives upstream). Deny-by-default; opt-in to relax.
+   * @deprecated Header presence is not authentication. `true` is refused at construction
+   * (resolveEffectiveRoutePolicy throws); `false` or absent changes nothing. A `required`-auth
+   * route always needs a verified channel/identity verdict and principal, or it answers 401.
    */
-  /** @deprecated Header presence is not authentication; `true` is refused at construction. */
   readonly allowHeaderPresenceFallback?: boolean;
 }
 
