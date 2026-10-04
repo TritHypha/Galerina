@@ -1,0 +1,658 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v1",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-sentinel-time/src/self-hosted",
+    "file": "synchronization-gate.fungi",
+    "ledgerSha256": "3c697b6241fb777e652312a064c6bf6d6dd0e16794ce2ae01ea1641d0fe54eac"
+  },
+  "oracle": {
+    "kind": "typescript-shadow-capture",
+    "source": "packages-ts/galerina-core-sentinel-time/src/synchronization-gate.ts",
+    "capturedAtCommit": "030052b2c5f5d0fbf2d8c1a99bfd5da092a1b08f"
+  },
+  "exports": [
+    "syncGateVerdict",
+    "driftGateVerdict"
+  ],
+  "caseCount": 106,
+  "casesSha256": "443660e0e24fe3196967c6e8d2debf4d713a3f37a876610a1ac85744b8c17945",
+  "cases": [
+    {
+      "id": "sync-s0",
+      "export": "syncGateVerdict",
+      "args": [0],
+      "expected": -1
+    },
+    {
+      "id": "sync-s1",
+      "export": "syncGateVerdict",
+      "args": [1],
+      "expected": 1
+    },
+    {
+      "id": "drift-s0-d0-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 0, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d0-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 0, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d0-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 0, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d0-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 0, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d0-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 0, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 1, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 1, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 1, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 1, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 1, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d4-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 4, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d4-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 4, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d4-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 4, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d4-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 4, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d4-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 4, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d5-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 5, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d5-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 5, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d5-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 5, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d5-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 5, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d5-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 5, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d6-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 6, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d6-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 6, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d6-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 6, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d6-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 6, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d6-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 6, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d9-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 9, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d9-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 9, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d9-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 9, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d9-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 9, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d9-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 9, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d10-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 10, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d10-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 10, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d10-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 10, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d10-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 10, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d10-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 10, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d11-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 11, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d11-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 11, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d11-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 11, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d11-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 11, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d11-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 11, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d100-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 100, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d100-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 100, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d100-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 100, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d100-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 100, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d100-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 100, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1000000-m0",
+      "export": "driftGateVerdict",
+      "args": [0, 1000000, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1000000-m1",
+      "export": "driftGateVerdict",
+      "args": [0, 1000000, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1000000-m5",
+      "export": "driftGateVerdict",
+      "args": [0, 1000000, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1000000-m10",
+      "export": "driftGateVerdict",
+      "args": [0, 1000000, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s0-d1000000-m1000000",
+      "export": "driftGateVerdict",
+      "args": [0, 1000000, 1000000],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d0-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 0, 0],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d0-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 0, 1],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d0-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 0, 5],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d0-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 0, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d0-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 0, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d1-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 1, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d1-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 1, 1],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d1-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 1, 5],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d1-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 1, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d1-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 1, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d4-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 4, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d4-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 4, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d4-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 4, 5],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d4-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 4, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d4-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 4, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d5-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 5, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d5-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 5, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d5-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 5, 5],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d5-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 5, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d5-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 5, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d6-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 6, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d6-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 6, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d6-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 6, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d6-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 6, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d6-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 6, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d9-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 9, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d9-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 9, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d9-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 9, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d9-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 9, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d9-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 9, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d10-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 10, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d10-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 10, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d10-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 10, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d10-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 10, 10],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d10-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 10, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d11-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 11, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d11-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 11, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d11-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 11, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d11-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 11, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d11-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 11, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d100-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 100, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d100-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 100, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d100-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 100, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d100-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 100, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d100-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 100, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d1000000-m0",
+      "export": "driftGateVerdict",
+      "args": [1, 1000000, 0],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d1000000-m1",
+      "export": "driftGateVerdict",
+      "args": [1, 1000000, 1],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d1000000-m5",
+      "export": "driftGateVerdict",
+      "args": [1, 1000000, 5],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d1000000-m10",
+      "export": "driftGateVerdict",
+      "args": [1, 1000000, 10],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d1000000-m1000000",
+      "export": "driftGateVerdict",
+      "args": [1, 1000000, 1000000],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d2147483647-m2147483647",
+      "export": "driftGateVerdict",
+      "args": [1, 2147483647, 2147483647],
+      "expected": 1
+    },
+    {
+      "id": "drift-s1-d2147483647-m2147483646",
+      "export": "driftGateVerdict",
+      "args": [1, 2147483647, 2147483646],
+      "expected": -1
+    },
+    {
+      "id": "drift-s1-d2147483646-m2147483647",
+      "export": "driftGateVerdict",
+      "args": [1, 2147483646, 2147483647],
+      "expected": 1
+    },
+    {
+      "id": "drift-s0-d2147483647-m2147483647",
+      "export": "driftGateVerdict",
+      "args": [0, 2147483647, 2147483647],
+      "expected": -1
+    }
+  ]
+}
