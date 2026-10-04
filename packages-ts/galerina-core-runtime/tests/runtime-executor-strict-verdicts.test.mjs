@@ -179,3 +179,44 @@ test("bindGovernedRuntime fails closed for a null / malformed provider instead o
     assert.equal(bound, DENY_ALL_RUNTIME_EXECUTOR);
   }
 });
+
+// Codex fresh-review hold (2) on 4e63a98f: provider/request property reads must not throw out of the
+// fail-closed verdict or bind contract. Every hostile accessor is a deny (or deny-all bind), never an
+// exception, and never reaches the VM.
+const throwingSeam = (rest) => Object.defineProperty({ ...rest }, "seamVersion", { get() { throw new Error("seam getter exploded"); } });
+
+for (const [label, over] of [
+  ["artifactSource.seamVersion", () => ({ artifactSource: throwingSeam({ artifactBytesFor: () => BYTES }) })],
+  ["admissionVerifier.seamVersion", () => ({ admissionVerifier: throwingSeam({ verifyAttestation: () => true }) })],
+  ["lowLevel.seamVersion", () => ({ lowLevel: throwingSeam({ instantiateAndCall: () => ({ ok: true, result: 42 }) }) })],
+]) {
+  test(`a throwing ${label} getter is a deny verdict, not an exception, and never reaches the VM`, () => {
+    const { exec, calls } = wired(over());
+    let v;
+    assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
+    assert.equal(v.outcome, "deny");
+    assert.equal(calls.instantiate, 0);
+  });
+}
+
+test("a throwing request accessor (or hostile toString in a reason) is a deny verdict, not an exception", () => {
+  const { exec, calls } = wired();
+  const hostileRequest = Object.defineProperty(req(), "seamVersion", { get() { throw new Error("request getter exploded"); } });
+  const hostileToString = req({ seamVersion: { toString() { throw new Error("toString exploded"); } } });
+  for (const r of [hostileRequest, hostileToString]) {
+    let v;
+    assert.doesNotThrow(() => { v = exec.admitAndExecute(r); });
+    assert.equal(v.outcome, "deny");
+  }
+  assert.equal(calls.instantiate, 0);
+});
+
+test("bindGovernedRuntime binds deny-all, without throwing, for hostile admitAndExecute / seamVersion accessors", () => {
+  const hostileMethod = Object.defineProperty({ seamVersion: V }, "admitAndExecute", { get() { throw new Error("method getter exploded"); } });
+  const hostileSeam = Object.defineProperty({ admitAndExecute: () => ({ outcome: "admit" }) }, "seamVersion", { get() { throw new Error("seam getter exploded"); } });
+  for (const p of [hostileMethod, hostileSeam]) {
+    let bound;
+    assert.doesNotThrow(() => { bound = bindGovernedRuntime(p); });
+    assert.equal(bound, DENY_ALL_RUNTIME_EXECUTOR);
+  }
+});
