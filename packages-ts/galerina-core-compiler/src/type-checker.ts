@@ -288,6 +288,12 @@ const EPISTEMIC_RESERVED: ReadonlySet<string> = new Set([
   "Trusted", "Unverified", "Refuted", "Tainted", "SafeFor", "Secret", "Decision", "Verdict",
 ]);
 
+// RD-0349 D5 (zero-trust default, owner may revisit, 2026-10-04): the planned value-unit authority types
+// (Commodity<U> for metals/commodities, Crypto<T> for DTI-registered tokens, Security<ISIN> for securities).
+// None is built yet; reserving the exact names now means no user type can pose as the governed one before
+// it ships, and nothing has to be renamed when it does. Exact match only — CommodityOrder etc. stay free.
+const VALUE_UNIT_RESERVED: ReadonlySet<string> = new Set(["Commodity", "Crypto", "Security"]);
+
 // ---------------------------------------------------------------------------
 // Generic arity rules
 // Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 3
@@ -894,7 +900,11 @@ class TypeChecker {
       // (Result/Option/Array/… grant no authority; shadowing one is a footgun the schema checker already
       // catches, not authority laundering). hallmarkDecl is skipped (FUNGI-HALLMARK-005 owns it). Reuses
       // FUNGI-NAME-002 — shadowing a reserved name is a collision with the name that authority already owns.
-      if (child.kind !== "hallmarkDecl" && (nm === "Money" || nm === "Brand" || EPISTEMIC_RESERVED.has(nm))) {
+      // RD-0349 D5 (zero-trust default, owner may revisit, 2026-10-04): the names of the PLANNED value-unit
+      // authority types (Commodity<U>, Crypto<T>, Security<ISIN>) are reserved before they ship, so a user
+      // record cannot pose as the governed type in the meantime. Exact names only (CommodityOrder stays free).
+      // This tightens the "grows only as authority types ship" rule above for these three names.
+      if (child.kind !== "hallmarkDecl" && (nm === "Money" || nm === "Brand" || EPISTEMIC_RESERVED.has(nm) || VALUE_UNIT_RESERVED.has(nm))) {
         const kindWord = child.kind === "recordDecl" ? "record" : child.kind === "enumDecl" ? "enum" : "type";
         this.diagnostics.push({
           code: "FUNGI-NAME-002",
@@ -3140,7 +3150,7 @@ class TypeChecker {
   /** A hallmark may not mint a reserved name: a built-in type or currency/unit tag
    *  (both covered by BUILT_IN_TYPES) or the epistemic/security governance vocabulary. */
   private isReservedHallmarkName(name: string): boolean {
-    return isBuiltInType(name) || EPISTEMIC_RESERVED.has(name);
+    return isBuiltInType(name) || EPISTEMIC_RESERVED.has(name) || VALUE_UNIT_RESERVED.has(name);
   }
 
   private reservedHallmarkMessage(name: string): string {
@@ -3156,6 +3166,9 @@ class TypeChecker {
     }
     if (EPISTEMIC_RESERVED.has(name)) {
       return `'${name}' is a reserved governance/epistemic term. Names carry no authority in Galerina, so it cannot be minted as a hallmark type.`;
+    }
+    if (VALUE_UNIT_RESERVED.has(name)) {
+      return `'${name}' is reserved for a planned value-unit authority type (RD-0349) and cannot be minted as a hallmark type.`;
     }
     return `'${name}' is a reserved built-in name and cannot be minted as a hallmark type.`;
   }
