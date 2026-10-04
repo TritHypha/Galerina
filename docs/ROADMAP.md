@@ -20,7 +20,8 @@ the sync section at the top of [docs/TODO.md](TODO.md). In roadmap terms:
   SLIDE L756 together with Galerina #40), native provider packs, V2-C
   admission evidence, trit bitplane 64/256, general source entry, the Contract 84
   absence census, and the L1686 bitwise/shift registries (#11–#16, all off by
-  default).
+  default). SLIDE #17 (CI pin to `26efe2c06`) and #18 (the SLIDE side of this
+  sync) were opened later the same evening.
 - **Blocked, unchanged:** RD-1413–1415 product route; release signing
   ceremony; platform durability and the seven-OS matrix; RD-0365 hardware
   custody; RD-0364 provider identity; SLIDE/VOK re-admission and `.fungi`

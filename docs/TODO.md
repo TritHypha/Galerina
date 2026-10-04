@@ -77,8 +77,9 @@ details (#28). The live open-checkbox count is now **235** (238 before this sync
   L1951 and the receipt half of L1955). Pairs with SLIDE #4. Codex Astra review
   running; branch left untouched.
 - [ ] SLIDE PRs #1–#16 are open on `TritHypha/SLIDE` (none merged). Of these, #3
-  and #5 complete SLIDE TODO L756 with Galerina #40 (merged); once they merge, SLIDE
-  CI's Galerina pin still needs bumping to `26efe2c06` or later.
+  and #5 complete SLIDE TODO L756 with Galerina #40 (merged); SLIDE #17 (open,
+  opened during this sync) bumps SLIDE CI's Galerina pin to `26efe2c06`. SLIDE
+  #18 is this sync's SLIDE companion.
 - Closed without merge: #2 (2026-08-23) and #4 (superseded by #5).
 
 ### Blocked
