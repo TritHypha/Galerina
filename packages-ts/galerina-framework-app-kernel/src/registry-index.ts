@@ -425,10 +425,17 @@ export function lookupCertifiedPackage(index: RegistryIndex, q: CertifiedLookup)
 export interface RegistryPolicy {
   /** Allowed certification levels. A package whose level is not listed is denied. */
   readonly allowedLevels: readonly CertificationLevel[];
-  /** Maximum acceptable risk rating (inclusive). Higher → denied. Omit to not gate on risk. */
+  /**
+   * Maximum acceptable risk rating (inclusive). Higher → denied. Omit to not gate on risk.
+   * When set, an entry whose riskRating is not exactly one of low | medium | high | critical
+   * (unknown, empty, differently cased, non-string) is DENIED: zero-trust default, owner may revisit.
+   */
   readonly maxRiskRating?: RiskRating;
 }
 const RISK_ORDER: Readonly<Record<RiskRating, number>> = { low: 0, medium: 1, high: 2, critical: 3 };
+/** Exact, own-key membership: no case folding, no trimming, no prototype keys ("constructor"). */
+const isRecognisedRiskRating = (r: unknown): r is RiskRating =>
+  typeof r === "string" && Object.prototype.hasOwnProperty.call(RISK_ORDER, r);
 export type PolicyResult =
   | { readonly ok: true }
   | { readonly ok: false; readonly code: string; readonly reason: string };
@@ -437,8 +444,15 @@ export function checkRegistryPolicy(entry: RegistryEntry, policy: RegistryPolicy
   if (!policy.allowedLevels.includes(entry.certificationLevel)) {
     return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' certification level '${entry.certificationLevel}' is not permitted (allowed: ${policy.allowedLevels.join(", ")}).` };
   }
-  if (policy.maxRiskRating !== undefined && RISK_ORDER[entry.riskRating] > RISK_ORDER[policy.maxRiskRating]) {
-    return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' risk rating '${entry.riskRating}' exceeds the policy maximum '${policy.maxRiskRating}'.` };
+  if (policy.maxRiskRating !== undefined) {
+    // Zero-trust: an unrecognised rating has no rank, and `RISK_ORDER[unknown] > n` is false, which
+    // used to ADMIT it (fail-open, RD-0361 S6b finding D1). Deny it explicitly before comparing.
+    if (!isRecognisedRiskRating(entry.riskRating)) {
+      return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' risk rating '${String(entry.riskRating)}' is not a recognised rating (low | medium | high | critical); unknown risk is denied.` };
+    }
+    if (RISK_ORDER[entry.riskRating] > RISK_ORDER[policy.maxRiskRating]) {
+      return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' risk rating '${entry.riskRating}' exceeds the policy maximum '${policy.maxRiskRating}'.` };
+    }
   }
   return { ok: true };
 }
