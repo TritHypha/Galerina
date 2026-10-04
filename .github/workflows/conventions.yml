@@ -484,6 +484,8 @@ jobs:
       # the closure walk could not see it). Drift, not design: R&D traced it to the initial commit,
       # carried forward by four rebrand passes that renamed the path without ever asking whether the edge
       # should exist. No cycle — verified both ways before declaring.
+      - name: Build-chain derivation self-test (test-first probe)
+        run: node scripts/build-core-chain.mjs --self-test
       - name: Build the gate subjects + their file-dep closures (derived, topological)
         run: node scripts/build-core-chain.mjs --gate-subjects
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
