@@ -30,6 +30,7 @@ export function packageManagerInvocation(
     return { command: "npm", argsPrefix: [] };
   }
   const pathOps = platform === "win32" ? win32Path : { join, dirname, isAbsolute };
+  const candidates = [
     env.npm_execpath,
     pathOps.join(pathOps.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js"),
   ];
