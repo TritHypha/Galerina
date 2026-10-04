@@ -2332,7 +2332,7 @@
       "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:280",
       "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:365",
       "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:377",
-      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:466"
+      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:486"
     ],
     "tests": 9,
     "refs": 8,
@@ -2347,8 +2347,8 @@
       "ref packages-ts/galerina-framework-app-kernel/src/registry-index.ts:366",
       "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:377",
       "ref packages-ts/galerina-framework-app-kernel/src/registry-index.ts:378",
-      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:466",
-      "ref packages-ts/galerina-framework-app-kernel/src/registry-index.ts:466",
+      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:486",
+      "ref packages-ts/galerina-framework-app-kernel/src/registry-index.ts:486",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/err-registry-index-bad-signature.fungi:3",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/err-registry-index-bad-signature.fungi:5",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/registry-index.fungi:47",
@@ -2542,7 +2542,7 @@
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index-hybrid.test.mjs:134",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:14",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:125",
-      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:199",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:293",
       "ref scripts/registry-index-cli.mjs:947",
       "ref scripts/registry-index-cli.mjs:953"
     ]
@@ -2757,7 +2757,7 @@
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index-fuse-e2e.test.mjs:97",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:17",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:156",
-      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:203",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:297",
       "ref scripts/registry-index-cli.mjs:939",
       "test scripts/tests/codes.test.mjs:26"
     ]
@@ -2766,24 +2766,28 @@
     "code": "ERR_REGISTRY_POLICY_DENIED",
     "namespace": "ERR",
     "family": "ERR_*",
-    "occurrences": 12,
+    "occurrences": 23,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:83"
     ],
     "emits": [
-      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:438",
-      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:441"
+      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:446",
+      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:452",
+      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:457",
+      "packages-ts/galerina-framework-app-kernel/src/registry-index.ts:460"
     ],
-    "tests": 5,
+    "tests": 14,
     "refs": 0,
     "docs": 0,
     "names": [],
     "severities": [],
     "allSites": [
       "def packages-ts/galerina-framework-app-kernel/src/registry-index.ts:83",
-      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:438",
-      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:441",
+      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:446",
+      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:452",
+      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:457",
+      "emit packages-ts/galerina-framework-app-kernel/src/registry-index.ts:460",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/err-registry-policy-denied.fungi:3",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/err-registry-policy-denied.fungi:5",
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/registry-index.fungi:94",
@@ -2792,7 +2796,16 @@
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:21",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:180",
       "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:184",
-      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:208"
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:196",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:204",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:216",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:224",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:237",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:248",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:255",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:262",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:278",
+      "test packages-ts/galerina-framework-app-kernel/tests/registry-index.test.mjs:302"
     ]
   },
   {

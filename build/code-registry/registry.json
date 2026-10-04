@@ -1422,8 +1422,8 @@
       "names": [],
       "severities": [],
       "defs": 1,
-      "emits": 2,
-      "tests": 5,
+      "emits": 4,
+      "tests": 14,
       "docs": 0
     },
     {
