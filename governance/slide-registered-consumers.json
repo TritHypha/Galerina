@@ -1,0 +1,29 @@
+{
+  "schema": "galerina.slide-registered-consumers.v1",
+  "note": "Registers Galerina artifacts that SLIDE re-admits. Registration is non-authorizing: SLIDE still recomputes every digest, derives semantics independently and keeps authorityReleased false. Hold lifted by Phillip 2026-10-04 16:10 BST for the RD-0858 scalar route only.",
+  "consumers": [
+    {
+      "consumerId": "galerina.rd0858.unit4.scalar-oracle",
+      "artifactDirectory": "packages/fungi/products/galerina/rd0858-unit4-scalar-oracle",
+      "sourceFile": "scalar-oracle.fungi",
+      "checkedFile": "scalar-oracle.checked.json",
+      "sourceSha256": "sha256:bd5993a9d28ef4073e3e4e80ad6fcb0cab3fcc75b6d65d0d220f7e7ba1043544",
+      "checkedArtifactSha256": "sha256:11f010ed9ba7f1dd11ce5c2e34d766b1f41a1a590b4e39c58b9b8eed69960786",
+      "runtimeProfile": "scalar-1",
+      "flowName": "scalarOracle",
+      "expectedOutcomes": {
+        "DENY": "deny",
+        "UNKNOWN": "ambig",
+        "ALLOW": "allow"
+      },
+      "slideRoute": {
+        "repository": "TritHypha/SLIDE",
+        "module": "src/galerina-scalar-requirement-block-route.mjs",
+        "receiptSchema": "slide.galerina.scalar-requirement-block-route.receipt.v1",
+        "representationProfile": "trit.scalar.v1"
+      },
+      "conversionScope": "fixed-scalar-profile-1-artifact-only",
+      "authorityReleased": false
+    }
+  ]
+}
