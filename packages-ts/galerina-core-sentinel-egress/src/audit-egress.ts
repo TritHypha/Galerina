@@ -10,8 +10,9 @@ const GENESIS = "0".repeat(64);
 /**
  * Named development HMAC key identity: explicit all-zero 32 bytes.
  * Not a constructor default. Callers who want this mode must pass
- * `new Uint8Array(32)` (or an equivalent all-zero buffer). `strictKey`
- * refuses it (`EGR-KEY-001`).
+ * `new Uint8Array(32)` AND declare `developmentKey: true`; without that
+ * explicit development mode, and always under `strictKey`, it is refused
+ * (`EGR-KEY-001`). Zero-trust default, owner may revisit.
  */
 const ZERO_KEY = new Uint8Array(32);
 
@@ -52,7 +53,8 @@ export interface AuditEgressOptions {
   /**
    * HMAC key for the chain. Required. Omission throws `EGR-KEY-002`; it is
    * not a development default. Explicit {@link ZERO_KEY} (`new Uint8Array(32)`)
-   * is the named non-secret development key and is refused when
+   * is the named non-secret development key: admitted only with
+   * {@link AuditEgressOptions.developmentKey} `true`, and refused whenever
    * {@link AuditEgressOptions.strictKey} is true. PRODUCTION MUST inject a
    * real non-zero key.
    */
@@ -65,6 +67,12 @@ export interface AuditEgressOptions {
    */
   strictKey?: boolean;
   /**
+   * Explicit development mode for the named all-zero key ({@link ZERO_KEY}).
+   * Only the exact boolean `true` admits it; anything else (including omission)
+   * refuses it with `EGR-KEY-001`. Never set this in production.
+   */
+  developmentKey?: boolean;
+  /**
    * Key-rotation epoch this writer seals batches under (#28/D2). Positive
    * integer; stamped on and MAC-bound into every flushed batch. Omit for the
    * legacy single-key ledger.
@@ -72,9 +80,12 @@ export interface AuditEgressOptions {
   epochId?: number;
 }
 
-/** True if a key is missing or all bytes are zero (the non-secret dev key). */
+/** Minimum HMAC key length: 256 bits, the same floor as core-sentinel-state (zero-trust default, owner may revisit). */
+const MIN_KEY_BYTES = 32;
+
+/** True if a key is missing, shorter than 256 bits, or all bytes are zero (the non-secret dev key). */
 function isWeakKey(key: Uint8Array | undefined): boolean {
-  if (!key || key.length === 0) return true;
+  if (!key || key.length < MIN_KEY_BYTES) return true;
   for (const b of key) if (b !== 0) return false;
   return true;
 }
@@ -106,6 +117,30 @@ function computeBatchHash(
     h.update("\n");
   }
   return h.digest("hex");
+}
+
+/**
+ * Structural guard for a batch read back from disk. The ledger is parsed with
+ * `JSON.parse`, so a corrupted or hostile line can be any JSON value; the chain
+ * verifiers refuse anything that is not exactly the shape {@link AuditEgress.flush}
+ * writes, rather than throwing on it or hashing a look-alike (a string `records`
+ * iterates like an array of characters).
+ */
+function isAuditBatchShape(b: unknown): b is AuditBatch {
+  if (typeof b !== "object" || b === null || Array.isArray(b)) {
+    return false;
+  }
+  const o = b as Record<string, unknown>;
+  const records = o["records"];
+  return (
+    Number.isSafeInteger(o["seq"]) &&
+    Number.isSafeInteger(o["count"]) &&
+    typeof o["prevHash"] === "string" &&
+    typeof o["batchHash"] === "string" &&
+    Array.isArray(records) &&
+    records.every((r) => typeof r === "string") &&
+    (o["epochId"] === undefined || typeof o["epochId"] === "number")
+  );
 }
 
 /**
@@ -142,10 +177,26 @@ export class AuditEgress {
         "AuditEgress requires an explicit hmacKey; omission is not a development default",
       );
     }
+    // A key shorter than 256 bits is brute-forceable whatever its bytes, so it is refused even without strictKey.
+    if (!(opts.hmacKey instanceof Uint8Array) || opts.hmacKey.length < MIN_KEY_BYTES) {
+      throw new SecurityTrap(
+        "EGR-KEY-001",
+        `AuditEgress hmacKey must be a Uint8Array of at least ${MIN_KEY_BYTES} bytes (256 bits)`,
+      );
+    }
     if (opts.strictKey && isWeakKey(opts.hmacKey)) {
       throw new SecurityTrap(
         "EGR-KEY-001",
         "AuditEgress strictKey: a real (non-zero) HMAC key is required — the all-zero development key is a certification blocker",
+      );
+    }
+    // Zero-trust default (owner may revisit): a weak key is refused unless the writer is EXPLICITLY in
+    // development mode, and even then only the exact named 32-byte zero key is admitted.
+    const namedDevKey = opts.hmacKey instanceof Uint8Array && opts.hmacKey.length === ZERO_KEY.length;
+    if (isWeakKey(opts.hmacKey) && !(opts.developmentKey === true && namedDevKey)) {
+      throw new SecurityTrap(
+        "EGR-KEY-001",
+        "AuditEgress: the all-zero development key requires explicit developmentKey: true (development mode only)",
       );
     }
     if (opts.epochId !== undefined && (!Number.isInteger(opts.epochId) || opts.epochId < 1)) {
@@ -224,6 +275,8 @@ export class AuditEgress {
    * Egress all staged records as one chained batch (ONE disk write).
    *
    * @returns the written {@link AuditBatch}, or `null` if nothing was buffered.
+   * @throws the underlying I/O error if the ledger append fails; the records stay
+   *   staged and the chain head is unchanged, so a later flush retries them.
    */
   flush(): AuditBatch | null {
     const records = this.#ring.drain();
@@ -241,7 +294,17 @@ export class AuditEgress {
       ...(this.#epochId !== undefined ? { epochId: this.#epochId } : {}),
     };
     // ONE disk write per batch — the whole point.
-    appendFileSync(this.#ledgerPath, JSON.stringify(batch) + "\n");
+    try {
+      appendFileSync(this.#ledgerPath, JSON.stringify(batch) + "\n");
+    } catch (err) {
+      // Never drop: a failed write re-stages the drained records (FIFO order) and leaves the chain
+      // head and seq untouched, so the caller sees the I/O error and a later flush retries the SAME
+      // batch. The ring was emptied by drain() and these records came from it, so they always fit.
+      for (const r of records) {
+        this.#ring.push(r);
+      }
+      throw err;
+    }
     this.#prevHash = batchHash;
     this.#seq++;
     return batch;
@@ -273,14 +336,14 @@ export class AuditEgress {
    * @returns `true` iff the chain is intact (tamper-evident).
    */
   static verifyChain(batches: AuditBatch[], hmacKey?: Uint8Array): boolean {
-    if (hmacKey === undefined) {
-      return false;
+    if (!(hmacKey instanceof Uint8Array) || hmacKey.length < MIN_KEY_BYTES) {
+      return false; // absent or sub-256-bit verification key → nothing is proven
     }
     const key = hmacKey;
     let expectedPrev = GENESIS;
     for (let i = 0; i < batches.length; i++) {
       const b = batches[i];
-      if (b === undefined) {
+      if (!isAuditBatchShape(b)) {
         return false;
       }
       if (b.prevHash !== expectedPrev) {
@@ -328,7 +391,7 @@ export class AuditEgress {
     let lastEpoch = 0;
     for (let i = 0; i < batches.length; i++) {
       const b = batches[i];
-      if (b === undefined) {
+      if (!isAuditBatchShape(b)) {
         return false;
       }
       if (b.epochId === undefined || !Number.isInteger(b.epochId) || b.epochId < 1) {

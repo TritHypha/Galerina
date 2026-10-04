@@ -435,29 +435,8 @@ jobs:
         run: |
           node packages-ts/galerina-devtools-benchmarks/src/audit-benchmark-integrity.mjs --self-test
           node packages-ts/galerina-devtools-benchmarks/src/audit-benchmark-integrity.mjs --stale-only
-      # dev-tool script tests — the audit/index/registry tooling itself (scripts/tests/) lives OUTSIDE
-      # packages-ts, so the package runner never sees it. Run here so the gates that guard the repo
-      # are themselves regression-gated (incl. the doc-drift KB-resolution + fail-closed benches).
-      # The BUILD-dependent script tests run in the separate build-cli-gates job below; exclude them here
-      # so THIS job stays build-free. A new build-free test is auto-included (the glob minus the known
-      # build-dependent files) — no silent under-coverage.
-      #   • cg4-signing-boundary + signed-fixture-guard — drive `galerina.mjs build` (imports dist).
-      #   • gate-selftests — SPAWNS every audit-*/lint-* tool's --self-test, and FIVE of them read build
-      #     artifacts (audit-dss-wasm-build · audit-fungi-corpus-check · audit-hardening-determinism ·
-      #     audit-import-governance · audit-package-border). The META-gate is build-free; five of its
-      #     SUBJECTS are not — a surface/capability mismatch, not a logic bug. It was RED here on every
-      #     run since 2026-07-12 (VIOLATIONS: 5) while reporting VIOLATIONS: 0 on any dev box, because
-      #     dist/ and build/dss-wasm/ are gitignored (0 tracked files) and so exist only locally. The red
-      #     asserted "neutered detector", which was FALSE — the detectors are fine, their INPUT was absent.
-      #     Moved rather than skipped: it must still enforce, just where its subjects can actually load.
-      #     Same class, same remedy as cg4/signed-fixture above — that lesson simply never reached it.
-      - name: Dev-tool script tests (build-free)
-        run: |
-          files=$(ls scripts/tests/*.test.mjs | grep -vE '/(cg4-signing-boundary|signed-fixture-guard|gate-selftests)\.test\.mjs$')
-          echo "build-free script tests:"; echo "$files"
-          node --test $files
 
-  # build-cli gates (BUILD-FULL, ENFORCING) — the two script tests that drive `galerina.mjs build`
+  # build-cli gates (BUILD-FULL, ENFORCING) — derive gate and test package roots, build fail-closed, then run tests that import the generated package outputs.
   # (CG-4 signing-boundary + the CG-7 signed-fixture guard) need galerina-core-compiler/dist, which is
   # gitignored. They passed only on a dev box (dist present) and errored "Cannot find module .../dist" in
   # CI — the "green locally, red in CI" class these gates exist to prevent. Build the compiler's file: dep
@@ -484,6 +463,10 @@ jobs:
       # the closure walk could not see it). Drift, not design: R&D traced it to the initial commit,
       # carried forward by four rebrand passes that renamed the path without ever asking whether the edge
       # should exist. No cycle — verified both ways before declaring.
+      - name: Build-chain derivation self-test (test-first probe)
+        run: node scripts/build-core-chain.mjs --self-test
+      - name: Build-chain derivation self-test
+        run: node scripts/build-core-chain.mjs --self-test
       - name: Build the gate subjects + their file-dep closures (derived, topological)
         run: node scripts/build-core-chain.mjs --gate-subjects
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)

@@ -111,10 +111,62 @@ export interface PassiveExecutionPlan {
    * Replaying a cpu-plan on a gpu lane ⇒ REJECT at admission (cross-target smuggling, PV3).
    */
   readonly targetBinding?: string;
+  /**
+   * RD-0363 P5 (2026-10-04) — admission binding.
+   * SHA-256 over a domain-separated canonical encoding of the legacy `planHash` plus every
+   * admission-relevant field the legacy hash omits: `generatedAt`, `maxAgeMs`, `targetBinding`
+   * and `planSignature`. `verifyPlanAdmission` recomputes it, so changing any of those fields
+   * without re-binding is a terminal REJECT. Whoever attaches a signature, target or age policy
+   * re-binds with {@link computePlanAdmissionHash}.
+   *
+   * This is unkeyed integrity, NOT authentication: anyone can recompute it. Authenticity is the
+   * owner-gated P1 signed envelope (RD-0363 §8.2); `planHash` keeps its legacy four-field meaning.
+   */
+  readonly admissionHash: string;
 }
 
 /** Default plan max-age (24 h in ms). Plans older than this are stale → deny at replay. */
 export const PLAN_DEFAULT_MAX_AGE_MS = 86_400_000;
+
+/**
+ * RD-0363 P5 — the closed set of step kinds a plan may contain. Admission refuses any other kind
+ * and `executePlan` hard-refuses one, rather than skipping it.
+ */
+export const PASSIVE_PLAN_STEP_KINDS: ReadonlySet<string> = new Set([
+  "validate_context",
+  "validate_param",
+  "capability_call",
+  "response",
+  "emit_event",
+  "return",
+]);
+
+/** Domain tag for the admission binding; changing the encoding requires a new tag. */
+const PLAN_ADMISSION_BINDING_DOMAIN = "galerina.passive-plan.admission-binding.v1";
+
+/** Encode an optional admission field with explicit presence, so absent ≠ any present value. */
+function bindingField(value: string | number | undefined): readonly [string] | readonly [string, string] {
+  if (value === undefined) return ["absent"];
+  return ["present", typeof value === "number" ? `number:${String(value)}` : `string:${value}`];
+}
+
+/**
+ * RD-0363 P5 — compute the admission binding for a plan (see {@link PassiveExecutionPlan.admissionHash}).
+ * The legacy `planHash` is bound as stored; `verifyPlanAdmission` checks it separately.
+ */
+export function computePlanAdmissionHash(
+  plan: Pick<PassiveExecutionPlan, "planHash" | "generatedAt" | "maxAgeMs" | "targetBinding" | "planSignature">,
+): string {
+  const encoded = JSON.stringify([
+    PLAN_ADMISSION_BINDING_DOMAIN,
+    ["planHash", bindingField(plan.planHash)],
+    ["generatedAt", bindingField(plan.generatedAt)],
+    ["maxAgeMs", bindingField(plan.maxAgeMs)],
+    ["targetBinding", bindingField(plan.targetBinding)],
+    ["planSignature", bindingField(plan.planSignature)],
+  ]);
+  return sha256hex(encoded);
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -220,6 +272,7 @@ function extractUnsafeParams(meta: FlowMeta): Array<{ name: string; type: string
  * 5. return step at the end
  * 6. planHash from SHA-256 of canonical JSON (generatedAt stripped before hashing)
  * 7. approvedCapabilities from declaredEffects
+ * 8. admissionHash binding planHash + generatedAt (RD-0363 P5; re-bound when admission fields are added)
  */
 export function buildExecutionPlan(
   flowNode: AstNode,
@@ -299,6 +352,8 @@ export function buildExecutionPlan(
   };
   const planHash = sha256hex(JSON.stringify(canonicalPlan));
 
+  const admissionHash = computePlanAdmissionHash({ planHash, generatedAt });
+
   return {
     flow: meta.name,
     qualifier: meta.qualifier,
@@ -306,6 +361,7 @@ export function buildExecutionPlan(
     approvedCapabilities,
     planHash,
     generatedAt,
+    admissionHash,
   };
 }
 
@@ -326,13 +382,29 @@ export interface PlanAdmissionResult {
  * RD-0363 §2.2 freshness check — is the plan still within its max age?
  *
  * `nowMs` defaults to `Date.now()` (injected for deterministic testing).
- * Returns: +1 fresh, 0 stale (→ INDETERMINATE → caller collapses to DENY), -1 if parse fails.
+ * Returns: +1 fresh, 0 stale or future-dated (→ INDETERMINATE → caller collapses to DENY),
+ * -1 if a timestamp or age is malformed.
+ *
+ * RD-0363 P5 / §8.4 numeric rules: `nowMs` must be finite; `maxAgeMs` must be a non-negative safe
+ * integer no greater than {@link PLAN_DEFAULT_MAX_AGE_MS} (the outer compatibility ceiling); a
+ * future `generatedAt` is not admissible (zero skew); the plan is fresh only while
+ * `generatedAt <= now < generatedAt + maxAge`, so a zero-length window admits nothing.
  */
 export function verifyPlanFreshness(
   plan: PassiveExecutionPlan,
   nowMs: number = Date.now(),
 ): PlanAdmissionResult {
+  if (!Number.isFinite(nowMs)) {
+    return { admitted: false, reason: "planFreshness: nowMs is not a finite timestamp", verdict: -1 };
+  }
   const maxAge = plan.maxAgeMs ?? PLAN_DEFAULT_MAX_AGE_MS;
+  if (!Number.isSafeInteger(maxAge) || maxAge < 0 || maxAge > PLAN_DEFAULT_MAX_AGE_MS) {
+    return {
+      admitted: false,
+      reason: `planFreshness: maxAgeMs must be a safe integer in [0, ${PLAN_DEFAULT_MAX_AGE_MS}] ms`,
+      verdict: -1,
+    };
+  }
   let generatedAtMs: number;
   try {
     generatedAtMs = new Date(plan.generatedAt).getTime();
@@ -343,7 +415,14 @@ export function verifyPlanFreshness(
     return { admitted: false, reason: "planFreshness: generatedAt parsed to a non-finite timestamp", verdict: -1 };
   }
   const age = nowMs - generatedAtMs;
-  if (age > maxAge) {
+  if (age < 0) {
+    return {
+      admitted: false,
+      reason: "planFreshness: generatedAt is in the future — FUTURE (zero skew tolerance)",
+      verdict: 0, // INDETERMINATE → collapses to DENY at the caller boundary
+    };
+  }
+  if (age >= maxAge) {
     return {
       admitted: false,
       reason: `planFreshness: plan is ${Math.round(age / 1000)}s old (max ${Math.round(maxAge / 1000)}s) — STALE`,
@@ -359,8 +438,11 @@ export function verifyPlanFreshness(
  * This is the compile-time half of the admission story. The full runtime half (capability
  * re-verification at replay time, RD-0363 §2.2) is a runtime concern beyond the compiler.
  *
- * Checks:
+ * Checks (each failure is terminal, in this order):
+ *   (0) shape — approvedCapabilities is a Map and steps is an array (a JSON-decoded plan is refused,
+ *       never a TypeError); every step kind is in {@link PASSIVE_PLAN_STEP_KINDS} (RD-0363 P5, PV4).
  *   (1) planHash integrity — canonical hash must match what was committed at build time.
+ *   (1b) admissionHash — binds generatedAt, maxAgeMs, targetBinding and planSignature (RD-0363 P5).
  *   (2) freshness — plan must be within its max-age window.
  *   (3) targetBinding — if a required target is specified, the plan must declare it.
  *
@@ -373,16 +455,37 @@ export function verifyPlanAdmission(
   plan: PassiveExecutionPlan,
   options?: { requiredTarget?: string; nowMs?: number },
 ): PlanAdmissionResult {
+  // (0) Shape — refuse anything that is not an in-memory plan before reading it. The steps are read
+  // once into a snapshot so the kind check and the hash see the same array.
+  if (!(plan.approvedCapabilities instanceof Map)) {
+    return { admitted: false, reason: "planAdmission: approvedCapabilities is not a Map — plain JSON is not a plan codec (P1)", verdict: -1 };
+  }
+  if (!Array.isArray(plan.steps)) {
+    return { admitted: false, reason: "planAdmission: steps is not an array", verdict: -1 };
+  }
+  const steps: readonly ExecutionStep[] = [...plan.steps];
+  for (const step of steps) {
+    const kind: unknown = (step as { readonly kind?: unknown }).kind;
+    if (typeof kind !== "string" || !PASSIVE_PLAN_STEP_KINDS.has(kind)) {
+      return { admitted: false, reason: `planAdmission: unknown step kind '${String(kind)}' — refused (PV4)`, verdict: -1 };
+    }
+  }
+
   // (1) Hash integrity — recompute the canonical hash and compare.
   const canonical = {
     flow: plan.flow,
     qualifier: plan.qualifier,
-    steps: plan.steps,
+    steps,
     approvedCapabilities: Object.fromEntries(plan.approvedCapabilities),
   };
   const recomputed = createHash("sha256").update(JSON.stringify(canonical), "utf8").digest("hex");
   if (recomputed !== plan.planHash) {
     return { admitted: false, reason: `planAdmission: planHash mismatch — plan may have been tampered (PV1)`, verdict: -1 };
+  }
+
+  // (1b) Admission binding — generatedAt, maxAgeMs, targetBinding and planSignature (RD-0363 P5).
+  if (computePlanAdmissionHash(plan) !== plan.admissionHash) {
+    return { admitted: false, reason: "planAdmission: admissionHash mismatch — an admission field changed without re-binding (PV1)", verdict: -1 };
   }
 
   // (2) Freshness.
@@ -475,6 +578,13 @@ export async function executePlan(
             `executePlan: capability '${step.capability}' for effect '${step.effect}' is not approved in plan`,
           );
         }
+        // RD-0363 P5 (PV4): the approved entry must be the one this step names — declared, same
+        // effect, same capability. The host's effect-only check cannot substitute for this.
+        if (!approved.declared || approved.effect !== step.effect || approved.capability !== step.capability) {
+          throw new Error(
+            `executePlan: capability step '${step.capability}' for effect '${step.effect}' does not match its approved entry — refused (PV4)`,
+          );
+        }
 
         // Check that the host allows this call
         const checkResult = host.check({
@@ -516,9 +626,15 @@ export async function executePlan(
         return { value: returnValue, auditTrail, warnings };
       }
 
-      default:
-        // validate_param and any future step kinds — skip silently
+      case "validate_param":
+        // Known kind with no replay-time action yet: parameter gates run on the AST path.
         break;
+
+      default: {
+        // RD-0363 P5 (PV4): an unknown step kind is a hard refusal, never a silent skip.
+        const kind: unknown = (step as { readonly kind?: unknown }).kind;
+        throw new Error(`executePlan: unknown step kind '${String(kind)}' — refused (PV4)`);
+      }
     }
   }
 

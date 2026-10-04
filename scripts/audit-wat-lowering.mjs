@@ -188,7 +188,8 @@ function checkAnchors() {
   }
   // decimal-wart ↔ galerinaTypeToWAT("Decimal") === "f64"
   let decWasm = "?"; try { decWasm = L.galerinaTypeToWAT("Decimal"); } catch { /* falls through */ }
-  if (decWasm !== "f64") notes.push(`decimal-wart anchor CHANGED: galerinaTypeToWAT("Decimal")="${decWasm}" (was "f64") — the wart may be fixed; Decimal sites can shrink from the baseline`);
+  // #137 is fixed on main: Decimal lowers to an i32 handle. A return to f64 is a regression, not a note.
+  if (decWasm === "f64") problems.push(`decimal-f64 wart REGRESSED: galerinaTypeToWAT("Decimal")="f64" — Decimal is a bignum handle (#137)`);
   // FUNGI-LAYOUT-001 compile guard still present
   const emitterSource = existsSync(WAT_EMITTER) ? readFileSync(WAT_EMITTER, "utf8") : "";
   const guardPresent = /FUNGI-LAYOUT-001/.test(emitterSource);
@@ -227,7 +228,7 @@ function selfTest() {
   ok(legC(red3.sites).some((s) => s.kind === "flow-param" && s.base === "Decimal"), "RED: a Decimal SCALAR param is a Leg-C occurrence (scalar, not a field)");
 
   const redDecField = collectSites(`@version 1\nrecord M { amount: Decimal }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "redDecField");
-  ok(legA(redDecField.sites).some((s) => s.base === "Decimal") && legC(redDecField.sites).some((s) => s.kind === "record-field"), "RED: a Decimal record field is BOTH Leg-A and Leg-C");
+  ok(!legA(redDecField.sites).some((s) => s.base === "Decimal") && legC(redDecField.sites).some((s) => s.kind === "record-field"), "GREEN (#137 fixed): a Decimal record field is no longer a Leg-A layout site, and stays a Leg-C inventory occurrence");
   ok(legA(redDecField.sites).every((s) => rootCauseOf(s) === "decimal-f64-wart"), "RED: a Decimal field attributes to the decimal-wart, not slot-width");
 
   const green = collectSites(`@version 1\nrecord R { a: Int; s: String; xs: Array<Float>; b: Bool }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "green");
@@ -247,7 +248,7 @@ function selfTest() {
 
   // anchors self-check
   const anc = checkAnchors();
-  ok(anc.decWasm === "f64", "ANCHOR: the decimal-wart is still present (galerinaTypeToWAT(Decimal)=f64)");
+  ok(anc.decWasm === "i32", "ANCHOR: the #137 decimal-f64 wart stays fixed (galerinaTypeToWAT(Decimal)=i32 handle, never f64)");
   ok(anc.slotSize === 4, "ANCHOR: compact i32 host staging remains WAT_REC_FIELD_SIZE=4");
   ok(anc.typedLayoutPresent, "ANCHOR: typed naturally aligned record layout is present");
   ok(anc.guardPresent, "ANCHOR: the FUNGI-LAYOUT-001 compile guard is present");

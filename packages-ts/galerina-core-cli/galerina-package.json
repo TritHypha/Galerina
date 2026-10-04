@@ -9,7 +9,23 @@
     "status": "NO_WASM_ARTIFACT"
   },
   "capabilities": [],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "kind": "internal",
+      "name": "@galerina/core-tasks",
+      "specifier": "file:../galerina-core-tasks"
+    },
+    {
+      "kind": "internal",
+      "name": "@galerina/devtools-graph-project",
+      "specifier": "file:../galerina-devtools-graph-project"
+    },
+    {
+      "kind": "internal",
+      "name": "@galerina/devtools-project-graph",
+      "specifier": "file:../galerina-devtools-project-graph"
+    }
+  ],
   "effects": {
     "declares": [],
     "evidence": "NOT_OBSERVED",

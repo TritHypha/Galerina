@@ -14,7 +14,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | status | count | meaning |
 |---|---|---|
 | live | 203 | emitted with an exported constant |
-| inline | 421 | emitted, NO exported constant (R4 — Stage F) |
+| inline | 422 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 120 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
@@ -502,7 +502,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EMIT-STUB | inline | — | — |
 
-### ERR_* (158)
+### ERR_* (159)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -524,6 +524,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_ARGUMENT_COUNT | ref | — | — |
 | ERR_ARTIFACT_HASH_MISMATCH | ref | — | — |
 | ERR_ASSERTION | ref | — | — |
+| ERR_AUDIT_LEDGER_CORRUPT | inline | — | — |
 | ERR_BRAND_AUDIT_SHAPE | ref | — | — |
 | ERR_BRAND_AUDIT_SIZE | ref | — | — |
 | ERR_BRIDGE_DISPATCH_FAULT | inline | — | — |

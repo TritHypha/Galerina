@@ -20,6 +20,9 @@ import {
   generatedOutputMatches,
   provenanceForCheck,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/project-graph-generator.mjs [--root <dir>] [--check]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const FILES = Object.freeze([
   "Galerina_GRAPH_REPORT.md",

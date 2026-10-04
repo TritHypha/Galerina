@@ -8,6 +8,9 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/generate-rd0858-scalar-audit-map.mjs --check|--write|--self-test\n  select exactly one mode\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 

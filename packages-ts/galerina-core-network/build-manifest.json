@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "ade8c5b1673b4996a82e2f6e16ac1a0aefe9e0787c2f39cc255fd046945f48e1",
+    "aggregateSha256": "271b4f40f1c3b1d29030ad2e5b5cdb5c497ba13cb7902119612a9d1b3f6fd93e",
     "algorithm": "sha256",
     "files": [
       {
@@ -80,11 +80,11 @@
       },
       {
         "path": "src/egress-guard.ts",
-        "sha256": "a6d382ee050b17d0e1a19826220cee34da45e5f93a0e16367719dec3f13e53be"
+        "sha256": "2de70d9f9ae22185e3e0c9c29e88b4afdfbfd5004da1f482ccfc7bb6161b52e6"
       },
       {
         "path": "src/inbound-guard.ts",
-        "sha256": "ed05d3ccdda2c71e5a81c053123c419936ff21c14fe7bd03fdce44ebb2b26910"
+        "sha256": "afd0e92d71071068b121c75410d7ad661e5486ca474e734135f9e8d314e046b9"
       },
       {
         "path": "src/index.ts",
@@ -139,8 +139,16 @@
         "sha256": "eeae9e8b65a9efdefbc78c40714e2b1209ae6b283cb82672a027dfc7872132cb"
       },
       {
+        "path": "tests/egress-trailing-dot.test.mjs",
+        "sha256": "0f3a09238c291a4904c97ec766e4402062dd3e4ff1309bf59bd8fbde32c9fd75"
+      },
+      {
         "path": "tests/inbound-guard.test.mjs",
         "sha256": "f2783a823803336a62ad5a9b338a608b5024481fe3583d20130651373b02a31d"
+      },
+      {
+        "path": "tests/inbound-protocol-strict.test.mjs",
+        "sha256": "4760d4431916a908c7aa31a4f731fe51279d7390d16336d17aeb91016c43e317"
       },
       {
         "path": "tests/network-contracts.test.mjs",

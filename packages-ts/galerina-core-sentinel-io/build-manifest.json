@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "8b14c5eb99232c485b89a7931423f56904784ad8aa4e2e2af3f8b1e2575d769a",
+    "aggregateSha256": "6e13da0687f02eef25717168a203af163e79ca2fe30bb1eed48d936abc444310",
     "algorithm": "sha256",
     "files": [
       {
@@ -52,7 +52,7 @@
       },
       {
         "path": "src/errors.ts",
-        "sha256": "96340eb5ac0c254962a7c038916b29ac951b465ca94a7ea27b899ea6cc0d169a"
+        "sha256": "e750de5e273ecc20ec283b035371f1f14c6154952b7c81e7306673d6fe34d4c5"
       },
       {
         "path": "src/index.ts",
@@ -60,11 +60,11 @@
       },
       {
         "path": "src/integrity-monitor.ts",
-        "sha256": "6f65686ace10c4d31cb6239c09c2bc63720fbd381058b5f962a755c37addfabf"
+        "sha256": "ec73d1e6da5154eca20bce1a0534eb6dbcca7ff4e540ec954d5ed6c6aaab91dc"
       },
       {
         "path": "src/manifest.ts",
-        "sha256": "1cd366e2209e9ec82b5d873e6e7d36069a62a61dc31bb5ca79b6f47376600291"
+        "sha256": "0af7a9d5adda4aba7696f070b62fe0e6be343e5358948ef79e4a1d1742d8c19a"
       },
       {
         "path": "src/photonic-bus-interface.ts",
@@ -83,12 +83,24 @@
         "sha256": "ab273e3d5b20c0a8042cbb10119172a6df0161614fe189e729431d1fe523da8c"
       },
       {
+        "path": "tests/integrity-constant-time.test.mjs",
+        "sha256": "eef33b608380fd0dd98fbe690d5d6a6bd5b4e9db1d5dfd382eba155653e7e55a"
+      },
+      {
+        "path": "tests/integrity-key.test.mjs",
+        "sha256": "01f260febe6232c58a04c4f9bdb12d6e23e22ef3e3d024cee2955bc1c73599af"
+      },
+      {
         "path": "tests/integrity.test.mjs",
         "sha256": "326d27546044eade0aa48c6ca62b81da96ddb3ffa75f8b66d8c20a8d87f6b28e"
       },
       {
+        "path": "tests/manifest-strict.test.mjs",
+        "sha256": "c7dc51f3cf8cdd500d6dcf7224408173671158458cd6ad49f53664ad40c977ee"
+      },
+      {
         "path": "tests/manifest.test.mjs",
-        "sha256": "baa6f767e7305afe9fcd7c116e3b22c4567b1090f616af5df2001c6bee82b2c3"
+        "sha256": "6111a67fc311b971c9b42895a126a5b2ea8685d62294a3f790a0a936be827f56"
       },
       {
         "path": "tests/pbi.test.mjs",

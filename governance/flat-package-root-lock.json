@@ -172,14 +172,34 @@
       "identity": "@galerina/core-cli",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-cli",
-      "contentDigest": "4455a609bd143eab2c645246db89bff9f6546491a980975b187aa9664621b3c6",
+      "contentDigest": "fb5d4fd7efbc5655b57fba7194ed1e23bdad3e18f8af95bab83aacbcee3cda01",
       "manifestDigests": [
         {
           "path": "package.json",
-          "digest": "85a98a7c53cf3d0a8e77004e3fd0cdbcd84ad0f5b27d15af909331429652e970"
+          "digest": "62e35de2e0842ae63b11cce4a33de65953026034ab6de13a9f8c9d7cd99ebfed"
         }
       ],
       "dependencies": [
+        {
+          "identity": "@galerina/core-tasks",
+          "scope": "runtime",
+          "specifier": "file:../galerina-core-tasks"
+        },
+        {
+          "identity": "@galerina/devtools-graph-project",
+          "scope": "runtime",
+          "specifier": "file:../galerina-devtools-graph-project"
+        },
+        {
+          "identity": "@galerina/devtools-project-graph",
+          "scope": "runtime",
+          "specifier": "file:../galerina-devtools-project-graph"
+        },
+        {
+          "identity": "@types/node",
+          "scope": "development",
+          "specifier": "^25.9.1"
+        },
         {
           "identity": "typescript",
           "scope": "development",
@@ -191,7 +211,7 @@
       "identity": "@galerina/core-compiler",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-compiler",
-      "contentDigest": "2bee968478c502f7ecd718bfc46cc91fbc3793dd5289240ea93cfb92459df06f",
+      "contentDigest": "a7943f238451d68c9938269dbb04833e1a214e24a9e4d7c60c19491a061e026f",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -341,7 +361,7 @@
       "identity": "@galerina/core-network",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-network",
-      "contentDigest": "917551590bdb4d9a07090a2ddb6a401d092ded1c84870f65478efa75a7cb5f10",
+      "contentDigest": "923e4c574e932deceaa03be35a694d26365bc077027e1ae8297249cea3a3fefb",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -403,7 +423,7 @@
       "identity": "@galerina/core-runtime",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-runtime",
-      "contentDigest": "a1bd83ee7e0ddd6f9102748abe165b8b1225a7686eb000c19a43f7ed4cf1bd3f",
+      "contentDigest": "0d01c247f057d5dfedddc92198cc2ccfc7268a519199ebb2c7f150dec55e3ca2",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -470,7 +490,7 @@
       "identity": "@galerina/core-sentinel-egress",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-sentinel-egress",
-      "contentDigest": "d6aa537945db62b553f0f2de9b86f9c0030f11d6997ae85f452c612845d43c1a",
+      "contentDigest": "93e8423a6d87d2341e5378c8c5f49c0209d85f58e1f0e1992a2172be23b651f1",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -494,7 +514,7 @@
       "identity": "@galerina/core-sentinel-io",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-sentinel-io",
-      "contentDigest": "bbc1e9d960097471ab6a5949812218d160f2b88f0c4c7517d397d7243235bd2a",
+      "contentDigest": "fb442e7a94c3b3c1a4217b46d623803c20e3674cffb6d89c9d3b5a27eef4e2d3",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -566,7 +586,7 @@
       "identity": "@galerina/core-sentinel-state",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-sentinel-state",
-      "contentDigest": "0557a8b4b12c91a2912a474aebfd6709120b5ebcbe38a2b1ac2c3d1ab327ddf7",
+      "contentDigest": "83b416b9d923afafb68c445e5d17e912adb6dd9995fd86fc4855cfc818722f81",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1081,7 +1101,7 @@
       "identity": "@galerina/devtools-fungi-scan",
       "version": "1.0.0-beta.1",
       "directory": "galerina-devtools-fungi-scan",
-      "contentDigest": "7ebc9af4ea2553a0c9047e000af4ad44efe0fb0c65d763f00b54effefa28bddf",
+      "contentDigest": "f92966af933afc2fe4e15b1d3814ecf6dd4fd75e2b6b5d439a2dc3e99a61f05e",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1285,7 +1305,7 @@
       "identity": "@galerina/devtools-pci",
       "version": "1.0.0-beta.2",
       "directory": "galerina-devtools-pci",
-      "contentDigest": "4537e525c2ffc3941dfe45f62bc3cd680f4c85a24043d502df6a1dd4b1a5027b",
+      "contentDigest": "4f8f99838ed1d34ad6e62e759db0c882f4ed1eb1d0b549513f41c73042ac7670",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1714,7 +1734,7 @@
       "identity": "@galerina/framework-app-kernel",
       "version": "1.0.0-beta.2",
       "directory": "galerina-framework-app-kernel",
-      "contentDigest": "7bab97334ef12a53b41f51be2f1c682ba29760e5513ea5ac616d44b94fda548a",
+      "contentDigest": "61214e7cfcb3e7deb58ad0ef5e8d77c644036e5d2f10d05a36750b274fec58ef",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -2105,7 +2125,7 @@
       "identity": "@galerina/tower-citizen",
       "version": "1.0.0-beta.2",
       "directory": "galerina-tower-citizen",
-      "contentDigest": "b6766a124253f0d37bfc04b83e6cd955b8c3d4daecbe34df6ed05f357d4055a3",
+      "contentDigest": "05036ca00dd90038ae8db43785af414356211c515c1e504c51f30a219bb58c97",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -2331,7 +2351,6 @@
     "@galerina/ai-neuromorphic",
     "@galerina/api-protocol-rest",
     "@galerina/core",
-    "@galerina/core-cli",
     "@galerina/core-compute",
     "@galerina/core-config",
     "@galerina/core-economics",
@@ -2374,6 +2393,7 @@
     "@galerina/devtools-project-graph",
     "@galerina/core-tasks",
     "@galerina/devtools-graph-project",
+    "@galerina/core-cli",
     "@galerina/devtools-wasmtime-oracle",
     "@galerina/ext-proof-snarkjs",
     "@galerina/ext-secrets-vault",
@@ -2455,6 +2475,12 @@
       "owner": "@galerina/tower-citizen",
       "scope": "runtime",
       "specifier": "^0.6.1"
+    },
+    {
+      "identity": "@types/node",
+      "owner": "@galerina/core-cli",
+      "scope": "development",
+      "specifier": "^25.9.1"
     },
     {
       "identity": "@types/node",
@@ -3267,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "c24d0a6b06c49a176042ac1a075bfd06b97c84302b5b5c6b9f86a0185b9eca66"
+  "rootDigest": "0e47c9fecd5303fb9819112c46a3e7dd9cfe0549e1cb5d2b929b1c09f64f8f12"
 }

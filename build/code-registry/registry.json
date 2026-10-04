@@ -1,9 +1,9 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1124,
+  "total": 1125,
   "counts": {
     "ref": 253,
-    "inline": 421,
+    "inline": 422,
     "phantom": 110,
     "live": 203,
     "referenced": 120,
@@ -224,6 +224,18 @@
       "defs": 0,
       "emits": 0,
       "tests": 1,
+      "docs": 0
+    },
+    {
+      "code": "ERR_AUDIT_LEDGER_CORRUPT",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -751,7 +763,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 5,
+      "tests": 7,
       "docs": 3
     },
     {
@@ -919,7 +931,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 1,
+      "tests": 3,
       "docs": 0
     },
     {
@@ -10488,7 +10500,7 @@
       "severities": [],
       "defs": 0,
       "emits": 4,
-      "tests": 8,
+      "tests": 11,
       "docs": 0
     },
     {

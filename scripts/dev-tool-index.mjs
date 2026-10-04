@@ -19,7 +19,7 @@
 //   packages.mmd      mermaid: package workspace-dependency graph, grouped by kind
 //   tooling.mmd       mermaid: dev-tool -> concern coverage map
 //
-// Usage:  node scripts/dev-tool-index.mjs [--json] [--check]
+// Usage:  node scripts/dev-tool-index.mjs [--root <dir>] [--json] [--check] [--generator-check] [--help]
 //   --json   print the JSON summary to stdout (no files)
 //   --check  exit 1 if a NEW package has zero tests or a NEW concern has zero tools
 //            (a cadence gate — coverage can only grow); else 0.
@@ -40,6 +40,48 @@ import {
 } from "./lib/provenance.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// Argument contract (zero-trust default, owner may revisit): `--help`/`-h` prints usage and exits 0
+// WITHOUT writing; any unknown or repeated argument, or `--root` without a value, refuses (exit 2)
+// before any read or write. A generator owner must never treat an unrecognised flag as a request to
+// regenerate tracked output.
+const DEV_TOOL_INDEX_USAGE = [
+  "usage: node scripts/dev-tool-index.mjs [--root <dir>] [--json] [--check] [--generator-check]",
+  "  (no flags)         regenerate build/dev-tool-index/*",
+  "  --root <dir>       inventory <dir> instead of this repository",
+  "  --json             print the JSON summary to stdout (no files)",
+  "  --check            cadence gate: exit 1 if a new package has zero tests or a new concern zero tools",
+  "  --generator-check  compare the generated output without writing; exit 1 on drift",
+  "  --help, -h         print this usage and exit 0 without writing",
+].join("\n");
+{
+  const args = process.argv.slice(2);
+  const refuse = (why) => {
+    console.error(`dev-tool-index: REFUSED ${why}; nothing was written.\n${DEV_TOOL_INDEX_USAGE}`);
+    process.exit(2);
+  };
+  const helpIndex = args.findIndex((arg) => arg === "--help" || arg === "-h");
+  if (helpIndex >= 0) {
+    const rest = args.filter((_, i) => i !== helpIndex);
+    const onlyRoot = rest.length === 0 || (rest.length === 2 && rest[0] === "--root");
+    if (!onlyRoot) refuse("--help combined with other arguments");
+    console.log(DEV_TOOL_INDEX_USAGE);
+    process.exit(0);
+  }
+  const flags = new Set(["--json", "--check", "--generator-check"]);
+  const seen = new Set();
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (seen.has(arg)) refuse(`repeated argument ${JSON.stringify(arg)}`);
+    seen.add(arg);
+    if (arg === "--root") {
+      const value = args[i + 1];
+      if (typeof value !== "string" || value === "" || value.startsWith("-")) refuse("--root without a directory value");
+      i++;
+      continue;
+    }
+    if (!flags.has(arg)) refuse(`unknown argument ${JSON.stringify(arg)}`);
+  }
+}
 const ROOT_ARG = process.argv.indexOf("--root");
 const ROOT = ROOT_ARG >= 0 && process.argv[ROOT_ARG + 1]
   ? resolve(process.argv[ROOT_ARG + 1])

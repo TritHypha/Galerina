@@ -73,7 +73,7 @@ test("LST stamps every audit event with a deterministic LogicalTick", () => {
 
 test("audit writes go through the governed Egress sink (no direct appendFileSync)", () => {
   const dir = uniqueDir();
-  const egress = new AuditEgress({ dir, batchSize: 5, hmacKey: new Uint8Array(32) });
+  const egress = new AuditEgress({ dir, batchSize: 5, hmacKey: new Uint8Array(32), developmentKey: true });
   const clock = new LogicalClock(0);
   const logger = new AuditLogger(null, { egress, tickSource: () => clock.tick() });
 
@@ -93,7 +93,7 @@ test("audit writes go through the governed Egress sink (no direct appendFileSync
 
 test("a tampered egress batch fails chain verification", () => {
   const dir = uniqueDir();
-  const egress = new AuditEgress({ dir, batchSize: 3, hmacKey: new Uint8Array(32) });
+  const egress = new AuditEgress({ dir, batchSize: 3, hmacKey: new Uint8Array(32), developmentKey: true });
   const logger = new AuditLogger(null, { egress });
   for (let i = 0; i < 6; i++) logger.append({ phase: "EXEC", correlationId: "x" + i, artifactHash: "h", engineId: "e", severity: "INFO", category: "AUDIT_TRAIL", details: {}, governancePass: true });
   logger.flush();
@@ -106,7 +106,7 @@ test("a tampered egress batch fails chain verification", () => {
 
 test("TowerRuntime routes its audit through LST + Egress when configured", async () => {
   const dir = uniqueDir();
-  const egress = new AuditEgress({ dir, batchSize: 4, hmacKey: new Uint8Array(32) });
+  const egress = new AuditEgress({ dir, batchSize: 4, hmacKey: new Uint8Array(32), developmentKey: true });
   const clock = new LogicalClock(500);
   const tower = new TowerRuntime({ auditInMemory: true, auditTickSource: () => clock.tick(), auditEgress: egress, allowUnsignedLoad: true });
   const meta = { engineId: "uhie", artifactPath: "p", artifactHash: "sha256:x", governanceTier: 1, license: "Apache-2.0", maxMemoryMB: 64, capabilityMask: 0 };

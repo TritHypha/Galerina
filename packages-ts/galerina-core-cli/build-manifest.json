@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "7c22414a5b64b92902264789a6b518de931ead12b8bfce202474bc6e94e87441",
+    "aggregateSha256": "7bbd830b5b71d5e198e36698afb9f5ad71e45c498e0742e119189b708faf2a54",
     "algorithm": "sha256",
     "files": [
       {
@@ -48,7 +48,7 @@
       },
       {
         "path": "package.json",
-        "sha256": "de3404d2ae627abceba6e1987d9c49b6d897bea14c0116e29837f7d3945465b9"
+        "sha256": "46c02be6d04638ca58b3ddc7de6d67e7f12ed8136f6fdc3a1c9af25f9a42cd77"
       },
       {
         "path": "src/cli.ts",

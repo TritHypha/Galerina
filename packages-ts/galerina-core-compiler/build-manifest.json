@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "6b28d7d1930a99953e56c61bb394186a91108ac94abe1467fcfbcdb9d98ada4a",
+    "aggregateSha256": "32dd833c69726f37372a81e3cfeca720afdb06d51e7ba6c19874e9ad8a884485",
     "algorithm": "sha256",
     "files": [
       {
@@ -404,11 +404,11 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "179bd6a0191a940b93a3450cfcdcd371b9e7ac667f2ad023faf9d08191bde37d"
+        "sha256": "103620bf5db34982d5ccded48c3551580299ab0f7fdd88ec564f0acb8fbe1869"
       },
       {
         "path": "src/interpreter.ts",
-        "sha256": "109297b190c0a6cf56b886e5a5379e1b917a759fa760213b6a80ab5dd7efc412"
+        "sha256": "31fff3661083d5393bfd9da7fcfa4a1fc23abcf4f2aecaa5176124d67d97b8d8"
       },
       {
         "path": "src/invariant-discharge.ts",
@@ -612,7 +612,7 @@
       },
       {
         "path": "src/runtime/canonicalHash.ts",
-        "sha256": "76f8adc9ab6695ec0bc4e0fb7c62eb998fca2e3411e1ed267e8e2d6def73a608"
+        "sha256": "1d1888489725f420a17eee563560f0ebc9e3ad8315ecefb7d33157c63e8f0ab4"
       },
       {
         "path": "src/runtime/capabilityHost.ts",
@@ -624,7 +624,7 @@
       },
       {
         "path": "src/runtime/executionPlan.ts",
-        "sha256": "44de287fc1daa747047a8dd7163b6472fadb98c872b8f344ce20069502839733"
+        "sha256": "8905f0281667b374dd45370dd40f7ce082b95fa9db6f222ac6110bb86a534850"
       },
       {
         "path": "src/runtime/governedMemory.ts",
@@ -2032,7 +2032,7 @@
       },
       {
         "path": "tests/gate-v3-admission-namespace.test.mjs",
-        "sha256": "2516525c29f94d0f31e779de80f3e5d8cf1817c321c61328f1ff21ccb6f7000a"
+        "sha256": "538b2ed17d1788115b4d910cfb48480237182ffd9c1be4cf0ea9fda5e0cf61b9"
       },
       {
         "path": "tests/gate-v3-admission.test.mjs",
@@ -2732,7 +2732,7 @@
       },
       {
         "path": "tests/rd-0363-plan-admission.test.mjs",
-        "sha256": "015d478dd0a3af51dc93daeb4c4838d8ff918608371025b632df187a099fb12b"
+        "sha256": "6f45872d4978ca3516cf6d77b463e404240c9778a625e6d2528a2ff10a39a196"
       },
       {
         "path": "tests/rd-0364-inference-effects.test.mjs",
@@ -3776,7 +3776,7 @@
       },
       {
         "path": "tests/wat-q2-parked7-d5.test.mjs",
-        "sha256": "c06e18ad44514776904cd697684f5da75912d5dbdf3bd55e099b50b69eb0c705"
+        "sha256": "1dee0e009448eb13d4211b35730833e841476b9ab9a1115187fde9076d411c69"
       },
       {
         "path": "tests/wat-q3-d3-unknown-method.test.mjs",
@@ -3784,11 +3784,11 @@
       },
       {
         "path": "tests/wat-q4n-d4-pattern-refusal.test.mjs",
-        "sha256": "74954e55653ba13e526efa6bd02524cd231a291b4841d54e9db4ecf2b754c74a"
+        "sha256": "c9d29f77049435302986c79565c9fdf86bd929e9a5570707236e651c2ddfd21d"
       },
       {
         "path": "tests/wat-q5n-d7-d8-refusal.test.mjs",
-        "sha256": "317f8e6aa29793db332f8db7f4c9336b7f1898b3950013f812c90ea54bafd219"
+        "sha256": "bf88da701836be39e97734f9c713d44cb5140a9f8feb43a4a523d6bf504e0d0e"
       },
       {
         "path": "tests/wat-q6-d2-d9-i4.test.mjs",

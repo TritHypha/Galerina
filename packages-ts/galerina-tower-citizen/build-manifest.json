@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "798a608e78cb965a9ab786993d1d8c1bf4026be295823ef7d0dffa18b161f5d9",
+    "aggregateSha256": "d245f92f7e2aaa0d57d4ff4730b7f4ed954bdb457de3391e4de0faa307a90598",
     "algorithm": "sha256",
     "files": [
       {
@@ -76,7 +76,7 @@
       },
       {
         "path": "src/audit-logger.ts",
-        "sha256": "04d4f1b76921e6fa7c07b89d2b05a68b599dfa793db6aa2fc45ccdd9cf74482c"
+        "sha256": "56beda8614e60ade4975ca8a7271c5648440a1818518ac9a098de722f7221b37"
       },
       {
         "path": "src/bridge-attestation.ts",
@@ -333,6 +333,10 @@
       {
         "path": "tests/ai-governance.test.mjs",
         "sha256": "43182d8ebf4abfe889e12c2f41aa7c1f1407c6abd383595a97b64a5d72fad218"
+      },
+      {
+        "path": "tests/audit-ledger-corrupt.test.mjs",
+        "sha256": "789b0da506bc842181e31ec54bf025f1681b408614af4256a9d7e643b75344ee"
       },
       {
         "path": "tests/authorization-boundary-fungi-conversion.test.mjs",
@@ -616,7 +620,7 @@
       },
       {
         "path": "tests/full-sentinel-flight.test.mjs",
-        "sha256": "1f79d62990beb0daee49feb6aac21a3cd4ce533c12bf604286073c6ac158112b"
+        "sha256": "7b03992addabedda00f99f27de515f0b0191e44838b11e320535ead3f4aa1809"
       },
       {
         "path": "tests/gate-cache.test.mjs",
@@ -720,7 +724,7 @@
       },
       {
         "path": "tests/sentinel-egress-time.test.mjs",
-        "sha256": "f260df9484a7510bfb2f1aa9967b3582f1c4272b153d8ee63e0aa8668dd7e7c7"
+        "sha256": "964f8f599bd323db1b9d90d3d9d36cbb71c1155f28d38139b9812fed2fde6cfa"
       },
       {
         "path": "tests/sentinel-integration.test.mjs",
@@ -773,6 +777,10 @@
       {
         "path": "tests/transport-permit-data-fungi-conversion.test.mjs",
         "sha256": "405b99e51f3962468195202b102d3e1ac419987ebca96c3281261bfd23545f1b"
+      },
+      {
+        "path": "tests/trap-fixed-fields.test.mjs",
+        "sha256": "e9eda31a2b3825b5e833f945862c019d0a1a301963e7ecf5fe7ce20192fcc652"
       },
       {
         "path": "tests/vand-tensor.test.mjs",

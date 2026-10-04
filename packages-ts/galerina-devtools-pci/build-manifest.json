@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "353eb2c6ca56346746723efc3fab93a6263417c25c08b7a1dad29742b17d776e",
+    "aggregateSha256": "0e4ffefc326bcc9dd6030ea0134dfe31360b03656aea16a4c6109f4c4c678e0f",
     "algorithm": "sha256",
     "files": [
       {
@@ -68,11 +68,11 @@
       },
       {
         "path": "tests/cli-ledger.test.mjs",
-        "sha256": "9f0368b375d00731b02ceb7232528fee109009e719483bb26926159ce29f132d"
+        "sha256": "ae33d002c2700e8311893a3e69d18dfbffaf4855d87c1d787501ceadfbff3c81"
       },
       {
         "path": "tests/compliance-ledger.test.mjs",
-        "sha256": "ff644426659ef941b6593098425dd1738c2c353e3a5960176b5643d23670d2de"
+        "sha256": "62127a967608964e70dc99065c6c35932a421347e4c1a637e9f8dcbcd32b24f3"
       },
       {
         "path": "tests/pci-indeterminate.test.mjs",

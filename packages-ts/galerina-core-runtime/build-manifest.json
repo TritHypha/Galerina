@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "07f16be4f58b269facfc9cfae469e97de46bb3df5546b080f87ee06e208a95d0",
+    "aggregateSha256": "767d6672505a916f9e4f431a656f4d103a2c4b3cde7948d7061a6f66c6bda3e4",
     "algorithm": "sha256",
     "files": [
       {
@@ -108,7 +108,7 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "fb333cd73b48a37e9a6c4e0a991d2d633ef6af84eb42d5c9e795da1881d6f62d"
+        "sha256": "0a1bcde050b072225aabd676f59c34798ec5d07a6216da7ee9ad037664e7f82d"
       },
       {
         "path": "src/self-hosted/governed-runtime-seam-version.fungi",
@@ -133,6 +133,10 @@
       {
         "path": "tests/rd0363-passive-plan-replay-execution.test.mjs",
         "sha256": "1c662bd1262620a512f5e142454e839d8bc0ade017d1e0b514cc2371c0f589f8"
+      },
+      {
+        "path": "tests/runtime-context-timeout.test.mjs",
+        "sha256": "3fab7ce912eaec600f483599da2c0b1c5cbdc2734d3f9a5b44d0d5b468dcd35a"
       },
       {
         "path": "tests/runtime-contracts.test.mjs",

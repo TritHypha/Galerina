@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "8c7b290e36f76a38b52c4622e7d3d865b1989ae909fff3c7e3cfaebcd202c230",
+    "aggregateSha256": "764b9416961bc2f9337a973d0d9b2c5bc73cd1d56056e8bb00c1a1c071932778",
     "algorithm": "sha256",
     "files": [
       {
@@ -32,7 +32,7 @@
       },
       {
         "path": "ARCHITECTURE_ISSUES.md",
-        "sha256": "d398d14c16375875e416db04df88dcaaa9ecf2be37198a9c5b1aca937179a412"
+        "sha256": "86a04e1e96648d8ad0b4b424ad1bb76aa973ff477ceaa82ecdd364bbf931437f"
       },
       {
         "path": "LICENSE",
@@ -52,7 +52,7 @@
       },
       {
         "path": "src/atomic-writer.ts",
-        "sha256": "030f4d53164dad7d0d964a63580b4ba3ba58c20456be3fb33727d8fb025d290c"
+        "sha256": "cfefc6136e9d4b57a8ca9c88eed19b2c874c306f94e5f702c29a036ed1c0dae2"
       },
       {
         "path": "src/cold-boot.ts",
@@ -88,11 +88,15 @@
       },
       {
         "path": "src/state-serializer.ts",
-        "sha256": "6ffca4572d350569486a339baf7c5a6262811509464111e1eb64abd209497610"
+        "sha256": "30779290b805fbb75fcc278fd519570a65816c3a83d4ad9e472bda7145aa4ca5"
       },
       {
         "path": "tests/_tmp.mjs",
         "sha256": "491b33445927dc0d3e3e60cbead4ee013a4016b29d61b75687da8da6acce46c9"
+      },
+      {
+        "path": "tests/atomic-writer-durability.test.mjs",
+        "sha256": "1022619d7e9f8de429eab5afc86d9154487b0b4106b16df75deed64ac989f623"
       },
       {
         "path": "tests/atomic-writer.test.mjs",
@@ -113,6 +117,10 @@
       {
         "path": "tests/fifo-live-linux.mjs",
         "sha256": "3888dfe4350c6aa030b454ba60190a1fd3e9501aeda1b4d5c7cf29d32faefb1c"
+      },
+      {
+        "path": "tests/provider-weak-key.test.mjs",
+        "sha256": "2b15ebfe757fe5ed6f14f9e0b53071616c2be8b8b368b425e541be9f9de69d8f"
       },
       {
         "path": "tests/q3-fifo-toctou-child.mjs",

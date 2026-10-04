@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "ea3f06886a4ea5a71198e33305941c190b0607c052165dcf415781fdf7b72407",
+    "aggregateSha256": "3e00a642fbf23f504d531ded5462a455d6e1c43f4a16db36abb74c69293cbd26",
     "algorithm": "sha256",
     "files": [
       {
@@ -28,11 +28,11 @@
       },
       {
         "path": ".graph/boundary-policy.json",
-        "sha256": "62a713d853ad2bab6a552b8b31d4710b3affbe21f8061fa6a96f54a404baf54e"
+        "sha256": "84619aa66d3077d9d2889bc77645a4f4cd1df6430acdc9d8fc1d9e6bd007f09e"
       },
       {
         "path": "ARCHITECTURE.md",
-        "sha256": "c45e2d5be172939ac35b4f07006a517104e2cafeae443e8a85c57592cadecd37"
+        "sha256": "428b6cf9357b21574e3dc4d4acc7f9068d1990a37997eaaa90734f76abe589d5"
       },
       {
         "path": "LICENSE",
@@ -192,7 +192,7 @@
       },
       {
         "path": "src/fuse-loader.ts",
-        "sha256": "14529d727a8e75e58f0df00fb9a545baaaa61d81e90e929c8f015f53230a3c05"
+        "sha256": "1cf0fad84ba9a3caa4987596d465fd385206f4420317e8f687cb2cd857d650dc"
       },
       {
         "path": "src/host-floor.ts",
@@ -204,7 +204,7 @@
       },
       {
         "path": "src/kernel.ts",
-        "sha256": "51816b22e0f65c64f53a4cead77c8a58e68512801ea503b6b5135f836c3524ed"
+        "sha256": "c79bfebae8c161e1c9b2387490b8997d0d618eee6f88b0ac5bf3586b6360d36b"
       },
       {
         "path": "src/node-util-shim.d.ts",
@@ -272,7 +272,7 @@
       },
       {
         "path": "src/route-defaults.ts",
-        "sha256": "f063dc134dca9e68354dc1a432d33d99f33768ff7f531e7cbee23c55e5546721"
+        "sha256": "508abdcf780402e504ac2d2711039a17fd25fa8178ecac77404ce3de51b8e38c"
       },
       {
         "path": "src/secret-gate.ts",
@@ -500,11 +500,15 @@
       },
       {
         "path": "src/types.ts",
-        "sha256": "a8628fbb59ec61b420c32267cbf43105eea0012c55f023f395d381009db51a05"
+        "sha256": "c7f22b75a7c2536f1b4a2b5cf2627beb77bfa36d71272b1641de6f3e16d788c2"
       },
       {
         "path": "tests/admission-vocabulary-drift.test.mjs",
         "sha256": "9736d1ec33dfd8421b294ce91b6c1e464c65220010e7c1945f59776e140e17ae"
+      },
+      {
+        "path": "tests/app-frame-hardening.test.mjs",
+        "sha256": "59b2e4df91086fdcbd2f03bfebef864db007767556488dde58e0c058a5f43a39"
       },
       {
         "path": "tests/audit-async.test.mjs",
@@ -665,6 +669,10 @@
       {
         "path": "tests/registry-runtime.test.mjs",
         "sha256": "db9ed90e2442cc36ab247167a6bfd8fb6c10004e76cfa13c8ea42c57845ab13f"
+      },
+      {
+        "path": "tests/relaxation-report.test.mjs",
+        "sha256": "607db821cd7cc7fe3cceee15dc3432274645204d5ac416571bcb990b47a41a85"
       },
       {
         "path": "tests/route-defaults.test.mjs",

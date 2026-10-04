@@ -35,6 +35,9 @@ import { spawnSync } from "node:child_process";
 import { join, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deriveRoadmapEvidence } from "./lib/assurance-fabric/roadmap-evidence.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/gen-roadmap.mjs [--root <dir>] [--write|--check|--preview|--self-test]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 /**
  * Parse one repository root and one output mode.

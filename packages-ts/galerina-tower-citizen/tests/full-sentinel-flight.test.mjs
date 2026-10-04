@@ -61,7 +61,7 @@ test("all six sentinels compose into one governed, recoverable flight", () => {
   // ── LST + Egress: governed, cycle-indexed audit channel ──
   const clock = new LogicalClock(0);
   const egDir = dir();
-  const egress = new AuditEgress({ dir: egDir, batchSize: 8, hmacKey: new Uint8Array(32) });
+  const egress = new AuditEgress({ dir: egDir, batchSize: 8, hmacKey: new Uint8Array(32), developmentKey: true });
   const logger = new AuditLogger(null, { tickSource: () => clock.tick(), egress });
 
   // ── PREFLIGHT (fail-fast): LSM stage + LSIO integrity gate + lock ──

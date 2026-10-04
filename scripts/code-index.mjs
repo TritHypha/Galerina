@@ -19,6 +19,30 @@ import {
 } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
 const ROOT = process.cwd();
+// Argument contract (zero-trust default, owner may revisit): `--help`/`-h` prints usage and exits 0
+// WITHOUT writing; any unknown or repeated argument refuses (exit 2) before any read or write. A
+// generator owner must never treat an unrecognised flag as a request to regenerate tracked output.
+const CODE_INDEX_USAGE = [
+  "usage: node scripts/code-index.mjs [--check]",
+  "  (no arguments)  regenerate build/code-index/CODE_INDEX.md, code-index.json and provenance.json",
+  "  --check         compare the generated output without writing; exit 1 on drift",
+  "  --help, -h      print this usage and exit 0 without writing",
+].join("\n");
+{
+  const args = process.argv.slice(2);
+  if (args.length === 1 && (args[0] === "--help" || args[0] === "-h")) {
+    console.log(CODE_INDEX_USAGE);
+    process.exit(0);
+  }
+  const seen = new Set();
+  for (const arg of args) {
+    if (arg !== "--check" || seen.has(arg)) {
+      console.error(`code-index: REFUSED unknown or repeated argument ${JSON.stringify(arg)}; nothing was written.\n${CODE_INDEX_USAGE}`);
+      process.exit(2);
+    }
+    seen.add(arg);
+  }
+}
 const CHECK = process.argv.includes("--check");
 const SCAN = ["packages-ts", "docs", "scripts", "governance"].map((d) => join(ROOT, d));
 const ROOT_SOURCES = [join(ROOT, "galerina.mjs")];

@@ -8,7 +8,7 @@ import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
 import { type ContractEnforcementRecord } from "./runtime/runtimeReport.js";
-import { type PassiveExecutionPlan, executePlan } from "./runtime/executionPlan.js";
+import { type PassiveExecutionPlan, executePlan, verifyPlanAdmission } from "./runtime/executionPlan.js";
 import { type RuntimeManifest, EffectCheckerFlags } from "./type-registry.js";
 import { FUNGI_RUNTIME_006 } from "./security-policy.js";
 import {
@@ -1714,6 +1714,15 @@ class Interpreter {
       ) {
         const ctx = this.getContext(flowName);
         try {
+          // RD-0363 P5: a caller-supplied plan is evidence, never a bearer token. It runs only if
+          // it passes admission; until an owner-approved signature verifier exists (P1) that
+          // gate never returns ALLOW, so this path refuses every plan rather than trusting one.
+          const admission = verifyPlanAdmission(plan);
+          if (!admission.admitted) {
+            throw new Error(
+              `execution plan refused by admission (verdict ${admission.verdict}): ${admission.reason ?? "no reason given"}`,
+            );
+          }
           const planResult = await executePlan(plan, this.capabilityHost, ctx);
           for (const entry of planResult.auditTrail) {
             this.auditEntries.push({ event: entry, fields: {}, timestamp: new Date().toISOString() });

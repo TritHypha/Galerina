@@ -28,10 +28,12 @@ export interface IoManifest {
   readonly blocks: readonly IoBlock[];
 }
 
-const HEX_RE = /^[0-9a-f]+$/;
+/** Exactly one lowercase SHA-256 / HMAC-SHA256 hex digest (zero-trust default, owner may revisit). */
+const HEX_RE = /^[0-9a-f]{64}$/;
 
+/** Non-negative SAFE integer: beyond 2^53 `offset + length` silently loses precision. */
 function isNonNegInt(n: unknown): n is number {
-  return typeof n === "number" && Number.isInteger(n) && n >= 0;
+  return typeof n === "number" && Number.isSafeInteger(n) && n >= 0;
 }
 
 function trap(message: string): never {
@@ -56,8 +58,10 @@ export class ManifestLoader {
 
   /**
    * Validate a manifest from an already-parsed object. Same rules as
-   * {@link parse}. Every block is validated; blocks must be contiguous,
-   * in-range, non-negative, and non-overlapping.
+   * {@link parse}. Every block is validated: ids are unique, digests are
+   * 64 lowercase hex chars, offsets/lengths are non-negative safe integers,
+   * and blocks tile `[0, totalBytes)` exactly — contiguous, in order, with
+   * no overlap, no gap and no uncovered trailing bytes.
    */
   static fromObject(obj: unknown): IoManifest {
     if (obj === null || typeof obj !== "object") {
@@ -84,6 +88,7 @@ export class ManifestLoader {
     const rawBlocks = m["blocks"] as unknown[];
 
     const blocks: IoBlock[] = [];
+    const seenIds = new Set<string>();
     let prevEnd = 0;
     for (let i = 0; i < rawBlocks.length; i++) {
       const rb = rawBlocks[i];
@@ -106,13 +111,18 @@ export class ManifestLoader {
         b["sha256"].length === 0 ||
         !HEX_RE.test(b["sha256"])
       ) {
-        trap(`manifest.blocks[${i}].sha256 must be a non-empty hex string`);
+        trap(`manifest.blocks[${i}].sha256 must be exactly 64 lowercase hex characters`);
       }
 
       const id = b["id"] as string;
       const offset = b["offset"] as number;
       const length = b["length"] as number;
       const sha256 = b["sha256"] as string;
+
+      if (seenIds.has(id)) {
+        trap(`manifest.blocks[${i}].id "${id}" duplicates an earlier block id`);
+      }
+      seenIds.add(id);
 
       if (offset + length > totalBytes) {
         trap(
@@ -128,9 +138,21 @@ export class ManifestLoader {
             `(offset ${offset} < previous end ${prevEnd})`,
         );
       }
+      // Gap-free: bytes no block's digest covers would be released unverified (mapped as zeros) or
+      // silently ignored; either way the manifest no longer describes the source exactly.
+      if (offset !== prevEnd) {
+        trap(
+          `manifest.blocks[${i}] (${id}) leaves a gap ` +
+            `(offset ${offset} != previous end ${prevEnd})`,
+        );
+      }
       prevEnd = offset + length;
 
       blocks.push({ id, offset, length, sha256 });
+    }
+
+    if (prevEnd !== totalBytes) {
+      trap(`manifest blocks cover ${prevEnd} of ${totalBytes} bytes; trailing bytes are not governed`);
     }
 
     return { version, source, totalBytes, blocks };

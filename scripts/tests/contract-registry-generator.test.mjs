@@ -43,6 +43,7 @@ function fixture() {
   write(harness, "package.json", '{"type":"module"}\n');
   write(harness, "scripts/gen-contract-registry.mjs", readFileSync(SCRIPT, "utf8"));
   write(harness, "scripts/lib/provenance.mjs", readFileSync(PROVENANCE, "utf8"));
+  write(harness, "scripts/lib/cli-help.mjs", readFileSync(resolve("scripts/lib/cli-help.mjs"), "utf8"));
 
   const compiler = [
     "export function parseProgram(source) {",
