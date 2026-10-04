@@ -30,6 +30,7 @@ export interface AuthPolicy {
   readonly allowHeaderPresenceFallback?: boolean;
 }
 
+/** `"strip"` is reserved: it is not implemented, so a route declaring it is refused at construction. */
 export type UnknownFieldsMode = "deny" | "strip" | "allow";
 export type DuplicateKeysMode = "deny" | "lastWins";
 export interface BodyPolicy {
@@ -43,6 +44,7 @@ export interface IdempotencyPolicy {
   readonly enabled: boolean;
   readonly header: string;
   readonly ttlSeconds: number;
+  /** "replay" is reserved and not implemented: route admission refuses it (a duplicate key is always 409). */
   readonly onDuplicate: "reject" | "replay";
 }
 
