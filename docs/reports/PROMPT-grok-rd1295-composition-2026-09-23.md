@@ -17,7 +17,7 @@ claim RD-1295 closed on the strength of this slice.
 Access mode: read KB contracts; modify only the in-scope Galerina files and
 tests after confirming a defect. Do not read unrelated repositories.
 Work in `Galerina/.worktrees/rd-0873-native-fungi-bootstrap-implementation`.
-Read KB `private/research/rd/RD-1295-tower-citizen-modular-product-line-PRIVATE.md`
+Read the private RD-1295 KB research note (tower-citizen modular product line)
 sections 6.10 and 9 as a contract, not proof of live behaviour. Before edits,
 record `git rev-parse HEAD`, branch, and relevant status. At handoff, the
 Galerina HEAD was `e8f1b68235daeb6a0ec08f3639bd7e1b69af2de7` on a dirty
