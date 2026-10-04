@@ -75,6 +75,23 @@ const SUBJECTS = [
   { name: "compiler pipeline, unique input", file: "subject-galerina-compile.mjs", env: { LEAK_MODE: "unique" } },
 ];
 
+// --self-test: the anti-neutering proof only (the meta-gate runs it on every commit). It proves the detector
+// fires (Stage 0 above), that the measured subjects are declared and present, and that an empty receipt is
+// refused. It does NOT measure: the live measurement is this script without flags (retention.yml), which
+// keeps its own fail-closed verdict. Before this mode existed the meta-gate ran the full measurement here.
+if (process.argv.includes("--self-test")) {
+  const checks = [
+    ["measured subjects are declared", SUBJECTS.length > 0],
+    ["every declared subject script exists", SUBJECTS.every((s) => existsSync(SCRIPTS + "/" + s.file))],
+    ["an empty subject receipt is refused, never summarised as clean", parseRetentionReceipt({ status: 0, stdout: "", stderr: "" }).ok === false],
+    ["the cache-invariant probe exists", existsSync(SCRIPTS + "/kat-executeflow-cache-growth.mjs")],
+  ];
+  let ok = true;
+  for (const [name, pass] of checks) { P(`  ${pass ? "PASS" : "FAIL"}  ${name}`); if (!pass) ok = false; }
+  P(ok ? "  nightly retention self-test: PASS (detector proven; no measurement in self-test mode)" : "  nightly retention self-test: FAILED");
+  process.exit(ok ? 0 : 2);
+}
+
 let failures = 0, ran = 0;
 for (const s of SUBJECTS) {
   P(`\n-- ${s.name}`);
