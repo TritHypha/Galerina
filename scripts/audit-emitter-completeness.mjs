@@ -147,17 +147,24 @@ const INVENTORY = [
 ];
 
 // ── self-test: one exemplar per class must classify as that class; the % must be derived, not constant ──
+// Known-bad exemplar: a guarded Void flow that reassigns a `mut` local clears every front-end gate but
+// the emitter leaves a value on the stack for a Void return (wabt: "type mismatch in implicit return").
+// Same shape as corpus 006-mut-binding (baselined INVALID). It replaces money-ratio (077), which the
+// front end now refuses (FUNGI-NUMERIC-OP-002) and so no longer reaches the emitter. When this emitter
+// defect is fixed, this self-test goes red on purpose: pick the next live INVALID from the sweep.
+const KNOWN_EMITTER_INVALID = `guarded flow f() -> Void\n${C}\n{\n  mut count: Int = 0\n  count = count + 1\n}`;
+
 async function selfTest() {
   let pass = 0, fail = 0;
   const ok = (c, m) => { if (c) pass++; else { fail++; console.log(`  ✗ ${m}`); } };
   const cl = async (src, id) => (await classify(src, id)).cls;
   ok(await cl(bin("Int", "Int", "Int", "+"), "t-valid") === "standalone-valid", "standalone-valid: int-add");
   ok(await cl(`pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure result > 0 } }\n{ return a }`, "t-fc") === "fail-closed", "fail-closed: a violated-able ensure lowers to a trap");
-  ok(await cl(`pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }`, "t-inv") === "emitter-invalid", "emitter-invalid: money-ratio (the 077 gap)");
+  ok(await cl(KNOWN_EMITTER_INVALID, "t-inv") === "emitter-invalid", "emitter-invalid: a mut-reassigning Void flow (the 006 implicit-return gap)");
   ok(await cl(`pure flow f() -> Int\n${C}\n{ return "x" }`, "t-gate") === "gate-refused", "gate-refused: a String-for-Int return is refused by the front-end");
   // the completeness % must MOVE when the classification moves (not a hand-typed constant)
   const invAllValid = [{ id: "a", src: bin("Int", "Int", "Int", "+") }];
-  const invHalf = [{ id: "a", src: bin("Int", "Int", "Int", "+") }, { id: "b", src: `pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }` }];
+  const invHalf = [{ id: "a", src: bin("Int", "Int", "Int", "+") }, { id: "b", src: KNOWN_EMITTER_INVALID }];
   const p1 = await completeness(invAllValid), p2 = await completeness(invHalf);
   ok(p1.pct === 100 && p2.pct === 50, `derived %: all-valid=100 (${p1.pct}) · half-invalid=50 (${p2.pct}) — % tracks the classification`);
   // host-import class is populated (string concat + Result match) — assert the DETECTION fires on a known
@@ -165,7 +172,7 @@ async function selfTest() {
   const rows = await runInventory();
   ok(rows.filter((r) => r.cls === "host-import").some((r) => r.id === "string-concat"), "host-import detection works: string-concat emits `host.__str_concat` (a host FUNCTION import) → host-import class (won't instantiate with {})");
   // ratchet: prove the enforcing edge — a construct that WAS a higher rank and is NOW lower is a regression.
-  const nowInvalid = (await classify(`pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\n${C}\n{ let r: Decimal = revenue / cost\n  return r }`, "t-reg")).cls;
+  const nowInvalid = (await classify(KNOWN_EMITTER_INVALID, "t-reg")).cls;
   ok(RANK[nowInvalid] < RANK["standalone-valid"], "ratchet FIRES: a construct classified emitter-invalid ranks below a standalone-valid baseline → regression");
   ok(RANK["standalone-valid"] > RANK["host-import"] && RANK["host-import"] > RANK["emitter-invalid"] && RANK["fail-closed"] > RANK["emitter-invalid"], "ratchet: the completeness lattice is strictly ordered");
   console.log(`\naudit-emitter-completeness --self-test: ${pass}/${pass + fail} checks passed`);
