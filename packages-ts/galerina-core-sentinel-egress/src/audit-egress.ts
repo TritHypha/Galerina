@@ -10,8 +10,9 @@ const GENESIS = "0".repeat(64);
 /**
  * Named development HMAC key identity: explicit all-zero 32 bytes.
  * Not a constructor default. Callers who want this mode must pass
- * `new Uint8Array(32)` (or an equivalent all-zero buffer). `strictKey`
- * refuses it (`EGR-KEY-001`).
+ * `new Uint8Array(32)` AND declare `developmentKey: true`; without that
+ * explicit development mode, and always under `strictKey`, it is refused
+ * (`EGR-KEY-001`). Zero-trust default, owner may revisit.
  */
 const ZERO_KEY = new Uint8Array(32);
 
@@ -52,7 +53,8 @@ export interface AuditEgressOptions {
   /**
    * HMAC key for the chain. Required. Omission throws `EGR-KEY-002`; it is
    * not a development default. Explicit {@link ZERO_KEY} (`new Uint8Array(32)`)
-   * is the named non-secret development key and is refused when
+   * is the named non-secret development key: admitted only with
+   * {@link AuditEgressOptions.developmentKey} `true`, and refused whenever
    * {@link AuditEgressOptions.strictKey} is true. PRODUCTION MUST inject a
    * real non-zero key.
    */
@@ -64,6 +66,12 @@ export interface AuditEgressOptions {
    * Default false.
    */
   strictKey?: boolean;
+  /**
+   * Explicit development mode for the named all-zero key ({@link ZERO_KEY}).
+   * Only the exact boolean `true` admits it; anything else (including omission)
+   * refuses it with `EGR-KEY-001`. Never set this in production.
+   */
+  developmentKey?: boolean;
   /**
    * Key-rotation epoch this writer seals batches under (#28/D2). Positive
    * integer; stamped on and MAC-bound into every flushed batch. Omit for the
@@ -146,6 +154,15 @@ export class AuditEgress {
       throw new SecurityTrap(
         "EGR-KEY-001",
         "AuditEgress strictKey: a real (non-zero) HMAC key is required — the all-zero development key is a certification blocker",
+      );
+    }
+    // Zero-trust default (owner may revisit): a weak key is refused unless the writer is EXPLICITLY in
+    // development mode, and even then only the exact named 32-byte zero key is admitted.
+    const namedDevKey = opts.hmacKey instanceof Uint8Array && opts.hmacKey.length === ZERO_KEY.length;
+    if (isWeakKey(opts.hmacKey) && !(opts.developmentKey === true && namedDevKey)) {
+      throw new SecurityTrap(
+        "EGR-KEY-001",
+        "AuditEgress: the all-zero development key requires explicit developmentKey: true (development mode only)",
       );
     }
     if (opts.epochId !== undefined && (!Number.isInteger(opts.epochId) || opts.epochId < 1)) {
