@@ -82,6 +82,22 @@ export function deriveGateSubjects(scriptsDir, readdir, readfile) {
   return [...roots].sort();
 }
 
+/**
+ * DERIVE build roots referenced by the script test suite. These tests are not all build-free:
+ * several import compiled package dist/ outputs directly. Keep them in the build lane and derive
+ * their roots from the tests instead of excluding failures or maintaining a second package list.
+ */
+export function deriveTestSubjects(testsDir, readdir, readfile) {
+  const roots = new Set();
+  for (const f of readdir(testsDir)) {
+    if (!/\.test\.mjs$/.test(f)) continue;
+    const src = readfile(join(testsDir, f));
+    for (const m of src.matchAll(/packages-ts\/([a-z0-9-]+)\/dist/g)) roots.add(m[1]);
+    for (const m of src.matchAll(/["']packages-ts["']\s*,\s*["']([a-z0-9-]+)["']/g)) roots.add(m[1]);
+  }
+  return [...roots].sort();
+}
+
 // ── self-test: prove the derivation SEES BOTH REFERENCE FORMS. A scan that silently returns a short
 //    list is worse than no scan — it looks derived while hand-listing by omission. Fixture-driven, no
 //    filesystem: injected readdir/readfile (a DI seam, no monkeypatching).
@@ -103,6 +119,16 @@ function selfTest() {
     () => Object.keys(TEST_FIX),
     (p) => TEST_FIX[basename(p)],
   );
+  const TEST_FIX = {
+    "route.test.mjs": 'import "../packages-ts/galerina-core-logic/dist/index.js";',
+    "runtime.test.mjs": 'const DIST = join(ROOT, "packages-ts", "galerina-tower-citizen", "dist");',
+    "helper.mjs": 'import "../packages-ts/galerina-should-be-ignored/dist/index.js";',
+  };
+  const testRoots = deriveTestSubjects(
+    "/tests",
+    () => Object.keys(TEST_FIX),
+    (p) => TEST_FIX[basename(p)],
+  );
   const windowsNpm = packageManagerInvocation(
     "win32",
     "C:\\Program Files\\nodejs\\node.exe",
@@ -113,6 +139,10 @@ function selfTest() {
   const checks = [
     ["LITERAL form is seen (…/packages-ts/<pkg>/dist/…)", got.includes("galerina-core-compiler")],
     ["JOIN form is seen (join(ROOT,'packages-ts','<pkg>','dist')) — the one that broke CI", got.includes("galerina-devtools-package-graph")],
+    ["test literal import is discovered", testRoots.includes("galerina-core-logic")],
+    ["test join form is discovered", testRoots.includes("galerina-tower-citizen")],
+    ["non-test files are excluded", !testRoots.includes("galerina-should-be-ignored")],
+    ["test roots are deterministic + sorted", testRoots.join() === [...testRoots].sort().join()],
     ["a gate needing no build contributes nothing", !got.includes("audit-none")],
     ["non-gate files are NOT scanned (surface is audit-*/lint-* only)", !got.includes("galerina-should-be-ignored")],
     ["result is deterministic + sorted", got.join() === [...got].sort().join()],
@@ -141,15 +171,27 @@ const targets = argv.filter((a) => !a.startsWith("-"));
 let roots;
 if (targets.length) {
   roots = targets;
-} else if (argv.includes("--gate-subjects")) {
-  // The lane that runs the gate suite asks for the UNION the gates actually need.
-  const derived = deriveGateSubjects(
-    join(ROOT, "scripts"),
-    (d) => readdirSync(d),
-    (p) => readFileSync(p, "utf8"),
-  ).filter((r) => existsSync(join(PKG_DIR, r, "package.json")));
-  roots = derived.length ? derived : ["galerina-core-compiler"];
-  console.log(`  gate-subject roots DERIVED from the gates (not hand-listed): ${roots.join(", ")}`);
+} else if (argv.includes("--gate-subjects") || argv.includes("--test-subjects")) {
+  const derived = new Set();
+  if (argv.includes("--gate-subjects")) {
+    for (const root of deriveGateSubjects(
+      join(ROOT, "scripts"),
+      (d) => readdirSync(d),
+      (p) => readFileSync(p, "utf8"),
+    )) derived.add(root);
+  }
+  if (argv.includes("--test-subjects")) {
+    for (const root of deriveTestSubjects(
+      join(ROOT, "scripts", "tests"),
+      (d) => readdirSync(d),
+      (p) => readFileSync(p, "utf8"),
+    )) derived.add(root);
+  }
+  roots = [...derived]
+    .filter((r) => existsSync(join(PKG_DIR, r, "package.json")))
+    .sort();
+  if (roots.length === 0) roots = ["galerina-core-compiler"];
+  console.log("  package roots DERIVED from selected gates/tests: " + roots.join(", "));
 } else {
   roots = ["galerina-core-compiler"];
 }
