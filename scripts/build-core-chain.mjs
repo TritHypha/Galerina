@@ -14,7 +14,7 @@
 //   default target: galerina-core-compiler  (the chain the CG-4 / signed-fixture gates need)
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { join, dirname, resolve, basename, isAbsolute } from "node:path";
+import { join, dirname, resolve, basename, isAbsolute, win32 as win32Path } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,14 +29,14 @@ export function packageManagerInvocation(
   if (platform !== "win32") {
     return { command: "npm", argsPrefix: [] };
   }
-  const candidates = [
+  const pathOps = platform === "win32" ? win32Path : { join, dirname, isAbsolute };
     env.npm_execpath,
-    join(dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+    pathOps.join(pathOps.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js"),
   ];
   const npmCli = candidates.find(
     (candidate) =>
       typeof candidate === "string" &&
-      isAbsolute(candidate) &&
+      pathOps.isAbsolute(candidate) &&
       pathExists(candidate),
   );
   if (npmCli === undefined) {
