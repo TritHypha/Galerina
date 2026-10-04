@@ -1,0 +1,639 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-network/src/self-hosted",
+    "file": "defensive-controls.fungi",
+    "module": "defensive-controls",
+    "ledgerSha256": "19da5ad09872562727d78aed8d5cfd8b3a40d29ef8f00a3f9525d5ab1c998960"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-network/tests/rd0361-defensive-controls-execution.test.mjs",
+    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+  },
+  "exports": [
+    {
+      "name": "proxyTrustVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "useForwardedAddress",
+      "params": [
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "uniformResourceAuthorized",
+      "params": [
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "uniformAuthAuthenticated",
+      "params": [
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "opaqueIdVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "pageLimitBranch",
+      "params": [
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 52,
+  "casesSha256": "4cb007c1bd30f315f5d420050c25286088bb4a3596ea63e9b1109ae816f98a82",
+  "cases": [
+    {
+      "id": "proxy-00000",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00001",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00010",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00011",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-00100",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00101",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00110",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-00111",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-01000",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01001",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01010",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01011",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-01100",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01101",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01110",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-01111",
+      "export": "proxyTrustVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-10000",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10001",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10010",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10011",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10100",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10101",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10110",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-10111",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-11000",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-11001",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-11010",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-11011",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "proxy-11100",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-11101",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-11110",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "proxy-11111",
+      "export": "proxyTrustVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "fwd-00",
+      "export": "useForwardedAddress",
+      "args": [
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "fwd-01",
+      "export": "useForwardedAddress",
+      "args": [
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "fwd-10",
+      "export": "useForwardedAddress",
+      "args": [
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "fwd-11",
+      "export": "useForwardedAddress",
+      "args": [
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "res-0",
+      "export": "uniformResourceAuthorized",
+      "args": [
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "auth-0",
+      "export": "uniformAuthAuthenticated",
+      "args": [
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "res-1",
+      "export": "uniformResourceAuthorized",
+      "args": [
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "auth-1",
+      "export": "uniformAuthAuthenticated",
+      "args": [
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "opaque-000",
+      "export": "opaqueIdVerdict",
+      "args": [
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-001",
+      "export": "opaqueIdVerdict",
+      "args": [
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-010",
+      "export": "opaqueIdVerdict",
+      "args": [
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-011",
+      "export": "opaqueIdVerdict",
+      "args": [
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-100",
+      "export": "opaqueIdVerdict",
+      "args": [
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-101",
+      "export": "opaqueIdVerdict",
+      "args": [
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-110",
+      "export": "opaqueIdVerdict",
+      "args": [
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "opaque-111",
+      "export": "opaqueIdVerdict",
+      "args": [
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "page-00",
+      "export": "pageLimitBranch",
+      "args": [
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "page-01",
+      "export": "pageLimitBranch",
+      "args": [
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "page-10",
+      "export": "pageLimitBranch",
+      "args": [
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "page-11",
+      "export": "pageLimitBranch",
+      "args": [
+        true,
+        true
+      ],
+      "expected": 1
+    }
+  ]
+}
