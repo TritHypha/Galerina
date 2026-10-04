@@ -749,7 +749,8 @@ export async function fusePackage(dir: string, opts: FusePackageOptions = {}): P
       sourceHash: admitted.descriptor.wasmSha256,
       keyId: admitted.keyId,
     });
-    if (!verdict.ok) {
+    // Strict boolean (S9): only a literal `true` admits; a truthy non-boolean refuses.
+    if (verdict.ok !== true) {
       return fuseError(
         verdict.code ?? "FUNGI-FUSE-REGISTRY-DENIED",
         `central registry refused '${admitted.name}@${admitted.descriptor.version}': ${verdict.reason ?? "not admissible"}`,
