@@ -11,7 +11,7 @@ Rendered SVG architecture diagrams. All use a shared palette so the set reads as
 | [galerina-compiler.svg](galerina-compiler.svg) | Stage-A compiler internals | `project-galerina-compiler-gaps.md` |
 | [galerina-compiler-pipeline-foresight.svg](galerina-compiler-pipeline-foresight.svg) | the compiler pipeline + forward-looking passes | the build roadmap |
 | [galerina-runtime.svg](galerina-runtime.svg) | the K3 fail-closed runtime gate | `galerina-governance-rules.md` |
-| [galerina-framework.svg](galerina-framework.svg) | the Zero-Trust application framework | `galerina-post-framework-architecture.md` |
+| [galerina-framework.svg](galerina-framework.svg) | the Zero-Trust application framework | [`../framework/framework-overview.md`](../framework/framework-overview.md) |
 | [galerina-tower-citizen.svg](galerina-tower-citizen.svg) | the DRCM / Tower-citizen containment model | `galerina-drcm.md` |
 | [galerina-tri-pipe.svg](galerina-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `galerina-photonic-ppu-virtualisation.md` |
 | **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../../../ZTF-Knowledge-Bases/reference/language/untrusted-governed-lane.md)** |

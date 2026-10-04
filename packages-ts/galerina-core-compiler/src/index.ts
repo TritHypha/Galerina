@@ -1156,6 +1156,9 @@ export {
   verifyPlanAdmission,
   PLAN_DEFAULT_MAX_AGE_MS,
   type PlanAdmissionResult,
+  // RD-0363 P5 admission binding and closed step schema
+  computePlanAdmissionHash,
+  PASSIVE_PLAN_STEP_KINDS,
 } from "./runtime/executionPlan.js";
 
 // RD-0858 Unit 4 - non-authorizing process protocol

@@ -108,11 +108,16 @@ export function validateRuntimeContext(
     ));
   }
 
-  if (context.timeoutMs !== undefined && context.timeoutMs <= 0) {
+  // NaN fails every comparison and Infinity is "positive", so a bare `<= 0` check admitted a timeout
+  // that can never fire. Same rule as the structured-await plan admission: a positive safe integer.
+  if (
+    context.timeoutMs !== undefined &&
+    (!Number.isSafeInteger(context.timeoutMs) || context.timeoutMs <= 0)
+  ) {
     diagnostics.push(createRuntimeDiagnostic(
       "Galerina_RUNTIME_TIMEOUT_INVALID",
       "error",
-      "Runtime timeout must be positive when declared.",
+      "Runtime timeout must be a positive safe integer (milliseconds) when declared.",
       "timeoutMs",
     ));
   }
