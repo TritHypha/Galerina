@@ -1,6 +1,7 @@
 /**
- * #132 / FUNGI-LAYOUT-001 — typed natural alignment admits faithful i32, i64 and f64 fields. The guard
- * still refuses Float16/Float32 until the scalar f32 expression lane exists. Decimal record
+ * #132 / FUNGI-LAYOUT-001 — typed natural alignment admits faithful i32, i64 and f64 fields. E5
+ * (PROVISIONAL) admits Float32 as a 4-byte f32 slot (wat-e5-narrow-float.test.mjs); the guard still
+ * refuses Float16 (no 2-byte slot yet). Decimal record
  * fields lower as i32 host handles (C02) and must not be treated as inexact f64. Tests prove
  * both the refusal and admission directions so the boundary cannot be weakened or left
  * permanently closed.
@@ -31,12 +32,12 @@ function refusedByLayoutGuard(program) {
 }
 const trivialFlow = `pure flow f() -> Int contract { intent { "x" } } { return 0 }`;
 
-// Float32/Float16 do not yet have a scalar f32 expression lane. Decimal is an i32 host
-// handle after C02 and is admitted; these tests still refuse the unfinished f32 lane.
-const REFUSED = ["Float32", "Float16"];
+// E5: Float32 now has a 4-byte f32 slot; Float16 has no 2-byte slot yet and stays refused.
+// Decimal is an i32 host handle after C02 and is admitted.
+const REFUSED = ["Float16"];
 
 describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refused (fail-closed)", () => {
-  it("refuses f32 fields without a scalar f32 lane", () => {
+  it("refuses Float16 fields (no 2-byte slot yet)", () => {
     for (const T of REFUSED) {
       const program = `record S { x: ${T} }\n${trivialFlow}`;
       assert.ok(refusedByLayoutGuard(program), `must refuse a record with a ${T} field`);
@@ -44,7 +45,7 @@ describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refus
   });
 
   it("admits naturally aligned f64 and i64 fields", () => {
-    for (const T of ["Float", "Float64", "Double", "Int64", "UInt64"]) {
+    for (const T of ["Float", "Float64", "Double", "Int64", "UInt64", "Float32"]) {
       const program = `record S { x: ${T} }\n${trivialFlow}`;
       assert.equal(refusedByLayoutGuard(program), false, `must admit a record with a ${T} field`);
     }
@@ -52,11 +53,11 @@ describe("FUNGI-LAYOUT-001 — unfaithful record field representations are refus
 
   it("the refusal names the offending field and its lowered wasm type (checkable, actionable)", () => {
     let msg = "";
-    try { buildModule(`record Sample { amount: Float32 }\n${trivialFlow}`, "f"); }
+    try { buildModule(`record Sample { amount: Float16 }\n${trivialFlow}`, "f"); }
     catch (e) { msg = String(e && e.message ? e.message : e); }
     assert.ok(/FUNGI-LAYOUT-001/.test(msg), "carries the code");
     assert.ok(/Sample\.amount/.test(msg), "names the offending record.field: " + msg.slice(0, 180));
-    assert.ok(/f32/.test(msg), "names the lowered wasm type (f32 for Float32)");
+    assert.ok(/f16/.test(msg), "names the missing wasm representation (f16 for Float16)");
   });
 
   it("does NOT refuse i32 / i32-handle fields — no false-refusal", () => {
