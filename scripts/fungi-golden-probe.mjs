@@ -14,6 +14,9 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/fungi-golden-probe.mjs --check|--write\n  select exactly one mode\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);

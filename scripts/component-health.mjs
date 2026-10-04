@@ -34,6 +34,9 @@ import {
   provenance as generatedProvenance,
   provenanceForCheck,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/component-health.mjs [--gaps] [--json] [--strict] [--table] [--audit-html] [--audit-check] [--self-test]\n  see the header comment of scripts/component-health.mjs for each flag\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PKG_DIR = join(ROOT, "packages-ts");

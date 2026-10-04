@@ -15,6 +15,9 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { deriveSemanticCoverage } from "./lib/assurance-fabric/semantic-coverage.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/gen-assurance-semantic-graph.mjs [--root <dir>] [--check]\n  --check  compare the generated output without writing\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 const TOOL = "semantic-assurance-graph";
 const GIT_IDENTITY = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/u;
