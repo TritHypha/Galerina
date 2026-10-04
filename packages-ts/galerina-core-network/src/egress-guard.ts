@@ -210,9 +210,12 @@ export function classifyHost(rawHost: string): HostClassification {
   if (host.length === 0) return cls(rawHost, "invalid", "hostname", "empty host");
   // A host (no port — the URL parser strips it) containing ':' or brackets is IPv6.
   if (host.startsWith("[") || host.includes(":")) return classifyIpv6(host);
-  // IPv4 (dotted or numeric)
-  if (/^[0-9a-fx.]+$/i.test(host)) {
-    const oct = ipv4ToOctets(host);
+  // IPv4 (dotted or numeric). A single trailing root dot ("127.0.0.1.") names the SAME address — the
+  // system resolver and the WHATWG URL host parser both strip it — so it is parsed as the IP literal it
+  // is, never laundered through the hostname path as a tentatively-public name (SSRF bypass).
+  const ipv4Candidate = host.endsWith(".") && !host.endsWith("..") ? host.slice(0, -1) : host;
+  if (/^[0-9a-fx.]+$/i.test(ipv4Candidate)) {
+    const oct = ipv4ToOctets(ipv4Candidate);
     if (oct) return classifyIpv4(host, oct);
   }
   // hostname
