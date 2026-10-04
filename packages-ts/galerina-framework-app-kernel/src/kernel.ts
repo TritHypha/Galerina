@@ -55,7 +55,8 @@ export interface GalerinaKernelRequest {
   readonly receivedAt: number;
   /** Optional channel/identity verdict from the transport (e.g. the TLSTP S1 cert-gate K3 fold).
    *  When present it is collapsed FAIL-CLOSED at the auth gate: only ALLOW (+1) admits; an
-   *  INDETERMINATE (0) or DENY (−1) refuses. Absent → the header-presence check applies (legacy). */
+   *  INDETERMINATE (0) or DENY (−1) refuses. Absent on a `required`-auth route → 401; header
+   *  presence is never sufficient. */
   readonly channelVerdict?: Verdict;
   /** Exact scopes carried by the authenticated principal that produced `channelVerdict`. */
   readonly principalScopes?: readonly string[];

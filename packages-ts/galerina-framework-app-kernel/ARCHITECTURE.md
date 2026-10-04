@@ -8,21 +8,31 @@ full application framework.
 
 ## Runtime Pipeline
 
+The implemented order is fixed in `src/kernel.ts` (see the gate list in its header). Every
+gate fails closed, and the handler is reached only after all of them admit:
+
 ```text
 adapter request
   -> request normalisation
-  -> security policy check
-  -> auth verification
-  -> body limits and content-type check
-  -> typed decode and validation
-  -> idempotency and replay check
-  -> workload limits
-  -> request Structured Await scope
-  -> typed flow handler
-  -> child cancellation and queue handoff policy
-  -> typed response encode
-  -> reports and audit events
+  -> route match                (unknown path 404, known path + wrong method 405)
+  -> effective route policy     (resolveEffectiveRoutePolicy, posture-aware)
+  -> body size                  (413)
+  -> content-type               (415)
+  -> auth                       (verified channel verdict + principal, else 401; missing scope 403)
+  -> rate                       (429; counted before decode, so malformed bodies are charged)
+  -> decode + closed validation (422)
+  -> memory budget              (503)
+  -> concurrency                (429)
+  -> required secrets           (503)
+  -> idempotency                (409)
+  -> typed flow handler         (bounded by limits.timeoutMs)
+  -> response encode
+  -> runtime audit event
 ```
+
+Not yet implemented (design targets, see TODO.md): the request Structured Await scope,
+child cancellation and queue handoff policy, and checking a handler result against the
+declared `responseType`.
 
 Handlers should receive typed values, not unsafe raw JSON, unless a route
 explicitly opts into raw access and accepts the security consequences.
