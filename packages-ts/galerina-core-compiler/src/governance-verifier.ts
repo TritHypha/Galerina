@@ -3516,14 +3516,14 @@ class GovernanceVerifier {
 
     // RD-0365 §3 (KV4) — key custody is a host-profile claim. Resolve the declared host by NAME and
     // evaluate its custody claim. Compile time holds no attestation, so any rung above env-spore is
-    // denied fail-closed (effective custody = env-spore) and surfaced as an ADVISORY warning:
+    // denied fail-closed (compatibility fallback label = env-spore, not proof of protection) and surfaced as an ADVISORY warning:
     // keyCustody is a reserved v1 slot and never fails the build or grants a rung.
     const custodyHostName = extractValue("host");
     if (custodyHostName !== undefined) {
       const custody = resolveHostKeyCustody(custodyHostName);
       if (custody.claimed !== "env-spore" && custody.effective !== custody.claimed) {
         this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_009.code, FUNGI_HARDEN_009.name, "warning",
-          `Flow '${flowName}': host "${custodyHostName}" claims keyCustody ${custody.claimed}, but ${custody.decision.reason}; effective custody is ${custody.effective}. ${FUNGI_HARDEN_009.message}`,
+          `Flow '${flowName}': host "${custodyHostName}" claims keyCustody ${custody.claimed}, but ${custody.decision.reason}; effective custody label is ${custody.effective} (${custody.effectiveStatus}). ${FUNGI_HARDEN_009.message}`,
           hardeningNode.location,
           "Supply a current custody attestation to the admission boundary (evaluateKeyCustody with a native verifier), or declare a host profile whose claim is the env-spore baseline."));
       }

@@ -129,7 +129,9 @@ test("RD-0365: verified current TPM/PCR evidence admits only the matching custod
     return true;
   }, 1_000);
   assert.deepEqual(decision, { admitted: true, enforced: true, reason: "attested custody verified" });
-  assert.equal(seen.evidence, attestation);
+  assert.deepEqual(seen.evidence, attestation);
+  assert.notEqual(seen.evidence, attestation, "the verifier receives the validated immutable snapshot");
+  assert.equal(Object.isFrozen(seen.evidence), true);
   assert.equal(seen.candidate, host);
 });
 
@@ -155,6 +157,31 @@ test("RD-0365: stale, mismatched, malformed and verifier-failed evidence remains
   assert.equal(evaluateKeyCustody(host, { ...valid, hostName: "other_host" }, () => true, 1_000).admitted, false);
   const { challengeDigest: _challengeDigest, ...withoutChallenge } = valid;
   assert.equal(evaluateKeyCustody(host, withoutChallenge, () => true, 1_000).admitted, false);
+});
+
+test("RD-0365: accessor-backed attestation fields are refused before calling the verifier", () => {
+  const { evaluateKeyCustody, HOST_PROFILES } = L;
+  const host = HOST_PROFILES.get("register_pinned");
+  const unstable = {
+    hostName: "register_pinned",
+    keyCustody: "hardware-signer",
+    pcrProfile: "windows-v1-pcr0-pcr7",
+    quoteDigest: `sha256:${"e".repeat(64)}`,
+    challengeDigest: `sha256:${"f".repeat(64)}`,
+    issuedAtMs: 900,
+    expiresAtMs: 1_100,
+  };
+  Object.defineProperty(unstable, "schema", {
+    enumerable: true,
+    get() { return "galerina.key-custody-attestation.v1"; },
+  });
+  let verifierCalled = false;
+  const decision = evaluateKeyCustody(host, unstable, () => {
+    verifierCalled = true;
+    return true;
+  }, 1_000);
+  assert.deepEqual(decision, { admitted: false, enforced: false, reason: "elevated custody requires a valid attestation" });
+  assert.equal(verifierCalled, false);
 });
 
 test("RD-0365: a copied host capability is not a declared custody authority", () => {
@@ -232,6 +259,7 @@ test("RD-0365: resolveHostKeyCustody denies an unattested elevated claim and fal
   assert.equal(r.host, HOST_PROFILES.get("register_pinned"));
   assert.equal(r.claimed, "hardware-signer");
   assert.equal(r.effective, "env-spore", "a label alone never proves L4");
+  assert.equal(r.effectiveStatus, "unproven-fallback", "the fallback label is not proof that env-spore custody was established");
   assert.equal(r.decision.admitted, false);
   assert.match(r.decision.reason, /attestation/);
 });
@@ -240,11 +268,14 @@ test("RD-0365: resolveHostKeyCustody admits an elevated rung only with current v
   const { resolveHostKeyCustody } = L;
   const ok = resolveHostKeyCustody("register_pinned", ATTESTED, () => true, 1_000);
   assert.equal(ok.effective, "hardware-signer");
+  assert.equal(ok.effectiveStatus, "attested");
   assert.deepEqual(ok.decision, { admitted: true, enforced: true, reason: "attested custody verified" });
   const refused = resolveHostKeyCustody("register_pinned", ATTESTED, () => false, 1_000);
   assert.equal(refused.effective, "env-spore");
+  assert.equal(refused.effectiveStatus, "unproven-fallback");
   const stale = resolveHostKeyCustody("register_pinned", ATTESTED, () => true, 1_100);
   assert.equal(stale.effective, "env-spore");
+  assert.equal(stale.effectiveStatus, "unproven-fallback");
 });
 
 test("RD-0365: resolveHostKeyCustody keeps the env-spore baseline and fails closed for undeclared hosts", () => {
@@ -252,15 +283,18 @@ test("RD-0365: resolveHostKeyCustody keeps the env-spore baseline and fails clos
   const baseline = resolveHostKeyCustody("mlock_posix");
   assert.equal(baseline.claimed, "env-spore");
   assert.equal(baseline.effective, "env-spore");
+  assert.equal(baseline.effectiveStatus, "unenforced-baseline");
   assert.deepEqual(baseline.decision, { admitted: true, enforced: false, reason: "env-spore baseline does not claim hardware custody" });
   const unknown = resolveHostKeyCustody("bogus_unknown_host");
   assert.equal(unknown.host, UNKNOWN_HOST);
   assert.equal(unknown.claimed, "env-spore");
   assert.equal(unknown.effective, "env-spore");
+  assert.equal(unknown.effectiveStatus, "unavailable");
   assert.equal(unknown.decision.admitted, false);
   // An attestation cannot lift an undeclared host either.
   const forged = resolveHostKeyCustody("bogus_unknown_host", { ...ATTESTED, hostName: "bogus_unknown_host" }, () => true, 1_000);
   assert.equal(forged.effective, "env-spore");
+  assert.equal(forged.effectiveStatus, "unavailable");
 });
 
 test("RD-0365 consumer: a hardening host that claims elevated custody gets the FUNGI-HARDEN-009 warning", () => {
@@ -270,6 +304,7 @@ test("RD-0365 consumer: a hardening host that claims elevated custody gets the F
   assert.match(withResidency[0].message, /register_pinned/);
   assert.match(withResidency[0].message, /hardware-signer/);
   assert.match(withResidency[0].message, /env-spore/);
+  assert.match(withResidency[0].message, /unproven-fallback/);
   const hostOnly = custodyGov("host register_pinned");
   assert.equal(hostOnly.length, 1, "the custody check runs whenever a host is declared, not only with a residency ceiling");
 });

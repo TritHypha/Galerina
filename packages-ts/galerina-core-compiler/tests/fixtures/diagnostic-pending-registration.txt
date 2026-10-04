@@ -40,5 +40,3 @@ FUNGI-WAT-BODY-001
 # 2026-10-01: the 7 Grok Bot rounding codes (FUNGI-NUMERIC-OP-002..005, FUNGI-WAT-MONEY-001,
 # FUNGI-WAT-DECIMAL-001, FUNGI-HALLMARK-006) are now registered in the KB compiler-diagnostics.md and are
 # no longer pending (owner go-ahead 01:36 BST).
-# 2026-10-02: E5 provisional narrow-float lane refusal (Grok Bot, branch grok/wat-parked-memory-20261002). KB registration is an owner/KB step before carry.
-FUNGI-WAT-FLOAT32-001
