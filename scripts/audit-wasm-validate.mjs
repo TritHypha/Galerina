@@ -161,12 +161,17 @@ function isDirectRun() {
 // ── self-test: the gate must FIRE on known-bad and stay quiet on known-good ──
 if (isDirectRun() && process.argv.includes("--self-test")) {
   const good = `pure flow f(a: Int, b: Int) -> Int\ncontract { effects {} }\n{ return a + b }`;
-  const bad = `pure flow f(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal\ncontract { effects {} }\n{ let r: Decimal = revenue / cost\n  return r }`;
+  // Known-bad exemplar: a guarded Void flow that reassigns a `mut` local clears every front-end gate but
+  // the emitter leaves a value on the stack for a Void return (wabt: "type mismatch in implicit return").
+  // Same shape as corpus 006-mut-binding (baselined INVALID). It replaces money-ratio (077), which the
+  // front end now refuses (FUNGI-NUMERIC-OP-002) and so no longer reaches the emitter. When this emitter
+  // defect is fixed, this self-test goes red on purpose: pick the next live INVALID from the sweep.
+  const bad = `guarded flow f() -> Void\ncontract { effects {} }\n{\n  mut count: Int = 0\n  count = count + 1\n}`;
   const g = await classify(good, "good.fungi");
   const b = await classify(bad, "bad.fungi");
   const checks = [
     ["known-good Int flow is VALID (proves assembleWAT is awaited)", g.k === "VALID"],
-    ["known-bad money-ratio is INVALID (proves the gate fires)", b.k === "INVALID"],
+    ["known-bad mut-void flow is INVALID (proves the gate fires)", b.k === "INVALID"],
     ["the two verdicts differ (the projection discriminates)", g.k !== b.k],
     // B1 — the cause classifier must DISCRIMINATE the two live root classes (not lump them / not 'other').
     ["B1 classifyCause: an undefined-callee message → undefined-call",
@@ -175,7 +180,7 @@ if (isDirectRun() && process.argv.includes("--self-test")) {
       classifyCause("wabt rejected this WAT: validate failed: galerina.wat:17:6: error: type mismatch") === "type-mismatch"],
     ["B1 classifyCause: an unrecognised reason → other (fail-open into the deep-dive, never silently a known class)",
       classifyCause("some novel emitter failure") === "other"],
-    ["B1: the known-bad money-ratio classifies as a real cause, not 'other'", classifyCause(b.why) !== "other"],
+    ["B1: the known-bad mut-void flow classifies as a real cause, not 'other'", classifyCause(b.why) !== "other"],
   ];
   console.log(`  [good -> ${g.k} ${g.why}]  [bad -> ${b.k} ${b.why}]`);
   let ok = true;
