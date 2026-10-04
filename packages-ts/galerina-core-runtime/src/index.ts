@@ -276,7 +276,10 @@ export const DENY_ALL_RUNTIME_EXECUTOR: GovernedRuntimeExecutor = {
 export function bindGovernedRuntime(
   provider?: GovernedRuntimeExecutor,
 ): GovernedRuntimeExecutor {
-  if (provider === undefined) return DENY_ALL_RUNTIME_EXECUTOR;
+  // Zero-trust default (owner may revisit): a null / non-object / method-less provider is as unsafe as an
+  // absent one, so it binds deny-all instead of throwing a TypeError at the caller.
+  if (provider === undefined || typeof provider !== "object" || provider === null) return DENY_ALL_RUNTIME_EXECUTOR;
+  if (typeof provider.admitAndExecute !== "function") return DENY_ALL_RUNTIME_EXECUTOR;
   if (provider.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) return DENY_ALL_RUNTIME_EXECUTOR;
   return provider;
 }
@@ -403,13 +406,28 @@ export function createGovernedRuntimeExecutor(
       ) {
         return denyVerdict("a wired capability pins a different seam version — refused (fail-closed).");
       }
-      const bytes = artifactSource.artifactBytesFor(request.artifactSha256);
+      // Zero-trust default (owner may revisit): every injected capability is untrusted code. A throw from any
+      // of them is a DENY verdict, never an exception escaping the seam, and only EXACT success values admit.
+      let bytes: Uint8Array | undefined;
+      try {
+        bytes = artifactSource.artifactBytesFor(request.artifactSha256);
+      } catch {
+        return denyVerdict("artifact source failed while resolving the pinned artifact — deny (fail-closed).");
+      }
       if (bytes === undefined) {
         return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
       }
+      if (!(bytes instanceof Uint8Array)) {
+        return denyVerdict("artifact source returned something other than bytes — deny (fail-closed).");
+      }
       const ownedBytes = Uint8Array.from(bytes);
-      const computed = hashArtifact(ownedBytes);
-      if (computed !== request.artifactSha256) {
+      let computed: string;
+      try {
+        computed = hashArtifact(ownedBytes);
+      } catch {
+        return denyVerdict("artifact hash capability failed — deny (fail-closed).");
+      }
+      if (typeof computed !== "string" || computed !== request.artifactSha256) {
         return denyVerdict(
           `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
         );
@@ -422,20 +440,35 @@ export function createGovernedRuntimeExecutor(
       // check-then-swap window. The verifier also hard-gates that `exportName` is a defined export of that
       // hash-verified module (the export table is part of the signed bytes), so a valid signature can never
       // admit a call to an export the signed module does not define.
-      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes })) {
+      // EXACT `true` only: an async verifier returns a Promise (truthy) and would otherwise admit unverified.
+      let attested: unknown;
+      try {
+        attested = admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes });
+      } catch {
+        attested = false;
+      }
+      if (attested !== true) {
         return denyVerdict(
           `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
         );
       }
-      const executed = lowLevel.instantiateAndCall({
-        artifactBytes: ownedBytes,
-        exportName: request.exportName,
-        args: request.args,
-      });
-      if (!executed.ok) {
-        return denyVerdict(`low-level execution denied: ${executed.reason}`);
+      let executed: unknown;
+      try {
+        executed = lowLevel.instantiateAndCall({
+          artifactBytes: ownedBytes,
+          exportName: request.exportName,
+          args: request.args,
+        });
+      } catch {
+        return denyVerdict("low-level execution failed — deny (fail-closed).");
       }
-      return { outcome: "admit", result: executed.result };
+      if (typeof executed !== "object" || executed === null || (executed as { ok?: unknown }).ok !== true) {
+        const reason = typeof executed === "object" && executed !== null && typeof (executed as { reason?: unknown }).reason === "string"
+          ? (executed as { reason: string }).reason
+          : "the low-level executor did not return an exact { ok: true } result";
+        return denyVerdict(`low-level execution denied: ${reason}`);
+      }
+      return { outcome: "admit", result: (executed as { result?: unknown }).result };
     },
   };
 }
