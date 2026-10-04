@@ -2,6 +2,7 @@
   "packageName": "@galerina/devtools-fungi-scan",
   "allowedExternal": [
     "@galerina/core-compiler",
+    "node:child_process",
     "node:fs",
     "node:path"
   ],
