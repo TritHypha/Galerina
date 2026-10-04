@@ -357,6 +357,19 @@ export interface GovernedAdmissionVerifier {
  *  Hardened Border, the exact fail-open the seam exists to prevent). */
 export interface LowLevelWasmExecutor {
   readonly seamVersion: string;
+  /**
+   * Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The SYNCHRONOUS
+   * admit step: decide allow or deny for this exact (bytes, export, args) call WITHOUT creating any VM or WASM
+   * instance (compiling/inspecting a module is allowed; instantiating it is not). Only an exact boolean `true`
+   * allows; anything else (false, a Promise, a thenable, a throw) denies and `instantiateAndCall` is never
+   * entered. An executor without this step cannot prove it is safe synchronously and is refused.
+   */
+  admitInstantiation(input: {
+    readonly artifactBytes: Uint8Array;
+    readonly exportName: string;
+    readonly args: readonly unknown[];
+  }): boolean;
+  /** The instantiate step. Runs ONLY after `admitInstantiation` returned exact `true` for the same input. */
   instantiateAndCall(input: {
     readonly artifactBytes: Uint8Array;
     readonly exportName: string;
@@ -421,8 +434,10 @@ function isRefusedCapability(fn: unknown): boolean {
  *  (1) resolve artifact bytes from the content store; (2) re-hash and require the digest to equal the
  *  pinned sha256 (integrity); (3) verify the
  *  request's SIGNED attestation against that freshly-computed hash AND that the requested export is defined by
- *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) instantiate + call via the
- *  low-level VM. Any failure at any step — including a missing
+ *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) the low-level executor's
+ *  SYNCHRONOUS admit step decides allow/deny with no VM instance (zero-trust default, owner may revisit);
+ *  (5) only on an exact `true` from that admit step, instantiate + call via the low-level VM. Any failure at
+ *  any step — including a missing
  *  dependency or an empty attestation — is a DENY with a specific reason. Integrity and admission are both
  *  proven on the same bytes and BEFORE execution, so no unverified/unadmitted artifact ever reaches the VM
  *  and no TOCTOU window opens. There is no path from an absent dependency or a failed check to `admit`. */
@@ -459,16 +474,19 @@ export function createGovernedRuntimeExecutor(
     // and the call below.
     let artifactBytesFor: GovernedRuntimeArtifactSource["artifactBytesFor"];
     let verifyAttestation: GovernedAdmissionVerifier["verifyAttestation"];
+    let admitInstantiation: LowLevelWasmExecutor["admitInstantiation"];
     let instantiateAndCall: LowLevelWasmExecutor["instantiateAndCall"];
     let capabilitiesRefused: boolean;
     try {
       artifactBytesFor = artifactSource.artifactBytesFor;
       verifyAttestation = admissionVerifier.verifyAttestation;
+      admitInstantiation = lowLevel.admitInstantiation;
       instantiateAndCall = lowLevel.instantiateAndCall;
       capabilitiesRefused =
         isRefusedCapability(hashArtifact) ||
         isRefusedCapability(artifactBytesFor) ||
         isRefusedCapability(verifyAttestation) ||
+        isRefusedCapability(admitInstantiation) ||
         isRefusedCapability(instantiateAndCall);
     } catch {
       return denyVerdict("a wired capability could not be read — refused before any VM instance is created (fail-closed).");
@@ -527,13 +545,31 @@ export function createGovernedRuntimeExecutor(
         `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
       );
     }
+    // Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The low-level
+    // executor's SYNCHRONOUS admit step decides allow/deny with no VM instance; only an exact `true` lets the
+    // request reach instantiation. A plain function that returns a (rejected) Promise here is denied and its
+    // rejection consumed, and `instantiateAndCall` is never entered.
+    const lowLevelInput = { artifactBytes: ownedBytes, exportName: request.exportName, args: request.args };
+    let instantiationAdmitted: unknown;
+    try {
+      // The admit step gets its OWN copy of the bytes and args, so it cannot mutate what is later instantiated.
+      instantiationAdmitted = admitInstantiation.call(lowLevel, {
+        artifactBytes: Uint8Array.from(ownedBytes),
+        exportName: request.exportName,
+        args: Array.from(request.args),
+      });
+    } catch {
+      return denyVerdict("low-level admit step failed — deny before any VM instance is created (fail-closed).");
+    }
+    if (instantiationAdmitted !== true) {
+      consumeAsyncRejection(instantiationAdmitted);
+      return denyVerdict(
+        "low-level executor did not synchronously admit instantiation (exact true required) — deny before any VM instance is created.",
+      );
+    }
     let executed: unknown;
     try {
-      executed = instantiateAndCall.call(lowLevel, {
-        artifactBytes: ownedBytes,
-        exportName: request.exportName,
-        args: request.args,
-      });
+      executed = instantiateAndCall.call(lowLevel, lowLevelInput);
     } catch {
       return denyVerdict("low-level execution failed — deny (fail-closed).");
     }

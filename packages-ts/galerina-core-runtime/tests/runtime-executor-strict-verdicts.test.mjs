@@ -26,7 +26,7 @@ const wired = (over = {}) => {
     hashArtifact: fakeHash,
     artifactSource: { seamVersion: V, artifactBytesFor: (sha) => (sha === SHA ? BYTES : undefined) },
     admissionVerifier: { seamVersion: V, verifyAttestation: () => true },
-    lowLevel: { seamVersion: V, instantiateAndCall: () => { calls.instantiate += 1; return { ok: true, result: 42 }; } },
+    lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: () => { calls.instantiate += 1; return { ok: true, result: 42 }; } },
     ...over,
   };
   return { exec: createGovernedRuntimeExecutor(deps), calls };
@@ -64,19 +64,21 @@ for (const [label, value] of [
   ["a Promise", Promise.resolve({ ok: true })],
 ]) {
   test(`instantiateAndCall returning ${label} is a refusal`, () => {
-    const { exec } = wired({ lowLevel: { seamVersion: V, instantiateAndCall: () => value } });
+    const { exec } = wired({ lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: () => value } });
     assert.equal(exec.admitAndExecute(req()).outcome, "deny");
   });
 }
 
-for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "instantiateAndCall"]) {
+for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "admitInstantiation", "instantiateAndCall"]) {
   test(`a throwing ${dep} yields a deny verdict instead of an exception`, () => {
     const boom = () => { throw new Error(`${dep} exploded`); };
+    let vmCalls = 0;
     const over =
       dep === "hashArtifact" ? { hashArtifact: boom }
       : dep === "artifactBytesFor" ? { artifactSource: { seamVersion: V, artifactBytesFor: boom } }
       : dep === "verifyAttestation" ? verifier(boom)
-      : { lowLevel: { seamVersion: V, instantiateAndCall: boom } };
+      : dep === "admitInstantiation" ? { lowLevel: { seamVersion: V, admitInstantiation: boom, instantiateAndCall: () => { vmCalls += 1; return { ok: true, result: 42 }; } } }
+      : { lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: boom } };
     const { exec, calls } = wired(over);
     let v;
     assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
@@ -84,13 +86,14 @@ for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "ins
     // A throwing pre-VM capability never lets the request reach the VM (the instantiateAndCall case replaces
     // the counting VM itself, so its counter stays untouched by construction).
     assert.equal(calls.instantiate, 0);
+    assert.equal(vmCalls, 0);
   });
 }
 
 // Owner no-VM rule (2026-10-04): an `async` capability can only return a Promise (possibly rejected), so it is
 // refused BEFORE any capability runs — even one that would resolve to a valid value — and the VM is never
 // entered.
-for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "instantiateAndCall"]) {
+for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "admitInstantiation", "instantiateAndCall"]) {
   for (const [kind, make] of [
     ["async function", (body) => async (...a) => body(...a)],
     ["async generator", (body) => async function* (...a) { yield body(...a); }],
@@ -104,7 +107,8 @@ for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "ins
         dep === "hashArtifact" ? { hashArtifact: counted(SHA) }
         : dep === "artifactBytesFor" ? { artifactSource: { seamVersion: V, artifactBytesFor: counted(BYTES) } }
         : dep === "verifyAttestation" ? verifier(counted(true))
-        : { lowLevel: { seamVersion: V, instantiateAndCall: make(() => { vmCalls += 1; seen.capability += 1; return { ok: true, result: 42 }; }) } };
+        : dep === "admitInstantiation" ? { lowLevel: { seamVersion: V, admitInstantiation: counted(true), instantiateAndCall: () => { vmCalls += 1; return { ok: true, result: 42 }; } } }
+        : { lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: make(() => { vmCalls += 1; seen.capability += 1; return { ok: true, result: 42 }; }) } };
       const { exec, calls } = wired(over);
       let v;
       assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
@@ -122,7 +126,8 @@ test("a non-callable capability is refused before any VM instance is created", (
     { hashArtifact: "sha" },
     { artifactSource: { seamVersion: V, artifactBytesFor: BYTES } },
     verifier(true),
-    { lowLevel: { seamVersion: V, instantiateAndCall: { ok: true } } },
+    { lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: { ok: true } } },
+    { lowLevel: { seamVersion: V, admitInstantiation: true, instantiateAndCall: () => ({ ok: true, result: 42 }) } },
   ]) {
     const { exec, calls } = wired(over);
     const v = exec.admitAndExecute(req());
@@ -188,7 +193,7 @@ const throwingSeam = (rest) => Object.defineProperty({ ...rest }, "seamVersion",
 for (const [label, over] of [
   ["artifactSource.seamVersion", () => ({ artifactSource: throwingSeam({ artifactBytesFor: () => BYTES }) })],
   ["admissionVerifier.seamVersion", () => ({ admissionVerifier: throwingSeam({ verifyAttestation: () => true }) })],
-  ["lowLevel.seamVersion", () => ({ lowLevel: throwingSeam({ instantiateAndCall: () => ({ ok: true, result: 42 }) }) })],
+  ["lowLevel.seamVersion", () => ({ lowLevel: throwingSeam({ admitInstantiation: () => true, instantiateAndCall: () => ({ ok: true, result: 42 }) }) })],
 ]) {
   test(`a throwing ${label} getter is a deny verdict, not an exception, and never reaches the VM`, () => {
     const { exec, calls } = wired(over());
@@ -219,4 +224,72 @@ test("bindGovernedRuntime binds deny-all, without throwing, for hostile admitAnd
     assert.doesNotThrow(() => { bound = bindGovernedRuntime(p); });
     assert.equal(bound, DENY_ALL_RUNTIME_EXECUTOR);
   }
+});
+
+// Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The low-level
+// executor is split: a SYNCHRONOUS admit step decides allow/deny with no VM; instantiation runs only after an
+// exact `true`. Every deny below asserts expectedInstantiated = 0.
+const splitExecutor = (admit) => {
+  const seen = { admitCalls: 0, instantiated: 0, admitInput: undefined };
+  const lowLevel = {
+    seamVersion: V,
+    admitInstantiation: (input) => { seen.admitCalls += 1; seen.admitInput = input; return admit(input); },
+    instantiateAndCall: () => { seen.instantiated += 1; return { ok: true, result: 42 }; },
+  };
+  return { lowLevel, seen };
+};
+
+test("control: an admit step returning exact true instantiates exactly once", () => {
+  const { lowLevel, seen } = splitExecutor(() => true);
+  const { exec } = wired({ lowLevel });
+  const v = exec.admitAndExecute(req());
+  assert.equal(v.outcome, "admit");
+  assert.equal(v.result, 42);
+  assert.equal(seen.admitCalls, 1);
+  assert.equal(seen.instantiated, 1);
+});
+
+for (const [label, value] of [
+  ["false", false],
+  ["a resolved Promise of true", Promise.resolve(true)],
+  ["the number 1", 1],
+  ["the string \"true\"", "true"],
+  ["an object", {}],
+  ["a Boolean wrapper object", Object(true)],
+  ["a hostile thenable", { then: () => { throw new Error("hostile then"); } }],
+]) {
+  test(`an admit step returning ${label} denies with no VM instance (expectedInstantiated = 0)`, () => {
+    const { lowLevel, seen } = splitExecutor(() => value);
+    const { exec } = wired({ lowLevel });
+    const v = exec.admitAndExecute(req());
+    assert.equal(v.outcome, "deny");
+    assert.match(v.reason, /before any VM instance is created/);
+    assert.equal(seen.instantiated, 0);
+  });
+}
+
+test("a legacy executor with no admit step cannot prove it is safe synchronously: denied, expectedInstantiated = 0", () => {
+  let instantiated = 0;
+  const { exec } = wired({ lowLevel: { seamVersion: V, instantiateAndCall: () => { instantiated += 1; return { ok: true, result: 42 }; } } });
+  const v = exec.admitAndExecute(req());
+  assert.equal(v.outcome, "deny");
+  assert.equal(instantiated, 0);
+});
+
+test("the admit step is not reached when attestation fails, and it receives copies it cannot use to mutate the run", () => {
+  const denied = splitExecutor(() => true);
+  const { exec: deniedExec } = wired({ lowLevel: denied.lowLevel, admissionVerifier: { seamVersion: V, verifyAttestation: () => false } });
+  assert.equal(deniedExec.admitAndExecute(req()).outcome, "deny");
+  assert.equal(denied.seen.admitCalls, 0);
+  assert.equal(denied.seen.instantiated, 0);
+
+  let executedFirst = 0;
+  const lowLevel = {
+    seamVersion: V,
+    admitInstantiation: ({ artifactBytes, args }) => { artifactBytes[0] = 99; args[0] = 99; return true; },
+    instantiateAndCall: ({ artifactBytes, args }) => { executedFirst = artifactBytes[0] * 1000 + args[0]; return { ok: true, result: 42 }; },
+  };
+  const { exec } = wired({ lowLevel });
+  assert.equal(exec.admitAndExecute(req()).outcome, "admit");
+  assert.equal(executedFirst, 7001);
 });
