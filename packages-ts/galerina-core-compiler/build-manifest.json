@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "32dd833c69726f37372a81e3cfeca720afdb06d51e7ba6c19874e9ad8a884485",
+    "aggregateSha256": "0eacbba936efecb841a95e15b2779e3ce2c93a46745e499ce24bb6aeaa565a87",
     "algorithm": "sha256",
     "files": [
       {
@@ -1344,7 +1344,7 @@
       },
       {
         "path": "src/type-checker.ts",
-        "sha256": "d8b47d2a25df07c362e94e2ec4bf2569927b5db68eb5c718cd208c7d11fd0b9f"
+        "sha256": "d76d5d6114e5229c0b9ac2e4d48de25819fe5e2f9648a81d03e99aa91b84acc7"
       },
       {
         "path": "src/type-registry.ts",
@@ -2729,6 +2729,10 @@
       {
         "path": "tests/rd-0234c-h2b-tainted-param-qualifier.test.mjs",
         "sha256": "a01d0f38a79e92cf2f87be7636a24afe443853c6c67d0e4642059da92b7bc14e"
+      },
+      {
+        "path": "tests/rd-0349-zero-trust-defaults.test.mjs",
+        "sha256": "8b29a76e5967dddf13dc8c76f49e8595de32f9945ce6373548a1ccb078d5fcf8"
       },
       {
         "path": "tests/rd-0363-plan-admission.test.mjs",

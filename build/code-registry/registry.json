@@ -6054,8 +6054,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 8,
-      "docs": 8
+      "tests": 10,
+      "docs": 9
     },
     {
       "code": "FUNGI-HALLMARK-002",
@@ -8106,8 +8106,8 @@
       ],
       "defs": 0,
       "emits": 9,
-      "tests": 59,
-      "docs": 3
+      "tests": 62,
+      "docs": 4
     },
     {
       "code": "FUNGI-NAME-003",
@@ -11998,7 +11998,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 261,
+      "tests": 263,
       "docs": 29
     },
     {
@@ -12474,8 +12474,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 11,
-      "docs": 0
+      "tests": 15,
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-033",
