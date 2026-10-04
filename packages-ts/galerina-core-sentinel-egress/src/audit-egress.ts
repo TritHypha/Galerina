@@ -72,9 +72,12 @@ export interface AuditEgressOptions {
   epochId?: number;
 }
 
-/** True if a key is missing or all bytes are zero (the non-secret dev key). */
+/** Minimum HMAC key length: 256 bits, the same floor as core-sentinel-state (zero-trust default, owner may revisit). */
+const MIN_KEY_BYTES = 32;
+
+/** True if a key is missing, shorter than 256 bits, or all bytes are zero (the non-secret dev key). */
 function isWeakKey(key: Uint8Array | undefined): boolean {
-  if (!key || key.length === 0) return true;
+  if (!key || key.length < MIN_KEY_BYTES) return true;
   for (const b of key) if (b !== 0) return false;
   return true;
 }
@@ -140,6 +143,13 @@ export class AuditEgress {
       throw new SecurityTrap(
         "EGR-KEY-002",
         "AuditEgress requires an explicit hmacKey; omission is not a development default",
+      );
+    }
+    // A key shorter than 256 bits is brute-forceable whatever its bytes, so it is refused even without strictKey.
+    if (!(opts.hmacKey instanceof Uint8Array) || opts.hmacKey.length < MIN_KEY_BYTES) {
+      throw new SecurityTrap(
+        "EGR-KEY-001",
+        `AuditEgress hmacKey must be a Uint8Array of at least ${MIN_KEY_BYTES} bytes (256 bits)`,
       );
     }
     if (opts.strictKey && isWeakKey(opts.hmacKey)) {
@@ -273,8 +283,8 @@ export class AuditEgress {
    * @returns `true` iff the chain is intact (tamper-evident).
    */
   static verifyChain(batches: AuditBatch[], hmacKey?: Uint8Array): boolean {
-    if (hmacKey === undefined) {
-      return false;
+    if (!(hmacKey instanceof Uint8Array) || hmacKey.length < MIN_KEY_BYTES) {
+      return false; // absent or sub-256-bit verification key → nothing is proven
     }
     const key = hmacKey;
     let expectedPrev = GENESIS;
