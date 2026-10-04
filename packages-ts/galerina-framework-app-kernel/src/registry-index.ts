@@ -429,6 +429,7 @@ export interface RegistryPolicy {
    * Maximum acceptable risk rating (inclusive). Higher → denied. Omit to not gate on risk.
    * When set, an entry whose riskRating is not exactly one of low | medium | high | critical
    * (unknown, empty, differently cased, non-string) is DENIED: zero-trust default, owner may revisit.
+   * A set maxRiskRating that is itself not exactly one of those four is also DENIED (zero-trust default, owner may revisit).
    */
   readonly maxRiskRating?: RiskRating;
 }
@@ -445,6 +446,11 @@ export function checkRegistryPolicy(entry: RegistryEntry, policy: RegistryPolicy
     return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' certification level '${entry.certificationLevel}' is not permitted (allowed: ${policy.allowedLevels.join(", ")}).` };
   }
   if (policy.maxRiskRating !== undefined) {
+    // Zero-trust default, owner may revisit: an unrecognised policy maximum has no rank either, so it
+    // must not silently admit (`RISK_ORDER[r] > RISK_ORDER[unknown]` is false). Deny before anything else.
+    if (!isRecognisedRiskRating(policy.maxRiskRating)) {
+      return { ok: false, code: ERR_REGISTRY_POLICY_DENIED, reason: `Package '${entry.name}' denied: policy maxRiskRating not recognised ('${String(policy.maxRiskRating)}'; expected low | medium | high | critical).` };
+    }
     // Zero-trust: an unrecognised rating has no rank, and `RISK_ORDER[unknown] > n` is false, which
     // used to ADMIT it (fail-open, RD-0361 S6b finding D1). Deny it explicitly before comparing.
     if (!isRecognisedRiskRating(entry.riskRating)) {

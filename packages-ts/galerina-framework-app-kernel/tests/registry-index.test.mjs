@@ -238,6 +238,47 @@ describe("registry policy — unrecognised riskRating is DENIED (zero-trust; RD-
   });
 });
 
+describe("registry policy — unrecognised policy maxRiskRating is DENIED (zero-trust default, owner may revisit)", () => {
+  const base = ENTRIES[0]; // certified / low
+  const BAD_MAX = ["extreme", "", "HIGH", "Critical", " low", "constructor", "__proto__", 0, 3, {}, []];
+  for (const maxRiskRating of BAD_MAX) {
+    it(`denies under maxRiskRating ${JSON.stringify(maxRiskRating)} even for the lowest valid entry rating`, () => {
+      const r = checkRegistryPolicy({ ...base, riskRating: "low" }, { allowedLevels: ["certified"], maxRiskRating });
+      assert.equal(r.ok, false);
+      assert.equal(r.code, ERR_REGISTRY_POLICY_DENIED);
+      assert.match(r.reason, /policy maxRiskRating not recognised/);
+    });
+  }
+  it("denies every valid entry rating under an unrecognised maximum", () => {
+    for (const riskRating of ["low", "medium", "high", "critical"]) {
+      const r = checkRegistryPolicy({ ...base, riskRating }, { allowedLevels: ["certified"], maxRiskRating: "extreme" });
+      assert.equal(r.code, ERR_REGISTRY_POLICY_DENIED, riskRating);
+      assert.match(r.reason, /policy maxRiskRating not recognised/);
+    }
+  });
+  it("extreme/extreme (both unrecognised) is denied", () => {
+    const r = checkRegistryPolicy({ ...base, riskRating: "extreme" }, { allowedLevels: ["certified"], maxRiskRating: "extreme" });
+    assert.equal(r.ok, false);
+    assert.equal(r.code, ERR_REGISTRY_POLICY_DENIED);
+  });
+  it("no risk gate set keeps the documented contract: risk is not gated", () => {
+    for (const riskRating of ["low", "critical", "extreme"]) {
+      assert.deepEqual(checkRegistryPolicy({ ...base, riskRating }, { allowedLevels: ["certified"] }), { ok: true }, riskRating);
+    }
+  });
+  it("valid maxima are unchanged (low admits low; critical admits critical)", () => {
+    assert.deepEqual(checkRegistryPolicy({ ...base, riskRating: "low" }, { allowedLevels: ["certified"], maxRiskRating: "low" }), { ok: true });
+    assert.deepEqual(checkRegistryPolicy({ ...base, riskRating: "critical" }, { allowedLevels: ["certified"], maxRiskRating: "critical" }), { ok: true });
+  });
+  it("admitFromRegistry denies a valid signed entry when the policy maximum is unrecognised", () => {
+    const r = admitFromRegistry(freshSigned(), verifier,
+      { name: "Auth.Standard", version: "1.2.0", sourceHash: "sha256:aaa", keyId: "pub-auth" },
+      { allowedLevels: ["certified"], maxRiskRating: "Extreme" });
+    assert.equal(r.ok, false);
+    assert.equal(r.code, ERR_REGISTRY_POLICY_DENIED);
+  });
+});
+
 describe("B5a registry index — admitFromRegistry (verify → lookup → policy)", () => {
   const policy = { allowedLevels: ["certified", "verified"], maxRiskRating: "medium" };
   it("admits a verified, listed, policy-passing package", () => {
