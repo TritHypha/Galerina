@@ -5,12 +5,12 @@
     "dir": "packages-ts/galerina-framework-app-kernel/src/self-hosted",
     "file": "registry-index.fungi",
     "module": "registry-index",
-    "ledgerSha256": "99796c089eb1a88961ed6ca2766b3d7ec91ab6fa083b378027267ec4280a61e0"
+    "ledgerSha256": "edb82254d9eba5c2654121a76dd2620ec3653c4f47fbe2eb4636057d6ca7a466"
   },
   "oracle": {
     "kind": "typescript-shadow-capture",
     "source": "packages-ts/galerina-framework-app-kernel/src/registry-index.ts",
-    "capturedAtCommit": "1001e2112bc313a658eda7b3a51380c66ffdd4a4"
+    "capturedAtCommit": "4ddd77533b9356c0a867bf5d0d40dcfc48882078"
   },
   "exports": [
     {
@@ -63,8 +63,8 @@
       "returns": "string"
     }
   ],
-  "caseCount": 269,
-  "casesSha256": "af215772baec94e1f8700dbade1b263264915d18792000bed80fc6c7c6bfe2c4",
+  "caseCount": 274,
+  "casesSha256": "be3ce05502b8e238114588a8fbb87c7603113ac4f53f9c7c9982d76c748f67e2",
   "cases": [
     {
       "id": "lookup-n0-v0-101",
@@ -2218,7 +2218,7 @@
         "low",
         "extreme"
       ],
-      "expected": "ok"
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
     },
     {
       "id": "policy-11-medium-low",
@@ -2273,7 +2273,7 @@
         "medium",
         "extreme"
       ],
-      "expected": "ok"
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
     },
     {
       "id": "policy-11-high-low",
@@ -2328,7 +2328,7 @@
         "high",
         "extreme"
       ],
-      "expected": "ok"
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
     },
     {
       "id": "policy-11-critical-low",
@@ -2383,7 +2383,62 @@
         "critical",
         "extreme"
       ],
-      "expected": "ok"
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-low",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "low"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-medium",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "medium"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-high",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "high"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-critical",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "critical"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
+    },
+    {
+      "id": "policy-11-extreme-extreme",
+      "export": "policyVerdict",
+      "args": [
+        true,
+        true,
+        "extreme",
+        "extreme"
+      ],
+      "expected": "ERR_REGISTRY_POLICY_DENIED"
     },
     {
       "id": "admit-ok-ok-ok",
