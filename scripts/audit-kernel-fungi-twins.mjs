@@ -18,6 +18,7 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ledgerPin, loadFrozenReference } from "./lib/rd0361-frozen-reference.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const GALERINA = join(ROOT, "galerina.mjs");
@@ -77,6 +78,21 @@ function rawExecutionState(dir, twinFile) {
   return "shadow";
 }
 
+// RD-0361 S2 frozen-reference column (REPORT-ONLY until slice S6 enforces it). An authoritative twin is
+// `frozen` when its package carries tests/fixtures/rd0361-<stem>.frozen.json and the shared strict loader
+// accepts it against the twin's ledger pin; `invalid` when the file exists but is refused; else `absent`.
+function frozenState(dir, twinFile, ledgerText) {
+  const stem = twinFile.replace(/\.fungi$/, "");
+  const fixture = join(ROOT, dir.replace(/\/src\/self-hosted$/, ""), "tests", "fixtures", `rd0361-${stem}.frozen.json`);
+  if (!existsSync(fixture)) return "absent";
+  try {
+    loadFrozenReference(fixture, { dir, file: twinFile, ledgerSha256: ledgerPin(ledgerText, dir, twinFile) });
+    return "frozen";
+  } catch {
+    return "invalid";
+  }
+}
+
 // The RED-on-regression rule (pure, self-tested). rawState ∈ {shadow, differential}:
 //   authoritative-declared + differential (proof present) → "authoritative"
 //   authoritative-declared + shadow      (proof GONE)     → "regressed"   (RED — trust-root fail-open)
@@ -118,6 +134,8 @@ if (ledgerError) {
 // moved / deleted) is a flip target that no longer exists, and must not silently pass (you believe a trust root
 // is verified when it isn't there at all). Tracked here, enforced after the sweep.
 const seenAuthoritative = new Set();
+const frozenCol = { frozen: 0, absent: 0, invalid: 0 };
+const ledgerText = existsSync(LEDGER_PATH) ? readFileSync(LEDGER_PATH, "utf8") : "";
 
 for (const dir of TWIN_DIRS) {
   const abs = join(ROOT, dir);
@@ -135,6 +153,7 @@ for (const dir of TWIN_DIRS) {
     const out = (r.stdout ?? "") + (r.stderr ?? "");
     const checkOk = r.status === 0 && !/[1-9]\d* error/i.test(out);
     if (authoritative.has(rel)) seenAuthoritative.add(rel);
+    if (authoritative.has(rel)) frozenCol[frozenState(dir, twin, ledgerText)] += 1;
     const state = classifyWithAuthority(rawExecutionState(dir, twin), authoritative.has(rel));
     exec[state] += 1;
     // A `regressed` twin is an authoritative twin whose differential proof is gone — a trust-root RED even if
@@ -164,4 +183,5 @@ if (checked === 0 && failed === 0) {
 console.log(`fungi-twins: ${checked - failed}/${checked} check-clean across ${TWIN_DIRS.length} dir(s)`);
 const flip = exec.authoritative > 0 ? ` — #143 R4 flip LIVE (${exec.authoritative} authoritative)` : " (#143 not flipped)";
 console.log(`execution column (RD-0361): ${exec.shadow} shadow · ${exec.differential} differential (execute through #105) · ${exec.authoritative} authoritative${exec.regressed ? ` · ${exec.regressed} REGRESSED (RED)` : ""}${flip}`);
+console.log(`frozen-reference column (RD-0361 S2, report-only): ${frozenCol.frozen} frozen · ${frozenCol.absent} absent · ${frozenCol.invalid} invalid of ${exec.authoritative + exec.regressed} authoritative`);
 process.exit(failed === 0 ? 0 : 1);
