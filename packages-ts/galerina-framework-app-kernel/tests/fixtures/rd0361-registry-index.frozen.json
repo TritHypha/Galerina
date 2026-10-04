@@ -1,0 +1,416 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-framework-app-kernel/src/self-hosted",
+    "file": "registry-index.fungi",
+    "module": "registry-index",
+    "ledgerSha256": "99796c089eb1a88961ed6ca2766b3d7ec91ab6fa083b378027267ec4280a61e0"
+  },
+  "oracle": {
+    "kind": "typescript-shadow-capture",
+    "source": "packages-ts/galerina-framework-app-kernel/src/registry-index.ts",
+    "capturedAtCommit": "9651ce2e5903a3617b0b93b062f8d782b7c034c1"
+  },
+  "exports": [
+    {
+      "name": "lookupVerdict",
+      "params": [
+        "int",
+        "int",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "string"
+    }
+  ],
+  "caseCount": 32,
+  "casesSha256": "59e9c9753c386bbd54f3fc168ad8fef07318f36eea08b736894e67ae45647902",
+  "cases": [
+    {
+      "id": "lookup-n0-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        0,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "lookup-n0-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        0,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_PACKAGE_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n1-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n1-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n1-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        1,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n2-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n2-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n2-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n2-v2-101",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        2,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n2-v2-111",
+      "export": "lookupVerdict",
+      "args": [
+        2,
+        2,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v0-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        0,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n3-v0-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        0,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_VERSION_UNKNOWN"
+    },
+    {
+      "id": "lookup-n3-v1-001",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-010",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-011",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        false,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_HASH_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        false,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n3-v1-110",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        true,
+        false
+      ],
+      "expected": "ERR_REGISTRY_KEYID_MISMATCH"
+    },
+    {
+      "id": "lookup-n3-v1-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        1,
+        true,
+        true,
+        true
+      ],
+      "expected": "ok"
+    },
+    {
+      "id": "lookup-n3-v2-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        2,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v2-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        2,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v3-101",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        3,
+        true,
+        false,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    },
+    {
+      "id": "lookup-n3-v3-111",
+      "export": "lookupVerdict",
+      "args": [
+        3,
+        3,
+        true,
+        true,
+        true
+      ],
+      "expected": "ERR_REGISTRY_DUPLICATE"
+    }
+  ]
+}
