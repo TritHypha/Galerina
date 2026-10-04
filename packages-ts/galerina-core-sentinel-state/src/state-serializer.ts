@@ -32,6 +32,11 @@ export interface SnapshotKeyProvider {
 export interface StateSerializerOptions {
   readonly hmacKey?: Uint8Array;
   readonly keyProvider?: SnapshotKeyProvider;
+  /**
+   * Retained for API compatibility. A weak key (absent, shorter than 256 bits, or
+   * all-zero) is refused on construction, serialize AND verify whether or not this
+   * is set — the same rule egress applies to epoch rotation (EGR-EPOCH-003).
+   */
   readonly strictKey?: boolean;
 }
 
@@ -83,7 +88,6 @@ function fixedProvider(key: Uint8Array): SnapshotKeyProvider {
 
 export class StateSerializer {
   readonly #keyProvider: SnapshotKeyProvider;
-  readonly #strictKey: boolean;
 
   constructor(opts?: StateSerializerOptions) {
     if (opts?.hmacKey !== undefined && opts.keyProvider !== undefined) {
@@ -92,7 +96,6 @@ export class StateSerializer {
         "StateSerializer accepts one key authority, never both a fixed key and an epoch provider",
       );
     }
-    this.#strictKey = opts?.strictKey === true;
     if (opts?.keyProvider === undefined && opts?.hmacKey === undefined) {
       throw new SecurityTrap(
         "LSS-KEY-001",
@@ -172,7 +175,8 @@ export class StateSerializer {
     } catch {
       active = null;
     }
-    if (!validHandle(active) || (this.#strictKey && isWeakKey(active.key))) {
+    // A provider may rotate after construction: re-check strength on every use, not only under strictKey.
+    if (!validHandle(active) || isWeakKey(active.key)) {
       throw new SecurityTrap(
         "LSS-KEY-002",
         "no valid active snapshot-signing epoch is available",
@@ -251,7 +255,8 @@ export class StateSerializer {
     } catch {
       return false;
     }
-    if (!(key instanceof Uint8Array) || (this.#strictKey && isWeakKey(key))) {
+    // A weak resolved key is reproducible by an attacker, so its MAC proves nothing: refuse it always.
+    if (!(key instanceof Uint8Array) || isWeakKey(key)) {
       return false;
     }
     let expectedHmac: string;
