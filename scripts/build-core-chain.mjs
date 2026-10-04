@@ -119,16 +119,6 @@ function selfTest() {
     () => Object.keys(TEST_FIX),
     (p) => TEST_FIX[basename(p)],
   );
-  const TEST_FIX = {
-    "route.test.mjs": 'import "../packages-ts/galerina-core-logic/dist/index.js";',
-    "runtime.test.mjs": 'const DIST = join(ROOT, "packages-ts", "galerina-tower-citizen", "dist");',
-    "helper.mjs": 'import "../packages-ts/galerina-should-be-ignored/dist/index.js";',
-  };
-  const testRoots = deriveTestSubjects(
-    "/tests",
-    () => Object.keys(TEST_FIX),
-    (p) => TEST_FIX[basename(p)],
-  );
   const windowsNpm = packageManagerInvocation(
     "win32",
     "C:\\Program Files\\nodejs\\node.exe",
