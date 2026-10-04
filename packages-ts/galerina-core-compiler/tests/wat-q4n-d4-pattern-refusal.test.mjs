@@ -17,7 +17,10 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC = join(__dir, "../src");
 const SH = join(SRC, "self-hosted");
 const ROOT = join(__dir, "../../..");
-const AGENTS = "C:/Users/phill/Documents/GitHub/AGENTS";
+// The AGENTS checkout is a sibling repository: AGENTS_ROOT overrides (worktrees, CI); else ../AGENTS.
+const AGENTS = typeof process.env.AGENTS_ROOT === "string" && process.env.AGENTS_ROOT.length > 0
+  ? process.env.AGENTS_ROOT
+  : join(ROOT, "..", "AGENTS");
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 const ZONE = {
