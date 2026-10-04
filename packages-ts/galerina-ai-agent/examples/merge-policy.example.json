@@ -1,0 +1,63 @@
+{
+  "schema": "galerina.ai-agent.example.v1",
+  "name": "merge-policy",
+  "input": {
+    "findings": [
+      {
+        "title": "SQL injection in /search",
+        "severity": "Critical",
+        "evidence": "src/search.ts:42 concatenates input",
+        "confidence": 0.92
+      },
+      {
+        "title": "Possible secret in log",
+        "severity": "High",
+        "evidence": "",
+        "confidence": 0.9
+      },
+      {
+        "title": "Unused import",
+        "severity": "Low",
+        "evidence": "src/a.ts:1",
+        "confidence": 0.4
+      }
+    ],
+    "policy": {
+      "name": "security-review",
+      "requireEvidenceFor": [
+        "High",
+        "Critical"
+      ],
+      "minimumConfidence": 0.6,
+      "lowConfidenceAction": "review"
+    }
+  },
+  "expected": {
+    "included": [
+      {
+        "title": "SQL injection in /search",
+        "severity": "Critical",
+        "evidence": "src/search.ts:42 concatenates input",
+        "confidence": 0.92
+      },
+      {
+        "title": "Unused import",
+        "severity": "Low",
+        "evidence": "src/a.ts:1",
+        "confidence": 0.4
+      }
+    ],
+    "dropped": [
+      {
+        "title": "Possible secret in log",
+        "severity": "High",
+        "evidence": "",
+        "confidence": 0.9
+      }
+    ],
+    "warnings": [
+      "Dropped High finding \"Possible secret in log\": evidence required but missing.",
+      "Low-confidence finding \"Unused import\" retained for human review."
+    ]
+  }
+}
