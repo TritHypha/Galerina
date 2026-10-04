@@ -1,5 +1,42 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Grok TODO sync checkpoint — 2026-10-04
+
+`origin/main` is `df01d4ee0` (PR #7 merge, 20:46 BST). Today 36 Galerina
+PRs merged (#3, #5–#8, #10–#40). The itemised list with merge commits is in
+the sync section at the top of [docs/TODO.md](TODO.md). In roadmap terms:
+
+- **Landed on `main`:** CI `conventions` green (#6); Package Standard R3/R4
+  (#3); app-frame hardening and follow-ups (#5, #10, #11); WAT D4/E5/ZipPair
+  (#7); RD-0363 plan-admission gate (#8); RD-0349 zero-trust value-unit
+  defaults (#30); RD-0361 S1–S7 frozen-reference twin audit (#31–#37, #39) and
+  the registry-index unknown-riskRating denial (#38); RD-0858 scalar oracle
+  registered as a SLIDE consumer (#40); fifteen zero-trust I/O, network, runtime
+  and Tower fixes (#12–#25, #28); and dev-tool `--help` ergonomics (#26, #27, #29).
+- **Open:** Galerina #9 (RD-0365 custody ladder) and #41 (native-provider
+  installation receipts, pairs with SLIDE #4); both are under Codex Astra
+  review. SLIDE #1–#16 are open with none merged: the S2 rollback primitive, hybrid
+  signing manifest, scalar requirement-block route and CI pin (#3/#5, closing
+  SLIDE L756 together with Galerina #40), native provider packs, V2-C
+  admission evidence, trit bitplane 64/256, general source entry, the Contract 84
+  absence census, and the L1686 bitwise/shift registries (#11–#16, all off by
+  default).
+- **Blocked, unchanged:** RD-1413–1415 product route; release signing
+  ceremony; platform durability and the seven-OS matrix; RD-0365 hardware
+  custody; RD-0364 provider identity; SLIDE/VOK re-admission and `.fungi`
+  conversion; the `.gate` D5 re-scope and the app-kernel posture default (owner
+  decisions).
+
+**Diagram status:** the registered generator `scripts/gen-roadmap.mjs` owns
+`build/roadmap/roadmap.svg` and the generated region below. On a clean
+worktree at `df01d4ee0`, `--check` still refuses (`ASSURANCE-EVIDENCE-FILE`),
+because its input `build/graph/galerina-devtools-project-graph.html` is
+git-ignored and absent. A clean HEAD is therefore not sufficient: the graph
+artifact must be built first. Neither the SVG nor the generated region was
+regenerated. `build/component-health/roadmap-subway.svg` remains a historical
+artifact with no current generator, so it was not touched. No percentage was
+changed. NON_AUTHORIZING.
+
 ## Memory-security dependency checkpoint — 2026-09-28
 
 The former RD-1296 combined memory programme was split, not solved. Product

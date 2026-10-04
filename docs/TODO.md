@@ -1,5 +1,107 @@
 # TODO
 
+## Grok TODO sync — 2026-10-04 (`origin/main` `df01d4ee0`)
+
+Checked at 21:5x BST against `gh pr list --state all` and the first-parent
+history of `origin/main`. None of the merged PRs below had updated a TODO or
+ROADMAP file. This sync is documentation only, NON_AUTHORIZING, and lifts no
+HOLD. It does not re-run implementation gates.
+
+### Merged to `main` (with merge commit, BST)
+
+**CI and package standard**
+
+- [x] PR #6 `6602c0cd4` (2026-10-04 10:34): main `conventions` checks green.
+- [x] PR #3 `d6649fe14` (2026-10-04 14:51): Package Standard v1 R3 `pkg-standard-audit` gate + R4 deterministic manifest generator.
+
+**App-frame hardening (app-kernel / api-server)**
+
+- [x] PR #5 `875a81c03` (2026-10-04 10:39): fail-closed route policy, posture/env refusal, duplicate routes, audit provenance, rate before decode (supersedes closed #4).
+- [x] PR #10 `b0a240707` (2026-10-04 10:52): raised `limits.rate`/`limits.timeoutMs` recorded as relaxations.
+- [x] PR #11 `4f32998a8` (2026-10-04 10:53): pipeline-order and header-presence auth docs.
+
+**WAT / language**
+
+- [x] PR #7 `df01d4ee0` (2026-10-04 20:46): bounded WAT D4 pattern, E5 narrow-float and Option.zip `ZipPair` slices.
+
+**RD tracks**
+
+- [x] PR #8 `9b40ee31e` (2026-10-04 10:52): RD-0363 execution-plan fast path gated on admission.
+- [x] PR #30 `8bf342127` (2026-10-04 13:08): RD-0349 zero-trust defaults for the four open value-unit choices.
+- [x] PR #31 `3ff47531c` (2026-10-04 20:34): RD-0361 S1 frozen reference set.
+- [x] PR #32 `377fc5a7e` (2026-10-04 20:34): RD-0361 S2 shared frozen-reference loader + capture tool.
+- [x] PR #33 `f137e2884` (2026-10-04 20:35): RD-0361 S3 T1-remainder frozen sets.
+- [x] PR #34 `248f7d8a5` (2026-10-04 20:36): RD-0361 S4 T7 network-twin frozen sets.
+- [x] PR #35 `45a03b630` (2026-10-04 20:37): RD-0361 S5 transport-fsm/registry-index/route-defaults frozen sets.
+- [x] PR #36 `98e3ecb3c` (2026-10-04 20:38): RD-0361 S6 twin audit enforces frozen sets.
+- [x] PR #37 `8304e97b6` (2026-10-04 20:40): RD-0361 S6b replay against shipped .ts.
+- [x] PR #39 `195b6ef42` (2026-10-04 20:42): RD-0361 S7 registry-index re-capture.
+- [x] PR #38 `7f871de18` (2026-10-04 20:30): registry-index denies an unrecognised riskRating under a risk gate (S6b finding D1).
+- [x] PR #40 `26efe2c06` (2026-10-04 20:31): RD-0858 scalar oracle registered as a SLIDE consumer (Galerina side of SLIDE TODO L756).
+
+**Zero-trust fixes (I/O, network, runtime, Tower)**
+
+- [x] PR #12 `a8f5aefbf` (2026-10-04 10:54): core-network: trailing-dot IPv4 literal classified as IP.
+- [x] PR #13 `c392c90b7` (2026-10-04 10:54): sentinel-egress: failed ledger append no longer drops events.
+- [x] PR #14 `04d11b42c` (2026-10-04 10:54): sentinel-egress: chain verifiers return false on malformed input.
+- [x] PR #15 `eb637063c` (2026-10-04 10:56): core-runtime: `validateRuntimeContext` refuses NaN/Infinity timeouts.
+- [x] PR #16 `0a154c967` (2026-10-04 10:55): sentinel-state: weak provider keys refused.
+- [x] PR #17 `b1ff42a6d` (2026-10-04 10:55): sentinel-io: constant-time digest compare.
+- [x] PR #18 `5b77d824e` (2026-10-04 20:33): core-runtime: governed executor admits only exact boolean success.
+- [x] PR #19 `ea8a92efc` (2026-10-04 10:56): sentinel-egress: HMAC keys at least 256 bits.
+- [x] PR #20 `c3611fd8f` (2026-10-04 11:03): sentinel-egress: all-zero dev key needs explicit opt-in.
+- [x] PR #21 `6cade8e84` (2026-10-04 11:04): sentinel-state: durable atomic snapshot write.
+- [x] PR #22 `bae10597e` (2026-10-04 11:06): sentinel-io: io-manifest admits only exact, gap-free manifests.
+- [x] PR #23 `030052b2c` (2026-10-04 11:07): sentinel-io: IntegrityMonitor refuses empty/all-zero keys.
+- [x] PR #24 `d3eda81ae` (2026-10-04 10:58): core-network: inbound allow rules match the request protocol.
+- [x] PR #25 `c83bad40e` (2026-10-04 10:58): tower-citizen: `AuditLogger.query` fails closed on corrupt ledgers.
+- [x] PR #28 `0629d5b9c` (2026-10-04 11:05): tower-citizen: `trap` fixed fields cannot be overwritten.
+
+**Dev-tool ergonomics**
+
+- [x] PR #26 `d71d90210` (2026-10-04 11:00): code-index / dev-tool-index non-mutating `--help`.
+- [x] PR #27 `a58ee4ff5` (2026-10-04 11:01): ts-retirement-graph non-mutating `--help`.
+- [x] PR #29 `e1640f060` (2026-10-04 11:02): consistent `--help` for the 16 remaining generator owners.
+
+- [x] PR #1 `3ffc0e8aa` (2026-07-12 11:23): CI `conventions` workflow green (historical).
+
+Rows elsewhere in this file ticked by this sync: Slices 143-147 `AuditLogger.query()`
+(#25), Slice 147 `--help` contract (#26/#27/#29) and Slices 133-142 `trap`
+details (#28). The live open-checkbox count is now **235** (238 before this sync).
+
+### Open PRs (not ticked)
+
+- [ ] PR #9 open: RD-0365 key-custody ladder doc + fail-closed host custody
+  resolution. Codex Astra review running; branch left untouched.
+- [ ] PR #41 open: native-provider installation receipt writer (SLIDE TODO
+  L1951 and the receipt half of L1955). Pairs with SLIDE #4. Codex Astra review
+  running; branch left untouched.
+- [ ] SLIDE PRs #1–#16 are open on `TritHypha/SLIDE` (none merged). Of these, #3
+  and #5 complete SLIDE TODO L756 with Galerina #40 (merged); once they merge, SLIDE
+  CI's Galerina pin still needs bumping to `26efe2c06` or later.
+- Closed without merge: #2 (2026-08-23) and #4 (superseded by #5).
+
+### Blocked
+
+- [!] RD-1413–1415 memory-security adoption: blocked on one real wired
+  authenticated application operation and an independent composed security
+  review (see the 2026-09-28 holds below).
+- [!] Release signing, platform durability and the seven-OS matrix: blocked
+  on the owner's ceremony and physical/host receipts (`governance/status-ledger.json`).
+- [!] RD-0365 hardware custody/attestation: blocked on real vault/TPM evidence
+  (PR #9 only lands the fail-closed ladder). RD-0364: blocked on real provider
+  and weight identity.
+- [!] SLIDE/VOK admission and `.fungi` conversion: blocked on the SLIDE-side
+  route (SLIDE PRs #3/#5 open) and joint re-admission. The `.gate` D5 re-scope and
+  the app-kernel posture default are owner decisions.
+
+### Corrections made by this sync
+
+- Posture default row: the `kernel.ts:245` citation is stale. It is now
+  `createAppKernel` `opts.posture ?? "off"` (flagged in PR #11).
+- The "Registered `main` is now at `05eb5c29…`" checkpoint is historical;
+  `origin/main` is `df01d4ee0`.
+
 ## Current checkout check — 2026-09-26
 
 - [x] The RD-0873 worktree is dirty `main` at
@@ -66,6 +168,9 @@ before changing any status.
 
 Current outstanding and blockers:
 [outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
+**Correction (Grok TODO sync 2026-10-04):** `origin/main` is now
+`df01d4ee0` (PR #7 merge, 2026-10-04 20:46 BST); the `05eb5c29…` and
+`e8f1b682…` heads below are historical. See the sync section at the top.
 The `e8f1b682…` head and scan details in this 2026-09-26 checkpoint are historical, not a
 current-head receipt. Registered `main` is now at `05eb5c29be9592a42cdd48baaeb027279ff5299d`
 and dirty. Historical
@@ -302,7 +407,8 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
 - [!] RD-0361 / RD-0349 / RD-0363 / RD-0364 / RD-0365 completion requests
   stay HOLD. WAT emitter and runtime interpreter are not closed (Decimal,
   C20, signing, vault/TPM, BitNet pin, R4). Checking those `[!]` rows
-  would fake completion.
+  would fake completion. 2026-10-04 progress is recorded under the RD-0361…
+  RD-0349 reconciliation rows and in the sync section at the top; the HOLD stands.
 - [x] RD-1308 exact typed argument encoding for the pure-flow LRU:
   `encodePureFlowArgs` + `admitPureFlowCacheIdentity` + exact-mismatch
   miss + owned copies. Tests pure-flow-cache-identity **7/7**. Independent
@@ -952,7 +1058,8 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
   (photonic/registry/api-data/air-gap), isolation **36/36** + products **47/47**.
   Core-network runtime is `/governance` only. Package-dep extraction remains a proposal.
 - [x] Option.zip `ZipPair<T,U>` is a built-in named pair (`first`/`second`);
-  matrix **6/6**. Remaining W04–W11 are APPROVED_DEFERRED_SCOPE / CONTRACT_DECISION:
+  matrix **6/6**. On `main` since PR #7 `df01d4ee0` (WAT D4/E5/ZipPair slices,
+  2026-10-04). Remaining W04–W11 are APPROVED_DEFERRED_SCOPE / CONTRACT_DECISION:
   unknown-form inference, JSON fractions, OAuth/OpenAPI CLI/webhooks, C16 durable
   replay backend, WASM/native mapping, photonic post-v1.
 - [x] W12: SLIDE/Lyth independent inventory found no ordinary TS/docs/tooling
@@ -2155,14 +2262,26 @@ counts or open items that a newer section explicitly supersedes.
   verifier supplies proof.
 - [!] RD-0361 remains open for owner authority/deletion and SLIDE/VOK gates;
   the bounded audit count is not production admission.
+  2026-10-04: the S1–S7 frozen-reference stack is merged (PRs #31–#37 and #39,
+  `3ff47531c`…`195b6ef42`), plus the S6b D1 fix PR #38 `7f871de18`. That is twin-audit
+  evidence only; the owner-authority and SLIDE/VOK gates are unchanged.
 - [!] RD-0363 remains open for authenticated signature verification,
   complete canonical binding, replay-time enforcement, and receipts.
+  2026-10-04: PR #8 `9b40ee31e` gates the execution-plan fast path on
+  `verifyPlanAdmission` (a forged plan no longer runs). Signature
+  verification and receipts are still open.
 - [!] RD-0364 remains open for real provider/weight identity, egress and
   budget proof, and authorizing receipts.
 - [!] RD-0365 remains open for evidence-backed vault/TPM/hardware custody and
   host attestation.
+  2026-10-04: PR #9 open (key-custody ladder doc + fail-closed
+  `resolveHostKeyCustody`; Codex Astra review running). Hardware custody and
+  attestation stay blocked on real vault/TPM evidence.
 - [!] RD-0349 is broader than I2; Commodity/Crypto/Rate/Percent and their
   sourced scale policies remain open.
+  2026-10-04: PR #30 `8bf342127` pins the four open value-unit choices to
+  zero-trust defaults (owner may revisit). The sourced Commodity/Crypto/Rate/
+  Percent scale policies are still open.
 - [x] Keep the reconciliation report as the durable index; do not turn these
   dispositions into a bulk `.fungi` authoring scope.
 
@@ -4304,10 +4423,16 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [x] Review both private Fungi skills; `NO_SKILL_UPDATE` is correct at
   `1480843` and `b21ff6e` because their malformed-path, no-`try/catch`, exact
   record/wire, immutable-transport and active-effect rules cover this group.
-- [ ] Priority security investigation: replace `AuditLogger.query()` silently
+- [x] Priority security investigation: replace `AuditLogger.query()` silently
   dropping malformed JSONL rows with a fail-closed or explicit quarantine
   contract. Add hostile-ledger corruption/tampering tests, bounded diagnostics,
   recovery semantics and an anti-neutering test before changing runtime code.
+  Done on `main` by PR #25 `c83bad40e` (zero-trust default, owner may revisit):
+  persistent-ledger `query()`/`getLifecycle()` now fail closed with
+  `ERR_AUDIT_LEDGER_CORRUPT` on any malformed row, with red-first
+  `tests/audit-ledger-corrupt.test.mjs` (5 cases, including the anti-neutering
+  intact ledger). An explicit quarantine/recovery API stays an owner choice;
+  recovery is an explicit operator step. (Grok TODO sync 2026-10-04)
 - [ ] Add exact host-ledger query, binary64/Option/open-record, array/coercion
   and affine egress-capability ABIs before reopening these conversions.
 - [ ] Keep TypeScript and every caller active; no consumer switch, retirement,
@@ -4321,9 +4446,13 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   terms**, with the Slice 147 blocker queryable. One moderate codebase-memory
   refresh returned `Transport closed`; exact graph-HEAD freshness therefore
   remains `UNKNOWN` without a retry storm.
-- [ ] Dev-tool ergonomics: give registered owners a consistent non-mutating
+- [x] Dev-tool ergonomics: give registered owners a consistent non-mutating
   `--help` contract. Several currently reject it, while retirement/code-index
   interpret a no-mode invocation as generation; add CLI tests before changing.
+  Done on `main`: PR #26 `d71d90210` (code-index, dev-tool-index), PR #27 `a58ee4ff5`
+  (ts-retirement-graph) and PR #29 `e1640f060` (shared `scripts/lib/cli-help.mjs`
+  for the 16 remaining registered generator owners), each with CLI tests.
+  (Grok TODO sync 2026-10-04)
 
 ### Slices 133-142 TPL introspection and audit adjudication - 2026-08-13
 
@@ -4343,9 +4472,13 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   pass at `1480843` and `b21ff6e`, with no push.
 - [ ] Add explicit mutable-object, authenticated clock/sequence, callback,
   JSON/wire, filesystem-durability and governed-egress ABIs before reopening.
-- [ ] Decide whether `trap`'s caller-supplied details are intentionally allowed
+- [x] Decide whether `trap`'s caller-supplied details are intentionally allowed
   to overwrite fixed `violation`/`rollbackStatus`; any contract change needs
   its own security review and differential tests.
+  Decided and landed by PR #28 `0629d5b9c` (zero-trust default, owner may
+  revisit): **not allowed**; the fixed fields win over caller details, with
+  differential tests. Independent security review of the contract change is
+  still the owner's call. (Grok TODO sync 2026-10-04)
 - [ ] Keep TypeScript and every caller active; no consumer switch, retirement,
   production, release, signing or push authority follows.
 - [ ] Defer aggregate roadmap, subway, project-graph, code-index and re-index
@@ -13120,7 +13253,9 @@ residuals and production admission are not cleared here.
 - [ ] `.graph` A/B fair re-run — paused-coupled; `.graph` = ASCII Topology ONLY (never a language).
 
 ## 🔲 NEXT / carried forward
-- [ ] App-kernel posture default (`kernel.ts:245` = `"off"`) — decide production-adaptive `"auto"` default.
+- [ ] App-kernel posture default (`createAppKernel`: `opts.posture ?? "off"`; the old `kernel.ts:245`
+      citation is stale, per PR #11) — decide production-adaptive `"auto"` default. Still an owner decision:
+      the app-frame hardening in PR #5 `875a81c03` deliberately left the `off` default unchanged.
 - [ ] **web-* lead pair** (`galerina-web-render` + `galerina-web-state`) — largest shippable-scope gap.
 - [ ] **Full-suite CI** (#155 npm workspaces) — get the crypto/border phase-close gates off local-only.
 - [ ] Self-hosting: extend byte-parity tokenize → parser.

@@ -23,7 +23,11 @@ admission. No fresh tests were run for this TODO refresh.
 [ ] Define auth provider boundary contract
 [ ] Define scope and role policy model
 [ ] Define idempotency and replay protection contract
+    (2026-10-04: behaviour hardened on main by PR #5 `875a81c03`: `onDuplicate: "replay"` is refused, S8b;
+    the written contract spec is still open)
 [ ] Define rate-limit and workload control policy
+    (2026-10-04: rate limiting runs before decode on main via PR #5 `875a81c03`; raised `limits.rate`/
+    `limits.timeoutMs` are recorded as relaxations via PR #10 `b0a240707`; the policy spec is still open)
 [ ] Define request Structured Await scope and cancellation policy
 [ ] Define queue/job contract
 [ ] Define runtime audit report format

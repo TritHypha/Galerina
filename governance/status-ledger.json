@@ -1,6 +1,6 @@
 {
   "schema": "galerina.status-ledger.v1",
-  "asOf": "2026-09-28",
+  "asOf": "2026-10-04",
   "milestone": "Bounded pre-.fungi implementation closure before receipt-bound Galerina-to-SLIDE execution",
   "roadmap": "docs/ROADMAP.md",
   "openGates": [
@@ -21,7 +21,7 @@
     },
     {
       "id": "SLIDE-EXECUTABLE",
-      "summary": "Canonical .slide, flat package ABI/import/resource, affine VOK and typed receipts are implemented. Dynamic routing, broader closed bodies, effects, mutation/manual memory, callbacks, initialisers and production authentication remain open. The current work register requires checking independent ordinary work without minting a new producer/GIR subject or lifting SLIDE/VOK admission holds. Documentation reconciliation is not a fresh downstream test run.",
+      "summary": "Canonical .slide, flat package ABI/import/resource, affine VOK and typed receipts are implemented. Dynamic routing, broader closed bodies, effects, mutation/manual memory, callbacks, initialisers and production authentication remain open. The current work register requires checking independent ordinary work without minting a new producer/GIR subject or lifting SLIDE/VOK admission holds. Documentation reconciliation is not a fresh downstream test run. 2026-10-04: Galerina #40 (26efe2c06) registers the RD-0858 scalar oracle as a SLIDE consumer; SLIDE #1-#16 are open (none merged) and Galerina #41 (native-provider installation receipts) is open, so no SLIDE gate moved.",
       "evidence": "docs/superpowers/plans/2026-07-30-galerina-slide-full-fungi-retirement.md"
     },
     {
@@ -41,7 +41,7 @@
     },
     {
       "id": "PRE-FUNGI-NON-EVIDENCE-CLOSURE",
-      "summary": "HOLD. The historical dirty 91b4dec0 checkpoint covered Tower RD-1295 load-graph bounds (formerly E01/RD-1296) with 86/86 focused checks; composition/evidence-packet and lstat-to-read risks remain. The separate RD-1296 compiler/guest-byte route is not closed. The current docs/TODO.md recount is 238 open boxes; these are holds, not completed conversion. Example-app signing, independent completion audit, physical/production receipts, SLIDE/VOK re-admission, corpus, queue and .fungi assurance remain held. This update does not rerun older gates or claim a clean HEAD.",
+      "summary": "HOLD. The historical dirty 91b4dec0 checkpoint covered Tower RD-1295 load-graph bounds (formerly E01/RD-1296) with 86/86 focused checks; composition/evidence-packet and lstat-to-read risks remain. The separate RD-1296 compiler/guest-byte route is not closed. After the 2026-10-04 Grok TODO sync, docs/TODO.md has 235 pre-existing open boxes (merged PRs #25, #26/#27/#29 and #28 closed three) plus three open-PR tracking rows; these are holds, not completed conversion. Example-app signing, independent completion audit, physical/production receipts, SLIDE/VOK re-admission, corpus, queue and .fungi assurance remain held. This update does not rerun older gates or claim a clean HEAD.",
       "evidence": "docs/reports/outstanding-and-blockers-2026-09-23.md"
     },
     {
