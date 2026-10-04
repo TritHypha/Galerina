@@ -224,6 +224,8 @@ export class AuditEgress {
    * Egress all staged records as one chained batch (ONE disk write).
    *
    * @returns the written {@link AuditBatch}, or `null` if nothing was buffered.
+   * @throws the underlying I/O error if the ledger append fails; the records stay
+   *   staged and the chain head is unchanged, so a later flush retries them.
    */
   flush(): AuditBatch | null {
     const records = this.#ring.drain();
@@ -241,7 +243,17 @@ export class AuditEgress {
       ...(this.#epochId !== undefined ? { epochId: this.#epochId } : {}),
     };
     // ONE disk write per batch — the whole point.
-    appendFileSync(this.#ledgerPath, JSON.stringify(batch) + "\n");
+    try {
+      appendFileSync(this.#ledgerPath, JSON.stringify(batch) + "\n");
+    } catch (err) {
+      // Never drop: a failed write re-stages the drained records (FIFO order) and leaves the chain
+      // head and seq untouched, so the caller sees the I/O error and a later flush retries the SAME
+      // batch. The ring was emptied by drain() and these records came from it, so they always fit.
+      for (const r of records) {
+        this.#ring.push(r);
+      }
+      throw err;
+    }
     this.#prevHash = batchHash;
     this.#seq++;
     return batch;
