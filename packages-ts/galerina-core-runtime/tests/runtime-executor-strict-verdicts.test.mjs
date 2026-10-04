@@ -77,12 +77,94 @@ for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "ins
       : dep === "artifactBytesFor" ? { artifactSource: { seamVersion: V, artifactBytesFor: boom } }
       : dep === "verifyAttestation" ? verifier(boom)
       : { lowLevel: { seamVersion: V, instantiateAndCall: boom } };
-    const { exec } = wired(over);
+    const { exec, calls } = wired(over);
     let v;
     assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
     assert.equal(v.outcome, "deny");
+    // A throwing pre-VM capability never lets the request reach the VM (the instantiateAndCall case replaces
+    // the counting VM itself, so its counter stays untouched by construction).
+    assert.equal(calls.instantiate, 0);
   });
 }
+
+// Owner no-VM rule (2026-10-04): an `async` capability can only return a Promise (possibly rejected), so it is
+// refused BEFORE any capability runs — even one that would resolve to a valid value — and the VM is never
+// entered.
+for (const dep of ["hashArtifact", "artifactBytesFor", "verifyAttestation", "instantiateAndCall"]) {
+  for (const [kind, make] of [
+    ["async function", (body) => async (...a) => body(...a)],
+    ["async generator", (body) => async function* (...a) { yield body(...a); }],
+    ["async method", (body) => ({ async m(...a) { return body(...a); } }).m],
+  ]) {
+    test(`an ${kind} ${dep} is refused before any capability runs and never reaches the VM`, () => {
+      const seen = { capability: 0 };
+      const counted = (value) => make(() => { seen.capability += 1; return value; });
+      let vmCalls = 0;
+      const over =
+        dep === "hashArtifact" ? { hashArtifact: counted(SHA) }
+        : dep === "artifactBytesFor" ? { artifactSource: { seamVersion: V, artifactBytesFor: counted(BYTES) } }
+        : dep === "verifyAttestation" ? verifier(counted(true))
+        : { lowLevel: { seamVersion: V, instantiateAndCall: make(() => { vmCalls += 1; seen.capability += 1; return { ok: true, result: 42 }; }) } };
+      const { exec, calls } = wired(over);
+      let v;
+      assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
+      assert.equal(v.outcome, "deny");
+      assert.match(v.reason, /before any VM instance is created/);
+      assert.equal(seen.capability, 0);
+      assert.equal(calls.instantiate, 0);
+      assert.equal(vmCalls, 0);
+    });
+  }
+}
+
+test("a non-callable capability is refused before any VM instance is created", () => {
+  for (const over of [
+    { hashArtifact: "sha" },
+    { artifactSource: { seamVersion: V, artifactBytesFor: BYTES } },
+    verifier(true),
+    { lowLevel: { seamVersion: V, instantiateAndCall: { ok: true } } },
+  ]) {
+    const { exec, calls } = wired(over);
+    const v = exec.admitAndExecute(req());
+    assert.equal(v.outcome, "deny");
+    assert.match(v.reason, /before any VM instance is created/);
+    assert.equal(calls.instantiate, 0);
+  }
+});
+
+test("a capability whose inspection throws (hostile Proxy) is refused, not thrown, and never reaches the VM", () => {
+  const hostile = new Proxy(() => true, { get: () => { throw new Error("hostile trap"); } });
+  const { exec, calls } = wired(verifier(hostile));
+  let v;
+  assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
+  assert.equal(v.outcome, "deny");
+  assert.equal(calls.instantiate, 0);
+});
+
+test("a throwing capability getter is refused, not thrown, and never reaches the VM", () => {
+  const source = { seamVersion: V, get artifactBytesFor() { throw new Error("getter exploded"); } };
+  const { exec, calls } = wired({ artifactSource: source });
+  let v;
+  assert.doesNotThrow(() => { v = exec.admitAndExecute(req()); });
+  assert.equal(v.outcome, "deny");
+  assert.equal(calls.instantiate, 0);
+});
+
+test("each capability is read exactly once, so a getter cannot swap in an async capability after the check", () => {
+  let reads = 0;
+  const admissionVerifier = {
+    seamVersion: V,
+    get verifyAttestation() {
+      reads += 1;
+      return reads === 1 ? () => true : async () => true;
+    },
+  };
+  const { exec, calls } = wired({ admissionVerifier });
+  const v = exec.admitAndExecute(req());
+  assert.equal(reads, 1);
+  assert.equal(v.outcome, "admit");
+  assert.equal(calls.instantiate, 1);
+});
 
 test("an artifact source returning a non-Uint8Array is a refusal", () => {
   const { exec, calls } = wired({ artifactSource: { seamVersion: V, artifactBytesFor: () => [7, 7, 7] } });

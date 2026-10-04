@@ -380,7 +380,9 @@ const ignoreSettlement = (): void => {};
  *  rejected async provider cannot surface as a process-level unhandled rejection (which terminates Node by
  *  default — host-wide availability loss). `Promise.prototype.then.call` brand-checks for a REAL promise
  *  before any user code runs, so a hostile non-native thenable is never invoked; anything else throws a
- *  TypeError, which is swallowed — the verdict is deny either way. */
+ *  TypeError, which is swallowed — the verdict is deny either way. This is a BACKSTOP only: an `async`
+ *  capability is refused structurally before any capability runs (see `isRefusedCapability`), so the only
+ *  Promise that can still reach here comes from a plain function that returned one. */
 function consumeAsyncRejection(value: unknown): void {
   try {
     Promise.prototype.then.call(value as Promise<unknown>, ignoreSettlement, ignoreSettlement);
@@ -389,9 +391,30 @@ function consumeAsyncRejection(value: unknown): void {
   }
 }
 
+/** Owner decision (2026-10-04, no-VM rule): a capability that can hand back a rejected Promise is refused
+ *  BEFORE any VM or WASM instance is created. A capability declared `async` (or as an async generator) can
+ *  only ever return a Promise, so it is refused structurally, before ANY capability is invoked and therefore
+ *  before `instantiateAndCall` is ever entered. A non-callable capability is refused the same way, and an
+ *  inspection that itself throws (a hostile Proxy trap) is a refusal too. The check is deliberately biased
+ *  toward refusal: a sync method literally named `async` is also refused (fail-closed). */
+const ASYNC_CALLABLE_TAGS: readonly string[] = ["[object AsyncFunction]", "[object AsyncGeneratorFunction]"];
+const ASYNC_SOURCE_PREFIX = /^\s*async[\s*(]/;
+
+function isRefusedCapability(fn: unknown): boolean {
+  if (typeof fn !== "function") return true;
+  try {
+    if (ASYNC_CALLABLE_TAGS.includes(Object.prototype.toString.call(fn))) return true;
+    return ASYNC_SOURCE_PREFIX.test(Function.prototype.toString.call(fn));
+  } catch {
+    return true;
+  }
+}
+
 /** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
- *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
- *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) verify the
+ *  (0) seam-version match on the request AND every injected dependency, then refuse any async or
+ *  non-callable capability before ANY capability runs (owner no-VM rule, 2026-10-04);
+ *  (1) resolve artifact bytes from the content store; (2) re-hash and require the digest to equal the
+ *  pinned sha256 (integrity); (3) verify the
  *  request's SIGNED attestation against that freshly-computed hash AND that the requested export is defined by
  *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) instantiate + call via the
  *  low-level VM. Any failure at any step — including a missing
@@ -427,11 +450,36 @@ export function createGovernedRuntimeExecutor(
       ) {
         return denyVerdict("a wired capability pins a different seam version — refused (fail-closed).");
       }
+      // Owner decision (2026-10-04, no-VM rule): capture each capability ONCE and refuse an async or
+      // non-callable one before any capability runs, so a capability that can only return a (possibly
+      // rejected) Promise never reaches the VM. Capturing once also closes a getter swap between this check
+      // and the call below.
+      let artifactBytesFor: GovernedRuntimeArtifactSource["artifactBytesFor"];
+      let verifyAttestation: GovernedAdmissionVerifier["verifyAttestation"];
+      let instantiateAndCall: LowLevelWasmExecutor["instantiateAndCall"];
+      let capabilitiesRefused: boolean;
+      try {
+        artifactBytesFor = artifactSource.artifactBytesFor;
+        verifyAttestation = admissionVerifier.verifyAttestation;
+        instantiateAndCall = lowLevel.instantiateAndCall;
+        capabilitiesRefused =
+          isRefusedCapability(hashArtifact) ||
+          isRefusedCapability(artifactBytesFor) ||
+          isRefusedCapability(verifyAttestation) ||
+          isRefusedCapability(instantiateAndCall);
+      } catch {
+        return denyVerdict("a wired capability could not be read — refused before any VM instance is created (fail-closed).");
+      }
+      if (capabilitiesRefused) {
+        return denyVerdict(
+          "a wired capability is async or not callable — refused before any VM instance is created (fail-closed).",
+        );
+      }
       // Zero-trust default (owner may revisit): every injected capability is untrusted code. A throw from any
       // of them is a DENY verdict, never an exception escaping the seam, and only EXACT success values admit.
       let bytes: Uint8Array | undefined;
       try {
-        bytes = artifactSource.artifactBytesFor(request.artifactSha256);
+        bytes = artifactBytesFor.call(artifactSource, request.artifactSha256);
       } catch {
         return denyVerdict("artifact source failed while resolving the pinned artifact — deny (fail-closed).");
       }
@@ -466,7 +514,7 @@ export function createGovernedRuntimeExecutor(
       // EXACT `true` only: an async verifier returns a Promise (truthy) and would otherwise admit unverified.
       let attested: unknown;
       try {
-        attested = admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes });
+        attested = verifyAttestation.call(admissionVerifier, { attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes });
       } catch {
         attested = false;
       }
@@ -478,7 +526,7 @@ export function createGovernedRuntimeExecutor(
       }
       let executed: unknown;
       try {
-        executed = lowLevel.instantiateAndCall({
+        executed = instantiateAndCall.call(lowLevel, {
           artifactBytes: ownedBytes,
           exportName: request.exportName,
           args: request.args,
