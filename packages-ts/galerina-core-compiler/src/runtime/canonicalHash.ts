@@ -193,13 +193,19 @@ export function hashGIR(gir: object): string {
 /**
  * Hash a PassiveExecutionPlan.
  *
- * Strips "generatedAt" (non-deterministic). The "planHash" field is already
+ * Strips "generatedAt" and the top-level "admissionHash" that binds it
+ * (non-deterministic). The "planHash" field is already
  * a hash of the plan content — it is included as-is so the outer hash covers
  * the inner hash, giving a stable two-level commitment.
  *
  * Returns "sha256:" + hexdigest.
  */
 export function hashPassivePlan(plan: object): string {
-  const stripped = stripNonDeterministic(plan);
+  // RD-0363 P5: the top-level admissionHash binds generatedAt, so it is as
+  // non-deterministic as generatedAt itself and is left out of this content hash.
+  const content = Object.fromEntries(
+    Object.entries(plan).filter(([key]) => key !== "admissionHash"),
+  );
+  const stripped = stripNonDeterministic(content);
   return canonicalHash(stripped);
 }
