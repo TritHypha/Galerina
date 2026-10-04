@@ -62,7 +62,7 @@ test("malformed: negative offset throws LSIO-MANIFEST-001", () => {
     version: "1.1",
     source: "s",
     totalBytes: 10,
-    blocks: [{ id: "a", offset: -1, length: 4, sha256: "ab" }],
+    blocks: [{ id: "a", offset: -1, length: 4, sha256: "ab".repeat(32) }],
   };
   assert.throws(
     () => ManifestLoader.fromObject(bad),
@@ -75,7 +75,7 @@ test("malformed: block beyond totalBytes throws LSIO-MANIFEST-001", () => {
     version: "1.1",
     source: "s",
     totalBytes: 4,
-    blocks: [{ id: "a", offset: 2, length: 8, sha256: "ab" }],
+    blocks: [{ id: "a", offset: 2, length: 8, sha256: "ab".repeat(32) }],
   };
   assert.throws(
     () => ManifestLoader.fromObject(bad),
@@ -89,8 +89,8 @@ test("malformed: overlapping blocks throw LSIO-MANIFEST-001", () => {
     source: "s",
     totalBytes: 16,
     blocks: [
-      { id: "a", offset: 0, length: 8, sha256: "ab" },
-      { id: "b", offset: 4, length: 8, sha256: "cd" },
+      { id: "a", offset: 0, length: 8, sha256: "ab".repeat(32) },
+      { id: "b", offset: 4, length: 8, sha256: "cd".repeat(32) },
     ],
   };
   assert.throws(
