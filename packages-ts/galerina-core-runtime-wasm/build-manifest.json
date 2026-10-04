@@ -1,0 +1,95 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-runtime-wasm",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "656152b17933acf4c61dfe4e21bf1bcbbdb086720075342c96c6c695ca26c6c0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "da92f6fb8f15d0ecff5258988b365467b110da75bf88ce0f7a3f1c83aa0f934d"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "add4b63147c3aad920b4a5b5772db87d44438560cc3570bf9f4622b480ae9023"
+      },
+      {
+        "path": "README.md",
+        "sha256": "f193fb1683654ce8260f7d6cbed3f0efa75cc1ebbf6d89c2131b73a795011ebd"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "7ac9ca48d0e772d3a0cf0c7b178c0b5b14c9e69261189b2ff3a611f3c8d2eb70"
+      },
+      {
+        "path": "package.json",
+        "sha256": "5a69c0ef0b23a1122c6c2e2c2037d1b12096274c00818cf6220174e148bf0c7f"
+      },
+      {
+        "path": "src/decimal-core.ts",
+        "sha256": "de0f445d75db5562549d65709621c6596548a4858b2c412f63eb3eb62ba2366d"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "d7645b31cbb8f9d7bbf948829a6e2b1ec46b7ffafd86fc5bf6da3f18d39858ae"
+      },
+      {
+        "path": "src/record-abi.ts",
+        "sha256": "923d7ac59549c8d297964b27221d3d42c63aa1e5c319dac674fd6cd3ff01edf8"
+      },
+      {
+        "path": "src/seam-adapters.ts",
+        "sha256": "251d6542fb6e98cf6d4432f053250cef647d7f0275f6ae8f673e6e2470c485ea"
+      },
+      {
+        "path": "src/self-hosted/wasm-admit-domain.fungi",
+        "sha256": "89707f1a5f70308e3a8093b5be33f780e483484efc6b6fff62ae062881cad44c"
+      },
+      {
+        "path": "src/self-hosted/wat-heap-base.fungi",
+        "sha256": "eda40b54fbc55022121c909cda0c7a428f38842ea40c06a8faf2530643365ff7"
+      },
+      {
+        "path": "src/self-hosted/wat-rec-field-size.fungi",
+        "sha256": "d7e1e46aa9b7839f2bc2e3247b12390054aef82121b44a7fec93470d9d171836"
+      },
+      {
+        "path": "src/wasm-runtime.ts",
+        "sha256": "37138c839680a29af8852ed07c7c55e2787ecea9c5dd58191d9ecdd630c270b7"
+      },
+      {
+        "path": "tests/record-abi.test.mjs",
+        "sha256": "323a02f0afddf3cadb14fa91d3c200430044270260599ff94101364f79bb6e94"
+      },
+      {
+        "path": "tests/seam-adapters.test.mjs",
+        "sha256": "d268cef2ed23b50e4f9899c926423830cd7e84e3322fe8c7508158e1811c2814"
+      },
+      {
+        "path": "tests/wasm-runtime.test.mjs",
+        "sha256": "53ad7a83b5167df95e3a7b89c229e9ca71060ef18a1abd7ce4b6e320d4681653"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

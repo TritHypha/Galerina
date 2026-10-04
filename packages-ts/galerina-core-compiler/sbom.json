@@ -1,0 +1,406 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a1b7dbed4ea79c96de94c4a2aed56c565bedb0dde0bc5b27b8ab77f7621faf4d"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-network",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-network"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-runtime-wasm@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5a69c0ef0b23a1122c6c2e2c2037d1b12096274c00818cf6220174e148bf0c7f"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-runtime-wasm",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-runtime-wasm"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-runtime-wasm@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/core-security@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "82f022e0345405bacd210d0a07aa6edcef8ab08b0223a4a6299285cc1b202fd6"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/core-security",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-core-security"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/core-security@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/data-json@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cbf8b6e25561bd253ca98bd3c5c6cddcb1bfedbeb8fa730d0e2d7be45d2bfbb7"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/data-json",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-data-json"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/data-json@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/devtools-graph-algorithms@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "52cbc843b6c6cad7962ae410d611a69c6068d41efea4b21b0095a55cf47a9e7c"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/devtools-graph-algorithms",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-devtools-graph-algorithms"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/devtools-graph-algorithms@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2896855a97ef27656768f643034f5672b14994ca948d935e4e7c5af56af1830a"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/substrate-math",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-substrate-math"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    {
+      "bom-ref": "pkg:npm/%40galerina/tri-regex@0.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4642a409cc1610d513eb101701853887c3c83646337965a954823bd583f1a438"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "@galerina/tri-regex",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "package.json"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "internal"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "file:../galerina-tri-regex"
+        }
+      ],
+      "purl": "pkg:npm/%40galerina/tri-regex@0.1.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.1.1"
+    },
+    {
+      "bom-ref": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "fa9a2b9ab0d9c23470d3953c0032b82691de8e8f3bfa005dfa6b91041fe8cf3b47e728432cc0c5e231d058ddcd41002cbb5cc134f5931b4670548d02476f47d0"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "@noble/post-quantum",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^0.6.1"
+        }
+      ],
+      "purl": "pkg:npm/%40noble/post-quantum@0.6.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.6.1"
+    },
+    {
+      "bom-ref": "pkg:npm/argon2@0.44.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "cc73c63774b9e6c8a1490a347416cad00e6aa62d91df5cfb1d90d99ebcb789f3b28fc6d9667a59343da0a668674463b557f779e7947006a20ae56e0cae6bf78a"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "argon2",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^0.44.0"
+        }
+      ],
+      "purl": "pkg:npm/argon2@0.44.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.44.0"
+    },
+    {
+      "bom-ref": "pkg:npm/bcryptjs@3.0.3",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1a5179c0f5a749afd7e4b28cd68d30cf4b2e5c820dcf588744bbd34beb0bca2ed73db7b9c9c9982370e566a546659b43825e0399ab0583b80e0772586e9855e6"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "bcryptjs",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^3.0.3"
+        }
+      ],
+      "purl": "pkg:npm/bcryptjs@3.0.3",
+      "scope": "required",
+      "type": "library",
+      "version": "3.0.3"
+    },
+    {
+      "bom-ref": "pkg:npm/wabt@1.0.39",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6daf9d44bffbe5541063b46453f0a0ae219b9285807d2f130f252525f26127c2a1b5780c97976136fa0f354710f48591856f2ee35825312b99793bec62adab46"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "wabt",
+      "properties": [
+        {
+          "name": "galerina:hash-subject",
+          "value": "npm-integrity"
+        },
+        {
+          "name": "galerina:origin",
+          "value": "third-party"
+        },
+        {
+          "name": "galerina:specifier",
+          "value": "^1.0.39"
+        }
+      ],
+      "purl": "pkg:npm/wabt@1.0.39",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.39"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:npm/%40galerina/core-network@1.0.0-beta.2",
+        "pkg:npm/%40galerina/core-runtime-wasm@1.0.0-beta.2",
+        "pkg:npm/%40galerina/core-security@1.0.0-beta.2",
+        "pkg:npm/%40galerina/data-json@1.0.0-beta.2",
+        "pkg:npm/%40galerina/devtools-graph-algorithms@1.0.0-beta.2",
+        "pkg:npm/%40galerina/substrate-math@1.0.0-beta.2",
+        "pkg:npm/%40galerina/tri-regex@0.1.1",
+        "pkg:npm/%40noble/post-quantum@0.6.1",
+        "pkg:npm/argon2@0.44.0",
+        "pkg:npm/bcryptjs@3.0.3",
+        "pkg:npm/wabt@1.0.39"
+      ],
+      "ref": "pkg:npm/%40galerina/core-compiler@1.0.0-beta.2"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:npm/%40galerina/core-compiler@1.0.0-beta.2",
+      "name": "@galerina/core-compiler",
+      "type": "library",
+      "version": "1.0.0-beta.2"
+    },
+    "properties": [
+      {
+        "name": "galerina:depth",
+        "value": "1"
+      },
+      {
+        "name": "galerina:generated-by",
+        "value": "scripts/gen-package-standard-manifests.mjs"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}

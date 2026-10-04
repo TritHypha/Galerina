@@ -19,6 +19,9 @@ import {
   provenance,
 } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 import { scrubPaths } from "./lib/scrub-paths.mjs"; // extracted + unit-tested (was module-internal, untestable)
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/kb-index.mjs [--root <dir>] [--kb-dir <dir>] [--code <code>] [--check]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 function parseArgs(argv) {
   let root = process.cwd();

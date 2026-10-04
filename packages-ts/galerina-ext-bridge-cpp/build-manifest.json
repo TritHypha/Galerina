@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ext-bridge-cpp",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "573137b42f4283ed2d904abdfa942f701ecc0dffe0f36919620f9750748632f9",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "01c8dd1d52dcf340b5544be876f9c6962c6c75c918245fb7932d09368240d905"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "9327b9292187cf047eb620e26d0340d05a22fa4dc3239befa8bec12b29b7bcce"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "247bb1936f96d56134b4a204c603fc89cf64a5692f489069bd898eff622c242f"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "native/README.md",
+        "sha256": "f3f4150c0a1353be2ce65bc281579f93eb1b0ef75c6a6b784a714a800c6aac84"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "52bbcb0f264d6b76cbdbbac543825605866ad55409f364edea3a059d50e5d907"
+      },
+      {
+        "path": "package.json",
+        "sha256": "a7122aaafacb014b4249bea67b8eee1862e4d1d0235718ac1b26e323ecc3f159"
+      },
+      {
+        "path": "src/addon-loader.ts",
+        "sha256": "addd12ee0cb277f4638501bd3fd7e234e901063cbd602f40e693abdbcfda45ee"
+      },
+      {
+        "path": "src/bitnet-cpu-bridge.ts",
+        "sha256": "9b42003db9c864ec6117e927f8b1a6e61acd72de441fe348f3ad7c4b45ca65de"
+      },
+      {
+        "path": "src/bitnet-gpu-bridge.ts",
+        "sha256": "1785ab45169437e8268db6ebbc985dee290af6af46f0bb9baaefd93f0c8829ce"
+      },
+      {
+        "path": "src/hardware-detect.ts",
+        "sha256": "5bbaf56dd85b23583cadca5c88032e4a6fb8ab92eb95b07fcca5e10865e5021b"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "ba4f2b7efb63558f19f8778cffe8f5e81a51a53857e6a20af495d06fe6a3768c"
+      },
+      {
+        "path": "tests/addon-loader.test.mjs",
+        "sha256": "530fb1f89a9f8dba9744471572bfca55b7633bdb092585ef9bd1a43856caab5a"
+      },
+      {
+        "path": "tests/bridges.test.mjs",
+        "sha256": "4646a9b1faff7b7f7ed6afab264fa8ca1b05268a9b837a0980a57ccad20b025c"
+      },
+      {
+        "path": "tests/registry-integration.test.mjs",
+        "sha256": "6f7e441fcb51f7aa7b1c8bf9a2d8e6d2c054cd8cd35ee44efdd83ec156329931"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "513f764dcce7fb3ab99b730139740fcda54885b8a55d1fa8ab512a655ac67340"
+      }
+    ]
+  }
+}

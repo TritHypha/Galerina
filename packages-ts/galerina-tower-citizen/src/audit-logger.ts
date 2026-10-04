@@ -66,6 +66,38 @@ export interface AuditLoggerOptions {
   readonly egress?: EgressSink;
 }
 
+const LEDGER_PHASES: ReadonlySet<string> = new Set(["LOAD", "EXEC", "ERASE", "TRAP", "VIOLATION"]);
+const LEDGER_SEVERITIES: ReadonlySet<string> = new Set(["INFO", "WARNING", "ERROR", "CRITICAL"]);
+const LEDGER_CATEGORIES: ReadonlySet<string> = new Set(["LIFECYCLE", "RUNTIME_VIOLATION", "GOVERNANCE_DENIED", "AUDIT_TRAIL", "RESOURCE_LIMIT"]);
+
+function ledgerCorrupt(lineNo: number, why: string): Error {
+  return new Error(`ERR_AUDIT_LEDGER_CORRUPT: ledger row ${lineNo} ${why}; refusing to replay a ledger with a dropped or forged row`);
+}
+
+/** Decode one persisted JSONL row into a TowerAuditEvent, or throw ERR_AUDIT_LEDGER_CORRUPT. */
+function decodeLedgerRow(line: string, lineNo: number): TowerAuditEvent {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    throw ledgerCorrupt(lineNo, "is not valid JSON");
+  }
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) throw ledgerCorrupt(lineNo, "is not a JSON object");
+  const r = raw as Record<string, unknown>;
+  for (const k of ["eventId", "timestamp", "correlationId", "artifactHash", "engineId"]) {
+    if (typeof r[k] !== "string") throw ledgerCorrupt(lineNo, `has a missing or non-string '${k}'`);
+  }
+  if (typeof r.phase !== "string" || !LEDGER_PHASES.has(r.phase)) throw ledgerCorrupt(lineNo, "has an unknown phase");
+  if (typeof r.severity !== "string" || !LEDGER_SEVERITIES.has(r.severity)) throw ledgerCorrupt(lineNo, "has an unknown severity");
+  if (typeof r.category !== "string" || !LEDGER_CATEGORIES.has(r.category)) throw ledgerCorrupt(lineNo, "has an unknown category");
+  if (typeof r.governancePass !== "boolean") throw ledgerCorrupt(lineNo, "has a non-boolean governancePass");
+  if (typeof r.details !== "object" || r.details === null || Array.isArray(r.details)) throw ledgerCorrupt(lineNo, "has non-object details");
+  if ("logicalTick" in r && !(typeof r.logicalTick === "number" && Number.isFinite(r.logicalTick))) {
+    throw ledgerCorrupt(lineNo, "has a non-finite logicalTick");
+  }
+  return r as unknown as TowerAuditEvent;
+}
+
 export class AuditLogger {
   private readonly logPath: string | null;
   private readonly inMemory: boolean;
@@ -156,7 +188,9 @@ export class AuditLogger {
     return this.append({
       phase: "TRAP", correlationId, artifactHash, engineId,
       severity: "ERROR", category: "RUNTIME_VIOLATION",
-      details: { violation, rollbackStatus: "clean", ...details },
+      // Logger-owned fields are written LAST so caller-supplied details can never rename, blank or
+      // forge the recorded violation / rollbackStatus (zero-trust default, owner may revisit).
+      details: { ...details, violation, rollbackStatus: "clean" },
       governancePass: false,
     });
   }
@@ -170,14 +204,25 @@ export class AuditLogger {
     });
   }
 
+  /**
+   * Query the ledger. A persistent ledger is replayed from disk and every non-empty row must decode
+   * to a well-formed audit event; a corrupt, torn or forged row throws `ERR_AUDIT_LEDGER_CORRUPT`
+   * instead of being silently dropped (zero-trust default, owner may revisit: a dropped row is
+   * indistinguishable from a deleted one, so the reader fails closed rather than return a shorter,
+   * clean-looking history). Recovery or quarantine of a damaged ledger is an explicit operator step.
+   */
   query(filter: AuditFilter = {}): TowerAuditEvent[] {
     let events: TowerAuditEvent[];
     if (this.inMemory || this.batchSize > 0 || this.egress) {
       events = this.mem.slice();
     } else {
       if (!existsSync(this.logPath!)) return [];
-      const lines = readFileSync(this.logPath!, "utf-8").trim().split("\n").filter(Boolean);
-      events = lines.map(l => { try { return JSON.parse(l) as TowerAuditEvent; } catch { return null; } }).filter((e): e is TowerAuditEvent => e !== null); // perf-allow: loop-json-parse — audit-ledger replay; each line is distinct, no behavior-change refactor
+      const lines = readFileSync(this.logPath!, "utf-8").split(/\r?\n/);
+      events = [];
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i] === "") continue;
+        events.push(decodeLedgerRow(lines[i], i + 1)); // perf-allow: loop-json-parse — audit-ledger replay; each line is distinct
+      }
     }
     if (filter.correlationId) events = events.filter(e => e.correlationId === filter.correlationId);
     if (filter.phase) events = events.filter(e => e.phase === filter.phase);

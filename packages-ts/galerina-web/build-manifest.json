@@ -1,0 +1,67 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/web",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "26cdcaa4092a59f1a7ff68a62907c1c9a971d5baf9b98510b8b4e747ed8d4503",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "cbc3be21994859eac86835c7e79bf0615a245dee8f3790149110d9382ec2eec1"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "81da53c4673f20d1e615bbea596f540629a41fdb5611b3a7426c125a03d6a2e5"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "8075e23b68f55cca94c3eb81d5673264284277b9914063aeded2f6899f4d5c21"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "e0107469eb323e5720f708910e0b0bde6f5d7112b89fc7a15ff45e4a02d71373"
+      },
+      {
+        "path": "package.json",
+        "sha256": "3b4894766c79948d8014b892adc19525bc9ece942d7dd756d9369e957a84238f"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "5382a6a78bb67f98ad8863b175715cf246c960dd520e942b0040441e0fcd9978"
+      },
+      {
+        "path": "tests/web-contracts.test.mjs",
+        "sha256": "e322be5b166bab507555705367ea728a22c11d3a4a5756881fc786bea4363383"
+      },
+      {
+        "path": "tests/web.failclosed.test.mjs",
+        "sha256": "cb20ec02db605316d4499a953efd75ea39e4ce9f8b34cfb01d82267dbe93bc50"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

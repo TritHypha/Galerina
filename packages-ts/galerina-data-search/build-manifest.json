@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/data-search",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "f503c7937a52d39c51f113e837d09a28d67473d7958b0130be7e1d508803fbc0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "da5b32140f78aaf465dac43884ec52498e3a8b4f0b33a90620ff5c2f2b2fdf47"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "904c0058c64e36cc4090b4fff91ce97493f497932eb5dc791746b870b98f8fe6"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "9fb651b947694c27d84f507fbe65368f98b0d4d48ff3c235b1f015130a9ef401"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "91a6d4123021a797de349b8a7b41a228d2df4b13b513a318d6a83d28332cdd87"
+      },
+      {
+        "path": "package.json",
+        "sha256": "45ccfbee0d2e34fa09e647e9c30ee2f3616fb22259ea318a34e1332137c0440d"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "95d0390b8562ec3b59a987a06273bcb59a3557c552a356cf4f7b72d223d53f0e"
+      },
+      {
+        "path": "tests/search-contracts.test.mjs",
+        "sha256": "fd889f085bdc86dc60c372095c63576999040f4a868c2e013d4e61bf2ee3e8f3"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

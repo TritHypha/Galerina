@@ -1,0 +1,1165 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-sentinel-power/src/self-hosted",
+    "file": "power-governor.fungi",
+    "module": "power-governor",
+    "ledgerSha256": "95d7238c37511e1f7a1622c08ef9305e8eb891b4eb435282f0b73cc8a5d3a237"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-sentinel-power/tests/rd0361-power-governor-execution.test.mjs",
+    "capturedAtCommit": "ecf742ca87a9e73d5d1f325fd6e6f2cbdc56494d"
+  },
+  "exports": [
+    {
+      "name": "powerRank",
+      "params": [
+        "string"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "powerStateVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "kernelForState",
+      "params": [
+        "int"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "adjustmentVerdict",
+      "params": [
+        "int",
+        "int"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "envelopeValid",
+      "params": [
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "killSwitchVerdict",
+      "params": [
+        "int"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 123,
+  "casesSha256": "cdf07a70de00105628f8a76c2162a809234107fde07da910cbaa7405ee5924e5",
+  "cases": [
+    {
+      "id": "rank-0",
+      "export": "powerRank",
+      "args": [
+        "native"
+      ],
+      "expected": 0
+    },
+    {
+      "id": "rank-1",
+      "export": "powerRank",
+      "args": [
+        "simd"
+      ],
+      "expected": 1
+    },
+    {
+      "id": "rank-2",
+      "export": "powerRank",
+      "args": [
+        "shadow"
+      ],
+      "expected": 2
+    },
+    {
+      "id": "rank-3",
+      "export": "powerRank",
+      "args": [
+        ""
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rank-4",
+      "export": "powerRank",
+      "args": [
+        "Native"
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rank-5",
+      "export": "powerRank",
+      "args": [
+        " shadow"
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rank-6",
+      "export": "powerRank",
+      "args": [
+        "unknown"
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rank-7",
+      "export": "powerRank",
+      "args": [
+        "SIMD"
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-000",
+      "export": "powerStateVerdict",
+      "args": [
+        false,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "state-001",
+      "export": "powerStateVerdict",
+      "args": [
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "state-010",
+      "export": "powerStateVerdict",
+      "args": [
+        false,
+        true,
+        false
+      ],
+      "expected": 2
+    },
+    {
+      "id": "state-011",
+      "export": "powerStateVerdict",
+      "args": [
+        false,
+        true,
+        true
+      ],
+      "expected": 2
+    },
+    {
+      "id": "state-100",
+      "export": "powerStateVerdict",
+      "args": [
+        true,
+        false,
+        false
+      ],
+      "expected": 3
+    },
+    {
+      "id": "state-101",
+      "export": "powerStateVerdict",
+      "args": [
+        true,
+        false,
+        true
+      ],
+      "expected": 3
+    },
+    {
+      "id": "state-110",
+      "export": "powerStateVerdict",
+      "args": [
+        true,
+        true,
+        false
+      ],
+      "expected": 3
+    },
+    {
+      "id": "state-111",
+      "export": "powerStateVerdict",
+      "args": [
+        true,
+        true,
+        true
+      ],
+      "expected": 3
+    },
+    {
+      "id": "kernel--2147483648",
+      "export": "kernelForState",
+      "args": [
+        -2147483648
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel--1",
+      "export": "kernelForState",
+      "args": [
+        -1
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel-0",
+      "export": "kernelForState",
+      "args": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "kernel-1",
+      "export": "kernelForState",
+      "args": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kernel-2",
+      "export": "kernelForState",
+      "args": [
+        2
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel-3",
+      "export": "kernelForState",
+      "args": [
+        3
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel-4",
+      "export": "kernelForState",
+      "args": [
+        4
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel-5",
+      "export": "kernelForState",
+      "args": [
+        5
+      ],
+      "expected": 2
+    },
+    {
+      "id": "kernel-2147483647",
+      "export": "kernelForState",
+      "args": [
+        2147483647
+      ],
+      "expected": 2
+    },
+    {
+      "id": "adjust--2147483648--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust--2147483648--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--2147483648-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        -2147483648,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust--1--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust--1-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust--1-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        -1,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-0--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-0-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-0-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-0-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        0,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-1--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-1--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-1-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-1-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-1-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        2
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-1-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-1-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-1-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-1-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        1,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-2--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-2-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-2-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-2-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        2,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-3--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        3
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-3-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        4
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-3-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-3-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        3,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-4--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        3
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        4
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-4-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        5
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-4-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        4,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-5--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        3
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        4
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        5
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-5-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        5,
+        2147483647
+      ],
+      "expected": -1
+    },
+    {
+      "id": "adjust-2147483647--2147483648",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647--1",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-0",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-1",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-2",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-3",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        3
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-4",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        4
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-5",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        5
+      ],
+      "expected": 1
+    },
+    {
+      "id": "adjust-2147483647-2147483647",
+      "export": "adjustmentVerdict",
+      "args": [
+        2147483647,
+        2147483647
+      ],
+      "expected": 1
+    },
+    {
+      "id": "envelope-000",
+      "export": "envelopeValid",
+      "args": [
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-001",
+      "export": "envelopeValid",
+      "args": [
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-010",
+      "export": "envelopeValid",
+      "args": [
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-011",
+      "export": "envelopeValid",
+      "args": [
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-100",
+      "export": "envelopeValid",
+      "args": [
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-101",
+      "export": "envelopeValid",
+      "args": [
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-110",
+      "export": "envelopeValid",
+      "args": [
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "envelope-111",
+      "export": "envelopeValid",
+      "args": [
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill--2147483648",
+      "export": "killSwitchVerdict",
+      "args": [
+        -2147483648
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill--1",
+      "export": "killSwitchVerdict",
+      "args": [
+        -1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-0",
+      "export": "killSwitchVerdict",
+      "args": [
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-1",
+      "export": "killSwitchVerdict",
+      "args": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-2",
+      "export": "killSwitchVerdict",
+      "args": [
+        2
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-3",
+      "export": "killSwitchVerdict",
+      "args": [
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "kill-4",
+      "export": "killSwitchVerdict",
+      "args": [
+        4
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-5",
+      "export": "killSwitchVerdict",
+      "args": [
+        5
+      ],
+      "expected": 1
+    },
+    {
+      "id": "kill-2147483647",
+      "export": "killSwitchVerdict",
+      "args": [
+        2147483647
+      ],
+      "expected": 1
+    }
+  ]
+}

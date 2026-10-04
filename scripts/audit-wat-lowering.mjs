@@ -7,8 +7,10 @@
 // and separately inventories the exact-Decimal-to-f64 mismatch across every type site. It imports the
 // compiler's own isWATRecordFieldTypeSupported predicate, so no second hand-written type list can drift.
 //
-// Leg A — unsupported record fields. Float16/Float32 remain blocked until the scalar f32 expression
-//         lane is complete. Decimal remains blocked because Galerina Decimal is exact and f64 is not.
+// Leg A — unsupported record fields. Float16 remains blocked: WASM has no 2-byte f16 slot, so it has
+//         no faithful record representation. Float32 is admitted by E5 (narrow-float.ts) as a naturally
+//         aligned 4-byte f32 slot, so a Float32 field is NOT a Leg-A site. Decimal remains blocked
+//         because Galerina Decimal is exact and f64 is not.
 // Leg C — every Decimal occurrence, including params, locals and returns, because the current scalar
 //         mapping remains f64 and is therefore not an exact production representation.
 //
@@ -83,8 +85,8 @@ export function collectSites(src, rel) {
 }
 
 // ── leg extraction ────────────────────────────────────────────────────────────
-const rootCauseOf = (site) => (site.base === "Decimal" ? "decimal-f64-wart" : "missing-f32-scalar-lane");
-function legA(sites) { return sites.filter((s) => s.kind === "record-field" && !L.isWATRecordFieldTypeSupported(s.type)); }
+export const rootCauseOf = (site) => (site.base === "Decimal" ? "decimal-f64-wart" : "missing-f16-scalar-lane");
+export function legA(sites) { return sites.filter((s) => s.kind === "record-field" && !L.isWATRecordFieldTypeSupported(s.type)); }
 function legC(sites) { return sites.filter((s) => s.base === "Decimal"); }
 const keyA = (s) => `${s.rel}::${s.container}.${s.name}::${s.type}`;
 const keyC = (s) => `${s.rel}::${s.kind}::${s.container}.${s.name}::${s.type}`;
@@ -188,7 +190,8 @@ function checkAnchors() {
   }
   // decimal-wart ↔ galerinaTypeToWAT("Decimal") === "f64"
   let decWasm = "?"; try { decWasm = L.galerinaTypeToWAT("Decimal"); } catch { /* falls through */ }
-  if (decWasm !== "f64") notes.push(`decimal-wart anchor CHANGED: galerinaTypeToWAT("Decimal")="${decWasm}" (was "f64") — the wart may be fixed; Decimal sites can shrink from the baseline`);
+  // #137 is fixed on main: Decimal lowers to an i32 handle. A return to f64 is a regression, not a note.
+  if (decWasm === "f64") problems.push(`decimal-f64 wart REGRESSED: galerinaTypeToWAT("Decimal")="f64" — Decimal is a bignum handle (#137)`);
   // FUNGI-LAYOUT-001 compile guard still present
   const emitterSource = existsSync(WAT_EMITTER) ? readFileSync(WAT_EMITTER, "utf8") : "";
   const guardPresent = /FUNGI-LAYOUT-001/.test(emitterSource);
@@ -204,7 +207,7 @@ function currentBaselineShape(aSites, cSites) {
     generatedBy: "audit-wat-lowering.mjs",
     note: "Shrink-only inventory of the WAT record-field-layout fault class + Decimal-wart occurrences. A NEW off-baseline site fails the gate. Keys are line-independent (path + qualified name + type).",
     rootCauses: {
-      "missing-f32-scalar-lane": { why: "Float16/Float32 lack a faithful scalar WAT expression lane", task: "#132", anchor: "isWATRecordFieldTypeSupported" },
+      "missing-f16-scalar-lane": { why: "Float16 lacks a faithful WAT record representation (no 2-byte f16 slot); Float32 record fields are admitted by E5 as a 4-byte f32 slot", task: "#132", anchor: "isWATRecordFieldTypeSupported" },
       "decimal-f64-wart": { why: "galerinaTypeToWAT(Decimal)=f64 but Decimal is a bignum; also mis-lowers scalars", task: "#137", anchor: 'galerinaTypeToWAT("Decimal")==="f64"' },
     },
     legA_record_fields: [...new Set(aSites.map(keyA))].sort(),
@@ -217,8 +220,19 @@ function selfTest() {
   let pass = 0, fail = 0;
   const ok = (cond, msg) => { if (cond) { pass++; } else { fail++; console.log(`  ✗ ${msg}`); } };
 
-  const red1 = collectSites(`@version 1\nrecord R { x: Float32 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "red1");
-  ok(legA(red1.sites).some((s) => s.base === "Float32" && s.wasm === "f32"), "RED: a Float32 record field lacks the scalar f32 lane");
+  // RED: Float16 is still refused (no 2-byte f16 slot), so it must remain a Leg-A site.
+  const red1 = collectSites(`@version 1\nrecord R { x: Float16 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "red1");
+  ok(!red1.parseError && legA(red1.sites).some((s) => s.base === "Float16" && s.name === "x" && rootCauseOf(s) === "missing-f16-scalar-lane"), "RED: a Float16 record field has no faithful WAT slot and stays a Leg-A site");
+
+  // GREEN (E5): Float32 is admitted as a 4-byte f32 slot. The field must be collected (non-vacuous) yet produce no Leg-A site.
+  const greenF32 = collectSites(`@version 1\nrecord R { x: Float32 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "greenF32");
+  ok(!greenF32.parseError && greenF32.sites.some((s) => s.kind === "record-field" && s.base === "Float32") && legA(greenF32.sites).length === 0, "GREEN (E5): a Float32 record field is admitted (collected, no Leg-A site)");
+
+  // DISCRIMINATING: in one record, only the Float16 field is flagged; the Float32 field beside it is not.
+  const mixed = collectSites(`@version 1\nrecord R { h: Float16; s: Float32 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "mixed");
+  const mixedA = legA(mixed.sites);
+  ok(!mixed.parseError && mixed.sites.filter((s) => s.kind === "record-field").length === 2 && mixedA.length === 1 && mixedA.every((s) => s.base === "Float16" && s.name === "h"), "DISCRIMINATING: Float16 beside Float32 flags only the Float16 field");
+  ok(!L.isWATRecordFieldTypeSupported("Float16") && L.isWATRecordFieldTypeSupported("Float32"), "PREDICATE: the compiler refuses Float16 and admits Float32 record fields");
 
   const red2 = collectSites(`@version 1\nrecord R { x: Int64 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "red2");
   ok(legA(red2.sites).length === 0, "GREEN: a naturally aligned Int64 record field is supported");
@@ -227,7 +241,7 @@ function selfTest() {
   ok(legC(red3.sites).some((s) => s.kind === "flow-param" && s.base === "Decimal"), "RED: a Decimal SCALAR param is a Leg-C occurrence (scalar, not a field)");
 
   const redDecField = collectSites(`@version 1\nrecord M { amount: Decimal }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "redDecField");
-  ok(legA(redDecField.sites).some((s) => s.base === "Decimal") && legC(redDecField.sites).some((s) => s.kind === "record-field"), "RED: a Decimal record field is BOTH Leg-A and Leg-C");
+  ok(!legA(redDecField.sites).some((s) => s.base === "Decimal") && legC(redDecField.sites).some((s) => s.kind === "record-field"), "GREEN (#137 fixed): a Decimal record field is no longer a Leg-A layout site, and stays a Leg-C inventory occurrence");
   ok(legA(redDecField.sites).every((s) => rootCauseOf(s) === "decimal-f64-wart"), "RED: a Decimal field attributes to the decimal-wart, not slot-width");
 
   const green = collectSites(`@version 1\nrecord R { a: Int; s: String; xs: Array<Float>; b: Bool }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "green");
@@ -236,7 +250,14 @@ function selfTest() {
 
   ok(shouldSkipDirectory(".worktrees"), "BOUNDARY: nested Git worktrees are not part of the selected checkout corpus");
 
-  // fabricated off-baseline regression: a NEW affected site must be a violation against an empty baseline
+  // ROOT-CAUSE IDS: the committed baseline declares exactly the ids this script emits; the pre-E5
+  // id (missing-f32-scalar-lane) is retired because Float32 is admitted and only Float16 lacks a slot.
+  const committedCauses = existsSync(BASELINE) ? Object.keys(JSON.parse(readFileSync(BASELINE, "utf8")).rootCauses ?? {}).sort() : [];
+  const emittedCauses = Object.keys(currentBaselineShape([], []).rootCauses).sort();
+  ok(JSON.stringify(committedCauses) === JSON.stringify(emittedCauses) && emittedCauses.includes("missing-f16-scalar-lane") && !emittedCauses.includes("missing-f32-scalar-lane"), "ROOT-CAUSE IDS: baseline and script agree on missing-f16-scalar-lane; the retired missing-f32-scalar-lane id is absent");
+  ok([...legA(red1.sites), ...legA(redDecField.sites)].every((s) => emittedCauses.includes(rootCauseOf(s))), "ROOT-CAUSE IDS: every Leg-A site attributes to a declared root-cause id");
+
+  // fabricated off-baseline regression: a NEW affected (Float16) site must be a violation against an empty baseline
   const fabricated = legA(red1.sites);
   const emptyBaseA = new Set();
   const violations = fabricated.filter((s) => !emptyBaseA.has(keyA(s)));
@@ -247,7 +268,7 @@ function selfTest() {
 
   // anchors self-check
   const anc = checkAnchors();
-  ok(anc.decWasm === "f64", "ANCHOR: the decimal-wart is still present (galerinaTypeToWAT(Decimal)=f64)");
+  ok(anc.decWasm === "i32", "ANCHOR: the #137 decimal-f64 wart stays fixed (galerinaTypeToWAT(Decimal)=i32 handle, never f64)");
   ok(anc.slotSize === 4, "ANCHOR: compact i32 host staging remains WAT_REC_FIELD_SIZE=4");
   ok(anc.typedLayoutPresent, "ANCHOR: typed naturally aligned record layout is present");
   ok(anc.guardPresent, "ANCHOR: the FUNGI-LAYOUT-001 compile guard is present");
@@ -311,7 +332,7 @@ function runAudit() {
   for (const s of cSites.sort((a, b) => keyC(a).localeCompare(keyC(b))))
     console.log(`    ${s.rel}:${s.line}  ${s.kind} ${s.container}.${s.name}: ${s.type}`);
   console.log(`\n  Root causes:`);
-  console.log(`    missing f32 lane (#132)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f32-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
+  console.log(`    missing narrow-float slot (#132, Float16; Float32 admitted by E5)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f16-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
   console.log(`    decimal-f64-wart (#137)— galerinaTypeToWAT("Decimal")="${anchors.decWasm}"; ${aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length} field(s) + ${cSites.length} occurrence(s)`);
   for (const n of anchors.notes) console.log(`  ⚠ note: ${n}`);
   for (const c of coverage) console.log(`  ✗ COVERAGE: ${c}`);

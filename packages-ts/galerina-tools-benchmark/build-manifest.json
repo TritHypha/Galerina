@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/tools-benchmark",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "eae086b26e2edf8de96e88b647308ff989893443d076064d0af840de04fef05e",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "fbd31ff223796ccf64480b0809bd42ccbce1c697fde18c3abbfcbd936e2a1c58"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "2745429fb1e32529cf1a70fa40bfb6da14564c6ce02032c275e2d51bc9beaec2"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "a3b68c3c46eeeda55d67f13691d3efa39b0393fb6f597ec3d348bc82655d2064"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "fb80ac9054fc84d1aa9984b1f82f69409dfc6d3c1ba1a40b84918207e7690c36"
+      },
+      {
+        "path": "examples/benchmark-report.example.json",
+        "sha256": "45bd9272138423e22bd48d2dda09352d43def17fc6f7b97b95309492229f2893"
+      },
+      {
+        "path": "examples/benchmark.config.fungi",
+        "sha256": "94673c0b0a57c73d4c551a79813a26b977018cc61e488b226a218599cc47fdb0"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "53ed193b747524bd1f523d99e554b137a5634d9edc699adfdba929e67ef500cb"
+      },
+      {
+        "path": "package.json",
+        "sha256": "595fb46723767380f68c7e97d3f0813aea433b2074d75ab1f0aeb58dab5774bb"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "44d9bd66e5ebc4ec9d4d6c51b64c3dea46b0ad469331279c9f64a72b6c427a4a"
+      },
+      {
+        "path": "src/node-util-shim.d.ts",
+        "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
+      },
+      {
+        "path": "tests/benchmark-contracts.test.mjs",
+        "sha256": "54b29ef3b4d2742aca8d240bbb6137608bd0839485ef4bc1f69d6f315abdcb7a"
+      },
+      {
+        "path": "tests/system-detection.test.mjs",
+        "sha256": "73a8bc59535e6f0fc3ed5e00fc652ca4ab197f3fa801625928d0d6615ea764b9"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

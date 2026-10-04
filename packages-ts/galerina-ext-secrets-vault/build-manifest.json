@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ext-secrets-vault",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "8c1e65aaa6a3f41f8bb78e9651a0bcf3f25598eb1b13930939eb99408b877be4",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "6f08644e35ecebc5cbd18ecf982f1d9a064c5302bb5eb9664fd98bdf5fe24780"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "cfc490d56d7190a8737bcc4af213edd8c3c8e3e692e8ce11a00ee6d5bbf22e29"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "0917d2802d67ba8881947273087967fd40dc0cb1dbcbfc8ff53d6d9abd7a86dd"
+      },
+      {
+        "path": "package.json",
+        "sha256": "17685dde7f82547ed15d2afc8e3f5fa01dd2cd1da9f63d2e39f52ed185dd1955"
+      },
+      {
+        "path": "src/cli.ts",
+        "sha256": "ceee65aee1e9669c0ccc2a3cd1620c2fd2e850fd746fae77acffc1b13a2311ea"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "d18ee7e966247e06fba6dd5985fb7ef69fb90b7a28bd2c16abf8d51535bae000"
+      },
+      {
+        "path": "src/rotation-manager.ts",
+        "sha256": "cbca0f811b71fecffb678aa8918d0202a657a268ffb6ad05554073f3799f919e"
+      },
+      {
+        "path": "src/self-hosted/quiesce-ms.fungi",
+        "sha256": "1052e128c51275f0e92aff9254e82523a2ad3d1109258f040576c2df79d1c036"
+      },
+      {
+        "path": "src/self-hosted/secrets-gateway-wit.fungi",
+        "sha256": "1889fa2378faf5bd950ce82fe76a978a05cc7eb2468fb705ac146ea49f28af7a"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "d37c802219907a83a7d0e1fb21f3d1a11314940cda052b2ee4b8637f5b584c72"
+      },
+      {
+        "path": "src/vault-client.ts",
+        "sha256": "256f89fea025ec07a621635c97cedcc48cdb33be1da43b2fd8594e2d74b7892e"
+      },
+      {
+        "path": "tests/vault.test.mjs",
+        "sha256": "561a4c85e7865f673099507402eaa5fd209fb38be4226a13acf737826a542cd2"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "486d2f7dade04e266c1594ca54368904d5f8db70663c681566b313561c174e1b"
+      }
+    ]
+  }
+}

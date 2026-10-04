@@ -1,0 +1,103 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-wasmtime-oracle",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "84adcf5d65d7c58a553004a475ea68f56f0e6c802dc03accb72b64690b565f08",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".gitignore",
+        "sha256": "843730538f0640fb07f19a06b2545f24ba112b719ef7e2ce8d0fe087b6a209e3"
+      },
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "a4152d013b3d933eeea98579d6abed5a5fd2ae0aa7ee309d8871951cdf5ca880"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "39397de4a57405efa1dafc2ef8806290f51c22fccf77878d29c2bb22af427b94"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "d52ecbb38cc3a6ba4d11aee42732d63c6c3a3df3f38f18f8a0c6c65822e1259d"
+      },
+      {
+        "path": "Cargo.toml",
+        "sha256": "bb0d3eb174ce5e26c973705dcff651b16a1b6f64cd92ab8c5bbee97628121f97"
+      },
+      {
+        "path": "README.md",
+        "sha256": "0f9c010415825474141044b6b6b01cab5309e74c0d259c233e94601bb41bda00"
+      },
+      {
+        "path": "deny.toml",
+        "sha256": "c7f4e380345c9499e298c7ba8595d2a7ed2655db71b253435e29b640b63ced0d"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "3fee20f04da790ce644bbb9d82f3ea8542f676f29ca4725b98c98aa755434877"
+      },
+      {
+        "path": "package.json",
+        "sha256": "f9172f1445f1f271715cf3ca5db8ad5b12aef89d610c055f98878cbb39bf22b4"
+      },
+      {
+        "path": "src/admission.rs",
+        "sha256": "6eac87104128ae5b368bf5a30a7e2a1a8d6ce301f5ffd3a5754354dda6f7a73c"
+      },
+      {
+        "path": "src/lib.rs",
+        "sha256": "7ee08239edf0b61e35201977fa7b1f51309d076023b06881a5d9015533413e1d"
+      },
+      {
+        "path": "src/main.rs",
+        "sha256": "ad71addda9857226a7020490b1beea75e041ee387b40433523b35968c8f58202"
+      },
+      {
+        "path": "tests/attestation_reverify.rs",
+        "sha256": "87b65a2747ede9bf63fda24c264ca7a776f84d2b12043a0bef0c79dc7c3dc6e1"
+      },
+      {
+        "path": "tests/corpus_differential.rs",
+        "sha256": "cafc03e1ed66bddd6328dd7a8ea0ffcf16b7118f49d5de5ce6417f0bc41df077"
+      },
+      {
+        "path": "tests/memory_zero_on_reset.rs",
+        "sha256": "990cb92842bfa8e5188a261b8781e7d79c3665fa0a34ac69c2fe5e6f2d5c11a3"
+      },
+      {
+        "path": "tests/oracle-package.test.mjs",
+        "sha256": "a3a379ccc86d038322a0af34b9803aa20ef3c882046acb3af9a1cf6229a579d2"
+      },
+      {
+        "path": "tests/vdpm_differential.rs",
+        "sha256": "abca951a1f39972b4bd48bf4452278736c0317152ea460cd37d74d84f9b1bbf3"
+      },
+      {
+        "path": "tools/export-corpus-differential.mjs",
+        "sha256": "549a8ee03746cffba6b467ce6d62a78082e88ad0c3dd2650f918e170feab3f77"
+      },
+      {
+        "path": "tools/export-differential-fixture.mjs",
+        "sha256": "3205a0569c4d42ffad7d6dee83647420f17b49605f388a4e464dd88aa51039d9"
+      }
+    ]
+  }
+}

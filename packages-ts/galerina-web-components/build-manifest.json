@@ -1,0 +1,67 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/web-components",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "56adaa97da559c58df4368a8f1723b64c15fd1f359d9ec9d32fe0dce224b7832",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "0af64c3eac653e9d85cb89735d976ec0d44a1e9ac54b9db3942b650c6a686135"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "e587096276624c57b24322f60bcc523a62c634db28ff63e59c49571ff445be80"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "d6082c63d2221ba07c1f7aa6ae5de13753897a469f45985f8df92940285733f8"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "f38ec3cd7bc69023dc48bafd10a1a0c143e56c0f49a118892cf874e8c44eb06f"
+      },
+      {
+        "path": "package.json",
+        "sha256": "398e60abea76e415f2d1b9235d2f7a39425755a38d04bf64a3f3bc8adff5aeb7"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "621a95a50b2a1901f7edb3208286cfa431d65c05ff810aed055ec2b7e0facddf"
+      },
+      {
+        "path": "tests/web-components-contracts.test.mjs",
+        "sha256": "f2d203de5ef384be43258b7a1481c72aab340a5b52186795bea0cba074228913"
+      },
+      {
+        "path": "tests/web-components.failclosed.test.mjs",
+        "sha256": "bd417a35d8ded7403d4b9856fae009511a6debf496e0bab26dfe09a03892eac1"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

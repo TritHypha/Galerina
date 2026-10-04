@@ -33,6 +33,7 @@ const wired = (over = {}) => {
     admissionVerifier: { seamVersion: V, verifyAttestation: (input) => { calls.verifyArg = input; return input.attestation === "att-ok"; } },
     lowLevel: {
       seamVersion: V,
+      admitInstantiation: () => true,
       instantiateAndCall: () => { calls.instantiate += 1; return { ok: true, result: 42 }; },
     },
     ...over,
@@ -67,7 +68,7 @@ test("request seam-version skew → deny (never runs a mismatched request)", () 
 });
 
 test("a wired capability pinned to a different seam version → deny", () => {
-  const { exec } = wired({ lowLevel: { seamVersion: "galerina.runtime.seam.v0", instantiateAndCall: () => ({ ok: true }) } });
+  const { exec } = wired({ lowLevel: { seamVersion: "galerina.runtime.seam.v0", admitInstantiation: () => true, instantiateAndCall: () => ({ ok: true }) } });
   assert.equal(exec.admitAndExecute(req()).outcome, "deny");
 });
 
@@ -111,7 +112,7 @@ test("★ a non-verifying attestation denies and never reaches the VM (admission
 });
 
 test("low-level execution failure is surfaced as a deny (not an admit)", () => {
-  const { exec } = wired({ lowLevel: { seamVersion: V, instantiateAndCall: () => ({ ok: false, reason: "trap: unreachable" }) } });
+  const { exec } = wired({ lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: () => ({ ok: false, reason: "trap: unreachable" }) } });
   const v = exec.admitAndExecute(req());
   assert.equal(v.outcome, "deny");
   assert.match(v.reason, /trap: unreachable/);
@@ -137,6 +138,7 @@ test("hostile: mutating the source buffer after return cannot change hashed or e
     },
     lowLevel: {
       seamVersion: V,
+      admitInstantiation: () => true,
       instantiateAndCall: ({ artifactBytes }) => {
         calls.instantiate += 1;
         executedFirst = artifactBytes[0];
@@ -151,4 +153,13 @@ test("hostile: mutating the source buffer after return cannot change hashed or e
   assert.equal(hashedFirst, 7);
   assert.equal(executedFirst, 7);
   assert.equal(calls.verifyArg.artifactBytes[0], 7);
+});
+
+test("zero-trust default, owner may revisit: the low-level admit step denying means NO VM instance (expectedInstantiated = 0)", () => {
+  let instantiated = 0;
+  const { exec } = wired({ lowLevel: { seamVersion: V, admitInstantiation: () => false, instantiateAndCall: () => { instantiated += 1; return { ok: true, result: 42 }; } } });
+  const v = exec.admitAndExecute(req());
+  assert.equal(v.outcome, "deny");
+  assert.match(v.reason, /before any VM instance is created/);
+  assert.equal(instantiated, 0);
 });

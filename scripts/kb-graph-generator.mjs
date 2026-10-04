@@ -16,6 +16,9 @@ import {
   generatedOutputMatches,
   provenanceForCheck,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/kb-graph-generator.mjs [--root <dir>] [--kb-dir <dir>] [--check]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 function parseArgs(argv) {
   let root = resolve(dirname(fileURLToPath(import.meta.url)), "..");

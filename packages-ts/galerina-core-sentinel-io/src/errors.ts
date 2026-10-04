@@ -11,7 +11,8 @@
  *
  *  - {@link SecurityTrap} — a *structural / contract* violation detected before any
  *    bytes are trusted (malformed manifest, out-of-range bus read, source buffer
- *    too small for the manifest). These are caller/wiring faults.
+ *    too small for the manifest, an empty or all-zero integrity key
+ *    "LSIO-KEY-001"). These are caller/wiring faults.
  *
  * Both carry a stable machine-readable `code` (e.g. "LSIO-INTEGRITY-001") so the
  * Governed Tower can route on the code rather than the message string.

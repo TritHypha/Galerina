@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/ext-tritsocket",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "5fd3c49fcfdc3195241fcc1d67d92fe03ff8fa5d6be3e15f9584b96b18c5adc0",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "0c1c2ed5cb0d0814312f61aea4ad91f8cba7611abdd36e1c0fcfca18f9df53ae"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "308364549470710b2d4cdef4461d7d317bb06d051f0f44bef0827b1752d9c768"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "5096b0a82b0878e25048428193a9932d8a7c2a3390cda21496c555d28cee1e81"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "a018352cc14808c8ca96542b8c2cdfd7ccd9d73cc85275581f940f8eaf1c5f35"
+      },
+      {
+        "path": "package.json",
+        "sha256": "48dccb0ed16bbe0be53330278fdb50910489b6281226de9d8409a22a4146edde"
+      },
+      {
+        "path": "src/compose.ts",
+        "sha256": "18a8e4acff4950df4f487c7d99e65886e2cea9114c2f2fe24a91c96ca4ba4e8e"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "99382b1fa468110deedf1f19f29324722d0393f2d642dfe21261ee16b4602c53"
+      },
+      {
+        "path": "src/prefilter.ts",
+        "sha256": "3a0d5516c297030b1619b198931c5128fdefa02a147bf37b17550870d956f199"
+      },
+      {
+        "path": "src/self-hosted/abi-version.fungi",
+        "sha256": "14730b8cb4c7fdbe6c1bae661ba72dc39efa68fcef52a6fc1e5d4b986192baa3"
+      },
+      {
+        "path": "tests/prefilter-bounds.test.mjs",
+        "sha256": "22b9709c96f37891f961baaa4e8ab27d04c3e2cbfc67eb706e63cb07be56c638"
+      },
+      {
+        "path": "tests/prefilter.test.mjs",
+        "sha256": "c9e22ce3b1b9f983f7a52398b4cdec960961e557178bfc991482c626daf74cd6"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "cf0aaccdf5dfa2c9f4466e36b175cb2a344ecda64f3dc1fd611c61b42a423c08"
+      }
+    ]
+  }
+}

@@ -1,0 +1,707 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/framework-app-kernel",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "3e00a642fbf23f504d531ded5462a455d6e1c43f4a16db36abb74c69293cbd26",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "580b011d23e75e57e96667ccad3bd30a8cf775d23d3ab873d251512ee6cb2a5f"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "84619aa66d3077d9d2889bc77645a4f4cd1df6430acdc9d8fc1d9e6bd007f09e"
+      },
+      {
+        "path": "ARCHITECTURE.md",
+        "sha256": "428b6cf9357b21574e3dc4d4acc7f9068d1990a37997eaaa90734f76abe589d5"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "a39e473c4cd8de43a283bacd6575f46c6d44ad0d12aab8261cea15d2d4f2e3f2"
+      },
+      {
+        "path": "REQUIREMENTS.md",
+        "sha256": "1fc62ea1a863bdea8fb0ccf184a5503fa2feda6963ce5d495564d0388c3bf150"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "59d17fc1b52414f1df7451ad42841a4e994cf88b5a46e6a6f98549b65e0972e4"
+      },
+      {
+        "path": "examples/job.fungi",
+        "sha256": "c34f51a0d4bc4109232658d25dccbfa350b4e091fba6264aa5d4ada44858565c"
+      },
+      {
+        "path": "examples/security-policy.fungi",
+        "sha256": "64c7a6e2a4e8acfef4ceb9b2292c5da09792401550fc13890a30f74cf81bc97c"
+      },
+      {
+        "path": "examples/typed-api-boundary.fungi",
+        "sha256": "0c9a5b133c7b7cc5874047897b160560f2dba7e14b37368371a7a8aa9cb5fb7b"
+      },
+      {
+        "path": "native/registry-activation-host/galerina_registry_binding.cc",
+        "sha256": "4ec010ca2f421eb5d920d78256a08013daaaf553fe6a7aa94237a47a17fa7518"
+      },
+      {
+        "path": "native/registry-activation-host/host-build-recipe.json",
+        "sha256": "d6098b22838c3633dc06e8a398c52b68aedd5d7fcb6c601962d68fab19a830b1"
+      },
+      {
+        "path": "native/registry-activation-host/host-source-manifest.json",
+        "sha256": "2b6f0ab81770b54e1afc2bc799bd709eaed96be26e9ff2221717072679673a41"
+      },
+      {
+        "path": "native/registry-activation-host/node-v24.18.0-clang22-histogram.patch",
+        "sha256": "339a003f578d3a3dafe58810909470456f69ae8dd9fe934f7e518504a1e93b34"
+      },
+      {
+        "path": "native/registry-activation-host/node-v24.18.0-galerina-host.patch",
+        "sha256": "bc550c3012928746a6f0c158605e8b4249856aced14e4d28f0baaf314a366114"
+      },
+      {
+        "path": "native/registry-durability/.gitignore",
+        "sha256": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368"
+      },
+      {
+        "path": "native/registry-durability/Cargo.lock",
+        "sha256": "01e924d977bb38901aa916c290b1158c578c339e3cd96706024a466947210c90"
+      },
+      {
+        "path": "native/registry-durability/Cargo.toml",
+        "sha256": "88be34c3af2aa5942bc7d6d95d2e7c694189b528f50de21351dde2dab95441fb"
+      },
+      {
+        "path": "native/registry-durability/README.md",
+        "sha256": "a984cb1e5757a57aea47d65961ab4ee010b8a4d5fb75aacee31ed375a2d3b876"
+      },
+      {
+        "path": "native/registry-durability/deny.toml",
+        "sha256": "a34023938fcbb238d85abe3367d799ea4109c6e72f5a4badb670374d9e625f29"
+      },
+      {
+        "path": "native/registry-durability/src/bin/registry-durability-fault-worker.rs",
+        "sha256": "db001a7e3da7fe308406f795373f07c24476df5009feaed38ed3b8f3ddf69c3d"
+      },
+      {
+        "path": "native/registry-durability/src/bin/registry-durability-recovery-verifier.rs",
+        "sha256": "a22901355b9460de40613b06e449e89bae0b48b9315ff864f3cafb68f7aeb70a"
+      },
+      {
+        "path": "native/registry-durability/src/bin/registry-durability-recovery-worker.rs",
+        "sha256": "6f5a41bf1fd70949a90f440081d046597c1e335088e01458b4e04754d272d2bd"
+      },
+      {
+        "path": "native/registry-durability/src/bin/registry-durability-static-profile.rs",
+        "sha256": "ec885860782d6fe8eb1a7f18a93d553a1a74daebbdebce45b6591210e4083e53"
+      },
+      {
+        "path": "native/registry-durability/src/lib.rs",
+        "sha256": "cf222b3c06bc76c72fe182df5f13f06cec376569b2d63742f7654c2d0bfcc7c7"
+      },
+      {
+        "path": "native/registry-durability/src/recovery_support.rs",
+        "sha256": "5b3cff72677643c4c114a3d17fd15d38879d019463730d723691faa276633b1c"
+      },
+      {
+        "path": "native/registry-durability/tests/linux_fault_refusal.rs",
+        "sha256": "c9ff8195a605b0715c9cc06d15e916123a0258350f8d0ec01f9b0f336d83c75f"
+      },
+      {
+        "path": "native/registry-durability/tests/linux_fifo_refusal.rs",
+        "sha256": "6bb4224087691df39e39980c409ab45815d8f4cd33e43091dfbbdda84e4f72a3"
+      },
+      {
+        "path": "native/registry-durability/tests/linux_host_admission.rs",
+        "sha256": "e5f96ee7a42db431d2aba483fd0bab821c4e620adcaec3fcc370192df936e6e7"
+      },
+      {
+        "path": "native/registry-durability/tests/linux_live_host.rs",
+        "sha256": "42ab7b72057c5de401cec2a9c83eee9051d14546d58e2aee2eaaff8ccf070977"
+      },
+      {
+        "path": "native/registry-durability/tests/linux_process_kill.rs",
+        "sha256": "1324b486060a7dfc949037be9556e905b75161e6e2a5cf9a644274f003eceb6f"
+      },
+      {
+        "path": "native/registry-durability/tests/macos_host_admission.rs",
+        "sha256": "3a5059be8e9c442f5e7a0813bed3dff7af9c334bbc3c141df01adb4983cf9cd4"
+      },
+      {
+        "path": "native/registry-durability/tests/macos_live_host.rs",
+        "sha256": "814794d723ae35e66fdc698616b6766d7fe8d69cdad409b1834dc64f72a946a2"
+      },
+      {
+        "path": "native/registry-durability/tests/macos_process_kill.rs",
+        "sha256": "cffbb6afbe18d86475b0251ef6887aab05c7925b44dcb6516ba865938616848e"
+      },
+      {
+        "path": "native/registry-durability/tests/production_host_ffi.rs",
+        "sha256": "109b6230b696504aacb32b92893b369787bb081a2be43b619a8ce0080866489a"
+      },
+      {
+        "path": "native/registry-durability/tests/production_host_request.rs",
+        "sha256": "99d145e179f02b9e49a0d0495e61631856e4e83b27ec8969ff303dafe88c7ba9"
+      },
+      {
+        "path": "native/registry-durability/tests/recovery_protocol.rs",
+        "sha256": "0850f50a910dbc7ef042c8496ce581988c286455c8ef010ec3ae2677a8627867"
+      },
+      {
+        "path": "native/registry-durability/tests/static_link_profile.rs",
+        "sha256": "1f123c894a2b6d346c77e19a221ae6a4c36f647a74807f0bd56af3c38f45e965"
+      },
+      {
+        "path": "native/registry-durability/tests/windows_host_probe.rs",
+        "sha256": "0ff310f01d9d6d02d703a10a101bc6ee279d6213139b41642c6cae4264f01b76"
+      },
+      {
+        "path": "native/registry-durability/tests/windows_process_kill.rs",
+        "sha256": "47afc771ec4913bfa2b94821d6d7320a232ec0e16483ac813fdd6684b78b047f"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "5060dd89d75c42908b589e5cbcc7be86bf4d7648b7f8a5504423423aaa317114"
+      },
+      {
+        "path": "package.json",
+        "sha256": "ad21fe6d7b779472ab3e4804d8ce088766697ea61fd58fc1a37b1f3ede4f5326"
+      },
+      {
+        "path": "src/fuse-loader.ts",
+        "sha256": "1cf0fad84ba9a3caa4987596d465fd385206f4420317e8f687cb2cd857d650dc"
+      },
+      {
+        "path": "src/host-floor.ts",
+        "sha256": "edadba78cc637e49c4b5bd4743c8725ca5598c5011693fe88ecab312af6cb2ad"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "e9b4541e997e514b763dd762310e833fc95cffda9f615b233ccfabe37d0bfb9d"
+      },
+      {
+        "path": "src/kernel.ts",
+        "sha256": "c79bfebae8c161e1c9b2387490b8997d0d618eee6f88b0ac5bf3586b6360d36b"
+      },
+      {
+        "path": "src/node-util-shim.d.ts",
+        "sha256": "28bcbf026a2c0363f34c9b3976561a6ab45094af934e7334cbd54737aa69a3fc"
+      },
+      {
+        "path": "src/production-boot-composition-candidate.ts",
+        "sha256": "53ccc0bfef87012ab807444445bb5fb46882ced9ca3d890fb4852fa86758995d"
+      },
+      {
+        "path": "src/production-slide-restore-admission.ts",
+        "sha256": "79cb490ef75bf3fb694871964ee055dc2476ca9b8253e6b185a3a66befd134c3"
+      },
+      {
+        "path": "src/registry-activation-simulator.ts",
+        "sha256": "f234e1dd55627a6cd98a312ed142f48fde70d4a3a83bb0fc4d5b9a2a38cb31ce"
+      },
+      {
+        "path": "src/registry-authority.ts",
+        "sha256": "b5030c649ada2db6c02e1379e168e5e2c41701006658ff00b4ea00c5832ee7c0"
+      },
+      {
+        "path": "src/registry-durability-admission.ts",
+        "sha256": "8af5dc485a086d8be6f90e6c64208606b9e93a1ba3cb09c5d456e09f299cb4e7"
+      },
+      {
+        "path": "src/registry-durability-artifact.ts",
+        "sha256": "fcf07a44fc83e614c0f542b454b1f1a9aded73f8d7ccb2a16e69f22a0c4c0d6e"
+      },
+      {
+        "path": "src/registry-durability-evidence.ts",
+        "sha256": "4297d47f36656c6d45a2e8596a27bf143a82b3ff23869b72eaa3ca97fdc8b15c"
+      },
+      {
+        "path": "src/registry-durability-production-admission.ts",
+        "sha256": "11d21379b2b2fdb3e94843cc66417b8d17a91989c3d9b45c7dba6b3077f3234e"
+      },
+      {
+        "path": "src/registry-generation-store.ts",
+        "sha256": "c2dd1e1f916bdad5020ab1ddef7c90280ed0359696236d524df894fe44c96dd8"
+      },
+      {
+        "path": "src/registry-generation.ts",
+        "sha256": "6d2be56de097f0a84562f8af17ed9c617237e42174826374bc4fc2916b313688"
+      },
+      {
+        "path": "src/registry-index.ts",
+        "sha256": "4efe782d542eff47d0bbac22b2ab8bd358b229d3e67192bec45a8a8343bfc32c"
+      },
+      {
+        "path": "src/registry-package-manifest.ts",
+        "sha256": "687fdc31d7a32d038e014056a6f2547c0e5e73d67ac16c04a3e5c8742f068b09"
+      },
+      {
+        "path": "src/registry-rotation-authority.ts",
+        "sha256": "9876edeb549d93f4e453015227c3c8b684d15ad1ac998858287913bf152810ad"
+      },
+      {
+        "path": "src/registry-rotation-controller.ts",
+        "sha256": "4b7f03260aa4d1722353fd7fd94a91fede0fa405829aa0ec9c07157696d1f2e6"
+      },
+      {
+        "path": "src/registry-runtime.ts",
+        "sha256": "11efbba52726853ff48d6352292e7277ea6c3cd578c3e51b55b24362a4379b17"
+      },
+      {
+        "path": "src/route-defaults.ts",
+        "sha256": "508abdcf780402e504ac2d2711039a17fd25fa8178ecac77404ce3de51b8e38c"
+      },
+      {
+        "path": "src/secret-gate.ts",
+        "sha256": "d8b9da84a4a014d713ab8c31475e9601c780baced7b764f4ca660066d79c3251"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-bad-signature.fungi",
+        "sha256": "f53b508f516b391013957dd22b33c3cbab6cdb4b0e9c51eb037f74e876f2e872"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-key-mismatch.fungi",
+        "sha256": "43a0b5d302d9183987fffe8daaea148650516cc5076aed47854301df173c752c"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-malformed.fungi",
+        "sha256": "af03cb6a196e24e13998be3fbf7db6f016759c44e98d60c540166aa7b295b8cf"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-not-active.fungi",
+        "sha256": "2b2bd3fd8ab3a1f38e62eef8cf7d2939f5d1b0f6f3a04b114e7f3f8f728d2812"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-revoked.fungi",
+        "sha256": "e63ea0fd50ff5491cfdf38303e8685e589ac988fc9c7b69d54517008701b114d"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-role.fungi",
+        "sha256": "ff9a43dd230830e3164ef2c29490238bbdb851ac919d3fe66dcb8e16333252f7"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-stale.fungi",
+        "sha256": "8958ea8fcd0a7cfc3edd4648c8d4305bea11048000b1aa501ee303134ef2294f"
+      },
+      {
+        "path": "src/self-hosted/err-registry-delegation-unsigned.fungi",
+        "sha256": "1c0fd94c00aa153846665546825670df65c6ee0b9e90c9da94e7aaa09d854a64"
+      },
+      {
+        "path": "src/self-hosted/err-registry-duplicate.fungi",
+        "sha256": "7a11b3910a6b44cf7cab9289a341a7092f8a5397fdfbc30b10637172796354b8"
+      },
+      {
+        "path": "src/self-hosted/err-registry-hash-mismatch.fungi",
+        "sha256": "375b9837c5ee5ce99e4e7ded2f78f1c5d3692be3e1cebf0e3fd2230739fd9bfa"
+      },
+      {
+        "path": "src/self-hosted/err-registry-index-bad-signature.fungi",
+        "sha256": "2429e4cdc0905a66e22629f0ee7a437029b28d031de16178935d7ddbf9c63d42"
+      },
+      {
+        "path": "src/self-hosted/err-registry-index-malformed.fungi",
+        "sha256": "bf0e4d3041b71d6ebb70390c10c20becd2d59c95893107d2ff714b7077852aa4"
+      },
+      {
+        "path": "src/self-hosted/err-registry-index-no-key.fungi",
+        "sha256": "1936c7006f755df7be886c6d51ca333a701b523611953b120e2a40bb10edef59"
+      },
+      {
+        "path": "src/self-hosted/err-registry-index-stale.fungi",
+        "sha256": "7c79aef1588e1fffad6d75e47f1e01e7a22492fc9cf3d2098649f36c14faab01"
+      },
+      {
+        "path": "src/self-hosted/err-registry-index-unsigned.fungi",
+        "sha256": "5856e6ec3a8efc1cf69c31a6d89dd1875000e3df8b4d9a246db16c08984e340d"
+      },
+      {
+        "path": "src/self-hosted/err-registry-keyid-mismatch.fungi",
+        "sha256": "74efebb62d174c48d5d5e425e9b420f4384ce6d74595bea96ae08f3879464f33"
+      },
+      {
+        "path": "src/self-hosted/err-registry-manifest-bad-signature.fungi",
+        "sha256": "d574b0647fd9833dcc692223f6bee15468d934054680ba1b4562d9d7f668cf64"
+      },
+      {
+        "path": "src/self-hosted/err-registry-manifest-key-mismatch.fungi",
+        "sha256": "11783ffb015cbf0acd5d26fe51750928a38eb3aca9ebcfa0d478a07858e1aa32"
+      },
+      {
+        "path": "src/self-hosted/err-registry-manifest-malformed.fungi",
+        "sha256": "a061780e07aec01f4d142c2b8e3cd253d86b534ded72e32120be5fe7a4335c59"
+      },
+      {
+        "path": "src/self-hosted/err-registry-manifest-no-key.fungi",
+        "sha256": "f85216f7038d936558133fdb4b0acc9c9026a06c375fa0ab2e00c151f2d4201d"
+      },
+      {
+        "path": "src/self-hosted/err-registry-manifest-unsigned.fungi",
+        "sha256": "0ee6f903bce0ecb1c6e432a4682566b2ffac4770b78c3e5bbf9aad846d1c555e"
+      },
+      {
+        "path": "src/self-hosted/err-registry-package-unknown.fungi",
+        "sha256": "7be397c80349b468bd163e2fc9d4d0f892f4d1e2c08cf6b0301711fdd23710c4"
+      },
+      {
+        "path": "src/self-hosted/err-registry-policy-denied.fungi",
+        "sha256": "67bdc43b9335ea6bce1689ff864a0c9a69f88206fce23ec5bdbfef38c5bcb28d"
+      },
+      {
+        "path": "src/self-hosted/err-registry-runtime-authority.fungi",
+        "sha256": "66984fdaafb6753be833db6c993631472606e44bf654a9e7fd9697cfa1cdd27a"
+      },
+      {
+        "path": "src/self-hosted/err-registry-runtime-io.fungi",
+        "sha256": "0b0b16e15ccfa21a2678ca89e8035004b1e07d808757fadaf1d2df2309eade2d"
+      },
+      {
+        "path": "src/self-hosted/err-registry-runtime-malformed.fungi",
+        "sha256": "833b0b5d7da2bd4fa6e28b666daa771ba1df339a5d79844e3027bf64a4923985"
+      },
+      {
+        "path": "src/self-hosted/err-registry-version-unknown.fungi",
+        "sha256": "7f3b78c0b1629a116e76906172730733c90f8201a54190f56813564064f616ef"
+      },
+      {
+        "path": "src/self-hosted/fuse-admission.fungi",
+        "sha256": "f8f70633a43595b1e43747f6c8760396cc1c055df2b85364d9fa29b997fac5e1"
+      },
+      {
+        "path": "src/self-hosted/kernel.fungi",
+        "sha256": "c1160317df14c6758f9da87337c130e7a3dc59f342b246a5fe1a4bd67ceb70de"
+      },
+      {
+        "path": "src/self-hosted/literal-verification-success.fungi",
+        "sha256": "3606be956d8d0c6f68a0bab415117e140b2b3798eca119497bd67fdea5b4834e"
+      },
+      {
+        "path": "src/self-hosted/max-exploration-budget.fungi",
+        "sha256": "215f4d522f0cfbfc77075dc7772a145cdcc53998b5779c91bc94db2f3267a1a2"
+      },
+      {
+        "path": "src/self-hosted/max-generation-bytes.fungi",
+        "sha256": "db9fbe655342d86e09f75007f6c524d8ab4d5c94f65a6a37550df04f97284498"
+      },
+      {
+        "path": "src/self-hosted/max-index-bytes.fungi",
+        "sha256": "f450e4321db6093c75e163d9ab7bb38895cb5ac3b8a35a98bfa0d451e19d9b31"
+      },
+      {
+        "path": "src/self-hosted/max-linked-host-bytes.fungi",
+        "sha256": "9d284a86cfb39b16af5a0647ce6c7d17b1a0fd67025461e23a870b6104d568ee"
+      },
+      {
+        "path": "src/self-hosted/max-native-artifact-bytes.fungi",
+        "sha256": "a1ff99bf61d3d6ab1f7a75d0c941b8658aedc007b8b0da993774884464ceabf7"
+      },
+      {
+        "path": "src/self-hosted/max-public-key-bytes.fungi",
+        "sha256": "dff054aec17ef71a4bf6d9b77898f5d184e78f562b662f9861f85bdee42ca871"
+      },
+      {
+        "path": "src/self-hosted/package-admission.fungi",
+        "sha256": "206d45a886f0bd93fed1e11809f7dc7fbe969a47f3914ef109587a3e19513b0b"
+      },
+      {
+        "path": "src/self-hosted/registry-activation-fault-model-version.fungi",
+        "sha256": "a48dd3eac090560b1e0bfa84a4428149a428b51cfe631d311d0cebd7cfddb02d"
+      },
+      {
+        "path": "src/self-hosted/registry-activation-invariant.fungi",
+        "sha256": "88dbd3cb4c53f6e0387d21bdbd6a45c395f06746cbde795f7ba80656be2d75c4"
+      },
+      {
+        "path": "src/self-hosted/registry-activation-terminal.fungi",
+        "sha256": "cf57d5ebeab9528fe6b306b5da0818a923e0c5d51867712c6b545cd01dfe1fb3"
+      },
+      {
+        "path": "src/self-hosted/registry-delegation-v1-context.fungi",
+        "sha256": "481ec9d2d1f5d540acd54a84238a4324aad1f8693abc482ac1ad727bb15aa7aa"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-admission.fungi",
+        "sha256": "6a478938e44ce00dc413e7916c34fb95f6bd75123218db8466e5678306b6f9ae"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-artifact.fungi",
+        "sha256": "e41015642751b507790d1555b2224c349e22a157153fe79e3ff3b0e6bc63384c"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-evidence-schema.fungi",
+        "sha256": "b9d97a14485fd66bde52f3932ff12e65b022c2e9a9612e279a2552224454ded5"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-evidence.fungi",
+        "sha256": "5c28be1c380d8f14c199ee158981c1f89904387fea81cb97fd90907740dc5a9f"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-production-admission.fungi",
+        "sha256": "3f8e1aac230aab1b390f080d3b4cc06d99e29ab362d9a684a1c3a57bc3a2d873"
+      },
+      {
+        "path": "src/self-hosted/registry-durability-production-signature-context.fungi",
+        "sha256": "d0bbc216ec2849934a72bf8dec1d5645e02d4fb2cd605e4a21a4ee78ded8cff3"
+      },
+      {
+        "path": "src/self-hosted/registry-generation-forward-probe.fungi",
+        "sha256": "ced29734e9eac460cf8a6f7cc3614bc7dc6cc3ca2192cbe191c146a62f0d44c2"
+      },
+      {
+        "path": "src/self-hosted/registry-generation-v1-context.fungi",
+        "sha256": "6a598fb094041032cc31c44593ca2d3f932ab2c684e48201c72b046f2019707f"
+      },
+      {
+        "path": "src/self-hosted/registry-index-v2-context.fungi",
+        "sha256": "3cf5ca16d08ba25f6d68b4a81626bf40676601f82c5b1a7d085e700851f45ec4"
+      },
+      {
+        "path": "src/self-hosted/registry-index.fungi",
+        "sha256": "b98679ca9f5e6d23022282aca56e3a8aa0fea17dd5a7a282e031a24a138f2a38"
+      },
+      {
+        "path": "src/self-hosted/registry-package-manifest-v1-context.fungi",
+        "sha256": "35dd8d8bb7b6e4c691f883b959678d03505d20225203b92c5a1b94fe4abded83"
+      },
+      {
+        "path": "src/self-hosted/registry-package-manifest-v1-prefix.fungi",
+        "sha256": "43f654249c255d573ef7b174d20ceadc67f96e7b1c1aaea2130ebb06000e3e07"
+      },
+      {
+        "path": "src/self-hosted/route-defaults.fungi",
+        "sha256": "1666e616860211ca8e2e830bfb87d8f35429bc98aa4b256059370f0377a0f4df"
+      },
+      {
+        "path": "src/self-hosted/secret-gate.fungi",
+        "sha256": "7317039dcd45912cea8a5a4eed32774f0ceb389a1f9519197b55c6062e6b7b66"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "c7f22b75a7c2536f1b4a2b5cf2627beb77bfa36d71272b1641de6f3e16d788c2"
+      },
+      {
+        "path": "tests/admission-vocabulary-drift.test.mjs",
+        "sha256": "9736d1ec33dfd8421b294ce91b6c1e464c65220010e7c1945f59776e140e17ae"
+      },
+      {
+        "path": "tests/app-frame-hardening.test.mjs",
+        "sha256": "59b2e4df91086fdcbd2f03bfebef864db007767556488dde58e0c058a5f43a39"
+      },
+      {
+        "path": "tests/audit-async.test.mjs",
+        "sha256": "a13cd257372ba1d77074320166ea1a4373afe4377a1fa6e67d7c1818ca166ba5"
+      },
+      {
+        "path": "tests/decimal-sum.fungi",
+        "sha256": "40d3a48e889c8b95949e2cd5a4ad786c6cff2ae56546785fd6a912add98da1e1"
+      },
+      {
+        "path": "tests/fixtures/.gitignore",
+        "sha256": "83ad591090eebbee2dabe1856561a788ebced98bbe71664f1ff7b8fb14b442a8"
+      },
+      {
+        "path": "tests/fixtures/compose/_generate.mjs",
+        "sha256": "e24f5d49ee2f4232718b83e2baa53c9d7d1e93107540698897627377ebb8c8af"
+      },
+      {
+        "path": "tests/fixtures/compose/clockconsumer/dist/clockconsumer.lmanifest.json",
+        "sha256": "6ea32371e5731f471144bdfe9e52db23aa1169b7a9452de23344565866186e9f"
+      },
+      {
+        "path": "tests/fixtures/compose/clockconsumer/dist/clockconsumer.wasm",
+        "sha256": "bb55b319a32204114cb4ec73f311e2dbc625019467547d2ef41d6f086924e26b"
+      },
+      {
+        "path": "tests/fixtures/compose/clockconsumer/package.fungi.json",
+        "sha256": "0d14644f97ebf938621acd3ce4bc569945ccf6afc4c824512bc38c76cb938b06"
+      },
+      {
+        "path": "tests/fixtures/compose/clockprovider/dist/clockprovider.lmanifest.json",
+        "sha256": "5c5adce4a88bdf86b712c225faae4f5d550f3db846d7345773983285facdddea"
+      },
+      {
+        "path": "tests/fixtures/compose/clockprovider/dist/clockprovider.wasm",
+        "sha256": "bebe3538549e672371f5e1aa15d9e641d59f0a597135d776af1b73f67b01cac8"
+      },
+      {
+        "path": "tests/fixtures/compose/clockprovider/package.fungi.json",
+        "sha256": "61b85a176c49f68c2729eb91ddda961b2409127542eba35eea7bc62ed3de0152"
+      },
+      {
+        "path": "tests/fuse-compose.test.mjs",
+        "sha256": "89e0fc9da6497ec4dad918885a84b9eeda23c5aacb41eadd9bdbaeeb915832ac"
+      },
+      {
+        "path": "tests/fuse-loader.test.mjs",
+        "sha256": "446477b8baa1f1cca7711de81d345e703814c4a7ce8822a66d64fa931dcfe1b8"
+      },
+      {
+        "path": "tests/hello-world.fungi",
+        "sha256": "496822f2acfa90760ff44091e34dbb42d87af92bf38d4a7ee54b68863fc1ec74"
+      },
+      {
+        "path": "tests/host-floor.test.mjs",
+        "sha256": "d51ee81ea6420c750a021817a0112e0c1ecd07febc6415a21a4aed74f6649c28"
+      },
+      {
+        "path": "tests/json-return.fungi",
+        "sha256": "d07c4a1d862009d5d00cd9ccc9688128167b846bdaf61c07c0ffbd795dfc35d4"
+      },
+      {
+        "path": "tests/kernel.test.mjs",
+        "sha256": "759513d32f29e7f81f3f717bf83cb3e04eef4e7a01c217dca4236115b94d9a0c"
+      },
+      {
+        "path": "tests/literal-verification-success-fungi-conversion.test.mjs",
+        "sha256": "c3294912bb5af6c06f6ccc58204ce39f2218e16b55df20748c4dc0fb05c5da9d"
+      },
+      {
+        "path": "tests/posture-resolution.test.mjs",
+        "sha256": "f3cb569879c5d09f3d10c3bf6e8f15202b8d3e180454447a4987fcd5e7220ceb"
+      },
+      {
+        "path": "tests/production-boot-composition-candidate.test.mjs",
+        "sha256": "90340dc7501ef681ee174848a4f5ef7edfea00c1b0972acbbc1b9b98c706d8cd"
+      },
+      {
+        "path": "tests/production-posture-refusal.test.mjs",
+        "sha256": "dd488d948878d9690d13676cfddd9e09a7c5260a91611129efcb3e1105ae53c6"
+      },
+      {
+        "path": "tests/production-slide-restore-admission.test.mjs",
+        "sha256": "d82490bf53b92d967ee95fccb2ca29f61687034ab5e9c16e92600cd196091c2f"
+      },
+      {
+        "path": "tests/rd0361-fuse-admission-execution.test.mjs",
+        "sha256": "3b8e95e96a1d58121e7476e0034201f7095189fb7cdf703309a8103b1f63eeba"
+      },
+      {
+        "path": "tests/rd0361-kernel-auth-gate-execution.test.mjs",
+        "sha256": "c3956a30b645ea48907167c56b0fff39562c05a542aef5db5038fd7773a07d6a"
+      },
+      {
+        "path": "tests/rd0361-packages-execution-cutover.test.mjs",
+        "sha256": "b1482c36a602a91d09b8ccdb5e5d11db538e1fe5682522dc8b94ee731fb1b8b9"
+      },
+      {
+        "path": "tests/rd0361-route-defaults-execution.test.mjs",
+        "sha256": "d1e0b36efc22fa88124fd2729b1b3d50c3c749ee0ece98cdca754aefd5d02cd1"
+      },
+      {
+        "path": "tests/rd0361-secret-gate-execution.test.mjs",
+        "sha256": "f424f75f2c52ae4a971d63156fda1451a1af9819393db07e64d0e193627d552a"
+      },
+      {
+        "path": "tests/registry-activation-simulator.test.mjs",
+        "sha256": "33b2eaf4300640a0508a603d57271d621744f93e222ad2ac384b8d5cf0a8a1b9"
+      },
+      {
+        "path": "tests/registry-authority.test.mjs",
+        "sha256": "5e06271ba301e2e2eb41093bf79b6d9b6b0b41cd7fe8ccef824241f20471de83"
+      },
+      {
+        "path": "tests/registry-bounded-read.test.mjs",
+        "sha256": "65dd5486fad201bfc1cd3912477d5dcd0b896ae4513e906f7afd0d7871737185"
+      },
+      {
+        "path": "tests/registry-durability-admission.test.mjs",
+        "sha256": "ff77afcc5eaaf58739c2c25df372c8ef98f34898adf88c21475def24bb6414f0"
+      },
+      {
+        "path": "tests/registry-durability-artifact.test.mjs",
+        "sha256": "c8738bf1e7ae10d662c93252f768785587af42914f68af0cf5514df644e0d992"
+      },
+      {
+        "path": "tests/registry-durability-evidence.test.mjs",
+        "sha256": "a97f8f79ac7ad2cf742a473b043c58859d5cae11b3af1e5d13280ad08bb4df6b"
+      },
+      {
+        "path": "tests/registry-durability-production-admission.test.mjs",
+        "sha256": "908ecae333b2fee5568f45ddf825c153b814ff26cc4ebb0aedec05bf1e9a7211"
+      },
+      {
+        "path": "tests/registry-generation.test.mjs",
+        "sha256": "73f80d897c338c418878290ff6a1a50f7196bd26f371c32feead488979fa86b6"
+      },
+      {
+        "path": "tests/registry-index-fuse-e2e.test.mjs",
+        "sha256": "7272613007fe3e2b5a3b2d35ec7e7dd413cdaaee14b89dd4dc88e8346dbbbafa"
+      },
+      {
+        "path": "tests/registry-index-hybrid.test.mjs",
+        "sha256": "a3b4410dadf67a3c53bcd9978f6b1e29bb6bfd838e34ec4560a6562d7cebbf5f"
+      },
+      {
+        "path": "tests/registry-index.test.mjs",
+        "sha256": "e1c162e50a76bb16898f15f1e5dd4c7acd266d96fc77dd96b2ccc6a7074c3a3c"
+      },
+      {
+        "path": "tests/registry-package-manifest.test.mjs",
+        "sha256": "358b3ac10274e9efbfc57c7bac3688ec2392e0c9746edf7853ca2973f6e52e44"
+      },
+      {
+        "path": "tests/registry-rotation-authority.test.mjs",
+        "sha256": "f364bf28ce908fc45461894d72f54c38fcaca3beae87e82a3861dc8cab3a0366"
+      },
+      {
+        "path": "tests/registry-runtime.test.mjs",
+        "sha256": "db9ed90e2442cc36ab247167a6bfd8fb6c10004e76cfa13c8ea42c57845ab13f"
+      },
+      {
+        "path": "tests/relaxation-report.test.mjs",
+        "sha256": "607db821cd7cc7fe3cceee15dc3432274645204d5ac416571bcb990b47a41a85"
+      },
+      {
+        "path": "tests/route-defaults.test.mjs",
+        "sha256": "20a70aba4ba654df6ebe9aaab960e2448740397bb70daca9794c8a52ec93b620"
+      },
+      {
+        "path": "tests/secret-gate.test.mjs",
+        "sha256": "8df50ca8a4e2c9d5eb2584f8e3f24579a53a81cb3a047967b03ec7be38820dab"
+      },
+      {
+        "path": "tests/security-closure.test.mjs",
+        "sha256": "19e6b62de617814b8336ceff7ad00de91cf3f628b6f6922a4563482bb67c86fd"
+      },
+      {
+        "path": "tests/sum.fungi",
+        "sha256": "2c0d22983f551eca749a9ba61f4ad6ee41f39a766c06948d7e11a443ae775152"
+      },
+      {
+        "path": "tests/tower-subpath-imports.test.mjs",
+        "sha256": "722c80ee4f4879b4a6510975bd1179007538b0d6f1c1a6b5a1328e9ae9e27320"
+      },
+      {
+        "path": "tests/vector-function.fungi",
+        "sha256": "ae64354adae4ce3d14e23831429cc825f80bcab77a5d0e40dd7eac2ac530e937"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

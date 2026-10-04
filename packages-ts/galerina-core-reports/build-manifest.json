@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-reports",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "98d09a56f873899b9bb95e218dfd140ccbf64960c6573c929de1e57eaec26048",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "65a0d3739aada1565764e24fe8d040e58d623bdaf9c8438dfdae565c2866f712"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "44f07b3f3c5b27d4e018286de56a70223b1370b33e2117153e626cafd7f17ff3"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "7f6177d01c582c05327890587cece0bd6b668eff2b7a0abc1e5cce2074e3a6e2"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "494037c9ef8a275de1f30f1ababf5b3e60818122744a2c1b75d7a78ad44252b7"
+      },
+      {
+        "path": "examples/build-report.json",
+        "sha256": "134854adfea46af197ea8d775ba57fb676e9c41b86bf5a86f8b0c7fbb3ad6b7a"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "2d49fd9ba963cf905a6137ee471dfa3227b6a1e3c9248c5e7eae9ab5f9949900"
+      },
+      {
+        "path": "package.json",
+        "sha256": "afb9c3dd3904bbbf8f9cd6a0438b5cff60b88f8e1b6afbae7aa525fb891961ec"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "068c96abc0230e9400ec4b79aacf7184f07c0d36795f9e894bc49345eea38d80"
+      },
+      {
+        "path": "src/self-hosted/report-status.fungi",
+        "sha256": "0347d792d17c4830e65b2ca7159c111f966f745fadaec22345b17467a9a87921"
+      },
+      {
+        "path": "tests/report-contracts.test.mjs",
+        "sha256": "fd00e17e180d37d0920bdc1f7246dc446668e48cbda37befd86c1059c3cd10e0"
+      },
+      {
+        "path": "tests/report-status-fungi-conversion.test.mjs",
+        "sha256": "1da8921ba4a13c5203592af0caaf20cd4be836af7b85185a49df17086c633bc9"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

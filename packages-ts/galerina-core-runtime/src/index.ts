@@ -108,11 +108,16 @@ export function validateRuntimeContext(
     ));
   }
 
-  if (context.timeoutMs !== undefined && context.timeoutMs <= 0) {
+  // NaN fails every comparison and Infinity is "positive", so a bare `<= 0` check admitted a timeout
+  // that can never fire. Same rule as the structured-await plan admission: a positive safe integer.
+  if (
+    context.timeoutMs !== undefined &&
+    (!Number.isSafeInteger(context.timeoutMs) || context.timeoutMs <= 0)
+  ) {
     diagnostics.push(createRuntimeDiagnostic(
       "Galerina_RUNTIME_TIMEOUT_INVALID",
       "error",
-      "Runtime timeout must be positive when declared.",
+      "Runtime timeout must be a positive safe integer (milliseconds) when declared.",
       "timeoutMs",
     ));
   }
@@ -276,8 +281,16 @@ export const DENY_ALL_RUNTIME_EXECUTOR: GovernedRuntimeExecutor = {
 export function bindGovernedRuntime(
   provider?: GovernedRuntimeExecutor,
 ): GovernedRuntimeExecutor {
-  if (provider === undefined) return DENY_ALL_RUNTIME_EXECUTOR;
-  if (provider.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) return DENY_ALL_RUNTIME_EXECUTOR;
+  // Zero-trust default (owner may revisit): a null / non-object / method-less provider is as unsafe as an
+  // absent one, so it binds deny-all instead of throwing a TypeError at the caller.
+  if (provider === undefined || typeof provider !== "object" || provider === null) return DENY_ALL_RUNTIME_EXECUTOR;
+  // A hostile accessor on `admitAndExecute` / `seamVersion` must not throw out of bind: it binds deny-all.
+  try {
+    if (typeof provider.admitAndExecute !== "function") return DENY_ALL_RUNTIME_EXECUTOR;
+    if (provider.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) return DENY_ALL_RUNTIME_EXECUTOR;
+  } catch {
+    return DENY_ALL_RUNTIME_EXECUTOR;
+  }
   return provider;
 }
 
@@ -344,6 +357,19 @@ export interface GovernedAdmissionVerifier {
  *  Hardened Border, the exact fail-open the seam exists to prevent). */
 export interface LowLevelWasmExecutor {
   readonly seamVersion: string;
+  /**
+   * Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The SYNCHRONOUS
+   * admit step: decide allow or deny for this exact (bytes, export, args) call WITHOUT creating any VM or WASM
+   * instance (compiling/inspecting a module is allowed; instantiating it is not). Only an exact boolean `true`
+   * allows; anything else (false, a Promise, a thenable, a throw) denies and `instantiateAndCall` is never
+   * entered. An executor without this step cannot prove it is safe synchronously and is refused.
+   */
+  admitInstantiation(input: {
+    readonly artifactBytes: Uint8Array;
+    readonly exportName: string;
+    readonly args: readonly unknown[];
+  }): boolean;
+  /** The instantiate step. Runs ONLY after `admitInstantiation` returned exact `true` for the same input. */
   instantiateAndCall(input: {
     readonly artifactBytes: Uint8Array;
     readonly exportName: string;
@@ -365,77 +391,208 @@ function denyVerdict(reason: string): GovernedRuntimeVerdict {
   return { outcome: "deny", reason };
 }
 
+const ignoreSettlement = (): void => {};
+
+/** Zero-trust default (owner may revisit): a capability that returns a native Promise has already failed the
+ *  synchronous contract and is DENIED; it is never awaited. Its eventual rejection is consumed here so a
+ *  rejected async provider cannot surface as a process-level unhandled rejection (which terminates Node by
+ *  default — host-wide availability loss). `Promise.prototype.then.call` brand-checks for a REAL promise
+ *  before any user code runs, so a hostile non-native thenable is never invoked; anything else throws a
+ *  TypeError, which is swallowed — the verdict is deny either way. This is a BACKSTOP only: an `async`
+ *  capability is refused structurally before any capability runs (see `isRefusedCapability`), so the only
+ *  Promise that can still reach here comes from a plain function that returned one. */
+function consumeAsyncRejection(value: unknown): void {
+  try {
+    Promise.prototype.then.call(value as Promise<unknown>, ignoreSettlement, ignoreSettlement);
+  } catch {
+    // Not a native promise (or a hostile species constructor): nothing of ours to consume.
+  }
+}
+
+/** Owner decision (2026-10-04, no-VM rule): a capability that can hand back a rejected Promise is refused
+ *  BEFORE any VM or WASM instance is created. A capability declared `async` (or as an async generator) can
+ *  only ever return a Promise, so it is refused structurally, before ANY capability is invoked and therefore
+ *  before `instantiateAndCall` is ever entered. A non-callable capability is refused the same way, and an
+ *  inspection that itself throws (a hostile Proxy trap) is a refusal too. The check is deliberately biased
+ *  toward refusal: a sync method literally named `async` is also refused (fail-closed). */
+const ASYNC_CALLABLE_TAGS: readonly string[] = ["[object AsyncFunction]", "[object AsyncGeneratorFunction]"];
+const ASYNC_SOURCE_PREFIX = /^\s*async[\s*(]/;
+
+function isRefusedCapability(fn: unknown): boolean {
+  if (typeof fn !== "function") return true;
+  try {
+    if (ASYNC_CALLABLE_TAGS.includes(Object.prototype.toString.call(fn))) return true;
+    return ASYNC_SOURCE_PREFIX.test(Function.prototype.toString.call(fn));
+  } catch {
+    return true;
+  }
+}
+
 /** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
- *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
- *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) verify the
+ *  (0) seam-version match on the request AND every injected dependency, then refuse any async or
+ *  non-callable capability before ANY capability runs (owner no-VM rule, 2026-10-04);
+ *  (1) resolve artifact bytes from the content store; (2) re-hash and require the digest to equal the
+ *  pinned sha256 (integrity); (3) verify the
  *  request's SIGNED attestation against that freshly-computed hash AND that the requested export is defined by
- *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) instantiate + call via the
- *  low-level VM. Any failure at any step — including a missing
+ *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) the low-level executor's
+ *  SYNCHRONOUS admit step decides allow/deny with no VM instance (zero-trust default, owner may revisit);
+ *  (5) only on an exact `true` from that admit step, instantiate + call via the low-level VM. Any failure at
+ *  any step — including a missing
  *  dependency or an empty attestation — is a DENY with a specific reason. Integrity and admission are both
  *  proven on the same bytes and BEFORE execution, so no unverified/unadmitted artifact ever reaches the VM
  *  and no TOCTOU window opens. There is no path from an absent dependency or a failed check to `admit`. */
 export function createGovernedRuntimeExecutor(
   deps: GovernedRuntimeExecutorDeps = {},
 ): GovernedRuntimeExecutor {
+  const evaluate = (request: GovernedRuntimeRequest): GovernedRuntimeVerdict => {
+    if (request.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) {
+      return denyVerdict(
+        `request seam version '${request.seamVersion}' does not match '${GOVERNED_RUNTIME_SEAM_VERSION}'.`,
+      );
+    }
+    const { artifactSource, admissionVerifier, lowLevel, hashArtifact } = deps;
+    if (
+      artifactSource === undefined ||
+      admissionVerifier === undefined ||
+      lowLevel === undefined ||
+      hashArtifact === undefined
+    ) {
+      return denyVerdict(
+        "governed executor is under-wired — a required capability (artifact source, admission verifier, hash, or low-level executor) is unplugged; deny-by-default.",
+      );
+    }
+    if (
+      artifactSource.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
+      admissionVerifier.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
+      lowLevel.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION
+    ) {
+      return denyVerdict("a wired capability pins a different seam version — refused (fail-closed).");
+    }
+    // Owner decision (2026-10-04, no-VM rule): capture each capability ONCE and refuse an async or
+    // non-callable one before any capability runs, so a capability that can only return a (possibly
+    // rejected) Promise never reaches the VM. Capturing once also closes a getter swap between this check
+    // and the call below.
+    let artifactBytesFor: GovernedRuntimeArtifactSource["artifactBytesFor"];
+    let verifyAttestation: GovernedAdmissionVerifier["verifyAttestation"];
+    let admitInstantiation: LowLevelWasmExecutor["admitInstantiation"];
+    let instantiateAndCall: LowLevelWasmExecutor["instantiateAndCall"];
+    let capabilitiesRefused: boolean;
+    try {
+      artifactBytesFor = artifactSource.artifactBytesFor;
+      verifyAttestation = admissionVerifier.verifyAttestation;
+      admitInstantiation = lowLevel.admitInstantiation;
+      instantiateAndCall = lowLevel.instantiateAndCall;
+      capabilitiesRefused =
+        isRefusedCapability(hashArtifact) ||
+        isRefusedCapability(artifactBytesFor) ||
+        isRefusedCapability(verifyAttestation) ||
+        isRefusedCapability(admitInstantiation) ||
+        isRefusedCapability(instantiateAndCall);
+    } catch {
+      return denyVerdict("a wired capability could not be read — refused before any VM instance is created (fail-closed).");
+    }
+    if (capabilitiesRefused) {
+      return denyVerdict(
+        "a wired capability is async or not callable — refused before any VM instance is created (fail-closed).",
+      );
+    }
+    // Zero-trust default (owner may revisit): every injected capability is untrusted code. A throw from any
+    // of them is a DENY verdict, never an exception escaping the seam, and only EXACT success values admit.
+    let bytes: Uint8Array | undefined;
+    try {
+      bytes = artifactBytesFor.call(artifactSource, request.artifactSha256);
+    } catch {
+      return denyVerdict("artifact source failed while resolving the pinned artifact — deny (fail-closed).");
+    }
+    if (bytes === undefined) {
+      return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
+    }
+    if (!(bytes instanceof Uint8Array)) {
+      consumeAsyncRejection(bytes);
+      return denyVerdict("artifact source returned something other than bytes — deny (fail-closed).");
+    }
+    const ownedBytes = Uint8Array.from(bytes);
+    let computed: string;
+    try {
+      computed = hashArtifact(ownedBytes);
+    } catch {
+      return denyVerdict("artifact hash capability failed — deny (fail-closed).");
+    }
+    if (typeof computed !== "string" || computed !== request.artifactSha256) {
+      consumeAsyncRejection(computed);
+      return denyVerdict(
+        `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
+      );
+    }
+    if (typeof request.attestation !== "string" || request.attestation === "") {
+      return denyVerdict("request carries no signed admission attestation — deny (a bare 'admitted' claim is not accepted).");
+    }
+    // Admission is verified INSIDE, against the freshly-COMPUTED hash (not the request's claimed hash) and
+    // the EXACT bytes we re-hashed — so it is bound to the bytes we are about to run, closing any
+    // check-then-swap window. The verifier also hard-gates that `exportName` is a defined export of that
+    // hash-verified module (the export table is part of the signed bytes), so a valid signature can never
+    // admit a call to an export the signed module does not define.
+    // EXACT `true` only: an async verifier returns a Promise (truthy) and would otherwise admit unverified.
+    let attested: unknown;
+    try {
+      attested = verifyAttestation.call(admissionVerifier, { attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes });
+    } catch {
+      attested = false;
+    }
+    if (attested !== true) {
+      consumeAsyncRejection(attested);
+      return denyVerdict(
+        `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
+      );
+    }
+    // Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The low-level
+    // executor's SYNCHRONOUS admit step decides allow/deny with no VM instance; only an exact `true` lets the
+    // request reach instantiation. A plain function that returns a (rejected) Promise here is denied and its
+    // rejection consumed, and `instantiateAndCall` is never entered.
+    const lowLevelInput = { artifactBytes: ownedBytes, exportName: request.exportName, args: request.args };
+    let instantiationAdmitted: unknown;
+    try {
+      // The admit step gets its OWN copy of the bytes and args, so it cannot mutate what is later instantiated.
+      instantiationAdmitted = admitInstantiation.call(lowLevel, {
+        artifactBytes: Uint8Array.from(ownedBytes),
+        exportName: request.exportName,
+        args: Array.from(request.args),
+      });
+    } catch {
+      return denyVerdict("low-level admit step failed — deny before any VM instance is created (fail-closed).");
+    }
+    if (instantiationAdmitted !== true) {
+      consumeAsyncRejection(instantiationAdmitted);
+      return denyVerdict(
+        "low-level executor did not synchronously admit instantiation (exact true required) — deny before any VM instance is created.",
+      );
+    }
+    let executed: unknown;
+    try {
+      executed = instantiateAndCall.call(lowLevel, lowLevelInput);
+    } catch {
+      return denyVerdict("low-level execution failed — deny (fail-closed).");
+    }
+    if (typeof executed !== "object" || executed === null || (executed as { ok?: unknown }).ok !== true) {
+      consumeAsyncRejection(executed);
+      const reason = typeof executed === "object" && executed !== null && typeof (executed as { reason?: unknown }).reason === "string"
+        ? (executed as { reason: string }).reason
+        : "the low-level executor did not return an exact { ok: true } result";
+      return denyVerdict(`low-level execution denied: ${reason}`);
+    }
+    return { outcome: "admit", result: (executed as { result?: unknown }).result };
+  };
   return {
     seamVersion: GOVERNED_RUNTIME_SEAM_VERSION,
     admitAndExecute(request: GovernedRuntimeRequest): GovernedRuntimeVerdict {
-      if (request.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) {
-        return denyVerdict(
-          `request seam version '${request.seamVersion}' does not match '${GOVERNED_RUNTIME_SEAM_VERSION}'.`,
-        );
+      // Zero-trust default (owner may revisit): the request and every wired provider are untrusted objects. A
+      // throwing accessor anywhere (request fields, provider `seamVersion`, a capability getter, a hostile
+      // `toString` reached while building a reason) is a DENY verdict, never an exception escaping the seam.
+      try {
+        return evaluate(request);
+      } catch {
+        return denyVerdict("governed executor could not evaluate the request or a wired provider — deny (fail-closed).");
       }
-      const { artifactSource, admissionVerifier, lowLevel, hashArtifact } = deps;
-      if (
-        artifactSource === undefined ||
-        admissionVerifier === undefined ||
-        lowLevel === undefined ||
-        hashArtifact === undefined
-      ) {
-        return denyVerdict(
-          "governed executor is under-wired — a required capability (artifact source, admission verifier, hash, or low-level executor) is unplugged; deny-by-default.",
-        );
-      }
-      if (
-        artifactSource.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
-        admissionVerifier.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
-        lowLevel.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION
-      ) {
-        return denyVerdict("a wired capability pins a different seam version — refused (fail-closed).");
-      }
-      const bytes = artifactSource.artifactBytesFor(request.artifactSha256);
-      if (bytes === undefined) {
-        return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
-      }
-      const ownedBytes = Uint8Array.from(bytes);
-      const computed = hashArtifact(ownedBytes);
-      if (computed !== request.artifactSha256) {
-        return denyVerdict(
-          `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
-        );
-      }
-      if (typeof request.attestation !== "string" || request.attestation === "") {
-        return denyVerdict("request carries no signed admission attestation — deny (a bare 'admitted' claim is not accepted).");
-      }
-      // Admission is verified INSIDE, against the freshly-COMPUTED hash (not the request's claimed hash) and
-      // the EXACT bytes we re-hashed — so it is bound to the bytes we are about to run, closing any
-      // check-then-swap window. The verifier also hard-gates that `exportName` is a defined export of that
-      // hash-verified module (the export table is part of the signed bytes), so a valid signature can never
-      // admit a call to an export the signed module does not define.
-      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes })) {
-        return denyVerdict(
-          `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
-        );
-      }
-      const executed = lowLevel.instantiateAndCall({
-        artifactBytes: ownedBytes,
-        exportName: request.exportName,
-        args: request.args,
-      });
-      if (!executed.ok) {
-        return denyVerdict(`low-level execution denied: ${executed.reason}`);
-      }
-      return { outcome: "admit", result: executed.result };
     },
   };
 }

@@ -1,0 +1,119 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-egress",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "8934f3576308fd88857d1001317f8257223e48f3c581ab9f41dcea907b73bef9",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "abff5fa06700127ef9f3f935f9b0d694a62bf740bb6c399ee687557d75848aab"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "edcacb22ad4f7b3893313f3e1e28adccf6812e01c2881bf9a1e5502d3d5b9b51"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "4170f2f112bd5434ecaaf90d4fea0898ad0c7871bd55d0750977fa423bdb1bb4"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "8bcd147ddb7f2df40f2594317eb5b83be7ac0f70927f68c966bd6653988ca395"
+      },
+      {
+        "path": "package.json",
+        "sha256": "2feefbbfb8cf042125ba38433fd84cbc31e6879c801d3812378691f67d89131c"
+      },
+      {
+        "path": "src/audit-egress.ts",
+        "sha256": "780f748d856975089788fea9b76936436b4679699a32c126c4c1c8ec2bd216de"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "e3c2d94d9a1290137e3a24c5b6af0c00ad69e1f55aba3cbbe7ce75f34b413b06"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "91246114a6c68fdca66e683682b26f4ba2d390a93b48e6c8f8d9edb12b8f64d6"
+      },
+      {
+        "path": "src/ring-buffer.ts",
+        "sha256": "2df1d9e02a14247aa6719d00dbd91a5b2a1dfdd5f8877cde0c455c54c7d59483"
+      },
+      {
+        "path": "src/self-hosted/audit-egress.fungi",
+        "sha256": "d600b5d81ba27f9fe476034ed889f466feb5030b4726f3f30a785cc8fea20392"
+      },
+      {
+        "path": "src/self-hosted/ledger-file.fungi",
+        "sha256": "eb767250eae4b4b60ae165994b8b6eca738e0438430246dde43e96f3d810cff0"
+      },
+      {
+        "path": "tests/audit-egress.test.mjs",
+        "sha256": "1105ddd53b38ac25318b36aa999d49448c9e820d9001e4b2765345fa1dde8cc5"
+      },
+      {
+        "path": "tests/dev-key-mode.test.mjs",
+        "sha256": "1965cce8b7958b30311365dfde5bf66e53f7f64e004816aad5f74fc6a446de31"
+      },
+      {
+        "path": "tests/epoch-rotation.test.mjs",
+        "sha256": "f433fc5411e6e403e00e57a0f9acd428c4ad044d58115816d62c730258eaa062"
+      },
+      {
+        "path": "tests/flush-io-failure.test.mjs",
+        "sha256": "5bcfc1670cf4d769dd817b060bde5df3f6f035607f493e1a4a8145e565c20205"
+      },
+      {
+        "path": "tests/hmac-chain.test.mjs",
+        "sha256": "ea26fcb78d7084bdf26cd08acb99b30b342f56f7c79572fde25f0cc68ee8725f"
+      },
+      {
+        "path": "tests/key-length.test.mjs",
+        "sha256": "8668a859b549e9ca810d6bdd6d7c0da9fcd067321eec1f2035b36a9dd71e2955"
+      },
+      {
+        "path": "tests/never-drop.test.mjs",
+        "sha256": "29f8ad494f4784ee0535ed4d4e4952abd2001880e9413d28f8615e814b0b04bc"
+      },
+      {
+        "path": "tests/rd0361-audit-egress-execution.test.mjs",
+        "sha256": "701f7c15f69c30a93057a2fcb8fcba8eb96a3dbc7b8e56fe644c3778f1295f35"
+      },
+      {
+        "path": "tests/ring-buffer.test.mjs",
+        "sha256": "066812b1acbb21e88671f3a0d453f27fb99c79719aa78e2da0e4ddd4a8b346de"
+      },
+      {
+        "path": "tests/verify-malformed.test.mjs",
+        "sha256": "53725182e8aab0065c8af03eb082448d13ce2ef8423623c3466d07c00aafba99"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "5e6dfdaed284cc82464515a705f42e2c8be798ba16249f3f5de5ffb15724d4e8"
+      }
+    ]
+  }
+}

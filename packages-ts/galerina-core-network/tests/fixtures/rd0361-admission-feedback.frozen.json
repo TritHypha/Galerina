@@ -1,0 +1,505 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-network/src/self-hosted",
+    "file": "admission-feedback.fungi",
+    "module": "admission-feedback",
+    "ledgerSha256": "4d1e3bb6a25d2c4ec0af791f0db2e33704946f32ca1bdb28df6e7258159f3bad"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-network/tests/rd0361-admission-feedback-execution.test.mjs",
+    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+  },
+  "exports": [
+    {
+      "name": "vAnd",
+      "params": [
+        "k3",
+        "k3"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "telemetrySideSignal",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 41,
+  "casesSha256": "d265f602589878f30f545192b04206faff41149822e5f6b841e8037ff9889420",
+  "cases": [
+    {
+      "id": "vand--1--1",
+      "export": "vAnd",
+      "args": [
+        -1,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "vand--1-0",
+      "export": "vAnd",
+      "args": [
+        -1,
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "vand--1-1",
+      "export": "vAnd",
+      "args": [
+        -1,
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "vand-0--1",
+      "export": "vAnd",
+      "args": [
+        0,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "vand-0-0",
+      "export": "vAnd",
+      "args": [
+        0,
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "vand-0-1",
+      "export": "vAnd",
+      "args": [
+        0,
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "id": "vand-1--1",
+      "export": "vAnd",
+      "args": [
+        1,
+        -1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "vand-1-0",
+      "export": "vAnd",
+      "args": [
+        1,
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "vand-1-1",
+      "export": "vAnd",
+      "args": [
+        1,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00000",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00001",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00010",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00011",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00100",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00101",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00110",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-00111",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-01000",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "side-01001",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-01010",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "side-01011",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "side-01100",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-01101",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-01110",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-01111",
+      "export": "telemetrySideSignal",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10000",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10001",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10010",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10011",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10100",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10101",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10110",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-10111",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11000",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11001",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11010",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "side-11011",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "side-11100",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11101",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11110",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 0
+    },
+    {
+      "id": "side-11111",
+      "export": "telemetrySideSignal",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 0
+    }
+  ]
+}

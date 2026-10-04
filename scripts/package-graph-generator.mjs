@@ -15,6 +15,9 @@ import {
   generatedOutputMatches,
   provenance,
 } from "./lib/provenance.mjs";
+import { exitOnHelp } from "./lib/cli-help.mjs";
+
+exitOnHelp(import.meta.url, "usage: node scripts/package-graph-generator.mjs [--root <dir>] [--check]\n  --help, -h  print this usage and exit 0 without reading or writing");
 
 /**
  * Parse one selected root and an optional non-mutating check mode.

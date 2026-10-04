@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/db-mysql",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "bedaa1c953f2792388010ed0be9233d8eff45b6bd7391d9b7cceb27adf041557",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "2d7503c53e43a75a13bac4ab4c6530ea711d23ad1794ec4a814bde450b718fd3"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "65df25b8cf45921ddf41c85a08591b454f752d9f79ad06504702cc1b23aa5c28"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "16ca879acfcc3b95263b09b10eb0364e1e0774be9e616e7c56c88610c031a613"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "9b025dda86002f7481fd63ff510ae67db0f9c50b9b1a4b2ca23bc23f4d1a3868"
+      },
+      {
+        "path": "package.json",
+        "sha256": "fa0e7b0164d24e5b31280657f182db662a7d5be29974d17190bf982e046a6624"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "1c7277bcecd85efe1613d0de78f976c6c0b9150ae5b5b558f4f9b7916894b6bf"
+      },
+      {
+        "path": "tests/mysql-contracts.test.mjs",
+        "sha256": "89c5eed36e97257e2ac7bb8cedef0009e3c1cf1d9005684de2c6cbf120fb7d6b"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/target-wasm",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "f512a02ad6e34b16930706e4a453f3fc1da4a940a99cfba17e5481aeff8812bd",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "87c464ddb18e338edd189567ef33ee3b7d8006b544b92b09dba2695dcfdf52cf"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "193705499257044e2792407a17f13c8500115c98fb36ff0210f68d94ec11f172"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "e1bda5ae84d5231dd69232f7997fe331560282cec2e68601c3db4c8eb2211c42"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "0880bb72060a67b198fd2755a624d3ec26d5c5bf20a40adfed97f618b37f7506"
+      },
+      {
+        "path": "examples/artefact.example.json",
+        "sha256": "9b765cd2c84d5e2eaad9f7b195cc7b3babdc69dc1ac0ba93c3db74b1cdc1ab76"
+      },
+      {
+        "path": "examples/handoff.example.json",
+        "sha256": "f029e4804aa8136555edd299639304cb9a3df1c6f4030cf813820d4b83c0bae6"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "885e870afd1a6516e29eb270e623d9bc95f5741bdb63699a9f80db32bc884608"
+      },
+      {
+        "path": "package.json",
+        "sha256": "ceacf9c16b3f63ecb7062f84a15fea9eca9319b8c61af78f5de8869f95aff12d"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "7dbd8b034e6419cb22a605b68c34360e1fe8d41880aed4dcf03040dcb4452c4b"
+      },
+      {
+        "path": "src/node-crypto.d.ts",
+        "sha256": "53cdae9e3f4c2988957d4297cd57931b631ff180bee8c455fa0b5a05598e7455"
+      },
+      {
+        "path": "src/node-util-shim.d.ts",
+        "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
+      },
+      {
+        "path": "tests/wasm-contracts.test.mjs",
+        "sha256": "e590e56de169e5f322dab661ac11f82ce093a282f8e7f6ca5c14199011b25639"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

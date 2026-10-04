@@ -35,9 +35,9 @@ test("hostile: omitted hmacKey throws EGR-KEY-002", () => {
   );
 });
 
-test("named development zero-key is admitted without strictKey and refused with it", () => {
+test("named development zero-key is admitted only in explicit development mode and refused with strictKey", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   eg.push("dev-a");
   eg.push("dev-b");
   eg.flush();
@@ -62,7 +62,7 @@ test("positive: an explicit nonzero key seals a verifiable chain", () => {
 
 test("readEgressLedger after several batches -> verifyChain === true", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 3, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 3, hmacKey: DEV_KEY, developmentKey: true });
   for (let i = 0; i < 11; i++) eg.push(`rec-${i}`);
   eg.flush(); // flush the partial tail
   const batches = readEgressLedger(dir);
@@ -73,7 +73,7 @@ test("readEgressLedger after several batches -> verifyChain === true", () => {
 
 test("mutating one record in one batch -> verifyChain === false", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   for (let i = 0; i < 6; i++) eg.push(`x-${i}`);
   const batches = readEgressLedger(dir);
   assert.equal(AuditEgress.verifyChain(batches, DEV_KEY), true);
@@ -87,7 +87,7 @@ test("mutating one record in one batch -> verifyChain === false", () => {
 
 test("breaking a prevHash link -> verifyChain === false", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   for (let i = 0; i < 6; i++) eg.push(`y-${i}`);
   const batches = readEgressLedger(dir);
   assert.equal(AuditEgress.verifyChain(batches, DEV_KEY), true);
@@ -99,7 +99,7 @@ test("breaking a prevHash link -> verifyChain === false", () => {
 
 test("a wrong HMAC key -> verifyChain === false", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   for (let i = 0; i < 4; i++) eg.push(`z-${i}`);
   const batches = readEgressLedger(dir);
   assert.equal(AuditEgress.verifyChain(batches, DEV_KEY), true);
@@ -109,7 +109,7 @@ test("a wrong HMAC key -> verifyChain === false", () => {
 
 test("merging newline-containing records cannot preserve the MAC", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   eg.push("a");
   eg.push("b");
   const batches = readEgressLedger(dir);
@@ -124,7 +124,7 @@ test("merging newline-containing records cannot preserve the MAC", () => {
 
 test("splitting one record into two cannot preserve the MAC", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 1, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 1, hmacKey: DEV_KEY, developmentKey: true });
   eg.push("ab");
   const batches = readEgressLedger(dir);
   assert.equal(AuditEgress.verifyChain(batches, DEV_KEY), true);
@@ -150,7 +150,7 @@ test("chain verifies under an injected (non-zero) HMAC key", () => {
 
 test("hostile: omitted hmacKey does not authenticate a ZERO_KEY ledger", () => {
   const dir = freshDir();
-  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY });
+  const eg = new AuditEgress({ dir, batchSize: 2, hmacKey: DEV_KEY, developmentKey: true });
   for (let i = 0; i < 4; i++) eg.push(`omit-${i}`);
   eg.flush();
   const batches = readEgressLedger(dir);

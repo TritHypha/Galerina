@@ -169,3 +169,35 @@ test("e2e: a defined-but-trapping export is admitted, then DENIED at execution (
   assert.equal(v.outcome, "deny");
   assert.match(v.reason, /low-level execution denied|trap/);
 });
+
+// ── zero-trust default, owner may revisit: SYNCHRONOUS admit step (owner rule 2026-10-04, no VM on a deny path) ──
+test("★ admit step: a valid numeric call to a defined export is allowed with exact true (no instance created)", () => {
+  assert.equal(createLowLevelWasmExecutor().admitInstantiation({ artifactBytes: WASM, exportName: "add", args: [2, 40] }), true);
+});
+
+test("admit step denies, without instantiating: unknown export, non-numeric arg, unparseable bytes, import outside the closed host set", () => {
+  const ex = createLowLevelWasmExecutor();
+  assert.equal(ex.admitInstantiation({ artifactBytes: WASM, exportName: "nope", args: [] }), false);
+  assert.equal(ex.admitInstantiation({ artifactBytes: WASM, exportName: "add", args: ["1", 2] }), false);
+  assert.equal(ex.admitInstantiation({ artifactBytes: new Uint8Array([0, 1, 2, 3]), exportName: "add", args: [1, 2] }), false);
+  assert.equal(ex.admitInstantiation({ artifactBytes: IMPORT_WASM, exportName: "x", args: [] }), false);
+});
+
+test("★ e2e: a non-numeric arg is denied at the admit step, so the real executor is never instantiated (expectedInstantiated = 0)", () => {
+  const deps = createBorderSafeRuntimeDeps({ policy });
+  let instantiated = 0;
+  const real = deps.lowLevel;
+  const lowLevel = {
+    seamVersion: real.seamVersion,
+    admitInstantiation: (input) => real.admitInstantiation(input),
+    instantiateAndCall: (input) => { instantiated += 1; return real.instantiateAndCall(input); },
+  };
+  const exec = createGovernedRuntimeExecutor({ ...deps, lowLevel, artifactSource: sourceFor(WASM, SHA) });
+  const denied = exec.admitAndExecute({ seamVersion: V, artifactSha256: SHA, attestation: wire, exportName: "add", args: ["1", 2] });
+  assert.equal(denied.outcome, "deny");
+  assert.equal(instantiated, 0);
+  const allowed = exec.admitAndExecute({ seamVersion: V, artifactSha256: SHA, attestation: wire, exportName: "add", args: [40, 2] });
+  assert.equal(allowed.outcome, "admit");
+  assert.equal(allowed.result, 42);
+  assert.equal(instantiated, 1);
+});

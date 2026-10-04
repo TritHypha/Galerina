@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/substrate-math",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "f24e283d513ad394ab1d1729330dfd7fb6d9fa5db9ec86d8e8dd7a7ab5bad967",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "7c2c63b418d31b43a2fab8277ddb5ae3b150cd5fa4815c2604b8f87ca06960d0"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "013dcf8ab6afc2cc59bab64de5c14ebaf3b63e6b81adf68e1e974a769608eae9"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "77b75a7514ed17974a67e51b5e2ce7a7e91db8af9a295bd35a22080e01b4c18c"
+      },
+      {
+        "path": "package.json",
+        "sha256": "2896855a97ef27656768f643034f5672b14994ca948d935e4e7c5af56af1830a"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "cb7e3e67c3ec4ba786dbe628a3dba7bf486dac1bdab2daef57949f33aea7546f"
+      },
+      {
+        "path": "src/node-util-shim.d.ts",
+        "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
+      },
+      {
+        "path": "tests/substrate-math.test.mjs",
+        "sha256": "9aebec268b3b08535381cf74c52cf7f802565551a6cedae426f734d6a1c144bb"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "486d2f7dade04e266c1594ca54368904d5f8db70663c681566b313561c174e1b"
+      }
+    ]
+  }
+}

@@ -107,7 +107,7 @@ export interface WATEmitResult {
 export interface WATRecordFieldLayout {
   readonly name: string;
   readonly type: string;
-  readonly watType: "i32" | "i64" | "f64";
+  readonly watType: "i32" | "i64" | "f64" | "f32"; // f32 = an E5 Float32 slot (4 bytes; loads promote, stores demote)
   readonly offset: number;
   readonly size: 4 | 8;
 }
@@ -155,7 +155,10 @@ export function galerinaTypeToWAT(typeName: string): WATValType {
   switch (typeName) {
     case "Bool": case "Verdict": case "Int": case "Int8": case "Int16": case "Int32": case "Byte": return "i32";
     case "Int64": case "UInt64": return "i64";
-    case "Float16": case "Float32": return "f32";
+    // E5 (PROVISIONAL, narrow-float.ts): Float16/Float32 VALUES travel in the f64 lane as an exact
+    // binary16/binary32 carrier (params, results, locals); only a Float32 RECORD SLOT is stored as f32
+    // (buildWATRecordLayouts). Float16 has no WASM value type at all.
+    case "Float16": case "Float32": return "f64";
     case "Float64": case "Double": case "Float": return "f64";
     case "Decimal": return "i32";
     default: {

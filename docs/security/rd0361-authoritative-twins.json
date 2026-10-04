@@ -127,9 +127,9 @@
       "dir": "packages-ts/galerina-framework-app-kernel/src/self-hosted",
       "tranche": "T3",
       "surface": "signed registry-index signature/lookup/risk-policy admission",
-      "sha256": "99796c089eb1a88961ed6ca2766b3d7ec91ab6fa083b378027267ec4280a61e0",
+      "sha256": "edb82254d9eba5c2654121a76dd2620ec3653c4f47fbe2eb4636057d6ca7a466",
       "evidencePack": "docs/security/rd0361-t3-app-kernel-r4-evidence-pack.md",
-      "ownerNod": "2026-07-29 — owner's standing 'unlock all green light' plus autonomous ownership directive; T3 app-kernel flipped only after the complete fail-closed evidence pack passed",
+      "ownerNod": "2026-07-29 — owner's standing 'unlock all green light' plus autonomous ownership directive; T3 app-kernel flipped only after the complete fail-closed evidence pack passed; 2026-10-04 15:10 S7 twin change (unknown max / unknown rating under a gate deny, matching PR #38) and registry-index frozen-set re-capture approved by Phillip",
       "bake": "shadow-bake in progress (.ts retained as differential shadow; delete only after executable SLIDE integration and the later retirement gate)"
     },
     {

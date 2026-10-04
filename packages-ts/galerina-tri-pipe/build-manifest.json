@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/tri-pipe",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "a693bcaaacabaae4337359436c1d55473e6191ccd4b83d851c40d48c3b04ccda",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "fef026491663aee661a88816af5f9065cf832b25509059d5d7505c94f0dbe74e"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "0b5b848bc06b171203d4ac401cc620f6891a8c671d55d7f3d44af98e828afcc4"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "3a2b68f96c5f43bfc99194dbd940d251409472c5591bf5c9244a5cf9b5a213a0"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "9d1bb2eaad9a5c2e324a2875fa1b1d9c8ea5532ecb67ae216a817bcd69ab9582"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "fd8c7bc323d3d6ef0a6b6cb0f4fcd8861f51a65ef79de3b3fb3b5bbad970b5a6"
+      },
+      {
+        "path": "package.json",
+        "sha256": "944ef561d887f9daae78e1cd1faf466af7ecf0636dc81b69e33b0549529fa409"
+      },
+      {
+        "path": "scripts/prove-tri-pipe.mjs",
+        "sha256": "b8533bd9d52e3de3ea162c17b53c00e9bc472ee74b6729ed8d3ac95dc3d6dbac"
+      },
+      {
+        "path": "src/execution-router.ts",
+        "sha256": "47083341b4920da0a3e4e569445edf1eb4bee3eab9e9115686c7ef88571b8c1d"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "3c282b1596aadc3c96b155a44f1bf9f0a748b52a24dbdf1956468b177bb54c4d"
+      },
+      {
+        "path": "src/tri-pipe.ts",
+        "sha256": "febf63d703d54710be62bb511edb27e4c756249e90dadb09d4a40c241a6eefcb"
+      },
+      {
+        "path": "tests/execution-router.test.mjs",
+        "sha256": "b8a5adcdbee7bbc905325eca2eb1cadc207e7ab3b8f1bbacfd157cf2b6a56232"
+      },
+      {
+        "path": "tests/tri-pipe.test.mjs",
+        "sha256": "53f7140870f65005ff2381e17bf756d35cd70f4f276af0dedddfd6822f78baea"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "e1ea849a381185f545dd77b3359ce7ae3cf769e67450173bd8663c8f3e0496fe"
+      }
+    ]
+  }
+}

@@ -1,0 +1,318 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-network/src/self-hosted",
+    "file": "inbound-guard.fungi",
+    "module": "inbound-guard",
+    "ledgerSha256": "a447f52d440d6fb281ce3318b148bea7852a874498f7a8d1bbdb54ded089c1ec"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-network/tests/rd0361-inbound-guard-execution.test.mjs",
+    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+  },
+  "exports": [
+    {
+      "name": "admit",
+      "params": [],
+      "returns": "k3"
+    },
+    {
+      "name": "deny",
+      "params": [],
+      "returns": "k3"
+    },
+    {
+      "name": "inboundVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    },
+    {
+      "name": "rateLimitVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 26,
+  "casesSha256": "c437bbdac6213a29afff01f23d39886f3cbff864d4fcab6dda072907d2e211b9",
+  "cases": [
+    {
+      "id": "admit",
+      "export": "admit",
+      "args": [],
+      "expected": 1
+    },
+    {
+      "id": "deny",
+      "export": "deny",
+      "args": [],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0000",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0001",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0010",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0011",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0100",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0101",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0110",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-0111",
+      "export": "inboundVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-1000",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-1001",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "inbound-1010",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "inbound-1011",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "inbound-1100",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-1101",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-1110",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "inbound-1111",
+      "export": "inboundVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-000",
+      "export": "rateLimitVerdict",
+      "args": [
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-001",
+      "export": "rateLimitVerdict",
+      "args": [
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-010",
+      "export": "rateLimitVerdict",
+      "args": [
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-011",
+      "export": "rateLimitVerdict",
+      "args": [
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-100",
+      "export": "rateLimitVerdict",
+      "args": [
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "rate-101",
+      "export": "rateLimitVerdict",
+      "args": [
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "rate-110",
+      "export": "rateLimitVerdict",
+      "args": [
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "rate-111",
+      "export": "rateLimitVerdict",
+      "args": [
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    }
+  ]
+}

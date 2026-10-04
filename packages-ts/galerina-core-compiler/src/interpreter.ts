@@ -8,7 +8,7 @@ import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
 import { type ContractEnforcementRecord } from "./runtime/runtimeReport.js";
-import { type PassiveExecutionPlan, executePlan } from "./runtime/executionPlan.js";
+import { type PassiveExecutionPlan, executePlan, verifyPlanAdmission } from "./runtime/executionPlan.js";
 import { type RuntimeManifest, EffectCheckerFlags } from "./type-registry.js";
 import { FUNGI_RUNTIME_006 } from "./security-policy.js";
 import {
@@ -28,6 +28,7 @@ import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModCheck
 import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
 import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
 import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresSyncTierUnlowerable } from "./numeric-lowering.js";
+import { type NarrowFloatWidth, narrowFloatWidthOf, roundToNarrowFloat } from "./narrow-float.js";
 import { foldRequirementValues } from "./requirement-semantics.js";
 import { compareUtf16CodeUnits } from "@galerina/core-runtime-wasm";
 import { isProxy as isNodeProxy } from "node:util/types";
@@ -40,7 +41,9 @@ export type GalerinaValue =
   // (no silent precision loss). Routed through the checked i64-arith layer; see i64-arith.ts.
   | { readonly __tag: "int64";     readonly value: bigint }
   | { readonly __tag: "uint64";    readonly value: bigint }
-  | { readonly __tag: "float";     readonly value: number }
+  // E5 (PROVISIONAL, narrow-float.ts): `width` marks a Float32 (32) / Float16 (16) value — already rounded to
+  // that binary format. Absent = an f64 Float (or an unannotated literal/int, which adopts a narrow context).
+  | { readonly __tag: "float";     readonly value: number; readonly width?: NarrowFloatWidth }
   | { readonly __tag: "decimal";   readonly value: string }
   | { readonly __tag: "string";    readonly value: string }
   | { readonly __tag: "bool";      readonly value: boolean }
@@ -205,6 +208,10 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
     if (value.__tag === "int") return value.value >= 0 ? { __tag: "uint64", value: BigInt(value.value) } : { __tag: "runtimeError", message: "IntegerOverflow" };
     return { __tag: "runtimeError", message: `cannot represent ${value.__tag} as UInt64` };
   }
+  // E5 (PROVISIONAL): a declared Float32/Float16 slot holds a binary32/binary16 value — round on entry
+  // (Math.fround / f16round, ties-to-even). Overflow to ±Inf is the non-finite trap, never a silent Inf.
+  const narrow = narrowFloatWidthOf(declaredBase);
+  if (narrow !== undefined && (value.__tag === "float" || value.__tag === "int")) return mkNarrowFloat(value.value, narrow);
   return value;
 }
 
@@ -274,6 +281,38 @@ const FLOAT_NONFINITE_TRAP = "NonFiniteFloat";
  */
 function mkFloat(n: number): GalerinaValue {
   return Number.isFinite(n) ? { __tag: "float", value: n } : { __tag: "runtimeError", message: FLOAT_NONFINITE_TRAP };
+}
+
+/** E5 (PROVISIONAL): a Float32/Float16 value — `n` rounded to the width; a non-finite result traps (as mkFloat). */
+function mkNarrowFloat(n: number, width: NarrowFloatWidth): GalerinaValue {
+  const r = roundToNarrowFloat(n, width);
+  return Number.isFinite(r) ? { __tag: "float", value: r, width } : { __tag: "runtimeError", message: FLOAT_NONFINITE_TRAP };
+}
+
+/** A numeric literal operand (`0.1`, `2`, `-0.5`) adopts a narrow-float context instead of forcing f64. */
+function isNumericLiteralNode(node: AstNode): boolean {
+  if (node.kind === "numberLiteral") return true;
+  return node.kind === "unaryExpr" && node.value === "-" && node.children?.[0]?.kind === "numberLiteral";
+}
+
+/**
+ * E5 (PROVISIONAL, narrow-float.ts mixing rule): the narrow width a binary float op runs at, or undefined
+ * for the ordinary f64/int path. Narrow when at least one operand is a Float32/Float16 value and every other
+ * operand is a narrow value or a literal; a Float/Float64/Int VARIABLE operand promotes the op to f64.
+ */
+function narrowBinaryWidth(left: GalerinaValue, leftNode: AstNode, right: GalerinaValue, rightNode: AstNode): NarrowFloatWidth | undefined {
+  const w = (v: GalerinaValue, n: AstNode): NarrowFloatWidth | "flex" | 64 | undefined => {
+    if (v.__tag === "float") return v.width ?? (isNumericLiteralNode(n) ? "flex" : 64);
+    if (v.__tag === "int") return isNumericLiteralNode(n) ? "flex" : 64;
+    return undefined;
+  };
+  const wl = w(left, leftNode);
+  const wr = w(right, rightNode);
+  if (wl === undefined || wr === undefined || wl === 64 || wr === 64) return undefined;
+  if (wl === "flex" && wr === "flex") return undefined;
+  const nl = wl === "flex" ? 0 : wl;
+  const nr = wr === "flex" ? 0 : wr;
+  return (nl >= nr ? nl : nr) as NarrowFloatWidth;
 }
 
 /**
@@ -1295,7 +1334,7 @@ const STD_METHOD_NAMES = new Set([
   "startsWith", "endsWith", "contains", "includes", "split", "replace", "replaceAll",
   "slice", "encode", "encodedLength", "codePoints", "isEmpty", "toString", "toStr", "toText",
   "charAt", "indexOf", "lastIndexOf", "padStart", "padEnd", "repeat", "toChars",
-  "toInt", "toFloat", "toDecimal",
+  "toInt", "toFloat", "toDecimal", "matchesPattern", // D4: certified pattern method form (stdlib.ts); extract/replace stay unwired
   // Int / Float / Bool methods
   "abs",
   // Decimal partial-operator method forms (#53/#54): the obligation-carrying `/` and `%`
@@ -1656,6 +1695,19 @@ class Interpreter {
         const value: GalerinaValue = { __tag: "runtimeError", message };
         return this.buildResult(flowName, qualifier, startedAt, value, message);
       }
+      // E5 (PROVISIONAL): a Float32/Float16 parameter admits the nearest binary32/binary16 value (exactly what
+      // a Float32Array/Float16Array store or the WASM entry rounding does); an overflow fails closed.
+      const narrowParam = narrowFloatWidthOf(numericBaseType(paramType));
+      if (narrowParam !== undefined && (argVal.__tag === "float" || argVal.__tag === "int")) {
+        const coerced = mkNarrowFloat(argVal.value, narrowParam);
+        if (coerced.__tag === "runtimeError") {
+          const message = `Flow '${flowName}' received non-finite ${paramType} argument '${paramName}' after rounding; fail-closed`;
+          this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+          return this.buildResult(flowName, qualifier, startedAt, coerced, message);
+        }
+        admittedArgs.set(paramName, coerced);
+        continue;
+      }
       admittedArgs.set(paramName, argVal);
     }
     args = admittedArgs;
@@ -1714,6 +1766,15 @@ class Interpreter {
       ) {
         const ctx = this.getContext(flowName);
         try {
+          // RD-0363 P5: a caller-supplied plan is evidence, never a bearer token. It runs only if
+          // it passes admission; until an owner-approved signature verifier exists (P1) that
+          // gate never returns ALLOW, so this path refuses every plan rather than trusting one.
+          const admission = verifyPlanAdmission(plan);
+          if (!admission.admitted) {
+            throw new Error(
+              `execution plan refused by admission (verdict ${admission.verdict}): ${admission.reason ?? "no reason given"}`,
+            );
+          }
           const planResult = await executePlan(plan, this.capabilityHost, ctx);
           for (const entry of planResult.auditTrail) {
             this.auditEntries.push({ event: entry, fields: {}, timestamp: new Date().toISOString() });
@@ -1833,6 +1894,15 @@ class Interpreter {
         code: "FUNGI-RUNTIME-007",
         message: `Flow '${flowName}' is governed by a manifest that requires an audit entry, but AuditLog.write was not called.`,
       });
+    }
+
+    // E5 (PROVISIONAL): a Float32/Float16-returning flow returns a binary32/binary16 value (rounded once at
+    // the flow exit, matching the WASM return lane). Read from this flow's own node, not shared state.
+    if (runtimeError === undefined && flowNode !== undefined && (returnValue.__tag === "float" || returnValue.__tag === "int")) {
+      const kids = flowNode.children ?? [];
+      const rt = kids[kids.filter((c) => c.kind === "paramDecl").length]?.value;
+      const narrowRet = narrowFloatWidthOf(typeof rt === "string" ? numericBaseType(rt) : "");
+      if (narrowRet !== undefined) returnValue = mkNarrowFloat(returnValue.value, narrowRet);
     }
 
     // 0040/#70: output post-conditions — evaluate `invariant { ensure result … }` against the
@@ -2413,7 +2483,12 @@ class Interpreter {
         const targetName = node.value ?? "";
         const rhsNode = node.children?.[0];
         if (targetName === "" || rhsNode === undefined) return undefined;
-        const newValue = await this.evalExpr(rhsNode);
+        const rawValue = await this.evalExpr(rhsNode);
+        // E5 (PROVISIONAL): assigning into a declared Float32/Float16 binding rounds to its width.
+        const targetBase = numericBaseType(this.lookup(targetName)?.typeName ?? "");
+        const newValue = isCheckedTrap(rawValue) || narrowFloatWidthOf(targetBase) === undefined
+          ? rawValue
+          : coerceToDeclaredNumeric(targetBase, rawValue, rhsNode);
         if (isCheckedTrap(newValue)) return newValue; // 0038 fail-closed: don't assign + discard a checked trap
         if (!this.assign(targetName, newValue)) {
           this.diagnostics.push({
@@ -2650,7 +2725,8 @@ class Interpreter {
         // Step 1e: int64 negation through the checked layer so -INT64_MIN TRAPS (it overflows i64).
         if (op === "-" && operand.__tag === "int64") return i64R(i64NegChecked(operand.value));
         if (op === "-" && operand.__tag === "uint64") return u64R(u64NegChecked(operand.value)); // unsigned: traps for any x>0
-        if (op === "-" && operand.__tag === "float") return mkFloat(-operand.value);
+        // E5 (PROVISIONAL): negation is exact, so a Float32/Float16 value keeps its width.
+        if (op === "-" && operand.__tag === "float") return operand.width !== undefined ? mkNarrowFloat(-operand.value, operand.width) : mkFloat(-operand.value);
         return { __tag: "runtimeError", message: `Unary '${op}' not valid for ${operand.__tag}` };
       }
 
@@ -2823,6 +2899,32 @@ class Interpreter {
     if (left.__tag === "unresolved" && right.__tag === "unresolved") {
       if (op === "==") return boolVal(left.name === right.name);
       if (op === "!=") return boolVal(left.name !== right.name);
+    }
+
+    // E5 (PROVISIONAL): a Float32/Float16 op runs at its binary width — operands (incl. a literal) are
+    // rounded to it, an arithmetic result is rounded again (ties-to-even, Math.fround / f16round), matching
+    // the WASM lane's f32.demote_f64 / $fungi_round_f16. Comparisons compare the rounded operands.
+    const narrowW = (left.__tag === "float" || left.__tag === "int") && (right.__tag === "float" || right.__tag === "int")
+      ? narrowBinaryWidth(left, leftNode, right, rightNode)
+      : undefined;
+    if (narrowW !== undefined && (left.__tag === "float" || left.__tag === "int") && (right.__tag === "float" || right.__tag === "int")) {
+      const a = mkNarrowFloat(left.value, narrowW);
+      if (a.__tag !== "float") return a;
+      const b = mkNarrowFloat(right.value, narrowW);
+      if (b.__tag !== "float") return b;
+      switch (op) {
+        case "+": return mkNarrowFloat(a.value + b.value, narrowW);
+        case "-": return mkNarrowFloat(a.value - b.value, narrowW);
+        case "*": return mkNarrowFloat(a.value * b.value, narrowW);
+        case "/": return mkNarrowFloat(a.value / b.value, narrowW);
+        case "%": return mkNarrowFloat(a.value % b.value, narrowW);
+        case "<":  return floatCmp(a.value, b.value, (x, y) => x <  y);
+        case "<=": return floatCmp(a.value, b.value, (x, y) => x <= y);
+        case ">":  return floatCmp(a.value, b.value, (x, y) => x >  y);
+        case ">=": return floatCmp(a.value, b.value, (x, y) => x >= y);
+        case "==": return boolVal(a.value === b.value);
+        case "!=": return boolVal(a.value !== b.value);
+      }
     }
 
     // O(1) dispatch map — covers all common type × op × type combinations

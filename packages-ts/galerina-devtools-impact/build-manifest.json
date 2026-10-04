@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/devtools-impact",
+    "version": "1.0.0-beta.1"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "1dca34eb089eca47744491f861915d45c7e81fc6ec0fce0828d9c352b9352145",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "4a89b7deea4863af695ea83063e974ae2985840477e50b4a04e3cd6e133d468a"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "48c3e42b976918c39a6ee238d9d1d6093cc272c1a2b6d575043db34b88528d12"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "c8d21ff45ce5af4adc55605cc8aea99655a8cbb563c0f91388a4d55ba04edcc7"
+      },
+      {
+        "path": "bin/galerina-impact.mjs",
+        "sha256": "ea288025d86de7a858b5c90a3ce9502abe8dcc059088dcb3a7241d6147499400"
+      },
+      {
+        "path": "package.json",
+        "sha256": "9e1f9cdd2d6829dc0985b8b70d65b810508ad8e8c5512861687231f509075787"
+      },
+      {
+        "path": "src/git-changes.mjs",
+        "sha256": "07016d672c42a0e962bbe377f35cae98a5d130c162f5c63a8e397a578c0d9a3a"
+      },
+      {
+        "path": "src/impact-plan.mjs",
+        "sha256": "80df3250dc336514c4cf93f688c2c44023985df2d0d11e8ce3b73f8973f90939"
+      },
+      {
+        "path": "src/self-hosted/documentation-path.fungi",
+        "sha256": "4278b24440bf85ce5307d548b8461e4c710ce80713732b09477e4e0691c4dcfb"
+      },
+      {
+        "path": "tests/documentation-path-cases.mjs",
+        "sha256": "8e27d1f297f0639587b70c136cdbc9add47219f49d2a08c2215dc972043d5940"
+      },
+      {
+        "path": "tests/documentation-path-fungi-conversion.test.mjs",
+        "sha256": "8cd5d17f5dc4429fedab89039b09945ac9034fd8bef4226501f7a62ee4093e5f"
+      },
+      {
+        "path": "tests/git-changes.test.mjs",
+        "sha256": "f605f46005db7bb8010de56456ff9ebceb2271b9b44971d31b9208f670dfd03b"
+      },
+      {
+        "path": "tests/impact-plan.test.mjs",
+        "sha256": "302cf7e63bf956a39ea6e4d3eba6930bc8f35498ed5657eb57cddbd16adb4ffc"
+      }
+    ]
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-framework-app-kernel/src/self-hosted",
+    "file": "route-defaults.fungi",
+    "module": "route-defaults",
+    "ledgerSha256": "b7a27319ea50bfd09525ab151a33851fd2717137a6e2c101b4ed4fdcd8780bff"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-framework-app-kernel/tests/rd0361-route-defaults-execution.test.mjs",
+    "capturedAtCommit": "9651ce2e5903a3617b0b93b062f8d782b7c034c1"
+  },
+  "exports": [
+    {
+      "name": "secureMaxBodyBytes",
+      "params": [
+        "bool"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "secureMaxConcurrent",
+      "params": [
+        "bool"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "isBodySizeRelaxation",
+      "params": [
+        "int",
+        "bool"
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "isFieldPolicyRelaxation",
+      "params": [
+        "string"
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "isAuthRelaxation",
+      "params": [
+        "string"
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "idempotentByDefault",
+      "params": [
+        "string"
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "isIdempotencyRelaxation",
+      "params": [
+        "string",
+        "bool"
+      ],
+      "returns": "bool"
+    }
+  ],
+  "caseCount": 59,
+  "casesSha256": "9c41f76443323f763d83f5ab6725723f536928c101053b3134f6c7d23951ad7e",
+  "cases": [
+    {
+      "id": "maxbody-0",
+      "export": "secureMaxBodyBytes",
+      "args": [
+        false
+      ],
+      "expected": 262144
+    },
+    {
+      "id": "maxconc-0",
+      "export": "secureMaxConcurrent",
+      "args": [
+        false
+      ],
+      "expected": 10
+    },
+    {
+      "id": "maxbody-1",
+      "export": "secureMaxBodyBytes",
+      "args": [
+        true
+      ],
+      "expected": 65536
+    },
+    {
+      "id": "maxconc-1",
+      "export": "secureMaxConcurrent",
+      "args": [
+        true
+      ],
+      "expected": 5
+    },
+    {
+      "id": "bodyrelax-0-0",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        -2147483648,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-1",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        -1,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-2",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        0,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-3",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        1,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-4",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65535,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-5",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65536,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-6",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65537,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-7",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262143,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-8",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262144,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-0-9",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262145,
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-0-10",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        2147483647,
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-1-0",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        -2147483648,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-1",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        -1,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-2",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        0,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-3",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        1,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-4",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65535,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-5",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65536,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "bodyrelax-1-6",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        65537,
+        true
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-1-7",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262143,
+        true
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-1-8",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262144,
+        true
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-1-9",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        262145,
+        true
+      ],
+      "expected": true
+    },
+    {
+      "id": "bodyrelax-1-10",
+      "export": "isBodySizeRelaxation",
+      "args": [
+        2147483647,
+        true
+      ],
+      "expected": true
+    },
+    {
+      "id": "field-deny",
+      "export": "isFieldPolicyRelaxation",
+      "args": [
+        "deny"
+      ],
+      "expected": false
+    },
+    {
+      "id": "field-allow",
+      "export": "isFieldPolicyRelaxation",
+      "args": [
+        "allow"
+      ],
+      "expected": true
+    },
+    {
+      "id": "field-warn",
+      "export": "isFieldPolicyRelaxation",
+      "args": [
+        "warn"
+      ],
+      "expected": true
+    },
+    {
+      "id": "field-empty",
+      "export": "isFieldPolicyRelaxation",
+      "args": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "id": "field-upper-deny",
+      "export": "isFieldPolicyRelaxation",
+      "args": [
+        "Deny"
+      ],
+      "expected": true
+    },
+    {
+      "id": "auth-public",
+      "export": "isAuthRelaxation",
+      "args": [
+        "public"
+      ],
+      "expected": true
+    },
+    {
+      "id": "auth-required",
+      "export": "isAuthRelaxation",
+      "args": [
+        "required"
+      ],
+      "expected": false
+    },
+    {
+      "id": "auth-empty",
+      "export": "isAuthRelaxation",
+      "args": [
+        ""
+      ],
+      "expected": false
+    },
+    {
+      "id": "auth-upper-public",
+      "export": "isAuthRelaxation",
+      "args": [
+        "Public"
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-post",
+      "export": "idempotentByDefault",
+      "args": [
+        "POST"
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-post-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "POST",
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-post-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "POST",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-put",
+      "export": "idempotentByDefault",
+      "args": [
+        "PUT"
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-put-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "PUT",
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-put-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "PUT",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-patch",
+      "export": "idempotentByDefault",
+      "args": [
+        "PATCH"
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-patch-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "PATCH",
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-patch-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "PATCH",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-delete",
+      "export": "idempotentByDefault",
+      "args": [
+        "DELETE"
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-delete-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "DELETE",
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "idemrelax-delete-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "DELETE",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-get",
+      "export": "idempotentByDefault",
+      "args": [
+        "GET"
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-get-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "GET",
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-get-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "GET",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-head",
+      "export": "idempotentByDefault",
+      "args": [
+        "HEAD"
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-head-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "HEAD",
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-head-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "HEAD",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-options",
+      "export": "idempotentByDefault",
+      "args": [
+        "OPTIONS"
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-options-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "OPTIONS",
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-options-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "OPTIONS",
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "idem-lower-post",
+      "export": "idempotentByDefault",
+      "args": [
+        "post"
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-lower-post-0",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "post",
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "idemrelax-lower-post-1",
+      "export": "isIdempotencyRelaxation",
+      "args": [
+        "post",
+        true
+      ],
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,3769 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-tower-citizen/src/self-hosted",
+    "file": "transport-fsm.fungi",
+    "module": "transport-fsm",
+    "ledgerSha256": "5c91fbbb1002a421662d2a9f93801421b1055f026c9ec5ec54b6cf29d24733f8"
+  },
+  "oracle": {
+    "kind": "typescript-shadow-capture",
+    "source": "packages-ts/galerina-tower-citizen/src/transport-fsm.ts",
+    "capturedAtCommit": "9651ce2e5903a3617b0b93b062f8d782b7c034c1"
+  },
+  "exports": [
+    {
+      "name": "s4NextState",
+      "params": [
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "s4Erased",
+      "params": [
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "s4NextHasKeys",
+      "params": [
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ],
+      "returns": "int"
+    },
+    {
+      "name": "s4NextEnteredAt",
+      "params": [
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ],
+      "returns": "int"
+    }
+  ],
+  "caseCount": 264,
+  "casesSha256": "6cbeb7a35c14c59f1b89611663ca01fc937e43b1b0baa56dd9e42f0dc232f348",
+  "cases": [
+    {
+      "id": "state-est-keys-fault-150",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-keys-fault-150",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 150
+    },
+    {
+      "id": "state-est-keys-fault-0",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-keys-fault-0",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "state-est-keys-fatal",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-est-keys-fatal",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-est-keys-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-keys-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-tick-100",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-tick-100",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-tick-599",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-tick-599",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-tick-600",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-tick-600",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-tick-601",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-tick-601",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-est-keys-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-est-keys-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-keys-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-keys-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-keys-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 150
+    },
+    {
+      "id": "state-est-keys-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-keys-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-keys-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-est-keys-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-fault-150",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-nokeys-fault-150",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 150
+    },
+    {
+      "id": "state-est-nokeys-fault-0",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-nokeys-fault-0",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "state-est-nokeys-fatal",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-est-nokeys-fatal",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-tick-100",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-tick-100",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-tick-599",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-tick-599",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-tick-600",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-tick-600",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-tick-601",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-tick-601",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-est-nokeys-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-est-nokeys-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-est-nokeys-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 150
+    },
+    {
+      "id": "state-est-nokeys-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-est-nokeys-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-est-nokeys-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-est-nokeys-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        0,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-fault-150",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-100-fault-150",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-keys-100-fault-0",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-100-fault-0",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-keys-100-fatal",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-100-fatal",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-100-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-100-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-tick-100",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-100-tick-100",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-keys-100-tick-599",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-100-tick-599",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-keys-100-tick-600",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-100-tick-600",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-100-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-100-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-tick-601",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-100-tick-601",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-100-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-100-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-100-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-100-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-100-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-100-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-100-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-100-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-100-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-100-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-keys-100-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-rec-keys-100-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-100-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-100-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-fault-150",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-nokeys-100-fault-150",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-nokeys-100-fault-0",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-nokeys-100-fault-0",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-nokeys-100-fatal",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-nokeys-100-fatal",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-tick-100",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-nokeys-100-tick-100",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-nokeys-100-tick-599",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-nokeys-100-tick-599",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-nokeys-100-tick-600",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-nokeys-100-tick-600",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-tick-601",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-nokeys-100-tick-601",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-nokeys-100-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-nokeys-100-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-nokeys-100-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-nokeys-100-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 100
+    },
+    {
+      "id": "state-rec-nokeys-100-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-rec-nokeys-100-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-nokeys-100-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-nokeys-100-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        0,
+        100,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-fault-150",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-fault-150",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-fault-0",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-fault-0",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-fatal",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-nullclk-fatal",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-nullclk-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-nullclk-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-tick-100",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-tick-100",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-tick-599",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-tick-599",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-tick-600",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-tick-600",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-tick-601",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-tick-601",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-rec-keys-nullclk-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "keys-rec-keys-nullclk-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-rec-keys-nullclk-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "erased-rec-keys-nullclk-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-rec-keys-nullclk-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "erased-rec-keys-nullclk-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-rec-keys-nullclk-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 1
+    },
+    {
+      "id": "at-rec-keys-nullclk-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-fault-150",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-fault-150",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-fault-150",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-fault-150",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-fault-0",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-fault-0",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-fault-0",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-fault-0",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-fatal",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-fatal",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-fatal",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-fatal",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        3,
+        0,
+        0,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-tick-100",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-tick-100",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-tick-100",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-tick-100",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        100,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-tick-599",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-tick-599",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-tick-599",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-tick-599",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        599,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-tick-600",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-tick-600",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-tick-600",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-tick-600",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        600,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-tick-601",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-tick-601",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-tick-601",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-tick-601",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        601,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-tick-9999",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-tick-9999",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-tick-9999",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-tick-9999",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        2,
+        0,
+        9999,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-reverify-deny",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-reverify-deny",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-reverify-deny",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-reverify-deny",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        -1,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-reverify-indet",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-reverify-indet",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-reverify-indet",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-reverify-indet",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        0,
+        150,
+        500
+      ],
+      "expected": -1
+    },
+    {
+      "id": "state-closed-reverify-allow",
+      "export": "s4NextState",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 2
+    },
+    {
+      "id": "erased-closed-reverify-allow",
+      "export": "s4Erased",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "keys-closed-reverify-allow",
+      "export": "s4NextHasKeys",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": 0
+    },
+    {
+      "id": "at-closed-reverify-allow",
+      "export": "s4NextEnteredAt",
+      "args": [
+        2,
+        0,
+        -1,
+        1,
+        1,
+        150,
+        500
+      ],
+      "expected": -1
+    }
+  ]
+}

@@ -1,0 +1,3897 @@
+{
+  "schema": "galerina.rd0361.frozen-reference.v2",
+  "rd": "RD-0361",
+  "twin": {
+    "dir": "packages-ts/galerina-core-network/src/self-hosted",
+    "file": "cors-policy.fungi",
+    "module": "cors-policy",
+    "ledgerSha256": "a95a461f4e183e197fa8830d04006fc0beb2d17386b664c3da6f8f363dff3261"
+  },
+  "oracle": {
+    "kind": "differential-spec-capture",
+    "source": "packages-ts/galerina-core-network/tests/rd0361-cors-policy-execution.test.mjs",
+    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+  },
+  "exports": [
+    {
+      "name": "admit",
+      "params": [],
+      "returns": "k3"
+    },
+    {
+      "name": "deny",
+      "params": [],
+      "returns": "k3"
+    },
+    {
+      "name": "corsVerdict",
+      "params": [
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool",
+        "bool"
+      ],
+      "returns": "k3"
+    }
+  ],
+  "caseCount": 258,
+  "casesSha256": "ec95594e8485f56ab63d6c02a2a385f22726c124492a4415129243cc652c527c",
+  "cases": [
+    {
+      "id": "admit",
+      "export": "admit",
+      "args": [],
+      "expected": 1
+    },
+    {
+      "id": "deny",
+      "export": "deny",
+      "args": [],
+      "expected": -1
+    },
+    {
+      "id": "cors-0",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-1",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-2",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-3",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-4",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-5",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-6",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-7",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-8",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-9",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-10",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-11",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-12",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-13",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-14",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-15",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-16",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-17",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-18",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-19",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-20",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-21",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-22",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-23",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-24",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-25",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-26",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-27",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-28",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-29",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-30",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-31",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-32",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-33",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-34",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-35",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-36",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-37",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-38",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-39",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-40",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-41",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-42",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-43",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-44",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-45",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-46",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-47",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-48",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-49",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-50",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-51",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-52",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-53",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-54",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-55",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-56",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-57",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-58",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-59",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-60",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-61",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-62",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-63",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-64",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-65",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-66",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-67",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-68",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-69",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-70",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-71",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-72",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-73",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-74",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-75",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-76",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-77",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-78",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-79",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-80",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-81",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-82",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-83",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-84",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-85",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-86",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-87",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-88",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-89",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-90",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-91",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-92",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-93",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-94",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-95",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-96",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-97",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-98",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-99",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-100",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-101",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-102",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-103",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-104",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-105",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-106",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-107",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-108",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-109",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-110",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-111",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-112",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-113",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-114",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-115",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-116",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-117",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-118",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-119",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-120",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-121",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-122",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-123",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-124",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-125",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-126",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-127",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-128",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-129",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-130",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-131",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-132",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-133",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-134",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-135",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-136",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-137",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-138",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-139",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-140",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-141",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-142",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-143",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-144",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-145",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-146",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-147",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-148",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-149",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-150",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-151",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-152",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-153",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-154",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-155",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-156",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-157",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-158",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-159",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-160",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-161",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-162",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-163",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-164",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-165",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-166",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-167",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-168",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-169",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-170",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-171",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-172",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-173",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-174",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-175",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-176",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-177",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-178",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-179",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-180",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-181",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-182",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-183",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-184",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-185",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-186",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-187",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-188",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-189",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-190",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-191",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-192",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-193",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-194",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-195",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-196",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-197",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-198",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-199",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-200",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-201",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-202",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-203",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-204",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-205",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-206",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-207",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-208",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-209",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-210",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-211",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-212",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-213",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-214",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-215",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-216",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-217",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-218",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-219",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-220",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-221",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-222",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-223",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-224",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-225",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-226",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-227",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-228",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-229",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-230",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-231",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-232",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-233",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-234",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-235",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-236",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-237",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-238",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-239",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-240",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-241",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-242",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-243",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-244",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-245",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-246",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-247",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-248",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-249",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-250",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-251",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-252",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-253",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    },
+    {
+      "id": "cors-254",
+      "export": "corsVerdict",
+      "args": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cors-255",
+      "export": "corsVerdict",
+      "args": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "expected": -1
+    }
+  ]
+}

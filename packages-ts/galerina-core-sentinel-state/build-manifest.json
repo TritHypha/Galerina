@@ -1,0 +1,163 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-sentinel-state",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "764b9416961bc2f9337a973d0d9b2c5bc73cd1d56056e8bb00c1a1c071932778",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "3da070e1f751f6538f6ebfd11fdb022cdef8df142a4ecfbcdb72495a43e97fab"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "7681b1da7e9823457c1723018212312ee0e4b70b29c68d6e01d706362a63ba14"
+      },
+      {
+        "path": "ARCHITECTURE_ISSUES.md",
+        "sha256": "86a04e1e96648d8ad0b4b424ad1bb76aa973ff477ceaa82ecdd364bbf931437f"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "native/README.md",
+        "sha256": "19fab5727e21266b330971c09cd4fedbbcebd4da7ff351a5a02cb4a52d66fbd9"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "560439a23bc273830f6996fa897e36e4594b5031e178c9d42f37dfa2199121ec"
+      },
+      {
+        "path": "package.json",
+        "sha256": "32acbfa29c8078a00e625bf13e413422000818a77b6ac573c052aec87c4bb9b6"
+      },
+      {
+        "path": "src/atomic-writer.ts",
+        "sha256": "cfefc6136e9d4b57a8ca9c88eed19b2c874c306f94e5f702c29a036ed1c0dae2"
+      },
+      {
+        "path": "src/cold-boot.ts",
+        "sha256": "b8a4c94aff1ae846fe501a02289d21fb113528a889ac5022aaada367ea08d170"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "8bf42dcf00a968e313a606dba055cd0f48daf32b3be5d95ed04f47e4d5aa7dec"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "5a4cea466f9f072e809d12ceb0c204e86910a9f3c10e03c433833c95255f2c1e"
+      },
+      {
+        "path": "src/self-hosted/cold-boot.fungi",
+        "sha256": "5040e0b1ff890f602b8629f6205cee95f4236c502a446579f9184f27d22cf996"
+      },
+      {
+        "path": "src/self-hosted/local-key-id.fungi",
+        "sha256": "6f70a3af70b03e05f32b373bfcb2d5de58919957bc4f4b34e3a96fd9f61d9af1"
+      },
+      {
+        "path": "src/self-hosted/restore-verdict-export-name.fungi",
+        "sha256": "2091a9d180e44c4ba9ae10882acd0c4f5453627db4fb21253d0bae452a05835f"
+      },
+      {
+        "path": "src/self-hosted/restore-verdict-package-identity.fungi",
+        "sha256": "98f4fe61617f4cdc67cd322f4c107ce36a91b2a154b27cd151b01321ed0d7cdf"
+      },
+      {
+        "path": "src/self-hosted/snapshot-version.fungi",
+        "sha256": "9d010c23205947ff970c25756f7124e5d1bcff1fe2a4c1c5d99ed0be1a285349"
+      },
+      {
+        "path": "src/state-serializer.ts",
+        "sha256": "30779290b805fbb75fcc278fd519570a65816c3a83d4ad9e472bda7145aa4ca5"
+      },
+      {
+        "path": "tests/_tmp.mjs",
+        "sha256": "491b33445927dc0d3e3e60cbead4ee013a4016b29d61b75687da8da6acce46c9"
+      },
+      {
+        "path": "tests/atomic-writer-durability.test.mjs",
+        "sha256": "1022619d7e9f8de429eab5afc86d9154487b0b4106b16df75deed64ac989f623"
+      },
+      {
+        "path": "tests/atomic-writer.test.mjs",
+        "sha256": "788ae2bd4505649a921e88dce916bb53fe3d643fa899b4e402e942757de630d2"
+      },
+      {
+        "path": "tests/cold-boot.test.mjs",
+        "sha256": "cd11be4066db72e5b5d33f0fc69d77076d7f2841fa202e7e15c187c7519cd5bb"
+      },
+      {
+        "path": "tests/epoch-serializer.test.mjs",
+        "sha256": "4b816fdabd05fbf7304c9969cba5c06937465e403357a5c33d5a258c8626f954"
+      },
+      {
+        "path": "tests/errors.test.mjs",
+        "sha256": "69dc634f270006e774359209f569ee79f939a30d8db33adaba23f8765d19387a"
+      },
+      {
+        "path": "tests/fifo-live-linux.mjs",
+        "sha256": "3888dfe4350c6aa030b454ba60190a1fd3e9501aeda1b4d5c7cf29d32faefb1c"
+      },
+      {
+        "path": "tests/provider-weak-key.test.mjs",
+        "sha256": "2b15ebfe757fe5ed6f14f9e0b53071616c2be8b8b368b425e541be9f9de69d8f"
+      },
+      {
+        "path": "tests/q3-fifo-toctou-child.mjs",
+        "sha256": "47ad073875060de4ee826efacd020fbb8b98a916df2edc5103fd59d7d5a30310"
+      },
+      {
+        "path": "tests/q3-fifo-toctou-preload.cjs",
+        "sha256": "d35ebfe208bce9fde419bc54316cf544fd4e024a3e8743d630988616dd5d1ddf"
+      },
+      {
+        "path": "tests/q3-fifo-toctou-registry-child.mjs",
+        "sha256": "f80c52ff79c156221fed662f6974aaf47eb098df77f54759f5e5e4f32cce8fe7"
+      },
+      {
+        "path": "tests/q3-fifo-toctou.test.mjs",
+        "sha256": "c0e6875a3f158a204e3acdbdc13d27863b5e4e5509c2cf784662550e037ce261"
+      },
+      {
+        "path": "tests/rd0361-cold-boot-execution.test.mjs",
+        "sha256": "23dda22ce0a58ca5a8082ca38b662fcb735417d67e0e022ec4a2ac263e388c91"
+      },
+      {
+        "path": "tests/restore-authority.test.mjs",
+        "sha256": "07ca560d10dd87ad5b5b2c13a97e9de8d5cd5f29f178d94b6d741650def23e08"
+      },
+      {
+        "path": "tests/serializer.test.mjs",
+        "sha256": "0bc2cd049d485713c9ff74bd8d101251b6cad5042eccc08f1a84ff6cc378b238"
+      },
+      {
+        "path": "tests/strict-key.test.mjs",
+        "sha256": "e155a3ff57ead7d2b507f79d648cb8ade0323349a029fc2eeb6711fb05d8e282"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "5e6dfdaed284cc82464515a705f42e2c8be798ba16249f3f5de5ffb15724d4e8"
+      }
+    ]
+  }
+}

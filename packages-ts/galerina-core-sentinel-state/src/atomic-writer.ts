@@ -1,8 +1,8 @@
 // atomic-writer.ts — crash-safe persistence via double-buffered atomic rename.
 //
 // A snapshot must NEVER be observed half-written. We exploit POSIX/NTFS rename
-// atomicity: write the full payload to a sibling `.tmp` file, fsync-free flush,
-// then renameSync over the live `.snap`. A crash before the rename leaves the
+// atomicity: write the full payload to a sibling `.tmp` file, fsync it,
+// then renameSync over the live `.snap` and fsync the directory (POSIX). A crash before the rename leaves the
 // previous good `.snap` intact; a crash after leaves the new one. There is no
 // in-between state a reader can see.
 //
@@ -13,6 +13,7 @@ import {
   closeSync,
   constants,
   fstatSync,
+  fsyncSync,
   lstatSync,
   mkdirSync,
   openSync,
@@ -65,6 +66,37 @@ function openSnapshotFd(path: string, write: boolean, name: string): number {
   }
 }
 
+/** Write every byte of `bytes` to `fd`; a single writeSync may legally write fewer bytes than asked. */
+function writeAll(fd: number, bytes: Uint8Array): void {
+  let offset = 0;
+  while (offset < bytes.length) {
+    const written = writeSync(fd, bytes, offset, bytes.length - offset);
+    if (!Number.isSafeInteger(written) || written <= 0) {
+      throw new Error(`snapshot write made no progress at byte ${offset} of ${bytes.length}`);
+    }
+    offset += written;
+  }
+}
+
+/**
+ * Persist a directory entry change (the rename) where the platform supports it. POSIX can open a
+ * directory and fsync it; Windows cannot open a directory handle for fsync, so the step is skipped
+ * there. A filesystem that reports fsync of directories as unsupported (EINVAL / ENOTSUP) is tolerated;
+ * any other failure propagates, so the caller never believes an unsynced checkpoint is durable.
+ */
+function fsyncDirectory(dir: string): void {
+  if (process.platform === "win32") return;
+  const dfd = openSync(dir, constants.O_RDONLY);
+  try {
+    fsyncSync(dfd);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code !== "EINVAL" && code !== "ENOTSUP") throw err;
+  } finally {
+    closeSync(dfd);
+  }
+}
+
 function assertContained(root: string, candidate: string): string {
   const resolvedRoot = resolve(root);
   const resolved = resolve(candidate);
@@ -99,7 +131,11 @@ export class AtomicWriter {
     return assertContained(this.#dir, join(this.#dir, `${admitSnapshotName(name)}.tmp`));
   }
 
-  /** Atomically persist a snapshot: exclusive `.tmp` create, then rename over `.snap`. */
+  /**
+   * Atomically and durably persist a snapshot (zero-trust default, owner may revisit): exclusive `.tmp`
+   * create, write EVERY byte, fsync the file, rename over `.snap`, then fsync the directory where the
+   * platform supports it. Any failure before the rename leaves the previous `.snap` live.
+   */
   write(name: string, snap: Snapshot): void {
     const tmp = this.#temp(name);
     const live = this.#live(name);
@@ -116,12 +152,21 @@ export class AtomicWriter {
     }
     const fd = openSync(tmp, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600);
     try {
-      writeSync(fd, payload, undefined, "utf8");
-    } finally {
+      writeAll(fd, Buffer.from(payload, "utf8"));
+      fsyncSync(fd);
+    } catch (err) {
       closeSync(fd);
+      try {
+        unlinkSync(tmp); // never leave a partial / unsynced temp file behind
+      } catch {
+        /* best-effort: the next write unlinks a stale .tmp before its exclusive create */
+      }
+      throw err;
     }
+    closeSync(fd);
     this.#refuseLink(live, name);
     renameSync(tmp, live);
+    fsyncDirectory(this.#dir);
   }
 
   /** Read the live snapshot, or null if none exists. Throws on malformed JSON. */

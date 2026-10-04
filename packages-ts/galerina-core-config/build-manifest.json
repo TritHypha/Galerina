@@ -1,0 +1,127 @@
+{
+  "artifacts": {
+    "status": "NO_WASM_ARTIFACT",
+    "wasm": []
+  },
+  "compiler": {
+    "name": "@galerina/core-compiler",
+    "version": "1.0.0-beta.2"
+  },
+  "flags": [],
+  "generatedBy": "scripts/gen-package-standard-manifests.mjs",
+  "package": {
+    "name": "@galerina/core-config",
+    "version": "1.0.0-beta.2"
+  },
+  "reproducible": {
+    "method": "content-addressed-git-index",
+    "timestamp": "NONE"
+  },
+  "schemaVersion": "galerina.package.build-manifest.v1",
+  "sources": {
+    "aggregateSha256": "a86363fe4bd0f8ede92aee3a46c165aeb99e009feee02b74156fe7fe4069f1fa",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "path": ".graph/BOUNDARY.md",
+        "sha256": "402c5e451fbfe287aabbe993a3612d96d82c559d4182e69a7e2e0dabf96dc183"
+      },
+      {
+        "path": ".graph/boundary-policy.json",
+        "sha256": "d84c12caade8b19f8d36bebde9e576d40169cfdc4b7d3cc9200d0c1b9c234196"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a28e863c571b17714fed35c718ddc8bea5cef4cd05f1a45f34737e67182359df"
+      },
+      {
+        "path": "README.md",
+        "sha256": "942cc0e187f334137cfec926b335dbc23bdb3eb780c00027e6c724f9870395a1"
+      },
+      {
+        "path": "TODO.md",
+        "sha256": "d4f226bf8c67e6b3fc81bc1f5183de0d91c1deaa1a2e2701776462396e459c2a"
+      },
+      {
+        "path": "examples/project-config.json",
+        "sha256": "9bc1f67cde920a0e24b4132a89a918422866593c75f37ba93480367825e07425"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "3a2259808dc5e8fbc11f240664b8e2f74b42c23cfc3eb889cf87644b3f4c2288"
+      },
+      {
+        "path": "package.json",
+        "sha256": "0c12431687b522a0159ce1ed56b6d94f7c1a2afdadb861607c5e9ae9d7e78c69"
+      },
+      {
+        "path": "src/governance.ts",
+        "sha256": "c42ba2b580c9217622523281f847bae9da1bcddce64f1ddfa9853489907fd28a"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "7721bdf8239e4c55a37b7fe57f9e29706c11b167e2a56874f404f0b010485596"
+      },
+      {
+        "path": "src/node-util-shim.d.ts",
+        "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
+      },
+      {
+        "path": "src/posture.ts",
+        "sha256": "80a02d535ff5f61f39109d2e782b2a202424d06b04716e38c2cc42cded9f26e0"
+      },
+      {
+        "path": "src/self-hosted/allow-localhost-env.fungi",
+        "sha256": "18b6f60cc19bc90808ef566cffa2f9b9fd4a410c27348d7db6ffd6ef6c587579"
+      },
+      {
+        "path": "src/self-hosted/allow-plaintext-egress-env.fungi",
+        "sha256": "2f17acaa6151959fac51c725376306693b6a058a31a7deb9ed1eba57a058ae9b"
+      },
+      {
+        "path": "src/self-hosted/default-governance-mode.fungi",
+        "sha256": "6394a6788084e5c29ad0fa162f521396a8522e10a37a6e26cac91820c9166365"
+      },
+      {
+        "path": "src/self-hosted/default-security-posture.fungi",
+        "sha256": "9068c971d152f03cd502d90d5af200fd592d3a5346e5aae2b8aceb503bd99aa0"
+      },
+      {
+        "path": "src/self-hosted/egress-allowed-hosts-env.fungi",
+        "sha256": "7253b68f11200c7223bc514d39c0160fd124532a4fd33abd2b598d8f4d2f37b3"
+      },
+      {
+        "path": "tests/config-contracts.test.mjs",
+        "sha256": "f7115e061a92e005c2a45036326336bb5289d2810ef5f6a130b33fd2b15e0ed7"
+      },
+      {
+        "path": "tests/egress-tls.test.mjs",
+        "sha256": "1be7c333571e25c5bb0640ad796ed5af00bc12d6e3c9c6eb571ad257a07f28dd"
+      },
+      {
+        "path": "tests/environment-config-v2.test.mjs",
+        "sha256": "0a000a9d16ff6b179958b840e51c7b0b7ed05a66992204d17ffd512a2ffe9f8b"
+      },
+      {
+        "path": "tests/environment-mode-fungi-conversion.test.mjs",
+        "sha256": "1475f111cb9b963fe14adc2c0522e8f5e2aadebf0cd08f2eadd90f8f1f8b99c5"
+      },
+      {
+        "path": "tests/governance.test.mjs",
+        "sha256": "112e5eb472b1aa4fc6c091a4ea05ec5bbe6583e2145a2ebb44c67aa4e8fa2a52"
+      },
+      {
+        "path": "tests/posture.test.mjs",
+        "sha256": "480cea00d6eb6ec7a6993effccc21c09e7e25335ec508d42a95ffe13abe3a597"
+      },
+      {
+        "path": "tests/secret-report-invariant.test.mjs",
+        "sha256": "0db2b63f1ae69154414e7e82cc42f8653e3571f583a0113053cc62d092151492"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "67f7b97738e0eaece2691fe8963d9df6420fda53bcf5facf5813c38c15322082"
+      }
+    ]
+  }
+}

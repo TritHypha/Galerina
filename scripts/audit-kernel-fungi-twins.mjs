@@ -18,6 +18,7 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ledgerPin, loadFrozenReference } from "./lib/rd0361-frozen-reference.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const GALERINA = join(ROOT, "galerina.mjs");
@@ -77,6 +78,49 @@ function rawExecutionState(dir, twinFile) {
   return "shadow";
 }
 
+// RD-0361 frozen-reference column (S2 added it report-only; S6 ENFORCES it). An authoritative twin is
+// `frozen` when its package carries tests/fixtures/rd0361-<stem>.frozen.json and the shared strict loader
+// accepts it against the twin's ledger pin; `invalid` when the file exists but is refused; else `absent`.
+function frozenState(dir, twinFile, ledgerText) {
+  const stem = twinFile.replace(/\.fungi$/, "");
+  const fixture = join(ROOT, dir.replace(/\/src\/self-hosted$/, ""), "tests", "fixtures", `rd0361-${stem}.frozen.json`);
+  if (!existsSync(fixture)) return "absent";
+  try {
+    loadFrozenReference(fixture, { dir, file: twinFile, ledgerSha256: ledgerPin(ledgerText, dir, twinFile) });
+    return "frozen";
+  } catch {
+    return "invalid";
+  }
+}
+
+// RD-0361 S6 named deferral list: authoritative twins whose same-stem .ts remains but whose frozen set is
+// deliberately NOT captured yet. Memory-territory twins only, deferred to slice S-M (owner sequencing against
+// RD-1413..1415). The list is EXACT: an entry that is frozen, not authoritative, or never seen is itself RED,
+// so the exemption cannot outlive its reason or silently widen.
+const FROZEN_DEFERRED = new Map([
+  ["packages-ts/galerina-core-sentinel-memory/src/self-hosted/memory-validator.fungi", "memory-territory twin; deferred to S-M"],
+  ["packages-ts/galerina-framework-app-kernel/src/self-hosted/secret-gate.fungi", "memory-territory twin; deferred to S-M"],
+  ["packages-ts/galerina-framework-app-kernel/src/self-hosted/kernel.fungi", "memory-territory twin; deferred to S-M"],
+]);
+
+// The frozen-reference enforcement rule (pure, self-tested). For an AUTHORITATIVE twin:
+//   frozen  (valid set, not deferred)              → "frozen"        OK
+//   frozen  but still on the deferral list         → "stale-deferral" RED (the list must stay exact)
+//   invalid (set present, loader refuses it)       → "invalid"        RED
+//   absent  + no same-stem .ts left                → "not-required"   OK (nothing left for the set to guard)
+//   absent  + same-stem .ts + named deferral       → "deferred"       OK, reported as unassessed-named
+//   absent  + same-stem .ts + not deferred         → "missing"        RED (an authoritative twin with no frozen set)
+function frozenVerdict(state, tsPresent, deferred) {
+  if (state === "invalid") return "invalid";
+  if (state === "frozen") return deferred ? "stale-deferral" : "frozen";
+  if (!tsPresent) return "not-required";
+  return deferred ? "deferred" : "missing";
+}
+const FROZEN_RED = new Set(["invalid", "stale-deferral", "missing"]);
+function sameStemTsPresent(dir, twinFile) {
+  return existsSync(join(ROOT, dir.replace(/\/self-hosted$/, ""), twinFile.replace(/\.fungi$/, ".ts")));
+}
+
 // The RED-on-regression rule (pure, self-tested). rawState ∈ {shadow, differential}:
 //   authoritative-declared + differential (proof present) → "authoritative"
 //   authoritative-declared + shadow      (proof GONE)     → "regressed"   (RED — trust-root fail-open)
@@ -101,7 +145,29 @@ if (process.argv.includes("--self-test")) {
       process.exit(2);
     }
   }
+  const frozenCases = [
+    ["frozen", true, false, "frozen"],
+    ["frozen", false, false, "frozen"],
+    ["frozen", true, true, "stale-deferral"],
+    ["invalid", false, false, "invalid"],
+    ["invalid", true, true, "invalid"],
+    ["absent", false, false, "not-required"],
+    ["absent", true, true, "deferred"],
+    ["absent", true, false, "missing"], // planted-missing control: an authoritative twin with its .ts and no set
+  ];
+  for (const [state, ts, deferred, want] of frozenCases) {
+    const got = frozenVerdict(state, ts, deferred);
+    if (got !== want) {
+      console.error(`SELF-TEST FAIL: frozenVerdict(${state}, ${ts}, ${deferred}) = ${got}, want ${want} (frozen-reference enforcement neutered)`);
+      process.exit(2);
+    }
+  }
+  if (!FROZEN_RED.has(frozenVerdict("absent", true, false))) {
+    console.error("SELF-TEST FAIL: planted-missing frozen set is not RED (frozen-reference enforcement neutered)");
+    process.exit(2);
+  }
   console.log("  self-test: authority classifier fires — differential→authoritative, shadow-when-declared→regressed (RED) ✅");
+  console.log("  self-test: frozen-reference enforcement fires — planted-missing / invalid / stale-deferral are RED ✅");
   process.exit(0);
 }
 
@@ -118,6 +184,9 @@ if (ledgerError) {
 // moved / deleted) is a flip target that no longer exists, and must not silently pass (you believe a trust root
 // is verified when it isn't there at all). Tracked here, enforced after the sweep.
 const seenAuthoritative = new Set();
+const frozenCol = { frozen: 0, "not-required": 0, deferred: 0, invalid: 0, "stale-deferral": 0, missing: 0 };
+const seenDeferred = new Set();
+const ledgerText = existsSync(LEDGER_PATH) ? readFileSync(LEDGER_PATH, "utf8") : "";
 
 for (const dir of TWIN_DIRS) {
   const abs = join(ROOT, dir);
@@ -135,17 +204,38 @@ for (const dir of TWIN_DIRS) {
     const out = (r.stdout ?? "") + (r.stderr ?? "");
     const checkOk = r.status === 0 && !/[1-9]\d* error/i.test(out);
     if (authoritative.has(rel)) seenAuthoritative.add(rel);
+    let frozen = "";
+    if (authoritative.has(rel)) {
+      if (FROZEN_DEFERRED.has(rel)) seenDeferred.add(rel);
+      frozen = frozenVerdict(frozenState(dir, twin, ledgerText), sameStemTsPresent(dir, twin), FROZEN_DEFERRED.has(rel));
+      frozenCol[frozen] += 1;
+    }
     const state = classifyWithAuthority(rawExecutionState(dir, twin), authoritative.has(rel));
     exec[state] += 1;
     // A `regressed` twin is an authoritative twin whose differential proof is gone — a trust-root RED even if
     // `galerina check` still passes (check-clean is necessary, not sufficient, for an authoritative twin).
-    const ok = checkOk && state !== "regressed";
+    // RD-0361 S6: an authoritative twin whose frozen reference set is missing / invalid / stale-deferred is RED too.
+    const frozenRed = FROZEN_RED.has(frozen);
+    const ok = checkOk && state !== "regressed" && !frozenRed;
     const note = state === "regressed"
       ? "  →  AUTHORITATIVE twin regressed to shadow: its execution-cutover differential proof is GONE (trust-root fail-open)"
-      : (checkOk ? "" : "  →  " + out.trim().split("\n").slice(-1)[0]);
+      : !checkOk ? "  →  " + out.trim().split("\n").slice(-1)[0]
+      : frozen === "missing" ? "  →  AUTHORITATIVE twin with its same-stem .ts and NO frozen reference set (RD-0361 S6)"
+      : frozen === "invalid" ? "  →  frozen reference set present but REFUSED by the strict loader (RD-0361 S6)"
+      : frozen === "stale-deferral" ? "  →  frozen, but still on the S6 named deferral list: remove the stale exemption"
+      : frozen === "deferred" ? `  (frozen set deferred, unassessed named: ${FROZEN_DEFERRED.get(rel)})`
+      : "";
     console.log(`  ${ok ? "OK  " : "FAIL"} [${state.padEnd(13)}] ${rel}${note}`);
     checked += 1;
     if (!ok) failed += 1;
+  }
+}
+
+// Fail-closed: the S6 deferral list is exact. An entry that is not an authoritative twin seen in the sweep is RED.
+for (const key of FROZEN_DEFERRED.keys()) {
+  if (!seenDeferred.has(key)) {
+    console.error(`fungi-twins: S6 frozen-reference deferral names ${key}, which is not an authoritative twin in the sweep — fail-closed (an exemption with no subject).`);
+    failed += 1;
   }
 }
 
@@ -164,4 +254,6 @@ if (checked === 0 && failed === 0) {
 console.log(`fungi-twins: ${checked - failed}/${checked} check-clean across ${TWIN_DIRS.length} dir(s)`);
 const flip = exec.authoritative > 0 ? ` — #143 R4 flip LIVE (${exec.authoritative} authoritative)` : " (#143 not flipped)";
 console.log(`execution column (RD-0361): ${exec.shadow} shadow · ${exec.differential} differential (execute through #105) · ${exec.authoritative} authoritative${exec.regressed ? ` · ${exec.regressed} REGRESSED (RED)` : ""}${flip}`);
+const frozenRedCount = frozenCol.invalid + frozenCol["stale-deferral"] + frozenCol.missing;
+console.log(`frozen-reference column (RD-0361 S6, enforced): ${frozenCol.frozen} frozen · ${frozenCol["not-required"]} not-required (no same-stem .ts) · ${frozenCol.deferred} deferred (unassessed named) · ${frozenRedCount} RED of ${exec.authoritative + exec.regressed} authoritative`);
 process.exit(failed === 0 ? 0 : 1);
