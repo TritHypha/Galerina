@@ -7,6 +7,8 @@ import {
   scanFungiCorpus,
   coverageProblems,
   collectSites,
+  legA,
+  rootCauseOf,
   MAX_WAT_CORPUS_FILE_BYTES,
 } from "../audit-wat-lowering.mjs";
 
@@ -65,6 +67,51 @@ test("empty root is not a clean WAT lowering sweep", () => {
     const scan = scanFungiCorpus(join(root, "empty"));
     assert.equal(scan.scanned, 0);
     assert.ok(coverageProblems(scan).length > 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// E5 boundary: Float16 stays refused (RED, a Leg-A site); Float32 is admitted (GREEN, no Leg-A site).
+const recordProgram = (fields) => `@version 1
+record R { ${fields} }
+pure flow f() -> Int contract { intent { "x" } } { return 0 }
+`;
+
+test("RED: a Float16 record field stays a Leg-A site attributed to the narrow-float root cause", () => {
+  const parsed = collectSites(recordProgram("x: Float16"), "red-f16.fungi");
+  assert.equal(parsed.parseError, false);
+  const sites = legA(parsed.sites);
+  assert.equal(sites.length, 1);
+  assert.equal(sites[0].base, "Float16");
+  assert.equal(sites[0].name, "x");
+  assert.equal(rootCauseOf(sites[0]), "missing-f32-scalar-lane");
+});
+
+test("GREEN: a Float32 record field is collected but is not a Leg-A site (E5 admits f32 slots)", () => {
+  const parsed = collectSites(recordProgram("x: Float32"), "green-f32.fungi");
+  assert.equal(parsed.parseError, false);
+  assert.ok(parsed.sites.some((s) => s.kind === "record-field" && s.base === "Float32"), "the Float32 field is collected, so the GREEN result is not vacuous");
+  assert.equal(legA(parsed.sites).length, 0);
+});
+
+test("discriminating: a record with Float16 beside Float32 flags only the Float16 field", () => {
+  const parsed = collectSites(recordProgram("h: Float16; s: Float32"), "mixed.fungi");
+  assert.equal(parsed.parseError, false);
+  assert.equal(parsed.sites.filter((s) => s.kind === "record-field").length, 2);
+  const sites = legA(parsed.sites);
+  assert.deepEqual(sites.map((s) => `${s.name}:${s.base}`), ["h:Float16"]);
+});
+
+test("corpus scan: a Float16 field is an inventoried Leg-A site and a Float32 field is not", () => {
+  const root = mkdtempSync(join(tmpdir(), "wat-low-narrow-"));
+  try {
+    writeFileSync(join(root, "f16.fungi"), recordProgram("x: Float16"));
+    writeFileSync(join(root, "f32.fungi"), recordProgram("x: Float32"));
+    const scan = scanFungiCorpus(root);
+    assert.equal(scan.scanned, 2);
+    assert.equal(coverageProblems(scan).length, 0);
+    assert.deepEqual(scan.aSites.map((s) => `${s.rel}:${s.base}`), ["f16.fungi:Float16"]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

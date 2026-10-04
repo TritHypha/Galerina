@@ -3,7 +3,7 @@
   "note": "Shrink-only inventory of the WAT record-field-layout fault class + Decimal-wart occurrences. A NEW off-baseline site fails the gate. Keys are line-independent (path + qualified name + type).",
   "rootCauses": {
     "missing-f32-scalar-lane": {
-      "why": "Float16/Float32 lack a faithful scalar WAT expression lane",
+      "why": "Float16 lacks a faithful WAT record representation (no 2-byte f16 slot); Float32 record fields are admitted by E5 as a 4-byte f32 slot",
       "task": "#132",
       "anchor": "isWATRecordFieldTypeSupported"
     },
