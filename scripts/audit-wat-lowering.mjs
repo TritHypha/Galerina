@@ -85,7 +85,7 @@ export function collectSites(src, rel) {
 }
 
 // ── leg extraction ────────────────────────────────────────────────────────────
-export const rootCauseOf = (site) => (site.base === "Decimal" ? "decimal-f64-wart" : "missing-f32-scalar-lane");
+export const rootCauseOf = (site) => (site.base === "Decimal" ? "decimal-f64-wart" : "missing-f16-scalar-lane");
 export function legA(sites) { return sites.filter((s) => s.kind === "record-field" && !L.isWATRecordFieldTypeSupported(s.type)); }
 function legC(sites) { return sites.filter((s) => s.base === "Decimal"); }
 const keyA = (s) => `${s.rel}::${s.container}.${s.name}::${s.type}`;
@@ -207,7 +207,7 @@ function currentBaselineShape(aSites, cSites) {
     generatedBy: "audit-wat-lowering.mjs",
     note: "Shrink-only inventory of the WAT record-field-layout fault class + Decimal-wart occurrences. A NEW off-baseline site fails the gate. Keys are line-independent (path + qualified name + type).",
     rootCauses: {
-      "missing-f32-scalar-lane": { why: "Float16 lacks a faithful WAT record representation (no 2-byte f16 slot); Float32 record fields are admitted by E5 as a 4-byte f32 slot", task: "#132", anchor: "isWATRecordFieldTypeSupported" },
+      "missing-f16-scalar-lane": { why: "Float16 lacks a faithful WAT record representation (no 2-byte f16 slot); Float32 record fields are admitted by E5 as a 4-byte f32 slot", task: "#132", anchor: "isWATRecordFieldTypeSupported" },
       "decimal-f64-wart": { why: "galerinaTypeToWAT(Decimal)=f64 but Decimal is a bignum; also mis-lowers scalars", task: "#137", anchor: 'galerinaTypeToWAT("Decimal")==="f64"' },
     },
     legA_record_fields: [...new Set(aSites.map(keyA))].sort(),
@@ -222,7 +222,7 @@ function selfTest() {
 
   // RED: Float16 is still refused (no 2-byte f16 slot), so it must remain a Leg-A site.
   const red1 = collectSites(`@version 1\nrecord R { x: Float16 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "red1");
-  ok(!red1.parseError && legA(red1.sites).some((s) => s.base === "Float16" && s.name === "x" && rootCauseOf(s) === "missing-f32-scalar-lane"), "RED: a Float16 record field has no faithful WAT slot and stays a Leg-A site");
+  ok(!red1.parseError && legA(red1.sites).some((s) => s.base === "Float16" && s.name === "x" && rootCauseOf(s) === "missing-f16-scalar-lane"), "RED: a Float16 record field has no faithful WAT slot and stays a Leg-A site");
 
   // GREEN (E5): Float32 is admitted as a 4-byte f32 slot. The field must be collected (non-vacuous) yet produce no Leg-A site.
   const greenF32 = collectSites(`@version 1\nrecord R { x: Float32 }\npure flow f() -> Int contract { intent { "x" } } { return 0 }\n`, "greenF32");
@@ -249,6 +249,13 @@ function selfTest() {
   ok(legC(green.sites).length === 0, "GREEN: no Decimal → no Leg-C occurrence");
 
   ok(shouldSkipDirectory(".worktrees"), "BOUNDARY: nested Git worktrees are not part of the selected checkout corpus");
+
+  // ROOT-CAUSE IDS: the committed baseline declares exactly the ids this script emits; the pre-E5
+  // id (missing-f32-scalar-lane) is retired because Float32 is admitted and only Float16 lacks a slot.
+  const committedCauses = existsSync(BASELINE) ? Object.keys(JSON.parse(readFileSync(BASELINE, "utf8")).rootCauses ?? {}).sort() : [];
+  const emittedCauses = Object.keys(currentBaselineShape([], []).rootCauses).sort();
+  ok(JSON.stringify(committedCauses) === JSON.stringify(emittedCauses) && emittedCauses.includes("missing-f16-scalar-lane") && !emittedCauses.includes("missing-f32-scalar-lane"), "ROOT-CAUSE IDS: baseline and script agree on missing-f16-scalar-lane; the retired missing-f32-scalar-lane id is absent");
+  ok([...legA(red1.sites), ...legA(redDecField.sites)].every((s) => emittedCauses.includes(rootCauseOf(s))), "ROOT-CAUSE IDS: every Leg-A site attributes to a declared root-cause id");
 
   // fabricated off-baseline regression: a NEW affected (Float16) site must be a violation against an empty baseline
   const fabricated = legA(red1.sites);
@@ -325,7 +332,7 @@ function runAudit() {
   for (const s of cSites.sort((a, b) => keyC(a).localeCompare(keyC(b))))
     console.log(`    ${s.rel}:${s.line}  ${s.kind} ${s.container}.${s.name}: ${s.type}`);
   console.log(`\n  Root causes:`);
-  console.log(`    missing narrow-float slot (#132, Float16; Float32 admitted by E5)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f32-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
+  console.log(`    missing narrow-float slot (#132, Float16; Float32 admitted by E5)— ${aSites.filter((s) => rootCauseOf(s) === "missing-f16-scalar-lane").length} Leg-A field(s); i64/f64 use typed natural alignment`);
   console.log(`    decimal-f64-wart (#137)— galerinaTypeToWAT("Decimal")="${anchors.decWasm}"; ${aSites.filter((s) => rootCauseOf(s) === "decimal-f64-wart").length} field(s) + ${cSites.length} occurrence(s)`);
   for (const n of anchors.notes) console.log(`  ⚠ note: ${n}`);
   for (const c of coverage) console.log(`  ✗ COVERAGE: ${c}`);

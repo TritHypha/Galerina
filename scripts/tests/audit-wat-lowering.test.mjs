@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import {
   scanFungiCorpus,
@@ -85,7 +86,7 @@ test("RED: a Float16 record field stays a Leg-A site attributed to the narrow-fl
   assert.equal(sites.length, 1);
   assert.equal(sites[0].base, "Float16");
   assert.equal(sites[0].name, "x");
-  assert.equal(rootCauseOf(sites[0]), "missing-f32-scalar-lane");
+  assert.equal(rootCauseOf(sites[0]), "missing-f16-scalar-lane");
 });
 
 test("GREEN: a Float32 record field is collected but is not a Leg-A site (E5 admits f32 slots)", () => {
@@ -115,4 +116,13 @@ test("corpus scan: a Float16 field is an inventoried Leg-A site and a Float32 fi
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("baseline migration: the root-cause id is missing-f16-scalar-lane; the retired missing-f32-scalar-lane id is gone", () => {
+  const fixture = join(dirname(fileURLToPath(import.meta.url)), "../../packages-ts/galerina-core-compiler/tests/fixtures/wat-lowering-baseline.json");
+  const causes = Object.keys(JSON.parse(readFileSync(fixture, "utf8")).rootCauses);
+  assert.deepEqual(causes.sort(), ["decimal-f64-wart", "missing-f16-scalar-lane"]);
+  const red = legA(collectSites(recordProgram("x: Float16"), "red-f16.fungi").sites);
+  assert.equal(red.length, 1);
+  assert.ok(causes.includes(rootCauseOf(red[0])), "a Float16 Leg-A site attributes to a declared root-cause id");
 });
