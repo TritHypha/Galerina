@@ -35,6 +35,17 @@ const RESOLVED_POSTURES: ReadonlySet<string> = new Set(["off", "on"]);
 /** Largest delay a host timer honours; above it Node fires after 1 ms. */
 const MAX_TIMER_MS = 2_147_483_647;
 const HEADER_TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+/** The only rate form the kernel enforces: `<integer>/minute`. Shared with kernel.ts so the two cannot drift. */
+export const RATE_PER_MINUTE_FORM = /^(\d+)\/minute$/;
+
+/** Requests per minute of a well-formed rate; `isRatePerMinute` must hold first. */
+function ratePerMinute(rate: string): number {
+  return Number(rate.slice(0, rate.indexOf("/")));
+}
+
+function isRatePerMinute(rate: string): boolean {
+  return RATE_PER_MINUTE_FORM.test(rate);
+}
 
 function refuseRoute(route: RouteDeclaration, detail: string): never {
   const where = typeof route.method === "string" && typeof route.path === "string"
@@ -272,6 +283,12 @@ export function resolveEffectiveRoutePolicy(
       timeoutMs: route.limits.timeoutMs ?? baseLimits.timeoutMs,
     };
     if (limits.maxConcurrent > baseLimits.maxConcurrent) relaxations.push(`limits.maxConcurrent:${limits.maxConcurrent}`);
+    // A raised rate or deadline loosens a workload gate exactly as a raised concurrency ceiling does.
+    // A malformed rate records nothing here: createAppKernel refuses it (RATE_PER_MINUTE_FORM).
+    if (isRatePerMinute(limits.rate) && ratePerMinute(limits.rate) > ratePerMinute(baseLimits.rate)) {
+      relaxations.push(`limits.rate:${limits.rate}`);
+    }
+    if (limits.timeoutMs > baseLimits.timeoutMs) relaxations.push(`limits.timeoutMs:${limits.timeoutMs}`);
   }
 
   // ── audit ──
