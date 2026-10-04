@@ -10,14 +10,14 @@
 // identity disagreement and source-present-only providers refuse and write
 // nothing. The receipt is non-authorizing installation evidence.
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, readFileSync, writeFileSync } from "node:fs";
+import { constants, closeSync, existsSync, fstatSync, lstatSync, openSync, readSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export const RECEIPT_SCHEMA = "galerina.native-provider-installation-receipt.v1";
 export const DESCRIPTOR_SCHEMA = "slide.native-provider-descriptor.v1";
 export const CONSENT_EVIDENCE_SCHEMA = "galerina.native-provider-consent-evidence.v1";
-export const PROJECT_POLICY_SCHEMA = "galerina.native-provider-project-policy.v1";
+export const PROJECT_POLICY_SCHEMA = "galerina.native-provider-project-policy.v2";
 export const DESCRIPTOR_FILE = "native-provider.descriptor.json";
 export const MANIFEST_FILE = "package.fungi.json";
 export const INSTALLED_MARKER = ".installed";
@@ -62,9 +62,30 @@ function parseCanonicalRecord(bytes, keys) {
 }
 
 function readBounded(path) {
-  const status = lstatSync(path);
-  if (!status.isFile() || status.size < 1 || status.size > MAXIMUM_BYTES) return Buffer.alloc(0);
-  return readFileSync(path);
+  let fd;
+  try {
+    const before = lstatSync(path);
+    if (!before.isFile() || before.size < 1 || before.size > MAXIMUM_BYTES) return Buffer.alloc(0);
+    const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) | (constants.O_NONBLOCK ?? 0);
+    fd = openSync(path, flags);
+    const opened = fstatSync(fd);
+    if (!opened.isFile() || opened.size < 1 || opened.size > MAXIMUM_BYTES
+      || opened.dev !== before.dev || opened.ino !== before.ino) return Buffer.alloc(0);
+
+    const bytes = Buffer.alloc(opened.size);
+    let offset = 0;
+    while (offset < bytes.length) {
+      const count = readSync(fd, bytes, offset, bytes.length - offset, offset);
+      if (count === 0) break;
+      offset += count;
+    }
+    const after = fstatSync(fd);
+    return offset === bytes.length && after.size === opened.size ? bytes : Buffer.alloc(0);
+  } catch {
+    return Buffer.alloc(0);
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
 }
 
 /**
@@ -90,7 +111,7 @@ export function buildNativeProviderInstallationReceipt(request) {
     const folder = join(resolve(providersRoot), providerIdentity);
     if (!existsSync(folder) || !lstatSync(folder).isDirectory()) return refusal("GALERINA-NATIVE-RECEIPT-ABSENT");
     const markerPath = join(folder, INSTALLED_MARKER);
-    if (!existsSync(markerPath) || !lstatSync(markerPath).isFile()) return refusal("GALERINA-NATIVE-RECEIPT-SOURCE-PRESENT-NOT-INSTALLED");
+    if (!existsSync(markerPath) || readBounded(markerPath).length === 0) return refusal("GALERINA-NATIVE-RECEIPT-SOURCE-PRESENT-NOT-INSTALLED");
     const manifestBytes = readBounded(join(folder, MANIFEST_FILE));
     const descriptorBytes = readBounded(join(folder, DESCRIPTOR_FILE));
     if (manifestBytes.length === 0 || descriptorBytes.length === 0) return refusal("GALERINA-NATIVE-RECEIPT-FILES");

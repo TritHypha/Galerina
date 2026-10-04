@@ -93,7 +93,7 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
       assert.equal(receipt.broadYes, false);
       assert.equal(built.authorityReleased, false);
       const policy = Uint8Array.from(Buffer.from(canonicalJson({
-        schema: "galerina.native-provider-project-policy.v1",
+        schema: "galerina.native-provider-project-policy.v2",
         providers: [{ providerIdentity: IDENTITY, exactVersion: "1.0.0", descriptorDigest: descriptorDigest(readFileSync(join(root, IDENTITY, "native-provider.descriptor.json"))) }],
       }), "utf8"));
       const viaPolicy = buildNativeProviderInstallationReceipt({ providersRoot: root, providerIdentity: IDENTITY, consent: { mode: "project-policy", policyBytes: policy }, environment: { ...LOCAL, ci: true } });
@@ -111,8 +111,9 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
       ["unstructured evidence mentioning the provider", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(`approved ${IDENTITY}`, "utf8")) } }, "GALERINA-NATIVE-RECEIPT-MALFORMED"],
       ["evidence bound to another provider", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-consent-evidence.v1", providerIdentity: "galerina-time-calendar", exactVersion: "1.0.0", descriptorDigest: D(1), decision: "allow" }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS"],
       ["evidence bound to another version", { consent: { mode: "explicit-consent", evidenceBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-consent-evidence.v1", providerIdentity: IDENTITY, exactVersion: "1.0.1", descriptorDigest: D(1), decision: "allow" }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-AMBIGUOUS"],
-      ["policy binds a different version or digest", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v1", providers: [{ providerIdentity: IDENTITY, exactVersion: "1.0.1", descriptorDigest: D(5) }] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
-      ["policy omits provider", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v1", providers: [] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
+      ["policy binds a different version or digest", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v2", providers: [{ providerIdentity: IDENTITY, exactVersion: "1.0.1", descriptorDigest: D(5) }] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
+      ["policy omits provider", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v2", providers: [] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-CONSENT-ABSENT"],
+      ["legacy project-policy v1 does not masquerade as v2", { consent: { mode: "project-policy", policyBytes: Uint8Array.from(Buffer.from(canonicalJson({ schema: "galerina.native-provider-project-policy.v1", allowedProviders: [IDENTITY] }), "utf8")) } }, "GALERINA-NATIVE-RECEIPT-POLICY"],
       ["ci prompt", { environment: { ci: true, promptAttempted: true, broadYes: false } }, "GALERINA-NATIVE-RECEIPT-CI-PROMPT"],
       ["broad yes", { environment: { ci: false, promptAttempted: false, broadYes: true } }, "GALERINA-NATIVE-RECEIPT-BROAD-YES"],
       ["non-canonical identity", { providerIdentity: "numeric-bigfloat" }, "GALERINA-NATIVE-RECEIPT-IDENTITY"],
@@ -151,6 +152,14 @@ describe("Galerina native-provider installation receipts (SLIDE L1951/L1955)", (
       const base = ["--providers-root", root, "--provider", IDENTITY, "--mode", "explicit-consent", "--evidence", evidence, "--out", out];
       assert.equal(runCli([...base, "--yes"], {}).code, 2);
       assert.equal(existsSync(out), false);
+      const oversizedEvidence = join(root, "oversized-consent.txt");
+      writeFileSync(oversizedEvidence, Buffer.alloc(65_537, 0x20));
+      const oversizedOut = join(root, "oversized-receipt.json");
+      const oversizedArgs = [...base];
+      oversizedArgs[oversizedArgs.indexOf(evidence)] = oversizedEvidence;
+      oversizedArgs[oversizedArgs.indexOf(out)] = oversizedOut;
+      assert.equal(runCli(oversizedArgs, {}).code, 1);
+      assert.equal(existsSync(oversizedOut), false);
       assert.equal(runCli(base, {}).code, 0);
       assert.ok(readFileSync(out).length > 0);
       assert.throws(() => runCli(base, {}));
