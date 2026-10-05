@@ -658,3 +658,6 @@ export {
 } from "./defensive-controls.js";
 
 export * from "./webhook.js";
+export * from "./diagnostics/network-codes.js";
+export * from "./runtime/governed-network.js";
+export * from "./reports/network-policy-report.js";
