@@ -39,3 +39,17 @@ export type {
   BuildArtefactRefuse,
   BuildArtefactReadResult,
 } from "./verify/verify-integrity.js";
+export {
+  runVerifyCommand,
+  parseVerifyArgs,
+  FUNGI_CLI_VERIFY_001,
+  FUNGI_CLI_VERIFY_002,
+  FUNGI_CLI_VERIFY_003,
+  FUNGI_CLI_VERIFY_004,
+  FUNGI_CLI_VERIFY_005,
+  VERIFY_EXIT_OK,
+  VERIFY_EXIT_USAGE,
+  VERIFY_EXIT_ARTEFACT,
+  VERIFY_EXIT_MANIFEST,
+} from "./verify/verify-command.js";
+export type { VerifyCommandOptions, VerifyFlagName } from "./verify/verify-command.js";

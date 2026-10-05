@@ -3,6 +3,7 @@ import { createCoreCommandRunner } from "./core-command.js";
 import { runGraphCommand } from "./graph-command.js";
 import { runTaskCommand } from "./task-command.js";
 import { runInitCommand } from "./init-command.js";
+import { runVerifyCommand } from "./verify/verify-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -37,6 +38,11 @@ export const commands: readonly CliCommand[] = [
     name: "graph",
     description: "Generate or query the Galerina project graph.",
     run: runGraphCommand
+  },
+  {
+    name: "verify",
+    description: "Verify build artefacts and optional runtime manifests (fail-closed).",
+    run: runVerifyCommand
   },
   {
     name: "benchmark",
