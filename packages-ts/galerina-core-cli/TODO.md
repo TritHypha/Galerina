@@ -34,7 +34,8 @@
 [ ]   - support --json, --strict, --manifest, --hash, --policy, --audit flags
 [x]   - implement VerifiedArtefact: path, hash, verified, diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05)
 [x]   - implement VerificationResult: success, artefacts[], diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); verifyArtefacts(set, root)
-[x]   - implement verifyHash(artefact, expected): Promise<VerifiedArtefact> -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); sha256 only, root-confined (no absolute/traversal/symlink paths)
+[x]   - implement verifyHash(artefact, expected): Promise<VerifiedArtefact> -- src/verify.ts, tests/verify-contracts.test.mjs (Grok/Codex 2026-10-05); sha256 only, checked root resolution, descriptor identity, 64 KiB streaming and no-follow where supported
+[!] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05)
 [ ]   - emit verification-report.json
 [x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
 [ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts

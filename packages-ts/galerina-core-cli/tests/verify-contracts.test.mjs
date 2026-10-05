@@ -36,6 +36,15 @@ test("verifyHash accepts matching bytes and reports mismatches, malformed hashes
   }
 });
 
+test("verify entry points refuse malformed runtime values without throwing", async () => {
+  const malformed = await verifyHash(null, digest("x"));
+  assert.deepEqual([malformed.verified, codes(malformed)], [false, [FUNGI_VERIFY_004]]);
+  const badPath = await verifyHash(art(17, digest("x")), digest("x"));
+  assert.deepEqual([badPath.verified, codes(badPath)], [false, [FUNGI_VERIFY_004]]);
+  assert.deepEqual(codes(await verifyArtefacts(null)), [FUNGI_VERIFY_005]);
+  assert.deepEqual(codes(await verifyArtefacts([null])), [FUNGI_VERIFY_004]);
+});
+
 test("verifyHash refuses absolute paths, traversal and symlinks out of the root", async (t) => {
   const root = fixture();
   try {
