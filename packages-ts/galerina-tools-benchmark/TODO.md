@@ -40,7 +40,7 @@
 [x] Add JSON 1MB decode/validate benchmark -- src/json-1mb-benchmark.ts runJsonDecodeValidate1mbBenchmark / buildJson1mbPayload (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id json.decode_validate_1mb target json; exact 1 MiB deterministic payload; unknown-field reject; FUNGI-BENCH-JSON-001..005; in-process only (no stream 10MB/1GB / download / command runner)
 [ ] Add JSON 10MB streaming benchmark
 [ ] Add small vector benchmark
-[ ] Add SHA-256 byte benchmark
+[x] Add SHA-256 byte benchmark -- src/sha256-benchmark.ts runSha256Benchmark / benchSha256Hex (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id cpu.hash_sha256_32mb target cpu; deterministic generated 32 MiB; pure FIPS 180-4 (boundary admits no node:crypto; tests cross-check node:crypto); FUNGI-BENCH-SHA-001..005; benchmark only, not a security primitive; no 256MB full-mode / command runner
 ```
 
 ## Phase 4: Target Detection
@@ -189,3 +189,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 
 ## Notes (Grok 2026-10-05 logic.logic5_match PARKED)
 - README lists light id `logic.logic5_match` but no closed Logic5 vocabulary exists in-repo (core-logic has Tri 3-state, Decision 4-state, Omni 8-state). Do-not-invent: parked until owner supplies closed vocab. Not tied to TODO "Add Galerina benchmark" (also invent-heavy).
+
+## Notes (Grok 2026-10-05 SHA-256 byte benchmark)
+- Closed `src/sha256-benchmark.ts`: `runSha256Benchmark` / `benchSha256Hex` / `buildSha256BenchmarkBuffer`.
+- README light id `cpu.hash_sha256_32mb` (README CPU example id `cpu.hash.sha256_64mb` differs; light-list id used). Score = MiB/s capped 10000.
+- Pure TS digest because `.graph/boundary-policy.json` admits only `node:util/types`; not a security primitive.
