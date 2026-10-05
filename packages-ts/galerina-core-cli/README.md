@@ -71,6 +71,14 @@ Produces verification status with `manifestHash` and `graphHash`.
 Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-005`.
 Status: partial — hash checks only.
 
+The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
+avoiding whole-file allocations, and checks root resolution plus opened-file
+identity. `O_NOFOLLOW` is used where Node supports it. This is not a portable
+filesystem sandbox: standard Node does not prevent every concurrent ancestor
+directory/reparse-point swap on Windows and Linux. A successful result means the
+bytes read from the checked handle matched the supplied digest; it does not prove
+trusted provenance, prevent concurrent modification, or resist a compromised OS.
+
 `galerina deploy` validates the runtime manifest, effects, capabilities, policy,
 target compatibility, and module hashes before deploying. Exit codes: `0`
 success, `2` policy denial, `3` runtime incompatibility, `4` deployment

@@ -43,8 +43,10 @@
 [x] Define Omni advisory vs deterministic model: advisoryOnly: true is enforced on OmniDecision (2026-05-26)
 [x] Define FUNGI-OMNI-001 through FUNGI-OMNI-005 diagnostic codes (2026-05-26)
 [x] Phase 1: advisory OmniState types and omniToDecision() — COMPLETE (2026-05-26)
-[ ] Phase 2: runtime reasoning traces (deferred)
-[ ] Phase 3: AI orchestration integration (deferred until Phase 3)
+[x] Phase 2: runtime reasoning traces -- src/omni/omni-trace.ts: traceOmniDecision() validates an untrusted OmniDecision (invalid -> review, never allow), returns the Decision plus a frozen advisory OmniReasoningTrace (validate/evidence/classify/convert steps, rule, codes and confidences only; free text withheld); tests/omni-reasoning-trace.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[HOLD] Phase 3: AI orchestration integration (deferred until Phase 3)
+    HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): no Phase 3 authorization exists. Phase 2
+    traces (traceOmniDecision) are the advisory input such an integration would consume. Reopen as [ ] when authorized.
 [x] Define initial Tri conversion rules
 [x] Define initial truth table report format
 [x] Move or cross-reference relevant galerina-core logic docs when package extraction is ready

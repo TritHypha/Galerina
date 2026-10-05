@@ -13,12 +13,12 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 204 | emitted with an exported constant |
-| inline | 422 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 121 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
-| dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 253 | referenced only (no def/emit) |
+| live | 211 | emitted with an exported constant |
+| inline | 446 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 123 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| dead | 26 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
+| phantom | 91 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 277 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -33,12 +33,21 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 - `FUNGI-BYTE-005`
 - `FUNGI-CHAR-002`
 - `FUNGI-CHAR-004`
-- `FUNGI-CLI-ENV-001`
+- `FUNGI-CLI-001`
 - `FUNGI-CLI-ENV-002`
 - `FUNGI-CLI-ENV-003`
+- `FUNGI-CLI-INIT-001`
+- `FUNGI-CLI-INIT-002`
+- `FUNGI-CLI-INIT-003`
+- `FUNGI-CLI-INIT-004`
 - `FUNGI-JSON-001`
 - `FUNGI-STRING-003`
 - `FUNGI-STRING-004`
+- `FUNGI-VERIFY-001`
+- `FUNGI-VERIFY-002`
+- `FUNGI-VERIFY-003`
+- `FUNGI-VERIFY-004`
+- `FUNGI-VERIFY-005`
 
 ## Catalog (by family)
 
@@ -294,13 +303,21 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CHECK-001 | inline | NON_EXHAUSTIVE_CHECK | — |
 | FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | error |
 
-### CLI (4)
+### CLI (12)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-CLI-ENV-001 | dead | — | — |
+| FUNGI-CLI-001 | dead | — | — |
+| FUNGI-CLI-002 | referenced | — | — |
+| FUNGI-CLI-003 | live | — | — |
+| FUNGI-CLI-ENV-001 | referenced | — | — |
 | FUNGI-CLI-ENV-002 | dead | — | — |
 | FUNGI-CLI-ENV-003 | dead | — | — |
+| FUNGI-CLI-INIT-001 | dead | — | — |
+| FUNGI-CLI-INIT-002 | dead | — | — |
+| FUNGI-CLI-INIT-003 | dead | — | — |
+| FUNGI-CLI-INIT-004 | dead | — | — |
+| FUNGI-CLI-INIT-005 | live | — | — |
 | FUNGI-CLI-REDACT-001 | referenced | — | — |
 
 ### COMMAND (2)
@@ -310,13 +327,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-COMMAND-001 | phantom | — | — |
 | FUNGI-COMMAND-002 | phantom | — | — |
 
-### COMPAT (3)
+### COMPAT (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-COMPAT-001 | phantom | — | — |
-| FUNGI-COMPAT-004 | phantom | — | — |
-| FUNGI-COMPAT-005 | phantom | — | — |
+| FUNGI-COMPAT-001 | live | — | — |
+| FUNGI-COMPAT-002 | live | — | — |
+| FUNGI-COMPAT-003 | live | — | — |
+| FUNGI-COMPAT-004 | live | — | — |
+| FUNGI-COMPAT-005 | live | — | — |
 
 ### COMPUTE (7)
 
@@ -336,7 +355,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-COND-001 | ref | — | error |
 
-### CONFIG (33)
+### CONFIG (46)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -370,6 +389,19 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CONFIG-028 | live | — | error |
 | FUNGI-CONFIG-029 | live | — | error |
 | FUNGI-CONFIG-030 | live | — | error |
+| FUNGI-CONFIG-031 | ref | — | — |
+| FUNGI-CONFIG-032 | inline | — | — |
+| FUNGI-CONFIG-033 | inline | — | — |
+| FUNGI-CONFIG-034 | inline | — | — |
+| FUNGI-CONFIG-035 | inline | — | — |
+| FUNGI-CONFIG-036 | inline | — | — |
+| FUNGI-CONFIG-037 | inline | — | — |
+| FUNGI-CONFIG-038 | inline | — | — |
+| FUNGI-CONFIG-039 | ref | — | — |
+| FUNGI-CONFIG-040 | inline | — | — |
+| FUNGI-CONFIG-041 | ref | — | — |
+| FUNGI-CONFIG-042 | ref | — | — |
+| FUNGI-CONFIG-043 | ref | — | — |
 | FUNGI-CONFIG-GOV-001 | ref | — | — |
 | FUNGI-CONFIG-GOV-002 | ref | — | — |
 | FUNGI-CONFIG-GOV-003 | ref | — | — |
@@ -433,12 +465,14 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-DECISION-004 | live | DECISION_FAILED_CLOSED | error |
 | FUNGI-DECISION-005 | live | EMPTY_COMBINE | warning |
 
-### DENIAL (2)
+### DENIAL (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-DENIAL-001 | phantom | — | — |
-| FUNGI-DENIAL-004 | phantom | — | — |
+| FUNGI-DENIAL-001 | inline | — | — |
+| FUNGI-DENIAL-002 | inline | — | — |
+| FUNGI-DENIAL-003 | inline | — | — |
+| FUNGI-DENIAL-004 | inline | — | — |
 
 ### DEPLOY (2)
 
@@ -676,12 +710,14 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-EVENT-004 | live | DUPLICATE_EVENT_EMISSION | warning |
 | FUNGI-EVENT-005 | live | EVENT_EMITTED_NOT_IN_CONTRACT | warning |
 
-### EVIDENCE (2)
+### EVIDENCE (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-EVIDENCE-001 | phantom | — | — |
-| FUNGI-EVIDENCE-004 | phantom | — | — |
+| FUNGI-EVIDENCE-001 | inline | — | — |
+| FUNGI-EVIDENCE-002 | inline | — | — |
+| FUNGI-EVIDENCE-003 | inline | — | — |
+| FUNGI-EVIDENCE-004 | inline | — | — |
 
 ### EXAMPLE (1)
 
@@ -946,7 +982,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-INV-003 | inline | INVARIANT_BLOCK_EMPTY | — |
 | FUNGI-INV-004 | inline | SYMBOL_UNRESOLVED_IN_INVARIANT | — |
 
-### JS (17)
+### JS (27)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -967,6 +1003,16 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-JS-015 | ref | — | — |
 | FUNGI-JS-016 | ref | — | — |
 | FUNGI-JS-017 | ref | — | — |
+| FUNGI-JS-018 | ref | — | — |
+| FUNGI-JS-019 | ref | — | — |
+| FUNGI-JS-020 | ref | — | — |
+| FUNGI-JS-021 | ref | — | — |
+| FUNGI-JS-022 | ref | — | — |
+| FUNGI-JS-023 | ref | — | — |
+| FUNGI-JS-024 | ref | — | — |
+| FUNGI-JS-025 | ref | — | — |
+| FUNGI-JS-026 | ref | — | — |
+| FUNGI-JS-027 | ref | — | — |
 
 ### JSON (7)
 
@@ -1154,25 +1200,26 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-NAMING-004 | inline | ABBREVIATED_FLOW_NAME | warning |
 | FUNGI-NAMING-005 | inline | MISSING_INTENT_ON_PUBLIC_FLOW | warning |
 
-### NET (2)
+### NET (3)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-NET-001 | referenced | NETWORK_DESTINATION_DENIED | error |
 | FUNGI-NET-002 | referenced | PRIVATE_RANGE_ACCESS | error |
+| FUNGI-NET-004 | ref | — | — |
 
 ### NETWORK (8)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-NETWORK-001 | phantom | — | — |
-| FUNGI-NETWORK-002 | phantom | — | — |
-| FUNGI-NETWORK-003 | phantom | — | — |
-| FUNGI-NETWORK-004 | phantom | — | — |
-| FUNGI-NETWORK-005 | phantom | — | — |
-| FUNGI-NETWORK-006 | phantom | — | — |
-| FUNGI-NETWORK-007 | phantom | — | — |
-| FUNGI-NETWORK-008 | phantom | — | — |
+| FUNGI-NETWORK-001 | ref | — | — |
+| FUNGI-NETWORK-002 | ref | — | — |
+| FUNGI-NETWORK-003 | ref | — | — |
+| FUNGI-NETWORK-004 | ref | — | — |
+| FUNGI-NETWORK-005 | ref | — | — |
+| FUNGI-NETWORK-006 | ref | — | — |
+| FUNGI-NETWORK-007 | ref | — | — |
+| FUNGI-NETWORK-008 | ref | — | — |
 
 ### NUMERIC (6)
 
@@ -1432,12 +1479,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PROFILE-007 | referenced | DYNAMIC_RUNTIME_MUTATION_PROHIBITED | error |
 | FUNGI-PROFILE-UNRECOGNIZED | inline | — | — |
 
-### PROOF (5)
+### PROOF (8)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-PROOF-001 | phantom | — | — |
-| FUNGI-PROOF-005 | phantom | — | — |
+| FUNGI-PROOF-001 | inline | — | — |
+| FUNGI-PROOF-002 | inline | — | — |
+| FUNGI-PROOF-003 | inline | — | — |
+| FUNGI-PROOF-004 | inline | — | — |
+| FUNGI-PROOF-005 | inline | — | — |
 | FUNGI-PROOF-CERT-00 | ref | — | — |
 | FUNGI-PROOF-CERT-001 | referenced | — | — |
 | FUNGI-PROOF-CERT-002 | referenced | — | — |
@@ -1490,11 +1540,14 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | GATE-REGISTRY-015 | inline | GATE_V3_REGISTRY_BAD_VOCABULARY | — |
 | GATE-REGISTRY-016 | inline | GATE_V3_REGISTRY_VARIANT_VIOLATION | — |
 
-### REPORT (2)
+### REPORT (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-REPORT-001 | inline | — | — |
+| FUNGI-REPORT-002 | inline | — | — |
+| FUNGI-REPORT-003 | inline | — | — |
+| FUNGI-REPORT-004 | inline | — | — |
 | FUNGI-REPORT-005 | inline | — | — |
 
 ### REQUIREMENT (12)
@@ -1930,12 +1983,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-VER-001 | phantom | — | — |
 
-### VERIFY (2)
+### VERIFY (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-VERIFY-001 | phantom | — | — |
-| FUNGI-VERIFY-005 | phantom | — | — |
+| FUNGI-VERIFY-001 | dead | — | — |
+| FUNGI-VERIFY-002 | dead | — | — |
+| FUNGI-VERIFY-003 | dead | — | — |
+| FUNGI-VERIFY-004 | dead | — | — |
+| FUNGI-VERIFY-005 | dead | — | — |
 
 ### VIS (5)
 

@@ -3,7 +3,7 @@
 // equal test().verdict === 1 on every row (the contract a lowering relies on).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compile } from "../dist/index.js";
+import { compile, NO_CHAR_RANGES } from "../dist/index.js";
 
 function bit(bits, s) { return ((bits[s >> 5] >>> (s & 31)) & 1) === 1; }
 
@@ -25,7 +25,7 @@ function simulate(t, input) {
     }
     const nxt = new Array(t.words).fill(0);
     for (let s = 0; s < t.slots; s++) {
-      if (!bit(cur, s) || t.charRanges[s] === null || !inRanges(cp, t.charRanges[s])) continue;
+      if (!bit(cur, s) || !inRanges(cp, t.charRanges[s])) continue;
       for (let w = 0; w < t.words; w++) nxt[w] = (nxt[w] | t.rows[s][w]) >>> 0;
       if (t.matchOnConsume[s]) matched = true;
     }
@@ -68,4 +68,22 @@ test("tables() is frozen and never aliases the matcher", () => {
   assert.notEqual(r.matcher.tables(), t, "each call returns a fresh copy");
   assert.equal(r.matcher.test("hello").verdict, 1);
   assert.equal(r.matcher.test("Hello").verdict, -1);
+});
+
+test("charRanges is never null: non-consuming slots carry the frozen NO_CHAR_RANGES sentinel", () => {
+  assert.equal(Object.isFrozen(NO_CHAR_RANGES), true);
+  assert.equal(NO_CHAR_RANGES.length, 0);
+  for (const pattern of ["^[a-z]+$", "a|b$", "^(ab)*c", "x$", "[0-9]+"]) {
+    const r = compile(pattern);
+    assert.equal(r.ok, true, pattern);
+    const t = r.matcher.tables();
+    assert.equal(t.charRanges.length, t.slots, pattern);
+    for (let s = 0; s < t.slots; s++) {
+      const ranges = t.charRanges[s];
+      assert.ok(Array.isArray(ranges), `${pattern} slot ${s} is an array`);
+      assert.equal(Object.isFrozen(ranges), true);
+      if (t.eolSlot[s]) assert.equal(ranges, NO_CHAR_RANGES, `${pattern} eol slot ${s} uses the sentinel`);
+      if (ranges.length === 0) assert.equal(ranges, NO_CHAR_RANGES, `${pattern} empty slot ${s} is the shared sentinel`);
+    }
+  }
 });

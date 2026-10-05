@@ -295,3 +295,35 @@ describe("known-set vocabulary", () => {
     ]);
   });
 });
+
+describe("zero-trust diagnostics - a refused host is never echoed", () => {
+  it("withholds userinfo-bearing hosts from the diagnostic message", () => {
+    const diags = validatePostgresConnection({ ...goodConnection, host: "app:hunter2@db.example.com" });
+    assert.deepEqual(codes(diags), ["Galerina_DB_POSTGRES_INLINE_CREDENTIALS_FORBIDDEN"]);
+    for (const d of diags) {
+      assert.equal(d.message.includes("hunter2"), false);
+      assert.equal(d.message.includes("db.example.com"), false);
+    }
+    assert.match(diags[0].message, /value withheld/);
+  });
+});
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown sslMode, credential kind, provider and placeholder style", () => {
+    assertWithheld([
+      [validatePostgresConnection({ ...goodConnection, sslMode: probe }), "Galerina_DB_POSTGRES_SSL_MODE_UNKNOWN"],
+      [validatePostgresCredentialRef({ ...credential, kind: probe }), "Galerina_DB_POSTGRES_CREDENTIAL_KIND_INVALID"],
+      [validatePostgresAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_POSTGRES_PROVIDER_MISMATCH"],
+      [validatePostgresAdapterDeclaration({ ...goodDeclaration, placeholderStyle: probe }), "Galerina_DB_POSTGRES_PLACEHOLDER_STYLE_INVALID"],
+    ]);
+  });
+});

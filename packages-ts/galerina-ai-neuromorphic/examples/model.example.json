@@ -1,0 +1,7 @@
+{
+  "name": "KeywordSpotter",
+  "inputs": ["audio.mel"],
+  "outputs": ["keyword.detected"],
+  "neurons": 256,
+  "synapses": 4096
+}

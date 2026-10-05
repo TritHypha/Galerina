@@ -273,3 +273,41 @@ describe("known-set vocabulary — no network, no TLS", () => {
     ]);
   });
 });
+
+describe("zero-trust diagnostics - refused path values are never echoed", () => {
+  it("names the path class without the refused value", () => {
+    const cases = [
+      ["/srv/zt-echo-probe/app.db", "rooted"],
+      ["C:/zt-echo-probe/app.db", "drive-lettered"],
+      ["../zt-echo-probe.db", "upward-traversing"],
+      ["/srv/../zt-echo-probe.db", "rooted and upward-traversing"],
+    ];
+    for (const [databaseFile, pathClass] of cases) {
+      const diags = validateSqliteDatabaseFile(databaseFile);
+      assert.deepEqual(codes(diags), ["Galerina_DB_SQLITE_DATABASE_PATH_UNSAFE"], databaseFile);
+      assert.equal(diags[0].message.includes("zt-echo-probe"), false, databaseFile);
+      assert.match(diags[0].message, new RegExp(`is ${pathClass};`), databaseFile);
+      assert.match(diags[0].message, /value withheld/);
+    }
+  });
+});
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown journal mode, credential kind, provider and placeholder style", () => {
+    assertWithheld([
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, journalMode: probe }), "Galerina_DB_SQLITE_JOURNAL_MODE_UNKNOWN"],
+      [validateSqliteCredentialRef({ kind: probe, ref: "secrets://galerina/sqlite/key" }), "Galerina_DB_SQLITE_CREDENTIAL_KIND_INVALID"],
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_SQLITE_PROVIDER_MISMATCH"],
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, placeholderStyle: probe }), "Galerina_DB_SQLITE_PLACEHOLDER_STYLE_INVALID"],
+    ]);
+  });
+});

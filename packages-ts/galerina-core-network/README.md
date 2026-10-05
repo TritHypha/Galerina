@@ -11,7 +11,7 @@ Current canonical choices:
 
 ```text
 NetworkProtocol = "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket"
-WebhookVerificationConfig.secret: string | Uint8Array
+WebhookVerificationConfig.secret: string
 ReplayStore.has(key) / put(key, ttlSeconds)
 IdempotencyStore.get(key) / put(IdempotencyRecord, ttlSeconds?)
 ```
@@ -335,41 +335,25 @@ audit evidence generation
 
 See full specification: `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-network-webhook.md`
 
-### WebhookVerificationConfig (v0.2)
+### WebhookVerificationConfig (current source contract)
 
 ```ts
 export interface WebhookVerificationConfig {
-    /** Human-readable provider name. Used in reports; never log the secret. */
-    provider: string
-
-    /** Shared signing secret — string or raw bytes. */
-    secret: string | Uint8Array
-
-    /** HMAC algorithm. Default: "sha256". */
-    algorithm?: "sha256" | "sha384" | "sha512"
-
-    /** Header containing the HMAC signature (e.g. x-hub-signature-256). */
-    signatureHeader: string
-
-    /** Optional header containing a provider timestamp. */
+    secret: string
+    algorithm: "sha256"
+    headerName: string
     timestampHeader?: string
-
-    /** Optional header containing a delivery or event ID. */
-    deliveryIdHeader?: string
-
-    /** Prefix stripped from the signature value (e.g. "sha256="). */
-    signaturePrefix?: string
-
-    /** Maximum allowed clock skew in seconds. Default: 300. */
-    toleranceSeconds?: number
-
-    /** Encoding of the received signature. */
-    signatureEncoding?: "hex" | "base64" | "base64url"
-
-    /** Separator used when provider signs timestamp + body together. */
-    signedPayloadSeparator?: string
+    maxAgeSeconds: number
 }
 ```
+
+This implementation accepts HMAC-SHA256 only, requires a 32-byte minimum
+secret, caps the secret at 4,096 UTF-8 bytes, and caps the encoded payload at
+`WEBHOOK_MAX_PAYLOAD_BYTES` (1 MiB) before hashing. HTTP adapters must enforce
+the same payload ceiling while streaming/reading the request; this helper cannot
+reclaim memory already allocated by an upstream body parser. See the external
+v0.2 reference for planned/provider-specific fields; it is not the current
+source API.
 
 Webhook verification must use constant-time signature comparison.
 
@@ -420,11 +404,16 @@ cross-process guarantees remain owner/runtime contracts.
 ### Validation Functions
 
 ```ts
-// verifyWebhookHmac(VerifyWebhookHmacInput): VerifyWebhookHmacResult
-// validateWebhookTimestamp(ValidateWebhookTimestampInput): ValidateWebhookTimestampResult
-// validateReplayProtection(ValidateReplayProtectionInput): Promise<ValidateReplayProtectionResult>
-// validateIdempotency(ValidateIdempotencyInput): Promise<ValidateIdempotencyResult>
+verifyWebhookHmac(payload, signature, config, timestamp?): WebhookVerificationResult
+validateWebhookTimestamp(timestamp, maxAgeSeconds, nowSeconds): WebhookVerificationResult
+validateReplayProtection(id, atomicStore, ttlSeconds?): Promise<NetworkDiagnostic[]>
+validateIdempotency(key, atomicStore, ttlSeconds?): Promise<NetworkDiagnostic[]>
+admitWebhook(input): Promise<WebhookVerificationResult>
 ```
+The exported `admitWebhook` orders verification, freshness validation, then one
+atomic replay claim. The storage adapter still owns persistence, expiry, and
+cross-process atomicity; these helpers are contracts, not an HTTP server or
+production store.
 
 ## validateAiPrompt()
 
@@ -445,6 +434,12 @@ provider allowlists
 redaction requirements
 audit requirements
 ```
+
+The current runtime allowlist contains `openai` only. A missing prompt cap defaults to
+1 MiB; an explicitly invalid or larger cap is refused, and UTF-8 size is counted before
+encoding so validation does not allocate an oversized byte copy. This helper is a local
+prompt-shape gate, not proof that prompts are redacted or that network credentials,
+transport, or the receiving provider are authorized.
 
 ## NetworkDiagnostic
 

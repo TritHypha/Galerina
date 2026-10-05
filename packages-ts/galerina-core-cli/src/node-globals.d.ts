@@ -1,6 +1,7 @@
 declare const process: {
   readonly argv: readonly string[];
   readonly execPath: string;
+  readonly platform: string;
   readonly env: Readonly<Record<string, string | undefined>>;
   cwd(): string;
   exitCode?: number;

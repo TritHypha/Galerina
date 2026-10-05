@@ -581,6 +581,18 @@ export function validateRedactionRule(
     );
   }
 
+  const unsafeReason = findUnsafeRedactionPattern(rule.pattern);
+  if (unsafeReason !== "") {
+    diagnostics.push(
+      createSecurityDiagnostic(
+        "Galerina_SECURITY_REDACTION_RULE_UNSAFE_PATTERN",
+        "error",
+        `Redaction rule pattern was refused before compilation: ${unsafeReason}.`,
+        { path: `redaction.rules.${rule.name}.pattern` },
+      ),
+    );
+  }
+
   try {
     new RegExp(rule.pattern, normalizeRegexFlags(rule.flags));
   } catch {
@@ -647,6 +659,88 @@ function compileRedactionRule(
 
     return onInvalidRule === "fail-closed" ? "fail-closed" : undefined;
   }
+}
+
+/**
+ * Upper bound on a redaction rule pattern (owner may revisit). Redaction runs on
+ * every log line, so a policy-supplied pattern is untrusted input to the regex
+ * engine.
+ */
+export const MAX_REDACTION_PATTERN_LENGTH = 512;
+
+/**
+ * Conservative pre-compilation guard against catastrophic backtracking (ReDoS)
+ * in policy-supplied redaction patterns. Returns "" when the pattern is
+ * accepted, otherwise a short reason. It refuses, fail-closed:
+ *   - patterns longer than MAX_REDACTION_PATTERN_LENGTH;
+ *   - a group that contains a `+`, `*` or `{n,m}` quantifier or an alternation
+ *     and is itself repeated with `+`, `*` or `{` (for example `(a+)+`, `(a|b)*`);
+ *   - numeric backreferences (`\1`-`\9`), which defeat linear-time reasoning.
+ *   - named backreferences (`\k<name>`), for the same reason (SuperGrok C1 #60 NB-1).
+ * Bounded `?` after a group stays allowed, so the default rules pass. This is a
+ * heuristic, not a full automaton analysis: a refused pattern may be safe, never
+ * the reverse for these shapes. Owner may revisit.
+ */
+export function findUnsafeRedactionPattern(pattern: string): string {
+  if (pattern.length > MAX_REDACTION_PATTERN_LENGTH) {
+    return `pattern length ${pattern.length} exceeds ${MAX_REDACTION_PATTERN_LENGTH}`;
+  }
+  const groups: { quantified: boolean; alternation: boolean }[] = [];
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const ch = pattern[i];
+    if (ch === "\\") {
+      const next = pattern[i + 1] ?? "";
+      if (!inClass && next >= "1" && next <= "9") {
+        return "numeric backreference";
+      }
+      if (!inClass && next === "k" && pattern[i + 2] === "<") {
+        return "named backreference";
+      }
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (ch === "]") inClass = false;
+      continue;
+    }
+    if (ch === "[") {
+      inClass = true;
+      continue;
+    }
+    if (ch === "(") {
+      groups.push({ quantified: false, alternation: false });
+      continue;
+    }
+    const top = groups[groups.length - 1];
+    if (ch === "|") {
+      if (top !== undefined) top.alternation = true;
+      continue;
+    }
+    if (ch === "+" || ch === "*" || (ch === "{" && isQuantifierBrace(pattern, i))) {
+      if (top !== undefined) top.quantified = true;
+      continue;
+    }
+    if (ch === ")") {
+      const closed = groups.pop();
+      if (closed === undefined) continue;
+      const after = pattern[i + 1] ?? "";
+      const repeated = after === "+" || after === "*" || (after === "{" && isQuantifierBrace(pattern, i + 1));
+      if (repeated && (closed.quantified || closed.alternation)) {
+        return closed.quantified ? "nested quantifier" : "repeated alternation";
+      }
+      const parent = groups[groups.length - 1];
+      if (parent !== undefined) {
+        if (closed.quantified || repeated) parent.quantified = true;
+        if (closed.alternation) parent.alternation = true;
+      }
+    }
+  }
+  return "";
+}
+
+function isQuantifierBrace(pattern: string, index: number): boolean {
+  return /^\{\d+(?:,\d*)?\}/.test(pattern.slice(index, index + 24));
 }
 
 function normalizeRegexFlags(flags: string | undefined): string {

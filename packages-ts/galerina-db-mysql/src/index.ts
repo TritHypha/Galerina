@@ -204,7 +204,7 @@ export function validateMysqlCredentialRef(
     diagnostics.push(mysqlDiagnostic(
       "Galerina_DB_MYSQL_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -246,7 +246,8 @@ export function validateMysqlConnection(
     diagnostics.push(mysqlDiagnostic(
       "Galerina_DB_MYSQL_INLINE_CREDENTIALS_FORBIDDEN",
       "error",
-      `Host "${host}" carries userinfo; hosts are bare hostnames and credentials travel only as external references.`,
+      // Zero-trust: the refused host may embed user:password, so it is never echoed.
+      "Host carries userinfo; hosts are bare hostnames and credentials travel only as external references (value withheld).",
       `${path}.host`,
     ));
   }
@@ -277,7 +278,7 @@ export function validateMysqlConnection(
     diagnostics.push(mysqlDiagnostic(
       "Galerina_DB_MYSQL_TLS_MODE_UNKNOWN",
       "error",
-      `tlsMode "${String(connection.tlsMode)}" is not a known mode (disabled/required/verify_ca/verify_identity).`,
+      "tlsMode is not a known mode (disabled/required/verify_ca/verify_identity) (value withheld).",
       `${path}.tlsMode`,
     ));
   } else if (!isLocalhostHost(connection.host)) {
@@ -398,7 +399,7 @@ export function validateMysqlAdapterDeclaration(
     diagnostics.push(mysqlDiagnostic(
       "Galerina_DB_MYSQL_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "mysql".`,
+      "Adapter provider is not \"mysql\" (value withheld).",
       "provider",
     ));
   }
@@ -410,7 +411,7 @@ export function validateMysqlAdapterDeclaration(
     diagnostics.push(mysqlDiagnostic(
       "Galerina_DB_MYSQL_PLACEHOLDER_STYLE_INVALID",
       "error",
-      `Placeholder style "${String(declaration.placeholderStyle)}" is not "question_mark"; MySQL parameterisation uses ?-style placeholders only.`,
+      "Placeholder style is not \"question_mark\"; MySQL parameterisation uses ?-style placeholders only (value withheld).",
       "placeholderStyle",
     ));
   }

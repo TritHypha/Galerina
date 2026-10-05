@@ -205,3 +205,62 @@ galerina-core-runtime owns execution supervision.
 galerina-core-compute owns heavy compute planning.
 galerina-core-security owns permission and safety policy.
 ```
+
+## Zero-trust agent governance contracts
+
+`src/agent-governance.ts` adds pure policy decisions over already-parsed records. Callers must validate untrusted bytes against the declared schemas before calling these helpers; they are not runtime schema parsers. Each returns `{ allowed, diagnostics }` or a typed report, and none performs I/O or grants authority.
+
+| Contract | What it does |
+|---|---|
+| `validateSupervisedTaskGroup` | Only declared, unique members run, and none may outlive the group. |
+| `validateAgentManifest` | Signed manifests only. Grants must be exact and scoped, with no wildcards. read/write/tool/package/deploy stay separate. Every effect needs a grant. |
+| `routeAgentMessage` | Typed topics with sender and receiver allowlists and a data-classification clearance. |
+| `evaluateToolGatewayCall` | Tool allowlist (deny wins), secret-marker guard, memory budget guard, and no caching of confidential or secret data. |
+| `admitMcpTools` | MCP servers must be pinned by sha256 digest with a tool allowlist. Descriptions are never trusted. |
+| `attenuateLease` | A derived lease can only narrow its parent: capability, scope, expiry and uses. |
+| `decideAiCapabilityRequest` | Agents request and the authority kernel decides. No self-grants. write/package/deploy need a human approval id. |
+| `createSelfModificationReport`, `transitionQuarantine` | Trust roots are immutable. An agent cannot rewrite its own definition. AI-generated code is released only through an independent review that records evidence. |
+| `validateSandboxPolicy`, `evaluateHumanApprovalGate` | No process spawn and exact network allowlists. Approvals are per action, expire, and cannot come from the requester. |
+| `createLoopProtectionReport` | Iteration, crash and stall limits. |
+| `appendAiAuditEntry`, `verifyAiAuditLog`, `sha256Hex` | A local hash-chain consistency helper with a dependency-free SHA-256. It does not provide durable storage, signatures, or a trusted external head anchor; a complete rewritten chain can be recomputed. |
+
+Worked examples are in `examples/*.example.json`. The tests recompute each example's expected output.
+
+## Agent declaration syntax (compiler-facing contract)
+
+`src/agent-declaration.ts` defines the canonical source form and the node a compiler front end emits for it
+(zero-trust defaults, 2026-10-05; owner may revisit):
+
+```galerina
+agent DocumentationAgent {
+  input ProjectReviewRequest
+  output AgentResult
+  tools {
+    repo.read allow "./src"
+    security.scan allow
+    shell deny
+  }
+  effects [filesystem_read]
+  permissions [project.read]
+  failure return_typed_error
+  limits {
+    timeout 30s
+    memory 128mb
+    max_tool_calls 50
+    max_tokens 12000
+    rate_limit_per_minute 60
+  }
+}
+```
+
+| Piece | Contract |
+|---|---|
+| `AgentDeclarationNode` | `kind: "AgentDeclaration"`, `schema: "galerina.ai-agent.declaration.v1"`, name, span, input/output types, tools, effects, permissions, limits, failure behaviour. |
+| `parseAgentDeclarations(source)` | Reference parser. Returns only declarations with no error, plus diagnostics with line numbers and codes (source text is never echoed). |
+| `lowerAgentDeclaration(node)` | Treats the node as untrusted, re-checks kind, schema, name, failure behaviour and scopes, then runs `validateAgentDefinition`. Returns an `AgentDefinition` only when there is no error. |
+
+Rules: input, output and `limits { timeout, memory, max_tool_calls }` are required. Tools that are not listed are
+denied. An allow scope must be exact and relative (no wildcard, absolute path, drive letter, URL or `..`). `failure`
+defaults to `fail_group`. Unknown or duplicate clauses are refused, including the `model`, `visibility` and
+`deny [...]` clauses of the draft in `docs/MULTI_AGENT_RUNTIME.md`. Units: timeout `ms|s|m`, memory `kb|mb|gb`.
+The core-compiler grammar is not wired yet.

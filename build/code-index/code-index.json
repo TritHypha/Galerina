@@ -5485,7 +5485,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:370",
+      "doc packages-ts/galerina-core-logic/README.md:390",
       "ref packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:35",
@@ -5607,7 +5607,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:370",
+      "doc packages-ts/galerina-core-logic/README.md:390",
       "ref packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:24",
       "emit packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:76",
@@ -5886,7 +5886,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/TODO.md:68",
+      "doc packages-ts/galerina-core-network/TODO.md:69",
       "doc docs/compiler-effect-and-boundary-checker.md:985"
     ]
   },
@@ -6409,13 +6409,13 @@
     ]
   },
   {
-    "code": "FUNGI-CLI-ENV-001",
+    "code": "FUNGI-CLI-001",
     "namespace": "FUNGI",
     "family": "CLI",
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-core-cli/src/cli.ts:16"
+      "packages-ts/galerina-core-cli/src/cli.ts:23"
     ],
     "emits": [],
     "tests": 0,
@@ -6424,8 +6424,77 @@
     "names": [],
     "severities": [],
     "allSites": [
+      "def packages-ts/galerina-core-cli/src/cli.ts:23",
+      "doc packages-ts/galerina-core-cli/TODO.md:75"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-002",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/cli.ts:25"
+    ],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/cli.ts:25",
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:17",
+      "doc packages-ts/galerina-core-cli/TODO.md:75"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-003",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 7,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/cli.ts:27"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-cli/src/cli.ts:140"
+    ],
+    "tests": 4,
+    "refs": 0,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/cli.ts:27",
+      "emit packages-ts/galerina-core-cli/src/cli.ts:140",
+      "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:59",
+      "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:60",
+      "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:61",
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:31",
+      "doc packages-ts/galerina-core-cli/TODO.md:75"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-ENV-001",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/cli.ts:16"
+    ],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
       "def packages-ts/galerina-core-cli/src/cli.ts:16",
-      "doc packages-ts/galerina-core-cli/TODO.md:83"
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:54",
+      "doc packages-ts/galerina-core-cli/TODO.md:84"
     ]
   },
   {
@@ -6445,7 +6514,7 @@
     "severities": [],
     "allSites": [
       "def packages-ts/galerina-core-cli/src/cli.ts:18",
-      "doc packages-ts/galerina-core-cli/TODO.md:83"
+      "doc packages-ts/galerina-core-cli/TODO.md:84"
     ]
   },
   {
@@ -6465,7 +6534,105 @@
     "severities": [],
     "allSites": [
       "def packages-ts/galerina-core-cli/src/cli.ts:20",
-      "doc packages-ts/galerina-core-cli/TODO.md:84"
+      "doc packages-ts/galerina-core-cli/TODO.md:85"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-INIT-001",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:18"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/init-command.ts:18"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-INIT-002",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:19"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/init-command.ts:19"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-INIT-003",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:20"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/init-command.ts:20"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-INIT-004",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:21"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/init-command.ts:21"
+    ]
+  },
+  {
+    "code": "FUNGI-CLI-INIT-005",
+    "namespace": "FUNGI",
+    "family": "CLI",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:22"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-cli/src/init-command.ts:170"
+    ],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/init-command.ts:22",
+      "emit packages-ts/galerina-core-cli/src/init-command.ts:170"
     ]
   },
   {
@@ -6530,35 +6697,103 @@
     "code": "FUNGI-COMPAT-001",
     "namespace": "FUNGI",
     "family": "COMPAT",
-    "occurrences": 3,
-    "docOnly": true,
-    "defs": [],
-    "emits": [],
-    "tests": 0,
+    "occurrences": 10,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:3"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:16"
+    ],
+    "tests": 4,
     "refs": 0,
-    "docs": 3,
+    "docs": 4,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-compute/README.md:551",
+      "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:3",
+      "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:16",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:60",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:63",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:106",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107",
       "doc packages-ts/galerina-core-compute/TODO.md:63",
+      "doc packages-ts/galerina-core-compute/TODO.md:106",
       "doc docs/COVERAGE.md:477"
+    ]
+  },
+  {
+    "code": "FUNGI-COMPAT-002",
+    "namespace": "FUNGI",
+    "family": "COMPAT",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:4"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:17"
+    ],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:4",
+      "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:17",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:67",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107"
+    ]
+  },
+  {
+    "code": "FUNGI-COMPAT-003",
+    "namespace": "FUNGI",
+    "family": "COMPAT",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:5"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:18"
+    ],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:5",
+      "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:18",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:69",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107"
     ]
   },
   {
     "code": "FUNGI-COMPAT-004",
     "namespace": "FUNGI",
     "family": "COMPAT",
-    "occurrences": 1,
-    "docOnly": true,
-    "defs": [],
-    "emits": [],
-    "tests": 0,
+    "occurrences": 6,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:6"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:19"
+    ],
+    "tests": 3,
     "refs": 0,
     "docs": 1,
     "names": [],
     "severities": [],
     "allSites": [
+      "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:6",
+      "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:19",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:71",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:80",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107",
       "doc packages-ts/galerina-core-compute/TODO.md:63"
     ]
   },
@@ -6566,17 +6801,25 @@
     "code": "FUNGI-COMPAT-005",
     "namespace": "FUNGI",
     "family": "COMPAT",
-    "occurrences": 1,
-    "docOnly": true,
-    "defs": [],
-    "emits": [],
-    "tests": 0,
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:7"
+    ],
+    "emits": [
+      "packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:20"
+    ],
+    "tests": 2,
     "refs": 0,
     "docs": 1,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compute/README.md:551"
+      "doc packages-ts/galerina-core-compute/README.md:551",
+      "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:7",
+      "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:20",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:73",
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107"
     ]
   },
   {
@@ -6750,7 +6993,7 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:32",
       "doc packages-ts/galerina-core-config/README.md:72",
-      "ref packages-ts/galerina-core-config/src/index.ts:239",
+      "ref packages-ts/galerina-core-config/src/index.ts:249",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:50",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:70",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:72",
@@ -6779,7 +7022,7 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:32",
       "doc packages-ts/galerina-core-config/README.md:73",
-      "ref packages-ts/galerina-core-config/src/index.ts:254",
+      "ref packages-ts/galerina-core-config/src/index.ts:264",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:51",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:65",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:74",
@@ -6801,26 +7044,29 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:74",
-      "ref packages-ts/galerina-core-config/src/index.ts:300"
+      "ref packages-ts/galerina-core-config/src/index.ts:313"
     ]
   },
   {
     "code": "FUNGI-CONFIG-004",
     "namespace": "FUNGI",
     "family": "CONFIG",
-    "occurrences": 3,
+    "occurrences": 6,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 1,
-    "refs": 1,
-    "docs": 1,
+    "tests": 2,
+    "refs": 2,
+    "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:75",
-      "ref packages-ts/galerina-core-config/src/index.ts:443",
-      "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:75"
+      "doc packages-ts/galerina-core-config/README.md:307",
+      "ref packages-ts/galerina-core-config/src/index.ts:456",
+      "ref packages-ts/galerina-core-config/src/startup.ts:3",
+      "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:75",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:69"
     ]
   },
   {
@@ -6838,7 +7084,7 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:76",
-      "ref packages-ts/galerina-core-config/src/index.ts:479",
+      "ref packages-ts/galerina-core-config/src/index.ts:492",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:100"
     ]
   },
@@ -6856,7 +7102,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:576"
+      "ref packages-ts/galerina-core-config/src/index.ts:624"
     ]
   },
   {
@@ -6873,7 +7119,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:591",
+      "ref packages-ts/galerina-core-config/src/index.ts:639",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:232"
     ]
   },
@@ -6891,7 +7137,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:611"
+      "ref packages-ts/galerina-core-config/src/index.ts:659"
     ]
   },
   {
@@ -6908,7 +7154,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:625",
+      "ref packages-ts/galerina-core-config/src/index.ts:673",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:239"
     ]
   },
@@ -6926,7 +7172,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:653",
+      "ref packages-ts/galerina-core-config/src/index.ts:701",
       "doc packages-ts/galerina-core-config/TODO.md:38"
     ]
   },
@@ -6944,7 +7190,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:667"
+      "ref packages-ts/galerina-core-config/src/index.ts:715"
     ]
   },
   {
@@ -6961,7 +7207,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:694",
+      "ref packages-ts/galerina-core-config/src/index.ts:742",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:127"
     ]
   },
@@ -6979,7 +7225,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:708",
+      "ref packages-ts/galerina-core-config/src/index.ts:756",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:199"
     ]
   },
@@ -6997,7 +7243,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:733"
+      "ref packages-ts/galerina-core-config/src/index.ts:781"
     ]
   },
   {
@@ -7014,7 +7260,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:751"
+      "ref packages-ts/galerina-core-config/src/index.ts:799"
     ]
   },
   {
@@ -7031,7 +7277,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:768"
+      "ref packages-ts/galerina-core-config/src/index.ts:816"
     ]
   },
   {
@@ -7048,7 +7294,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:817"
+      "ref packages-ts/galerina-core-config/src/index.ts:865"
     ]
   },
   {
@@ -7065,7 +7311,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:862"
+      "ref packages-ts/galerina-core-config/src/index.ts:910"
     ]
   },
   {
@@ -7082,7 +7328,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:887"
+      "ref packages-ts/galerina-core-config/src/index.ts:935"
     ]
   },
   {
@@ -7099,7 +7345,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:921"
+      "ref packages-ts/galerina-core-config/src/index.ts:969"
     ]
   },
   {
@@ -7116,7 +7362,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:947"
+      "ref packages-ts/galerina-core-config/src/index.ts:995"
     ]
   },
   {
@@ -7133,7 +7379,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:989"
+      "ref packages-ts/galerina-core-config/src/index.ts:1037"
     ]
   },
   {
@@ -7150,7 +7396,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:1005"
+      "ref packages-ts/galerina-core-config/src/index.ts:1053"
     ]
   },
   {
@@ -7167,7 +7413,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:1031"
+      "ref packages-ts/galerina-core-config/src/index.ts:1079"
     ]
   },
   {
@@ -7184,7 +7430,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:1068"
+      "ref packages-ts/galerina-core-config/src/index.ts:1116"
     ]
   },
   {
@@ -7201,7 +7447,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:1094"
+      "ref packages-ts/galerina-core-config/src/index.ts:1142"
     ]
   },
   {
@@ -7218,7 +7464,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:1114"
+      "ref packages-ts/galerina-core-config/src/index.ts:1162"
     ]
   },
   {
@@ -7228,11 +7474,11 @@
     "occurrences": 13,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-core-config/src/index.ts:1444"
+      "packages-ts/galerina-core-config/src/index.ts:1492"
     ],
     "emits": [
-      "packages-ts/galerina-core-config/src/index.ts:1653",
-      "packages-ts/galerina-core-config/src/index.ts:1667"
+      "packages-ts/galerina-core-config/src/index.ts:1701",
+      "packages-ts/galerina-core-config/src/index.ts:1715"
     ],
     "tests": 2,
     "refs": 0,
@@ -7244,13 +7490,13 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:49",
       "doc packages-ts/galerina-core-config/README.md:77",
-      "def packages-ts/galerina-core-config/src/index.ts:1444",
-      "emit packages-ts/galerina-core-config/src/index.ts:1653",
-      "emit packages-ts/galerina-core-config/src/index.ts:1667",
+      "def packages-ts/galerina-core-config/src/index.ts:1492",
+      "emit packages-ts/galerina-core-config/src/index.ts:1701",
+      "emit packages-ts/galerina-core-config/src/index.ts:1715",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:41",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:108",
       "doc packages-ts/galerina-core-config/TODO.md:33",
-      "doc packages-ts/galerina-core-config/TODO.md:51",
+      "doc packages-ts/galerina-core-config/TODO.md:52",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:483",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:163",
       "doc docs/TODO-MISSING-RD.md:860",
@@ -7264,11 +7510,11 @@
     "occurrences": 6,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-core-config/src/index.ts:1445"
+      "packages-ts/galerina-core-config/src/index.ts:1493"
     ],
     "emits": [
-      "packages-ts/galerina-core-config/src/index.ts:1682",
-      "packages-ts/galerina-core-config/src/index.ts:1697"
+      "packages-ts/galerina-core-config/src/index.ts:1730",
+      "packages-ts/galerina-core-config/src/index.ts:1745"
     ],
     "tests": 1,
     "refs": 0,
@@ -7280,9 +7526,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:49",
       "doc packages-ts/galerina-core-config/README.md:78",
-      "def packages-ts/galerina-core-config/src/index.ts:1445",
-      "emit packages-ts/galerina-core-config/src/index.ts:1682",
-      "emit packages-ts/galerina-core-config/src/index.ts:1697",
+      "def packages-ts/galerina-core-config/src/index.ts:1493",
+      "emit packages-ts/galerina-core-config/src/index.ts:1730",
+      "emit packages-ts/galerina-core-config/src/index.ts:1745",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:109"
     ]
   },
@@ -7293,10 +7539,10 @@
     "occurrences": 3,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-core-config/src/index.ts:1446"
+      "packages-ts/galerina-core-config/src/index.ts:1494"
     ],
     "emits": [
-      "packages-ts/galerina-core-config/src/index.ts:1629"
+      "packages-ts/galerina-core-config/src/index.ts:1677"
     ],
     "tests": 0,
     "refs": 0,
@@ -7307,8 +7553,278 @@
     ],
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:79",
-      "def packages-ts/galerina-core-config/src/index.ts:1446",
-      "emit packages-ts/galerina-core-config/src/index.ts:1629"
+      "def packages-ts/galerina-core-config/src/index.ts:1494",
+      "emit packages-ts/galerina-core-config/src/index.ts:1677"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-031",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 6,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 4,
+    "refs": 2,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-config/src/startup.ts:240",
+      "ref packages-ts/galerina-core-config/src/startup.ts:332",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:57",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:103",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:201",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:208"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-032",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:264",
+      "packages-ts/galerina-core-config/src/startup.ts:271"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:264",
+      "emit packages-ts/galerina-core-config/src/startup.ts:271",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:93"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-033",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:276"
+    ],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:276",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:94",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:97"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-034",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:285"
+    ],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:285"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-035",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:294",
+      "packages-ts/galerina-core-config/src/startup.ts:298"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:294",
+      "emit packages-ts/galerina-core-config/src/startup.ts:298",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:110"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-036",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:308",
+      "packages-ts/galerina-core-config/src/startup.ts:310",
+      "packages-ts/galerina-core-config/src/startup.ts:312",
+      "packages-ts/galerina-core-config/src/startup.ts:313"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:308",
+      "emit packages-ts/galerina-core-config/src/startup.ts:310",
+      "emit packages-ts/galerina-core-config/src/startup.ts:312",
+      "emit packages-ts/galerina-core-config/src/startup.ts:313",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:119"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-037",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:323"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:323",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:127"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-038",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:327"
+    ],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:327",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:130",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:132"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-039",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-config/src/index.ts:522",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:140",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:146"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-040",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-config/src/startup.ts:370",
+      "packages-ts/galerina-core-config/src/startup.ts:377"
+    ],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-config/src/startup.ts:370",
+      "emit packages-ts/galerina-core-config/src/startup.ts:377",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:190",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:214"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-041",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-config/src/startup.ts:416",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:237"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-042",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-config/src/startup.ts:487",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:287"
+    ]
+  },
+  {
+    "code": "FUNGI-CONFIG-043",
+    "namespace": "FUNGI",
+    "family": "CONFIG",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 2,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-config/src/index.ts:121",
+      "ref packages-ts/galerina-core-config/src/index.ts:536",
+      "test packages-ts/galerina-core-config/tests/startup-validation.test.mjs:161"
     ]
   },
   {
@@ -7366,7 +7882,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-core-config/src/index.ts:320",
+      "ref packages-ts/galerina-core-config/src/index.ts:333",
       "test packages-ts/galerina-core-config/tests/governance.test.mjs:62",
       "test packages-ts/galerina-core-config/tests/governance.test.mjs:70",
       "test packages-ts/galerina-core-config/tests/governance.test.mjs:71"
@@ -8002,7 +8518,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:364",
+      "doc packages-ts/galerina-core-logic/README.md:384",
       "ref packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:34",
@@ -8122,7 +8638,7 @@
       "warning"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:364",
+      "doc packages-ts/galerina-core-logic/README.md:384",
       "ref packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:25",
       "def packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:26",
       "emit packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:78",
@@ -8135,36 +8651,101 @@
     "code": "FUNGI-DENIAL-001",
     "namespace": "FUNGI",
     "family": "DENIAL",
-    "occurrences": 3,
-    "docOnly": true,
+    "occurrences": 6,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:28"
+    ],
+    "tests": 1,
+    "refs": 1,
     "docs": 3,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:389",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:17",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:28",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:160",
       "doc packages-ts/galerina-core-reports/TODO.md:46",
       "doc docs/COVERAGE.md:518"
+    ]
+  },
+  {
+    "code": "FUNGI-DENIAL-002",
+    "namespace": "FUNGI",
+    "family": "DENIAL",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:29"
+    ],
+    "tests": 1,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:18",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:29",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:157"
+    ]
+  },
+  {
+    "code": "FUNGI-DENIAL-003",
+    "namespace": "FUNGI",
+    "family": "DENIAL",
+    "occurrences": 14,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/denials/denial-runtime.ts:38",
+      "packages-ts/galerina-core-reports/src/denials/denial-serializer.ts:11",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:30"
+    ],
+    "tests": 1,
+    "refs": 10,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-reports/src/denials/denial-runtime.ts:38",
+      "emit packages-ts/galerina-core-reports/src/denials/denial-serializer.ts:11",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:14",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:16",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:19",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:20",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:21",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:22",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:23",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:24",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:25",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:26",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:30",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:158"
     ]
   },
   {
     "code": "FUNGI-DENIAL-004",
     "namespace": "FUNGI",
     "family": "DENIAL",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:31"
+    ],
+    "tests": 1,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:389",
+      "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:27",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:31",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:159",
       "doc packages-ts/galerina-core-reports/TODO.md:46"
     ]
   },
@@ -8182,8 +8763,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:80",
-      "doc packages-ts/galerina-core-cli/TODO.md:51",
+      "doc packages-ts/galerina-core-cli/README.md:88",
+      "doc packages-ts/galerina-core-cli/TODO.md:52",
       "doc docs/COVERAGE.md:447"
     ]
   },
@@ -8201,8 +8782,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:80",
-      "doc packages-ts/galerina-core-cli/TODO.md:51"
+      "doc packages-ts/galerina-core-cli/README.md:88",
+      "doc packages-ts/galerina-core-cli/TODO.md:52"
     ]
   },
   {
@@ -8449,7 +9030,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:295",
+      "doc packages-ts/galerina-core-cli/README.md:303",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:47",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:137",
       "doc packages-ts/galerina-core-compiler/README.md:314",
@@ -8844,7 +9425,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:295",
+      "doc packages-ts/galerina-core-cli/README.md:303",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:50",
       "doc packages-ts/galerina-core-compiler/README.md:317",
       "ref packages-ts/galerina-core-compiler/scripts/cec-promotion-pass.mjs:33",
@@ -9616,36 +10197,112 @@
     "code": "FUNGI-EVIDENCE-001",
     "namespace": "FUNGI",
     "family": "EVIDENCE",
-    "occurrences": 3,
-    "docOnly": true,
+    "occurrences": 6,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:35"
+    ],
+    "tests": 1,
+    "refs": 1,
     "docs": 3,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:390",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:13",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:35",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185",
       "doc packages-ts/galerina-core-reports/TODO.md:52",
       "doc docs/COVERAGE.md:519"
+    ]
+  },
+  {
+    "code": "FUNGI-EVIDENCE-002",
+    "namespace": "FUNGI",
+    "family": "EVIDENCE",
+    "occurrences": 21,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:41",
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:42",
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:43",
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:44",
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:64",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:36"
+    ],
+    "tests": 1,
+    "refs": 14,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:12",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:14",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:15",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:16",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:23",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:25",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:26",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:27",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:28",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:35",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:37",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:38",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:39",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:40",
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:41",
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:42",
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:43",
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:44",
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:64",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:36",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185"
+    ]
+  },
+  {
+    "code": "FUNGI-EVIDENCE-003",
+    "namespace": "FUNGI",
+    "family": "EVIDENCE",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:52",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:37"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-reports/src/evidence/runtime-evidence.ts:52",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:37",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185"
     ]
   },
   {
     "code": "FUNGI-EVIDENCE-004",
     "namespace": "FUNGI",
     "family": "EVIDENCE",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:38"
+    ],
+    "tests": 1,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:390",
+      "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:17",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:38",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185",
       "doc packages-ts/galerina-core-reports/TODO.md:52"
     ]
   },
@@ -9685,8 +10342,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:86",
-      "doc packages-ts/galerina-core-cli/TODO.md:61",
+      "doc packages-ts/galerina-core-cli/README.md:94",
+      "doc packages-ts/galerina-core-cli/TODO.md:62",
       "doc docs/COVERAGE.md:448"
     ]
   },
@@ -9704,8 +10361,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:86",
-      "doc packages-ts/galerina-core-cli/TODO.md:61"
+      "doc packages-ts/galerina-core-cli/README.md:94",
+      "doc packages-ts/galerina-core-cli/TODO.md:62"
     ]
   },
   {
@@ -13057,7 +13714,7 @@
       "packages-ts/galerina-core-compiler/src/hardening-residency.ts:76"
     ],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:558"
+      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:577"
     ],
     "tests": 9,
     "refs": 4,
@@ -13074,7 +13731,7 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3488",
       "ref packages-ts/galerina-core-compiler/src/hardening-residency.ts:74",
       "def packages-ts/galerina-core-compiler/src/hardening-residency.ts:76",
-      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:558",
+      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:577",
       "test packages-ts/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:66",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:28",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:33",
@@ -13145,7 +13802,7 @@
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:3500",
-      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:649"
+      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:668"
     ],
     "tests": 7,
     "refs": 3,
@@ -13161,7 +13818,7 @@
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:3500",
       "ref packages-ts/galerina-core-compiler/src/hardening-residency.ts:90",
       "def packages-ts/galerina-core-compiler/src/hardening-residency.ts:92",
-      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:649",
+      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:668",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/hardening-trust-boundary.fungi:69",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:33",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:41",
@@ -13247,13 +13904,13 @@
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:44",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:52",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:53",
-      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:194",
-      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:217",
-      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:222",
-      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:266",
-      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:277",
-      "doc docs/security/rd0365-key-custody-ladder.md:45",
-      "doc docs/security/rd0365-key-custody-ladder.md:55"
+      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:221",
+      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:244",
+      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:249",
+      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:300",
+      "test packages-ts/galerina-core-compiler/tests/rd-0365-key-custody.test.mjs:312",
+      "doc docs/security/rd0365-key-custody-ladder.md:50",
+      "doc docs/security/rd0365-key-custody-ladder.md:60"
     ]
   },
   {
@@ -14281,17 +14938,18 @@
     "code": "FUNGI-JS-001",
     "namespace": "FUNGI",
     "family": "JS",
-    "occurrences": 7,
+    "occurrences": 8,
     "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 5,
-    "refs": 1,
+    "refs": 2,
     "docs": 1,
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:136",
+      "ref packages-ts/galerina-target-js/src/index.ts:147",
+      "ref packages-ts/galerina-target-js/src/index.ts:990",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:116",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:121",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:127",
@@ -14314,8 +14972,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:645",
-      "ref packages-ts/galerina-target-js/src/index.ts:688",
+      "ref packages-ts/galerina-target-js/src/index.ts:722",
+      "ref packages-ts/galerina-target-js/src/index.ts:765",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:198",
       "doc docs/TODO-MISSING-RD.md:539",
       "doc docs/TODO-MISSING-RD.md:542",
@@ -14336,7 +14994,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:374",
+      "ref packages-ts/galerina-target-js/src/index.ts:399",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:83"
     ]
   },
@@ -14354,7 +15012,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:383",
+      "ref packages-ts/galerina-target-js/src/index.ts:408",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:84"
     ]
   },
@@ -14372,7 +15030,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:393"
+      "ref packages-ts/galerina-target-js/src/index.ts:418"
     ]
   },
   {
@@ -14389,7 +15047,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:400",
+      "ref packages-ts/galerina-target-js/src/index.ts:425",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:77"
     ]
   },
@@ -14408,9 +15066,9 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-target-js/README.md:5",
-      "ref packages-ts/galerina-target-js/src/index.ts:411",
-      "ref packages-ts/galerina-target-js/src/index.ts:637",
-      "ref packages-ts/galerina-target-js/src/index.ts:688",
+      "ref packages-ts/galerina-target-js/src/index.ts:436",
+      "ref packages-ts/galerina-target-js/src/index.ts:714",
+      "ref packages-ts/galerina-target-js/src/index.ts:765",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:48",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:49",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:232",
@@ -14432,8 +15090,8 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-target-js/README.md:7",
-      "ref packages-ts/galerina-target-js/src/index.ts:421",
-      "ref packages-ts/galerina-target-js/src/index.ts:697",
+      "ref packages-ts/galerina-target-js/src/index.ts:446",
+      "ref packages-ts/galerina-target-js/src/index.ts:774",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:70"
     ]
   },
@@ -14452,8 +15110,8 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-target-js/README.md:7",
-      "ref packages-ts/galerina-target-js/src/index.ts:430",
-      "ref packages-ts/galerina-target-js/src/index.ts:696",
+      "ref packages-ts/galerina-target-js/src/index.ts:455",
+      "ref packages-ts/galerina-target-js/src/index.ts:773",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:71"
     ]
   },
@@ -14471,25 +15129,29 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:440"
+      "ref packages-ts/galerina-target-js/src/index.ts:465"
     ]
   },
   {
     "code": "FUNGI-JS-011",
     "namespace": "FUNGI",
     "family": "JS",
-    "occurrences": 3,
+    "occurrences": 7,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 1,
+    "tests": 3,
     "refs": 2,
-    "docs": 0,
+    "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:448",
-      "ref packages-ts/galerina-target-js/src/index.ts:705",
+      "doc packages-ts/galerina-core/COMPILED_APP_GIT.md:37",
+      "doc packages-ts/galerina-target-js/README.md:52",
+      "ref packages-ts/galerina-target-js/src/index.ts:474",
+      "ref packages-ts/galerina-target-js/src/index.ts:782",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:294",
+      "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:88",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:94"
     ]
   },
@@ -14507,8 +15169,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:456",
-      "ref packages-ts/galerina-target-js/src/index.ts:704",
+      "ref packages-ts/galerina-target-js/src/index.ts:482",
+      "ref packages-ts/galerina-target-js/src/index.ts:781",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:93"
     ]
   },
@@ -14526,7 +15188,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:500",
+      "ref packages-ts/galerina-target-js/src/index.ts:577",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:145"
     ]
   },
@@ -14544,7 +15206,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:509",
+      "ref packages-ts/galerina-target-js/src/index.ts:586",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:146",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:148"
     ]
@@ -14563,7 +15225,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:536",
+      "ref packages-ts/galerina-target-js/src/index.ts:613",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:154",
       "doc docs/independent-audits/2026-09-19-target-boundary-slices-independent-pass.md:27"
     ]
@@ -14582,8 +15244,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:657",
-      "ref packages-ts/galerina-target-js/src/index.ts:689",
+      "ref packages-ts/galerina-target-js/src/index.ts:734",
+      "ref packages-ts/galerina-target-js/src/index.ts:766",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:222",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:431",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:143"
@@ -14603,10 +15265,208 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-ts/galerina-target-js/src/index.ts:666",
-      "ref packages-ts/galerina-target-js/src/index.ts:689",
+      "ref packages-ts/galerina-target-js/src/index.ts:743",
+      "ref packages-ts/galerina-target-js/src/index.ts:766",
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:211",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:431"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-018",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 1,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:51",
+      "ref packages-ts/galerina-target-js/src/index.ts:499",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:115"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-019",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 1,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:48",
+      "ref packages-ts/galerina-target-js/src/index.ts:509",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:95",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:101"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-020",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 2,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:49",
+      "ref packages-ts/galerina-target-js/src/index.ts:519",
+      "ref packages-ts/galerina-target-js/src/index.ts:782",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:73"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-021",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 6,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 3,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:49",
+      "ref packages-ts/galerina-target-js/src/index.ts:527",
+      "ref packages-ts/galerina-target-js/src/index.ts:782",
+      "ref packages-ts/galerina-target-js/src/index.ts:825",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:81",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:285"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-022",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 2,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:51",
+      "ref packages-ts/galerina-target-js/src/index.ts:535",
+      "ref packages-ts/galerina-target-js/src/index.ts:782",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:96"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-023",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 1,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc packages-ts/galerina-target-js/README.md:61",
+      "ref packages-ts/galerina-target-js/src/index.ts:945",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:183"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-024",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 3,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-target-js/src/index.ts:951",
+      "ref packages-ts/galerina-target-js/src/index.ts:959",
+      "ref packages-ts/galerina-target-js/src/index.ts:962",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:177",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:184"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-025",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 3,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-target-js/src/index.ts:923",
+      "ref packages-ts/galerina-target-js/src/index.ts:926",
+      "ref packages-ts/galerina-target-js/src/index.ts:981",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:198"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-026",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-target-js/src/index.ts:968",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:216"
+    ]
+  },
+  {
+    "code": "FUNGI-JS-027",
+    "namespace": "FUNGI",
+    "family": "JS",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-target-js/src/index.ts:985",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:204",
+      "test packages-ts/galerina-target-js/tests/js-target-build-modes.test.mjs:205"
     ]
   },
   {
@@ -17419,24 +18279,45 @@
     ]
   },
   {
+    "code": "FUNGI-NET-004",
+    "namespace": "FUNGI",
+    "family": "NET",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:147"
+    ]
+  },
+  {
     "code": "FUNGI-NETWORK-001",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 6,
-    "docOnly": true,
+    "occurrences": 10,
+    "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "tests": 1,
+    "refs": 3,
     "docs": 6,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:454",
-      "doc packages-ts/galerina-core-network/README.md:473",
-      "doc packages-ts/galerina-core-network/README.md:477",
-      "doc packages-ts/galerina-core-network/TODO.md:65",
-      "doc packages-ts/galerina-core-network/TODO.md:67",
+      "doc packages-ts/galerina-core-network/README.md:449",
+      "doc packages-ts/galerina-core-network/README.md:468",
+      "doc packages-ts/galerina-core-network/README.md:472",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:1",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:5",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:88",
+      "test packages-ts/galerina-core-network/tests/governed-network-runtime.test.mjs:49",
+      "doc packages-ts/galerina-core-network/TODO.md:66",
+      "doc packages-ts/galerina-core-network/TODO.md:68",
       "doc docs/COVERAGE.md:502"
     ]
   },
@@ -17444,127 +18325,139 @@
     "code": "FUNGI-NETWORK-002",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 4,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 2,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:455",
-      "doc packages-ts/galerina-core-network/README.md:478"
+      "doc packages-ts/galerina-core-network/README.md:450",
+      "doc packages-ts/galerina-core-network/README.md:473",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:7",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:124"
     ]
   },
   {
     "code": "FUNGI-NETWORK-003",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 3,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:456",
-      "doc packages-ts/galerina-core-network/README.md:479"
+      "doc packages-ts/galerina-core-network/README.md:451",
+      "doc packages-ts/galerina-core-network/README.md:474",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:9"
     ]
   },
   {
     "code": "FUNGI-NETWORK-004",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 3,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:457",
-      "doc packages-ts/galerina-core-network/README.md:480"
+      "doc packages-ts/galerina-core-network/README.md:452",
+      "doc packages-ts/galerina-core-network/README.md:475",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:11"
     ]
   },
   {
     "code": "FUNGI-NETWORK-005",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 3,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:458",
-      "doc packages-ts/galerina-core-network/README.md:481"
+      "doc packages-ts/galerina-core-network/README.md:453",
+      "doc packages-ts/galerina-core-network/README.md:476",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:13"
     ]
   },
   {
     "code": "FUNGI-NETWORK-006",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 3,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:459",
-      "doc packages-ts/galerina-core-network/README.md:482"
+      "doc packages-ts/galerina-core-network/README.md:454",
+      "doc packages-ts/galerina-core-network/README.md:477",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:15",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:262",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:263"
     ]
   },
   {
     "code": "FUNGI-NETWORK-007",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 4,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 2,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:460",
-      "doc packages-ts/galerina-core-network/README.md:483"
+      "doc packages-ts/galerina-core-network/README.md:455",
+      "doc packages-ts/galerina-core-network/README.md:478",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:17",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:261"
     ]
   },
   {
     "code": "FUNGI-NETWORK-008",
     "namespace": "FUNGI",
     "family": "NETWORK",
-    "occurrences": 3,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 2,
     "docs": 3,
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-network/README.md:461",
-      "doc packages-ts/galerina-core-network/README.md:484",
-      "doc packages-ts/galerina-core-network/TODO.md:65"
+      "doc packages-ts/galerina-core-network/README.md:456",
+      "doc packages-ts/galerina-core-network/README.md:479",
+      "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:19",
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:187",
+      "doc packages-ts/galerina-core-network/TODO.md:66"
     ]
   },
   {
@@ -17900,7 +18793,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:376",
+      "doc packages-ts/galerina-core-logic/README.md:396",
       "ref packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:32",
@@ -17915,7 +18808,7 @@
     "code": "FUNGI-OMNI-002",
     "namespace": "FUNGI",
     "family": "OMNI",
-    "occurrences": 6,
+    "occurrences": 7,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:15"
@@ -17923,7 +18816,7 @@
     "emits": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:42"
     ],
-    "tests": 1,
+    "tests": 2,
     "refs": 1,
     "docs": 1,
     "names": [
@@ -17938,6 +18831,7 @@
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:42",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-omni-002-advisory-only-violated.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:684",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:97",
       "doc docs/galerina-core-logic-omni-logic.md:774"
     ]
   },
@@ -17945,7 +18839,7 @@
     "code": "FUNGI-OMNI-003",
     "namespace": "FUNGI",
     "family": "OMNI",
-    "occurrences": 6,
+    "occurrences": 8,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:18"
@@ -17953,7 +18847,7 @@
     "emits": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:55"
     ],
-    "tests": 1,
+    "tests": 3,
     "refs": 1,
     "docs": 1,
     "names": [
@@ -17968,6 +18862,8 @@
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:55",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-omni-003-confidence-out-of-range.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:685",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:82",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:98",
       "doc docs/galerina-core-logic-omni-logic.md:775"
     ]
   },
@@ -17975,7 +18871,7 @@
     "code": "FUNGI-OMNI-004",
     "namespace": "FUNGI",
     "family": "OMNI",
-    "occurrences": 6,
+    "occurrences": 10,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:21"
@@ -17983,7 +18879,7 @@
     "emits": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:65"
     ],
-    "tests": 1,
+    "tests": 5,
     "refs": 1,
     "docs": 1,
     "names": [
@@ -17998,6 +18894,10 @@
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:65",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-omni-004-malformed-evidence.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:686",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:99",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:100",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:101",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:102",
       "doc docs/galerina-core-logic-omni-logic.md:776"
     ]
   },
@@ -18005,7 +18905,7 @@
     "code": "FUNGI-OMNI-005",
     "namespace": "FUNGI",
     "family": "OMNI",
-    "occurrences": 8,
+    "occurrences": 10,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:24"
@@ -18013,7 +18913,7 @@
     "emits": [
       "packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:78"
     ],
-    "tests": 1,
+    "tests": 3,
     "refs": 1,
     "docs": 3,
     "names": [
@@ -18023,12 +18923,14 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:376",
+      "doc packages-ts/galerina-core-logic/README.md:396",
       "ref packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:24",
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:78",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-omni-005-invalid-state.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:687",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:96",
+      "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:107",
       "doc packages-ts/galerina-core-logic/TODO.md:44",
       "doc docs/galerina-core-logic-omni-logic.md:777"
     ]
@@ -20456,8 +21358,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:93",
-      "doc packages-ts/galerina-core-cli/TODO.md:69",
+      "doc packages-ts/galerina-core-cli/README.md:101",
+      "doc packages-ts/galerina-core-cli/TODO.md:70",
       "doc docs/COVERAGE.md:449"
     ]
   },
@@ -20475,8 +21377,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/README.md:93",
-      "doc packages-ts/galerina-core-cli/TODO.md:69"
+      "doc packages-ts/galerina-core-cli/README.md:101",
+      "doc packages-ts/galerina-core-cli/TODO.md:70"
     ]
   },
   {
@@ -21148,35 +22050,115 @@
     "code": "FUNGI-PROOF-001",
     "namespace": "FUNGI",
     "family": "PROOF",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:20"
+    ],
     "tests": 0,
-    "refs": 0,
+    "refs": 2,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:388",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:14",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:16",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:20",
       "doc packages-ts/galerina-core-reports/TODO.md:43"
+    ]
+  },
+  {
+    "code": "FUNGI-PROOF-002",
+    "namespace": "FUNGI",
+    "family": "PROOF",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:21"
+    ],
+    "tests": 0,
+    "refs": 2,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:17",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:18",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:21"
+    ]
+  },
+  {
+    "code": "FUNGI-PROOF-003",
+    "namespace": "FUNGI",
+    "family": "PROOF",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:22"
+    ],
+    "tests": 0,
+    "refs": 4,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:20",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:23",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:24",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:26",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:22"
+    ]
+  },
+  {
+    "code": "FUNGI-PROOF-004",
+    "namespace": "FUNGI",
+    "family": "PROOF",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:78",
+      "packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:83",
+      "packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:85",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:23"
+    ],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:78",
+      "emit packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:83",
+      "emit packages-ts/galerina-core-reports/src/proofs/proof-hashing.ts:85",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:23",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:141"
     ]
   },
   {
     "code": "FUNGI-PROOF-005",
     "namespace": "FUNGI",
     "family": "PROOF",
-    "occurrences": 2,
-    "docOnly": true,
+    "occurrences": 5,
+    "docOnly": false,
     "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 0,
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:24"
+    ],
+    "tests": 1,
+    "refs": 1,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:388",
+      "ref packages-ts/galerina-core-reports/src/proofs/proof-report.ts:24",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:24",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:142",
       "doc packages-ts/galerina-core-reports/TODO.md:43"
     ]
   },
@@ -21400,19 +22382,23 @@
     "code": "FUNGI-REPORT-001",
     "namespace": "FUNGI",
     "family": "REPORT",
-    "occurrences": 6,
+    "occurrences": 9,
     "docOnly": false,
     "defs": [],
     "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:12",
       "packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:59"
     ],
-    "tests": 1,
-    "refs": 1,
+    "tests": 2,
+    "refs": 2,
     "docs": 3,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:387",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:42",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:12",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:58",
       "doc packages-ts/galerina-core-reports/TODO.md:28",
       "doc packages-ts/galerina-devtools-project-graph/README.md:201",
       "emit packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:59",
@@ -21421,23 +22407,111 @@
     ]
   },
   {
-    "code": "FUNGI-REPORT-005",
+    "code": "FUNGI-REPORT-002",
     "namespace": "FUNGI",
     "family": "REPORT",
-    "occurrences": 5,
+    "occurrences": 19,
     "docOnly": false,
     "defs": [],
     "emits": [
+      "packages-ts/galerina-core-reports/src/audit/audit-jsonl.ts:20",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:13"
+    ],
+    "tests": 3,
+    "refs": 14,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:40",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:41",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:43",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:45",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:46",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:47",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:49",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:51",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:52",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:53",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:54",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:55",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:56",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:59",
+      "emit packages-ts/galerina-core-reports/src/audit/audit-jsonl.ts:20",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:13",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:59",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:63",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:64"
+    ]
+  },
+  {
+    "code": "FUNGI-REPORT-003",
+    "namespace": "FUNGI",
+    "family": "REPORT",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:14"
+    ],
+    "tests": 1,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:44",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:14",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:60"
+    ]
+  },
+  {
+    "code": "FUNGI-REPORT-004",
+    "namespace": "FUNGI",
+    "family": "REPORT",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:15"
+    ],
+    "tests": 2,
+    "refs": 1,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:68",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:15",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:61",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:114"
+    ]
+  },
+  {
+    "code": "FUNGI-REPORT-005",
+    "namespace": "FUNGI",
+    "family": "REPORT",
+    "occurrences": 10,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "packages-ts/galerina-core-reports/src/audit/audit-jsonl.ts:36",
+      "packages-ts/galerina-core-reports/src/shared/report-codes.ts:16",
       "packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:122",
       "packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:170"
     ],
-    "tests": 0,
-    "refs": 1,
+    "tests": 1,
+    "refs": 3,
     "docs": 2,
     "names": [],
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:387",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:61",
+      "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:65",
+      "emit packages-ts/galerina-core-reports/src/audit/audit-jsonl.ts:36",
+      "emit packages-ts/galerina-core-reports/src/shared/report-codes.ts:16",
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:62",
       "doc packages-ts/galerina-core-reports/TODO.md:28",
       "emit packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:122",
       "ref packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:123",
@@ -25711,7 +26785,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:358",
+      "doc packages-ts/galerina-core-logic/README.md:378",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-tri-001-invalid-tristate.fungi:5",
       "ref packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:12",
@@ -25830,7 +26904,7 @@
       "error"
     ],
     "allSites": [
-      "doc packages-ts/galerina-core-logic/README.md:358",
+      "doc packages-ts/galerina-core-logic/README.md:378",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-tri-005-malformed-unknown-reason.fungi:5",
       "ref packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:24",
@@ -29750,11 +30824,11 @@
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:306",
-      "packages-ts/galerina-core-config/src/index.ts:1349"
+      "packages-ts/galerina-core-config/src/index.ts:1397"
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/parser.ts:6370",
-      "packages-ts/galerina-core-config/src/index.ts:1360"
+      "packages-ts/galerina-core-config/src/index.ts:1408"
     ],
     "tests": 1,
     "refs": 7,
@@ -29771,10 +30845,10 @@
       "ref packages-ts/galerina-core-compiler/src/index.ts:1493",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:6370",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6370",
-      "ref packages-ts/galerina-core-config/src/index.ts:1314",
-      "ref packages-ts/galerina-core-config/src/index.ts:1348",
-      "def packages-ts/galerina-core-config/src/index.ts:1349",
-      "emit packages-ts/galerina-core-config/src/index.ts:1360",
+      "ref packages-ts/galerina-core-config/src/index.ts:1362",
+      "ref packages-ts/galerina-core-config/src/index.ts:1396",
+      "def packages-ts/galerina-core-config/src/index.ts:1397",
+      "emit packages-ts/galerina-core-config/src/index.ts:1408",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:312",
       "doc packages-ts/galerina-core-config/TODO.md:40",
       "doc docs/COVERAGE.md:300",
@@ -29800,11 +30874,11 @@
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:315",
-      "packages-ts/galerina-core-config/src/index.ts:1351"
+      "packages-ts/galerina-core-config/src/index.ts:1399"
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/parser.ts:6466",
-      "packages-ts/galerina-core-config/src/index.ts:1371"
+      "packages-ts/galerina-core-config/src/index.ts:1419"
     ],
     "tests": 1,
     "refs": 3,
@@ -29820,9 +30894,9 @@
       "def packages-ts/galerina-core-compiler/src/governance-verifier.ts:315",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:6466",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6466",
-      "ref packages-ts/galerina-core-config/src/index.ts:1350",
-      "def packages-ts/galerina-core-config/src/index.ts:1351",
-      "emit packages-ts/galerina-core-config/src/index.ts:1371",
+      "ref packages-ts/galerina-core-config/src/index.ts:1398",
+      "def packages-ts/galerina-core-config/src/index.ts:1399",
+      "emit packages-ts/galerina-core-config/src/index.ts:1419",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:313",
       "doc docs/examples/README.md:159"
     ]
@@ -29835,11 +30909,11 @@
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:321",
-      "packages-ts/galerina-core-config/src/index.ts:1353"
+      "packages-ts/galerina-core-config/src/index.ts:1401"
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:3311",
-      "packages-ts/galerina-core-config/src/index.ts:1386"
+      "packages-ts/galerina-core-config/src/index.ts:1434"
     ],
     "tests": 1,
     "refs": 7,
@@ -29859,9 +30933,9 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3243",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:3311",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6331",
-      "ref packages-ts/galerina-core-config/src/index.ts:1352",
-      "def packages-ts/galerina-core-config/src/index.ts:1353",
-      "emit packages-ts/galerina-core-config/src/index.ts:1386",
+      "ref packages-ts/galerina-core-config/src/index.ts:1400",
+      "def packages-ts/galerina-core-config/src/index.ts:1401",
+      "emit packages-ts/galerina-core-config/src/index.ts:1434",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:314",
       "fungi docs/examples/Level-5-Governance/230-vault-access-denied-invalid/example.fungi:4",
       "fungi docs/examples/Level-5-Governance/230-vault-access-denied-invalid/example.fungi:5",
@@ -29882,11 +30956,11 @@
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:327",
-      "packages-ts/galerina-core-config/src/index.ts:1355"
+      "packages-ts/galerina-core-config/src/index.ts:1403"
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:3319",
-      "packages-ts/galerina-core-config/src/index.ts:1396"
+      "packages-ts/galerina-core-config/src/index.ts:1444"
     ],
     "tests": 2,
     "refs": 3,
@@ -29902,9 +30976,9 @@
       "def packages-ts/galerina-core-compiler/src/governance-verifier.ts:327",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3245",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:3319",
-      "ref packages-ts/galerina-core-config/src/index.ts:1354",
-      "def packages-ts/galerina-core-config/src/index.ts:1355",
-      "emit packages-ts/galerina-core-config/src/index.ts:1396",
+      "ref packages-ts/galerina-core-config/src/index.ts:1402",
+      "def packages-ts/galerina-core-config/src/index.ts:1403",
+      "emit packages-ts/galerina-core-config/src/index.ts:1444",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:315",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:4",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:5",
@@ -29926,10 +31000,10 @@
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:333",
-      "packages-ts/galerina-core-config/src/index.ts:1357"
+      "packages-ts/galerina-core-config/src/index.ts:1405"
     ],
     "emits": [
-      "packages-ts/galerina-core-config/src/index.ts:1406"
+      "packages-ts/galerina-core-config/src/index.ts:1454"
     ],
     "tests": 1,
     "refs": 2,
@@ -29943,9 +31017,9 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:331",
       "def packages-ts/galerina-core-compiler/src/governance-verifier.ts:333",
-      "ref packages-ts/galerina-core-config/src/index.ts:1356",
-      "def packages-ts/galerina-core-config/src/index.ts:1357",
-      "emit packages-ts/galerina-core-config/src/index.ts:1406",
+      "ref packages-ts/galerina-core-config/src/index.ts:1404",
+      "def packages-ts/galerina-core-config/src/index.ts:1405",
+      "emit packages-ts/galerina-core-config/src/index.ts:1454",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:316",
       "doc packages-ts/galerina-core-config/TODO.md:40",
       "doc docs/examples/EXAMPLES_INDEX.md:212",
@@ -30064,9 +31138,11 @@
     "code": "FUNGI-VERIFY-001",
     "namespace": "FUNGI",
     "family": "VERIFY",
-    "occurrences": 3,
-    "docOnly": true,
-    "defs": [],
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/verify.ts:44"
+    ],
     "emits": [],
     "tests": 0,
     "refs": 0,
@@ -30075,17 +31151,77 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:71",
-      "doc packages-ts/galerina-core-cli/TODO.md:39",
+      "def packages-ts/galerina-core-cli/src/verify.ts:44",
+      "doc packages-ts/galerina-core-cli/TODO.md:40",
       "doc docs/COVERAGE.md:446"
+    ]
+  },
+  {
+    "code": "FUNGI-VERIFY-002",
+    "namespace": "FUNGI",
+    "family": "VERIFY",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/verify.ts:46"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/verify.ts:46"
+    ]
+  },
+  {
+    "code": "FUNGI-VERIFY-003",
+    "namespace": "FUNGI",
+    "family": "VERIFY",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/verify.ts:48"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/verify.ts:48"
+    ]
+  },
+  {
+    "code": "FUNGI-VERIFY-004",
+    "namespace": "FUNGI",
+    "family": "VERIFY",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/verify.ts:50"
+    ],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "def packages-ts/galerina-core-cli/src/verify.ts:50"
     ]
   },
   {
     "code": "FUNGI-VERIFY-005",
     "namespace": "FUNGI",
     "family": "VERIFY",
-    "occurrences": 2,
-    "docOnly": true,
-    "defs": [],
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [
+      "packages-ts/galerina-core-cli/src/verify.ts:52"
+    ],
     "emits": [],
     "tests": 0,
     "refs": 0,
@@ -30094,7 +31230,8 @@
     "severities": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:71",
-      "doc packages-ts/galerina-core-cli/TODO.md:39"
+      "def packages-ts/galerina-core-cli/src/verify.ts:52",
+      "doc packages-ts/galerina-core-cli/TODO.md:40"
     ]
   },
   {

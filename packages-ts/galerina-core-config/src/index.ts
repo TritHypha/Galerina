@@ -21,6 +21,9 @@ export type EnvironmentMode = (typeof GALERINA_ENVIRONMENT_MODES)[number];
 
 // #195 â€” OS/HW-compromised security posture (off|auto|on, default auto, fail-secure).
 export * from "./posture.js";
+// W01 G5: startup validation, build flags and build report schemas.
+export * from "./startup.js";
+import { validateStartup, type StartupReport } from "./startup.js";
 
 // JOB 0011 (a) â€” project governance ceiling (full|auto|lean, default full, fail-closed).
 export * from "./governance.js";
@@ -114,6 +117,9 @@ export interface ProductionStrictnessPolicy {
   readonly disabledPackagePatterns: readonly string[];
   readonly allowProductionPackageOverrides: boolean;
   readonly maxWarnings: number;
+  /** W01 G5: when true, a production handoff without a startup manifest is refused
+   *  (FUNGI-CONFIG-043). Omitted means false for existing callers (owner may revisit). */
+  readonly requireStartupValidation?: boolean;
 }
 
 export interface RuntimeConfigHandoff {
@@ -124,6 +130,8 @@ export interface RuntimeConfigHandoff {
   readonly diagnostics: readonly ConfigDiagnostic[];
   readonly canRun: boolean;
   readonly generatedAt: string;
+  /** W01 G5: present when a startup manifest was supplied. */
+  readonly startup?: StartupReport;
 }
 
 export interface ConfigLoadResult {
@@ -139,6 +147,8 @@ export interface RuntimeConfigHandoffOptions {
   readonly availableEnvironment?: Readonly<Record<string, string | undefined>>;
   readonly diagnostics?: readonly ConfigDiagnostic[];
   readonly productionPolicy?: Partial<ProductionStrictnessPolicy>;
+  /** W01 G5: declared startup manifest, validated by `validateStartup` before main(). */
+  readonly startupManifest?: unknown;
 }
 
 export interface HostPackageManifestBoundaryPolicy {
@@ -285,6 +295,9 @@ export function defineProductionStrictnessPolicy(
       DEFAULT_PRODUCTION_STRICTNESS_POLICY.allowProductionPackageOverrides,
     maxWarnings:
       policy.maxWarnings ?? DEFAULT_PRODUCTION_STRICTNESS_POLICY.maxWarnings,
+    ...(policy.requireStartupValidation === undefined
+      ? {}
+      : { requireStartupValidation: policy.requireStartupValidation }),
   };
 }
 
@@ -495,6 +508,40 @@ export function createRuntimeConfigHandoff(
     );
   }
 
+  let startup: StartupReport | undefined;
+  if (options.startupManifest !== undefined) {
+    startup = validateStartup(
+      options.startupManifest,
+      options.availableEnvironment ?? {},
+      productionPolicy,
+    );
+    if (!startup.pass) {
+      const failed = startup.checks.filter((c) => !c.passed).map((c) => c.id);
+      diagnostics.push(
+        createConfigDiagnostic(
+          "FUNGI-CONFIG-039",
+          "STARTUP_VALIDATION_FAILED",
+          "error",
+          `Startup validation failed before main(): ${failed.join(", ")}.`,
+          "startup",
+        ),
+      );
+    }
+  } else if (
+    environment.mode === "production" &&
+    productionPolicy.requireStartupValidation === true
+  ) {
+    diagnostics.push(
+      createConfigDiagnostic(
+        "FUNGI-CONFIG-043",
+        "STARTUP_VALIDATION_REQUIRED",
+        "error",
+        "Production policy requires a startup manifest to be validated before main().",
+        "startup",
+      ),
+    );
+  }
+
   const warningCount = diagnostics.filter(
     (diagnostic) => diagnostic.severity === "warning",
   ).length;
@@ -513,6 +560,7 @@ export function createRuntimeConfigHandoff(
     diagnostics,
     canRun: !hasError && warningsAllowed,
     generatedAt: options.generatedAt ?? new Date().toISOString(),
+    ...(startup === undefined ? {} : { startup }),
   };
 }
 

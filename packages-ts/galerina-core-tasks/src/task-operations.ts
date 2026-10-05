@@ -10,8 +10,8 @@ import type {
   TaskRunBlock
 } from "./types.js";
 
-// Parse and permission-check `run { ... }` task operations. This is a check-only
-// slice: nothing here executes an operation. Execution semantics (what
+// Parse and permission-check `run { ... }` task operations. This is the check
+// slice: nothing here executes an operation (see execute-operations.ts). Execution semantics (what
 // compiler.build writes, which effect schemas/openapi/tests map to, ordering and
 // failure behaviour) are still product decisions, so those are refused here.
 
@@ -41,6 +41,13 @@ const TASK_OPERATION_SPECS: Readonly<Record<TaskOperationName, TaskOperationSpec
   "openapi.generate": { effect: undefined, arity: 0, access: [] },
   "tests.run": { effect: undefined, arity: 0, access: [] }
 });
+
+/** Number of leading path arguments per operation (internal; used by execution). */
+export const TASK_OPERATION_PATH_POSITIONS: Readonly<Record<TaskOperationName, number>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(TASK_OPERATION_SPECS).map(([name, spec]) => [name, spec.access.length])
+  ) as Record<TaskOperationName, number>
+);
 
 export const TASK_OPERATION_NAMES: readonly TaskOperationName[] = Object.freeze(
   Object.keys(TASK_OPERATION_SPECS) as TaskOperationName[]
@@ -119,7 +126,7 @@ export function parseTaskRunBlock(body: string, blockCount = 1): TaskRunBlock {
 }
 
 /** Strict repository-relative normalisation; undefined = refused. */
-function normalizeTaskPath(path: string): string | undefined {
+export function normalizeTaskPath(path: string): string | undefined {
   let text = path.replace(/\\/g, "/").trim();
   if (text.length === 0 || text.includes("\0") || text.startsWith("/") || /^[A-Za-z]:/.test(text)) return undefined;
   if (text.startsWith("./")) text = text.slice(2);
