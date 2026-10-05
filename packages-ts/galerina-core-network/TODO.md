@@ -41,7 +41,10 @@ policy belongs in `galerina-framework-app-kernel`.
     until a QUIC transport with verified TLS 1.3 is attested. `grpc` was not added; still an open decision.
     Tests: tests/quic-protocol.test.mjs.)
 [x] Upgrade NetworkDestinationReference: add provider, category, dataCategories (defined from the README shape with these optional fields; it was planned-only before) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
-[ ] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits (2026-10-05: left open; productionNetworkPolicy is a frozen current-schema value and `defaultEffect`/`requireTimeouts` already exist, so this is a schema decision)
+[HOLD] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits (2026-10-05: left open; productionNetworkPolicy is a frozen current-schema value and `defaultEffect`/`requireTimeouts` already exist, so this is a schema decision)
+      HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): a schema decision on a frozen value. productionNetworkPolicy is frozen at the current schema,
+      and `defaultEffect` and `requireTimeouts` already cover two of the five fields under other names. Reopen as [ ]
+      when the owner picks the field names (rename or alias) and records a schema-version bump for productionNetworkPolicy.
 [x] Implement frozen current-schema productionNetworkPolicy with SSRF-safe deny list, HTTPS/443-only egress, and runtime-guard regression (declarative policy does not itself dial or resolve DNS)
 [x] Define AiProviderNetworkPolicy: provider, allowedEndpoints, requireApiKeyCapability, dataCategories, auditRequired, prompt/privacy controls
 [x] Define immutable OPENAI_POLICY const and regression (declarative only; no credential or network authority)
@@ -69,7 +72,14 @@ policy belongs in `galerina-framework-app-kernel`.
     as { code, severity, message, path? }; `path` is used in place of `destination`. Ticked 2026-09-29, Grok Bot)
 [x] Define NetworkPolicyReport with schemaVersion "galerina.network.report.v1" (TODO id kept over the README draft "galerina.network.policy.report.v1"; generatedAt passed in; webhook secrets stripped) -- src/reports/network-policy-report.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
 [x] Define FUNGI-NETWORK-001 through FUNGI-NETWORK-008 diagnostic codes -- src/diagnostics/network-codes.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05). Existing Galerina_NETWORK_* policy diagnostics are unchanged.
-[ ] Create internal dir: policy/, runtime/, webhook/, reports/, diagnostics/ (2026-10-05: runtime/, reports/, diagnostics/ exist for the new contracts; moving the existing policy and webhook code is left so the frozen RD-0361 fixtures and imports stay stable)
+[HOLD] Create internal dir: policy/, runtime/, webhook/, reports/, diagnostics/ (2026-10-05: runtime/, reports/, diagnostics/ exist for the new contracts; moving the existing policy and webhook code is left so the frozen RD-0361 fixtures and imports stay stable)
+      HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): moving policy and webhook code would break the frozen RD-0361 fixtures and import paths
+      (tests/rd0361-*-frozen.test.mjs). Reopen as [ ] when RD-0361 refreezes or a move receipt exists.
 [x] Implement deny-by-default rule (FUNGI-NETWORK-001 for undeclared destinations; stays 001 even under defaultEffect "allow", owner may revisit) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
-[ ] Integrate with boundary checker for FUNGI-BOUNDARY-008 (network allowlist violation)
+[HOLD] Integrate with boundary checker for FUNGI-BOUNDARY-008 (network allowlist violation)
+      HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): code collision. docs/compiler-effect-and-boundary-checker.md defines FUNGI-BOUNDARY-008 as
+      "Public API exposes denied dependency", it is in scripts/baselines/phantom-codes.json (not implemented), and the
+      compiler already reports an allowlist violation as FUNGI-NET-001 (core-compiler src/security-policy.ts). The checker
+      also lives in core-compiler. Reopen as [ ] when the owner chooses FUNGI-NET-001 or a new code, and core-compiler
+      has no uncommitted work.
 ```
