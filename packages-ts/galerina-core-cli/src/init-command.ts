@@ -19,6 +19,23 @@ export const FUNGI_CLI_INIT_001 = "FUNGI-CLI-INIT-001";
 export const FUNGI_CLI_INIT_002 = "FUNGI-CLI-INIT-002";
 export const FUNGI_CLI_INIT_003 = "FUNGI-CLI-INIT-003";
 export const FUNGI_CLI_INIT_004 = "FUNGI-CLI-INIT-004";
+export const FUNGI_CLI_INIT_005 = "FUNGI-CLI-INIT-005";
+
+/** Environment keys the scaffolder may see (SuperGrok C1 #63 NB-1): enough for Node
+ *  to start and for reproducible timestamps; secrets in the caller's env are not passed. */
+export const INIT_CHILD_ENV_KEYS: readonly string[] = Object.freeze([
+  "PATH", "Path", "SystemRoot", "SYSTEMROOT", "HOME", "USERPROFILE", "TEMP", "TMP", "TMPDIR",
+  "LANG", "LC_ALL", "SOURCE_DATE_EPOCH",
+]);
+
+export function initChildEnvironment(source: NodeJS.ProcessEnv): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const key of INIT_CHILD_ENV_KEYS) {
+    const value = Object.hasOwn(source, key) ? source[key] : undefined;
+    if (typeof value === "string") env[key] = value;
+  }
+  return env;
+}
 
 function refuse(code: string, safeMessage: string, suggestedFix: string): CliResult {
   const error: CliError = Object.freeze({ code, safeMessage, suggestedFix });
@@ -132,7 +149,7 @@ export async function runInitCommand(context: CliContext): Promise<CliResult> {
     encoding: "utf8",
     shell: false,
     windowsHide: true,
-    env: process.env,
+    env: initChildEnvironment(process.env),
   });
 
   if (result.error !== undefined) {
@@ -152,9 +169,19 @@ export async function runInitCommand(context: CliContext): Promise<CliResult> {
   }
   // The scaffolder already refuses overwrite / missing template; surface its
   // operator message without inventing a second refusal vocabulary.
-  return {
-    ok: false,
+  // SuperGrok C1 #63 NB-2: the structured error stays path-free; the scaffolder's own
+  // local operator output is kept only in details.
+  const output = stderr.length > 0 ? stderr : stdout;
+  const error: CliError = Object.freeze({
+    code: FUNGI_CLI_INIT_005,
+    safeMessage: "galerina new app refused the request.",
+    suggestedFix: "Use a new or empty target directory; see details for the scaffolder's reason.",
+  });
+  return Object.freeze({
+    ok: false as const,
     code: status,
-    message: stderr.length > 0 ? stderr : stdout.length > 0 ? stdout : "galerina new app refused the request.",
-  };
+    message: `${FUNGI_CLI_INIT_005}: galerina new app refused the request.`,
+    ...(output.length > 0 ? { details: Object.freeze([output]) } : {}),
+    error,
+  });
 }

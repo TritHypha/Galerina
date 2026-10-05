@@ -9,6 +9,8 @@ import {
   FUNGI_CLI_INIT_001,
   FUNGI_CLI_INIT_002,
   FUNGI_CLI_INIT_003,
+  FUNGI_CLI_INIT_005,
+  initChildEnvironment,
   parseInitArgs,
   resolveNewAppScaffolder,
 } from "../dist/init-command.js";
@@ -70,6 +72,15 @@ describe("galerina init (thin alias of galerina new app)", () => {
       assert.equal(result.ok, false);
       assert.notEqual(result.code, 0);
       assert.equal(readFileSync(join(target, "App.manifest"), "utf8"), "keep");
+      assert.equal(result.error.code, FUNGI_CLI_INIT_005);
+      assert.equal(result.error.safeMessage.includes(base), false);
+      assert.equal(result.message.includes(base), false);
     });
+  });
+
+  it("passes only allow-listed environment keys to the scaffolder", () => {
+    const fakeToken = "example-token-not-real"; // gitleaks:allow
+    const env = initChildEnvironment({ PATH: "p", SOURCE_DATE_EPOCH: "1700000000", GITHUB_TOKEN: fakeToken, NODE_OPTIONS: "--require x" });
+    assert.deepEqual(env, { PATH: "p", SOURCE_DATE_EPOCH: "1700000000" });
   });
 });
