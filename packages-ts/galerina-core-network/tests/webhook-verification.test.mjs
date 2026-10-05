@@ -50,6 +50,7 @@ describe("verifyWebhookHmac", () => {
     assert.deepEqual(code(N.verifyWebhookHmac({}, sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_INVALID"]);
     assert.equal(N.verifyWebhookHmac("é".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES / 2 + 1), sign(""), base).valid, false);
     assert.deepEqual(code(N.verifyWebhookHmac("\u0800".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES), sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
+    assert.deepEqual(code(N.verifyWebhookHmac("\ud800".repeat(349_526), sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
   });
   it("binds the timestamp into the MAC when the config names a timestamp header", () => {
     const bound = { ...base, timestampHeader: "X-Timestamp" };
