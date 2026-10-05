@@ -18,7 +18,7 @@
 [x] Add Galerina security:check command integration
 [x] Add Galerina routes command integration
 [x] Add Galerina task command integration with galerina-core-tasks
-[ ] Complete Galerina build command — full 14-pass pipeline with artefact generation
+[ ] Complete Galerina build command â€” full 14-pass pipeline with artefact generation
 [ ]   - emit runtime-manifest.json, compiler-report.json, effect-report.json, capability-report.json
 [ ]   - emit audit-report.json, build-hash.txt
 [ ]   - support --target, --json, --report, --strict, --profile, --out, --audit flags
@@ -28,7 +28,7 @@
 [ ]   - implement buildWorkspace(input: BuildWorkspaceInput): Promise<BuildResult>
 [ ]   - diagnostic codes FUNGI-BUILD-001 through FUNGI-BUILD-005
 [ ]   - create build/ dir: build-command.ts, build-pipeline.ts, build-reporter.ts, build-artifacts.ts, build-integrity.ts
-[ ] Complete Galerina verify command — full governance verification
+[ ] Complete Galerina verify command â€” full governance verification
 [x]   - validate manifest integrity (beyond hash-only) -- src/verify/verify-manifest.ts, tests/verify-manifest.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): verifyRuntimeManifest / verifyRuntimeManifestSet check the shipped per-flow `fungi.runtime.manifest.v1` record (compiler type-registry.ts RuntimeManifest): closed shape read through descriptors (no getters run), exact schemaVersion, closed field domains, cross-field consistency with GovernanceFlags, verified:false never verifies, unique flows; FUNGI-VERIFY-006..011; optional `manifests` section in verification-report.json; a test pins the mirror to the compiler source. Not covered: the runtime-manifest.json file container (compiler README v0.2 `galerina.manifest.v1`, pass 14, not built) and signatures (GovernanceSignature, Phase 39); the --manifest flag row stays open
 [ ]   - validate runtime compatibility, capability consistency, audit reports
 [ ]   - support --json, --strict, --manifest, --hash, --policy, --audit flags
@@ -38,7 +38,7 @@
 [x] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05) -- UNLOCKED 2026-10-05 (Grok Bot; owner may revisit): the actionable part (document the limit) is done in README.md and src/verify.ts, and verification-report.json now carries the same limitations; the platform limit itself stays documented, not solved
 [x]   - emit verification-report.json -- src/verify/verify-reporter.ts, tests/verify-report.test.mjs (Grok 2026-10-05); createVerificationReport recomputes success, writeVerificationReport is exclusive-create (no overwrite) into an existing dir, no timestamp unless given (owner may revisit)
 [x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
-[ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts -- progress 2026-10-05: verify-reporter.ts and verify-manifest.ts exist; verify-command.ts, verify-integrity.ts, verify-runtime.ts not yet
+[x]   - create verify/ dir: verify-integrity.ts -- src/verify/verify-integrity.ts, tests/verify-integrity.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): readBuildArtefact / verifyArtefactIntegrity / verifyArtefactIntegritySet; closed BuildArtefact shape via property descriptors (no getters); closed kind vocabulary; malformed hash refused as 001 before open; dense-array set checks; codes stay FUNGI-VERIFY-001..005. Progress on verify/ dir: verify-reporter.ts, verify-manifest.ts, verify-integrity.ts exist; verify-command.ts, verify-runtime.ts not yet
 [ ] Add Galerina deploy command integration
 [ ]   - load workspace manifest, runtime profile, deployment policy
 [ ]   - validate effects, capabilities, runtime targets, module hashes
@@ -48,7 +48,7 @@
 [ ]   - implement DeploymentResult: success, target, manifestHash, diagnostics[], reportPath?
 [ ]   - implement ValidateEffectsInput: manifest, policy, target
 [ ]   - implement validateEffects(input): CompilerDiagnostic[]
-[ ]   - return exit codes 0–7 (0 success, 2 policy denial, 3 runtime incompatibility, 4 validation failure, 5 capability failure, 6 verify failure, 7 manifest integrity)
+[ ]   - return exit codes 0â€“7 (0 success, 2 policy denial, 3 runtime incompatibility, 4 validation failure, 5 capability failure, 6 verify failure, 7 manifest integrity)
 [ ]   - diagnostic codes FUNGI-DEPLOY-001 through FUNGI-DEPLOY-005
 [ ]   - create deploy/ dir: deploy-command.ts, deploy-policy.ts, deploy-validator.ts, deploy-report.ts, deploy-runtime.ts
 [ ] Add Galerina explain command integration
