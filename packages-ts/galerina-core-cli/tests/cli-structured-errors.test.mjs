@@ -17,7 +17,7 @@ test("unknown commands get a structured error that never echoes the raw name", a
 test("a throwing command becomes FUNGI-CLI-002 with no internal detail", async () => {
   const benchmark = commands.find((c) => c.name === "benchmark");
   const original = benchmark.run;
-  benchmark.run = async () => { throw new Error("secret internal path C:/Users/x/token"); };
+  benchmark.run = async () => { throw new Error("secret internal path <home>/x/token"); };
   try {
     const result = await runCli(["benchmark"], process.cwd());
     assert.equal(result.ok, false);

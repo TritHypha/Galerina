@@ -6,7 +6,7 @@
 // Diagnostics never echo file contents.
 
 import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { lstat, readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 export type BuildArtefactKind = "manifest" | "bundle" | "report" | "hash" | "map";
@@ -70,14 +70,14 @@ export async function verifyHash(artefact: BuildArtefact, expected: string = art
   }
   let bytes: Uint8Array;
   try {
-    const rootReal = realpathSync(resolve(root));
+    const rootReal = await realpath(resolve(root));
     const full = resolve(rootReal, path);
-    const stat = lstatSync(full);
+    const stat = await lstat(full);
     if (stat.isSymbolicLink()) return result(path, "", [diag(FUNGI_VERIFY_004, "Artefact path is a symbolic link.", path)]);
     if (!stat.isFile()) return result(path, "", [diag(FUNGI_VERIFY_002, "Artefact is not a regular file.", path)]);
-    const rel = relative(rootReal, realpathSync(full));
+    const rel = relative(rootReal, await realpath(full));
     if (rel.startsWith(`..${sep}`) || rel === ".." || isAbsolute(rel)) return result(path, "", [diag(FUNGI_VERIFY_004, "Artefact resolves outside the verification root.", path)]);
-    bytes = readFileSync(full);
+    bytes = await readFile(full);
   } catch {
     return result(path, "", [diag(FUNGI_VERIFY_002, "Artefact is missing or unreadable.", path)]);
   }

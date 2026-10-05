@@ -4,6 +4,7 @@
     "@galerina/core-tasks",
     "@galerina/devtools-graph-project",
     "node:child_process",
+    "node:crypto",
     "node:fs/promises",
     "node:path",
     "node:url"
