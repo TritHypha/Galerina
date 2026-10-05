@@ -81,16 +81,44 @@ timeout / timeoutMs values
 ```
 
 Dependency resolution is deterministic and rejects missing or circular task
-dependencies before execution. Current execution can dry-run task plans and
-perform permission checks; built-in operation execution is still future work.
+dependencies before execution. Current execution can dry-run task plans,
+perform permission checks, and run checked operations through host handlers
+(see Executing Operations below).
 
 `run { ... }` blocks are parsed into typed operations (one built-in call per
 line, double-quoted string arguments) and checked before a dry-run or run: an
 unknown operation (including `shell.exec`), a missing effect, wrong arity, or a
 filesystem path outside the task's `read`/`write` permissions fails the task.
 `schemas.generateJson()`, `openapi.generate()` and `tests.run()` are recognised
-but refused until their effect mapping is decided. Operations are never executed
-yet.
+but refused until their effect mapping is decided.
+
+## Executing Operations
+
+The package has no built-in file, compiler or report access. A host runs a task by
+passing one handler per operation name:
+
+```ts
+const result = await runTask(task, {
+  handlers: {
+    "filesystem.mkdir": async ({ args: [dir], signal }) => { /* host-owned, scoped */ },
+    "filesystem.copy": async ({ args: [from, to], signal }) => { /* ... */ }
+  }
+});
+```
+
+Zero-trust defaults (owner may revisit):
+
+```text
+no handlers                 -> nothing runs, status skipped
+checks first                -> permission and operation checks refuse before any handler
+preflight                   -> every operation needs an own-property function handler, or nothing runs
+sequential, fail-fast       -> declared order; first failure stops the task
+time bound                  -> timeoutMs, else 60 s; 1 ms..1 h accepted; AbortSignal fires on timeout/failure
+normalised paths            -> handlers receive repository-relative paths without dot segments
+no echo                     -> handler error text is never copied into the TaskResult
+```
+
+The CLI does not register handlers yet, so `galerina task` runs remain `skipped`.
 
 ## Permission Checks
 

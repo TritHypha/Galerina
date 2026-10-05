@@ -22,7 +22,7 @@ export interface TaskDefinition {
   readonly effects: readonly TaskEffect[];
   readonly permissions: readonly TaskPermission[];
   readonly timeoutMs?: number;
-  /** Parsed `run { ... }` block, when the task declares one. Check-only; never executed here. */
+  /** Parsed `run { ... }` block, when the task declares one. Executed only through host handlers. */
   readonly run?: TaskRunBlock;
 }
 
@@ -81,5 +81,7 @@ export interface TaskResult {
   readonly status: TaskStatus;
   readonly durationMs: number;
   readonly warnings: readonly string[];
+  /** Operations that resolved before the task finished (execution only). */
+  readonly operationsCompleted?: number;
   readonly error?: TaskError;
 }
