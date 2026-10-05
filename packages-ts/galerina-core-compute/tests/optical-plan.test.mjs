@@ -179,4 +179,38 @@ describe("buildOpticalPlan", () => {
     assert.equal(plan.recommendedMode, "photonic_planning_only");
     assert.equal(plan.fallback.target, "cpu");
   });
+
+  it("hostile getters on workload return invalid plan / unknown need (never throw)", () => {
+    const base = workload({ kind: "route", preferredTargets: ["optical_io"], effects: ["optical_io"] });
+    const counts = Object.create(null);
+    const boom = new Proxy(base, {
+      get(target, prop, receiver) {
+        if (typeof prop === "string") {
+          counts[prop] = (counts[prop] || 0) + 1;
+          if (
+            counts[prop] > 1 &&
+            (prop === "kind" ||
+              prop === "effects" ||
+              prop === "preferredTargets" ||
+              prop === "requiredCapabilities" ||
+              prop === "dataShape" ||
+              prop === "deployment" ||
+              prop === "memoryMb" ||
+              prop === "operationCount")
+          ) {
+            throw new Error("hostile-getter-do-not-echo");
+          }
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+    assert.equal(estimateOpticalNeed(boom), "unknown");
+    const plan = buildOpticalPlan(boom);
+    assert.equal(plan.need, "unknown");
+    assert.equal(plan.recommendedMode, "none");
+    assert.equal(plan.fallback.target, "cpu");
+    assert.equal(plan.fallback.reason, "workload_invalid");
+    assert.ok(!JSON.stringify(plan).includes("hostile-getter-do-not-echo"));
+  });
+
 });
