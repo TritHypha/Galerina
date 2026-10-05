@@ -4,7 +4,7 @@
 
 import { validateDestination, validateTlsRequirement, type NetworkDestinationReference } from "../runtime/governed-network.js";
 import type { NetworkDiagnostic, NetworkPolicy } from "../index.js";
-import type { WebhookVerificationConfig } from "../webhook.js";
+import type { WebhookVerificationConfig } from "../webhook/webhook-verification.js";
 
 export const NETWORK_POLICY_REPORT_SCHEMA = "galerina.network.report.v1";
 

@@ -75,9 +75,12 @@ policy belongs in `galerina-framework-app-kernel`.
     as { code, severity, message, path? }; `path` is used in place of `destination`. Ticked 2026-09-29, Grok Bot)
 [x] Define NetworkPolicyReport with schemaVersion "galerina.network.report.v1" (TODO id kept over the README draft "galerina.network.policy.report.v1"; generatedAt passed in; webhook secrets stripped) -- src/reports/network-policy-report.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
 [x] Define FUNGI-NETWORK-001 through FUNGI-NETWORK-008 diagnostic codes -- src/diagnostics/network-codes.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05). Existing Galerina_NETWORK_* policy diagnostics are unchanged.
-[HOLD] Create internal dir: policy/, runtime/, webhook/, reports/, diagnostics/ (2026-10-05: runtime/, reports/, diagnostics/ exist for the new contracts; moving the existing policy and webhook code is left so the frozen RD-0361 fixtures and imports stay stable)
-      HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): moving policy and webhook code would break the frozen RD-0361 fixtures and import paths
-      (tests/rd0361-*-frozen.test.mjs). Reopen as [ ] when RD-0361 refreezes or a move receipt exists.
+[x] Create internal dir: policy/, runtime/, webhook/, reports/, diagnostics/ (2026-10-05: runtime/, reports/, diagnostics/ exist for the new contracts; moving the existing policy and webhook code is left so the frozen RD-0361 fixtures and imports stay stable)
+      UNLOCKED 2026-10-05 (Grok Bot; owner may revisit): the HOLD reason was wrong. The RD-0361 frozen and execution
+      tests cover the six guard modules (admission-feedback, b8, cert-gate, cors, defensive-controls, egress, inbound),
+      not webhook or policy code. webhook/webhook-verification.ts (src/webhook.ts kept as a compatibility re-export) and
+      policy/network-policy-values.ts (DEFAULT_TLS_POLICY, DEFAULT_NETWORK_PRIVACY_POLICY, productionNetworkPolicy,
+      OPENAI_POLICY; type-only imports, no cycle). Public exports unchanged; full suite incl. RD-0361 green.
 [x] Implement deny-by-default rule (FUNGI-NETWORK-001 for undeclared destinations; stays 001 even under defaultEffect "allow", owner may revisit) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
 [HOLD] Integrate with boundary checker for FUNGI-BOUNDARY-008 (network allowlist violation)
       HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): code collision. docs/compiler-effect-and-boundary-checker.md defines FUNGI-BOUNDARY-008 as

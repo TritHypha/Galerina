@@ -83,23 +83,6 @@ export interface AiProviderNetworkPolicy {
 }
 
 /**
- * Documented OpenAI provider policy. This is a declarative policy value only;
- * it does not perform network access, resolve credentials, or grant authority.
- */
-export const OPENAI_POLICY: AiProviderNetworkPolicy = Object.freeze({
-  provider: "openai",
-  allowedEndpoints: Object.freeze(["api.openai.com"]),
-  requireApiKeyCapability: "OpenAiApiKey",
-  dataCategories: Object.freeze([] as string[]),
-  auditRequired: true,
-  allowSecretsInPrompt: false,
-  allowPii: false,
-  allowedRegions: Object.freeze(["eu-west"]),
-  maxPromptBytes: 1024 * 1024,
-  requireRedaction: true,
-});
-
-/**
  * Canonical replay boundary. The contract describes storage operations only;
  * it does not choose a clock, persistence medium, or request ordering.
  */
@@ -201,66 +184,9 @@ export interface NetworkReport {
   readonly outboundHosts: readonly string[];
 }
 
-export const DEFAULT_TLS_POLICY: TlsPolicy = {
-  requireTls: true,
-  minVersion: "TLS1.3",
-  verifyCertificates: true,
-  verifyHostnames: true,
-  denySelfSignedInProduction: true,
-  allowPlaintextFallback: false,
-  allowDowngrade: false,
-};
+import { DEFAULT_NETWORK_PRIVACY_POLICY, DEFAULT_TLS_POLICY } from "./policy/network-policy-values.js";
 
-export const DEFAULT_NETWORK_PRIVACY_POLICY: NetworkPrivacyPolicy = {
-  minimiseMetadata: true,
-  denyQueryStringSecrets: true,
-  redactSensitiveHeaders: true,
-  denySensitiveDataInUrls: true,
-};
-
-const PRODUCTION_SSRF_DENY_HOSTS = Object.freeze([
-  "localhost",
-  "127.0.0.1",
-  "0.0.0.0",
-  "::1",
-  "169.254.169.254",
-  "metadata.google.internal",
-  "metadata.azure.internal",
-]);
-
-/**
- * Current-schema production posture. This is declarative policy only: callers
- * must still pass its egress member to the runtime guard and perform the
- * connect-time DNS recheck before dialing a hostname.
- */
-export const productionNetworkPolicy: NetworkPolicy = Object.freeze({
-  name: "production",
-  defaultEffect: "deny",
-  tls: Object.freeze({ ...DEFAULT_TLS_POLICY }),
-  endpoints: Object.freeze([
-    Object.freeze({
-      direction: "outbound",
-      protocol: "https",
-      effect: "deny",
-      hosts: PRODUCTION_SSRF_DENY_HOSTS,
-      reason: "SSRF and metadata destinations are never admitted by production policy.",
-    }),
-  ]),
-  rateLimits: Object.freeze([] as RateLimitRule[]),
-  privacy: Object.freeze({ ...DEFAULT_NETWORK_PRIVACY_POLICY }),
-  denyRawSockets: true,
-  requireTimeouts: true,
-  requireBackpressure: true,
-  egress: Object.freeze({
-    allowedSchemes: Object.freeze(["https"]),
-    allowedPorts: Object.freeze([443]),
-    allowNonPublicHosts: false,
-    allowMetadataEndpoint: false,
-    allowUrlCredentials: false,
-    requireTls: true,
-    allowLoopback: false,
-  }),
-});
+export { DEFAULT_NETWORK_PRIVACY_POLICY, DEFAULT_TLS_POLICY, OPENAI_POLICY, productionNetworkPolicy } from "./policy/network-policy-values.js";
 
 export function defineNetworkPolicy(
   name: string,
@@ -733,7 +659,7 @@ export {
   OPAQUE_ID_MIN_LENGTH,
 } from "./defensive-controls.js";
 
-export * from "./webhook.js";
+export * from "./webhook/webhook-verification.js";
 export * from "./diagnostics/network-codes.js";
 export * from "./runtime/governed-network.js";
 export * from "./reports/network-policy-report.js";
