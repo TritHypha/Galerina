@@ -205,3 +205,23 @@ galerina-core-runtime owns execution supervision.
 galerina-core-compute owns heavy compute planning.
 galerina-core-security owns permission and safety policy.
 ```
+
+## Zero-trust agent governance contracts
+
+`src/agent-governance.ts` adds pure policy decisions over already-parsed records. Callers must validate untrusted bytes against the declared schemas before calling these helpers; they are not runtime schema parsers. Each returns `{ allowed, diagnostics }` or a typed report, and none performs I/O or grants authority.
+
+| Contract | What it does |
+|---|---|
+| `validateSupervisedTaskGroup` | Only declared, unique members run, and none may outlive the group. |
+| `validateAgentManifest` | Signed manifests only. Grants must be exact and scoped, with no wildcards. read/write/tool/package/deploy stay separate. Every effect needs a grant. |
+| `routeAgentMessage` | Typed topics with sender and receiver allowlists and a data-classification clearance. |
+| `evaluateToolGatewayCall` | Tool allowlist (deny wins), secret-marker guard, memory budget guard, and no caching of confidential or secret data. |
+| `admitMcpTools` | MCP servers must be pinned by sha256 digest with a tool allowlist. Descriptions are never trusted. |
+| `attenuateLease` | A derived lease can only narrow its parent: capability, scope, expiry and uses. |
+| `decideAiCapabilityRequest` | Agents request and the authority kernel decides. No self-grants. write/package/deploy need a human approval id. |
+| `createSelfModificationReport`, `transitionQuarantine` | Trust roots are immutable. An agent cannot rewrite its own definition. AI-generated code is released only through an independent review that records evidence. |
+| `validateSandboxPolicy`, `evaluateHumanApprovalGate` | No process spawn and exact network allowlists. Approvals are per action, expire, and cannot come from the requester. |
+| `createLoopProtectionReport` | Iteration, crash and stall limits. |
+| `appendAiAuditEntry`, `verifyAiAuditLog`, `sha256Hex` | A local hash-chain consistency helper with a dependency-free SHA-256. It does not provide durable storage, signatures, or a trusted external head anchor; a complete rewritten chain can be recomputed. |
+
+Worked examples are in `examples/*.example.json`. The tests recompute each example's expected output.
