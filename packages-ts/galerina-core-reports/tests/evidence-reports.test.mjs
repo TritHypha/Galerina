@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   MAX_AUDIT_LINE_LENGTH,
+  MAX_REPORT_ITEMS,
   capabilityEvidenceAuditEvent,
   createAuditReport,
   createCapabilityReport,
@@ -47,6 +48,33 @@ describe("capability and effect evidence audit-event shapes", () => {
     assert.throws(() => capabilityEvidenceAuditEvent(cap(), { eventId: "e-1", timestamp: "yesterday", runtime }), /^Error: FUNGI-REPORT-003/);
     assert.throws(() => effectEvidenceAuditEvent(eff(), undefined), /^Error: FUNGI-REPORT-/);
   });
+
+  it("events copy the caller runtime: later mutation cannot change the event or its JSONL line", () => {
+    for (const make of [(rt) => capabilityEvidenceAuditEvent(cap(), { eventId: "e-m", timestamp: T, runtime: rt }), (rt) => effectEvidenceAuditEvent(eff(), { eventId: "e-m", timestamp: T, runtime: rt })]) {
+      const rt = { ...runtime, region: "eu-west-2" };
+      const event = make(rt);
+      const before = serializeAuditEvent(event);
+      assert.notEqual(event.runtime, rt);
+      assert.ok(Object.isFrozen(event.runtime));
+      rt.environment = "prod";
+      rt.processId = "p-evil";
+      rt.extra = MARKER;
+      delete rt.region;
+      assert.equal(serializeAuditEvent(event), before);
+      assert.equal(event.runtime.environment, "test");
+      assert.equal(event.runtime.region, "eu-west-2");
+      assert.ok(!before.includes(MARKER));
+    }
+  });
+
+  it("a runtime with an own __proto__ key or a throwing getter is refused, not merged", () => {
+    const polluted = JSON.parse('{"runtimeId":"rt-1","environment":"test","target":"node","processId":"p-1","__proto__":{"polluted":"yes"}}');
+    assert.throws(() => capabilityEvidenceAuditEvent(cap(), { eventId: "e-p", timestamp: T, runtime: polluted }), /^Error: FUNGI-REPORT-002/);
+    assert.equal({}.polluted, undefined);
+    const hostile = { ...runtime };
+    Object.defineProperty(hostile, "environment", { enumerable: true, get() { throw new Error(MARKER); } });
+    assert.throws(() => effectEvidenceAuditEvent(eff(), { eventId: "e-h", timestamp: T, runtime: hostile }), (e) => /^FUNGI-REPORT-002/.test(e.message) && !e.message.includes(MARKER));
+  });
 });
 
 describe("audit-report.json", () => {
@@ -84,6 +112,21 @@ describe("audit-report.json", () => {
     assert.equal(empty.firstTimestamp, undefined);
     assert.equal(empty.complete, true);
   });
+
+  it("reads at most MAX_REPORT_ITEMS lines; a trailing empty line does not count toward the cap", () => {
+    const template = JSON.parse(line("e-0"));
+    const lines = Array.from({ length: MAX_REPORT_ITEMS + 1 }, (_, i) => JSON.stringify({ ...template, eventId: `e-${i}` }));
+    const over = createAuditReport(lines, T);
+    assert.equal(over.eventCount, MAX_REPORT_ITEMS);
+    assert.equal(over.truncated, true);
+    assert.equal(over.complete, false);
+    assert.deepEqual([...over.rejectedLines], []);
+    lines[MAX_REPORT_ITEMS] = "";
+    const atCap = createAuditReport(lines, T);
+    assert.equal(atCap.eventCount, MAX_REPORT_ITEMS);
+    assert.equal(atCap.truncated, false);
+    assert.equal(atCap.complete, true);
+  });
 });
 
 describe("capability-report.json and effect-report.json", () => {
@@ -119,6 +162,15 @@ describe("capability-report.json and effect-report.json", () => {
     assert.deepEqual([...r.conflictingEffects], ["db.write"]);
     assert.equal(r.complete, true);
     assert.throws(() => createEffectReport(null, T), /^Error: FUNGI-EVIDENCE-002/);
+  });
+
+  it("evidence past MAX_REPORT_ITEMS is not read and leaves the report truncated and incomplete", () => {
+    const items = Array.from({ length: MAX_REPORT_ITEMS + 1 }, (_, i) => cap({ evidenceId: `ev-${i}` }));
+    const r = createCapabilityReport(items, T);
+    assert.deepEqual(r.capabilities.map((x) => ({ ...x })), [{ capability: "db.orders.write", allowed: MAX_REPORT_ITEMS, denied: 0 }]);
+    assert.deepEqual([...r.rejectedIndices], []);
+    assert.equal(r.truncated, true);
+    assert.equal(r.complete, false);
   });
 });
 

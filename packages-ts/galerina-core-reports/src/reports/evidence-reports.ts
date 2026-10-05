@@ -45,6 +45,23 @@ function finishEvent(event: RuntimeAuditEvent): RuntimeAuditEvent {
 const evidenceReference = (evidenceId: string): RuntimeAuditReference => Object.freeze({ type: "evidence" as const, id: evidenceId });
 
 /**
+ * Copy of the caller's runtime record: every own enumerable key is read once into a fresh,
+ * frozen record, so later mutation of the caller's object cannot change the event or its
+ * serialised JSONL line. Object.fromEntries defines data properties, so an own "__proto__"
+ * key stays a plain (refused) field. Non-record values pass through for the validator to refuse.
+ */
+function snapshotRuntime(runtime: unknown): RuntimeAuditRuntime {
+  if (typeof runtime !== "object" || runtime === null || Array.isArray(runtime)) return runtime as RuntimeAuditRuntime;
+  let copy: Record<string, unknown>;
+  try {
+    copy = Object.fromEntries(Object.keys(runtime).map((key) => [key, (runtime as Record<string, unknown>)[key]]));
+  } catch {
+    throw new Error("FUNGI-REPORT-002: audit event refused (runtime could not be read).");
+  }
+  return Object.freeze(copy) as unknown as RuntimeAuditRuntime;
+}
+
+/**
  * Capability evidence as a runtime audit event (category "capability"). The message is fixed;
  * the evidence reason is not copied. Throws with the first FUNGI-EVIDENCE / FUNGI-REPORT code.
  */
@@ -58,7 +75,7 @@ export function capabilityEvidenceAuditEvent(evidence: CapabilityEvidence, param
     category: "capability",
     status: evidence.decision === "allow" ? "allowed" : "denied",
     message: evidence.decision === "allow" ? "Capability allowed." : "Capability denied.",
-    runtime: params?.runtime,
+    runtime: snapshotRuntime(params?.runtime),
     capability: evidence.capability,
     references: Object.freeze([evidenceReference(evidence.evidenceId), ...evidence.references.map((r) => Object.freeze({ type: r.type, id: r.id }))]),
     metadata: Object.freeze({ decision: evidence.decision, ...(evidence.policyId === undefined ? {} : { policyId: evidence.policyId }) }),
@@ -76,7 +93,7 @@ export function effectEvidenceAuditEvent(evidence: EffectEvidence, params: Evide
     category: "effect",
     status: evidence.allowed ? "allowed" : "denied",
     message: evidence.allowed ? "Effect allowed." : "Effect denied.",
-    runtime: params?.runtime,
+    runtime: snapshotRuntime(params?.runtime),
     effect: evidence.effect,
     references: Object.freeze([evidenceReference(evidence.evidenceId)]),
     metadata: Object.freeze({ declared: String(evidence.declared), inferred: String(evidence.inferred), transitive: String(evidence.transitive) }),
@@ -107,7 +124,8 @@ export interface AuditReport {
 export function createAuditReport(lines: readonly string[], generatedAt: string): AuditReport {
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   if (!Array.isArray(lines)) throw new Error("FUNGI-REPORT-002: audit lines must be an array of strings.");
-  const input = lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+  // One trailing empty line is ignored by shortening the read length, not by copying the array.
+  const length = lines.length > 0 && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length;
   const byCategory = countMap(RUNTIME_AUDIT_CATEGORIES);
   const byStatus = countMap(RUNTIME_AUDIT_STATUSES);
   const rejectedLines: number[] = [];
@@ -116,9 +134,9 @@ export function createAuditReport(lines: readonly string[], generatedAt: string)
   let first: string | undefined;
   let last: string | undefined;
   let eventCount = 0;
-  const limit = Math.min(input.length, MAX_REPORT_ITEMS);
+  const limit = Math.min(length, MAX_REPORT_ITEMS);
   for (let i = 0; i < limit; i++) {
-    const line = input[i];
+    const line = lines[i];
     const reject = (code: string): void => { rejectedLines.push(i + 1); rejectedCodes.add(code); };
     if (typeof line !== "string" || line.length === 0 || line.length > MAX_AUDIT_LINE_LENGTH) { reject("FUNGI-REPORT-005"); continue; }
     let parsed: unknown;
@@ -135,7 +153,7 @@ export function createAuditReport(lines: readonly string[], generatedAt: string)
     if (first === undefined || t < Date.parse(first)) first = event.timestamp;
     if (last === undefined || t > Date.parse(last)) last = event.timestamp;
   }
-  const truncated = input.length > MAX_REPORT_ITEMS;
+  const truncated = length > MAX_REPORT_ITEMS;
   return Object.freeze({
     schema: "galerina.report.audit.v1",
     generatedAt,
