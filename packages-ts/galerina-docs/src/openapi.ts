@@ -37,8 +37,8 @@ import type {
   HttpOperationKey,
   MediaTypeObject,
 } from "./types.js";
-import type { HttpMethod } from "../../galerina-framework-app-kernel/dist/index.js";
-import { resolveEffectiveRoutePolicy } from "../../galerina-framework-app-kernel/dist/index.js";
+import type { HttpMethod } from "@galerina/framework-app-kernel";
+import { resolveEffectiveRoutePolicy } from "@galerina/framework-app-kernel";
 import { OpenApiGenerationError, validateOpenApiDocument } from "./validate.js";
 
 const DEFAULT_VERSION: OpenApiVersion = "3.1.0";
