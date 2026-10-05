@@ -1387,3 +1387,33 @@ export {
   type CpuArithmeticBenchmarkResult,
   type RunCpuArithmeticBenchmarkResult,
 } from "./cpu-arithmetic-benchmark.js";
+
+
+export {
+  FUNGI_BENCH_JSON_001,
+  FUNGI_BENCH_JSON_002,
+  FUNGI_BENCH_JSON_003,
+  FUNGI_BENCH_JSON_004,
+  FUNGI_BENCH_JSON_005,
+  JSON_DECODE_VALIDATE_1MB_BENCHMARK_ID,
+  JSON_DECODE_VALIDATE_1MB_BENCHMARK_TARGET,
+  JSON_1MB_BYTES,
+  JSON_DECODE_VALIDATE_1MB_OPTIONS_FIELDS,
+  DEFAULT_JSON_1MB_OPERATIONS,
+  MAX_JSON_1MB_OPERATIONS,
+  DEFAULT_JSON_1MB_MAX_DURATION_MS,
+  MAX_JSON_1MB_MAX_DURATION_MS,
+  JSON_1MB_ITEM_FIELDS,
+  JSON_1MB_META_FIELDS,
+  JSON_1MB_ROOT_FIELDS,
+  buildJson1mbPayload,
+  validateJson1mbDocument,
+  decodeAndValidateJson1mb,
+  runJsonDecodeValidate1mbBenchmark,
+  scoreJson1mbBenchmark,
+  type Json1mbBenchmarkDiagnosticField,
+  type Json1mbBenchmarkDiagnostic,
+  type Json1mbBenchmarkOptions,
+  type Json1mbBenchmarkResult,
+  type RunJson1mbBenchmarkResult,
+} from "./json-1mb-benchmark.js";

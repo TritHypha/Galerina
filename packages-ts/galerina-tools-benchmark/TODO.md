@@ -37,7 +37,7 @@
 [ ] Add Galerina benchmark
 [x] Add Result / Option benchmark -- src/result-option-benchmark.ts runResultOptionBenchmark / scoreResultOptionBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.result_option target logic; Option some|none + Result ok|err match/unwrapOr; FUNGI-BENCH-RO-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [x] Add CPU arithmetic benchmark -- src/cpu-arithmetic-benchmark.ts runCpuArithmeticBenchmark / scoreCpuArithmeticBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids cpu.integer_loop + cpu.float_loop target cpu; FUNGI-BENCH-CPU-ARITH-001..005; in-process only (no command runner / vector-SIMD / hardware / Phase 8-9)
-[ ] Add JSON 1MB decode/validate benchmark
+[x] Add JSON 1MB decode/validate benchmark -- src/json-1mb-benchmark.ts runJsonDecodeValidate1mbBenchmark / buildJson1mbPayload (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id json.decode_validate_1mb target json; exact 1 MiB deterministic payload; unknown-field reject; FUNGI-BENCH-JSON-001..005; in-process only (no stream 10MB/1GB / download / command runner)
 [ ] Add JSON 10MB streaming benchmark
 [ ] Add small vector benchmark
 [ ] Add SHA-256 byte benchmark
@@ -181,3 +181,11 @@ generator existed is superseded by the 2026-10-05 note above.)
 ## Notes (Grok 2026-10-05 CPU arithmetic benchmark)
 - Closed `src/cpu-arithmetic-benchmark.ts`: `runCpuArithmeticBenchmark` returns both `cpu.integer_loop` and `cpu.float_loop`.
 - README light ids; float path refuses NaN/Infinity (never collapses non-finite to allow). CASE ONLY.
+
+## Notes (Grok 2026-10-05 JSON 1MB decode/validate)
+- Closed `src/json-1mb-benchmark.ts`: `runJsonDecodeValidate1mbBenchmark` / `buildJson1mbPayload` / `validateJson1mbDocument`.
+- README light id `json.decode_validate_1mb`; exact `JSON_1MB_BYTES` = 1048576; local closed field allowlists (no data-json import).
+- CASE ONLY: no 10MB/100MB/1GB streaming, no network download, no command runner.
+
+## Notes (Grok 2026-10-05 logic.logic5_match PARKED)
+- README lists light id `logic.logic5_match` but no closed Logic5 vocabulary exists in-repo (core-logic has Tri 3-state, Decision 4-state, Omni 8-state). Do-not-invent: parked until owner supplies closed vocab. Not tied to TODO "Add Galerina benchmark" (also invent-heavy).
