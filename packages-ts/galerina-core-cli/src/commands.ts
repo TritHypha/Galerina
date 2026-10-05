@@ -7,6 +7,7 @@ import { runVerifyCommand } from "./verify/verify-command.js";
 import { runDeployCommand } from "./deploy/deploy-command.js";
 import { runExplainCommand } from "./explain/explain-command.js";
 import { runPlanCommand } from "./plan/plan-command.js";
+import { runBuildCommand } from "./build/build-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -26,7 +27,11 @@ export const commands: readonly CliCommand[] = [
     run: runInitCommand
   },
   createCoreCommand("check", "Parse and type-check a Galerina project."),
-  createCoreCommand("build", "Build project outputs."),
+  {
+    name: "build",
+    description: "Closed-shape build admission against BuildWorkspaceInput (fail-closed; 14-pass pipeline not admitted).",
+    run: runBuildCommand
+  },
   createCoreCommand("run", "Run a Galerina entrypoint."),
   createCoreCommand("serve", "Start the API server package."),
   createCoreCommand("reports", "Generate development reports."),
