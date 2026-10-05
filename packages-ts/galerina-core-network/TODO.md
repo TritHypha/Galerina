@@ -41,10 +41,13 @@ policy belongs in `galerina-framework-app-kernel`.
     until a QUIC transport with verified TLS 1.3 is attested. `grpc` was not added; still an open decision.
     Tests: tests/quic-protocol.test.mjs.)
 [x] Upgrade NetworkDestinationReference: add provider, category, dataCategories (defined from the README shape with these optional fields; it was planned-only before) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
-[HOLD] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits (2026-10-05: left open; productionNetworkPolicy is a frozen current-schema value and `defaultEffect`/`requireTimeouts` already exist, so this is a schema decision)
-      HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): a schema decision on a frozen value. productionNetworkPolicy is frozen at the current schema,
-      and `defaultEffect` and `requireTimeouts` already cover two of the five fields under other names. Reopen as [ ]
-      when the owner picks the field names (rename or alias) and records a schema-version bump for productionNetworkPolicy.
+[x] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits (2026-10-05: left open; productionNetworkPolicy is a frozen current-schema value and `defaultEffect`/`requireTimeouts` already exist, so this is a schema decision)
+      UNLOCKED 2026-10-05 (Grok Bot; zero-trust defaults, owner may revisit): the block was the frozen
+      productionNetworkPolicy value, so the five fields are added as OPTIONAL members and the frozen value is unchanged.
+      `default` is an alias that must equal defaultEffect and be deny; `allowPlainHttp: true` is refused; `aiProviders`
+      need audit, an API-key capability, no secrets in prompts and endpoints covered by an outbound https allow rule;
+      `requireRateLimits` (absent = true) warns when inbound allow rules carry no rate limit; `requireTimeouts` already
+      existed. src/index.ts validatePolicyUpgradeFields; tests/network-policy-upgrade.test.mjs.
 [x] Implement frozen current-schema productionNetworkPolicy with SSRF-safe deny list, HTTPS/443-only egress, and runtime-guard regression (declarative policy does not itself dial or resolve DNS)
 [x] Define AiProviderNetworkPolicy: provider, allowedEndpoints, requireApiKeyCapability, dataCategories, auditRequired, prompt/privacy controls
 [x] Define immutable OPENAI_POLICY const and regression (declarative only; no credential or network authority)

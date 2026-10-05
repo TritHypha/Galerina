@@ -154,6 +154,17 @@ export interface NetworkPolicy {
   readonly requireBackpressure: boolean;
   /** Optional declarative outbound-egress posture (SSRF). Validated only when present. */
   readonly egress?: EgressPolicy;
+  // ── 2026-10-05 upgrade (Grok; zero-trust defaults, owner may revisit) ──
+  // Optional, so the frozen current-schema productionNetworkPolicy is unchanged and
+  // means the defaults below.
+  /** Alias of defaultEffect. When present it must equal defaultEffect, and "allow" is refused like defaultEffect. */
+  readonly default?: NetworkEffect;
+  /** Absent means false. true is refused: core network policy never admits plaintext HTTP. */
+  readonly allowPlainHttp?: boolean;
+  /** AI providers this policy admits. Absent means none. Each endpoint must be covered by an outbound https allow rule. */
+  readonly aiProviders?: readonly AiProviderNetworkPolicy[];
+  /** Absent means true: inbound allow rules need at least one rate limit (warning, like requireTimeouts). */
+  readonly requireRateLimits?: boolean;
 }
 
 export interface NetworkBackendCapability {
@@ -266,6 +277,10 @@ export function defineNetworkPolicy(
     requireTimeouts: input.requireTimeouts ?? true,
     requireBackpressure: input.requireBackpressure ?? true,
     ...(input.egress !== undefined ? { egress: input.egress } : {}),
+    ...(input.default !== undefined ? { default: input.default } : {}),
+    ...(input.allowPlainHttp !== undefined ? { allowPlainHttp: input.allowPlainHttp } : {}),
+    ...(input.aiProviders !== undefined ? { aiProviders: input.aiProviders } : {}),
+    ...(input.requireRateLimits !== undefined ? { requireRateLimits: input.requireRateLimits } : {}),
   };
 }
 
@@ -294,6 +309,7 @@ export function validateNetworkPolicy(
   }
 
   diagnostics.push(...validateTlsPolicy(policy.tls, options));
+  diagnostics.push(...validatePolicyUpgradeFields(policy));
 
   policy.endpoints.forEach((endpoint, index) => {
     diagnostics.push(...validateEndpointRule(endpoint, index, policy));
@@ -408,6 +424,53 @@ export function createNetworkReport(input: {
         .flatMap((endpoint) => endpoint.hosts ?? []),
     ),
   };
+}
+
+const isApprovedHostName = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0 && !/[\s/?#@*]/.test(value);
+
+function validatePolicyUpgradeFields(policy: NetworkPolicy): readonly NetworkDiagnostic[] {
+  const diagnostics: NetworkDiagnostic[] = [];
+  if (policy.default !== undefined && (policy.default !== policy.defaultEffect || policy.default !== "deny")) {
+    diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_DEFAULT_ALLOW", "error", "Network policy default must be deny and must match defaultEffect.", "default"));
+  }
+  if (policy.allowPlainHttp !== undefined && policy.allowPlainHttp !== false) {
+    diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_PLAINTEXT_HTTP_ALLOWED", "error", "Plaintext HTTP must not be allowed in core network policy.", "allowPlainHttp"));
+  }
+  if (policy.aiProviders !== undefined) {
+    if (!Array.isArray(policy.aiProviders)) {
+      diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_AI_PROVIDER_INVALID", "error", "aiProviders must be a list of AI provider policies.", "aiProviders"));
+    } else {
+      const seen = new Set<string>();
+      const httpsAllowHosts = new Set(policy.endpoints
+        .filter((e) => e.direction === "outbound" && e.protocol === "https" && e.effect === "allow")
+        .flatMap((e) => e.hosts ?? [])
+        .filter((h) => h !== "*")
+        .map((h) => h.trim().toLowerCase()));
+      policy.aiProviders.forEach((provider, index) => {
+        const path = `aiProviders.${index}`;
+        const ok = typeof provider === "object" && provider !== null &&
+          typeof provider.provider === "string" && provider.provider.trim().length > 0 && !seen.has(provider.provider) &&
+          typeof provider.requireApiKeyCapability === "string" && provider.requireApiKeyCapability.trim().length > 0 &&
+          provider.auditRequired === true && provider.allowSecretsInPrompt === false &&
+          Array.isArray(provider.allowedEndpoints) && provider.allowedEndpoints.length > 0 && provider.allowedEndpoints.every(isApprovedHostName);
+        if (!ok) {
+          diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_AI_PROVIDER_INVALID", "error", "AI providers need a unique name, an API-key capability, required audit, no secrets in prompts and exact endpoint hosts.", path));
+          return;
+        }
+        seen.add(provider.provider);
+        if (!provider.allowedEndpoints.every((host: string) => httpsAllowHosts.has(host.trim().toLowerCase()))) {
+          diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_AI_PROVIDER_ENDPOINT_UNDECLARED", "error", "Every AI provider endpoint must be covered by an outbound https allow rule.", `${path}.allowedEndpoints`));
+        }
+      });
+    }
+  }
+  const inboundAllows = policy.endpoints.some((e) => e.direction === "inbound" && e.effect === "allow");
+  if (policy.requireRateLimits === false) {
+    diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_RATE_LIMIT_REQUIRED", "warning", "Network policy should require rate limits for inbound traffic.", "requireRateLimits"));
+  } else if (inboundAllows && policy.rateLimits.length === 0) {
+    diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_RATE_LIMIT_REQUIRED", "warning", "Inbound allow rules should carry at least one rate limit.", "rateLimits"));
+  }
+  return diagnostics;
 }
 
 function validateTlsPolicy(
