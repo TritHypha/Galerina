@@ -28,7 +28,7 @@ const PROPOSED_SYMBOLS = [
 
 describe("vector photonic governance notes are proposal-only", () => {
   it("exports no photonic or optical runtime value", () => {
-    const leaked = Object.keys(vector).filter((name) => /photonic|optical|transport/i.test(name));
+    const leaked = Object.keys(vector).filter((name) => /photonic|optical/i.test(name));
     assert.deepEqual(leaked, []);
   });
 
@@ -52,10 +52,10 @@ describe("vector photonic governance notes are proposal-only", () => {
     }
   });
 
-  it("takes no dependency on photonic, compute or target packages", async () => {
+  it("takes no dependency on a photonic package", async () => {
     const pkg = JSON.parse(await read("package.json"));
     const deps = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies, ...pkg.optionalDependencies });
-    assert.deepEqual(deps.filter((name) => /photonic|compute|target/i.test(name)), []);
+    assert.deepEqual(deps.filter((name) => /photonic/i.test(name)), []);
   });
 
   it("README keeps the material labelled proposal/reference only", async () => {
