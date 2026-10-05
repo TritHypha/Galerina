@@ -295,3 +295,15 @@ describe("known-set vocabulary", () => {
     ]);
   });
 });
+
+describe("zero-trust diagnostics - a refused host is never echoed", () => {
+  it("withholds userinfo-bearing hosts from the diagnostic message", () => {
+    const diags = validatePostgresConnection({ ...goodConnection, host: "app:hunter2@db.example.com" });
+    assert.deepEqual(codes(diags), ["Galerina_DB_POSTGRES_INLINE_CREDENTIALS_FORBIDDEN"]);
+    for (const d of diags) {
+      assert.equal(d.message.includes("hunter2"), false);
+      assert.equal(d.message.includes("db.example.com"), false);
+    }
+    assert.match(diags[0].message, /value withheld/);
+  });
+});
