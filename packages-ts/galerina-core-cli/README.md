@@ -119,8 +119,10 @@ Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
 declarations, boundary violations, and why deployment was denied.
-Closed-shape contracts landed (`src/explain/explain-trace.ts`); CLI wiring /
-report writer / denial reader still open. Flags (when wired): `--tree`,
+Explain CLI wired (`galerina explain`): closed-shape manifest facets and/or
+`deployment-denial.json` reasoning; emits `explain-report.json`. Admitted flags:
+`--manifest`, `--denial`, `--report`, `--json`, `--trace`, `--effects`,
+`--capabilities`. Still open / refuse: `--tree`,
 `--trace`, `--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`,
 `--json`. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
 
@@ -361,7 +363,7 @@ vocabulary `import|effect|capability|boundary|dependency|denial`; closed `Explai
 Shapes via property descriptors (no getters). Unknown keys refuse without echo. Diagnostic messages
 never echo tokens/keys. Codes: `FUNGI-EXPLAIN-001` shape, `002` domain, `003` options facet refuse,
 `004` result consistency (contiguous steps). Does not wire `galerina explain`, write
-`explain-report.json`, read `deployment-denial.json`, or walk a live dependency tree.
+walk a live dependency tree, or probe runtime/policy/audit (`--tree`/`--runtime`/`--policy`/`--audit` refuse). Denial reader + report writer landed.
 
 
 ### Compute Plan Contracts
