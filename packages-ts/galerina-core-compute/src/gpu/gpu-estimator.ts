@@ -23,20 +23,25 @@ const GPU_INTEREST_KINDS = new Set([
 
 /**
  * Advisory GPU suitability. Never claims high/medium under the v1 freeze.
+ * Hostile getters that throw during reads return "unknown" (never throw out).
  */
 export function estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability {
-  if (validateComputeWorkload(workload).length > 0) return "unknown";
+  try {
+    if (validateComputeWorkload(workload).length > 0) return "unknown";
 
-  const gpuInteresting =
-    GPU_INTEREST_KINDS.has(workload.kind) ||
-    workload.preferredTargets.includes("gpu") ||
-    workload.effects.some((e) => e === "accelerator" || e === "parallel_compute") ||
-    workload.operationCount >= 10_000 ||
-    workload.memoryMb >= 512;
+    const gpuInteresting =
+      GPU_INTEREST_KINDS.has(workload.kind) ||
+      workload.preferredTargets.includes("gpu") ||
+      workload.effects.some((e) => e === "accelerator" || e === "parallel_compute") ||
+      workload.operationCount >= 10_000 ||
+      workload.memoryMb >= 512;
 
-  if (!gpuInteresting) return "unsuitable";
+    if (!gpuInteresting) return "unsuitable";
 
-  // Sensitive workloads stay "low" as advisory interest but must not look like
-  // an admission recommendation — buildGpuPlan refuses GPU execution for them.
-  return "low";
+    // Sensitive workloads stay "low" as advisory interest but must not look like
+    // an admission recommendation — buildGpuPlan refuses GPU execution for them.
+    return "low";
+  } catch {
+    return "unknown";
+  }
 }
