@@ -105,6 +105,7 @@ const makeRuntime = (over = {}) => {
   return { runtime, calls };
 };
 const req = (over = {}) => ({ destination: dest(), method: "GET", path: "/v1/items", timeoutMs: 5000, capability: "NetworkHttps", ...over });
+const GRANTS = ["NetworkHttps"];
 const refusedWith = async (promise, expected) => {
   await assert.rejects(promise, (err) => { assert.ok(err instanceof NetworkAdmissionError); for (const c of expected) assert.ok(codes(err.diagnostics).includes(c), c); return true; });
 };
@@ -112,7 +113,7 @@ const refusedWith = async (promise, expected) => {
 describe("safeHttpRequest", () => {
   it("delegates an admitted request exactly once", async () => {
     const { runtime, calls } = makeRuntime();
-    const res = await safeHttpRequest(req(), runtime);
+    const res = await safeHttpRequest(req(), runtime, GRANTS);
     assert.equal(res.status, 200);
     assert.equal(calls.length, 1);
   });
@@ -129,31 +130,47 @@ describe("safeHttpRequest", () => {
       [req({ timeoutMs: 120001 }), [C.RUNTIME_POLICY_UNAVAILABLE]],
       [req({ timeoutMs: Number.POSITIVE_INFINITY }), [C.RUNTIME_POLICY_UNAVAILABLE]],
       [req({ headers: { "x-ok": "a\r\nb" } }), [C.RUNTIME_POLICY_UNAVAILABLE]],
+      [req({ headers: { Host: "evil.example.net" } }), [C.DESTINATION_NOT_ALLOWLISTED]],
+      [req({ path: "/a/../admin" }), [C.RUNTIME_POLICY_UNAVAILABLE]],
+      [req({ path: "/a/%2e%2e/admin" }), [C.RUNTIME_POLICY_UNAVAILABLE]],
+      [req({ path: "/a%2Fb" }), [C.RUNTIME_POLICY_UNAVAILABLE]],
+      [req({ path: "/./x" }), [C.RUNTIME_POLICY_UNAVAILABLE]],
     ];
     for (const [input, expected] of cases) {
       const { runtime, calls } = makeRuntime();
-      await refusedWith(safeHttpRequest(input, runtime), expected);
+      await refusedWith(safeHttpRequest(input, runtime, GRANTS), expected);
       assert.equal(calls.length, 0, JSON.stringify(input.path));
     }
   });
   it("a permissive runtime cannot override the package checks; a stricter one can refuse more", async () => {
     const lax = makeRuntime({ validateDestination: () => [], validateTlsRequirement: () => [], validate: () => [] });
-    await refusedWith(safeHttpRequest(req({ destination: dest({ host: "evil.example.net" }) }), lax.runtime), [C.UNDECLARED_DESTINATION]);
+    await refusedWith(safeHttpRequest(req({ destination: dest({ host: "evil.example.net" }) }), lax.runtime, GRANTS), [C.UNDECLARED_DESTINATION]);
     assert.equal(lax.calls.length, 0);
     const strict = makeRuntime({ validate: () => [{ code: C.DESTINATION_NOT_ALLOWLISTED, severity: "error", message: "no" }] });
-    await refusedWith(safeHttpRequest(req(), strict.runtime), [C.DESTINATION_NOT_ALLOWLISTED]);
+    await refusedWith(safeHttpRequest(req(), strict.runtime, GRANTS), [C.DESTINATION_NOT_ALLOWLISTED]);
     const throwing = makeRuntime({ validateCapability: () => { throw new Error("boom"); } });
-    await refusedWith(safeHttpRequest(req(), throwing.runtime), [C.RUNTIME_POLICY_UNAVAILABLE]);
+    await refusedWith(safeHttpRequest(req(), throwing.runtime, GRANTS), [C.RUNTIME_POLICY_UNAVAILABLE]);
+  });
+  it("an ungranted capability refuses even when the runtime's own capability check admits everything", async () => {
+    const lax = makeRuntime({ validateCapability: () => [] });
+    await refusedWith(safeHttpRequest(req({ capability: "Other" }), lax.runtime, GRANTS), [C.CAPABILITY_MISSING]);
+    await refusedWith(safeHttpRequest(req(), lax.runtime), [C.CAPABILITY_MISSING]);
+    assert.equal(lax.calls.length, 0);
+  });
+  it("a Host header naming the destination host is admitted", async () => {
+    const { runtime, calls } = makeRuntime();
+    await safeHttpRequest(req({ headers: { Host: "API.example.com:443" } }), runtime, GRANTS);
+    assert.equal(calls.length, 1);
   });
   it("refuses an unusable runtime and a malformed or redirected response", async () => {
     await refusedWith(safeHttpRequest(req(), {}), [C.RUNTIME_POLICY_UNAVAILABLE]);
     await refusedWith(safeHttpRequest(req(), makeRuntime({ request: "not-a-function" }).runtime), [C.RUNTIME_POLICY_UNAVAILABLE]);
     for (const response of [{ status: 99, headers: {} }, { status: 200.5 }, "ok"]) {
       const { runtime } = makeRuntime({ request: async (i) => (typeof response === "string" ? response : { ...response, destination: i.destination, receivedAt: "t", durationMs: 1, body: "" }) });
-      await refusedWith(safeHttpRequest(req(), runtime), [C.RUNTIME_POLICY_UNAVAILABLE]);
+      await refusedWith(safeHttpRequest(req(), runtime, GRANTS), [C.RUNTIME_POLICY_UNAVAILABLE]);
     }
     const redirected = makeRuntime({ request: async () => ({ status: 200, headers: {}, body: "", destination: dest({ host: "other.example.com" }), receivedAt: "t", durationMs: 1 }) });
-    await refusedWith(safeHttpRequest(req(), redirected.runtime), [C.RUNTIME_POLICY_UNAVAILABLE]);
+    await refusedWith(safeHttpRequest(req(), redirected.runtime, GRANTS), [C.RUNTIME_POLICY_UNAVAILABLE]);
   });
 });
 

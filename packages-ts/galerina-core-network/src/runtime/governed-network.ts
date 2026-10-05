@@ -134,8 +134,8 @@ export function validateCapability(capability: string, policy: NetworkPolicy, gr
 function validateRequestShape(input: SafeHttpRequestInput, policy: NetworkPolicy): NetworkDiagnostic[] {
   const out: NetworkDiagnostic[] = [];
   if (!METHODS.has(input.method)) out.push(diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Method must be GET, POST, PUT, PATCH or DELETE.", "method"));
-  if (typeof input.path !== "string" || !input.path.startsWith("/") || input.path.startsWith("//") || CONTROL.test(input.path) || input.path.includes("\\") || input.path.includes("#")) {
-    out.push(diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Path must be an origin-relative path starting with a single '/'.", "path"));
+  if (typeof input.path !== "string" || !input.path.startsWith("/") || input.path.startsWith("//") || CONTROL.test(input.path) || input.path.includes("\\") || input.path.includes("#") || /(?:^|\/)\.\.?(?:\/|\?|$)/.test(input.path) || /%(?:2e|2f|5c|00)/i.test(input.path)) {
+    out.push(diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Path must be an origin-relative path starting with a single '/', with no dot segments or encoded dots/slashes.", "path"));
   } else if (policy.privacy?.denyQueryStringSecrets !== false && SECRET_QUERY.test(input.path)) {
     out.push(diag(FUNGI_NETWORK_CODES.SECRET_FLOW, "Secrets must not travel in the query string.", "path"));
   }
@@ -146,6 +146,8 @@ function validateRequestShape(input: SafeHttpRequestInput, policy: NetworkPolicy
     else for (const [name, value] of Object.entries(input.headers)) {
       if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name) || typeof value !== "string" || CONTROL.test(value)) {
         out.push(diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Header names must be tokens and values must carry no control characters.", "headers"));
+      } else if (name.toLowerCase() === "host" && normaliseHost(value.replace(/:\d{1,5}$/, "")) !== normaliseHost(input.destination.host)) {
+        out.push(diag(FUNGI_NETWORK_CODES.DESTINATION_NOT_ALLOWLISTED, "A Host header must name the validated destination host.", "headers.host"));
       } else if (SECRET_HEADERS.has(name.toLowerCase()) && !TLS_PROTOCOLS.has(input.destination.protocol)) {
         out.push(diag(FUNGI_NETWORK_CODES.SECRET_FLOW, "Credential headers are only sent over TLS.", `headers.${name.toLowerCase()}`));
       }
@@ -179,12 +181,13 @@ function runtimeDiagnostics(call: () => readonly NetworkDiagnostic[], path: stri
 
 /**
  * Validate a request against the runtime's policy and then delegate to `runtime.request`.
- * Rejects with NetworkAdmissionError on any error diagnostic, before any I/O. Capability grants
- * come from the runtime's own validateCapability; the package check only demands a well-formed id.
+ * Rejects with NetworkAdmissionError on any error diagnostic, before any I/O. The capability must be
+ * in the caller's explicit `granted` list (default none) AND pass the runtime's own validateCapability;
+ * a permissive runtime cannot admit an ungranted capability.
  * A response that is not a plain record with an integer status 100-599, string headers and the
  * same destination is refused (FUNGI-NETWORK-008).
  */
-export async function safeHttpRequest(input: SafeHttpRequestInput, runtime: GovernedNetworkRuntime): Promise<SafeHttpResponse> {
+export async function safeHttpRequest(input: SafeHttpRequestInput, runtime: GovernedNetworkRuntime, granted: readonly string[] = []): Promise<SafeHttpResponse> {
   if (!runtimeUsable(runtime)) throw new NetworkAdmissionError([diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Governed network runtime is unavailable or incomplete.", "runtime")]);
   if (!isRecord(input)) throw new NetworkAdmissionError([diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Request input must be a plain record.", "input")]);
   const policy = runtime.policy;
@@ -192,7 +195,7 @@ export async function safeHttpRequest(input: SafeHttpRequestInput, runtime: Gove
   const diagnostics: NetworkDiagnostic[] = [
     ...validateDestination(destination, policy),
     ...validateTlsRequirement(destination, policy),
-    ...(typeof input.capability === "string" && /^[A-Za-z][A-Za-z0-9_.:-]{0,127}$/.test(input.capability) ? [] : [diag(FUNGI_NETWORK_CODES.CAPABILITY_MISSING, "Capability must be a declared identifier.", "capability")]),
+    ...validateCapability(input.capability, policy, granted),
   ];
   if (wellFormedDestination(destination)) diagnostics.push(...validateRequestShape(input, policy));
   diagnostics.push(
