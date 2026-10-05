@@ -42,7 +42,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [x] Define policy definition, effective policy and conflict report schemas -- src/policy-contracts.ts readPolicyDefinition / readEffectivePolicy / readPolicyConflict (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.policy-definition/v1, effective-policy/v1, policy-conflict/v1; FUNGI-SEC-POL-001..005; deny-default only; kinds align with core-reports policy family (authored excludes unknown); never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; tests/policy-contracts.test.mjs
 [x] Define capability boundary and grant report schemas -- src/capability-contracts.ts readCapabilityBoundary / readCapabilityGrantReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.capability-boundary/v1, capability-grant-report/v1; FUNGI-SEC-CAP-001..005; deny-default only; admitted/denied and granted/refused disjoint ascending tokens; never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; lease/attenuation/approver-chain still open; tests/capability-contracts.test.mjs
 [x] Define capability lease, attenuation and approver-chain diagnostics (closed-shape CapabilityLease / CapabilityAttenuation / ApproverChain; FUNGI-SEC-CLA-001..005; Grok 2026-10-05; owner may revisit)
-[ ] Define AI self-grant and trust-root modification diagnostics
+[x] Define AI self-grant and trust-root modification diagnostics (closed-shape AiAuthorityRequest / TrustRootModification; FUNGI-SEC-ASG-001..005; Grok 2026-10-05; owner may revisit)
 [ ] Define malicious data validation and taint-flow diagnostics
 [ ] Define OWASP/CWE baseline diagnostic mapping
 [ ] Define hardware-risk security report inputs
@@ -61,3 +61,9 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 - Schemas: `galerina.security.capability-lease/v1`, `capability-attenuation/v1`, `approver-chain/v1`.
 - Deny-first: active lease needs capabilities; denied lease empty; allow chain needs approvers; child ⊆ parent.
 - Epoch seconds finite safe ints only; SecretReference v0.2 still do-not-invent; no live lease runtime.
+
+## Notes (Grok 2026-10-05 AI authority / trust-root)
+- Closed `src/ai-authority-contracts.ts`: `readAiAuthorityRequest` / `readTrustRootModification`.
+- Schemas: `galerina.security.ai-authority-request/v1`, `trust-root-modification/v1`.
+- Deny-first: selfGrantAttempt requires deny; allow needs capabilities and not self-grant; trust-root allow needs externalGovernance + human|service actor (ai_agent/tool allow refused).
+- SecretReference v0.2 still do-not-invent; no live AI grant / trust-root mutation runtime.
