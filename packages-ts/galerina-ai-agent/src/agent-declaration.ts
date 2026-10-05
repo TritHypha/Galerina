@@ -97,6 +97,8 @@ const FAILURE_BEHAVIOURS: readonly AgentFailureBehaviour[] = Object.freeze([
 ]);
 const TIME_UNITS: Readonly<Record<string, number>> = Object.freeze({ ms: 1, s: 1_000, m: 60_000 });
 const SIZE_UNITS: Readonly<Record<string, number>> = Object.freeze({ kb: 1_024, mb: 1_048_576, gb: 1_073_741_824 });
+const AGENT_NODE_FIELDS = ["kind", "schema", "name", "span", "inputType", "outputType", "tools", "effects", "permissions", "limits", "failureBehaviour"] as const;
+const AGENT_TOOL_FIELDS = ["tool", "decision", "scope"] as const;
 const AGENT_LIMIT_FIELDS = ["timeoutMs", "memoryBytes", "maxToolCalls", "maxTokens", "rateLimitPerMinute"] as const;
 const LIMIT_KEYS = ["timeout", "memory", "max_tool_calls", "max_tokens", "rate_limit_per_minute"] as const;
 type LimitKey = (typeof LIMIT_KEYS)[number];
@@ -424,6 +426,15 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
     };
   }
   const extra: AgentDiagnostic[] = [];
+  // Exact shape on a hand-built node: unknown node or tool keys are refused (keys are not echoed).
+  if (Object.keys(node).some((key) => !(AGENT_NODE_FIELDS as readonly string[]).includes(key))) {
+    extra.push({ code: "Galerina_AGENT_DECL_FIELD_UNKNOWN", severity: "error", message: `Agent declaration nodes may only carry: ${AGENT_NODE_FIELDS.join(", ")}.`, path: "node" });
+  }
+  node.tools.forEach((tool, position) => {
+    if (typeof tool !== "object" || tool === null || Object.keys(tool).some((key) => !(AGENT_TOOL_FIELDS as readonly string[]).includes(key))) {
+      extra.push({ code: "Galerina_AGENT_DECL_FIELD_UNKNOWN", severity: "error", message: `Tool entries may only carry: ${AGENT_TOOL_FIELDS.join(", ")}.`, path: `tools.${position}` });
+    }
+  });
   if (!TYPE_NAME.test(node.name)) {
     extra.push({ code: "Galerina_AGENT_DECL_NAME_INVALID", severity: "error", message: "Agent name must be an UpperCamel identifier.", path: "name" });
   }
@@ -477,7 +488,7 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
     name: node.name,
     inputType: node.inputType,
     outputType: node.outputType,
-    tools: Object.freeze(node.tools.map((tool) => Object.freeze({ ...tool }))),
+    tools: Object.freeze(node.tools.map((tool) => Object.freeze({ tool: tool.tool, decision: tool.decision, ...(tool.scope === undefined ? {} : { scope: tool.scope }) }))),
     effects: Object.freeze([...node.effects]),
     permissions: Object.freeze([...node.permissions]),
     // Copy only the known limit fields so an unknown key can never ride into the definition.

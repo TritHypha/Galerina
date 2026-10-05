@@ -63,3 +63,22 @@ describe("lowerAgentDeclaration: non-positive limits stay with validateAgentLimi
     assert.deepEqual(lowered.diagnostics.map((d) => d.code), ["Galerina_AGENT_MAX_TOKENS_INVALID"]);
   });
 });
+
+describe("lowerAgentDeclaration: exact node and tool shape", () => {
+  it("refuses unknown keys on the node and on tool entries without echoing them", () => {
+    const node = base();
+    for (const bad of [{ ...node, model: "gpt-x" }, { ...node, tools: [{ tool: "repo.read", decision: "allow", sudo: true }] }]) {
+      const lowered = lowerAgentDeclaration(bad);
+      assert.equal(lowered.definition, undefined);
+      assert.ok(lowered.diagnostics.some((d) => d.code === "Galerina_AGENT_DECL_FIELD_UNKNOWN"));
+      assert.ok(!/gpt-x|sudo/.test(JSON.stringify(lowered.diagnostics)));
+    }
+  });
+
+  it("a parser-produced node still lowers, and tools carry only tool/decision/scope", () => {
+    const node = base();
+    const lowered = lowerAgentDeclaration({ ...node, tools: [{ tool: "repo.read", decision: "allow", scope: "./src" }] });
+    assert.ok(lowered.definition, JSON.stringify(lowered.diagnostics));
+    assert.deepEqual(Object.keys(lowered.definition.tools[0]).sort(), ["decision", "scope", "tool"]);
+  });
+});
