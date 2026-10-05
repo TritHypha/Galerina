@@ -35,8 +35,8 @@
 [x]   - implement VerifiedArtefact: path, hash, verified, diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05)
 [x]   - implement VerificationResult: success, artefacts[], diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); verifyArtefacts(set, root)
 [x]   - implement verifyHash(artefact, expected): Promise<VerifiedArtefact> -- src/verify.ts, tests/verify-contracts.test.mjs (Grok/Codex 2026-10-05); sha256 only, checked root resolution, descriptor identity, 64 KiB streaming and no-follow where supported
-[!] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05)
-[ ]   - emit verification-report.json
+[x] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05) -- UNLOCKED 2026-10-05 (Grok Bot; owner may revisit): the actionable part (document the limit) is done in README.md and src/verify.ts, and verification-report.json now carries the same limitations; the platform limit itself stays documented, not solved
+[x]   - emit verification-report.json -- src/verify/verify-reporter.ts, tests/verify-report.test.mjs (Grok 2026-10-05); createVerificationReport recomputes success, writeVerificationReport is exclusive-create (no overwrite) into an existing dir, no timestamp unless given (owner may revisit)
 [x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
 [ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts
 [ ] Add Galerina deploy command integration
