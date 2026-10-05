@@ -3,6 +3,10 @@
 > Current sequencing: root [work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
 > (W15 security continuation, CONST constitution discussion draft). This package
 > checklist is historical language-core planning.
+>
+> 2026-10-05 W01 inventory of every open row against the register:
+> [galerina-core-todo-w01-inventory-2026-10-05](../../docs/reports/galerina-core-todo-w01-inventory-2026-10-05.md)
+> (73 rows are real work no register lane names; listed there with next actions).
 
 This document lists the working TODO items for **Galerina / Galerina**.
 
