@@ -49,7 +49,28 @@ export {
   FUNGI_CLI_VERIFY_005,
   VERIFY_EXIT_OK,
   VERIFY_EXIT_USAGE,
+  VERIFY_EXIT_RUNTIME,
+  VERIFY_EXIT_VALIDATION,
+  VERIFY_EXIT_CAPABILITY,
   VERIFY_EXIT_ARTEFACT,
   VERIFY_EXIT_MANIFEST,
 } from "./verify/verify-command.js";
 export type { VerifyCommandOptions, VerifyFlagName } from "./verify/verify-command.js";
+export {
+  verifyAuditReport,
+  verifyCapabilityReport,
+  verifyRuntimeCompatibility,
+  AUDIT_REPORT_SCHEMA,
+  CAPABILITY_REPORT_SCHEMA,
+  AUDIT_REPORT_CATEGORIES,
+  AUDIT_REPORT_STATUSES,
+  AUDIT_REPORT_FIELDS,
+  CAPABILITY_REPORT_FIELDS,
+  CAPABILITY_ROW_FIELDS,
+  FUNGI_VERIFY_012,
+  FUNGI_VERIFY_013,
+  FUNGI_VERIFY_014,
+  FUNGI_VERIFY_015,
+  FUNGI_VERIFY_016,
+} from "./verify/verify-runtime.js";
+export type { RuntimeReportDiagnostic, RuntimeReportField, RuntimeReportVerification } from "./verify/verify-runtime.js";

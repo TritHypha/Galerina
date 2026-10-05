@@ -1,15 +1,16 @@
 /**
  * `galerina verify` command wiring (zero-trust defaults, owner may revisit).
  *
- * Composes closed-shape artefact integrity + optional runtime-manifest checks into one
- * CliResult with exit codes: 0 success, 2 usage/refusal, 6 artefact verify failure,
- * 7 manifest integrity failure. Never echoes raw paths, flag values, or file contents.
+ * Composes closed-shape artefact integrity + optional runtime-manifest checks + optional
+ * audit/capability report validation into one CliResult with exit codes: 0 success, 2 usage,
+ * 3 audit/runtime failure, 4 runtime-compatibility validation failure, 5 capability/policy
+ * failure, 6 artefact verify failure, 7 manifest integrity failure. Never echoes raw paths,
+ * flag values, or file contents.
  *
  * Admitted flags: --artefacts <file>, --root <dir>, --manifest <file>, --report <dir>,
- * --json, --strict, --hash. --policy and --audit are recognized but refused as not
- * admitted (runtime compatibility / capability / audit-report validation is a later
- * slice). Unknown flags refuse. No getters run on loaded JSON: JSON.parse yields data
- * only; shape checks live in verify-integrity / verify-manifest.
+ * --policy <capability-report.json>, --audit <audit-report.json>, --json, --strict, --hash.
+ * Unknown flags refuse. No getters run on loaded JSON: JSON.parse yields data only; shape
+ * checks live in verify-integrity / verify-manifest / verify-runtime.
  */
 
 import { readFile } from "node:fs/promises";
@@ -25,20 +26,29 @@ import { verifyArtefactIntegritySet } from "./verify-integrity.js";
 import { verifyRuntimeManifestSet } from "./verify-manifest.js";
 import type { RuntimeManifestVerification } from "./verify-manifest.js";
 import type { VerificationResult } from "../verify.js";
+import {
+  verifyAuditReport,
+  verifyCapabilityReport,
+  verifyRuntimeCompatibility,
+} from "./verify-runtime.js";
+import type { RuntimeReportVerification } from "./verify-runtime.js";
 
 /** Unknown or duplicate flag / missing value. */
 export const FUNGI_CLI_VERIFY_001 = "FUNGI-CLI-VERIFY-001";
 /** Required --artefacts missing. */
 export const FUNGI_CLI_VERIFY_002 = "FUNGI-CLI-VERIFY-002";
-/** Artefacts or manifest input file unreadable / not JSON / not a dense array. */
+/** Artefacts, manifest or report input file unreadable / not JSON / wrong top-level shape. */
 export const FUNGI_CLI_VERIFY_003 = "FUNGI-CLI-VERIFY-003";
-/** --policy / --audit not admitted yet. */
+/** Reserved (previously --policy/--audit not admitted); kept for stable code space. */
 export const FUNGI_CLI_VERIFY_004 = "FUNGI-CLI-VERIFY-004";
 /** --report directory unusable (missing, not a dir, or report already exists). */
 export const FUNGI_CLI_VERIFY_005 = "FUNGI-CLI-VERIFY-005";
 
 export const VERIFY_EXIT_OK = 0;
 export const VERIFY_EXIT_USAGE = 2;
+export const VERIFY_EXIT_RUNTIME = 3;
+export const VERIFY_EXIT_VALIDATION = 4;
+export const VERIFY_EXIT_CAPABILITY = 5;
 export const VERIFY_EXIT_ARTEFACT = 6;
 export const VERIFY_EXIT_MANIFEST = 7;
 
@@ -61,6 +71,8 @@ export interface VerifyCommandOptions {
   readonly root: string;
   readonly manifestPath?: string;
   readonly reportDir?: string;
+  readonly policyPath?: string;
+  readonly auditPath?: string;
   readonly json: boolean;
   readonly strict: boolean;
   readonly hash: boolean;
@@ -82,9 +94,9 @@ function isAdmittedFlag(name: string): name is VerifyFlagName {
 }
 
 /**
- * Parse verify argv. Fail-closed: unknown flags, duplicates, missing values, and
- * --policy/--audit all refuse. Boolean flags (--json/--strict/--hash) take no value.
- * Value flags accept `--flag <value>` only (no `--flag=value`) so values never look like flags.
+ * Parse verify argv. Fail-closed: unknown flags, duplicates and missing values refuse.
+ * Boolean flags (--json/--strict/--hash) take no value. Value flags accept `--flag <value>`
+ * only (no `--flag=value`) so values never look like flags.
  */
 export function parseVerifyArgs(args: readonly string[]):
   | { readonly ok: true; readonly options: VerifyCommandOptions }
@@ -93,6 +105,8 @@ export function parseVerifyArgs(args: readonly string[]):
   let root = "";
   let manifestPath = "";
   let reportDir = "";
+  let policyPath = "";
+  let auditPath = "";
   let json = false;
   let strict = false;
   let hash = false;
@@ -107,10 +121,10 @@ export function parseVerifyArgs(args: readonly string[]):
       return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "Verify does not accept --flag=value forms.", "Pass --flag <value> with a separate argument.") };
     }
     if (!a.startsWith("--")) {
-      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "Verify does not accept positional arguments.", "Pass inputs through --artefacts / --manifest / --root / --report.") };
+      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "Verify does not accept positional arguments.", "Pass inputs through --artefacts / --manifest / --root / --report / --policy / --audit.") };
     }
     if (!isAdmittedFlag(a)) {
-      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "Verify received an unknown flag.", "Use only --artefacts, --root, --manifest, --report, --json, --strict, --hash (and note --policy/--audit are not admitted yet).") };
+      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "Verify received an unknown flag.", "Use only --artefacts, --root, --manifest, --report, --policy, --audit, --json, --strict, --hash.") };
     }
     if (seen.has(a)) {
       return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "A verify flag was given more than once.", "Pass each flag at most once.") };
@@ -120,19 +134,18 @@ export function parseVerifyArgs(args: readonly string[]):
     if (a === "--json") { json = true; continue; }
     if (a === "--strict") { strict = true; continue; }
     if (a === "--hash") { hash = true; continue; }
-    if (a === "--policy" || a === "--audit") {
-      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_004, VERIFY_EXIT_USAGE, "Verify --policy / --audit are not admitted yet.", "Omit --policy and --audit until runtime compatibility, capability consistency and audit-report validation land.") };
-    }
 
     const next = args[i + 1];
     if (next === undefined || next.startsWith("-")) {
-      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "A verify flag that needs a value was given without one.", "Pass --artefacts <file>, --root <dir>, --manifest <file>, or --report <dir>.") };
+      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_001, VERIFY_EXIT_USAGE, "A verify flag that needs a value was given without one.", "Pass --artefacts <file>, --root <dir>, --manifest <file>, --report <dir>, --policy <file>, or --audit <file>.") };
     }
     i += 1;
     if (a === "--artefacts") artefactsPath = next;
     else if (a === "--root") root = next;
     else if (a === "--manifest") manifestPath = next;
     else if (a === "--report") reportDir = next;
+    else if (a === "--policy") policyPath = next;
+    else if (a === "--audit") auditPath = next;
   }
 
   if (artefactsPath.length === 0) {
@@ -143,12 +156,13 @@ export function parseVerifyArgs(args: readonly string[]):
   // --strict is accepted; verification is always fail-closed (no non-strict mode).
   void hash;
   void strict;
-
   const options: VerifyCommandOptions = Object.freeze({
     artefactsPath,
     root: root.length > 0 ? root : ".",
     ...(manifestPath.length > 0 ? { manifestPath } : {}),
     ...(reportDir.length > 0 ? { reportDir } : {}),
+    ...(policyPath.length > 0 ? { policyPath } : {}),
+    ...(auditPath.length > 0 ? { auditPath } : {}),
     json,
     strict,
     hash,
@@ -160,7 +174,6 @@ async function readJsonArray(filePath: string, cwd: string): Promise<
   | { readonly ok: true; readonly value: unknown }
   | { readonly ok: false; readonly result: CliResult }
 > {
-  // Resolve relative to cwd; never echo the path. Absolute paths are allowed but not echoed.
   const absolute = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
   let text: string;
   try {
@@ -177,9 +190,31 @@ async function readJsonArray(filePath: string, cwd: string): Promise<
   if (!Array.isArray(parsed)) {
     return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file must be a JSON array.", "Provide a dense JSON array (not an object or sparse array wrapper).") };
   }
-  // Dense-array check (no holes): length matches own numeric keys count.
   if (Object.keys(parsed).length !== parsed.length) {
     return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input array must be dense.", "Remove holes from the JSON array.") };
+  }
+  return { ok: true, value: parsed };
+}
+
+async function readJsonObject(filePath: string, cwd: string): Promise<
+  | { readonly ok: true; readonly value: unknown }
+  | { readonly ok: false; readonly result: CliResult }
+> {
+  const absolute = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
+  let text: string;
+  try {
+    text = await readFile(absolute, "utf8");
+  } catch {
+    return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file could not be read.", "Ensure --policy / --audit names a readable UTF-8 JSON object.") };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file was not valid JSON.", "Provide a JSON object matching the closed report shape.") };
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify report input must be a JSON object.", "Provide a single closed-shape report object (not an array).") };
   }
   return { ok: true, value: parsed };
 }
@@ -206,8 +241,24 @@ export async function runVerifyCommand(context: CliContext): Promise<CliResult> 
     manifests = verifyRuntimeManifestSet(manifestLoad.value);
   }
 
-  // Integrity (closed shape + hash) always runs when --artefacts is given.
   const artefactResult: VerificationResult = await verifyArtefactIntegritySet(artefactsLoad.value, root);
+
+  let audit: RuntimeReportVerification | undefined;
+  let capability: RuntimeReportVerification | undefined;
+  if (options.auditPath !== undefined) {
+    const load = await readJsonObject(options.auditPath, context.cwd);
+    if (!load.ok) return load.result;
+    audit = verifyAuditReport(load.value);
+  }
+  if (options.policyPath !== undefined) {
+    const load = await readJsonObject(options.policyPath, context.cwd);
+    if (!load.ok) return load.result;
+    capability = verifyCapabilityReport(load.value);
+  }
+  let runtimeCompat: RuntimeReportVerification | undefined;
+  if (audit !== undefined && capability !== undefined) {
+    runtimeCompat = verifyRuntimeCompatibility(audit, capability);
+  }
 
   if (options.reportDir !== undefined) {
     const reportAbsolute = isAbsolute(options.reportDir) ? options.reportDir : resolve(context.cwd, options.reportDir);
@@ -228,6 +279,8 @@ export async function runVerifyCommand(context: CliContext): Promise<CliResult> 
       ...(report.manifests !== undefined
         ? [`Manifests: ${report.manifests.summary.verified}/${report.manifests.summary.total} verified`]
         : []),
+      ...(audit !== undefined ? [`Audit report: ${audit.success ? "verified" : "failed"}`] : []),
+      ...(capability !== undefined ? [`Capability report: ${capability.success ? "verified" : "failed"}`] : []),
     );
   }
 
@@ -249,7 +302,33 @@ export async function runVerifyCommand(context: CliContext): Promise<CliResult> 
     });
   }
 
-  // createVerificationReport recomputes combined success; trust that for the ok path.
+  if (audit !== undefined && !audit.success) {
+    return Object.freeze({
+      ok: false as const,
+      code: VERIFY_EXIT_RUNTIME,
+      message: "Verify failed: audit report did not verify.",
+      details: Object.freeze(details),
+    });
+  }
+
+  if (capability !== undefined && !capability.success) {
+    return Object.freeze({
+      ok: false as const,
+      code: VERIFY_EXIT_CAPABILITY,
+      message: "Verify failed: capability/policy report did not verify.",
+      details: Object.freeze(details),
+    });
+  }
+
+  if (runtimeCompat !== undefined && !runtimeCompat.success) {
+    return Object.freeze({
+      ok: false as const,
+      code: VERIFY_EXIT_VALIDATION,
+      message: "Verify failed: runtime compatibility check did not verify.",
+      details: Object.freeze(details),
+    });
+  }
+
   if (!report.success) {
     return Object.freeze({
       ok: false as const,
