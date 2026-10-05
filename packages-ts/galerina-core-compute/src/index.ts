@@ -365,3 +365,10 @@ function sumDataMovementBytes(plan: ComputeOffloadPlan): number {
     return stageTotal + stageBytes;
   }, 0);
 }
+
+// Shared workload types and target compatibility (TODO pass, Grok 2026-10-05).
+export * from "./workload.js";
+export * from "./compatibility/target-compatibility.js";
+export * from "./compatibility/compatibility-rules.js";
+export * from "./compatibility/target-validator.js";
+export * from "./compatibility/compatibility-report.js";

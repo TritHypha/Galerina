@@ -85,14 +85,14 @@ describe("validateJsOutputPlan — browser is fail-closed", () => {
     ]);
   });
 
-  it("production browser: sourcesContent is an error, inline map a warning", () => {
+  it("production browser: sourcesContent and inline maps are errors (W01 G3 raised FUNGI-JS-011)", () => {
     const diags = validateJsOutputPlan({
       ...browserPlan,
       sourceMap: { mode: "inline", includeSourcesContent: true, production: true },
     });
     assert.ok(errorCodes(diags).includes("FUNGI-JS-012"));
-    const warn = diags.find((d) => d.code === "FUNGI-JS-011");
-    assert.equal(warn?.severity, "warning");
+    const inline = diags.find((d) => d.code === "FUNGI-JS-011");
+    assert.equal(inline?.severity, "error");
   });
 
   it("non-production browser plans may carry inline maps (dev loop)", () => {

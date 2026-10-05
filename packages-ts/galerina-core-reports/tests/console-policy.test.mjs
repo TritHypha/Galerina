@@ -136,6 +136,33 @@ describe("console policy (W01 G4, owner may revisit)", () => {
     assert.ok(Buffer.byteLength(emitted, "utf8") <= CONSOLE_DUMP_LIMITS.maxBytes);
   });
 
+  it("counts unpaired surrogates in raw scope names as UTF-8 replacement bytes", () => {
+    const malformedName = "\uD800\uD800x".repeat(650);
+    const scope = renderConsoleScope({ [malformedName]: { value: 1 } });
+
+    assert.ok(Buffer.byteLength(scope.text, "utf8") <= CONSOLE_DUMP_LIMITS.maxBytes);
+  });
+
+  it("returns a refusal marker when proxy inspection throws", () => {
+    const hostile = new Proxy({}, {
+      ownKeys() {
+        throw new Error("inspection trap");
+      },
+    });
+
+    assert.match(renderConsoleValue(hostile).text, /inspection refused/);
+    assert.match(summarizeLargeJson(hostile).text, /inspection refused/);
+    assert.match(renderConsoleScope(hostile).text, /inspection refused/);
+  });
+
+  it("marks cyclic values without recursing indefinitely", () => {
+    const cyclic = {};
+    cyclic.self = cyclic;
+
+    assert.match(renderConsoleValue(cyclic).text, /\[circular\]/);
+    assert.match(summarizeLargeJson(cyclic).text, /\$\.self: object/);
+  });
+
   it("bounds total summary traversal instead of walking every nested branch", () => {
     const wide = Object.fromEntries(Array.from({ length: 100 }, (_, i) => [`branch-${i}`, { leaf: i }]));
     const summary = summarizeLargeJson(wide);

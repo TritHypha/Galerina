@@ -53,6 +53,9 @@ export function aiSafeText(input: string, max: number = AI_DIGEST_MAX_TEXT): str
     .replace(/[\u0000-\u001f\u007f]+/g, " ")
     .replace(/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, "Bearer <redacted>")
     .replace(/\b(api[_-]?key|token|secret|password|passwd|authorization|cookie)\s*[=:]\s*[^\s,;]+/gi, "$1=<redacted>")
+    // SuperGrok C1 #61 NB-1: file: URLs and ~/ home paths too.
+    .replace(/\bfile:[^\s"'`<>|]*/gi, "<path>")
+    .replace(/(^|[\s"'`(=])~[\\/][^\s"'`<>|]*/g, "$1<path>")
     .replace(/[A-Za-z]:[\\/][^\s"'`<>|]*/g, "<path>")
     .replace(/\\\\[^\s"'`<>|]+/g, "<path>")
     .replace(/(^|[\s"'`(=])\/(?:home|Users|root|var|tmp|etc|opt|mnt|private|srv|workspace)\/[^\s"'`<>|]*/g, "$1<path>")
@@ -69,6 +72,7 @@ export function aiSafePath(path: string): string {
   const p = String(path).replace(/\\/g, "/");
   if (p === "") return "<unknown>";
   if (/^[A-Za-z]:\//.test(p) || p.startsWith("/") || p.startsWith("//")) return "<absolute>";
+  if (p.startsWith("~") || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(p)) return "<absolute>";
   if (p.split("/").includes("..")) return "<outside>";
   return aiSafeText(p.replace(/^\.\//, ""), 120);
 }

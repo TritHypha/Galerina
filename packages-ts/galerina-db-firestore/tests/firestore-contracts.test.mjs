@@ -311,3 +311,20 @@ describe("known-set vocabulary", () => {
     ]);
   });
 });
+
+describe("zero-trust diagnostics - refused path values are never echoed", () => {
+  it("withholds the path value from every path diagnostic", () => {
+    const cases = [
+      [{ kind: "collection", path: "/zt-echo-probe" }, "Galerina_DB_FIRESTORE_PATH_NOT_RELATIVE"],
+      [{ kind: "collection", path: "zt-echo-probe//x" }, "Galerina_DB_FIRESTORE_PATH_SEGMENT_EMPTY"],
+      [{ kind: "collection", path: "zt-echo-probe/../x" }, "Galerina_DB_FIRESTORE_PATH_SEGMENT_INVALID"],
+      [{ kind: "collection", path: "zt-echo-probe/doc-1" }, "Galerina_DB_FIRESTORE_PATH_KIND_MISMATCH"],
+    ];
+    for (const [contract, code] of cases) {
+      const diags = validateFirestorePath(contract);
+      assert.deepEqual(codes(diags), [code], contract.path);
+      assert.equal(diags[0].message.includes("zt-echo-probe"), false, contract.path);
+      assert.match(diags[0].message, /value withheld/);
+    }
+  });
+});
