@@ -1,3 +1,4 @@
+export * from "./console-policy.js";
 export * from "./ai-digest.js";
 export type ReportSeverity = "info" | "warning" | "error" | "critical";
 
