@@ -26,6 +26,10 @@ describe("console policy (W01 G4, owner may revisit)", () => {
     assert.match(r.text, /"password":"\[REDACTED\]"/);
     assert.match(r.text, /"id":7/);
     assert.equal(r.text.includes("hunter2"), false);
+    assert.equal(renderConsoleValue({ pin: 1234 }).text.includes("1234"), false);
+    assert.match(renderConsoleValue({ secretary: "office" }).text, /"secretary":"office"/);
+    assert.equal(renderConsoleValue({ encryptionKey: "must-not-leak" }).text.includes("must-not-leak"), false);
+    assert.equal(renderConsoleValue({ connectionString: "must-not-leak" }).text.includes("must-not-leak"), false);
   });
 
   it("L832 dump respects byte, depth and key caps", () => {
@@ -95,5 +99,49 @@ describe("console policy (W01 G4, owner may revisit)", () => {
     assert.equal(r.text.includes("undefined"), false);
     assert.equal(r.text.includes("null"), false);
     assert.match(r.text, /"a":1/);
+  });
+
+  it("refuses accessor properties without invoking getters in dumps, scopes, or summaries", () => {
+    let getterCalls = 0;
+    const hostile = Object.defineProperty({}, "password", {
+      enumerable: true,
+      get() {
+        getterCalls++;
+        return "must-not-be-read";
+      },
+    });
+
+    const dump = renderConsoleValue(hostile);
+    const scope = renderConsoleScope(hostile);
+    const summary = summarizeLargeJson(hostile);
+    const emitted = createConsoleRecorder("debug").emit("dump", hostile);
+
+    assert.equal(getterCalls, 0);
+    assert.equal(dump.text.includes("must-not-be-read"), false);
+    assert.equal(scope.text.includes("must-not-be-read"), false);
+    assert.equal(summary.text.includes("must-not-be-read"), false);
+    assert.equal(emitted.includes("must-not-be-read"), false);
+    assert.match(dump.text, /inspection refused/);
+    assert.match(scope.text, /inspection refused/);
+    assert.match(summary.text, /inspection refused/);
+    assert.match(emitted, /inspection refused/);
+  });
+
+  it("keeps summary and complete emitted lines within the UTF-8 byte ceiling", () => {
+    const wide = Object.fromEntries(Array.from({ length: 100 }, (_, i) => [`field-${i}-with-a-long-name`, { value: "😀".repeat(40) }]));
+    const summary = summarizeLargeJson(wide);
+    const emitted = createConsoleRecorder("debug").emit("dump", wide);
+
+    assert.ok(Buffer.byteLength(summary.text, "utf8") <= CONSOLE_DUMP_LIMITS.maxBytes);
+    assert.ok(Buffer.byteLength(emitted, "utf8") <= CONSOLE_DUMP_LIMITS.maxBytes);
+  });
+
+  it("bounds total summary traversal instead of walking every nested branch", () => {
+    const wide = Object.fromEntries(Array.from({ length: 100 }, (_, i) => [`branch-${i}`, { leaf: i }]));
+    const summary = summarizeLargeJson(wide);
+
+    assert.ok(summary.paths <= CONSOLE_DUMP_LIMITS.maxKeys);
+    assert.ok(summary.truncated > 0);
+    assert.match(summary.text, /more path branches/);
   });
 });
