@@ -276,6 +276,11 @@ export function parseAgentDeclarations(source: string): AgentDeclarationParseRes
         while (!(rows.at(-1) ?? "").includes("]")) {
           const more = next();
           if (more === undefined) break;
+          if (more.text.includes("{") || more.text.includes("}")) {
+            // An unclosed list must not swallow a later block or agent: re-read this line.
+            index = more.line - 1;
+            break;
+          }
           rows.push(more.text);
         }
         if (!once(clause, line)) continue;
@@ -420,6 +425,25 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
   const extra: AgentDiagnostic[] = [];
   if (!TYPE_NAME.test(node.name)) {
     extra.push({ code: "Galerina_AGENT_DECL_NAME_INVALID", severity: "error", message: "Agent name must be an UpperCamel identifier.", path: "name" });
+  }
+  for (const field of ["inputType", "outputType"] as const) {
+    if (!TYPE_NAME.test(node[field])) {
+      extra.push({ code: "Galerina_AGENT_DECL_TYPE_INVALID", severity: "error", message: "Agent input and output types must be UpperCamel type names.", path: field });
+    }
+  }
+  node.tools.forEach((tool, position) => {
+    if (!TOOL_NAME.test(tool.tool) || (tool.decision !== "allow" && tool.decision !== "deny")) {
+      extra.push({ code: "Galerina_AGENT_DECL_TOOL_INVALID", severity: "error", message: "Tool entries need a lower-case dotted tool name and an allow or deny decision.", path: `tools.${position}` });
+    }
+  });
+  if (node.tools.length > MAX_AGENT_TOOLS) {
+    extra.push({ code: "Galerina_AGENT_DECL_LIMIT_EXCEEDED", severity: "error", message: `At most ${MAX_AGENT_TOOLS} tool entries are allowed per agent.`, path: "tools" });
+  }
+  for (const field of ["effects", "permissions"] as const) {
+    const items = node[field];
+    if (!items.every((item) => LIST_ITEM.test(item)) || new Set(items).size !== items.length) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIST_INVALID", severity: "error", message: `The ${field} list needs unique lower-case dotted names.`, path: field });
+    }
   }
   if (!FAILURE_BEHAVIOURS.includes(node.failureBehaviour)) {
     extra.push({ code: "Galerina_AGENT_DECL_FAILURE_INVALID", severity: "error", message: `Failure behaviour must be one of: ${FAILURE_BEHAVIOURS.join(", ")}.`, path: "failureBehaviour" });
