@@ -8,6 +8,7 @@ import { runDeployCommand } from "./deploy/deploy-command.js";
 import { runExplainCommand } from "./explain/explain-command.js";
 import { runPlanCommand } from "./plan/plan-command.js";
 import { runBuildCommand } from "./build/build-command.js";
+import { runPromoteCommand } from "./promote/promote-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -66,6 +67,11 @@ export const commands: readonly CliCommand[] = [
     name: "plan",
     description: "Estimate closed-shape compute plan suitability (fail-closed; no live GPU/optical/memory probe).",
     run: runPlanCommand
+  },
+  {
+    name: "promote",
+    description: "Admit a closed-shape promote plan between environments (fail-closed; no live apply/sign/push).",
+    run: runPromoteCommand
   },
   {
     name: "benchmark",
