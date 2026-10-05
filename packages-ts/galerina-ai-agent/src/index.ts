@@ -385,3 +385,4 @@ export function createAgentReport(input: {
   };
 }
 export * from "./agent-governance.js";
+export * from "./agent-declaration.js";

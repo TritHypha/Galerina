@@ -7,8 +7,11 @@
 [x] Add package metadata
 [x] Add initial typed exports
 [x] Define agent, tool permission, limit, task group and report placeholders
-[ ] Define agent syntax and compiler-facing contracts
-    Open 2026-10-05: needs core-compiler grammar work; the runtime contracts below are in src/agent-governance.ts.
+[x] Define agent syntax and compiler-facing contracts -- src/agent-declaration.ts: canonical `agent Name { ... }` form,
+    AgentDeclarationNode (schema galerina.ai-agent.declaration.v1), reference parser parseAgentDeclarations and
+    lowerAgentDeclaration -> AgentDefinition; tests/agent-declaration.test.mjs (Grok 2026-10-05; zero-trust defaults,
+    owner may revisit). Not done here: wiring the grammar into galerina-core-compiler (core-compiler has uncommitted
+    Codex work, so it was not touched); the compiler should emit AgentDeclarationNode and call lowerAgentDeclaration.
 [x] Define supervised task group validation rules
 [x] Define merge policy examples
 [x] Define agent security report examples
