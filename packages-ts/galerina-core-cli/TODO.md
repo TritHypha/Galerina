@@ -18,7 +18,7 @@
 [x] Add Galerina security:check command integration
 [x] Add Galerina routes command integration
 [x] Add Galerina task command integration with galerina-core-tasks
-[ ] Complete Galerina build command â€” full 14-pass pipeline with artefact generation
+[ ] Complete Galerina build command Ã¢â‚¬â€ full 14-pass pipeline with artefact generation
 [ ]   - emit runtime-manifest.json, compiler-report.json, effect-report.json, capability-report.json
 [ ]   - emit audit-report.json, build-hash.txt
 [ ]   - support --target, --json, --report, --strict, --profile, --out, --audit flags
@@ -28,7 +28,7 @@
 [ ]   - implement buildWorkspace(input: BuildWorkspaceInput): Promise<BuildResult>
 [ ]   - diagnostic codes FUNGI-BUILD-001 through FUNGI-BUILD-005
 [ ]   - create build/ dir: build-command.ts, build-pipeline.ts, build-reporter.ts, build-artifacts.ts, build-integrity.ts
-[ ] Complete Galerina verify command â€” full governance verification
+[ ] Complete Galerina verify command Ã¢â‚¬â€ full governance verification
 [x]   - validate manifest integrity (beyond hash-only) -- src/verify/verify-manifest.ts, tests/verify-manifest.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): verifyRuntimeManifest / verifyRuntimeManifestSet check the shipped per-flow `fungi.runtime.manifest.v1` record (compiler type-registry.ts RuntimeManifest): closed shape read through descriptors (no getters run), exact schemaVersion, closed field domains, cross-field consistency with GovernanceFlags, verified:false never verifies, unique flows; FUNGI-VERIFY-006..011; optional `manifests` section in verification-report.json; a test pins the mirror to the compiler source. Not covered: the runtime-manifest.json file container (compiler README v0.2 `galerina.manifest.v1`, pass 14, not built) and signatures (GovernanceSignature, Phase 39); the --manifest flag row stays open
 [x]   - wire verify-command.ts into `galerina verify` -- src/verify/verify-command.ts, src/commands.ts, tests/verify-command.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): parseVerifyArgs + runVerifyCommand; composes verifyArtefactIntegritySet + optional verifyRuntimeManifestSet + optional verification-report.json; exit 0/2/6/7; FUNGI-CLI-VERIFY-001..005; never echoes paths/values
 [x]   - validate runtime compatibility, capability consistency, audit reports -- src/verify/verify-runtime.ts, tests/verify-runtime.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): verifyAuditReport / verifyCapabilityReport / verifyRuntimeCompatibility; closed shapes for galerina.report.audit.v1 and galerina.report.capability.v1 via descriptors; FUNGI-VERIFY-012..016; --audit/--policy value flags admitted in verify-command (exit 3/5); complete:false never verifies
@@ -62,14 +62,14 @@
 [x]   - emit explain-report.json -- src/explain/explain-reporter.ts, tests/explain-report.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): createExplainReport / writeExplainReport exclusive-create; messages withheld; limitations; schema galerina.explain-report/v1
 [x]   - diagnostic codes FUNGI-EXPLAIN-001 through FUNGI-EXPLAIN-010 -- explain-trace/denial/tree/runtime (Grok 2026-10-05; zero-trust defaults, owner may revisit): 001-004 contracts, 005-006 denial, 007-008 tree, 009-010 runtime
 [x]   - create explain/ dir: explain-trace.ts + explain-denial.ts + explain-reporter.ts + explain-command.ts -- (Grok 2026-10-05; zero-trust defaults, owner may revisit): contracts + denial reader + report writer + CLI wiring; explain-tree.ts + explain-runtime.ts landed (closed-shape declared tree/profile; no live walk/probe); --policy/--audit remain open
-[ ] Add Galerina plan command integration
+[ ] Add Galerina plan command integration -- remaining: CLI wiring / compute-plan.json reporter / plan-graph / plan-runtime / plan-memory live probes / --energy/--graph flags (zero-trust defaults, owner may revisit). Contracts + estimateTarget landed.
 [ ]   - estimate CPU/GPU/accelerator suitability and memory pressure
 [ ]   - produce compute-plan.json
 [ ]   - support --json, --runtime, --memory, --parallelism, --energy, --target, --graph, --compatibility flags
-[ ]   - implement ComputePlan: target, gpu (GpuPlan), optical (OpticalPlan), wasm, compatibility, estimatedMemoryMb, parallelism, diagnostics[]
-[ ]   - implement estimateTarget(workspace, options): ComputePlan
-[ ]   - diagnostic codes FUNGI-PLAN-001 through FUNGI-PLAN-004
-[ ]   - create plan/ dir: plan-command.ts, plan-graph.ts, plan-runtime.ts, plan-memory.ts, plan-reporter.ts
+[x]   - implement ComputePlan: target, gpu (GpuPlan), optical (OpticalPlan), wasm, compatibility, estimatedMemoryMb, parallelism, diagnostics[] -- src/plan/plan-contracts.ts, tests/plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed ComputePlan + PlanGpuPlan/PlanOpticalPlan/PlanCompatibility via descriptors; v1 freeze GpuPlan.recommendedTarget always node; null wasm/optical/gpu/compat when include facet is false
+[x]   - implement estimateTarget(workspace, options): ComputePlan -- src/plan/plan-contracts.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): estimateTarget never throws; PlanWorkspaceInput + PlanOptions closed shapes; FUNGI-PLAN-001..003 on refuse; advisory suitability only (no live GPU/optical/memory probe)
+[x]   - diagnostic codes FUNGI-PLAN-001 through FUNGI-PLAN-004 -- src/plan/plan-contracts.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): 001 shape, 002 domain (incl NaN/Infinity refuse), 003 options facet refuse, 004 result consistency / v1 freeze
+[x]   - create plan/ dir: plan-contracts.ts -- src/plan/plan-contracts.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): contracts landed; plan-command.ts / plan-graph.ts / plan-runtime.ts / plan-memory.ts / plan-reporter.ts remain open
 [ ] Add Galerina verify deploy command integration (verify running version against build manifest)
 [ ] Add Galerina promote command integration (promote artifact across environments)
 [ ] Add environment mode config loading

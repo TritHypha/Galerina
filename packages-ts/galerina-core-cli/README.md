@@ -31,31 +31,31 @@ generate project graphs
 ### Implemented (Prototype)
 
 ```text
-galerina check             â€” validate source without producing artefacts
-galerina build             â€” compile and produce artefacts (partial)
-galerina run               â€” run compiled output
-galerina serve             â€” start server
-galerina reports           â€” generate reports
-galerina security:check    â€” run security scan
-galerina routes            â€” list route table
-galerina benchmark         â€” placeholder command
-galerina task              â€” run project automation tasks
-galerina graph             â€” generate project dependency graph
-galerina graph query       â€” query generated graph
-galerina graph explain     â€” explain graph node
-galerina graph path        â€” show path between nodes
-galerina fmt               â€” format source files
+galerina check             Ã¢â‚¬â€ validate source without producing artefacts
+galerina build             Ã¢â‚¬â€ compile and produce artefacts (partial)
+galerina run               Ã¢â‚¬â€ run compiled output
+galerina serve             Ã¢â‚¬â€ start server
+galerina reports           Ã¢â‚¬â€ generate reports
+galerina security:check    Ã¢â‚¬â€ run security scan
+galerina routes            Ã¢â‚¬â€ list route table
+galerina benchmark         Ã¢â‚¬â€ placeholder command
+galerina task              Ã¢â‚¬â€ run project automation tasks
+galerina graph             Ã¢â‚¬â€ generate project dependency graph
+galerina graph query       Ã¢â‚¬â€ query generated graph
+galerina graph explain     Ã¢â‚¬â€ explain graph node
+galerina graph path        Ã¢â‚¬â€ show path between nodes
+galerina fmt               Ã¢â‚¬â€ format source files
 ```
 
 ### Planned / Not Yet Implemented
 
 ```text
-galerina deploy            â€” deploy verified build to target environment
-galerina explain           â€” explain build decisions, authority model, effects
-galerina plan              â€” preview deployment actions without applying changes
-galerina verify deploy     â€” verify running version against build manifest
-galerina promote           â€” promote artifact from one environment to another
-galerina rollback          â€” rollback to previous deployment
+galerina deploy            Ã¢â‚¬â€ deploy verified build to target environment
+galerina explain           Ã¢â‚¬â€ explain build decisions, authority model, effects
+galerina plan              Ã¢â‚¬â€ preview deployment actions without applying changes
+galerina verify deploy     Ã¢â‚¬â€ verify running version against build manifest
+galerina promote           Ã¢â‚¬â€ promote artifact from one environment to another
+galerina rollback          Ã¢â‚¬â€ rollback to previous deployment
 ```
 
 `galerina build` compiles source into governed runtime artefacts through a
@@ -127,15 +127,15 @@ flags: `--manifest`, `--denial`, `--tree`, `--runtime`, `--report`, `--json`,
 (`FUNGI-CLI-EXPLAIN-004`). Does not walk a live package graph or probe a live
 runtime. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-010`.
 
-`galerina plan` estimates how execution will be coordinated â€” CPU/GPU suitability,
+`galerina plan` estimates how execution will be coordinated Ã¢â‚¬â€ CPU/GPU suitability,
 memory pressure, parallelism, and fallback options. The planner recommends;
 the runtime decides final execution.
 Flags: `--json`, `--runtime`, `--memory`, `--parallelism`, `--energy`,
 `--target`, `--graph`, `--compatibility`. Produces `compute-plan.json`.
 Diagnostic codes: `FUNGI-PLAN-001` through `FUNGI-PLAN-004`.
 
-Implementation order: Phase 1 build â†’ Phase 2 verify â†’ Phase 3 explain â†’
-Phase 4 deploy â†’ Phase 5 plan.
+Implementation order: Phase 1 build Ã¢â€ â€™ Phase 2 verify Ã¢â€ â€™ Phase 3 explain Ã¢â€ â€™
+Phase 4 deploy Ã¢â€ â€™ Phase 5 plan.
 
 See `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-cli-deploy-explain-plan.md` for the
 full specification including all examples, exit codes, output modes, and
@@ -348,7 +348,7 @@ export function validateEffects(
     input: ValidateEffectsInput
 ): CompilerDiagnostic[]
 // For each function in manifest.functions:
-//   effectiveEffects = declaredEffects âˆª inferredEffects
+//   effectiveEffects = declaredEffects Ã¢Ë†Âª inferredEffects
 //   check each effect against policy.allowedEffects
 //   check capabilities present for each effect
 //   emit FUNGI-EFFECT-001 through FUNGI-EFFECT-004 as needed
@@ -369,23 +369,33 @@ walk a live dependency tree, or probe runtime/policy/audit (`--tree`/`--runtime`
 
 ### Compute Plan Contracts
 
+Closed-shape `ComputePlan` / `PlanGpuPlan` / `PlanOpticalPlan` / `PlanCompatibility`
+landed in `src/plan/plan-contracts.ts` (Grok 2026-10-05; zero-trust defaults, owner may
+revisit). Shapes via property descriptors (no getters). Unknown keys refuse without echo.
+Numeric fields refuse `NaN` / `Infinity` / non-integers. `GpuPlan.recommendedTarget` is
+frozen to `"node"` under v1 (advisory suitability only — never an execution admission).
+`estimateTarget(workspace, options)` never throws. Codes: `FUNGI-PLAN-001` shape,
+`002` domain, `003` options facet refuse, `004` result consistency / v1 freeze.
+Does not wire `galerina plan`, write `compute-plan.json`, or probe live GPU/optical/memory.
+
 ```ts
 export interface ComputePlan {
-    target: RuntimeTarget
-    gpu: GpuPlan
-    optical: OpticalPlan
-    wasm: WasmTarget | null
-    compatibility: CompatibilityReport
+    target: PlanRuntimeTarget
+    gpu: PlanGpuPlan | null
+    optical: PlanOpticalPlan | null
+    wasm: PlanWasmTarget | null
+    compatibility: PlanCompatibility | null
     estimatedMemoryMb: number
     parallelism: number
-    diagnostics: CompilerDiagnostic[]
+    diagnostics: PlanDiagnostic[]
 }
 
 export function estimateTarget(
-    workspace: Workspace,
+    workspace: PlanWorkspaceInput,
     options: PlanOptions
 ): ComputePlan
 ```
+
 
 ### Exit Codes
 
@@ -440,7 +450,7 @@ packages-ts/galerina-core-cli/src/
     explain-contracts.ts
     plan-contracts.ts
   output/
-    safe-output.ts       â† redact SecureString, tokens
+    safe-output.ts       Ã¢â€ Â redact SecureString, tokens
     json-output.ts
   index.ts
 ```
