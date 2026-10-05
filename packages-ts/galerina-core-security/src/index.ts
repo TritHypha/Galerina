@@ -887,3 +887,28 @@ export {
   type ReadAiAuthorityRequestResult,
   type ReadTrustRootModificationResult,
 } from "./ai-authority-contracts.js";
+
+export {
+  FUNGI_SEC_OWC_001,
+  FUNGI_SEC_OWC_002,
+  FUNGI_SEC_OWC_003,
+  FUNGI_SEC_OWC_004,
+  FUNGI_SEC_OWC_005,
+  OWASP_CWE_MAPPING_SCHEMA,
+  OWASP_TOP10_EDITION,
+  OWASP_TOP10_2021_IDS,
+  OWASP_CWE_MAPPING_STATUSES,
+  OWASP_CWE_MAPPING_FIELDS,
+  OWASP_CWE_ENTRY_FIELDS,
+  OWASP_CWE_BASELINE_MAPPING,
+  readOwaspCweMapping,
+  lookupOwaspCweBaseline,
+  type OwaspTop10Id,
+  type OwaspCweMappingStatus,
+  type OwaspCweDiagnosticField,
+  type OwaspCweDiagnostic,
+  type OwaspCweEntry,
+  type OwaspCweMapping,
+  type ReadOwaspCweMappingResult,
+  type LookupOwaspCweBaselineResult,
+} from "./owasp-cwe-mapping.js";

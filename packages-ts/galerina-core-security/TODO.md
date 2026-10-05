@@ -44,7 +44,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [x] Define capability lease, attenuation and approver-chain diagnostics (closed-shape CapabilityLease / CapabilityAttenuation / ApproverChain; FUNGI-SEC-CLA-001..005; Grok 2026-10-05; owner may revisit)
 [x] Define AI self-grant and trust-root modification diagnostics (closed-shape AiAuthorityRequest / TrustRootModification; FUNGI-SEC-ASG-001..005; Grok 2026-10-05; owner may revisit)
 [ ] Define malicious data validation and taint-flow diagnostics
-[ ] Define OWASP/CWE baseline diagnostic mapping
+[x] Define OWASP/CWE baseline diagnostic mapping (closed-shape OwaspCweMapping + OWASP_CWE_BASELINE_MAPPING for the 12 in-package Galerina_SECURITY_* codes; OWASP Top 10 2021 ids + CWE ids; FUNGI-SEC-OWC-001..005; Grok 2026-10-05; owner may revisit)
 [ ] Define hardware-risk security report inputs
 [x] Define security diagnostic format
 [x] Define security report contract
@@ -67,3 +67,10 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 - Schemas: `galerina.security.ai-authority-request/v1`, `trust-root-modification/v1`.
 - Deny-first: selfGrantAttempt requires deny; allow needs capabilities and not self-grant; trust-root allow needs externalGovernance + human|service actor (ai_agent/tool allow refused).
 - SecretReference v0.2 still do-not-invent; no live AI grant / trust-root mutation runtime.
+
+## Notes (Grok 2026-10-05 OWASP / CWE baseline)
+- Closed `src/owasp-cwe-mapping.ts`: `readOwaspCweMapping` / `lookupOwaspCweBaseline` / `OWASP_CWE_BASELINE_MAPPING`.
+- Schema: `galerina.security.owasp-cwe-mapping/v1`; owaspEdition `2021` only (A01:2021..A10:2021).
+- Descriptive metadata only: no new rules, no severity changes, no OWASP coverage claim. Hygiene-only codes recorded `unmapped` (DUPLICATE_GRANT, REDACTION_RULE_INVALID, REDACTION_RULE_NAME_EMPTY) rather than guessed.
+- Test pins entries to exactly the Galerina_SECURITY_* codes in src/index.ts (drift guard).
+- Not covered: FUNGI-SEC-* reader codes, FUNGI-CRYPTO-* provider codes, later OWASP editions, ASVS/CVSS. SecretReference v0.2 / taint types still do-not-invent.
