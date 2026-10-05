@@ -56,8 +56,9 @@ describe("Galerina CLI --env resolution (fail-closed)", () => {
   it("runCli still runs the command when --env is valid or absent", async () => {
     const withEnv = await runCli(["benchmark", "--env", "production"], process.cwd());
     const withoutEnv = await runCli(["benchmark"], process.cwd());
-    assert.equal(withEnv.error, undefined);
-    assert.equal(withoutEnv.error, undefined);
+    // benchmark is not implemented, so it now carries FUNGI-CLI-003 (structured CLI errors), never an ENV error.
+    assert.equal(withEnv.error.code, "FUNGI-CLI-003");
+    assert.equal(withoutEnv.error.code, "FUNGI-CLI-003");
     assert.match(withEnv.message, /benchmark/i);
   });
 });
