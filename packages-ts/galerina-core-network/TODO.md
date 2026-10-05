@@ -59,7 +59,7 @@ policy belongs in `galerina-framework-app-kernel`.
     IdempotencyStore.seen gate before wiring; never implement admission as an
     unprotected read-then-write pair
 [x] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]> (atomic claim in its own scope; not wired to app-kernel, the [!] reconciliation row above stays open) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
-[x] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[] (heuristic, fail-closed: byte cap 007, secret-shaped 006, e-mail/phone 006; bounded linear-time patterns with a ReDoS regression) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
+[x] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[] (heuristic; current provider allowlist is openai only; fail-closed 1 MiB hard prompt cap with allocation-free UTF-8 preflight, invalid explicit-cap refusal, secret-shaped 006, e-mail/phone 006; bounded linear-time patterns with a ReDoS regression; still not proof of outbound authorization/redaction) -- src/runtime/governed-network.ts, tests/governed-network.test.mjs (Grok 2026-10-05; Codex follow-up 2026-10-05)
 [x] Define NetworkDiagnostic: code, message, severity, destination? (exists at src/index.ts:29-34
     as { code, severity, message, path? }; `path` is used in place of `destination`. Ticked 2026-09-29, Grok Bot)
 [x] Define NetworkPolicyReport with schemaVersion "galerina.network.report.v1" (TODO id kept over the README draft "galerina.network.policy.report.v1"; generatedAt passed in; webhook secrets stripped) -- src/reports/network-policy-report.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)

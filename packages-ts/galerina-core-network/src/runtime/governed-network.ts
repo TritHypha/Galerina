@@ -56,6 +56,7 @@ export interface GovernedNetworkRuntime {
 export const SAFE_HTTP_MAX_TIMEOUT_MS = 120_000;
 /** Prompt cap used when an AI provider policy declares no maxPromptBytes. */
 export const DEFAULT_MAX_PROMPT_BYTES = 1024 * 1024;
+const APPROVED_AI_PROVIDER_IDS: ReadonlySet<string> = new Set(["openai"]);
 
 const PROTOCOLS: ReadonlySet<string> = new Set(["https", "http", "tls", "tcp", "udp", "websocket", "rawSocket"]);
 const TLS_PROTOCOLS: ReadonlySet<string> = new Set(["https", "tls"]);
@@ -63,8 +64,6 @@ const METHODS: ReadonlySet<string> = new Set(["GET", "POST", "PUT", "PATCH", "DE
 const SECRET_HEADERS: ReadonlySet<string> = new Set(["authorization", "proxy-authorization", "cookie", "x-api-key", "api-key", "x-auth-token"]);
 const SECRET_QUERY = /[?&](?:access_token|token|api_key|apikey|key|secret|password|signature|sig)=/i;
 const CONTROL = /[\u0000-\u001f\u007f]/;
-const UTF8 = new TextEncoder();
-
 function diag(code: FungiNetworkCode, message: string, path: string): NetworkDiagnostic {
   return Object.freeze({ code, severity: "error" as const, message, path });
 }
@@ -232,6 +231,31 @@ const PHONE = /\+?\d[\d ().-]{8,24}\d/;
 
 const looksLikePii = (text: string): boolean => EMAIL_WINDOW.test(text) || PHONE.test(text);
 
+/** Count TextEncoder-compatible UTF-8 bytes without allocating an encoded copy. */
+const utf8ByteLengthUpTo = (text: string, maximum: number): number | undefined => {
+  let bytes = 0;
+  for (let i = 0; i < text.length; i++) {
+    const first = text.charCodeAt(i);
+    if (first <= 0x7f) bytes += 1;
+    else if (first <= 0x7ff) bytes += 2;
+    else if (first >= 0xd800 && first <= 0xdbff && i + 1 < text.length) {
+      const second = text.charCodeAt(i + 1);
+      if (second >= 0xdc00 && second <= 0xdfff) {
+        bytes += 4;
+        i++;
+      } else {
+        // TextEncoder replaces an unpaired surrogate with U+FFFD (three UTF-8 bytes).
+        bytes += 3;
+      }
+    } else {
+      // Includes lone low surrogates, also replaced with U+FFFD by TextEncoder.
+      bytes += 3;
+    }
+    if (bytes > maximum) return undefined;
+  }
+  return bytes;
+};
+
 /**
  * Prompt gate against an AI provider policy. Heuristic and fail-closed: a non-string prompt or one
  * over the byte cap (DEFAULT_MAX_PROMPT_BYTES when the policy declares none) is FUNGI-NETWORK-007;
@@ -239,12 +263,16 @@ const looksLikePii = (text: string): boolean => EMAIL_WINDOW.test(text) || PHONE
  * FUNGI-NETWORK-006 unless allowPii. Passing this gate is not proof a prompt is secret- or PII-free.
  */
 export function validateAiPrompt(prompt: string, policy: AiProviderNetworkPolicy): NetworkDiagnostic[] {
-  if (!isRecord(policy) || typeof policy.provider !== "string" || policy.provider.length === 0) return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "AI provider policy is missing.", "policy")];
+  if (!isRecord(policy) || typeof policy.provider !== "string" || !APPROVED_AI_PROVIDER_IDS.has(policy.provider)) return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "AI provider policy is missing or not approved.", "policy")];
   if (typeof prompt !== "string") return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "Prompt must be text.", "prompt")];
   const out: NetworkDiagnostic[] = [];
-  const cap = typeof policy.maxPromptBytes === "number" && Number.isInteger(policy.maxPromptBytes) && policy.maxPromptBytes > 0 ? policy.maxPromptBytes : DEFAULT_MAX_PROMPT_BYTES;
-  // An oversized prompt is refused outright and never scanned.
-  if (UTF8.encode(prompt).length > cap) return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "Prompt exceeds the provider's size policy.", "prompt")];
+  const configuredCap = policy.maxPromptBytes;
+  if (configuredCap !== undefined && (typeof configuredCap !== "number" || !Number.isSafeInteger(configuredCap) || configuredCap < 1 || configuredCap > DEFAULT_MAX_PROMPT_BYTES)) {
+    return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "Prompt size policy is invalid.", "policy.maxPromptBytes")];
+  }
+  const cap = configuredCap ?? DEFAULT_MAX_PROMPT_BYTES;
+  // Refuse before encoding so an attacker-controlled string cannot cause a larger temporary byte allocation.
+  if (utf8ByteLengthUpTo(prompt, cap) === undefined) return [diag(FUNGI_NETWORK_CODES.AI_PROVIDER_NOT_APPROVED, "Prompt exceeds the provider's size policy.", "prompt")];
   if (policy.allowSecretsInPrompt !== true && SECRET_PATTERNS.some((re) => re.test(prompt))) out.push(diag(FUNGI_NETWORK_CODES.SECRET_FLOW, "Prompt appears to contain a secret.", "prompt"));
   if (policy.allowPii !== true && looksLikePii(prompt)) out.push(diag(FUNGI_NETWORK_CODES.SECRET_FLOW, "Prompt appears to contain personal data.", "prompt"));
   return out;

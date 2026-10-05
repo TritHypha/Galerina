@@ -183,6 +183,12 @@ describe("validateAiPrompt", () => {
     assert.deepEqual(validateAiPrompt("mail alice@example.com", { ...OPENAI_POLICY, allowPii: true }), []);
     assert.deepEqual(codes(validateAiPrompt(42, OPENAI_POLICY)), [C.AI_PROVIDER_NOT_APPROVED]);
     assert.deepEqual(codes(validateAiPrompt("hi", {})), [C.AI_PROVIDER_NOT_APPROVED]);
+    assert.deepEqual(codes(validateAiPrompt("hi", { ...OPENAI_POLICY, provider: "unlisted-provider" })), [C.AI_PROVIDER_NOT_APPROVED]);
+    for (const maxPromptBytes of [-1, 1.5, Number.POSITIVE_INFINITY, 1024 * 1024 + 1]) {
+      assert.deepEqual(codes(validateAiPrompt("hi", { ...OPENAI_POLICY, maxPromptBytes })), [C.AI_PROVIDER_NOT_APPROVED], String(maxPromptBytes));
+    }
+    assert.deepEqual(codes(validateAiPrompt("\u0800", { ...OPENAI_POLICY, maxPromptBytes: 2 })), [C.AI_PROVIDER_NOT_APPROVED]);
+    assert.deepEqual(codes(validateAiPrompt("\ud800", { ...OPENAI_POLICY, maxPromptBytes: 2 })), [C.AI_PROVIDER_NOT_APPROVED]);
     // Linear-time scans: worst-case near-cap inputs with no match finish quickly (ReDoS regression).
     for (const hostile of ["a".repeat(1024 * 1024 - 1) + "@", "a@".repeat(400000), "a@a.".repeat(250000), "1(".repeat(400000), "eyJ" + "a".repeat(900000)]) {
       const started = Date.now();

@@ -435,6 +435,12 @@ redaction requirements
 audit requirements
 ```
 
+The current runtime allowlist contains `openai` only. A missing prompt cap defaults to
+1 MiB; an explicitly invalid or larger cap is refused, and UTF-8 size is counted before
+encoding so validation does not allocate an oversized byte copy. This helper is a local
+prompt-shape gate, not proof that prompts are redacted or that network credentials,
+transport, or the receiving provider are authorized.
+
 ## NetworkDiagnostic
 
 ```ts
