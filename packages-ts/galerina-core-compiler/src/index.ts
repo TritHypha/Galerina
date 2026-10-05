@@ -1458,6 +1458,7 @@ export {
 export {
   verifyGovernance,
   extractArenaLimitMB,
+  obligationBoundToFlow,
   FUNGI_GOV_001,
   FUNGI_GOV_003,
   FUNGI_GOV_006,

@@ -1607,6 +1607,20 @@ function exprReferencesResult(node: AstNode): boolean {
   return false;
 }
 
+/**
+ * True when a proof-obligation string is bound to exactly this flow.
+ * Obligations are produced as `<kind>:<flow>` or `<kind>:<flow>:<rest...>`.
+ * Must NOT use `String.includes(flowName)`: that attaches `payAll` obligations
+ * to flow `pay` (and any other prefix collision). Matches the consumer check in
+ * galerina-core-cli verify-manifest (FUNGI-VERIFY-009).
+ */
+export function obligationBoundToFlow(obligation: string, flowName: string): boolean {
+  const first = obligation.indexOf(":");
+  if (first <= 0) return false;
+  const rest = obligation.slice(first + 1);
+  return rest === flowName || rest.startsWith(`${flowName}:`);
+}
+
 class GovernanceVerifier {
   private readonly diagnostics: GovernanceDiagnostic[] = [];
   private readonly intentStatus = new Map<string, "satisfied" | "missing" | "mismatch">();
@@ -2320,7 +2334,7 @@ class GovernanceVerifier {
           requiredContext:  requiredContext,
           computeTarget:    "best",   // Phase 20: extracted from compute block
           governanceFlagsMask: mask,
-          proofObligations: this.proofObligations.filter((o) => o.includes(flow.name)),
+          proofObligations: this.proofObligations.filter((o) => obligationBoundToFlow(o, flow.name)),
           policyPurposes:   fn !== undefined ? extractPolicyPurposes(fn) : [],
           verified:         noErrors,
           arenaLimitMb,
