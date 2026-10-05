@@ -363,3 +363,126 @@ export function validateAiInferenceRequest(
 
   return diagnostics;
 }
+
+// ---------------------------------------------------------------------------
+// Local AI review and report explanation contracts (TODO row; zero-trust
+// default, owner may revisit). A local model may explain a report; it can never
+// change a verdict, cite text that is not in the report, or reach the network.
+// ---------------------------------------------------------------------------
+
+export interface AiReportSection {
+  /** Lowercase dotted token, unique within the report. */
+  readonly id: string;
+  readonly text: string;
+}
+
+export interface AiReportExplanationRequest {
+  readonly reportKind: string;
+  /** "sha256:" + 64 lowercase hex of the report bytes being explained. */
+  readonly reportDigest: string;
+  readonly sections: readonly AiReportSection[];
+  readonly audience: "developer" | "owner";
+  readonly maxSummaryChars: number;
+  readonly network: "denied";
+}
+
+export interface AiReportExplanation {
+  readonly reportDigest: string;
+  readonly summary: string;
+  readonly citedSections: readonly string[];
+  readonly outputTrust: "untrusted";
+  readonly advisoryOnly: true;
+  readonly changesVerdict: false;
+}
+
+export type AiReportExplanationVerdict =
+  | { readonly status: "ADVISORY_ADMITTED"; readonly authorityReleased: false; readonly diagnostics: readonly AiDiagnostic[] }
+  | { readonly status: "REFUSED"; readonly authorityReleased: false; readonly diagnostics: readonly AiDiagnostic[] };
+
+const AI_REPORT_TOKEN = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+){0,7}$/u;
+const AI_SHA256 = /^sha256:[0-9a-f]{64}$/u;
+const AI_LOCAL_SOURCES: ReadonlySet<string> = new Set(["local-file", "local-directory"]);
+const AI_MAX_SUMMARY_CHARS = 8192;
+
+function aiError(code: string, message: string, path: string): AiDiagnostic {
+  return { code, severity: "error", message, path };
+}
+
+export function validateAiReportExplanationRequest(
+  request: AiReportExplanationRequest,
+  model: AiModelDescriptor,
+): readonly AiDiagnostic[] {
+  const diagnostics: AiDiagnostic[] = [];
+  if (!AI_LOCAL_SOURCES.has(model.source) || model.format === "remote") {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_MODEL_NOT_LOCAL", "Report explanation is local-only: the model must be a local file or directory.", "model.source"));
+  }
+  if (model.safetyPolicy.outputTrust !== "untrusted" || model.safetyPolicy.allowSecurityDecisions !== false) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_POLICY_TOO_WEAK", "Review models must emit untrusted output and may not make security decisions.", "model.safetyPolicy"));
+  }
+  if (request.network !== "denied") {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_NETWORK_DENIED", "Report explanation never has network access.", "request.network"));
+  }
+  if (typeof request.reportKind !== "string" || !AI_REPORT_TOKEN.test(request.reportKind)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_REPORT_KIND_INVALID", "reportKind must be a lowercase dotted token.", "request.reportKind"));
+  }
+  if (typeof request.reportDigest !== "string" || !AI_SHA256.test(request.reportDigest)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_REPORT_DIGEST_INVALID", "reportDigest must be sha256:<64 lowercase hex>.", "request.reportDigest"));
+  }
+  if (request.audience !== "developer" && request.audience !== "owner") {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_AUDIENCE_INVALID", "audience must be developer or owner.", "request.audience"));
+  }
+  if (!Number.isSafeInteger(request.maxSummaryChars) || request.maxSummaryChars <= 0 || request.maxSummaryChars > AI_MAX_SUMMARY_CHARS) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SUMMARY_LIMIT_INVALID", `maxSummaryChars must be an integer in 1..${AI_MAX_SUMMARY_CHARS}.`, "request.maxSummaryChars"));
+  }
+  const seen = new Set<string>();
+  if (!Array.isArray(request.sections)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SECTIONS_INVALID", "sections must be an array of report sections.", "request.sections"));
+  } else if (request.sections.length === 0) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SECTIONS_REQUIRED", "A report explanation needs at least one report section.", "request.sections"));
+  }
+  (Array.isArray(request.sections) ? request.sections : []).forEach((section, index) => {
+    if (section === null || typeof section !== "object" || Array.isArray(section)) {
+      diagnostics.push(aiError("Galerina_AI_REVIEW_SECTION_INVALID", "Each section must be a report-section object.", `request.sections.${index}`));
+      return;
+    }
+    if (typeof section.id !== "string" || !AI_REPORT_TOKEN.test(section.id) || seen.has(section.id)) {
+      diagnostics.push(aiError("Galerina_AI_REVIEW_SECTION_ID_INVALID", "Section ids must be unique lowercase dotted tokens.", `request.sections.${index}.id`));
+    }
+    seen.add(section.id);
+    if (typeof section.text !== "string") {
+      diagnostics.push(aiError("Galerina_AI_REVIEW_SECTION_TEXT_INVALID", "Section text must be a string.", `request.sections.${index}.text`));
+    }
+  });
+  return diagnostics;
+}
+
+export function admitAiReportExplanation(
+  explanation: AiReportExplanation,
+  request: AiReportExplanationRequest,
+  model: AiModelDescriptor,
+): AiReportExplanationVerdict {
+  const diagnostics: AiDiagnostic[] = [...validateAiReportExplanationRequest(request, model)];
+  if (explanation.reportDigest !== request.reportDigest) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_DIGEST_MISMATCH", "The explanation is for a different report.", "explanation.reportDigest"));
+  }
+  if (typeof explanation.summary !== "string" || explanation.summary.trim().length === 0) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SUMMARY_REQUIRED", "The explanation summary is empty.", "explanation.summary"));
+  } else if (explanation.summary.length > request.maxSummaryChars) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SUMMARY_TOO_LONG", "The explanation summary exceeds the request limit.", "explanation.summary"));
+  }
+  const sectionIds = new Set((Array.isArray(request.sections) ? request.sections : [])
+    .filter((section): section is AiReportSection => section !== null && typeof section === "object" && !Array.isArray(section) && typeof section.id === "string")
+    .map((section) => section.id));
+  if (!Array.isArray(explanation.citedSections)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_CITATIONS_INVALID", "citedSections must be an array of section ids.", "explanation.citedSections"));
+  } else if (explanation.citedSections.length === 0 || !explanation.citedSections.every((id) => typeof id === "string" && sectionIds.has(id))) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_CITATION_UNKNOWN", "Every explanation must cite only sections present in the report.", "explanation.citedSections"));
+  }
+  if (explanation.outputTrust !== "untrusted" || explanation.advisoryOnly !== true || explanation.changesVerdict !== false) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_AUTHORITY_CLAIM", "An explanation is untrusted advice and never changes a verdict.", "explanation"));
+  }
+  const frozen = Object.freeze(diagnostics);
+  return diagnostics.length === 0
+    ? Object.freeze({ status: "ADVISORY_ADMITTED", authorityReleased: false, diagnostics: frozen })
+    : Object.freeze({ status: "REFUSED", authorityReleased: false, diagnostics: frozen });
+}

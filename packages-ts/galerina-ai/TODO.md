@@ -13,7 +13,8 @@ part of the active v1 language surface.
 [x] Define inference target selection contract
 [x] Define AI output trust and policy checks
 [x] Define AI inference report schema
-[ ] Define local AI review and report explanation contracts
+[x] Define local AI review and report explanation contracts (2026-10-05, Grok Bot;
+    zero-trust default, owner may revisit; tests/ai-report-explanation.test.mjs)
 [x] Add examples
 [x] Add tests
 ```
