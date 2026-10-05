@@ -435,10 +435,16 @@ export function validateAiReportExplanationRequest(
     diagnostics.push(aiError("Galerina_AI_REVIEW_SUMMARY_LIMIT_INVALID", `maxSummaryChars must be an integer in 1..${AI_MAX_SUMMARY_CHARS}.`, "request.maxSummaryChars"));
   }
   const seen = new Set<string>();
-  if (request.sections.length === 0) {
+  if (!Array.isArray(request.sections)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_SECTIONS_INVALID", "sections must be an array of report sections.", "request.sections"));
+  } else if (request.sections.length === 0) {
     diagnostics.push(aiError("Galerina_AI_REVIEW_SECTIONS_REQUIRED", "A report explanation needs at least one report section.", "request.sections"));
   }
-  request.sections.forEach((section, index) => {
+  (Array.isArray(request.sections) ? request.sections : []).forEach((section, index) => {
+    if (section === null || typeof section !== "object" || Array.isArray(section)) {
+      diagnostics.push(aiError("Galerina_AI_REVIEW_SECTION_INVALID", "Each section must be a report-section object.", `request.sections.${index}`));
+      return;
+    }
     if (typeof section.id !== "string" || !AI_REPORT_TOKEN.test(section.id) || seen.has(section.id)) {
       diagnostics.push(aiError("Galerina_AI_REVIEW_SECTION_ID_INVALID", "Section ids must be unique lowercase dotted tokens.", `request.sections.${index}.id`));
     }
@@ -464,8 +470,12 @@ export function admitAiReportExplanation(
   } else if (explanation.summary.length > request.maxSummaryChars) {
     diagnostics.push(aiError("Galerina_AI_REVIEW_SUMMARY_TOO_LONG", "The explanation summary exceeds the request limit.", "explanation.summary"));
   }
-  const sectionIds = new Set(request.sections.map((section) => section.id));
-  if (explanation.citedSections.length === 0 || !explanation.citedSections.every((id) => sectionIds.has(id))) {
+  const sectionIds = new Set((Array.isArray(request.sections) ? request.sections : [])
+    .filter((section): section is AiReportSection => section !== null && typeof section === "object" && !Array.isArray(section) && typeof section.id === "string")
+    .map((section) => section.id));
+  if (!Array.isArray(explanation.citedSections)) {
+    diagnostics.push(aiError("Galerina_AI_REVIEW_CITATIONS_INVALID", "citedSections must be an array of section ids.", "explanation.citedSections"));
+  } else if (explanation.citedSections.length === 0 || !explanation.citedSections.every((id) => typeof id === "string" && sectionIds.has(id))) {
     diagnostics.push(aiError("Galerina_AI_REVIEW_CITATION_UNKNOWN", "Every explanation must cite only sections present in the report.", "explanation.citedSections"));
   }
   if (explanation.outputTrust !== "untrusted" || explanation.advisoryOnly !== true || explanation.changesVerdict !== false) {

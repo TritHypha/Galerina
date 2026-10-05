@@ -38,6 +38,15 @@ describe("local AI report explanation", () => {
     ];
     for (const [patch, code] of cases) assert.ok(validateAiReportExplanationRequest({ ...request, ...patch }, model).some((d) => d.code === code), code);
   });
+  it("refuses non-array sections and malformed section entries without throwing", () => {
+    const invalidSections = validateAiReportExplanationRequest({ ...request, sections: null }, model);
+    assert.ok(invalidSections.some((d) => d.code === "Galerina_AI_REVIEW_SECTIONS_INVALID"));
+    const invalidEntry = validateAiReportExplanationRequest({ ...request, sections: [null] }, model);
+    assert.ok(invalidEntry.some((d) => d.code === "Galerina_AI_REVIEW_SECTION_INVALID"));
+    const refused = admitAiReportExplanation({ ...explanation, citedSections: null }, { ...request, sections: null }, model);
+    assert.equal(refused.status, "REFUSED");
+    assert.ok(codes(refused).includes("Galerina_AI_REVIEW_CITATIONS_INVALID"));
+  });
   it("refuses wrong-report, uncited, overlong and authority-claiming explanations", () => {
     const cases = [
       [{ reportDigest: `sha256:${"d".repeat(64)}` }, "Galerina_AI_REVIEW_DIGEST_MISMATCH"],
