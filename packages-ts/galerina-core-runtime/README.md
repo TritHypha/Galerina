@@ -347,3 +347,17 @@ galerina-core-runtime runs Galerina.
 galerina-core-network describes network I/O contracts.
 galerina-framework-app-kernel governs application/API runtime boundaries.
 ```
+
+## Runtime policy contracts
+
+`src/runtime-contracts.ts` holds pure, fail-closed policy decisions. None of them executes guest code or performs I/O.
+
+| Contract | What it does |
+|---|---|
+| Stream backpressure | `decideStreamBackpressure` accepts, pauses the producer, or fails the stream. It never drops data. |
+| Memory policy | `validateRuntimeMemoryPolicy` and `decideRuntimeAllocation`: heap and single-allocation caps, zero-on-free, no shared memory. Executable memory stays with the RD-0662 W^X floor. |
+| Node-hosted adapter | `validateNodeHostAdapter` requires Node 18 or later, the permission model, a closed `node:` builtin allowlist, no native addons and no eval. |
+| Host-runtime overhead | `createHostOverheadReport` reports integer-nanosecond totals and integer permille overhead. Zero guest time gives `UNMEASURED`. |
+| Target fallback | `decideTargetFallback` is off by default. When enabled it follows only the declared chain, uses only targets with exact semantics, and records every skipped target. |
+| Resource budget | `DEFAULT_RUNTIME_RESOURCE_BUDGET` grants no network, tool or accelerator budget. `checkRuntimeResourceUsage` terminates on any overrun. |
+| Malicious-data intake | `admitUntrustedData` runs staged checks: size, parse, depth/keys/strings/prototype keys, closed schema, canonical JSON, then owner. Admitted data stays tainted `untrusted`. |
