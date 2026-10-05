@@ -973,7 +973,7 @@ Reason for additions:
 ## CLI TODO
 
 ```text
-[ ] Galerina init
+[x] Galerina init
 [x] Galerina run
 [x] Galerina serve --dev planning report
 [x] Galerina build
