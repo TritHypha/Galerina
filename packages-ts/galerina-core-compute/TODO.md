@@ -29,7 +29,7 @@ active v1 runtime target.
 [ ] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
 [ ] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
 [ ] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
-[ ] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
+[x] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
 [ ] Define GpuSuitability: high|medium|low|unsuitable|unknown
 [ ] Define GpuRequirements: minMemoryMb, minParallelism, precision
 [ ] Define GpuFallbackPlan: target, reason
@@ -50,18 +50,18 @@ active v1 runtime target.
 [x] SUPERSEDED (galerina-target-wasm, see note W3) Implement validateWasmTarget(target): ComputeDiagnostic[]
 [x] SUPERSEDED (package split, see note W4) Create wasm/ dir: wasm-emitter.ts, wasm-runtime.ts, wasm-bindings.ts, wasm-sandbox.ts
 [x] SUPERSEDED (galerina-target-wasm, see note W5) Define FUNGI-WASM-001 through FUNGI-WASM-004 diagnostic codes
-[ ] Define CompatibilityLevel: full|partial|degraded|incompatible
-[ ] Define CompatibilityBlocker: reason, diagnosticCode
-[ ] Define CompatibilityWarning: message, diagnosticCode
-[ ] Define CompatibilityFallback: target, reason
-[ ] Upgrade CompatibilityResult: target, level, blockers[], warnings[], fallback?
-[ ] Define TargetProfile: target, supportedEffects[], forbiddenEffects[], requiredCapabilities[], memoryLimitMb?
-[ ] Implement validateTarget(workload, profile): CompatibilityResult
-[ ] Implement buildCompatibilityReport(workload, profiles[]): CompatibilityReport
-[ ] Define CompatibilityReport: targets[], recommendedTarget, diagnostics[]
-[ ] Create compatibility/ dir: target-compatibility.ts, compatibility-report.ts, compatibility-rules.ts, target-validator.ts
-[ ] Define FUNGI-COMPAT-001 through FUNGI-COMPAT-004 diagnostic codes
-[ ] Define shared types: ComputeWorkload, DataShape, DeploymentShape, ComputeDiagnostic
+[x] Define CompatibilityLevel: full|partial|degraded|incompatible
+[x] Define CompatibilityBlocker: reason, diagnosticCode
+[x] Define CompatibilityWarning: message, diagnosticCode
+[x] Define CompatibilityFallback: target, reason
+[x] Upgrade CompatibilityResult: target, level, blockers[], warnings[], fallback?
+[x] Define TargetProfile: target, supportedEffects[], forbiddenEffects[], requiredCapabilities[], memoryLimitMb?
+[x] Implement validateTarget(workload, profile): CompatibilityResult
+[x] Implement buildCompatibilityReport(workload, profiles[]): CompatibilityReport
+[x] Define CompatibilityReport: targets[], recommendedTarget, diagnostics[]
+[x] Create compatibility/ dir: target-compatibility.ts, compatibility-report.ts, compatibility-rules.ts, target-validator.ts
+[x] Define FUNGI-COMPAT-001 through FUNGI-COMPAT-004 diagnostic codes
+[x] Define shared types: ComputeWorkload, DataShape, DeploymentShape, ComputeDiagnostic
 [ ] Define future quantum target planning rules after core compute reports stabilise
 [x] Add examples
 [x] Add tests
@@ -91,3 +91,25 @@ the shipped design differs in places:
 - W5: the registry is `FUNGI-WASM-001`..`FUNGI-WASM-030`
   (`WASM_DIAGNOSTIC_REGISTRY`); its meanings do not match this package README's
   `FUNGI-WASM-001`..`005` list.
+
+### Compatibility and shared types (2026-10-05, Grok Bot, standing permission, owner may revisit)
+
+- `src/workload.ts`: `RuntimeTarget` (the 11 TODO values, `RUNTIME_TARGETS`,
+  `isRuntimeTarget`), `DataShape`, `DeploymentShape`, `ComputeWorkload` and a
+  fail-closed `validateComputeWorkload`. `ComputeDiagnostic` is the existing type
+  in `src/index.ts`. The README `RuntimeTarget` list (server/browser/worker/
+  ai_accelerator) differs; the TODO list was used.
+- `src/compatibility/`: `target-compatibility.ts` (levels per the TODO,
+  `full|partial|degraded|incompatible`, not the README
+  `compatible|compatible_with_warnings|requires_fallback|incompatible`; blocker,
+  warning, fallback, result, `TargetProfile` with a required `allowsSensitiveData`),
+  `compatibility-rules.ts` (registry FUNGI-COMPAT-001..005: forbidden effect,
+  unsupported effect, missing capability, memory limit, sensitive data; 005 matches
+  the README range), `target-validator.ts` (`validateTarget`) and
+  `compatibility-report.ts` (`buildCompatibilityReport`).
+- Zero-trust defaults: effects are allowlisted (unknown fails closed), a target's
+  required capabilities must be declared by the workload, an undeclared memory
+  limit is a warning, sensitive data needs an explicit allow, duplicate profiles are
+  errors, and there is no implicit CPU default (`recommendedTarget: "none"`).
+- Tests: `tests/compatibility.test.mjs`. GPU, optical/photonic and quantum rows stay
+  open (post-v1 planning; photonic ownership unsettled).
