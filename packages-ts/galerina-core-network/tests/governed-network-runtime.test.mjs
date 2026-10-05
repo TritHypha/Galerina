@@ -58,7 +58,7 @@ describe("validateDestination (deny-by-default)", () => {
     assert.ok(codes(validateDestination(without(dest({ protocol: "rawSocket", host: "raw.example.com" }), "port"), policy)).includes(C.RAW_SOCKET_DENIED));
   });
   it("malformed destinations and policies refuse", () => {
-    for (const bad of [{}, dest({ name: "" }), dest({ protocol: "quic" }), dest({ host: "a b" }), dest({ host: "user@api.example.com" }), dest({ port: 0 }), dest({ port: 1.5 }), dest({ tlsRequired: "yes" })]) {
+    for (const bad of [{}, dest({ name: "" }), dest({ protocol: "gopher" }), dest({ host: "a b" }), dest({ host: "user@api.example.com" }), dest({ port: 0 }), dest({ port: 1.5 }), dest({ tlsRequired: "yes" })]) {
       assert.deepEqual(codes(validateDestination(bad, policy)), [C.UNDECLARED_DESTINATION]);
     }
     assert.deepEqual(codes(validateDestination(dest(), {})), [C.RUNTIME_POLICY_UNAVAILABLE]);

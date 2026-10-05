@@ -9,7 +9,7 @@
 // Pure + deterministic: the rate limiter takes the clock (nowMs) as an argument, so it is fully testable.
 
 export type InboundProtocol =
-  | "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket";
+  | "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket" | "quic";
 
 /** The minimal policy shape this guard needs — structurally compatible with NetworkPolicy. */
 export interface InboundGuardPolicy {

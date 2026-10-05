@@ -10,7 +10,7 @@ This package owns the canonical v0.2 network and webhook contracts referenced by
 Current canonical choices:
 
 ```text
-NetworkProtocol = "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket"
+NetworkProtocol = "https" | "http" | "tls" | "tcp" | "udp" | "websocket" | "rawSocket" | "quic"
 WebhookVerificationConfig.secret: string
 ReplayStore.has(key) / put(key, ttlSeconds)
 IdempotencyStore.get(key) / put(IdempotencyRecord, ttlSeconds?)
@@ -99,6 +99,7 @@ export type NetworkProtocol =
     | "udp"
     | "websocket"
     | "rawSocket"
+    | "quic" // declared, not admitted: allow rules and runtime requests are refused until a verified QUIC/TLS 1.3 stack is attested
 ```
 
 `grpc` and `quic` remain planned protocol extensions in `TODO.md`; they are
