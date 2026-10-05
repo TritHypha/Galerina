@@ -16,8 +16,10 @@ active v1 runtime target.
 [x] Define compute capability model
 [x] Define compute budget model
 [x] Define target selection rules
-[ ] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
-[ ] Define specialist compute capability, data-sensitivity and audit report fields
+[x] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
+      src/specialist/specialist-hardware.ts SPECIALIST_HARDWARE_CLASSES + SpecialistHardwareTarget + validateSpecialistHardwareTarget (v1 freeze: only cpu may claim available); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define specialist compute capability, data-sensitivity and audit report fields
+      src/specialist/specialist-hardware.ts SpecialistComputeCapabilityFields / SpecialistDataSensitivity / SpecialistComputeAuditFields + specialistTargetAllowsSensitivity (omit max = admits nothing); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Add generic low-bit AI fallback target concept
 [x] Define offload planning reports
 [x] Define compute effects model (accelerator, optical_io, distributed_compute, high_memory, parallel_compute)
