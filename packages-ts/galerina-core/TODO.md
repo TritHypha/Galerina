@@ -1104,16 +1104,16 @@ Reason for additions:
 
 ```text
 [x] Create GIT.md
-[ ] Define branch strategy
-[ ] Define feature branch naming
-[ ] Define commit message format
-[ ] Define pull request template
-[ ] Define issue templates
-[ ] Define release tags
-[ ] Define changelog update process
-[ ] Define generated file policy
-[ ] Define docs-only change policy
-[ ] Define main branch protection policy
+[x] Define branch strategy
+[x] Define feature branch naming
+[x] Define commit message format
+[x] Define pull request template
+[x] Define issue templates
+[x] Define release tags
+[x] Define changelog update process
+[x] Define generated file policy
+[x] Define docs-only change policy
+[x] Define main branch protection policy
 ```
 
 ---
@@ -1122,17 +1122,17 @@ Reason for additions:
 
 ```text
 [x] Create COMPILED_APP_GIT.md
-[ ] Define what Galerina app files should be committed
-[ ] Define what build files should not be committed
-[ ] Define when build artefacts may be stored
-[ ] Define source-map handling
-[ ] Define .env handling
-[ ] Define .env.example handling
+[x] Define what Galerina app files should be committed
+[x] Define what build files should not be committed
+[x] Define when build artefacts may be stored
+[x] Define source-map handling
+[x] Define .env handling
+[x] Define .env.example handling
 [x] Define build manifest handling
-[ ] Define release artefact storage
-[ ] Define CI/CD deployment tags
-[ ] Define rollback tags
-[ ] Define multi-server deployment records
+[x] Define release artefact storage
+[x] Define CI/CD deployment tags
+[x] Define rollback tags
+[x] Define multi-server deployment records
 ```
 
 ---

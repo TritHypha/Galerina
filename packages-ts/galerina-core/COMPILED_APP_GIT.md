@@ -24,6 +24,29 @@ compiled Galerina binaries
 
 ---
 
+## Current policy (W01 G6, 2026-10-05)
+
+This section records the required rules for Galerina application repositories and takes
+precedence over the longer guidance below where they differ.
+
+| Topic | Policy |
+|---|---|
+| Files to commit | `.fungi` sources, `boot.fungi`, `package.fungi.json` and other package manifests, lock files, tests and fixtures, docs, `.env.example`, CI workflow files. |
+| Files never committed | `build/`, `dist/`, `out/`, compiled binaries (`*.bin`, `*.wasm`), `*.source-map.json` and other source maps, generated reports (`*.ai-context.json`, `*.failure-report.json`, `*.test-report.json`), `.env` and any `.env.*` other than `.env.example`, release artefacts, keys and certificates. |
+| When build artefacts may be stored | Only in release storage, never in Git. The one exception is a small, clearly labelled fixture under `tests/fixtures/` or `examples/`. |
+| Source maps | Debug builds write `build/debug/app.source-map.json` locally. Release builds ship no source map; if one is needed for symbolication it is written outside `build/release/` and stored privately with the release record. Inline maps are refused in release (`@galerina/target-js` FUNGI-JS-011/020/021). |
+| `.env` | Never committed and git-ignored. Values come from the deployment environment or a secret store. Startup validation (`@galerina/core-config` `validateStartup`) requires required names to be present and non-empty, and never prints values. |
+| `.env.example` | Committed. Key names only, with empty values or obvious placeholders, and a comment saying which keys are secrets. Never real values. |
+| Release artefact storage | Release storage (for example GitHub Releases or an artefact bucket) holds the built output plus a manifest listing every file with its SHA-256. Build once; deploy the same artefact to every environment. |
+| CI/CD deployment tags | `deploy/<env>/<yyyymmdd-hhmm>` (UTC), with `<env>` one of `dev`, `test`, `staging`, `production`, pointing at the commit that was deployed. |
+| Rollback tags | `rollback/<env>/<fromTag>-<toTag>`, for example `rollback/production/v1.2.3-v1.2.2`. |
+| Multi-server deployment records | One JSON record per deploy (not per server), listing environment, release tag, artefact manifest SHA-256, every target server and its result, and who or what triggered it. Records are append-only and stored with the release, not in the app repository. |
+
+`scripts/check-git-conventions.mjs` in the Galerina repository can validate deploy and
+rollback tags as well as branch names and commit subjects (advisory, not wired into CI).
+
+---
+
 ## Purpose
 
 The purpose of this document is to define how a Galerina application should be stored, versioned, built and deployed using Git.

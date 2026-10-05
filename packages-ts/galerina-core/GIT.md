@@ -14,6 +14,28 @@ COMPILED_APP_GIT.md
 
 ---
 
+## Current policy (W01 G6, 2026-10-05)
+
+This section records current practice and takes precedence over the older
+recommendations further down where they differ. The advisory checker
+`scripts/check-git-conventions.mjs` validates branch names, commit subjects and tags;
+it is **not** wired into CI (wiring it is the owner's choice).
+
+| Topic | Policy |
+|---|---|
+| Branch strategy | `main` is the only long-lived branch and is protected. All work happens on short-lived branches merged by pull request. Agent sessions use their own prefix (`grok/`, `codex/`). No `dev` branch for now. |
+| Feature branch naming | `<owner>/<topic>-<yyyymmdd>`, lowercase kebab-case, for example `grok/core-config-startup-validation-20261005`. The older `type/topic` form below is legacy. |
+| Commit messages | Conventional Commits: `type(scope)!: subject`, at most 100 characters, no trailing period. Types: `feat`, `fix`, `docs`, `design`, `security`, `test`, `chore`, `refactor`, `perf`, `build`, `ci`, `revert`, `todo`. GitHub merge subjects are accepted as they are. |
+| Pull request template | `.github/PULL_REQUEST_TEMPLATE.md`: summary, affected areas, generated files (with generator command), tests and gates checklist, review notes. |
+| Issue templates | `.github/ISSUE_TEMPLATE/bug.md` and `.github/ISSUE_TEMPLATE/task.md`. Vulnerabilities go through `SECURITY.md`, not public issues. |
+| Release tags | `vMAJOR.MINOR.PATCH`, with `-beta.N` for pre-releases (for example `v1.0.0-beta.2`). Tags are created from `main` only. |
+| Changelog | `CHANGELOG.md` is updated in the same PR as the change when it affects syntax, project structure, security rules, targets, file names, public APIs or deployment. Typos and internal refactors need no entry. |
+| Generated files | Only regenerate a generated file with its generator, never by hand, and put the generator command in the PR body. Generated output stays out of Git unless it is a labelled fixture or a tracked report the repository already keeps (for example `.graph/BOUNDARY.md`). |
+| Docs-only changes | Docs-only PRs still run the leak gates (`audit-path-leak`, secret scan) and the normal CI. They must not claim unimplemented features exist. |
+| Main branch protection | No direct pushes to `main`, no force-push, no deletion, no self-merge or self-approval, CI must be green, and at least one reviewer other than the author. Rewriting pushed history needs explicit owner approval. |
+
+---
+
 ## Purpose
 
 The purpose of this document is to keep the Galerina repository organised, traceable and easy to contribute to.
@@ -186,7 +208,13 @@ feature branches = work in progress
 
 Use short, clear branch names.
 
-Recommended format:
+Current format (see "Current policy" above):
+
+```text
+<owner>/<topic>-<yyyymmdd>
+```
+
+Legacy format, kept for older branches only:
 
 ```text
 type/topic
@@ -232,11 +260,13 @@ Suggested branch types:
 
 Use clear commit messages.
 
-Recommended format:
+Current format (Conventional Commits, see "Current policy" above):
 
 ```text
-type: short description
+type(scope): short description
 ```
+
+The scope is optional; `type: short description` is still valid.
 
 Examples:
 
