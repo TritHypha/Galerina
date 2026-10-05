@@ -19,13 +19,13 @@ const example = JSON.parse(readFileSync(new URL("../examples/benchmark-report.ex
 const optIn = { ...DEFAULT_BENCHMARK_CONFIG, privacy: { ...DEFAULT_BENCHMARK_CONFIG.privacy, allowSubmit: true } };
 const leaky = () => ({
   ...structuredClone(example),
-  hostname: "phill-desktop",
-  username: "phill",
-  projectPath: "C:\\Users\\phill\\secret-project",
-  env: { HOME: "/home/phill", API_TOKEN: "x" },
-  system: { ...structuredClone(example.system), hostname: "phill-desktop", cwd: "/home/phill/p" },
-  tests: example.tests.map((t, i) => (i === 0 ? { ...t, reason: "failed at /home/phill/p/x.lo", user: "phill" } : t)),
-  privacy: { ...example.privacy, hostname: "phill-desktop" },
+  hostname: "alice-desktop",
+  username: "alice",
+  projectPath: "C:\\Users\\alice\\secret-project", // path-leak-audit:allow (deliberate leak fixture)
+  env: { HOME: "/home/alice", API_TOKEN: "x" }, // path-leak-audit:allow (deliberate leak fixture)
+  system: { ...structuredClone(example.system), hostname: "alice-desktop", cwd: "/home/alice/p" }, // path-leak-audit:allow (deliberate leak fixture)
+  tests: example.tests.map((t, i) => (i === 0 ? { ...t, reason: "failed at /home/alice/p/x.lo", user: "alice" } : t)), // path-leak-audit:allow (deliberate leak fixture)
+  privacy: { ...example.privacy, hostname: "alice-desktop" },
 });
 
 describe("createShareableBenchmarkReport", () => {
@@ -34,7 +34,7 @@ describe("createShareableBenchmarkReport", () => {
     assert.equal(r.status, "SHAREABLE");
     for (const f of ["report.hostname", "report.username", "report.projectPath", "report.env", "report.system.hostname", "report.system.cwd", "report.tests.0.user"]) assert.ok(r.removedFields.includes(f), f);
     const text = JSON.stringify(r.report);
-    for (const leak of ["phill", "secret-project", "API_TOKEN", "/home"]) assert.ok(!text.includes(leak), leak);
+    for (const leak of ["alice", "secret-project", "API_TOKEN", "/home"]) assert.ok(!text.includes(leak), leak);
     assert.equal(r.redactedReasons, 1);
     assert.equal(r.report.tests[0].reason, "redacted");
     assert.deepEqual(validateBenchmarkReport(r.report), []);
@@ -45,7 +45,7 @@ describe("createShareableBenchmarkReport", () => {
     const r = createShareableBenchmarkReport(leaky(), DEFAULT_BENCHMARK_CONFIG);
     assert.equal(r.status, "SHAREABLE");
     assert.equal(r.report.privacy.shareable, false);
-    assert.ok(!JSON.stringify(r.report).includes("phill"));
+    assert.ok(!JSON.stringify(r.report).includes("alice"));
   });
   it("refuses non-records and structurally invalid reports", () => {
     assert.equal(createShareableBenchmarkReport("x", optIn).status, "REFUSED");
@@ -92,6 +92,6 @@ describe("prepareBenchmarkSubmission placeholder", () => {
     assert.equal(ok.networkUsed, false);
     assert.equal(ok.payload.anonymous, true);
     assert.equal(ok.payload.schema, "Galerina.benchmark.submit.v1");
-    assert.ok(!JSON.stringify(ok.payload).includes("phill"));
+    assert.ok(!JSON.stringify(ok.payload).includes("alice"));
   });
 });
