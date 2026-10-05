@@ -1,3 +1,4 @@
+export * from "./ai-digest.js";
 export type ReportSeverity = "info" | "warning" | "error" | "critical";
 
 export type ReportStatus = "ok" | "warning" | "error" | "critical";

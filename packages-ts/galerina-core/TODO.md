@@ -1003,10 +1003,10 @@ Reason for additions:
 [x] Define app.ai-context.md
 [x] Define Galerina ai-context command
 [x] Define Galerina explain --for-ai command
-[ ] Define token-efficient error reports
-[ ] Define AI-safe project summaries
-[ ] Define route summary output
-[ ] Define type summary output
+[x] Define token-efficient error reports
+[x] Define AI-safe project summaries
+[x] Define route summary output
+[x] Define type summary output
 [x] Define changed file summary output
 [x] Define security summary output
 [x] Define target summary output
