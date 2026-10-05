@@ -215,6 +215,12 @@ and produce compliance evidence.
 
 See `../../../ZTF-Knowledge-Bases/reference/language/ai-compute-plan.md`.
 
+Contracts: `src/governed-plan-contracts.ts` defines the execution plan stage machine
+(`validateGovernedExecutionPlan`, `startGovernedExecution`, `advanceGovernedExecution`), fast path
+signatures (`createFastPathSignature`, `checkFastPath`, `FAST_PATH_NEVER_BYPASSES`) and the AI compute
+plan hooks (`admitAiComputePlan`, `checkAiComputeOutput`). They are pure and fail closed; the default AI
+compute policy admits nothing. Fast path signatures are not authenticated by these contracts.
+
 ## Startup And Boot Warmup
 
 `galerina-core-runtime` should support verified startup rather than runtime
