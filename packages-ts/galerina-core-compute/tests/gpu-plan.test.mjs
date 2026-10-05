@@ -192,6 +192,58 @@ describe("GPU planning metadata and plan", () => {
     assert.ok(validateComputeWorkload(workload({ preferredTargets: ["cuda"] })).length > 0);
   });
 
+
+  it("hostile getters on workload return invalid plan / unknown suitability (never throw)", () => {
+    const base = workload({ kind: "matrix", preferredTargets: ["gpu"], memoryMb: 64 });
+    const counts = Object.create(null);
+    const boom = new Proxy(base, {
+      get(target, prop, receiver) {
+        if (typeof prop === "string") {
+          counts[prop] = (counts[prop] || 0) + 1;
+          // First pass (validateComputeWorkload) succeeds; later planner/estimator reads throw.
+          if (
+            counts[prop] > 1 &&
+            (prop === "kind" ||
+              prop === "effects" ||
+              prop === "preferredTargets" ||
+              prop === "operationCount" ||
+              prop === "memoryMb" ||
+              prop === "dataShape")
+          ) {
+            throw new Error("hostile-getter-do-not-echo");
+          }
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+    assert.equal(estimateGpuSuitability(boom), "unknown");
+    const plan = buildGpuPlan(boom);
+    assert.equal(plan.suitability, "unknown");
+    assert.equal(plan.recommendedTarget, "cpu");
+    assert.ok(plan.diagnostics.some((d) => d.code === "FUNGI-COMPUTE-002"));
+    assert.ok(!JSON.stringify(plan).includes("hostile-getter-do-not-echo"));
+  });
+
+  it("emits FUNGI-COMPUTE-007 when elementType has no mapped GPU precision", () => {
+    const plan = buildGpuPlan(
+      workload({
+        kind: "matrix",
+        preferredTargets: ["gpu"],
+        dataShape: {
+          rank: 2,
+          dimensions: [8, 8],
+          elementType: "opaque-blob",
+          byteSize: 64,
+          sensitive: false,
+          streamable: false,
+        },
+      }),
+    );
+    assert.equal(plan.requirements.precision, "unknown");
+    assert.ok(plan.diagnostics.some((d) => d.code === "FUNGI-COMPUTE-007"));
+    assert.equal(plan.recommendedTarget, "cpu");
+  });
+
   it("createGpuPlanReport is advisory-only and carries fungi codes without free text", () => {
     const plan = buildGpuPlan(workload({ kind: "image", memoryMb: 64 }));
     const report = createGpuPlanReport(plan);
