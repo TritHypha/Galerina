@@ -39,7 +39,7 @@
 [x] Add CPU arithmetic benchmark -- src/cpu-arithmetic-benchmark.ts runCpuArithmeticBenchmark / scoreCpuArithmeticBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids cpu.integer_loop + cpu.float_loop target cpu; FUNGI-BENCH-CPU-ARITH-001..005; in-process only (no command runner / vector-SIMD / hardware / Phase 8-9)
 [x] Add JSON 1MB decode/validate benchmark -- src/json-1mb-benchmark.ts runJsonDecodeValidate1mbBenchmark / buildJson1mbPayload (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id json.decode_validate_1mb target json; exact 1 MiB deterministic payload; unknown-field reject; FUNGI-BENCH-JSON-001..005; in-process only (no stream 10MB/1GB / download / command runner)
 [ ] Add JSON 10MB streaming benchmark
-[ ] Add small vector benchmark
+[x] Add small vector benchmark -- src/small-vector-benchmark.ts runSmallVectorBenchmark / benchDotFloat32 / benchCosineFloat32 (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids vector.dot_product_small + vector.cosine_batch_small target vector; scalar Float32 only (dim 256, batch 64); zero-norm/non-finite refuse; FUNGI-BENCH-VEC-001..005; no SIMD detection claim / matrix / GPU / command runner
 [x] Add SHA-256 byte benchmark -- src/sha256-benchmark.ts runSha256Benchmark / benchSha256Hex (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id cpu.hash_sha256_32mb target cpu; deterministic generated 32 MiB; pure FIPS 180-4 (boundary admits no node:crypto; tests cross-check node:crypto); FUNGI-BENCH-SHA-001..005; benchmark only, not a security primitive; no 256MB full-mode / command runner
 ```
 
@@ -194,3 +194,9 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Closed `src/sha256-benchmark.ts`: `runSha256Benchmark` / `benchSha256Hex` / `buildSha256BenchmarkBuffer`.
 - README light id `cpu.hash_sha256_32mb` (README CPU example id `cpu.hash.sha256_64mb` differs; light-list id used). Score = MiB/s capped 10000.
 - Pure TS digest because `.graph/boundary-policy.json` admits only `node:util/types`; not a security primitive.
+
+## Notes (Grok 2026-10-05 small vector benchmark)
+- Closed `src/small-vector-benchmark.ts`: `runSmallVectorBenchmark` returns `vector.dot_product_small` + `vector.cosine_batch_small`.
+- Scalar Float32Array path only (README "generic scalar fallback"); "Detect vector features where possible" stays open (needs hardware probing).
+- Closed sizes dim 256 / batch 64 are zero-trust defaults (owner may revisit). Zero-norm cosine and NaN/Infinity refuse (never collapse to pass).
+- `cpu.record_validate` (README light id) has no TODO row; not implemented (avoid scope creep / inventing a record shape).
