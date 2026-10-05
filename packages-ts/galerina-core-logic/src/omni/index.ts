@@ -15,6 +15,21 @@ export {
   omniToDecision,
 } from "./omni-to-decision.js";
 
+export type {
+  OmniReasoningTrace,
+  OmniTraceEvidence,
+  OmniTraceResult,
+  OmniTraceRule,
+  OmniTraceStep,
+  OmniTraceStepKind,
+} from "./omni-trace.js";
+export {
+  MAX_OMNI_TRACE_EVIDENCE,
+  OMNI_TRACE_SCHEMA,
+  traceOmniDecision,
+  validateOmniDecision,
+} from "./omni-trace.js";
+
 export {
   FUNGI_OMNI_001_DIRECT_BOUNDARY_USE,
   FUNGI_OMNI_002_ADVISORY_ONLY_VIOLATED,
