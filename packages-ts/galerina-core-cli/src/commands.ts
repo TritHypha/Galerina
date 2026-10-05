@@ -2,6 +2,7 @@ import type { CliCommand, CliContext, CliResult } from "./types.js";
 import { createCoreCommandRunner } from "./core-command.js";
 import { runGraphCommand } from "./graph-command.js";
 import { runTaskCommand } from "./task-command.js";
+import { runInitCommand } from "./init-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -15,6 +16,11 @@ function createCoreCommand(
 }
 
 export const commands: readonly CliCommand[] = [
+  {
+    name: "init",
+    description: "Scaffold a deny-by-default Galerina app (alias of galerina new app).",
+    run: runInitCommand
+  },
   createCoreCommand("check", "Parse and type-check a Galerina project."),
   createCoreCommand("build", "Build project outputs."),
   createCoreCommand("run", "Run a Galerina entrypoint."),
