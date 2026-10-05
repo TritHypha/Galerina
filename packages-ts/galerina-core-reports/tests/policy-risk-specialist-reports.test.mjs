@@ -36,11 +36,11 @@ describe("policy report contracts", () => {
       T,
     );
     assert.equal(report.schema, "galerina.report.policy-index.v1");
-    assert.equal(report.entries.length, 3);
+    assert.equal(report.entries.length, 2);
     assert.equal(report.byKind.network, 1);
     assert.equal(report.byKind.capability, 1);
-    assert.equal(report.byKind.data, 1);
-    assert.deepEqual([...report.rejectedIndexes], [2, 3]);
+    assert.equal(report.byKind.data, 0, "an entry with an extra key is rejected, not trimmed (C15 NB-1)");
+    assert.deepEqual([...report.rejectedIndexes], [2, 3, 4]);
     assert.equal(report.complete, false);
     assert.ok(!JSON.stringify(report).includes(MARKER));
     assert.ok(Object.isFrozen(report));
@@ -74,11 +74,12 @@ describe("policy report contracts", () => {
     assert.deepEqual([...report.rejectedIndexes], [2]);
   });
 
-  it("conflicts carry codes only", () => {
+  it("conflicts carry codes only; a free-text reason rejects the entry", () => {
     const report = createPolicyConflictReport(
       [
+        { conflictId: "c1", kind: "contradictory_decision", policyIds: ["p1", "p2"], diagnosticCodes: ["FUNGI-REPORT-002"] },
         {
-          conflictId: "c1",
+          conflictId: "c2",
           kind: "contradictory_decision",
           policyIds: ["p1", "p2"],
           diagnosticCodes: ["FUNGI-REPORT-002"],
@@ -89,6 +90,7 @@ describe("policy report contracts", () => {
     );
     assert.equal(report.entries.length, 1);
     assert.deepEqual([...report.entries[0].diagnosticCodes], ["FUNGI-REPORT-002"]);
+    assert.deepEqual([...report.rejectedIndexes], [1]);
     assert.ok(!JSON.stringify(report).includes(MARKER));
   });
 
@@ -112,6 +114,47 @@ describe("policy report contracts", () => {
     assert.equal(report.entries.length, 1);
     assert.deepEqual([...report.rejectedIndexes], [0]);
     assert.ok(!JSON.stringify(report).includes(MARKER));
+  });
+});
+
+describe("closed input shapes (SuperGrok C15 NB-1)", () => {
+  const cases = [
+    ["policy index", createPolicyIndexReport, { policyId: "pol-a", kind: "network" }],
+    ["policy definitions", createPolicyDefinitionsReport, { policyId: "pol-a", kind: "runtime", fieldNames: ["defaultEffect"] }],
+    ["policy effective", createPolicyEffectiveReport, { subjectId: "s1", policyId: "pol-a", decision: "deny" }],
+    ["policy conflict", createPolicyConflictReport, { conflictId: "c1", kind: "priority_tie", policyIds: ["pol-a"], diagnosticCodes: [] }],
+    ["malicious data", createMaliciousDataReport, { findingId: "f1", severity: "low", diagnosticCodes: [] }],
+    ["exploit resistance", createExploitResistanceReport, { findingId: "f1", kind: "exploit_resistance", severity: "low" }],
+    ["specialist hardware", createSpecialistHardwareReport, { targetId: "t1", hardwareClass: "cpu", availability: "available" }],
+    ["accelerator capability", createAcceleratorCapabilityReport, { targetId: "t1", hardwareClass: "cpu", capabilityIds: [], admitted: false }],
+    ["accelerator fallback", createAcceleratorFallbackReport, { fromClass: "gpu", toTarget: "cpu", diagnosticCodes: [] }],
+    ["data sensitivity", createDataSensitivityReport, { targetId: "t1", maxSensitivity: "internal", requestedSensitivity: "public" }],
+    ["precision compatibility", createPrecisionCompatibilityReport, { targetId: "t1", requested: "fp32", supported: ["fp32"] }],
+  ];
+  for (const [name, build, good] of cases) {
+    it(`${name}: any key outside the closed shape rejects the entry`, () => {
+      // Each variant gets its own id, so duplicate-id rejection cannot mask the shape check.
+      const idKey = ["policyId", "conflictId", "findingId", "targetId", "subjectId"].find((k) => k in good);
+      const v = (i, extra) => ({ ...good, ...(idKey ? { [idKey]: `${good[idKey]}x${i}` } : {}), ...extra });
+      const nonEnumerable = v(3, {});
+      Object.defineProperty(nonEnumerable, MARKER, { value: 1, enumerable: false });
+      const report = build([good, v(1, { [MARKER]: MARKER }), v(2, { [Symbol(MARKER)]: 1 }), nonEnumerable], T);
+      const list = report.entries ?? report.findings;
+      assert.equal(list.length, 1, name);
+      assert.deepEqual([...report.rejectedIndexes], [1, 2, 3], name);
+      assert.equal(report.complete, false);
+      assert.ok(!JSON.stringify(report).includes(MARKER));
+    });
+  }
+
+  it("AI summary refuses an extra key without echoing it, and no getter runs before the shape check", () => {
+    let ran = false;
+    const extra = { tokens: ["empty"], [MARKER]: 1 };
+    assert.throws(() => createPolicyAiSummaryReport(extra, T), (e) => /FUNGI-REPORT-002/.test(e.message) && !e.message.includes(MARKER));
+    const withGetter = { get policyId() { ran = true; return "pol-a"; }, kind: "network", extra: 1 };
+    const report = createPolicyIndexReport([withGetter], T);
+    assert.deepEqual([...report.rejectedIndexes], [0]);
+    assert.equal(ran, false);
   });
 });
 

@@ -26,6 +26,29 @@ function readOwn<T extends object>(value: unknown, label: string): T {
   }
 }
 
+/**
+ * Closed-shape read (SuperGrok C15 NB-1, zero-trust default, owner may revisit): the entry may
+ * carry only the listed keys. Any other own key (enumerable or not, string or symbol) refuses the
+ * whole entry instead of being silently dropped. The refused key is never echoed.
+ */
+function assertClosedKeys(value: unknown, label: string, allowed: readonly string[]): void {
+  let keys: readonly (string | symbol)[];
+  try {
+    keys = Reflect.ownKeys(value as object);
+  } catch {
+    throw new Error("FUNGI-REPORT-002: " + label + " could not be read.");
+  }
+  for (const k of keys) {
+    if (typeof k !== "string" || !allowed.includes(k)) throw new Error("FUNGI-REPORT-002: " + label + " has a field outside its closed shape.");
+  }
+}
+
+function readClosed<T extends object>(value: unknown, label: string, allowed: readonly string[]): T {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return readOwn<T>(value, label); // throws: not a record
+  assertClosedKeys(value, label, allowed); // keys only; no getter runs before the shape is accepted
+  return readOwn<T>(value, label);
+}
+
 function requireId(value: unknown, label: string): string {
   if (typeof value !== "string" || !ID.test(value)) throw new Error("FUNGI-REPORT-002: " + label + " id refused.");
   return value;
@@ -194,12 +217,19 @@ function isAiToken(v: unknown): v is PolicyAiSummaryToken {
 
 const FIELD_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
 
+// Closed input shapes (C15 NB-1): an entry with any other key is rejected, not trimmed.
+const POLICY_INDEX_KEYS = Object.freeze(["policyId", "kind"]);
+const POLICY_DEFINITION_KEYS = Object.freeze(["policyId", "kind", "fieldNames"]);
+const POLICY_EFFECTIVE_KEYS = Object.freeze(["subjectId", "policyId", "decision"]);
+const POLICY_CONFLICT_KEYS = Object.freeze(["conflictId", "kind", "policyIds", "diagnosticCodes"]);
+const POLICY_AI_SUMMARY_KEYS = Object.freeze(["tokens", "policyCount", "conflictCount", "denyCount", "allowCount"]);
+
 export function createPolicyIndexReport(items: unknown, generatedAt: string): PolicyIndexReport {
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const seen = new Set<string>();
   const byKind = Object.fromEntries(POLICY_KINDS.map((k) => [k, 0])) as Record<PolicyKind, number>;
   const listed = boundedList<PolicyIndexEntry>(items, "policy index", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "policy index entry");
+    const o = readClosed<Record<string, unknown>>(raw, "policy index entry", POLICY_INDEX_KEYS);
     const policyId = requireId(o.policyId, "policy");
     if (!isPolicyKind(o.kind)) return null;
     if (seen.has(policyId)) return null;
@@ -222,7 +252,7 @@ export function createPolicyDefinitionsReport(items: unknown, generatedAt: strin
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const seen = new Set<string>();
   const listed = boundedList<PolicyDefinitionEntry>(items, "policy definitions", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "policy definition");
+    const o = readClosed<Record<string, unknown>>(raw, "policy definition", POLICY_DEFINITION_KEYS);
     const policyId = requireId(o.policyId, "policy");
     if (!isPolicyKind(o.kind)) return null;
     if (seen.has(policyId)) return null;
@@ -249,7 +279,7 @@ export function createPolicyEffectiveReport(items: unknown, generatedAt: string)
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const byDecision = Object.fromEntries(POLICY_EFFECTIVE_DECISIONS.map((k) => [k, 0])) as Record<PolicyEffectiveDecision, number>;
   const listed = boundedList<PolicyEffectiveEntry>(items, "policy effective", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "policy effective entry");
+    const o = readClosed<Record<string, unknown>>(raw, "policy effective entry", POLICY_EFFECTIVE_KEYS);
     const subjectId = requireId(o.subjectId, "subject");
     const policyId = requireId(o.policyId, "policy");
     if (!isDecision(o.decision)) return null;
@@ -272,7 +302,7 @@ export function createPolicyConflictReport(items: unknown, generatedAt: string):
   const seen = new Set<string>();
   const byKind = Object.fromEntries(POLICY_CONFLICT_KINDS.map((k) => [k, 0])) as Record<PolicyConflictKind, number>;
   const listed = boundedList<PolicyConflictEntry>(items, "policy conflicts", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "policy conflict");
+    const o = readClosed<Record<string, unknown>>(raw, "policy conflict", POLICY_CONFLICT_KEYS);
     const conflictId = requireId(o.conflictId, "conflict");
     if (seen.has(conflictId)) return null;
     seen.add(conflictId);
@@ -305,6 +335,7 @@ export function createPolicyAiSummaryReport(input: unknown, generatedAt: string)
   if (o.summaryText !== undefined || o.text !== undefined || o.message !== undefined || o.prompt !== undefined) {
     throw new Error("FUNGI-REPORT-002: free-text AI summary fields refused.");
   }
+  assertClosedKeys(input, "policy ai summary", POLICY_AI_SUMMARY_KEYS);
   if (!Array.isArray(o.tokens) || o.tokens.length > 16) throw new Error("FUNGI-REPORT-002: tokens refused.");
   const tokens: PolicyAiSummaryToken[] = [];
   for (const t of o.tokens) {
@@ -361,6 +392,9 @@ export interface RiskFamilyReport {
   readonly complete: boolean;
 }
 
+// Payload-family keys (payload/sample/raw/message/reason) are outside this shape, so they still refuse the finding.
+const RISK_FINDING_KEYS = Object.freeze(["findingId", "kind", "severity", "diagnosticCodes"]);
+
 function isSeverity(v: unknown): v is RiskSeverity {
   return typeof v === "string" && (RISK_SEVERITIES as readonly string[]).includes(v);
 }
@@ -370,10 +404,7 @@ function createRiskReport(kind: RiskKind, items: unknown, generatedAt: string): 
   const seen = new Set<string>();
   const bySeverity = Object.fromEntries(RISK_SEVERITIES.map((k) => [k, 0])) as Record<RiskSeverity, number>;
   const listed = boundedList<RiskFinding>(items, kind, (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, kind + " finding");
-    if (o.payload !== undefined || o.sample !== undefined || o.raw !== undefined || o.message !== undefined || o.reason !== undefined) {
-      return null;
-    }
+    const o = readClosed<Record<string, unknown>>(raw, kind + " finding", RISK_FINDING_KEYS);
     const findingId = requireId(o.findingId, "finding");
     if (seen.has(findingId)) return null;
     seen.add(findingId);
@@ -549,6 +580,12 @@ export interface PrecisionCompatibilityReport {
   readonly complete: boolean;
 }
 
+const SPECIALIST_HARDWARE_KEYS = Object.freeze(["targetId", "hardwareClass", "availability"]);
+const ACCELERATOR_CAPABILITY_KEYS = Object.freeze(["targetId", "hardwareClass", "capabilityIds", "admitted"]);
+const ACCELERATOR_FALLBACK_KEYS = Object.freeze(["fromClass", "toTarget", "diagnosticCodes"]);
+const DATA_SENSITIVITY_KEYS = Object.freeze(["targetId", "maxSensitivity", "requestedSensitivity", "allowed"]);
+const PRECISION_COMPATIBILITY_KEYS = Object.freeze(["targetId", "requested", "supported", "compatible"]);
+
 const SENS_RANK: Readonly<Record<SpecialistSensitivity, number>> = Object.freeze({
   public: 0,
   internal: 1,
@@ -562,7 +599,7 @@ export function createSpecialistHardwareReport(items: unknown, generatedAt: stri
   const seen = new Set<string>();
   const byClass = Object.fromEntries(SPECIALIST_HARDWARE_CLASSES.map((k) => [k, 0])) as Record<SpecialistHardwareClass, number>;
   const listed = boundedList<SpecialistHardwareEntry>(items, "specialist hardware", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "specialist hardware entry");
+    const o = readClosed<Record<string, unknown>>(raw, "specialist hardware entry", SPECIALIST_HARDWARE_KEYS);
     const targetId = requireId(o.targetId, "target");
     if (seen.has(targetId)) return null;
     seen.add(targetId);
@@ -588,7 +625,7 @@ export function createAcceleratorCapabilityReport(items: unknown, generatedAt: s
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const seen = new Set<string>();
   const listed = boundedList<AcceleratorCapabilityEntry>(items, "accelerator capability", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "accelerator capability");
+    const o = readClosed<Record<string, unknown>>(raw, "accelerator capability", ACCELERATOR_CAPABILITY_KEYS);
     const targetId = requireId(o.targetId, "target");
     if (seen.has(targetId)) return null;
     seen.add(targetId);
@@ -620,7 +657,7 @@ export function createAcceleratorCapabilityReport(items: unknown, generatedAt: s
 export function createAcceleratorFallbackReport(items: unknown, generatedAt: string): AcceleratorFallbackReport {
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const listed = boundedList<AcceleratorFallbackEntry>(items, "accelerator fallback", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "accelerator fallback");
+    const o = readClosed<Record<string, unknown>>(raw, "accelerator fallback", ACCELERATOR_FALLBACK_KEYS);
     if (!isHw(o.fromClass) || !isFallback(o.toTarget)) return null;
     // Executable fallback under v1 is always cpu (or none); wasm is advisory only.
     if (o.toTarget === "none" && o.fromClass === "cpu") return null;
@@ -641,7 +678,7 @@ export function createDataSensitivityReport(items: unknown, generatedAt: string)
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const seen = new Set<string>();
   const listed = boundedList<DataSensitivityEntry>(items, "data sensitivity", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "data sensitivity");
+    const o = readClosed<Record<string, unknown>>(raw, "data sensitivity", DATA_SENSITIVITY_KEYS);
     const targetId = requireId(o.targetId, "target");
     if (seen.has(targetId)) return null;
     seen.add(targetId);
@@ -671,7 +708,7 @@ export function createPrecisionCompatibilityReport(items: unknown, generatedAt: 
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
   const seen = new Set<string>();
   const listed = boundedList<PrecisionCompatibilityEntry>(items, "precision compatibility", (raw) => {
-    const o = readOwn<Record<string, unknown>>(raw, "precision compatibility");
+    const o = readClosed<Record<string, unknown>>(raw, "precision compatibility", PRECISION_COMPATIBILITY_KEYS);
     const targetId = requireId(o.targetId, "target");
     if (seen.has(targetId)) return null;
     seen.add(targetId);
