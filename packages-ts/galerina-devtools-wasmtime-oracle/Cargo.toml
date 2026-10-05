@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
-wasmtime = "47.0.2"
+wasmtime = "47.0.4"
 # F3 admission re-verify (owner-ruled, bridge 0045). Pure-Rust — pairs with the coming pure-Rust
 # ml-dsa for the F2 hybrid = one coherent crypto stack. Cargo.lock is
 # the exact pin (cargo-deny/vet). verify_admission takes RAW signature bytes, so base64 stays test-only.

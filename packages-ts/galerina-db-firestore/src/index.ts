@@ -261,7 +261,8 @@ export function validateFirestorePath(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_PATH_NOT_RELATIVE",
       "error",
-      `Firestore path "${value}" must be relative segments, not an absolute or drive-lettered path.`,
+      // Zero-trust: refused path values are never echoed (document ids and local paths stay out of reports).
+      "Firestore path must be relative segments, not an absolute or drive-lettered path (value withheld).",
       `${path}.path`,
     ));
     return diagnostics;
@@ -275,7 +276,7 @@ export function validateFirestorePath(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_PATH_SEGMENT_EMPTY",
       "error",
-      `Firestore path "${value}" contains an empty segment ("//" or a trailing slash).`,
+      "Firestore path contains an empty segment (\"//\" or a trailing slash) (value withheld).",
       `${path}.path`,
     ));
   }
@@ -285,7 +286,7 @@ export function validateFirestorePath(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_PATH_SEGMENT_INVALID",
       "error",
-      `Firestore path "${value}" contains a "." or ".." segment; traversal segments are rejected.`,
+      "Firestore path contains a \".\" or \"..\" segment; traversal segments are rejected (value withheld).",
       `${path}.path`,
     ));
   }
@@ -299,7 +300,7 @@ export function validateFirestorePath(
       diagnostics.push(firestoreDiagnostic(
         "Galerina_DB_FIRESTORE_PATH_KIND_MISMATCH",
         "error",
-        `A ${pathContract.kind} path requires an ${expectOdd ? "odd" : "even"} number of segments; "${value}" has ${segments.length}.`,
+        `A ${pathContract.kind} path requires an ${expectOdd ? "odd" : "even"} number of segments; the declared path has ${segments.length} (value withheld).`,
         `${path}.path`,
       ));
     }

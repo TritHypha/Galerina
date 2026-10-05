@@ -271,7 +271,8 @@ export function validateOpenSearchConnection(
     diagnostics.push(openSearchDiagnostic(
       "Galerina_DB_OPENSEARCH_ENDPOINT_SCHEME_INVALID",
       "error",
-      `Endpoint "${endpoint}" must be an http(s) URL.`,
+      // Zero-trust: a refused endpoint may carry a token in its query string; never echoed.
+      "Endpoint must be an http(s) URL (value withheld).",
       `${path}.endpoint`,
     ));
   } else if (/^http:\/\//i.test(endpoint) && !isLocalhostHost(endpointHost(endpoint))) {

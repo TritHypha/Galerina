@@ -1,3 +1,5 @@
+export * from "./ai-digest.js";
+export * from "./console-policy.js";
 export type ReportSeverity = "info" | "warning" | "error" | "critical";
 
 export type ReportStatus = "ok" | "warning" | "error" | "critical";
@@ -929,3 +931,27 @@ function selectReportStatus(input: {
 
   return "ok";
 }
+
+// Runtime audit v0.2: audit events, proofs, denials and evidence (TODO pass, Grok 2026-10-05).
+export * from "./shared/audit-status.js";
+export * from "./shared/audit-reference.js";
+export * from "./shared/report-codes.js";
+export * from "./audit/audit-runtime.js";
+export * from "./audit/audit-redaction.js";
+export * from "./audit/audit-events.js";
+export * from "./audit/audit-validator.js";
+export * from "./audit/audit-jsonl.js";
+export * from "./proofs/execution-proof.js";
+export * from "./proofs/proof-runtime.js";
+export * from "./proofs/proof-hashing.js";
+export * from "./proofs/proof-validator.js";
+export { createProofReport, type ProofReport } from "./proofs/proof-report.js";
+export * from "./denials/denial-report.js";
+export * from "./denials/denial-validator.js";
+export * from "./denials/denial-runtime.js";
+export * from "./denials/denial-serializer.js";
+export * from "./evidence/capability-evidence.js";
+export * from "./evidence/effect-evidence.js";
+export * from "./evidence/evidence-validator.js";
+export * from "./evidence/runtime-evidence.js";
+export * from "./evidence/evidence-aggregator.js";

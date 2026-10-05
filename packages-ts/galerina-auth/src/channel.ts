@@ -36,7 +36,7 @@ import {
   type CertSubVerdicts,
   type ChainValidationOutcome,
   type RevocationOutcome,
-} from "../../galerina-core-network/dist/index.js";
+} from "@galerina/core-network";
 import type {
   Verdict,
   GovernanceDiagnostic,
