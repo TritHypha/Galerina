@@ -2,7 +2,7 @@ import type {
   AtomicAdmissionStore,
   AtomicClaimResult,
   ReplayStore,
-} from "../../galerina-core-network/dist/index.js";
+} from "@galerina/core-network";
 
 export interface MemoryReplayStoreOptions {
   /** Injectable for deterministic tests; production defaults to Date.now. */
