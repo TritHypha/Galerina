@@ -109,12 +109,12 @@ directory/reparse-point swap on Windows and Linux. A successful result means the
 bytes read from the checked handle matched the supplied digest; it does not prove
 trusted provenance, prevent concurrent modification, or resist a compromised OS.
 
-`galerina deploy` validates the runtime manifest, effects, capabilities, policy,
-target compatibility, and module hashes before deploying. Exit codes: `0`
-success, `2` policy denial, `3` runtime incompatibility, `4` deployment
-validation failure, `5` capability resolution failure, `7` manifest integrity
-failure. Flags: `--dry-run`, `--json`, `--report`, `--audit`, `--strict`,
-`--profile`, `--policy`, `--target`. Produces `deployment-report.json`.
+`galerina deploy` (dry-run) validates effects, target compatibility, and the
+verified gate against a closed EffectsPolicy + DeployManifestSlice. Live deploy
+is not admitted (`--dry-run` required). Exit codes: `0` success, `2` usage or
+policy denial, `3` target incompatibility, `4` validation failure, `6` verified-gate
+failure. Flags: `--manifest`, `--policy`, `--target`, `--hash`, `--report`,
+`--json`, `--dry-run`, `--strict`. Produces optional `deployment-report.json`.
 Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
@@ -301,8 +301,15 @@ revisit): closed `DeploymentTarget` vocabulary (`node|wasm|native|serverless|edg
 `DeployManifestSlice` (`allowedEffects` + `verified`), and `validateEffects`. Shapes are read through
 property descriptors (no getters). Diagnostics never echo effect names, targets, hashes or unknown
 keys. Codes: `FUNGI-DEPLOY-001` shape, `002` domain, `003` policy effect denial, `004` target
-incompatibility, `005` verified gate. Not covered: `galerina deploy` command wiring,
-`deployment-report.json` writer, dry-run, or live target probing.
+incompatibility, `005` verified gate. Command wiring (`src/deploy/deploy-command.ts`, zero-trust defaults, owner may revisit):
+`parseDeployArgs` + `runDeployCommand` wire `galerina deploy` as **dry-run only**.
+Admitted flags: `--manifest`, `--policy`, `--target`, `--hash`, `--report`,
+`--json`, `--dry-run` (required), `--strict`. `--audit` refuses `FUNGI-CLI-DEPLOY-004`.
+Exit codes: `0` success, `2` usage or policy denial, `3` target incompatibility,
+`4` validation failure, `6` verified-gate failure (`5`/`7` reserved). Report writer
+(`src/deploy/deploy-report.ts`): exclusive-create `deployment-report.json` with
+messages withheld and `dryRun:true`. Not covered: live deploy, module hashes on disk,
+capability/audit validation, deploy-policy.ts / deploy-runtime.ts.
 
 
 ```ts

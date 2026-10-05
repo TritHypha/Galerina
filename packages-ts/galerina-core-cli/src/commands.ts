@@ -4,6 +4,7 @@ import { runGraphCommand } from "./graph-command.js";
 import { runTaskCommand } from "./task-command.js";
 import { runInitCommand } from "./init-command.js";
 import { runVerifyCommand } from "./verify/verify-command.js";
+import { runDeployCommand } from "./deploy/deploy-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -43,6 +44,11 @@ export const commands: readonly CliCommand[] = [
     name: "verify",
     description: "Verify build artefacts and optional runtime manifests (fail-closed).",
     run: runVerifyCommand
+  },
+  {
+    name: "deploy",
+    description: "Dry-run deploy effects validation against a closed policy (fail-closed; no live deploy).",
+    run: runDeployCommand
   },
   {
     name: "benchmark",
