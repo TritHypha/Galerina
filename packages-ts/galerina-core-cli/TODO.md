@@ -40,7 +40,7 @@
 [x]   - emit verification-report.json -- src/verify/verify-reporter.ts, tests/verify-report.test.mjs (Grok 2026-10-05); createVerificationReport recomputes success, writeVerificationReport is exclusive-create (no overwrite) into an existing dir, no timestamp unless given (owner may revisit)
 [x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
 [x]   - create verify/ dir: verify-integrity.ts -- src/verify/verify-integrity.ts, tests/verify-integrity.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): readBuildArtefact / verifyArtefactIntegrity / verifyArtefactIntegritySet; closed BuildArtefact shape via property descriptors (no getters); closed kind vocabulary; malformed hash refused as 001 before open; dense-array set checks; codes stay FUNGI-VERIFY-001..005. Progress on verify/ dir: verify-reporter.ts, verify-manifest.ts, verify-integrity.ts, verify-command.ts, verify-runtime.ts exist; parent Complete Galerina verify command stays open only for remaining product gaps (runtime-manifest.json container / signatures)
-[ ] Add Galerina deploy command integration
+[ ] Add Galerina deploy command integration -- remaining: live deploy / module-hash on disk / --audit capability / deploy-policy.ts / deploy-runtime.ts / workspace live runtime profile (HOLD until authority or receipt; zero-trust defaults, owner may revisit). Dry-run contracts+command+report landed.
 [x]   - load workspace manifest, runtime profile, deployment policy -- src/deploy/deploy-command.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): loads closed-shape DeployManifestSlice + EffectsPolicy JSON objects via --manifest/--policy (workspace profile / live runtime profile still open)
 [x]   - validate effects, capabilities, runtime targets, module hashes -- src/deploy/deploy-command.ts + validateEffects (Grok 2026-10-05; zero-trust defaults, owner may revisit): effects + target + verified gate via validateEffects; capabilities (--audit) refuse 004; module hashes on disk still open
 [x]   - produce deployment-report.json -- src/deploy/deploy-report.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): createDeploymentReport / writeDeploymentReport exclusive-create; messages withheld; dryRun:true + limitations; optional --report <dir>
@@ -53,15 +53,15 @@
 [x]   - diagnostic codes FUNGI-DEPLOY-001 through FUNGI-DEPLOY-005 -- src/deploy/deploy-validator.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): 001 closed-shape refuse, 002 domain refuse, 003 policy effect denial, 004 target incompatibility, 005 verified gate
 [x]   - create deploy/ dir: deploy-validator.ts + deploy-command.ts + deploy-report.ts -- (Grok 2026-10-05; zero-trust defaults, owner may revisit): contracts + dry-run CLI wiring + report writer; deploy-policy.ts / deploy-runtime.ts remain open (no live deploy / no module-hash probe)
 [ ] Add Galerina explain command integration
-[ ]   - explain imports, effects, capabilities, dependency tree
+[x]   - explain imports, effects, capabilities, dependency tree -- src/explain/explain-trace.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed ExplainManifestSlice lists + ExplainOptions facets drive buildTrace / explainManifest traces (import|effect|capability|boundary); dependency-tree walk still open
 [ ]   - explain denial reasoning from deployment-denial.json
 [ ]   - support --tree, --trace, --effects, --capabilities, --runtime, --policy, --audit, --json flags
-[ ]   - implement ExplainTrace: step, label, input, output, diagnostics[]
-[ ]   - implement ExplainResult: traces[], effects[], capabilities[], boundaries[], diagnostics[]
-[ ]   - implement buildTrace(manifest, options): ExplainTrace[]
+[x]   - implement ExplainTrace: step, label, input, output, diagnostics[] -- src/explain/explain-trace.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed label vocabulary import|effect|capability|boundary|dependency|denial; input/output dotted tokens; diagnostics snapshotted
+[x]   - implement ExplainResult: traces[], effects[], capabilities[], boundaries[], diagnostics[] -- src/explain/explain-trace.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): createExplainResult / readExplainResult; steps contiguous from 0; FUNGI-EXPLAIN-004 on step order
+[x]   - implement buildTrace(manifest, options): ExplainTrace[] -- src/explain/explain-trace.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): buildTrace returns traces or []; explainManifest returns full ExplainResult with diagnostics; never throws; never echoes refused tokens
 [ ]   - emit explain-report.json
-[ ]   - diagnostic codes FUNGI-EXPLAIN-001 through FUNGI-EXPLAIN-004
-[ ]   - create explain/ dir: explain-command.ts, explain-trace.ts, explain-tree.ts, explain-runtime.ts, explain-reporter.ts
+[x]   - diagnostic codes FUNGI-EXPLAIN-001 through FUNGI-EXPLAIN-004 -- src/explain/explain-trace.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): 001 closed-shape refuse, 002 domain refuse, 003 options facet refuse, 004 result consistency
+[x]   - create explain/ dir: explain-trace.ts -- src/explain/explain-trace.ts + src/explain.ts barrel (Grok 2026-10-05; zero-trust defaults, owner may revisit): contracts only; explain-command.ts / explain-tree.ts / explain-runtime.ts / explain-reporter.ts remain open
 [ ] Add Galerina plan command integration
 [ ]   - estimate CPU/GPU/accelerator suitability and memory pressure
 [ ]   - produce compute-plan.json
