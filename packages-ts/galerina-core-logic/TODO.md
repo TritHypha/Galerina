@@ -43,7 +43,7 @@
 [x] Define Omni advisory vs deterministic model: advisoryOnly: true is enforced on OmniDecision (2026-05-26)
 [x] Define FUNGI-OMNI-001 through FUNGI-OMNI-005 diagnostic codes (2026-05-26)
 [x] Phase 1: advisory OmniState types and omniToDecision() — COMPLETE (2026-05-26)
-[ ] Phase 2: runtime reasoning traces (deferred)
+[x] Phase 2: runtime reasoning traces -- src/omni/omni-trace.ts: traceOmniDecision() validates an untrusted OmniDecision (invalid -> review, never allow), returns the Decision plus a frozen advisory OmniReasoningTrace (validate/evidence/classify/convert steps, rule, codes and confidences only; free text withheld); tests/omni-reasoning-trace.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ] Phase 3: AI orchestration integration (deferred until Phase 3)
 [x] Define initial Tri conversion rules
 [x] Define initial truth table report format
