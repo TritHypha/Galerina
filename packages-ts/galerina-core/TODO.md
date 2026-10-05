@@ -832,12 +832,12 @@ Reason for additions:
 [x] Add debug console documentation
 [ ] Define console.log/info/warn/error/debug syntax
 [ ] Define console.here source-map output
-[ ] Define console.scope and console.vars safety rules
-[ ] Define console.dump size limits
-[ ] Define SecureString redaction for console output
-[ ] Define large JSON console summaries
-[ ] Define production console policy
-[ ] Define console report schema
+[x] Define console.scope and console.vars safety rules
+[x] Define console.dump size limits
+[x] Define SecureString redaction for console output
+[x] Define large JSON console summaries
+[x] Define production console policy
+[x] Define console report schema
 [ ] Add console diagnostics to compiler prototype
 ```
 
