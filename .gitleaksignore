@@ -90,3 +90,4 @@ f35ed68c07a0eda81c44d5a862bb928103a16d3c:scripts/rd-0151-0153-assimilation-ambig
 d3f83a58fb79ddd97138287097d1daa87fedf9fc:packages-logicn/logicn-devtools-security/tests/security-devtools.test.mjs:jwt:87
 d3f83a58fb79ddd97138287097d1daa87fedf9fc:packages-logicn/logicn-devtools-security/tests/security-devtools.test.mjs:jwt:268
 d3f83a58fb79ddd97138287097d1daa87fedf9fc:docs/ENV_SECRETS.md:stripe-access-token:500
+b271e98439b97d147f530619e02741e7172c8aeb:packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:generic-api-key:68

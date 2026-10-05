@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   AtomicAdmissionStore,
   AtomicClaimResult,
-} from "../../galerina-core-network/dist/index.js";
+} from "@galerina/core-network";
 
 export const WEBHOOK_REPLAY_SCOPE = "replay";
 

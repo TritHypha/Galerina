@@ -30,11 +30,15 @@ export interface TriStream {
  * copy: the matcher's own tables are never exposed or aliased, and the
  * snapshot carries no input, span or capture data.
  */
+/** Empty, frozen range list for slots that consume no char (non-null sentinel). */
+export const NO_CHAR_RANGES: readonly (readonly [number, number])[] = Object.freeze([]);
+
 export interface AutomatonTables {
   readonly slots: number;
   readonly words: number;
-  /** per resting slot: the char ranges if the slot consumes a char, else null */
-  readonly charRanges: readonly (readonly (readonly [number, number])[] | null)[];
+  /** per resting slot: the char ranges the slot consumes; the shared frozen
+   *  NO_CHAR_RANGES (empty) when the slot does not consume a char. Never null. */
+  readonly charRanges: readonly (readonly (readonly [number, number])[])[];
   /** per resting slot: true for an end-of-line assertion slot */
   readonly eolSlot: readonly boolean[];
   /** per resting slot: closure row after consuming (u32 words; empty for eol slots) */
@@ -66,7 +70,7 @@ export class TriMatcher {
   /** Frozen copy of the automaton tables (see AutomatonTables). */
   tables(): AutomatonTables {
     const c = this.c;
-    const charRanges: (readonly (readonly [number, number])[] | null)[] = [];
+    const charRanges: (readonly (readonly [number, number])[])[] = [];
     const eolSlot: boolean[] = [];
     const rows: (readonly number[])[] = [];
     const matchOnConsume: boolean[] = [];
@@ -76,7 +80,7 @@ export class TriMatcher {
       charRanges.push(
         instr.op === "char"
           ? Object.freeze(instr.ranges.map((r) => Object.freeze([r[0], r[1]] as const)))
-          : null,
+          : NO_CHAR_RANGES,
       );
       eolSlot.push(instr.op === "eol");
       rows.push(Object.freeze(Array.from(c.rows[s] ?? new Uint32Array(0))));
