@@ -97,5 +97,9 @@ The existing `galerina-core-photonic` package already has these types fully spec
 
 **Resolution required before implementation.**
 
+Until then this package stays proposal-only for photonic material: it exports, declares
+and depends on none of the proposed contracts. `tests/photonic-proposal-boundary.test.mjs`
+enforces that (zero-trust default, 2026-10-05; owner may revisit).
+
 See `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-vector-photonic-governance.md` for the full
 photonic governance spec and boundary conflict details.
