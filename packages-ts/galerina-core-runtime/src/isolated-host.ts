@@ -12,7 +12,7 @@
 //      result is "termination_unconfirmed" and no receipt is issued.
 //   2. createReceiptSigner / createReceiptVerifier authenticate task-event and termination
 //      receipts with HMAC-SHA256 under a host-held key, refuse unknown keys, tampering,
-//      replays and reordering (strict per-scope sequence), and turn a verified receipt into
+//      replays and reordering (strict per-scope sequence via an injected sequence store that the host can make durable across restarts), and turn a verified receipt into
 //      the exact StructuredAwaitEvent the reducer admits.
 //
 // No Node builtin is imported. The host passes the process-spawn capability and the
@@ -61,6 +61,7 @@ export const ERR_RUNTIME_RECEIPT_REPLAY = err("ERR_RUNTIME_RECEIPT_REPLAY", "Tas
 export const ERR_RUNTIME_RECEIPT_CAPACITY = err("ERR_RUNTIME_RECEIPT_CAPACITY", "Task receipt scope capacity is exhausted.");
 export const ERR_RUNTIME_RECEIPT_HMAC = err("ERR_RUNTIME_RECEIPT_HMAC", "Injected HMAC-SHA256 failed the RFC 4231 self-test.");
 export const ERR_RUNTIME_RECEIPT_CONFIG = err("ERR_RUNTIME_RECEIPT_CONFIG", "Task receipt key configuration is invalid.");
+export const ERR_RUNTIME_RECEIPT_SEQUENCE_STORE = err("ERR_RUNTIME_RECEIPT_SEQUENCE_STORE", "Task receipt sequence store failed or returned an invalid value.");
 export const ERR_RUNTIME_ISOLATED_CONFIG = err("ERR_RUNTIME_ISOLATED_CONFIG", "Isolated host configuration is invalid.");
 export const ERR_RUNTIME_ISOLATED_SPEC = err("ERR_RUNTIME_ISOLATED_SPEC", "Isolated task specification is not the exact closed contract.");
 export const ERR_RUNTIME_ISOLATED_RECEIPT = err("ERR_RUNTIME_ISOLATED_RECEIPT", "Isolated task outcome could not be receipted.");
@@ -135,6 +136,39 @@ export type ReceiptVerification =
 
 export interface ReceiptVerifier {
   verify(input: unknown): ReceiptVerification;
+}
+
+/** Host-injected last-seen / last-issued sequence store. The verifier persists the last
+ *  accepted sequence per scope before returning ok, so a validly-signed receipt cannot be
+ *  replayed after a verifier restart when the store is durable. createMemoryReceiptSequenceStore
+ *  is process-local only (does not survive restart); hosts that need durability inject a store
+ *  that commits before setLastSequence returns. No Node builtin is imported here. */
+export interface ReceiptSequenceStore {
+  /** Last sequence recorded for scope, or undefined if none. */
+  getLastSequence(scopeId: string): number | undefined;
+  /** Persist last sequence for scope. Must complete durably before returning; throws on failure. */
+  setLastSequence(scopeId: string, sequence: number): void;
+  /** Number of distinct scopes currently recorded (capacity accounting). */
+  scopeCount(): number;
+}
+
+/** Process-local sequence store. Does not survive process restart — for tests and hosts that
+ *  explicitly accept in-memory last-seen (zero-trust default is to inject a durable store). */
+export function createMemoryReceiptSequenceStore(): ReceiptSequenceStore {
+  const sequences = new Map<string, number>();
+  return Object.freeze({
+    getLastSequence(scopeId: string): number | undefined {
+      if (!isIdentifier(scopeId)) return undefined;
+      return sequences.get(scopeId);
+    },
+    setLastSequence(scopeId: string, sequence: number): void {
+      if (!isIdentifier(scopeId) || !isPositiveInt(sequence)) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+      sequences.set(scopeId, sequence);
+    },
+    scopeCount(): number {
+      return sequences.size;
+    },
+  });
 }
 
 // Same identifier alphabet as the Structured Await reducer, so receipts and plans agree.
@@ -217,20 +251,62 @@ function checkedKey(input: unknown): { keyId: string; key: Uint8Array } {
   return { keyId: values.keyId, key: Uint8Array.from(key) };
 }
 
+
+function checkedSequenceStore(input: unknown): ReceiptSequenceStore {
+  if (typeof input !== "object" || input === null) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CONFIG);
+  const store = input as ReceiptSequenceStore;
+  if (typeof store.getLastSequence !== "function" || typeof store.setLastSequence !== "function" || typeof store.scopeCount !== "function") {
+    throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CONFIG);
+  }
+  return store;
+}
+
+function readLastSequence(store: ReceiptSequenceStore, scopeId: string): number | undefined {
+  let previous: unknown;
+  try {
+    previous = store.getLastSequence(scopeId);
+  } catch {
+    throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+  }
+  if (previous === undefined) return undefined;
+  if (!isPositiveInt(previous)) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+  return previous;
+}
+
+function writeLastSequence(store: ReceiptSequenceStore, scopeId: string, sequence: number): void {
+  try {
+    store.setLastSequence(scopeId, sequence);
+  } catch {
+    throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+  }
+}
+
+function readScopeCount(store: ReceiptSequenceStore): number {
+  let size: unknown;
+  try {
+    size = store.scopeCount();
+  } catch {
+    throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+  }
+  if (!isNonNegativeInt(size)) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+  return size;
+}
+
 function canonicalReceiptText(r: Omit<TaskReceipt, "mac">): Uint8Array {
   // Every field is an identifier, a closed enum or a safe integer, so "\n" cannot appear
   // inside a field and the encoding is injective.
   return encoder.encode([r.version, r.keyId, r.scopeId, r.taskId, r.kind, r.cause, String(r.elapsedMs), String(r.sequence)].join("\n"));
 }
 
-/** Host-side signer. Keeps a strict per-scope sequence so the verifier can refuse replays and
- *  reordering. Throws RuntimeReceiptError on an invalid body (a host bug, never guest data). */
-export function createReceiptSigner(options: { readonly key: ReceiptKey; readonly hmacSha256: HmacSha256 }): ReceiptSigner {
-  const values = exactData(options, ["key", "hmacSha256"]);
+/** Host-side signer. Issues a strictly increasing per-scope sequence through the injected
+ *  sequence store so a durable store keeps issuance monotonic across signer restarts. Throws
+ *  RuntimeReceiptError on an invalid body (a host bug, never guest data). */
+export function createReceiptSigner(options: { readonly key: ReceiptKey; readonly hmacSha256: HmacSha256; readonly sequenceStore: ReceiptSequenceStore }): ReceiptSigner {
+  const values = exactData(options, ["key", "hmacSha256", "sequenceStore"]);
   if (values === undefined) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CONFIG);
   const { keyId, key } = checkedKey(values.key);
   const hmac = checkedHmac(values.hmacSha256);
-  const sequences = new Map<string, number>();
+  const sequenceStore = checkedSequenceStore(values.sequenceStore);
   return Object.freeze({
     keyId,
     sign(input: TaskReceiptBody): TaskReceipt {
@@ -238,8 +314,8 @@ export function createReceiptSigner(options: { readonly key: ReceiptKey; readonl
       if (body === undefined || !isIdentifier(body.scopeId) || !isIdentifier(body.taskId) || !isCause(body.cause) || !isNonNegativeInt(body.elapsedMs)) {
         throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_SHAPE);
       }
-      const previous = sequences.get(body.scopeId);
-      if (previous === undefined && sequences.size >= MAX_RECEIPT_SCOPES) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CAPACITY);
+      const previous = readLastSequence(sequenceStore, body.scopeId);
+      if (previous === undefined && readScopeCount(sequenceStore) >= MAX_RECEIPT_SCOPES) throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CAPACITY);
       const sequence = (previous ?? 0) + 1;
       const unsigned = {
         version: TASK_RECEIPT_VERSION,
@@ -252,7 +328,7 @@ export function createReceiptSigner(options: { readonly key: ReceiptKey; readonl
         sequence,
       };
       const mac = hex(hmac(key, canonicalReceiptText(unsigned)));
-      sequences.set(body.scopeId, sequence);
+      writeLastSequence(sequenceStore, body.scopeId, sequence);
       return Object.freeze({ ...unsigned, mac });
     },
   });
@@ -260,9 +336,11 @@ export function createReceiptSigner(options: { readonly key: ReceiptKey; readonl
 
 /** Verifier for the receiving side of the host boundary. A receipt is accepted at most once,
  *  only in strictly increasing per-scope sequence order, and only after its MAC verifies, so a
- *  forged receipt cannot burn a sequence number. Errors carry fixed codes and never echo input. */
-export function createReceiptVerifier(options: { readonly keys: readonly ReceiptKey[]; readonly hmacSha256: HmacSha256 }): ReceiptVerifier {
-  const values = exactData(options, ["keys", "hmacSha256"]);
+ *  forged receipt cannot burn a sequence number. The last accepted sequence is written to the
+ *  injected sequence store before ok is returned, so a durable store refuses replay across
+ *  verifier restarts. Errors carry fixed codes and never echo input. */
+export function createReceiptVerifier(options: { readonly keys: readonly ReceiptKey[]; readonly hmacSha256: HmacSha256; readonly sequenceStore: ReceiptSequenceStore }): ReceiptVerifier {
+  const values = exactData(options, ["keys", "hmacSha256", "sequenceStore"]);
   if (values === undefined || !Array.isArray(values.keys) || values.keys.length < 1 || values.keys.length > MAX_RECEIPT_KEYS) {
     throw new RuntimeReceiptError(ERR_RUNTIME_RECEIPT_CONFIG);
   }
@@ -273,7 +351,7 @@ export function createReceiptVerifier(options: { readonly keys: readonly Receipt
     keys.set(keyId, key);
   }
   const hmac = checkedHmac(values.hmacSha256);
-  const lastSequence = new Map<string, number>();
+  const sequenceStore = checkedSequenceStore(values.sequenceStore);
   const refuse = (error: ReceiptErrorMetadata): ReceiptVerification => Object.freeze({ ok: false as const, error });
   return Object.freeze({
     verify(input: unknown): ReceiptVerification {
@@ -310,10 +388,27 @@ export function createReceiptVerifier(options: { readonly keys: readonly Receipt
       const presented = new Uint8Array(32);
       for (let i = 0; i < 32; i += 1) presented[i] = Number.parseInt(r.mac.slice(i * 2, i * 2 + 2), 16);
       if (!constantTimeEqual(expected, presented)) return refuse(ERR_RUNTIME_RECEIPT_MAC);
-      const previous = lastSequence.get(receipt.scopeId);
+      let previous: number | undefined;
+      try {
+        previous = readLastSequence(sequenceStore, receipt.scopeId);
+      } catch {
+        return refuse(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+      }
       if (previous !== undefined && receipt.sequence <= previous) return refuse(ERR_RUNTIME_RECEIPT_REPLAY);
-      if (previous === undefined && lastSequence.size >= MAX_RECEIPT_SCOPES) return refuse(ERR_RUNTIME_RECEIPT_CAPACITY);
-      lastSequence.set(receipt.scopeId, receipt.sequence);
+      if (previous === undefined) {
+        let size: number;
+        try {
+          size = readScopeCount(sequenceStore);
+        } catch {
+          return refuse(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+        }
+        if (size >= MAX_RECEIPT_SCOPES) return refuse(ERR_RUNTIME_RECEIPT_CAPACITY);
+      }
+      try {
+        writeLastSequence(sequenceStore, receipt.scopeId, receipt.sequence);
+      } catch {
+        return refuse(ERR_RUNTIME_RECEIPT_SEQUENCE_STORE);
+      }
       const event: StructuredAwaitEvent = Object.freeze({ kind: receipt.kind, taskId: receipt.taskId, elapsedMs: receipt.elapsedMs });
       return Object.freeze({ ok: true as const, receipt, event });
     },

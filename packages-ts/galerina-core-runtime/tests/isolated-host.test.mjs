@@ -9,6 +9,7 @@ import { join } from "node:path";
 import {
   createReceiptSigner,
   createReceiptVerifier,
+  createMemoryReceiptSequenceStore,
   createIsolatedHost,
   isolatedGuestArgs,
   startStructuredAwait,
@@ -46,17 +47,17 @@ const G = {
 let clock = 0;
 const elapsedMs = () => clock;
 const makeHost = (overrides = {}) => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const host = createIsolatedHost({ execPath: process.execPath, nodeMajor, spawn, signer, elapsedMs, ...overrides });
-  return { host, verifier: createReceiptVerifier({ keys: [KEY], hmacSha256 }) };
+  return { host, verifier: createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }) };
 };
 const spec = (entry, extra = {}) => ({ scopeId: "scope-1", taskId: "task-a", entry, input: "hello", deadlineMs: 5_000, maxOutputBytes: 4_096, maxHeapMb: 64, ...extra });
 
 // ── receipts ──────────────────────────────────────────────────────────────────
 
 test("receipt round-trips into the exact reducer event", () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   for (const [cause, kind] of Object.entries(TASK_RECEIPT_CAUSE_KIND)) {
     const r = signer.sign({ scopeId: "s-" + cause, taskId: "t1", cause, elapsedMs: 7 });
     assert.equal(r.kind, kind);
@@ -69,15 +70,15 @@ test("receipt round-trips into the exact reducer event", () => {
 });
 
 test("tampered, re-keyed, unknown-key and inconsistent receipts are refused", () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const r = signer.sign({ scopeId: "s1", taskId: "t1", cause: "deadline_kill", elapsedMs: 10 });
   assert.equal(verifier.verify({ ...r, elapsedMs: 9 }).error.code, "ERR_RUNTIME_RECEIPT_MAC");
   assert.equal(verifier.verify({ ...r, taskId: "t2" }).error.code, "ERR_RUNTIME_RECEIPT_MAC");
   assert.equal(verifier.verify({ ...r, kind: "task_succeeded", cause: "exit_zero" }).error.code, "ERR_RUNTIME_RECEIPT_MAC");
   assert.equal(verifier.verify({ ...r, kind: "task_succeeded" }).error.code, "ERR_RUNTIME_RECEIPT_CAUSE");
   assert.equal(verifier.verify({ ...r, keyId: "other" }).error.code, "ERR_RUNTIME_RECEIPT_KEY");
-  const forged = createReceiptSigner({ key: OTHER, hmacSha256 }).sign({ scopeId: "s1", taskId: "t1", cause: "exit_zero", elapsedMs: 10 });
+  const forged = createReceiptSigner({ key: OTHER, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }).sign({ scopeId: "s1", taskId: "t1", cause: "exit_zero", elapsedMs: 10 });
   assert.equal(verifier.verify({ ...forged }).error.code, "ERR_RUNTIME_RECEIPT_MAC");
   assert.equal(verifier.verify({ ...r, version: "galerina.runtime.receipt.v0" }).error.code, "ERR_RUNTIME_RECEIPT_VERSION");
   assert.equal(verifier.verify({ ...r, mac: r.mac.toUpperCase() }).error.code, "ERR_RUNTIME_RECEIPT_SHAPE");
@@ -86,8 +87,8 @@ test("tampered, re-keyed, unknown-key and inconsistent receipts are refused", ()
 });
 
 test("replay and reordering are refused per scope", () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const a = signer.sign({ scopeId: "s1", taskId: "t1", cause: "exit_zero", elapsedMs: 1 });
   const b = signer.sign({ scopeId: "s1", taskId: "t2", cause: "exit_zero", elapsedMs: 2 });
   const other = signer.sign({ scopeId: "s2", taskId: "t1", cause: "exit_zero", elapsedMs: 1 });
@@ -99,8 +100,8 @@ test("replay and reordering are refused per scope", () => {
 });
 
 test("receipt shape is exact: accessors, extra keys, proxies and prototypes refuse without echo", () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const r = signer.sign({ scopeId: "s1", taskId: "t1", cause: "exit_zero", elapsedMs: 1 });
   const withGetter = { ...r };
   Object.defineProperty(withGetter, "elapsedMs", { get() { throw new Error("boom"); }, enumerable: true });
@@ -114,20 +115,60 @@ test("receipt shape is exact: accessors, extra keys, proxies and prototypes refu
 });
 
 test("weak keys, duplicate key ids and a fake HMAC are refused at construction", () => {
-  assert.throws(() => createReceiptSigner({ key: { keyId: "k", key: new Uint8Array(MIN_RECEIPT_KEY_BYTES - 1) }, hmacSha256 }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
-  assert.throws(() => createReceiptVerifier({ keys: [KEY, KEY], hmacSha256 }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
-  assert.throws(() => createReceiptVerifier({ keys: [], hmacSha256 }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptSigner({ key: { keyId: "k", key: new Uint8Array(MIN_RECEIPT_KEY_BYTES - 1) }, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptVerifier({ keys: [KEY, KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptVerifier({ keys: [], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
   const fake = () => new Uint8Array(32);
-  assert.throws(() => createReceiptSigner({ key: KEY, hmacSha256: fake }), { code: "ERR_RUNTIME_RECEIPT_HMAC" });
-  assert.throws(() => createReceiptVerifier({ keys: [KEY], hmacSha256: (k, d) => hmacSha256(k, d).slice(0, 16) }), { code: "ERR_RUNTIME_RECEIPT_HMAC" });
+  assert.throws(() => createReceiptSigner({ key: KEY, hmacSha256: fake, sequenceStore: createMemoryReceiptSequenceStore() }), { code: "ERR_RUNTIME_RECEIPT_HMAC" });
+  assert.throws(() => createReceiptVerifier({ keys: [KEY], hmacSha256: (k, d) => hmacSha256(k, d).slice(0, 16), sequenceStore: createMemoryReceiptSequenceStore() }), { code: "ERR_RUNTIME_RECEIPT_HMAC" });
 });
 
 test("signer copies the key: later mutation of the caller buffer does not change receipts", () => {
   const raw = new Uint8Array(randomBytes(32));
-  const signer = createReceiptSigner({ key: { keyId: "k1", key: raw }, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [{ keyId: "k1", key: Uint8Array.from(raw) }], hmacSha256 });
+  const signer = createReceiptSigner({ key: { keyId: "k1", key: raw }, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [{ keyId: "k1", key: Uint8Array.from(raw) }], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   raw.fill(0);
   assert.equal(verifier.verify({ ...signer.sign({ scopeId: "s1", taskId: "t1", cause: "exit_zero", elapsedMs: 0 }) }).ok, true);
+});
+
+
+test("durable sequence store refuses replay across verifier restart", () => {
+  const signStore = createMemoryReceiptSequenceStore();
+  const verifyStore = createMemoryReceiptSequenceStore();
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: signStore });
+  const verifier1 = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: verifyStore });
+  const r = signer.sign({ scopeId: "durable-1", taskId: "t1", cause: "exit_zero", elapsedMs: 1 });
+  assert.equal(verifier1.verify({ ...r }).ok, true);
+  // New verifier instance, same durable store: old receipt must still be refused.
+  const verifier2 = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: verifyStore });
+  assert.equal(verifier2.verify({ ...r }).error.code, "ERR_RUNTIME_RECEIPT_REPLAY");
+  const r2 = signer.sign({ scopeId: "durable-1", taskId: "t2", cause: "exit_zero", elapsedMs: 2 });
+  assert.equal(verifier2.verify({ ...r2 }).ok, true);
+});
+
+test("sequence store set failure refuses without accepting the receipt", () => {
+  const signStore = createMemoryReceiptSequenceStore();
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: signStore });
+  const r = signer.sign({ scopeId: "fail-store", taskId: "t1", cause: "exit_zero", elapsedMs: 1 });
+  let sets = 0;
+  const broken = Object.freeze({
+    getLastSequence() { return undefined; },
+    setLastSequence() { sets += 1; throw new Error("disk full"); },
+    scopeCount() { return 0; },
+  });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: broken });
+  assert.equal(verifier.verify({ ...r }).error.code, "ERR_RUNTIME_RECEIPT_SEQUENCE_STORE");
+  assert.equal(sets, 1);
+  // A working store still accepts the same receipt (broken store never persisted).
+  const okVerifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  assert.equal(okVerifier.verify({ ...r }).ok, true);
+});
+
+test("missing or invalid sequenceStore is refused at construction", () => {
+  assert.throws(() => createReceiptVerifier({ keys: [KEY], hmacSha256 }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptSigner({ key: KEY, hmacSha256 }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: {} }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
+  assert.throws(() => createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: { getLastSequence: 1, setLastSequence() {}, scopeCount() { return 0; } } }), { code: "ERR_RUNTIME_RECEIPT_CONFIG" });
 });
 
 // ── isolated host ─────────────────────────────────────────────────────────────
@@ -246,7 +287,7 @@ test("invalid specs are refused before anything is spawned", async () => {
 });
 
 test("host configuration is validated: old Node, relative exec path, missing signer", () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const base = { execPath: process.execPath, nodeMajor, spawn, signer, elapsedMs };
   assert.throws(() => createIsolatedHost({ ...base, nodeMajor: 20 }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
   assert.throws(() => createIsolatedHost({ ...base, execPath: "node" }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
@@ -272,8 +313,8 @@ test("a kill whose exit is never observed is termination_unconfirmed, with no re
 });
 
 test("end to end: reducer timeout waits for the authenticated hard-termination receipt", async () => {
-  const signer = createReceiptSigner({ key: KEY, hmacSha256 });
-  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256 });
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   let now = 0;
   const host = createIsolatedHost({ execPath: process.execPath, nodeMajor, spawn, signer, elapsedMs: () => now });
   const start = startStructuredAwait({
@@ -290,7 +331,7 @@ test("end to end: reducer timeout waits for the authenticated hard-termination r
   now = 301;
   const r = await run.result;
   // A forged success for the same task is refused before it can reach the reducer.
-  const forged = createReceiptSigner({ key: OTHER, hmacSha256 }).sign({ scopeId: "scope-e2e", taskId: "task-a", cause: "exit_zero", elapsedMs: 301 });
+  const forged = createReceiptSigner({ key: OTHER, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() }).sign({ scopeId: "scope-e2e", taskId: "task-a", cause: "exit_zero", elapsedMs: 301 });
   assert.equal(verifier.verify({ ...forged }).ok, false);
   const v = verifier.verify({ ...r.receipt });
   assert.equal(v.ok, true);

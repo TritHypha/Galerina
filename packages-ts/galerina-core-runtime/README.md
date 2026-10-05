@@ -328,74 +328,13 @@ Stream queue/backpressure enforcement is a separate runtime chapter.
   and returns the exact `StructuredAwaitEvent` for `advanceStructuredAwait`.
   Kill causes map to `task_cancelled`, the acknowledgement a `cancelling`
   scope waits for.
-- No Node builtin is imported: the host passes `spawn` and the HMAC primitive
-  in, and the HMAC is checked against RFC 4231 test case 2 first.
-
-Non-claims: this is not an OS sandbox. Network access is not confined by this
-adapter, CPU use is bounded only by the wall-clock deadline, and a receipt proves
-that the host observed an outcome, not that guest output is correct. Guest
-output is returned as untrusted text.
-
-## Controlled Recovery
-
-`galerina-core-runtime` should distinguish item/data failures from system/runtime failures.
-
-```text
-item/data failure:
-  may continue only when a resilient flow declares the policy
-
-system/runtime failure:
-  stop or restart safely, cancel children, release resources and report
-```
-
-Memory corruption, unsafe native failures and runtime integrity failures should
-not continue blindly. Memory pressure can use controlled recovery such as
-streaming mode, reduced batch size, backpressure, checkpointing or target
-fallback.
-
-## Memory Hierarchy and Reliability Facts
-
-The runtime may report memory hierarchy and reliability facts when the platform
-exposes them, such as cache line size, cache metadata or ECC status. It must not
-claim direct control over CPU cache levels or ECC hardware.
-
-When details are unavailable because the app is running in a container, VM,
-managed host or restricted runtime, the runtime should report `unknown` rather
-than guessing.
-
-## Boundary
-
-`galerina-core-runtime` executes Galerina code. It is not the secure application boundary.
-
-```text
-galerina-core-runtime
-  executes checked or compiled Galerina code and Structured Await scopes
-
-galerina-framework-app-kernel
-  validates requests, checks auth, controls idempotency, rate limits, jobs and API policy
-
-galerina-core-network
-  defines network policy, profile, backend capability and report contracts
-```
-
-Final rule:
-
-```text
-galerina-core-runtime runs Galerina.
-galerina-core-network describes network I/O contracts.
-galerina-framework-app-kernel governs application/API runtime boundaries.
-```
-
-## Runtime policy contracts
-
-`src/runtime-contracts.ts` holds pure, fail-closed policy decisions. None of them executes guest code or performs I/O.
-
-| Contract | What it does |
-|---|---|
-| Stream backpressure | `decideStreamBackpressure` accepts, pauses the producer, or fails the stream. It never drops data. |
-| Memory policy | `validateRuntimeMemoryPolicy` and `decideRuntimeAllocation`: heap and single-allocation caps, zero-on-free, no shared memory. Executable memory stays with the RD-0662 W^X floor. |
-| Node-hosted adapter | `validateNodeHostAdapter` requires Node 18 or later, the permission model, a closed `node:` builtin allowlist, no native addons and no eval. |
-| Host-runtime overhead | `createHostOverheadReport` reports integer-nanosecond totals and integer permille overhead. Zero guest time gives `UNMEASURED`. |
-| Target fallback | `decideTargetFallback` is off by default. When enabled it follows only the declared chain, uses only targets with exact semantics, and records every skipped target. |
-| Resource budget | `DEFAULT_RUNTIME_RESOURCE_BUDGET` grants no network, tool or accelerator budget. `checkRuntimeResourceUsage` terminates on any overrun. |
-| Malicious-data intake | `admitUntrustedData` validates positive finite policy bounds and closed key sets before staged checks: size, parse, depth/keys/strings/prototype keys, schema, canonical JSON, then owner. Admitted data stays tainted `untrusted`. |
+- Last-seen / last-issued sequences are held in an injected
+  `ReceiptSequenceStore` (required). The verifier writes the last accepted
+  sequence before returning ok, so a durable store refuses replay across
+  verifier restarts. `createMemoryReceiptSequenceStore` is process-local only
+  and does not survive restart; hosts that need durability inject a store that
+  commits before `setLastSequence` returns. A store failure refuses the
+  receipt (`ERR_RUNTIME_RECEIPT_SEQUENCE_STORE`) without accepting it.
+- No Node builtin is imported: the host passes `spawn`, the HMAC primitive and
+  the sequence store in, and the HMAC is checked against RFC 4231 test case 2
+  first.
