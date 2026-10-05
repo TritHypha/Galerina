@@ -370,3 +370,55 @@ export function validateLowBitAiInferencePlan(
 
   return diagnostics;
 }
+
+// ---------------------------------------------------------------------------
+// Local low-bit AI review adapter contract for report explanation (TODO row;
+// zero-trust default, owner may revisit). The adapter may only explain reports
+// locally: no network, no remote runtime, untrusted advisory output only.
+// ---------------------------------------------------------------------------
+
+export interface LowBitAiReviewAdapterContract {
+  readonly adapter: LowBitAiBackendAdapter;
+  readonly purpose: "report-explanation";
+  readonly network: "denied";
+  readonly outputTrust: "untrusted";
+  readonly changesVerdict: false;
+  readonly maxOutputTokens: number;
+  readonly timeoutMs: number;
+}
+
+const LOWBIT_REVIEW_MAX_OUTPUT_TOKENS = 4096;
+const LOWBIT_REVIEW_MAX_TIMEOUT_MS = 120_000;
+
+function lowBitError(code: string, message: string, path: string): LowBitAiDiagnostic {
+  return { code, severity: "error", message, path };
+}
+
+export function validateLowBitAiReviewAdapterContract(
+  contract: LowBitAiReviewAdapterContract,
+): readonly LowBitAiDiagnostic[] {
+  const diagnostics: LowBitAiDiagnostic[] = [];
+  const { adapter } = contract;
+  if (adapter.runtime === "remote-runtime") {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_REMOTE_RUNTIME", "Report explanation adapters must run locally.", "adapter.runtime"));
+  }
+  if (adapter.runtime === "plan-only" || adapter.device === "plan-only" || adapter.id === "plan_only") {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_PLAN_ONLY", "A plan-only backend cannot produce explanations.", "adapter.runtime"));
+  }
+  if (contract.purpose !== "report-explanation") {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_PURPOSE_INVALID", "The review adapter only explains reports.", "purpose"));
+  }
+  if (contract.network !== "denied") {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_NETWORK_DENIED", "Report explanation never has network access.", "network"));
+  }
+  if (contract.outputTrust !== "untrusted" || contract.changesVerdict !== false) {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_AUTHORITY_CLAIM", "Explanations are untrusted and never change a verdict.", "outputTrust"));
+  }
+  if (!Number.isSafeInteger(contract.maxOutputTokens) || contract.maxOutputTokens <= 0 || contract.maxOutputTokens > LOWBIT_REVIEW_MAX_OUTPUT_TOKENS) {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_OUTPUT_LIMIT_INVALID", `maxOutputTokens must be an integer in 1..${LOWBIT_REVIEW_MAX_OUTPUT_TOKENS}.`, "maxOutputTokens"));
+  }
+  if (!Number.isSafeInteger(contract.timeoutMs) || contract.timeoutMs <= 0 || contract.timeoutMs > LOWBIT_REVIEW_MAX_TIMEOUT_MS) {
+    diagnostics.push(lowBitError("Galerina_LOWBIT_AI_REVIEW_TIMEOUT_INVALID", `timeoutMs must be an integer in 1..${LOWBIT_REVIEW_MAX_TIMEOUT_MS}.`, "timeoutMs"));
+  }
+  return diagnostics;
+}

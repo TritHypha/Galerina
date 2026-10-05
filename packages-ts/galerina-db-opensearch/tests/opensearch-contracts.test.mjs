@@ -299,3 +299,16 @@ describe("known-set vocabulary", () => {
     assert.deepEqual(KNOWN_OPENSEARCH_OPERATION_KINDS, ["index", "update", "delete"]);
   });
 });
+
+describe("zero-trust diagnostics - a refused endpoint is never echoed", () => {
+  it("withholds an odd-scheme endpoint (which may carry a token) from the message", () => {
+    const diags = validateOpenSearchConnection({
+      ...goodConnection,
+      endpoint: "ftp://search.internal.example/?token=zt-echo-probe",
+    });
+    assert.deepEqual(codes(diags), ["Galerina_DB_OPENSEARCH_ENDPOINT_SCHEME_INVALID"]);
+    assert.equal(diags[0].message.includes("zt-echo-probe"), false);
+    assert.equal(diags[0].message.includes("search.internal.example"), false);
+    assert.match(diags[0].message, /value withheld/);
+  });
+});

@@ -11,7 +11,8 @@
 [x] Define benchmark report format
 [x] Define safety diagnostics
 [x] Add BitNet as a backend id, not a syntax target
-[ ] Define local low-bit AI review adapter contract for report explanation
+[x] Define local low-bit AI review adapter contract for report explanation (2026-10-05,
+    Grok Bot; zero-trust default, owner may revisit; tests/lowbit-review-adapter.test.mjs)
 [x] Add examples
 [x] Add tests
 ```

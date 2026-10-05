@@ -244,7 +244,8 @@ export function validatePostgresConnection(
     diagnostics.push(postgresDiagnostic(
       "Galerina_DB_POSTGRES_INLINE_CREDENTIALS_FORBIDDEN",
       "error",
-      `Host "${host}" carries userinfo; hosts are bare hostnames and credentials travel only as external references.`,
+      // Zero-trust: the refused host may embed user:password, so it is never echoed.
+      "Host carries userinfo; hosts are bare hostnames and credentials travel only as external references (value withheld).",
       `${path}.host`,
     ));
   }

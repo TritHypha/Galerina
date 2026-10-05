@@ -17,12 +17,20 @@ export type JsModuleFormat = "esm" | "cjs";
 
 export type SourceMapMode = "external" | "inline" | "none";
 
+/** W01 G3 build modes. `debug`: external map, no minification, test report allowed.
+ *  `release`: map `none` by default; `external` only when written outside the shipped
+ *  folder; inline maps refused. */
+export type JsBuildMode = "debug" | "release";
+
 export interface SourceMapRule {
   readonly mode: SourceMapMode;
   /** Embeds original sources in the map — never acceptable in production browser output. */
   readonly includeSourcesContent: boolean;
   /** True when this plan describes a production artifact (stricter disclosure rules). */
   readonly production: boolean;
+  /** Release builds may keep an external map only when it is written OUTSIDE the
+   *  shipped output folder (for private symbolication). Omitted means false. */
+  readonly outsideShippedOutput?: boolean;
 }
 
 export interface JsOutputPlan {
@@ -36,6 +44,8 @@ export interface JsOutputPlan {
   /** Plan declares the emitted code touches secret material. */
   readonly accessesSecrets: boolean;
   readonly sourceMap: SourceMapRule;
+  /** Optional W01 G3 build mode; when present the mode rules below are enforced. */
+  readonly buildMode?: JsBuildMode;
 }
 
 export interface EsModuleMetadata {
@@ -81,6 +91,7 @@ export interface JsTargetDiagnostic {
 const JS_RUNTIMES: readonly JsRuntime[] = ["browser", "node"];
 const JS_MODULE_FORMATS: readonly JsModuleFormat[] = ["esm", "cjs"];
 const SOURCE_MAP_MODES: readonly SourceMapMode[] = ["external", "inline", "none"];
+const JS_BUILD_MODES: readonly JsBuildMode[] = ["debug", "release"];
 
 /** Node-only module surface (deny-by-default for browser plans). A specifier is
  *  server-only when it carries the `node:` scheme OR matches this bare-name list —
@@ -189,7 +200,11 @@ function decodeOwnDataRecord(
   }
 }
 
-function decodeExactArray(value: unknown, path: string): DecodeResult<readonly unknown[]> {
+function decodeExactArray(
+  value: unknown,
+  path: string,
+  maxItems: number = MAX_EXACT_ARRAY_ITEMS,
+): DecodeResult<readonly unknown[]> {
   try {
     if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) {
       return decodeFailure(path, "expected a plain array");
@@ -199,7 +214,7 @@ function decodeExactArray(value: unknown, path: string): DecodeResult<readonly u
         typeof lengthDescriptor.value !== "number" ||
         !Number.isSafeInteger(lengthDescriptor.value) ||
         lengthDescriptor.value < 0 ||
-        lengthDescriptor.value > MAX_EXACT_ARRAY_ITEMS) {
+        lengthDescriptor.value > maxItems) {
       return decodeFailure(path, "array length is invalid or unbounded");
     }
     const length = lengthDescriptor.value;
@@ -248,7 +263,7 @@ function decodeStringArray(value: unknown, path: string): DecodeResult<readonly 
 function decodeSourceMapRule(value: unknown, path: string): DecodeResult<SourceMapRule> {
   const record = decodeOwnDataRecord(
     value,
-    ["mode", "includeSourcesContent", "production"],
+    ["mode", "includeSourcesContent", "production", "outsideShippedOutput"],
     ["mode", "includeSourcesContent", "production"],
     path,
   );
@@ -262,6 +277,10 @@ function decodeSourceMapRule(value: unknown, path: string): DecodeResult<SourceM
   if ("diagnostic" in includeSourcesContent) return includeSourcesContent;
   const production = decodeBoolean(record.value.production, `${path}.production`);
   if ("diagnostic" in production) return production;
+  const outside = Object.hasOwn(record.value, "outsideShippedOutput")
+    ? decodeBoolean(record.value.outsideShippedOutput, `${path}.outsideShippedOutput`)
+    : { value: false };
+  if ("diagnostic" in outside) return outside;
   if (!isStructuredCloneable(value)) {
     return decodeFailure(path, "proxy-backed records are refused");
   }
@@ -270,6 +289,7 @@ function decodeSourceMapRule(value: unknown, path: string): DecodeResult<SourceM
       mode: mode.value as SourceMapMode,
       includeSourcesContent: includeSourcesContent.value,
       production: production.value,
+      ...(outside.value ? { outsideShippedOutput: true } : {}),
     }),
   };
 }
@@ -277,7 +297,7 @@ function decodeSourceMapRule(value: unknown, path: string): DecodeResult<SourceM
 function decodeJsOutputPlan(value: unknown, path: string): DecodeResult<JsOutputPlan> {
   const record = decodeOwnDataRecord(
     value,
-    ["flow", "runtime", "moduleFormat", "imports", "accessesEnvironment", "accessesSecrets", "sourceMap"],
+    ["flow", "runtime", "moduleFormat", "imports", "accessesEnvironment", "accessesSecrets", "sourceMap", "buildMode"],
     ["flow", "runtime", "moduleFormat", "imports", "accessesEnvironment", "accessesSecrets", "sourceMap"],
     path,
   );
@@ -299,11 +319,16 @@ function decodeJsOutputPlan(value: unknown, path: string): DecodeResult<JsOutput
   if ("diagnostic" in accessesSecrets) return accessesSecrets;
   const sourceMap = decodeSourceMapRule(record.value.sourceMap, `${path}.sourceMap`);
   if ("diagnostic" in sourceMap) return sourceMap;
+  const buildMode = Object.hasOwn(record.value, "buildMode")
+    ? decodeString(record.value.buildMode, `${path}.buildMode`)
+    : { value: "" };
+  if ("diagnostic" in buildMode) return buildMode;
   if (!isStructuredCloneable(value)) {
     return decodeFailure(path, "proxy-backed records are refused");
   }
   return {
     value: Object.freeze({
+      ...(Object.hasOwn(record.value, "buildMode") ? { buildMode: buildMode.value as JsBuildMode } : {}),
       flow: flow.value,
       runtime: runtime.value as JsRuntime,
       moduleFormat: moduleFormat.value as JsModuleFormat,
@@ -444,9 +469,10 @@ function validateDecodedJsOutputPlan(
     ));
   } else if (plan.sourceMap.production && plan.runtime === "browser") {
     if (plan.sourceMap.mode === "inline") {
+      // W01 G3 (A1 NB-5): raised from warning to error; owner may revisit.
       diagnostics.push(jsDiagnostic(
         "FUNGI-JS-011",
-        "warning",
+        "error",
         "Inline source maps in a production browser bundle disclose source structure.",
         `${path}.sourceMap.mode`,
       ));
@@ -461,7 +487,58 @@ function validateDecodedJsOutputPlan(
     }
   }
 
+  diagnostics.push(...validateBuildModeRules(plan, path));
   return diagnostics;
+}
+
+function validateBuildModeRules(plan: JsOutputPlan, path: string): JsTargetDiagnostic[] {
+  if (plan.buildMode === undefined) return [];
+  const out: JsTargetDiagnostic[] = [];
+  if (!JS_BUILD_MODES.includes(plan.buildMode)) {
+    out.push(jsDiagnostic(
+      "FUNGI-JS-018",
+      "error",
+      `Build mode must be one of: ${JS_BUILD_MODES.join(", ")}.`,
+      `${path}.buildMode`,
+    ));
+    return out;
+  }
+  const releaseMode = plan.buildMode === "release";
+  if (plan.sourceMap.production !== releaseMode) {
+    out.push(jsDiagnostic(
+      "FUNGI-JS-019",
+      "error",
+      releaseMode
+        ? "Release builds are production artifacts; sourceMap.production must be true."
+        : "Debug builds are never production artifacts; sourceMap.production must be false.",
+      `${path}.sourceMap.production`,
+    ));
+  }
+  if (releaseMode && plan.sourceMap.mode === "inline") {
+    out.push(jsDiagnostic(
+      "FUNGI-JS-020",
+      "error",
+      "Inline source maps are refused in release builds (any runtime).",
+      `${path}.sourceMap.mode`,
+    ));
+  }
+  if (releaseMode && plan.sourceMap.mode === "external" && plan.sourceMap.outsideShippedOutput !== true) {
+    out.push(jsDiagnostic(
+      "FUNGI-JS-021",
+      "error",
+      "Release builds may keep an external source map only outside the shipped folder (sourceMap.outsideShippedOutput: true).",
+      `${path}.sourceMap.outsideShippedOutput`,
+    ));
+  }
+  if (releaseMode && plan.sourceMap.includeSourcesContent) {
+    out.push(jsDiagnostic(
+      "FUNGI-JS-022",
+      "error",
+      "Release builds must not embed sourcesContent.",
+      `${path}.sourceMap.includeSourcesContent`,
+    ));
+  }
+  return out;
 }
 
 /** A JS output plan must name its flow, use a known runtime/format, and — fail-closed —
@@ -702,7 +779,7 @@ export function createJsBundleReport(input: {
     {
       check: "source-map-disclosure",
       passed: checksAdmitted && !has("FUNGI-JS-012")
-        && !has("FUNGI-JS-011"),
+        && !has("FUNGI-JS-011") && !has("FUNGI-JS-020") && !has("FUNGI-JS-021") && !has("FUNGI-JS-022"),
       detail: checksAdmitted
         ? "production browser artifacts must not disclose sources via maps"
         : "input validation refused",
@@ -717,5 +794,246 @@ export function createJsBundleReport(input: {
     adapters,
     warnings: Object.freeze(diagnostics.filter((d) => d.severity === "warning").map((d) => d.message)),
     diagnostics: Object.freeze(diagnostics.map((diagnostic) => Object.freeze({ ...diagnostic }))),
+  });
+}
+
+// ── W01 G3: build modes, layout, app.source-map.json and binary-error mapping ──
+// Design: grok-scratch designs/galerina-core-w01-zero-trust-designs-2026-10-05.md G3 + A1.
+
+export interface JsBuildModePolicy {
+  readonly mode: JsBuildMode;
+  readonly minify: boolean;
+  readonly defaultSourceMap: SourceMapMode;
+  readonly allowedSourceMaps: readonly SourceMapMode[];
+  readonly testReportAllowed: boolean;
+  readonly production: boolean;
+}
+
+const BUILD_MODE_POLICIES: Readonly<Record<JsBuildMode, JsBuildModePolicy>> = Object.freeze({
+  debug: Object.freeze({
+    mode: "debug",
+    minify: false,
+    defaultSourceMap: "external",
+    allowedSourceMaps: Object.freeze(["external", "inline", "none"] as SourceMapMode[]),
+    testReportAllowed: true,
+    production: false,
+  }),
+  release: Object.freeze({
+    mode: "release",
+    minify: true,
+    defaultSourceMap: "none",
+    // `external` only with sourceMap.outsideShippedOutput (FUNGI-JS-021).
+    allowedSourceMaps: Object.freeze(["none", "external"] as SourceMapMode[]),
+    testReportAllowed: false,
+    production: true,
+  }),
+});
+
+/** Policy for a build mode; an unknown mode returns undefined (callers must refuse). */
+export function jsBuildModePolicy(mode: string): JsBuildModePolicy | undefined {
+  return mode === "debug" || mode === "release" ? BUILD_MODE_POLICIES[mode] : undefined;
+}
+
+export interface JsBuildLayoutEntry {
+  readonly path: string;
+  readonly role: "app" | "source-map" | "report";
+  readonly required: boolean;
+}
+
+export interface JsBuildLayout {
+  readonly root: string;
+  readonly entries: readonly JsBuildLayoutEntry[];
+  readonly note: string;
+}
+
+/** Contract for `build/<mode>/`. This records the layout; it never creates, moves or
+ *  deletes files. The repository's existing `build/debug/` already holds compiler
+ *  artifacts (app.build-manifest.json, app.map-manifest.json, reports); they are left
+ *  as they are. */
+export function jsBuildLayout(mode: string): JsBuildLayout | undefined {
+  const policy = jsBuildModePolicy(mode);
+  if (policy === undefined) return undefined;
+  const root = `build/${policy.mode}/`;
+  const entries: JsBuildLayoutEntry[] = [
+    { path: `${root}app.js`, role: "app", required: true },
+    { path: `${root}app.build-manifest.json`, role: "report", required: true },
+    { path: `${root}app.map-manifest.json`, role: "report", required: true },
+  ];
+  if (policy.mode === "debug") {
+    entries.splice(1, 0, { path: `${root}app.source-map.json`, role: "source-map", required: true });
+    entries.push({ path: `${root}app.test-report.json`, role: "report", required: false });
+  }
+  return Object.freeze({
+    root,
+    entries: Object.freeze(entries.map((e) => Object.freeze(e))),
+    note: policy.mode === "release"
+      ? "Release ships no source map; an external map, when requested, is written outside build/release/."
+      : "Existing build/debug/ compiler artifacts are recorded, not modified.",
+  });
+}
+
+export const JS_SOURCE_MAP_MAX_MAPPINGS = 100_000;
+const JS_SOURCE_MAP_MAX_PATH = 1024;
+
+export interface JsSourcePosition {
+  readonly line: number;
+  readonly column: number;
+}
+
+export interface JsSourceMapping {
+  readonly generated: JsSourcePosition;
+  readonly source: number;
+  readonly original: JsSourcePosition;
+}
+
+/** `app.source-map.json` v1. Mappings are sorted by (generated.line, generated.column)
+ *  with no duplicates; lines are 1-based, columns 0-based. */
+export interface JsSourceMap {
+  readonly version: 1;
+  readonly file: string;
+  readonly sources: readonly string[];
+  readonly mappings: readonly JsSourceMapping[];
+}
+
+export interface JsSourceMapValidation {
+  readonly ok: boolean;
+  readonly map?: JsSourceMap;
+  readonly diagnostics: readonly JsTargetDiagnostic[];
+}
+
+function relativePathProblem(value: string, requiredSuffix: string): string {
+  if (value.length === 0) return "is empty";
+  if (value.length > JS_SOURCE_MAP_MAX_PATH) return "is too long";
+  if (value.includes("\\")) return "uses backslashes";
+  if (value.includes(":")) return "carries a scheme or drive letter";
+  if (value.startsWith("/")) return "is absolute";
+  if (/[\u0000-\u001f]/.test(value)) return "contains control characters";
+  if (value.split("/").some((seg) => seg === ".." || seg === "." || seg === "")) {
+    return "has empty, '.' or '..' segments";
+  }
+  if (!value.endsWith(requiredSuffix)) return `does not end with ${requiredSuffix}`;
+  return "";
+}
+
+function decodePosition(value: unknown, path: string): DecodeResult<JsSourcePosition> {
+  const record = decodeOwnDataRecord(value, ["line", "column"], ["line", "column"], path);
+  if ("diagnostic" in record) return record;
+  const { line, column } = record.value;
+  if (typeof line !== "number" || !Number.isSafeInteger(line) || line < 1) {
+    return { diagnostic: jsDiagnostic("FUNGI-JS-025", "error", "line must be a safe integer >= 1.", `${path}.line`) };
+  }
+  if (typeof column !== "number" || !Number.isSafeInteger(column) || column < 0) {
+    return { diagnostic: jsDiagnostic("FUNGI-JS-025", "error", "column must be a safe integer >= 0.", `${path}.column`) };
+  }
+  return { value: Object.freeze({ line, column }) };
+}
+
+function comparePositions(a: JsSourcePosition, b: JsSourcePosition): number {
+  return a.line !== b.line ? a.line - b.line : a.column - b.column;
+}
+
+/** Fail-closed validator for `app.source-map.json` v1. Refuses absolute, `..`,
+ *  scheme-bearing or non-`.fungi` sources, duplicate sources, out-of-range source
+ *  indices, invalid positions, more than 100k mappings and unsorted or duplicate
+ *  generated positions. */
+export function validateJsSourceMap(value: unknown, path = "sourceMap"): JsSourceMapValidation {
+  const fail = (d: JsTargetDiagnostic): JsSourceMapValidation =>
+    Object.freeze({ ok: false, diagnostics: Object.freeze([Object.freeze(d)]) });
+  const record = decodeOwnDataRecord(value, ["version", "file", "sources", "mappings"], ["version", "file", "sources", "mappings"], path);
+  if ("diagnostic" in record) return fail(record.diagnostic);
+  if (record.value.version !== 1) {
+    return fail(jsDiagnostic("FUNGI-JS-023", "error", "Source map version must be 1.", `${path}.version`));
+  }
+  const file = decodeString(record.value.file, `${path}.file`);
+  if ("diagnostic" in file) return fail(file.diagnostic);
+  const fileProblem = relativePathProblem(file.value, ".js");
+  if (fileProblem !== "") {
+    return fail(jsDiagnostic("FUNGI-JS-024", "error", `Source map file ${fileProblem}.`, `${path}.file`));
+  }
+  const sources = decodeStringArray(record.value.sources, `${path}.sources`);
+  if ("diagnostic" in sources) return fail(sources.diagnostic);
+  const seen = new Set<string>();
+  for (const [index, source] of sources.value.entries()) {
+    const problem = relativePathProblem(source, ".fungi");
+    if (problem !== "") {
+      return fail(jsDiagnostic("FUNGI-JS-024", "error", `Source path ${problem}; only relative .fungi paths are allowed.`, `${path}.sources.${index}`));
+    }
+    if (seen.has(source)) {
+      return fail(jsDiagnostic("FUNGI-JS-024", "error", "Duplicate source path.", `${path}.sources.${index}`));
+    }
+    seen.add(source);
+  }
+  const rawMappings = decodeExactArray(record.value.mappings, `${path}.mappings`, JS_SOURCE_MAP_MAX_MAPPINGS);
+  if ("diagnostic" in rawMappings) {
+    return fail(jsDiagnostic("FUNGI-JS-026", "error", `Mappings must be a plain array of at most ${JS_SOURCE_MAP_MAX_MAPPINGS} entries.`, `${path}.mappings`));
+  }
+  const mappings: JsSourceMapping[] = [];
+  for (const [index, raw] of rawMappings.value.entries()) {
+    const at = `${path}.mappings.${index}`;
+    const entry = decodeOwnDataRecord(raw, ["generated", "source", "original"], ["generated", "source", "original"], at);
+    if ("diagnostic" in entry) return fail(entry.diagnostic);
+    const generated = decodePosition(entry.value.generated, `${at}.generated`);
+    if ("diagnostic" in generated) return fail(generated.diagnostic);
+    const original = decodePosition(entry.value.original, `${at}.original`);
+    if ("diagnostic" in original) return fail(original.diagnostic);
+    const source = entry.value.source;
+    if (typeof source !== "number" || !Number.isSafeInteger(source) || source < 0 || source >= sources.value.length) {
+      return fail(jsDiagnostic("FUNGI-JS-025", "error", "Mapping source index is out of range.", `${at}.source`));
+    }
+    const previous = mappings[mappings.length - 1];
+    if (previous !== undefined && comparePositions(previous.generated, generated.value) >= 0) {
+      return fail(jsDiagnostic("FUNGI-JS-027", "error", "Mappings must be sorted by generated (line, column) with no duplicates.", `${at}.generated`));
+    }
+    mappings.push(Object.freeze({ generated: generated.value, source, original: original.value }));
+  }
+  if (!isStructuredCloneable(value)) {
+    return fail(jsDiagnostic("FUNGI-JS-001", "error", "proxy-backed source maps are refused", path));
+  }
+  const map: JsSourceMap = Object.freeze({
+    version: 1,
+    file: file.value,
+    sources: sources.value,
+    mappings: Object.freeze(mappings),
+  });
+  return Object.freeze({ ok: true, map, diagnostics: Object.freeze([]) });
+}
+
+export type JsBinaryErrorMapping =
+  | { readonly status: "mapped"; readonly source: string; readonly line: number; readonly column: number; readonly exact: boolean }
+  | { readonly status: "unmapped"; readonly reason: "invalid-map" | "invalid-position" | "no-mapping-on-line" };
+
+/** Map a generated (binary/JS) error position back to its `.fungi` source. Uses the
+ *  nearest preceding mapping on the SAME generated line (binary search over the
+ *  sorted mappings); it never guesses across lines. Invalid maps fail closed. */
+export function mapBinaryError(map: unknown, position: unknown): JsBinaryErrorMapping {
+  const validated = validateJsSourceMap(map);
+  if (!validated.ok || validated.map === undefined) return Object.freeze({ status: "unmapped", reason: "invalid-map" });
+  const pos = decodePosition(position, "position");
+  if ("diagnostic" in pos) return Object.freeze({ status: "unmapped", reason: "invalid-position" });
+  const { mappings, sources } = validated.map;
+  // Largest index whose generated position is <= pos.
+  let lo = 0;
+  let hi = mappings.length - 1;
+  let found = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    const candidate = mappings[mid];
+    if (candidate !== undefined && comparePositions(candidate.generated, pos.value) <= 0) {
+      found = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  const hit = found >= 0 ? mappings[found] : undefined;
+  if (hit === undefined || hit.generated.line !== pos.value.line) {
+    return Object.freeze({ status: "unmapped", reason: "no-mapping-on-line" });
+  }
+  return Object.freeze({
+    status: "mapped",
+    source: sources[hit.source] ?? "",
+    line: hit.original.line,
+    column: hit.original.column,
+    exact: hit.generated.column === pos.value.column,
   });
 }

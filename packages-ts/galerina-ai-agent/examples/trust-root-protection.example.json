@@ -1,0 +1,49 @@
+{
+  "schema": "galerina.ai-agent.example.v1",
+  "name": "trust-root-protection",
+  "input": {
+    "agent": "release-bot",
+    "intents": [
+      {
+        "agent": "release-bot",
+        "path": "docs/CHANGELOG.md"
+      },
+      {
+        "agent": "release-bot",
+        "path": "governance/trust-roots/root.pub"
+      },
+      {
+        "agent": "release-bot",
+        "path": "agents/release-bot/manifest.json"
+      },
+      {
+        "agent": "release-bot",
+        "path": "docs/../governance/trust-roots/root.pub"
+      }
+    ],
+    "policy": {
+      "trustRoots": [
+        "governance/trust-roots",
+        ".github/workflows"
+      ],
+      "selfDefinitionPaths": [
+        "agents/release-bot"
+      ]
+    }
+  },
+  "expected": {
+    "schema": "galerina.ai-agent.self-modification-report.v1",
+    "agent": "release-bot",
+    "refusedTrustRootWrites": [
+      "governance/trust-roots/root.pub",
+      "docs/../governance/trust-roots/root.pub"
+    ],
+    "refusedSelfModifications": [
+      "agents/release-bot/manifest.json"
+    ],
+    "allowedWrites": [
+      "docs/CHANGELOG.md"
+    ],
+    "humanReviewRequired": true
+  }
+}
