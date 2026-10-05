@@ -117,3 +117,14 @@ test("writeVerificationReport writes once into an existing directory and refuses
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("forged diagnostic message is withheld (C12 NB-3)", () => {
+  const marker = "planted-free-text-c12-nb3";
+  const report = createVerificationReport({
+    success: false,
+    artefacts: [],
+    diagnostics: [{ code: "FUNGI-VERIFY-003", message: marker, path: "x" }],
+  });
+  assert.equal(report.diagnostics[0].message, "diagnostic message withheld");
+  assert.ok(!JSON.stringify(report).includes(marker));
+});

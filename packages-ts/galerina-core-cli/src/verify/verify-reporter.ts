@@ -64,7 +64,14 @@ const list = (v: unknown): readonly unknown[] => {
 };
 
 function copyDiagnostic(d: unknown): VerificationReportDiagnostic {
-  return Object.freeze({ code: str(get(d, "code")), severity: "error" as const, message: str(get(d, "message")), path: str(get(d, "path")) });
+  // SuperGrok C12 NB-3: never copy untrusted diagnostic.message (a forged result can plant free text).
+  // Code + path are still taken as short strings; message is a fixed withhold token.
+  return Object.freeze({
+    code: str(get(d, "code")),
+    severity: "error" as const,
+    message: "diagnostic message withheld",
+    path: str(get(d, "path")),
+  });
 }
 
 /** Build a frozen, JSON-safe verification report from a verifier result. Throws RangeError for a malformed generatedAt. */
