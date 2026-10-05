@@ -181,7 +181,7 @@ export function validateSqliteCredentialRef(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -355,7 +355,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "sqlite".`,
+      "Adapter provider is not \"sqlite\" (value withheld).",
       "provider",
     ));
   }
@@ -367,7 +367,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_PLACEHOLDER_STYLE_INVALID",
       "error",
-      `Placeholder style "${String(declaration.placeholderStyle)}" is not "question_mark" or "named_colon"; SQLite parameterisation uses ? or :name placeholders only.`,
+      "Placeholder style is not \"question_mark\" or \"named_colon\"; SQLite parameterisation uses ? or :name placeholders only (value withheld).",
       "placeholderStyle",
     ));
   }
@@ -379,7 +379,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_JOURNAL_MODE_UNKNOWN",
       "error",
-      `Journal mode "${String(declaration.journalMode)}" is not in the known set (wal/delete/truncate/persist/memory).`,
+      "Journal mode is not in the known set (wal/delete/truncate/persist/memory) (value withheld).",
       "journalMode",
     ));
   }

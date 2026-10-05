@@ -312,3 +312,22 @@ describe("zero-trust diagnostics - a refused endpoint is never echoed", () => {
     assert.match(diags[0].message, /value withheld/);
   });
 });
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown operation kind, credential kind and provider", () => {
+    assertWithheld([
+      [validateOpenSearchIndexOperation({ ...goodOperation, kind: probe }), "Galerina_DB_OPENSEARCH_OPERATION_KIND_UNKNOWN"],
+      [validateOpenSearchCredentialRef({ ...credential, kind: probe }), "Galerina_DB_OPENSEARCH_CREDENTIAL_KIND_INVALID"],
+      [validateOpenSearchAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_OPENSEARCH_PROVIDER_MISMATCH"],
+    ]);
+  });
+});
