@@ -1361,3 +1361,29 @@ export {
   type ResultOptionBenchmarkResult,
   type RunResultOptionBenchmarkResult,
 } from "./result-option-benchmark.js";
+
+
+export {
+  FUNGI_BENCH_CPU_ARITH_001,
+  FUNGI_BENCH_CPU_ARITH_002,
+  FUNGI_BENCH_CPU_ARITH_003,
+  FUNGI_BENCH_CPU_ARITH_004,
+  FUNGI_BENCH_CPU_ARITH_005,
+  CPU_INTEGER_LOOP_BENCHMARK_ID,
+  CPU_FLOAT_LOOP_BENCHMARK_ID,
+  CPU_ARITHMETIC_BENCHMARK_TARGET,
+  CPU_ARITHMETIC_BENCHMARK_OPTIONS_FIELDS,
+  DEFAULT_CPU_ARITHMETIC_OPERATIONS,
+  MAX_CPU_ARITHMETIC_OPERATIONS,
+  DEFAULT_CPU_ARITHMETIC_MAX_DURATION_MS,
+  MAX_CPU_ARITHMETIC_MAX_DURATION_MS,
+  benchIntegerStep,
+  benchFloatStep,
+  runCpuArithmeticBenchmark,
+  scoreCpuArithmeticBenchmark,
+  type CpuArithmeticBenchmarkDiagnosticField,
+  type CpuArithmeticBenchmarkDiagnostic,
+  type CpuArithmeticBenchmarkOptions,
+  type CpuArithmeticBenchmarkResult,
+  type RunCpuArithmeticBenchmarkResult,
+} from "./cpu-arithmetic-benchmark.js";
