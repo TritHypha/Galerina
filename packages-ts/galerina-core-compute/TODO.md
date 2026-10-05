@@ -26,11 +26,12 @@ active v1 runtime target.
       src/capabilities/compute-runtime-capabilities.ts COMPUTE_RUNTIME_CAPABILITIES + validateComputeRuntimeCapabilityClaim (v1: only ComputeRuntime may claim available); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define GPU planning metadata and fallback rules (FUNGI-COMPUTE-001 through FUNGI-COMPUTE-007)
       src/gpu/gpu-codes.ts FUNGI_COMPUTE_CODES; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[x] Define GPU runtime architecture: compute planner → GPU scheduler → buffer manager → kernel adapter → GPU backend
+[x] Define GPU runtime architecture: compute planner â†’ GPU scheduler â†’ buffer manager â†’ kernel adapter â†’ GPU backend
       src/gpu/gpu-runtime.ts GPU_RUNTIME_ARCHITECTURE_STAGES (planning vocabulary only; no stage executes); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define vendor-neutral adapter model (CUDA/ROCm/Metal/Vulkan as runtime plugins, not language syntax)
       src/gpu/gpu-runtime.ts GPU_VENDOR_ADAPTERS; isGpuVendorAdapterAdmitted always false under v1 freeze; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[ ] Define optical/photonic transport planning (optical_io effect, OpticalTransport capability)
+[x] Define optical/photonic transport planning (optical_io effect, OpticalTransport capability)
+      effects/compute-effects.ts optical_io (planning-only under v1); capabilities OpticalTransport (planning_only); photonic/ optical plan (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
 [ ] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
 [ ] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
@@ -43,18 +44,18 @@ active v1 runtime target.
       src/gpu/gpu-types.ts + src/gpu/gpu-fallback.ts cpuGpuFallback; closed reason tokens; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define GpuPlan v0.2: schemaVersion, suitability, recommendedTarget, reasons[], requirements, fallback, diagnostics[]
       src/gpu/gpu-types.ts schemaVersion galerina.compute.gpu-plan.v0.2; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[x] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability — score-based algorithm
+[x] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability â€” score-based algorithm
       src/gpu/gpu-estimator.ts: never returns high|medium under v1 freeze; unknown if invalid; low=advisory GPU-interest; unsuitable otherwise; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[x] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan — with advisory warning if low/unsuitable
-      src/gpu/gpu-planner.ts: recommendedTarget always cpu; always emits FUNGI-COMPUTE-001/005; sensitive→004; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan â€” with advisory warning if low/unsuitable
+      src/gpu/gpu-planner.ts: recommendedTarget always cpu; always emits FUNGI-COMPUTE-001/005; sensitiveâ†’004; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Create gpu/ dir: gpu-planner.ts, gpu-runtime.ts, gpu-fallback.ts, gpu-reports.ts, gpu-estimator.ts
       plus gpu-codes.ts, gpu-types.ts, index.ts; createGpuPlanReport in gpu-reports.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[ ] Define OpticalNeed: none|data_movement|topology_aware|high_bandwidth|unknown
-[ ] Define OpticalFallbackPlan: target (network_io|cpu|cluster_runtime), reason
-[ ] Define OpticalPlan: need, recommendedMode (none|optical_io_awareness|photonic_planning_only), fallback, diagnostics[]
-[ ] Implement estimateOpticalNeed(workload): OpticalNeed
-[ ] Implement buildOpticalPlan(workload): OpticalPlan
-[ ] Create photonic/ dir: photonic-planner.ts, optical-routing.ts, distributed-graph.ts, optical-runtime.ts, photonic-audit.ts
+[x] Define OpticalNeed: none|data_movement|topology_aware|high_bandwidth|unknown â€” src/photonic/optical-types.ts (Grok 2026-10-05)
+[x] Define OpticalFallbackPlan: target (network_io|cpu|cluster_runtime), reason â€” src/photonic/optical-types.ts (Grok 2026-10-05; executable fallback always cpu under v1)
+[x] Define OpticalPlan: need, recommendedMode (none|optical_io_awareness|photonic_planning_only), fallback, diagnostics[] â€” src/photonic/optical-types.ts v0.2 (Grok 2026-10-05)
+[x] Implement estimateOpticalNeed(workload): OpticalNeed â€” src/photonic/optical-estimator.ts (Grok 2026-10-05)
+[x] Implement buildOpticalPlan(workload): OpticalPlan â€” src/photonic/photonic-planner.ts; always cpu fallback under v1 (Grok 2026-10-05)
+[x] Create photonic/ dir: photonic-planner.ts, optical-routing.ts, distributed-graph.ts, optical-runtime.ts, photonic-audit.ts (+ optical-types/estimator/fallback/index) (Grok 2026-10-05)
 [x] SUPERSEDED (galerina-target-wasm, see note W1) Upgrade WasmTarget: sandboxed, allowedEffects, runtime (browser|wasi|edge|node-wasm|unknown), forbiddenEffects[]
 [x] SUPERSEDED (galerina-target-wasm, see note W2) Define DEFAULT_WASM_FORBIDDEN_EFFECTS: filesystem, process, shell, native, gpu
 [x] SUPERSEDED (galerina-target-wasm, see note W2) Define BROWSER_WASM_FORBIDDEN_EFFECTS: DEFAULT + database, secret
@@ -123,5 +124,4 @@ the shipped design differs in places:
   required capabilities must be declared by the workload, an undeclared memory
   limit is a warning, sensitive data needs an explicit allow, duplicate profiles are
   errors, and there is no implicit CPU default (`recommendedTarget: "none"`).
-- Tests: `tests/compatibility.test.mjs`. GPU, optical/photonic and quantum rows stay
-  open (post-v1 planning; photonic ownership unsettled).
+- Tests: `tests/compatibility.test.mjs`, `tests/gpu-plan.test.mjs`, `tests/optical-plan.test.mjs`. GPU + optical planning vocabulary landed under v1 freeze (cpu-only executable). Quantum + scheduler/planner/audit rows stay open.
