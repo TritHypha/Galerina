@@ -64,6 +64,14 @@ galerina rollback          Ã¢â‚¬â€ rollback to previous deployment
 `audit-report.json`, `build-hash.txt`. Diagnostic codes: `FUNGI-BUILD-001`
 through `FUNGI-BUILD-005`. Status: partial implementation.
 
+Build contracts (`src/build/build-contracts.ts`, zero-trust defaults, owner may revisit):
+`BuildResult` / `BuildWorkspaceInput` / `buildWorkspace` closed-shape via property
+descriptors (no getters). Nested artefacts use `readBuildArtefact`. Targets match the
+deploy/plan vocabulary. `buildWorkspace` never throws and never opens the workspace;
+a valid input returns `FUNGI-BUILD-005` (14-pass pipeline not admitted on this tip).
+Codes: `FUNGI-BUILD-001` shape, `002` domain, `003` path token, `004` artefact set,
+`005` pipeline-not-admitted / success consistency. No CLI / reporter / emit yet.
+
 `galerina verify` validates compiler and runtime artefact integrity.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.

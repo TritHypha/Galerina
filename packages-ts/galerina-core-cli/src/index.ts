@@ -252,3 +252,28 @@ export type {
   PlanCommandOptions,
   PlanFlagName,
 } from "./plan.js";
+
+export {
+  FUNGI_BUILD_001,
+  FUNGI_BUILD_002,
+  FUNGI_BUILD_003,
+  FUNGI_BUILD_004,
+  FUNGI_BUILD_005,
+  BUILD_RUNTIME_TARGETS,
+  BUILD_RESULT_FIELDS,
+  BUILD_WORKSPACE_INPUT_FIELDS,
+  isBuildRuntimeTarget,
+  createBuildResult,
+  readBuildResult,
+  readBuildWorkspaceInput,
+  buildWorkspace,
+} from "./build.js";
+export type {
+  BuildRuntimeTarget,
+  BuildDiagnosticField,
+  BuildDiagnostic,
+  BuildWorkspaceInput,
+  BuildResult,
+  ReadBuildResultResult,
+  ReadBuildWorkspaceInputResult,
+} from "./build.js";
