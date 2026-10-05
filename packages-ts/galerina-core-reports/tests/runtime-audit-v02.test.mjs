@@ -66,6 +66,41 @@ describe("runtime audit events", () => {
   it("validateAuditSafety rejects sk_live_, Bearer tokens and private keys anywhere", () => {
     assert.equal(validateAuditSafety(event()), true);
     assert.equal(validateAuditSafety(event({ metadata: { key: "sk_live_abc123" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { password: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { token: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { auth: { accessToken: "ordinary-looking-value" } } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { tokenCount: 3 } })), true);
+    assert.equal(validateAuditSafety(event({ metadata: { apiKey: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { tokenHash: "sha256:derived-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { signingKey: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { cookie: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { sessionId: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { csrf: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { connectionString: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { pin: 1234 } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { cookieName: "sid" } })), true);
+    assert.equal(validateAuditSafety(event({ metadata: { refreshInterval: "30 seconds" } })), true);
+    assert.equal(validateAuditSafety(event({ metadata: { passwordName: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { tokenName: "ordinary-looking-value" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { tokenCount: "3" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { password: "" } })), false);
+    assert.equal(validateAuditSafety(event({ metadata: { secretary: "x" } })), true);
+    let getterCalled = false;
+    const metadataWithGetter = {};
+    Object.defineProperty(metadataWithGetter, "token", {
+      enumerable: true,
+      get() { getterCalled = true; return "ordinary-looking-value"; },
+    });
+    assert.equal(validateAuditSafety(event({ metadata: metadataWithGetter })), false);
+    assert.equal(getterCalled, false);
+    const arrayWithGetter = [];
+    Object.defineProperty(arrayWithGetter, "0", {
+      enumerable: true,
+      get() { getterCalled = true; return "ordinary-looking-value"; },
+    });
+    assert.equal(validateAuditSafety(event({ metadata: arrayWithGetter })), false);
+    assert.equal(getterCalled, false);
+    assert.equal(validateAuditSafety(event({ metadata: new Map([["password", "secret"]]) })), false);
     assert.equal(validateAuditSafety(event({ destination: "Bearer abcdefgh12345678" })), false);
     assert.equal(validateAuditSafety(event({ metadata: { "sk_live_inKey": "x" } })), false);
     assert.equal(validateAuditSafety(event({ message: "-----BEGIN RSA PRIVATE KEY-----" })), false);
