@@ -1275,3 +1275,26 @@ export function formatBenchmarkSummary(report: unknown): readonly string[] {
     `tests passed=${passed} failed=${failed} skipped=${skipped} fallback=${fallback} total=${r.tests.length}`,
   ]);
 }
+
+
+export {
+  FUNGI_BENCH_BOOL_001,
+  FUNGI_BENCH_BOOL_002,
+  FUNGI_BENCH_BOOL_003,
+  FUNGI_BENCH_BOOL_004,
+  FUNGI_BENCH_BOOL_005,
+  BOOL_LOGIC_BENCHMARK_ID,
+  BOOL_LOGIC_BENCHMARK_TARGET,
+  BOOL_LOGIC_BENCHMARK_OPTIONS_FIELDS,
+  DEFAULT_BOOL_LOGIC_OPERATIONS,
+  MAX_BOOL_LOGIC_OPERATIONS,
+  DEFAULT_BOOL_LOGIC_MAX_DURATION_MS,
+  MAX_BOOL_LOGIC_MAX_DURATION_MS,
+  runBoolLogicBenchmark,
+  scoreBoolLogicBenchmark,
+  type BoolLogicBenchmarkDiagnosticField,
+  type BoolLogicBenchmarkDiagnostic,
+  type BoolLogicBenchmarkOptions,
+  type BoolLogicBenchmarkResult,
+  type RunBoolLogicBenchmarkResult,
+} from "./bool-logic-benchmark.js";

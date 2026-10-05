@@ -32,7 +32,7 @@
 ## Phase 3: Light Benchmarks
 
 ```text
-[ ] Add Bool logic benchmark
+[x] Add Bool logic benchmark -- src/bool-logic-benchmark.ts runBoolLogicBenchmark / scoreBoolLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.bool_branch target logic; FUNGI-BENCH-BOOL-001..005; in-process truth-table microbench only (no command runner / hardware probes / Phase 8-9)
 [ ] Add Tri logic benchmark
 [ ] Add Galerina benchmark
 [ ] Add Result / Option benchmark
@@ -161,3 +161,9 @@ generator existed is superseded by the 2026-10-05 note above.)
 [ ] Record compiler version and flags where applicable
 [ ] Write comparison report
 ```
+
+## Notes (Grok 2026-10-05 Bool logic benchmark)
+- Closed `src/bool-logic-benchmark.ts`: `runBoolLogicBenchmark` / `scoreBoolLogicBenchmark`.
+- README light id `logic.bool_branch`; target `logic`; purpose check no silent Bool conversion (genuine boolean ops only).
+- CASE ONLY: does not implement the Galerina benchmark command runner, RAM/vector/GPU detection, or Phase 8-9.
+- Never throws; never echoes options/tokens. Owner may revisit score formula / default operations.
