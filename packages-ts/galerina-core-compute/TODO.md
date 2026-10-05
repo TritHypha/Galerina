@@ -16,14 +16,16 @@ active v1 runtime target.
 [x] Define compute capability model
 [x] Define compute budget model
 [x] Define target selection rules
-[ ] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
-[ ] Define specialist compute capability, data-sensitivity and audit report fields
+[x] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
+      src/specialist/specialist-hardware.ts SPECIALIST_HARDWARE_CLASSES + SpecialistHardwareTarget + validateSpecialistHardwareTarget (v1 freeze: only cpu may claim available); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define specialist compute capability, data-sensitivity and audit report fields
+      src/specialist/specialist-hardware.ts SpecialistComputeCapabilityFields / SpecialistDataSensitivity / SpecialistComputeAuditFields + specialistTargetAllowsSensitivity (omit max = admits nothing); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Add generic low-bit AI fallback target concept
 [x] Define offload planning reports
 [ ] Define compute effects model (accelerator, optical_io, distributed_compute, high_memory, parallel_compute)
 [ ] Define compute capabilities model (ComputeRuntime, GpuRuntime, AcceleratorRuntime, OpticalTransport, DistributedScheduler)
 [ ] Define GPU planning metadata and fallback rules (FUNGI-COMPUTE-001 through FUNGI-COMPUTE-007)
-[ ] Define GPU runtime architecture: compute planner → GPU scheduler → buffer manager → kernel adapter → GPU backend
+[ ] Define GPU runtime architecture: compute planner â†’ GPU scheduler â†’ buffer manager â†’ kernel adapter â†’ GPU backend
 [ ] Define vendor-neutral adapter model (CUDA/ROCm/Metal/Vulkan as runtime plugins, not language syntax)
 [ ] Define optical/photonic transport planning (optical_io effect, OpticalTransport capability)
 [ ] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
@@ -34,8 +36,8 @@ active v1 runtime target.
 [ ] Define GpuRequirements: minMemoryMb, minParallelism, precision
 [ ] Define GpuFallbackPlan: target, reason
 [ ] Define GpuPlan v0.2: schemaVersion, suitability, recommendedTarget, reasons[], requirements, fallback, diagnostics[]
-[ ] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability — score-based algorithm
-[ ] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan — with advisory warning if low/unsuitable
+[ ] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability â€” score-based algorithm
+[ ] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan â€” with advisory warning if low/unsuitable
 [ ] Create gpu/ dir: gpu-planner.ts, gpu-runtime.ts, gpu-fallback.ts, gpu-reports.ts, gpu-estimator.ts
 [ ] Define OpticalNeed: none|data_movement|topology_aware|high_bandwidth|unknown
 [ ] Define OpticalFallbackPlan: target (network_io|cpu|cluster_runtime), reason
