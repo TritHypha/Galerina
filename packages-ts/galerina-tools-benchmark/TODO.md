@@ -143,7 +143,7 @@ generator existed is superseded by the 2026-10-05 note above.)
 ```text
 [ ] Add 100MB JSON streaming test
 [ ] Add optional 1GB generated JSON streaming test
-[ ] Add medium matrix multiply
+[x] Add medium matrix multiply -- src/matrix-medium-benchmark.ts runMatrixMultiplyMediumBenchmark / benchMatMulFloat32 (Grok 2026-10-05; zero-trust defaults, owner may revisit): README full-mode id vector.matrix_multiply_medium target vector; scalar Float32 CPU only; OWNER-REVISIT pick N=128, tol 1e-3; score = M mul-adds/s (ZTF scoreboard size-invariant unit); FUNGI-BENCH-MAT-001..005; no GPU / SIMD claim / mode gating (runner) 
 [ ] Add GPU benchmark if available
 [ ] Add generic AI accelerator benchmark if available
 [ ] Add low-bit AI backend benchmark if available
@@ -205,3 +205,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Closed `src/json-stream-10mb-benchmark.ts`: `runJsonStreamValidate10mbBenchmark` / `createJsonLinesStreamValidator` / `streamValidateJsonLines`.
 - OWNER-REVISIT picks (not in-repo spec): 10 MiB (10485760), JSON Lines framing (mirrors data-json `json_lines` mode), 64 KiB chunks, 4 KiB max line, record shape reused from json.decode_validate_1mb.
 - Validator holds at most one partial line; README resilient "quarantine and continue" not implemented here (separate resilient.* family).
+
+## Notes (Grok 2026-10-05 medium matrix multiply)
+- Closed `src/matrix-medium-benchmark.ts`: `runMatrixMultiplyMediumBenchmark` / `benchMatMulFloat32` / `verifyMatMulSpotEntries`.
+- OWNER-REVISIT picks (not in-repo spec): N = 128 (README says only "medium"), Float32 row-major i-k-j, spot-check tolerance 1e-3 vs Float64 reference.
+- Score unit mul-adds/s from the ZTF benchmark scoreboard standard (size-invariant). Light/full gating is the command runner's job; GPU matmul stays HOLD.
