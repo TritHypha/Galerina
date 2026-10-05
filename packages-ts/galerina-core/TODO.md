@@ -946,24 +946,24 @@ Reason for additions:
 [x] Add security-first build system documentation
 [x] Add startup validation documentation
 [ ] Define startup block syntax
-[ ] Define startup report schema
-[ ] Validate required env variables before main()
-[ ] Validate required secrets before main()
-[ ] Validate security.api_methods against routes
-[ ] Validate inbound ports against server.listen()
-[ ] Validate route handlers before main()
-[ ] Validate webhook HMAC/replay/idempotency requirements before main()
-[ ] Validate packages registry before main()
+[x] Define startup report schema
+[x] Validate required env variables before main()
+[x] Validate required secrets before main()
+[x] Validate security.api_methods against routes
+[x] Validate inbound ports against server.listen()
+[x] Validate route handlers before main()
+[x] Validate webhook HMAC/replay/idempotency requirements before main()
+[x] Validate packages registry before main()
 [ ] Validate memory/vector/json policies before main()
-[ ] Define Galerina build --with-tests
-[ ] Define Galerina build --security
-[ ] Define Galerina build --strict
+[x] Define Galerina build --with-tests
+[x] Define Galerina build --security
+[x] Define Galerina build --strict
 [ ] Define compiler block syntax
-[ ] Define fail_on_warning behavior
-[ ] Define fail_on_test_failure behavior
-[ ] Define app.test-report.json
-[ ] Define app.ai-suggestions.md
-[ ] Define app.ai-suggestions.json
+[x] Define fail_on_warning behavior
+[x] Define fail_on_test_failure behavior
+[x] Define app.test-report.json
+[x] Define app.ai-suggestions.md
+[x] Define app.ai-suggestions.json
 [ ] Integrate vector/offload safety checks into build pipeline
 [ ] Integrate target/capability import checks into build pipeline
 ```
