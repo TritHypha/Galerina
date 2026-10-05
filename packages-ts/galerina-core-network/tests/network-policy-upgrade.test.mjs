@@ -25,12 +25,12 @@ describe("NetworkPolicy upgrade fields (optional; zero-trust defaults, owner may
     assert.deepEqual(errors(defineNetworkPolicy("p", { allowPlainHttp: false })), []);
   });
 
-  it("aiProviders need audit, a capability, no secrets and declared https endpoints", () => {
+  it("aiProviders need audit, a capability, no secrets/PII, required redaction and declared https endpoints", () => {
     assert.deepEqual(errors(defineNetworkPolicy("ai", { endpoints: [openaiAllow], aiProviders: [OPENAI_POLICY] })), []);
     assert.deepEqual(errors(defineNetworkPolicy("ai", { aiProviders: [OPENAI_POLICY] })), ["Galerina_NETWORK_AI_PROVIDER_ENDPOINT_UNDECLARED"]);
     const wildcard = defineNetworkPolicy("ai", { endpoints: [{ ...openaiAllow, hosts: ["*"] }], aiProviders: [OPENAI_POLICY] });
     assert.deepEqual(errors(wildcard), ["Galerina_NETWORK_AI_PROVIDER_ENDPOINT_UNDECLARED"]);
-    for (const bad of [{ auditRequired: false }, { allowSecretsInPrompt: true }, { requireApiKeyCapability: "" }, { allowedEndpoints: [] }, { allowedEndpoints: ["https://api.openai.com/v1"] }]) {
+    for (const bad of [{ auditRequired: false }, { allowSecretsInPrompt: true }, { allowPii: true }, { requireRedaction: false }, { requireApiKeyCapability: "" }, { allowedEndpoints: [] }, { allowedEndpoints: ["https://api.openai.com/v1"] }]) {
       assert.deepEqual(errors(defineNetworkPolicy("ai", { endpoints: [openaiAllow], aiProviders: [{ ...OPENAI_POLICY, ...bad }] })), ["Galerina_NETWORK_AI_PROVIDER_INVALID"], JSON.stringify(bad));
     }
     assert.deepEqual(errors(defineNetworkPolicy("ai", { endpoints: [openaiAllow], aiProviders: [OPENAI_POLICY, OPENAI_POLICY] })), ["Galerina_NETWORK_AI_PROVIDER_INVALID"]);

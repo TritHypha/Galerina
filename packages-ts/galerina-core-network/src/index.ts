@@ -378,9 +378,10 @@ function validatePolicyUpgradeFields(policy: NetworkPolicy): readonly NetworkDia
           typeof provider.provider === "string" && provider.provider.trim().length > 0 && !seen.has(provider.provider) &&
           typeof provider.requireApiKeyCapability === "string" && provider.requireApiKeyCapability.trim().length > 0 &&
           provider.auditRequired === true && provider.allowSecretsInPrompt === false &&
+          provider.allowPii === false && provider.requireRedaction === true &&
           Array.isArray(provider.allowedEndpoints) && provider.allowedEndpoints.length > 0 && provider.allowedEndpoints.every(isApprovedHostName);
         if (!ok) {
-          diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_AI_PROVIDER_INVALID", "error", "AI providers need a unique name, an API-key capability, required audit, no secrets in prompts and exact endpoint hosts.", path));
+          diagnostics.push(createNetworkDiagnostic("Galerina_NETWORK_AI_PROVIDER_INVALID", "error", "AI providers need a unique name, an API-key capability, required audit, no secrets or PII in prompts, required redaction and exact endpoint hosts.", path));
           return;
         }
         seen.add(provider.provider);
