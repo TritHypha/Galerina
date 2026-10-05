@@ -32,6 +32,8 @@ describe("redaction rule ReDoS guard (owner may revisit)", () => {
       "(x{2,})*": "nested quantifier",
       "((ab)+)+": "nested quantifier",
       "(a|aa)+$": "repeated alternation",
+      "((a|aa))+z": "repeated alternation",
+      "(?:prefix((a|aa))*)+z": "repeated alternation",
       "(?:a|b)*c": "repeated alternation",
       "(a|b){2,}": "repeated alternation",
       "(a)\\1": "numeric backreference",
@@ -51,7 +53,7 @@ describe("redaction rule ReDoS guard (owner may revisit)", () => {
   });
 
   it("keeps ordinary bounded shapes allowed", () => {
-    for (const pattern of ["^[a-z]+$", "a+b+", "(ab)?c", "[(+]+", "\\(a+\\)+", "(?:x|y)?z", "(a+)?b", "a{3}", "[\\d]{2,4}"]) {
+    for (const pattern of ["^[a-z]+$", "a+b+", "(ab)?c", "[(+]+", "\\(a+\\)+", "(?:x|y)?z", "((a|aa))z", "(a|aa)c+", "(a+)?b", "a{3}", "[\\d]{2,4}"]) {
       assert.equal(findUnsafeRedactionPattern(pattern), "", pattern);
     }
   });

@@ -730,7 +730,10 @@ export function findUnsafeRedactionPattern(pattern: string): string {
         return closed.quantified ? "nested quantifier" : "repeated alternation";
       }
       const parent = groups[groups.length - 1];
-      if (parent !== undefined && (closed.quantified || repeated)) parent.quantified = true;
+      if (parent !== undefined) {
+        if (closed.quantified || repeated) parent.quantified = true;
+        if (closed.alternation) parent.alternation = true;
+      }
     }
   }
   return "";
