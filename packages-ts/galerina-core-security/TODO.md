@@ -51,7 +51,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [x] Define safe token, cookie and header handling helpers
 [x] Define cryptographic policy types
 [x] Define crypto inventory and post-quantum readiness report schemas (closed-shape CryptoInventoryReport / CryptoInventoryUse + CRYPTO_ALGORITHM_BASELINE_LABELS; LABELS ONLY, no PQ readiness claim; FUNGI-SEC-CIV-001..005; Grok 2026-10-05; owner may revisit)
-[ ] Define SecureRandom versus Random diagnostic examples
+[x] Define SecureRandom versus Random diagnostic examples -- src/secure-random-examples.ts readSecureRandomExamples / lookupSecureRandomExample / SECURE_RANDOM_DIAGNOSTIC_EXAMPLES (EXAMPLES ONLY; FUNGI-SEC-SRN-001..005; Grok 2026-10-05; owner may revisit)
 [x] Add examples
 [x] Add tests
 ```
@@ -82,3 +82,10 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 - Deny-first: weak algorithms must be legacy_weak + denied; unassessed and hard-coded uses can never be approved; quantum_vulnerable / legacy_weak need a migration-path state; post_quantum needs not_applicable.
 - Owner may revisit: baseline labels (symmetric AEAD / hash / argon2id counted as symmetric_or_hash and admissible for `ready`; ed25519 / x25519 quantum_vulnerable; ml-dsa-65 post_quantum); purpose vocabulary; schema id vs doc example `reportType: galerina.crypto.inventory` / boolean `postQuantumReady`.
 - Not covered: library / deployment / fingerprint fields, key sizes, hybrid pair records, post-quantum-readiness-report.json / quantum target / measurement / fallback reports, SecureRandom diagnostics, scanners, report writers. SecretReference v0.2 / taint types still do-not-invent.
+
+## Notes (Grok 2026-10-05 SecureRandom versus Random diagnostic examples)
+- Closed `src/secure-random-examples.ts`: `readSecureRandomExamples` / `lookupSecureRandomExample` / `SECURE_RANDOM_DIAGNOSTIC_EXAMPLES`.
+- Schema: `galerina.security.secure-random-examples/v1`.
+- Purpose vocab = rule list only: key|nonce|salt|secret|token. Sources: SecureRandom|Random.
+- Deny-first matrix: Random → denied/error/`example.random.forbidden`; SecureRandom → allowed/info/`example.secure-random.required`.
+- EXAMPLES ONLY: no CSPRNG, scanner, report writer, or new Galerina_SECURITY_* codes. SecretReference v0.2 / taint / hardware-risk still open or do-not-invent.
