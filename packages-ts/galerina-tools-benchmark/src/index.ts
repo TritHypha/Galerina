@@ -797,3 +797,174 @@ export function detectBenchmarkSystem(probe: unknown): BenchmarkSystemDetection 
     diagnostics: Object.freeze(diagnostics),
   });
 }
+
+// ── shareable reports, version-trigger state and submit placeholder (TODO pass, Grok 2026-10-05) ──
+// Pure and fail-closed. The shareable generator REBUILDS a report from the closed
+// allowlists above instead of deleting known-bad fields, so any field it does not know
+// (hostname, username, cwd, projectPath, env, machine ids, ...) is dropped by
+// construction. Nothing here reads the filesystem, the environment or the network.
+
+export interface ShareableBenchmarkReportResult {
+  readonly status: "SHAREABLE" | "REFUSED";
+  readonly report: BenchmarkReport | Readonly<Record<string, never>>;
+  readonly removedFields: readonly string[];
+  readonly redactedReasons: number;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+// Free text that looks like a path, a user directory, an env assignment or an e-mail is
+// replaced: reasons are operator hints, never a channel for machine identity.
+const IDENTIFYING_TEXT = /[\\/]|~|\$|%[A-Za-z_]+%|\b[A-Z][A-Z0-9_]{2,}=|@/;
+
+function pickAllowed(record: UnknownRecord, keys: readonly string[], path: string, removed: string[]): UnknownRecord {
+  const out: UnknownRecord = {};
+  for (const key of Reflect.ownKeys(record)) {
+    const name = typeof key === "string" ? key : String(key);
+    if (typeof key !== "string" || !keys.includes(key)) { removed.push(`${path}.${name}`); continue; }
+    const descriptor = Object.getOwnPropertyDescriptor(record, key);
+    if (descriptor === undefined || !("value" in descriptor)) { removed.push(`${path}.${name}`); continue; }
+    out[key] = descriptor.value;
+  }
+  return out;
+}
+
+export function createShareableBenchmarkReport(input: unknown, config: BenchmarkConfig): ShareableBenchmarkReportResult {
+  const removed: string[] = [];
+  let redactedReasons = 0;
+  const refused = (diagnostics: readonly BenchmarkDiagnostic[]): ShareableBenchmarkReportResult =>
+    Object.freeze({ status: "REFUSED", report: Object.freeze({}), removedFields: Object.freeze([...removed]), redactedReasons, diagnostics: Object.freeze([...diagnostics]) });
+  const optedIn = isRecord(config) && isRecord(config.privacy) && config.privacy.allowSubmit === true;
+  if (!isRecord(input)) return refused([createBenchmarkDiagnostic("Galerina_BENCHMARK_REPORT_RECORD_REQUIRED", "error", "Benchmark report must be a plain data record.", "report")]);
+  const top = pickAllowed(input, BENCHMARK_REPORT_KEYS, "report", removed);
+  if (isRecord(top.system)) top.system = pickAllowed(top.system, BENCHMARK_SYSTEM_KEYS, "report.system", removed);
+  if (Array.isArray(top.tests)) {
+    top.tests = top.tests.map((test, index) => {
+      if (!isRecord(test)) return test;
+      const kept = pickAllowed(test, BENCHMARK_TEST_KEYS, `report.tests.${index}`, removed);
+      if (typeof kept.reason === "string" && IDENTIFYING_TEXT.test(kept.reason)) { kept.reason = "redacted"; redactedReasons += 1; }
+      if (typeof kept.backend === "string" && IDENTIFYING_TEXT.test(kept.backend)) { kept.backend = "redacted"; redactedReasons += 1; }
+      return kept;
+    });
+  }
+  top.privacy = {
+    shareable: optedIn,
+    containsPersonalData: false,
+    machineId: "not_included",
+    hostname: "not_included",
+    username: "not_included",
+    projectPath: "not_included",
+  };
+  const captured = captureBenchmarkReport(top);
+  if (captured.report === undefined) return refused(captured.diagnostics);
+  return Object.freeze({ status: "SHAREABLE", report: captured.report, removedFields: Object.freeze([...removed]), redactedReasons, diagnostics: Object.freeze([]) });
+}
+
+export const BENCHMARK_STATE_PATH = ".fungi/benchmark-state.json";
+
+export interface BenchmarkState {
+  readonly schema: "Galerina.benchmark.state.v1";
+  readonly lastGalerinaVersion: string;
+}
+
+const SEMVER = /^(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})(?:-[0-9A-Za-z.-]{1,64})?$/;
+
+export function serializeBenchmarkState(version: string): string {
+  if (!SEMVER.test(version)) throw new Error("Galerina_BENCHMARK_STATE_VERSION_INVALID: version must be semver.");
+  return `${JSON.stringify({ schema: "Galerina.benchmark.state.v1", lastGalerinaVersion: version })}\n`;
+}
+
+export interface BenchmarkStateParse {
+  readonly ok: boolean;
+  readonly state: BenchmarkState | Readonly<Record<string, never>>;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+export function parseBenchmarkState(text: string): BenchmarkStateParse {
+  const bad = (message: string): BenchmarkStateParse =>
+    Object.freeze({ ok: false, state: Object.freeze({}), diagnostics: Object.freeze([createBenchmarkDiagnostic("Galerina_BENCHMARK_STATE_INVALID", "error", message, BENCHMARK_STATE_PATH)]) });
+  if (typeof text !== "string" || text.length > 4096) return bad("State file must be a small text document.");
+  let value: unknown;
+  try { value = JSON.parse(text); } catch { return bad("State file is not valid JSON."); }
+  if (!isRecord(value)) return bad("State file must be a JSON object.");
+  const keys = Object.keys(value);
+  if (keys.length !== 2 || value.schema !== "Galerina.benchmark.state.v1" || typeof value.lastGalerinaVersion !== "string" || !SEMVER.test(value.lastGalerinaVersion)) {
+    return bad("State file must be exactly {schema, lastGalerinaVersion} with a semver version.");
+  }
+  return Object.freeze({ ok: true, state: Object.freeze({ schema: "Galerina.benchmark.state.v1" as const, lastGalerinaVersion: value.lastGalerinaVersion }), diagnostics: Object.freeze([]) });
+}
+
+export type BenchmarkAutoRunReason =
+  | "MAJOR_VERSION_CHANGED"
+  | "NEVER_IN_PRODUCTION"
+  | "NOT_DEVELOPMENT"
+  | "DISABLED_BY_CONFIG"
+  | "FIRST_RUN_RECORDED"
+  | "NO_MAJOR_CHANGE"
+  | "STATE_INVALID"
+  | "VERSION_INVALID";
+
+export interface BenchmarkAutoRunDecision {
+  readonly run: boolean;
+  readonly reason: BenchmarkAutoRunReason;
+  readonly nextStateText: string;
+}
+
+/**
+ * Decide whether a light benchmark should auto-run after an upgrade. It runs only in
+ * development, only when enabled, only when a valid recorded version exists and the
+ * major version increased. Production never auto-runs, whatever else is true. An
+ * unreadable state file never triggers a run. `stateText` is "" when no state exists.
+ */
+export function decideBenchmarkAutoRun(input: {
+  readonly stateText: string;
+  readonly currentVersion: string;
+  readonly environment: "development" | "test" | "staging" | "production";
+  readonly config: BenchmarkConfig;
+}): BenchmarkAutoRunDecision {
+  const decide = (run: boolean, reason: BenchmarkAutoRunReason, nextStateText: string): BenchmarkAutoRunDecision => Object.freeze({ run, reason, nextStateText });
+  if (input.environment === "production") return decide(false, "NEVER_IN_PRODUCTION", input.stateText);
+  if (input.environment !== "development") return decide(false, "NOT_DEVELOPMENT", input.stateText);
+  if (!isRecord(input.config) || input.config.runOnMajorUpdate !== true) return decide(false, "DISABLED_BY_CONFIG", input.stateText);
+  const current = SEMVER.exec(input.currentVersion);
+  if (current === null) return decide(false, "VERSION_INVALID", input.stateText);
+  const next = serializeBenchmarkState(input.currentVersion);
+  if (input.stateText.length === 0) return decide(false, "FIRST_RUN_RECORDED", next);
+  const parsed = parseBenchmarkState(input.stateText);
+  if (!parsed.ok) return decide(false, "STATE_INVALID", input.stateText);
+  const last = SEMVER.exec((parsed.state as BenchmarkState).lastGalerinaVersion) as RegExpExecArray;
+  return Number(current[1]) > Number(last[1]) ? decide(true, "MAJOR_VERSION_CHANGED", next) : decide(false, "NO_MAJOR_CHANGE", Number(current[1]) === Number(last[1]) ? next : input.stateText);
+}
+
+export const BENCHMARK_SUBMIT_CONFIRMATION = "submit-anonymous-benchmark";
+
+export interface BenchmarkSubmitPreparation {
+  readonly status: "NOT_SUBMITTED_PLACEHOLDER" | "REFUSED";
+  readonly networkUsed: false;
+  readonly payload: BenchmarkSubmitPayload | Readonly<Record<string, never>>;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+/**
+ * `Galerina benchmark submit` placeholder. Builds the anonymous submit payload only after
+ * an explicit typed confirmation over a shareable report, and never sends anything:
+ * there is no submission endpoint yet.
+ */
+export function prepareBenchmarkSubmission(report: unknown, config: BenchmarkConfig, confirmation: string): BenchmarkSubmitPreparation {
+  const refuse = (code: string, message: string): BenchmarkSubmitPreparation =>
+    Object.freeze({ status: "REFUSED", networkUsed: false, payload: Object.freeze({}), diagnostics: Object.freeze([createBenchmarkDiagnostic(code, "error", message, "submit")]) });
+  if (confirmation !== BENCHMARK_SUBMIT_CONFIRMATION) return refuse("Galerina_BENCHMARK_SUBMIT_NOT_CONFIRMED", `Submission needs the exact confirmation "${BENCHMARK_SUBMIT_CONFIRMATION}".`);
+  const shareable = createShareableBenchmarkReport(report, config);
+  if (shareable.status !== "SHAREABLE") return Object.freeze({ status: "REFUSED", networkUsed: false, payload: Object.freeze({}), diagnostics: shareable.diagnostics });
+  if ((shareable.report as BenchmarkReport).privacy.shareable !== true) return refuse("Galerina_BENCHMARK_SUBMIT_NOT_OPTED_IN", "Submission needs privacy.allowSubmit === true (opt-in).");
+  const r = shareable.report as BenchmarkReport;
+  const payload: BenchmarkSubmitPayload = deepFreeze({
+    schema: "Galerina.benchmark.submit.v1",
+    anonymous: true,
+    loVersion: r.loVersion,
+    mode: r.mode,
+    system: r.system,
+    scores: r.scores,
+    fallbacks: r.tests.filter((t) => t.fallback === true || t.status === "fallback").map((t) => ({ target: t.target, reason: typeof t.reason === "string" ? t.reason : "fallback" })),
+  });
+  return Object.freeze({ status: "NOT_SUBMITTED_PLACEHOLDER", networkUsed: false, payload, diagnostics: Object.freeze([]) });
+}

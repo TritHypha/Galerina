@@ -95,24 +95,44 @@ session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md):
 ## Phase 6: Major Version Trigger
 
 ```text
-[ ] Add .fungi/benchmark-state.json
-[ ] Store last Galerina version
-[ ] Detect major version change
-[ ] Trigger only in development mode
-[ ] Never auto-run in production mode
+[x] Add .fungi/benchmark-state.json
+[x] Store last Galerina version
+[x] Detect major version change
+[x] Trigger only in development mode
+[x] Never auto-run in production mode
 ```
+
+Phase 6 note (2026-10-05, Grok Bot, standing permission, owner may revisit):
+`BENCHMARK_STATE_PATH` (".fungi/benchmark-state.json"), strict
+`serializeBenchmarkState` / `parseBenchmarkState` (exactly {schema,
+lastGalerinaVersion}, semver only) and `decideBenchmarkAutoRun` in src/index.ts.
+Auto-run happens only in development, only with runOnMajorUpdate, only on a strict
+major increase over a valid recorded version. Production never runs; a first run
+only records the version; an unreadable state never triggers a run. Pure: the
+caller does the file I/O. Tests: tests/benchmark-governance.test.mjs.
 
 ## Phase 7: Privacy and Sharing
 
 ```text
-[ ] Add shareable-report generator
-[ ] Remove hostname
-[ ] Remove username
-[ ] Remove project path
-[ ] Remove environment variables
-[ ] Add Galerina benchmark submit placeholder
-[ ] Add opt-in confirmation
+[x] Add shareable-report generator
+[x] Remove hostname
+[x] Remove username
+[x] Remove project path
+[x] Remove environment variables
+[x] Add Galerina benchmark submit placeholder
+[x] Add opt-in confirmation
 ```
+
+Phase 7 note (2026-10-05, Grok Bot, standing permission, owner may revisit):
+`createShareableBenchmarkReport(report, config)` rebuilds the report from the
+closed key allowlists, so hostname, username, project path, env and any unknown
+field are dropped by construction (listed in `removedFields`); path-, env- or
+e-mail-like `reason`/`backend` text becomes "redacted"; privacy identifiers are
+forced to not_included and `shareable` is true only with privacy.allowSubmit.
+`prepareBenchmarkSubmission(report, config, confirmation)` is the submit
+placeholder: it needs the exact phrase `submit-anonymous-benchmark` plus opt-in,
+builds the anonymous payload, and always returns NOT_SUBMITTED_PLACEHOLDER with
+networkUsed false (no endpoint exists). Tests: tests/benchmark-governance.test.mjs.
 
 Phase 7 notes (2026-09-29, Grok Bot): rows stay open. What exists today is
 fail-closed refusal, not removal: the report shape is exact-key (unknown fields
