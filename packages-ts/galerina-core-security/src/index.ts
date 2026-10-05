@@ -805,3 +805,28 @@ export {
   type ReadEffectivePolicyResult,
   type ReadPolicyConflictResult,
 } from "./policy-contracts.js";
+
+export {
+  FUNGI_SEC_CAP_001,
+  FUNGI_SEC_CAP_002,
+  FUNGI_SEC_CAP_003,
+  FUNGI_SEC_CAP_004,
+  FUNGI_SEC_CAP_005,
+  CAPABILITY_BOUNDARY_SCHEMA,
+  CAPABILITY_GRANT_REPORT_SCHEMA,
+  CAPABILITY_DEFAULT_EFFECTS,
+  CAPABILITY_GRANT_DECISIONS,
+  CAPABILITY_BOUNDARY_FIELDS,
+  CAPABILITY_GRANT_REPORT_FIELDS,
+  readCapabilityBoundary,
+  readCapabilityGrantReport,
+  type CapabilityDefaultEffect,
+  type CapabilityGrantDecision,
+  type CapabilityDiagnosticField,
+  type CapabilityDiagnostic,
+  type CapabilityBoundary,
+  type CapabilityGrantReport,
+  type ReadCapabilityBoundaryResult,
+  type ReadCapabilityGrantReportResult,
+} from "./capability-contracts.js";
+
