@@ -38,6 +38,10 @@ describe("AI digests (W01 G2, owner may revisit)", () => {
     assert.equal(aiSafePath("/srv/app.fungi"), "<absolute>");
     assert.equal(aiSafePath("src/../../etc/passwd"), "<outside>");
     assert.equal(aiSafePath(""), "<unknown>");
+    assert.equal(aiSafePath("~/app/main.fungi"), "<absolute>"); // path-leak-audit:allow
+    assert.equal(aiSafePath("file:///srv/app.fungi"), "<absolute>"); // path-leak-audit:allow
+    assert.equal(aiSafeText("see ~/app/secret.env and file:///srv/x.fungi now").includes("~/"), false); // path-leak-audit:allow
+    assert.equal(aiSafeText("see file:///srv/x.fungi now").includes("file:"), false); // path-leak-audit:allow
   });
 
   it("L1006 error digest is sorted, one line per diagnostic and redacted", () => {
