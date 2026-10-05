@@ -330,6 +330,53 @@ describe("lowerAgentDeclaration (compiler-facing contract)", () => {
     ]);
   });
 
+  it("re-checks types, tool names and list items on a hand-built node", () => {
+    const lowered = lowerAgentDeclaration({
+      ...base(),
+      inputType: "lower case",
+      outputType: "",
+      tools: [{ tool: "Shell Exec", decision: "allow" }, { tool: "shell", decision: "maybe" }],
+      effects: ["Network.*"],
+      permissions: ["a", "a"],
+    });
+    assert.equal(lowered.definition, undefined);
+    const found = lowered.diagnostics.map((d) => [d.code, d.path]);
+    for (const expected of [
+      ["Galerina_AGENT_DECL_TYPE_INVALID", "inputType"],
+      ["Galerina_AGENT_DECL_TYPE_INVALID", "outputType"],
+      ["Galerina_AGENT_DECL_TOOL_INVALID", "tools.0"],
+      ["Galerina_AGENT_DECL_TOOL_INVALID", "tools.1"],
+      ["Galerina_AGENT_DECL_LIST_INVALID", "effects"],
+      ["Galerina_AGENT_DECL_LIST_INVALID", "permissions"],
+    ]) {
+      assert.ok(found.some(([c, p]) => c === expected[0] && p === expected[1]), JSON.stringify(expected));
+    }
+  });
+
+  it("an unclosed list does not swallow the next agent", () => {
+    const result = parseAgentDeclarations(`agent Broken {
+  input A
+  output B
+  effects [a,
+  limits {
+    timeout 1s
+    memory 1mb
+    max_tool_calls 1
+  }
+}
+agent Fine {
+  input A
+  output B
+  limits {
+    timeout 1s
+    memory 1mb
+    max_tool_calls 1
+  }
+}`);
+    assert.deepEqual(result.declarations.map((d) => d.name), ["Fine"]);
+    assert.deepEqual(codes(result), ["Galerina_AGENT_DECL_LIST_INVALID"]);
+  });
+
   it("returns a frozen copy that later node mutation cannot reach", () => {
     const node = base();
     const tools = node.tools.map((t) => ({ ...t }));
