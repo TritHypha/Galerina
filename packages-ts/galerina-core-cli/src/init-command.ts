@@ -157,31 +157,24 @@ export async function runInitCommand(context: CliContext): Promise<CliResult> {
   }
 
   const status = result.status ?? 1;
-  const stdout = (result.stdout ?? "").trim();
-  const stderr = (result.stderr ?? "").trim();
   if (status === 0) {
     return {
       ok: true,
       code: 0,
-      message: stdout.length > 0 ? stdout : `Initialized Galerina app at the requested directory (via galerina new app).`,
-      ...(stderr.length > 0 ? { details: [stderr] } : {}),
+      message: "Initialized Galerina app (via galerina new app).",
     };
   }
-  // The scaffolder already refuses overwrite / missing template; surface its
-  // operator message without inventing a second refusal vocabulary.
-  // SuperGrok C1 #63 NB-2: the structured error stays path-free; the scaffolder's own
-  // local operator output is kept only in details.
-  const output = stderr.length > 0 ? stderr : stdout;
+  // Child output is untrusted and may contain absolute paths or secret material.
+  // Preserve the typed refusal, but never forward raw stdout/stderr to the caller.
   const error: CliError = Object.freeze({
     code: FUNGI_CLI_INIT_005,
     safeMessage: "galerina new app refused the request.",
-    suggestedFix: "Use a new or empty target directory; see details for the scaffolder's reason.",
+    suggestedFix: "Use a new or empty target directory and verify the app template is available.",
   });
   return Object.freeze({
     ok: false as const,
     code: status,
     message: `${FUNGI_CLI_INIT_005}: galerina new app refused the request.`,
-    ...(output.length > 0 ? { details: Object.freeze([output]) } : {}),
     error,
   });
 }

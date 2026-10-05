@@ -55,6 +55,8 @@ describe("galerina init (thin alias of galerina new app)", () => {
       const result = await runCli(["init", target], base);
       assert.equal(result.ok, true, result.message);
       assert.equal(result.code, 0);
+      assert.equal(result.message.includes(target), false);
+      assert.equal(result.details, undefined);
       assert.ok(existsSync(join(target, "src/App.fungi")));
       assert.ok(existsSync(join(target, "App.manifest")));
       const manifest = JSON.parse(readFileSync(join(target, "App.manifest"), "utf8"));
@@ -75,6 +77,8 @@ describe("galerina init (thin alias of galerina new app)", () => {
       assert.equal(result.error.code, FUNGI_CLI_INIT_005);
       assert.equal(result.error.safeMessage.includes(base), false);
       assert.equal(result.message.includes(base), false);
+      assert.equal(result.details, undefined);
+      assert.equal(JSON.stringify(result).includes(base), false);
     });
   });
 
