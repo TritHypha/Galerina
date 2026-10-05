@@ -67,6 +67,9 @@ describe("routeAgentMessage (typed bus, data classification)", () => {
     assert.deepEqual(codes(A.routeAgentMessage({ ...ok, topic: "other" }, channels)), ["Galerina_AGENT_BUS_UNKNOWN_TOPIC"]);
     assert.deepEqual(codes(A.routeAgentMessage({ from: "x", to: "y", topic: "review", payloadType: "Diff", classification: "secret" }, channels)), ["Galerina_AGENT_BUS_CLASSIFICATION", "Galerina_AGENT_BUS_PAYLOAD_TYPE", "Galerina_AGENT_BUS_RECEIVER", "Galerina_AGENT_BUS_SENDER"]);
   });
+  it("refuses classifications outside the declared closed set", () => {
+    assert.deepEqual(codes(A.routeAgentMessage({ ...ok, classification: "unclassified" }, channels)), ["Galerina_AGENT_BUS_CLASSIFICATION"]);
+  });
 });
 
 describe("evaluateToolGatewayCall (tool gateway, secret/memory/cache guards)", () => {

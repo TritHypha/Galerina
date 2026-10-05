@@ -145,7 +145,9 @@ export function routeAgentMessage(message: AgentMessage, channels: readonly Agen
   if (channel.payloadType !== message.payloadType) diagnostics.push(deny("Galerina_AGENT_BUS_PAYLOAD_TYPE", "Payload type does not match the channel type.", "payloadType"));
   if (!channel.allowedSenders.includes(message.from)) diagnostics.push(deny("Galerina_AGENT_BUS_SENDER", `Sender "${message.from}" is not allowed on this topic.`, "from"));
   if (!channel.allowedReceivers.includes(message.to)) diagnostics.push(deny("Galerina_AGENT_BUS_RECEIVER", `Receiver "${message.to}" is not allowed on this topic.`, "to"));
-  if (DATA_CLASSIFICATION_RANK[message.classification] > DATA_CLASSIFICATION_RANK[channel.clearance]) {
+  const messageRank = DATA_CLASSIFICATION_RANK[message.classification];
+  const clearanceRank = DATA_CLASSIFICATION_RANK[channel.clearance];
+  if (typeof messageRank !== "number" || typeof clearanceRank !== "number" || messageRank > clearanceRank) {
     diagnostics.push(deny("Galerina_AGENT_BUS_CLASSIFICATION", "Message classification exceeds the channel clearance.", "classification"));
   }
   return verdict(diagnostics);
