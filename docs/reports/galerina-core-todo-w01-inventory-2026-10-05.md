@@ -6,7 +6,7 @@ Inputs: `packages-ts/galerina-core/TODO.md` and `docs/PRE-FUNGI-WORK-REGISTER-20
 
 ## Method
 
-Every open `[ ]` row (321; the 9 `[HOLD]`-style rows are already holds) was assigned exactly one class:
+Every open `[ ]` row (321) was assigned exactly one class. The source TODO separately contains 8 pre-existing actionable `[!]` blocked entries; these are not part of the 321 open rows. The 12 HOLD rows below are open `[ ]` tasks classified under the register's held lanes, not a recount of those `[!]` entries:
 
 - **COVERED**: the register names the lane (W01-W15) that owns this work.
 - **DEFERRED**: post-v1 by the package's own v1 scope rows (TODO.md:19-20, "v1 target scope CPU and WASM"; GPU/AI/photonic/domain packages post-v1) and register W11/W13 ("not silently promoted").
