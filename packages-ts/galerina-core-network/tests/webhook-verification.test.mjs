@@ -39,6 +39,17 @@ describe("verifyWebhookHmac", () => {
     assert.deepEqual(code(N.verifyWebhookHmac(payload, sign(payload), { ...base, algorithm: "sha1" })), ["Galerina_NETWORK_WEBHOOK_ALGORITHM"]);
     assert.deepEqual(code(N.verifyWebhookHmac(payload, sign(payload), { ...base, headerName: " " })), ["Galerina_NETWORK_WEBHOOK_HEADER"]);
     for (const maxAgeSeconds of [0, 601, 1.5, Infinity]) assert.deepEqual(code(N.validateWebhookConfig({ ...base, maxAgeSeconds })), ["Galerina_NETWORK_WEBHOOK_MAX_AGE"]);
+    assert.deepEqual(code(N.validateWebhookConfig(null)), ["Galerina_NETWORK_WEBHOOK_CONFIG"]);
+    assert.deepEqual(code(N.validateWebhookConfig({ ...base, secret: "x".repeat(N.WEBHOOK_MAX_SECRET_BYTES + 1) })), ["Galerina_NETWORK_WEBHOOK_SECRET_INVALID"]);
+    assert.deepEqual(code(N.validateWebhookConfig({ ...base, secret: "\u0800".repeat(Math.floor(N.WEBHOOK_MAX_SECRET_BYTES / 3) + 1) })), ["Galerina_NETWORK_WEBHOOK_SECRET_INVALID"]);
+  });
+  it("refuses oversized strings and byte buffers before hashing them", () => {
+    const tooLarge = "x".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES + 1);
+    assert.deepEqual(code(N.verifyWebhookHmac(tooLarge, sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
+    assert.deepEqual(code(N.verifyWebhookHmac(new Uint8Array(N.WEBHOOK_MAX_PAYLOAD_BYTES + 1), sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
+    assert.deepEqual(code(N.verifyWebhookHmac({}, sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_INVALID"]);
+    assert.equal(N.verifyWebhookHmac("é".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES / 2 + 1), sign(""), base).valid, false);
+    assert.deepEqual(code(N.verifyWebhookHmac("\u0800".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES), sign(""), base)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
   });
   it("binds the timestamp into the MAC when the config names a timestamp header", () => {
     const bound = { ...base, timestampHeader: "X-Timestamp" };
@@ -111,7 +122,16 @@ describe("admitWebhook composes MAC, freshness and replay in one path", () => {
     assert.deepEqual(codes(await N.admitWebhook({ ...input, nowSeconds: now + 1000 })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_STALE"]);
     assert.deepEqual(codes(await N.admitWebhook({ ...input, nowSeconds: now - 100 })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_FUTURE"]);
     assert.deepEqual(codes(await N.admitWebhook({ ...input, config: base })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_UNBOUND"]);
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, config: { ...bound, timestampHeader: undefined } })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_UNBOUND"]);
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, config: null })), ["Galerina_NETWORK_WEBHOOK_CONFIG"]);
     assert.equal(s.calls, 0);
     assert.equal((await N.admitWebhook(input)).valid, true);
+  });
+  it("never claims a replay key for an oversized payload", async () => {
+    const s = store();
+    const input = { payload: "x".repeat(N.WEBHOOK_MAX_PAYLOAD_BYTES + 1), signature: sig, timestamp: ts, deliveryId: "delivery-0003", config: bound, nowSeconds: now, store: s };
+    assert.deepEqual(codes(await N.admitWebhook(input)), ["Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE"]);
+    assert.equal(s.calls, 0);
+    assert.deepEqual(codes(await N.admitWebhook(null)), ["Galerina_NETWORK_WEBHOOK_INPUT"]);
   });
 });

@@ -25,10 +25,33 @@ export interface WebhookVerificationResult {
 }
 
 export const WEBHOOK_MIN_SECRET_BYTES = 32;
+export const WEBHOOK_MAX_SECRET_BYTES = 4096;
 export const WEBHOOK_MAX_AGE_CEILING_SECONDS = 600;
+// Bounds synchronous hashing work and temporary copies. HTTP adapters must enforce this
+// while reading the request stream too; checking here cannot undo an upstream allocation.
+export const WEBHOOK_MAX_PAYLOAD_BYTES = 1_048_576;
 
 const UTF8 = new TextEncoder();
 const ok: WebhookVerificationResult = Object.freeze({ valid: true, diagnostics: Object.freeze([]) });
+// Measure TextEncoder-compatible UTF-8 length without allocating an encoded copy.
+// Undefined means the limit was crossed. The length fast-path also bounds scan time.
+function utf8ByteLengthUpTo(value: string, limit: number): number | undefined {
+  if (value.length > limit) return undefined;
+  let bytes = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    if (code <= 0x7f) bytes += 1;
+    else if (code <= 0x7ff) bytes += 2;
+    else if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(i + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) { bytes += 4; i += 1; }
+      else bytes += 3; // TextEncoder replaces an unpaired surrogate with U+FFFD.
+    } else bytes += 3; // Includes standalone low surrogates, also replaced by U+FFFD.
+    if (bytes > limit) return undefined;
+  }
+  return bytes;
+}
+
 function invalid(code: string, reason: string, path: string): WebhookVerificationResult {
   return Object.freeze({ valid: false, reason, diagnostics: Object.freeze([Object.freeze({ code, severity: "error" as const, message: reason, path })]) });
 }
@@ -102,9 +125,18 @@ function constantTimeEqualHex64(a: string, b: string): boolean {
 }
 
 export function validateWebhookConfig(config: WebhookVerificationConfig): WebhookVerificationResult {
+  if (config === null || typeof config !== "object") return invalid("Galerina_NETWORK_WEBHOOK_CONFIG", "Webhook configuration must be an object.", "config");
+  if (typeof config.secret !== "string" || utf8ByteLengthUpTo(config.secret, WEBHOOK_MAX_SECRET_BYTES) === undefined) {
+    return invalid("Galerina_NETWORK_WEBHOOK_SECRET_INVALID", `Webhook secret must be a string no longer than ${WEBHOOK_MAX_SECRET_BYTES} UTF-8 bytes.`, "secret");
+  }
   if (config.algorithm !== "sha256") return invalid("Galerina_NETWORK_WEBHOOK_ALGORITHM", "Only HMAC-SHA256 is accepted.", "algorithm");
-  if (UTF8.encode(config.secret).length < WEBHOOK_MIN_SECRET_BYTES) return invalid("Galerina_NETWORK_WEBHOOK_SECRET_WEAK", `Webhook secrets need at least ${WEBHOOK_MIN_SECRET_BYTES} bytes.`, "secret");
-  if (config.headerName.trim().length === 0) return invalid("Galerina_NETWORK_WEBHOOK_HEADER", "A signature header name is required.", "headerName");
+  const secretBytes = utf8ByteLengthUpTo(config.secret, WEBHOOK_MAX_SECRET_BYTES);
+  if (secretBytes === undefined) return invalid("Galerina_NETWORK_WEBHOOK_SECRET_INVALID", `Webhook secret exceeds ${WEBHOOK_MAX_SECRET_BYTES} UTF-8 bytes.`, "secret");
+  if (secretBytes < WEBHOOK_MIN_SECRET_BYTES) return invalid("Galerina_NETWORK_WEBHOOK_SECRET_WEAK", `Webhook secrets need at least ${WEBHOOK_MIN_SECRET_BYTES} bytes.`, "secret");
+  if (typeof config.headerName !== "string" || config.headerName.trim().length === 0) return invalid("Galerina_NETWORK_WEBHOOK_HEADER", "A signature header name is required.", "headerName");
+  if (config.timestampHeader !== undefined && (typeof config.timestampHeader !== "string" || config.timestampHeader.trim().length === 0)) {
+    return invalid("Galerina_NETWORK_WEBHOOK_TIMESTAMP_HEADER", "timestampHeader must be a non-empty string when supplied.", "timestampHeader");
+  }
   if (!Number.isSafeInteger(config.maxAgeSeconds) || config.maxAgeSeconds <= 0 || config.maxAgeSeconds > WEBHOOK_MAX_AGE_CEILING_SECONDS) {
     return invalid("Galerina_NETWORK_WEBHOOK_MAX_AGE", `maxAgeSeconds must be an integer in 1..${WEBHOOK_MAX_AGE_CEILING_SECONDS}.`, "maxAgeSeconds");
   }
@@ -122,14 +154,26 @@ export function verifyWebhookHmac(
 ): WebhookVerificationResult {
   const configCheck = validateWebhookConfig(config);
   if (!configCheck.valid) return configCheck;
+  if (typeof signature !== "string") return invalid("Galerina_NETWORK_WEBHOOK_SIGNATURE_FORMAT", "Signature must be a string.", "signature");
+  if (typeof payload === "string") {
+    if (utf8ByteLengthUpTo(payload, WEBHOOK_MAX_PAYLOAD_BYTES) === undefined) return invalid("Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE", `Webhook payload exceeds ${WEBHOOK_MAX_PAYLOAD_BYTES} UTF-8 bytes.`, "payload");
+  } else if (!(payload instanceof Uint8Array)) {
+    return invalid("Galerina_NETWORK_WEBHOOK_PAYLOAD_INVALID", "Webhook payload must be a string or Uint8Array.", "payload");
+  } else if (payload.byteLength > WEBHOOK_MAX_PAYLOAD_BYTES) {
+    return invalid("Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE", `Webhook payload exceeds ${WEBHOOK_MAX_PAYLOAD_BYTES} bytes.`, "payload");
+  }
   const provided = signature.startsWith("sha256=") ? signature.slice(7) : signature;
   if (!/^[0-9a-f]{64}$/.test(provided)) {
     return invalid("Galerina_NETWORK_WEBHOOK_SIGNATURE_FORMAT", "Signature must be 64 lower-case hex digits.", "signature");
   }
-  const bound = "timestampHeader" in config;
+  const bound = config.timestampHeader !== undefined;
   if (bound && !/^[0-9]{1,12}$/.test(timestamp)) return invalid("Galerina_NETWORK_WEBHOOK_TIMESTAMP_REQUIRED", "A signed timestamp is required by this config.", "timestamp");
   const body = typeof payload === "string" ? UTF8.encode(payload) : payload;
-  const message = bound ? new Uint8Array([...UTF8.encode(`${timestamp}.`), ...body]) : body;
+  if (body.byteLength > WEBHOOK_MAX_PAYLOAD_BYTES) return invalid("Galerina_NETWORK_WEBHOOK_PAYLOAD_TOO_LARGE", `Webhook payload exceeds ${WEBHOOK_MAX_PAYLOAD_BYTES} bytes.`, "payload");
+  const prefix = bound ? UTF8.encode(`${timestamp}.`) : undefined;
+  const message = prefix
+    ? (() => { const bytes = new Uint8Array(prefix.length + body.length); bytes.set(prefix); bytes.set(body, prefix.length); return bytes; })()
+    : body;
   const expected = toHex(hmacSha256(UTF8.encode(config.secret), message));
   return constantTimeEqualHex64(expected, provided)
     ? ok
@@ -191,7 +235,10 @@ export interface WebhookAdmissionInput {
 // then MAC -> freshness -> one replay claim, in that order, so an unauthenticated or stale
 // request can never consume a delivery id. Any failure refuses with its diagnostics.
 export async function admitWebhook(input: WebhookAdmissionInput): Promise<WebhookVerificationResult> {
-  if (!("timestampHeader" in input.config)) {
+  if (input === null || typeof input !== "object") return invalid("Galerina_NETWORK_WEBHOOK_INPUT", "Webhook admission input must be an object.", "input");
+  const configCheck = validateWebhookConfig(input.config);
+  if (!configCheck.valid) return configCheck;
+  if (input.config.timestampHeader === undefined) {
     return invalid("Galerina_NETWORK_WEBHOOK_TIMESTAMP_UNBOUND", "admitWebhook needs a config whose timestampHeader binds the timestamp into the MAC.", "config.timestampHeader");
   }
   const mac = verifyWebhookHmac(input.payload, input.signature, input.config, input.timestamp);
