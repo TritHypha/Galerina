@@ -223,7 +223,7 @@ describe("run { } operations: parse and permission-check (no execution)", () => 
     assert.equal((await runTask(good, { dryRun: true })).status, "dry-run");
     const real = await runTask(good);
     assert.equal(real.status, "skipped");
-    assert.deepEqual(real.warnings, ["Task operation execution is not implemented yet."]);
+    assert.deepEqual(real.warnings, ["No operation handlers were supplied; nothing was executed."]);
     assert.deepEqual(createDryRunPlan(good).operations.map((op) => op.name), ["filesystem.remove"]);
   });
 
