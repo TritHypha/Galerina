@@ -119,12 +119,13 @@ Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
 declarations, boundary violations, and why deployment was denied.
-Explain CLI wired (`galerina explain`): closed-shape manifest facets and/or
-`deployment-denial.json` reasoning; emits `explain-report.json`. Admitted flags:
-`--manifest`, `--denial`, `--report`, `--json`, `--trace`, `--effects`,
-`--capabilities`. Still open / refuse: `--tree`,
-`--trace`, `--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`,
-`--json`. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
+Explain CLI wired (`galerina explain`): closed-shape manifest facets,
+`deployment-denial.json` reasoning, declared dependency-tree (`--tree`), and
+declared runtime profile (`--runtime`); emits `explain-report.json`. Admitted
+flags: `--manifest`, `--denial`, `--tree`, `--runtime`, `--report`, `--json`,
+`--trace`, `--effects`, `--capabilities`. Still refuse: `--policy`, `--audit`
+(`FUNGI-CLI-EXPLAIN-004`). Does not walk a live package graph or probe a live
+runtime. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-010`.
 
 `galerina plan` estimates how execution will be coordinated â€” CPU/GPU suitability,
 memory pressure, parallelism, and fallback options. The planner recommends;

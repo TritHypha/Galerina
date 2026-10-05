@@ -1,14 +1,16 @@
 /**
  * `galerina explain` command wiring (zero-trust defaults, owner may revisit).
  *
- * Explains a closed ExplainManifestSlice and/or a closed DeploymentDenial.
- * Optionally writes explain-report.json. Never walks a live dependency tree.
- * Never probes runtime / policy / audit. Never echoes paths, tokens, or keys
- * in diagnostics / default details.
+ * Explains a closed ExplainManifestSlice, DeploymentDenial, ExplainDependencyTree
+ * and/or ExplainRuntimeProfile. Optionally writes explain-report.json.
+ * Tree input is a declared closed graph (no live filesystem walk). Runtime
+ * input is a declared closed profile (no live runtime probe). --policy / --audit
+ * remain refused. Never echoes paths, tokens, or keys in diagnostics / default.
  *
- * Admitted flags: --manifest <file>, --denial <file>, --report <dir>, --json,
- * --trace, --effects, --capabilities. At least one of --manifest / --denial.
- * --tree / --runtime / --policy / --audit are recognized but refused.
+ * Admitted flags: --manifest <file>, --denial <file>, --tree <file>,
+ * --runtime <file>, --report <dir>, --json, --trace, --effects, --capabilities.
+ * At least one of --manifest / --denial / --tree / --runtime.
+ * --policy / --audit are recognized but refused (FUNGI-CLI-EXPLAIN-004).
  * Exit codes: 0 success, 2 usage, 4 validation (shape/domain refuse).
  */
 
@@ -22,6 +24,8 @@ import {
   type ExplainResult,
 } from "./explain-trace.js";
 import { explainDenial } from "./explain-denial.js";
+import { explainDependencyTree } from "./explain-tree.js";
+import { explainRuntimeProfile } from "./explain-runtime.js";
 import {
   createExplainReport,
   renderExplainReport,
@@ -31,11 +35,11 @@ import {
 
 /** Unknown or duplicate flag / missing value / equals-form / positional. */
 export const FUNGI_CLI_EXPLAIN_001 = "FUNGI-CLI-EXPLAIN-001";
-/** Required input missing (need --manifest and/or --denial). */
+/** Required input missing (need --manifest and/or --denial and/or --tree and/or --runtime). */
 export const FUNGI_CLI_EXPLAIN_002 = "FUNGI-CLI-EXPLAIN-002";
 /** Input file unreadable / not JSON / not a plain object. */
 export const FUNGI_CLI_EXPLAIN_003 = "FUNGI-CLI-EXPLAIN-003";
-/** --tree / --runtime / --policy / --audit not admitted yet. */
+/** --policy / --audit not admitted yet. */
 export const FUNGI_CLI_EXPLAIN_004 = "FUNGI-CLI-EXPLAIN-004";
 /** --report directory unusable (missing, not a dir, or report already exists). */
 export const FUNGI_CLI_EXPLAIN_005 = "FUNGI-CLI-EXPLAIN-005";
@@ -63,6 +67,8 @@ export type ExplainFlagName = (typeof ADMITTED_FLAGS)[number];
 export interface ExplainCommandOptions {
   readonly manifestPath?: string;
   readonly denialPath?: string;
+  readonly treePath?: string;
+  readonly runtimePath?: string;
   readonly reportDir?: string;
   readonly json: boolean;
   readonly trace: boolean;
@@ -94,6 +100,8 @@ export function parseExplainArgs(args: readonly string[]):
   | { readonly ok: false; readonly result: CliResult } {
   let manifestPath = "";
   let denialPath = "";
+  let treePath = "";
+  let runtimePath = "";
   let reportDir = "";
   let json = false;
   let trace = false;
@@ -132,7 +140,7 @@ export function parseExplainArgs(args: readonly string[]):
           FUNGI_CLI_EXPLAIN_001,
           EXPLAIN_EXIT_USAGE,
           "Explain does not accept positional arguments.",
-          "Pass inputs through --manifest / --denial / --report.",
+          "Pass inputs through --manifest / --denial / --tree / --runtime / --report.",
         ),
       };
     }
@@ -143,7 +151,7 @@ export function parseExplainArgs(args: readonly string[]):
           FUNGI_CLI_EXPLAIN_001,
           EXPLAIN_EXIT_USAGE,
           "Explain received an unknown flag.",
-          "Use only --manifest, --denial, --report, --json, --trace, --effects, --capabilities (and note --tree/--runtime/--policy/--audit are not admitted yet).",
+          "Use only --manifest, --denial, --tree, --runtime, --report, --json, --trace, --effects, --capabilities (and note --policy/--audit are not admitted yet).",
         ),
       };
     }
@@ -176,14 +184,14 @@ export function parseExplainArgs(args: readonly string[]):
       capabilitiesOnly = true;
       continue;
     }
-    if (a === "--tree" || a === "--runtime" || a === "--policy" || a === "--audit") {
+    if (a === "--policy" || a === "--audit") {
       return {
         ok: false,
         result: refuse(
           FUNGI_CLI_EXPLAIN_004,
           EXPLAIN_EXIT_USAGE,
           "Explain flag is not admitted yet.",
-          "Omit --tree / --runtime / --policy / --audit until dependency-tree / runtime / policy / audit explain lands.",
+          "Omit --policy / --audit until policy / audit explain lands.",
         ),
       };
     }
@@ -196,24 +204,31 @@ export function parseExplainArgs(args: readonly string[]):
           FUNGI_CLI_EXPLAIN_001,
           EXPLAIN_EXIT_USAGE,
           "An explain flag that needs a value was given without one.",
-          "Pass --manifest <file>, --denial <file>, or --report <dir>.",
+          "Pass --manifest <file>, --denial <file>, --tree <file>, --runtime <file>, or --report <dir>.",
         ),
       };
     }
     i += 1;
     if (a === "--manifest") manifestPath = next;
     else if (a === "--denial") denialPath = next;
+    else if (a === "--tree") treePath = next;
+    else if (a === "--runtime") runtimePath = next;
     else if (a === "--report") reportDir = next;
   }
 
-  if (manifestPath.length === 0 && denialPath.length === 0) {
+  if (
+    manifestPath.length === 0 &&
+    denialPath.length === 0 &&
+    treePath.length === 0 &&
+    runtimePath.length === 0
+  ) {
     return {
       ok: false,
       result: refuse(
         FUNGI_CLI_EXPLAIN_002,
         EXPLAIN_EXIT_USAGE,
-        "Explain requires --manifest <file> and/or --denial <file>.",
-        "Pass a closed ExplainManifestSlice and/or DeploymentDenial JSON object.",
+        "Explain requires --manifest, --denial, --tree, and/or --runtime.",
+        "Pass a closed ExplainManifestSlice / DeploymentDenial / ExplainDependencyTree / ExplainRuntimeProfile JSON object.",
       ),
     };
   }
@@ -224,6 +239,8 @@ export function parseExplainArgs(args: readonly string[]):
   const options: ExplainCommandOptions = Object.freeze({
     ...(manifestPath.length > 0 ? { manifestPath } : {}),
     ...(denialPath.length > 0 ? { denialPath } : {}),
+    ...(treePath.length > 0 ? { treePath } : {}),
+    ...(runtimePath.length > 0 ? { runtimePath } : {}),
     ...(reportDir.length > 0 ? { reportDir } : {}),
     json,
     trace,
@@ -248,7 +265,7 @@ async function readJsonObject(
         FUNGI_CLI_EXPLAIN_003,
         EXPLAIN_EXIT_USAGE,
         "An explain input file could not be read.",
-        "Ensure --manifest / --denial names a readable UTF-8 JSON object.",
+        "Ensure --manifest / --denial / --tree / --runtime names a readable UTF-8 JSON object.",
       ),
     };
   }
@@ -370,6 +387,16 @@ export async function runExplainCommand(context: CliContext): Promise<CliResult>
     if (!loaded.ok) return loaded.result;
     parts.push(explainDenial(loaded.value));
   }
+  if (options.treePath !== undefined) {
+    const loaded = await readJsonObject(options.treePath, context.cwd);
+    if (!loaded.ok) return loaded.result;
+    parts.push(explainDependencyTree(loaded.value));
+  }
+  if (options.runtimePath !== undefined) {
+    const loaded = await readJsonObject(options.runtimePath, context.cwd);
+    if (!loaded.ok) return loaded.result;
+    parts.push(explainRuntimeProfile(loaded.value));
+  }
 
   const result = mergeResults(parts);
   if (result.diagnostics.length > 0) {
@@ -377,7 +404,7 @@ export async function runExplainCommand(context: CliContext): Promise<CliResult>
       FUNGI_CLI_EXPLAIN_001,
       EXPLAIN_EXIT_VALIDATION,
       "Explain input failed closed-shape validation.",
-      "Provide closed ExplainManifestSlice / DeploymentDenial objects with admitted tokens only.",
+      "Provide closed ExplainManifestSlice / DeploymentDenial / ExplainDependencyTree / ExplainRuntimeProfile objects with admitted tokens only.",
     );
   }
 

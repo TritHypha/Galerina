@@ -4,7 +4,7 @@
 // diagnostics.length === 0. Diagnostic messages are withheld (fixed token); only
 // FUNGI-form codes and closed field tokens are copied. Trace labels/input/output
 // must already be closed tokens (copied only when they match). Exclusive create
-// only (never overwrite). Limitations note denial reader + no live tree/runtime.
+// only (never overwrite). Limitations note declared tree/runtime; no live walk/probe; policy/audit open.
 
 import { constants } from "node:fs";
 import { open, realpath, stat } from "node:fs/promises";
@@ -21,9 +21,9 @@ export const EXPLAIN_REPORT_SCHEMA = "galerina.explain-report/v1";
 export const EXPLAIN_REPORT_FILE = "explain-report.json";
 
 export const EXPLAIN_REPORT_LIMITATIONS: readonly string[] = Object.freeze([
-  "closed-shape explain of manifest slice and/or deployment-denial only",
-  "does not walk a live dependency tree",
-  "does not probe runtime targets or audit evidence",
+  "closed-shape explain of manifest / denial / declared dependency-tree / declared runtime profile",
+  "does not walk a live filesystem or package dependency graph",
+  "does not probe a live runtime, policy, or audit evidence stream",
 ]);
 
 export interface ExplainReportDiagnostic {
