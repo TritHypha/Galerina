@@ -913,9 +913,9 @@ Reason for additions:
 ## Build TODO
 
 ```text
-[ ] Define debug build mode
-[ ] Define release build mode
-[ ] Define build folder layout
+[x] Define debug build mode
+[x] Define release build mode
+[x] Define build folder layout
 [x] Define build manifest schema
 [x] Define map manifest schema
 [x] Define docs manifest schema
@@ -933,7 +933,7 @@ Reason for additions:
 [x] Generate global report and global registry guide
 [x] Generate docs manifest
 [ ] Define build signing possibility
-[ ] Define source-map output rules
+[x] Define source-map output rules
 [x] Define generated file naming
 [x] Define generated file cleanup
 ```
@@ -1018,8 +1018,8 @@ Reason for additions:
 ## Source Map TODO
 
 ```text
-[ ] Define app.source-map.json format
-[ ] Map binary errors to .fungi files
+[x] Define app.source-map.json format
+[x] Map binary errors to .fungi files
 [x] Map WASM errors to .fungi files
 [x] Map GPU plan errors to .fungi files
 [x] Map photonic plan errors to .fungi files
@@ -1067,9 +1067,9 @@ Reason for additions:
 [ ] Define security tests
 [ ] Define memory-safety tests
 [x] Define type checker tests
-[ ] Define source-map tests
+[x] Define source-map tests
 [ ] Define compiler report tests
-[ ] Define target report tests
+[x] Define target report tests
 [x] Define AI context tests
 ```
 
