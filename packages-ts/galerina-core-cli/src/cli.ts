@@ -95,7 +95,7 @@ export async function runCli(args: readonly string[], cwd: string): Promise<CliR
       ok: true,
       code: 0,
       message:
-        "Usage: Galerina <check|build|run|serve|reports|security:check|routes|benchmark|task|graph|verify|deploy|init> [options]"
+        "Usage: Galerina <check|build|run|serve|reports|security:check|routes|benchmark|task|graph|verify|deploy|explain|plan|init> [options]"
     };
   }
 

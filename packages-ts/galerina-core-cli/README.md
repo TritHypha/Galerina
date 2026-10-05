@@ -52,7 +52,6 @@ galerina fmt               Ã¢â‚¬â€ format source files
 ```text
 galerina deploy            Ã¢â‚¬â€ deploy verified build to target environment
 galerina explain           Ã¢â‚¬â€ explain build decisions, authority model, effects
-galerina plan              Ã¢â‚¬â€ preview deployment actions without applying changes
 galerina verify deploy     Ã¢â‚¬â€ verify running version against build manifest
 galerina promote           Ã¢â‚¬â€ promote artifact from one environment to another
 galerina rollback          Ã¢â‚¬â€ rollback to previous deployment
@@ -376,7 +375,7 @@ Numeric fields refuse `NaN` / `Infinity` / non-integers. `GpuPlan.recommendedTar
 frozen to `"node"` under v1 (advisory suitability only — never an execution admission).
 `estimateTarget(workspace, options)` never throws. Codes: `FUNGI-PLAN-001` shape,
 `002` domain, `003` options facet refuse, `004` result consistency / v1 freeze.
-Does not wire `galerina plan`, write `compute-plan.json`, or probe live GPU/optical/memory.
+`galerina plan` CLI + `compute-plan.json` reporter landed (`src/plan/plan-command.ts`, `src/plan/plan-reporter.ts`; Grok 2026-10-05; zero-trust defaults, owner may revisit). Admitted flags: `--workspace`, `--target`, `--memory`, `--parallelism`, `--report`, `--json`, `--compatibility`. `--runtime` / `--energy` / `--graph` refuse `FUNGI-CLI-PLAN-004` (live probe HOLD). Does not probe live GPU/optical/memory/energy or walk a plan-graph.
 
 ```ts
 export interface ComputePlan {
