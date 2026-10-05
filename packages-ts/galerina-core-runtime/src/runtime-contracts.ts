@@ -279,7 +279,7 @@ export interface DataIntakePolicy {
   readonly allowedKeys: readonly string[];
 }
 
-export type DataIntakeStage = "size" | "parse" | "depth" | "schema" | "canonical" | "ownership";
+export type DataIntakeStage = "policy" | "size" | "parse" | "depth" | "schema" | "canonical" | "ownership";
 
 export interface DataIntakeResult {
   readonly admitted: boolean;
@@ -316,8 +316,17 @@ function deepFreeze<T>(value: T): T {
 export function admitUntrustedData(text: string, policy: DataIntakePolicy, owner: string): DataIntakeResult {
   const fail = (stage: DataIntakeStage, code: string, message: string): DataIntakeResult =>
     ({ admitted: false, failedStage: stage, diagnostics: [refuse(code, message, stage)], owner, taint: "untrusted", value: Object.freeze({}) });
+  const validKeys = (keys: unknown): keys is readonly string[] => Array.isArray(keys) && keys.every((key) => typeof key === "string");
+  if (policy === null || typeof policy !== "object"
+    || !isPositiveInt(policy.maxBytes) || !isPositiveInt(policy.maxDepth)
+    || !isPositiveInt(policy.maxKeys) || !isPositiveInt(policy.maxStringLength)
+    || !validKeys(policy.requiredKeys) || !validKeys(policy.allowedKeys)
+    || policy.requiredKeys.some((key) => !policy.allowedKeys.includes(key))) {
+    return fail("policy", "Galerina_RUNTIME_INTAKE_POLICY", "Intake policy bounds and key sets must be valid before processing input.");
+  }
+  if (typeof text !== "string") return fail("size", "Galerina_RUNTIME_INTAKE_SIZE", "Input must be text.");
   const bytes = new TextEncoder().encode(text).length;
-  if (!isPositiveInt(policy.maxBytes) || bytes > policy.maxBytes) return fail("size", "Galerina_RUNTIME_INTAKE_SIZE", "Input exceeds the byte limit.");
+  if (bytes > policy.maxBytes) return fail("size", "Galerina_RUNTIME_INTAKE_SIZE", "Input exceeds the byte limit.");
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -350,6 +359,6 @@ export function admitUntrustedData(text: string, policy: DataIntakePolicy, owner
     return fail("schema", "Galerina_RUNTIME_INTAKE_SCHEMA", "Input keys do not match the closed schema.");
   }
   if (canonicalJson(record) !== text) return fail("canonical", "Galerina_RUNTIME_INTAKE_CANONICAL", "Input is not in canonical JSON form.");
-  if (owner.trim().length === 0) return fail("ownership", "Galerina_RUNTIME_INTAKE_OWNER", "Admitted data needs an explicit owner.");
+  if (typeof owner !== "string" || owner.trim().length === 0) return fail("ownership", "Galerina_RUNTIME_INTAKE_OWNER", "Admitted data needs an explicit owner.");
   return { admitted: true, failedStage: "none", diagnostics: [], owner, taint: "untrusted", value: deepFreeze(record) };
 }

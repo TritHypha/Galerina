@@ -360,4 +360,4 @@ galerina-framework-app-kernel governs application/API runtime boundaries.
 | Host-runtime overhead | `createHostOverheadReport` reports integer-nanosecond totals and integer permille overhead. Zero guest time gives `UNMEASURED`. |
 | Target fallback | `decideTargetFallback` is off by default. When enabled it follows only the declared chain, uses only targets with exact semantics, and records every skipped target. |
 | Resource budget | `DEFAULT_RUNTIME_RESOURCE_BUDGET` grants no network, tool or accelerator budget. `checkRuntimeResourceUsage` terminates on any overrun. |
-| Malicious-data intake | `admitUntrustedData` runs staged checks: size, parse, depth/keys/strings/prototype keys, closed schema, canonical JSON, then owner. Admitted data stays tainted `untrusted`. |
+| Malicious-data intake | `admitUntrustedData` validates positive finite policy bounds and closed key sets before staged checks: size, parse, depth/keys/strings/prototype keys, schema, canonical JSON, then owner. Admitted data stays tainted `untrusted`. |

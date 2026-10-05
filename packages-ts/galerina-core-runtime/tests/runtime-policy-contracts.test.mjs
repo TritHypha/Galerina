@@ -119,4 +119,12 @@ describe("malicious-data intake pipeline", () => {
     assert.equal(stage('{ "id":1}'), "canonical");
     assert.equal(stage('{"id":1}', " "), "ownership");
   });
+  it("refuses invalid intake policy bounds before processing attacker input", () => {
+    for (const patch of [{ maxDepth: 0 }, { maxDepth: Number.NaN }, { maxKeys: undefined }, { maxStringLength: -1 }]) {
+      const result = R.admitUntrustedData('{"id":1}', { ...policy, ...patch }, "tenant-a");
+      assert.equal(result.admitted, false);
+      assert.equal(result.failedStage, "policy");
+      assert.ok(codes(result).includes("Galerina_RUNTIME_INTAKE_POLICY"));
+    }
+  });
 });
