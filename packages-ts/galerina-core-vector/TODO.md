@@ -4,7 +4,7 @@
 [x] Treat vector photonic governance notes as proposal-only until galerina-core-photonic reconciles ownership
     -- enforced by tests/photonic-proposal-boundary.test.mjs: no photonic/optical export,
     none of the proposed symbols or FUNGI-PHOTONIC codes in src or published types, no
-    photonic/compute/target dependency, README label kept (Grok 2026-10-05; zero-trust
+    photonic dependency, README label kept (Grok 2026-10-05; zero-trust
     default, owner may revisit). The cross-package adjudication itself is not settled
     here: it stays with core-photonic HOLD-PHOTONIC-TRANSPORT / -DIAGNOSTICS / -BOUNDARY.
     (2026-09-29 note: core-photonic TODO.md records a 2026-09-22 reconciliation, but its
