@@ -35,6 +35,7 @@ describe("redaction rule ReDoS guard (owner may revisit)", () => {
       "(?:a|b)*c": "repeated alternation",
       "(a|b){2,}": "repeated alternation",
       "(a)\\1": "numeric backreference",
+      "(?<x>a)\\k<x>": "named backreference",
     };
     for (const [pattern, reason] of Object.entries(refused)) {
       assert.equal(findUnsafeRedactionPattern(pattern), reason, pattern);

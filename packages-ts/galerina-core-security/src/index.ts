@@ -676,6 +676,7 @@ export const MAX_REDACTION_PATTERN_LENGTH = 512;
  *   - a group that contains a `+`, `*` or `{n,m}` quantifier or an alternation
  *     and is itself repeated with `+`, `*` or `{` (for example `(a+)+`, `(a|b)*`);
  *   - numeric backreferences (`\1`-`\9`), which defeat linear-time reasoning.
+ *   - named backreferences (`\k<name>`), for the same reason (SuperGrok C1 #60 NB-1).
  * Bounded `?` after a group stays allowed, so the default rules pass. This is a
  * heuristic, not a full automaton analysis: a refused pattern may be safe, never
  * the reverse for these shapes. Owner may revisit.
@@ -692,6 +693,9 @@ export function findUnsafeRedactionPattern(pattern: string): string {
       const next = pattern[i + 1] ?? "";
       if (!inClass && next >= "1" && next <= "9") {
         return "numeric backreference";
+      }
+      if (!inClass && next === "k" && pattern[i + 2] === "<") {
+        return "named backreference";
       }
       i++;
       continue;
