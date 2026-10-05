@@ -130,7 +130,7 @@ describe("run { } execution through host handlers (zero-trust defaults)", () => 
     const { calls, handlers } = recorder(FS, {
       "filesystem.copy": (inv) => {
         seen.signal = inv.signal;
-        throw new Error("EACCES C:\\Users\\secret\\token=abc123");
+        throw new Error("EACCES build/secret/token=abc123");
       }
     });
     const result = await runTask(one(COPY_TASK), { handlers });
