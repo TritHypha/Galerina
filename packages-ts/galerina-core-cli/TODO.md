@@ -45,13 +45,13 @@
 [ ]   - validate effects, capabilities, runtime targets, module hashes
 [ ]   - produce deployment-report.json
 [ ]   - support --dry-run, --json, --report, --audit, --strict flags
-[ ]   - implement DeploymentTarget union: node|wasm|native|serverless|edge|gpu|photonic
-[ ]   - implement DeploymentResult: success, target, manifestHash, diagnostics[], reportPath?
-[ ]   - implement ValidateEffectsInput: manifest, policy, target
-[ ]   - implement validateEffects(input): CompilerDiagnostic[]
+[x]   - implement DeploymentTarget union: node|wasm|native|serverless|edge|gpu|photonic -- src/deploy.ts, src/deploy/deploy-validator.ts, tests/deploy-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): DEPLOYMENT_TARGETS closed vocabulary; isDeploymentTarget exact match only
+[x]   - implement DeploymentResult: success, target, manifestHash, diagnostics[], reportPath? -- src/deploy/deploy-validator.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): createDeploymentResult / readDeploymentResult; success recomputed as diagnostics.length===0; optional reportPath relative only; closed shape via descriptors
+[x]   - implement ValidateEffectsInput: manifest, policy, target -- src/deploy/deploy-validator.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed ValidateEffectsInput + EffectsPolicy + DeployManifestSlice (allowedEffects|verified); unknown keys refuse without echo
+[x]   - implement validateEffects(input): DeployDiagnostic[] -- src/deploy/deploy-validator.ts, tests/deploy-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): validateEffects never throws; FUNGI-DEPLOY-003 effect denial, 004 target incompatibility, 005 verified gate; never echoes effect/target names
 [x]   - return exit codes 0?7 (0 success, 2 policy denial, 3 runtime incompatibility, 4 validation failure, 5 capability failure, 6 verify failure, 7 manifest integrity) -- src/verify/verify-command.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): verify command emits 0 (ok), 2 (usage/not-admitted flags), 6 (artefact verify failure), 7 (manifest integrity failure). Codes 3/4/5 remain for deploy/runtime-compatibility slices not yet wired
-[ ]   - diagnostic codes FUNGI-DEPLOY-001 through FUNGI-DEPLOY-005
-[ ]   - create deploy/ dir: deploy-command.ts, deploy-policy.ts, deploy-validator.ts, deploy-report.ts, deploy-runtime.ts
+[x]   - diagnostic codes FUNGI-DEPLOY-001 through FUNGI-DEPLOY-005 -- src/deploy/deploy-validator.ts (Grok 2026-10-05; zero-trust defaults, owner may revisit): 001 closed-shape refuse, 002 domain refuse, 003 policy effect denial, 004 target incompatibility, 005 verified gate
+[x]   - create deploy/ dir: deploy-validator.ts -- src/deploy/deploy-validator.ts (+ src/deploy.ts barrel) (Grok 2026-10-05; zero-trust defaults, owner may revisit): contracts only; deploy-command.ts / deploy-policy.ts / deploy-report.ts / deploy-runtime.ts remain open (no CLI wiring / no report writer / no live deploy)
 [ ] Add Galerina explain command integration
 [ ]   - explain imports, effects, capabilities, dependency tree
 [ ]   - explain denial reasoning from deployment-denial.json

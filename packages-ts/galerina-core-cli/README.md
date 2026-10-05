@@ -295,6 +295,16 @@ export async function verifyHash(
 
 ### Deploy Contracts
 
+Deploy contracts (`src/deploy.ts` / `src/deploy/deploy-validator.ts`, zero-trust defaults, owner may
+revisit): closed `DeploymentTarget` vocabulary (`node|wasm|native|serverless|edge|gpu|photonic`),
+`DeploymentResult` (`createDeploymentResult` / `readDeploymentResult`), `EffectsPolicy`,
+`DeployManifestSlice` (`allowedEffects` + `verified`), and `validateEffects`. Shapes are read through
+property descriptors (no getters). Diagnostics never echo effect names, targets, hashes or unknown
+keys. Codes: `FUNGI-DEPLOY-001` shape, `002` domain, `003` policy effect denial, `004` target
+incompatibility, `005` verified gate. Not covered: `galerina deploy` command wiring,
+`deployment-report.json` writer, dry-run, or live target probing.
+
+
 ```ts
 export type DeploymentTarget =
     | "node"
