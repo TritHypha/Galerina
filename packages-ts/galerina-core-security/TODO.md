@@ -41,7 +41,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [ ] Ensure SecretReference protected marker prevents accidental string serialization
 [x] Define policy definition, effective policy and conflict report schemas -- src/policy-contracts.ts readPolicyDefinition / readEffectivePolicy / readPolicyConflict (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.policy-definition/v1, effective-policy/v1, policy-conflict/v1; FUNGI-SEC-POL-001..005; deny-default only; kinds align with core-reports policy family (authored excludes unknown); never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; tests/policy-contracts.test.mjs
 [x] Define capability boundary and grant report schemas -- src/capability-contracts.ts readCapabilityBoundary / readCapabilityGrantReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.capability-boundary/v1, capability-grant-report/v1; FUNGI-SEC-CAP-001..005; deny-default only; admitted/denied and granted/refused disjoint ascending tokens; never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; lease/attenuation/approver-chain still open; tests/capability-contracts.test.mjs
-[ ] Define capability lease, attenuation and approver-chain diagnostics
+[x] Define capability lease, attenuation and approver-chain diagnostics (closed-shape CapabilityLease / CapabilityAttenuation / ApproverChain; FUNGI-SEC-CLA-001..005; Grok 2026-10-05; owner may revisit)
 [ ] Define AI self-grant and trust-root modification diagnostics
 [ ] Define malicious data validation and taint-flow diagnostics
 [ ] Define OWASP/CWE baseline diagnostic mapping
@@ -55,3 +55,9 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [x] Add examples
 [x] Add tests
 ```
+
+## Notes (Grok 2026-10-05 capability lease)
+- Closed `src/capability-lease-contracts.ts`: `readCapabilityLease` / `readCapabilityAttenuation` / `readApproverChain`.
+- Schemas: `galerina.security.capability-lease/v1`, `capability-attenuation/v1`, `approver-chain/v1`.
+- Deny-first: active lease needs capabilities; denied lease empty; allow chain needs approvers; child ⊆ parent.
+- Epoch seconds finite safe ints only; SecretReference v0.2 still do-not-invent; no live lease runtime.

@@ -830,3 +830,33 @@ export {
   type ReadCapabilityGrantReportResult,
 } from "./capability-contracts.js";
 
+
+export {
+  FUNGI_SEC_CLA_001,
+  FUNGI_SEC_CLA_002,
+  FUNGI_SEC_CLA_003,
+  FUNGI_SEC_CLA_004,
+  FUNGI_SEC_CLA_005,
+  CAPABILITY_LEASE_SCHEMA,
+  CAPABILITY_ATTENUATION_SCHEMA,
+  APPROVER_CHAIN_SCHEMA,
+  CAPABILITY_LEASE_STATUSES,
+  CAPABILITY_LEASE_PARENT_NONE,
+  APPROVER_CHAIN_DECISIONS,
+  CAPABILITY_LEASE_FIELDS,
+  CAPABILITY_ATTENUATION_FIELDS,
+  APPROVER_CHAIN_FIELDS,
+  readCapabilityLease,
+  readCapabilityAttenuation,
+  readApproverChain,
+  type CapabilityLeaseStatus,
+  type ApproverChainDecision,
+  type CapabilityLeaseDiagnosticField,
+  type CapabilityLeaseDiagnostic,
+  type CapabilityLease,
+  type CapabilityAttenuation,
+  type ApproverChain,
+  type ReadCapabilityLeaseResult,
+  type ReadCapabilityAttenuationResult,
+  type ReadApproverChainResult,
+} from "./capability-lease-contracts.js";
