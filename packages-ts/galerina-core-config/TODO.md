@@ -40,7 +40,8 @@
 [x] Define FUNGI-VAULT-001 through FUNGI-VAULT-005 diagnostic codes and constructors (2026-05-26)
 [x] Define SecretCategory type (api-key|signing-key|password|token|certificate|database-credential|webhook-secret|oauth-secret|generic) (2026-05-26)
 [x] Define SecretRedactionPolicy with DEFAULT_SECRET_REDACTION_POLICY (2026-05-26)
-[ ] Create internal dir structure: environment/, secrets/, loaders/, types/ — DEFERRED by the RD-1285 v0.2 freeze; symbols remain intentionally in src/index.ts and no split receipt authorizes this work
+[HOLD] Create internal dir structure: environment/, secrets/, loaders/, types/ — DEFERRED by the RD-1285 v0.2 freeze; symbols remain intentionally in src/index.ts and no split receipt authorizes this work
+    HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): no split without a receipt. Reopen as [ ] when RD-1285 lifts or a split receipt exists.
 ```
 
 ## v0.2 freeze (2026-09-21) — `RD-1285`
