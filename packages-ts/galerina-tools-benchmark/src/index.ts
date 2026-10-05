@@ -145,7 +145,8 @@ function validateExactKeys(
         "Galerina_BENCHMARK_FIELD_UNKNOWN",
         "error",
         "Benchmark record contains an unknown or symbolic field.",
-        `${path}.${String(key)}`,
+        // Never echo an unknown/symbolic key (zero-trust no-echo; C40 follow-up).
+        `${path}.<unknown>`,
       ));
     }
   }
@@ -315,7 +316,8 @@ function validateReportKeys(
         "Galerina_BENCHMARK_REPORT_FIELD_UNKNOWN",
         "error",
         "Benchmark report record contains an unknown or symbolic field.",
-        `${path}.${String(key)}`,
+        // Never echo an unknown/symbolic key (zero-trust no-echo; C40 follow-up).
+        `${path}.<unknown>`,
       ));
     }
   }
