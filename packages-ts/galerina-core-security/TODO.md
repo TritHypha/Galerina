@@ -39,7 +39,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [ ] Create checks/ dir: check-secret-sink.ts, check-secret-string-conversion.ts, secret-taint.ts
 [ ] Create runtime/ dir: secret-resolver.ts, safe-log.ts, safe-json.ts
 [ ] Ensure SecretReference protected marker prevents accidental string serialization
-[ ] Define policy definition, effective policy and conflict report schemas
+[x] Define policy definition, effective policy and conflict report schemas -- src/policy-contracts.ts readPolicyDefinition / readEffectivePolicy / readPolicyConflict (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.policy-definition/v1, effective-policy/v1, policy-conflict/v1; FUNGI-SEC-POL-001..005; deny-default only; kinds align with core-reports policy family (authored excludes unknown); never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; tests/policy-contracts.test.mjs
 [ ] Define capability boundary and grant report schemas
 [ ] Define capability lease, attenuation and approver-chain diagnostics
 [ ] Define AI self-grant and trust-root modification diagnostics
