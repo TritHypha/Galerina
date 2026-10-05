@@ -141,8 +141,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 ## Phase 8: Full Benchmarks
 
 ```text
-[ ] Add 100MB JSON streaming test
-[ ] Add optional 1GB generated JSON streaming test
+[x] Add 100MB JSON streaming test -- src/json-stream-generated-benchmark.ts runJsonStreamValidate100mbBenchmark (Grok 2026-10-06; zero-trust defaults, owner may revisit): full-mode id json.stream_validate_100mb; generated as fed (no payload in memory) through the #127 JSON Lines validator; OWNER-REVISIT 100 MiB + closed `bytes` override for tests; FUNGI-BENCH-JSONG-001..005
+[x] Add optional 1GB generated JSON streaming test -- src/json-stream-generated-benchmark.ts runJsonStreamValidate1gbOptionalBenchmark (Grok 2026-10-06; zero-trust defaults, owner may revisit): full-mode id json.stream_validate_1gb_optional; generated as fed; OWNER-REVISIT 1 GiB; never run implicitly or in unit tests; light-mode exclusion belongs to the command runner
 [x] Add medium matrix multiply -- src/matrix-medium-benchmark.ts runMatrixMultiplyMediumBenchmark / benchMatMulFloat32 (Grok 2026-10-05; zero-trust defaults, owner may revisit): README full-mode id vector.matrix_multiply_medium target vector; scalar Float32 CPU only; OWNER-REVISIT pick N=128, tol 1e-3; score = M mul-adds/s (ZTF scoreboard size-invariant unit); FUNGI-BENCH-MAT-001..005; no GPU / SIMD claim / mode gating (runner) 
 [ ] Add GPU benchmark if available
 [ ] Add generic AI accelerator benchmark if available
@@ -210,3 +210,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Closed `src/matrix-medium-benchmark.ts`: `runMatrixMultiplyMediumBenchmark` / `benchMatMulFloat32` / `verifyMatMulSpotEntries`.
 - OWNER-REVISIT picks (not in-repo spec): N = 128 (README says only "medium"), Float32 row-major i-k-j, spot-check tolerance 1e-3 vs Float64 reference.
 - Score unit mul-adds/s from the ZTF benchmark scoreboard standard (size-invariant). Light/full gating is the command runner's job; GPU matmul stays HOLD.
+
+## Notes (Grok 2026-10-06 JSON 100MB / 1GB generated streams)
+- Closed `src/json-stream-generated-benchmark.ts`: `generateJsonLinesChunks` feeds the #127 validator chunk by chunk; peak memory ~one chunk + one partial line.
+- OWNER-REVISIT picks: 100 MiB / 1 GiB; `bytes` override in [64 KiB, case size] (result reports `bytes` + `bytesValidated`); maxDurationMs 60 s/300 s (100MB) and 300 s/1800 s (1GB).
+- Unit tests use 256 KiB-8 MiB overrides only; the full sizes are never run in tests.
