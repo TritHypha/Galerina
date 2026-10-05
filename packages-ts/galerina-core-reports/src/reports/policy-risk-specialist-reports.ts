@@ -331,11 +331,12 @@ export function createPolicyConflictReport(items: unknown, generatedAt: string):
  */
 export function createPolicyAiSummaryReport(input: unknown, generatedAt: string): PolicyAiSummaryReport {
   requireTimestamp(generatedAt, "FUNGI-REPORT-003");
+  // C16 NB-1 (zero-trust default, owner may revisit): closed-key check before any getter runs.
+  assertClosedKeys(input, "policy ai summary", POLICY_AI_SUMMARY_KEYS);
   const o = readOwn<Record<string, unknown>>(input, "policy ai summary");
   if (o.summaryText !== undefined || o.text !== undefined || o.message !== undefined || o.prompt !== undefined) {
     throw new Error("FUNGI-REPORT-002: free-text AI summary fields refused.");
   }
-  assertClosedKeys(input, "policy ai summary", POLICY_AI_SUMMARY_KEYS);
   if (!Array.isArray(o.tokens) || o.tokens.length > 16) throw new Error("FUNGI-REPORT-002: tokens refused.");
   const tokens: PolicyAiSummaryToken[] = [];
   for (const t of o.tokens) {

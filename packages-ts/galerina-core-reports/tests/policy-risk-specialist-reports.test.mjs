@@ -151,9 +151,16 @@ describe("closed input shapes (SuperGrok C15 NB-1)", () => {
     let ran = false;
     const extra = { tokens: ["empty"], [MARKER]: 1 };
     assert.throws(() => createPolicyAiSummaryReport(extra, T), (e) => /FUNGI-REPORT-002/.test(e.message) && !e.message.includes(MARKER));
-    const withGetter = { get policyId() { ran = true; return "pol-a"; }, kind: "network", extra: 1 };
-    const report = createPolicyIndexReport([withGetter], T);
-    assert.deepEqual([...report.rejectedIndexes], [0]);
+    // C16 NB-1: the AI-summary path itself must not run getters before assertClosedKeys.
+    const withGetter = {
+      get tokens() { ran = true; return ["empty"]; },
+      policyCount: 0,
+      conflictCount: 0,
+      denyCount: 0,
+      allowCount: 0,
+      extra: 1,
+    };
+    assert.throws(() => createPolicyAiSummaryReport(withGetter, T), (e) => /FUNGI-REPORT-002/.test(e.message) && !e.message.includes("empty"));
     assert.equal(ran, false);
   });
 });
