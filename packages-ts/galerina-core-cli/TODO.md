@@ -29,7 +29,7 @@
 [ ]   - diagnostic codes FUNGI-BUILD-001 through FUNGI-BUILD-005
 [ ]   - create build/ dir: build-command.ts, build-pipeline.ts, build-reporter.ts, build-artifacts.ts, build-integrity.ts
 [ ] Complete Galerina verify command — full governance verification
-[ ]   - validate manifest integrity (beyond hash-only)
+[x]   - validate manifest integrity (beyond hash-only) -- src/verify/verify-manifest.ts, tests/verify-manifest.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): verifyRuntimeManifest / verifyRuntimeManifestSet check the shipped per-flow `fungi.runtime.manifest.v1` record (compiler type-registry.ts RuntimeManifest): closed shape read through descriptors (no getters run), exact schemaVersion, closed field domains, cross-field consistency with GovernanceFlags, verified:false never verifies, unique flows; FUNGI-VERIFY-006..011; optional `manifests` section in verification-report.json; a test pins the mirror to the compiler source. Not covered: the runtime-manifest.json file container (compiler README v0.2 `galerina.manifest.v1`, pass 14, not built) and signatures (GovernanceSignature, Phase 39); the --manifest flag row stays open
 [ ]   - validate runtime compatibility, capability consistency, audit reports
 [ ]   - support --json, --strict, --manifest, --hash, --policy, --audit flags
 [x]   - implement VerifiedArtefact: path, hash, verified, diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05)
@@ -38,7 +38,7 @@
 [x] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05) -- UNLOCKED 2026-10-05 (Grok Bot; owner may revisit): the actionable part (document the limit) is done in README.md and src/verify.ts, and verification-report.json now carries the same limitations; the platform limit itself stays documented, not solved
 [x]   - emit verification-report.json -- src/verify/verify-reporter.ts, tests/verify-report.test.mjs (Grok 2026-10-05); createVerificationReport recomputes success, writeVerificationReport is exclusive-create (no overwrite) into an existing dir, no timestamp unless given (owner may revisit)
 [x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
-[ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts
+[ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts -- progress 2026-10-05: verify-reporter.ts and verify-manifest.ts exist; verify-command.ts, verify-integrity.ts, verify-runtime.ts not yet
 [ ] Add Galerina deploy command integration
 [ ]   - load workspace manifest, runtime profile, deployment policy
 [ ]   - validate effects, capabilities, runtime targets, module hashes

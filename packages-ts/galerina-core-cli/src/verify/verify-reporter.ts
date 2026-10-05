@@ -6,12 +6,18 @@
 // known string fields are copied, so a hostile object cannot add keys to the report. The
 // output is deterministic: there is no timestamp unless the caller supplies one, and keys
 // are in a fixed order. Writing refuses to overwrite an existing report.
+//
+// Optional runtime manifest section (Grok 2026-10-05): pass the result of
+// verifyRuntimeManifestSet as `options.manifests`. Its success is recomputed in the same way,
+// only index, a re-validated flow name, the verdict and FUNGI-form codes are copied, and overall
+// success also needs every manifest to verify.
 
 import { constants } from "node:fs";
 import { open, realpath, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { VerificationResult } from "../verify.js";
+import { RUNTIME_MANIFEST_SCHEMA, type RuntimeManifestVerification } from "./verify-manifest.js";
 
 export const VERIFICATION_REPORT_SCHEMA = "galerina.verification-report/v1";
 export const VERIFICATION_REPORT_FILE = "verification-report.json";
@@ -37,6 +43,24 @@ export interface VerificationReportArtefact {
   readonly codes: readonly string[];
 }
 
+/** One runtime manifest record in the report: position, validated flow name (or ""), verdict and codes only. */
+export interface VerificationReportManifestRecord {
+  readonly index: number;
+  readonly flow: string;
+  readonly verified: boolean;
+  readonly codes: readonly string[];
+}
+
+/** Optional runtime manifest section (present only when the caller passes `manifests`). */
+export interface VerificationReportManifests {
+  readonly schema: typeof RUNTIME_MANIFEST_SCHEMA;
+  readonly success: boolean;
+  readonly summary: { readonly total: number; readonly verified: number; readonly failed: number };
+  readonly records: readonly VerificationReportManifestRecord[];
+  /** Set-level codes (empty set, duplicate flow, not an array). */
+  readonly setCodes: readonly string[];
+}
+
 export interface VerificationReport {
   readonly schema: typeof VERIFICATION_REPORT_SCHEMA;
   readonly success: boolean;
@@ -44,12 +68,19 @@ export interface VerificationReport {
   readonly artefacts: readonly VerificationReportArtefact[];
   readonly diagnostics: readonly VerificationReportDiagnostic[];
   readonly limitations: readonly string[];
+  readonly manifests?: VerificationReportManifests;
   readonly generatedAt?: string;
 }
 
 export interface VerificationReportOptions {
   /** Optional UTC timestamp `YYYY-MM-DDTHH:MM:SS(.sss)Z`. Omitted by default so reports are reproducible. */
   readonly generatedAt?: string;
+  /**
+   * Optional result of verifyRuntimeManifestSet. When given, the report carries a `manifests`
+   * section and overall success also needs every manifest to verify. Its `success` flag is not
+   * trusted: it is recomputed from the copied records and codes.
+   */
+  readonly manifests?: RuntimeManifestVerification;
 }
 
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
@@ -62,6 +93,36 @@ const get = (o: unknown, key: string): unknown => {
 const list = (v: unknown): readonly unknown[] => {
   try { return Array.isArray(v) ? Array.from(v as readonly unknown[]) : []; } catch { return []; }
 };
+
+const CODE = /^FUNGI-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}$/;
+const FLOW = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
+/** A manifest code is copied only when it has the FUNGI-...-NNN form; anything else becomes a fixed token. */
+const safeCode = (v: unknown): string => (typeof v === "string" && CODE.test(v) ? v : "code withheld");
+
+function copyManifests(m: unknown): VerificationReportManifests {
+  const records = list(get(m, "manifests")).map((r): VerificationReportManifestRecord => {
+    const codes = list(get(r, "diagnostics")).map((d) => safeCode(get(d, "code")));
+    const index = get(r, "index");
+    const flow = get(r, "flow");
+    return Object.freeze({
+      index: typeof index === "number" && Number.isSafeInteger(index) && index >= 0 ? index : -1,
+      flow: typeof flow === "string" && FLOW.test(flow) ? flow : "",
+      verified: get(r, "verified") === true && codes.length === 0,
+      codes: Object.freeze(codes),
+    });
+  });
+  const all = list(get(m, "diagnostics"));
+  const setCodes = all.filter((d) => get(d, "field") === "set").map((d) => safeCode(get(d, "code")));
+  const verifiedCount = records.filter((r) => r.verified).length;
+  const success = get(m, "success") === true && records.length > 0 && verifiedCount === records.length && all.length === 0;
+  return Object.freeze({
+    schema: RUNTIME_MANIFEST_SCHEMA,
+    success,
+    summary: Object.freeze({ total: records.length, verified: verifiedCount, failed: records.length - verifiedCount }),
+    records: Object.freeze(records),
+    setCodes: Object.freeze(setCodes),
+  });
+}
 
 function copyDiagnostic(d: unknown): VerificationReportDiagnostic {
   // SuperGrok C12 NB-3: never copy untrusted diagnostic.message (a forged result can plant free text).
@@ -91,7 +152,11 @@ export function createVerificationReport(result: VerificationResult, options: Ve
   });
   const diagnostics = list(get(result, "diagnostics")).map(copyDiagnostic);
   const verifiedCount = artefacts.filter((a) => a.verified).length;
-  const success = get(result, "success") === true && artefacts.length > 0 && verifiedCount === artefacts.length && diagnostics.length === 0;
+  const manifestOption = options?.manifests;
+  const manifests = manifestOption !== undefined ? copyManifests(manifestOption) : undefined;
+  const success =
+    get(result, "success") === true && artefacts.length > 0 && verifiedCount === artefacts.length && diagnostics.length === 0 &&
+    (manifests === undefined || manifests.success);
   const report: VerificationReport = {
     schema: VERIFICATION_REPORT_SCHEMA,
     success,
@@ -99,6 +164,7 @@ export function createVerificationReport(result: VerificationResult, options: Ve
     artefacts: Object.freeze(artefacts),
     diagnostics: Object.freeze(diagnostics),
     limitations: VERIFICATION_REPORT_LIMITATIONS,
+    ...(manifests !== undefined ? { manifests } : {}),
     ...(generatedAt !== undefined ? { generatedAt } : {}),
   };
   return Object.freeze(report);
