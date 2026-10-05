@@ -11,10 +11,10 @@
 
 | Metric | Count |
 |---|---|
-| Files | 12 |
-| Internal edges | 18 |
-| External dependencies | 6 |
-| ├─ Node core | 4 |
+| Files | 13 |
+| Internal edges | 19 |
+| External dependencies | 8 |
+| ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 2 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -23,6 +23,8 @@
 
 ### Node core
 - `node:child_process`
+- `node:crypto`
+- `node:fs`
 - `node:fs/promises`
 - `node:path`
 - `node:url`
