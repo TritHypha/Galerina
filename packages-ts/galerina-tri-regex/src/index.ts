@@ -18,7 +18,7 @@ export type {
   TriVerdict, Budget, CostCertificate, CompileVeto, EngineStats, MatchOutcome,
 } from "./types.ts";
 export type { TriStream, AutomatonTables } from "./engine.ts";
-export { TriMatcher } from "./engine.ts";
+export { TriMatcher, NO_CHAR_RANGES } from "./engine.ts";
 
 export interface CompileOptions {
   budget?: Partial<Budget>;
