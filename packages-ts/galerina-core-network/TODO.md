@@ -47,17 +47,18 @@ policy belongs in `galerina-framework-app-kernel`.
 [ ] Implement validateTlsRequirement(destination, policy): NetworkDiagnostic[]
 [ ] Implement validateCapability(capability, policy): NetworkDiagnostic[]
 [ ] Implement safeHttpRequest(input, runtime): Promise<SafeHttpResponse>
-[ ] Define WebhookVerificationConfig: secret, algorithm, headerName, timestampHeader?, maxAgeSeconds
-[ ] Define WebhookVerificationResult: valid, reason?, diagnostics[]
-[ ] Implement verifyWebhookHmac(payload, signature, config): WebhookVerificationResult
-[ ] Implement validateWebhookTimestamp(timestamp, maxAgeSeconds): WebhookVerificationResult
+[x] Define WebhookVerificationConfig: secret, algorithm, headerName, timestampHeader?, maxAgeSeconds (sha256 only, secret >= 32 bytes, maxAgeSeconds 1..600) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
+[x] Define WebhookVerificationResult: valid, reason?, diagnostics[] -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
+[x] Implement verifyWebhookHmac(payload, signature, config): WebhookVerificationResult (dependency-free HMAC-SHA256 cross-checked with node:crypto; constant-time compare; timestamp bound into the MAC when timestampHeader is set) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
+[x] Implement validateWebhookTimestamp(timestamp, maxAgeSeconds): WebhookVerificationResult (takes an explicit nowSeconds: no clock is chosen here; future timestamps refuse) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
+[x] Bound webhook helper work to 1 MiB payloads and 4,096 UTF-8-byte secrets; refuse over-limit or malformed runtime inputs before HMAC/replay admission. HTTP adapters must enforce the payload cap during body reads because helper-level checks cannot undo an upstream allocation -- src/webhook.ts, tests/webhook-verification.test.mjs (Codex 2026-10-05)
 [x] Define canonical ReplayStore interface: has(key: string): Promise<boolean> | boolean, put(key: string, ttlSeconds: number): Promise<void> | void
-[ ] Implement validateReplayProtection(id, store): Promise<NetworkDiagnostic[]>
+[x] Implement validateReplayProtection(id, store): Promise<NetworkDiagnostic[]> (store is AtomicAdmissionStore: one atomic claim, never read-then-write; fails closed on store errors) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
 [x] Define canonical IdempotencyRecord and IdempotencyStore interfaces; storage, clock, and ordering semantics remain runtime-owned
 [!] Reconcile observational IdempotencyStore get/put with the app-kernel atomic
     IdempotencyStore.seen gate before wiring; never implement admission as an
     unprotected read-then-write pair
-[ ] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]>
+[x] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]> (atomic claim in its own scope; not wired to app-kernel, the [!] reconciliation row above stays open) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
 [ ] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[]
 [x] Define NetworkDiagnostic: code, message, severity, destination? (exists at src/index.ts:29-34
     as { code, severity, message, path? }; `path` is used in place of `destination`. Ticked 2026-09-29, Grok Bot)

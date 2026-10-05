@@ -656,3 +656,5 @@ export {
   isOpaqueId,
   OPAQUE_ID_MIN_LENGTH,
 } from "./defensive-controls.js";
+
+export * from "./webhook.js";
