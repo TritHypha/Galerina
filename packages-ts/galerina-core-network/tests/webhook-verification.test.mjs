@@ -89,3 +89,29 @@ describe("replay protection and idempotency use one atomic claim", () => {
     assert.deepEqual(await c(N.validateReplayProtection("delivery-0002", { claim: () => "ok" })), ["Galerina_NETWORK_REPLAY_STORE_FAILED"]);
   });
 });
+
+describe("admitWebhook composes MAC, freshness and replay in one path", () => {
+  const bound = { ...base, timestampHeader: "X-Timestamp" };
+  const now = 1_800_000_000;
+  const ts = String(now - 10);
+  const body = '{"id":"evt_1"}';
+  const sig = createHmac("sha256", SECRET).update(`${ts}.${body}`).digest("hex");
+  const store = () => { const seen = new Set(); return { calls: 0, claim(scope, key) { this.calls += 1; const k = `${scope}|${key}`; if (seen.has(k)) return "duplicate"; seen.add(k); return "claimed"; } }; };
+  const codes = (r) => r.diagnostics.map((d) => d.code);
+  it("admits once, then refuses the replay", async () => {
+    const s = store();
+    const input = { payload: body, signature: sig, timestamp: ts, deliveryId: "delivery-0001", config: bound, nowSeconds: now, store: s };
+    assert.equal((await N.admitWebhook(input)).valid, true);
+    assert.deepEqual(codes(await N.admitWebhook(input)), ["Galerina_NETWORK_REPLAY_DUPLICATE"]);
+  });
+  it("never consumes a delivery id for a bad MAC, stale or future timestamp, or unbound config", async () => {
+    const s = store();
+    const input = { payload: body, signature: sig, timestamp: ts, deliveryId: "delivery-0002", config: bound, nowSeconds: now, store: s };
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, signature: "0".repeat(64) })), ["Galerina_NETWORK_WEBHOOK_SIGNATURE_MISMATCH"]);
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, nowSeconds: now + 1000 })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_STALE"]);
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, nowSeconds: now - 100 })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_FUTURE"]);
+    assert.deepEqual(codes(await N.admitWebhook({ ...input, config: base })), ["Galerina_NETWORK_WEBHOOK_TIMESTAMP_UNBOUND"]);
+    assert.equal(s.calls, 0);
+    assert.equal((await N.admitWebhook(input)).valid, true);
+  });
+});

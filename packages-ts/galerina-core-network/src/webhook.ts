@@ -176,3 +176,29 @@ export function validateReplayProtection(id: string, store: AtomicAdmissionStore
 export function validateIdempotency(key: string, store: AtomicAdmissionStore, ttlSeconds = 86_400): Promise<readonly NetworkDiagnostic[]> {
   return claimOnce("idempotency", key, store, ttlSeconds, "Galerina_NETWORK_IDEMPOTENCY");
 }
+
+export interface WebhookAdmissionInput {
+  readonly payload: string | Uint8Array;
+  readonly signature: string;
+  readonly timestamp: string;
+  readonly deliveryId: string;
+  readonly config: WebhookVerificationConfig;
+  readonly nowSeconds: number;
+  readonly store: AtomicAdmissionStore;
+}
+
+// One admit path (SuperGrok batch-3 NB-2): the config must bind the timestamp into the MAC,
+// then MAC -> freshness -> one replay claim, in that order, so an unauthenticated or stale
+// request can never consume a delivery id. Any failure refuses with its diagnostics.
+export async function admitWebhook(input: WebhookAdmissionInput): Promise<WebhookVerificationResult> {
+  if (!("timestampHeader" in input.config)) {
+    return invalid("Galerina_NETWORK_WEBHOOK_TIMESTAMP_UNBOUND", "admitWebhook needs a config whose timestampHeader binds the timestamp into the MAC.", "config.timestampHeader");
+  }
+  const mac = verifyWebhookHmac(input.payload, input.signature, input.config, input.timestamp);
+  if (!mac.valid) return mac;
+  const fresh = validateWebhookTimestamp(input.timestamp, input.config.maxAgeSeconds, input.nowSeconds);
+  if (!fresh.valid) return fresh;
+  const replay = await validateReplayProtection(input.deliveryId, input.store, input.config.maxAgeSeconds);
+  if (replay.length > 0) return Object.freeze({ valid: false, reason: replay[0]?.message ?? "Replay admission refused.", diagnostics: Object.freeze([...replay]) });
+  return ok;
+}
