@@ -179,3 +179,31 @@ test("readDeploymentResult accepts closed success/failure shapes and refuses con
   Object.defineProperty(accessor, "reportPath", { get: () => "x", enumerable: true });
   assert.equal(readDeploymentResult(accessor).ok, false);
 });
+
+test("createDeploymentResult snapshots diagnostic entries (C21 NB-2; no getters later)", () => {
+  let gets = 0;
+  const hostile = {
+    get code() { gets += 1; return "FUNGI-DEPLOY-003"; },
+    get severity() { gets += 1; return "error"; },
+    get message() { gets += 1; return "A declared effect is denied by the deployment policy."; },
+    get field() { gets += 1; return "allowedEffects"; },
+  };
+  // Accessors refuse at snapshot time -> shape refuse diagnostic, never store hostile object.
+  const refused = createDeploymentResult("wasm", "sha256:" + "ab".repeat(32), [hostile]);
+  assert.equal(refused.success, false);
+  assert.equal(refused.diagnostics.length, 1);
+  assert.equal(refused.diagnostics[0].code, "FUNGI-DEPLOY-001");
+  assert.equal(gets, 0);
+  const plain = Object.freeze({
+    code: "FUNGI-DEPLOY-003",
+    severity: "error",
+    message: "A declared effect is denied by the deployment policy.",
+    field: "allowedEffects",
+  });
+  const ok = createDeploymentResult("wasm", "sha256:" + "ab".repeat(32), [plain]);
+  assert.equal(ok.success, false);
+  assert.equal(ok.diagnostics.length, 1);
+  assert.equal(ok.diagnostics[0].code, "FUNGI-DEPLOY-003");
+  assert.notEqual(ok.diagnostics[0], plain);
+  assert.ok(Object.isFrozen(ok.diagnostics[0]));
+});
