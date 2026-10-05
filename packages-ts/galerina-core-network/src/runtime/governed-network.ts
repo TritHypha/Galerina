@@ -58,7 +58,7 @@ export const SAFE_HTTP_MAX_TIMEOUT_MS = 120_000;
 export const DEFAULT_MAX_PROMPT_BYTES = 1024 * 1024;
 const APPROVED_AI_PROVIDER_IDS: ReadonlySet<string> = new Set(["openai"]);
 
-const PROTOCOLS: ReadonlySet<string> = new Set(["https", "http", "tls", "tcp", "udp", "websocket", "rawSocket"]);
+const PROTOCOLS: ReadonlySet<string> = new Set(["https", "http", "tls", "tcp", "udp", "websocket", "rawSocket", "quic"]);
 const TLS_PROTOCOLS: ReadonlySet<string> = new Set(["https", "tls"]);
 const METHODS: ReadonlySet<string> = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 const SECRET_HEADERS: ReadonlySet<string> = new Set(["authorization", "proxy-authorization", "cookie", "x-api-key", "api-key", "x-auth-token"]);
@@ -108,12 +108,17 @@ export function validateDestination(destination: NetworkDestinationReference, po
   return out;
 }
 
-/** TLS check: a TLS-requiring policy or destination admits only https/tls, and tlsRequired may not be false under a TLS policy. */
+/**
+ * TLS check: a TLS-requiring policy or destination admits only https/tls, and tlsRequired may not be false under a TLS policy.
+ * QUIC is refused under every policy (FUNGI-NETWORK-003) until a QUIC stack with verified TLS 1.3 is attested; it is not
+ * counted as a TLS protocol. Zero-trust default, owner may revisit.
+ */
 export function validateTlsRequirement(destination: NetworkDestinationReference, policy: NetworkPolicy): NetworkDiagnostic[] {
   if (!isRecord(policy) || !isRecord(policy.tls)) return [diag(FUNGI_NETWORK_CODES.RUNTIME_POLICY_UNAVAILABLE, "Network TLS policy is unavailable or malformed.", "policy.tls")];
   if (!wellFormedDestination(destination)) return [diag(FUNGI_NETWORK_CODES.INSECURE_TRANSPORT, "Destination is malformed; transport security cannot be established.", "destination")];
   const policyRequires = policy.tls.requireTls !== false;
   const out: NetworkDiagnostic[] = [];
+  if (destination.protocol === "quic") return [diag(FUNGI_NETWORK_CODES.INSECURE_TRANSPORT, "QUIC is not admitted until a QUIC transport with verified TLS 1.3 is attested.", "destination.protocol")];
   if ((policyRequires || destination.tlsRequired) && !TLS_PROTOCOLS.has(destination.protocol)) out.push(diag(FUNGI_NETWORK_CODES.INSECURE_TRANSPORT, "Plaintext transport is denied; use https or tls.", "destination.protocol"));
   if (policyRequires && destination.tlsRequired !== true) out.push(diag(FUNGI_NETWORK_CODES.INSECURE_TRANSPORT, "Destination must declare tlsRequired under a TLS-requiring policy.", "destination.tlsRequired"));
   return out;

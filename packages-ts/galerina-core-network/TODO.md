@@ -30,11 +30,16 @@ policy belongs in `galerina-framework-app-kernel`.
 [x] Add tests
 [x] Add examples
 [ ] Wire network reports into compiler/runtime reports
-[ ] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
+[x] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
     (2026-09-29 correction: the live union at src/index.ts:5-12 is
     https|http|tls|tcp|udp|websocket|rawSocket. It has no `grpc` and does have `tls` and
     `rawSocket`, so adding `quic` alone does not produce the union above. Whether
     `grpc` belongs here is an open decision.)
+    (2026-10-05 Grok: `quic` added to NetworkProtocol, InboundProtocol and the runtime protocol set. Zero-trust
+    default, owner may revisit: it is declared but not admitted. validateNetworkPolicy refuses a QUIC allow rule
+    (Galerina_NETWORK_QUIC_NOT_ADMITTED) and validateTlsRequirement refuses QUIC under every policy (FUNGI-NETWORK-003)
+    until a QUIC transport with verified TLS 1.3 is attested. `grpc` was not added; still an open decision.
+    Tests: tests/quic-protocol.test.mjs.)
 [x] Upgrade NetworkDestinationReference: add provider, category, dataCategories (defined from the README shape with these optional fields; it was planned-only before) -- src/runtime/governed-network.ts, tests/governed-network-runtime.test.mjs (Grok 2026-10-05)
 [ ] Upgrade NetworkPolicy: add default (allow|deny), allowPlainHttp, aiProviders[], requireTimeouts, requireRateLimits (2026-10-05: left open; productionNetworkPolicy is a frozen current-schema value and `defaultEffect`/`requireTimeouts` already exist, so this is a schema decision)
 [x] Implement frozen current-schema productionNetworkPolicy with SSRF-safe deny list, HTTPS/443-only egress, and runtime-guard regression (declarative policy does not itself dial or resolve DNS)

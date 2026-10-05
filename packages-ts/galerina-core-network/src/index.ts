@@ -9,7 +9,11 @@ export type NetworkProtocol =
   | "tcp"
   | "udp"
   | "websocket"
-  | "rawSocket";
+  | "rawSocket"
+  // QUIC is a declared transport but is not admitted yet: validateNetworkPolicy refuses an allow
+  // rule for it and validateTlsRequirement refuses it at runtime until a QUIC stack with verified
+  // TLS 1.3 (certificates and hostnames) is attested. Zero-trust default, owner may revisit.
+  | "quic";
 
 export type NetworkEffect = "allow" | "deny";
 
@@ -468,6 +472,15 @@ function validateEndpointRule(
       "Galerina_NETWORK_RAW_SOCKET_DENIED",
       "error",
       "Raw sockets require an explicit package-level exception.",
+      `${path}.protocol`,
+    ));
+  }
+
+  if (endpoint.protocol === "quic" && endpoint.effect === "allow") {
+    diagnostics.push(createNetworkDiagnostic(
+      "Galerina_NETWORK_QUIC_NOT_ADMITTED",
+      "error",
+      "QUIC endpoints are not admitted until a QUIC transport with verified TLS 1.3 is attested.",
       `${path}.protocol`,
     ));
   }
