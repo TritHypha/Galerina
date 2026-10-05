@@ -380,3 +380,6 @@ export * from "./gpu/index.js";
 
 // Optical/photonic planning (TODO pass, Grok 2026-10-05).
 export * from "./photonic/index.js";
+
+// Scheduler / planner responsibilities + compute audit event shapes (TODO pass, Grok 2026-10-05).
+export * from "./scheduling/index.js";
