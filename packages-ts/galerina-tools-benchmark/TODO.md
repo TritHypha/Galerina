@@ -35,7 +35,7 @@
 [x] Add Bool logic benchmark -- src/bool-logic-benchmark.ts runBoolLogicBenchmark / scoreBoolLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.bool_branch target logic; FUNGI-BENCH-BOOL-001..005; in-process truth-table microbench only (no command runner / hardware probes / Phase 8-9)
 [x] Add Tri logic benchmark -- src/tri-logic-benchmark.ts runTriLogicBenchmark / scoreTriLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.tri_match target logic; Tri -1|0|1 Kleene table; FUNGI-BENCH-TRI-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [ ] Add Galerina benchmark
-[ ] Add Result / Option benchmark
+[x] Add Result / Option benchmark -- src/result-option-benchmark.ts runResultOptionBenchmark / scoreResultOptionBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.result_option target logic; Option some|none + Result ok|err match/unwrapOr; FUNGI-BENCH-RO-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [ ] Add CPU arithmetic benchmark
 [ ] Add JSON 1MB decode/validate benchmark
 [ ] Add JSON 10MB streaming benchmark
@@ -172,3 +172,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Closed `src/tri-logic-benchmark.ts`: `runTriLogicBenchmark` / `scoreTriLogicBenchmark` / `benchTriAnd|Or|Not`.
 - README light id `logic.tri_match`; target `logic`. Tri vocabulary `-1|0|1` matches galerina-core-logic (local closed copy; no package import).
 - CASE ONLY: no command runner, RAM/vector/GPU detection, or Phase 8-9.
+
+## Notes (Grok 2026-10-05 Result / Option benchmark)
+- Closed `src/result-option-benchmark.ts`: `runResultOptionBenchmark` / `benchMatchResultOption` / `benchUnwrapOr`.
+- README light id `logic.result_option`; Option shape matches galerina-data-query QueryOption; Result is closed Ok/Err (local copies; no package import).
+- CASE ONLY: no command runner, RAM/vector/GPU detection, or Phase 8-9. Never throws on err/none paths.
