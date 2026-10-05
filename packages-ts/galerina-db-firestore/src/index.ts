@@ -204,7 +204,7 @@ export function validateFirestoreCredentialRef(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -241,7 +241,7 @@ export function validateFirestorePath(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_PATH_KIND_UNKNOWN",
       "error",
-      `Path kind "${String(pathContract.kind)}" is not "collection" or "document".`,
+      "Path kind is not \"collection\" or \"document\" (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -335,7 +335,7 @@ export function validateFirestoreCompositeIndex(
     ));
   }
 
-  const seen = new Set<string>();
+  const firstSeenAt = new Map<string, number>();
   index.fields.forEach((field, fieldIndex) => {
     if (field.name.trim().length === 0) {
       diagnostics.push(firestoreDiagnostic(
@@ -344,21 +344,21 @@ export function validateFirestoreCompositeIndex(
         "Composite index fields must be named.",
         `${path}.fields.${fieldIndex}.name`,
       ));
-    } else if (seen.has(field.name)) {
+    } else if (firstSeenAt.has(field.name)) {
       diagnostics.push(firestoreDiagnostic(
         "Galerina_DB_FIRESTORE_INDEX_FIELD_DUPLICATE",
         "error",
-        `Composite index names field "${field.name}" more than once.`,
+        `Composite index names the field at fields.${firstSeenAt.get(field.name)} more than once (value withheld).`,
         `${path}.fields.${fieldIndex}.name`,
       ));
     }
-    seen.add(field.name);
+    if (!firstSeenAt.has(field.name)) firstSeenAt.set(field.name, fieldIndex);
 
     if (!KNOWN_INDEX_FIELD_ORDERS.has(field.order)) {
       diagnostics.push(firestoreDiagnostic(
         "Galerina_DB_FIRESTORE_INDEX_FIELD_ORDER_UNKNOWN",
         "error",
-        `Index field order "${String(field.order)}" is not a known order (ascending/descending/array_contains).`,
+        "Index field order is not a known order (ascending/descending/array_contains) (value withheld).",
         `${path}.fields.${fieldIndex}.order`,
       ));
     }
@@ -459,7 +459,7 @@ export function validateFirestoreAdapterDeclaration(
     diagnostics.push(firestoreDiagnostic(
       "Galerina_DB_FIRESTORE_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "firestore".`,
+      "Adapter provider is not \"firestore\" (value withheld).",
       "provider",
     ));
   }

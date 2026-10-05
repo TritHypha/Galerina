@@ -291,3 +291,23 @@ describe("zero-trust diagnostics - refused path values are never echoed", () => 
     }
   });
 });
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown journal mode, credential kind, provider and placeholder style", () => {
+    assertWithheld([
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, journalMode: probe }), "Galerina_DB_SQLITE_JOURNAL_MODE_UNKNOWN"],
+      [validateSqliteCredentialRef({ kind: probe, ref: "secrets://galerina/sqlite/key" }), "Galerina_DB_SQLITE_CREDENTIAL_KIND_INVALID"],
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_SQLITE_PROVIDER_MISMATCH"],
+      [validateSqliteAdapterDeclaration({ ...goodDeclaration, placeholderStyle: probe }), "Galerina_DB_SQLITE_PLACEHOLDER_STYLE_INVALID"],
+    ]);
+  });
+});

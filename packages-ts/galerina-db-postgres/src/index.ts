@@ -202,7 +202,7 @@ export function validatePostgresCredentialRef(
     diagnostics.push(postgresDiagnostic(
       "Galerina_DB_POSTGRES_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -276,7 +276,7 @@ export function validatePostgresConnection(
     diagnostics.push(postgresDiagnostic(
       "Galerina_DB_POSTGRES_SSL_MODE_UNKNOWN",
       "error",
-      `sslMode "${String(connection.sslMode)}" is not a known mode (disable/require/verify-ca/verify-full).`,
+      "sslMode is not a known mode (disable/require/verify-ca/verify-full) (value withheld).",
       `${path}.sslMode`,
     ));
   } else if (!isLocalhostHost(connection.host)) {
@@ -397,7 +397,7 @@ export function validatePostgresAdapterDeclaration(
     diagnostics.push(postgresDiagnostic(
       "Galerina_DB_POSTGRES_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "postgres".`,
+      "Adapter provider is not \"postgres\" (value withheld).",
       "provider",
     ));
   }
@@ -409,7 +409,7 @@ export function validatePostgresAdapterDeclaration(
     diagnostics.push(postgresDiagnostic(
       "Galerina_DB_POSTGRES_PLACEHOLDER_STYLE_INVALID",
       "error",
-      `Placeholder style "${String(declaration.placeholderStyle)}" is not "dollar_numbered"; PostgreSQL parameterisation uses $1-style placeholders only.`,
+      "Placeholder style is not \"dollar_numbered\"; PostgreSQL parameterisation uses $1-style placeholders only (value withheld).",
       "placeholderStyle",
     ));
   }

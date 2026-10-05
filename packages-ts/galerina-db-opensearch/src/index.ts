@@ -220,7 +220,7 @@ export function validateOpenSearchCredentialRef(
     diagnostics.push(openSearchDiagnostic(
       "Galerina_DB_OPENSEARCH_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -312,7 +312,7 @@ export function validateOpenSearchIndexOperation(
     diagnostics.push(openSearchDiagnostic(
       "Galerina_DB_OPENSEARCH_OPERATION_KIND_UNKNOWN",
       "error",
-      `Index operation kind "${String(operation.kind)}" is not a known kind (index/update/delete).`,
+      "Index operation kind is not a known kind (index/update/delete) (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -459,7 +459,7 @@ export function validateOpenSearchAdapterDeclaration(
     diagnostics.push(openSearchDiagnostic(
       "Galerina_DB_OPENSEARCH_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "opensearch".`,
+      "Adapter provider is not \"opensearch\" (value withheld).",
       "provider",
     ));
   }
