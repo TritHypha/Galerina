@@ -193,6 +193,35 @@ describe("resolveBuildFlags (L958-L960, L962, L963)", () => {
   });
 });
 
+describe("C2 review hardening (NB-1..NB-3)", () => {
+  it("env/secret records with surplus keys are malformed", () => {
+    const m = manifest({ environment: { ...manifest().environment, secrets: [{ name: "STRIPE_KEY", required: true, value: fakeSecret }] } });
+    const r = validateStartup(m, env);
+    assert.equal(r.pass, false);
+    assert.equal(r.diagnostics[0].code, "FUNGI-CONFIG-031");
+    assert.equal(JSON.stringify(r).includes(fakeSecret), false);
+  });
+
+  it("arrays with extra non-index own keys are malformed", () => {
+    const ports = [8443];
+    ports.extra = 1;
+    assert.equal(validateStartup(manifest({ listenPorts: ports }), env).diagnostics[0].code, "FUNGI-CONFIG-031");
+    const argv = ["--strict"];
+    argv[Symbol("x")] = 1;
+    assert.equal(resolveBuildFlags(argv).ok, false);
+  });
+
+  it("FUNGI-CONFIG-040 never echoes positional arguments or flag values", () => {
+    const r = resolveBuildFlags(["private-app/main.fungi", "--out=private-out/x", "--fast"]);
+    const text = JSON.stringify(r.diagnostics);
+    assert.equal(text.includes("private-app"), false);
+    assert.equal(text.includes("private-out"), false);
+    assert.ok(text.includes("--out=(value withheld)"));
+    assert.ok(text.includes("--fast"));
+    assert.equal(r.flags.strict, true);
+  });
+});
+
 describe("app.test-report.json and build gate (L962-L964)", () => {
   const report = (o = {}) => ({
     schema: APP_TEST_REPORT_SCHEMA, passed: 3, failed: 0, skipped: 1, durationMs: 120,

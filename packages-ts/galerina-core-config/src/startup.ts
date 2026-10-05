@@ -115,6 +115,11 @@ function plainRecord(value: unknown): Readonly<Record<string, unknown>> | undefi
 function plainArray(value: unknown, max = MAX_ITEMS): readonly unknown[] | undefined {
   if (!Array.isArray(value) || isProxy(value) || Object.getPrototypeOf(value) !== Array.prototype) return undefined;
   if (value.length > max) return undefined;
+  // Only canonical index keys and "length" may be own keys (no extra named or symbol keys).
+  for (const key of Reflect.ownKeys(value)) {
+    if (key === "length") continue;
+    if (typeof key !== "string" || !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length) return undefined;
+  }
   for (let i = 0; i < value.length; i += 1) {
     const d = Object.getOwnPropertyDescriptor(value, String(i));
     if (d === undefined || !("value" in d)) return undefined;
@@ -163,7 +168,7 @@ function envRefs(value: unknown, secret: boolean): readonly EnvironmentVariableR
   const out: EnvironmentVariableReference[] = [];
   for (const item of list) {
     const r = plainRecord(item);
-    if (r === undefined || !str(r["name"], 256) || !/^[A-Z_][A-Z0-9_]*$/.test(r["name"] as string) ||
+    if (r === undefined || !exactKeys(r, ["name", "required"]) || !str(r["name"], 256) || !/^[A-Z_][A-Z0-9_]*$/.test(r["name"] as string) ||
         typeof r["required"] !== "boolean") return undefined;
     out.push(Object.freeze({
       kind: "env",
@@ -366,7 +371,9 @@ export function resolveBuildFlags(argv: unknown): BuildFlagResolution {
   } else {
     list.forEach((arg, i) => {
       if (typeof arg !== "string" || !KNOWN_BUILD_FLAGS.has(arg)) {
-        const shown = typeof arg === "string" && str(arg, 64) ? arg : "(non-string or oversized)";
+        // Echo only a flag-shaped name; values and positional arguments (possibly paths) are withheld.
+        const name = typeof arg === "string" ? /^(--[a-z][a-z0-9-]{0,30})(=|$)/.exec(arg) : null;
+        const shown = name === null ? "(argument withheld)" : name[2] === "=" ? `${name[1]}=(value withheld)` : name[1];
         diagnostics.push(diag("FUNGI-CONFIG-040", "BUILD_FLAG_UNKNOWN", "error", `Unknown build flag ${shown}.`, `argv.${i}`));
       } else {
         seen.add(arg);
