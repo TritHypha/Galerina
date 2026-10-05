@@ -571,6 +571,8 @@ WEBHOOK_SECRET=from server secret
 
 ## Branch Strategy for Galerina Apps
 
+> **Legacy (superseded).** Kept for reference only. Until an app repository records its own policy, follow the "Current policy" table in `GIT.md`: short-lived `<owner>/<topic>-<yyyymmdd>` branches merged into protected `main`, and Conventional Commits subjects. `scripts/check-git-conventions.mjs` refuses `feature/*`, `fix/*`, `hotfix/*` and `type: subject` forms such as `api:` (zero-trust default; owner may revisit).
+
 Recommended simple branch strategy:
 
 ```text
@@ -641,6 +643,8 @@ hotfix/payment-webhook-replay
 ---
 
 ## Commit Message Style
+
+> **Legacy (superseded).** Kept for reference only. Until an app repository records its own policy, follow the "Current policy" table in `GIT.md`: short-lived `<owner>/<topic>-<yyyymmdd>` branches merged into protected `main`, and Conventional Commits subjects. `scripts/check-git-conventions.mjs` refuses `feature/*`, `fix/*`, `hotfix/*` and `type: subject` forms such as `api:` (zero-trust default; owner may revisit).
 
 Recommended format:
 
@@ -880,6 +884,8 @@ Do not rebuild old releases unless necessary.
 ---
 
 ## Hotfix Strategy
+
+> **Legacy (superseded).** Kept for reference only. Until an app repository records its own policy, follow the "Current policy" table in `GIT.md`: short-lived `<owner>/<topic>-<yyyymmdd>` branches merged into protected `main`, and Conventional Commits subjects. `scripts/check-git-conventions.mjs` refuses `feature/*`, `fix/*`, `hotfix/*` and `type: subject` forms such as `api:` (zero-trust default; owner may revisit).
 
 For urgent fixes:
 

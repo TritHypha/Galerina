@@ -180,6 +180,8 @@ require documentation build passing
 
 ## Development Branch
 
+> **Legacy (superseded).** Kept for reference only. The "Current policy" table at the top of this file takes precedence: `main` is the only long-lived branch (no `dev`), branches are `<owner>/<topic>-<yyyymmdd>`, and commits use the Conventional Commits types listed there (`feat`, not `feature`). `scripts/check-git-conventions.mjs` refuses the legacy forms.
+
 A development branch may be used later:
 
 ```text
@@ -241,6 +243,8 @@ chore/repo-structure
 
 ## Branch Types
 
+> **Legacy (superseded).** Kept for reference only. The "Current policy" table at the top of this file takes precedence: `main` is the only long-lived branch (no `dev`), branches are `<owner>/<topic>-<yyyymmdd>`, and commits use the Conventional Commits types listed there (`feat`, not `feature`). `scripts/check-git-conventions.mjs` refuses the legacy forms.
+
 Suggested branch types:
 
 | Type | Purpose |
@@ -283,6 +287,8 @@ chore: add Apache notice file
 ---
 
 ## Commit Types
+
+> **Legacy (superseded).** Kept for reference only. The "Current policy" table at the top of this file takes precedence: `main` is the only long-lived branch (no `dev`), branches are `<owner>/<topic>-<yyyymmdd>`, and commits use the Conventional Commits types listed there (`feat`, not `feature`). `scripts/check-git-conventions.mjs` refuses the legacy forms.
 
 Suggested types:
 
