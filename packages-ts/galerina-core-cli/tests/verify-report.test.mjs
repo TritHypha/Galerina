@@ -77,6 +77,22 @@ test("the report recomputes success and does not trust a forged result", () => {
   assert.ok(!renderVerificationReport(extra).includes("injected"));
 });
 
+test("hostile getters and proxies cannot throw out of the report builder or forge success", () => {
+  const boom = () => { throw new Error("getter"); };
+  const hostile = Object.defineProperty({ artefacts: [], diagnostics: [] }, "success", { get: boom });
+  assert.equal(createVerificationReport(hostile).success, false);
+  const art = Object.defineProperty({ path: "a", hash: "h", diagnostics: [] }, "verified", { get: boom });
+  const r = createVerificationReport({ success: true, artefacts: [art], diagnostics: [] });
+  assert.equal(r.success, false);
+  assert.equal(r.artefacts[0].verified, false);
+  const proxy = new Proxy([], { get: boom });
+  assert.equal(createVerificationReport({ success: true, artefacts: proxy, diagnostics: [] }).success, false);
+  const diag = Object.defineProperty({}, "code", { get: boom });
+  const d = createVerificationReport({ success: true, artefacts: [{ path: "a", hash: "h", verified: true, diagnostics: [] }], diagnostics: [diag] });
+  assert.equal(d.success, false);
+  assert.equal(d.diagnostics[0].code, "");
+});
+
 test("generatedAt is optional and must be a UTC ISO timestamp", () => {
   const ok = { success: true, artefacts: [{ path: "a", hash: "h", verified: true, diagnostics: [] }], diagnostics: [] };
   assert.equal(createVerificationReport(ok, { generatedAt: "2026-10-05T10:00:00Z" }).generatedAt, "2026-10-05T10:00:00Z");

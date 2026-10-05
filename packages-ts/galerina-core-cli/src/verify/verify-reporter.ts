@@ -54,11 +54,17 @@ export interface VerificationReportOptions {
 
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
-const list = (v: unknown): readonly unknown[] => (Array.isArray(v) ? v : []);
+/** Read one property without letting a hostile getter or proxy throw out of the report builder. */
+const get = (o: unknown, key: string): unknown => {
+  if (o === null || typeof o !== "object") return undefined;
+  try { return (o as Record<string, unknown>)[key]; } catch { return undefined; }
+};
+const list = (v: unknown): readonly unknown[] => {
+  try { return Array.isArray(v) ? Array.from(v as readonly unknown[]) : []; } catch { return []; }
+};
 
 function copyDiagnostic(d: unknown): VerificationReportDiagnostic {
-  const o = (d !== null && typeof d === "object" ? d : {}) as Record<string, unknown>;
-  return Object.freeze({ code: str(o.code), severity: "error" as const, message: str(o.message), path: str(o.path) });
+  return Object.freeze({ code: str(get(d, "code")), severity: "error" as const, message: str(get(d, "message")), path: str(get(d, "path")) });
 }
 
 /** Build a frozen, JSON-safe verification report from a verifier result. Throws RangeError for a malformed generatedAt. */
@@ -67,20 +73,18 @@ export function createVerificationReport(result: VerificationResult, options: Ve
   if (generatedAt !== undefined && (typeof generatedAt !== "string" || !ISO_UTC.test(generatedAt) || Number.isNaN(Date.parse(generatedAt)))) {
     throw new RangeError("generatedAt must be a UTC ISO-8601 timestamp ending in Z.");
   }
-  const r = (result !== null && typeof result === "object" ? result : {}) as Record<string, unknown>;
-  const artefacts = list(r.artefacts).map((a): VerificationReportArtefact => {
-    const o = (a !== null && typeof a === "object" ? a : {}) as Record<string, unknown>;
-    const diagnostics = list(o.diagnostics).map(copyDiagnostic);
+  const artefacts = list(get(result, "artefacts")).map((a): VerificationReportArtefact => {
+    const diagnostics = list(get(a, "diagnostics")).map(copyDiagnostic);
     return Object.freeze({
-      path: str(o.path),
-      hash: str(o.hash),
-      verified: o.verified === true && diagnostics.length === 0,
+      path: str(get(a, "path")),
+      hash: str(get(a, "hash")),
+      verified: get(a, "verified") === true && diagnostics.length === 0,
       codes: Object.freeze(diagnostics.map((d) => d.code)),
     });
   });
-  const diagnostics = list(r.diagnostics).map(copyDiagnostic);
+  const diagnostics = list(get(result, "diagnostics")).map(copyDiagnostic);
   const verifiedCount = artefacts.filter((a) => a.verified).length;
-  const success = r.success === true && artefacts.length > 0 && verifiedCount === artefacts.length && diagnostics.length === 0;
+  const success = get(result, "success") === true && artefacts.length > 0 && verifiedCount === artefacts.length && diagnostics.length === 0;
   const report: VerificationReport = {
     schema: VERIFICATION_REPORT_SCHEMA,
     success,
