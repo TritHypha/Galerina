@@ -38,13 +38,13 @@
 //     }
 //   }
 
-import {
-  validateAgentDefinition,
-  type AgentDefinition,
-  type AgentDiagnostic,
-  type AgentFailureBehaviour,
-  type AgentLimits,
-  type AgentToolPermission,
+import { validateAgentDefinition } from "./agent-validation.js";
+import type {
+  AgentDefinition,
+  AgentDiagnostic,
+  AgentFailureBehaviour,
+  AgentLimits,
+  AgentToolPermission,
 } from "./index.js";
 
 export const AGENT_DECLARATION_SCHEMA = "galerina.ai-agent.declaration.v1";
@@ -97,6 +97,7 @@ const FAILURE_BEHAVIOURS: readonly AgentFailureBehaviour[] = Object.freeze([
 ]);
 const TIME_UNITS: Readonly<Record<string, number>> = Object.freeze({ ms: 1, s: 1_000, m: 60_000 });
 const SIZE_UNITS: Readonly<Record<string, number>> = Object.freeze({ kb: 1_024, mb: 1_048_576, gb: 1_073_741_824 });
+const AGENT_LIMIT_FIELDS = ["timeoutMs", "memoryBytes", "maxToolCalls", "maxTokens", "rateLimitPerMinute"] as const;
 const LIMIT_KEYS = ["timeout", "memory", "max_tool_calls", "max_tokens", "rate_limit_per_minute"] as const;
 type LimitKey = (typeof LIMIT_KEYS)[number];
 
@@ -448,6 +449,25 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
   if (!FAILURE_BEHAVIOURS.includes(node.failureBehaviour)) {
     extra.push({ code: "Galerina_AGENT_DECL_FAILURE_INVALID", severity: "error", message: `Failure behaviour must be one of: ${FAILURE_BEHAVIOURS.join(", ")}.`, path: "failureBehaviour" });
   }
+  // Limits on a hand-built node: only the five known keys, each a positive safe integer
+  // (validateAgentLimits alone uses `> 0`, which a string such as "5" or Infinity passes;
+  // zero and negative values stay with validateAgentLimits so each problem is reported once).
+  const limitsRecord: Record<string, unknown> = typeof node.limits === "object" && node.limits !== null && !Array.isArray(node.limits) ? node.limits as unknown as Record<string, unknown> : {};
+  if (limitsRecord !== (node.limits as unknown)) {
+    extra.push({ code: "Galerina_AGENT_DECL_LIMIT_INVALID", severity: "error", message: "Agent limits must be a plain record.", path: "limits" });
+  }
+  for (const key of Object.keys(limitsRecord)) {
+    if (!(AGENT_LIMIT_FIELDS as readonly string[]).includes(key)) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIMIT_UNKNOWN", severity: "error", message: `Limits may only set: ${AGENT_LIMIT_FIELDS.join(", ")}.`, path: "limits" });
+      break;
+    }
+  }
+  for (const key of AGENT_LIMIT_FIELDS) {
+    const value = limitsRecord[key];
+    if (value !== undefined && !(typeof value === "number" && Number.isSafeInteger(value))) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIMIT_INVALID", severity: "error", message: "Each limit must be a whole number.", path: `limits.${key}` });
+    }
+  }
   node.tools.forEach((tool, position) => {
     if (tool.scope !== undefined && (tool.decision !== "allow" || !isSafeScope(tool.scope))) {
       extra.push({ code: "Galerina_AGENT_DECL_TOOL_SCOPE_INVALID", severity: "error", message: "Tool scope must be an exact relative scope on an allow.", path: `tools.${position}.scope` });
@@ -460,7 +480,8 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
     tools: Object.freeze(node.tools.map((tool) => Object.freeze({ ...tool }))),
     effects: Object.freeze([...node.effects]),
     permissions: Object.freeze([...node.permissions]),
-    limits: Object.freeze({ ...node.limits }),
+    // Copy only the known limit fields so an unknown key can never ride into the definition.
+    limits: Object.freeze(Object.fromEntries(AGENT_LIMIT_FIELDS.filter((key) => limitsRecord[key] !== undefined).map((key) => [key, limitsRecord[key]]))) as unknown as AgentLimits,
     failureBehaviour: node.failureBehaviour,
   });
   const diagnostics = [...extra, ...validateAgentDefinition(definition)];
