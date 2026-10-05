@@ -13,6 +13,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { parseProgram, checkEffects, verifyGovernance } from "../dist/index.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "dist", "index.js");
@@ -128,7 +129,9 @@ test("RD-0365: verified current TPM/PCR evidence admits only the matching custod
     return true;
   }, 1_000);
   assert.deepEqual(decision, { admitted: true, enforced: true, reason: "attested custody verified" });
-  assert.equal(seen.evidence, attestation);
+  assert.deepEqual(seen.evidence, attestation);
+  assert.notEqual(seen.evidence, attestation, "the verifier receives the validated immutable snapshot");
+  assert.equal(Object.isFrozen(seen.evidence), true);
   assert.equal(seen.candidate, host);
 });
 
@@ -154,6 +157,31 @@ test("RD-0365: stale, mismatched, malformed and verifier-failed evidence remains
   assert.equal(evaluateKeyCustody(host, { ...valid, hostName: "other_host" }, () => true, 1_000).admitted, false);
   const { challengeDigest: _challengeDigest, ...withoutChallenge } = valid;
   assert.equal(evaluateKeyCustody(host, withoutChallenge, () => true, 1_000).admitted, false);
+});
+
+test("RD-0365: accessor-backed attestation fields are refused before calling the verifier", () => {
+  const { evaluateKeyCustody, HOST_PROFILES } = L;
+  const host = HOST_PROFILES.get("register_pinned");
+  const unstable = {
+    hostName: "register_pinned",
+    keyCustody: "hardware-signer",
+    pcrProfile: "windows-v1-pcr0-pcr7",
+    quoteDigest: `sha256:${"e".repeat(64)}`,
+    challengeDigest: `sha256:${"f".repeat(64)}`,
+    issuedAtMs: 900,
+    expiresAtMs: 1_100,
+  };
+  Object.defineProperty(unstable, "schema", {
+    enumerable: true,
+    get() { return "galerina.key-custody-attestation.v1"; },
+  });
+  let verifierCalled = false;
+  const decision = evaluateKeyCustody(host, unstable, () => {
+    verifierCalled = true;
+    return true;
+  }, 1_000);
+  assert.deepEqual(decision, { admitted: false, enforced: false, reason: "elevated custody requires a valid attestation" });
+  assert.equal(verifierCalled, false);
 });
 
 test("RD-0365: a copied host capability is not a declared custody authority", () => {
@@ -184,4 +212,106 @@ test("RD-0365: fail-closed host sentinels and profile records are immutable", ()
   const { HOST_PROFILES, UNKNOWN_HOST } = L;
   assert.equal(Object.isFrozen(UNKNOWN_HOST), true);
   for (const profile of HOST_PROFILES.values()) assert.equal(Object.isFrozen(profile), true);
+});
+
+// ---------------------------------------------------------------------------
+// RD-0365 close-out (2026-10-04): host-profile resolution wired into the
+// hardening authorization consumer (governance verifier). keyCustody stays
+// ADVISORY: an unproven elevated claim is denied and surfaced as the
+// FUNGI-HARDEN-009 warning; it never fails compilation and never mints a rung.
+// ---------------------------------------------------------------------------
+
+const ATTESTED = Object.freeze({
+  schema: "galerina.key-custody-attestation.v1",
+  hostName: "register_pinned",
+  keyCustody: "hardware-signer",
+  pcrProfile: "windows-v1-pcr0-pcr7",
+  quoteDigest: `sha256:${"e".repeat(64)}`,
+  challengeDigest: `sha256:${"f".repeat(64)}`,
+  issuedAtMs: 900,
+  expiresAtMs: 1_100,
+});
+
+function custodyGov(hardening) {
+  const src = `secure flow handleKey(k: Int) -> Int
+contract { intent { "Handle a secret." } privacy { contains PII }
+  hardening { ${hardening} } }
+{ return 1 }`;
+  const parsed = parseProgram(src, "rd0365-custody.fungi");
+  const parseErrors = (parsed.diagnostics ?? []).filter((d) => d.severity === "error");
+  assert.equal(parseErrors.length, 0, `parse errors: ${parseErrors.map((d) => d.message).join("; ")}`);
+  const result = verifyGovernance(parsed.ast, parsed.flows, checkEffects(parsed.flows, parsed.ast), "dev");
+  return result.diagnostics.filter((d) => d.code === "FUNGI-HARDEN-009");
+}
+
+test("RD-0365: FUNGI_HARDEN_009 is an exported warning in the hardening catalogue", () => {
+  const { FUNGI_HARDEN_009, HARDENING_DIAGNOSTICS } = L;
+  assert.equal(FUNGI_HARDEN_009.code, "FUNGI-HARDEN-009");
+  assert.equal(FUNGI_HARDEN_009.name, "KEY_CUSTODY_CLAIM_UNPROVEN");
+  assert.equal(FUNGI_HARDEN_009.severity, "warning", "keyCustody is advisory: the code never fails a build");
+  assert.ok(HARDENING_DIAGNOSTICS.includes(FUNGI_HARDEN_009));
+});
+
+test("RD-0365: resolveHostKeyCustody denies an unattested elevated claim and falls back to env-spore", () => {
+  const { resolveHostKeyCustody, HOST_PROFILES } = L;
+  assert.equal(typeof resolveHostKeyCustody, "function");
+  const r = resolveHostKeyCustody("register_pinned");
+  assert.equal(r.host, HOST_PROFILES.get("register_pinned"));
+  assert.equal(r.claimed, "hardware-signer");
+  assert.equal(r.effective, "env-spore", "a label alone never proves L4");
+  assert.equal(r.effectiveStatus, "unproven-fallback", "the fallback label is not proof that env-spore custody was established");
+  assert.equal(r.decision.admitted, false);
+  assert.match(r.decision.reason, /attestation/);
+});
+
+test("RD-0365: resolveHostKeyCustody admits an elevated rung only with current verified evidence", () => {
+  const { resolveHostKeyCustody } = L;
+  const ok = resolveHostKeyCustody("register_pinned", ATTESTED, () => true, 1_000);
+  assert.equal(ok.effective, "hardware-signer");
+  assert.equal(ok.effectiveStatus, "attested");
+  assert.deepEqual(ok.decision, { admitted: true, enforced: true, reason: "attested custody verified" });
+  const refused = resolveHostKeyCustody("register_pinned", ATTESTED, () => false, 1_000);
+  assert.equal(refused.effective, "env-spore");
+  assert.equal(refused.effectiveStatus, "unproven-fallback");
+  const stale = resolveHostKeyCustody("register_pinned", ATTESTED, () => true, 1_100);
+  assert.equal(stale.effective, "env-spore");
+  assert.equal(stale.effectiveStatus, "unproven-fallback");
+});
+
+test("RD-0365: resolveHostKeyCustody keeps the env-spore baseline and fails closed for undeclared hosts", () => {
+  const { resolveHostKeyCustody, UNKNOWN_HOST } = L;
+  const baseline = resolveHostKeyCustody("mlock_posix");
+  assert.equal(baseline.claimed, "env-spore");
+  assert.equal(baseline.effective, "env-spore");
+  assert.equal(baseline.effectiveStatus, "unenforced-baseline");
+  assert.deepEqual(baseline.decision, { admitted: true, enforced: false, reason: "env-spore baseline does not claim hardware custody" });
+  const unknown = resolveHostKeyCustody("bogus_unknown_host");
+  assert.equal(unknown.host, UNKNOWN_HOST);
+  assert.equal(unknown.claimed, "env-spore");
+  assert.equal(unknown.effective, "env-spore");
+  assert.equal(unknown.effectiveStatus, "unavailable");
+  assert.equal(unknown.decision.admitted, false);
+  // An attestation cannot lift an undeclared host either.
+  const forged = resolveHostKeyCustody("bogus_unknown_host", { ...ATTESTED, hostName: "bogus_unknown_host" }, () => true, 1_000);
+  assert.equal(forged.effective, "env-spore");
+  assert.equal(forged.effectiveStatus, "unavailable");
+});
+
+test("RD-0365 consumer: a hardening host that claims elevated custody gets the FUNGI-HARDEN-009 warning", () => {
+  const withResidency = custodyGov("residency register_only host register_pinned");
+  assert.equal(withResidency.length, 1);
+  assert.equal(withResidency[0].severity, "warning");
+  assert.match(withResidency[0].message, /register_pinned/);
+  assert.match(withResidency[0].message, /hardware-signer/);
+  assert.match(withResidency[0].message, /env-spore/);
+  assert.match(withResidency[0].message, /unproven-fallback/);
+  const hostOnly = custodyGov("host register_pinned");
+  assert.equal(hostOnly.length, 1, "the custody check runs whenever a host is declared, not only with a residency ceiling");
+});
+
+test("RD-0365 consumer: baseline, undeclared and absent hosts emit no FUNGI-HARDEN-009", () => {
+  assert.deepEqual(custodyGov("residency no_disk host mlock_posix"), []);
+  assert.deepEqual(custodyGov("host browser_secure_context"), []);
+  assert.deepEqual(custodyGov("host bogus_unknown_host"), []);
+  assert.deepEqual(custodyGov("erase on_exit"), []);
 });
