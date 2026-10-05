@@ -11,7 +11,7 @@ import {
   type ProjectGraph,
   type ProjectGraphWorkspaceConfig,
   type ProjectGraphWorkspaceFile,
-} from "../../galerina-devtools-graph-project/dist/index.js";
+} from "@galerina/devtools-graph-project";
 import type { CliContext, CliResult } from "./types.js";
 
 interface WorkspaceConfig {

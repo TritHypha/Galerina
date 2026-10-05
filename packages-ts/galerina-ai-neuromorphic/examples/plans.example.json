@@ -1,0 +1,20 @@
+{
+  "plans": [
+    {
+      "flow": "DetectKeyword",
+      "model": "KeywordSpotter",
+      "targetPreference": ["neuromorphic"],
+      "fallback": "reject",
+      "maxEvents": 10000,
+      "timeoutMs": 50
+    },
+    {
+      "flow": "DetectKeywordPlanOnly",
+      "model": "KeywordSpotter",
+      "targetPreference": [],
+      "fallback": "cpu",
+      "maxEvents": 10000,
+      "timeoutMs": 50
+    }
+  ]
+}

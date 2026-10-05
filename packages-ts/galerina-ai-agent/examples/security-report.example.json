@@ -1,0 +1,59 @@
+{
+  "schema": "galerina.ai-agent.example.v1",
+  "name": "security-report",
+  "input": {
+    "flow": "pr-security-review",
+    "parallel": true,
+    "timeoutMs": 60000,
+    "runs": [
+      {
+        "name": "reviewer",
+        "status": "passed",
+        "toolCalls": 5,
+        "memoryBytes": 67108864,
+        "durationMs": 12000
+      },
+      {
+        "name": "fuzzer",
+        "status": "timeout",
+        "toolCalls": 8,
+        "memoryBytes": 100663296,
+        "durationMs": 60000
+      }
+    ],
+    "unsafeToolsUsed": [
+      "shell"
+    ]
+  },
+  "expected": {
+    "flow": "pr-security-review",
+    "parallel": true,
+    "timeoutMs": 60000,
+    "agents": [
+      {
+        "name": "reviewer",
+        "status": "passed",
+        "toolCalls": 5,
+        "memoryBytes": 67108864,
+        "durationMs": 12000
+      },
+      {
+        "name": "fuzzer",
+        "status": "timeout",
+        "toolCalls": 8,
+        "memoryBytes": 100663296,
+        "durationMs": 60000
+      }
+    ],
+    "unsafeToolsUsed": [
+      "shell"
+    ],
+    "humanReviewRequired": true,
+    "warnings": [
+      "Dropped High finding \"Possible secret in log\": evidence required but missing.",
+      "Low-confidence finding \"Unused import\" retained for human review.",
+      "Agent \"fuzzer\" did not pass (status: timeout).",
+      "Unsafe tool \"shell\" was used and requires review."
+    ]
+  }
+}

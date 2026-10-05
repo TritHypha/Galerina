@@ -8,9 +8,12 @@
 [x] Add initial typed exports
 [x] Define neural model, layer, inference and training contract placeholders
 [x] Define tensor shape compatibility with galerina-core-vector
-[ ] Define inference result and confidence policy contracts
-[ ] Define training data policy contracts
-[ ] Define model verification and loading contracts
+[x] Define inference result and confidence policy contracts (2026-10-05, Grok Bot; zero-trust default, owner may revisit;
+    tests/neural-policy-contracts.test.mjs)
+[x] Define training data policy contracts (2026-10-05, Grok Bot; zero-trust default, owner may revisit;
+    tests/neural-policy-contracts.test.mjs)
+[x] Define model verification and loading contracts (2026-10-05, Grok Bot; zero-trust default, owner may revisit;
+    tests/neural-policy-contracts.test.mjs)
 [x] Define neural report examples (`examples/report.example.json` = exact
     `createNeuralReport` output for `examples/model.example.json`)
 [x] Add examples (`examples/model.example.json`; validated by

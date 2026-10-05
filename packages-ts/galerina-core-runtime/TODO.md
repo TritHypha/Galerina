@@ -18,12 +18,16 @@ runtime work.
 [x] Define Structured Await scope and deterministic scheduler-reducer contract
 [x] Define cancellation request/acknowledged-termination propagation contract
 [x] Define timeout enforcement decision contract with deadline equality
-[ ] Define stream backpressure runtime contract
+[x] Define stream backpressure runtime contract
+    src/runtime-contracts.ts validateStreamBackpressurePolicy / decideStreamBackpressure (no drop mode); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [ ] Add isolated hard-termination adapter for untrusted/non-cooperative work
 [ ] Authenticate task-event and termination receipts at the host boundary
-[ ] Define runtime memory policy contract
-[ ] Define Node-hosted runtime adapter contract
-[ ] Define host-runtime overhead report contract
+[x] Define runtime memory policy contract
+    src/runtime-contracts.ts validateRuntimeMemoryPolicy / decideRuntimeAllocation (zero-on-free, no shared/executable memory); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
+[x] Define Node-hosted runtime adapter contract
+    src/runtime-contracts.ts validateNodeHostAdapter + NODE_HOST_BUILTIN_ALLOWLIST; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
+[x] Define host-runtime overhead report contract
+    src/runtime-contracts.ts createHostOverheadReport (integer permille; UNMEASURED/REFUSED); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [ ] Define Securely Governed Runtime execution plan contract
 [ ] Define verified fast path execution signature and invalidation contract
 [ ] Define AI compute plan runtime hook contract
@@ -38,9 +42,12 @@ runtime work.
 [ ] Obtain independent live Linux and macOS W^X/entropy receipts
 [ ] Prove hostile-memory isolation/integrity and physical-erasure policy
 [x] Define runtime error format
-[ ] Define target fallback runtime contract
-[ ] Define runtime resource budget contract for CPU, wall time, memory, recursion, loops, tasks, network, tools and accelerator work
-[ ] Define malicious-data intake pipeline contract for size, depth, schema, canonicalisation, ownership and taint checks
+[x] Define target fallback runtime contract
+    src/runtime-contracts.ts decideTargetFallback (opt-in, declared chain, exact semantics only); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
+[x] Define runtime resource budget contract for CPU, wall time, memory, recursion, loops, tasks, network, tools and accelerator work
+    src/runtime-contracts.ts DEFAULT_RUNTIME_RESOURCE_BUDGET / validateRuntimeResourceBudget / checkRuntimeResourceUsage; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
+[x] Define malicious-data intake pipeline contract for policy bounds, size, depth, schema, canonicalisation, ownership and taint checks
+    src/runtime-contracts.ts admitUntrustedData (staged policy->size->parse->depth->schema->canonical->ownership; taint stays untrusted); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define runtime report format
 [x] Add examples
 [x] Add tests
