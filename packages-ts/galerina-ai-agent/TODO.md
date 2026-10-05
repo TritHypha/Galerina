@@ -23,7 +23,7 @@
 [x] Define immutable trust-root protection examples
 [x] Define read/write/tool/package/deploy capability separation examples
 [x] Define self-modification governance report examples
-[x] Define immutable AI audit log contract
+[x] Define local AI audit hash-chain consistency helper (not durable or externally anchored storage)
 [x] Define loop/crash protection report examples
 [x] Add examples
 [x] Add tests

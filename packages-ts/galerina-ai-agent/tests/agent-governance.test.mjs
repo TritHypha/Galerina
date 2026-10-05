@@ -57,6 +57,10 @@ describe("validateAgentManifest (zero-trust manifest, class separation)", () => 
     });
     assert.deepEqual(codes(v), ["Galerina_AGENT_MANIFEST_CLASS_MIXED", "Galerina_AGENT_MANIFEST_EFFECT_UNGRANTED", "Galerina_AGENT_MANIFEST_GRANT_UNSCOPED", "Galerina_AGENT_MANIFEST_GRANT_WILDCARD", "Galerina_AGENT_MANIFEST_UNSIGNED"]);
   });
+  it("refuses unknown manifest grant classes and data classifications", () => {
+    assert.ok(codes(A.validateAgentManifest({ ...base, grants: [{ ...base.grants[0], capabilityClass: "owner" }] })).includes("Galerina_AGENT_MANIFEST_GRANT_CLASS_INVALID"));
+    assert.ok(codes(A.validateAgentManifest({ ...base, maxDataClassification: "unclassified" })).includes("Galerina_AGENT_MANIFEST_CLASSIFICATION_INVALID"));
+  });
 });
 
 describe("routeAgentMessage (typed bus, data classification)", () => {
@@ -69,6 +73,7 @@ describe("routeAgentMessage (typed bus, data classification)", () => {
   });
   it("refuses classifications outside the declared closed set", () => {
     assert.deepEqual(codes(A.routeAgentMessage({ ...ok, classification: "unclassified" }, channels)), ["Galerina_AGENT_BUS_CLASSIFICATION"]);
+    assert.deepEqual(codes(A.routeAgentMessage(ok, [{ ...channels[0], clearance: "unclassified" }])), ["Galerina_AGENT_BUS_CLASSIFICATION"]);
   });
 });
 
@@ -85,6 +90,9 @@ describe("evaluateToolGatewayCall (tool gateway, secret/memory/cache guards)", (
   it("deny wins when a tool is both allowed and denied", () => {
     const mixed = { ...reviewer, tools: [{ tool: "repo.read", decision: "allow" }, { tool: "repo.read", decision: "deny" }] };
     assert.equal(A.evaluateToolGatewayCall(call, mixed, policy).allowed, false);
+  });
+  it("refuses unknown data classifications even when caching would otherwise be allowed", () => {
+    assert.ok(codes(A.evaluateToolGatewayCall({ ...call, classification: "unclassified" }, reviewer, policy)).includes("Galerina_AGENT_GATEWAY_CLASSIFICATION"));
   });
 });
 
@@ -124,6 +132,9 @@ describe("decideAiCapabilityRequest (authority-kernel separation)", () => {
   it("read and tool classes need no human approval", () => {
     assert.equal(A.decideAiCapabilityRequest({ request: { ...request, capabilityClass: "read" }, decidedBy: "kernel", decidedByKind: "authority-kernel", humanApprovalId: "" }).allowed, true);
   });
+  it("refuses unknown capability classes even when an approval id is supplied", () => {
+    assert.ok(codes(A.decideAiCapabilityRequest({ request: { ...request, capabilityClass: "owner" }, decidedBy: "kernel", decidedByKind: "authority-kernel", humanApprovalId: "APR-1" })).includes("Galerina_AGENT_AUTHORITY_CLASS_INVALID"));
+  });
 });
 
 describe("transitionQuarantine (AI-generated code quarantine)", () => {
@@ -145,6 +156,7 @@ describe("sandbox policy and human approval gate", () => {
   it("refuses spawn, contradictory or wildcard network policies", () => {
     assert.deepEqual(codes(A.validateSandboxPolicy({ network: "deny", networkAllowlist: ["a"], filesystem: "deny", processSpawn: "allow" })), ["Galerina_AGENT_SANDBOX_NETWORK_CONTRADICTION", "Galerina_AGENT_SANDBOX_SPAWN"]);
     assert.deepEqual(codes(A.validateSandboxPolicy({ network: "allowlist", networkAllowlist: ["*.example.com"], filesystem: "deny", processSpawn: "deny" })), ["Galerina_AGENT_SANDBOX_NETWORK_ALLOWLIST"]);
+    assert.deepEqual(codes(A.validateSandboxPolicy({ network: "allow", networkAllowlist: [], filesystem: "unrestricted", processSpawn: "deny" })), ["Galerina_AGENT_SANDBOX_FILESYSTEM_INVALID", "Galerina_AGENT_SANDBOX_NETWORK_INVALID"]);
   });
   it("closes the gate for missing, expired, self-issued or other-action approvals", () => {
     const a = examples["sandbox-and-approval"];
@@ -152,6 +164,7 @@ describe("sandbox policy and human approval gate", () => {
     assert.equal(A.evaluateHumanApprovalGate(a.action, a.requester, a.approvals, a.approvals[0].expiresAtMs).allowed, false);
     assert.equal(A.evaluateHumanApprovalGate(a.action, "phillip", a.approvals, NOW).allowed, false);
     assert.equal(A.evaluateHumanApprovalGate("deploy.prod", a.requester, a.approvals, NOW).allowed, false);
+    assert.equal(A.evaluateHumanApprovalGate(a.action, a.requester, [{ ...a.approvals[0], approver: "" }], NOW).allowed, false);
   });
 });
 

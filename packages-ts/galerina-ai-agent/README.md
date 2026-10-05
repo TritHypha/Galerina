@@ -208,7 +208,7 @@ galerina-core-security owns permission and safety policy.
 
 ## Zero-trust agent governance contracts
 
-`src/agent-governance.ts` adds pure, fail-closed decisions. Each returns `{ allowed, diagnostics }` or a typed report, and none of them performs I/O or grants authority.
+`src/agent-governance.ts` adds pure policy decisions over already-parsed records. Callers must validate untrusted bytes against the declared schemas before calling these helpers; they are not runtime schema parsers. Each returns `{ allowed, diagnostics }` or a typed report, and none performs I/O or grants authority.
 
 | Contract | What it does |
 |---|---|
@@ -222,6 +222,6 @@ galerina-core-security owns permission and safety policy.
 | `createSelfModificationReport`, `transitionQuarantine` | Trust roots are immutable. An agent cannot rewrite its own definition. AI-generated code is released only through an independent review that records evidence. |
 | `validateSandboxPolicy`, `evaluateHumanApprovalGate` | No process spawn and exact network allowlists. Approvals are per action, expire, and cannot come from the requester. |
 | `createLoopProtectionReport` | Iteration, crash and stall limits. |
-| `appendAiAuditEntry`, `verifyAiAuditLog`, `sha256Hex` | A hash-chained, frozen audit log with a dependency-free SHA-256. |
+| `appendAiAuditEntry`, `verifyAiAuditLog`, `sha256Hex` | A local hash-chain consistency helper with a dependency-free SHA-256. It does not provide durable storage, signatures, or a trusted external head anchor; a complete rewritten chain can be recomputed. |
 
 Worked examples are in `examples/*.example.json`. The tests recompute each example's expected output.

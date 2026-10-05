@@ -1,10 +1,10 @@
 // Zero-trust agent governance contracts (TODO pass, Grok 2026-10-05).
 //
-// Every helper here is a pure, fail-closed decision over typed records: it returns a
-// verdict plus typed diagnostics and never performs I/O, never grants authority on its
-// own and never trusts a field the caller did not declare. An agent may REQUEST a
-// capability; only the authority kernel (a non-agent principal) may GRANT one. The
-// defaults are deny: anything not explicitly declared is refused.
+// These helpers assume inputs already conform to their declared record shapes; callers
+// must schema-validate untrusted bytes first. Each helper is a pure policy decision:
+// it returns typed diagnostics and never performs I/O or grants authority on its own.
+// An agent may REQUEST a capability; only the authority kernel (a non-agent principal)
+// may GRANT one. The defaults are deny: anything not explicitly declared is refused.
 
 import type { AgentDefinition, AgentDiagnostic, AgentTaskGroupPlan } from "./index.js";
 
@@ -62,6 +62,9 @@ export function validateSupervisedTaskGroup(
 // ── capability classes and the zero-trust agent manifest ────────────────────
 export type AgentCapabilityClass = "read" | "write" | "tool" | "package" | "deploy";
 
+const isAgentCapabilityClass = (value: unknown): value is AgentCapabilityClass =>
+  value === "read" || value === "write" || value === "tool" || value === "package" || value === "deploy";
+
 export interface AgentCapabilityGrant {
   readonly capability: string;
   readonly capabilityClass: AgentCapabilityClass;
@@ -69,6 +72,9 @@ export interface AgentCapabilityGrant {
 }
 
 export type DataClassification = "public" | "internal" | "confidential" | "secret";
+
+const isDataClassification = (value: unknown): value is DataClassification =>
+  value === "public" || value === "internal" || value === "confidential" || value === "secret";
 
 export const DATA_CLASSIFICATION_RANK: Readonly<Record<DataClassification, number>> = Object.freeze({
   public: 0,
@@ -98,9 +104,15 @@ export function validateAgentManifest(manifest: AgentManifest): GovernanceVerdic
   if (manifest.signatureRequired !== true) {
     diagnostics.push(deny("Galerina_AGENT_MANIFEST_UNSIGNED", "Agent manifests must require a signature; unsigned manifests are refused.", "signatureRequired"));
   }
+  if (!isDataClassification(manifest.maxDataClassification)) {
+    diagnostics.push(deny("Galerina_AGENT_MANIFEST_CLASSIFICATION_INVALID", "Manifest maximum data classification is not declared.", "maxDataClassification"));
+  }
   const classByCapability = new Map<string, AgentCapabilityClass>();
   manifest.grants.forEach((grant, index) => {
     const path = `grants.${index}`;
+    if (!isAgentCapabilityClass(grant.capabilityClass)) {
+      diagnostics.push(deny("Galerina_AGENT_MANIFEST_GRANT_CLASS_INVALID", "Grant capability class is not declared.", `${path}.capabilityClass`));
+    }
     if (!isNonEmpty(grant.capability) || WILDCARD.test(grant.capability)) {
       diagnostics.push(deny("Galerina_AGENT_MANIFEST_GRANT_WILDCARD", "Grants must name one exact capability.", `${path}.capability`));
     }
@@ -186,7 +198,10 @@ export function evaluateToolGatewayCall(
   if (!(isPositiveFinite(call.requestedMemoryBytes) && call.requestedMemoryBytes <= definition.limits.memoryBytes)) {
     diagnostics.push(deny("Galerina_AGENT_GATEWAY_MEMORY", "Requested memory is not within the agent budget.", "requestedMemoryBytes"));
   }
-  if (call.cacheable && DATA_CLASSIFICATION_RANK[call.classification] >= DATA_CLASSIFICATION_RANK.confidential) {
+  const classificationRank = DATA_CLASSIFICATION_RANK[call.classification];
+  if (typeof classificationRank !== "number") {
+    diagnostics.push(deny("Galerina_AGENT_GATEWAY_CLASSIFICATION", "Tool call data classification is not declared.", "classification"));
+  } else if (call.cacheable && classificationRank >= DATA_CLASSIFICATION_RANK.confidential) {
     diagnostics.push(deny("Galerina_AGENT_GATEWAY_CACHE", "Confidential and secret results are never cached.", "cacheable"));
   }
   return verdict(diagnostics);
@@ -277,6 +292,7 @@ export interface AuthorityDecisionInput {
 export function decideAiCapabilityRequest(input: AuthorityDecisionInput): GovernanceVerdict {
   const diagnostics: AgentDiagnostic[] = [];
   const { request } = input;
+  if (!isAgentCapabilityClass(request.capabilityClass)) diagnostics.push(deny("Galerina_AGENT_AUTHORITY_CLASS_INVALID", "Capability class is not declared.", "request.capabilityClass"));
   if (input.decidedByKind !== "authority-kernel") diagnostics.push(deny("Galerina_AGENT_AUTHORITY_NOT_KERNEL", "Only the authority kernel may decide capability requests.", "decidedByKind"));
   if (input.decidedBy === request.requester) diagnostics.push(deny("Galerina_AGENT_AUTHORITY_SELF_GRANT", "A requester may never decide its own request.", "decidedBy"));
   if (!isNonEmpty(request.justification)) diagnostics.push(deny("Galerina_AGENT_AUTHORITY_JUSTIFICATION", "Capability requests must carry a justification.", "request.justification"));
@@ -378,6 +394,10 @@ export interface AgentSandboxPolicy {
 export function validateSandboxPolicy(policy: AgentSandboxPolicy): GovernanceVerdict {
   const diagnostics: AgentDiagnostic[] = [];
   if (policy.processSpawn !== "deny") diagnostics.push(deny("Galerina_AGENT_SANDBOX_SPAWN", "Agent sandboxes never spawn processes.", "processSpawn"));
+  if (policy.network !== "deny" && policy.network !== "allowlist") diagnostics.push(deny("Galerina_AGENT_SANDBOX_NETWORK_INVALID", "Network mode is not declared.", "network"));
+  if (policy.filesystem !== "deny" && policy.filesystem !== "read-only" && policy.filesystem !== "scratch-only") {
+    diagnostics.push(deny("Galerina_AGENT_SANDBOX_FILESYSTEM_INVALID", "Filesystem mode is not declared.", "filesystem"));
+  }
   if (policy.network === "deny" && policy.networkAllowlist.length > 0) diagnostics.push(deny("Galerina_AGENT_SANDBOX_NETWORK_CONTRADICTION", "A denied network may not carry an allowlist.", "networkAllowlist"));
   if (policy.network === "allowlist" && (policy.networkAllowlist.length === 0 || policy.networkAllowlist.some((host) => !isNonEmpty(host) || WILDCARD.test(host)))) {
     diagnostics.push(deny("Galerina_AGENT_SANDBOX_NETWORK_ALLOWLIST", "Allowlisted networks need exact, non-wildcard hosts.", "networkAllowlist"));
@@ -395,7 +415,7 @@ export interface HumanApproval {
 // The gate opens only for an approval naming this exact action, from a human other than
 // the requesting agent, that has not expired. Missing approval means closed.
 export function evaluateHumanApprovalGate(action: string, requester: string, approvals: readonly HumanApproval[], nowMs: number): GovernanceVerdict {
-  const approved = approvals.some((approval) => approval.action === action && isNonEmpty(approval.approvalId) && approval.approver !== requester && approval.expiresAtMs > nowMs);
+  const approved = approvals.some((approval) => approval.action === action && isNonEmpty(approval.approvalId) && isNonEmpty(approval.approver) && approval.approver !== requester && Number.isFinite(approval.expiresAtMs) && approval.expiresAtMs > nowMs);
   return approved
     ? verdict([])
     : verdict([deny("Galerina_AGENT_APPROVAL_REQUIRED", `Action "${action}" has no valid human approval.`, "approvals")]);
@@ -433,7 +453,7 @@ export function createLoopProtectionReport(observations: readonly AgentLoopObser
   return { schema: "galerina.ai-agent.loop-protection-report.v1", terminated, healthy };
 }
 
-// ── immutable AI audit log (hash chain) ─────────────────────────────────────
+// ── AI audit hash-chain consistency helper (not durable/anchored storage) ───
 export interface AiAuditEntry {
   readonly sequence: number;
   readonly agent: string;
