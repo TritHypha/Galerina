@@ -1,3 +1,6 @@
+import { constants } from "node:fs";
+import { open, realpath, stat } from "node:fs/promises";
+import { join } from "node:path";
 import { isProxy as isNodeProxy } from "node:util/types";
 
 export type BenchmarkMode = "light" | "full" | "stress";
@@ -990,4 +993,285 @@ export function prepareBenchmarkSubmission(report: unknown, config: BenchmarkCon
     fallbacks: r.tests.filter((t) => t.fallback === true || t.status === "fallback").map((t) => ({ target: t.target, reason: typeof t.reason === "string" ? t.reason : "fallback" })),
   });
   return Object.freeze({ status: "NOT_SUBMITTED_PLACEHOLDER", networkUsed: false, payload, diagnostics: Object.freeze([]) });
+}
+
+// ---------------------------------------------------------------------------
+// Write benchmark-report.json + closed-shape CLI flag parse + summary
+// (TODO pass, Grok 2026-10-05; zero-trust defaults, owner may revisit).
+//
+// writeBenchmarkReport: validates via captureBenchmarkReport, exclusive-creates
+// benchmark-report.json into an existing directory, never overwrites, never
+// echoes paths / errno / report body on failure, never throws.
+//
+// parseBenchmarkCliArgs: admits --light|--full|--json|--save|--out <dir> only.
+// formatBenchmarkSummary: privacy-safe summary lines (no paths / host / user).
+// Does not run benchmarks, probe hardware, or implement the live runner.
+// ---------------------------------------------------------------------------
+
+export const BENCHMARK_REPORT_FILE = "benchmark-report.json";
+
+export const BENCHMARK_REPORT_WRITE_LIMITATIONS: readonly string[] = Object.freeze([
+  "writes a previously validated BenchmarkReport only",
+  "does not run benchmarks or probe hardware",
+  "exclusive create; never overwrites an existing file",
+]);
+
+export type BenchmarkReportWriteStatus = "WRITTEN" | "REFUSED" | "IO_FAILED";
+
+export interface BenchmarkReportWriteResult {
+  readonly status: BenchmarkReportWriteStatus;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+  readonly report: BenchmarkReport | Readonly<Record<string, never>>;
+}
+
+/** JSON render of a captured report (trailing newline). */
+export function renderBenchmarkReport(report: BenchmarkReport): string {
+  return JSON.stringify(report, null, 2) + "\n";
+}
+
+/**
+ * Exclusively create `benchmark-report.json` in an existing directory.
+ * Never throws. Never echoes paths, errno codes, or refused report contents.
+ */
+export async function writeBenchmarkReport(
+  report: unknown,
+  outDir: unknown,
+): Promise<BenchmarkReportWriteResult> {
+  const empty = Object.freeze({}) as Readonly<Record<string, never>>;
+  const refuse = (code: string, message: string, path = "write"): BenchmarkReportWriteResult =>
+    Object.freeze({
+      status: "REFUSED" as const,
+      diagnostics: Object.freeze([createBenchmarkDiagnostic(code, "error", message, path)]),
+      report: empty,
+    });
+  const failIo = (code: string, message: string): BenchmarkReportWriteResult =>
+    Object.freeze({
+      status: "IO_FAILED" as const,
+      diagnostics: Object.freeze([createBenchmarkDiagnostic(code, "error", message, "write")]),
+      report: empty,
+    });
+
+  if (typeof outDir !== "string" || outDir.length === 0 || outDir.length > 4096) {
+    return refuse(
+      "Galerina_BENCHMARK_REPORT_WRITE_DIR_INVALID",
+      "Output directory must be a non-empty bounded string.",
+      "outDir",
+    );
+  }
+
+  const captured = captureBenchmarkReport(report);
+  if (captured.report === undefined) {
+    return Object.freeze({
+      status: "REFUSED" as const,
+      diagnostics: captured.diagnostics,
+      report: empty,
+    });
+  }
+
+  try {
+    const dir = await realpath(outDir);
+    const st = await stat(dir);
+    if (!st.isDirectory()) {
+      return failIo(
+        "Galerina_BENCHMARK_REPORT_WRITE_DIR_INVALID",
+        "Output path must resolve to an existing directory.",
+      );
+    }
+    const filePath = join(dir, BENCHMARK_REPORT_FILE);
+    const noFollow = typeof constants.O_NOFOLLOW === "number" ? constants.O_NOFOLLOW : 0;
+    const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | noFollow;
+    const handle = await open(filePath, flags, 0o644);
+    try {
+      await handle.writeFile(renderBenchmarkReport(captured.report), "utf8");
+    } finally {
+      await handle.close();
+    }
+    return Object.freeze({
+      status: "WRITTEN" as const,
+      diagnostics: Object.freeze([] as BenchmarkDiagnostic[]),
+      report: captured.report,
+    });
+  } catch {
+    return failIo(
+      "Galerina_BENCHMARK_REPORT_WRITE_IO",
+      "Could not exclusively create benchmark-report.json in the output directory.",
+    );
+  }
+}
+
+/** Unknown / duplicate / equals-form / positional / missing --out value. */
+export const Galerina_BENCHMARK_CLI_001 = "Galerina_BENCHMARK_CLI_001";
+/** --light and --full conflict. */
+export const Galerina_BENCHMARK_CLI_002 = "Galerina_BENCHMARK_CLI_002";
+/** --save requires --out; --out dir token refuse. */
+export const Galerina_BENCHMARK_CLI_003 = "Galerina_BENCHMARK_CLI_003";
+/** Not-admitted flag (e.g. live / apply / network runner hooks). */
+export const Galerina_BENCHMARK_CLI_004 = "Galerina_BENCHMARK_CLI_004";
+
+const BENCHMARK_CLI_REFUSED_FLAGS = Object.freeze([
+  "--live",
+  "--apply",
+  "--network",
+  "--stress",
+  "--submit",
+  "--probe",
+] as const);
+
+const OUT_DIR_TOKEN = /^(?!.*(?:^|[\/])\.{1,2}(?:[\/]|$))[A-Za-z0-9._~/=+-][A-Za-z0-9._~/=+-]{0,255}$/;
+
+export type BenchmarkCliModeFlag = "light" | "full";
+
+export interface BenchmarkCliArgs {
+  readonly mode: BenchmarkCliModeFlag;
+  readonly json: boolean;
+  readonly save: boolean;
+  readonly outDir: string | undefined;
+}
+
+export interface BenchmarkCliParseResult {
+  readonly ok: boolean;
+  readonly args: BenchmarkCliArgs | Readonly<Record<string, never>>;
+  readonly diagnostics: readonly BenchmarkDiagnostic[];
+}
+
+/**
+ * Closed-shape parse for `galerina benchmark` flags (library-side).
+ * Admits --light, --full, --json, --save, --out <rel-dir>. Default mode is light.
+ * Does not run benchmarks. Never echoes refused tokens.
+ */
+export function parseBenchmarkCliArgs(argv: unknown): BenchmarkCliParseResult {
+  const empty = Object.freeze({}) as Readonly<Record<string, never>>;
+  const refuse = (code: string, message: string, path = "argv"): BenchmarkCliParseResult =>
+    Object.freeze({
+      ok: false,
+      args: empty,
+      diagnostics: Object.freeze([createBenchmarkDiagnostic(code, "error", message, path)]),
+    });
+
+  if (!Array.isArray(argv)) {
+    return refuse(Galerina_BENCHMARK_CLI_001, "Benchmark CLI argv must be a dense string array.");
+  }
+  const args: string[] = [];
+  for (let i = 0; i < argv.length; i += 1) {
+    if (!Object.prototype.hasOwnProperty.call(argv, i)) {
+      return refuse(Galerina_BENCHMARK_CLI_001, "Benchmark CLI argv must be a dense string array.");
+    }
+    const v = (argv as readonly unknown[])[i];
+    if (typeof v !== "string" || v.length === 0 || v.length > 512) {
+      return refuse(Galerina_BENCHMARK_CLI_001, "Benchmark CLI argv entries must be non-empty bounded strings.");
+    }
+    args.push(v);
+  }
+
+  let mode: BenchmarkCliModeFlag | undefined;
+  let json = false;
+  let save = false;
+  let outDir: string | undefined;
+  let seenLight = false;
+  let seenFull = false;
+  let seenJson = false;
+  let seenSave = false;
+  let seenOut = false;
+
+  for (let i = 0; i < args.length; i += 1) {
+    const tok = args[i] as string;
+    if (tok.includes("=")) {
+      return refuse(Galerina_BENCHMARK_CLI_001, "Benchmark CLI flags do not admit equals-form values.");
+    }
+    if ((BENCHMARK_CLI_REFUSED_FLAGS as readonly string[]).includes(tok)) {
+      return refuse(Galerina_BENCHMARK_CLI_004, "Benchmark CLI flag is not admitted in this slice.", "flag");
+    }
+    if (tok === "--light") {
+      if (seenLight) return refuse(Galerina_BENCHMARK_CLI_001, "Duplicate --light flag.", "flag");
+      seenLight = true;
+      mode = "light";
+      continue;
+    }
+    if (tok === "--full") {
+      if (seenFull) return refuse(Galerina_BENCHMARK_CLI_001, "Duplicate --full flag.", "flag");
+      seenFull = true;
+      mode = "full";
+      continue;
+    }
+    if (tok === "--json") {
+      if (seenJson) return refuse(Galerina_BENCHMARK_CLI_001, "Duplicate --json flag.", "flag");
+      seenJson = true;
+      json = true;
+      continue;
+    }
+    if (tok === "--save") {
+      if (seenSave) return refuse(Galerina_BENCHMARK_CLI_001, "Duplicate --save flag.", "flag");
+      seenSave = true;
+      save = true;
+      continue;
+    }
+    if (tok === "--out") {
+      if (seenOut) return refuse(Galerina_BENCHMARK_CLI_001, "Duplicate --out flag.", "flag");
+      seenOut = true;
+      const next = args[i + 1];
+      if (typeof next !== "string") {
+        return refuse(Galerina_BENCHMARK_CLI_003, "Benchmark CLI --out requires a directory token.", "out");
+      }
+      i += 1;
+      if (next.includes("\0") || !OUT_DIR_TOKEN.test(next)) {
+        return refuse(Galerina_BENCHMARK_CLI_003, "Benchmark CLI --out directory token refused.", "out");
+      }
+      outDir = next;
+      continue;
+    }
+    if (tok.startsWith("-")) {
+      return refuse(Galerina_BENCHMARK_CLI_001, "Unknown Benchmark CLI flag.", "flag");
+    }
+    return refuse(Galerina_BENCHMARK_CLI_001, "Benchmark CLI does not admit positional arguments.", "argv");
+  }
+
+  if (seenLight && seenFull) {
+    return refuse(Galerina_BENCHMARK_CLI_002, "Benchmark CLI admits only one of --light or --full.", "mode");
+  }
+  if (save && outDir === undefined) {
+    return refuse(Galerina_BENCHMARK_CLI_003, "Benchmark CLI --save requires --out directory.", "out");
+  }
+  if (!save && outDir !== undefined) {
+    return refuse(Galerina_BENCHMARK_CLI_003, "Benchmark CLI --out requires --save.", "out");
+  }
+
+  return Object.freeze({
+    ok: true,
+    args: Object.freeze({
+      mode: mode === undefined ? ("light" as const) : mode,
+      json,
+      save,
+      outDir,
+    }),
+    diagnostics: Object.freeze([] as BenchmarkDiagnostic[]),
+  });
+}
+
+const SUMMARY_ID = /^[A-Za-z0-9._-]{1,64}$/;
+const SUMMARY_VERSION = /^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/;
+
+/**
+ * Privacy-safe CLI summary lines from a captured report. Never includes paths,
+ * hostnames, usernames, or raw refusal reasons.
+ */
+export function formatBenchmarkSummary(report: unknown): readonly string[] {
+  const captured = captureBenchmarkReport(report);
+  if (captured.report === undefined) {
+    return Object.freeze(["benchmark summary unavailable"]);
+  }
+  const r = captured.report;
+  const id = typeof r.benchmarkId === "string" && SUMMARY_ID.test(r.benchmarkId) ? r.benchmarkId : "id-withheld";
+  const ver = typeof r.loVersion === "string" && SUMMARY_VERSION.test(r.loVersion) ? r.loVersion : "version-withheld";
+  const overall =
+    typeof r.scores.overall === "number" && Number.isFinite(r.scores.overall) ? String(r.scores.overall) : "n/a";
+  const passed = r.tests.filter((t) => t.status === "passed").length;
+  const failed = r.tests.filter((t) => t.status === "failed").length;
+  const skipped = r.tests.filter((t) => t.status === "skipped" || t.status === "skipped_timeout").length;
+  const fallback = r.tests.filter((t) => t.status === "fallback" || t.fallback === true).length;
+  return Object.freeze([
+    `galerina benchmark summary`,
+    `id=${id} mode=${r.mode} trigger=${r.trigger} version=${ver}`,
+    `overall=${overall} durationMs=${Number.isFinite(r.durationMs) ? String(r.durationMs) : "n/a"}`,
+    `tests passed=${passed} failed=${failed} skipped=${skipped} fallback=${fallback} total=${r.tests.length}`,
+  ]);
 }
