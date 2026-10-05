@@ -22,7 +22,7 @@
 [ ]   - emit runtime-manifest.json, compiler-report.json, effect-report.json, capability-report.json
 [ ]   - emit audit-report.json, build-hash.txt
 [ ]   - support --target, --json, --report, --strict, --profile, --out, --audit flags
-[ ]   - implement BuildArtefact: path, kind (manifest|bundle|report|hash|map), hash, target
+[x]   - implement BuildArtefact: path, kind (manifest|bundle|report|hash|map), hash, target -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05)
 [ ]   - implement BuildResult: success, artefacts[], diagnostics[], manifestPath, duration
 [ ]   - implement BuildWorkspaceInput: workspace, target, strict, profile?, outDir
 [ ]   - implement buildWorkspace(input: BuildWorkspaceInput): Promise<BuildResult>
@@ -32,11 +32,12 @@
 [ ]   - validate manifest integrity (beyond hash-only)
 [ ]   - validate runtime compatibility, capability consistency, audit reports
 [ ]   - support --json, --strict, --manifest, --hash, --policy, --audit flags
-[ ]   - implement VerifiedArtefact: path, hash, verified, diagnostics[]
-[ ]   - implement VerificationResult: success, artefacts[], diagnostics[]
-[ ]   - implement verifyHash(artefact, expected): Promise<VerifiedArtefact>
+[x]   - implement VerifiedArtefact: path, hash, verified, diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05)
+[x]   - implement VerificationResult: success, artefacts[], diagnostics[] -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); verifyArtefacts(set, root)
+[x]   - implement verifyHash(artefact, expected): Promise<VerifiedArtefact> -- src/verify.ts, tests/verify-contracts.test.mjs (Grok/Codex 2026-10-05); sha256 only, checked root resolution, descriptor identity, 64 KiB streaming and no-follow where supported
+[!] Portable resistance to concurrent ancestor-directory/reparse-point swaps is not provided by standard Node across Windows and Linux; document verifier as an integrity helper, not a filesystem sandbox (README.md, src/verify.ts, 2026-10-05)
 [ ]   - emit verification-report.json
-[ ]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005
+[x]   - diagnostic codes FUNGI-VERIFY-001 through FUNGI-VERIFY-005 -- src/verify.ts, tests/verify-contracts.test.mjs (Grok 2026-10-05); 001 malformed hash, 002 missing/unreadable/not a file, 003 mismatch, 004 path escapes root, 005 empty or duplicate set
 [ ]   - create verify/ dir: verify-command.ts, verify-manifest.ts, verify-integrity.ts, verify-runtime.ts, verify-reporter.ts
 [ ] Add Galerina deploy command integration
 [ ]   - load workspace manifest, runtime profile, deployment policy
@@ -71,7 +72,7 @@
 [ ] Add Galerina verify deploy command integration (verify running version against build manifest)
 [ ] Add Galerina promote command integration (promote artifact across environments)
 [ ] Add environment mode config loading
-[ ] Add structured CLI errors
+[x] Add structured CLI errors -- src/cli.ts FUNGI-CLI-001 unknown command (raw name never echoed), FUNGI-CLI-002 command threw (no internal detail), FUNGI-CLI-003 failure without its own error (exit code 0 is never success); tests/cli-structured-errors.test.mjs (Grok 2026-10-05)
 [x] Add report summary output
 [x] Add tests
 ```
@@ -86,4 +87,5 @@ or a repeated flag (FUNGI-CLI-ENV-003) with a structured `CliError`
 `--env=<value>` is also accepted. Tests: tests/cli-environment.test.mjs. The two
 rows above stay open: no environment config file is loaded yet, and only the
 `--env` path uses `CliError` (unknown-command and command errors are still
-plain messages).
+plain messages). Update 2026-10-05: structured CLI errors are now done (see the row above);
+environment config loading stays open because no config-file convention is decided (owner may revisit).

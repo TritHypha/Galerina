@@ -296,3 +296,32 @@ galerina-core-config describes configuration safely.
 galerina-core-security protects sensitive values.
 consuming packages enforce their own runtime behaviour.
 ```
+
+## Startup validation and build flags (W01 G5)
+
+Pure contracts in `src/startup.ts` (no file or network I/O). Values are never echoed;
+diagnostics carry names only.
+
+- `validateStartup(manifest, availableEnvironment, policy?)` returns a frozen
+  `galerina.startup-report.v1` with ordered checks: required env and secrets present and
+  non-empty (reuses `validateRuntimeEnvironment`, `FUNGI-CONFIG-004`), route methods inside
+  `security.api_methods` (`032`, unused methods warn `033`), listen ports declared as
+  inbound (`034`), every route has a handler and no duplicates (`035`), webhooks declare
+  HMAC, a 1-86400 s replay window, an idempotency key and a POST route (`036`), packages
+  pinned (`037`) and present in the registry (`038`). A malformed manifest is refused
+  whole (`031`). `pass` is true only when every check passes.
+- `createRuntimeConfigHandoff(..., { startupManifest })` attaches the report and blocks
+  `canRun` on failure (`039`). `ProductionStrictnessPolicy.requireStartupValidation`
+  (default off for existing callers; owner may revisit) refuses a production handoff
+  without a manifest (`043`).
+- `resolveBuildFlags(argv)`: `--with-tests`, `--security`, `--strict` (implies both plus
+  fail_on_warning), `--fail-on-warning`. Unknown, `--flag=value` and positional arguments
+  are refused (`040`) and resolve to the strictest flags. `failOnTestFailure` is always true.
+- `validateAppTestReport` (`galerina.app-test-report.v1`, totals must match suites, `041`)
+  and `evaluateBuildGate` (fail_on_warning, fail_on_test_failure; tests requested without a
+  valid report fail closed).
+- `validateAppAiSuggestions` (`galerina.app-ai-suggestions.v1`: at most 200 suggestions,
+  relative paths only, secret-like text refused, `042`) and
+  `renderAppAiSuggestionsMarkdown`, which renders `app.ai-suggestions.md` from validated
+  JSON only, with HTML and Markdown escaping.
+

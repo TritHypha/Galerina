@@ -44,8 +44,8 @@ import https from "node:https";
 import { randomUUID, createHash } from "node:crypto";
 import type { TLSSocket, DetailedPeerCertificate, SecureContextOptions } from "node:tls";
 import { types as utilTypes } from "node:util";
-import type { AppKernel, GalerinaKernelRequest, GalerinaKernelResponse } from "../../galerina-framework-app-kernel/dist/index.js";
-import type { HttpMethod } from "../../galerina-framework-app-kernel/dist/index.js";
+import type { AppKernel, GalerinaKernelRequest, GalerinaKernelResponse } from "@galerina/framework-app-kernel";
+import type { HttpMethod } from "@galerina/framework-app-kernel";
 import { Verdict } from "../../galerina-tower-citizen/dist/index.js";
 // TLSTP S1 cert-gate (fail-closed K3 fold; revocation-unknown → DENY). The adapter feeds it the
 // TLS library's outputs and forwards the folded verdict — it never re-implements any crypto/PKI.
@@ -55,7 +55,7 @@ import {
   type CertGateInput,
   type ChainValidationOutcome,
   type RevocationOutcome,
-} from "../../galerina-core-network/dist/index.js";
+} from "@galerina/core-network";
 export {
   MemoryReplayStore,
   isProcessLocalReplayStore,

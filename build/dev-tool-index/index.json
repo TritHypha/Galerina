@@ -4,7 +4,7 @@
     "packages": 100,
     "testBearing": 100,
     "tests": 9612,
-    "devTools": 192,
+    "devTools": 194,
     "auditTools": 94,
     "toolsInCadence": 126,
     "proofs": 40
@@ -287,7 +287,7 @@
       "tests": 21,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 11,
+      "files": 13,
       "deps": [
         "@galerina/core-tasks",
         "@galerina/devtools-graph-project"
@@ -328,7 +328,7 @@
       "tests": 52,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 8,
+      "files": 9,
       "deps": []
     },
     {
@@ -358,7 +358,7 @@
       "tests": 192,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 14,
+      "files": 18,
       "deps": [
         "@galerina/tower-citizen/governance"
       ]
@@ -380,7 +380,7 @@
       "tests": 17,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 2,
+      "files": 26,
       "deps": []
     },
     {
@@ -3137,6 +3137,20 @@
       ]
     },
     {
+      "name": "check-git-conventions.mjs",
+      "category": "util",
+      "purpose": "advisory checker for the Galerina Git policy",
+      "selfTest": false,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": [
+        "signing/fusion",
+        "gate-wiring",
+        "diagnostics",
+        "doc-drift"
+      ]
+    },
+    {
       "name": "conversion-queue.mjs",
       "category": "util",
       "purpose": "(no header description)",
@@ -3492,6 +3506,17 @@
         "teaching-corpus",
         "doc-drift",
         "graph/index"
+      ]
+    },
+    {
+      "name": "native-provider-installation-receipt.mjs",
+      "category": "util",
+      "purpose": "Galerina native-provider installation receipt writer (SLIDE TODO L1951/L1955).",
+      "selfTest": false,
+      "inCadence": false,
+      "cadenceDisposition": "on-demand",
+      "concerns": [
+        "signing/fusion"
       ]
     },
     {
@@ -3889,6 +3914,7 @@
       "build-core-chain.mjs",
       "build-process-tree-observer.mjs",
       "build-receipt-bound-slide-package.mjs",
+      "check-git-conventions.mjs",
       "flat-package-root-lock.mjs",
       "galerina-source-origin-frame.mjs",
       "gather-compiler-stage-hashes.mjs",
@@ -4089,6 +4115,7 @@
       "audit-u2-version-floor.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
+      "check-git-conventions.mjs",
       "debug-compiler-globs.mjs",
       "fungi-golden-probe.mjs",
       "gather-compiler-stage-hashes.mjs",
@@ -4181,6 +4208,7 @@
       "build-process-warden.mjs",
       "build-receipt-bound-slide-package.mjs",
       "check-gate-injection.mjs",
+      "check-git-conventions.mjs",
       "emit-doc-wat.mjs",
       "flat-package-root-lock.mjs",
       "fungi-source-capability-inventory.mjs",
@@ -4197,6 +4225,7 @@
       "logic-aig-source-origin-toolchain-load-observation.mjs",
       "logic-aig-source-origin-toolchain-pin-observation.mjs",
       "migrate-fungi.mjs",
+      "native-provider-installation-receipt.mjs",
       "p9-100-site-mapper.mjs",
       "phase-close-hook.mjs",
       "rd0361-freeze-reference.mjs",
@@ -4260,6 +4289,7 @@
       "component-health.mjs",
       "run-proofs.mjs",
       "status.mjs",
+      "check-git-conventions.mjs",
       "emit-doc-wat.mjs",
       "gather-r4-twin-hashes.mjs",
       "generate-rd0858-scalar-audit-map.mjs",
@@ -6028,6 +6058,15 @@
       "disposition": "scheduled"
     },
     {
+      "tool": "check-git-conventions.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
+    },
+    {
       "tool": "code-index.mjs",
       "directEntryIds": [
         "code-index"
@@ -6612,6 +6651,15 @@
     },
     {
       "tool": "migrate-fungi.mjs",
+      "directEntryIds": [],
+      "transitiveEntryIds": [],
+      "via": [],
+      "cadences": [],
+      "lifecycle": "not-applicable",
+      "disposition": "on-demand"
+    },
+    {
+      "tool": "native-provider-installation-receipt.mjs",
       "directEntryIds": [],
       "transitiveEntryIds": [],
       "via": [],

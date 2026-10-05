@@ -181,7 +181,7 @@ export function validateSqliteCredentialRef(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_CREDENTIAL_KIND_INVALID",
       "error",
-      `Credential kind "${String(credential.kind)}" is not "external_ref"; inline credentials are unrepresentable.`,
+      "Credential kind is not \"external_ref\"; inline credentials are unrepresentable (value withheld).",
       `${path}.kind`,
     ));
   }
@@ -208,6 +208,14 @@ export function validateSqliteCredentialRef(
 // The archive path rule applied to the database file: relative, no drive
 // letters, no upward traversal — the adapter may never be pointed outside
 // the application tree.
+function sqlitePathClass(databaseFile: string, traversal: boolean): string {
+  const classes: string[] = [];
+  if (/^[A-Za-z]:/.test(databaseFile)) classes.push("drive-lettered");
+  else if (databaseFile.startsWith("/") || databaseFile.startsWith("\\")) classes.push("rooted");
+  if (traversal) classes.push("upward-traversing");
+  return classes.join(" and ");
+}
+
 export function validateSqliteDatabaseFile(
   databaseFile: string,
   path = "databaseFile",
@@ -245,7 +253,9 @@ export function validateSqliteDatabaseFile(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_DATABASE_PATH_UNSAFE",
       "error",
-      `Database file path "${databaseFile}" must be relative, without drive letters or upward traversal.`,
+      // Zero-trust: name the refused path class, never echo the value (an
+      // absolute path can carry a local user or host name into a report).
+      `Database file path is ${sqlitePathClass(databaseFile, traversal)}; it must be relative, without drive letters or upward traversal (value withheld).`,
       path,
     ));
   }
@@ -345,7 +355,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_PROVIDER_MISMATCH",
       "error",
-      `Adapter provider "${String(declaration.provider)}" is not "sqlite".`,
+      "Adapter provider is not \"sqlite\" (value withheld).",
       "provider",
     ));
   }
@@ -357,7 +367,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_PLACEHOLDER_STYLE_INVALID",
       "error",
-      `Placeholder style "${String(declaration.placeholderStyle)}" is not "question_mark" or "named_colon"; SQLite parameterisation uses ? or :name placeholders only.`,
+      "Placeholder style is not \"question_mark\" or \"named_colon\"; SQLite parameterisation uses ? or :name placeholders only (value withheld).",
       "placeholderStyle",
     ));
   }
@@ -369,7 +379,7 @@ export function validateSqliteAdapterDeclaration(
     diagnostics.push(sqliteDiagnostic(
       "Galerina_DB_SQLITE_JOURNAL_MODE_UNKNOWN",
       "error",
-      `Journal mode "${String(declaration.journalMode)}" is not in the known set (wal/delete/truncate/persist/memory).`,
+      "Journal mode is not in the known set (wal/delete/truncate/persist/memory) (value withheld).",
       "journalMode",
     ));
   }

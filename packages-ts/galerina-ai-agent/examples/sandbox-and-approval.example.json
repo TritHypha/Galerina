@@ -1,0 +1,34 @@
+{
+  "schema": "galerina.ai-agent.example.v1",
+  "name": "sandbox-and-approval",
+  "input": {
+    "sandbox": {
+      "network": "allowlist",
+      "networkAllowlist": [
+        "registry.npmjs.org"
+      ],
+      "filesystem": "scratch-only",
+      "processSpawn": "deny"
+    },
+    "action": "deploy.staging",
+    "requester": "release-bot",
+    "approvals": [
+      {
+        "approvalId": "APR-0001",
+        "approver": "phillip",
+        "action": "deploy.staging",
+        "expiresAtMs": 1800000600000
+      }
+    ]
+  },
+  "expected": {
+    "sandbox": {
+      "allowed": true,
+      "diagnostics": []
+    },
+    "gate": {
+      "allowed": true,
+      "diagnostics": []
+    }
+  }
+}

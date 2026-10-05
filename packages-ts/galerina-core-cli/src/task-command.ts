@@ -7,7 +7,7 @@ import {
   runTask,
   type LoadedTasks,
   type TaskResult
-} from "../../galerina-core-tasks/dist/index.js";
+} from "@galerina/core-tasks";
 import type { CliContext, CliResult } from "./types.js";
 
 export async function runTaskCommand(context: CliContext): Promise<CliResult> {

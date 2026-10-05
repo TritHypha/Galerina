@@ -299,3 +299,35 @@ describe("known-set vocabulary", () => {
     assert.deepEqual(KNOWN_OPENSEARCH_OPERATION_KINDS, ["index", "update", "delete"]);
   });
 });
+
+describe("zero-trust diagnostics - a refused endpoint is never echoed", () => {
+  it("withholds an odd-scheme endpoint (which may carry a token) from the message", () => {
+    const diags = validateOpenSearchConnection({
+      ...goodConnection,
+      endpoint: "ftp://search.internal.example/?token=zt-echo-probe",
+    });
+    assert.deepEqual(codes(diags), ["Galerina_DB_OPENSEARCH_ENDPOINT_SCHEME_INVALID"]);
+    assert.equal(diags[0].message.includes("zt-echo-probe"), false);
+    assert.equal(diags[0].message.includes("search.internal.example"), false);
+    assert.match(diags[0].message, /value withheld/);
+  });
+});
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown operation kind, credential kind and provider", () => {
+    assertWithheld([
+      [validateOpenSearchIndexOperation({ ...goodOperation, kind: probe }), "Galerina_DB_OPENSEARCH_OPERATION_KIND_UNKNOWN"],
+      [validateOpenSearchCredentialRef({ ...credential, kind: probe }), "Galerina_DB_OPENSEARCH_CREDENTIAL_KIND_INVALID"],
+      [validateOpenSearchAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_OPENSEARCH_PROVIDER_MISMATCH"],
+    ]);
+  });
+});

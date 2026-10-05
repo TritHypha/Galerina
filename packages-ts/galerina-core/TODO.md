@@ -3,6 +3,10 @@
 > Current sequencing: root [work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md)
 > (W15 security continuation, CONST constitution discussion draft). This package
 > checklist is historical language-core planning.
+>
+> 2026-10-05 W01 inventory of every open row against the register:
+> [galerina-core-todo-w01-inventory-2026-10-05](../../docs/reports/galerina-core-todo-w01-inventory-2026-10-05.md)
+> (73 rows are real work no register lane names; listed there with next actions).
 
 This document lists the working TODO items for **Galerina / Galerina**.
 
@@ -828,12 +832,12 @@ Reason for additions:
 [x] Add debug console documentation
 [ ] Define console.log/info/warn/error/debug syntax
 [ ] Define console.here source-map output
-[ ] Define console.scope and console.vars safety rules
-[ ] Define console.dump size limits
-[ ] Define SecureString redaction for console output
-[ ] Define large JSON console summaries
-[ ] Define production console policy
-[ ] Define console report schema
+[x] Define console.scope and console.vars safety rules
+[x] Define console.dump size limits
+[x] Define SecureString redaction for console output
+[x] Define large JSON console summaries
+[x] Define production console policy
+[x] Define console report schema
 [ ] Add console diagnostics to compiler prototype
 ```
 
@@ -913,9 +917,9 @@ Reason for additions:
 ## Build TODO
 
 ```text
-[ ] Define debug build mode
-[ ] Define release build mode
-[ ] Define build folder layout
+[x] Define debug build mode
+[x] Define release build mode
+[x] Define build folder layout
 [x] Define build manifest schema
 [x] Define map manifest schema
 [x] Define docs manifest schema
@@ -933,7 +937,7 @@ Reason for additions:
 [x] Generate global report and global registry guide
 [x] Generate docs manifest
 [ ] Define build signing possibility
-[ ] Define source-map output rules
+[x] Define source-map output rules
 [x] Define generated file naming
 [x] Define generated file cleanup
 ```
@@ -946,24 +950,24 @@ Reason for additions:
 [x] Add security-first build system documentation
 [x] Add startup validation documentation
 [ ] Define startup block syntax
-[ ] Define startup report schema
-[ ] Validate required env variables before main()
-[ ] Validate required secrets before main()
-[ ] Validate security.api_methods against routes
-[ ] Validate inbound ports against server.listen()
-[ ] Validate route handlers before main()
-[ ] Validate webhook HMAC/replay/idempotency requirements before main()
-[ ] Validate packages registry before main()
+[x] Define startup report schema
+[x] Validate required env variables before main()
+[x] Validate required secrets before main()
+[x] Validate security.api_methods against routes
+[x] Validate inbound ports against server.listen()
+[x] Validate route handlers before main()
+[x] Validate webhook HMAC/replay/idempotency requirements before main()
+[x] Validate packages registry before main()
 [ ] Validate memory/vector/json policies before main()
-[ ] Define Galerina build --with-tests
-[ ] Define Galerina build --security
-[ ] Define Galerina build --strict
+[x] Define Galerina build --with-tests
+[x] Define Galerina build --security
+[x] Define Galerina build --strict
 [ ] Define compiler block syntax
-[ ] Define fail_on_warning behavior
-[ ] Define fail_on_test_failure behavior
-[ ] Define app.test-report.json
-[ ] Define app.ai-suggestions.md
-[ ] Define app.ai-suggestions.json
+[x] Define fail_on_warning behavior
+[x] Define fail_on_test_failure behavior
+[x] Define app.test-report.json
+[x] Define app.ai-suggestions.md
+[x] Define app.ai-suggestions.json
 [ ] Integrate vector/offload safety checks into build pipeline
 [ ] Integrate target/capability import checks into build pipeline
 ```
@@ -973,7 +977,7 @@ Reason for additions:
 ## CLI TODO
 
 ```text
-[ ] Galerina init
+[x] Galerina init
 [x] Galerina run
 [x] Galerina serve --dev planning report
 [x] Galerina build
@@ -1003,10 +1007,10 @@ Reason for additions:
 [x] Define app.ai-context.md
 [x] Define Galerina ai-context command
 [x] Define Galerina explain --for-ai command
-[ ] Define token-efficient error reports
-[ ] Define AI-safe project summaries
-[ ] Define route summary output
-[ ] Define type summary output
+[x] Define token-efficient error reports
+[x] Define AI-safe project summaries
+[x] Define route summary output
+[x] Define type summary output
 [x] Define changed file summary output
 [x] Define security summary output
 [x] Define target summary output
@@ -1018,8 +1022,8 @@ Reason for additions:
 ## Source Map TODO
 
 ```text
-[ ] Define app.source-map.json format
-[ ] Map binary errors to .fungi files
+[x] Define app.source-map.json format
+[x] Map binary errors to .fungi files
 [x] Map WASM errors to .fungi files
 [x] Map GPU plan errors to .fungi files
 [x] Map photonic plan errors to .fungi files
@@ -1067,9 +1071,9 @@ Reason for additions:
 [ ] Define security tests
 [ ] Define memory-safety tests
 [x] Define type checker tests
-[ ] Define source-map tests
+[x] Define source-map tests
 [ ] Define compiler report tests
-[ ] Define target report tests
+[x] Define target report tests
 [x] Define AI context tests
 ```
 
@@ -1104,16 +1108,16 @@ Reason for additions:
 
 ```text
 [x] Create GIT.md
-[ ] Define branch strategy
-[ ] Define feature branch naming
-[ ] Define commit message format
-[ ] Define pull request template
-[ ] Define issue templates
-[ ] Define release tags
-[ ] Define changelog update process
-[ ] Define generated file policy
-[ ] Define docs-only change policy
-[ ] Define main branch protection policy
+[x] Define branch strategy
+[x] Define feature branch naming
+[x] Define commit message format
+[x] Define pull request template
+[x] Define issue templates
+[x] Define release tags
+[x] Define changelog update process
+[x] Define generated file policy
+[x] Define docs-only change policy
+[x] Define main branch protection policy
 ```
 
 ---
@@ -1122,17 +1126,17 @@ Reason for additions:
 
 ```text
 [x] Create COMPILED_APP_GIT.md
-[ ] Define what Galerina app files should be committed
-[ ] Define what build files should not be committed
-[ ] Define when build artefacts may be stored
-[ ] Define source-map handling
-[ ] Define .env handling
-[ ] Define .env.example handling
+[x] Define what Galerina app files should be committed
+[x] Define what build files should not be committed
+[x] Define when build artefacts may be stored
+[x] Define source-map handling
+[x] Define .env handling
+[x] Define .env.example handling
 [x] Define build manifest handling
-[ ] Define release artefact storage
-[ ] Define CI/CD deployment tags
-[ ] Define rollback tags
-[ ] Define multi-server deployment records
+[x] Define release artefact storage
+[x] Define CI/CD deployment tags
+[x] Define rollback tags
+[x] Define multi-server deployment records
 ```
 
 ---

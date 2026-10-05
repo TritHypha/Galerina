@@ -22,7 +22,7 @@ import type {
   RouteDeclaration,
   EffectiveRoutePolicy,
   EffectivePosture,
-} from "../../galerina-framework-app-kernel/dist/index.js";
+} from "@galerina/framework-app-kernel";
 
 // Re-export the route types we accept so consumers can import the whole surface
 // from `@galerina/docs` without reaching into the kernel package directly.

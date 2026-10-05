@@ -773,6 +773,11 @@ flowchart LR
   T_check_gate_injection_mjs --> C_secrets_privacy
   T_check_gate_injection_mjs --> C_package_border
   T_check_gate_injection_mjs --> C_graph_index
+  T_check_git_conventions_mjs["check-git-conventions.mjs"]
+  T_check_git_conventions_mjs --> C_signing_fusion
+  T_check_git_conventions_mjs --> C_gate_wiring
+  T_check_git_conventions_mjs --> C_diagnostics
+  T_check_git_conventions_mjs --> C_doc_drift
   T_conversion_queue_mjs["conversion-queue.mjs"]
   T_conversion_queue_mjs --> C_teaching_corpus
   T_conversion_queue_mjs --> C_source_hygiene
@@ -897,6 +902,8 @@ flowchart LR
   T_migrate_fungi_mjs --> C_teaching_corpus
   T_migrate_fungi_mjs --> C_doc_drift
   T_migrate_fungi_mjs --> C_graph_index
+  T_native_provider_installation_receipt_mjs["native-provider-installation-receipt.mjs"]
+  T_native_provider_installation_receipt_mjs --> C_signing_fusion
   T_p9_100_site_mapper_mjs["p9-100-site-mapper.mjs"]
   T_p9_100_site_mapper_mjs --> C_effects
   T_p9_100_site_mapper_mjs --> C_signing_fusion

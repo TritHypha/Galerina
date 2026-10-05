@@ -311,3 +311,60 @@ describe("known-set vocabulary", () => {
     ]);
   });
 });
+
+describe("zero-trust diagnostics - refused path values are never echoed", () => {
+  it("withholds the path value from every path diagnostic", () => {
+    const cases = [
+      [{ kind: "collection", path: "/zt-echo-probe" }, "Galerina_DB_FIRESTORE_PATH_NOT_RELATIVE"],
+      [{ kind: "collection", path: "zt-echo-probe//x" }, "Galerina_DB_FIRESTORE_PATH_SEGMENT_EMPTY"],
+      [{ kind: "collection", path: "zt-echo-probe/../x" }, "Galerina_DB_FIRESTORE_PATH_SEGMENT_INVALID"],
+      [{ kind: "collection", path: "zt-echo-probe/doc-1" }, "Galerina_DB_FIRESTORE_PATH_KIND_MISMATCH"],
+    ];
+    for (const [contract, code] of cases) {
+      const diags = validateFirestorePath(contract);
+      assert.deepEqual(codes(diags), [code], contract.path);
+      assert.equal(diags[0].message.includes("zt-echo-probe"), false, contract.path);
+      assert.match(diags[0].message, /value withheld/);
+    }
+  });
+});
+
+describe("zero-trust diagnostics - unknown closed-set members are never echoed", () => {
+  const probe = "zt-echo-probe";
+  const assertWithheld = (cases) => {
+    for (const [diags, code] of cases) {
+      assert.deepEqual(codes(diags), [code], code);
+      assert.equal(diags[0].message.includes(probe), false, code);
+      assert.match(diags[0].message, /value withheld/, code);
+    }
+  };
+
+  it("withholds an unknown path kind, index field order, credential kind and provider", () => {
+    assertWithheld([
+      [validateFirestorePath({ kind: probe, path: "users" }), "Galerina_DB_FIRESTORE_PATH_KIND_UNKNOWN"],
+      [
+        validateFirestoreCompositeIndex({
+          ...goodIndex,
+          fields: [goodIndex.fields[0], { ...goodIndex.fields[1], order: probe }],
+        }),
+        "Galerina_DB_FIRESTORE_INDEX_FIELD_ORDER_UNKNOWN",
+      ],
+      [validateFirestoreCredentialRef({ ...credential, kind: probe }), "Galerina_DB_FIRESTORE_CREDENTIAL_KIND_INVALID"],
+      [validateFirestoreAdapterDeclaration({ ...goodDeclaration, provider: probe }), "Galerina_DB_FIRESTORE_PROVIDER_MISMATCH"],
+    ]);
+  });
+
+  it("names a duplicate index field by its first position, not its value", () => {
+    const diags = validateFirestoreCompositeIndex({
+      ...goodIndex,
+      fields: [
+        { name: probe, order: "ascending" },
+        { name: "createdAt", order: "descending" },
+        { name: probe, order: "descending" },
+      ],
+    });
+    assertWithheld([[diags, "Galerina_DB_FIRESTORE_INDEX_FIELD_DUPLICATE"]]);
+    assert.match(diags[0].message, /fields\.0 more than once/);
+    assert.equal(diags[0].path, "compositeIndex.fields.2.name");
+  });
+});

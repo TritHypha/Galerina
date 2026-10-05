@@ -1,0 +1,57 @@
+{
+  "schema": "galerina.ai-agent.example.v1",
+  "name": "loop-protection",
+  "input": {
+    "observations": [
+      {
+        "agent": "planner",
+        "iterations": 12,
+        "crashes": 0,
+        "identicalOutputsInARow": 1
+      },
+      {
+        "agent": "coder",
+        "iterations": 400,
+        "crashes": 0,
+        "identicalOutputsInARow": 2
+      },
+      {
+        "agent": "tester",
+        "iterations": 20,
+        "crashes": 4,
+        "identicalOutputsInARow": 0
+      },
+      {
+        "agent": "summariser",
+        "iterations": 30,
+        "crashes": 0,
+        "identicalOutputsInARow": 9
+      }
+    ],
+    "limits": {
+      "maxIterations": 100,
+      "maxCrashes": 2,
+      "maxIdenticalOutputs": 5
+    }
+  },
+  "expected": {
+    "schema": "galerina.ai-agent.loop-protection-report.v1",
+    "terminated": [
+      {
+        "agent": "coder",
+        "reason": "iterations"
+      },
+      {
+        "agent": "tester",
+        "reason": "crashes"
+      },
+      {
+        "agent": "summariser",
+        "reason": "stalled"
+      }
+    ],
+    "healthy": [
+      "planner"
+    ]
+  }
+}

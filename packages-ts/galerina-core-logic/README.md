@@ -334,6 +334,26 @@ export function omniToDecision(
 ): Decision
 ```
 
+## traceOmniDecision() (Phase 2: runtime reasoning traces)
+
+Use `traceOmniDecision(input)` (from `@galerina/core-logic/omni`) when the
+OmniDecision comes from an advisory source at runtime. It validates the input,
+converts it, and returns `{ decision, trace }`:
+
+```text
+untrusted OmniDecision
+  -> validateOmniDecision()   invalid -> review(), never allow
+  -> omniToDecision()
+  -> { decision, trace }      trace: validate / evidence / classify / convert steps
+```
+
+Zero-trust defaults (2026-10-05, owner may revisit): `omniToDecision()` on its
+own does not validate, so a `"true"` state with confidence 5 would allow; the
+traced path reviews it. At most 64 evidence items. The trace is frozen,
+`advisoryOnly: true`, and keeps codes, confidences, sources and the mapping rule
+only; evidence messages, reasons and rejected values are withheld. Only the
+returned Decision may reach `validateBoolBoundary()`.
+
 ---
 
 # Safety Rules

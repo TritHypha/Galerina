@@ -19,6 +19,18 @@ export const FUNGI_CLI_ENV_002 = "FUNGI-CLI-ENV-002";
 /** --env was given more than once. */
 export const FUNGI_CLI_ENV_003 = "FUNGI-CLI-ENV-003";
 
+/** The command name is not a known Galerina command (the raw name is never echoed). */
+export const FUNGI_CLI_001 = "FUNGI-CLI-001";
+/** A command threw instead of returning a result; the thrown detail is never echoed. */
+export const FUNGI_CLI_002 = "FUNGI-CLI-002";
+/** A command reported failure without its own structured error. */
+export const FUNGI_CLI_003 = "FUNGI-CLI-003";
+
+function cliFailure(code: string, exitCode: number, safeMessage: string, suggestedFix: string, details: readonly string[] = []): CliResult {
+  const error: CliError = Object.freeze({ code, safeMessage, suggestedFix });
+  return Object.freeze({ ok: false, code: exitCode, message: `${code}: ${safeMessage}`, details: Object.freeze([...details, `Fix: ${suggestedFix}`]), error });
+}
+
 export type EnvironmentResolution =
   | { readonly ok: true; readonly env: CliEnvironment }
   | { readonly ok: false; readonly error: CliError };
@@ -90,11 +102,12 @@ export async function runCli(args: readonly string[], cwd: string): Promise<CliR
   const command = findCommand(commandName);
 
   if (command === undefined) {
-    return {
-      ok: false,
-      code: 1,
-      message: `Unknown Galerina command: ${commandName}`
-    };
+    return cliFailure(
+      FUNGI_CLI_001,
+      1,
+      "The first argument is not a known Galerina command.",
+      "Run `Galerina help` to list the commands."
+    );
   }
 
   const environment = parseEnvironment(args);
@@ -114,5 +127,16 @@ export async function runCli(args: readonly string[], cwd: string): Promise<CliR
     args: args.slice(1)
   };
 
-  return command.run(context);
+  let result: CliResult;
+  try {
+    result = await command.run(context);
+  } catch {
+    return cliFailure(FUNGI_CLI_002, 1, `The ${command.name} command failed unexpectedly.`, "Re-run with a smaller input or report the failure; no internal detail is printed.");
+  }
+  if (result.ok || "error" in result) return result;
+  return Object.freeze({
+    ...result,
+    code: result.code === 0 ? 1 : result.code,
+    error: Object.freeze({ code: FUNGI_CLI_003, safeMessage: `The ${command.name} command reported a failure.`, suggestedFix: "See the details above." })
+  });
 }

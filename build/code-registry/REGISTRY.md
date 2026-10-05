@@ -15,7 +15,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|
 | live | 203 | emitted with an exported constant |
 | inline | 422 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 120 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 121 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 17 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 253 | referenced only (no def/emit) |
@@ -1984,7 +1984,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-WASM-HOST-001 | inline | — | — |
 | FUNGI-WASM-RET-001 | inline | — | — |
 
-### WAT (11)
+### WAT (12)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1992,6 +1992,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-WAT-CHECKED-001 | live | — | error |
 | FUNGI-WAT-DECIMAL-001 | referenced | DECIMAL_FORM_NOT_LOWERED | error |
 | FUNGI-WAT-EFFECT-001 | referenced | EFFECTFUL_ENTRY_NOT_LOWERED | error |
+| FUNGI-WAT-FLOAT32-001 | referenced | NARROW_FLOAT_FORM_NOT_LOWERED | error |
 | FUNGI-WAT-HOF-001 | referenced | ARRAY_HOF_REQUIRES_NAMED_FLOW | error |
 | FUNGI-WAT-INT64-001 | referenced | MIXED_64BIT_OP_NOT_LOWERED | error |
 | FUNGI-WAT-METHOD-001 | referenced | UNKNOWN_METHOD_NOT_LOWERED | error |
