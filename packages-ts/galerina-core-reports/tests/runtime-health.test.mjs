@@ -62,8 +62,11 @@ test("non-finite, negative, fractional and wrong-typed values refuse (no NaN/nul
   assert.equal(Object.is(validateRuntimeHealth({ ...docExample(), cpuLoad: -0 }).value.cpuLoad, -0), false);
 });
 
+// Built at runtime so the source holds no key-shaped literal (fake fixture, not a key).
+const FAKE_SECRET_RUNTIME = ["sk", "live", "abcdefghijklmnopqrstuvwx"].join("_");
+
 test("secret material in runtime refuses as FUNGI-REPORT-004 and is never echoed", () => {
-  const r = validateRuntimeHealth({ ...docExample(), runtime: ["sk", "live", "abcdefghijklmnopqrstuvwx"].join("_") } // built at runtime: fake fixture, not a key);
+  const r = validateRuntimeHealth({ ...docExample(), runtime: FAKE_SECRET_RUNTIME });
   assert.deepEqual(codes(r), ["FUNGI-REPORT-004:runtime"]);
   assert.equal(JSON.stringify(r).includes("abcdefghij"), false);
 });
