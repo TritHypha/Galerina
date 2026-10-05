@@ -126,22 +126,17 @@ caller does the file I/O. Tests: tests/benchmark-governance.test.mjs.
 Phase 7 note (2026-10-05, Grok Bot, standing permission, owner may revisit):
 `createShareableBenchmarkReport(report, config)` rebuilds the report from the
 closed key allowlists, so hostname, username, project path, env and any unknown
-field are dropped by construction (listed in `removedFields`); path-, env- or
-e-mail-like `reason`/`backend` text becomes "redacted"; privacy identifiers are
+field are dropped by construction (listed in `removedFields`); path-, env-,
+e-mail-, assignment-, drive-letter- or IP-like `reason`/`backend` text, or text
+containing a hostname/username the input carried, becomes "redacted"; privacy identifiers are
 forced to not_included and `shareable` is true only with privacy.allowSubmit.
 `prepareBenchmarkSubmission(report, config, confirmation)` is the submit
 placeholder: it needs the exact phrase `submit-anonymous-benchmark` plus opt-in,
 builds the anonymous payload, and always returns NOT_SUBMITTED_PLACEHOLDER with
 networkUsed false (no endpoint exists). Tests: tests/benchmark-governance.test.mjs.
 
-Phase 7 notes (2026-09-29, Grok Bot): rows stay open. What exists today is
-fail-closed refusal, not removal: the report shape is exact-key (unknown fields
-such as a hostname or env var are refused, src/index.ts:352, :366), and
-`isBenchmarkReportShareable` (:655) needs `privacy.allowSubmit === true`
-(default false) plus a valid PII-free privacy block. There is no
-shareable-report generator or scrubber, and no interactive opt-in prompt.
-`BenchmarkSubmitPayload` (:209-220, schema `Galerina.benchmark.submit.v1`)
-is a type only; there is no `benchmark submit` command placeholder in core-cli.
+(The 2026-09-29 note that said these rows stay open and that no shareable-report
+generator existed is superseded by the 2026-10-05 note above.)
 
 ## Phase 8: Full Benchmarks
 

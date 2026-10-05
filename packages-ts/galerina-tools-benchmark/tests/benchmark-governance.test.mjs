@@ -47,6 +47,15 @@ describe("createShareableBenchmarkReport", () => {
     assert.equal(r.report.privacy.shareable, false);
     assert.ok(!JSON.stringify(r.report).includes("alice"));
   });
+  it("redacts free text carrying bare host or user names, lowercase assignments, drive letters and IP addresses", () => {
+    const withReason = (reason) => ({ ...leaky(), tests: example.tests.map((t, i) => (i === 0 ? { ...t, reason } : t)) });
+    for (const reason of ["ran on alice-desktop", "user alice hit a timeout", "token=secret", "drive C: full", "peer 10.0.0.7 refused", "peer fe80::1 refused"]) {
+      const r = createShareableBenchmarkReport(withReason(reason), optIn);
+      assert.equal(r.report.tests[0].reason, "redacted", reason);
+    }
+    const clean = createShareableBenchmarkReport(withReason("timed out after warmup"), optIn);
+    assert.equal(clean.report.tests[0].reason, "timed out after warmup");
+  });
   it("refuses non-records and structurally invalid reports", () => {
     assert.equal(createShareableBenchmarkReport("x", optIn).status, "REFUSED");
     assert.equal(createShareableBenchmarkReport({ ...structuredClone(example), mode: "turbo" }, optIn).status, "REFUSED");

@@ -814,7 +814,29 @@ export interface ShareableBenchmarkReportResult {
 
 // Free text that looks like a path, a user directory, an env assignment or an e-mail is
 // replaced: reasons are operator hints, never a channel for machine identity.
-const IDENTIFYING_TEXT = /[\\/]|~|\$|%[A-Za-z_]+%|\b[A-Z][A-Z0-9_]{2,}=|@/;
+// Also caught: any `name=` assignment (any case), a drive letter (`C:`), IPv4 and IPv6-looking text.
+// Over-redaction (e.g. a `12:30:` time) is the accepted cost of the fail-closed default.
+const IDENTIFYING_TEXT = /[\\/]|~|\$|%[A-Za-z_]+%|\b[A-Za-z_][A-Za-z0-9_]*=|@|\b[A-Za-z]:|\b\d{1,3}(?:\.\d{1,3}){3}\b|[0-9A-Fa-f]{0,4}:[0-9A-Fa-f]{0,4}:/;
+const IDENTITY_KEYS = ["hostname", "host", "username", "user", "cwd", "projectPath", "machineName"];
+
+// Identity values the input itself carried (dropped by the allowlist rebuild) must not survive inside free text either.
+function collectIdentityTerms(input: UnknownRecord): readonly string[] {
+  const terms = new Set<string>();
+  const visit = (record: unknown): void => {
+    if (!isRecord(record)) return;
+    for (const key of IDENTITY_KEYS) {
+      const descriptor = Object.getOwnPropertyDescriptor(record, key);
+      if (descriptor !== undefined && "value" in descriptor && typeof descriptor.value === "string" && descriptor.value.trim().length >= 3) terms.add(descriptor.value.trim().toLowerCase());
+    }
+  };
+  visit(input);
+  visit(input.system);
+  visit(input.privacy);
+  if (Array.isArray(input.tests)) for (const test of input.tests) visit(test);
+  return [...terms];
+}
+
+const isIdentifyingText = (text: string, terms: readonly string[]): boolean => IDENTIFYING_TEXT.test(text) || terms.some((term) => text.toLowerCase().includes(term));
 
 function pickAllowed(record: UnknownRecord, keys: readonly string[], path: string, removed: string[]): UnknownRecord {
   const out: UnknownRecord = {};
@@ -835,14 +857,15 @@ export function createShareableBenchmarkReport(input: unknown, config: Benchmark
     Object.freeze({ status: "REFUSED", report: Object.freeze({}), removedFields: Object.freeze([...removed]), redactedReasons, diagnostics: Object.freeze([...diagnostics]) });
   const optedIn = isRecord(config) && isRecord(config.privacy) && config.privacy.allowSubmit === true;
   if (!isRecord(input)) return refused([createBenchmarkDiagnostic("Galerina_BENCHMARK_REPORT_RECORD_REQUIRED", "error", "Benchmark report must be a plain data record.", "report")]);
+  const identityTerms = collectIdentityTerms(input);
   const top = pickAllowed(input, BENCHMARK_REPORT_KEYS, "report", removed);
   if (isRecord(top.system)) top.system = pickAllowed(top.system, BENCHMARK_SYSTEM_KEYS, "report.system", removed);
   if (Array.isArray(top.tests)) {
     top.tests = top.tests.map((test, index) => {
       if (!isRecord(test)) return test;
       const kept = pickAllowed(test, BENCHMARK_TEST_KEYS, `report.tests.${index}`, removed);
-      if (typeof kept.reason === "string" && IDENTIFYING_TEXT.test(kept.reason)) { kept.reason = "redacted"; redactedReasons += 1; }
-      if (typeof kept.backend === "string" && IDENTIFYING_TEXT.test(kept.backend)) { kept.backend = "redacted"; redactedReasons += 1; }
+      if (typeof kept.reason === "string" && isIdentifyingText(kept.reason, identityTerms)) { kept.reason = "redacted"; redactedReasons += 1; }
+      if (typeof kept.backend === "string" && isIdentifyingText(kept.backend, identityTerms)) { kept.backend = "redacted"; redactedReasons += 1; }
       return kept;
     });
   }
