@@ -31,7 +31,8 @@
 [ ] Define runtime audit log format (JSONL, event categories, trace correlation, FUNGI-AUDIT codes)
 [x]   - runtime-audit.jsonl schema with all required fields
 [x]   - status values aligned with RuntimeAuditStatus v0.2
-[ ]   - capability and effect evidence event shapes
+[x]   - capability and effect evidence event shapes
+      src/reports/evidence-reports.ts capabilityEvidenceAuditEvent / effectEvidenceAuditEvent (validated evidence -> v1 audit event, fixed message, evidence reference, reason not copied); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ]   - scheduler evidence event shape
 [ ]   - runtime health schema
 [x] Define ExecutionProofHashes: manifestSha256, auditSha256, evidenceSha256, denialSha256, artefactSha256
@@ -51,10 +52,14 @@
 [x] Implement buildRuntimeEvidence(params): Promise<RuntimeEvidence>
 [x] Define FUNGI-EVIDENCE-001 through FUNGI-EVIDENCE-004 diagnostic codes
 [x] Create evidence/ dir: capability-evidence.ts, effect-evidence.ts, runtime-evidence.ts, evidence-aggregator.ts, evidence-validator.ts
-[ ] Define audit report contract (audit-report.json) fed from runtime audit log
-[ ] Define capability report contract (capability-report.json)
-[ ] Define effect report contract (effect-report.json)
-[ ] Define denial report contract (denial-report.json)
+[x] Define audit report contract (audit-report.json) fed from runtime audit log
+      src/reports/evidence-reports.ts createAuditReport (JSONL lines; counts by category/status, time range; bad/duplicate lines rejected by number only; bounded); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define capability report contract (capability-report.json)
+      src/reports/evidence-reports.ts createCapabilityReport; tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define effect report contract (effect-report.json)
+      src/reports/evidence-reports.ts createEffectReport (undeclared-inferred, denied, conflicting); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define denial report contract (denial-report.json)
+      src/reports/evidence-reports.ts createDenialReportSummary (DenialReport stays the single record; code-shaped diagnostics only); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define target report contract
 [x] Define runtime report contract
 [x] Define async/concurrency report contract

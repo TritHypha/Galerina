@@ -955,3 +955,4 @@ export * from "./evidence/effect-evidence.js";
 export * from "./evidence/evidence-validator.js";
 export * from "./evidence/runtime-evidence.js";
 export * from "./evidence/evidence-aggregator.js";
+export * from "./reports/evidence-reports.js";
