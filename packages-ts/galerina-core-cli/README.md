@@ -119,9 +119,10 @@ Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
 declarations, boundary violations, and why deployment was denied.
-Flags: `--tree` (dependency graph), `--trace` (execution reasoning chain),
-`--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`, `--json`.
-Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
+Closed-shape contracts landed (`src/explain/explain-trace.ts`); CLI wiring /
+report writer / denial reader still open. Flags (when wired): `--tree`,
+`--trace`, `--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`,
+`--json`. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
 
 `galerina plan` estimates how execution will be coordinated â€” CPU/GPU suitability,
 memory pressure, parallelism, and fallback options. The planner recommends;
@@ -352,28 +353,16 @@ export function validateEffects(
 
 ### Explain Contracts
 
-```ts
-export interface ExplainTrace {
-    step: number
-    label: string
-    input: string
-    output: string
-    diagnostics: CompilerDiagnostic[]
-}
+Explain contracts (`src/explain.ts` / `src/explain/explain-trace.ts`, zero-trust defaults, owner may
+revisit): closed `ExplainTrace` (`step`, `label`, `input`, `output`, `diagnostics[]`) with label
+vocabulary `import|effect|capability|boundary|dependency|denial`; closed `ExplainResult`
+(`traces`, `effects`, `capabilities`, `boundaries`, `diagnostics`); `ExplainManifestSlice` +
+`ExplainOptions`; `buildTrace` / `explainManifest` / `createExplainResult` / `readExplainResult`.
+Shapes via property descriptors (no getters). Unknown keys refuse without echo. Diagnostic messages
+never echo tokens/keys. Codes: `FUNGI-EXPLAIN-001` shape, `002` domain, `003` options facet refuse,
+`004` result consistency (contiguous steps). Does not wire `galerina explain`, write
+`explain-report.json`, read `deployment-denial.json`, or walk a live dependency tree.
 
-export interface ExplainResult {
-    traces: ExplainTrace[]
-    effects: string[]
-    capabilities: string[]
-    boundaries: string[]
-    diagnostics: CompilerDiagnostic[]
-}
-
-export function buildTrace(
-    manifest: RuntimeManifest,
-    options: ExplainOptions
-): ExplainTrace[]
-```
 
 ### Compute Plan Contracts
 
