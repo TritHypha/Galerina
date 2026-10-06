@@ -48,8 +48,8 @@
 ```text
 [x] Detect CPU architecture
 [x] Detect logical core count
-[ ] Detect RAM bucket
-[ ] Detect vector features where possible
+[x] Detect RAM bucket -- src/target-detection.ts bucketTotalMemory / detectBenchmarkMemory, tests/target-detection.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): host-injected totalMemoryBytes (e.g. os.totalmem()) -> closed README buckets <8GB|8GB|16GB|32GB|64GB+|unknown; OWNER-REVISIT 7/8 tolerance (firmware/iGPU reservations); exact byte count never echoed; closed probe, accessors/unknown keys refused unread; detectBenchmarkSystem probe unchanged
+[x] Detect vector features where possible -- src/target-detection.ts detectBenchmarkVectorFeatures / wasmSimd128ProbeBytes, tests/target-detection.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): host-injected arch + cpuFlags (Linux /proc/cpuinfo spellings: sse..sse4_2, pni=sse3, avx, avx2, avx512f, asimd/neon, sve, sve2) + wasmSimd128 (host runs WebAssembly.validate on the probe bytes) -> closed feature list + bestVectorBackend; x86-64 SSE/SSE2 and AArch64 NEON baselines; cross-ISA flags ignored; unknown arch reports no CPU feature; hints only: benchmarkVectorBackend stays "scalar" (no SIMD kernel selected or claimed)
 [ ] Detect GPU backend availability
 [ ] Detect low-bit backend availability
 ```
@@ -64,6 +64,17 @@ through. Unknown probe keys are refused unread. The package border is unchanged
 (no `node:os` import); a runner wires in the real probe. Tests:
 tests/system-detection.test.mjs. The RAM bucket is left out on purpose
 (memory-adjacent), and vector/GPU/low-bit detection needs hardware probing.
+
+Phase 4 update (2026-10-06, Grok Bot; zero-trust defaults, owner may revisit):
+the RAM bucket and vector features now have their own pure probes in
+src/target-detection.ts (`detectBenchmarkMemory`, `detectBenchmarkVectorFeatures`),
+so the closed `detectBenchmarkSystem` probe and its tests are unchanged. The
+package border is unchanged (`node:util/types` only; a test checks the module
+source). Still open: GPU backend availability (owner hold O1 keeps the GPU
+target parked post-v1) and low-bit backend availability (galerina-ai-lowbit
+defines backend adapter contracts only; no backend implementation exists to
+detect, and its gpu/npu kernels fall under O1). Until then the runner keeps
+reporting those cases as skipped.
 
 ## Phase 5: Reports
 
