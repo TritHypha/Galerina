@@ -53,7 +53,7 @@ test("legacy header-presence authentication is refused at kernel construction", 
   );
 });
 
-test("handler secret access is restricted to the route declaration and raw views cannot be returned", async () => {
+test("handler secret access is declaration-bound and callback-returned views are refused", async () => {
   const values = new Map([
     ["allowed", new Uint8Array([1, 2, 3])],
     ["other", new Uint8Array([9, 9, 9])],
@@ -80,9 +80,271 @@ test("handler secret access is restricted to the route declaration and raw views
   });
 
   const response = await kernel.handle(request());
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 500); // Returning the raw view is a forbidden callback channel.
   assert.equal(undeclaredCalled, false);
   assert.equal(escaped, undefined);
+});
+
+test("handler mutation cannot expand the kernel's private secret authorization snapshot", async () => {
+  let providerUses = 0;
+  let consumerCalled = false;
+  let retainedPolicy;
+  let dispatches = 0;
+  const kernel = createAppKernel({
+    routes: [{ method: "GET", path: "/x", handler: "x", auth: { mode: "public" }, secrets: { require: ["allowed"] } }],
+    secretsProvider: {
+      has: () => true,
+      use: (_name, callback) => { providerUses += 1; callback(new Uint8Array([0x41])); },
+    },
+    dispatch: {
+      x: ({ policy, getSecret }) => {
+        dispatches += 1;
+        if (dispatches === 1) {
+          retainedPolicy = policy;
+          try {
+            policy.secrets.require[0] = "other";
+          } catch {
+            // An immutable public view is also acceptable; the private authorization snapshot is authoritative.
+          }
+        }
+        getSecret("other", () => { consumerCalled = true; });
+        return { body: { ok: true } };
+      },
+    },
+  });
+
+  const response = await kernel.handle(request());
+  assert.equal(response.status, 200);
+  assert.equal(providerUses, 0, "an undeclared secret must not be requested from the provider");
+  assert.equal(consumerCalled, false, "handler-visible policy mutation must not authorize a secret callback");
+
+  try {
+    retainedPolicy.secrets.require[0] = "other";
+  } catch {
+    // A frozen detached view is also acceptable.
+  }
+  const subsequent = await kernel.handle(request({ requestId: "security-closure-next" }));
+  assert.equal(subsequent.status, 200);
+  assert.equal(providerUses, 0, "retaining and mutating an old handler view must not change a later request");
+  assert.equal(consumerCalled, false);
+});
+
+test("post-construction mutation of a route declaration cannot rewrite the kernel policy", async () => {
+  const scopes = ["orders:read"];
+  let ran = false;
+  const route = {
+    method: "GET",
+    path: "/x",
+    handler: "x",
+    auth: { mode: "required", scopes },
+  };
+  const kernel = createAppKernel({
+    routes: [route],
+    dispatch: { x: () => { ran = true; return { body: { ok: true } }; } },
+  });
+
+  scopes.splice(0, 1);
+  const response = await kernel.handle(request({
+    channelVerdict: 1,
+    principalId: "principal-a",
+    principalScopes: [],
+  }));
+  assert.equal(response.status, 403);
+  assert.equal(errorOf(response), "forbidden");
+  assert.equal(ran, false);
+});
+
+test("a handler cannot erase a private required scope through Array.prototype.some", async () => {
+  const originalSome = Array.prototype.some;
+  let protectedDispatches = 0;
+  const kernel = createAppKernel({
+    routes: [
+      { method: "GET", path: "/poison-scopes", handler: "poison", auth: { mode: "public" } },
+      { method: "GET", path: "/protected", handler: "protected", auth: { mode: "required", scopes: ["orders:read"] } },
+    ],
+    dispatch: {
+      poison: () => {
+        Array.prototype.some = function (predicate, thisArg) {
+          if (this.length === 1 && this[0] === "orders:read") {
+            this.length = 0;
+            Array.prototype.some = originalSome;
+            return false;
+          }
+          return originalSome.call(this, predicate, thisArg);
+        };
+        return { body: { ok: true } };
+      },
+      protected: () => { protectedDispatches += 1; return { body: { ok: true } }; },
+    },
+  });
+
+  try {
+    assert.equal((await kernel.handle(request({ path: "/poison-scopes" }))).status, 200);
+    const denied = await kernel.handle(request({
+      path: "/protected",
+      requestId: "scope-prototype-attack",
+      channelVerdict: 1,
+      principalId: "principal-a",
+      principalScopes: [],
+    }));
+    assert.equal(denied.status, 403);
+    assert.equal(errorOf(denied), "forbidden");
+    assert.equal(protectedDispatches, 0, "missing required scope must never reach protected dispatch");
+  } finally {
+    Array.prototype.some = originalSome;
+  }
+});
+
+test("a handler cannot obtain and mutate a private route policy through Map.prototype.get", async () => {
+  const originalGet = Map.prototype.get;
+  let protectedDispatches = 0;
+  const kernel = createAppKernel({
+    routes: [
+      { method: "GET", path: "/poison-map", handler: "poison", auth: { mode: "public" } },
+      { method: "GET", path: "/protected-map", handler: "protected", auth: { mode: "required", scopes: ["orders:read"] } },
+    ],
+    dispatch: {
+      poison: () => {
+        Map.prototype.get = function (key) {
+          const value = originalGet.call(this, key);
+          if (value?.auth?.scopes?.[0] === "orders:read") {
+            value.auth.scopes.length = 0;
+            Map.prototype.get = originalGet;
+          }
+          return value;
+        };
+        return { body: { ok: true } };
+      },
+      protected: () => { protectedDispatches += 1; return { body: { ok: true } }; },
+    },
+  });
+
+  try {
+    assert.equal((await kernel.handle(request({ path: "/poison-map" }))).status, 200);
+    const denied = await kernel.handle(request({
+      path: "/protected-map",
+      requestId: "map-prototype-attack",
+      channelVerdict: 1,
+      principalId: "principal-a",
+      principalScopes: [],
+    }));
+    assert.equal(denied.status, 403);
+    assert.equal(errorOf(denied), "forbidden");
+    assert.equal(protectedDispatches, 0, "private policy must remain unreachable to handler-installed Map methods");
+  } finally {
+    Map.prototype.get = originalGet;
+  }
+});
+
+test("handler mutation of Array.prototype cannot rewrite secret authorization", async () => {
+  const originalIncludes = Array.prototype.includes;
+  let providerName;
+  let consumerCalled = false;
+  const kernel = createAppKernel({
+    routes: [{ method: "GET", path: "/x", handler: "x", auth: { mode: "public" }, secrets: { require: ["allowed"] } }],
+    secretsProvider: {
+      has: () => true,
+      use: (name, callback) => { providerName = name; callback(new Uint8Array([0x42])); },
+    },
+    dispatch: {
+      x: ({ getSecret }) => {
+        Array.prototype.includes = function (name) {
+          return name === "other" || originalIncludes.call(this, name);
+        };
+        try {
+          getSecret("other", () => { consumerCalled = true; });
+        } finally {
+          Array.prototype.includes = originalIncludes;
+        }
+        return { body: { ok: true } };
+      },
+    },
+  });
+
+  const response = await kernel.handle(request());
+  assert.equal(response.status, 200);
+  assert.equal(providerName, undefined, "provider must not be queried for a secret absent from the private allowlist");
+  assert.equal(consumerCalled, false, "prototype poisoning must not invoke the undeclared-secret consumer");
+});
+
+test("handler-installed array iterator cannot mutate the private secret allowlist during the next request", async () => {
+  const originalIterator = Array.prototype[Symbol.iterator];
+  let dispatches = 0;
+  const providerNames = [];
+  let consumerCalled = false;
+  const kernel = createAppKernel({
+    routes: [{ method: "GET", path: "/x", handler: "x", auth: { mode: "public" }, secrets: { require: ["allowed"] } }],
+    secretsProvider: {
+      has: () => true,
+      use: (name, callback) => { providerNames.push(name); callback(new Uint8Array([0x42])); },
+    },
+    dispatch: {
+      x: ({ getSecret }) => {
+        dispatches += 1;
+        if (dispatches === 1) {
+          Array.prototype[Symbol.iterator] = function* () {
+            if (this.length === 1 && this[0] === "allowed") this[0] = "other";
+            yield* originalIterator.call(this);
+          };
+          return { body: { ok: true } };
+        }
+        getSecret("other", () => { consumerCalled = true; });
+        return { body: { ok: true } };
+      },
+    },
+  });
+
+  try {
+    assert.equal((await kernel.handle(request())).status, 200);
+    assert.equal((await kernel.handle(request({ requestId: "iterator-poisoning-next" }))).status, 200);
+  } finally {
+    Array.prototype[Symbol.iterator] = originalIterator;
+  }
+
+  assert.deepEqual(providerNames, [], "an undeclared name must never reach the provider");
+  assert.equal(consumerCalled, false, "iterator poisoning must not authorize a later request");
+});
+
+test("transferred handler copies survive the attempted gate wipe while the kernel refuses success", async () => {
+  const source = new Uint8Array([0x41, 0x42, 0x43]);
+  const provider = {
+    has(name) { return name === "allowed"; },
+    use(name, callback) { return name === "allowed" ? callback(source) : undefined; },
+  };
+  let stagedView;
+  let transferred;
+  let transferCompleted = false;
+  let cleanupError;
+  const kernel = createAppKernel({
+    routes: [{ method: "GET", path: "/x", handler: "x", auth: { mode: "public" }, secrets: { require: ["allowed"] } }],
+    secretsProvider: provider,
+    dispatch: {
+      x: ({ getSecret }) => {
+        try {
+          getSecret("allowed", (view) => {
+            stagedView = view;
+            transferred = structuredClone(view, { transfer: [view.buffer] });
+            transferCompleted = true;
+          });
+        } catch (error) {
+          // A consumer can catch the detached-buffer wipe failure; the kernel must still fail closed.
+          cleanupError = error;
+        }
+        return { body: { ok: true } };
+      },
+    },
+  });
+
+  const response = await kernel.handle(request());
+  assert.equal(response.status, 500);
+  const responseBody = JSON.parse(dec.decode(response.body));
+  assert.equal(responseBody.error, "internal_error");
+  assert.notEqual(responseBody.ok, true);
+  assert.equal(transferCompleted, true);
+  assert.equal(stagedView.byteLength, 0);
+  assert.equal(stagedView.buffer.byteLength, 0);
+  assert.ok(cleanupError instanceof TypeError);
+  assert.deepEqual(Array.from(transferred), [0x41, 0x42, 0x43]);
 });
 
 test("duplicate JSON keys are denied before the handler", async () => {
@@ -237,7 +499,7 @@ test("authenticated rate windows are isolated by a required principal identity",
   assert.equal(noIdentity.status, 401);
 });
 
-test("a timed-out handler retains its concurrency lease until underlying work settles", async () => {
+test("a timed-out handler retains its in-flight slot until underlying work settles", async () => {
   let release;
   let calls = 0;
   const blocked = new Promise((resolve) => { release = resolve; });
@@ -254,7 +516,7 @@ test("a timed-out handler retains its concurrency lease until underlying work se
 
   assert.equal((await kernel.handle(request({ requestId: "first" }))).status, 504);
   assert.equal((await kernel.handle(request({ requestId: "second" }))).status, 429);
-  assert.equal(calls, 1, "a zombie handler must keep its one active-compute lease");
+  assert.equal(calls, 1, "a zombie handler must keep its one in-flight concurrency slot");
   release();
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal((await kernel.handle(request({ requestId: "third" }))).status, 200);
