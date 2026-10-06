@@ -18,7 +18,7 @@ export const DEPLOYMENT_REPORT_FILE = "deployment-report.json";
 
 export const DEPLOYMENT_REPORT_LIMITATIONS: readonly string[] = Object.freeze([
   "dry-run effects validation only; no live deploy",
-  "does not probe targets or check module hashes on disk",
+  "does not probe targets; module hashes on disk are checked only when --artefacts is given",
   "does not prove trusted provenance",
 ]);
 

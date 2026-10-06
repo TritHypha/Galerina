@@ -2,16 +2,23 @@
  * `galerina deploy` command wiring (zero-trust defaults, owner may revisit).
  *
  * Dry-run effects validation only: loads closed-shape manifest slice + effects
- * policy JSON objects, runs validateEffects, optionally writes
+ * policy JSON objects, optionally checks module hashes on disk (--artefacts,
+ * deploy-module-hash.ts), runs validateEffects, optionally writes
  * deployment-report.json. Never live-deploys. Never echoes paths, effect names,
  * targets, hashes, or file contents in diagnostics / default details.
  *
  * Admitted flags: --manifest <file>, --policy <file>, --target <token>,
- * --hash <sha256:...>, --report <dir>, --json, --dry-run, --strict.
- * --audit is recognized but refused (capability/audit validation later).
+ * --hash <sha256:...>, --artefacts <file>, --root <dir>, --report <dir>, --json,
+ * --dry-run, --strict. --audit is recognized but refused (capability/audit
+ * validation later).
  * Exit codes: 0 success, 2 usage or policy denial, 3 target incompatibility,
  * 4 validation failure, 5 reserved (capability), 6 verified-gate failure,
- * 7 reserved (module-hash / manifest integrity).
+ * 7 module-hash failure (FUNGI-VERIFY-001..005 from --artefacts).
+ *
+ * Module-hash check runs before effects validation and before any report write;
+ * a failure stops the command with no file written. Owner decision 2026-10-06
+ * 10:15 BST: live deploy is authorised for a follow-up PR, and this check is its
+ * mandatory pre-deploy gate; this slice stays dry-run only.
  */
 
 import { readFile } from "node:fs/promises";
@@ -35,6 +42,7 @@ import {
   writeDeploymentReport,
   DEPLOYMENT_REPORT_FILE,
 } from "./deploy-report.js";
+import { verifyDeployModuleHashes } from "./deploy-module-hash.js";
 
 /** Unknown or duplicate flag / missing value / equals-form / positional. */
 export const FUNGI_CLI_DEPLOY_001 = "FUNGI-CLI-DEPLOY-001";
@@ -60,6 +68,8 @@ const ADMITTED_FLAGS = Object.freeze([
   "--policy",
   "--target",
   "--hash",
+  "--artefacts",
+  "--root",
   "--report",
   "--json",
   "--dry-run",
@@ -74,6 +84,8 @@ export interface DeployCommandOptions {
   readonly policyPath: string;
   readonly target: string;
   readonly manifestHash: string;
+  readonly artefactsPath?: string;
+  readonly root?: string;
   readonly reportDir?: string;
   readonly json: boolean;
   readonly dryRun: boolean;
@@ -110,6 +122,8 @@ export function parseDeployArgs(args: readonly string[]):
   let target = "";
   let manifestHash = "";
   let reportDir = "";
+  let artefactsPath = "";
+  let root = "";
   let json = false;
   let dryRun = false;
   let strict = false;
@@ -157,7 +171,7 @@ export function parseDeployArgs(args: readonly string[]):
           FUNGI_CLI_DEPLOY_001,
           DEPLOY_EXIT_USAGE_OR_POLICY,
           "Deploy received an unknown flag.",
-          "Use only --manifest, --policy, --target, --hash, --report, --json, --dry-run, --strict (and note --audit is not admitted yet).",
+          "Use only --manifest, --policy, --target, --hash, --artefacts, --root, --report, --json, --dry-run, --strict (and note --audit is not admitted yet).",
         ),
       };
     }
@@ -206,7 +220,7 @@ export function parseDeployArgs(args: readonly string[]):
           FUNGI_CLI_DEPLOY_001,
           DEPLOY_EXIT_USAGE_OR_POLICY,
           "A deploy flag that needs a value was given without one.",
-          "Pass --manifest <file>, --policy <file>, --target <token>, --hash <sha256:...>, or --report <dir>.",
+          "Pass --manifest <file>, --policy <file>, --target <token>, --hash <sha256:...>, --artefacts <file>, --root <dir>, or --report <dir>.",
         ),
       };
     }
@@ -215,6 +229,8 @@ export function parseDeployArgs(args: readonly string[]):
     else if (a === "--policy") policyPath = next;
     else if (a === "--target") target = next;
     else if (a === "--hash") manifestHash = next;
+    else if (a === "--artefacts") artefactsPath = next;
+    else if (a === "--root") root = next;
     else if (a === "--report") reportDir = next;
   }
 
@@ -263,6 +279,18 @@ export function parseDeployArgs(args: readonly string[]):
     };
   }
 
+  if (root.length > 0 && artefactsPath.length === 0) {
+    return {
+      ok: false,
+      result: refuse(
+        FUNGI_CLI_DEPLOY_001,
+        DEPLOY_EXIT_USAGE_OR_POLICY,
+        "Deploy --root is only meaningful with --artefacts.",
+        "Pass --artefacts <file> with --root, or omit --root.",
+      ),
+    };
+  }
+
   // Live deploy is never admitted; --dry-run is the explicit acknowledgment.
   // --strict is accepted; validation is always fail-closed.
   void dryRun;
@@ -273,6 +301,8 @@ export function parseDeployArgs(args: readonly string[]):
     policyPath,
     target,
     manifestHash,
+    ...(artefactsPath.length > 0 ? { artefactsPath } : {}),
+    ...(root.length > 0 ? { root } : {}),
     ...(reportDir.length > 0 ? { reportDir } : {}),
     json,
     dryRun,
@@ -322,6 +352,53 @@ async function readJsonObject(
         DEPLOY_EXIT_USAGE_OR_POLICY,
         "A deploy input must be a JSON object.",
         "Provide a single closed-shape object (not an array).",
+      ),
+    };
+  }
+  return { ok: true, value: parsed };
+}
+
+async function readJsonArray(
+  filePath: string,
+  cwd: string,
+): Promise<{ readonly ok: true; readonly value: unknown } | { readonly ok: false; readonly result: CliResult }> {
+  const absolute = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
+  let text: string;
+  try {
+    text = await readFile(absolute, "utf8");
+  } catch {
+    return {
+      ok: false,
+      result: refuse(
+        FUNGI_CLI_DEPLOY_003,
+        DEPLOY_EXIT_USAGE_OR_POLICY,
+        "A deploy input file could not be read.",
+        "Ensure --artefacts names a readable UTF-8 JSON array of BuildArtefact records.",
+      ),
+    };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return {
+      ok: false,
+      result: refuse(
+        FUNGI_CLI_DEPLOY_003,
+        DEPLOY_EXIT_USAGE_OR_POLICY,
+        "A deploy input file was not valid JSON.",
+        "Provide a JSON array of closed-shape BuildArtefact records.",
+      ),
+    };
+  }
+  if (!Array.isArray(parsed) || Object.keys(parsed).length !== parsed.length) {
+    return {
+      ok: false,
+      result: refuse(
+        FUNGI_CLI_DEPLOY_003,
+        DEPLOY_EXIT_USAGE_OR_POLICY,
+        "Deploy --artefacts must be a dense JSON array.",
+        "Provide a JSON array (not an object) with no holes.",
       ),
     };
   }
@@ -383,6 +460,29 @@ export async function runDeployCommand(context: CliContext): Promise<CliResult> 
   const policyLoad = await readJsonObject(options.policyPath, context.cwd);
   if (!policyLoad.ok) return policyLoad.result;
 
+  // Module hashes on disk: checked before effects validation and before any report write.
+  let moduleCount = -1;
+  if (options.artefactsPath !== undefined) {
+    const artefactsLoad = await readJsonArray(options.artefactsPath, context.cwd);
+    if (!artefactsLoad.ok) return artefactsLoad.result;
+    const rootDir = options.root !== undefined
+      ? (isAbsolute(options.root) ? options.root : resolve(context.cwd, options.root))
+      : context.cwd;
+    const modules = await verifyDeployModuleHashes(artefactsLoad.value, rootDir);
+    if (!modules.ok) {
+      return Object.freeze({
+        ok: false as const,
+        code: DEPLOY_EXIT_MANIFEST,
+        message: "Deploy dry-run refused: module hashes on disk did not verify.",
+        details: Object.freeze([
+          `Module-hash codes: ${modules.codes.join(", ")}`,
+          "Fix: rebuild or restore the listed artefacts so each file matches its declared sha256 under --root.",
+        ]),
+      });
+    }
+    moduleCount = modules.checked;
+  }
+
   const target = options.target as DeploymentTarget;
   const diagnostics = validateEffects({
     manifest: manifestLoad.value,
@@ -418,6 +518,9 @@ export async function runDeployCommand(context: CliContext): Promise<CliResult> 
     // JSON details carry closed report fields (target/hash/codes). Paths are never included.
     details.push(renderDeploymentReport(report).trimEnd());
   } else {
+    if (moduleCount >= 0) {
+      details.push(`Deploy dry-run: module hashes verified (${moduleCount} artefact(s)).`);
+    }
     details.push(
       result.success
         ? "Deploy dry-run: effects validation succeeded."

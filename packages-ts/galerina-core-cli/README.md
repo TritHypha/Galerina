@@ -316,13 +316,20 @@ property descriptors (no getters). Diagnostics never echo effect names, targets,
 keys. Codes: `FUNGI-DEPLOY-001` shape, `002` domain, `003` policy effect denial, `004` target
 incompatibility, `005` verified gate. Command wiring (`src/deploy/deploy-command.ts`, zero-trust defaults, owner may revisit):
 `parseDeployArgs` + `runDeployCommand` wire `galerina deploy` as **dry-run only**.
-Admitted flags: `--manifest`, `--policy`, `--target`, `--hash`, `--report`,
-`--json`, `--dry-run` (required), `--strict`. `--audit` refuses `FUNGI-CLI-DEPLOY-004`.
+Admitted flags: `--manifest`, `--policy`, `--target`, `--hash`, `--artefacts`, `--root`,
+`--report`, `--json`, `--dry-run` (required), `--strict`. `--audit` refuses `FUNGI-CLI-DEPLOY-004`.
 Exit codes: `0` success, `2` usage or policy denial, `3` target incompatibility,
-`4` validation failure, `6` verified-gate failure (`5`/`7` reserved). Report writer
+`4` validation failure, `6` verified-gate failure, `7` module-hash failure (`5` reserved). Report writer
 (`src/deploy/deploy-report.ts`): exclusive-create `deployment-report.json` with
-messages withheld and `dryRun:true`. Not covered: live deploy, module hashes on disk,
-capability/audit validation, deploy-policy.ts / deploy-runtime.ts.
+messages withheld and `dryRun:true`. Module hashes on disk (`src/deploy/deploy-module-hash.ts`,
+2026-10-06, zero-trust defaults, owner may revisit): `--artefacts <file>` (JSON array of closed
+`BuildArtefact` records) with optional `--root <dir>` (default: working directory) runs
+`verifyDeployModuleHashes`, which reuses `verifyArtefactIntegritySet` / `verifyHash` unchanged
+(sha256 only, root-confined, regular non-symlink files, no-follow where supported). It runs before
+effects validation and before any report write; a failure exits `7` with `FUNGI-VERIFY-001..005`
+codes only (no paths, hashes or bytes) and writes nothing. Owner decision 2026-10-06 10:15 BST:
+live deploy is authorised for a follow-up PR and this check is its mandatory pre-deploy gate.
+Not covered: live deploy, capability/audit validation, deploy-policy.ts / deploy-runtime.ts.
 
 
 ```ts

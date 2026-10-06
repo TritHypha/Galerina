@@ -61,3 +61,6 @@ export {
 } from "./deploy/deploy-command.js";
 
 export type { DeployCommandOptions, DeployFlagName } from "./deploy/deploy-command.js";
+
+export { verifyDeployModuleHashes } from "./deploy/deploy-module-hash.js";
+export type { DeployModuleHashResult } from "./deploy/deploy-module-hash.js";
