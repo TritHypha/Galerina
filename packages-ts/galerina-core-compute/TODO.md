@@ -28,6 +28,13 @@ active v1 runtime target.
       src/capabilities/compute-runtime-capabilities.ts COMPUTE_RUNTIME_CAPABILITIES + validateComputeRuntimeCapabilityClaim (v1: only ComputeRuntime may claim available); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define GPU planning metadata and fallback rules (FUNGI-COMPUTE-001 through FUNGI-COMPUTE-007)
       src/gpu/gpu-codes.ts FUNGI_COMPUTE_CODES; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[HOLD] RD-0855 admission-time alternative plans: task-policy issuer and the allowed alternatives, permitted reasons and their order (proposed 2026-10-06, owner decision pending; refines the fallback rules row above)
+    No new fallback mechanism. A failed attempt keeps its typed refusal. A separate alternative plan is allowed only for authenticated
+    candidate-local unavailability or incompatibility, under the unchanged admitted task policy and with no prior effect; it needs its own
+    SLIDE admission and a fresh VOK decision, lease and receipt. DENY, revocation, invalid evidence, unknown outcome, partial effects and
+    cleanup failure never become retry permission. Post-effect or uncertain-outcome retry is excluded.
+    "binary" owner decided 2026-10-06 (Phillip, 15:21 BST): the same task semantics implemented in binary, with K3 still deciding permission; a different two-valued algorithm or semantic degradation is not permitted. Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+    Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 [x] Define GPU runtime architecture: compute planner â†’ GPU scheduler â†’ buffer manager â†’ kernel adapter â†’ GPU backend
       src/gpu/gpu-runtime.ts GPU_RUNTIME_ARCHITECTURE_STAGES (planning vocabulary only; no stage executes); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define vendor-neutral adapter model (CUDA/ROCm/Metal/Vulkan as runtime plugins, not language syntax)
@@ -36,10 +43,18 @@ active v1 runtime target.
       effects/compute-effects.ts optical_io (planning-only under v1); capabilities OpticalTransport (planning_only); photonic/ optical plan (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
     src/scheduling/responsibilities.ts SCHEDULER_RESPONSIBILITIES + validateSchedulerResponsibilityClaim; v1 planning_only only; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[HOLD] Bound total attempts and resources across one task's RD-0855 alternative plans (proposed 2026-10-06, owner decision pending; refines the scheduler fallback row above)
+    One budget for the whole task: attempt count, deadline and CPU/memory/accelerator use shared by every attempt; an exhausted or cyclic chain
+    refuses instead of starting another attempt. Retry-budget owner is open; unresolved = HOLD. Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 [x] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
     src/scheduling/responsibilities.ts PLANNER_RESPONSIBILITIES + validatePlannerResponsibilityClaim; v1 planning_only only; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
     src/scheduling/responsibilities.ts ComputeAuditEventShape v0.1 + validateComputeAuditEventShape / buildComputeAuditEvent; closed kind/subject/outcome; no free-text; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[HOLD] Tests for RD-0855 alternative-plan planning (proposed 2026-10-06, owner decision pending; refines the audit fallback row above)
+    Positive: preferred candidate authenticated-unavailable before any effect -> a permitted scalar alternative is emitted as a proposal only,
+    with a new plan identity linked to the refused attempt. Negative: DENY, revoked capability, invalid or stale evidence, unknown outcome,
+    partial effect or cleanup failure -> no retry grant, original typed refusal kept; task-policy substitution and exhausted or cyclic chains refuse.
+    Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 [x] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
 [x] Define GpuSuitability: high|medium|low|unsuitable|unknown
       src/gpu/gpu-types.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)

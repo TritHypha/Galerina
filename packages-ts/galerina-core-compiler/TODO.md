@@ -371,6 +371,25 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     **4/4**. Residual: node adapter lazy-loads KDF only when invoked.
 ```
 
+## RD-0855 admission-time replanning (proposed 2026-10-06, owner decision pending)
+
+No new lowering for alternative plans until these rows pass. A failed attempt keeps
+its typed refusal; an alternative plan reuses the sealed checked input and never
+re-enters TypeScript, AST or WAT (no rescue). "binary" owner decided 2026-10-06 (Phillip, 15:21 BST): the same task semantics implemented in binary, with K3 still deciding permission; a different two-valued algorithm or semantic degradation is not permitted.
+Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
+
+```text
+[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
+[HOLD] K3/refusal parity for binary carriers: a binary implementation returns the same K3 values and typed refusals as the scalar reference
+    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
+    Meaning of binary owner decided 2026-10-06; parity evidence and any lowering stay HOLD.
+[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
+    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+```
+
 ## Post-v1 (owner-gated)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
