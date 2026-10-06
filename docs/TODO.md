@@ -47,7 +47,7 @@ not compare.
   three kinds. Some are unbuilt. Some are owner-parked by note only: three
   core-compiler post-v1 rows and the core-photonic v0.2 section (O1, #133; the
   photonic HOLD markers are in open #141). The rest are being changed by open
-  PRs: #135, #138—#141, #144—#147, #149, #151. Those rows are left to their
+  PRs: #135, #138—#141, #144—#147, #149, #151—#155. Those rows are left to their
   own PRs.
 - The roadmap SVG and generated region were refreshed on the new HEAD. See
   [ROADMAP.md](ROADMAP.md#current-state--2026-10-06-evening). This supersedes

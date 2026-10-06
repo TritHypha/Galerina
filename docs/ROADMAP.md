@@ -112,6 +112,10 @@ the TODO census.
 - #148 architecture: trit-width component proposal (non-authorizing).
 - #150 core-cli: remove the `galerina benchmark` placeholder.
 - #151 tri-pipe: RD-0855 alternative-proposal rows (stacked on #146).
+- #152 tools-benchmark: RAM bucket and vector feature detection.
+- #153 app-kernel: api-server handoff contract (not wired).
+- #154 core-compiler: numeric-gate fixture names; Int64/UInt64 row evidence.
+- #155 ai-neuromorphic: wider PAT-NEU-01 non-execution guard (O2).
 - Drafts: #83 core-compute specialist taxonomy (conflicting); #149
   tools-benchmark command composition (stacked on #147).
 
