@@ -50,7 +50,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [x] Define security report contract
 [x] Define safe token, cookie and header handling helpers
 [x] Define cryptographic policy types
-[ ] Define crypto inventory and post-quantum readiness report schemas
+[x] Define crypto inventory and post-quantum readiness report schemas (closed-shape CryptoInventoryReport / CryptoInventoryUse + CRYPTO_ALGORITHM_BASELINE_LABELS; LABELS ONLY, no PQ readiness claim; FUNGI-SEC-CIV-001..005; Grok 2026-10-05; owner may revisit)
 [ ] Define SecureRandom versus Random diagnostic examples
 [x] Add examples
 [x] Add tests
@@ -74,3 +74,11 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 - Descriptive metadata only: no new rules, no severity changes, no OWASP coverage claim. Hygiene-only codes recorded `unmapped` (DUPLICATE_GRANT, REDACTION_RULE_INVALID, REDACTION_RULE_NAME_EMPTY) rather than guessed.
 - Test pins entries to exactly the Galerina_SECURITY_* codes in src/index.ts (drift guard).
 - Not covered: FUNGI-SEC-* reader codes, FUNGI-CRYPTO-* provider codes, later OWASP editions, ASVS/CVSS. SecretReference v0.2 / taint types still do-not-invent.
+
+## Notes (Grok 2026-10-05 crypto inventory / PQ readiness)
+- Closed `src/crypto-inventory.ts`: `readCryptoInventory` / `lookupCryptoAlgorithmLabel` / `CRYPTO_ALGORITHM_BASELINE_LABELS`.
+- Schema: `galerina.security.crypto-inventory/v1`. Algorithm vocabulary = CryptoAlgorithm + WeakCryptoAlgorithm (src/index.ts) + ml-dsa-65; test pins it to DEFAULT_CRYPTOGRAPHIC_POLICY (drift guard).
+- LABELS ONLY: `postQuantumReadiness` (not_assessed|not_ready|ready) is the caller's declared policy state; the reader refuses `ready` only when its own inventory contradicts it (incomplete, empty, or any unassessed / quantum_vulnerable / legacy_weak use). Accepting a report does not certify readiness.
+- Deny-first: weak algorithms must be legacy_weak + denied; unassessed and hard-coded uses can never be approved; quantum_vulnerable / legacy_weak need a migration-path state; post_quantum needs not_applicable.
+- Owner may revisit: baseline labels (symmetric AEAD / hash / argon2id counted as symmetric_or_hash and admissible for `ready`; ed25519 / x25519 quantum_vulnerable; ml-dsa-65 post_quantum); purpose vocabulary; schema id vs doc example `reportType: galerina.crypto.inventory` / boolean `postQuantumReady`.
+- Not covered: library / deployment / fingerprint fields, key sizes, hybrid pair records, post-quantum-readiness-report.json / quantum target / measurement / fallback reports, SecureRandom diagnostics, scanners, report writers. SecretReference v0.2 / taint types still do-not-invent.
