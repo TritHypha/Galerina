@@ -19,9 +19,15 @@
 
 ## Phase 2: CLI Integration
 
+Owner decision 2026-10-06 17:28 BST: tools-benchmark stays an independent
+TypeScript package. core-cli must not depend on it, no `Galerina benchmark`
+command is wired into core-cli, and the benchmark is not converted to `.fungi`.
+"CLI" in this phase means the package's own argv contract
+(`parseBenchmarkCliArgs`) and in-package composition only.
+
 ```text
-[x] Add Galerina benchmark command placeholder
-[ ] Implement Galerina benchmark command runner -- progress (Grok 2026-10-06; zero-trust defaults, owner may revisit): src/benchmark-runner.ts runLightBenchmark runs the README light list in order through the existing case modules, and the result must pass validateBenchmarkReport. Host-injected benchmarkId/loVersion/system/clock; no OS/file/network reads. Parked, not-implemented and *_if_available cases are skipped with fixed reasons; the total budget skips the remaining cases as skipped_timeout. Score mean is an OWNER-REVISIT pick; shareable is always false. FUNGI-BENCH-RUN-001..005; tests/benchmark-runner.test.mjs. Remaining: full/stress modes (refused FUNGI-BENCH-RUN-002), CLI wiring of parseBenchmarkCliArgs into the runner, --save via BenchmarkReportFileWriter.
+[x] Add Galerina benchmark command placeholder -- SUPERSEDED for core-cli (owner decision 2026-10-06 17:28 BST): no further core-cli wiring. The core-cli placeholder (galerina-core-cli/src/commands.ts:77-83) predates the decision; removing it is a Codex follow-up.
+[ ] Implement Galerina benchmark command runner -- progress (Grok 2026-10-06; zero-trust defaults, owner may revisit): src/benchmark-runner.ts runLightBenchmark runs the README light list in order through the existing case modules, and the result must pass validateBenchmarkReport. Host-injected benchmarkId/loVersion/system/clock; no OS/file/network reads. Parked, not-implemented and *_if_available cases are skipped with fixed reasons; the total budget skips the remaining cases as skipped_timeout. Score mean is an OWNER-REVISIT pick; shareable is always false. FUNGI-BENCH-RUN-001..005; tests/benchmark-runner.test.mjs. Remaining: full/stress modes (refused FUNGI-BENCH-RUN-002), CLI wiring of parseBenchmarkCliArgs into the runner, --save via BenchmarkReportFileWriter. Wiring into core-cli (replacing the core-cli benchmark placeholder) is SUPERSEDED / won't-do per owner decision 2026-10-06 17:28 BST; argv composition stays inside tools-benchmark.
 [x] Add --light flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --light; conflicts with --full refused Galerina_BENCHMARK_CLI_002; never echoes refused tokens
 [x] Add --full flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --full; mutual exclusion with --light; default mode light when neither set
 [x] Add --json flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --json boolean; duplicates/equals-form refused Galerina_BENCHMARK_CLI_001
@@ -152,6 +158,10 @@ generator existed is superseded by the 2026-10-05 note above.)
 ```
 
 ## Phase 9: External Runtime Comparisons
+
+Owner decision 2026-10-06 17:29 BST: `--compare` takes `runtime|compiled`, not
+`python|cpp`. `runtime` = run the test in TypeScript (`.ts`); `compiled` = run
+the test against the compiled `.fungi` output.
 
 ```text
 [ ] Add optional external runtime comparison runner
