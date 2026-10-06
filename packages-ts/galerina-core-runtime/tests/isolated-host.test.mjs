@@ -16,12 +16,22 @@ import {
   advanceStructuredAwait,
   TASK_RECEIPT_CAUSE_KIND,
   MIN_RECEIPT_KEY_BYTES,
+  MIN_ISOLATED_NODE_MAJOR,
 } from "../dist/index.js";
 
 const hmacSha256 = (key, data) => new Uint8Array(createHmac("sha256", key).update(data).digest());
 const KEY = { keyId: "host-key-1", key: new Uint8Array(randomBytes(32)) };
 const OTHER = { keyId: "host-key-1", key: new Uint8Array(randomBytes(32)) };
 const nodeMajor = Number(process.versions.node.split(".")[0]);
+// The isolated host is fail-closed below MIN_ISOLATED_NODE_MAJOR (src/isolated-host.ts; the floor
+// is deliberate and is not lowered here). On an older Node only the refusal is asserted, and that
+// test runs on every Node. Tests that need a real isolated host are skipped with an explicit reason
+// instead of failing, or passing vacuously, on a Node the host will never accept.
+const ISOLATION_SUPPORTED = Number.isSafeInteger(nodeMajor) && nodeMajor >= MIN_ISOLATED_NODE_MAJOR;
+const NEEDS_ISOLATED_HOST = ISOLATION_SUPPORTED
+  ? false
+  : `needs a real isolated host: Node ${nodeMajor} is below the fail-closed floor MIN_ISOLATED_NODE_MAJOR=${MIN_ISOLATED_NODE_MAJOR}, so createIsolatedHost refuses it (asserted by the refusal test)`;
+const hostTest = (name, fn) => test(name, { skip: NEEDS_ISOLATED_HOST }, fn);
 
 const dir = realpathSync(mkdtempSync(join(tmpdir(), "galerina-isolated-")));
 test.after(() => rmSync(dir, { recursive: true, force: true }));
@@ -183,7 +193,7 @@ test("guest args: permission model, entry-only read, no eval, bounded heap", () 
 // empty env; nothing else from the host environment reaches the guest.
 const WINDOWS_LIBUV_REQUIRED_ENV = new Set(["HOMEDRIVE", "HOMEPATH", "LOGONSERVER", "PATH", "SYSTEMDRIVE", "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE", "WINDIR"]);
 
-test("cooperative guest succeeds without the host environment and with a verifiable receipt", async () => {
+hostTest("cooperative guest succeeds without the host environment and with a verifiable receipt", async () => {
   const { host, verifier } = makeHost();
   clock = 3;
   process.env.GALERINA_ISOLATED_TEST_SECRET = "s3cr3t";
@@ -206,7 +216,7 @@ test("cooperative guest succeeds without the host environment and with a verifia
   assert.deepEqual({ ...v.event }, { kind: "task_succeeded", taskId: "task-a", elapsedMs: 3 });
 });
 
-test("non-cooperative busy loop is hard-terminated at its deadline", async () => {
+hostTest("non-cooperative busy loop is hard-terminated at its deadline", async () => {
   const { host, verifier } = makeHost();
   const started = Date.now();
   const r = await host.run(spec(G.loop, { deadlineMs: 300 })).result;
@@ -217,7 +227,7 @@ test("non-cooperative busy loop is hard-terminated at its deadline", async () =>
   assert.equal(verifier.verify({ ...r.receipt }).ok, true);
 });
 
-test("guest that ignores SIGTERM/SIGINT is still stopped by host cancel", async () => {
+hostTest("guest that ignores SIGTERM/SIGINT is still stopped by host cancel", async () => {
   const { host } = makeHost();
   const run = host.run(spec(G.ignoreSignals));
   setTimeout(() => run.cancel(), 200);
@@ -227,7 +237,7 @@ test("guest that ignores SIGTERM/SIGINT is still stopped by host cancel", async 
   run.cancel(); // idempotent after settle
 });
 
-test("non-zero exit, output flood and invalid UTF-8 fail closed", async () => {
+hostTest("non-zero exit, output flood and invalid UTF-8 fail closed", async () => {
   const { host } = makeHost();
   const fail = await host.run(spec(G.fail)).result;
   assert.equal(fail.outcome, "failed");
@@ -241,7 +251,7 @@ test("non-zero exit, output flood and invalid UTF-8 fail closed", async () => {
   assert.equal(bad.receipt.cause, "output_invalid");
 });
 
-test("guest cannot write files, read siblings, spawn processes, start workers or eval strings", async () => {
+hostTest("guest cannot write files, read siblings, spawn processes, start workers or eval strings", async () => {
   const { host } = makeHost();
   for (const entry of [G.fsWrite, G.fsReadSibling, G.child, G.worker, G.evalStr]) {
     const r = await host.run(spec(entry)).result;
@@ -251,7 +261,7 @@ test("guest cannot write files, read siblings, spawn processes, start workers or
   assert.equal(existsSync(join(dir, "escaped.txt")), false);
 });
 
-test("missing executable is a spawn failure, not a success", async () => {
+hostTest("missing executable is a spawn failure, not a success", async () => {
   const missing = process.platform === "win32" ? "C:\\no-such-dir\\node.exe" : "/no-such-dir/node";
   const { host } = makeHost({ execPath: missing });
   const r = await host.run(spec(G.echo)).result;
@@ -259,7 +269,7 @@ test("missing executable is a spawn failure, not a success", async () => {
   assert.equal(r.receipt.cause, "spawn_failed");
 });
 
-test("invalid specs are refused before anything is spawned", async () => {
+hostTest("invalid specs are refused before anything is spawned", async () => {
   let calls = 0;
   const spy = (...a) => { calls += 1; return spawn(...a); };
   const { host } = makeHost({ spawn: spy });
@@ -288,21 +298,39 @@ test("invalid specs are refused before anything is spawned", async () => {
 
 test("host configuration is validated: old Node, relative exec path, missing signer", () => {
   const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
-  const base = { execPath: process.execPath, nodeMajor, spawn, signer, elapsedMs };
+  // Admissible Node major, so each refusal below is caused by the one field it changes (on every Node).
+  const base = { execPath: process.execPath, nodeMajor: Math.max(nodeMajor, MIN_ISOLATED_NODE_MAJOR), spawn, signer, elapsedMs };
   assert.throws(() => createIsolatedHost({ ...base, nodeMajor: 20 }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
   assert.throws(() => createIsolatedHost({ ...base, execPath: "node" }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
   assert.throws(() => createIsolatedHost({ ...base, signer: {} }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
   assert.throws(() => createIsolatedHost({ ...base, extra: 1 }), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
 });
 
-test("a bad clock yields receipt_unavailable, never an unreceipted success", async () => {
+test("a Node below the isolation floor is refused before anything starts (runs on every Node)", () => {
+  let calls = 0;
+  const spy = (...a) => { calls += 1; return spawn(...a); };
+  const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
+  const config = (major) => ({ execPath: process.execPath, nodeMajor: major, spawn: spy, signer, elapsedMs });
+  for (const major of [18, 20, MIN_ISOLATED_NODE_MAJOR - 1]) {
+    assert.throws(() => createIsolatedHost(config(major)), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
+  }
+  if (ISOLATION_SUPPORTED) {
+    assert.equal(typeof createIsolatedHost(config(nodeMajor)).run, "function");
+  } else {
+    // The running Node itself is refused: no host exists, so no guest can ever be spawned.
+    assert.throws(() => createIsolatedHost(config(nodeMajor)), { code: "ERR_RUNTIME_ISOLATED_CONFIG" });
+  }
+  assert.equal(calls, 0, "nothing is spawned while a host is constructed or refused");
+});
+
+hostTest("a bad clock yields receipt_unavailable, never an unreceipted success", async () => {
   const { host } = makeHost({ elapsedMs: () => -1 });
   const r = await host.run(spec(G.echo)).result;
   assert.equal(r.outcome, "receipt_unavailable");
   assert.equal("receipt" in r, false);
 });
 
-test("a kill whose exit is never observed is termination_unconfirmed, with no receipt", async () => {
+hostTest("a kill whose exit is never observed is termination_unconfirmed, with no receipt", async () => {
   // Fake child that never emits close: termination must not be claimed.
   const fakeSpawn = () => ({ pid: 4242, stdin: null, stdout: null, on() {}, kill() { return true; } });
   const { host } = makeHost({ spawn: fakeSpawn });
@@ -312,7 +340,7 @@ test("a kill whose exit is never observed is termination_unconfirmed, with no re
   assert.equal("receipt" in r, false);
 });
 
-test("end to end: reducer timeout waits for the authenticated hard-termination receipt", async () => {
+hostTest("end to end: reducer timeout waits for the authenticated hard-termination receipt", async () => {
   const signer = createReceiptSigner({ key: KEY, hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   const verifier = createReceiptVerifier({ keys: [KEY], hmacSha256, sequenceStore: createMemoryReceiptSequenceStore() });
   let now = 0;
