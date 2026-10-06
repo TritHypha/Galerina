@@ -2,15 +2,15 @@
   "generatedBy": "scripts/component-health.mjs --audit-html",
   "provenance": {
     "available": true,
-    "branch": "main",
-    "sha": "0f24ca30e",
+    "branch": "grok/roadmap-todo-refresh-20261006",
+    "sha": "9b0ac3ba3",
     "detached": false,
-    "dirty": true
+    "dirty": false
   },
   "shipReadinessPct": 100,
   "ztAvg": 78,
   "buildAvg": 75,
-  "trackingRegistryCount": 31,
+  "trackingRegistryCount": 33,
   "sections": [
     {
       "key": "zero-trust-thesis",
@@ -164,21 +164,223 @@
         },
         {
           "kind": "percent",
-          "label": "WAT emitter",
-          "pct": 89,
+          "label": "WAT emitter (L1 self-hosted flow coverage)",
+          "pct": 100,
           "live": false,
           "evidence": {
-            "asserted": "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung"
+            "ladder": [
+              "aliasCanonicalOf",
+              "appendAll",
+              "applyBinop",
+              "areFlatArrayArguments",
+              "authorityTag",
+              "authorityTagCharAllowed",
+              "authorityTagValid",
+              "binResultType",
+              "bodyHasModulo",
+              "bodyHasRecordFieldCeilingBreach",
+              "bodyHasStepConstruct",
+              "bodyHasTrapConstruct",
+              "buildBitfieldEnv",
+              "buildExecutionPlan",
+              "buildFlowTable",
+              "buildStaticEnv",
+              "charAtIsDigit",
+              "charAtStr",
+              "checkArgsOfCallExpr",
+              "checkBinding",
+              "checkBodyEffects",
+              "checkBodyGovernance",
+              "checkCallArgs",
+              "checkCallEffects",
+              "checkCondNotBool",
+              "checkFlowBodies",
+              "checkFlowEffects",
+              "checkFlows",
+              "checkGenericBinding",
+              "checkImmutableReassign",
+              "checkMatchArms",
+              "checkParams",
+              "checkPureFlowEffects",
+              "checkQualifierBinding",
+              "checkSafetyCritical",
+              "checkSecureFlowEffects",
+              "checkSecureFlowGovernance",
+              "checkStaticDecls",
+              "checkStmt",
+              "checkStmtList",
+              "checkTensorBinding",
+              "checkUsedVsDeclared",
+              "checkViewBindings",
+              "checkViewType",
+              "classifyOperandType",
+              "collectBodyEffects",
+              "collectCallEffectsExpr",
+              "collectCallNames",
+              "collectCallNamesExpr",
+              "collectCallNamesStmts",
+              "collectCallsInExpr",
+              "collectNamesByKind",
+              "collectTransitiveEffects",
+              "contains",
+              "containsEffectRec",
+              "containsName",
+              "countK3Arm",
+              "declaredEffectsOfFlow",
+              "decomposeReturn",
+              "dedup",
+              "diagName",
+              "diagSeverity",
+              "digitStrGreater",
+              "digitVal",
+              "eTokVal",
+              "effectDiagName",
+              "effectIsPermitted",
+              "effectOfCall",
+              "effectWithNames",
+              "effectsForFlow",
+              "emitBodyGIR",
+              "emitExprGIR",
+              "emitFlowExprGIR",
+              "emitFlowGIRNode",
+              "emitGIRModule",
+              "emptyExecResult",
+              "envBind",
+              "envLookup",
+              "evalFirst",
+              "evalGIRExpr",
+              "execGIRBody",
+              "exprCallsAudit",
+              "exprLitI32Overflow",
+              "findK3Arm",
+              "findPolicyExists",
+              "findReturnExpr",
+              "firstExpr",
+              "firstExprOf",
+              "flowCallNames",
+              "flowCallsAudit",
+              "flowExists",
+              "genericArity",
+              "governanceQualifier",
+              "hasEffect",
+              "hexToInt",
+              "inferExprType",
+              "intDigitOverflow",
+              "isAcceptedWidening",
+              "isArithOp",
+              "isAuthorityType",
+              "isBinding",
+              "isBroadAlias",
+              "isCacheEligible",
+              "isCmpOp",
+              "isCompareOp",
+              "isDenyOnly",
+              "isDigitChar",
+              "isFlatArrayArgument",
+              "isHexDigit",
+              "isI32OverflowLiteral",
+              "isIdent",
+              "isKnownCapability",
+              "isKnownCurrency",
+              "isKnownType",
+              "isKw",
+              "isNewline",
+              "isNullish",
+              "isOpSym",
+              "isPrivilegedEffect",
+              "isQuantizedMix",
+              "isRecordFieldName",
+              "isTrivia",
+              "isWildcardPat",
+              "knownEffects",
+              "lookupFlow",
+              "lookupQualifiedType",
+              "lowerBody",
+              "lowerExpr",
+              "lowerStmt",
+              "makeKeywordTable",
+              "makePair",
+              "mergeAuditLog",
+              "opcodeOf",
+              "paramCountForFlow",
+              "paramNameAt",
+              "paramNames",
+              "paramTypeAt",
+              "paramTypes",
+              "parseAdditive",
+              "parseArrayLiteral",
+              "parseBlock",
+              "parseCallArgs",
+              "parseCheckArms",
+              "parseComparison",
+              "parseDotPath",
+              "parseExpr",
+              "parseFlows",
+              "parseForLoop",
+              "parseLogical",
+              "parseMatchArms",
+              "parseMultiplicative",
+              "parseParams",
+              "parsePrimary",
+              "parsePrimaryWithMember",
+              "parseRecordLiteral",
+              "parseSmallNat",
+              "parseStmt",
+              "parseTopLevelEnumDecl",
+              "parseTopLevelRecordDecl",
+              "parseUnary",
+              "qualifiedTypeEndPos",
+              "qualifierForExpr",
+              "qualifierParamScope",
+              "qualifierStmtList",
+              "readQualifiedTypeName",
+              "readTypeName",
+              "recordGet",
+              "resolveBitfieldAccess",
+              "resolveStatic",
+              "rtBool",
+              "rtInt",
+              "rtList",
+              "rtNone",
+              "rtStr",
+              "rtTag",
+              "rtVerdict",
+              "runGIR",
+              "runGIRBody",
+              "runProgram",
+              "scanBlockComment",
+              "scanCharLit",
+              "scanDigits",
+              "scanLineComment",
+              "scanOperator",
+              "scanString",
+              "scanUnicodeEscape",
+              "scanWord",
+              "selectTier",
+              "skipNewlines",
+              "splitGenericType",
+              "strContainsChar",
+              "stripGovernanceQualifier",
+              "stripLeadingZeros",
+              "tokVal",
+              "tokenize",
+              "typeEndPos",
+              "verifyDomainGuardConformance",
+              "verifyGovernance",
+              "verifyGuardDecl",
+              "withNames"
+            ]
           }
         },
         {
-          "kind": "percent",
-          "label": "Runtime interpreter",
-          "pct": 87,
-          "live": false,
-          "evidence": {
-            "asserted": "no countable ladder defined"
-          }
+          "kind": "status",
+          "label": "WAT parked ABI items (named refusals outside L1): D4 pattern ABI; D8 host-import ABI; E5 Float32 + secure wipe; ZipPair",
+          "status": "parked - named compile-time refusals, not counted in the L1 figure"
+        },
+        {
+          "kind": "status",
+          "label": "Runtime interpreter: parity coverage 14/14 (D10/K1); real I2 fault handlers + I3 body-local invariants open",
+          "status": "parity coverage only - not a completion percentage; I2/I3 unbuilt"
         },
         {
           "kind": "percent",
@@ -228,7 +430,7 @@
         {
           "kind": "status",
           "label": "Independent SLIDE general executable backend",
-          "status": "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK now records 12 named groups in the current-head scope manifest. Focused feature evidence is 142/142 and the independent selected matrix is 112/112; the complete SLIDE command is 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. Arbitrary loops, general collections/Result families, multiple/cross-package effects, executable provider identity, authenticated platform durability and production authority remain open"
+          "status": "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK now records 12 named groups in the current-head scope manifest. Focused feature evidence is 142/142 and the independent selected matrix is 112/112; the complete SLIDE command is 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. Arbitrary loops, general collections/Result families, multiple/cross-package effects, executable provider identity, authenticated platform durability and production authority remain open. Trit-width profiles 32/64/256 are proposed as fail-closed stub routes (SuperGrok proposal, not yet a PR); the Galerina bitplane 32/64/256 producers are missing, so those profiles stay inactive"
         },
         {
           "kind": "status",
@@ -238,7 +440,7 @@
         {
           "kind": "status",
           "label": "Lyth/Weaver Verified Admission Fabric",
-          "status": "laboratory — schema and hardening suites are verified; A-lane preregistered but not yet run; no performance percentage claimed"
+          "status": "laboratory — lyth-weaver main c5c8c67dc (2026-10-06): RD-0858 scalar route binding + hostile tests (lyth-weaver #2) and P7 scalar-route removal/rollback (#3, PARTIAL: Lyth side, scalar profile-1 family only) merged; 25 suites / 940 checks / 0 failures; every other checked-Fungi family and profile needs its own SLIDE admission and VOK receipt (HOLD); A-lane preregistered but not yet run; no performance percentage claimed"
         }
       ],
       "avg": 75
@@ -256,7 +458,7 @@
         {
           "item": "Twin corpus + 6 sentinels",
           "state": "shipped",
-          "detail": "29 pure .fungi verdict twins checker-clean across 10 governed dirs (execution is RD-0361)"
+          "detail": "103 governed .fungi verdict twins checker-clean per the governed ledger (execution and authority are tracked under RD-0361)"
         },
         {
           "item": "Hardening / residency (RD-0358)",
@@ -272,6 +474,11 @@
           "item": "Hallmark open types (RD-0353 H1)",
           "state": "shipped",
           "detail": "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097"
+        },
+        {
+          "item": "Value-unit types: Money<C> (RD-0349 I2-I4 + zero-trust defaults)",
+          "state": "shipped",
+          "detail": "one runtime unit table (generated constructors, deny-by-default Money.of); ISO-4217 snapshot pinned (280 entries, hash-recorded); FUNGI-TYPE-032 rejects unknown, test and metal tags at compile time with a transposition-aware suggestion; I2 minor-unit precision corrected 2026-09-12 (25/25); #30 (2026-10-04) pinned the D1-D5 zero-trust defaults in docs/DECISIONS.md and the rd-0349-zero-trust-defaults test: metals are never Money, the crypto set is empty, there is no default rounding mode, no Security<ISIN>, and the Commodity/Crypto/Security names are reserved. No float bridge"
         },
         {
           "item": "CANONICAL_EFFECTS registry (RD-0341)",
@@ -292,6 +499,11 @@
           "item": "Workspace package families",
           "state": "shipped",
           "detail": "100/100 component families green; 100 workspace packages, 9,612 recorded tests and 0 unadjudicated orphans, all derived from the live workspace and version ledgers"
+        },
+        {
+          "item": "SBOM generator + fuzz shape-oracle (RD-0316 leg 1)",
+          "state": "shipped",
+          "detail": "scripts/generate-sbom.mjs and the compiler SBOM module are tested, and every workspace package now carries a generated sbom.json (Package Standard R4, #3); the RD-0316 leg-1 slice-6 shape-oracle runs in the compiler fidelity-differential suite (it found and fixed the MIN-literal wasm-trap fidelity bug on run one)"
         },
         {
           "item": "Devtools audit suite",
@@ -326,7 +538,7 @@
         {
           "item": "myco",
           "state": "shipped",
-          "detail": "v0.1.3 (graph-indexed grep replacement, own subproject; Apache-2.0): ReDoS regex-guard + per-edge word-boundary fix with wordBoundaryExcluded reporting (no silent narrowing); owned Galerina mirror galerina-tools-myco synced to upstream e5e0e25 (src+tests byte-identical, 23/23); npm publish 🔒 outward"
+          "detail": "graph-indexed grep replacement, own subproject (Apache-2.0); the Galerina mirror galerina-tools-myco is v0.2.2 with 80 recorded tests (version.json); ReDoS regex-guard and word-boundary exclusion reporting (no silent narrowing); npm publish 🔒 outward"
         },
         {
           "item": "Execution-cutover (RD-0361)",
@@ -336,7 +548,7 @@
         {
           "item": "Independent SLIDE backend",
           "state": "building",
-          "detail": "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK now records 12 named groups in the current-head scope manifest. Focused feature evidence is 142/142 and the independent selected matrix is 112/112; the complete SLIDE command is 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. Arbitrary loops, general collections/Result families, multiple/cross-package effects, executable provider identity, authenticated platform durability and production authority remain open"
+          "detail": "building — bounded checked-Fungi → canonical GIR → source-free .slide → independent re-admission → affine VOK now records 12 named groups in the current-head scope manifest. Focused feature evidence is 142/142 and the independent selected matrix is 112/112; the complete SLIDE command is 1,053 pass / 0 fail / 9 cancelled because two Galerina producer inputs are absent. Contract 85 remains 4/4 and Contract 86 remains 5/5 over all 19,683 K3 vectors, with exact rebuild and mutation refusal. Both physical candidates bind the remediated policy/verifier context; caller-owned authentication refuses and external deployment authentication remains K3 0. Arbitrary loops, general collections/Result families, multiple/cross-package effects, executable provider identity, authenticated platform durability and production authority remain open. Trit-width profiles 32/64/256 are proposed as fail-closed stub routes (SuperGrok proposal, not yet a PR); the Galerina bitplane 32/64/256 producers are missing, so those profiles stay inactive"
         },
         {
           "item": "Package retirement",
@@ -344,19 +556,9 @@
           "detail": "565 tracked package TypeScript paths · 2544/2544 .fungi sources unexecuted · 0/57 host bridges owned · 95 node_modules trees · 1 nested native identity. All exact debts must reach zero before terminal retirement authority."
         },
         {
-          "item": "Value-unit types (RD-0349)",
-          "state": "building",
-          "detail": "I2/I3/I4 done (I4: ONE runtime unit table — generated constructors + deny-by-default Money.of, G2+G5 closed) · I5/I6 queued · I1 OWNER-GATE CLEARED (ISO-4217 snapshot pinned in KB data/iso-4217/, 280 entries, hash-recorded) → remainder = the compile-time tag-validation + fuzzy-suggestion rungs NOW BUILT (2026-07-18 — type-checker imports MONEY_UNIT_TAGS; FUNGI-TYPE-032 rejects Money<BANANAS>/Money<GPB>/Money<XAU>/Money<XXX> at COMPILE, transposition-aware 'did you mean GBP', 6 regression tests, doc-drift+diagnostic-codes+twin-parity green) → I1 = 3/6; remaining rungs = `unit` schema escape · B1 reserved-name gate · B0 shadowing check; metals/reserved SPECIFIC Commodity<T> routing waits on RD-0350 C1; no float bridge"
-        },
-        {
           "item": "Package Standard + pub ladder",
           "state": "building",
-          "detail": "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner"
-        },
-        {
-          "item": "Security-infra designs (×4)",
-          "state": "building",
-          "detail": "SBOM tool exists · fuzz RD-0316 leg 1 BUILT (slice-6 shape-oracle live in the suite; found+fixed the MIN-literal wasm-trap fidelity bug on run one) · Z3 RD-0318 needs a new dep (🔒 propose) · tabletop RD-0319 = owner exercise, runbook on request"
+          "detail": "Standard v1 + pkg-census + 9 schematics done; the R3 pkg-standard-audit gate (FUNGI-PKGSTD-001..016) and R4 deterministic manifest generator merged in #3 (2026-10-04), with galerina-package.json, build-manifest.json and sbom.json committed for every workspace package; the production profile stays RED until R1/R2 (WASM artifact + signature) and section 5b signing land; the remaining rungs are pending; .graph amendment 🔒 owner"
         },
         {
           "item": "Pre-conversion security closure",
@@ -366,7 +568,7 @@
         {
           "item": "Memory retention audit and bounded caches",
           "state": "building",
-          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented; .github/workflows/retention.yml now builds before the per-commit gate and schedules the dynamic stage on Ubuntu, Windows and macOS; the first hosted receipts remain evidence to collect"
+          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented, and the per-commit retention gate passes on main pushes and PRs. The scheduled dynamic stage has failed on all three hosted OSes in every nightly run so far (16 of 16, 2026-09-21 to 2026-10-06, NIGHTLY RETENTION: FAIL (2)), so no passing hosted dynamic receipt exists yet"
         },
         {
           "item": "General Fungi-to-SLIDE control-flow corpus",
@@ -374,24 +576,34 @@
           "detail": "Grok prompt 21 is source-adjudicated for partial use; prompt 22 completed but does not pass the technical acceptance gate as submitted. Executable fixtures, corrected lattice maths and current Fungi surface mappings remain open; no later query has started"
         },
         {
-          "item": ".gate v3",
+          "item": "RD-0363/0364/0365 build-out (replay admission, inference governance, key custody)",
           "state": "building",
-          "detail": "frontend, canonical GIR, admission and the non-authorizing order-six link-plan boundary are verified; independent review, runtime execution, offline signing and production release remain separate open gates"
+          "detail": "the R&D records exist; the build is not done. #8 (2026-10-04) gates the execution-plan fast path on RD-0363 admission with a hash-bound admissionHash and 26 new adversarial P5 tests; #9 (2026-10-05) adds fail-closed, advisory RD-0365 host custody resolution (effectiveStatus) and the custody ladder doc. Still open in docs/TODO.md ([!] rows): RD-0363 authenticated signature verification (owner-gated P1 signed envelope), P2 replay-time grant re-check and receipts; RD-0364 real provider/weight identity, egress and budget proof and authorizing receipts (no PR yet); RD-0365 evidence-backed vault/TPM/hardware custody and host attestation (owner-gated)"
         },
         {
-          "item": "RD-0363/0364/0365 wiring (R&D done)",
-          "state": "building",
-          "detail": "R&D COMPLETE — all 3 authored in the KB (galerina-rd-0363/0364/0365). RD-0363 replay-admission + RD-0364 inference-governance DECISION surfaces execute through #105 (R0→R1, verdict≡spec); RD-0365 key-custody design-done. What remains is BUILD not R&D: P/I wiring increments (0363/0364) + implement 0365. (Renamed 2026-07-15 — 'Missing R&D' was a stale backlog label; the R&D is not missing.)"
-        },
-        {
-          "item": ".gate v4 ADR-002 synthesize-only experiment",
+          "item": "Value-unit types: Commodity / Crypto / Security / Rate / Percent (RD-0349 remainder)",
           "state": "build-pending",
-          "detail": "RD-0792 rules REWORK as a versioned experiment and REFUSE production authority. Grok independently returned REWORK; Antigravity returned ADOPT research / REWORK conversion / REFUSE production. V4-X1 through V4-X4 remain unbuilt, S3 cannot inherit transparent re-derivation or no-DSS claims, and current conversion retains Galerina → GIR → SLIDE/VOK"
+          "detail": "not built, and docs/TODO.md keeps the RD-0349 [!] rows open: Commodity<U> waits on a sourced, pinned scale policy and RD-0350 C1 routing; Crypto<T> waits on an owner-admitted registry snapshot with ISO 24165 DTIs; Security<ISIN> is tracked, not built; Rate/Percent scale policies are open; the I1 compile-time rungs were 3/6 at the last count (unit schema escape, B1 reserved-name gate and B0 shadowing check open; the D5 name reservation in #30 is not counted as a rung); I5/I6 queued. Owner/R&D-gated, so not building"
+        },
+        {
+          "item": "Z3 checker-algebra leg (RD-0318) + tabletop exercise (RD-0319)",
+          "state": "build-pending",
+          "detail": "owner-gated, nothing in flight: Z3 needs a new solver dependency (🔒 propose; once opened it must expose SAT/UNSAT/UNKNOWN/TIMEOUT/RESOURCE_EXHAUSTED, and only UNSAT may support \"proved absent\"); the RD-0319 tabletop is an owner exercise, runbook on request"
         },
         {
           "item": "Self-hosting SLIDE bootstrap fixpoint",
           "state": "post-v1",
           "detail": "all 7 canonical .fungi compiler stages are authoritative specifications; the distinct open work is an executable source-to-SLIDE self-compile, exact bootstrap fixpoint, crypto FFI seam and bounded host path. Do not repeat the retired WASM stage-flip programme"
+        },
+        {
+          "item": ".gate v4 — current programme (HOLD: final phase)",
+          "state": "post-v1",
+          "detail": "Current programme · HOLD until the final phase; product dialect is not built or admitted. RD-0792 rules REWORK as a versioned experiment and REFUSE production authority. V4-X1 through V4-X4 remain unbuilt, S3 cannot inherit transparent re-derivation or no-DSS claims, and current conversion retains Galerina → GIR → SLIDE/VOK. The v3 product is a frozen compatibility baseline, not a parallel active roadmap lane."
+        },
+        {
+          "item": "Owner parks O1/O2: photonic, quantum, AI-accel, GPU target, DSS.wasm, Stage-B, LSP, neuromorphic",
+          "state": "post-v1",
+          "detail": "O1: post-v1 targets (core-photonic v0.2 and POST-V1 rows, core-compute quantum target planning (added by the owner 2026-10-06 23:01 BST), target-ai-accelerator, target-gpu, compiler DSS.wasm / Stage-B self-hosting / LSP) stay parked until v1 ships; the Int64/UInt64 gate lift is a separate open question. O2: ai-neuromorphic stays non-executing. O3: core-logic Omni Phase 3 (AI orchestration) not before v1. O4: signed Tower Citizen deployment waits for the v1 release-signing ceremony (no throwaway keys, no allowUnsigned). O5: galerina deploy may perform a real live deploy (authorised; not yet implemented)."
         },
         {
           "item": "KB category indexes",
