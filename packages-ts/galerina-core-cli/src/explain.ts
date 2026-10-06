@@ -1,6 +1,7 @@
 // Explain contracts + command barrel (TODO pass, Grok 2026-10-05; zero-trust defaults, owner may revisit).
 // Re-exports closed-shape ExplainTrace / ExplainResult / buildTrace, denial reader,
-// explain-report emitter, and CLI wiring. Tree/runtime helpers remain open.
+// dependency-tree / runtime-profile explain, explain-report emitter, and CLI wiring.
+// --policy / --audit still refuse.
 
 export {
   FUNGI_EXPLAIN_001,
@@ -44,6 +45,38 @@ export type {
   DeploymentDenialReasonCode,
   DeploymentDenial,
 } from "./explain/explain-denial.js";
+
+
+export {
+  FUNGI_EXPLAIN_007,
+  FUNGI_EXPLAIN_008,
+  EXPLAIN_DEPENDENCY_TREE_SCHEMA,
+  EXPLAIN_DEPENDENCY_TREE_FIELDS,
+  EXPLAIN_DEPENDENCY_EDGE_FIELDS,
+  readExplainDependencyTree,
+  explainDependencyTree,
+} from "./explain/explain-tree.js";
+
+export type {
+  ExplainDependencyEdge,
+  ExplainDependencyTree,
+} from "./explain/explain-tree.js";
+
+export {
+  FUNGI_EXPLAIN_009,
+  FUNGI_EXPLAIN_010,
+  EXPLAIN_RUNTIME_PROFILE_SCHEMA,
+  EXPLAIN_RUNTIME_TARGETS,
+  EXPLAIN_RUNTIME_PROFILE_FIELDS,
+  isExplainRuntimeTarget,
+  readExplainRuntimeProfile,
+  explainRuntimeProfile,
+} from "./explain/explain-runtime.js";
+
+export type {
+  ExplainRuntimeTarget,
+  ExplainRuntimeProfile,
+} from "./explain/explain-runtime.js";
 
 export {
   createExplainReport,

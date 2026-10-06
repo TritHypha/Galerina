@@ -50,8 +50,8 @@ describe("parseExplainArgs", () => {
     assert.equal(parseExplainArgs(["--nope"]).result.error.code, FUNGI_CLI_EXPLAIN_001);
     assert.equal(parseExplainArgs(["pos"]).result.error.code, FUNGI_CLI_EXPLAIN_001);
     assert.equal(parseExplainArgs(["--manifest=x"]).result.error.code, FUNGI_CLI_EXPLAIN_001);
-    assert.equal(parseExplainArgs(["--tree"]).result.error.code, FUNGI_CLI_EXPLAIN_004);
-    assert.equal(parseExplainArgs(["--runtime"]).result.error.code, FUNGI_CLI_EXPLAIN_004);
+    assert.equal(parseExplainArgs(["--tree"]).result.error.code, FUNGI_CLI_EXPLAIN_001); // needs value
+    assert.equal(parseExplainArgs(["--runtime"]).result.error.code, FUNGI_CLI_EXPLAIN_001);
     assert.equal(parseExplainArgs(["--policy"]).result.error.code, FUNGI_CLI_EXPLAIN_004);
     assert.equal(parseExplainArgs(["--audit"]).result.error.code, FUNGI_CLI_EXPLAIN_004);
     const ok = parseExplainArgs(["--manifest", "m.json", "--json", "--trace", "--effects"]);
@@ -60,6 +60,10 @@ describe("parseExplainArgs", () => {
     assert.equal(ok.options.json, true);
     assert.equal(ok.options.trace, true);
     assert.equal(ok.options.effectsOnly, true);
+    const treeOk = parseExplainArgs(["--tree", "t.json", "--runtime", "r.json"]);
+    assert.equal(treeOk.ok, true);
+    assert.equal(treeOk.options.treePath, "t.json");
+    assert.equal(treeOk.options.runtimePath, "r.json");
   });
 });
 
@@ -141,4 +145,33 @@ describe("runExplainCommand / galerina explain", () => {
       assert.equal(JSON.stringify(result).includes(dir), false);
     });
   });
+
+  it("explains a closed dependency tree and runtime profile", async () => {
+    await withTemp(async (dir) => {
+      const tree = {
+        schema: "galerina.explain-dependency-tree/v1",
+        root: "app.main",
+        edges: [{ from: "app.main", to: "lib.core" }],
+      };
+      const runtime = {
+        schema: "galerina.explain-runtime/v1",
+        profile: "production",
+        target: "node",
+        effects: ["fs.read"],
+        capabilities: ["cap.read"],
+      };
+      writeFileSync(join(dir, "t.json"), JSON.stringify(tree));
+      writeFileSync(join(dir, "r.json"), JSON.stringify(runtime));
+      const result = await runCli(
+        ["explain", "--tree", "t.json", "--runtime", "r.json", "--json", "--trace"],
+        dir,
+      );
+      assert.equal(result.ok, true, result.message);
+      assert.equal(result.code, EXPLAIN_EXIT_OK);
+      assert.ok(result.details.some((d) => typeof d === "string" && d.includes("dependency")));
+      assert.ok(result.details.some((d) => typeof d === "string" && d.includes("boundary")));
+      assert.equal(JSON.stringify(result).includes("512"), false);
+    });
+  });
+
 });
