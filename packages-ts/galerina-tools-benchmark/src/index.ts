@@ -1,6 +1,3 @@
-import { constants } from "node:fs";
-import { open, realpath, stat } from "node:fs/promises";
-import { join } from "node:path";
 import { isProxy as isNodeProxy } from "node:util/types";
 
 export type BenchmarkMode = "light" | "full" | "stress";
@@ -999,9 +996,10 @@ export function prepareBenchmarkSubmission(report: unknown, config: BenchmarkCon
 // Write benchmark-report.json + closed-shape CLI flag parse + summary
 // (TODO pass, Grok 2026-10-05; zero-trust defaults, owner may revisit).
 //
-// writeBenchmarkReport: validates via captureBenchmarkReport, exclusive-creates
-// benchmark-report.json into an existing directory, never overwrites, never
-// echoes paths / errno / report body on failure, never throws.
+// writeBenchmarkReport: validates via captureBenchmarkReport, then exclusive-creates
+// benchmark-report.json through a host-supplied BenchmarkReportFileWriter capability
+// (this package imports no filesystem module); never overwrites, never echoes
+// paths / errno / writer errors / report body on failure, never throws.
 //
 // parseBenchmarkCliArgs: admits --light|--full|--json|--save|--out <dir> only.
 // formatBenchmarkSummary: privacy-safe summary lines (no paths / host / user).
@@ -1014,6 +1012,7 @@ export const BENCHMARK_REPORT_WRITE_LIMITATIONS: readonly string[] = Object.free
   "writes a previously validated BenchmarkReport only",
   "does not run benchmarks or probe hardware",
   "exclusive create; never overwrites an existing file",
+  "performs no filesystem IO itself; the host supplies a BenchmarkReportFileWriter capability",
 ]);
 
 export type BenchmarkReportWriteStatus = "WRITTEN" | "REFUSED" | "IO_FAILED";
@@ -1024,18 +1023,97 @@ export interface BenchmarkReportWriteResult {
   readonly report: BenchmarkReport | Readonly<Record<string, never>>;
 }
 
+/** Closed outcome vocabulary a host report writer must answer with. */
+export type BenchmarkReportFileWriteOutcome = "CREATED" | "EXISTS" | "DIR_INVALID" | "IO_FAILED";
+
+export const BENCHMARK_REPORT_FILE_WRITE_OUTCOMES: readonly BenchmarkReportFileWriteOutcome[] = Object.freeze([
+  "CREATED",
+  "EXISTS",
+  "DIR_INVALID",
+  "IO_FAILED",
+] as const);
+
+/** Frozen request handed to the host writer. `fileName` is always BENCHMARK_REPORT_FILE. */
+export interface BenchmarkReportFileWriteRequest {
+  readonly outDir: string;
+  readonly fileName: typeof BENCHMARK_REPORT_FILE;
+  readonly contents: string;
+}
+
+/** Closed result: a plain object with exactly one own data property, `outcome`. */
+export interface BenchmarkReportFileWriteResult {
+  readonly outcome: BenchmarkReportFileWriteOutcome;
+}
+
+/**
+ * Host-supplied exclusive-create capability (zero-trust default, owner may revisit).
+ * This package imports no filesystem or path module, so its hardened border stays
+ * `node:util/types` only; the caller injects IO, as core-runtime injects `spawn` /
+ * `sequenceStore` and core-reports declares `ReportWriter`.
+ *
+ * Contract: `createExclusive` creates `fileName` inside the existing directory `outDir`
+ * with exclusive-create, no-follow semantics (O_CREAT | O_EXCL, plus O_NOFOLLOW where
+ * the platform has it), writes `contents` as UTF-8, and never overwrites or truncates an
+ * existing file. It resolves with `{ outcome }` and never rejects: `CREATED` (file
+ * written), `EXISTS` (target already present; nothing written), `DIR_INVALID` (`outDir`
+ * is missing or not a directory), `IO_FAILED` (anything else).
+ *
+ * The writer must be a plain object with exactly one own data property, `createExclusive`
+ * (a function). Anything else is refused before the report is captured. A writer that
+ * throws, rejects, or answers outside the closed result is treated as IO_FAILED: no write
+ * is claimed, and nothing it returned or threw is echoed.
+ */
+export interface BenchmarkReportFileWriter {
+  createExclusive(request: BenchmarkReportFileWriteRequest): Promise<BenchmarkReportFileWriteResult>;
+}
+
+type BenchmarkReportCreateExclusive = (request: BenchmarkReportFileWriteRequest) => unknown;
+
+function readBenchmarkReportWriter(writer: unknown): BenchmarkReportCreateExclusive | undefined {
+  try {
+    if (!isRecord(writer)) return undefined;
+    const keys = Reflect.ownKeys(writer);
+    if (keys.length !== 1 || keys[0] !== "createExclusive") return undefined;
+    const descriptor = Object.getOwnPropertyDescriptor(writer, "createExclusive");
+    if (descriptor === undefined || !("value" in descriptor)) return undefined;
+    const fn: unknown = descriptor.value;
+    if (typeof fn !== "function" || isNodeProxy(fn)) return undefined;
+    return fn as BenchmarkReportCreateExclusive;
+  } catch {
+    return undefined;
+  }
+}
+
+function readBenchmarkReportWriteOutcome(result: unknown): BenchmarkReportFileWriteOutcome | undefined {
+  try {
+    if (!isRecord(result)) return undefined;
+    const keys = Reflect.ownKeys(result);
+    if (keys.length !== 1 || keys[0] !== "outcome") return undefined;
+    const descriptor = Object.getOwnPropertyDescriptor(result, "outcome");
+    if (descriptor === undefined || !("value" in descriptor)) return undefined;
+    const outcome: unknown = descriptor.value;
+    return typeof outcome === "string" && (BENCHMARK_REPORT_FILE_WRITE_OUTCOMES as readonly string[]).includes(outcome)
+      ? outcome as BenchmarkReportFileWriteOutcome
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** JSON render of a captured report (trailing newline). */
 export function renderBenchmarkReport(report: BenchmarkReport): string {
   return JSON.stringify(report, null, 2) + "\n";
 }
 
 /**
- * Exclusively create `benchmark-report.json` in an existing directory.
- * Never throws. Never echoes paths, errno codes, or refused report contents.
+ * Exclusively create `benchmark-report.json` in an existing directory through the
+ * host-supplied `writer` capability (see BenchmarkReportFileWriter).
+ * Never throws. Never echoes paths, errno codes, writer errors, or refused report contents.
  */
 export async function writeBenchmarkReport(
   report: unknown,
   outDir: unknown,
+  writer: BenchmarkReportFileWriter,
 ): Promise<BenchmarkReportWriteResult> {
   const empty = Object.freeze({}) as Readonly<Record<string, never>>;
   const refuse = (code: string, message: string, path = "write"): BenchmarkReportWriteResult =>
@@ -1059,6 +1137,15 @@ export async function writeBenchmarkReport(
     );
   }
 
+  const createExclusive = readBenchmarkReportWriter(writer);
+  if (createExclusive === undefined) {
+    return refuse(
+      "Galerina_BENCHMARK_REPORT_WRITE_WRITER_INVALID",
+      "A report writer capability (a plain object with one createExclusive function) is required.",
+      "writer",
+    );
+  }
+
   const captured = captureBenchmarkReport(report);
   if (captured.report === undefined) {
     return Object.freeze({
@@ -1068,37 +1155,43 @@ export async function writeBenchmarkReport(
     });
   }
 
+  const request: BenchmarkReportFileWriteRequest = Object.freeze({
+    outDir,
+    fileName: BENCHMARK_REPORT_FILE,
+    contents: renderBenchmarkReport(captured.report),
+  });
+  let outcome: BenchmarkReportFileWriteOutcome | undefined;
   try {
-    const dir = await realpath(outDir);
-    const st = await stat(dir);
-    if (!st.isDirectory()) {
+    outcome = readBenchmarkReportWriteOutcome(await Reflect.apply(createExclusive, writer, [request]));
+  } catch {
+    outcome = undefined;
+  }
+
+  switch (outcome) {
+    case "CREATED":
+      return Object.freeze({
+        status: "WRITTEN" as const,
+        diagnostics: Object.freeze([] as BenchmarkDiagnostic[]),
+        report: captured.report,
+      });
+    case "DIR_INVALID":
       return failIo(
         "Galerina_BENCHMARK_REPORT_WRITE_DIR_INVALID",
         "Output path must resolve to an existing directory.",
       );
-    }
-    const filePath = join(dir, BENCHMARK_REPORT_FILE);
-    const noFollow = typeof constants.O_NOFOLLOW === "number" ? constants.O_NOFOLLOW : 0;
-    const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | noFollow;
-    const handle = await open(filePath, flags, 0o644);
-    try {
-      await handle.writeFile(renderBenchmarkReport(captured.report), "utf8");
-    } finally {
-      await handle.close();
-    }
-    return Object.freeze({
-      status: "WRITTEN" as const,
-      diagnostics: Object.freeze([] as BenchmarkDiagnostic[]),
-      report: captured.report,
-    });
-  } catch {
-    return failIo(
-      "Galerina_BENCHMARK_REPORT_WRITE_IO",
-      "Could not exclusively create benchmark-report.json in the output directory.",
-    );
+    case "EXISTS":
+    case "IO_FAILED":
+      return failIo(
+        "Galerina_BENCHMARK_REPORT_WRITE_IO",
+        "Could not exclusively create benchmark-report.json in the output directory.",
+      );
+    default:
+      return failIo(
+        "Galerina_BENCHMARK_REPORT_WRITE_WRITER_RESULT_INVALID",
+        "The report writer failed or answered outside its closed result; no write is claimed.",
+      );
   }
 }
-
 /** Unknown / duplicate / equals-form / positional / missing --out value. */
 export const Galerina_BENCHMARK_CLI_001 = "Galerina_BENCHMARK_CLI_001";
 /** --light and --full conflict. */
