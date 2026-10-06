@@ -1510,3 +1510,28 @@ export {
   type Json1mbBenchmarkResult,
   type RunJson1mbBenchmarkResult,
 } from "./json-1mb-benchmark.js";
+
+export {
+  FUNGI_BENCH_SHA_001,
+  FUNGI_BENCH_SHA_002,
+  FUNGI_BENCH_SHA_003,
+  FUNGI_BENCH_SHA_004,
+  FUNGI_BENCH_SHA_005,
+  SHA256_32MB_BENCHMARK_ID,
+  SHA256_32MB_BENCHMARK_TARGET,
+  SHA256_32MB_BYTES,
+  SHA256_32MB_OPTIONS_FIELDS,
+  DEFAULT_SHA256_32MB_OPERATIONS,
+  MAX_SHA256_32MB_OPERATIONS,
+  DEFAULT_SHA256_32MB_MAX_DURATION_MS,
+  MAX_SHA256_32MB_MAX_DURATION_MS,
+  benchSha256Hex,
+  buildSha256BenchmarkBuffer,
+  runSha256Benchmark,
+  scoreSha256Benchmark,
+  type Sha256BenchmarkDiagnosticField,
+  type Sha256BenchmarkDiagnostic,
+  type Sha256BenchmarkOptions,
+  type Sha256BenchmarkResult,
+  type RunSha256BenchmarkResult,
+} from "./sha256-benchmark.js";
