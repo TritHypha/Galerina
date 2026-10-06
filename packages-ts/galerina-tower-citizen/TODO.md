@@ -49,6 +49,8 @@ the core-network *package* install are not this package's remaining source work.
 [!] HOLD extract core-network's Tower package install (architecture; runtime
     graphs already use /governance only).
 [!] HOLD successful signed certified deployment (no keys in this package).
+    Owner decision 2026-10-06 10:14 BST (O4, Phillip): wait for the v1 release-signing ceremony; no throwaway
+    keys and no allowUnsigned.
 [x] Certified photonic coupon: snapshot own-data before verify; re-run
     couponRevocationCheck on every infer against the snapshot identity.
     Focused photonic+bridge tests 24/24 (audit pending).

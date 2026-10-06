@@ -373,6 +373,9 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
 
 ## Post-v1 (owner-gated)
 
+Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
+until v1 ships. The Int64 / UInt64 row is a separate open question, not part of this decision.
+
 ```text
 [ ] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
 [ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)

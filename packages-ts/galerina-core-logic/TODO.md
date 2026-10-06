@@ -47,6 +47,7 @@
 [HOLD] Phase 3: AI orchestration integration (deferred until Phase 3)
     HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): no Phase 3 authorization exists. Phase 2
     traces (traceOmniDecision) are the advisory input such an integration would consume. Reopen as [ ] when authorized.
+    Owner decision 2026-10-06 10:14 BST (O3, Phillip): no Phase 3 (AI orchestration consuming Omni traces) before v1.
 [x] Define initial Tri conversion rules
 [x] Define initial truth table report format
 [x] Move or cross-reference relevant galerina-core logic docs when package extraction is ready

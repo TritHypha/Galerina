@@ -45,6 +45,10 @@ optional YAML output separate; this documentation refresh closes no feature.
 - [!] HOLD: Option/Result and Decimal schema semantics still need the compiler
       contract export owner's admitted mapping and refusal fixtures. C17
       nested record/array support does not supply those mappings.
+      Refusal fixtures landed 2026-10-06 (Grok Bot; zero-trust defaults, owner may
+      revisit): `tests/contract-export-refusals.test.mjs` shows the compiler refuses
+      Option/Result/Decimal fields (FUNGI-CONTRACT-SCHEMA-003, no export) and docs then
+      refuses the route (no placeholder schema). The admitted mapping half stays HOLD.
 - [!] Independent audit pending; these are bounded source/test results.
 
 ## Later — remaining owner contracts and optional output

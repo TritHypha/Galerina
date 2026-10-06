@@ -31,11 +31,13 @@ Canonical ownership (2026-09-22 reconciliation):
 [x] Define PhotonicPlan as a developer-facing model concept
 [!] POST-V1 Define Mach-Zehnder / WDM / optical-matmul model helpers
     (PhotonicMode names exist; no v1 simulation APIs).
+    Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
 [x] Define optical signal reports
 [x] Define mappings from galerina-core-logic states
 [!] POST-V1 simulation APIs, OpticalTransportMode, runtime/planner/routing
     packages, and execution-plan helpers. C10 diagnostics already exist.
     Do not implement these on the v1 surface.
+    Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
 [x] Add examples
 [x] Add tests
 [x] C10 `fungi.photonic.diagnostic.v1` shared with target-photonic (`RD-1282`).
@@ -43,6 +45,9 @@ Canonical ownership (2026-09-22 reconciliation):
     `FUNGI-PHOTONIC-001..006` remains separate.
 
 ## v0.2 Governance Architecture (from galerina-core-photonic-v02.md)
+
+Owner decision 2026-10-06 10:14 BST (O1, Phillip): every row in this v0.2 section stays parked until
+v1 ships; no implementation. The HOLD groups below are unchanged.
 
 [ ] Replace OpticalTransportMode string union with 6-value enum (Waveguide/Coherent/Mesh/FreeSpace/Hybrid/Experimental)
 [ ] Update PhotonicRuntimeTarget to v0.2 fields (id/transport/realtime/deterministic/supportsIsolation/maxPropagationDepth)
@@ -98,7 +103,8 @@ Canonical ownership (2026-09-22 reconciliation):
 - **HOLD-PHOTONIC-BOUNDARY:** runtime target, execution-plan, simulation,
   audit and fallback ownership must be confirmed across the package boundary
   before implementation. Required receipt: the boundary decision named in
-  row 9 above. Hardware, key custody, SLIDE and VOK evidence are separate
+  the "Ownership:" reconciliation row near the top of this file (2026-09-22;
+  RD-1242, RD-1282). Hardware, key custody, SLIDE and VOK evidence are separate
   authority lanes and are not supplied by this package.
 
 The v0.2 section above is retained as historical planning. Every row remains
@@ -117,3 +123,5 @@ core-compute or target-photonic, and README.md "Coverage Reconciliation
 Status" still describes the conflict as open. HOLD-PHOTONIC-BOUNDARY's
 "row 9 above" pointer is also stale (line 9 is now prose). The HOLDs are left in
 place until the owner confirms whether the 09-22 rows are the receipt.
+Pointer fixed 2026-10-06 (Grok Bot, doc only): HOLD-PHOTONIC-BOUNDARY now names
+the "Ownership:" row; no HOLD state changed.

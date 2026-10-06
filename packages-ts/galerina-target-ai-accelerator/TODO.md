@@ -18,9 +18,11 @@ must not be part of the active v1 build surface.
 [x] Define passive Intel Gaudi 3 backend profile concept
 [x] Define NPU/TPU/AI-chip capability detection contracts
 [!] POST-V1 VPU/FPGA/ASIC planning examples and isolation-level reports.
+    Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
 [x] Define precision compatibility checks
 [x] Define framework adapter planning examples
 [!] POST-V1 HBM and topology report examples.
+    Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
 [x] Define fallback report examples
 [x] Add examples
 [x] Add tests
