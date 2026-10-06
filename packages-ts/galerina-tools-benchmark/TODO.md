@@ -68,7 +68,7 @@ tests/system-detection.test.mjs. The RAM bucket is left out on purpose
 ## Phase 5: Reports
 
 ```text
-[x] Write benchmark-report.json -- src/index.ts writeBenchmarkReport / renderBenchmarkReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): exclusive-create BENCHMARK_REPORT_FILE into existing dir via captureBenchmarkReport; never overwrites; never throws; never echoes paths/errno; IO_FAILED/REFUSED statuses; tests/benchmark-report-write.test.mjs
+[x] Write benchmark-report.json -- src/index.ts writeBenchmarkReport / renderBenchmarkReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): exclusive-create BENCHMARK_REPORT_FILE into existing dir via captureBenchmarkReport and a host-supplied BenchmarkReportFileWriter capability (closed CREATED/EXISTS/DIR_INVALID/IO_FAILED result; the package imports no node:fs/node:path, boundary policy unchanged); never overwrites; never throws; never echoes paths/errno; IO_FAILED/REFUSED statuses; tests/benchmark-report-write.test.mjs
 [x] Add report schema version
 [x] Add privacy section
 [x] Add fallback section
