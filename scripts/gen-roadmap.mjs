@@ -496,7 +496,8 @@ export function renderBlock(model) {
     ...build.map((r) => `| ${r.label} | ${r.pct}% | ${r.measured ? "measured" : "**asserted**"} |`),
     ...(meta.wordRows.length ? [``, `**No percentage claimed:** ${meta.wordRows.join(" · ")}.`] : []),
     ``,
-    `**Tracking registry (${meta.registry.length}):** ` + ["shipped", "building", "post-v1"]
+    `**Tracking registry (${meta.registry.length}):** ` + ["shipped", "building", "design-done", "build-pending", "post-v1"]
+      .filter((s) => ["shipped", "building", "post-v1"].includes(s) || meta.registry.some((r) => r.state === s))
       .map((s) => `${s} ${meta.registry.filter((r) => r.state === s).length}`).join(" · ")
       + ` — every named workstream, from the same percent-audit source; the map's registry section lists each one.`,
     ``,

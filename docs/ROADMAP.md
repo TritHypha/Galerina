@@ -44,6 +44,32 @@ TLSTP 56%. Treat them as judgements, not measurements. Parked and word-only
 rows (WAT parked ABI, interpreter I2/I3, SLIDE, B8, Lyth/Weaver, owner parks)
 carry no percentage, so they never sort as "nearly done".
 
+### Tracking-registry audit — 2026-10-06 (late evening)
+
+The owner asked for every row on the map to be checked against merged PRs,
+code and open/HOLD TODO rows. The changes are in the registry source,
+`scripts/component-health.mjs`; the map and the generated region below were
+regenerated from it.
+
+- **Value-unit types (RD-0349)** is split. The `Money<C>` slice is
+  **shipped**: I2-I4, FUNGI-TYPE-032 and the D1-D5 zero-trust defaults (#30).
+  Commodity, Crypto, Security, Rate and Percent are **build-pending**. They
+  are not built, they are owner/R&D-gated, and the RD-0349 `[!]` rows in
+  docs/TODO.md are still open.
+- **Security-infra designs (x4)** is split. The SBOM generator and the
+  RD-0316 leg-1 fuzz shape-oracle are **shipped**. Z3 (RD-0318) and the
+  RD-0319 tabletop are **build-pending** because both are owner-gated.
+- **RD-0363/0364/0365 wiring (R&D done)** is renamed **RD-0363/0364/0365
+  build-out**. It stays **building**: #8 and #9 landed, and the RD-0363,
+  RD-0364 and RD-0365 `[!]` rows are still open.
+- **Execution-cutover (RD-0361)** stays **building**. The governed ledger has
+  74 differential twins and 29 authoritative, and the RD-0361 `[!]` row is
+  open.
+- Row text refreshed: Package Standard (R3 and R4 merged in #3), memory
+  retention (the nightly dynamic stage has failed 16 of 16 runs), twin corpus
+  (count read from the ledger), myco (version and test count read live).
+- The generated summary line now counts build-pending rows too.
+
 ### Merged into Galerina main on 2026-10-06
 
 There were 55 PRs, merged 11:11—12:15 BST. GitHub Actions CI is paused, so
