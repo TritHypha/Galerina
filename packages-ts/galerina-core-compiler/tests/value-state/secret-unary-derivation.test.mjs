@@ -5,9 +5,10 @@ import { parseProgram, checkTypes, checkValueStates } from "../../dist/index.js"
 // RD-1413--1415: unary operations are not declassification boundaries.
 // Exercise Fungi source through the real bootstrap parser/checkers. These tests
 // establish compiler diagnostics only, not runtime erasure or host isolation.
-function check(expression) {
+function check(expression, declarations = "") {
   const source = `@version 1
 secure flow probe(key: SecureString) -> Int {
+  ${declarations}
   let derived = ${expression}
   print(derived)
   return 0
@@ -29,6 +30,18 @@ describe("Fungi secret derivation through unary operations", () => {
       );
     });
   }
+
+  it("preserves secret derivation through an alias before negation", () => {
+    assert.ok(check("!alias", "let alias = key").some(
+      (d) => d.code === "FUNGI-SECRET-001" && d.severity === "error",
+    ));
+  });
+
+  it("preserves secret derivation through an alias after negation", () => {
+    assert.ok(check("alias", "let alias = !key").some(
+      (d) => d.code === "FUNGI-SECRET-001" && d.severity === "error",
+    ));
+  });
 
   for (const expression of ["!true", "!!false", "!Crypto.constantTimeEquals(key, key)"]) {
     it(`preserves the permitted public result of ${expression}`, () => {

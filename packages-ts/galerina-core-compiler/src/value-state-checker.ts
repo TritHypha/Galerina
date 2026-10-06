@@ -617,6 +617,7 @@ function derivesFromSecret(
       return interpolatedNames(node).some(
         (n) => lookupBinding(n)?.typeName === "SecureString",
       );
+    case "unaryExpr":
     case "binaryExpr":
     case "listLiteral":
     case "errorPropagation":
