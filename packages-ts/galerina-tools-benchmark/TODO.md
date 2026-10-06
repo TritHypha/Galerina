@@ -36,7 +36,7 @@
 [x] Add Tri logic benchmark -- src/tri-logic-benchmark.ts runTriLogicBenchmark / scoreTriLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.tri_match target logic; Tri -1|0|1 Kleene table; FUNGI-BENCH-TRI-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [ ] Add Galerina benchmark
 [x] Add Result / Option benchmark -- src/result-option-benchmark.ts runResultOptionBenchmark / scoreResultOptionBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.result_option target logic; Option some|none + Result ok|err match/unwrapOr; FUNGI-BENCH-RO-001..005; in-process only (no command runner / hardware / Phase 8-9)
-[ ] Add CPU arithmetic benchmark
+[x] Add CPU arithmetic benchmark -- src/cpu-arithmetic-benchmark.ts runCpuArithmeticBenchmark / scoreCpuArithmeticBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids cpu.integer_loop + cpu.float_loop target cpu; FUNGI-BENCH-CPU-ARITH-001..005; in-process only (no command runner / vector-SIMD / hardware / Phase 8-9)
 [ ] Add JSON 1MB decode/validate benchmark
 [ ] Add JSON 10MB streaming benchmark
 [ ] Add small vector benchmark
@@ -177,3 +177,7 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Closed `src/result-option-benchmark.ts`: `runResultOptionBenchmark` / `benchMatchResultOption` / `benchUnwrapOr`.
 - README light id `logic.result_option`; Option shape matches galerina-data-query QueryOption; Result is closed Ok/Err (local copies; no package import).
 - CASE ONLY: no command runner, RAM/vector/GPU detection, or Phase 8-9. Never throws on err/none paths.
+
+## Notes (Grok 2026-10-05 CPU arithmetic benchmark)
+- Closed `src/cpu-arithmetic-benchmark.ts`: `runCpuArithmeticBenchmark` returns both `cpu.integer_loop` and `cpu.float_loop`.
+- README light ids; float path refuses NaN/Infinity (never collapses non-finite to allow). CASE ONLY.
