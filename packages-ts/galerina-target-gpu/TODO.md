@@ -17,6 +17,7 @@ part of the active v1 build surface.
 [!] POST-V1 GPU capability/plan/kernel/precision/data-movement/fallback
     contracts, examples and tests. Not part of the active v1 build.
     Compute already owns generic target/fallback selection.
+    Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
 [x] Implement the bounded runtime capability/plan decoder and detached report
     snapshot; `src/index.ts:71-217,219-315` and
     `tests/gpu-contracts.test.mjs:10-74` pass **6/6** with typecheck/build.
