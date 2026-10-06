@@ -25,3 +25,17 @@ if (process.argv[1]?.endsWith("index.js") === true) {
 
   process.exitCode = result.code;
 }
+
+export {
+  readBuildArtefact,
+  verifyArtefactIntegrity,
+  verifyArtefactIntegritySet,
+  BUILD_ARTEFACT_FIELDS,
+  BUILD_ARTEFACT_KINDS,
+} from "./verify/verify-integrity.js";
+export type {
+  BuildArtefactField,
+  BuildArtefactRead,
+  BuildArtefactRefuse,
+  BuildArtefactReadResult,
+} from "./verify/verify-integrity.js";

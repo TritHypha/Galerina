@@ -31,31 +31,31 @@ generate project graphs
 ### Implemented (Prototype)
 
 ```text
-galerina check             — validate source without producing artefacts
-galerina build             — compile and produce artefacts (partial)
-galerina run               — run compiled output
-galerina serve             — start server
-galerina reports           — generate reports
-galerina security:check    — run security scan
-galerina routes            — list route table
-galerina benchmark         — placeholder command
-galerina task              — run project automation tasks
-galerina graph             — generate project dependency graph
-galerina graph query       — query generated graph
-galerina graph explain     — explain graph node
-galerina graph path        — show path between nodes
-galerina fmt               — format source files
+galerina check             â€” validate source without producing artefacts
+galerina build             â€” compile and produce artefacts (partial)
+galerina run               â€” run compiled output
+galerina serve             â€” start server
+galerina reports           â€” generate reports
+galerina security:check    â€” run security scan
+galerina routes            â€” list route table
+galerina benchmark         â€” placeholder command
+galerina task              â€” run project automation tasks
+galerina graph             â€” generate project dependency graph
+galerina graph query       â€” query generated graph
+galerina graph explain     â€” explain graph node
+galerina graph path        â€” show path between nodes
+galerina fmt               â€” format source files
 ```
 
 ### Planned / Not Yet Implemented
 
 ```text
-galerina deploy            — deploy verified build to target environment
-galerina explain           — explain build decisions, authority model, effects
-galerina plan              — preview deployment actions without applying changes
-galerina verify deploy     — verify running version against build manifest
-galerina promote           — promote artifact from one environment to another
-galerina rollback          — rollback to previous deployment
+galerina deploy            â€” deploy verified build to target environment
+galerina explain           â€” explain build decisions, authority model, effects
+galerina plan              â€” preview deployment actions without applying changes
+galerina verify deploy     â€” verify running version against build manifest
+galerina promote           â€” promote artifact from one environment to another
+galerina rollback          â€” rollback to previous deployment
 ```
 
 `galerina build` compiles source into governed runtime artefacts through a
@@ -69,7 +69,13 @@ through `FUNGI-BUILD-005`. Status: partial implementation.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
 Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-011`.
-Status: partial. Hash checks, plus runtime manifest record checks (below). No command wiring yet.
+Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts / verify deploy still open.
+
+Artefact integrity (`src/verify/verify-integrity.ts`, zero-trust defaults, owner may
+revisit): `readBuildArtefact`, `verifyArtefactIntegrity` and `verifyArtefactIntegritySet`
+read BuildArtefact metadata through property descriptors (no getters run), require the
+exact closed key list and kind vocabulary, refuse malformed sha256: digests before any
+filesystem open, and require dense artefact sets. Codes stay FUNGI-VERIFY-001..005.
 
 Runtime manifest checks (`src/verify/verify-manifest.ts`, zero-trust defaults, owner may
 revisit): `verifyRuntimeManifest(record)` and `verifyRuntimeManifestSet(records)` validate the
@@ -85,6 +91,18 @@ echo a value or an unknown key. `createVerificationReport(result, { manifests })
 container (the v0.2 manifest from compiler pass 14 is not built) and signature checks
 (GovernanceSignature, Phase 39).
 
+
+Verify command (`src/verify/verify-command.ts`, zero-trust defaults, owner may revisit):
+`parseVerifyArgs` + `runVerifyCommand` wire `galerina verify`. Admitted flags:
+`--artefacts` (required), `--root`, `--manifest`, `--report`, `--json`, `--strict`,
+`--hash`. `--policy` / `--audit` are recognized but refuse with `FUNGI-CLI-VERIFY-004`
+until runtime compatibility / capability / audit-report validation land. Unknown flags,
+duplicates, `--flag=value`, and positionals refuse (`FUNGI-CLI-VERIFY-001`/`002`).
+Input files must be dense JSON arrays (`003`). The command composes
+`verifyArtefactIntegritySet` and optional `verifyRuntimeManifestSet`, can write
+`verification-report.json` exclusively (`005`), and never echoes paths or values.
+Exit codes: `0` success, `2` usage, `6` artefact verify failure, `7` manifest integrity
+failure. `verify-runtime.ts` and deploy still open.
 The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
 avoiding whole-file allocations, and checks root resolution plus opened-file
 identity. `O_NOFOLLOW` is used where Node supports it. This is not a portable
@@ -107,15 +125,15 @@ Flags: `--tree` (dependency graph), `--trace` (execution reasoning chain),
 `--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`, `--json`.
 Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
 
-`galerina plan` estimates how execution will be coordinated — CPU/GPU suitability,
+`galerina plan` estimates how execution will be coordinated â€” CPU/GPU suitability,
 memory pressure, parallelism, and fallback options. The planner recommends;
 the runtime decides final execution.
 Flags: `--json`, `--runtime`, `--memory`, `--parallelism`, `--energy`,
 `--target`, `--graph`, `--compatibility`. Produces `compute-plan.json`.
 Diagnostic codes: `FUNGI-PLAN-001` through `FUNGI-PLAN-004`.
 
-Implementation order: Phase 1 build → Phase 2 verify → Phase 3 explain →
-Phase 4 deploy → Phase 5 plan.
+Implementation order: Phase 1 build â†’ Phase 2 verify â†’ Phase 3 explain â†’
+Phase 4 deploy â†’ Phase 5 plan.
 
 See `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-cli-deploy-explain-plan.md` for the
 full specification including all examples, exit codes, output modes, and
@@ -311,7 +329,7 @@ export function validateEffects(
     input: ValidateEffectsInput
 ): CompilerDiagnostic[]
 // For each function in manifest.functions:
-//   effectiveEffects = declaredEffects ∪ inferredEffects
+//   effectiveEffects = declaredEffects âˆª inferredEffects
 //   check each effect against policy.allowedEffects
 //   check capabilities present for each effect
 //   emit FUNGI-EFFECT-001 through FUNGI-EFFECT-004 as needed
@@ -415,7 +433,7 @@ packages-ts/galerina-core-cli/src/
     explain-contracts.ts
     plan-contracts.ts
   output/
-    safe-output.ts       ← redact SecureString, tokens
+    safe-output.ts       â† redact SecureString, tokens
     json-output.ts
   index.ts
 ```
