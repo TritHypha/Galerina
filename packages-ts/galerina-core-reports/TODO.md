@@ -14,9 +14,12 @@
 [x] Add package-owned `ReportStatusCounts` and `selectReportStatus` Fungi semantic twin
 [x] Prove all 27 bounded priority combinations through interpretation, signed Wasm and physical SLIDE/VOK
 [x] Keep the TypeScript selector and `summarizeDiagnostics` consumer active pending an authorised switch
-[ ] Define policy index, definitions, effective, conflict and AI-summary report contracts
-[ ] Define malicious data, exploit-resistance, resource-budget, taint-flow and hardware-risk report contracts
-[ ] Define specialist hardware, AI accelerator capability, accelerator fallback, data-sensitivity and precision-compatibility report contracts
+[x] Define policy index, definitions, effective, conflict and AI-summary report contracts
+      src/reports/policy-risk-specialist-reports.ts createPolicyIndex/Definitions/Effective/Conflict/AiSummaryReport; closed kinds/decisions/tokens; free-text AI fields refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define malicious data, exploit-resistance, resource-budget, taint-flow and hardware-risk report contracts
+      src/reports/policy-risk-specialist-reports.ts createMaliciousData/ExploitResistance/ResourceBudget/TaintFlow/HardwareRiskReport; schema galerina.report.risk.v1; payload/sample/message refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define specialist hardware, AI accelerator capability, accelerator fallback, data-sensitivity and precision-compatibility report contracts
+      src/reports/policy-risk-specialist-reports.ts createSpecialistHardware/AcceleratorCapability/AcceleratorFallback/DataSensitivity/PrecisionCompatibilityReport; v1 freeze non-cpu available refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Upgrade RuntimeAuditStatus to v0.2: allowed|denied|warning|error|executed|verified
 [x]   - document v0.1 form as active until reconciliation: started|running|completed|denied|failed|fallback|deferred
 [x] Define RuntimeAuditEvent v0.2: schemaVersion "galerina.runtime.audit.v1", eventId, timestamp, category (8 values), status, message, runtime, effect?, capability?, destination?, references?, metadata?
