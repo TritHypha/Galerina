@@ -157,6 +157,10 @@ surface above.
        the kernel matches exact declared paths; named :param matching is not
        implemented there either and would be App Kernel owner work. Examples
        are tracked under "OpenAPI, examples" below.
+       Follow-up (Grok 2026-10-06): a pure, closed-grammar `:param` compiler,
+       matcher and no-precedence conflict check is proposed in App Kernel PR #142
+       (`src/route-pattern.ts`). It is not wired into createAppKernel; wiring it
+       into the request path stays App Kernel owner work.
 ```
 
 ## Historical v0.2 implementation scaffold - explicit HOLDs
@@ -291,6 +295,14 @@ is visible. They are not a request to recreate the superseded architecture.
        policy. Genuine, owner App Kernel (not this adapter): a missing handler is
        refused only at request time with 500 (kernel.ts:668-673), and there is
        no network route-policy kind (types.ts:69-83).
+       Progress (Grok 2026-10-06): the handler half is proposed as a pure boot
+       check, `checkHandlerReferences` / `assertHandlerReferences`, in App Kernel PR
+       #143. It accepts only own, callable dispatch entries, and it is not wired.
+       Its test also documents that kernel.ts:668 reads `opts.dispatch[handler]`
+       through the prototype chain, so an inherited entry is dispatched (finding
+       for the owner). The network half has no grounded vocabulary yet; a design
+       draft is with SuperGrok (R5 D5). Stays HOLD until the check is wired and
+       a network policy kind is owner-approved.
 ```
 
 ## Remaining bounded work
@@ -303,4 +315,14 @@ is visible. They are not a request to recreate the superseded architecture.
        route, OpenAPI, and ownership contract is supplied. Historical guard, kept.
 [HOLD] Do not create or modify `.fungi` sources in this package as part of this
        reconciliation. Process guard, kept (this pass edited TODO.md only).
+[HOLD] Sync the galerina-test conversion overlay with the duplicate-query refusal
+       (PR #136). `packages-ts/galerina-test/src/self-hosted/conversion-overlays/`
+       `url-query-last-wins.fungi` still encodes `replace_last` for a repeated
+       key, mirroring this package's `parseUrl`. Blocked on two things: #136 must
+       merge first, and the edit changes that file's sha256 in
+       `packages-ts/galerina-test/build-manifest.json` and in
+       `build/fungi-source-capabilities/source-capability-inventory.json`, and
+       changes its intent text in `docs/contract-registry/`. Those generated
+       artifacts need an owner-approved regeneration. The .fungi file is outside
+       this package, so the process guard above does not apply.
 ```
