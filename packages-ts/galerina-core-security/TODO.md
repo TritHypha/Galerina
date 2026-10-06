@@ -40,7 +40,7 @@ See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
 [ ] Create runtime/ dir: secret-resolver.ts, safe-log.ts, safe-json.ts
 [ ] Ensure SecretReference protected marker prevents accidental string serialization
 [x] Define policy definition, effective policy and conflict report schemas -- src/policy-contracts.ts readPolicyDefinition / readEffectivePolicy / readPolicyConflict (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.policy-definition/v1, effective-policy/v1, policy-conflict/v1; FUNGI-SEC-POL-001..005; deny-default only; kinds align with core-reports policy family (authored excludes unknown); never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; tests/policy-contracts.test.mjs
-[ ] Define capability boundary and grant report schemas
+[x] Define capability boundary and grant report schemas -- src/capability-contracts.ts readCapabilityBoundary / readCapabilityGrantReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): schemas galerina.security.capability-boundary/v1, capability-grant-report/v1; FUNGI-SEC-CAP-001..005; deny-default only; admitted/denied and granted/refused disjoint ascending tokens; never throws; never echoes ids/tokens; SecretReference v0.2 still do-not-invent; lease/attenuation/approver-chain still open; tests/capability-contracts.test.mjs
 [ ] Define capability lease, attenuation and approver-chain diagnostics
 [ ] Define AI self-grant and trust-root modification diagnostics
 [ ] Define malicious data validation and taint-flow diagnostics
