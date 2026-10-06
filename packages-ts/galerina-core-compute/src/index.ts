@@ -377,3 +377,6 @@ export * from "./compatibility/compatibility-report.js";
 export * from "./effects/compute-effects.js";
 export * from "./capabilities/compute-runtime-capabilities.js";
 export * from "./gpu/index.js";
+
+// Optical/photonic planning (TODO pass, Grok 2026-10-05).
+export * from "./photonic/index.js";
