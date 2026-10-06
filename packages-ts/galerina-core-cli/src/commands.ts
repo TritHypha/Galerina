@@ -5,6 +5,7 @@ import { runTaskCommand } from "./task-command.js";
 import { runInitCommand } from "./init-command.js";
 import { runVerifyCommand } from "./verify/verify-command.js";
 import { runDeployCommand } from "./deploy/deploy-command.js";
+import { runExplainCommand } from "./explain/explain-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -49,6 +50,11 @@ export const commands: readonly CliCommand[] = [
     name: "deploy",
     description: "Dry-run deploy effects validation against a closed policy (fail-closed; no live deploy).",
     run: runDeployCommand
+  },
+  {
+    name: "explain",
+    description: "Explain closed-shape manifest facets and/or deployment-denial reasoning (fail-closed; no live tree).",
+    run: runExplainCommand
   },
   {
     name: "benchmark",
