@@ -1,5 +1,22 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Current Fungi-first memory review — 2026-10-06
+
+At review pin `e26b1e3ea084a1439a4c939edaa29357892a132f`, initial Astra and
+Grok.com reviews plus Astra's Grok.com-only delta adjudication are complete.
+Grok-Bot's matching reply is now received and hash-verified, but its new claims
+await source checking and independent Astra adjudication. The existing SuperGrok
+follow-up remains pending; do not repeat already delivered assignments.
+
+Next milestone: finish that bounded review and separate implementation work,
+missing loaded-runtime/host evidence and genuine owner decisions. This is not a
+release milestone: **RD-1413/1414/1415 stay HOLD / NON_AUTHORIZING**. Fungi can
+define stronger semantics than the TypeScript bootstrap; implementation and
+end-to-end evidence must establish them. Keep the dated history below intact.
+
+Current actions are in [TODO](TODO.md#current-memory-review-checkpoint--2026-10-06)
+and the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md).
+
 ## Memory-security dependency checkpoint — 2026-09-28
 
 The former RD-1296 combined memory programme was split, not solved. Product
