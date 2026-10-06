@@ -38,7 +38,7 @@
 [x] Add Result / Option benchmark -- src/result-option-benchmark.ts runResultOptionBenchmark / scoreResultOptionBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.result_option target logic; Option some|none + Result ok|err match/unwrapOr; FUNGI-BENCH-RO-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [x] Add CPU arithmetic benchmark -- src/cpu-arithmetic-benchmark.ts runCpuArithmeticBenchmark / scoreCpuArithmeticBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids cpu.integer_loop + cpu.float_loop target cpu; FUNGI-BENCH-CPU-ARITH-001..005; in-process only (no command runner / vector-SIMD / hardware / Phase 8-9)
 [x] Add JSON 1MB decode/validate benchmark -- src/json-1mb-benchmark.ts runJsonDecodeValidate1mbBenchmark / buildJson1mbPayload (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id json.decode_validate_1mb target json; exact 1 MiB deterministic payload; unknown-field reject; FUNGI-BENCH-JSON-001..005; in-process only (no stream 10MB/1GB / download / command runner)
-[ ] Add JSON 10MB streaming benchmark
+[x] Add JSON 10MB streaming benchmark -- src/json-stream-10mb-benchmark.ts runJsonStreamValidate10mbBenchmark / createJsonLinesStreamValidator (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id json.stream_validate_10mb target json; OWNER-REVISIT picks 10 MiB / JSON Lines / 64 KiB chunks / 4 KiB max line; any invalid/oversize/empty line fails the run; FUNGI-BENCH-JSONS-001..005; no 100MB/1GB / quarantine mode / command runner
 [x] Add small vector benchmark -- src/small-vector-benchmark.ts runSmallVectorBenchmark / benchDotFloat32 / benchCosineFloat32 (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light ids vector.dot_product_small + vector.cosine_batch_small target vector; scalar Float32 only (dim 256, batch 64); zero-norm/non-finite refuse; FUNGI-BENCH-VEC-001..005; no SIMD detection claim / matrix / GPU / command runner
 [x] Add SHA-256 byte benchmark -- src/sha256-benchmark.ts runSha256Benchmark / benchSha256Hex (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed light id cpu.hash_sha256_32mb target cpu; deterministic generated 32 MiB; pure FIPS 180-4 (boundary admits no node:crypto; tests cross-check node:crypto); FUNGI-BENCH-SHA-001..005; benchmark only, not a security primitive; no 256MB full-mode / command runner
 ```
@@ -200,3 +200,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 - Scalar Float32Array path only (README "generic scalar fallback"); "Detect vector features where possible" stays open (needs hardware probing).
 - Closed sizes dim 256 / batch 64 are zero-trust defaults (owner may revisit). Zero-norm cosine and NaN/Infinity refuse (never collapse to pass).
 - `cpu.record_validate` (README light id) has no TODO row; not implemented (avoid scope creep / inventing a record shape).
+
+## Notes (Grok 2026-10-05 JSON 10MB streaming)
+- Closed `src/json-stream-10mb-benchmark.ts`: `runJsonStreamValidate10mbBenchmark` / `createJsonLinesStreamValidator` / `streamValidateJsonLines`.
+- OWNER-REVISIT picks (not in-repo spec): 10 MiB (10485760), JSON Lines framing (mirrors data-json `json_lines` mode), 64 KiB chunks, 4 KiB max line, record shape reused from json.decode_validate_1mb.
+- Validator holds at most one partial line; README resilient "quarantine and continue" not implemented here (separate resilient.* family).
