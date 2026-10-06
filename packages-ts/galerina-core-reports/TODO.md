@@ -37,7 +37,8 @@
 [x]   - capability and effect evidence event shapes
       src/reports/evidence-reports.ts capabilityEvidenceAuditEvent / effectEvidenceAuditEvent (validated evidence -> v1 audit event, fixed message, evidence reference, reason not copied); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ]   - scheduler evidence event shape
-[ ]   - runtime health schema
+[x]   - runtime health schema
+      src/reports/runtime-health.ts validateRuntimeHealth / serializeRuntimeHealth (exact 8-field shape from docs/runtime-audit-log-schema-and-execution-proof.md section 30; runtime-health.json per section 33; types/ranges and FUNGI-REPORT-002/003/004 reuse are owner-revisit picks); tests/runtime-health.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit)
 [x] Define ExecutionProofHashes: manifestSha256, auditSha256, evidenceSha256, denialSha256, artefactSha256
 [x] Define ExecutionProof v0.2: schemaVersion "galerina.proof.v1", proofId, generatedAt, hashes: ExecutionProofHashes
 [x]   - document v0.1 form: { executionProofVersion, manifestHash, graphHash, policyHash, auditHash, runtimeHash }
