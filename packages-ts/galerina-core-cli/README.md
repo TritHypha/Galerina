@@ -68,8 +68,22 @@ through `FUNGI-BUILD-005`. Status: partial implementation.
 `galerina verify` validates compiler and runtime artefact integrity.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
-Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-005`.
-Status: partial — hash checks only.
+Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-011`.
+Status: partial. Hash checks, plus runtime manifest record checks (below). No command wiring yet.
+
+Runtime manifest checks (`src/verify/verify-manifest.ts`, zero-trust defaults, owner may
+revisit): `verifyRuntimeManifest(record)` and `verifyRuntimeManifestSet(records)` validate the
+per-flow `fungi.runtime.manifest.v1` record that the compiler ships today (`RuntimeManifest` in
+`galerina-core-compiler/src/type-registry.ts`). A record must be a plain data object with exactly
+the v1 keys; values are read once through property descriptors, so getters never run. The
+schemaVersion must match exactly, every field has a closed domain, and the fields must agree with
+the governance flag mask the way the compiler derives them. `verified: false` never verifies, and
+a set must not list a flow twice. Codes: `FUNGI-VERIFY-006` shape, `007` schemaVersion, `008`
+domain, `009` consistency, `010` not verified, `011` set. Diagnostics name a field but never
+echo a value or an unknown key. `createVerificationReport(result, { manifests })` adds a
+`manifests` section and recomputes its success. Not covered: the `runtime-manifest.json` file
+container (the v0.2 manifest from compiler pass 14 is not built) and signature checks
+(GovernanceSignature, Phase 39).
 
 The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
 avoiding whole-file allocations, and checks root resolution plus opened-file
