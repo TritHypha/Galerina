@@ -598,3 +598,4 @@ export function createGovernedRuntimeExecutor(
 }
 export * from "./runtime-contracts.js";
 export * from "./governed-plan-contracts.js";
+export * from "./isolated-host.js";

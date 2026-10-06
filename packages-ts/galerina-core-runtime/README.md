@@ -300,9 +300,49 @@ does the reducer emit a terminal command. Deadline equality belongs to the
 timeout, so a result observed exactly at `timeoutMs` cannot win the race.
 
 This does not claim that an in-process signal forcibly stops arbitrary work.
-Untrusted or non-cooperative execution still requires a separately admitted
-isolated host adapter and authenticated termination acknowledgement. Stream
-queue/backpressure enforcement is also a separate runtime chapter.
+Untrusted or non-cooperative execution goes through the isolated host adapter
+below, and the reducer only sees its outcome through an authenticated receipt.
+Stream queue/backpressure enforcement is a separate runtime chapter.
+
+### Isolated hard termination and authenticated receipts
+
+`src/isolated-host.ts` (zero-trust defaults, owner may revisit):
+
+- `createIsolatedHost({ execPath, nodeMajor, spawn, signer, elapsedMs })` runs one
+  guest `.mjs` in a separate Node process (Node 22 or later) with
+  `--permission`, `--allow-fs-read=<entry>` only,
+  `--disallow-code-generation-from-strings` and a bounded heap. The environment
+  is empty (on Windows libuv still forwards its fixed set of system variables
+  such as `PATH` and `TEMP`), so `NODE_OPTIONS` and host secrets do not
+  reach the guest. The guest cannot write files, read other files, spawn
+  processes, start workers, load addons or evaluate strings.
+- On its deadline, on `cancel()` or when stdout passes `maxOutputBytes`, the
+  guest is killed with `SIGKILL` (`TerminateProcess` on Windows). There is no
+  grace period and no cooperative signal. Termination is claimed only after the
+  child's `close` event; otherwise the run ends `termination_unconfirmed`
+  with no receipt.
+- Every observed outcome is turned into a `galerina.runtime.receipt.v1`
+  receipt, HMAC-SHA256-signed by `createReceiptSigner` with a host-held key of
+  at least 32 bytes. `createReceiptVerifier` refuses unknown keys, tampering,
+  kind/cause disagreement, replays and reordering (strict per-scope sequence),
+  and returns the exact `StructuredAwaitEvent` for `advanceStructuredAwait`.
+  Kill causes map to `task_cancelled`, the acknowledgement a `cancelling`
+  scope waits for.
+- Last-seen / last-issued sequences are held in an injected
+  `ReceiptSequenceStore` (required). The verifier writes the last accepted
+  sequence before returning ok, so a durable store refuses replay across
+  verifier restarts. `createMemoryReceiptSequenceStore` is process-local only
+  and does not survive restart; hosts that need durability inject a store that
+  commits before `setLastSequence` returns. A store failure refuses the
+  receipt (`ERR_RUNTIME_RECEIPT_SEQUENCE_STORE`) without accepting it.
+- No Node builtin is imported: the host passes `spawn`, the HMAC primitive and
+  the sequence store in, and the HMAC is checked against RFC 4231 test case 2
+  first.
+
+Non-claims: this is not an OS sandbox. Network access is not confined by this
+adapter, CPU use is bounded only by the wall-clock deadline, and a receipt proves
+that the host observed an outcome, not that guest output is correct. Guest
+output is returned as untrusted text.
 
 ## Controlled Recovery
 
