@@ -700,8 +700,16 @@ function derivesFromSecret(
         return derivesFromMatchArmResult(body, armLookup, aliasMap);
       });
     }
+    case "binaryExpr": {
+      const [left] = node.children ?? [];
+      const skipsRight = left?.kind === "boolLiteral" &&
+        (((node.value === "&&" || node.value === "and") && left.value === "false") ||
+         ((node.value === "||" || node.value === "or") && left.value === "true"));
+      return skipsRight
+        ? left !== undefined && derivesFromSecret(left, lookupBinding, aliasMap)
+        : (node.children ?? []).some((child) => derivesFromSecret(child, lookupBinding, aliasMap));
+    }
     case "unaryExpr":
-    case "binaryExpr":
     case "listLiteral":
     case "k3FoldExpr":
     case "errorPropagation":
@@ -737,6 +745,18 @@ function isReviewedSecretSinkAstKind(kind: string): boolean {
   return REVIEWED_SECRET_SINK_AST_KINDS.has(kind);
 }
 
+/** Return only operands that can execute under a statically known short-circuit. */
+function evaluatedExpressionChildren(node: AstNode): readonly AstNode[] {
+  const children = node.children ?? [];
+  if (node.kind !== "binaryExpr") return children;
+  const left = children[0];
+  if (left?.kind !== "boolLiteral") return children;
+  const skipsRight =
+    ((node.value === "&&" || node.value === "and") && left.value === "false") ||
+    ((node.value === "||" || node.value === "or") && left.value === "true");
+  return skipsRight ? [left] : children;
+}
+
 /** Read only values that can leave a match-arm body, not arbitrary local expressions. */
 function derivesFromMatchArmResult(
   node: AstNode,
@@ -757,12 +777,14 @@ function derivesFromMatchArmResult(
       readonly secretResult: boolean;
       readonly continues: boolean;
       readonly writes: ReadonlySet<string>;
+      readonly secretContinuation?: boolean;
     };
     const lookupIn = (state: ReadonlyMap<string, BindingInfo>, name: string): BindingInfo | undefined =>
       state.get(name) ?? lookupBinding(name);
 
     const visitBlock = (block: AstNode, state: Map<string, BindingInfo>): ArmOutcome => {
       let secretResult = false;
+      let secretContinuation = false;
       const writes = new Set<string>();
       const declaredHere = new Set<string>();
       for (const candidate of block.children ?? []) {
@@ -773,7 +795,22 @@ function derivesFromMatchArmResult(
         if (candidate.kind === "letDecl" || candidate.kind === "readonlyDecl" || candidate.kind === "mutDecl") {
           const info = parseBindingValue(candidate.value ?? "");
           const init = candidate.children?.[0];
-          const isSecret = init !== undefined && derivesFromSecret(init, (name) => lookupIn(state, name), aliasMap);
+          const initIsSecret = init !== undefined &&
+            derivesFromSecret(init, (name) => lookupIn(state, name), aliasMap);
+          const initOutcome = init === undefined
+            ? { secretResult: false, continues: true, writes: new Set<string>() }
+            : visitExpressionEffects(init, state);
+          for (const name of initOutcome.writes) {
+            if (!declaredHere.has(name)) writes.add(name);
+          }
+          if (!initOutcome.continues) {
+            secretResult ||= initOutcome.secretResult;
+            secretContinuation ||= initOutcome.secretContinuation ?? false;
+            return { secretResult, continues: false, writes, secretContinuation };
+          }
+          secretContinuation ||= initOutcome.secretContinuation ?? false;
+          secretResult ||= initOutcome.secretContinuation ?? false;
+          const isSecret = initIsSecret || initOutcome.secretResult;
           state.set(info.name, {
             ...info,
             typeName: isSecret ? "SecureString" : info.typeName,
@@ -788,7 +825,19 @@ function derivesFromMatchArmResult(
           const existing = lookupIn(state, target);
           const rhs = candidate.children?.[0];
           if (target !== "" && existing !== undefined && rhs !== undefined) {
-            const isSecret = derivesFromSecret(rhs, (name) => lookupIn(state, name), aliasMap);
+            const rhsIsSecret = derivesFromSecret(rhs, (name) => lookupIn(state, name), aliasMap);
+            const rhsOutcome = visitExpressionEffects(rhs, state);
+            for (const name of rhsOutcome.writes) {
+              if (!declaredHere.has(name)) writes.add(name);
+            }
+            if (!rhsOutcome.continues) {
+              secretResult ||= rhsOutcome.secretResult;
+              secretContinuation ||= rhsOutcome.secretContinuation ?? false;
+              return { secretResult, continues: false, writes, secretContinuation };
+            }
+            secretContinuation ||= rhsOutcome.secretContinuation ?? false;
+            secretResult ||= rhsOutcome.secretContinuation ?? false;
+            const isSecret = rhsIsSecret || rhsOutcome.secretResult;
             state.set(target, {
               ...existing,
               typeName: isSecret ? "SecureString"
@@ -806,17 +855,31 @@ function derivesFromMatchArmResult(
         if (candidate.kind === "returnStmt") {
           const value = candidate.children?.[0];
           secretResult ||= value !== undefined && derivesFromSecret(value, (name) => lookupIn(state, name), aliasMap);
-          return { secretResult, continues: false, writes };
+          return { secretResult, continues: false, writes, secretContinuation };
         }
 
         if (candidate.kind === "faultStmt") {
-          return { secretResult, continues: false, writes };
+          return { secretResult, continues: false, writes, secretContinuation };
         }
 
         if (candidate.kind === "ifStmt") {
           const [condition, thenBlock, elseBlock] = candidate.children ?? [];
-          const conditionIsSecret = condition !== undefined &&
+          const conditionIsSecretBeforeEvaluation = condition !== undefined &&
             derivesFromSecret(condition, (name) => lookupIn(state, name), aliasMap);
+          const conditionOutcome = condition === undefined
+            ? { secretResult: false, continues: true, writes: new Set<string>() }
+            : visitExpressionEffects(condition, state);
+          for (const name of conditionOutcome.writes) {
+            if (!declaredHere.has(name)) writes.add(name);
+          }
+          if (!conditionOutcome.continues) {
+            secretResult ||= conditionOutcome.secretResult;
+            secretContinuation ||= conditionOutcome.secretContinuation ?? false;
+            return { secretResult, continues: false, writes, secretContinuation };
+          }
+          secretContinuation ||= conditionOutcome.secretContinuation ?? false;
+          secretResult ||= conditionOutcome.secretContinuation ?? false;
+          const conditionIsSecret = conditionIsSecretBeforeEvaluation || conditionOutcome.secretResult;
           const incoming = new Map(state);
           const thenState = new Map(incoming);
           const thenOutcome = thenBlock?.kind === "block"
@@ -832,10 +895,13 @@ function derivesFromMatchArmResult(
               : visitNode(elseBlock, elseState);
 
           secretResult ||= thenOutcome.secretResult || elseOutcome.secretResult;
+          secretContinuation ||= thenOutcome.secretContinuation ?? false;
+          secretContinuation ||= elseOutcome.secretContinuation ?? false;
           if (conditionIsSecret && thenOutcome.continues !== elseOutcome.continues) {
             // Returning on only one secret-controlled path makes the match
             // result/control outcome depend on the secret predicate.
             secretResult = true;
+            secretContinuation = true;
           }
           if (conditionIsSecret && !thenOutcome.continues && !elseOutcome.continues &&
               (containsReturnStatement(thenBlock) || containsReturnStatement(elseBlock))) {
@@ -853,7 +919,7 @@ function derivesFromMatchArmResult(
             ...(thenOutcome.continues ? [{ state: thenState, outcome: thenOutcome }] : []),
             ...(elseOutcome.continues ? [{ state: elseState, outcome: elseOutcome }] : []),
           ];
-          if (reachableStates.length === 0) return { secretResult, continues: false, writes };
+          if (reachableStates.length === 0) return { secretResult, continues: false, writes, secretContinuation };
 
           // Join branch assignments, not declarations: a nested block may
           // legally shadow an outer binding, but its declaration must not
@@ -886,13 +952,37 @@ function derivesFromMatchArmResult(
           const [condition, body] = candidate.children ?? [];
           const incoming = new Map(state);
           let headState = new Map(incoming);
+          let loopContinues = true;
+          const loopExitStates: Map<string, BindingInfo>[] = [];
           const loopStateKey = (current: ReadonlyMap<string, BindingInfo>): string =>
             JSON.stringify([...current.entries()]);
           const maxIterations = Math.max(2, incoming.size * 4 + 4);
 
           for (let iteration = 0; iteration < maxIterations; iteration++) {
-            const conditionIsSecret = condition !== undefined &&
+            const iterationHeadState = new Map(headState);
+            const conditionIsSecretBeforeEvaluation = condition !== undefined &&
               derivesFromSecret(condition, (name) => lookupIn(headState, name), aliasMap);
+            const conditionOutcome = condition === undefined
+              ? { secretResult: false, continues: true, writes: new Set<string>() }
+              : visitExpressionEffects(condition, headState);
+            const conditionIsSecret = conditionIsSecretBeforeEvaluation || conditionOutcome.secretResult ||
+              (conditionOutcome.secretContinuation ?? false);
+            for (const name of conditionOutcome.writes) {
+              if (!declaredHere.has(name)) writes.add(name);
+            }
+            secretContinuation ||= conditionOutcome.secretContinuation ?? false;
+            secretResult ||= conditionOutcome.secretResult || (conditionOutcome.secretContinuation ?? false);
+            if (!conditionOutcome.continues) {
+              secretResult ||= conditionOutcome.secretResult;
+              loopContinues = false;
+              break;
+            }
+            // A normal while exit is observed after the final condition
+            // evaluation, not at the pre-loop state or after a body pass.
+            // Keep each feasible condition-exit snapshot while finding the
+            // loop-head fixed point so overwrites in the condition can clear
+            // stale incoming taint on every exit path.
+            loopExitStates.push(new Map(headState));
             const bodyState = new Map(headState);
             const bodyOutcome = body?.kind === "block"
               ? visitBlock(body, bodyState)
@@ -900,10 +990,12 @@ function derivesFromMatchArmResult(
                 ? { secretResult: false, continues: true, writes: new Set<string>() }
                 : visitNode(body, bodyState);
             secretResult ||= bodyOutcome.secretResult;
+            secretContinuation ||= bodyOutcome.secretContinuation ?? false;
             if (conditionIsSecret && !bodyOutcome.continues) {
               // A secret-dependent return from the loop changes whether the
               // enclosing match arm reaches its trailing result expression.
               secretResult = true;
+              secretContinuation = true;
             }
 
             // A returning body has no backedge, so its assignments cannot
@@ -911,8 +1003,9 @@ function derivesFromMatchArmResult(
             if (!bodyOutcome.continues) break;
 
             const assignedNames = new Set<string>(incoming.keys());
+            for (const name of conditionOutcome.writes) assignedNames.add(name);
             for (const name of bodyOutcome.writes) assignedNames.add(name);
-            const nextHeadState = new Map(incoming);
+            const nextHeadState = new Map(headState);
             for (const name of assignedNames) {
               const original = incoming.get(name) ?? lookupBinding(name);
               if (original === undefined) continue;
@@ -931,7 +1024,7 @@ function derivesFromMatchArmResult(
               if (!declaredHere.has(name) && bodyOutcome.writes.has(name)) writes.add(name);
             }
 
-            const stable = loopStateKey(headState) === loopStateKey(nextHeadState);
+            const stable = loopStateKey(iterationHeadState) === loopStateKey(nextHeadState);
             headState = nextHeadState;
             if (stable) break;
             if (iteration === maxIterations - 1) {
@@ -939,8 +1032,280 @@ function derivesFromMatchArmResult(
             }
           }
 
+          const loopExitState = new Map(incoming);
+          const exitNames = new Set<string>(incoming.keys());
+          for (const exitState of loopExitStates) {
+            for (const name of exitState.keys()) exitNames.add(name);
+          }
+          for (const name of exitNames) {
+            const original = incoming.get(name) ?? lookupBinding(name);
+            if (original === undefined) continue;
+            const isSecret = loopExitStates.some((exitState) =>
+              (exitState.get(name) ?? original).typeName === "SecureString");
+            loopExitState.set(name, {
+              ...original,
+              typeName: isSecret ? "SecureString"
+                : original.typeName === "SecureString" ? "" : original.typeName,
+            });
+          }
           state.clear();
-          for (const [name, info] of headState) state.set(name, info);
+          for (const [name, info] of loopExitState) state.set(name, info);
+          if (!loopContinues) return { secretResult, continues: false, writes, secretContinuation };
+          continue;
+        }
+
+        if (candidate.kind === "matchExpr") {
+          const [subject, ...arms] = candidate.children ?? [];
+          const incoming = new Map(state);
+          const lookupState = (name: string) => lookupIn(incoming, name);
+          const subjectIsSecret = subject !== undefined &&
+            derivesFromSecret(subject, lookupState, aliasMap);
+          const subjectState = new Map(incoming);
+          const subjectOutcome = subject === undefined
+            ? { secretResult: true, continues: true, writes: new Set<string>() }
+            : visitExpressionEffects(subject, subjectState);
+          if (!subjectOutcome.continues) {
+            secretResult ||= subjectOutcome.secretResult;
+            secretContinuation ||= subjectOutcome.secretContinuation ?? false;
+            return {
+              secretResult,
+              continues: false,
+              writes: new Set([...writes, ...subjectOutcome.writes]),
+              secretContinuation,
+            };
+          }
+          secretContinuation ||= subjectOutcome.secretContinuation ?? false;
+          secretResult ||= subjectOutcome.secretContinuation ?? false;
+          const reachable: Array<{
+            readonly state: Map<string, BindingInfo>;
+            readonly outcome: ArmOutcome;
+            readonly secretControl: boolean;
+            readonly shadowedNames: ReadonlySet<string>;
+            readonly outerState: Map<string, BindingInfo>;
+            readonly outerWrites: ReadonlySet<string>;
+            readonly controlledWrites: ReadonlySet<string>;
+          }> = [];
+          let hasReachableFallthrough = true;
+          let fallthroughState = new Map(subjectState);
+          let fallthroughWrites = new Set(subjectOutcome.writes);
+          let fallthroughControlledWrites = new Set<string>();
+          let priorFallthroughSecret = false;
+
+          for (const arm of arms) {
+            if (arm.kind !== "matchArm") {
+              // An unrecognized arm shape cannot prove that the match preserves
+              // the incoming confidentiality state.
+              secretResult = true;
+              continue;
+            }
+            const armChildren = arm.children ?? [];
+            const guard = arm.value === "__guard__" ? armChildren[0] : undefined;
+            const body = [...armChildren].reverse().find((child) => child.kind !== "identifier");
+            if (body === undefined) {
+              secretResult = true;
+              continue;
+            }
+            const isCatchAll = isCatchAllMatchArm(arm) && guard === undefined;
+            const armIncoming = new Map(fallthroughState);
+            const guardState = new Map(armIncoming);
+            const guardOutcome = guard === undefined
+              ? { secretResult: false, continues: true, writes: new Set<string>() }
+              : visitExpressionEffects(guard, guardState);
+            secretContinuation ||= guardOutcome.secretContinuation ?? false;
+            secretResult ||= guardOutcome.secretContinuation ?? false;
+            const guardIsSecret = guard !== undefined &&
+              derivesFromSecret(guard, (name) => lookupIn(guardState, name), aliasMap);
+            const patternControlsSelection = subjectIsSecret && arm.value !== "__guard__" &&
+              !isCatchAllMatchArm(arm);
+            const armSecretControl = priorFallthroughSecret || patternControlsSelection || guardIsSecret;
+            if (!guardOutcome.continues) {
+              // Evaluating a terminating guard returns/faults from the enclosing
+              // flow. Its arm body and every later arm are unreachable on this path.
+              secretResult ||= guardOutcome.secretResult;
+              reachable.push({
+                state: guardState,
+                outcome: {
+                  secretResult: guardOutcome.secretResult,
+                  continues: false,
+                  writes: new Set([...fallthroughWrites, ...guardOutcome.writes]),
+                  secretContinuation: guardOutcome.secretContinuation ?? false,
+                },
+                secretControl: armSecretControl,
+                shadowedNames: new Set<string>(),
+                outerState: guardState,
+                outerWrites: new Set([...fallthroughWrites, ...guardOutcome.writes]),
+                controlledWrites: new Set(fallthroughControlledWrites),
+              });
+              // No evaluation path reaches a later arm after a terminating
+              // guard; continuing the source-order loop would invent one.
+              hasReachableFallthrough = false;
+              break;
+            }
+            const armState = new Map(guardState);
+            const shadowedNames = new Set<string>();
+            if (arm.value !== "__guard__") {
+              for (const pattern of armChildren.slice(0, -1)) {
+                if (pattern.kind !== "identifier" || pattern.value === undefined) continue;
+                shadowedNames.add(pattern.value);
+                armState.set(pattern.value, {
+                  ...(lookupIn(incoming, pattern.value) ?? {
+                    name: pattern.value,
+                    safetyPrefix: undefined,
+                    typeName: "",
+                  }),
+                  typeName: subjectIsSecret ? "SecureString" : "",
+                });
+              }
+            }
+            const outcome = body.kind === "block"
+              ? visitBlock(body, armState)
+              : visitNode(body, armState);
+            secretResult ||= outcome.secretResult || guardOutcome.secretResult;
+            // A secret-controlled arm that terminates while another feasible
+            // path continues changes whether the enclosing expression reaches
+            // its value. Keep that control dependence even when the next arm
+            // writes only a public constant.
+            const armWrites = new Set([
+              ...fallthroughWrites,
+              ...guardOutcome.writes,
+              ...outcome.writes,
+            ]);
+            reachable.push({
+              state: armState,
+              outcome: {
+                ...outcome,
+                secretResult: outcome.secretResult || guardOutcome.secretResult,
+                secretContinuation: (outcome.secretContinuation ?? false) || (guardOutcome.secretContinuation ?? false),
+                writes: armWrites,
+              },
+              secretControl: armSecretControl,
+              shadowedNames,
+              outerState: guardState,
+              outerWrites: new Set([...fallthroughWrites, ...guardOutcome.writes]),
+              controlledWrites: new Set([
+                ...fallthroughControlledWrites,
+                ...(priorFallthroughSecret ? guardOutcome.writes : []),
+                ...(armSecretControl ? outcome.writes : []),
+              ]),
+            });
+
+            const fallthroughPaths: Array<{
+              readonly state: Map<string, BindingInfo>;
+              readonly secretControl: boolean;
+              readonly writes: ReadonlySet<string>;
+              readonly controlledWrites: ReadonlySet<string>;
+            }> = [];
+            if (guard === undefined && !isCatchAllMatchArm(arm)) {
+              // Pattern miss skips the guard and preserves the pre-arm state.
+              fallthroughPaths.push({
+                state: armIncoming,
+                secretControl: priorFallthroughSecret || patternControlsSelection,
+                writes: new Set(fallthroughWrites),
+                controlledWrites: new Set(fallthroughControlledWrites),
+              });
+            }
+            if (guard !== undefined && guardOutcome.continues) {
+              // A failed guard still ran, so its side effects flow to later
+              // arms. Pattern and guard outcomes can both select that path.
+              fallthroughPaths.push({
+                state: guardState,
+                secretControl: priorFallthroughSecret || patternControlsSelection || guardIsSecret,
+                writes: new Set([...fallthroughWrites, ...guardOutcome.writes]),
+                controlledWrites: new Set([
+                  ...fallthroughControlledWrites,
+                  ...(priorFallthroughSecret ? guardOutcome.writes : []),
+                ]),
+              });
+            }
+            if (fallthroughPaths.length > 0) {
+              const nextState = new Map(armIncoming);
+              const names = new Set<string>(armIncoming.keys());
+              for (const path of fallthroughPaths) {
+                for (const name of path.writes) names.add(name);
+              }
+              for (const name of names) {
+                const original = armIncoming.get(name) ?? lookupBinding(name);
+                if (original === undefined) continue;
+                const infos = fallthroughPaths.map(({ state: pathState, writes: pathWrites }) =>
+                  pathWrites.has(name) ? pathState.get(name) ?? original : original);
+                const secretValue = infos.some((info) => info.typeName === "SecureString");
+                const secretControlledWrite = fallthroughPaths.some(({ controlledWrites }) =>
+                  controlledWrites.has(name));
+                nextState.set(name, {
+                  ...original,
+                  typeName: secretValue || secretControlledWrite ? "SecureString"
+                    : original.typeName === "SecureString" ? "" : original.typeName,
+                });
+              }
+              fallthroughState = nextState;
+              fallthroughWrites = new Set(fallthroughPaths.flatMap(({ writes: pathWrites }) =>
+                [...pathWrites]));
+              fallthroughControlledWrites = new Set(fallthroughPaths.flatMap(({ controlledWrites }) =>
+                [...controlledWrites]));
+              priorFallthroughSecret ||= fallthroughPaths.some(({ secretControl }) => secretControl);
+            }
+
+            if (isCatchAll) {
+              hasReachableFallthrough = false;
+              break;
+            }
+          }
+
+          // A non-exhaustive or guarded match can fall through without taking
+          // an arm. Retain the source-ordered fallthrough state as a real path.
+          if (hasReachableFallthrough) {
+            reachable.push({
+              state: new Map(fallthroughState),
+              outcome: { secretResult: false, continues: true, writes: new Set(fallthroughWrites) },
+              secretControl: priorFallthroughSecret,
+              shadowedNames: new Set<string>(),
+              outerState: new Map(fallthroughState),
+              outerWrites: new Set(fallthroughWrites),
+              controlledWrites: new Set(fallthroughControlledWrites),
+            });
+          }
+
+          const continuingFlags = new Set(reachable.map(({ outcome }) => outcome.continues));
+          if (continuingFlags.size > 1 && reachable.some(({ secretControl }) => secretControl)) {
+            secretResult = true;
+            secretContinuation = true;
+          }
+          secretContinuation ||= reachable.some(({ outcome }) => outcome.secretContinuation ?? false);
+          secretResult ||= reachable.some(({ outcome }) => outcome.secretContinuation ?? false);
+          const continuing = reachable.filter(({ outcome }) => outcome.continues);
+          if (continuing.length === 0) {
+            return { secretResult, continues: false, writes, secretContinuation };
+          }
+          secretContinuation ||= continuing.some(({ outcome }) => outcome.secretContinuation ?? false);
+          secretResult ||= continuing.some(({ outcome }) => outcome.secretContinuation ?? false);
+          const assignedNames = new Set<string>(incoming.keys());
+          for (const { outcome, shadowedNames, outerWrites } of continuing) {
+            for (const name of outcome.writes) {
+              if (!shadowedNames.has(name) || outerWrites.has(name)) assignedNames.add(name);
+            }
+          }
+          for (const name of assignedNames) {
+            const original = incoming.get(name) ?? lookupBinding(name);
+            if (original === undefined) continue;
+            const infos = continuing.map(({ state: armState, outcome, shadowedNames, outerState, outerWrites }) => {
+              if (shadowedNames.has(name)) {
+                return outerWrites.has(name) ? outerState.get(name) ?? original : original;
+              }
+              return outcome.writes.has(name) ? armState.get(name) ?? original : original;
+            });
+            const isSecret = infos.some((info) => info.typeName === "SecureString");
+            const secretControlledWrite = continuing.some(({ controlledWrites, shadowedNames, outerWrites }) =>
+              controlledWrites.has(name) && (!shadowedNames.has(name) || outerWrites.has(name)));
+            state.set(name, {
+              ...original,
+              typeName: isSecret || secretControlledWrite ? "SecureString"
+                : original.typeName === "SecureString" ? "" : original.typeName,
+            });
+            if (!declaredHere.has(name) && continuing.some(({ outcome, shadowedNames, outerWrites }) =>
+              outcome.writes.has(name) && (!shadowedNames.has(name) || outerWrites.has(name)))) {
+              writes.add(name);
+            }
+          }
           continue;
         }
 
@@ -948,6 +1313,8 @@ function derivesFromMatchArmResult(
           const nestedState = new Map(state);
           const nestedOutcome = visitBlock(candidate, nestedState);
           secretResult ||= nestedOutcome.secretResult;
+          secretContinuation ||= nestedOutcome.secretContinuation ?? false;
+          secretResult ||= nestedOutcome.secretContinuation ?? false;
           // Preserve writes to enclosing bindings, but do not export nested
           // declarations introduced by the lexical block.
           for (const name of nestedOutcome.writes) {
@@ -957,23 +1324,159 @@ function derivesFromMatchArmResult(
               writes.add(name);
             }
           }
-          if (!nestedOutcome.continues) return { secretResult, continues: false, writes };
+          if (!nestedOutcome.continues) return { secretResult, continues: false, writes, secretContinuation };
           continue;
         }
 
-        secretResult ||= derivesFromMatchArmResult(candidate, (name) => lookupIn(state, name), aliasMap);
+        const expressionOutcome = visitExpressionEffects(candidate, state);
+        secretResult ||= expressionOutcome.secretResult || (expressionOutcome.secretContinuation ?? false);
+        secretContinuation ||= expressionOutcome.secretContinuation ?? false;
+        for (const name of expressionOutcome.writes) {
+          if (!declaredHere.has(name)) writes.add(name);
+        }
+        if (!expressionOutcome.continues) return { secretResult, continues: false, writes, secretContinuation };
       }
-      return { secretResult, continues: true, writes };
+      return { secretResult, continues: true, writes, secretContinuation };
     };
 
     const visitNode = (candidate: AstNode, state: Map<string, BindingInfo>): ArmOutcome => {
       if (candidate.kind === "block") return visitBlock(candidate, state);
-      const secretResult = derivesFromMatchArmResult(candidate, (name) =>
+      return visitExpressionEffects(candidate, state);
+    };
+
+    const visitExpressionEffects = (candidate: AstNode, state: Map<string, BindingInfo>): ArmOutcome => {
+      if (candidate.kind === "block") return visitBlock(candidate, state);
+      if (candidate.kind === "fnDecl") {
+        return { secretResult: false, continues: true, writes: new Set<string>() };
+      }
+      const lookupState = (name: string) => state.get(name) ?? lookupBinding(name);
+      if (isRedactCall(candidate, lookupState) || isConstantTimeEqualsCall(candidate, lookupState)) {
+        const writes = new Set<string>();
+        let secretContinuation = false;
+        for (const child of candidate.children ?? []) {
+          const childOutcome = visitExpressionEffects(child, state);
+          secretContinuation ||= childOutcome.secretContinuation ?? false;
+          for (const name of childOutcome.writes) writes.add(name);
+          if (!childOutcome.continues) {
+            return { secretResult: false, continues: false, writes, secretContinuation };
+          }
+        }
+        // Authorized declassification applies to the call result, not to any
+        // independently observed side effects while evaluating its arguments.
+        return { secretResult: false, continues: true, writes, secretContinuation };
+      }
+      if (candidate.kind === "matchExpr") {
+        // Reuse the statement transfer by evaluating the expression in a
+        // one-node block; its path-sensitive writes are observable to a guard.
+        return visitBlock({ kind: "block", children: [candidate] }, state);
+      }
+      if (candidate.kind === "binaryExpr" &&
+          (candidate.value === "&&" || candidate.value === "and" ||
+           candidate.value === "||" || candidate.value === "or")) {
+        const [left, right] = candidate.children ?? [];
+        if (left !== undefined && right !== undefined) {
+          const incoming = new Map(state);
+          const leftIsSecret = derivesFromSecret(left, (name) => lookupIn(incoming, name), aliasMap);
+          const leftOutcome = visitExpressionEffects(left, state);
+          if (!leftOutcome.continues) {
+            return {
+              secretResult: leftOutcome.secretResult,
+              continues: false,
+              writes: leftOutcome.writes,
+              secretContinuation: leftOutcome.secretContinuation ?? false,
+            };
+          }
+
+          const leftLiteral = left.kind === "boolLiteral" ? left.value : undefined;
+          const skipsRight = ((candidate.value === "&&" || candidate.value === "and") && leftLiteral === "false") ||
+            ((candidate.value === "||" || candidate.value === "or") && leftLiteral === "true");
+          if (skipsRight) {
+            // The result is the public short-circuit literal. Do not recurse
+            // into an operand that the language runtime will not evaluate.
+            return {
+              secretResult: derivesFromMatchArmResult(left, (name) => lookupIn(state, name), aliasMap),
+              continues: true,
+              writes: leftOutcome.writes,
+              secretContinuation: leftOutcome.secretContinuation ?? false,
+            };
+          }
+
+          const alwaysEvaluatesRight =
+            ((candidate.value === "&&" || candidate.value === "and") && leftLiteral === "true") ||
+            ((candidate.value === "||" || candidate.value === "or") && leftLiteral === "false");
+          if (alwaysEvaluatesRight) {
+            const rightIsSecret = derivesFromMatchArmResult(right, (name) => lookupIn(state, name), aliasMap);
+            const rightOutcome = visitExpressionEffects(right, state);
+            return {
+              secretResult: rightIsSecret || rightOutcome.secretResult,
+              continues: rightOutcome.continues,
+              writes: new Set([...leftOutcome.writes, ...rightOutcome.writes]),
+              secretContinuation: (leftOutcome.secretContinuation ?? false) ||
+                (rightOutcome.secretContinuation ?? false),
+            };
+          }
+
+          // With a nonliteral left operand, both paths are feasible: the
+          // operator may skip the RHS, or evaluate it. Analyze RHS effects in
+          // an isolated state so its writes do not erase the skipped path.
+          const skippedState = new Map(state);
+          const evaluatedState = new Map(skippedState);
+          const rightOutcome = visitExpressionEffects(right, evaluatedState);
+          const writes = new Set(leftOutcome.writes);
+          const secretContinuation = (leftOutcome.secretContinuation ?? false) ||
+            (rightOutcome.secretContinuation ?? false) || (leftIsSecret && !rightOutcome.continues);
+          if (rightOutcome.continues) {
+            for (const name of rightOutcome.writes) writes.add(name);
+            const names = new Set([...skippedState.keys(), ...rightOutcome.writes]);
+            for (const name of names) {
+              const original = skippedState.get(name) ?? lookupBinding(name);
+              if (original === undefined) continue;
+              const skippedInfo = skippedState.get(name) ?? original;
+              const evaluatedInfo = rightOutcome.writes.has(name)
+                ? evaluatedState.get(name) ?? original
+                : skippedInfo;
+              const secretControlledWrite = leftIsSecret && rightOutcome.writes.has(name);
+              state.set(name, {
+                ...original,
+                typeName: skippedInfo.typeName === "SecureString" || evaluatedInfo.typeName === "SecureString" ||
+                  secretControlledWrite ? "SecureString"
+                  : original.typeName === "SecureString" ? "" : original.typeName,
+              });
+            }
+          } else {
+            state.clear();
+            for (const [name, info] of skippedState) state.set(name, info);
+          }
+          return {
+            secretResult: leftIsSecret || leftOutcome.secretResult || rightOutcome.secretResult ||
+              derivesFromMatchArmResult(right, (name) => lookupIn(evaluatedState, name), aliasMap),
+            continues: true, // the short-circuit path always remains feasible
+            writes,
+            secretContinuation,
+          };
+        }
+      }
+      let secretResult = derivesFromMatchArmResult(candidate, (name) =>
         state.get(name) ?? lookupBinding(name), aliasMap);
+      const writes = new Set<string>();
+      let secretContinuation = false;
+      let childrenContinue = true;
+      const children = candidate.children ?? [];
+      for (let index = 0; index < children.length; index++) {
+        const child = children[index];
+        if (child === undefined) continue;
+        if (!childrenContinue) break;
+        const childOutcome = visitExpressionEffects(child, state);
+        secretResult ||= childOutcome.secretResult;
+        secretContinuation ||= childOutcome.secretContinuation ?? false;
+        for (const name of childOutcome.writes) writes.add(name);
+        childrenContinue = childOutcome.continues;
+      }
       return {
         secretResult,
-        continues: candidate.kind !== "returnStmt" && candidate.kind !== "faultStmt",
-        writes: new Set<string>(),
+        continues: childrenContinue && candidate.kind !== "returnStmt" && candidate.kind !== "faultStmt",
+        writes,
+        secretContinuation,
       };
     };
 
@@ -1999,7 +2502,7 @@ class ValueStateChecker {
 
       case "binaryExpr":
         this.handleBinaryExpr(node);
-        this.walkChildren(node);
+        for (const child of evaluatedExpressionChildren(node)) this.walkNode(child);
         break;
 
       case "matchExpr":
@@ -3015,12 +3518,12 @@ class ValueStateChecker {
       }
       // A direct record literal stores each field value below an identifier
       // label. Descend so that wrapper cannot hide a secret from this sink.
-      for (const child of node.children ?? []) {
+      for (const child of evaluatedExpressionChildren(node)) {
         this.checkArgForSecretNetwork(child, callName, location);
       }
       return;
     }
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForSecretNetwork(child, callName, location);
     }
   }
@@ -3102,7 +3605,7 @@ class ValueStateChecker {
       ));
       return;
     }
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForEmbeddingNetwork(child, callName, location);
     }
   }
@@ -3200,15 +3703,12 @@ class ValueStateChecker {
       }
     }
     // Recurse into nested children (e.g. named-argument wrappers, blocks)
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForUnsafeBinding(child, sinkName, location);
     }
   }
 
-  /**
-   * Recursively checks whether `node` or any of its descendants is an
-   * identifier that resolves to a `SecureString` binding.
-   */
+  /** Checks the value crossing a logging sink, not every statement in its AST. */
   private checkArgForSecretLogging(
     node: AstNode,
     callName: string,
@@ -3239,6 +3739,44 @@ class ValueStateChecker {
     // A redact(...) wrapper produces a safe '[REDACTED]' placeholder — honor it at log
     // sinks just as checkArgForSecretSerialization does (do not recurse into its child).
     if (node.kind === "callExpr" && isRedactCall(node, (name) => this.lookupBinding(name))) return;
+    const lookup = (name: string) => this.lookupBinding(name);
+    if (node.kind === "matchExpr") {
+      // A match expression's result is its value; its arm statements are not values
+      // crossing the sink. Derive secrecy from the result semantics, then stop walking
+      // the statement AST (which otherwise rejects public locals/loops as unknown values).
+      if (derivesFromSecret(node, lookup, this.moduleAliases)) {
+        this.diagnostics.push(makeVSDiag(
+          "FUNGI-SECRET-001",
+          "SECRET_VALUE_LOGGED",
+          `Secret-derived expression must not be passed to '${callName}'.`,
+          location,
+          "Apply redact(...) to the secret-derived value before logging it.",
+          undefined,
+          {
+            why: "The value produced by this match expression is secret-derived.",
+            risk: "Logging the raw result can expose credentials or other secret material.",
+          },
+        ));
+      }
+      return;
+    }
+    if (node.kind === "callExpr" && isSecretSourceExpression(node, lookup, this.moduleAliases)) {
+      // The recursive identifier walk below cannot recognize a direct accessor call
+      // such as print(Env.get("k")); classify the accessor's result at the sink.
+      this.diagnostics.push(makeVSDiag(
+        "FUNGI-SECRET-001",
+        "SECRET_VALUE_LOGGED",
+        `Secret-derived expression must not be passed to '${callName}'.`,
+        location,
+        "Apply redact(...) to the secret-derived value before logging it.",
+        undefined,
+        {
+          why: "The argument is a recognized secret-source expression.",
+          risk: "Logging the raw result can expose credentials or other secret material.",
+        },
+      ));
+      return;
+    }
     if (node.kind === "identifier") {
       // Field-name guard (RD-0093b): check the field VALUE, not the field NAME — else a record/arg field
       // named after a SecureString binding false-fires SECRET-001.
@@ -3270,7 +3808,7 @@ class ValueStateChecker {
         ));
       }
     }
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForSecretLogging(child, callName, location);
     }
   }
@@ -3319,7 +3857,7 @@ class ValueStateChecker {
     }
     // Task 3: check record literals — fire SECRET-003 for any SecureString field value
     // Record literals appear as children of call arguments in some AST shapes.
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForSecretSerialization(child, callName, location);
     }
   }
@@ -3391,7 +3929,7 @@ class ValueStateChecker {
       }
       return;
     }
-    for (const child of node.children ?? []) {
+    for (const child of evaluatedExpressionChildren(node)) {
       this.checkArgForProtectedAtAuditLog(child, sinkName, location, allowSealed);
     }
   }

@@ -178,6 +178,19 @@ secure flow probe(key: SecureString, flag: Bool) -> Int {
     }
   });
 
+  it("keeps comparison results over ordinary public strings ordinary", () => {
+    const source = `@version 1
+secure flow probe(left: String, right: String) -> Int {
+  print(Crypto.constantTimeEquals(left, right))
+  return 0
+}`;
+    const parsed = parseProgram(source, "public-constant-time-result.fungi");
+    assert.deepEqual(parsed.diagnostics, []);
+    assert.deepEqual(checkTypes(parsed.ast).diagnostics, []);
+    const diagnostics = checkValueStates(parsed.ast, "production").diagnostics;
+    assert.equal(diagnostics.filter((d) => d.code === "FUNGI-SECRET-001").length, 0, JSON.stringify(diagnostics));
+  });
+
   it("keeps a secret returned by a match arm secret at an output sink", () => {
     const diagnostics = checkBody("let derived = match 0 { _ => key }\n  print(derived)");
     assert.ok(diagnostics.some(
@@ -218,6 +231,61 @@ secure flow probe(key: SecureString, flag: Bool) -> Int {
       (d) => d.code === "FUNGI-SECRET-001" && d.severity === "error",
     ), JSON.stringify(diagnostics));
     assert.ok(diagnostics.some((d) => d.code === "FUNGI-SECRET-004" && d.severity === "warning"));
+  });
+
+  it("retains secrecy read by an ordered logical RHS after the LHS writes it", () => {
+    for (const operator of ["&&", "||"]) {
+      const sourceFor = (assigned) => `let result = match flag { _ => {
+    mut local = false
+    let copied = (match flag { _ => { local = ${assigned}
+      flag } }) ${operator} !local
+    copied
+  } }
+  print(result)`;
+      const diagnostics = checkBody(sourceFor("key"));
+      assert.ok(
+        diagnostics.some((d) => d.code === "FUNGI-SECRET-001" && d.severity === "error"),
+        `${operator} must retain an ordered RHS read after a secret write: ${JSON.stringify(diagnostics)}`,
+      );
+
+      const publicControl = checkBody(sourceFor("flag"));
+      assert.equal(
+        publicControl.some((d) => d.code === "FUNGI-SECRET-001"),
+        false,
+        `${operator} over public control must remain public: ${JSON.stringify(publicControl)}`,
+      );
+    }
+  });
+
+  it("treats a loop condition as secret when ordered RHS evaluation observes a secret LHS write", () => {
+    const secretCondition = checkBody(`let result = match flag { _ => {
+    mut local = false
+    while (match flag { _ => { local = key
+      flag } }) && !local {
+      return 0
+    }
+    flag
+  } }
+  print(result)`);
+    assert.ok(
+      secretCondition.some((d) => d.code === "FUNGI-SECRET-001" && d.severity === "error"),
+      `a secret-dependent loop decision must taint the observable return: ${JSON.stringify(secretCondition)}`,
+    );
+
+    const publicCondition = checkBody(`let result = match flag { _ => {
+    mut local = false
+    while (match flag { _ => { local = flag
+      flag } }) && !local {
+      return 0
+    }
+    flag
+  } }
+  print(result)`);
+    assert.equal(
+      publicCondition.some((d) => d.code === "FUNGI-SECRET-001"),
+      false,
+      `the same loop condition over public data must remain public: ${JSON.stringify(publicCondition)}`,
+    );
   });
 
   it("tracks secret-dependent while control into the loop body", () => {
