@@ -398,6 +398,35 @@ export function readDeploymentResult(
   return { ok: true, value: result };
 }
 
+function snapshotDiagnosticEntries(value: unknown): readonly DeployDiagnostic[] | undefined {
+  const items = snapshotArray(value, MAX_LIST);
+  if (items === undefined) return undefined;
+  const list: DeployDiagnostic[] = [];
+  for (const item of items) {
+    const snap = snapshotRecord(item, 8);
+    if (!snap.ok) return undefined;
+    if (
+      snap.values.size !== 4 ||
+      !snap.values.has("code") ||
+      !snap.values.has("severity") ||
+      !snap.values.has("message") ||
+      !snap.values.has("field")
+    ) {
+      return undefined;
+    }
+    const code = snap.values.get("code");
+    const severity = snap.values.get("severity");
+    const message = snap.values.get("message");
+    const field = snap.values.get("field");
+    if (typeof code !== "string" || code.length === 0 || code.length > MAX_TOKEN) return undefined;
+    if (severity !== "error") return undefined;
+    if (typeof message !== "string" || message.length === 0 || message.length > 512) return undefined;
+    if (typeof field !== "string" || field.length === 0 || field.length > MAX_TOKEN) return undefined;
+    list.push(Object.freeze({ code, severity: "error" as const, message, field: field as DeployDiagnosticField }));
+  }
+  return Object.freeze(list);
+}
+
 /** Build a frozen DeploymentResult from parts. success is recomputed from diagnostics. */
 export function createDeploymentResult(
   target: DeploymentTarget,
@@ -421,9 +450,12 @@ export function createDeploymentResult(
       diagnostics: Object.freeze([diag(FUNGI_DEPLOY_002, "manifestHash must be sha256:<64 lower-case hex>.", "manifestHash")]),
     });
   }
-  const list = Array.isArray(diagnostics)
-    ? Object.freeze([...diagnostics])
-    : Object.freeze([diag(FUNGI_DEPLOY_001, "Diagnostics must be a dense array.", "diagnostics")]);
+  // C21 NB-2: never spread caller diagnostic objects (getters must not run later). Snapshot entries.
+  const snapped = snapshotDiagnosticEntries(diagnostics);
+  const list =
+    snapped !== undefined
+      ? snapped
+      : Object.freeze([diag(FUNGI_DEPLOY_001, "Diagnostics must be a dense array of closed entries.", "diagnostics")]);
   if (reportPath !== undefined) {
     if (
       typeof reportPath !== "string" ||
