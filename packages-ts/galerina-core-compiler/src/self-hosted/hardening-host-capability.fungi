@@ -21,7 +21,8 @@ contract { intent { "Resolve only exact declared host profiles and fail closed t
       canNoDramSpill: false
       // A profile label cannot prove the lock hook is registered or succeeds.
       canNoSwap: false
-      canNoDisk: true
+      // mlock does not prevent persistence through other process or host paths.
+      canNoDisk: false
       keyCustody: "env-spore"
     }
     "register_pinned" => return HostResidencyCapabilityFungi {

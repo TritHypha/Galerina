@@ -385,7 +385,7 @@ export const UNKNOWN_HOST: HostResidencyCapability = Object.freeze({
 const HOST_PROFILE_MAP = new Map<string, HostResidencyCapability>([
   // The profile name alone does not prove a live mlock hook is registered and succeeds.
   // Keep no-swap false until the runtime supplies current enforcement evidence.
-  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
+  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "env-spore" }],
   // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
   // keyCustody: "hardware-signer" because a register-pinned target implies an HSM for key ops.
   ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true, keyCustody: "hardware-signer" }],

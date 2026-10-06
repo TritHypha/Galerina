@@ -109,6 +109,11 @@ describe("compiler package-owned Fungi host resolution", () => {
           false,
           "the Fungi host profile must not claim no-swap without runtime enforcement evidence",
         );
+        assert.equal(
+          unwrapRecord(interpreted.value).canNoDisk,
+          false,
+          "mlock alone must not claim no-disk without a separate persistence control",
+        );
       }
     }
   });
