@@ -1371,6 +1371,28 @@ export function formatBenchmarkSummary(report: unknown): readonly string[] {
   ]);
 }
 
+// Phase 9 comparison report contract (runtime|compiled; report side only, no runner).
+export {
+  BENCHMARK_COMPARISON_SCHEMA,
+  BENCHMARK_COMPARE_SIDES,
+  BENCHMARK_COMPARISON_STATUSES,
+  BENCHMARK_COMPARISON_LIMITS,
+  FUNGI_BENCH_CMP_SHAPE,
+  FUNGI_BENCH_CMP_INPUT_MISMATCH,
+  FUNGI_BENCH_CMP_VERSION_RECORD,
+  FUNGI_BENCH_CMP_SIDES,
+  FUNGI_BENCH_CMP_RESULT,
+  createBenchmarkComparisonReport,
+  type BenchmarkCompareSide,
+  type BenchmarkComparisonStatus,
+  type BenchmarkComparisonDiagnostic,
+  type BenchmarkToolIdentity,
+  type BenchmarkCompilerIdentity,
+  type BenchmarkComparisonSideResult,
+  type BenchmarkComparisonInput,
+  type BenchmarkComparisonReport,
+  type BenchmarkComparisonResult,
+} from "./comparison-report.js";
 
 export {
   FUNGI_BENCH_BOOL_001,
