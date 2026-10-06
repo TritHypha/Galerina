@@ -74,3 +74,29 @@ export {
   FUNGI_VERIFY_016,
 } from "./verify/verify-runtime.js";
 export type { RuntimeReportDiagnostic, RuntimeReportField, RuntimeReportVerification } from "./verify/verify-runtime.js";
+
+export {
+  FUNGI_DEPLOY_001,
+  FUNGI_DEPLOY_002,
+  FUNGI_DEPLOY_003,
+  FUNGI_DEPLOY_004,
+  FUNGI_DEPLOY_005,
+  DEPLOYMENT_TARGETS,
+  DEPLOYMENT_RESULT_FIELDS,
+  EFFECTS_POLICY_FIELDS,
+  DEPLOY_MANIFEST_SLICE_FIELDS,
+  VALIDATE_EFFECTS_INPUT_FIELDS,
+  isDeploymentTarget,
+  readDeploymentResult,
+  createDeploymentResult,
+  validateEffects,
+} from "./deploy.js";
+export type {
+  DeploymentTarget,
+  DeployDiagnostic,
+  DeployDiagnosticField,
+  EffectsPolicy,
+  DeployManifestSlice,
+  ValidateEffectsInput,
+  DeploymentResult,
+} from "./deploy.js";
