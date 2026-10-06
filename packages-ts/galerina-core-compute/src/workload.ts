@@ -78,8 +78,10 @@ function isStringList(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string" && item.length > 0);
 }
 
-/** Structural check for a workload. Fails closed: anything malformed is an error. */
+/** Structural check for a workload. Fails closed: anything malformed is an error.
+ * Hostile getters that throw are treated as invalid (never escape). */
 export function validateComputeWorkload(workload: unknown): readonly ComputeDiagnostic[] {
+  try {
   const out: ComputeDiagnostic[] = [];
   const bad = (path: string, message: string): void => {
     out.push({ code: "Galerina_COMPUTE_WORKLOAD_INVALID", severity: "error", message, path });
@@ -122,4 +124,7 @@ export function validateComputeWorkload(workload: unknown): readonly ComputeDiag
     if (typeof d.networkAllowed !== "boolean") bad("deployment.networkAllowed", "networkAllowed must be Boolean.");
   }
   return out;
+  } catch {
+    return [{ code: "Galerina_COMPUTE_WORKLOAD_INVALID", severity: "error", message: "Workload fields threw during validation.", path: "workload" }];
+  }
 }

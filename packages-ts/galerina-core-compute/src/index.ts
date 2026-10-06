@@ -372,3 +372,8 @@ export * from "./compatibility/target-compatibility.js";
 export * from "./compatibility/compatibility-rules.js";
 export * from "./compatibility/target-validator.js";
 export * from "./compatibility/compatibility-report.js";
+
+// Compute effects, runtime capabilities, and GPU planning (TODO pass, Grok 2026-10-05).
+export * from "./effects/compute-effects.js";
+export * from "./capabilities/compute-runtime-capabilities.js";
+export * from "./gpu/index.js";

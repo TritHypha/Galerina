@@ -20,23 +20,35 @@ active v1 runtime target.
 [ ] Define specialist compute capability, data-sensitivity and audit report fields
 [x] Add generic low-bit AI fallback target concept
 [x] Define offload planning reports
-[ ] Define compute effects model (accelerator, optical_io, distributed_compute, high_memory, parallel_compute)
-[ ] Define compute capabilities model (ComputeRuntime, GpuRuntime, AcceleratorRuntime, OpticalTransport, DistributedScheduler)
-[ ] Define GPU planning metadata and fallback rules (FUNGI-COMPUTE-001 through FUNGI-COMPUTE-007)
-[ ] Define GPU runtime architecture: compute planner → GPU scheduler → buffer manager → kernel adapter → GPU backend
-[ ] Define vendor-neutral adapter model (CUDA/ROCm/Metal/Vulkan as runtime plugins, not language syntax)
+[x] Define compute effects model (accelerator, optical_io, distributed_compute, high_memory, parallel_compute)
+      src/effects/compute-effects.ts COMPUTE_EFFECTS + validateComputeEffectNames + assertComputeEffectsAdmissible (v1 active: high_memory|parallel_compute only); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define compute capabilities model (ComputeRuntime, GpuRuntime, AcceleratorRuntime, OpticalTransport, DistributedScheduler)
+      src/capabilities/compute-runtime-capabilities.ts COMPUTE_RUNTIME_CAPABILITIES + validateComputeRuntimeCapabilityClaim (v1: only ComputeRuntime may claim available); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define GPU planning metadata and fallback rules (FUNGI-COMPUTE-001 through FUNGI-COMPUTE-007)
+      src/gpu/gpu-codes.ts FUNGI_COMPUTE_CODES; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define GPU runtime architecture: compute planner → GPU scheduler → buffer manager → kernel adapter → GPU backend
+      src/gpu/gpu-runtime.ts GPU_RUNTIME_ARCHITECTURE_STAGES (planning vocabulary only; no stage executes); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define vendor-neutral adapter model (CUDA/ROCm/Metal/Vulkan as runtime plugins, not language syntax)
+      src/gpu/gpu-runtime.ts GPU_VENDOR_ADAPTERS; isGpuVendorAdapterAdmitted always false under v1 freeze; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ] Define optical/photonic transport planning (optical_io effect, OpticalTransport capability)
 [ ] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
 [ ] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
 [ ] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
 [x] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
-[ ] Define GpuSuitability: high|medium|low|unsuitable|unknown
-[ ] Define GpuRequirements: minMemoryMb, minParallelism, precision
-[ ] Define GpuFallbackPlan: target, reason
-[ ] Define GpuPlan v0.2: schemaVersion, suitability, recommendedTarget, reasons[], requirements, fallback, diagnostics[]
-[ ] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability — score-based algorithm
-[ ] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan — with advisory warning if low/unsuitable
-[ ] Create gpu/ dir: gpu-planner.ts, gpu-runtime.ts, gpu-fallback.ts, gpu-reports.ts, gpu-estimator.ts
+[x] Define GpuSuitability: high|medium|low|unsuitable|unknown
+      src/gpu/gpu-types.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define GpuRequirements: minMemoryMb, minParallelism, precision
+      src/gpu/gpu-types.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define GpuFallbackPlan: target, reason
+      src/gpu/gpu-types.ts + src/gpu/gpu-fallback.ts cpuGpuFallback; closed reason tokens; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define GpuPlan v0.2: schemaVersion, suitability, recommendedTarget, reasons[], requirements, fallback, diagnostics[]
+      src/gpu/gpu-types.ts schemaVersion galerina.compute.gpu-plan.v0.2; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Implement estimateGpuSuitability(workload: ComputeWorkload): GpuSuitability — score-based algorithm
+      src/gpu/gpu-estimator.ts: never returns high|medium under v1 freeze; unknown if invalid; low=advisory GPU-interest; unsuitable otherwise; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Implement buildGpuPlan(workload: ComputeWorkload): GpuPlan — with advisory warning if low/unsuitable
+      src/gpu/gpu-planner.ts: recommendedTarget always cpu; always emits FUNGI-COMPUTE-001/005; sensitive→004; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Create gpu/ dir: gpu-planner.ts, gpu-runtime.ts, gpu-fallback.ts, gpu-reports.ts, gpu-estimator.ts
+      plus gpu-codes.ts, gpu-types.ts, index.ts; createGpuPlanReport in gpu-reports.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [ ] Define OpticalNeed: none|data_movement|topology_aware|high_bandwidth|unknown
 [ ] Define OpticalFallbackPlan: target (network_io|cpu|cluster_runtime), reason
 [ ] Define OpticalPlan: need, recommendedMode (none|optical_io_awareness|photonic_planning_only), fallback, diagnostics[]
