@@ -33,7 +33,7 @@
 
 ```text
 [x] Add Bool logic benchmark -- src/bool-logic-benchmark.ts runBoolLogicBenchmark / scoreBoolLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.bool_branch target logic; FUNGI-BENCH-BOOL-001..005; in-process truth-table microbench only (no command runner / hardware probes / Phase 8-9)
-[ ] Add Tri logic benchmark
+[x] Add Tri logic benchmark -- src/tri-logic-benchmark.ts runTriLogicBenchmark / scoreTriLogicBenchmark (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed case id logic.tri_match target logic; Tri -1|0|1 Kleene table; FUNGI-BENCH-TRI-001..005; in-process only (no command runner / hardware / Phase 8-9)
 [ ] Add Galerina benchmark
 [ ] Add Result / Option benchmark
 [ ] Add CPU arithmetic benchmark
@@ -167,3 +167,8 @@ generator existed is superseded by the 2026-10-05 note above.)
 - README light id `logic.bool_branch`; target `logic`; purpose check no silent Bool conversion (genuine boolean ops only).
 - CASE ONLY: does not implement the Galerina benchmark command runner, RAM/vector/GPU detection, or Phase 8-9.
 - Never throws; never echoes options/tokens. Owner may revisit score formula / default operations.
+
+## Notes (Grok 2026-10-05 Tri logic benchmark)
+- Closed `src/tri-logic-benchmark.ts`: `runTriLogicBenchmark` / `scoreTriLogicBenchmark` / `benchTriAnd|Or|Not`.
+- README light id `logic.tri_match`; target `logic`. Tri vocabulary `-1|0|1` matches galerina-core-logic (local closed copy; no package import).
+- CASE ONLY: no command runner, RAM/vector/GPU detection, or Phase 8-9.
