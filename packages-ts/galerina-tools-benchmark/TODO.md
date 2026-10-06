@@ -22,11 +22,11 @@
 ```text
 [x] Add Galerina benchmark command placeholder
 [ ] Implement Galerina benchmark command runner
-[ ] Add --light flag
-[ ] Add --full flag
-[ ] Add --json flag
-[ ] Add --save flag
-[ ] Add command-line summary output
+[x] Add --light flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --light; conflicts with --full refused Galerina_BENCHMARK_CLI_002; never echoes refused tokens
+[x] Add --full flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --full; mutual exclusion with --light; default mode light when neither set
+[x] Add --json flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --json boolean; duplicates/equals-form refused Galerina_BENCHMARK_CLI_001
+[x] Add --save flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --save with required --out <rel-dir>; path traversal / refused tokens Galerina_BENCHMARK_CLI_003; --network/--live/--stress refused Galerina_BENCHMARK_CLI_004
+[x] Add command-line summary output -- src/index.ts formatBenchmarkSummary (Grok 2026-10-05; zero-trust defaults, owner may revisit): privacy-safe lines from captured report; never includes paths/host/user/raw reasons; invalid report yields fixed unavailable line
 ```
 
 ## Phase 3: Light Benchmarks
@@ -68,7 +68,7 @@ tests/system-detection.test.mjs. The RAM bucket is left out on purpose
 ## Phase 5: Reports
 
 ```text
-[ ] Write benchmark-report.json
+[x] Write benchmark-report.json -- src/index.ts writeBenchmarkReport / renderBenchmarkReport (Grok 2026-10-05; zero-trust defaults, owner may revisit): exclusive-create BENCHMARK_REPORT_FILE into existing dir via captureBenchmarkReport and a host-supplied BenchmarkReportFileWriter capability (closed CREATED/EXISTS/DIR_INVALID/IO_FAILED result; the package imports no node:fs/node:path, boundary policy unchanged); never overwrites; never throws; never echoes paths/errno; IO_FAILED/REFUSED statuses; tests/benchmark-report-write.test.mjs
 [x] Add report schema version
 [x] Add privacy section
 [x] Add fallback section
@@ -90,7 +90,7 @@ session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md):
 - Skipped tests section: `skipped` / `skipped_timeout` statuses with a bounded
   `reason` (:19-25, :410, :414).
 - Score section: `BenchmarkScores` with required `overall` (:174-186, :382-390).
-- Still open: `Write benchmark-report.json` (nothing writes the file yet).
+- Update 2026-10-05 (Grok Bot; owner may revisit): `writeBenchmarkReport` exclusive-creates `benchmark-report.json`; Phase 2 flag parse + summary landed. Live runner / hardware probes / Phase 8-9 remain open.
 
 ## Phase 6: Major Version Trigger
 
