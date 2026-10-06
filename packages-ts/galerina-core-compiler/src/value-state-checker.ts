@@ -460,6 +460,13 @@ function isProtectedValueExpression(node: AstNode): boolean {
 }
 
 const SECRET_NS = new Set(["secret", "secrets", "vault", "kms", "env"]);
+const SECRET_ACCESSORS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ["secret", new Set(["get", "read"])],
+  ["secrets", new Set(["get"])],
+  ["vault", new Set(["get", "read"])],
+  ["kms", new Set(["decrypt"])],
+  ["env", new Set(["get", "secret"])],
+]);
 
 /**
  * Source-only receiver classification (DESIGN-02 / Q1b).
@@ -473,21 +480,22 @@ type SourceReceiver =
   | { readonly tag: "PlainCall" }
   | { readonly tag: "Unclassified" };
 
-function sourceLastSegment(node: AstNode): string {
+function sourceLastSegment(node: AstNode, aliasMap?: ReadonlyMap<string, string>): string {
   let receiver = node.children?.[0];
   while (receiver?.kind === "errorPropagation") {
     receiver = receiver.children?.[0];
   }
   if (receiver === undefined) return "";
-  const name = receiver.kind === "identifier" ? (receiver.value ?? "") : getNodeName(receiver);
+  const name = receiver.kind === "identifier" ? (aliasMap?.get(receiver.value ?? "") ?? receiver.value ?? "")
+    : getNodeName(receiver, aliasMap);
   const seg = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : name;
   return seg.toLowerCase();
 }
 
-function sourceReceiverSegment(node: AstNode): SourceReceiver {
+function sourceReceiverSegment(node: AstNode, aliasMap?: ReadonlyMap<string, string>): SourceReceiver {
   const style: string | undefined = node.callStyle;
   if (style === "method") {
-    return { tag: "Receiver", seg: sourceLastSegment(node) };
+    return { tag: "Receiver", seg: sourceLastSegment(node, aliasMap) };
   }
   if (style === undefined) {
     return { tag: "PlainCall" };
@@ -503,38 +511,75 @@ function sourceReceiverSegment(node: AstNode): SourceReceiver {
  * sink. Recognised accessors (receiver namespace . method):
  *   secret.get / secret.read / vault.read / vault.get / kms.decrypt / secrets.get / Env.get / env.secret  (any case)
  */
-function isSecretSourceExpression(node: AstNode): boolean {
+function sourceReceiverRoot(node: AstNode): string | undefined {
+  let receiver = node.children?.[0];
+  while (receiver?.kind === "errorPropagation") receiver = receiver.children?.[0];
+  while (receiver?.kind === "memberExpr") receiver = receiver.children?.[0];
+  return receiver?.kind === "identifier" ? receiver.value : undefined;
+}
+
+function isSecretSourceExpression(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+  aliasMap: ReadonlyMap<string, string>,
+): boolean {
   if (node.kind === "errorPropagation") {
     const inner = node.children?.[0];
-    return inner !== undefined && isSecretSourceExpression(inner);
+    return inner !== undefined && isSecretSourceExpression(inner, lookupBinding, aliasMap);
   }
   if (node.kind !== "callExpr") return false;
-  const classified = sourceReceiverSegment(node);
-  switch (classified.tag) {
-    case "Receiver":
-      return SECRET_NS.has(classified.seg);
-    case "PlainCall":
-      return false;
-    case "Unclassified":
-      return SECRET_NS.has(receiverSegment(node));
-    default: {
-      const _unused: never = classified;
-      return SECRET_NS.has(receiverSegment(node));
-    }
-  }
+  const root = sourceReceiverRoot(node);
+  if (root !== undefined && lookupBinding(root) !== undefined && !aliasMap.has(root)) return false;
+  const classified = sourceReceiverSegment(node, aliasMap);
+  const receiver = classified.tag === "Receiver"
+    ? classified.seg
+    : classified.tag === "Unclassified"
+      ? sourceLastSegment(node, aliasMap)
+      : "";
+  return receiver !== ""
+    && (SECRET_ACCESSORS.get(receiver)?.has((node.value ?? "").toLowerCase()) ?? false);
 }
 
 /**
  * Returns true when the AST node is a `redact(...)` call expression (or wrapped in ?).
  * Assigning redact(x) to a plain binding is a FUNGI-VALUESTATE-007 violation.
  */
-function isRedactCall(node: AstNode): boolean {
+function isRedactCall(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+): boolean {
   // Unwrap errorPropagation (?)
   if (node.kind === "errorPropagation") {
     const inner = node.children?.[0];
-    return inner !== undefined && isRedactCall(inner);
+    return inner !== undefined && isRedactCall(inner, lookupBinding);
   }
-  return node.kind === "callExpr" && (node.value === "redact");
+  return node.kind === "callExpr" && node.callStyle === undefined
+    && node.value === "redact" && lookupBinding("redact") === undefined;
+}
+
+/**
+ * Recognise only the compiler-provided constant-time comparison, never a same-named
+ * method or a locally rebound prelude value. A declassifier is an authority boundary:
+ * spelling alone must not clear secret provenance.
+ */
+function isConstantTimeEqualsCall(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+): boolean {
+  if (node.kind === "errorPropagation") {
+    const inner = node.children?.[0];
+    return inner !== undefined && isConstantTimeEqualsCall(inner, lookupBinding);
+  }
+  if (!(node.kind === "callExpr" && node.value === "constantTimeEquals")) return false;
+  if (node.callStyle === "method") {
+    const receiver = node.children?.[0];
+    return receiver?.kind === "identifier"
+      && receiver.value === "Crypto"
+      && lookupBinding("Crypto") === undefined;
+  }
+  // The legacy prelude spelling remains valid only while it resolves to the prelude,
+  // rather than a local value with the same name.
+  return node.callStyle === undefined && lookupBinding("constantTimeEquals") === undefined;
 }
 
 /**
@@ -572,19 +617,15 @@ function interpolatedNames(node: AstNode): string[] {
 function derivesFromSecret(
   node: AstNode,
   lookupBinding: (name: string) => BindingInfo | undefined,
+  aliasMap: ReadonlyMap<string, string> = new Map(),
 ): boolean {
   // redact(...) is the sole declassifier to a SAFE placeholder — it breaks the chain.
-  if (isRedactCall(node)) return false;
-  // constantTimeEquals(secret, x) DECLASSIFIES too: it is the SANCTIONED secret comparison (== on a secret is
-  // forbidden, Rule 4) and returns a public Bool (the match OUTCOME — the user inevitably learns it), not
-  // secret material. Without this, `let ok = Crypto.constantTimeEquals(pw, hash)` over-taints `ok` as
-  // SecureString, false-firing SECRET-001/003 when `ok` is later logged/audited (RD-0093b ripple). Shape
-  // mirrors isRedactCall: `Crypto.constantTimeEquals(...)` parses to callExpr value="constantTimeEquals".
-  if (node.kind === "callExpr" && node.value === "constantTimeEquals") return false;
-  if (node.kind === "errorPropagation" && node.children?.[0]?.kind === "callExpr"
-      && node.children[0].value === "constantTimeEquals") return false;
+  if (isRedactCall(node, lookupBinding)) return false;
+  // Only the compiler-provided Crypto operation (or unshadowed legacy prelude alias)
+  // declassifies its public Bool outcome. Same-spelled user methods/locals stay secret.
+  if (isConstantTimeEqualsCall(node, lookupBinding)) return false;
   // A direct secret accessor (secret.get / vault.read / kms.decrypt / secrets.get), incl. `?`.
-  if (isSecretSourceExpression(node)) return true;
+  if (isSecretSourceExpression(node, lookupBinding, aliasMap)) return true;
 
   switch (node.kind) {
     case "identifier": {
@@ -597,7 +638,7 @@ function derivesFromSecret(
     }
     case "memberExpr": {
       const receiver = node.children?.[0];
-      return receiver !== undefined && derivesFromSecret(receiver, lookupBinding);
+      return receiver !== undefined && derivesFromSecret(receiver, lookupBinding, aliasMap);
     }
     case "callExpr": {
       // Record literal "#record" AND spread/update "#record-update" (`{ ...base, tok: k }`):
@@ -605,28 +646,44 @@ function derivesFromSecret(
       if (node.value === "#record" || node.value === "#record-update") {
         return (node.children ?? []).some((field) => {
           const value = field.children?.[0] ?? field;
-          return derivesFromSecret(value, lookupBinding);
+          return derivesFromSecret(value, lookupBinding, aliasMap);
         });
       }
       // Any non-redacting call carrying a secret through receiver or args stays secret
       // (NOTE: unlike the taint chain, validate/parse/decode do NOT declassify a secret).
-      return (node.children ?? []).some((child) => derivesFromSecret(child, lookupBinding));
+      const children = node.children ?? [];
+      const root = sourceReceiverRoot(node);
+      const receiverIsNamespaceOnly = node.callStyle === "method"
+        && root !== undefined
+        && lookupBinding(root) === undefined
+        && SECRET_NS.has(sourceLastSegment(node, aliasMap));
+      return children.some((child, index) =>
+        !(index === 0 && receiverIsNamespaceOnly)
+        && derivesFromSecret(child, lookupBinding, aliasMap));
     }
     case "stringLiteral":
       // Interpolated secret: `"Authorization: ${key}"` keeps the secret.
       return interpolatedNames(node).some(
         (n) => lookupBinding(n)?.typeName === "SecureString",
       );
+    case "numberLiteral":
+    case "boolLiteral":
+    case "charLiteral":
+      // These parser-known leaves carry no secret-capable children.
+      return false;
     case "matchExpr": {
       const [subject, ...arms] = node.children ?? [];
       const subjectIsSecret =
-        subject !== undefined && derivesFromSecret(subject, lookupBinding);
-      if (subjectIsSecret) return true;
+        subject !== undefined && derivesFromSecret(subject, lookupBinding, aliasMap);
+      const subjectControlsDispatch = subjectIsSecret && arms.some((arm) =>
+        arm.kind === "matchArm" && arm.value !== "__guard__" && !isCatchAllMatchArm(arm),
+      );
+      if (subjectControlsDispatch) return true;
       return arms.some((arm) => {
         if (arm.kind !== "matchArm") return false;
         const children = arm.children ?? [];
         const guard = arm.value === "__guard__" ? children[0] : undefined;
-        if (guard !== undefined && derivesFromSecret(guard, lookupBinding)) return true;
+        if (guard !== undefined && derivesFromSecret(guard, lookupBinding, aliasMap)) return true;
         const body = [...children].reverse().find((child) => child.kind !== "identifier");
         if (body === undefined) return false;
         const armLookup = (name: string): BindingInfo | undefined => {
@@ -640,7 +697,7 @@ function derivesFromSecret(
           }
           return lookupBinding(name);
         };
-        return derivesFromMatchArmResult(body, armLookup);
+        return derivesFromMatchArmResult(body, armLookup, aliasMap);
       });
     }
     case "unaryExpr":
@@ -648,26 +705,51 @@ function derivesFromSecret(
     case "listLiteral":
     case "k3FoldExpr":
     case "errorPropagation":
-      return (node.children ?? []).some((child) => derivesFromSecret(child, lookupBinding));
+    case "checkExpr":
+    case "prefilterExpr":
+    case "requirementExpr":
+    case "requirementConstraint":
+    case "typedContentBlockExpr":
+    case "forEachStmt":
+    case "block":
+      return (node.children ?? []).some((child) => derivesFromSecret(child, lookupBinding, aliasMap));
+    case "fnDecl":
+      // A nested function body is not executed merely because its declaration
+      // occurs inside an expression block.
+      return false;
     default:
-      // Unknown or newly-added child-bearing nodes must not erase confidentiality.
-      // Literal typed content has no expression children, so remains public here.
-      return (node.children ?? []).some((child) => derivesFromSecret(child, lookupBinding));
+      // A future AST kind has no reviewed secrecy semantics. Treat it as secret
+      // until its exact semantics are classified above; child traversal alone
+      // cannot prove an unknown node public (it may encode control or hidden data).
+      return true;
   }
+}
+
+/** Existing expression and value-wrapper kinds admitted by secret logging traversal. */
+const REVIEWED_SECRET_SINK_AST_KINDS: ReadonlySet<string> = new Set([
+  "identifier", "memberExpr", "callExpr", "stringLiteral", "numberLiteral", "boolLiteral", "charLiteral",
+  "unaryExpr", "binaryExpr", "listLiteral", "k3FoldExpr", "errorPropagation", "matchExpr", "matchArm",
+  "checkExpr", "checkArm", "prefilterExpr", "prefilterArm", "requirementExpr", "requirementConstraint",
+  "typedContentBlockExpr", "block",
+]);
+
+function isReviewedSecretSinkAstKind(kind: string): boolean {
+  return REVIEWED_SECRET_SINK_AST_KINDS.has(kind);
 }
 
 /** Read only values that can leave a match-arm body, not arbitrary local expressions. */
 function derivesFromMatchArmResult(
   node: AstNode,
   lookupBinding: (name: string) => BindingInfo | undefined,
+  aliasMap: ReadonlyMap<string, string> = new Map(),
 ): boolean {
   if (node.kind === "returnStmt") {
     const value = node.children?.[0];
-    return value !== undefined && derivesFromSecret(value, lookupBinding);
+    return value !== undefined && derivesFromSecret(value, lookupBinding, aliasMap);
   }
   if (node.kind === "block" && node.value === "(expr)") {
     const value = node.children?.[0];
-    return value !== undefined && derivesFromSecret(value, lookupBinding);
+    return value !== undefined && derivesFromSecret(value, lookupBinding, aliasMap);
   }
   if (node.kind === "block") {
     const locals = new Map<string, BindingInfo>();
@@ -688,10 +770,10 @@ function derivesFromMatchArmResult(
             candidate.kind === "pureFlowDecl" || candidate.kind === "guardedFlowDecl" ||
             candidate.kind === "governedFlowDecl") continue;
 
-        if (candidate.kind === "letDecl" || candidate.kind === "mutDecl") {
+        if (candidate.kind === "letDecl" || candidate.kind === "readonlyDecl" || candidate.kind === "mutDecl") {
           const info = parseBindingValue(candidate.value ?? "");
           const init = candidate.children?.[0];
-          const isSecret = init !== undefined && derivesFromSecret(init, (name) => lookupIn(state, name));
+          const isSecret = init !== undefined && derivesFromSecret(init, (name) => lookupIn(state, name), aliasMap);
           state.set(info.name, {
             ...info,
             typeName: isSecret ? "SecureString" : info.typeName,
@@ -706,7 +788,7 @@ function derivesFromMatchArmResult(
           const existing = lookupIn(state, target);
           const rhs = candidate.children?.[0];
           if (target !== "" && existing !== undefined && rhs !== undefined) {
-            const isSecret = derivesFromSecret(rhs, (name) => lookupIn(state, name));
+            const isSecret = derivesFromSecret(rhs, (name) => lookupIn(state, name), aliasMap);
             state.set(target, {
               ...existing,
               typeName: isSecret ? "SecureString"
@@ -723,7 +805,7 @@ function derivesFromMatchArmResult(
 
         if (candidate.kind === "returnStmt") {
           const value = candidate.children?.[0];
-          secretResult ||= value !== undefined && derivesFromSecret(value, (name) => lookupIn(state, name));
+          secretResult ||= value !== undefined && derivesFromSecret(value, (name) => lookupIn(state, name), aliasMap);
           return { secretResult, continues: false, writes };
         }
 
@@ -734,7 +816,7 @@ function derivesFromMatchArmResult(
         if (candidate.kind === "ifStmt") {
           const [condition, thenBlock, elseBlock] = candidate.children ?? [];
           const conditionIsSecret = condition !== undefined &&
-            derivesFromSecret(condition, (name) => lookupIn(state, name));
+            derivesFromSecret(condition, (name) => lookupIn(state, name), aliasMap);
           const incoming = new Map(state);
           const thenState = new Map(incoming);
           const thenOutcome = thenBlock?.kind === "block"
@@ -754,6 +836,17 @@ function derivesFromMatchArmResult(
             // Returning on only one secret-controlled path makes the match
             // result/control outcome depend on the secret predicate.
             secretResult = true;
+          }
+          if (conditionIsSecret && !thenOutcome.continues && !elseOutcome.continues &&
+              (containsReturnStatement(thenBlock) || containsReturnStatement(elseBlock))) {
+            const thenLiteral = thenBlock === undefined ? undefined : directLiteralReturnSignature(thenBlock);
+            const elseLiteral = elseBlock === undefined ? undefined : directLiteralReturnSignature(elseBlock);
+            // Two terminal returns can still expose a secret-dependent value
+            // even though neither path reaches a later statement. Prove the
+            // result is independent only for the same direct primitive literal;
+            // unknown expressions, mixed returns/faults, and different literals
+            // remain confidential.
+            if (thenLiteral === undefined || thenLiteral !== elseLiteral) secretResult = true;
           }
 
           const reachableStates = [
@@ -782,8 +875,72 @@ function derivesFromMatchArmResult(
               typeName: isSecret || secretControlledWrite ? "SecureString"
                 : original.typeName === "SecureString" ? "" : original.typeName,
             });
-            if (reachableStates.some(({ outcome }) => outcome.writes.has(name))) writes.add(name);
+            if (!declaredHere.has(name) && reachableStates.some(({ outcome }) => outcome.writes.has(name))) {
+              writes.add(name);
+            }
           }
+          continue;
+        }
+
+        if (candidate.kind === "whileStmt") {
+          const [condition, body] = candidate.children ?? [];
+          const incoming = new Map(state);
+          let headState = new Map(incoming);
+          const loopStateKey = (current: ReadonlyMap<string, BindingInfo>): string =>
+            JSON.stringify([...current.entries()]);
+          const maxIterations = Math.max(2, incoming.size * 4 + 4);
+
+          for (let iteration = 0; iteration < maxIterations; iteration++) {
+            const conditionIsSecret = condition !== undefined &&
+              derivesFromSecret(condition, (name) => lookupIn(headState, name), aliasMap);
+            const bodyState = new Map(headState);
+            const bodyOutcome = body?.kind === "block"
+              ? visitBlock(body, bodyState)
+              : body === undefined
+                ? { secretResult: false, continues: true, writes: new Set<string>() }
+                : visitNode(body, bodyState);
+            secretResult ||= bodyOutcome.secretResult;
+            if (conditionIsSecret && !bodyOutcome.continues) {
+              // A secret-dependent return from the loop changes whether the
+              // enclosing match arm reaches its trailing result expression.
+              secretResult = true;
+            }
+
+            // A returning body has no backedge, so its assignments cannot
+            // become the state of another iteration or the trailing result.
+            if (!bodyOutcome.continues) break;
+
+            const assignedNames = new Set<string>(incoming.keys());
+            for (const name of bodyOutcome.writes) assignedNames.add(name);
+            const nextHeadState = new Map(incoming);
+            for (const name of assignedNames) {
+              const original = incoming.get(name) ?? lookupBinding(name);
+              if (original === undefined) continue;
+              const headInfo = headState.get(name) ?? original;
+              const bodyInfo = bodyOutcome.writes.has(name)
+                ? bodyState.get(name) ?? headInfo
+                : headInfo;
+              const isSecret = [original, headInfo, bodyInfo]
+                .some((info) => info.typeName === "SecureString");
+              const secretControlledWrite = conditionIsSecret && bodyOutcome.writes.has(name);
+              nextHeadState.set(name, {
+                ...original,
+                typeName: isSecret || secretControlledWrite ? "SecureString"
+                  : original.typeName === "SecureString" ? "" : original.typeName,
+              });
+              if (!declaredHere.has(name) && bodyOutcome.writes.has(name)) writes.add(name);
+            }
+
+            const stable = loopStateKey(headState) === loopStateKey(nextHeadState);
+            headState = nextHeadState;
+            if (stable) break;
+            if (iteration === maxIterations - 1) {
+              throw new Error("match-arm while analysis did not converge within its finite state bound");
+            }
+          }
+
+          state.clear();
+          for (const [name, info] of headState) state.set(name, info);
           continue;
         }
 
@@ -804,7 +961,7 @@ function derivesFromMatchArmResult(
           continue;
         }
 
-        secretResult ||= derivesFromMatchArmResult(candidate, (name) => lookupIn(state, name));
+        secretResult ||= derivesFromMatchArmResult(candidate, (name) => lookupIn(state, name), aliasMap);
       }
       return { secretResult, continues: true, writes };
     };
@@ -812,7 +969,7 @@ function derivesFromMatchArmResult(
     const visitNode = (candidate: AstNode, state: Map<string, BindingInfo>): ArmOutcome => {
       if (candidate.kind === "block") return visitBlock(candidate, state);
       const secretResult = derivesFromMatchArmResult(candidate, (name) =>
-        state.get(name) ?? lookupBinding(name));
+        state.get(name) ?? lookupBinding(name), aliasMap);
       return {
         secretResult,
         continues: candidate.kind !== "returnStmt" && candidate.kind !== "faultStmt",
@@ -825,10 +982,76 @@ function derivesFromMatchArmResult(
     // is joined across all reachable paths before the arm's return is classified.
     return visitBlock(node, locals).secretResult;
   }
-  return derivesFromSecret(node, lookupBinding);
+  return derivesFromSecret(node, lookupBinding, aliasMap);
 }
 
 /** True when executing this statement cannot reach the next statement in its block. */
+function isCatchAllMatchArm(node: AstNode): boolean {
+  return node.kind === "matchArm" && (node.value === "_" || node.value === "else");
+}
+
+/** A declared SecureString component preserves the confidentiality label at return. */
+function returnTypePreservesSecretLabel(typeName: string | undefined): boolean {
+  return typeName !== undefined && /\bSecureString\b/.test(typeName);
+}
+
+function directLiteralReturnSignature(node: AstNode): string | undefined {
+  const returned = node.kind === "returnStmt"
+    ? node
+    : node.kind === "block" && node.children?.length === 1 && node.children[0]?.kind === "returnStmt"
+      ? node.children[0]
+      : undefined;
+  const value = returned?.children?.[0];
+  if (value === undefined || ![
+    "boolLiteral",
+    "charLiteral",
+    "floatLiteral",
+    "intLiteral",
+    "numberLiteral",
+    "stringLiteral",
+  ].includes(value.kind)) return undefined;
+  return JSON.stringify([value.kind, value.value]);
+}
+
+function containsReturnStatement(node: AstNode | undefined): boolean {
+  if (node === undefined) return false;
+  if (node.kind === "returnStmt") return true;
+  if (node.kind === "flowDecl" || node.kind === "secureFlowDecl" || node.kind === "pureFlowDecl" ||
+      node.kind === "guardedFlowDecl" || node.kind === "governedFlowDecl") return false;
+  return (node.children ?? []).some(containsReturnStatement);
+}
+
+function containsTerminalExitStatement(node: AstNode | undefined): boolean {
+  if (node === undefined) return false;
+  if (node.kind === "returnStmt" || node.kind === "faultStmt") return true;
+  if (node.kind === "flowDecl" || node.kind === "secureFlowDecl" || node.kind === "pureFlowDecl" ||
+      node.kind === "guardedFlowDecl" || node.kind === "governedFlowDecl" || node.kind === "fnDecl") return false;
+  if (node.kind === "ifStmt") {
+    const [condition, thenBlock, elseBlock] = node.children ?? [];
+    if (containsTerminalExitStatement(condition)) return true;
+    if (condition?.kind === "boolLiteral") {
+      return condition.value === "true"
+        ? containsTerminalExitStatement(thenBlock)
+        : containsTerminalExitStatement(elseBlock);
+    }
+    return containsTerminalExitStatement(thenBlock) || containsTerminalExitStatement(elseBlock);
+  }
+  if (node.kind === "whileStmt") {
+    const [condition, body] = node.children ?? [];
+    if (containsTerminalExitStatement(condition)) return true;
+    if (condition?.kind === "boolLiteral" && condition.value === "false") return false;
+    return containsTerminalExitStatement(body);
+  }
+  if (node.kind === "block") {
+    for (const child of node.children ?? []) {
+      if (containsTerminalExitStatement(child)) return true;
+      if (definitelyTerminates(child)) return false;
+    }
+    return false;
+  }
+  return (node.children ?? []).some(containsTerminalExitStatement);
+}
+
 function definitelyTerminates(node: AstNode): boolean {
   if (node.kind === "returnStmt" || node.kind === "faultStmt") return true;
   if (node.kind === "block") {
@@ -841,11 +1064,14 @@ function definitelyTerminates(node: AstNode): boolean {
   }
   if (node.kind === "matchExpr") {
     const arms = (node.children ?? []).slice(1);
-    if (arms.length === 0 || !arms.some((arm) => arm.kind === "matchArm" && arm.value === "_")) {
+    if (arms.length === 0 || !arms.some(isCatchAllMatchArm)) {
       return false;
     }
     return arms.every((arm) => {
-      if (arm.kind !== "matchArm" || arm.value === "__guard__") return false;
+      if (arm.kind !== "matchArm") return false;
+      // A guarded arm can still be terminal: when an unguarded wildcard is
+      // present and every arm body terminates, guard fallthrough cannot reach
+      // the following statement either.
       const body = [...(arm.children ?? [])].reverse().find((child) => child.kind !== "identifier");
       return body !== undefined && definitelyTerminates(body);
     });
@@ -903,12 +1129,30 @@ function isEmbeddingSourceExpression(node: AstNode): boolean {
 }
 
 /** seal(...) / encrypt(...) — the sole declassifier for an embedding (incl. `?`). */
-function isSealCall(node: AstNode): boolean {
+function isSealCall(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+): boolean {
   if (node.kind === "errorPropagation") {
     const inner = node.children?.[0];
-    return inner !== undefined && isSealCall(inner);
+    return inner !== undefined && isSealCall(inner, lookupBinding);
   }
-  return node.kind === "callExpr" && (node.value === "seal" || node.value === "encrypt");
+  return node.kind === "callExpr" && node.callStyle === undefined
+    && (node.value === "seal" || node.value === "encrypt")
+    && lookupBinding(node.value) === undefined;
+}
+
+/** Only the authenticated-envelope primitive may carry protected data over network egress. */
+function isAuthenticatedSealCall(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+): boolean {
+  if (node.kind === "errorPropagation") {
+    const inner = node.children?.[0];
+    return inner !== undefined && isAuthenticatedSealCall(inner, lookupBinding);
+  }
+  return node.kind === "callExpr" && node.callStyle === undefined
+    && node.value === "seal" && lookupBinding("seal") === undefined;
 }
 
 /**
@@ -921,7 +1165,7 @@ function derivesFromEmbedding(
   node: AstNode,
   lookupBinding: (name: string) => BindingInfo | undefined,
 ): boolean {
-  if (isSealCall(node)) return false;
+  if (isSealCall(node, lookupBinding)) return false;
   if (isEmbeddingSourceExpression(node)) return true;
 
   switch (node.kind) {
@@ -1384,6 +1628,9 @@ class ValueStateChecker {
   // R&D 0093: the flow-kind currently being walked, so registerParamBinding knows whether
   // a bare param sits at a posture-gated entry boundary (secure/guarded → boundary-untrusted).
   private currentFlowKind: string | undefined;
+  // Preserve secret provenance across returns by comparing the expression with
+  // the enclosing flow's declared result type.
+  private currentFlowReturnType: string | undefined;
   // C1: per-flow `let x = Module` alias map, set on flow entry; resolves an aliased sink receiver
   // (`x.write` → `AuditLog.write`) so the taint/sink gates aren't smuggled past by a rename.
   private moduleAliases: ReadonlyMap<string, string> = new Map();
@@ -1473,6 +1720,7 @@ class ValueStateChecker {
   private joinSecretStates(
     baseline: Array<Map<string, BindingInfo>>,
     outcomes: Array<Array<Map<string, BindingInfo>>>,
+    includeAffineConsumption = true,
   ): void {
     for (let scopeIndex = 0; scopeIndex < baseline.length; scopeIndex++) {
       const scope = baseline[scopeIndex]!;
@@ -1484,8 +1732,14 @@ class ValueStateChecker {
         if (current === undefined || branchBindings.length === 0) continue;
 
         const tainted = branchBindings.some((binding) => binding.tainted === true);
-        const consumed = branchBindings.some((binding) => binding.consumed === true);
-        const consumedAt = branchBindings.find((binding) => binding.consumedAt !== undefined)?.consumedAt;
+        const consumed = includeAffineConsumption
+          ? branchBindings.some((binding) => binding.consumed === true)
+          : original.consumed === true;
+        const consumedAt = consumed
+          ? (includeAffineConsumption
+            ? branchBindings.find((binding) => binding.consumedAt !== undefined)?.consumedAt
+            : original.consumedAt)
+          : undefined;
         const taintSource = branchBindings.find((binding) => binding.taintSource !== undefined)?.taintSource;
         let typeName = current.typeName;
         if (branchBindings.some((binding) => binding.typeName === "SecureString")) {
@@ -1613,11 +1867,13 @@ class ValueStateChecker {
       case "guardedFlowDecl": {
         this.pushScope();
         const prevFlowKind = this.currentFlowKind;
+        const prevFlowReturnType = this.currentFlowReturnType;
         const prevAliases = this.moduleAliases;
         const prevSecretControlDepth = this.secretControlDepth;
         this.secretControlDepth = 0;
         try {
           this.currentFlowKind = node.kind; // R&D 0093: posture context for registerParamBinding
+          this.currentFlowReturnType = (node.children ?? []).find((child) => child.kind === "typeRef")?.value;
           this.moduleAliases = buildModuleAliasMap(node); // C1: flow-scoped `let x = Module` aliases
           // Register parameter bindings so SecureString params are tracked
           for (const child of node.children ?? []) {
@@ -1629,6 +1885,7 @@ class ValueStateChecker {
         } finally {
           this.secretControlDepth = prevSecretControlDepth;
           this.moduleAliases = prevAliases;
+          this.currentFlowReturnType = prevFlowReturnType;
           this.currentFlowKind = prevFlowKind;
           this.popScope();
         }
@@ -1670,6 +1927,12 @@ class ValueStateChecker {
         this.handleLetDecl(node);
         break;
 
+      case "readonlyDecl":
+        // Immutable locals carry the same confidentiality and binding-identity
+        // facts as `let`; omitting them makes a readonly shadow look intrinsic.
+        this.handleLetDecl(node);
+        break;
+
       case "recordDecl": {
         for (const field of node.children ?? []) {
           if (field.kind !== "paramDecl") continue;
@@ -1697,6 +1960,24 @@ class ValueStateChecker {
 
       case "returnStmt": {
         const returned = node.children?.[0];
+        if (
+          returned !== undefined
+          && this.currentFlowKind !== undefined
+          && !returnTypePreservesSecretLabel(this.currentFlowReturnType)
+          && derivesFromSecret(returned, (name) => this.lookupBinding(name), this.moduleAliases)
+        ) {
+          const returnType = this.currentFlowReturnType ?? "an unqualified result";
+          this.diagnostics.push({
+            code: "FUNGI-SECRET-006",
+            name: "SECRET_CROSSES_FLOW_BOUNDARY",
+            severity: this.mode === "production" ? "error" : "warning",
+            message: `A secret-derived value is returned as '${returnType}', which does not preserve the SecureString confidentiality label. Preserve a secret-bearing result type or explicitly redact before returning.`,
+            ...(node.location !== undefined ? { location: node.location } : {}),
+            suggestedFix: "Return SecureString (or a result type containing it), or explicitly redact the value before return.",
+            why: "A return boundary with an ordinary result type would erase the compiler's secret provenance for callers.",
+            risk: "A caller may treat returned secret bytes as an ordinary value and pass them to an unguarded sink.",
+          });
+        }
         if (returned?.kind === "identifier") {
           this.consumeAuthorityBinding(returned.value ?? "", node.location);
         }
@@ -1734,6 +2015,10 @@ class ValueStateChecker {
         this.handleIfStmt(node);
         break;
 
+      case "whileStmt":
+        this.handleWhileStmt(node);
+        break;
+
       default:
         this.walkChildren(node);
         break;
@@ -1753,7 +2038,7 @@ class ValueStateChecker {
   private handleIfStmt(node: AstNode): void {
     const [_condition, thenBlock, elseBlock] = node.children ?? [];
     const secretCondition =
-      _condition !== undefined && derivesFromSecret(_condition, (name) => this.lookupBinding(name));
+      _condition !== undefined && derivesFromSecret(_condition, (name) => this.lookupBinding(name), this.moduleAliases);
 
     // Walk the condition expression first (does NOT clear taint).
     if (_condition !== undefined) {
@@ -1866,28 +2151,134 @@ class ValueStateChecker {
     }
   }
 
+  /** Track secret-dependent loop entry/exit, body effects, and later-iteration state. */
+  private handleWhileStmt(node: AstNode): void {
+    const [condition, body] = node.children ?? [];
+    if (condition === undefined || body === undefined) {
+      this.walkChildren(node);
+      return;
+    }
+
+    const baseline = this.snapshotScopes();
+    const baselineSecretControlDepth = this.secretControlDepth;
+    const diagnosticStart = this.diagnostics.length;
+    const loopDiagnostics = new Map<string, ValueStateDiagnostic>();
+    const rememberDiagnostics = (): void => {
+      for (const diagnostic of this.diagnostics.splice(diagnosticStart)) {
+        loopDiagnostics.set(JSON.stringify(diagnostic), diagnostic);
+      }
+    };
+    const stateKey = (scopes: Array<Map<string, BindingInfo>>, depth: number): string =>
+      JSON.stringify([scopes.map((scope) => [...scope.entries()]), depth]);
+
+    let headScopes = baseline;
+    let headSecretControlDepth = baselineSecretControlDepth;
+    let warnedForSecretCondition = false;
+    const maxIterations = Math.max(2, baseline.reduce((count, scope) => count + scope.size, 0) * 4 + 4);
+
+    for (let iteration = 0; iteration < maxIterations; iteration++) {
+      this.restoreScopes(headScopes);
+      this.secretControlDepth = headSecretControlDepth;
+      const secretCondition = derivesFromSecret(condition, (name) => this.lookupBinding(name), this.moduleAliases);
+      this.walkNode(condition);
+      const conditionOutcome = this.snapshotScopes();
+      if (secretCondition && !warnedForSecretCondition) {
+        warnedForSecretCondition = true;
+        this.diagnostics.push({
+          code: "FUNGI-SECRET-004",
+          name: "SECRET_DEPENDENT_BRANCH",
+          severity: "warning",
+          message: "This 'while' loop continues according to a secret-derived value, so its body execution count and observable timing depend on secret material (timing side-channel, CWE-208).",
+          ...(condition.location !== undefined ? { location: condition.location } : {}),
+          suggestedFix: "Use a public loop bound or a reviewed constant-time primitive for secret processing.",
+          why: "A secret-dependent loop condition can reveal information through iteration count, early exit, or loop-body effects.",
+          risk: "Timing analysis of loop duration can disclose secret-dependent state.",
+        });
+      }
+
+      this.walkUnderSecretControl(body, secretCondition);
+      rememberDiagnostics();
+
+      let nextHeadScopes = baseline;
+      const bodyTerminates = definitelyTerminates(body);
+      const bodyOutcome = this.snapshotScopes();
+      const bodySecretControlDepth = this.secretControlDepth;
+      // Secret control is a finite lattice fact, not a nesting counter across
+      // iterations. Saturating its continuation label at baseline+1 guarantees
+      // the loop-head state can converge instead of growing once per pass.
+      let nextHeadSecretControlDepth =
+        secretCondition || bodySecretControlDepth > baselineSecretControlDepth
+          ? baselineSecretControlDepth + 1
+          : baselineSecretControlDepth;
+      // Only a body with a reachable backedge can transfer its ownership/value
+      // state to another iteration. A returning body can still make reaching
+      // the continuation secret-dependent, but its consumed authority and writes
+      // do not reach that continuation.
+      this.restoreScopes(baseline);
+      if (bodyTerminates && secretCondition) {
+        // A condition-side affine transfer reaches the false exit. A
+        // secret-controlled terminating body contributes taint/control facts,
+        // but its consumed authority and writes do not reach the continuation.
+        this.joinSecretStates(baseline, [conditionOutcome]);
+        const conditionJoined = this.snapshotScopes();
+        this.restoreScopes(conditionJoined);
+        this.joinSecretStates(conditionJoined, [bodyOutcome], false);
+      } else {
+        this.joinSecretStates(
+          baseline,
+          bodyTerminates ? [conditionOutcome] : [conditionOutcome, bodyOutcome],
+        );
+      }
+      nextHeadScopes = this.snapshotScopes();
+
+      const stable = stateKey(headScopes, headSecretControlDepth) ===
+        stateKey(nextHeadScopes, nextHeadSecretControlDepth);
+      headScopes = nextHeadScopes;
+      headSecretControlDepth = nextHeadSecretControlDepth;
+      // A terminating body has no backedge. Replaying the condition would
+      // invent another affine use that cannot occur at runtime.
+      if (bodyTerminates || stable) break;
+      if (iteration === maxIterations - 1) {
+        // The transfer operates over finite, monotone binding facts (taint,
+        // embedding derivation, and affine consumption) and a saturated control
+        // label. Never publish a capped, non-fixed-point state if that invariant
+        // is violated by a future checker change.
+        throw new Error("value-state while analysis did not converge within its finite state bound");
+      }
+    }
+
+    this.restoreScopes(headScopes);
+    this.secretControlDepth = headSecretControlDepth;
+    this.diagnostics.push(...loopDiagnostics.values());
+  }
+
   private handleMatchExpr(node: AstNode): void {
     const [subject, ...arms] = node.children ?? [];
     if (subject !== undefined) this.walkNode(subject);
     const subjectIsSecret =
-      subject !== undefined && derivesFromSecret(subject, (name) => this.lookupBinding(name));
+      subject !== undefined && derivesFromSecret(subject, (name) => this.lookupBinding(name), this.moduleAliases);
     const baseline = this.snapshotScopes();
     const baselineSecretControlDepth = this.secretControlDepth;
     const outcomes: Array<Array<Map<string, BindingInfo>>> = [];
     const continuingControlDepths: number[] = [];
-    const hasWildcard = arms.some((arm) => arm.kind === "matchArm" && arm.value === "_");
+    const hasWildcard = arms.some(isCatchAllMatchArm);
+    let fallthroughScopes = baseline;
     let priorGuardIsSecret = false;
+    let priorSubjectPatternIsSecret = false;
     let hasSecretTerminatingPath = false;
+    let secretControlLocation: SourceLocation | undefined;
 
     for (const arm of arms) {
-      this.restoreScopes(baseline);
+      this.restoreScopes(fallthroughScopes);
       this.secretControlDepth = baselineSecretControlDepth;
       if (arm.kind !== "matchArm") {
-        const secretControlled = subjectIsSecret || priorGuardIsSecret;
+        const secretControlled = priorSubjectPatternIsSecret || priorGuardIsSecret;
         const terminates = definitelyTerminates(arm);
         try {
           this.walkUnderSecretControl(arm, secretControlled);
-          if (terminates && secretControlled) hasSecretTerminatingPath = true;
+          if ((terminates || containsTerminalExitStatement(arm)) && secretControlled) {
+            hasSecretTerminatingPath = true;
+          }
           if (!terminates) {
             outcomes.push(this.snapshotScopes());
             continuingControlDepths.push(this.secretControlDepth);
@@ -1901,6 +2292,7 @@ class ValueStateChecker {
       const armBaselineSecretControlDepth = baselineSecretControlDepth;
       let armTerminates = false;
       let armControlDepth = baselineSecretControlDepth;
+      let armGuardFallthrough = fallthroughScopes;
       try {
         this.pushScope();
         const children = arm.children ?? [];
@@ -1921,10 +2313,24 @@ class ValueStateChecker {
             }
           }
         }
-        if (guard !== undefined) this.walkNode(guard);
+        if (guard !== undefined) {
+          this.walkNode(guard);
+          // A false guard reaches the next arm after its effects. Pattern
+          // bindings belong only to this arm and must not escape into that path.
+          armGuardFallthrough = this.snapshotScopes().slice(0, -1);
+        }
         const guardIsSecret =
-          guard !== undefined && derivesFromSecret(guard, (name) => this.lookupBinding(name));
-        const secretControlled = subjectIsSecret || priorGuardIsSecret || guardIsSecret;
+          guard !== undefined && derivesFromSecret(guard, (name) => this.lookupBinding(name), this.moduleAliases);
+        const subjectPatternIsSecret = subjectIsSecret
+          && arm.value !== "__guard__"
+          && !isCatchAllMatchArm(arm);
+        const secretControlled =
+          subjectPatternIsSecret || priorSubjectPatternIsSecret || priorGuardIsSecret || guardIsSecret;
+        if (secretControlled && secretControlLocation === undefined) {
+          secretControlLocation = guard?.location
+            ?? (subjectPatternIsSecret ? subject?.location : undefined)
+            ?? arm.location;
+        }
         armTerminates = body !== undefined && definitelyTerminates(body);
         if (body !== undefined) {
           // Ordered guards make every later arm depend on earlier guard failures.
@@ -1933,7 +2339,10 @@ class ValueStateChecker {
           this.walkUnderSecretControl(body, secretControlled);
         }
         armControlDepth = this.secretControlDepth;
-        if (armTerminates && secretControlled) hasSecretTerminatingPath = true;
+        if ((armTerminates || containsTerminalExitStatement(body)) && secretControlled) {
+          hasSecretTerminatingPath = true;
+        }
+        priorSubjectPatternIsSecret ||= subjectPatternIsSecret;
         priorGuardIsSecret ||= guardIsSecret;
       } finally {
         this.popScope();
@@ -1943,10 +2352,24 @@ class ValueStateChecker {
         outcomes.push(this.snapshotScopes());
         continuingControlDepths.push(armControlDepth);
       }
+      fallthroughScopes = armGuardFallthrough;
+    }
+
+    if (secretControlLocation !== undefined) {
+      this.diagnostics.push({
+        code: "FUNGI-SECRET-004",
+        name: "SECRET_DEPENDENT_BRANCH",
+        severity: "warning",
+        message: "This match selects an arm using a secret-derived pattern or guard, so the selected path and observable execution time may depend on secret material (timing side-channel, CWE-208).",
+        location: secretControlLocation,
+        suggestedFix: "Compare secrets with Crypto.constantTimeEquals(...), or review whether every match arm is observationally equivalent.",
+        why: "Dispatch on secret material can make execution paths observable and disclose information through timing or other side channels.",
+        risk: "Timing analysis of distinguishable match arms can leak information about the secret.",
+      });
     }
 
     if (!hasWildcard) {
-      outcomes.unshift(baseline);
+      outcomes.unshift(fallthroughScopes);
       continuingControlDepths.push(baselineSecretControlDepth);
     }
     this.restoreScopes(baseline);
@@ -1967,7 +2390,7 @@ class ValueStateChecker {
     const [subject, ...arms] = node.children ?? [];
     if (subject !== undefined) this.walkNode(subject);
     const secretSubject =
-      subject !== undefined && derivesFromSecret(subject, (name) => this.lookupBinding(name));
+      subject !== undefined && derivesFromSecret(subject, (name) => this.lookupBinding(name), this.moduleAliases);
     const baseline = this.snapshotScopes();
     const baselineSecretControlDepth = this.secretControlDepth;
     const outcomes: Array<Array<Map<string, BindingInfo>>> = [];
@@ -2154,7 +2577,7 @@ class ValueStateChecker {
           `Change the type annotation to: protected ${info.typeName}`,
           `protected ${info.typeName}`,
         ));
-      } else if (isRedactCall(init)) {
+      } else if (isRedactCall(init, (name) => this.lookupBinding(name))) {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-007",
           "REDACTED_BOUNDARY_VIOLATION",
@@ -2170,7 +2593,7 @@ class ValueStateChecker {
     // existing FUNGI-SECRET-001/003 sink guards block it from logs/serialization/audit output.
     const secretField =
       init !== undefined &&
-      (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name)))
+      (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name), this.moduleAliases))
         ? { typeName: "SecureString" }
         : {};
     // U2/#204: a binding that holds or derives a cleartext embedding (and isn't sealed)
@@ -2243,7 +2666,7 @@ class ValueStateChecker {
     // SecureString unless re-bound to a non-secret), closing the mut laundering path.
     const mutSecretField =
       init !== undefined &&
-      (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name)))
+      (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name), this.moduleAliases))
         ? { typeName: "SecureString" }
         : {};
     const mutEmbeddingField =
@@ -2270,7 +2693,7 @@ class ValueStateChecker {
     if (target !== "" && rhs !== undefined && this.lookupBinding(target) !== undefined) {
       const lookup = (n: string) => this.lookupBinding(n);
       const existing = this.lookupBinding(target)!;
-      const isSecret = this.secretControlDepth > 0 || derivesFromSecret(rhs, lookup);
+      const isSecret = this.secretControlDepth > 0 || derivesFromSecret(rhs, lookup, this.moduleAliases);
       const isEmbedding = derivesFromEmbedding(rhs, lookup);
       const isTainted = isTaintedExpression(rhs, lookup, this.userGates);
       const taintSrc = isTainted ? findTaintSourceName(rhs, lookup) : undefined;
@@ -2530,7 +2953,7 @@ class ValueStateChecker {
       // future fix (RD-0124 audit NOW-2 option b); until then, production fail-closed is the safe default.
       for (const arg of callArgs) {
         const lookup = (n: string) => this.lookupBinding(n);
-        if (derivesFromSecret(arg, lookup)) {
+        if (derivesFromSecret(arg, lookup, this.moduleAliases)) {
           this.diagnostics.push({
             code: "FUNGI-SECRET-006",
             name: "SECRET_CROSSES_FLOW_BOUNDARY",
@@ -2573,7 +2996,7 @@ class ValueStateChecker {
     callName: string,
     location: SourceLocation | undefined,
   ): void {
-    if (node.kind === "callExpr" && isRedactCall(node)) return;
+    if (node.kind === "callExpr" && isRedactCall(node, (name) => this.lookupBinding(name))) return;
     if (node.kind === "identifier") {
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.typeName === "SecureString") {
@@ -2612,8 +3035,8 @@ class ValueStateChecker {
     callName: string,
     location: SourceLocation | undefined,
   ): void {
-    if (isRedactCall(node)) return;
-    if (!derivesFromSecret(node, (name) => this.lookupBinding(name))) return;
+    if (isRedactCall(node, (name) => this.lookupBinding(name))) return;
+    if (!derivesFromSecret(node, (name) => this.lookupBinding(name), this.moduleAliases)) return;
 
     const bindingName =
       node.kind === "identifier" ? (node.value ?? "secret value") : "secret-derived value";
@@ -2644,7 +3067,7 @@ class ValueStateChecker {
     callName: string,
     location: SourceLocation | undefined,
   ): void {
-    if (isSealCall(node)) return; // a sealed/encrypted vector may cross — the cleartext may not
+    if (isSealCall(node, (name) => this.lookupBinding(name))) return; // a sealed/encrypted vector may cross — the cleartext may not
     if (node.kind === "identifier") {
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.embeddingDerived === true) {
@@ -2791,9 +3214,31 @@ class ValueStateChecker {
     callName: string,
     location: SourceLocation | undefined,
   ): void {
+    if (node.kind === "fnDecl") return;
+    if (!isReviewedSecretSinkAstKind(node.kind)) {
+      this.diagnostics.push(makeVSDiag(
+        "FUNGI-SECRET-001",
+        "SECRET_VALUE_LOGGED",
+        `An unrecognized value of AST kind '${node.kind}' must not be passed to '${callName}'.`,
+        location,
+        "Classify this expression kind's secrecy semantics before allowing it at a logging or audit sink.",
+        undefined,
+        {
+          why: "The checker has no reviewed value-secrecy rule for this AST kind.",
+          risk: "Treating a future or malformed expression as public could expose secret-derived data.",
+        },
+      ));
+      return;
+    }
+    // A recognized constant-time equality call yields only a public Boolean; do
+    // not recursively treat its secret operands as values sent to the sink.
+    if (node.kind === "callExpr" && isConstantTimeEqualsCall(
+      node,
+      (name) => this.lookupBinding(name),
+    )) return;
     // A redact(...) wrapper produces a safe '[REDACTED]' placeholder — honor it at log
     // sinks just as checkArgForSecretSerialization does (do not recurse into its child).
-    if (node.kind === "callExpr" && isRedactCall(node)) return;
+    if (node.kind === "callExpr" && isRedactCall(node, (name) => this.lookupBinding(name))) return;
     if (node.kind === "identifier") {
       // Field-name guard (RD-0093b): check the field VALUE, not the field NAME — else a record/arg field
       // named after a SecureString binding false-fires SECRET-001.
@@ -2841,8 +3286,14 @@ class ValueStateChecker {
     callName: string,
     location: SourceLocation | undefined,
   ): void {
+    // A trusted constant-time comparison exposes only its public Boolean
+    // result. Do not inspect the protected operands as serialized values.
+    if (node.kind === "callExpr" && isConstantTimeEqualsCall(
+      node,
+      (name) => this.lookupBinding(name),
+    )) return;
     // A redact() call wrapping the value is safe — do not recurse into it.
-    if (node.kind === "callExpr" && isRedactCall(node)) return;
+    if (node.kind === "callExpr" && isRedactCall(node, (name) => this.lookupBinding(name))) return;
 
     if (node.kind === "identifier") {
       // Field-name guard (RD-0093b): check the field VALUE, not the field NAME. Without this a field named
@@ -2890,10 +3341,10 @@ class ValueStateChecker {
     allowSealed = false,
   ): void {
     // A redact() call wrapping the value is the correct pattern — do not recurse into it.
-    if (node.kind === "callExpr" && isRedactCall(node)) return;
+    if (node.kind === "callExpr" && isRedactCall(node, (name) => this.lookupBinding(name))) return;
     // Network egress may preserve the protected value only inside an
     // authenticated sealed envelope. Audit logs still require redaction.
-    if (allowSealed && node.kind === "callExpr" && (node.value ?? "") === "seal") return;
+    if (allowSealed && isAuthenticatedSealCall(node, (name) => this.lookupBinding(name))) return;
 
     if (node.kind === "identifier") {
       // A record-literal field `{ email: redact(email) }` and a named argument `f(email: redact(email))`

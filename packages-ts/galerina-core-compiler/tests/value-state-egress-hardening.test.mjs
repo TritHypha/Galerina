@@ -43,6 +43,31 @@ describe("declassifier-name shadowing — FUNGI-VALUESTATE-011 (CWE-501 floor)",
   it("a clean program with no shadow does NOT fire", () => {
     assert.ok(!has(chk(`pure flow add(a: Int, b: Int) -> Int\ncontract { intent { "add" } }\n{\n  return a\n}`), "FUNGI-VALUESTATE-011"));
   });
+
+  it("a readonly lexical redact binding is not mistaken for the compiler intrinsic", () => {
+    const r = chk(wrap('  readonly redact = Fake\n  let kk = secret.get("api")\n  let copied = redact(kk)\n  let x = http.post("u", copied)'));
+    assert.ok(has(r, "FUNGI-SECRET-005"), codes(r));
+  });
+});
+
+describe("protected network egress requires an authenticated seal", () => {
+  const protectedEgress = (wrapper) => `secure flow f() -> Int
+contract { effects { network.outbound } }
+{
+  let msg: protected String = "synthetic"
+  let response = http.post("u", ${wrapper}(msg))
+  return 0
+}`;
+
+  it("generic encrypt does not discharge protected network egress", () => {
+    const r = chk(protectedEgress("encrypt"));
+    assert.ok(has(r, "FUNGI-VALUESTATE-009"), codes(r));
+  });
+
+  it("the authenticated seal control remains permitted", () => {
+    const r = chk(protectedEgress("seal"));
+    assert.ok(!has(r, "FUNGI-VALUESTATE-009"), codes(r));
+  });
 });
 
 describe("egress hardening — A1 bare assignment (assignStmt) re-derives flags", () => {
@@ -194,6 +219,14 @@ describe("egress hardening — no false positives", () => {
   it("seal()-ed embedding stays clean", () => {
     const r = chk(wrap('  let e = EmbeddingModel.run(req)\n  let s = seal(e)\n  let x = http.post("u", s)'));
     assert.ok(!has(r, "FUNGI-PRIVACY-002"), codes(r));
+  });
+  it("an unrelated receiver's seal method does not discharge a protected network value", () => {
+    const src = `secure flow leak(msg: protected String) -> Int\ncontract { effects { network.outbound } }\n{\n  let x = http.post("u", Fake.seal(msg))\n  return 0\n}`;
+    assert.ok(has(chk(src), "FUNGI-VALUESTATE-009"), codes(chk(src)));
+  });
+  it("a local seal binding does not discharge a protected network value", () => {
+    const src = `secure flow leak(msg: protected String) -> Int\ncontract { effects { network.outbound } }\n{\n  let seal = msg\n  let x = http.post("u", seal(msg))\n  return 0\n}`;
+    assert.ok(has(chk(src), "FUNGI-VALUESTATE-009"), codes(chk(src)));
   });
   it("a derived non-secret value stays clean", () => {
     const r = chk(wrap('  let a = build(1)\n  let b = a.slice(0,2)\n  let x = http.post("u", b)'));
