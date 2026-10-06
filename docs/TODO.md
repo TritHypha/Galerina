@@ -1,5 +1,38 @@
 # TODO
 
+## Current memory-review checkpoint — 2026-10-06
+
+This checkpoint supersedes older *current-state* wording below, not the dated
+receipts or their evidence limits. Review pin:
+`e26b1e3ea084a1439a4c939edaa29357892a132f` on
+`codex/rd1413-1415-coupled-route-20261004`.
+
+- [x] Initial independent Astra review, Grok.com follow-up, and separate Astra
+  adjudication of the Grok.com-only delta are retained with distinct identities.
+- [x] Grok-Bot's matching Fungi-first answer was received at
+  `2026-10-06T08:55:49.417Z`; its envelope and report hashes were verified.
+- [ ] Source-check and independently adjudicate Grok-Bot's newly reported
+  checker/declassifier, staging-custody and output-mediation claims. Receipt is
+  not adoption, and this documentation update did not run their proposed tests.
+- [ ] Await the existing SuperGrok assignment's matching reply; do not redispatch.
+- [ ] Complete the bounded review sequence and publish the final blocker list,
+  separating engineering work, runtime/host evidence and genuine owner decisions.
+- [ ] Resolve the housekeeping instrument refusal before claiming a clean session:
+  bounded-execution findings remain and context-cost failed before inventory.
+  This checkpoint records the failure; it does not authorize broad repairs.
+- [!] RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING**. Fungi's memory,
+  allocation, aliasing and effect semantics are designable; TypeScript exposure
+  tests characterize bootstrap behavior, not an inherent Fungi limitation.
+- [!] Still establish one real protected operation and its full authority chain,
+  actual provider/open and sink/revocation ordering, exact accepted host/TCB and
+  freshness profile, cleanup/reuse evidence, permitted output/storage contract,
+  crypto policy and workload bounds. Neither a greeting route nor a fixture
+  satisfies the operation requirement.
+
+See the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md)
+for receipt identities, scope limits and the next bounded actions. Historical
+checkbox totals below are not a freshly recomputed aggregate.
+
 ## Current checkout check — 2026-09-26
 
 - [x] The RD-0873 worktree is dirty `main` at
