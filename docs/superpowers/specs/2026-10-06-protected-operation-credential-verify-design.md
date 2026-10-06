@@ -140,6 +140,20 @@ request state: a restored or concurrently running old instance must not open
 or deliver under an old epoch. If the provider and the sink cannot share this
 one authority, the design stays non-authorizing.
 
+Residual windows this draft does not close yet (review C61 NB-2):
+
+- Fence to open: revocation can land after `openIfCurrent` returns and before
+  the first provider `use`. Closing it needs the open fused with the fence
+  check, or the provider re-checking the epoch inside `use`.
+- Commit to socket: `commitIfFenced` succeeding and the response reaching the
+  socket are separate steps (adapter `writeResponse` runs after
+  `kernel.handle`, `index.ts:843,853`). A write failure after commit is a
+  committed but undelivered effect.
+
+Default-pending-owner: both windows are open. The design stays non-authorizing
+until each has a test-visible receipt; a committed-but-undelivered result is
+never retried under the same grant.
+
 The store's durability and multi-process semantics are open in the same way as
 replay storage (`MemoryReplayStore` is process-local only); a process-local
 store is acceptable for a development receipt only.
@@ -161,6 +175,11 @@ Copy inventory today, per request, for a protected body:
 | 3 | `Uint8Array` handed to the kernel (`kreq.body`) | kernel request | Yes, by the handler on every exit (not done today) |
 | 4 | Kernel JSON decode: the password as a JS string | kernel / handler | No (immutable string); charged |
 | 5 | Provider `use` view (`new Uint8Array(value)` then zeroed in `finally`) | secret gate | The view yes; the provider's own bytes and any copy made inside `fn` no |
+
+Also charged, outside the table (review C61 NB-4): Node HTTP/TLS record and
+parser buffers; the HMAC computation over `kreq.body` when a webhook gate is
+configured (an alias of copy 3 plus crypto internals); and the JSON object that
+holds the password string. None of them is claimed cleanable.
 
 Default-pending-owner admission contract for the protected route:
 
@@ -222,7 +241,12 @@ entry. Any doubt at commit: discard the result.
 4. Provider / key custodian identity, where the credential hash store lives, and the KDF/hash algorithm from the approved crypto policy.
 5. Allowed sinks limited to the response boolean and the audit record.
 6. Accepted host profile: none by default (owner names profile, remaining TCB and key-release condition); Node host for development receipts only; no residency capability relied on.
-7. One-bit release rule and the refusal-code set.
+7. One-bit release rule and the refusal-code set. Note (review C61 NB-3):
+   refusal codes that tell missing, stale or revoked objects apart from
+   `verified: false` are an existence oracle for objects, grants and versions.
+   With a constant-time comparison they are not a password-bit channel.
+   Default-pending-owner: one uniform refusal to the caller, with the
+   distinction kept in the audit record only.
 8. Rate bound values per principal and per object.
 9. `openIfCurrent` / `commitIfFenced` on one store shared by provider and sink,
    not restorable from the request snapshot; revocation not retroactive.
