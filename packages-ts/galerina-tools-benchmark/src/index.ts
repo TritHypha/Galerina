@@ -1670,3 +1670,13 @@ export {
   type BenchmarkRunnerInput,
   type BenchmarkRunnerResult,
 } from "./benchmark-runner.js";
+
+// `galerina benchmark` command composition (argv -> runner -> summary/json -> optional save).
+export {
+  BENCHMARK_COMMAND_EXIT,
+  BENCHMARK_COMMAND_HOST_FIELDS,
+  FUNGI_BENCH_CMD_001,
+  runBenchmarkCommand,
+  type BenchmarkCommandDiagnostic,
+  type BenchmarkCommandResult,
+} from "./benchmark-command.js";
