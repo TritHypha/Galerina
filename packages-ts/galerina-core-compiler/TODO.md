@@ -381,4 +381,15 @@ until v1 ships. The Int64 / UInt64 row is a separate open question, not part of 
 [ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
 [ ] LSP (Language Server Protocol) — diagnostics on save
 [ ] Int64 / UInt64 full compiler gate lift (currently owner-gated, one line)
+    Reconciled 2026-10-06 (Grok Bot, docs/tests only, no compiler source change; Codex/owner decide closure):
+    the FUNGI-NUMERIC-001 gate set is already EMPTY - src/numeric-lowering.ts:41
+    `BACKEND_UNLOWERABLE_SCALAR = new Set([])` (its header records Int64 lifted 2026-06-25 and UInt64 lifted
+    in #52, both owner-authorized). `check` and a default `build` admit both widths:
+    tests/cli-numeric-gate.test.mjs 4/4 (its two build cases were failing on main only because the fixtures
+    were named `__numgate_*`, which the galerina.mjs:2430 artifact-name rule refuses; renamed `numgate_*`),
+    tests/u64-unlock.test.mjs, tests/interpreter-int64-dispatch.test.mjs, tests/wat-i64-lift-readiness.test.mjs.
+    Residual by design, not a gate: the i32-only fast tiers bail to the tree-walker
+    (`FAST_TIER_UNLOWERABLE_SCALAR`, numeric-lowering.ts:61), and a default UInt64 build is walker-only
+    (WASM declines). Proposed: close this row as done; if wanted, track "default-build UInt64 WASM lowering"
+    as its own post-v1 row. Until confirmed the row stays [ ] (fail-closed: nothing is lifted further).
 ```
