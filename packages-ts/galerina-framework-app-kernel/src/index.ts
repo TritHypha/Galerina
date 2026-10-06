@@ -39,3 +39,4 @@ export * from "./auth-provider-boundary.js";
 export * from "./scope-role-policy.js";
 export * from "./rate-limit-workload-policy.js";
 export * from "./structured-await-policy.js";
+export * from "./queue-job-contract.js";
