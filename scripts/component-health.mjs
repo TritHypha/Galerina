@@ -346,6 +346,10 @@ try { WAT = { kind: "found", value: watLoweringLadder() }; } catch { WAT = { kin
 // (scripts/lib/interpreter-parity-ladder.mjs: walker == WASM == sync fast path, per feature rung).
 // Fail-closed but NON-FATAL: if it can't be measured the row carries the WORD "unmeasured", never 87.
 let RT = { kind: "none", reason: "not-run" };
+// Owner ruling 2026-10-02: WAT % is L1 self-hosted flow coverage ONLY; parked ABI items are named
+// compile-time refusals OUTSIDE L1 and are listed as a word row, never folded into the number.
+const WAT_LABEL = "WAT emitter (L1 self-hosted flow coverage)";
+const WAT_PARKED_ROW = { layer: "WAT parked ABI items (named refusals outside L1): D4 pattern ABI; D8 host-import ABI; E5 Float32 + secure wipe; ZipPair", status: "parked - named compile-time refusals, not counted in the L1 figure" };
 try { RT = { kind: "found", value: interpreterParityLadder() }; } catch { RT = { kind: "none", reason: "ladder-unavailable" }; }
 const compilerRecordedCount = rows.find((row) => row.dir === "galerina-core-compiler")?.recordedCount;
 const compilerStatus = Number.isInteger(compilerRecordedCount) && compilerRecordedCount > 0
@@ -379,10 +383,14 @@ const BUILD_PROGRESS = [
     ? { layer: "Type checker / Effect checker", pct: TCE.pct }
     : { layer: "Type checker / Effect checker", status: "twin-parity ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
   WAT.kind === "found"
-    ? { layer: "WAT emitter", pct: WAT.value.pct }
-    : { layer: "WAT emitter", status: "wat-lowering ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
+    ? { layer: WAT_LABEL, pct: WAT.value.pct }
+    : { layer: WAT_LABEL, status: "wat-lowering ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
+  // Owner ruling 2026-10-02 (Phillip, 00:37 BST): the D10/K1 parity ladder measures executor AGREEMENT on
+  // its feature rungs (14 today), not interpreter completeness. Real I2 (fault handlers) and I3 (body-local
+  // invariants) are unbuilt, so this row carries a WORD (no completion %) and stays out of buildAvg.
+  WAT_PARKED_ROW,
   RT.kind === "found"
-    ? { layer: "Runtime interpreter", pct: RT.value.pct }
+    ? { layer: `Runtime interpreter: parity coverage ${RT.value.done}/${RT.value.total} (D10/K1); real I2 fault handlers + I3 body-local invariants open`, status: "parity coverage only - not a completion percentage; I2/I3 unbuilt" }
     : { layer: "Runtime interpreter", status: "unmeasured — interpreter-parity ladder unavailable (fail-closed: no number without evidence)" },
   { layer: "Application-framework layer", pct: 72 },
   { layer: "Post-Quantum & Hardware Security", pct: 40 },
@@ -533,7 +541,7 @@ const EVIDENCE = {
   // the TYPE-* ∪ EFFECT-* charter mirrored today; the 1 open rung is FUNGI-TYPE-032). When the ladder
   // can't be computed the row above carries a WORD, so no `asserted` fallback number is ever published.
   "Type checker / Effect checker": TCE ? { ladder: TCE.ladder } : { asserted: "twin-parity ladder temporarily unavailable — carrying a word, not a stale number" },
-  "WAT emitter": WAT.kind === "found" ? { ladder: WAT.value.ladder } : { asserted: "wat-lowering ladder temporarily unavailable — carrying a word, not a stale number" },
+  [WAT_LABEL]: WAT.kind === "found" ? { ladder: WAT.value.ladder } : { asserted: "wat-lowering ladder temporarily unavailable — carrying a word, not a stale number" },
   "Runtime interpreter": RT.kind === "found" ? { ladder: RT.value.ladder } : { asserted: "interpreter-parity ladder unavailable — carrying a word, not a stale number" },
   "Application-framework layer": { asserted: "candidate ladder = servable api-server · example-app · signed registry index" },
   "Post-Quantum & Hardware Security": { asserted: "NO ladder — custody ladder + HW signer are post-v1/hardware. Fail-closed reading: this should become a WORD" },
