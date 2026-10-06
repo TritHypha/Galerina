@@ -34,3 +34,4 @@ export * from "./registry-durability-production-admission.js";
 export * from "./production-slide-restore-admission.js";
 export * from "./production-boot-composition-candidate.js";
 export * from "./typed-api-boundary.js";
+export * from "./request-validation-policy.js";
