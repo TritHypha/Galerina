@@ -16,8 +16,10 @@ active v1 runtime target.
 [x] Define compute capability model
 [x] Define compute budget model
 [x] Define target selection rules
-[ ] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
-[ ] Define specialist compute capability, data-sensitivity and audit report fields
+[x] Define specialist AI hardware target taxonomy for CPU, GPU, NPU, TPU, VPU, FPGA and ASIC
+      src/specialist/specialist-hardware.ts SPECIALIST_HARDWARE_CLASSES + SpecialistHardwareTarget + validateSpecialistHardwareTarget (v1 freeze: only cpu may claim available); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define specialist compute capability, data-sensitivity and audit report fields
+      src/specialist/specialist-hardware.ts SpecialistComputeCapabilityFields / SpecialistDataSensitivity / SpecialistComputeAuditFields + specialistTargetAllowsSensitivity (omit max = admits nothing); tests/specialist-hardware.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Add generic low-bit AI fallback target concept
 [x] Define offload planning reports
 [x] Define compute effects model (accelerator, optical_io, distributed_compute, high_memory, parallel_compute)
@@ -32,9 +34,12 @@ active v1 runtime target.
       src/gpu/gpu-runtime.ts GPU_VENDOR_ADAPTERS; isGpuVendorAdapterAdmitted always false under v1 freeze; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define optical/photonic transport planning (optical_io effect, OpticalTransport capability)
       effects/compute-effects.ts optical_io (planning-only under v1); capabilities OpticalTransport (planning_only); photonic/ optical plan (Grok 2026-10-05; zero-trust defaults, owner may revisit)
-[ ] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
-[ ] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
-[ ] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
+[x] Define scheduler responsibilities (thermal balancing, queue depth, fairness, fallback)
+    src/scheduling/responsibilities.ts SCHEDULER_RESPONSIBILITIES + validateSchedulerResponsibilityClaim; v1 planning_only only; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define planner responsibilities (parallelism, memory, energy cost, backend suitability)
+    src/scheduling/responsibilities.ts PLANNER_RESPONSIBILITIES + validatePlannerResponsibilityClaim; v1 planning_only only; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
+    src/scheduling/responsibilities.ts ComputeAuditEventShape v0.1 + validateComputeAuditEventShape / buildComputeAuditEvent; closed kind/subject/outcome; no free-text; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
 [x] Define GpuSuitability: high|medium|low|unsuitable|unknown
       src/gpu/gpu-types.ts; tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
@@ -124,4 +129,4 @@ the shipped design differs in places:
   required capabilities must be declared by the workload, an undeclared memory
   limit is a warning, sensitive data needs an explicit allow, duplicate profiles are
   errors, and there is no implicit CPU default (`recommendedTarget: "none"`).
-- Tests: `tests/compatibility.test.mjs`, `tests/gpu-plan.test.mjs`, `tests/optical-plan.test.mjs`. GPU + optical planning vocabulary landed under v1 freeze (cpu-only executable). Quantum + scheduler/planner/audit rows stay open.
+- Tests: `tests/compatibility.test.mjs`, `tests/gpu-plan.test.mjs`, `tests/optical-plan.test.mjs`. GPU + optical planning vocabulary landed under v1 freeze (cpu-only executable). Quantum + specialist taxonomy (#83 parallel) stay open; scheduler/planner/audit closed on this tip.
