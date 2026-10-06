@@ -18,7 +18,7 @@ admission. No fresh tests were run for this TODO refresh.
 [x] Add README.md
 [x] Add package metadata
 [x] Add checked Run Mode smoke fixtures
-[ ] Define typed API boundary contract
+[x] Define typed API boundary contract -- src/typed-api-boundary.ts, tests/typed-api-boundary.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed TypedApiBoundary / TypedApiRoute via descriptors; schema galerina.app-kernel.typed-api-boundary/v1; FUNGI-APPK-001..005; never throws; never echoes refused tokens; reserved strip/replay refused
 [ ] Define request validation policy
 [ ] Define auth provider boundary contract
 [ ] Define scope and role policy model
