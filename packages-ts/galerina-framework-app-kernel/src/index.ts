@@ -37,3 +37,4 @@ export * from "./typed-api-boundary.js";
 export * from "./request-validation-policy.js";
 export * from "./auth-provider-boundary.js";
 export * from "./scope-role-policy.js";
+export * from "./rate-limit-workload-policy.js";

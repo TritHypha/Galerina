@@ -23,7 +23,7 @@ admission. No fresh tests were run for this TODO refresh.
 [x] Define auth provider boundary contract -- src/auth-provider-boundary.ts, tests/auth-provider-boundary.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed AuthProviderBoundary / AuthProviderDescriptor via descriptors; schema galerina.app-kernel.auth-provider-boundary/v1; FUNGI-APPK-APB-001..005; kinds bearer/jwt/oauth2/oidc/dpop/mtls/apiKey/webhookSignature/capabilityToken; none/HS* + header-presence fallback refused; never throws; never echoes refused tokens
 [x] Define scope and role policy model -- src/scope-role-policy.ts, tests/scope-role-policy.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed ScopeRolePolicy / RoleDescriptor via descriptors; schema galerina.app-kernel.scope-role-policy/v1; FUNGI-APPK-SRP-001..005; defaultDecision deny-only; wildcards refused; role scopes subset of admittedScopes; never throws; never echoes refused tokens
 [ ] Define idempotency and replay protection contract
-[ ] Define rate-limit and workload control policy
+[x] Define rate-limit and workload control policy -- src/rate-limit-workload-policy.ts, tests/rate-limit-workload-policy.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit): closed RateLimitWorkloadPolicy / RateLimitRule / WorkloadControl via descriptors; schema galerina.app-kernel.rate-limit-workload-policy/v1; FUNGI-APPK-RLW-001..005; defaultDecision deny-only; keyKinds principal/route/principal_route; positive finite ceilings; never throws; never echoes refused tokens
 [ ] Define request Structured Await scope and cancellation policy
 [ ] Define queue/job contract
 [ ] Define runtime audit report format
