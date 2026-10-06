@@ -12,6 +12,15 @@ incoming access, RD-1414 transient ownership, RD-1415 outgoing release) and the
 `docs/ROADMAP.md` memory-security dependency checkpoint, both of which ask for
 one real, loaded protected operation before any status changes.
 
+**Review inputs (advisory, non-authorizing, pinned at `e1c2496f3`):** the three
+SuperGrok RD-1413 answers of 2026-10-06 in the AGENTS coordination buckets
+(`rd1413-pinned-protected-operation`: no qualifying operation at that head;
+`rd1413-provider-open-revocation-order`: no ordering mechanism at that head,
+fencing-epoch design endorsed with conditions; `rd1413-six-design-pins`: all six
+slots open owner decisions). This document fills those slots with candidate
+defaults for the owner to accept or refuse; it does not re-adjudicate them. The
+R / O / D event names and schedules A-C below follow those answers.
+
 **Companion PRs (separate, not prerequisites of this text):** duplicate
 query-name refusal in `packages-ts/galerina-framework-api-server` and the
 api-server TODO HOLD reconciliation.
@@ -66,9 +75,9 @@ body: {"secret":"<password>"}            (JSON, closed shape, small cap)
 | Object / version | `credentialId` + integer `version`, exactly one decoded value each (query uniqueness: companion PR). Version must equal the object's current version at the fence (section 5). | Duplicate name, missing, non-canonical or non-current version: refuse before provider entry. |
 | Grant | Per-object grant `(principalId, credentialId, scope)` held by the grant authority with a monotonic revocation epoch. | No grant, or epoch moved: refuse. |
 | Grant and revocation authority | The credential owner service (the role `docs/TODO.md` calls Signet) is the only writer of grants and revocations. Candidate only; owner must name it. | Unnamed authority: the route stays disabled (503), never open. |
-| Provider / key custodian | The boot-resolved secrets provider holding the KDF pepper and the credential hash store (structural seam today: `SecretsProvider.has/use`, `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:29-34`). Custodian identity is an owner decision. | Provider absent, faulted or disposed: 503 `secret_unavailable`. |
+| Provider / key custodian | The boot-resolved secrets provider holding the KDF pepper and the credential hash store (structural seam today: `SecretsProvider.has/use`, `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:29-34`). Custodian identity, KDF/hash algorithm and key format are owner choices from the repository's approved crypto policy; the fixture's BCrypt is not adopted by this text. | Provider absent, faulted or disposed: 503 `secret_unavailable`. |
 | Allowed recipient / sink | Exactly two sinks: (a) the HTTP response to the same authenticated principal on the same connection, carrying only the boolean; (b) the kernel audit sink, carrying principal, object, version, epoch, outcome code and request ID, never secret-derived bytes. | Any other sink (logs, reports, caches, retries, error bodies) receives nothing derived from the secret. |
-| Accepted host profile / TCB | Node host process plus the Node TLS library and the App Kernel; **no residency capability is relied on**. `hardening-residency.ts` host profiles (`packages-ts/galerina-core-compiler/src/hardening-residency.ts:388-398`) are claims under review, not evidence. | A deployment that requires a residency claim fails closed until section 11 is decided. |
+| Accepted host profile / TCB | **None accepted by default.** Protected use stays refused until the owner names a profile, its remaining TCB and the key-release condition. A development receipt may run on the Node host (Node TLS library + App Kernel) but is labelled development-only and never counts as protected use. No residency capability is relied on; `hardening-residency.ts` host profiles (`packages-ts/galerina-core-compiler/src/hardening-residency.ts:388-398`) are claims under review, not evidence. | No owner-named profile: route disabled (503). A deployment that requires a residency claim fails closed until section 11 is decided. |
 
 ## 4. Authorized result and declassification rule
 
@@ -107,18 +116,29 @@ operations, both single atomic steps on that store:
 2. `commitIfFenced(fence)` -> `ok | refusal`. Atomically checks the epoch and
    version are unchanged. Only `ok` lets the boolean reach sink (a).
 
-Revocation and version bumps increment the epoch through the same store.
-Resulting order, for every request:
+Revocation and version bumps increment the epoch through the same store, and
+that store emits a monotonic receipt for each open, revocation and commit, so
+the order is test-visible. Events: **R** = effective revocation (epoch advance);
+**O** = the first provider effect that can yield secret bytes (only after
+`openIfCurrent`); **D** = the sink effect (the boolean written to the
+response; only after `commitIfFenced`). Resulting order, for every request:
 
 ```text
-open (fence epoch E) -> provider use -> comparison -> commit (epoch still E) -> sink effect
+openIfCurrent (epoch E) -> O -> comparison -> commitIfFenced (epoch still E) -> D
 ```
 
-- Revocation before open: open refuses; provider never entered.
-- Revocation between open and commit: commit refuses; the computed boolean is
-  discarded, owner buffers are cleaned, the response is a fixed refusal.
-- Revocation after commit: the released bit stands; revocation is not
-  retroactive (stated, owner may change).
+- Schedule A, `R < O`: open refuses; zero protected opens, zero D.
+- Schedule B, `O < R < D`: commit refuses; no D, no retry-open under the spent
+  grant; the computed boolean is discarded and the already-open bytes are
+  charged / quarantined (cleanup is attempted, but no erasure is claimed).
+- Schedule C, `O < D < R`: exactly one permitted effect, recorded as a
+  pre-revocation disclosure; revocation is not retroactive (stated, owner may
+  change). An observer that always reports zero effects must fail this control.
+
+The fence store must not be restorable from the same snapshot as leases or
+request state: a restored or concurrently running old instance must not open
+or deliver under an old epoch. If the provider and the sink cannot share this
+one authority, the design stays non-authorizing.
 
 The store's durability and multi-process semantics are open in the same way as
 replay storage (`MemoryReplayStore` is process-local only); a process-local
@@ -165,8 +185,9 @@ All on the actual loaded server path, from a source build of a pinned commit
    non-current versions refuse before provider entry (counter on the provider).
 2. Missing ALLOW, missing principal, missing scope, missing grant: refuse before
    provider entry.
-3. Revocation race: revoke between open and commit; result discarded, fixed
-   refusal, no boolean released.
+3. Revocation schedules A, B and C from section 5, each observed through the
+   fence store's receipts plus a provider open counter; a check-then-open
+   candidate paused between check and O must fail schedule A.
 4. Cleanup: copy 3 and the provider view are cleaned on every exit path
    (return, throw, refusal, abort), checked by inspection hooks in tests.
 5. Copy/alias inventory: every copy site in section 6 listed with status; no
@@ -198,12 +219,13 @@ entry. Any doubt at commit: discard the result.
 1. Operation choice: `credential.verify` as the first protected operation.
 2. Route form, scope name and the closed body shape.
 3. Grant and revocation authority identity (Signet role candidate).
-4. Provider / key custodian identity and where the credential hash store lives.
+4. Provider / key custodian identity, where the credential hash store lives, and the KDF/hash algorithm from the approved crypto policy.
 5. Allowed sinks limited to the response boolean and the audit record.
-6. Accepted host profile: Node host, no residency capability relied on.
+6. Accepted host profile: none by default (owner names profile, remaining TCB and key-release condition); Node host for development receipts only; no residency capability relied on.
 7. One-bit release rule and the refusal-code set.
 8. Rate bound values per principal and per object.
-9. `openIfCurrent` / `commitIfFenced` on one store; revocation not retroactive.
+9. `openIfCurrent` / `commitIfFenced` on one store shared by provider and sink,
+   not restorable from the request snapshot; revocation not retroactive.
 10. Copies 1, 2 and 4 remain charged until a Fungi-owned ingress path exists.
 11. Evidence list in section 7 as the acceptance bar.
 
