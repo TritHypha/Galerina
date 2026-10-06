@@ -41,6 +41,19 @@ contract { intent { "Handle a secret." } privacy { contains PII }
     assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
   });
 
+  it("no_disk on mlock_posix is refused while an unrestricted positive control passes", () => {
+    const denied = `secure flow handleKey(k: Int) -> Int
+contract { intent { "Handle a secret." } privacy { contains PII }
+  hardening { residency no_disk host mlock_posix audited_loosen } }
+{ return 1 }`;
+    const allowed = `secure flow handleKey(k: Int) -> Int
+contract { intent { "Handle a secret." } privacy { contains PII }
+  hardening { residency unrestricted host mlock_posix audited_loosen } }
+{ return 1 }`;
+    assert.deepEqual(hardenCodes(gov(denied)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
+    assert.deepEqual(hardenCodes(gov(allowed)), []);
+  });
+
   it("register_only WITH a register_pinned host (which honours it) → FUNGI-HARDEN-008 warning (runtime enforcement gap, BOB-M1) + FUNGI-HARDEN-009 (unattested custody claim, RD-0365)", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII }

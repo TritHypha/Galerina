@@ -83,6 +83,14 @@ test("H-2/HV5: mlock_posix without an active lock attestation refuses no_swap an
   assert.equal(reg.rejection.code, "FUNGI-HARDEN-005");
 });
 
+test("H-2: mlock_posix refuses no_disk without residency evidence but permits unrestricted", () => {
+  const host = L.resolveHost("mlock_posix");
+  const noDisk = L.canHonour("no_disk", host);
+  assert.equal(noDisk.ok, false);
+  assert.equal(noDisk.rejection.code, "FUNGI-HARDEN-005");
+  assert.equal(L.canHonour("unrestricted", host).ok, true);
+});
+
 test("H-6: an UNDECLARED host cannot honour any real ceiling — fail-closed", () => {
   assert.equal(L.canHonour("no_swap", L.UNKNOWN_HOST).ok, false);
   assert.equal(L.canHonour("no_disk", L.resolveHost("bogus_unknown_host")).ok, false);
