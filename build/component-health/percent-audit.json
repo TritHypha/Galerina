@@ -3,14 +3,14 @@
   "provenance": {
     "available": true,
     "branch": "grok/roadmap-todo-refresh-20261006",
-    "sha": "b1d2be96b",
+    "sha": "f63088b8f",
     "detached": false,
     "dirty": false
   },
   "shipReadinessPct": 100,
   "ztAvg": 78,
   "buildAvg": 75,
-  "trackingRegistryCount": 31,
+  "trackingRegistryCount": 33,
   "sections": [
     {
       "key": "zero-trust-thesis",
@@ -458,7 +458,7 @@
         {
           "item": "Twin corpus + 6 sentinels",
           "state": "shipped",
-          "detail": "29 pure .fungi verdict twins checker-clean across 10 governed dirs (execution is RD-0361)"
+          "detail": "103 governed .fungi verdict twins checker-clean per the governed ledger (execution and authority are tracked under RD-0361)"
         },
         {
           "item": "Hardening / residency (RD-0358)",
@@ -474,6 +474,11 @@
           "item": "Hallmark open types (RD-0353 H1)",
           "state": "shipped",
           "detail": "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097"
+        },
+        {
+          "item": "Value-unit types: Money<C> (RD-0349 I2-I4 + zero-trust defaults)",
+          "state": "shipped",
+          "detail": "one runtime unit table (generated constructors, deny-by-default Money.of); ISO-4217 snapshot pinned (280 entries, hash-recorded); FUNGI-TYPE-032 rejects unknown, test and metal tags at compile time with a transposition-aware suggestion; I2 minor-unit precision corrected 2026-09-12 (25/25); #30 (2026-10-04) pinned the D1-D5 zero-trust defaults in docs/DECISIONS.md and the rd-0349-zero-trust-defaults test: metals are never Money, the crypto set is empty, there is no default rounding mode, no Security<ISIN>, and the Commodity/Crypto/Security names are reserved. No float bridge"
         },
         {
           "item": "CANONICAL_EFFECTS registry (RD-0341)",
@@ -494,6 +499,11 @@
           "item": "Workspace package families",
           "state": "shipped",
           "detail": "100/100 component families green; 100 workspace packages, 9,612 recorded tests and 0 unadjudicated orphans, all derived from the live workspace and version ledgers"
+        },
+        {
+          "item": "SBOM generator + fuzz shape-oracle (RD-0316 leg 1)",
+          "state": "shipped",
+          "detail": "scripts/generate-sbom.mjs and the compiler SBOM module are tested, and every workspace package now carries a generated sbom.json (Package Standard R4, #3); the RD-0316 leg-1 slice-6 shape-oracle runs in the compiler fidelity-differential suite (it found and fixed the MIN-literal wasm-trap fidelity bug on run one)"
         },
         {
           "item": "Devtools audit suite",
@@ -528,7 +538,7 @@
         {
           "item": "myco",
           "state": "shipped",
-          "detail": "v0.1.3 (graph-indexed grep replacement, own subproject; Apache-2.0): ReDoS regex-guard + per-edge word-boundary fix with wordBoundaryExcluded reporting (no silent narrowing); owned Galerina mirror galerina-tools-myco synced to upstream e5e0e25 (src+tests byte-identical, 23/23); npm publish 🔒 outward"
+          "detail": "graph-indexed grep replacement, own subproject (Apache-2.0); the Galerina mirror galerina-tools-myco is v0.2.2 with 80 recorded tests (version.json); ReDoS regex-guard and word-boundary exclusion reporting (no silent narrowing); npm publish 🔒 outward"
         },
         {
           "item": "Execution-cutover (RD-0361)",
@@ -546,19 +556,9 @@
           "detail": "565 tracked package TypeScript paths · 2544/2544 .fungi sources unexecuted · 0/57 host bridges owned · 95 node_modules trees · 1 nested native identity. All exact debts must reach zero before terminal retirement authority."
         },
         {
-          "item": "Value-unit types (RD-0349)",
-          "state": "building",
-          "detail": "I2/I3/I4 done (I4: ONE runtime unit table — generated constructors + deny-by-default Money.of, G2+G5 closed) · I5/I6 queued · I1 OWNER-GATE CLEARED (ISO-4217 snapshot pinned in KB data/iso-4217/, 280 entries, hash-recorded) → remainder = the compile-time tag-validation + fuzzy-suggestion rungs NOW BUILT (2026-07-18 — type-checker imports MONEY_UNIT_TAGS; FUNGI-TYPE-032 rejects Money<BANANAS>/Money<GPB>/Money<XAU>/Money<XXX> at COMPILE, transposition-aware 'did you mean GBP', 6 regression tests, doc-drift+diagnostic-codes+twin-parity green) → I1 = 3/6; remaining rungs = `unit` schema escape · B1 reserved-name gate · B0 shadowing check; metals/reserved SPECIFIC Commodity<T> routing waits on RD-0350 C1; no float bridge"
-        },
-        {
           "item": "Package Standard + pub ladder",
           "state": "building",
-          "detail": "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner"
-        },
-        {
-          "item": "Security-infra designs (×4)",
-          "state": "building",
-          "detail": "SBOM tool exists · fuzz RD-0316 leg 1 BUILT (slice-6 shape-oracle live in the suite; found+fixed the MIN-literal wasm-trap fidelity bug on run one) · Z3 RD-0318 needs a new dep (🔒 propose) · tabletop RD-0319 = owner exercise, runbook on request"
+          "detail": "Standard v1 + pkg-census + 9 schematics done; the R3 pkg-standard-audit gate (FUNGI-PKGSTD-001..016) and R4 deterministic manifest generator merged in #3 (2026-10-04), with galerina-package.json, build-manifest.json and sbom.json committed for every workspace package; the production profile stays RED until R1/R2 (WASM artifact + signature) and section 5b signing land; the remaining rungs are pending; .graph amendment 🔒 owner"
         },
         {
           "item": "Pre-conversion security closure",
@@ -568,7 +568,7 @@
         {
           "item": "Memory retention audit and bounded caches",
           "state": "building",
-          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented; .github/workflows/retention.yml now builds before the per-commit gate and schedules the dynamic stage on Ubuntu, Windows and macOS; the first hosted receipts remain evidence to collect"
+          "detail": "bounded compiler caches and the static/dynamic retention tools are implemented, and the per-commit retention gate passes on main pushes and PRs. The scheduled dynamic stage has failed on all three hosted OSes in every nightly run so far (16 of 16, 2026-09-21 to 2026-10-06, NIGHTLY RETENTION: FAIL (2)), so no passing hosted dynamic receipt exists yet"
         },
         {
           "item": "General Fungi-to-SLIDE control-flow corpus",
@@ -576,9 +576,19 @@
           "detail": "Grok prompt 21 is source-adjudicated for partial use; prompt 22 completed but does not pass the technical acceptance gate as submitted. Executable fixtures, corrected lattice maths and current Fungi surface mappings remain open; no later query has started"
         },
         {
-          "item": "RD-0363/0364/0365 wiring (R&D done)",
+          "item": "RD-0363/0364/0365 build-out (replay admission, inference governance, key custody)",
           "state": "building",
-          "detail": "R&D COMPLETE — all 3 authored in the KB (galerina-rd-0363/0364/0365). RD-0363 replay-admission + RD-0364 inference-governance DECISION surfaces execute through #105 (R0→R1, verdict≡spec); RD-0365 key-custody design-done. What remains is BUILD not R&D: P/I wiring increments (0363/0364) + implement 0365. (Renamed 2026-07-15 — 'Missing R&D' was a stale backlog label; the R&D is not missing.)"
+          "detail": "the R&D records exist; the build is not done. #8 (2026-10-04) gates the execution-plan fast path on RD-0363 admission with a hash-bound admissionHash and 26 new adversarial P5 tests; #9 (2026-10-05) adds fail-closed, advisory RD-0365 host custody resolution (effectiveStatus) and the custody ladder doc. Still open in docs/TODO.md ([!] rows): RD-0363 authenticated signature verification (owner-gated P1 signed envelope), P2 replay-time grant re-check and receipts; RD-0364 real provider/weight identity, egress and budget proof and authorizing receipts (no PR yet); RD-0365 evidence-backed vault/TPM/hardware custody and host attestation (owner-gated)"
+        },
+        {
+          "item": "Value-unit types: Commodity / Crypto / Security / Rate / Percent (RD-0349 remainder)",
+          "state": "build-pending",
+          "detail": "not built, and docs/TODO.md keeps the RD-0349 [!] rows open: Commodity<U> waits on a sourced, pinned scale policy and RD-0350 C1 routing; Crypto<T> waits on an owner-admitted registry snapshot with ISO 24165 DTIs; Security<ISIN> is tracked, not built; Rate/Percent scale policies are open; the I1 compile-time rungs were 3/6 at the last count (unit schema escape, B1 reserved-name gate and B0 shadowing check open; the D5 name reservation in #30 is not counted as a rung); I5/I6 queued. Owner/R&D-gated, so not building"
+        },
+        {
+          "item": "Z3 checker-algebra leg (RD-0318) + tabletop exercise (RD-0319)",
+          "state": "build-pending",
+          "detail": "owner-gated, nothing in flight: Z3 needs a new solver dependency (🔒 propose; once opened it must expose SAT/UNSAT/UNKNOWN/TIMEOUT/RESOURCE_EXHAUSTED, and only UNSAT may support \"proved absent\"); the RD-0319 tabletop is an owner exercise, runbook on request"
         },
         {
           "item": "Self-hosting SLIDE bootstrap fixpoint",
