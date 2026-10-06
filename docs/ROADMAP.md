@@ -69,6 +69,9 @@ regenerated from it.
   retention (the nightly dynamic stage has failed 16 of 16 runs), twin corpus
   (count read from the ledger), myco (version and test count read live).
 - The generated summary line now counts build-pending rows too.
+- The owner parks row now names quantum (O1, 2026-10-06 23:01 BST). The
+  core-compute quantum TODO row is `[!]` POST-V1, so core-compute moves from
+  1 open / 0 HOLD to 0 open / 1 HOLD.
 
 ### Merged into Galerina main on 2026-10-06
 
@@ -149,7 +152,9 @@ the TODO census.
 
 - **O1:** post-v1 targets stay parked until v1. That covers photonic, the
   AI-accelerator target, the GPU target and the compiler DSS.wasm / Stage-B /
-  LSP block. The Int64/UInt64 row is a separate open question.
+  LSP block. Quantum (the core-compute `quantum` target planning row) joined
+  O1 on 2026-10-06 at 23:01 BST. The Int64/UInt64 row is a separate open
+  question.
 - **O2:** neuromorphic stays non-executing until after v1.
 - **O3:** core-logic Omni Phase 3 (AI orchestration) waits until after v1. Phase
   2 runtime reasoning traces merged on 2026-10-05 (#72).

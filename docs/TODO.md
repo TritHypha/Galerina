@@ -15,7 +15,7 @@ not compare.
 | galerina-core (legacy umbrella) | 275 | 9 |
 | galerina-core-cli | 2 | 6 |
 | galerina-core-compiler | 6 | 1 |
-| galerina-core-compute | 1 | 0 |
+| galerina-core-compute | 0 | 1 |
 | galerina-core-config | 0 | 1 |
 | galerina-core-logic | 0 | 1 |
 | galerina-core-network | 1 | 4 |
@@ -40,13 +40,15 @@ not compare.
 | galerina-devtools-graph-project | 0 | 0 |
 | galerina-tower-citizen | 0 | 3 |
 | galerina-tri-pipe | 0 | 2 |
-| **total** | **612** | **202** |
+| **total** | **611** | **203** |
 
 - No package row was ticked in this refresh. Every row for work merged to
   `main` (through #133) already shows done. The rows still open are one of
   three kinds. Some are unbuilt. Some are owner-parked by note only: three
   core-compiler post-v1 rows and the core-photonic v0.2 section (O1, #133; the
-  photonic HOLD markers are in open #141). The rest are being changed by open
+  photonic HOLD markers are in open #141). The core-compute quantum target row
+  is marked `[!]` POST-V1 here (O1, owner decision 2026-10-06 23:01 BST).
+  The rest are being changed by open
   PRs: #135, #138—#141, #144—#147, #149, #151—#155. Those rows are left to their
   own PRs.
 - The roadmap SVG and generated region were refreshed on the new HEAD. See

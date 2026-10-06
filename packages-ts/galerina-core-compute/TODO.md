@@ -80,7 +80,9 @@ active v1 runtime target.
 [x] Create compatibility/ dir: target-compatibility.ts, compatibility-report.ts, compatibility-rules.ts, target-validator.ts
 [x] Define FUNGI-COMPAT-001 through FUNGI-COMPAT-004 diagnostic codes
 [x] Define shared types: ComputeWorkload, DataShape, DeploymentShape, ComputeDiagnostic
-[ ] Define future quantum target planning rules after core compute reports stabilise
+[!] POST-V1 Define future quantum target planning rules after core compute reports stabilise.
+    Not part of the active v1 build (RuntimeTarget 'quantum').
+    Owner decision 2026-10-06 23:01 BST (O1, Phillip): stays parked until v1 ships, like photonic and GPU; no implementation.
 [x] Add examples
 [x] Add tests
 ```
