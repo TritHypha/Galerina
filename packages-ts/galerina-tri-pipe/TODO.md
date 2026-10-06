@@ -27,7 +27,7 @@ These rows extend the `[!] HOLD SLIDE/VOK admission of a proposed route` row abo
 (L20). The proposal-only role is unchanged: Tri-Pipe never dispatches, admits or
 authorises. A failed attempt keeps its typed refusal; an alternative is a new
 proposal with a new plan identity, followed downstream by its own SLIDE admission
-and a fresh VOK decision, lease and receipt. "binary" owner decided 2026-10-06 (Phillip, 15:21 BST): the same task semantics implemented in binary, with K3 still deciding permission; a different two-valued algorithm or semantic degradation is not permitted.
+and a fresh VOK decision, lease and receipt. Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry.
 Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
 Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 
@@ -38,6 +38,8 @@ Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488;
 [HOLD] Refuse forged or unauthenticated reasons, task-policy substitution, dispatch bypass and unbounded or cyclic proposal chains
     Hostile tests: forged unavailability reason; reason not in the policy; swapped policy digest; proposal handed straight to an executor;
     chain past the policy bound or revisiting a candidate.
-[HOLD] Binary-carrier candidates keep the task's K3 semantics; no two-valued substitute or degraded-semantics candidate is proposed
-    Meaning of binary owner decided 2026-10-06; the row stays HOLD until the task-policy issuer and coordinator package are decided.
+[HOLD] Propose alternatives only in the owner's three-tier order: requested trit-width profile -> standard Galerina Trit (K3) -> binary with the same task semantics
+    Tier 3 only when Trit cannot be processed at all; binary keeps the task's K3 semantics and K3 still decides permission; no two-valued substitute
+    or degraded-semantics candidate; no skipped tier. Order owner decided 2026-10-06 (16:52 BST); row stays HOLD until the task-policy issuer and
+    coordinator package are decided.
 ```

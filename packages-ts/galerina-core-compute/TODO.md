@@ -33,7 +33,7 @@ active v1 runtime target.
     candidate-local unavailability or incompatibility, under the unchanged admitted task policy and with no prior effect; it needs its own
     SLIDE admission and a fresh VOK decision, lease and receipt. DENY, revocation, invalid evidence, unknown outcome, partial effects and
     cleanup failure never become retry permission. Post-effect or uncertain-outcome retry is excluded.
-    "binary" owner decided 2026-10-06 (Phillip, 15:21 BST): the same task semantics implemented in binary, with K3 still deciding permission; a different two-valued algorithm or semantic degradation is not permitted. Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+    Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry. Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
     Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 [x] Define GPU runtime architecture: compute planner â†’ GPU scheduler â†’ buffer manager â†’ kernel adapter â†’ GPU backend
       src/gpu/gpu-runtime.ts GPU_RUNTIME_ARCHITECTURE_STAGES (planning vocabulary only; no stage executes); tests/gpu-plan.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
@@ -51,8 +51,10 @@ active v1 runtime target.
 [x] Define compute audit event shapes for planner, scheduler, fallback, and distributed execution
     src/scheduling/responsibilities.ts ComputeAuditEventShape v0.1 + validateComputeAuditEventShape / buildComputeAuditEvent; closed kind/subject/outcome; no free-text; tests/scheduler-planner.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [HOLD] Tests for RD-0855 alternative-plan planning (proposed 2026-10-06, owner decision pending; refines the audit fallback row above)
-    Positive: preferred candidate authenticated-unavailable before any effect -> a permitted scalar alternative is emitted as a proposal only,
-    with a new plan identity linked to the refused attempt. Negative: DENY, revoked capability, invalid or stale evidence, unknown outcome,
+    Positive (three-tier order): requested trit-width profile authenticated-unavailable before any effect -> a tier-2 standard K3 Trit alternative
+    is emitted as a proposal only, with a new plan identity linked to the refused attempt; tier-3 binary (same task semantics, K3 deciding
+    permission) is proposed only after tier 2 is itself authenticated as unprocessable. Negative: binary proposed while tier 2 can run, a
+    different two-valued algorithm or degraded semantics -> refuse. DENY, revoked capability, invalid or stale evidence, unknown outcome,
     partial effect or cleanup failure -> no retry grant, original typed refusal kept; task-policy substitution and exhausted or cyclic chains refuse.
     Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 [x] Define RuntimeTarget union: cpu|node|wasm|browser-wasm|wasi|gpu|optical_io|photonic|native|serverless|edge (11 values)
