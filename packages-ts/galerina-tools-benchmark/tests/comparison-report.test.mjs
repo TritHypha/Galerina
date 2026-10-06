@@ -66,12 +66,12 @@ describe("Phase 9 comparison report (runtime|compiled)", () => {
   });
 
   it("refuses path-like, spaced, duplicate or excessive flags and versions without echoing them", () => {
-    const secret = "/home/phill/secret-token";
-    for (const flags of [[`--out=${secret}`], ["--a b"], ["--x", "--x"], ["-"], [`--key=C:\\Users\\x`], Array.from({ length: 33 }, (_, i) => `--f${i}`)]) {
+    const secret = "/srv/scratch/secret-token";
+    for (const flags of [[`--out=${secret}`], ["--a b"], ["--x", "--x"], ["-"], [`--key=D:\\data\\x`], Array.from({ length: 33 }, (_, i) => `--f${i}`)]) {
       const r = make([compiledSide({ compiler: { name: "galerina", version: "1.0.0", flags } })]);
       assert.equal(r.ok, false, JSON.stringify(flags).slice(0, 40));
       assert.ok(codes(r).every((c) => c === "FUNGI-BENCH-CMP-003" || c === "FUNGI-BENCH-CMP-001"));
-      assert.ok(!JSON.stringify(r).includes("phill") && !JSON.stringify(r).includes("Users"));
+      assert.ok(!JSON.stringify(r).includes("secret-token") && !JSON.stringify(r).includes("data\\"));
     }
     for (const version of ["1.0 beta", "../1.0", "", "x".repeat(65)]) {
       assert.deepEqual(codes(make([runtimeSide({ runtime: { name: "node", version } })])), ["FUNGI-BENCH-CMP-003"]);
