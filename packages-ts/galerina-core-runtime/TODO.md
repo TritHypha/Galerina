@@ -28,9 +28,12 @@ runtime work.
     src/runtime-contracts.ts validateNodeHostAdapter + NODE_HOST_BUILTIN_ALLOWLIST; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define host-runtime overhead report contract
     src/runtime-contracts.ts createHostOverheadReport (integer permille; UNMEASURED/REFUSED); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
-[ ] Define Securely Governed Runtime execution plan contract
-[ ] Define verified fast path execution signature and invalidation contract
-[ ] Define AI compute plan runtime hook contract
+[x] Define Securely Governed Runtime execution plan contract
+    src/governed-plan-contracts.ts validateGovernedExecutionPlan / startGovernedExecution / advanceGovernedExecution (strict request->planning->verification->capability locking->execution->audit proof; out-of-order is terminal; exact capability lock; AI actors need a lease, never trusted-core); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define verified fast path execution signature and invalidation contract
+    src/governed-plan-contracts.ts createFastPathSignature / checkFastPath (context-tagged policy/package/output-contract hashes + model/hardware/trust; 1 h lease cap; expiry, revocation and every context change invalidate; FAST_PATH_NEVER_BYPASSES; signatures not authenticated here); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define AI compute plan runtime hook contract
+    src/governed-plan-contracts.ts admitAiComputePlan pre-execution hook (default policy admits nothing; per-target sensitivity cap; tools subset; audit required) / checkAiComputeOutput typed-output hook (literal true only, no echo); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Implement RD-0660 `.fungi` nine-gate VOK authority fold
 [x] Implement RD-0660 bounded safe VOK handle-table API
 [x] Verify native VOK forged/stale/replay/context/capacity hostile corpus
