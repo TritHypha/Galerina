@@ -6,6 +6,7 @@ import { runInitCommand } from "./init-command.js";
 import { runVerifyCommand } from "./verify/verify-command.js";
 import { runDeployCommand } from "./deploy/deploy-command.js";
 import { runExplainCommand } from "./explain/explain-command.js";
+import { runPlanCommand } from "./plan/plan-command.js";
 
 function createCoreCommand(
   name: Parameters<typeof createCoreCommandRunner>[0],
@@ -55,6 +56,11 @@ export const commands: readonly CliCommand[] = [
     name: "explain",
     description: "Explain closed-shape manifest facets and/or deployment-denial reasoning (fail-closed; no live tree).",
     run: runExplainCommand
+  },
+  {
+    name: "plan",
+    description: "Estimate closed-shape compute plan suitability (fail-closed; no live GPU/optical/memory probe).",
+    run: runPlanCommand
   },
   {
     name: "benchmark",
