@@ -69,6 +69,8 @@ Build contracts (`src/build/build-contracts.ts`, zero-trust defaults, owner may 
 descriptors (no getters). Nested artefacts use `readBuildArtefact`. Targets match the
 deploy/plan vocabulary. `buildWorkspace` never throws and never opens the workspace;
 a valid input returns `FUNGI-BUILD-005` (14-pass pipeline not admitted on this tip).
+
+Build CLI + reporter (`src/build/build-command.ts`, `src/build/build-reporter.ts`, zero-trust defaults, owner may revisit): `galerina build` admits `--workspace` / `--target` / `--out` / `--strict` / `--profile` / `--report` / `--json`; `--audit` refuses `FUNGI-CLI-BUILD-004`. Calls `buildWorkspace` (never opens the workspace). Optional `build-report.json` (`galerina.build-report/v1`) exclusive-create with messages withheld and limitations noting no 14-pass / no artefact emit. Exit 0/2/4.
 Codes: `FUNGI-BUILD-001` shape, `002` domain, `003` path token, `004` artefact set,
 `005` pipeline-not-admitted / success consistency. No CLI / reporter / emit yet.
 
