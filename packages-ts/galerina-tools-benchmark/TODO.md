@@ -21,7 +21,7 @@
 
 ```text
 [x] Add Galerina benchmark command placeholder
-[ ] Implement Galerina benchmark command runner
+[ ] Implement Galerina benchmark command runner -- progress (Grok 2026-10-06; zero-trust defaults, owner may revisit): src/benchmark-runner.ts runLightBenchmark runs the README light list in order through the existing case modules, and the result must pass validateBenchmarkReport. Host-injected benchmarkId/loVersion/system/clock; no OS/file/network reads. Parked, not-implemented and *_if_available cases are skipped with fixed reasons; the total budget skips the remaining cases as skipped_timeout. Score mean is an OWNER-REVISIT pick; shareable is always false. FUNGI-BENCH-RUN-001..005; tests/benchmark-runner.test.mjs. Remaining: full/stress modes (refused FUNGI-BENCH-RUN-002), CLI wiring of parseBenchmarkCliArgs into the runner, --save via BenchmarkReportFileWriter.
 [x] Add --light flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --light; conflicts with --full refused Galerina_BENCHMARK_CLI_002; never echoes refused tokens
 [x] Add --full flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --full; mutual exclusion with --light; default mode light when neither set
 [x] Add --json flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --json boolean; duplicates/equals-form refused Galerina_BENCHMARK_CLI_001

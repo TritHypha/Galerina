@@ -1654,3 +1654,19 @@ export {
   type RunJsonStreamGeneratedResult,
   type GeneratedJsonLinesSummary,
 } from "./json-stream-generated-benchmark.js";
+
+// Light benchmark command runner (in-process; host-injected facts; light mode only).
+export {
+  FUNGI_BENCH_RUN_001,
+  FUNGI_BENCH_RUN_002,
+  FUNGI_BENCH_RUN_003,
+  FUNGI_BENCH_RUN_004,
+  FUNGI_BENCH_RUN_005,
+  BENCHMARK_RUNNER_INPUT_FIELDS,
+  BENCHMARK_RUNNER_REASONS,
+  LIGHT_BENCHMARK_CASE_IDS,
+  runLightBenchmark,
+  type BenchmarkRunnerDiagnostic,
+  type BenchmarkRunnerInput,
+  type BenchmarkRunnerResult,
+} from "./benchmark-runner.js";
