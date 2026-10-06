@@ -1,0 +1,40 @@
+export {
+  FUNGI_PROMOTE_001,
+  FUNGI_PROMOTE_002,
+  FUNGI_PROMOTE_003,
+  FUNGI_PROMOTE_004,
+  FUNGI_PROMOTE_005,
+  PROMOTE_ENVIRONMENTS,
+  PROMOTE_TARGETS,
+  PROMOTE_REQUEST_SCHEMA,
+  PROMOTE_REQUEST_FIELDS,
+  PROMOTE_RESULT_FIELDS,
+  isPromoteEnvironment,
+  isPromoteTarget,
+  readPromoteRequest,
+  createPromoteResult,
+  readPromoteResult,
+  createPromotePlan,
+} from "./promote/promote-contracts.js";
+export type {
+  PromoteEnvironment,
+  PromoteTarget,
+  PromoteDiagnosticField,
+  PromoteDiagnostic,
+  PromoteRequest,
+  PromoteResult,
+  ReadPromoteRequestResult,
+  ReadPromoteResultResult,
+} from "./promote/promote-contracts.js";
+export {
+  runPromoteCommand,
+  parsePromoteArgs,
+  FUNGI_CLI_PROMOTE_001,
+  FUNGI_CLI_PROMOTE_002,
+  FUNGI_CLI_PROMOTE_003,
+  FUNGI_CLI_PROMOTE_004,
+  PROMOTE_EXIT_OK,
+  PROMOTE_EXIT_USAGE,
+  PROMOTE_EXIT_VALIDATION,
+} from "./promote/promote-command.js";
+export type { PromoteCommandOptions, PromoteFlagName } from "./promote/promote-command.js";

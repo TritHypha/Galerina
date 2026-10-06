@@ -354,3 +354,43 @@ export {
   VDEPLOY_EXIT_VALIDATION,
 } from "./verify/verify-deploy-command.js";
 export type { VDeployCommandOptions, VDeployFlagName } from "./verify/verify-deploy-command.js";
+
+export {
+  FUNGI_PROMOTE_001,
+  FUNGI_PROMOTE_002,
+  FUNGI_PROMOTE_003,
+  FUNGI_PROMOTE_004,
+  FUNGI_PROMOTE_005,
+  PROMOTE_ENVIRONMENTS,
+  PROMOTE_TARGETS,
+  PROMOTE_REQUEST_SCHEMA,
+  PROMOTE_REQUEST_FIELDS,
+  PROMOTE_RESULT_FIELDS,
+  isPromoteEnvironment,
+  isPromoteTarget,
+  readPromoteRequest,
+  createPromoteResult,
+  readPromoteResult,
+  createPromotePlan,
+  runPromoteCommand,
+  parsePromoteArgs,
+  FUNGI_CLI_PROMOTE_001,
+  FUNGI_CLI_PROMOTE_002,
+  FUNGI_CLI_PROMOTE_003,
+  FUNGI_CLI_PROMOTE_004,
+  PROMOTE_EXIT_OK,
+  PROMOTE_EXIT_USAGE,
+  PROMOTE_EXIT_VALIDATION,
+} from "./promote.js";
+export type {
+  PromoteEnvironment,
+  PromoteTarget,
+  PromoteDiagnosticField,
+  PromoteDiagnostic,
+  PromoteRequest,
+  PromoteResult,
+  ReadPromoteRequestResult,
+  ReadPromoteResultResult,
+  PromoteCommandOptions,
+  PromoteFlagName,
+} from "./promote.js";
