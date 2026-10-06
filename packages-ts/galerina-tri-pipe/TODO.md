@@ -18,7 +18,13 @@ authorise its own route. SLIDE/VOK admission is a later independent act.
 [x] README matches proposal-only architecture (no engine.infer fiction)
 [x] prove-tri-pipe.mjs: tier == hardware(); photonicEnabled IFF hybrid|photonic
 [!] HOLD SLIDE/VOK admission of a proposed route (not this package)
-[!] HOLD Tri-Fuse as a separate optimisation package (RD-0855: not currently a package)
+[SUPERSEDED] Tri-Fuse as a separate optimisation package. Reason: settled by RD-0855
+    §4.3 and §11 item 14 unless the owner reopens it. Tri-Fuse keeps its bounded
+    role as a backend-neutral, proof-constrained optimisation CONTRACT and is not
+    a package. Optimising already-admitted bytes yields a new artifact that needs
+    fresh SLIDE admission and a new VOK receipt. Tri-Pipe may only propose. No
+    package is to be created here; a Tri-Fuse package needs the owner to reopen
+    RD-0855. (Grok 2026-10-06, RD cited by id only.)
 ```
 
 ## RD-0855 admission-time alternatives (proposed 2026-10-06, owner decision pending)
