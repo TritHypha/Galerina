@@ -78,7 +78,7 @@ Codes: `FUNGI-BUILD-001` shape, `002` domain, `003` path token, `004` artefact s
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
 Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-016`.
-Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts / verify deploy still open.
+Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts landed; verify deploy closed-shape receipt compare landed (live process probe still open).
 
 Artefact integrity (`src/verify/verify-integrity.ts`, zero-trust defaults, owner may
 revisit): `readBuildArtefact`, `verifyArtefactIntegrity` and `verifyArtefactIntegritySet`

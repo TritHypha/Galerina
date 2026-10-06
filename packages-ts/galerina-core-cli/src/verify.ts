@@ -142,3 +142,29 @@ export async function verifyArtefacts(artefacts: readonly BuildArtefact[], root 
   const diagnostics = [...setDiagnostics, ...verified.flatMap((v) => v.diagnostics)];
   return Object.freeze({ success: diagnostics.length === 0, artefacts: Object.freeze(verified), diagnostics: Object.freeze(diagnostics) });
 }
+
+export {
+  FUNGI_VDEPLOY_001,
+  FUNGI_VDEPLOY_002,
+  FUNGI_VDEPLOY_003,
+  FUNGI_VDEPLOY_004,
+  FUNGI_VDEPLOY_005,
+  verifyDeploy,
+  readRunningVersionReceipt,
+  readBuildManifestSlice,
+  createVerifyDeployResult,
+  readVerifyDeployResult,
+  isVDeployTarget,
+  VDEPLOY_TARGETS,
+  RUNNING_VERSION_RECEIPT_SCHEMA,
+  BUILD_MANIFEST_SLICE_SCHEMA,
+} from "./verify/verify-deploy.js";
+export {
+  runVerifyDeployCommand,
+  parseVerifyDeployArgs,
+} from "./verify/verify-deploy-command.js";
+export {
+  createVerifyDeployReport,
+  writeVerifyDeployReport,
+  VERIFY_DEPLOY_REPORT_FILE,
+} from "./verify/verify-deploy-reporter.js";

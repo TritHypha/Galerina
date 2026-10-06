@@ -298,3 +298,59 @@ export type {
   BuildCommandOptions,
   BuildFlagName,
 } from "./build.js";
+
+export {
+  FUNGI_VDEPLOY_001,
+  FUNGI_VDEPLOY_002,
+  FUNGI_VDEPLOY_003,
+  FUNGI_VDEPLOY_004,
+  FUNGI_VDEPLOY_005,
+  VDEPLOY_TARGETS,
+  RUNNING_VERSION_RECEIPT_SCHEMA,
+  BUILD_MANIFEST_SLICE_SCHEMA,
+  RUNNING_VERSION_RECEIPT_FIELDS,
+  BUILD_MANIFEST_SLICE_FIELDS,
+  VERIFY_DEPLOY_RESULT_FIELDS,
+  isVDeployTarget,
+  readRunningVersionReceipt,
+  readBuildManifestSlice,
+  createVerifyDeployResult,
+  readVerifyDeployResult,
+  verifyDeploy,
+} from "./verify/verify-deploy.js";
+export type {
+  VDeployTarget,
+  VDeployDiagnosticField,
+  VDeployDiagnostic,
+  RunningVersionReceipt,
+  BuildManifestSlice,
+  VerifyDeployResult,
+  ReadRunningVersionReceiptResult,
+  ReadBuildManifestSliceResult,
+  ReadVerifyDeployResultResult,
+} from "./verify/verify-deploy.js";
+export {
+  createVerifyDeployReport,
+  renderVerifyDeployReport,
+  writeVerifyDeployReport,
+  VERIFY_DEPLOY_REPORT_SCHEMA,
+  VERIFY_DEPLOY_REPORT_FILE,
+  VERIFY_DEPLOY_REPORT_LIMITATIONS,
+} from "./verify/verify-deploy-reporter.js";
+export type {
+  VerifyDeployReport,
+  VerifyDeployReportDiagnostic,
+} from "./verify/verify-deploy-reporter.js";
+export {
+  runVerifyDeployCommand,
+  parseVerifyDeployArgs,
+  FUNGI_CLI_VDEPLOY_001,
+  FUNGI_CLI_VDEPLOY_002,
+  FUNGI_CLI_VDEPLOY_003,
+  FUNGI_CLI_VDEPLOY_004,
+  FUNGI_CLI_VDEPLOY_005,
+  VDEPLOY_EXIT_OK,
+  VDEPLOY_EXIT_USAGE,
+  VDEPLOY_EXIT_VALIDATION,
+} from "./verify/verify-deploy-command.js";
+export type { VDeployCommandOptions, VDeployFlagName } from "./verify/verify-deploy-command.js";

@@ -32,6 +32,7 @@ import {
   verifyRuntimeCompatibility,
 } from "./verify-runtime.js";
 import type { RuntimeReportVerification } from "./verify-runtime.js";
+import { runVerifyDeployCommand } from "./verify-deploy-command.js";
 
 /** Unknown or duplicate flag / missing value. */
 export const FUNGI_CLI_VERIFY_001 = "FUNGI-CLI-VERIFY-001";
@@ -225,6 +226,14 @@ function resolveRoot(root: string, cwd: string): string {
 }
 
 export async function runVerifyCommand(context: CliContext): Promise<CliResult> {
+  // `galerina verify deploy ...` — closed receipt vs build-manifest-slice compare.
+  if (context.args[0] === "deploy") {
+    return runVerifyDeployCommand({
+      cwd: context.cwd,
+      env: context.env,
+      args: context.args.slice(1),
+    });
+  }
   const parsed = parseVerifyArgs(context.args);
   if (!parsed.ok) return parsed.result;
 
