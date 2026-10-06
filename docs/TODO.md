@@ -1,5 +1,61 @@
 # TODO
 
+## Current state — 2026-10-06
+
+Base: `origin/main` `df7f2fb51`. Counts are re-derived from every tracked
+`TODO.md`. A box is `[ ]`, `[~]`, `[/]`, `[?]`, `[!]` or `[HOLD]`, with or
+without a leading `-`. **HOLD** means `[!]`, `[HOLD]`, or an unchecked row
+whose text says HOLD. **Open** means any other unchecked row. These counts use a
+wider rule than the 2026-09-26 figure below (238 `- [ ]` rows), so the two do
+not compare.
+
+| TODO file | open | HOLD |
+|---|--:|--:|
+| docs/TODO.md | 251 | 133 |
+| galerina-core (legacy umbrella) | 275 | 9 |
+| galerina-core-cli | 2 | 6 |
+| galerina-core-compiler | 6 | 1 |
+| galerina-core-compute | 1 | 0 |
+| galerina-core-config | 0 | 1 |
+| galerina-core-logic | 0 | 1 |
+| galerina-core-network | 1 | 4 |
+| galerina-core-photonic | 22 | 2 |
+| galerina-core-reports | 2 | 0 |
+| galerina-core-runtime | 4 | 0 |
+| galerina-core-security | 26 | 0 |
+| galerina-core-tasks / core-vector | 0 | 0 |
+| galerina-framework-api-server | 0 | 26 |
+| galerina-framework-app-kernel | 3 | 0 |
+| galerina-framework-example-app | 2 | 0 |
+| galerina-target-ai-accelerator | 0 | 2 |
+| galerina-target-gpu | 0 | 2 |
+| galerina-target-native | 0 | 2 |
+| galerina-target-photonic | 0 | 1 |
+| galerina-target-cpu / target-wasm | 0 | 0 |
+| galerina-cpu-kernels | 0 | 1 |
+| galerina-ai-neuromorphic | 0 | 1 |
+| galerina-ai / ai-agent / ai-lowbit / ai-neural | 0 | 0 |
+| galerina-docs | 0 | 5 |
+| galerina-tools-benchmark | 17 | 0 |
+| galerina-devtools-graph-project | 0 | 0 |
+| galerina-tower-citizen | 0 | 3 |
+| galerina-tri-pipe | 0 | 2 |
+| **total** | **612** | **202** |
+
+- No package row was ticked in this refresh. Every row for work merged to
+  `main` (through #133) already shows done. The rows still open are one of
+  three kinds. Some are unbuilt. Some are owner-parked by note only: three
+  core-compiler post-v1 rows and the core-photonic v0.2 section (O1, #133; the
+  photonic HOLD markers are in open #141). The rest are being changed by open
+  PRs: #135, #138—#141, #144—#147, #149, #151. Those rows are left to their
+  own PRs.
+- The roadmap SVG and generated region were refreshed on the new HEAD. See
+  [ROADMAP.md](ROADMAP.md#current-state--2026-10-06-evening). This supersedes
+  "old roadmap SVG is not refreshed" in the 2026-09-22 source-verified
+  reconciliation below. Semantic provenance is still stale.
+- Merged-today, awaiting-merge, owner-hold and cross-repository lists are in
+  that ROADMAP section. Nothing awaiting merge is counted as done.
+
 ## Current checkout check — 2026-09-26
 
 - [x] The RD-0873 worktree is dirty `main` at

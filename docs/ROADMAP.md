@@ -1,5 +1,152 @@
 # Galerina beta v1 to SLIDE roadmap
 
+## Current state — 2026-10-06 (evening)
+
+Base: `origin/main` `df7f2fb51` (merge of #133). This section supersedes the
+dated checkpoints below for current status; those stay as the chronological
+ledger. It is a roadmap locator only. It grants no production, signing,
+SLIDE/VOK or `.fungi` authority.
+
+### Generated map refreshed
+
+`build/roadmap/roadmap.svg`, `build/roadmap/provenance.json` and the generated
+region further down were rewritten by `node scripts/gen-roadmap.mjs --write` on
+a clean HEAD, in Docker `node:20` on a fresh clone. The compiler dist was built
+first, so the WAT and interpreter ladders were measured instead of reading as
+missing. What changed on the map:
+
+- The WAT row is now **WAT emitter (L1 self-hosted flow coverage)**: **100%**,
+  measured by the wat-lowering ladder. Per the owner ruling of 2026-10-02, the
+  parked ABI items (D4 pattern ABI; D8 host-import ABI; E5 Float32 + secure
+  wipe; ZipPair) are named compile-time refusals outside L1. They are a text row
+  and are not part of the figure.
+- **Runtime interpreter** no longer carries a completion percentage. The D10/K1
+  parity ladder measures executor agreement (**14/14** rungs). Real I2 fault
+  handlers and I3 body-local invariants are unbuilt. It is a text row and is
+  left out of the build average.
+- Owner parks O1—O5 are one post-v1 text row in the tracking registry. No
+  percentage was raised or lowered for them.
+- The Lyth/Weaver and SLIDE text rows carry tonight's status (see below).
+- The other percentages are unchanged. Most are still **asserted** (hand-typed),
+  and the map draws them hollow with a dashed ring.
+
+The assurance DAG reads **UNKNOWN**: the predecessor sidecars (project graph,
+KB graph, semantic coverage, TS retirement, status ledger, SLIDE reference)
+predate this HEAD. `build/status/STATUS.md` (gen-status-blocks) still shows the
+old WAT 89% row and was not regenerated here.
+`build/component-health/roadmap-subway.svg` is a historical artifact that no
+generator targets; it is unchanged.
+
+**Picking next work (nearest 100% first).** Every measured row already reads
+100%. The numeric rows nearest 100% are all asserted: Packages 98%, then I/O
+— OS kernel 72% and Application-framework layer 72%, then Memory 62% and
+TLSTP 56%. Treat them as judgements, not measurements. Parked and word-only
+rows (WAT parked ABI, interpreter I2/I3, SLIDE, B8, Lyth/Weaver, owner parks)
+carry no percentage, so they never sort as "nearly done".
+
+### Merged into Galerina main on 2026-10-06
+
+There were 55 PRs, merged 11:11—12:15 BST. GitHub Actions CI is paused, so
+these are not CI receipts. Merge commits are in brackets.
+
+- core-runtime: #77 governed execution plan / verified fast path / AI compute
+  plan hooks (`5f2593892`); #81 isolated hard-termination host adapter +
+  authenticated receipts (`938f93115`).
+- ai-agent: #78 import-cycle removal and strict hand-built node limits
+  (`61cd27b72`).
+- core-reports: #79 audit/capability/effect/denial report contracts
+  (`a2573f702`); #87 policy/risk/specialist report contracts (`b54032961`);
+  #131 runtime health schema (`67ad1a246`).
+- core-cli: #82 verification-report.json (`3336ce02c`); #88 runtime-manifest
+  verify (`1b5e21018`); #90—#92 verify integrity/command/runtime
+  (`40c4b0edc`, `6341f349e`, `c428fe8a4`); #93—#94 deploy contracts +
+  dry-run (`cd0f886bc`, `b9763db72`); #95—#97 explain (`6b416b117`,
+  `1ebb67561`, `5f900e6d3`); #98—#99 plan (`10ff354e1`, `440ea7c8e`);
+  #100—#101 build contracts + CLI (`849d8e84b`, `99ed330a4`); #102 verify
+  deploy (`adb6cb25b`); #111 promote plan (`54a146539`); #132 deploy dry-run
+  module hashes (`e530d47a8`).
+- core-compute: #84—#86 effects/GPU plan v0.2, optical plan v0.2,
+  scheduler/planner audit shapes (`c97c14be4`, `56dc59ba0`, `5adfc1bef`).
+- core-compiler: #89 runtime-manifest proofObligations bound to the exact flow
+  (`73b4e1064`).
+- framework-app-kernel: #103—#110 typed API boundary, request validation,
+  auth provider boundary, scope/role, rate-limit/workload, Structured Await,
+  queue/job, runtime audit report format (`0bd9fd95f`, `f3ac4fc7e`,
+  `fe81051ab`, `4dec9a18e`, `9e1f967f1`, `ae1e32f16`, `07ddb16af`,
+  `869019729`).
+- core-security: #113—#119 policy, capability boundary/grant,
+  lease/attenuation/approver chain, AI self-grant/trust-root, OWASP/CWE
+  mapping, crypto inventory labels, SecureRandom diagnostics (`d7d76bc70`,
+  `75393bc0e`, `af136c9fa`, `535a631ec`, `93d45f433`, `309b148ff`,
+  `ca484821b`).
+- tools-benchmark: #112 benchmark-report.json write (`c089596a3`);
+  #120—#129 Bool, Tri, Result/Option, CPU arithmetic, JSON 1MB, SHA-256,
+  small vector, JSON 10MB stream, medium matrix, JSON 100MB + optional 1GB
+  cases (`c2ef06f4e`, `a4deafcc7`, `9f3e5b474`, `c1827c4f3`,
+  `1a567a803`, `ed6d4e739`, `063d15596`, `7b92bf222`, `deff4b7e5`,
+  `2a8aac71b`); #130 never echo unknown keys (`58f90b4d3`).
+- docs/TODO: #133 refusal fixtures, photonic pointer fix and owner-decided
+  parks (`df7f2fb51`).
+
+### Ready, awaiting merge (not counted as done)
+
+These are open on GitHub and waiting for Codex to merge. Codex has not
+responded since about 15:14 BST. None of them counts as done on the map or in
+the TODO census.
+
+- #80 core-network: unlock NetworkPolicy-upgrade and dir-split HOLDs.
+- #134 docs: route refusals throw OpenApiGenerationError.
+- #135 api-server: reconcile TODO HOLDs against current source.
+- #136 api-server: refuse repeated decoded query names before the kernel.
+- #137 specs: protected operation v0 (credential verify).
+- #138 app-kernel: idempotency and replay protection contract.
+- #139 core-reports: scheduler evidence event shape.
+- #140 TODO: classify not-buildable package rows as HOLD (batch 1).
+- #141 core-photonic v0.2 rows to HOLD (owner decision O1).
+- #142 app-kernel: `:param` route-pattern matcher (not wired).
+- #143 app-kernel: boot-time handler-reference check (not wired).
+- #144 api-server: TODO follow-ups (stacked on #135).
+- #145 tri-pipe: Tri-Fuse row resolved per RD-0855.
+- #146 TODO: RD-0855 admission-time fallback rows as HOLD.
+- #147 tools-benchmark: light benchmark command runner.
+- #148 architecture: trit-width component proposal (non-authorizing).
+- #150 core-cli: remove the `galerina benchmark` placeholder.
+- #151 tri-pipe: RD-0855 alternative-proposal rows (stacked on #146).
+- Drafts: #83 core-compute specialist taxonomy (conflicting); #149
+  tools-benchmark command composition (stacked on #147).
+
+### Owner holds and decisions
+
+- **O1:** post-v1 targets stay parked until v1. That covers photonic, the
+  AI-accelerator target, the GPU target and the compiler DSS.wasm / Stage-B /
+  LSP block. The Int64/UInt64 row is a separate open question.
+- **O2:** neuromorphic stays non-executing until after v1.
+- **O3:** core-logic Omni Phase 3 (AI orchestration) waits until after v1. Phase
+  2 runtime reasoning traces merged on 2026-10-05 (#72).
+- **O4:** signed Tower deployment waits for the v1 signing ceremony. No
+  throwaway keys and no allowUnsigned.
+- **O5:** `galerina deploy` may do a real live deploy. This is authorised but
+  not implemented: the merged deploy path is still dry-run only.
+- tools-benchmark stays a standalone TypeScript package. core-cli exposes no
+  benchmark command; #150 removes the placeholder and is still open.
+
+### Cross-repository status
+
+- **lyth-weaver** main is `c5c8c67dc`. #2 (RD-0858 route binding + hostile
+  tests) and #3 (P7 scalar route removal/rollback) merged at 21:03 BST. The
+  receipt is 25 suites, 940 checks, 0 failures. P7 is **PARTIAL**: Lyth side
+  only, scalar profile-1 family only. Every other checked-Fungi family and
+  profile needs its own SLIDE admission and VOK receipt first.
+- **SLIDE:** trit-width profiles 32/64/256 are proposed as fail-closed stub
+  routes. This is a SuperGrok proposal, not yet a PR. The Galerina bitplane
+  32/64/256 producers are missing, so those profiles stay inactive. Galerina
+  #148 is the matching architecture proposal and is still open.
+
+### TODO census
+
+The per-file open/HOLD counts and the counting rule are in
+[docs/TODO.md](TODO.md#current-state--2026-10-06).
+
 ## Memory-security dependency checkpoint — 2026-09-28
 
 The former RD-1296 combined memory programme was split, not solved. Product
