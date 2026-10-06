@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import {
   BENCHMARK_RUNNER_REASONS,
   DEFAULT_BENCHMARK_CONFIG,
@@ -8,7 +9,10 @@ import {
   FUNGI_BENCH_RUN_003,
   FUNGI_BENCH_RUN_004,
   FUNGI_BENCH_RUN_005,
+  FUNGI_BENCH_RUN_006,
   LIGHT_BENCHMARK_CASE_IDS,
+  LIGHT_BENCHMARK_RUN_GROUPS,
+  createLightBenchmarkRunner,
   createShareableBenchmarkReport,
   formatBenchmarkSummary,
   runLightBenchmark,
@@ -170,4 +174,123 @@ test("trigger and explicit light mode are carried through", () => {
   const r = runLightBenchmark(input({ mode: "light", trigger: "ci" }));
   assert.equal(r.ok, true);
   assert.equal(r.report.trigger, "ci");
+});
+
+// ---- SuperGrok C72 review gaps (2026-10-06) ----
+
+test("C72 gap 1: an availability-gated target set to \"optional\" behaves differently from one set to true", () => {
+  const run = (gpu) => runLightBenchmark(input({ config: config({ targets: { ...FAST, gpu } }) }));
+  const required = run(true);
+  const optional = run("optional");
+  const disabled = run(false);
+  for (const r of [required, optional, disabled]) {
+    assert.equal(r.ok, true, JSON.stringify(r));
+    assert.deepEqual(validateBenchmarkReport(r.report), []);
+  }
+  const req = byId(required.report).get("gpu.vector_small_if_available");
+  const opt = byId(optional.report).get("gpu.vector_small_if_available");
+  const off = byId(disabled.report).get("gpu.vector_small_if_available");
+  assert.deepEqual([req.status, req.reason], ["failed", BENCHMARK_RUNNER_REASONS.requiredUnavailable]);
+  assert.deepEqual([opt.status, opt.reason], ["skipped", BENCHMARK_RUNNER_REASONS.detectionPending]);
+  assert.deepEqual([off.status, off.reason], ["skipped", BENCHMARK_RUNNER_REASONS.disabled]);
+  assert.equal(required.report.summary.gpu, "failed");
+  assert.equal(optional.report.summary.gpu, "skipped");
+  assert.notDeepEqual(required.report.summary, optional.report.summary);
+  assert.ok(!("score" in req));
+  // Runnable targets: true and "optional" both run the cases.
+  const logicOptional = runLightBenchmark(input({ config: config({ targets: { ...FAST, logic: "optional" } }) }));
+  assert.equal(byId(logicOptional.report).get("logic.bool_branch").status, "passed");
+});
+
+test("C72 gap 2: a case that throws ends failed (refused), never passed, and its message is not echoed", () => {
+  const marker = "SECRETBOOM";
+  const boom = () => { throw new Error(marker); };
+  const single = createLightBenchmarkRunner({ "logic.bool_branch": boom })(input());
+  assert.equal(single.ok, true, JSON.stringify(single));
+  assert.deepEqual(validateBenchmarkReport(single.report), []);
+  const row = byId(single.report).get("logic.bool_branch");
+  assert.deepEqual([row.status, row.reason], ["failed", BENCHMARK_RUNNER_REASONS.refused]);
+  assert.ok(!("score" in row));
+  assert.equal(single.report.summary.logic, "failed");
+  assert.equal(byId(single.report).get("logic.tri_match").status, "passed"); // other cases still run
+  assert.ok(!JSON.stringify(single).includes(marker));
+
+  const group = createLightBenchmarkRunner({ "vector.dot_product_small": boom })(input());
+  for (const id of ["vector.dot_product_small", "vector.cosine_batch_small"]) {
+    assert.equal(byId(group.report).get(id).status, "failed", id);
+  }
+  assert.equal(group.report.summary.vector, "failed");
+
+  // A case that claims "passed" for the wrong id, or returns junk, is not passed either.
+  const forged = () => ({ ok: true, value: { id: "logic.tri_match", target: "logic", status: "passed", durationMs: 1, operations: 1, score: 100 } });
+  for (const run of [forged, () => undefined, () => ({ ok: false }), () => ({ ok: true, value: { id: "logic.bool_branch", target: "logic", status: "PASSED" } })]) {
+    const r = createLightBenchmarkRunner({ "logic.bool_branch": run })(input());
+    assert.equal(byId(r.report).get("logic.bool_branch").status, "failed");
+  }
+});
+
+test("C72 gap 3: the 60-second per-case cap is reached under a fake clock (no real wait)", () => {
+  const wallStart = Date.now();
+  let t = 0;
+  const fakeNow = () => t;
+  const seen = [];
+  const burnToCap = (id) => ({ maxDurationMs }) => {
+    seen.push(maxDurationMs);
+    const start = t;
+    while (t - start <= maxDurationMs) t += 1_000; // fake time only
+    return { ok: true, value: { id, target: "logic", status: "skipped_timeout", durationMs: t - start, operations: 1, score: 0 } };
+  };
+  const runner = createLightBenchmarkRunner({
+    "logic.bool_branch": burnToCap("logic.bool_branch"),
+    "logic.tri_match": burnToCap("logic.tri_match"),
+    "logic.result_option": burnToCap("logic.result_option"),
+  });
+  // maxSingleTestSeconds 120 asks for more than the module cap; the runner must clamp to 60 000 ms.
+  const r = runner(input({ now: fakeNow, config: config({ maxDurationSeconds: 180, maxSingleTestSeconds: 120, targets: FAST }) }));
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.deepEqual(validateBenchmarkReport(r.report), []);
+  assert.deepEqual(seen, [60_000, 60_000, 60_000]);
+  const tests = byId(r.report);
+  for (const id of ["logic.bool_branch", "logic.tri_match", "logic.result_option"]) {
+    assert.equal(tests.get(id).status, "skipped_timeout", id);
+    assert.ok(tests.get(id).durationMs > 60_000, id);
+  }
+  // Three capped cases spend the 180 s total budget, so the vector cases never run.
+  for (const id of ["vector.dot_product_small", "vector.cosine_batch_small"]) {
+    assert.deepEqual([tests.get(id).status, tests.get(id).reason], ["skipped_timeout", BENCHMARK_RUNNER_REASONS.budget], id);
+  }
+  assert.ok(r.report.durationMs >= 180_000);
+  assert.ok(Date.now() - wallStart < 5_000, "fake clock: no real 60-second wait");
+
+  // A smaller maxSingleTestSeconds is honoured below the cap.
+  const small = [];
+  createLightBenchmarkRunner({ "logic.bool_branch": ({ maxDurationMs }) => { small.push(maxDurationMs); return { ok: false }; } })(
+    input({ config: config({ maxSingleTestSeconds: 20, targets: FAST }) }));
+  assert.deepEqual(small, [20_000]);
+});
+
+test("createLightBenchmarkRunner refuses an invalid override set without echo", () => {
+  const marker = "SECRETKEY";
+  for (const cases of [null, [], 5, { [marker]: () => {} }, { "logic.bool_branch": marker }, { "logic.tri_match": undefined }, { "cpu.float_loop": () => {} }]) {
+    const r = createLightBenchmarkRunner(cases)(input());
+    assert.equal(r.ok, false);
+    assert.equal(r.diagnostics[0].code, FUNGI_BENCH_RUN_006);
+    assert.ok(!JSON.stringify(r).includes(marker));
+  }
+  assert.deepEqual([...LIGHT_BENCHMARK_RUN_GROUPS], [
+    "logic.bool_branch", "logic.tri_match", "logic.result_option", "cpu.integer_loop", "cpu.hash_sha256_32mb",
+    "json.decode_validate_1mb", "json.stream_validate_10mb", "vector.dot_product_small",
+  ]);
+  assert.equal(createLightBenchmarkRunner(undefined)(input()).ok, true);
+});
+
+test("the runner module stays free of filesystem, environment and network access", () => {
+  const src = readFileSync(new URL("../dist/benchmark-runner.js", import.meta.url), "utf8");
+  const imports = [...src.matchAll(/\bfrom\s+["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']/g)].map((m) => m[1] ?? m[2]);
+  assert.ok(imports.length > 0);
+  for (const spec of imports) assert.ok(spec.startsWith("./"), spec);
+  const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  for (const banned of [/\bprocess\b/, /\brequire\s*\(/, /\bfetch\s*\(/, /\bglobalThis\b/, /\bDeno\b/, /node:/]) {
+    assert.ok(!banned.test(code), String(banned));
+  }
 });

@@ -22,7 +22,13 @@
  * - A case refusal or throw is recorded as `failed` with a fixed reason. A case
  *   timeout keeps the case's own `skipped_timeout`.
  * - A target set to `false` in config is `skipped` (disabled). `true` and
- *   `"optional"` both leave it enabled.
+ *   `"optional"` both run the target's runnable cases. They differ on an
+ *   availability-gated case (the four `*_if_available` cases, whose backend
+ *   detection is not implemented): `"optional"` reports it `skipped` with the
+ *   detection-pending reason, while `true` means the caller requires that
+ *   target, so the case is `failed` with a fixed required-unavailable reason
+ *   instead of being silently skipped. Parked and not-implemented cases stay
+ *   `skipped` either way.
  * - When the total budget (`config.maxDurationSeconds`) is spent, every
  *   remaining case is `skipped_timeout` and is not run.
  * - Target summary:
@@ -37,6 +43,11 @@
  * - `privacy.shareable` is always false here. Sharing goes through
  *   `createShareableBenchmarkReport`.
  * - Diagnostics never echo input values.
+ * - `createLightBenchmarkRunner(cases)` lets a host (in practice, tests) replace
+ *   the case function of a run group with its own function, for example a
+ *   throwing case or one driven by a fake clock. The runner itself still does no
+ *   I/O; the override set must be a closed plain record of known group ids to
+ *   functions, or every call is refused (FUNGI-BENCH-RUN-006).
  */
 import {
   DEFAULT_BENCHMARK_CONFIG,
@@ -72,6 +83,8 @@ export const FUNGI_BENCH_RUN_003 = "FUNGI-BENCH-RUN-003";
 export const FUNGI_BENCH_RUN_004 = "FUNGI-BENCH-RUN-004";
 /** The assembled report failed `validateBenchmarkReport` (for example a bad system record). */
 export const FUNGI_BENCH_RUN_005 = "FUNGI-BENCH-RUN-005";
+/** The case override set given to `createLightBenchmarkRunner` is not a closed record of known run groups to functions. */
+export const FUNGI_BENCH_RUN_006 = "FUNGI-BENCH-RUN-006";
 
 export const BENCHMARK_RUNNER_INPUT_FIELDS = Object.freeze([
   "mode", "benchmarkId", "loVersion", "trigger", "system", "config", "now",
@@ -101,6 +114,7 @@ export const BENCHMARK_RUNNER_REASONS = Object.freeze({
   parked: "Case parked: no closed vocabulary exists for it.",
   notImplemented: "Case not implemented.",
   detectionPending: "Backend detection is not implemented.",
+  requiredUnavailable: "Required target unavailable: backend detection is not implemented.",
   disabled: "Target disabled by configuration.",
   budget: "Total benchmark budget spent before this case.",
   refused: "Benchmark case refused.",
@@ -150,7 +164,7 @@ type CaseRun = (options: { readonly maxDurationMs: number }) =>
 
 type CasePlan =
   | { readonly kind: "run"; readonly ids: readonly string[]; readonly target: BenchmarkTarget; readonly run: CaseRun }
-  | { readonly kind: "skip"; readonly id: string; readonly target: BenchmarkTarget; readonly reason: string };
+  | { readonly kind: "skip"; readonly id: string; readonly target: BenchmarkTarget; readonly reason: string; readonly availabilityGated?: true };
 
 const PLAN: readonly CasePlan[] = [
   { kind: "run", ids: ["logic.bool_branch"], target: "logic", run: runBoolLogicBenchmark as unknown as CaseRun },
@@ -163,13 +177,18 @@ const PLAN: readonly CasePlan[] = [
   { kind: "run", ids: ["json.decode_validate_1mb"], target: "json", run: runJsonDecodeValidate1mbBenchmark as unknown as CaseRun },
   { kind: "run", ids: ["json.stream_validate_10mb"], target: "json", run: runJsonStreamValidate10mbBenchmark as unknown as CaseRun },
   { kind: "run", ids: ["vector.dot_product_small", "vector.cosine_batch_small"], target: "vector", run: runSmallVectorBenchmark as unknown as CaseRun },
-  { kind: "skip", id: "gpu.vector_small_if_available", target: "gpu", reason: BENCHMARK_RUNNER_REASONS.detectionPending },
-  { kind: "skip", id: "ai_accelerator.llm_batch_if_available", target: "ai_accelerator", reason: BENCHMARK_RUNNER_REASONS.detectionPending },
-  { kind: "skip", id: "low_bit_ai.reference_small_if_available", target: "low_bit_ai", reason: BENCHMARK_RUNNER_REASONS.detectionPending },
-  { kind: "skip", id: "optical_io.latency_small_if_available", target: "optical_io", reason: BENCHMARK_RUNNER_REASONS.detectionPending },
+  { kind: "skip", id: "gpu.vector_small_if_available", target: "gpu", reason: BENCHMARK_RUNNER_REASONS.detectionPending, availabilityGated: true },
+  { kind: "skip", id: "ai_accelerator.llm_batch_if_available", target: "ai_accelerator", reason: BENCHMARK_RUNNER_REASONS.detectionPending, availabilityGated: true },
+  { kind: "skip", id: "low_bit_ai.reference_small_if_available", target: "low_bit_ai", reason: BENCHMARK_RUNNER_REASONS.detectionPending, availabilityGated: true },
+  { kind: "skip", id: "optical_io.latency_small_if_available", target: "optical_io", reason: BENCHMARK_RUNNER_REASONS.detectionPending, availabilityGated: true },
 ];
 
 const MODULE_MAX_DURATION_MS = 60_000;
+
+/** First case id of each run group: the keys `createLightBenchmarkRunner` accepts. */
+export const LIGHT_BENCHMARK_RUN_GROUPS = Object.freeze(
+  PLAN.flatMap((p) => (p.kind === "run" && p.ids[0] !== undefined ? [p.ids[0]] : [])),
+);
 
 function refuse(code: string, message: string, field?: string): BenchmarkRunnerResult {
   const d = field === undefined ? { code, message } : { code, message, field };
@@ -215,8 +234,45 @@ function summarise(statuses: readonly BenchmarkStatus[]): BenchmarkStatus {
   return "partial";
 }
 
+/** Snapshot a case override set: closed plain record, known group ids, function values. */
+function snapshotOverrides(cases: unknown): ReadonlyMap<string, CaseRun> | undefined {
+  try {
+    if (cases === undefined) return new Map();
+    if (cases === null || typeof cases !== "object" || Array.isArray(cases)) return undefined;
+    const proto: unknown = Object.getPrototypeOf(cases);
+    if (proto !== Object.prototype && proto !== null) return undefined;
+    const out = new Map<string, CaseRun>();
+    for (const key of Reflect.ownKeys(cases)) {
+      if (typeof key !== "string" || !(LIGHT_BENCHMARK_RUN_GROUPS as readonly string[]).includes(key)) return undefined;
+      const d = Object.getOwnPropertyDescriptor(cases, key);
+      if (d === undefined || !("value" in d) || typeof d.value !== "function") return undefined;
+      out.set(key, d.value as CaseRun);
+    }
+    return out;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Build a light runner whose run groups may be replaced by host functions
+ * (keyed by `LIGHT_BENCHMARK_RUN_GROUPS`). An invalid override set yields a
+ * runner that refuses every call with FUNGI-BENCH-RUN-006.
+ */
+export function createLightBenchmarkRunner(cases?: unknown): (input: unknown) => BenchmarkRunnerResult {
+  const overrides = snapshotOverrides(cases);
+  if (overrides === undefined) {
+    return () => refuse(FUNGI_BENCH_RUN_006, "Case override set must map known run groups to functions.", "cases");
+  }
+  return (input: unknown) => runWith(input, overrides);
+}
+
 /** Run the light benchmark set and return a validated report, or refuse. */
 export function runLightBenchmark(input: unknown): BenchmarkRunnerResult {
+  return runWith(input, new Map());
+}
+
+function runWith(input: unknown, overrides: ReadonlyMap<string, CaseRun>): BenchmarkRunnerResult {
   const snap = snapshot(input);
   if (snap === undefined) return refuse(FUNGI_BENCH_RUN_001, "Runner input must be a closed plain data record.", "record");
   const mode = snap.has("mode") ? snap.get("mode") : "light";
@@ -252,9 +308,17 @@ export function runLightBenchmark(input: unknown): BenchmarkRunnerResult {
   for (const plan of PLAN) {
     const ids = plan.kind === "run" ? plan.ids : [plan.id];
     // `false` disables a target; `true` and `"optional"` both leave it enabled.
-    const enabled = config.targets[plan.target] !== false;
+    const setting = config.targets[plan.target];
+    const enabled = setting !== false;
     if (plan.kind === "skip") {
-      tests.push({ id: plan.id, target: plan.target, status: "skipped", reason: enabled ? plan.reason : BENCHMARK_RUNNER_REASONS.disabled });
+      if (!enabled) {
+        tests.push({ id: plan.id, target: plan.target, status: "skipped", reason: BENCHMARK_RUNNER_REASONS.disabled });
+      } else if (plan.availabilityGated === true && setting === true) {
+        // Required (`true`) but unavailable: fail closed instead of a silent skip.
+        tests.push({ id: plan.id, target: plan.target, status: "failed", reason: BENCHMARK_RUNNER_REASONS.requiredUnavailable });
+      } else {
+        tests.push({ id: plan.id, target: plan.target, status: "skipped", reason: plan.reason });
+      }
       continue;
     }
     if (!enabled) {
@@ -267,7 +331,8 @@ export function runLightBenchmark(input: unknown): BenchmarkRunnerResult {
     }
     let outcome: ReturnType<CaseRun> | undefined;
     try {
-      outcome = plan.run({ maxDurationMs: caseMaxMs });
+      const run = overrides.get(plan.ids[0] ?? "") ?? plan.run;
+      outcome = run({ maxDurationMs: caseMaxMs });
     } catch {
       outcome = undefined;
     }
