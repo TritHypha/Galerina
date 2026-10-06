@@ -537,6 +537,116 @@ ${body}
       codes(checkValueStates(feasibleSkip.ast)));
   });
 
+  it("carries secrecy accumulated by a nested logical LHS into RHS write control", () => {
+    for (const operator of ["&&", "||"]) {
+      const sourceFor = (assigned) => probe(`  let result = match flag { _ => {
+    mut local = false
+    mut leaked = false
+    let ignored = ((match flag { _ => { local = ${assigned}
+      flag
+    } }) && !local) ${operator} (match flag { _ => {
+      leaked = true
+      flag
+    } })
+    leaked
+  } }
+  print(result)`);
+      const secret = parseProgram(sourceFor("key"), `nested-logical-lhs-secret-${operator}.fungi`);
+      assert.deepEqual(secret.diagnostics, []);
+      assert.deepEqual(checkTypes(secret.ast).diagnostics, []);
+      assert.ok(has(checkValueStates(secret.ast), "FUNGI-SECRET-001"), codes(checkValueStates(secret.ast)));
+
+      const publicControl = parseProgram(sourceFor("flag"), `nested-logical-lhs-public-${operator}.fungi`);
+      assert.deepEqual(publicControl.diagnostics, []);
+      assert.deepEqual(checkTypes(publicControl.ast).diagnostics, []);
+      assert.ok(!has(checkValueStates(publicControl.ast), "FUNGI-SECRET-001"), codes(checkValueStates(publicControl.ast)));
+    }
+  });
+
+  it("does not retroactively taint a Boolean saved before a later RHS secret write", () => {
+    for (const operator of ["&&", "||"]) {
+      const sourceFor = (assigned) => probe(`  let result = match flag { _ => {
+    mut local = false
+    let derived = flag ${operator} (match flag { _ => {
+      let saved = local
+      local = ${assigned}
+      saved
+    } })
+    derived
+  } }
+  print(result)`);
+      const publicRead = parseProgram(sourceFor("key"), `rhs-snapshot-before-write-${operator}.fungi`);
+      assert.deepEqual(publicRead.diagnostics, []);
+      assert.deepEqual(checkTypes(publicRead.ast).diagnostics, []);
+      assert.ok(!has(checkValueStates(publicRead.ast), "FUNGI-SECRET-001"), codes(checkValueStates(publicRead.ast)));
+
+      const publicTwin = parseProgram(sourceFor("flag"), `rhs-public-control-${operator}.fungi`);
+      assert.deepEqual(publicTwin.diagnostics, []);
+      assert.deepEqual(checkTypes(publicTwin.ast).diagnostics, []);
+      assert.ok(!has(checkValueStates(publicTwin.ast), "FUNGI-SECRET-001"), codes(checkValueStates(publicTwin.ast)));
+    }
+  });
+
+  it("retains secret-dependent continuation when the logical RHS can return or continue", () => {
+    for (const operator of ["&&", "||"]) {
+      const sourceFor = (assigned) => `@version 1
+secure flow probe(key: SecureString, flag: Bool, other: Bool) -> Int {
+  let result = match flag { _ => {
+    mut local = false
+    let ignored = ((match flag { _ => {
+      local = ${assigned}
+      flag
+    } }) && !local) ${operator} (match flag { _ => {
+      if other { return 0 }
+      flag
+    } })
+    flag
+  } }
+  print(result)
+  return 0
+}`;
+      const secret = parseProgram(sourceFor("key"), `nested-logical-partial-return-secret-${operator}.fungi`);
+      assert.deepEqual(secret.diagnostics, []);
+      assert.deepEqual(checkTypes(secret.ast).diagnostics, []);
+      assert.ok(has(checkValueStates(secret.ast), "FUNGI-SECRET-001"), codes(checkValueStates(secret.ast)));
+
+      const publicControl = parseProgram(sourceFor("flag"), `nested-logical-partial-return-public-${operator}.fungi`);
+      assert.deepEqual(publicControl.diagnostics, []);
+      assert.deepEqual(checkTypes(publicControl.ast).diagnostics, []);
+      assert.ok(!has(checkValueStates(publicControl.ast), "FUNGI-SECRET-001"), codes(checkValueStates(publicControl.ast)));
+    }
+  });
+
+  it("does not treat statically unreachable returns as secret-controlled short-circuit exits", () => {
+    const unreachableReturns = [
+      "if false { return 0 }",
+      "if true {} else { return 0 }",
+      "while false { return 0 }",
+    ];
+    for (const operator of ["&&", "||"]) {
+      for (const assigned of ["key", "flag"]) {
+        for (const unreachable of unreachableReturns) {
+          const source = `@version 1
+secure flow probe(key: SecureString, flag: Bool, other: Bool) -> Int {
+  let result = match flag { _ => {
+    let ignored = !${assigned} ${operator} (match flag { _ => {
+      ${unreachable}
+      flag
+    } })
+    flag
+  } }
+  print(result)
+  return 0
+}`;
+          const parsed = parseProgram(source, `unreachable-return-short-circuit-${operator}-${assigned}.fungi`);
+          assert.deepEqual(parsed.diagnostics, []);
+          assert.deepEqual(checkTypes(parsed.ast).diagnostics, []);
+          assert.ok(!has(checkValueStates(parsed.ast), "FUNGI-SECRET-001"), codes(checkValueStates(parsed.ast)));
+        }
+      }
+    }
+  });
+
   it("does not transfer effects from a short-circuited Boolean operand", () => {
     const source = probe(`  let result = match flag { _ => {
     mut local = false
