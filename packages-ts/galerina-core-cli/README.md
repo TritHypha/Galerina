@@ -68,7 +68,7 @@ through `FUNGI-BUILD-005`. Status: partial implementation.
 `galerina verify` validates compiler and runtime artefact integrity.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
-Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-011`.
+Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-016`.
 Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts / verify deploy still open.
 
 Artefact integrity (`src/verify/verify-integrity.ts`, zero-trust defaults, owner may
@@ -95,14 +95,12 @@ container (the v0.2 manifest from compiler pass 14 is not built) and signature c
 Verify command (`src/verify/verify-command.ts`, zero-trust defaults, owner may revisit):
 `parseVerifyArgs` + `runVerifyCommand` wire `galerina verify`. Admitted flags:
 `--artefacts` (required), `--root`, `--manifest`, `--report`, `--json`, `--strict`,
-`--hash`. `--policy` / `--audit` are recognized but refuse with `FUNGI-CLI-VERIFY-004`
-until runtime compatibility / capability / audit-report validation land. Unknown flags,
+`--hash`, `--policy <capability-report.json>`, `--audit <audit-report.json>`. Unknown flags,
 duplicates, `--flag=value`, and positionals refuse (`FUNGI-CLI-VERIFY-001`/`002`).
 Input files must be dense JSON arrays (`003`). The command composes
 `verifyArtefactIntegritySet` and optional `verifyRuntimeManifestSet`, can write
 `verification-report.json` exclusively (`005`), and never echoes paths or values.
-Exit codes: `0` success, `2` usage, `6` artefact verify failure, `7` manifest integrity
-failure. `verify-runtime.ts` and deploy still open.
+Exit codes: `0` success, `2` usage, `3` audit report failure, `4` runtime-compatibility failure, `5` capability/policy report failure, `6` artefact verify failure, `7` manifest integrity failure. Runtime report validation (`src/verify/verify-runtime.ts`, zero-trust defaults, owner may revisit): closed-shape `galerina.report.audit.v1` / `galerina.report.capability.v1` via descriptors; FUNGI-VERIFY-012..016; complete:false never verifies. Deploy still open.
 The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
 avoiding whole-file allocations, and checks root resolution plus opened-file
 identity. `O_NOFOLLOW` is used where Node supports it. This is not a portable

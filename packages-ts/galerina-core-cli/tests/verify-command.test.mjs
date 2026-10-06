@@ -16,6 +16,8 @@ import {
   FUNGI_CLI_VERIFY_005,
   VERIFY_EXIT_OK,
   VERIFY_EXIT_USAGE,
+  VERIFY_EXIT_RUNTIME,
+  VERIFY_EXIT_CAPABILITY,
   VERIFY_EXIT_ARTEFACT,
   VERIFY_EXIT_MANIFEST,
 } from "../dist/verify/verify-command.js";
@@ -72,13 +74,14 @@ describe("parseVerifyArgs", () => {
     assert.equal(ok.options.hash, true);
   });
 
-  it("refuses --policy and --audit as not admitted", () => {
-    const p = parseVerifyArgs(["--artefacts", "a.json", "--policy", "p.json"]);
-    assert.equal(p.ok, false);
-    assert.equal(p.result.error.code, FUNGI_CLI_VERIFY_004);
-    assert.equal(p.result.code, VERIFY_EXIT_USAGE);
-    const a = parseVerifyArgs(["--audit", "a.json"]);
-    assert.equal(a.result.error.code, FUNGI_CLI_VERIFY_004);
+  it("admits --policy and --audit as value flags", () => {
+    const p = parseVerifyArgs(["--artefacts", "a.json", "--policy", "p.json", "--audit", "audit.json"]);
+    assert.equal(p.ok, true);
+    assert.equal(p.options.policyPath, "p.json");
+    assert.equal(p.options.auditPath, "audit.json");
+    const missing = parseVerifyArgs(["--artefacts", "a.json", "--policy"]);
+    assert.equal(missing.ok, false);
+    assert.equal(missing.result.error.code, FUNGI_CLI_VERIFY_001);
   });
 });
 
@@ -179,6 +182,87 @@ describe("runVerifyCommand / galerina verify", () => {
       const result = await runCli(["verify", "--artefacts", "arts.json", "--root", base], base);
       assert.equal(result.ok, false);
       assert.equal(result.code, VERIFY_EXIT_ARTEFACT);
+    });
+  });
+});
+
+
+describe("verify --audit / --policy", () => {
+  const zeroCats = () => ({ effect: 0, capability: 0, boundary: 0, secret: 0, network: 0, policy: 0, denial: 0, proof: 0 });
+  const zeroStatus = () => ({ allowed: 0, denied: 0, warning: 0, error: 0, executed: 0, verified: 0 });
+  function goodAudit() {
+    return {
+      schema: "galerina.report.audit.v1",
+      generatedAt: "2026-10-05T12:00:00.000Z",
+      eventCount: 1,
+      byCategory: { ...zeroCats(), effect: 1 },
+      byStatus: { ...zeroStatus(), allowed: 1 },
+      rejectedLines: [],
+      rejectedCodes: [],
+      truncated: false,
+      complete: true,
+    };
+  }
+  function goodCapability() {
+    return {
+      schema: "galerina.report.capability.v1",
+      generatedAt: "2026-10-05T12:00:00.000Z",
+      capabilities: [{ capability: "db.read", allowed: 1, denied: 0 }],
+      deniedCapabilities: [],
+      policyIds: [],
+      rejectedIndices: [],
+      rejectedCodes: [],
+      truncated: false,
+      complete: true,
+    };
+  }
+
+  it("verifies with --audit and --policy and returns exit 0", async () => {
+    await withTemp(async (base) => {
+      mkdirSync(join(base, "build"));
+      writeFileSync(join(base, "build", "a.json"), '{"ok":1}');
+      writeFileSync(join(base, "arts.json"), JSON.stringify([art("build/a.json", digest('{"ok":1}'))]));
+      writeFileSync(join(base, "audit.json"), JSON.stringify(goodAudit()));
+      writeFileSync(join(base, "policy.json"), JSON.stringify(goodCapability()));
+      const result = await runCli([
+        "verify", "--artefacts", "arts.json", "--root", base,
+        "--audit", "audit.json", "--policy", "policy.json",
+      ], base);
+      assert.equal(result.ok, true, result.message);
+      assert.equal(result.code, VERIFY_EXIT_OK);
+      assert.equal(JSON.stringify(result).includes(base), false);
+    });
+  });
+
+  it("audit report failure returns exit 3", async () => {
+    await withTemp(async (base) => {
+      mkdirSync(join(base, "build"));
+      writeFileSync(join(base, "build", "a.json"), '{"ok":1}');
+      writeFileSync(join(base, "arts.json"), JSON.stringify([art("build/a.json", digest('{"ok":1}'))]));
+      writeFileSync(join(base, "audit.json"), JSON.stringify({
+        ...goodAudit(),
+        complete: false,
+        rejectedLines: [1],
+        rejectedCodes: ["FUNGI-REPORT-002"],
+      }));
+      const result = await runCli(["verify", "--artefacts", "arts.json", "--root", base, "--audit", "audit.json"], base);
+      assert.equal(result.ok, false);
+      assert.equal(result.code, VERIFY_EXIT_RUNTIME);
+    });
+  });
+
+  it("capability report failure returns exit 5", async () => {
+    await withTemp(async (base) => {
+      mkdirSync(join(base, "build"));
+      writeFileSync(join(base, "build", "a.json"), '{"ok":1}');
+      writeFileSync(join(base, "arts.json"), JSON.stringify([art("build/a.json", digest('{"ok":1}'))]));
+      writeFileSync(join(base, "policy.json"), JSON.stringify({
+        ...goodCapability(),
+        deniedCapabilities: ["missing.cap"],
+      }));
+      const result = await runCli(["verify", "--artefacts", "arts.json", "--root", base, "--policy", "policy.json"], base);
+      assert.equal(result.ok, false);
+      assert.equal(result.code, VERIFY_EXIT_CAPABILITY);
     });
   });
 });
