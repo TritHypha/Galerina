@@ -236,6 +236,31 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
     }
   });
 
+  it("request over the declared 16 KiB ceiling is rejected before password verification", async () => {
+    let providerCalls = 0;
+    const boundedServer = await serve(readFileSync(SERVICE, "utf8"), "verifyPasswordService.fungi", { port: PORT + 5 }, {
+      cryptoProvider: {
+        schema: "fungi.security.crypto-provider.v1",
+        invoke: async () => {
+          providerCalls += 1;
+          return { ok: true, kind: "verify", matches: false };
+        },
+      },
+    });
+    try {
+      const response = await fetch(`http://127.0.0.1:${PORT + 5}/auth/verify`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: "a@b.com", password: "x".repeat(16 * 1024) }),
+      });
+      assert.equal(response.status, 413);
+      assert.deepEqual(await response.json(), { error: "Request body too large" });
+      assert.equal(providerCalls, 0);
+    } finally {
+      await boundedServer.close();
+    }
+  });
+
   it("unknown route → 404", async () => {
     const r = await fetch(`http://127.0.0.1:${PORT}/nonexistent`, { method: "POST" });
     assert.equal(r.status, 404);

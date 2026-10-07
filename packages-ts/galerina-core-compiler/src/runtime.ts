@@ -32,6 +32,7 @@ import { startServer, type RunningServer, type ServerConfig } from "./route-disp
 import { buildRouteRegistry } from "./route-registry.js";
 import { buildAttestation, signAttestation, type GalerinaAttestation, type AttestationKeyPair } from "./attestation.js";
 import { createContractEnforcer, compileContract, type ContractEnforcer } from "./runtime/contractEnforcer.js";
+import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
 import { createCapabilityHost, type CapabilityHost } from "./runtime/capabilityHost.js";
 import type { ContractEnforcementRecord } from "./runtime/runtimeReport.js";
 import { checkSourceEscapes, type EscapeDiagnostic } from "./source-escape-checker.js";
@@ -482,9 +483,22 @@ export async function serve(
     throw new Error("Galerina: route admission references an unknown flow");
   }
 
+  const routeBodyLimits = new Map<string, number>();
+  for (const route of registry.routes) {
+    const flowNode = resolveRuntimeFlowNode(admission.parseResult.ast, route.flowName);
+    const maxRequestSizeBytes = routeRequestSizeLimit(flowNode, route.flowName);
+    if (maxRequestSizeBytes !== undefined) {
+      const existingLimit = routeBodyLimits.get(route.flowName);
+      routeBodyLimits.set(
+        route.flowName,
+        existingLimit === undefined ? maxRequestSizeBytes : Math.min(existingLimit, maxRequestSizeBytes),
+      );
+    }
+  }
+
   return startServer(
     admission.parseResult.ast,
-    { ...serverConfig, mode },
+    { ...serverConfig, mode, routeBodyLimits },
     async (flowName, args) => {
       const result = await run(source, file, flowName, args, { ...options, mode });
       if (result.execution === undefined || result.value === undefined) {
@@ -499,4 +513,52 @@ export async function serve(
       return result.value;
     },
   );
+}
+
+function routeRequestSizeLimit(
+  flowNode: ReturnType<typeof resolveRuntimeFlowNode>,
+  flowName: string,
+): number | undefined {
+  if (flowNode === undefined) {
+    throw new Error(`Galerina: route '${flowName}' has no resolvable flow declaration`);
+  }
+  const contractNodes = (flowNode.children ?? []).filter((child) => child.kind === "contractDecl");
+  if (contractNodes.length > 1) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+  const contractNode = contractNodes[0];
+  if (contractNode === undefined) return undefined;
+
+  const limitSections = (contractNode.children ?? []).filter((child) =>
+    (child.kind === "contractSetDecl" || child.kind === "identifier") &&
+    (child.value === "limits" || child.value === "limits:block"),
+  );
+  if (limitSections.length > 1) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+  const limitSection = limitSections[0];
+  if (limitSection === undefined) return undefined;
+
+  const declarations = (limitSection.children ?? [])
+    .filter((child) => child.kind === "identifier" && child.value !== undefined)
+    .map((child) => child.value!.startsWith("decl:") ? child.value!.slice("decl:".length) : child.value!);
+  if (declarations.some((declaration) => !isRecognizedLimitDecl(declaration))) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+  const requestSizeDeclarations = declarations
+    .filter((declaration) => /^max\s+request\s+size\b/iu.test(declaration));
+  if (requestSizeDeclarations.length === 0) return undefined;
+  if (requestSizeDeclarations.length !== 1) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+
+  const declaration = requestSizeDeclarations[0] as string;
+  if (!/^max\s+request\s+size\s+\d+(?:\.\d+)?\s*(?:bytes?|kb|mb|gb)$/iu.test(declaration)) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+  const maxRequestSizeBytes = compileContract(contractNode).limitConfig.maxRequestSizeBytes;
+  if (maxRequestSizeBytes === undefined || !Number.isSafeInteger(maxRequestSizeBytes) || maxRequestSizeBytes <= 0) {
+    throw new Error(`Galerina: invalid or duplicate request-size contract for flow '${flowName}'`);
+  }
+  return maxRequestSizeBytes;
 }
