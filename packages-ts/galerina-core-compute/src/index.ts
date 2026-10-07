@@ -1,3 +1,5 @@
+import { isQuantumTargetToken, quantumTargetRefusalDiagnostic } from "./quantum/quantum-refusal.js";
+
 export type ComputeTarget =
   | "cpu"
   | "cpu.generic"
@@ -145,6 +147,15 @@ export function validateComputePlan(
     });
   }
 
+  if (isQuantumTargetToken(plan.preferredTarget)) {
+    diagnostics.push(quantumTargetRefusalDiagnostic("preferredTarget"));
+  }
+  for (const [index, target] of plan.fallbackTargets.entries()) {
+    if (isQuantumTargetToken(target)) {
+      diagnostics.push(quantumTargetRefusalDiagnostic(`fallbackTargets.${index}`));
+    }
+  }
+
   if (plan.fallbackTargets.includes(plan.preferredTarget)) {
     diagnostics.push({
       code: "Galerina_COMPUTE_FALLBACK_DUPLICATES_PREFERRED_TARGET",
@@ -180,7 +191,8 @@ export function selectComputeTarget(
   capabilities: readonly ComputeCapability[],
 ): ComputeTargetSelection {
   for (const target of policy.prefer) {
-    const capability = capabilities.find((item) => item.target === target); // perf-allow: loop-array-find â€” bounded by the small fixed set of hardware compute targets
+    if (isQuantumTargetToken(target)) continue;
+    const capability = capabilities.find((item) => item.target === target && !isQuantumTargetToken(item.target)); // perf-allow: loop-array-find â€” bounded by the small fixed set of hardware compute targets
     if (capability?.available === true) {
       return {
         requested: "compute auto",
@@ -193,7 +205,7 @@ export function selectComputeTarget(
     }
   }
 
-  const firstPreference = policy.prefer[0] ?? "cpu.generic";
+  const firstPreference = policy.prefer.find((target) => !isQuantumTargetToken(target)) ?? "cpu.generic";
 
   return {
     requested: "compute auto",
@@ -332,6 +344,13 @@ function validateComputeOffloadPlan(
       });
     }
 
+    if (isQuantumTargetToken(stage.target)) {
+      diagnostics.push(quantumTargetRefusalDiagnostic(`stages.${index}.target`));
+    }
+    if (stage.fallbackTarget !== undefined && isQuantumTargetToken(stage.fallbackTarget)) {
+      diagnostics.push(quantumTargetRefusalDiagnostic(`stages.${index}.fallbackTarget`));
+    }
+
     if (stage.operations.length === 0) {
       diagnostics.push({
         code: "Galerina_COMPUTE_OFFLOAD_STAGE_OPERATION_REQUIRED",
@@ -384,3 +403,4 @@ export * from "./photonic/index.js";
 // Scheduler / planner responsibilities + compute audit event shapes (TODO pass, Grok 2026-10-05).
 export * from "./scheduling/index.js";
 export * from "./specialist/specialist-hardware.js";
+export * from "./quantum/quantum-refusal.js";

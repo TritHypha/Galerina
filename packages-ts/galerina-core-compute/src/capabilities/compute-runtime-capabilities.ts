@@ -3,6 +3,7 @@
 // does not grant it. V1 freeze: only ComputeRuntime may be claimed available.
 
 import type { ComputeDiagnostic } from "../index.js";
+import { isQuantumTargetToken, quantumTargetRefusalDiagnostic } from "../quantum/quantum-refusal.js";
 
 /** Closed compute capability names named by the package TODO. */
 export const COMPUTE_RUNTIME_CAPABILITIES = Object.freeze([
@@ -65,7 +66,9 @@ export function validateComputeRuntimeCapabilityClaim(
       break;
     }
   }
-  if (!isComputeRuntimeCapabilityName(c.name)) {
+  if (isQuantumTargetToken(c.name)) {
+    out.push(quantumTargetRefusalDiagnostic(`${path}.name`));
+  } else if (!isComputeRuntimeCapabilityName(c.name)) {
     out.push(diag("Galerina_COMPUTE_CAPABILITY_NAME_INVALID", "Capability name is not in the closed vocabulary.", `${path}.name`));
   }
   const availabilityOk =

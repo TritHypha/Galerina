@@ -1,6 +1,7 @@
 // validateTarget (TODO pass, Grok 2026-10-05; owner may revisit). Pure and explainable.
 
 import type { ComputeWorkload } from "../workload.js";
+import { isQuantumTargetToken, COMPUTE_QUANTUM_TARGET_REFUSED, COMPUTE_QUANTUM_TARGET_REFUSED_MESSAGE } from "../quantum/quantum-refusal.js";
 import type { CompatibilityBlocker, CompatibilityLevel, CompatibilityResult, CompatibilityWarning, TargetProfile } from "./target-compatibility.js";
 import {
   FUNGI_COMPAT_FORBIDDEN_EFFECT,
@@ -13,6 +14,22 @@ import {
 export function validateTarget(workload: ComputeWorkload, profile: TargetProfile): CompatibilityResult {
   const blockers: CompatibilityBlocker[] = [];
   const warnings: CompatibilityWarning[] = [];
+  if (isQuantumTargetToken(profile.target)) {
+    blockers.push({
+      reason: COMPUTE_QUANTUM_TARGET_REFUSED_MESSAGE,
+      diagnosticCode: COMPUTE_QUANTUM_TARGET_REFUSED,
+    });
+    const next = workload.fallbackTargets.find((t) => t !== profile.target && !isQuantumTargetToken(t));
+    const base = {
+      target: profile.target,
+      level: "incompatible" as const,
+      blockers: Object.freeze(blockers),
+      warnings: Object.freeze(warnings),
+    };
+    return next === undefined
+      ? Object.freeze(base)
+      : Object.freeze({ ...base, fallback: Object.freeze({ target: next, reason: COMPUTE_QUANTUM_TARGET_REFUSED_MESSAGE }) });
+  }
   for (const effect of workload.effects) {
     if (profile.forbiddenEffects.includes(effect)) {
       blockers.push({ reason: `Effect ${effect} is forbidden on ${profile.target}.`, diagnosticCode: FUNGI_COMPAT_FORBIDDEN_EFFECT, effect });

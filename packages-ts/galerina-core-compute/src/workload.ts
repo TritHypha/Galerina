@@ -4,6 +4,7 @@
 // vocabulary so reports can say "not compatible" explicitly instead of guessing.
 
 import type { ComputeDiagnostic } from "./index.js";
+import { isQuantumTargetToken, quantumTargetRefusalDiagnostic } from "./quantum/quantum-refusal.js";
 
 /** The 11 runtime targets a workload can be planned against. */
 export type RuntimeTarget =
@@ -101,6 +102,11 @@ export function validateComputeWorkload(workload: unknown): readonly ComputeDiag
   for (const key of ["preferredTargets", "fallbackTargets"] as const) {
     const list = w[key];
     if (!Array.isArray(list) || !list.every(isRuntimeTarget)) bad(key, `${key} must list known RuntimeTarget values.`);
+    if (Array.isArray(list)) {
+      list.forEach((item, index) => {
+        if (isQuantumTargetToken(item)) out.push(quantumTargetRefusalDiagnostic(`${key}.${index}`));
+      });
+    }
   }
   const shape = w.dataShape;
   if (typeof shape !== "object" || shape === null || Array.isArray(shape)) {

@@ -1,6 +1,7 @@
 // buildCompatibilityReport (TODO pass, Grok 2026-10-05; owner may revisit).
 
 import type { ComputeDiagnostic } from "../index.js";
+import { isQuantumTargetToken } from "../quantum/quantum-refusal.js";
 import { validateComputeWorkload, type ComputeWorkload, type RuntimeTarget } from "../workload.js";
 import type { CompatibilityResult, TargetProfile } from "./target-compatibility.js";
 import { validateTarget } from "./target-validator.js";
@@ -37,6 +38,7 @@ export function buildCompatibilityReport(workload: ComputeWorkload, profiles: re
       diagnostics.push({ code: "Galerina_COMPAT_PROFILE_MISSING", severity: "warning", message: `No profile for requested target ${target}; it cannot be recommended.`, path: "profiles" });
       continue;
     }
+    if (isQuantumTargetToken(target)) continue;
     if (result.level !== "incompatible") { recommendedTarget = target; break; }
   }
   if (recommendedTarget === "none") {
