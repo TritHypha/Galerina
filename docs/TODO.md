@@ -2,9 +2,14 @@
 
 ## Current memory-review checkpoint — 2026-10-07
 
-Current Galerina review pin: `f7751c852444285ae74562b1dbf59778817b6117` on
-`codex/rd1413-1415-coupled-route-20261004` (local branch matches origin; checkout
-was clean at review). This is a new-language effort: design Fungi's memory,
+Current Galerina review pin: `302230b33990ef452688b0c383a683c770e99e52` on
+`codex/rd1413-1415-coupled-route-20261004` (HEAD matches its upstream ref). The
+worktree is dirty across the auth example, compiler/security/secrets-spore code,
+tests and documentation, with additional untracked tests and a review report;
+path-level custody and staging eligibility still need reconciliation. Preserve
+all of it until that audit is done. The earlier
+`f7751c852444285ae74562b1dbf59778817b6117` review is a historical pin, not the
+current source. This is a new-language effort: design Fungi's memory,
 ownership, aliasing, allocation and effects deliberately. TypeScript/bootstrap
 tests are evidence about the prototype, not an inherent ceiling on Fungi
 guarantees and not proof of runtime/FFI/host enforcement.
@@ -21,16 +26,15 @@ guarantees and not proof of runtime/FFI/host enforcement.
   answer is pinned to the earlier `d3f645fe2` revision and marked stale because
   HEAD advanced; it supplies no current review of the changed vectors. Do not
   infer review from delivery.
-- [!] A real secret-using bootstrap operation is verified:
-  `packages-ts/galerina-framework-api-server/src/webhook-admission.ts::admitWebhookReplay`
-  reads a configured key for HMAC and replay identity. The operation's inputs
-  are ordinary TypeScript `string | Uint8Array`; no principal-bound grant,
-  canonical protected object/version, provider/key custodian, revocation
-  generation, Fungi-owned lease, or authorized durable recipient is bound to
-  it. It is a candidate, not an implemented qualifying RD operation. The
-  owner-selected `/secure` route shape is not a live handler. Decide whether to
-  nominate the webhook operation for protected integration or name the actual
-  `/secure` handler/object; do not substitute `/auth/verify` or a fixture.
+- [!] The owner fixed `POST /auth/verify` as the first operation on 2026-10-07;
+  webhook HMAC remains a separate later candidate. Do not reopen the route
+  choice. This supersedes the earlier `/secure` selection below. The selected
+  route is still not a real protected operation: `verifyPasswordService.fungi`
+  reads an ordinary `String` and uses a fixture hash, while the Deno adapter
+  returns 503. Promote this route into the real operation with authenticated
+  gateway identity, exact credential object/version authority, provider-bound
+  acquisition, Fungi-owned protected bytes, and the permitted one-time result.
+  Do not route a raw password through the existing ordinary Node/JSON body path.
 - [!] Then bind the full authority chain, provider-open/revocation and effect/sink
   ordering, measured host/TCB and freshness authority, cleanup/reuse accounting,
   recipient/output/storage and recovery contract, crypto policy, and finite
@@ -40,6 +44,58 @@ guarantees and not proof of runtime/FFI/host enforcement.
   operation passes end-to-end compiler/runtime/FFI/host evidence and receives
   independent owner adjudication. A design choice, model answer, or bootstrap
   test alone does not close them.
+
+## Owner-approved first-slice inputs — 2026-10-07
+
+These owner answers choose the first-slice contract; they do not close an RD or
+authorize live deployment or live protected data.
+
+- **Operation:** `POST /auth/verify` is the first operation; webhook HMAC is
+  later and separate. Historical `/secure` wording is superseded for this
+  slice, not silently retained as a competing route choice.
+- **Authority and custody:** Phillip is the policy/grant/revocation signer and
+  interim provider, pepper/key, and recovery authority until a named operational
+  identity is placed in signed deployment configuration. The conversational
+  assistant is not a custodian, signer, or recovery principal. No unsigned
+  policy, throwaway key, or repository key is allowed; the gateway identity
+  cannot grant itself access.
+- **Boundary:** outer host and administrators remain outside the trust boundary.
+  Nitro Enclaves are an AWS Linux candidate to evaluate, not an approved or
+  proven profile. Windows 10 has no protected-bytes path until an equivalent
+  attested boundary is evidenced; verify the exact Windows edition and current
+  security-update status before treating it as a production profile. A
+  ciphertext-only gateway relay, decrypted only inside the verifier, is the
+  recommended design to preserve the stated boundary; plaintext at the gateway
+  would put that gateway inside the TCB and requires an explicit boundary change.
+- **Result and recovery:** return only `matched`, `not-matched`, or `UNKNOWN` to
+  the authenticated requesting gateway, at most once per operation;
+  `UNKNOWN` never authenticates. Do not disclose account existence, issue
+  tokens, update credentials, publish to the graph, or persist result data.
+  Require an authenticated acknowledgement bound to the operation. Recovery is
+  status-only and must not redisclose or retry using a consumed lease.
+- **Limits:** password up to 1024 bytes (reject, never truncate), credential
+  record up to 16 KiB, one active verification per worker, bounded pool/queue,
+  no escaping borrows, and a 5-second execution deadline are provisional
+  engineering bounds. Measure cleanup latency; expiry means refuse or
+  quarantine, never presume wipe. Bring revised measured limits back for
+  Phillip's sign-off.
+- **Retention:** 30 days is a guess, not an accepted production period. Do not
+  hard-code it as policy. Before production, document the metadata purpose and
+  identifiability, justify a period, specify deletion/review behavior, and get
+  the policy signed. No secrets or guessable digests belong in this metadata.
+- **Deployment:** no live deployment until Phillip approves the live-deploy
+  plan. Engineering may use only a controlled provider and sink with synthetic
+  data until then.
+
+The `/auth/verify` route choice is fixed, but its deployed ingress mode remains
+to be evidenced: the stated outer-host threat boundary favors end-to-end
+ciphertext relay and verifier-only decryption. The source, Fungi compiler,
+runtime, FFI, provider, sink, accepted attestation profile, and cross-project
+SLIDE/VOK receipts still need to be reconciled against the three exact RD owners.
+The local R&D metadata range query returned `STALE` with per-RD `AMBIGUOUS`
+decisions; that index result is not an absence claim or current acceptance.
+Direct owner sources are present, but the full criteria-to-slice mapping still
+needs exact-source reconciliation and an approved public extract for Astra.
 
 See the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md)
 for receipt identities, scope limits and the next bounded actions. Historical
@@ -61,22 +117,25 @@ checkbox totals below are not a freshly recomputed aggregate.
 
 ## Memory-security product-adoption holds — 2026-09-28, route rechecked 2026-10-02
 
-The KB's RD-1413–1415 isolated packets and synthetic tests are research evidence,
-not a real, loaded protected-data operation. There is a declared Fungi
-`POST /auth/verify` fixture route and a Node-host test, but the Deno adapter still
-returns 503, the service uses a fixture password hash, and the passing tests
-import ignored `dist/` output without a fresh source/build receipt. This is
-login-demo evidence, not the missing caller/object-version/Signet/provider
-operation. On 2026-10-05 the owner selected a **governed `/secure` route** as
-the intended V1 operation surface; this is a route-name decision, not evidence
-of an implemented protected operation. Current non-test application source has
-no `/secure` route definition; the matching route references are test fixtures.
-`POST /auth/verify` remains a login-demo fixture, not the selected protected
-operation. The actual operation semantics, HTTP contract, caller, object/version
-grant issuer/revoker, provider/key-custodian reference, and permitted recipient
-still need to be defined and wired together. The dated checkbox counts above
-precede these hold markers. Reopen the three private RD owners and verify exact
-product source and loaded tests before changing any status.
+Historical checkpoint: the `/secure` route choice and the statements below that
+call `/auth/verify` unselected were superseded by Phillip's 2026-10-07 decision
+recorded at the top of this file. Keep the evidence findings below; do not treat
+their old route selection as current direction.
+
+This paragraph records the **2026-09-28 evidence snapshot only**. At that time,
+the KB's RD-1413–1415 isolated packets and synthetic tests were not a real,
+loaded protected-data operation. The declared Fungi `POST /auth/verify` route
+was fixture-backed, the Deno adapter returned 503, the service used a fixture
+password hash, and the passing tests imported ignored `dist/` output without a
+fresh source/build receipt. On 2026-10-05, `/secure` was selected as the
+intended V1 surface. Phillip superseded that route choice on 2026-10-07 by
+selecting `POST /auth/verify`; see the current owner-approved checkpoint above.
+The present implementation gaps remain: the selected route still needs a real
+loaded operation, authenticated caller and object/version authority,
+provider/key-custodian binding, Fungi-owned protected bytes, and its permitted
+recipient. These historical observations are not a current-source receipt;
+recheck the three private RD owners and loaded product source before changing
+any disposition.
 
 ### Owner direction — V1 zero-trust threat boundary — 2026-10-04
 

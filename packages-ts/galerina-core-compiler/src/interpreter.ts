@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, NodeFlags } from "./parser.js";
-import { callStdlib, callStdlibPureSync, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider } from "./stdlib.js";
+import { callStdlib, callStdlibPureSync, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider, type CryptoProviderV2 } from "./stdlib.js";
 import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
@@ -714,6 +714,10 @@ export interface InterpreterRuntimeOptions {
   readonly outputSink?: (line: string) => void;
   /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
   readonly cryptoProvider?: CryptoProvider;
+  /** Explicit byte-capable provider; not accepted as the frozen v1 text provider. */
+  readonly cryptoProviderV2?: CryptoProviderV2;
+  /** Host-owned Password.verify plaintext ceiling; defaults to the provisional 1024-byte policy. */
+  readonly maxPasswordVerifyBytes?: number;
 }
 
 /** Default global compute-step budget — high enough that no legitimate flow reaches it (a flow doing
@@ -1617,6 +1621,12 @@ class Interpreter {
       ...(this.runtimeOptions.outputSink !== undefined ? { outputSink: this.runtimeOptions.outputSink } : {}),
       ...(this.runtimeOptions.cryptoProvider !== undefined
         ? { cryptoProvider: this.runtimeOptions.cryptoProvider }
+        : {}),
+      ...(this.runtimeOptions.cryptoProviderV2 !== undefined
+        ? { cryptoProviderV2: this.runtimeOptions.cryptoProviderV2 }
+        : {}),
+      ...(this.runtimeOptions.maxPasswordVerifyBytes !== undefined
+        ? { maxPasswordVerifyBytes: this.runtimeOptions.maxPasswordVerifyBytes }
         : {}),
     };
   }

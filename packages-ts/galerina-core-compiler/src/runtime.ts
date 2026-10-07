@@ -25,7 +25,7 @@ import {
   type FlowExecutionResult,
   type GalerinaValue,
 } from "./interpreter.js";
-import type { CryptoProvider } from "./stdlib.js";
+import type { CryptoProvider, CryptoProviderV2 } from "./stdlib.js";
 import { buildFlowAuditEvent, createAuditWriter } from "./audit-writer.js";
 import { buildProofChain, type ExecutionProofChain } from "./proof-chain.js";
 import { startServer, type RunningServer, type ServerConfig } from "./route-dispatcher.js";
@@ -64,6 +64,10 @@ export interface RuntimeOptions {
   readonly enforceNamingPolicy?: boolean;
   /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
   readonly cryptoProvider?: CryptoProvider;
+  /** Explicit byte-capable provider; not accepted as the frozen v1 text provider. */
+  readonly cryptoProviderV2?: CryptoProviderV2;
+  /** Host-owned Password.verify plaintext ceiling; defaults to the provisional 1024-byte policy. */
+  readonly maxPasswordVerifyBytes?: number;
   /**
    * Host-owned effect grants. Source declarations request effects; they never grant them.
    * Production and deterministic modes require this array whenever the flow declares any
@@ -346,9 +350,17 @@ export async function run(
     parseResult.flows,
     finalEnforcer,
     capabilityHost,
-    options.cryptoProvider === undefined
+    options.cryptoProvider === undefined &&
+      options.cryptoProviderV2 === undefined &&
+      options.maxPasswordVerifyBytes === undefined
       ? undefined
-      : { cryptoProvider: options.cryptoProvider },
+      : {
+          ...(options.cryptoProvider === undefined ? {} : { cryptoProvider: options.cryptoProvider }),
+          ...(options.cryptoProviderV2 === undefined ? {} : { cryptoProviderV2: options.cryptoProviderV2 }),
+          ...(options.maxPasswordVerifyBytes === undefined
+            ? {}
+            : { maxPasswordVerifyBytes: options.maxPasswordVerifyBytes }),
+        },
   );
   for (const diagnostic of execution.diagnostics) {
     allDiagnostics.push({

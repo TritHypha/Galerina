@@ -127,11 +127,12 @@ describe("Phase 34: verifyPasswordService.fungi compiles", () => {
     assert.equal(errs.length, 0, errs.map(e => e.code + ":" + e.message).join(" | "));
   });
 
-  it("declares the verifyPassword flow and the POST route", () => {
+  it("declares the synthetic fixture route separately from production /auth/verify", () => {
     const prog = loadService();
     assert.ok(prog.flows.some(f => f.name === "verifyPassword"));
     const routes = (prog.ast.children ?? []).filter(c => c.kind === "routeDecl").map(c => c.value);
-    assert.ok(routes.includes("POST /auth/verify"), `routes: ${routes.join(",")}`);
+    assert.ok(routes.includes("POST /__fixture/auth/verify"), `routes: ${routes.join(",")}`);
+    assert.equal(routes.includes("POST /auth/verify"), false, "plaintext JSON fixture must not occupy the selected production route");
   });
 
   it("does not persist verification outcomes through an audit sink", () => {
@@ -159,7 +160,7 @@ describe("Phase 34: verifyPasswordService.fungi compiles", () => {
 describe("Phase 34: synthetic loopback HTTP service", () => {
   let server;
   const PORT = 3917;
-  const url = `http://127.0.0.1:${PORT}/auth/verify`;
+  const url = `http://127.0.0.1:${PORT}/__fixture/auth/verify`;
 
   before(async () => {
     const source = readFileSync(SERVICE, "utf8");
@@ -197,7 +198,7 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
       },
     });
     try {
-      const response = await fetch(`http://127.0.0.1:${PORT + 3}/auth/verify`, {
+      const response = await fetch(`http://127.0.0.1:${PORT + 3}/__fixture/auth/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: "a@b.com", password: "" }),
@@ -222,7 +223,7 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
       },
     });
     try {
-      const response = await fetch(`http://127.0.0.1:${PORT + 4}/auth/verify`, {
+      const response = await fetch(`http://127.0.0.1:${PORT + 4}/__fixture/auth/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: "a@b.com" }),
@@ -248,7 +249,7 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
       },
     });
     try {
-      const response = await fetch(`http://127.0.0.1:${PORT + 5}/auth/verify`, {
+      const response = await fetch(`http://127.0.0.1:${PORT + 5}/__fixture/auth/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: "a@b.com", password: "x".repeat(16 * 1024) }),
@@ -282,7 +283,7 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
       },
     });
     try {
-      const response = await fetch(`http://127.0.0.1:${PORT + 1}/auth/verify`, {
+      const response = await fetch(`http://127.0.0.1:${PORT + 1}/__fixture/auth/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: "a@b.com", password: FIXTURE_PASSWORD }),
@@ -300,7 +301,7 @@ describe("Phase 34: synthetic loopback HTTP service", () => {
     const failureServer = await serve(source, "verifyPasswordService.fungi", { port: PORT + 2 }, kdf);
     bcrypt.compare = (_plain, _hash, callback) => callback(new Error("controlled bcrypt backend failure"), false);
     try {
-      const response = await fetch(`http://127.0.0.1:${PORT + 2}/auth/verify`, {
+      const response = await fetch(`http://127.0.0.1:${PORT + 2}/__fixture/auth/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: "a@b.com", password: FIXTURE_PASSWORD }),
