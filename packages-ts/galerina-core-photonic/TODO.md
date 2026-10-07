@@ -83,10 +83,10 @@ v1 ships; no implementation. The HOLD groups below are unchanged.
     2026-10-07 SuperGrok: src/governance/capabilities.ts refusal-only. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
 [ ] Create targets/runtimeTargets.ts (PhotonicRuntimeTarget)
 [ ] Create targets/OpticalTransportMode.ts
-[x] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
-    2026-10-07 SuperGrok: tests pin identical outputs of existing concept functions (validate*/createPhotonicReport/decodePhotonicDiagnostic). Execution plans/routes/schedules remain unadmitted. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
-[x] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
-    2026-10-07 SuperGrok: refusal/doc only. admitExperimentalTransport is always false; refuseExperimentalTransport emits Galerina_PHOTONIC_EXPERIMENTAL_TRANSPORT_REFUSED. No production, sandbox, capability, or audit receipt is granted. Transport modes stay NOT ADMITTED. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
+[ ] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
+    2026-10-07 O1 subset only, row stays OPEN: tests pin identical outputs of existing concept functions (validate*/createPhotonicReport/decodePhotonicDiagnostic). Execution plans/routes/schedules are not admitted (L37 POST-V1). Evidence: tests/photonic-o1-refusals.test.mjs.
+[ ] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
+    2026-10-07 O1 refusal-only subset, row stays OPEN: admitExperimentalTransport always false; refuseExperimentalTransport emits a fixed REFUSED diagnostic. No sandboxing, production restriction, capability-backed transport or audit logging is implemented. HOLD-PHOTONIC-TRANSPORT stays HOLD.
 ```
 
 ## Live reconciliation (2026-09-21)
