@@ -19,6 +19,9 @@
  *   Empty segments, dot segments, and encoded `/` or `\` are refused, so a
  *   value can never move across a path boundary.
  * - Diagnostics never echo the input text, only a code, a reason, and an index.
+ * - A compiled pattern is an object issued by compileRoutePattern. match and
+ *   conflict checks accept only those issued objects. A Proxy wrapper or a
+ *   forged shape is not a compiled pattern.
  */
 
 export const ROUTE_PATTERN_MAX_PATH_CHARS = 2048;
@@ -72,6 +75,17 @@ const VALUE_RE = /^[A-Za-z0-9._~!$&'()*+,;=:@%-]+$/;
 const ENCODED_SEPARATOR_RE = /%(?:2f|5c)/i;
 const PERCENT_TRIPLET_RE = /%(?![0-9A-Fa-f]{2})/;
 
+const ISSUED_ROUTE_PATTERNS = new WeakSet<object>();
+
+function issuePattern(pattern: RoutePattern): RoutePattern {
+  ISSUED_ROUTE_PATTERNS.add(pattern);
+  return pattern;
+}
+
+function isIssuedPattern(pattern: unknown): pattern is RoutePattern {
+  return typeof pattern === "object" && pattern !== null && ISSUED_ROUTE_PATTERNS.has(pattern);
+}
+
 function diag(code: string, reason: string, index?: number, otherIndex?: number): RoutePatternDiagnostic {
   const d: { code: string; reason: string; index?: number; otherIndex?: number } = { code, reason };
   if (index !== undefined) d.index = index;
@@ -112,7 +126,7 @@ export function compileRoutePattern(path: unknown): RoutePatternResult {
   if (path === "/") {
     return Object.freeze({
       ok: true as const,
-      pattern: Object.freeze({ canonical: "/", segments: Object.freeze([]), params: Object.freeze([]) }),
+      pattern: issuePattern(Object.freeze({ canonical: "/", segments: Object.freeze([]), params: Object.freeze([]) })),
     });
   }
   const rawSegments = path.slice(1).split("/");
@@ -150,7 +164,7 @@ export function compileRoutePattern(path: unknown): RoutePatternResult {
   const canonical = "/" + segments.map((s) => (s.kind === "param" ? `:${s.name}` : s.value)).join("/");
   return Object.freeze({
     ok: true as const,
-    pattern: Object.freeze({ canonical, segments: Object.freeze(segments), params: Object.freeze(params) }),
+    pattern: issuePattern(Object.freeze({ canonical, segments: Object.freeze(segments), params: Object.freeze(params) })),
   });
 }
 
@@ -163,6 +177,7 @@ export function matchRoutePattern(
   pattern: RoutePattern,
   requestPath: unknown,
 ): Readonly<Record<string, string>> | undefined {
+  if (!isIssuedPattern(pattern)) return undefined;
   if (typeof requestPath !== "string" || requestPath.length > ROUTE_PATTERN_MAX_PATH_CHARS) return undefined;
   if (!requestPath.startsWith("/")) return undefined;
   const values: Record<string, string> = Object.create(null) as Record<string, string>;
@@ -209,8 +224,15 @@ function overlaps(a: RoutePattern, b: RoutePattern): boolean {
 export function checkRoutePatternConflicts(patterns: readonly RoutePattern[]): RoutePatternConflictResult {
   const diagnostics: RoutePatternDiagnostic[] = [];
   for (let i = 0; i < patterns.length; i += 1) {
+    const current = patterns[i];
+    if (!isIssuedPattern(current)) {
+      diagnostics.push(diag(FUNGI_APPK_RPT_001, "pattern must be issued by compileRoutePattern", i));
+      continue;
+    }
     for (let j = 0; j < i; j += 1) {
-      if (overlaps(patterns[j] as RoutePattern, patterns[i] as RoutePattern)) {
+      const earlier = patterns[j];
+      if (!isIssuedPattern(earlier)) continue;
+      if (overlaps(earlier, current)) {
         diagnostics.push(diag(FUNGI_APPK_RPT_005, "patterns can match the same request path", i, j));
       }
     }
