@@ -645,13 +645,16 @@ async function loadAndVerifyPackage(
   }
 
   if (keyId !== undefined && opts.revocationCheck !== undefined) {
-    let revoked: boolean;
+    let revocationResult: unknown;
     try {
-      revoked = opts.revocationCheck(keyId) === true;
+      revocationResult = opts.revocationCheck(keyId);
     } catch (e) {
       return fuseError("FUNGI-FUSE-REVOCATION-UNVERIFIABLE", `revocation status for keyId '${keyId}' could not be determined (${(e as Error).message}) — refusing to fuse (fail-closed)`);
     }
-    if (revoked) {
+    if (revocationResult !== true && revocationResult !== false) {
+      return fuseError("FUNGI-FUSE-REVOCATION-UNVERIFIABLE", `revocation status for keyId '${keyId}' returned a malformed value — refusing to fuse (fail-closed)`);
+    }
+    if (revocationResult === true) {
       return fuseError("FUNGI-FUSE-KEY-REVOKED", `keyId '${keyId}' is REVOKED — refusing to fuse (the manifest names a revoked signing key; refused regardless of whether its signature verified, and even under allowUnsigned)`);
     }
   }

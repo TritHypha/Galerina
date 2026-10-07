@@ -187,6 +187,17 @@ it(
         assert.equal(verified.verdict, 1, JSON.stringify(verified));
         assert.deepEqual(verified.value, resolveHost(referenceName));
         assert.equal(verified.authorityReleased, false);
+        if (physicalName === "register_pinned" || physicalName === "browser_secure_context") {
+          const expectedPhysicalCapabilities = {
+            canRegisterPin: false,
+            canNoDramSpill: false,
+            canNoSwap: false,
+            canNoDisk: false,
+          };
+          for (const [field, value] of Object.entries(expectedPhysicalCapabilities)) {
+            assert.equal(verified.value[field], value, `${physicalName}.${field}`);
+          }
+        }
         retainedReceipt = receipt;
       }
       for (const invalidArguments of [

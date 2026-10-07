@@ -1,5 +1,50 @@
 # TODO
 
+## Current memory-review checkpoint — 2026-10-07
+
+Current Galerina review pin: `f7751c852444285ae74562b1dbf59778817b6117` on
+`codex/rd1413-1415-coupled-route-20261004` (local branch matches origin; checkout
+was clean at review). This is a new-language effort: design Fungi's memory,
+ownership, aliasing, allocation and effects deliberately. TypeScript/bootstrap
+tests are evidence about the prototype, not an inherent ceiling on Fungi
+guarantees and not proof of runtime/FFI/host enforcement.
+
+- [x] Initial Astra/Grok.com reviews and the expanded owner-context review
+  sequence were already delivered; do not dispatch them again. Reuse the exact
+  identities in the linked review checkpoint.
+- [x] The Grok.com follow-up withdrew its alleged source/test contradiction;
+  independent Astra adjudication confirms that the modeled behavior and test
+  agree. The conservative rule to refuse disk-backed swap under `no_disk` is
+  supportable without weakening the secret default. The full storage-medium
+  contract and authority for any secret-loosening exception remain unresolved.
+- [x] SuperGrok returned its bounded residency answer. Grok-Bot's corresponding
+  answer is pinned to the earlier `d3f645fe2` revision and marked stale because
+  HEAD advanced; it supplies no current review of the changed vectors. Do not
+  infer review from delivery.
+- [!] A real secret-using bootstrap operation is verified:
+  `packages-ts/galerina-framework-api-server/src/webhook-admission.ts::admitWebhookReplay`
+  reads a configured key for HMAC and replay identity. The operation's inputs
+  are ordinary TypeScript `string | Uint8Array`; no principal-bound grant,
+  canonical protected object/version, provider/key custodian, revocation
+  generation, Fungi-owned lease, or authorized durable recipient is bound to
+  it. It is a candidate, not an implemented qualifying RD operation. The
+  owner-selected `/secure` route shape is not a live handler. Decide whether to
+  nominate the webhook operation for protected integration or name the actual
+  `/secure` handler/object; do not substitute `/auth/verify` or a fixture.
+- [!] Then bind the full authority chain, provider-open/revocation and effect/sink
+  ordering, measured host/TCB and freshness authority, cleanup/reuse accounting,
+  recipient/output/storage and recovery contract, crypto policy, and finite
+  workload bounds. Cross-repository SLIDE/VOK, Lyth-Weaver, and relevant KB
+  owner evidence still needs exact-head reconciliation.
+- [!] RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING** until a real Fungi
+  operation passes end-to-end compiler/runtime/FFI/host evidence and receives
+  independent owner adjudication. A design choice, model answer, or bootstrap
+  test alone does not close them.
+
+See the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md)
+for receipt identities, scope limits and the next bounded actions. Historical
+checkbox totals below are not a freshly recomputed aggregate.
+
 ## Current checkout check — 2026-09-26
 
 - [x] The RD-0873 worktree is dirty `main` at
@@ -22,12 +67,1038 @@ not a real, loaded protected-data operation. There is a declared Fungi
 returns 503, the service uses a fixture password hash, and the passing tests
 import ignored `dist/` output without a fresh source/build receipt. This is
 login-demo evidence, not the missing caller/object-version/Signet/provider
-operation. The dated checkbox counts above precede these hold markers. Reopen
-the three private RD owners and verify exact product source and loaded tests
-before changing any status.
+operation. On 2026-10-05 the owner selected a **governed `/secure` route** as
+the intended V1 operation surface; this is a route-name decision, not evidence
+of an implemented protected operation. Current non-test application source has
+no `/secure` route definition; the matching route references are test fixtures.
+`POST /auth/verify` remains a login-demo fixture, not the selected protected
+operation. The actual operation semantics, HTTP contract, caller, object/version
+grant issuer/revoker, provider/key-custodian reference, and permitted recipient
+still need to be defined and wired together. The dated checkbox counts above
+precede these hold markers. Reopen the three private RD owners and verify exact
+product source and loaded tests before changing any status.
 
-- [!] **RD-1413 incoming access:** select and wire one real authenticated
-  application operation with an object/version grant, protected provider/key
+### Owner direction — V1 zero-trust threat boundary — 2026-10-04
+
+The owner selected the zero-trust path after being asked whether V1 must
+protect against a compromised host kernel or hypervisor. Treat those layers as
+untrusted for the V1 confidentiality claim: ordinary OS memory controls alone
+do not satisfy this boundary. The implementation must use an attested
+confidential-computing boundary on supported hosts and fail closed when that
+boundary or its evidence is absent, invalid, stale, or revoked. This is an
+accepted threat-model direction, **not evidence that such a runtime exists**.
+For a confidential-VM profile, “untrusted host kernel” means the outer host
+OS/VMM outside the attested guest. The guest kernel, measured boot chain,
+firmware, and TEE implementation remain in that profile's trusted computing
+base unless an additional enclave boundary removes them. Therefore a
+confidential VM alone does **not** satisfy a requirement to withstand a
+compromised guest kernel. Keep that distinction explicit in the threat model
+and attestation measurement policy; do not call either profile “zero trust”
+without naming its trusted computing base.
+The owner has set the platform direction: Amazon Linux is the primary
+deployment target, and the application must also run on Windows 10. This is
+not evidence that the protected operation is available on every Windows,
+WSL, VM, or native Linux configuration. Keep one Fungi-facing contract; a
+platform backend may be admitted only when its measured/confidential boundary
+meets the named threat model. Otherwise the application may run, but the
+protected operation must refuse rather than fall back to ordinary host memory.
+Still to approve: the exact Amazon Linux release and hardware/host profiles,
+attestation trust roots, measurement policy, and refusal/recovery contract.
+Windows 10 protected use is resolved as remote-only by the owner decision below;
+it is not a pending local protected-operation profile. The four product holds
+below remain open.
+
+### Owner decision — production Fungi boundary — 2026-10-05
+
+The owner selected **no TypeScript authorization/secret-gate decision logic in
+the protected production request path**. A minimal TypeScript host adapter is
+allowed only to load/invoke the built Fungi operation and transport
+ciphertext, opaque non-authorizing references, and its typed result. It must
+not decide admission, treat a host-supplied presence/success Boolean as
+authority, parse secret-bearing input into JS strings/objects/byte arrays, or
+receive plaintext. The TypeScript compiler may remain a build-time/bootstrap
+tool; that does not make it the production decision owner.
+
+This does **not** approve the existing `secret-gate.fungi` for cutover: it
+folds host-supplied presence strings and is not the runtime byte owner. Do not
+generate or switch to a Fungi twin as a substitute for wiring. First provide
+the real protected runtime and versioned ABI that keep authorization,
+secret-byte ownership, cleanup/reuse accounting, and recipient-bound release
+inside the attested boundary; then wire the thin adapter to that exact loaded
+artifact and test the actual route. The HTTP API's current JS body-buffer and
+JSON-decode path cannot be placed before this boundary for secret-bearing
+ingress. RD-1413–1415 remain **HOLD / NON_AUTHORIZING**. The selected adapter
+rule does not identify the exact production operation and parties; those product
+facts remain open. Windows protected-use mode is resolved by the owner decision
+update below.
+
+### Owner decision update — zero-trust defaults — 2026-10-05
+
+The owner selected the zero-trust option for the remaining policy choices:
+
+- **Windows 10 protected use is remote-only.** Windows 10 and WSL may run
+  non-secret application paths or act as clients; they are not protected
+  execution profiles. Plaintext must not be sent to or released into the
+  Windows/WSL host. Protected execution is refused before provider entry unless
+  a separately attested service, confidential client-to-service channel,
+  current grant, recipient binding, and durable release/recovery path are all
+  verified. There is no ordinary-memory fallback.
+- **Only an explicitly approved, measured host profile may handle plaintext.**
+  It must keep the outer host kernel and hypervisor outside the plaintext trust
+  boundary and enumerate every remaining TCB component. Until that exact
+  profile and runtime are implemented and evidenced, protected execution is
+  `protected_unavailable` on all hosts, including Amazon Linux.
+- **A required secret value must be a valid, positive-length byte value.**
+  Missing, non-byte, and zero-length secret values are refused before consumer
+  entry. An empty `secrets.require` list remains a no-secret-required no-op.
+- **Failure and uncertain recovery fail closed.** A failed secret acquisition
+  permanently retires that request's accessor; no nested or repeated provider
+  acquisition is allowed in that request. An uncertain idempotency outcome is
+  `UNKNOWN`: do not automatically retry, reacquire, or release output. A
+  reservation may be released only through a durable, authoritative
+  `NOT_STARTED` reconciliation, never by blind deletion. Replay requires fresh
+  current authorization, and incomplete/uncertain cleanup prevents memory reuse.
+  Lease/generation/accounting/cleanup state must be explicit, authenticated, and
+  range-checked; missing, null, NaN, stale, or inconsistent state refuses.
+  External graph/Myco projections remain locator-only, never authority.
+
+These choices settle policy defaults, not missing product facts. The real
+protected `/secure` operation and its caller, object/version grant issuer and revoker,
+provider/key custodian reference, permitted recipient, plaintext origin, exact
+Amazon Linux release, and measured runtime profile still must be identified and
+verified. No key bytes are needed to identify the contract. RD-1413–1415 remain
+**HOLD / NON_AUTHORIZING** until one such end-to-end route passes and is
+independently reviewed. The RD metadata query returned `STALE`; this decision
+was recorded from the live Galerina owner files, not inferred from the index.
+
+### 2026-10-05 deployment-profile feasibility — compatibility is not protected availability
+
+Current vendor documentation narrows the Windows/Linux decision. Microsoft
+describes WSL 2 as a Linux kernel in a lightweight, Windows-managed utility
+VM; this provides a Linux ABI for development/compatibility, not evidence that
+plaintext is protected from the Windows host or hypervisor. AWS documents
+Nitro Enclaves with Windows Server 2016-or-later parent instances, but the
+enclave itself must run Linux and its image must be built on Linux. That does
+not establish a supported Windows 10 desktop parent or a local protected
+operation on this Windows 10 machine. Ordinary Linux/EC2 or WSL availability
+must not be converted into protected availability.
+
+**Candidate contract, now narrowed by the owner decision above:** keep one Fungi-facing semantic
+operation and expose a closed, total capability result. Only an attested,
+approved protected backend may acquire the secret; ordinary Amazon Linux,
+Windows 10 native, WSL 2, and ordinary VMs return `protected_unavailable`
+  before provider entry. Windows 10 may run non-secret application paths and
+  may act as a client to a separately attested service only when the same grant,
+  recipient, release, and durable reconciliation rules are enforced end-to-end.
+  The owner has chosen remote-only protected use on Windows 10; local Windows
+  10 and WSL protected execution must refuse. Product holds remain open.
+
+**Remote-client consequence (derived requirement, not a profile selection):**
+if the Windows client uses a separately attested service while the parent/relay
+is outside the plaintext trust boundary, TLS that terminates at that parent is
+not enough. The client must verify fresh attestation and encrypt the
+secret-bearing request to the attested endpoint key before sending it through
+the relay; bind freshness and operation/grant/recipient context into the
+authenticated protocol, and refuse before provider entry on stale or mismatched
+attestation. The parent transports ciphertext only. This follows from Nitro's
+attested-key/KMS flow and parent-relay model; it does not claim Galerina has
+implemented that flow or select Nitro for V1.
+
+Vendor references: [Microsoft WSL 2 architecture](https://learn.microsoft.com/en-us/windows/wsl/wsl2-about),
+[AWS Nitro Enclaves on Windows parent instances](https://docs.aws.amazon.com/enclaves/latest/user/developing-applications-windows.html),
+and [AWS Nitro Enclaves CLI for Amazon Linux](https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave-cli-install.html),
+[AWS enclave/KMS flow](https://docs.aws.amazon.com/enclaves/latest/user/flow.html),
+[AWS enclave KMS attestation policy](https://docs.aws.amazon.com/enclaves/latest/user/kms.html),
+and [AWS attestation root and document](https://docs.aws.amazon.com/enclaves/latest/user/verify-root.html).
+
+**Additional confidential-VM candidate, source-checked 2026-10-05; not selected:**
+AWS documents AMD SEV-SNP on EC2 for Amazon Linux 2023, with attestation
+reports signed through VCEK/VLEK chains to AMD's root of trust. The report's
+launch measurement covers initial guest memory and vCPU state; it is not by
+itself a receipt for Galerina's loaded application or a complete workload
+measurement policy. AWS documents that an SEV-SNP-enabled instance cannot use
+Nitro Enclaves or hibernation. Do not combine the two profiles in the design
+without new platform evidence. This makes SEV-SNP a concrete candidate to
+evaluate for keeping the outer host VMM outside the guest-memory TCB, not a
+product selection or closure proof. The profile still needs an explicit trust
+root and TCB (including CPU/firmware/attestation chain, measured boot, guest
+kernel, runtime, verifier and key-release authority), an application-bound
+freshness policy, and a Windows 10 compatibility decision. See [AWS AMD
+SEV-SNP requirements](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sev-snp.html),
+[AWS SEV-SNP attestation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snp-attestation.html),
+and the [Linux confidential-computing threat model](https://docs.kernel.org/security/snp-tdx-threat-model.html).
+All product holds remain unchanged.
+
+### 2026-10-05 Astra coupled RD-1413–1415 architecture adjudication
+
+Read-only review of the exact dirty candidate at
+`df01d4ee038f54c56647a39cdd39ca863a40eff4`: **PARTIAL / HOLD / NON_AUTHORIZING**
+for all three RDs. The current route resolves a Fungi flow name and returns a
+dispatch record; it does not invoke the credential service. That service reads
+the request password as `String` and compares it to a fixture hash, while its
+Deno adapter returns 503. The API server buffers request-body chunks into a
+`Uint8Array` before channel admission, and the kernel decodes/parses JSON before
+the secret gate. Therefore raw secret ingress through this ordinary JS/Wasm
+path cannot satisfy the selected custody boundary; putting bytes in a later
+arena does not erase those earlier copies. No live workload caller, signed
+object/version grant, provider/key custodian, revoker, or permitted recipient
+is evidenced, and no production `getSecret()` call site was found.
+
+The review confirmed that the source-built TypeScript seam has candidate-only
+failure cases already recorded below: provider-suppressed refusal, callbacks
+after request completion, and an idempotency key stranded when admission fails
+after claim. These findings justify more negative tests but do not make
+TypeScript callback hardening a substitute for a Fungi-owned runtime. The
+Fungi `secret-gate.fungi` remains a checker twin, not the executing byte owner.
+
+**Dependency order:** (1) name the real operation, parties, grant, key custodian,
+and plaintext-origin boundary; (2) select an attested deployment profile and
+its explicit trust roots/TCB, with fail-closed refusal elsewhere; (3) prove
+Fungi-owned opaque bytes, non-copying leases and cleanup, including all native
+crypto scratch; (4) bind an allowlisted output to the live authorized recipient
+and operation, with revocation linearized at release and uncertainty-safe
+idempotency/recovery; (5) run source/build/load-pinned positive and negative
+tests for the same operation, and independently review receipts. The owner has
+selected remote-only protected use on Windows 10. The outer host VMM being
+outside a confidential guest's TCB does not remove the
+guest kernel, CPU/firmware/TEE roots, runtime, attestation verifier or key
+release authority from the TCB. Product and production clearance remain held.
+
+### 2026-10-05 current coupled-branch source pin — no Fungi production cutover
+
+Fresh source-only recheck of dirty branch
+`codex/rd1413-1415-coupled-route-20261004` at HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae` confirms the prior Astra review's
+boundary findings on this later candidate. Exact SHA-256 pins:
+
+| Source | SHA-256 |
+|---|---|
+| `packages-ts/galerina-framework-api-server/src/index.ts` | `000FC72B88A394B30886782A9B210D08512E9908184D8DFBF328C1DAC6CA7D8B` |
+| `packages-ts/galerina-framework-app-kernel/src/kernel.ts` | `5C8F2EDA750F54016A6A996FD1172AE7C95D4D4FF7C7755F7BE989B50B5974EE` |
+| `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` | `50BC90AE44B2F10771C99C5A8F8F8591630AD8A9A56FFF60F9B6D77077E5BB5D` |
+| `packages-ts/galerina-framework-app-kernel/src/self-hosted/secret-gate.fungi` | `7317039DCD45912CEA8A5A4EED32774F0CEB389A1F9519197B55C6062E6B7B66` |
+
+In `galerina-framework-api-server/src/index.ts`, `bufferBody` retains incoming
+Node `Buffer` chunks and concatenates them to a `Uint8Array` before channel
+resolution and kernel handoff. In `galerina-framework-app-kernel/src/kernel.ts`,
+TypeScript decodes/parses JSON before its gate, calls TypeScript
+`createSecretGate().admit()` for admission, and provides a staged JS
+`Uint8Array` through `getSecret()` to handler code. The same kernel copies or
+serializes response data, and the HTTP adapter creates a `Buffer` for output.
+The current `.fungi` asset remains a host-presence fold, not the invoked route,
+secret-byte owner, or release authority. Its differential test compares a
+Wasm execution of that fold with the TypeScript gate; it is not evidence that
+the app's request path invokes Fungi. No tests were run as part of this source
+recheck.
+
+This corrects the source pin in the earlier 2026-10-05 Astra adjudication,
+which was recorded against HEAD `df01d4ee038f54c56647a39cdd39ca863a40eff4`;
+that older pin is historical, not current evidence. The present checkout is
+still dirty and this recheck does not assert that these bytes are deployed.
+The user's minimal-adapter boundary still requires ciphertext, opaque
+non-authorizing references, and typed results only. No generated `.fungi`,
+production wiring, TODO closure, RD disposition, or production clearance is
+claimed. RD-1413/1414/1415 remain HOLD / NON_AUTHORIZING.
+
+### 2026-10-05 owner-approved ECC/RAS and bounded protected staging direction
+
+The owner approves ECC/RAS as a host reliability layer and a bounded,
+protected staging-and-verification protocol in Galerina. ECC and a second
+plaintext copy are **not** zero-trust integrity or authorization controls.
+Astra's two-vector follow-up was PARTIAL: corrected bytes still require normal
+authentication/authorization/validation; deferred poison is not success;
+fault attribution, region retirement, fatal-interruption recovery, alias
+mutation prevention through final use, atomic promotion, complete resource
+bounds, cleanup acknowledgement before reuse, fresh-generation/wrap refusal,
+and rollback-safe leases/replay/IV state remain to be designed and proven.
+Untrusted telemetry can cause conservative refusal but cannot prove health.
+This is approved design direction only—not implementation or evidence that the
+selected Amazon Linux confidential-compute profile can enforce it. The Astra
+answer is advisory, and its submitted kernel digest had a typo; the current
+source hash is corrected in
+`docs/reports/rd1413-1415-coupled-review-20261005.md`. Preserve all product
+holds: RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 same-stack response-encoding refusal fix — candidate only
+
+Astra found that a provider-saved callback invoked by a handler-controlled
+response getter could be refused and caught during serialization while the
+kernel still published HTTP 200. RED regressions reproduced both synchronous
+and queued-microtask callback attempts; the current TypeScript candidate
+rechecks the monotonic failure latch at the outer response boundary and
+returns 500 before sealing. Astra then found the injected audit hook runs after
+that selection and could itself call the retained callback. To avoid changing
+the response after an immutable audit event is accepted, the kernel now seals
+the selected outcome before calling audit hooks. Post-seal retained callbacks
+still refuse and cannot reacquire or invoke the consumer, but their refusal
+does not rewrite the already sealed response/event. Regression coverage checks
+both optional `emit` and required `commit` paths. A second test-first
+regression reproduced the in-memory audit ambiguity as `503` with one already
+retained event when both microtask and timer scheduling failed. The built-in
+sink now treats its bounded queue insertion as synchronous acceptance and
+flush scheduling as best-effort export. With capacity one, the next
+reservation schedules a retry but refuses before handler effects while the
+event remains charged. After its asynchronous drain, explicit `takeDrained()`
+custody transfer releases capacity; the following request proceeds. The
+accepted queue is volatile process memory, not durability evidence. Injected custom `AuditSink`
+implementations remain contract-dependent: they must guarantee a throw means
+no acceptance, or place a bounded authoritative outbox before any fallible
+exporter.
+
+Fresh verification: typecheck/build pass; the focused secret/audit/deadline/
+security-closure suite passes **88/88**. The full app-kernel suite is
+**437/439**: two
+`fuse-compose` signature assertions fail because a revocation-required error
+precedes their expected signature error. A clean-HEAD baseline was not run;
+these remain unresolved, not presumed pre-existing. This is TypeScript
+same-stack containment evidence only; it does not close provider-generation
+binding, staging budgets, Fungi/runtime custody, host protection, cleanup/reuse,
+or authorized release. No RD checkbox or product status changes;
+RD-1413–1415 remain **HOLD / NON_AUTHORIZING**. Astra's independent audit
+passes for the scoped sealing diff and reports no blocking finding within that
+scope. It confirms the focused response and event tests and in-memory parity
+for 22 package JS outputs. This does not prove deep runtime immutability: tests
+verify matching captured response/event statuses. Astra's independent audit
+of the built-in audit-acceptance and capacity-one retry repair is pending; custom-sink acceptance and
+durable audit custody remain open. Full evidence and current pins are in
+`docs/reports/rd1413-1415-coupled-review-20261005.md`.
+
+**Superseding verification, 2026-10-05:** the earlier **437/439** result above
+was corrected after tracing both assertion-precedence failures to missing test
+preconditions, not by weakening the revocation gate. The isolated sync-deadline
+probe now resolves `dist/index.js` from the app-kernel package directory; its
+response-size case uses a 250 ms deadline so suite scheduling is not mistaken
+for the intrinsic-getter behavior. Fresh typecheck and build pass, the full
+app-kernel suite passes **439/439**, and the focused secret/audit/deadline/
+security-closure set passes **88/88**. The `.fungi` `/auth/verify` example
+checks with 0 errors/0 warnings but still uses `fixtureHash`; it does not name
+the real caller/grant/provider/object-version/recipient chain. This remains
+candidate evidence only, not an RD or product closure.
+
+The live source confirms the route gap: `examples/auth-service/deno-adapter.ts`
+returns **503** for `/auth/verify` with “Service bridge pending Phase 54”;
+`packages-ts/galerina-framework-example-app/host/server.ts` wires only the
+public greeting route. Thus a clean `.fungi` check is not an executing
+protected request. The owner-selected `/secure` surface still needs a real
+operation and its caller, grant issuer/revoker, provider/key custodian,
+object/version, and recipient bound before product wiring can be truthful.
+
+### 2026-10-05 existing Fungi loader boundary — reusable mechanics only
+
+The adjacent app-kernel package declares `secret-gate.fungi` under
+`packageGraph.loadedAssets`, but its package `build` script is only
+`tsc -p tsconfig.json`; this does not build or wire that Fungi asset. The
+current source pins are:
+
+| Source | SHA-256 |
+|---|---|
+| `packages-ts/galerina-framework-app-kernel/package.json` | `1CEFF3965F36F183D3A161CBDF03A71CB84D7BC3AE5CF43B387446E28DF83F47` |
+| `packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts` | `03C1EA2E80F15A1448C38885BC8D2F6676AA5341FD04634CC7AFC08F4CE05334` |
+| `packages-ts/galerina-framework-example-app/host/server.ts` | `B5C71558BFBC6D0DCAB39991F70927195DFD4BCBEC6B5A7D897185B0B068071F` |
+
+The existing `fuse-loader.ts` can instantiate admitted WASM through the Node
+WebAssembly host and exposes only a numeric `i32`-handle/scalar call surface.
+The inspected example caller invokes a public greeting component, not a
+secret-bearing operation. Separately,
+`rd0361-secret-gate-execution.test.mjs` emits and instantiates a test WASM,
+then compares its verdict with TypeScript; it does not route a live kernel
+request through the component loader. These are reusable loader/test
+mechanics, not evidence of production Fungi decision wiring, secret-byte
+custody, or a protected Linux runtime. No test was run for this source review.
+
+Therefore the integration gap is larger than adding the twin to a build list:
+the protected deployment needs a versioned request/response ABI to an actually
+loaded Fungi operation inside the selected protected boundary. Any TypeScript
+adapter outside that boundary must only relay ciphertext, opaque references,
+and typed results. Its host must not materialize plaintext or decide
+admission. The current loader cannot be called that adapter unchanged: it is
+Node-hosted, in-process, numeric-only, and the example is public/non-secret.
+No design approval, source change, test result, or RD closure follows from this
+finding.
+
+### 2026-10-05 legacy TypeScript SealArena page-lock boundary — not V1 custody
+
+The adjacent `galerina-ext-secrets-spore` implementation is not a substitute
+for the selected Fungi-owned protected runtime. Its `mlock.ts` source
+(SHA-256
+`B4B93D626BDF822D5A15DD726B59AF85254A551A5160D543EC5FC6BBB76EFEAC`)
+leaves the hook unset by default; `tryMlock` then returns `false`, and it also
+converts hook exceptions to `false`. `arena.ts`
+(SHA-256
+`7F58DEE6134CFF19CED781F3736568499683C2741AC3D7F8659FEAF49FD8011E`)
+stores plaintext in JavaScript `Buffer` values in a `Map`, calls `tryMlock`
+without checking its result, and makes transient plaintext copies for
+callbacks. Its best-effort zeroing and optional page-lock hook are legacy
+hardening, not proof of locked pages, exclusive byte ownership, or physical
+erasure. No runtime test was run in this source check.
+
+Do not reuse this path as V1 admission or report a required residency state as
+`LOCKED` when the lock result is absent, false, malformed, or unknown. The
+selected protected backend needs its own Fungi-owned lease/arena contract,
+truthful per-allocation lifecycle/accounting state, and refusal before secret
+acquisition when its named measured profile is unavailable. This source note
+does not authorize a TypeScript fallback or change any RD disposition.
+
+### 2026-10-05 Signet precedent boundary — reusable pattern, not request authority
+
+Galerina has two relevant but non-equivalent precedents. The implemented
+`scripts/lib/assurance-fabric/private-host.mjs` (SHA-256
+`FE5B4FEE44D8B98ECB00C22A1F5DDAF8124DFBC49ED764EC1A9B356E820FA559`)
+keeps a private Signet-like object in process-local weak state and emits a
+terminal Wax Seal with `authorizing: false` and
+`authentication: "UNAUTHENTICATED_REFERENCE"`. It is an assurance-reference
+host, not authority to admit a real secret operation. The separate
+`packages-ts/galerina-tower-citizen/src/capability-grant.ts` (SHA-256
+`9B4A7294FAEF5AE32FD0AD28B9882817171E7D68059C2C8BF2EBF40BF1421363`)
+signs/verifies grants over `engineId`, `capabilityMask`, and optional `grantId`;
+its traced caller is the inference engine, and the current app-kernel/API-server
+source has no reference to that verifier. Neither artifact supplies the
+authenticated request, exact credential object/version grant, provider/key
+custodian, or permitted release recipient required by RD-1413/1415.
+
+Reuse only the patterns of private non-forgeable state, exact context binding,
+explicit lifecycle, and terminal non-authorizing receipt. The product Signet
+and receipt contract must be separately designed for the actual protected
+operation and executed within its measured Fungi boundary; no key bytes are
+needed in this design record. This source comparison changes no code, test,
+TODO checkbox, or RD disposition.
+
+### 2026-10-05 source-built SecretGate and Fungi differential recheck
+
+On dirty branch `codex/rd1413-1415-coupled-route-20261004` at HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`,
+`packages-ts/galerina-framework-app-kernel` was rebuilt from the current
+TypeScript source with `npm run build` (exit 0). The focused command
+`node --test tests/rd0361-secret-gate-execution.test.mjs tests/secret-gate.test.mjs tests/security-closure.test.mjs tests/rd1414-sync-deadline.test.mjs`
+then passed **68/68**. It includes the 14-case Wasm-vs-`createSecretGate`
+decision differential and the current callback, timeout, and cleanup
+characterization tests. This is candidate-only behavior on the rebuilt Node
+package, not production cutover or proof of protected memory.
+
+The passing security-closure control explicitly shows a consumer-transferred
+copy survives the TypeScript gate's wipe while the kernel refuses successful
+publication. Thus wiping the gate-owned staging view cannot establish
+all-alias erasure. The Fungi twin still receives presence/status records,
+not an opaque lease or secret bytes; the Wasm ABI used by this existing test
+is host-marshalled and is not a confidential-memory proof.
+
+**Fresh rerun on the same source pins, 2026-10-05:** `npm run build` exited 0,
+then the exact focused command above passed **71/71** with zero skips. The
+increase from the earlier 68/68 is the current test set, not additional
+product coverage. In particular, the 14-case Fungi/WASM comparison still uses
+the TypeScript `createSecretGate` as its oracle; it does not exercise the
+loaded protected route or the selected Fungi-owned authorization/runtime
+boundary. This is fresh candidate evidence only; it closes no RD or product
+hold.
+
+### 2026-10-05 WAMR candidate boundary recheck — ABI admission only
+
+The separate `main` worktree at the same HEAD contains an untracked native
+WAMR import validator:
+`packages-ts/galerina-core-runtime/native/wamr-host/src/wamr_import_admission.c`
+(SHA-256
+`8C7E3A3367C46958E9C02C28D804985E85DC90B9F582A0C83996A4D87AAAE63A`)
+and its header
+`packages-ts/galerina-core-runtime/native/wamr-host/include/wamr_import_admission.h`
+(SHA-256
+`4B98CEF62F34C30797036818E07370F1295895C5E27151839FF3DD25EB0321CA`).
+Source inspection confirms it checks import names, kinds, and function
+signatures for an already-loaded module; it does not instantiate or execute a
+module, validate Signet/caller authority, or establish secret custody. A
+bounded exact-symbol search in that worktree found references only in the
+RD-1413 C probe and its runner, not a production runtime call site. This is
+useful fail-closed ABI-admission work, but it is not the missing Fungi runtime,
+secret arena, request route, or TS-to-Fungi execution wiring. Keep production
+secret routes on HOLD; do not use the validator or generated WAT/WASM as
+evidence that protected execution is wired.
+
+Before this candidate is reused even as an ABI preflight, close its own
+source-visible gaps: the import loop does not check the linked bit, does not
+reject duplicate module imports, and validates imported valkind equality
+without validating the allowlist's valkind bytes. Separately, the dirty
+TypeScript Wasm host at
+`packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts` (SHA-256
+`008F9F158C9D5DBC24308EA9C0625B15E695220294BC1B515F65D3F882E867AA`)
+continues past an effect-grant name collision with an existing host bridge
+instead of refusing. These are candidate defects to fix and test on their
+own exact patch; neither file is production secret authority.
+
+The full package `npm test` run typechecked and rebuilt successfully, then
+finished **426/428**: two `fuse-compose.test.mjs` signature-precedence
+assertions expected the unsigned-set/signature refusal but observed the earlier
+`FUNGI-FUSE-REVOCATION-REQUIRED` refusal. This run did not recheck those
+failures against baseline `main`; leave them classified as unresolved,
+unrelated package failures rather than claiming they are pre-existing.
+Source/build pins for this run: `secret-gate.ts`
+`139DD0EF5753D41E4309E05EE2A402E2F09D4F3517C208031AF253929F370030`,
+`secret-gate.fungi`
+`7317039DCD45912CEA8A5A4EED32774F0CEB389A1F9519197B55C6062E6B7B66`,
+focused differential test
+`EF39E01F66E8ACC949542D77D256E3370B301FF2FBC262350731E15F3C414FE0`,
+and rebuilt ignored `dist/secret-gate.js`
+`E6611A866C56A5D0EB4AF029E5F57FE390A35118A370136F55EF81BADF0245B0`.
+All existing tracked/untracked changes were preserved. No product TODO box or
+RD status changes; RD-1413–1415 remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 secret-vault Fungi handoff recheck — source blocker, not runtime proof
+
+The current vault handoff declaration is not an opaque-handle contract. The
+TypeScript `SECRETS_GATEWAY_WIT` and its Fungi string-emitter both declare
+`provide-secret-buffer(...)->list<u8>`, a byte-list result that could transfer
+bytes if wired and invoked. The signature alone does **not** prove that the
+returned values are plaintext or that this operation executes. The Fungi file
+labels itself a non-authorizing sandbox candidate; a bounded search of the
+vault package found no call site loading or invoking that emitter. The
+source pins checked on this dirty HEAD are `types.ts`
+`18BB899F34098B9CF5D59D213297ED4E17AEA33E575AF01EF0706E753075DD9F`,
+`rotation-manager.ts`
+`1213A47F632CEF4B89AC1B31750221155F274A399E253E4075B4F7368C64AE05`,
+`secrets-gateway-wit.fungi`
+`1889FA2378FAF5BD950CE82FE76A978A05CC7EB2468FB705AC146EA49F28AF7A`, and
+`vault.test.mjs`
+`7537B99AEF941CCD8463A1C0BBA545772877E4C9F1F055784239925A57F34174`.
+`node --test tests/vault.test.mjs` passes **24/24**, but that test imports the
+existing `../dist/*`. The package build manifest records different source/test
+hashes (`types.ts` `d37c8022…`, `rotation-manager.ts` `cbca0f81…`,
+`vault.test.mjs` `561a4c85…`), so this run has no verified fresh
+source-to-dist provenance and is not execution of this Fungi WIT or a loaded
+protected runtime.
+
+The TypeScript fixture's `SecretHandle` stores `activeValue: Buffer`, permits
+`stagingValue: null`, and makes `faulted` optional. `getHandle()` returns
+`undefined` for an unknown ID; its status view exposes a numeric `version`
+without a closed-state or finite-value validator. The 24 passing cases include
+ordinary loaded-state/redacted-status examples, but do not prove every lifecycle
+state has an explicit total outcome or that numeric status values are validated;
+nor are they connected to Fungi/runtime bytes. `null`/`undefined` are current
+absence sentinels, not evidence that NaN was observed or that an exploit exists.
+
+The Linux `SecretArena` prototype is Rust code in
+`packages-ts/galerina-core-runtime/native/vok-authority`, not a Fungi-owned
+runtime binding: the runtime package's JS build/entry does not link or invoke
+that crate. References outside the Rust crate are documentation, build metadata,
+and tests; no application-runtime call site was found.
+Its current source pins are `secret_arena.rs`
+`4A8BC6BA69A2C2E67F8F92032146D0B4A84E65ACD9449588F16F0F5ABCDD6277`,
+`lib.rs` `AFB301A986CC655F5FC9F94A017DCB01766CB95CFB8B58D1A1A13BC1426C95E7`,
+and `tests/secret_arena.rs`
+`5B0703B8E739ECA571637028060168007FDD2A659FC24A3D6899F38B7DD17146`.
+On 2026-10-05, WSL `cargo test --locked secret_arena -- --ignored` passed
+**3/3** live Rust tests: secretmem reserve/status accounting, pre-allocation
+access refusal, explicit cleanup, and panic-path cleanup/consumption. This
+demonstrates those Rust prototype transitions on this WSL Linux kernel. The
+tests observe status/accounting and refusal after cleanup, not physical erasure
+from every alias/copy; they do not prove Amazon Linux behavior or a Fungi
+runtime binding. This is not an approved Rust production path.
+
+The vault test named “zero-wipes old buffer” also does not observe the
+manager-owned buffer: it obtains a caller copy through `useActive`, rotates,
+then confirms a second saved copy still contains the old value. The manager
+source calls `fill(0)`, but that test does not prove the manager buffer was
+wiped. Keep RD-1414 and the coupled RD-1413–1415 product holds open; next
+evidence must show the chosen Fungi/runtime handoff owns opaque bytes and
+exposes a total, validated status algebra, then test that same loaded path and
+its refusal/cleanup cases.
+
+### 2026-10-05 Fungi ownership-language source check — capability gap, not closure
+
+On the dirty coupled-route branch at HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`, the lexer lists `borrow`, `move`,
+and `pinned` as keywords, but a bounded read of the parser, value-state checker,
+and GIR emitter found no general resource-borrow, affine-secret, or mandatory
+drop/cleanup semantics. The existing consume-once checker tracks a specialized
+Passport/Authority binding (`authorityType`, `consumed`) rather than arbitrary
+resource values. The existing `resource Name { ... }` grammar does not fill this
+gap: `parser.ts` says enforcement is deferred and captures fields, operation
+labels, and policy clauses in a `resourceDecl`. `symbol-resolver.ts` does
+consume that node to register a resource name as a type-like declaration and
+scope its children, but this is name resolution, not enforcement of resource
+policy or byte ownership. The type checker and value-state checker use generic
+traversal for it; GIR/WAT have no resource ownership representation. The
+matching `tests/resource-decl.test.mjs` checks lexing and AST capture only; it
+does not assert type/value/GIR/WAT ownership behavior.
+
+Astra's read-only follow-up on this same HEAD corrected the phrase “parser-only”
+to this narrower finding (**Q1 PARTIAL; Q2 NOT_VERIFIABLE as an implemented
+protected path**). Astra inspected the source and relevant tests but did not run
+tests. Its smallest compiler slice is a nominal move-only lease contract with
+path-sensitive ownership checking across branches, loops, and terminal paths,
+then explicit ownership obligations in versioned GIR; current exported-memory
+and copy-to-JS WAT/runtime lowering must refuse protected leases until a
+protected ABI exists. This is a proposed compiler foundation, not product
+closure or approval of an ABI/profile. The Fungi syntax and diagnostic contract
+still need to be specified before editing compiler behavior.
+
+Additional exact-head pins checked for this review:
+`packages-ts/galerina-core-compiler/src/symbol-resolver.ts`
+`C90F991FE1735FFCE4376281BD2D842966D8E0BD3D762262206B0726FC521E55`,
+`packages-ts/galerina-core-compiler/src/type-checker.ts`
+`3F8A3FA523F9636D4AECFEC69E3C15A3E4B0FBED48AC6C56C1CFAD7D1224C3B8`, and
+`packages-ts/galerina-core-compiler/tests/resource-decl.test.mjs`
+`0873022EAF5AB710227DA2B53A20E6EB41F7CB71D4F5CDF0A2BEB9BB2FDA3DCD`.
+Current source pins are
+`packages-ts/galerina-core-compiler/src/lexer.ts`
+`6583F579D3DF031AC0DC43610F7D9AA03B19D0AF69891FAE8C169CD5A5CD2788`,
+`packages-ts/galerina-core-compiler/src/parser.ts`
+`3C4F8CBCBBD569D5D151A35ED7274950375F58B9D75318AE08C29E857474041B`,
+`packages-ts/galerina-core-compiler/src/value-state-checker.ts`
+`90391708C766F6A4D7BA21037B0B2EB81A3E5DFAA6F7A78DC360384A16121C48`, and
+`packages-ts/galerina-core-compiler/src/gir-emitter.ts`
+`FCEA08C4427D4A40E34605EF59E8E68EBF3AD8BE43088F874BD89926F43B1C3E`.
+
+The existing WAT backend is not that missing secret runtime. At the same HEAD,
+`packages-ts/galerina-core-compiler/src/wat-emitter.ts`
+`E90CE555C32428C7E2924526508C0386646E98000DD65A0E61C4033319A13F31`
+emits ordinary module-owned linear memory and exports it as `memory`; the host
+helper reads that exported `WebAssembly.Memory`. Arena derivation sets a static
+page bound, and the source states generated modules do not emit `memory.grow`.
+That bounds capacity but does not hide the bytes from a host that can read the
+export, or prove cleanup of aliases and copies. Wasm should not be rejected
+categorically: it could be considered only under an approved measured
+confidential-execution profile that actually protects plaintext from the outer
+host kernel/hypervisor, with the exact memory and import/export path verified
+under that profile. Otherwise that profile must refuse the protected operation;
+ordinary Node/Wasm is not a fallback. No such profile, runtime binding, or
+Windows 10 equivalent is evidenced here.
+
+Therefore keyword recognition and Passport consume-once checks cannot be used
+as evidence that Fungi owns a secret lease or guarantees cleanup on every exit.
+The next implementation boundary is a compiler/runtime contract for an opaque,
+non-copyable secret resource: define borrow/transfer rules, all-terminal-path
+retirement, failure behavior, and emitted/runtime ownership together, then test
+the accepted and rejected programs before wiring any product route. This is a
+design/implementation prerequisite, not a new product feature receipt; the
+route, provider, supported attested profile, and authorized recipient are still
+unproved. All coupled RD-1413–1415 holds remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 active coupled-route branch check — AFFINE-005 absent here
+
+The current checkout is `codex/rd1413-1415-coupled-route-20261004` at
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`. A literal source/test search found
+only the compiler's existing `FUNGI-AFFINE-001` through `004`; neither
+`FUNGI-AFFINE-005` nor `SECRET_LEASE_RUNTIME_UNWIRED` is present in this
+branch's `value-state-checker.ts`, diagnostic catalog, or authority-use test.
+Current SHA-256 pins: `value-state-checker.ts`
+`90391708C766F6A4D7BA21037B0B2EB81A3E5DFAA6F7A78DC360384A16121C48`,
+`index.ts` `E5EB594FDF45E00B78C393BAEBF0711BEF6993F0F3CDC66224C2FE22E5BEF5A6`,
+and `authority-use-state.test.mjs`
+`AB614BF9BC0FA343B04C9627586DFF108E416EFB16392C0C1BEBC10472A6B20A`.
+The prior AFFINE-005 receipt applies to a different `main` worktree and must
+not be treated as a guard in this candidate. No compiler code or diagnostic
+register was changed by this check. Before implementing a secret lease, define
+its Fungi syntax, semantic identity, path-sensitive cleanup obligations, and
+backend refusal contract; all coupled product holds remain unchanged.
+
+### 2026-10-05 cross-worktree AFFINE-005 candidate check — staged, not integrated
+
+The separate registered `.worktrees/rd-0873-native-fungi-bootstrap-implementation`
+worktree is on `main` at the same HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`, but it now contains staged
+`FUNGI-AFFINE-005 SECRET_LEASE_RUNTIME_UNWIRED` compiler changes and generated
+code-index/registry changes. Its current staged source pins are
+`value-state-checker.ts` `E6831C2AE763D3DE29DFD0917DDB84117757FF02A437E3BD3597331650033936`,
+compiler `index.ts` `FF795E8B4B38372173FC6CB54D8B4BDF63B8DF0C123E12193BB1A49B122DBFC7`,
+and `authority-use-state.test.mjs`
+`3D104C00723980636C9B7A97BFC0526A14BF5FE086BE182A5E2F60A94D75338D`;
+the untracked `generic-argument-kinds.ts` helper is
+`4A7567ED3CB259D95131BF4D5A21719BAF540F4B18B371698FF00992209B03EA`.
+The active coupled-route checkout above still has no AFFINE-005 implementation.
+
+Fresh `npm run typecheck --prefix packages-ts/galerina-core-compiler` runs in
+both worktrees exit 1 with the same three nullability errors in
+`src/wat-emitter-pattern.ts` (lines 82, 143, and 152). That matching failure
+does not implicate the candidate files, but it also does not prove the new
+candidate compiles or that its changed tests pass. The older private-RD
+94/94 receipt is for earlier source pins, not these bytes. The main worktree
+also contains a broad staged/untracked overlay, so this check neither adopts
+nor authorizes wholesale integration. No code was copied, staged, or committed
+here; product status remains HOLD / NON_AUTHORIZING.
+
+**2026-10-05 read-only status recheck:** the same worktree remains on `main`
+at `e1c2496f3f36d154a445ba9c302401ccaaf74bae`, with 49 changed paths (36
+staged, 5 unstaged, 13 untracked). The reviewed AFFINE-005 checker delta is a
+fail-closed *reservation* that rejects a declared secret-lease use until a
+compiler-owned cleanup operation and runtime binding exist; it does not
+implement a lease, byte arena, wipe, or safe reuse and cannot close RD-1414.
+This broad staged bundle is not safe to transplant wholesale. The typecheck
+result above is from its earlier recorded run; no typecheck or candidate test
+was rerun in this status recheck. No files were copied or changed here.
+
+**WAMR C helper re-open:** that same worktree also has untracked
+`packages-ts/galerina-core-runtime/native/wamr-host/include/wamr_import_admission.h`
+and `packages-ts/galerina-core-runtime/native/wamr-host/src/wamr_import_admission.c`,
+with SHA-256 pins `4B98CEF62F34C30797036818E07370F1295895C5E27151839FF3DD25EB0321CA`
+and `8C7E3A3367C46958E9C02C28D804985E85DC90B9F582A0C83996A4D87AAAE63A`.
+The C helper checks imports on an already-loaded WAMR module against exact
+function names and signatures, refusing unknown, non-function, or mismatched
+imports. It neither loads/instantiates/invokes Fungi nor enforces authorization,
+protects linear memory, owns secret bytes, or performs cleanup. No call site or
+build integration for this helper was found in the inspected runtime package;
+the staged/untracked worktree remains unadopted and no tests were run for it.
+Treat it as a possible ABI-admission component only, not as the missing runtime
+or evidence that the selected TypeScript adapter boundary is wired.
+
+### 2026-10-05 active coupled-route execution trace — not wired to Fungi
+
+On the same dirty checkout and HEAD, the live app-kernel still imports and
+constructs TypeScript `createSecretGate`; it parses request JSON before secret
+admission and later passes a staged JS `Uint8Array` to handler code. The
+candidate `verifyPasswordService.fungi` reads `request.jsonBody.password` as a
+`String` and verifies against an in-memory fixture hash. The separate
+`routeDispatcherService.fungi` resolves `/auth/verify` to the name
+`verifyPassword`, then returns a dispatch-decision record; it does not invoke
+that service or establish a real protected operation. The self-hosted
+`secret-gate.fungi` identifies itself as a checker twin and says the TypeScript
+gate remains the executed artifact. Thus neither generating nor checking that
+twin removes TypeScript decisions or the earlier JS plaintext path.
+
+The current WAT emitter exports ordinary module memory, and the Wasm runtime's
+`snapshotMemory()` copies the whole exported buffer into a new `Uint8Array`.
+The Rust `SecretArena` has a closed Rust lifecycle enum and a Linux cleanup
+candidate, but a bounded `packages-ts` search found its arena calls only in
+Rust tests/doc examples, not an application-runtime caller. Its callback API
+also cannot prevent code inside the crate from copying the borrowed bytes.
+These are useful primitives and bounded evidence, not the requested Fungi
+byte owner, a protected production ABI, physical-erasure proof, or an
+end-to-end route. No tests were run in this source trace; all three product
+RDs remain HOLD / NON_AUTHORIZING.
+
+Exact source pins for this dirty candidate: `kernel.ts`
+`5C8F2EDA750F54016A6A996FD1172AE7C95D4D4FF7C7755F7BE989B50B5974EE`,
+`secret-gate.ts`
+`50BC90AE44B2F10771C99C5A8F8F8591630AD8A9A56FFF60F9B6D77077E5BB5D`,
+`routeDispatcherService.fungi`
+`A13937B038A8955102A15A5B2DF71E7705BC41461473B016F62A59398C141EF5`,
+`verifyPasswordService.fungi`
+`AAEDCD79F1182DA4D0331CDD7063759A3CDBA371B47652BF12DA7759CEE52294`,
+`secret-gate.fungi`
+`7317039DCD45912CEA8A5A4EED32774F0CEB389A1F9519197B55C6062E6B7B66`,
+`wat-emitter.ts`
+`E90CE555C32428C7E2924526508C0386646E98000DD65A0E61C4033319A13F31`,
+`wasm-runtime.ts`
+`E6DB571BBDF8FCBCF45C3AE752FF463550969416AA6400DF2332154FF3DD0F3D`, and
+`secret_arena.rs`
+`4A8BC6BA69A2C2E67F8F92032146D0B4A84E65ACD9449588F16F0F5ABCDD6277`.
+
+### 2026-10-05 Astra confidential-runtime feasibility review — conditional, non-authorizing
+
+Astra independently reviewed the coupled memory design against Galerina HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae` and the supplied compiler pins. The
+review made no edits. Its result is **PARTIAL / HOLD**: keeping Fungi as the
+resource owner and using Wasm as its execution format inside an approved,
+measured confidential VM remains a plausible path, but no qualifying platform
+profile or deployed binding is verified. A complete native backend and full
+compiler self-hosting are not prerequisites to trying that path. Production
+Rust is not approved by this review.
+
+The core compiler evidence is material: `wat-emitter.ts` defines module-owned
+linear memory and exports it as `memory`; host helpers can read that export,
+and heap-return finalization can copy bytes into JavaScript before wiping. The
+reviewed `packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts` pin is
+`E6DB571BBDF8FCBCF45C3AE752FF463550969416AA6400DF2332154FF3DD0F3D`;
+`snapshotMemory()` returns a copy of the complete memory, and
+`finalizeSecretExportResultWithAttempt()` reads heap result bytes before calling
+the wipe helper. Therefore ordinary Node/Wasm,
+WSL, static arena sizing, and a guest wipe are not proof of confidentiality or
+all-copy cleanup. A non-exported memory ABI is necessary for the candidate but
+not sufficient: plaintext must remain inside the measured execution boundary,
+all imports and outputs must prevent plaintext escape, and hardware-backed
+attestation/key release must bind the exact image/profile. A Windows 10 client
+may call a remote protected service; local protected execution must refuse
+unless that Windows host independently satisfies the same approved boundary.
+There is no silent ordinary-memory fallback.
+
+**Implementation/evidence order (none of these rows closes an RD yet):**
+
+1. Define one real operation and its caller, action/object/version grant,
+   issuer/revoker, secret provider/key reference and owner, recipient, output,
+   and every plaintext ingress/egress point. No private key bytes are needed.
+2. Specify a Fungi opaque, non-copyable lease with allocation identity and
+   generation, scoped non-escaping borrow/transfer, and mandatory cleanup on
+   every terminal path. Preserve those obligations through AST, type/value
+   checking, GIR, WAT and every admitted backend. Add accepted *and rejected*
+   compiler programs; a legal protected operation must execute, not merely
+   have all programs refused.
+3. Introduce a versioned protected ABI: non-exported, non-shared secret memory;
+   closed imports; no plaintext JS strings/arrays, callbacks, snapshots or
+   logging; mandatory runtime cleanup hooks; refuse backend admission if any
+   obligation cannot be enforced.
+4. Bind Signet authorization, live grant/revocation, object/version and provider
+   lease atomically before admission; transport confidential ingress and seal
+   release to the authorized recipient.
+5. Model lifecycle metadata as a closed, authenticated state machine with
+   explicit validated values (no missing/null/NaN/invalid ranges/stale
+   generations). Keep the authority ledger inside the measured boundary; an
+   external Myco/graph view is locator-only and grants no authority. Recycle
+   only after complete accounting and verified cleanup; otherwise retire.
+6. Execute the same loaded end-to-end route on each approved host profile,
+   including traps, cancellation, crash/retry, revocation, cleanup failure,
+   replay and unauthorized release. Withhold output on any uncertain cleanup
+   or recovery state.
+
+A small `.fungi` conversion of isolated pure policy/state modules, compiled and
+run through the actual CLI in WSL, is worthwhile as **compiler feasibility and
+differential characterization**: it can expose unsupported syntax, status
+algebra gaps, and generated-WAT differences cheaply. Start with a pure
+admission/lifecycle state module and its counterexamples; do not treat the
+existing `secret-gate.fungi` presence-check stub as secret ownership. WSL is a
+Linux development test host, not a confidential VM or protected product
+receipt. Defer byte-custody claims until the Fungi resource contract and
+non-exporting protected runtime exist. Astra also executed 21 focused
+authority/wiping tests and reported matching in-memory transpilation for its
+pinned compiler/runtime files; these are advisory source checks, not product
+acceptance. All RD-1413–1415 states remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-04 coupled-route kernel-gap recheck — local candidate only
+
+On branch `codex/rd1413-1415-coupled-route-20261004`, based on
+`df01d4ee038f54c56647a39cdd39ca863a40eff4`, the app-kernel candidate now
+re-admits required secrets after the asynchronous idempotency claim and before
+handler dispatch. The regression in
+`packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs`
+reproduced the old behavior as HTTP 200 with dispatch reached, then passed
+after the fix. Additional regressions refuse callback return/Promise channels,
+a provider that says a required secret is present but skips `use`, and a handler
+that catches a secret-use error and tries to return success; the kernel latches
+the request failure. The two focused files pass **24/24**. Current source pins:
+`kernel.ts` SHA-256
+`BDE728E4B14C873BB214A11DD07B59C6430CDE2BE7922DF454B765FE084963DD`,
+`secret-gate.ts` SHA-256
+`D980B282087B6BF1887A4F9B8BFF26F2BC9D1E54EE5D2C4B82648329DCD960CA`,
+`secret-gate.test.mjs` SHA-256
+`1010211A46B1BACC9D852D62EA44D2D9C6F65F91D21A35138368923CAC82A720`, and
+`security-closure.test.mjs` SHA-256
+`50C1ECC3FE7BCADEA59D0589DB910C2AEBC73BF6EB675960E7B4966EFCFC0F44`.
+Typecheck and package build completed; the full app-kernel suite is **369/381**:
+three fuse/signature tests fail, while nine compiler integration checks cannot
+import `@galerina/data-json`. This patch still does not provide an atomic lease
+through handler use, prevent handler-created copies/effects, or create a
+Fungi/Linux protected-memory route. Because `IdempotencyStore` exposes only
+atomic `claim()` and no reservation rollback, a post-claim secret refusal may
+consume the key; retry/reconciliation is unresolved. A current source census
+found only a public greeting route in the example server and no non-test
+`secretsProvider` wiring or production `ctx.getSecret()` call site. All four
+`[!]` adoption holds remain open; these local changes are not on `main`, and
+this patch has not had independent review. It is not product evidence.
+
+### 2026-10-05 post-refusal provider-callback probe — candidate seam gap
+
+After a fresh `galerina-framework-app-kernel` typecheck and build, the existing
+`tests/secret-gate.test.mjs` passes **11/11**, but it does not exercise a
+provider that retains the supplied callback. Against the freshly built
+`dist/secret-gate.js`, a provider that saves the callback and returns without
+calling it causes `getSecret` to refuse; invoking the saved callback afterward
+still reaches the handler (**`refused: true`, `lateHandlerCalls: 1`**). A second
+probe returns a rejected Promise despite the synchronous `void` interface:
+the gate refuses, the Promise rejection is unhandled, and the saved callback
+still reaches the handler (**`refused: true`, `providerRejectionUnhandled:
+true`, `lateHandlerCalls: 1`**). The owning source is
+`packages-ts/galerina-framework-app-kernel/src/secret-gate.ts`: `getSecret`
+calls `provider.use` without retaining or validating its runtime return, and
+the callback has no closed/active-window check after `use` returns.
+
+The opposite ordering is also unsafe: a provider that invokes the callback
+synchronously and then returns a rejected Promise is accepted (`refused:
+false`, `handlerCalls: 1`) while the provider rejection is unhandled. Thus the
+runtime-return contract must be checked even when the callback was invoked;
+checking only whether a callback happened is insufficient. The user handler
+has already run before `provider.use` returns, so a later throw or closed-window
+check cannot undo its side effects. A candidate-only mitigation would stage the
+copied bytes inside the gate, close the wrapper when `use` returns, require
+exactly one synchronous invocation and a literal `undefined` runtime return,
+then call the handler only after those checks. On throw, skip, duplicate
+callback, or unexpected return, wipe staged bytes and refuse; observe any
+returned rejection and make post-return callback invocations no-op. This does
+not constrain provider-owned copies or asynchronous work a handler schedules
+after a valid callback; Fungi/runtime ownership remains required for the
+product boundary.
+
+This is a reproducible defect in the dirty TypeScript candidate contract, not
+evidence of a production exploit: no non-test provider wiring or protected
+product operation has been established. It is distinct from a handler's
+returned-Promise check. A callback-lifetime guard could stop later
+gate-mediated callback use, but cannot erase provider-owned copies or cancel
+work already scheduled by a synchronous callback. Before adopting a fix, define
+the callback lifetime and runtime-return contract; add negative tests for
+post-refusal invocation, repeated invocation after the synchronous window,
+synchronous callback followed by fulfilled/rejected thenable, provider throw
+after callback, and skipped callback followed by late invocation. Assert the
+handler is not called before provider-return validation and staged bytes are
+wiped on refusal; retain positive synchronous-use coverage. Keep
+provider-owned plaintext and already-scheduled handler work as separate
+unresolved custody obligations. No implementation or product-hold status
+change is authorized by these probes; all four `[!]` holds remain open.
+The advisory cross-checks are Grok.com responses
+`05145892-fda6-4aa5-8ed2-44422e4f66cf` (late-callback proposal; its `finally`-
+close recommendation does not cover the synchronous-callback-before-return
+case reproduced above) and `00460002-5369-44b3-a4df-80bada40df4b`, plus the SuperGrok report
+`../../AGENTS/coordination/model-reviews/supergrok-secretgate-post-refusal-callback-20261005/reports/report.md`
+(SHA-256 `B7D0A9C13C12D1279E07D1FE0E528FB14DD0311BF109A2DA23489C78E8480770`).
+SuperGrok's matrix also omits that sync-callback/thenable ordering. It records
+that the clean commit pin silently accepts a provider that skips the callback,
+so the observed refusal is candidate-only hardening, not a behavior that exists
+at the named commit. These model answers remain advisory.
+
+**Fresh exact-byte recheck, 2026-10-05:** Galerina HEAD is
+`df01d4ee038f54c56647a39cdd39ca863a40eff4` (dirty). The reviewed
+`secret-gate.ts` SHA-256 is
+`D980B282087B6BF1887A4F9B8BFF26F2BC9D1E54EE5D2C4B82648329DCD960CA`;
+`kernel.ts` is
+`BDE728E4B14C873BB214A11DD07B59C6430CDE2BE7922DF454B765FE084963DD`;
+the focused test is
+`1010211A46B1BACC9D852D62EA44D2D9C6F65F91D21A35138368923CAC82A720`;
+and the already-built `dist/secret-gate.js` exercised here is
+`6057131C8DAC55D2F58A70F2868207A45ADFDA8E03DBD74C456177653F11A7FA`.
+Direct `node --test tests/secret-gate.test.mjs` passed **11/11**. A fresh
+read-only runtime probe against that same dist reproduced late callback
+dispatch after refusal (**1 handler call**) and sync callback dispatch before
+an ignored rejected thenable (**1 handler call, 1 unhandled rejection**). This
+recheck did not rebuild the artifact; retain its build provenance from the
+earlier fresh build and do not treat these dirty candidate bytes as committed
+`main` or product-route evidence.
+
+**Fungi/compiler boundary recheck, 2026-10-05:**
+`src/self-hosted/secret-gate.fungi` is explicitly a checker-verified twin of
+the pure `admit()` decision over `SecretPresence`; its header says the
+TypeScript artifact remains executed until a separate Stage-6 execution
+switch. The package manifest records the `.fungi` file as a loaded asset, but
+that is not runtime wiring. `tests/rd0361-secret-gate-execution.test.mjs`
+attempted its differential WASM check and stopped during module loading because
+`galerina-core-compiler/dist/stdlib.js` cannot resolve the local package
+`@galerina/data-json`. The sibling source package exists, but the compiler has
+no corresponding `node_modules` entry in this checkout. This is `REFUSED` at
+test setup, not a semantic failure or pass; rerun through the governed package
+installation/build path before relying on the differential result. The narrow
+Passport/`Authority<Tag>` consume-once rules in `value-state-checker.ts` and
+their tests are reusable precedents only: they do not implement a secret-byte
+handle, a scoped non-escaping borrow, runtime arena ownership, or unavoidable
+cleanup. These inspected bytes are pinned for this recheck: Fungi decision twin
+SHA-256 `7317039DCD45912CEA8A5A4EED32774F0CEB389A1F9519197B55C6062E6B7B66`;
+its differential test `EF39E01F66E8ACC949542D77D256E3370B301FF2FBC262350731E15F3C414FE0`;
+app-kernel package manifest
+`1CEFF3965F36F183D3A161CBDF03A71CB84D7BC3AE5CF43B387446E28DF83F47`;
+compiler affine checker
+`90391708C766F6A4D7BA21037B0B2EB81A3E5DFAA6F7A78DC360384A16121C48`;
+and Passport typestate test
+`19103144E7131466663964DF732B96690BA4E90937E36A6C74E96E0807D3D8B7`.
+No Fungi runtime adoption or product hold changes.
+
+### 2026-10-05 Astra cross-review — terminal request and provider failures
+
+Astra's read-only review of the same dirty source confirmed that the current
+kernel latches a `getSecret` error only when it escapes the provider call. A
+structural provider can catch a callback refusal and return normally, so a
+handler may still produce success. A second source issue is request lifetime:
+the kernel clears its deadline timer after handler settlement but does not
+retire the captured `getSecret` capability on normal completion. Astra's review
+also confirmed that the existing idempotency `claim()` stores the key before
+post-claim secret re-admission and exposes no rollback/reconciliation call;
+the prior SuperGrok zero-trust retry review already covers that finding, so it
+is not reassigned here.
+
+Codex independently reran the focused `secret-gate.test.mjs` and
+`security-closure.test.mjs` files on Node v24.18.0: **24 passed, 0 failed, 0
+skipped**, with the real `SealArena` selected. These existing tests do not
+cover the new cases. Two separate read-only probes against the following
+already-built outputs observed: (1) a provider swallowing the callback-return
+refusal still led to HTTP 200 and one handler entry; (2) a handler-retained
+`getSecret` accessor acquired a byte after the HTTP 200 response completed.
+The outputs are `dist/kernel.js` SHA-256
+`6E3AADFFF32F4A2AFE8946569AE3FA949A016E342AE189C5CC4118E21F20CCDA` and
+`dist/secret-gate.js` SHA-256
+`6057131C8DAC55D2F58A70F2868207A45ADFDA8E03DBD74C456177653F11A7FA`;
+source hashes remain the exact pins recorded above. Source-to-dist and loaded
+dependency provenance is **NOT ESTABLISHED**, so runtime results are candidate
+observations, not a source-built or product receipt.
+
+Before adopting any TypeScript seam hardening, tests must prove a monotonic
+failure latch even when provider code catches an exception, and that a
+request-scoped accessor is irreversibly retired on success, error, timeout,
+cancellation, and refusal. Also validate accepted byte representations and
+bounded owned copies; `new Uint8Array(value)` alone does not prove ownership
+for every runtime value. The two-phase provider proposal alone is incomplete
+without these properties, and none of them can erase copies already owned by
+the provider or handler. The candidate design remains unapproved and
+unimplemented; all four `[!]` adoption holds remain open.
+
+The read-only Astra review is advisory, and the existing SuperGrok report is
+not repeated. A distinct SuperGrok lifecycle follow-up is queued in
+`../../AGENTS/coordination/model-reviews/supergrok-secretgate-terminal-lifecycle-20261005/`;
+Grok.com has also been asked only about these two new deltas. Neither response
+or this note changes an RD status or authorizes product integration.
+
+**Astra adjudication of the Grok.com lifecycle answer, 2026-10-05:** Astra
+independently confirmed both findings against the exact dirty source and
+supplied source/dist hashes; no files or tests were changed/run in that review,
+and source-to-dist build provenance is still unestablished. Refine the
+candidate contract as follows: the provider callback validates and stages only;
+after provider completion, the gate enters the consumer only on literal
+`undefined`, exactly one accepted callback, no latched failure, and a live
+request capability. Latch callback-attempt, validation, duplicate, copy, and
+provider failures before throwing; provider catches must not rehabilitate the
+request. Close the callback window on provider exit and keep late callbacks
+inert. A test for consumer-return refusal must expect one consumer invocation
+(the outer route handler is already running); provider-validation refusal must
+expect zero consumer invocations. Test staging cleanup separately after bytes
+were successfully staged. Retire secret authority before response encoding,
+audit callbacks, or publication; do not repurpose the deadline signal as a
+success/completion signal. The inspected API exposes no transport-cancellation
+input, so cancellation coverage remains unproven until that integration exists.
+These distinctions refine test assertions and ordering; they do not approve or
+implement a patch, prove physical erasure, or close any RD.
+
+**Fresh source-built reproduction, 2026-10-05:** `npm run build` completed in
+`packages-ts/galerina-framework-app-kernel`; the resulting `dist/kernel.js`
+and `dist/secret-gate.js` hashes match the exact source/build pins above. The
+two probes were rerun after that build: swallowed consumer refusal produced
+`HTTP 200` with one route-handler entry, and a handler-retained accessor
+acquired byte `0x42` after its `HTTP 200` response. The focused
+`secret-gate.test.mjs` + `security-closure.test.mjs` suite passed **24/24** on
+these freshly built outputs, but contains no assertions for either reproduced
+case. This upgrades those two observations from old-dist candidates to
+reproducible behavior of the current dirty TypeScript build only; it does not
+prove the loaded application path, Fungi runtime, Linux confidential profile,
+copy eradication, or product status. All four coupled adoption holds remain
+open.
+
+**Independent Astra adjudication of SuperGrok's terminal-lifecycle answer,
+2026-10-05:** Astra verified the exact task/report digests and all four source
+and output pins. It independently upheld Q1 (provider-suppressed callback
+failure) as **CONFIRMED / PARTIAL**, and Q2 (post-success accessor acquisition)
+as **CONFIRMED after success / PARTIAL**. The timeout refusal is supported;
+cancellation remains **NOT VERIFIABLE** because the inspected request API has no
+transport-cancellation input. This adjudication uses the fresh source-build
+receipt above; it does not establish a deployed route or product behavior.
+
+Refine Q1's test oracle: a forbidden value returned by the consumer is known
+only after the route handler/consumer has run, so “no application entry” is
+impossible for that vector. Require no successful protected response and no
+subsequent gate-mediated acquisition; do not imply already-run side effects
+were undone. Provider-side invalid return, missing/duplicate callback, or
+thenable can be rejected before consumer dispatch if the callback only stages
+bytes until provider completion. Keep an irreversible invocation-failure latch
+and request-level failure state so a provider catching an exception cannot
+rehabilitate the request. For Q2, revoke the request capability before
+response processing can invoke application-controlled getters/serialization,
+audit callbacks, or publication; keep it separate from the deadline signal.
+These are still proposed contracts, not implemented fixes. Existing 24/24
+tests do not cover them, provider-owned or handler-captured copies remain
+outside the gate, and all coupled RD holds remain open.
+
+The same freshly built kernel also reproduced the idempotency interaction with
+the real `InMemoryIdempotencyStore`: a controlled wrapper makes provider
+presence disappear during `claim`, yielding **503** after the key is reserved;
+restoring presence and retrying that same key immediately yields **409**, with
+zero handler entries. This confirms the current pre-dispatch refusal can strand
+the key through its TTL. It is a controlled kernel-ordering probe, not evidence
+of a production provider outage. A safe repair must define reserve/commit and
+uncertain-outcome reconciliation; unconditional claim deletion could permit
+duplicate side effects. Treat this as the coupled RD-1413/RD-1415 retry blocker,
+not a separate successful product slice.
+
+- [!] **RD-1413 incoming access:** the owner has selected governed `/secure` as
+  the intended V1 route surface. Wire it as one real authenticated application
+  operation with an object/version grant, protected provider/key
   owner, quota and permitted recipient. Prove duplicate object/version query-key
   and invalid-version refusals before protected acquisition on the actual
   loaded server path. Current product `parseUrl` overwrites repeated keys. A
@@ -51,9 +1122,12 @@ before changing any status.
   package-level SecretGate return contract, GCM update-buffer cleanup and
   copy/alias accounting. A wiped handed view is not proof that handler-created
   copies or immutable strings were erased; unresolved storage stays charged.
-  The current `secret-gate.fungi` source explicitly marks itself NOT
-  build-wired and leaves plaintext `has/use` in the host provider seam; it is
-  a decision twin, not proof of Fungi-owned secret bytes.
+  `secret-gate.fungi` is a listed package asset, and its focused differential
+  test emits, admits and instantiates a WASM decision artifact. It is not the
+  live app-kernel decision path: `kernel.ts` still executes TypeScript
+  `createSecretGate`. The Fungi flow folds presence evidence only; plaintext
+  `has/use` remains in the host provider seam, so this is not proof of
+  Fungi-owned secret bytes, allocation, cleanup or release.
 - [!] **RD-1415 outgoing release:** bind an actual consumer, revoker and output
   inventory; prove release policy, authenticated storage/graph recovery and
   revocation against the same issued source. Synthetic field-challenge and
@@ -63,6 +1137,900 @@ before changing any status.
   RD-1296 A–E obligation. Only after the wired route and its checks pass may
   the owner-authorized scoped commit, push and merge into `main` proceed;
   preserve unrelated dirty changes and do not claim production clearance.
+
+### 2026-10-05 SecretGate seam candidate update — not product closure
+
+On dirty branch `codex/rd1413-1415-coupled-route-20261004`, based on
+`df01d4ee038f54c56647a39cdd39ca863a40eff4`, the local TypeScript candidate now
+stages a gate-owned copy before provider-return validation, invokes the
+consumer only after one synchronous callback and literal-`undefined` provider
+return, and wipes the staging array from an outer `finally`. Cleanup captures
+`Reflect.apply` and `Uint8Array.prototype.fill` at module initialization so a
+consumer cannot replace the staging view's own `fill` method and bypass that
+wipe. Kernel request access is retired at the dispatch boundary before
+response-controlled getters/encoding; queued handler microtasks before the
+kernel continuation remain within the live request. The corresponding
+regressions reproduce and close the instance-method-shadow case and exercise
+provider-throw, caught duplicate-callback, consumer-throw, response-getter,
+post-response, timeout, and in-flight microtask behavior.
+
+Exact local pins: `kernel.ts` SHA-256
+`18A1687F55A0CC396048C07572849AF04BD6D0DED0E4BB896E72DBFB61E7D5D7`,
+`secret-gate.ts` SHA-256
+`E28A712E0035259DBCF1B06C71A5A22CA0AD96C2E112D392AC629931E01EC94B`, and
+`secret-gate.test.mjs` SHA-256
+`E6816C756BE4584790EEE7E084B38AECD4B9B0CF130999202ACECF8FA526D149`.
+Typecheck/build passed; the three-file focused suite is **57/57**. The full
+app-kernel suite is **379/391**: three refusal-order expectations fail (two
+`fuse-compose` tests and one production-posture test), and nine compiler
+integration tests cannot import `@galerina/data-json`. These failures are not
+baseline-classified. The exact full-suite output is retained at the local
+temporary test log for this run only; it is not a durable review receipt.
+
+This closes only the tested local seam defects. It does not recover a buffer a
+handler/provider has copied or transferred, erase completed side effects,
+prove physical erasure, or supply a Fungi-owned runtime. A detached/transferred
+view and cleanup failure remain explicit adversarial cases; external review
+of the intrinsic-wipe delta is pending. The owner has since selected durable
+`NOT_STARTED` reconciliation or fail-closed `UNKNOWN` handling after post-claim
+secret refusal; code implementation remains open. The real loaded
+protected operation, attested host profile, Fungi runtime binding, authorized
+release, and inherited RD-1296 reconciliation are absent; **all four `[!]`
+holds above stay open / HOLD / NON_AUTHORIZING**. No commit, push, merge, or
+production-clearance claim follows from this candidate.
+
+### 2026-10-05 transferred-view characterization — residual exposure
+
+A further test-only characterization now transfers the callback's staged
+`Uint8Array` buffer before SecretGate's `finally` cleanup. The current test
+asserts that transfer completed, the original view and buffer are detached,
+the cleanup exception is a `TypeError`, the caught failure still forces
+`500/internal_error` rather than publishing the handler's `{ ok: true }` body,
+and the transferred clone retains the exact original bytes. The current
+`security-closure.test.mjs` pin is SHA-256
+`2E338FB9884EA1D2A571B871564EF6B2384C9FEAE8FD6F1F6E8A6DB9C9B41D1C`.
+After build, `node --test tests/security-closure.test.mjs` passed **14/14**.
+The full app-kernel `npm test` passed typecheck/build and reported **380/392**:
+three refusal-order assertion failures and nine compiler-integration tests
+blocked by missing `@galerina/data-json`; neither group is baseline-classified.
+
+SuperGrok's existing postfix-delta answer agrees that wiping applies only to
+the gate-owned staging array and does not erase provider/handler copies.
+Grok.com independently reasoned that transfer detaches the staged view,
+causing the wipe attempt to throw while the moved copy keeps its bytes. Astra
+reviewed the source and the initial form of this test; its suggested
+transfer-completion/detachment assertions were added. Exact Grok.com prompt and
+reply, plus Astra's source-review prompt/reply, are retained in the private
+RD-1414 evidence folder. Grok.com did not inspect source or run the test; the
+current test was not re-reviewed by Astra after its final small assertion
+edit.
+
+This is a passing **characterization of an exposure plus HTTP refusal**, not
+a security pass: the moved bytes remain readable to the consumer. The
+TypeScript callback boundary cannot retract bytes after the consumer has
+transferred or copied them. No production code changed, no TODO/RD closure
+was earned, and RD-1413–1415 remain HOLD / NON_AUTHORIZING.
+
+### 2026-10-05 Astra re-entry adjudication — candidate-only residual confirmed
+
+The exact-pinned Astra review returned Q1 **PARTIAL** and Q2
+**NOT_VERIFIABLE for product integration**. Codex independently reproduced
+the smallest residual: after the consumer catches a nested `getSecret`
+refusal, it can copy bytes from a view already delivered to it; the request
+returns 500, the provider is called once, the gate-owned original is wiped,
+but the copied bytes remain readable. This is not a successful-response
+bypass or a second provider acquisition. The source-bound record, pins,
+review provenance and limits are in
+[`docs/reports/rd1413-1415-secret-access-reentry-adjudication-20261005.md`](reports/rd1413-1415-secret-access-reentry-adjudication-20261005.md).
+
+Carry an opaque, object/version-bound operation/lease with trusted
+Fungi/runtime-controlled effect and release into the coupled design; do not
+pretend a TypeScript wrapper can revoke a plaintext copy already handed to
+arbitrary callback code. The owner's ECC/RAS + bounded protected-staging
+approval does not approve the full v1.1 design or authorize implementation.
+Astra's v1.0 delta review identified a queued-effect race unless terminal
+failure linearizes at the actual commit/release boundary, and requires the
+output-only capability to remain distinct from the retired secret-input lease.
+Both are now explicit proposed constraints and negative-test obligations in
+[`docs/superpowers/specs/2026-10-05-coupled-rd-1413-1415-design.md`](superpowers/specs/2026-10-05-coupled-rd-1413-1415-design.md).
+No selected runtime/sink proves those contracts. No code or private RD owner
+changed. RD-1413–1415 and composed adoption remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 callback/thenable oracle tightening — test-only
+
+After Astra's source review and a separate Grok.com challenge, the regression
+tests were tightened without changing production source. Astra re-inspected
+the final test/source pins and found no additional test change necessary; it
+did not execute the tests. A provider callback
+saved past `use()` return is checked for zero staged-constructor calls and no
+consumer invocation. In the accepted-then-late case, the test retains the
+exact consumer view, confirms normal cleanup zeroes it, invokes the saved
+callback with a different marker, and confirms the same view stays zero with
+no second consumer call. The rejected-Promise test records the exact staged
+object, its source identity, and marker bytes at allocation, then asserts that
+this same distinct copy is zero after refusal and that no unhandled rejection
+escapes.
+The zero assertion follows `setImmediate`, so this test does not itself prove
+synchronous wipe timing; the current source `finally` does, and no stronger
+test claim is made here.
+
+Exact test pin: `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs`
+SHA-256 `BC1C2E3DE532CC6DD9CAEB8E5BCD38E25848EACBDEDB6AB483F929D5C6BC1CD7`.
+`npm run build` passed; the focused
+`node --test tests/secret-gate.test.mjs tests/security-closure.test.mjs`
+run passed **36/36**. The latest full app-kernel suite remains **381/393**:
+two refusal-order expectation failures and ten `@galerina/data-json`
+dependency/import failures, not baseline-classified. Do not treat the focused
+green as a full-suite or product pass.
+
+These assertions characterize only the gate-owned typed-array copy and its
+callback protocol. They do not prevent a provider or handler from retaining
+other copies, undo consumer side effects, prove physical erasure, or establish
+Fungi-owned bytes. The `secret-gate.fungi` file remains an unwired decision
+twin; the real protected operation and production runtime binding remain
+absent. RD-1413, RD-1414, RD-1415, and composed adoption stay **HOLD /
+NON_AUTHORIZING**; no product TODO is closed by these test improvements.
+
+### 2026-10-05 current-candidate boundary review — new open findings
+
+Rebuilt the current dirty candidate at HEAD
+`df01d4ee038f54c56647a39cdd39ca863a40eff4`. Exact review pins:
+`secret-gate.ts` `E28A712E0035259DBCF1B06C71A5A22CA0AD96C2E112D392AC629931E01EC94B`,
+`kernel.ts` `18A1687F55A0CC396048C07572849AF04BD6D0DED0E4BB896E72DBFB61E7D5D7`,
+`secret-gate.test.mjs` `BC1C2E3DE532CC6DD9CAEB8E5BCD38E25848EACBDEDB6AB483F929D5C6BC1CD7`,
+and `security-closure.test.mjs`
+`2E338FB9884EA1D2A571B871564EF6B2384C9FEAE8FD6F1F6E8A6DB9C9B41D1C`.
+`npm run build` passed; the focused SecretGate/security-closure pair passed
+**36/36**. The full package `npm test` passed typecheck/build but finished
+**381/393**: two `fuse-compose.test.mjs` `requireSignature` expectations failed;
+ten additional tests could not import `@galerina/data-json` (one conversion
+test file, one production-posture test, and eight RD-0361 compiler integrations).
+These failures are not baseline-classified and do not change the focused result.
+
+An independent Astra review of the exact four source/test pins and independent
+Grok.com challenge identified candidate-level gaps. Codex reproduced three
+directly against the rebuilt `dist`:
+
+- A provider claiming a secret is present and calling back with `undefined`
+  is coerced by `new Uint8Array(value)` into an empty staged array; the handler
+  receives length zero and the route returns **200**. The callback input needs
+  runtime byte-view validation before staging; the contract must explicitly
+  state whether empty secrets are refused.
+- **The byte-value rule is not already settled by the nearby “empty” rules.**
+  An empty `secrets.require` list is a documented no-op (no secret is required);
+  RD-1413's “nonempty synthetic object” is protected request data; and RD-1414's
+  zero-length refusal test concerns a Linux arena extent, not the provider's
+  secret value. None decides whether a required secret may contain zero bytes.
+  Grok.com's scenario-only recommendation is to reject `undefined`, non-byte
+  values, and zero-length views before staging. Proposed V1 default: a required
+  secret must be a real byte view with positive length; if an operation needs an
+  empty payload, model that separately and explicitly. This was a recommendation
+  when recorded; the owner decision update above now selects this contract.
+  Preserve the empty `require` list no-op.
+- **Resolved only in the dirty TypeScript candidate:** a caught secret-use
+  failure or any later accessor attempt now poisons the request before a second
+  provider entry. Regression evidence and current pins are recorded in the
+  2026-10-05 candidate entries below. This is not Fungi/runtime or product
+  custody evidence and does not close an RD item.
+- A handler can synchronously block for about 25 ms under a configured 5 ms
+  timeout, then acquire the secret and return **200**. The timer starts only
+  after handler invocation and cannot pre-empt a blocked JavaScript event loop.
+  Treat this as a cooperative timeout only; hard pre-emption needs an isolated
+  execution boundary, not a timer claim.
+
+The existing transferred-buffer test remains a valid exposure
+characterization: the kernel returns **500**, while the moved plaintext copy
+survives. Astra also demonstrated a normal `slice()` copy can escape as a
+successful response body; add a focused copy-escape regression if this
+TypeScript seam remains an enforced control. These observations do not make
+the seam a product memory owner and do not close Fungi custody, provider-owned
+copy, or output-recipient requirements.
+
+The earlier SuperGrok provider-swallowed-failure and post-200 reacquisition
+findings are fixed at their original current-candidate boundaries, not at the
+product/runtime boundary. Grok.com agrees that final-response refusal is not
+proof of immediate revocation or erasure. A source-hash-specific SuperGrok
+delta review returned as
+`supergrok-secretgate-current-candidate-delta-20261005-answer-01` (report SHA-256
+`51CFDDCA0FF4E1FC6AE950CAFBB9550A19D7E764D5BEC0C98718A9FA4CED3DCB`). Its
+source pins match, but it assessed the two prior lifecycle findings and the
+transfer case without resolving the three reproduced callback-value,
+post-failure-reacquisition, and synchronous-deadline gaps above. Astra
+independently adjudicated the exact answer and current pins, and reproduced
+all three gaps and reran the focused pair 36/36. SuperGrok's Q1 PASS is valid
+only for the named older swallowed-callback and post-response-access findings;
+Q2 PASS is valid for the transfer-exposure characterization and eventual
+response refusal, not immediate revocation or erasure. Q3 is PARTIAL and its
+"strongest remaining" wording is incomplete: malformed data is accepted at
+the staging boundary, and the failure latch does not prevent another provider
+call. The synchronous deadline issue was outside SuperGrok's explicit task,
+not evidence of a false statement by that reviewer.
+
+Astra also found that the line-353 ordering regression does not assert the
+consumer actually ran, so early rejection could satisfy the test. Add a
+positive consumer-invoked assertion alongside `providerCaught === false` and
+the 500 result. The three newly reproduced combinations also need focused
+regressions. No code changed in that review. A subsequent, narrowly scoped
+candidate implementation is recorded below; the true V1 Fungi-owned route,
+host profile, live party/operation contract, authorized release and RD-1296
+reconciliation remain separate blocking product work. All RD-1413–1415 and
+composed adoption statuses remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 coupled lifecycle cross-review — provisional, non-authorizing
+
+SuperGrok's coupled Q1/Q2 result remains **PARTIAL / PARTIAL** as advisory
+design input. A separate Grok.com scenario challenge supports the same
+non-closure boundary and refines one point: MAC/signature over lease metadata
+is one option for metadata crossing an untrusted boundary, not a universal
+requirement if a private canonical runtime table is the authority. A signed
+stale lease still must fail against live generation/revocation state. Keep
+`UNKNOWN` distinct from `DISCLOSED`: uncertainty blocks automatic refetch or
+redisclosure until a durable authority reconciles it; do not assert a disclosure
+occurred when the outcome is unknown. Any plaintext already received by a
+consumer or irreversible effect already committed is disclosure even if the
+caller timed out.
+
+Neither scenario review inspected current Galerina source or executed tests.
+Astra could not be started for that review cycle because the agent-thread limit
+was reached; that is a historical limitation, not the latest review state.
+This entry remains **provisional synthesis**. Its full evidence boundary,
+counterexamples, and ordered proof plan are in the external AGENTS review
+record `codex-provisional-cross-review-20261005` (separate repository; not a
+Galerina-owned file). A later, distinct Astra source adjudication is recorded
+above under `2026-10-05 Astra coupled RD-1413–1415 architecture adjudication`.
+The exact dirty-source pins and 36/36 focused TS candidate results above
+remain historical and do not prove Fungi-owned bytes, a loaded protected
+operation, platform attestation, all-copy cleanup, durable recovery, or product
+security. All three RDs and composed adoption remain **HOLD / NON_AUTHORIZING**;
+no TODO is closed here.
+
+### 2026-10-05 Astra coupled-source adjudication — partial, non-authorizing
+
+Astra read-only checked the coupled SuperGrok design against the current
+Galerina candidate and private RD-1413/1414/1415 owners. It made no edits and
+ran no tests. The source pins matched during that review: `kernel.ts`
+`32831D2D…6216C2`, `secret-gate.ts` `22730E4E…BE800C`,
+`routeDispatcherService.fungi` `08214268…0ABC8F`,
+`verifyPasswordService.fungi` `AAEDCD79…E52294`, `deno-adapter.ts`
+`718F4DD…457D4C`, and `secret-gate.fungi` `7317039D…6B7B66`.
+
+The review confirms that `/auth/verify` is not yet a demonstrated protected
+product operation: the Fungi dispatcher records a decision rather than invoking
+a proven deployed operation; the candidate password service consumes a fixture
+hash and an ordinary JavaScript `String`; the Deno adapter returns 503; and
+`secret-gate.fungi` is an unwired presence-check twin, not owner of secret bytes.
+Therefore the candidate password's ingress bytes must be treated as secret;
+the earlier suggestion that ingress is non-secret is rejected. Define the real
+operation and its parties before implementation: caller, object/version grant,
+provider and key owner/reference, recipient, and plaintext origin.
+
+Further corrections: generation alone is not revocation authority; any lease
+must consult live owner state. Reuse requires borrowers drained, complete extent
+accounting, and verified cleanup—not only a higher generation. Every consumer
+copy needs an explicit owner, protected location, cleanup rule, and release
+authorization. Keep epistemic `UNKNOWN` distinct from `DISCLOSED`; uncertainty
+must block automatic reacquisition, while replay is a new release requiring
+current authorization. A candidate Nitro profile that trusts its Nitro
+hypervisor does not meet an unqualified outer-hypervisor exclusion claim, and
+the Windows 10 protected mode remains unestablished. RD-1296 A–E needs an
+explicit disposition against the selected real route; older WAT results do not
+substitute.
+
+The first bounded gate is a named real operation plus the complete parties,
+grant, key/provider reference, and plaintext origin, alongside an explicit
+attested host/TCB profile and Windows compatibility mode. Then prove protected
+ingress and provider admission into an opaque Fungi-owned lease. No key bytes
+are needed to settle that interface contract. Astra's result is **PARTIAL**
+design/source adjudication only; no RD or product state changes.
+
+### 2026-10-05 post-review candidate hardening — local TypeScript only
+
+Three bounded regressions have now been reproduced and fixed in the existing
+dirty app-kernel candidate. First, a caught secret-use failure followed by a
+sequential retry reproduced a second provider entry; the request accessor now
+checks `secretAccessFailed` before another SecretGate entry. Second,
+`new Uint8Array(undefined)` silently created an empty view; the provider
+callback now refuses values that are not `Uint8Array` before staging or calling
+consumer code. Third, Grok.com identified same-stack re-entry from inside the
+consumer callback, before the outer SecretGate call returned and set the
+failure latch. The new regression failed with HTTP 200 and two provider uses;
+the request accessor now refuses nested secret access, latches the request as
+failed, and allows only non-nested sequential use. At that review snapshot, the
+owner-selected zero-length refusal implementation and test remained open; the
+later candidate follow-up below records its bounded implementation evidence.
+Cross-realm values and provider-retained source buffers also remain outside
+what this `instanceof` check establishes.
+
+Current dirty-source pins:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` — SHA-256
+  `FE195545EF0DC2B9D4A418E2881EC4A49FC9324FD1C5491DE14116F33EC71A2E`.
+- `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` — SHA-256
+  `22730E4E294873A054390C393429CF1D5A9C97AD65D5EA249C7AF6450ABE800C`.
+- `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` —
+  SHA-256 `EC690F91695AE654CB85802BB36FE45148A142E327BDBF0865935AAB5A76BD91`.
+
+`npm run build` passed; the complete focused
+`node --test tests/secret-gate.test.mjs` run passed **25/25**. The full
+`npm test` passed typecheck/build and reports **384/396**: two signature-posture
+assertions and ten compiler/conversion/package tests fail, including missing
+`@galerina/data-json` imports. These failures remain unclassified against a
+clean baseline. SuperGrok's accepted task
+`supergrok-secretgate-retry-after-failure-20261005` pins the earlier state
+before the same-stack regression/guard; its answer must be treated as stale for
+the new delta and reconciled before use. Grok.com response
+`e020ea94-41d8-49c8-a502-9c7531611bdf` identified the same-stack case and
+criticized the `Uint8Array` contract, but did not inspect the new guard. Astra
+review remains pending.
+
+These are candidate TypeScript controls only. They do not contain
+provider-owned plaintext, handler copies or transferred buffers; do not
+preempt synchronous JavaScript, establish Fungi-owned custody, select a real
+operation/host profile/key authority/recipient, or prove runtime deployment.
+RD-1413, RD-1414, RD-1415 and composed product adoption remain **HOLD /
+NON_AUTHORIZING**; no product TODO is closed by these changes. No commit or
+push was made.
+
+### 2026-10-05 deadline-slot correction — local TypeScript candidate only
+
+Astra's fresh review found a P1 lifecycle defect in the synchronous deadline
+candidate: when a handler blocks past its deadline and then throws
+synchronously, `handlerPromise` is never assigned. The timeout path previously
+deferred slot release anyway, leaving `maxConcurrent: 1` stuck at 429 for later
+requests. I added a regression that reproduced exactly `504` followed by the
+incorrect `429`, then changed the catch path to defer release only when an
+actual handler Promise exists. After rebuilding, the same sequence returns
+`504` then `200`; the focused RD-1414/SecretGate/security-closure set passes
+**42/42**. Package `npm test` passes typecheck/build and reports **398/400**;
+the two failures are the existing `fuse-compose.test.mjs` signature-posture
+expectations failing earlier on the required revocation check. Their clean-main
+baseline is not established.
+
+This only repairs candidate timeout/slot bookkeeping. Synchronous execution is
+still not preempted; asynchronous handlers that never settle can retain a
+bounded in-flight slot indefinitely (availability risk, not a secret-memory
+lease); TypeScript buffers/copies, host/runtime custody, the real protected
+operation, platform profile, key/provider owner, recipient-bound release, and
+RD-1296 reconciliation remain open. Grok.com and SuperGrok feedback is advisory;
+SuperGrok ANSWER-02 now accepts the slot-release fix narrowly after current-pin
+rehash. It does not cover the response-encoding deadline gap recorded below.
+Product
+RD-1413–1415 and composed adoption stay **HOLD / NON_AUTHORIZING**. No product
+box is closed; no commit or push was made.
+
+Current candidate pin for this correction:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` — SHA-256
+  `32831D2DF94F7FACF86748DB273978601B28DEFA2C6842FA288D55E8BA6216C2`.
+- Regression: `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
+  SHA-256 `1F4A40FFC22526C94C1E188290A722F5E8FBFF1F028113191517A016637205E3`.
+- Current revalidation: app-kernel `npm run typecheck` **PASS**; `node --test tests/rd1414-sync-deadline.test.mjs tests/security-closure.test.mjs` **17/17 PASS**.
+  These checks cover only the dirty TypeScript candidate. The earlier **42/42** focused
+  aggregate and **398/400** package run are historical results, not rerun in this revalidation.
+
+### 2026-10-05 caught late-provider-callback refusal — local TypeScript candidate only
+
+Astra's pre-fix scoped source review identified an uncovered case: a provider could save its callback,
+invoke it again from a live-request microtask, catch the gate's refusal, and let the handler
+return success because the gate-local violation did not reach the kernel's request-failure
+latch. A regression reproduced **HTTP 200** before the change. The gate now reports its first
+callback-contract violation to the request owner; the request remains terminally failed even if
+provider code catches that late callback error. Rebuilt app-kernel and the focused
+`node --test tests/secret-gate.test.mjs` pass **33/33**, including the REAL SealArena-backed
+case. Package `npm test` passes typecheck/build and reports **431/433**; two
+`fuse-compose.test.mjs` signature-posture assertions still fail earlier on
+`FUNGI-FUSE-REVOCATION-REQUIRED`. A clean-main comparison has not established their baseline.
+
+The post-fix Astra review has been requested and is pending. Current dirty-source pins:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` — SHA-256
+  `3473AA79EDED7A74CC99AAA5BBC44E04B43B4E72393086287B1CAED3D101316`.
+- `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` — SHA-256
+  `1F22409F0305B1204A7D12920C6F466EDB15C055BF5A3555A0997FCC4F997C3A`.
+- `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` — SHA-256
+  `C17C6DDBCBA5C12F74D6EFC31F31FA6F18CDF98AD9AC4DC2C40388260561AC5E`.
+
+Later same-day positive-length follow-up: the provider-caught empty-value
+regression failed before the change because the empty view reached consumer
+code. A captured typed-array byte-length intrinsic now refuses a zero-length
+provider value before consumer entry and notifies the request owner; a provider
+cannot swallow the refusal and continue. The focused regression pair passes
+**2/2**. `npm test` passes typecheck/build and reports **432/434**; the two
+remaining failures are the `fuse-compose.test.mjs` signature-posture assertions
+that fail earlier on `FUNGI-FUSE-REVOCATION-REQUIRED`; their clean-main baseline
+is unverified. `git diff --check` passes. Latest pins:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` — SHA-256
+  `3473AA794EDED7A74CC99AAA5BBC44E04B43B4E72393086287B1CAED3D101316`.
+- `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` — SHA-256
+  `8297E27EAE76EE491A51B91C0181A279DBC4A93C5F10301D16218438432CFBBA`.
+- `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` — SHA-256
+  `5FA966961335D285897BA42C6A97D84282B15AC3E05800C0284100C0E6191AB8`.
+
+This follow-up is still only a dirty TypeScript candidate: no Fungi/runtime
+wiring, actual `/secure` route, physical erasure, or product custody is proven.
+The coupled RDs remain **HOLD / NON_AUTHORIZING**.
+
+This closes only the reproduced TypeScript request-latch gap. It does not prove Fungi/runtime
+behavior or product custody, and it does not close the remaining same-realm, buffer-copy,
+provider ownership, cleanup/reuse, real protected operation, host-profile, recipient-release,
+or RD-1296 evidence. The accepted owner choices and product holds still apply; RD-1413–1415
+remain **HOLD / NON_AUTHORIZING**, with no product TODO closed, commit, push, or merge.
+
+### 2026-10-05 response-publication deadline review — candidate source only
+
+Grok.com follow-up `099bfe77-1b39-4dad-b8b7-df94ba89934f` withdraws its earlier
+double-release objection: current `slotReleased` makes decrement idempotent, and
+the controlled timeout test is consistent with one route-concurrency slot held
+through settlement. It found no demonstrated confidentiality/integrity exploit
+in the supplied evidence; a never-settling handler is a bounded-slot availability
+and denial-of-service risk. This review did not run tests or inspect the source.
+In refutation follow-up `6989e255-44a3-4be6-a78f-254d4c62bf51`, Grok labels the
+supplied source sequence **NOT VERIFIABLE** (it did not inspect the pin) while
+agreeing that the described `toJSON()` interleaving is a feasible nominal-late
+success, distinct from replacing an already-selected 504 or proving disclosure.
+Its proposed discriminator is a blocking `toJSON()` that invokes the captured
+`getSecret`; observe final status and provider-use count. Astra's independent
+inspection of the matching local hash confirms the source sequence exists. At
+the time of that review the case had not been executed; the later candidate
+regression results are recorded below.
+
+Astra independently inspected the exact current pins below (hashes matched
+before/after inspection; no tests run). Slot accounting is **PASS narrowly**:
+`kernel.ts:638–658` guards one decrement; the supplied tests cover controlled
+late settlement and a synchronous late throw. A never-settling handler can still
+hold one bounded slot indefinitely. For secret access and response integrity,
+the result is **PARTIAL**: the kernel gates accessor calls before provider entry
+and retires `requestActive` before response preparation, so no post-timeout
+accessor admission or overwrite of an already-selected 504 is established in
+this source. A provider operation admitted before expiry may nevertheless finish
+after expiry; cancellation/rollback is not shown.
+
+A separate, source-derived deadline gap remains: after the handler passes the
+deadline check at `kernel.ts:760`, response getters and `JSON.stringify` run at
+`785–794`; the success response returns at `804–806` without another deadline
+check. A handler-controlled getter or `toJSON()` that blocks across the deadline
+can therefore make this candidate publish success after the deadline. This is
+not an observed execution, does not replace a 504 already selected, and is not
+proof of secret disclosure. A `Uint8Array` response body is also passed through
+by reference. The reported 17/17 and typecheck are Codex-provided results, not
+Astra-run evidence; build correspondence was not checked by Astra.
+
+Remaining discriminating tests: (1) captured accessor invoked after asynchronous
+504 causes zero provider/callback uses, with saved 504 status/headers/body
+unchanged after late resolve and reject; (2) separately count a pre-expiry
+provider admission whose side effect completes after expiry; (3) after late
+resolve or reject, keep a replacement request pending and confirm a third
+request still gets 429 until settlement. The blocking-serialization and
+typed-array-size cases are now covered by the candidate delta below. These are
+candidate TypeScript controls only; no
+Fungi byte ownership, alias erasure, Linux/TEE isolation, or RD closure follows.
+The coupled RD-1413–1415 product state remains **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 response-publication candidate delta — local TypeScript only
+
+The blocking-serialization regressions first failed against the built pre-fix
+candidate for the expected reasons: blocking `toJSON()` returned **200** instead
+of 504, and blocking then throwing returned **500** instead of 504. Astra's
+independent audit then found that reading a handler-overridable typed-array
+`byteLength` after deadline arbitration could still allow a late **200** or
+conceal an over-budget response. The candidate now captures and calls the
+intrinsic typed-array byte-length getter, snapshots the handler body once, checks
+the deadline after handler-controlled getters/serialization, and gives expiry
+precedence over a serialization exception. The success-path regression invokes
+a captured `getSecret` during `toJSON()` and confirms zero provider and consumer
+calls; additional regressions verify the own getter is not invoked and true
+backing length still enforces the response budget. A fourth check also showed a
+handler could replace global `Reflect.apply` and make dynamic invocation lie;
+the kernel now captures that intrinsic before handler execution, and the test
+refuses the concealed over-budget body. The focused
+SecretGate/security-closure/deadline set passes **47/47** after `npm run build`.
+Package `npm test` passed typecheck/build and reports **403/405**;
+the two failures remain the existing `fuse-compose.test.mjs` signature-posture
+expectations, which fail earlier on the current mandatory revocation check.
+Their clean-main baseline is not established. Astra found and specified the
+typed-array bypass on its first audit; its independent re-review of the exact
+corrected delta is pending.
+
+Current dirty-source pins: `kernel.ts` SHA-256
+`6C33189F59D25269388271457E4E63C26E24248E85C1B56BF3441AD1E2BBB0B1`;
+`tests/rd1414-sync-deadline.test.mjs` SHA-256
+`C907C79FCF2EEB68E30267CD7B23F6EB7ED281ED602A3C897587B6AAFEFBA31A`.
+This remains a TypeScript candidate control. It does not preempt synchronous
+execution, establish Fungi-owned bytes or host isolation, prove a product route,
+or close any RD. All RD-1413–1415 and composed adoption statuses remain
+**HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 post-pull candidate revalidation — local TypeScript only
+
+After the feature checkout was fast-forwarded to `origin/main` at
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`, the preserved dirty candidate was
+reapplied and rebuilt. Typecheck and build passed; the focused SecretGate,
+security-closure, synchronous-deadline and strict Fungi CLI route-dispatcher
+tests passed **52/52** on Node `v24.18.0` / npm `12.0.2`. This is a fresh
+candidate receipt only. It does not prove that the route is served by the
+loaded application, that Fungi owns plaintext bytes, or that provider/handler
+copies are erased.
+
+These exact post-pull working-tree SHA-256 pins supersede the earlier
+`6C33189F…` / `C907C79F…` candidate pins above; those older values do not match
+the current files:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` —
+  `25BD2707C41B3159E743706FB4F01CE95D8EE13809EA87ECED5E34C6BD940E03`.
+- `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` —
+  `8FDA38DE0E3DF6FFD72506E54F191CFD6109833386DD33250FCBCF0016139547`.
+- `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` —
+  `BE3132A7134BFDCFA51D7C28E81F8E486654C95CE04D13280CCEA464266275A6`.
+- `packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs` —
+  `1F1FC6C88667AEE26794E6954C5E37ABA7D58DA65FFA7D6DE62DB0D5DA484560`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
+  `02DB07A406E473CF7E5D3D74E7113C082E658CC03DB4E545C80CCA255D147B83`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1413-route-dispatcher-strict-cli.test.mjs` —
+  `7E28DA393E0EB6335A7AFB79F7857ADA237A1B42956C40A9340A81C12335DAD2`.
+
+The RD owner query remains `REFUSED` because the KB's tracked RD sources are
+dirty. The exact owner files and accepted reviews were opened directly instead;
+the refusal is not upgraded to fresh index evidence. RD-1413, RD-1414, RD-1415
+and composed adoption remain **HOLD / NON_AUTHORIZING**. No product TODO is
+closed by this revalidation.
+
+### 2026-10-05 coupled SecretGate security regressions — local TypeScript only
+
+Three focused regressions were added and first reproduced against this
+post-pull candidate: a handler could mutate the shared route policy to request
+an undeclared secret; provider replacement of the global `Uint8Array` could
+make gate cleanup overwrite provider-owned bytes; and synchronous provider work
+could cross the deadline before the consumer received plaintext. Astra's
+independent read-only review confirmed those paths and found two adjacent
+issues: a shared `Array.prototype.includes` replacement could still alter the
+secret allowlist, and a post-idempotency provider-loss refusal leaves the
+already-claimed key reserved.
+
+The candidate now copies resolved policy state away from both route declarations
+and each handler-visible context, scans secret allowlists without dispatching
+through mutable array prototype methods, captures the typed-array constructor
+before provider callbacks, and rechecks the monotonic deadline immediately
+before passing staged bytes to the consumer. The provider-loss case remains
+fail-closed. Retry rule for this TS seam: refusals before a successful atomic
+idempotency claim do not consume a key; after the claim succeeds, later refusal
+burns it because the store contract has no ownership-bound rollback. A same-key
+retry returns 409; callers must reconcile and use a new key. This is an
+availability tradeoff, not proof of the eventual Fungi/product recovery policy.
+
+Fresh package typecheck/build passed. The focused SecretGate,
+security-closure and synchronous-deadline suites pass **57/57** with zero skips.
+Full `npm test` is **413/415**: the two remaining failures are the
+`fuse-compose.test.mjs` signature-posture assertions, which encounter the
+required revocation refusal first. Their source and test files are unchanged
+from `HEAD`; a clean-main baseline run remains unverified. Current candidate
+SHA-256 pins:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` —
+  `2BE5EB65ACF3B14F6FAB9D35F6F5D68846CBBA897123798F9A051E16807A7E08`.
+- `packages-ts/galerina-framework-app-kernel/src/secret-gate.ts` —
+  `D472D2BF5F67E0602D8F802E40089204E04B296116F3F0DFAD0520CBECB597A9`.
+- `packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs` —
+  `CC3EDB32459EBED87EF92CF268B662BAD5B00F5794D68CB8BE2FF1792076A6C6`.
+- `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` —
+  `617879C43071E904E78D295F98727965CAF881BF6E01A7C9F74500973FD821CD`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
+  `258A543638F03B4D239F895846FA7E2E0510C5665D92F9A052B92DD6CF53A38C`.
+
+This is candidate-level TypeScript gate hardening only. The protected operation,
+Fungi-owned secret bytes/runtime, admitted host profile, provider/key custodian,
+recipient-bound release, alias-complete cleanup, and production receipt remain
+unproved. The Astra review preceded the final two remediation edits; focused
+verification was rerun, but this exact final delta has not had a second review.
+No RD-1413, RD-1414, RD-1415, or composed-adoption hold is closed.
+
+### 2026-10-05 Astra follow-up remediation — local candidate, review pending
+
+Astra's independent exact-diff review reproduced four more defects; each new
+regression failed against the prior build and passes after the local fix:
+
+- Policy list copying now uses captured intrinsics and indexed own-property
+  writes, so handler replacement of `Array.prototype[Symbol.iterator]` cannot
+  mutate the private secret allowlist on a later request.
+- SecretGate rechecks literal provider presence after staging and before
+  consumer entry; a provider that revokes and wipes its storage during `use()`
+  now refuses instead of delivering the stale staged copy.
+- The kernel rechecks its irreversible request-failure latch at the final
+  staged-byte delivery boundary, so provider-caught re-entry refusal prevents
+  the pending outer consumer callback.
+- Audit request ID/method/path are snapshotted before dispatch, so handler-
+  installed blocking getters are not evaluated after deadline arbitration.
+
+Fresh app-kernel build passed; focused SecretGate, security-closure and
+synchronous-deadline checks pass **61/61**. Full `npm test` passes
+typecheck/build and reports **417/419**. The same two `fuse-compose.test.mjs`
+signature-posture expectations fail earlier on required revocation refusal;
+their clean-main baseline remains unverified. A fresh independent Astra
+remediation review is pending. The transfer characterization still proves
+that a handler-transferred copy survives the attempted wipe even though the
+kernel returns 500; this is exposure evidence, not cleanup success.
+
+Exact current dirty-source SHA-256 pins:
+
+- `kernel.ts` `0D11F575336DF9F274DD45CE898C9FFD73B7D9309468BA6AA2196EA69236216D`.
+- `secret-gate.ts` `139DD0EF5753D41E4309E05EE2A402E2F09D4F3517C208031AF253929F370030`.
+- `security-closure.test.mjs` `1A1BBCA6869D5925DF18A6B28E92235CA3474EF4F8E2268611AACEF08D84BB1B`.
+- `secret-gate.test.mjs` `9FA460C15FEA17A1FE1B4BCD95F41A3150473462425A762F2A04DC37AE7B5304`.
+- `rd1414-sync-deadline.test.mjs` `B5A48151B0BFAA3B09A12B0F76E502155F245A967D56E23BFA365DC773142E1A`.
+
+These are still TypeScript candidate controls, not Fungi-owned memory or a
+real protected operation. Provider lease semantics and malicious provider
+copies, handler-transferred copies, physical erasure, attested host/TCB,
+recipient-bound release, and durable recovery remain open. All coupled
+RD-1413–1415 and composed-adoption holds remain **HOLD / NON_AUTHORIZING**;
+no product TODO is closed.
+
+### 2026-10-05 Astra challenge follow-up — local TypeScript candidate
+
+Astra's exact-delta review found two additional authorization/deadline
+weaknesses and one refusal-ordering inconsistency. Three regression tests were
+first run against the prior build and failed on the reported behavior:
+
+- Replaced `Array.prototype.some` could mutate the kernel-private required
+  scope list and admit a request without its required scope. Scope membership
+  now uses indexed comparisons rather than mutable array/set prototype methods.
+- A handler-installed `AbortSignal.aborted` getter could run during deadline
+  arbitration and trigger a caught re-entrant refusal after the initial latch
+  check. Deadline truth is now tracked in kernel-private state; the public
+  signal property is not consulted as authority.
+- A slow response-body getter followed by an over-budget byte array returned
+  503 before noticing that the deadline had expired. The candidate checks the
+  monotonic deadline before returning the size refusal.
+
+Fresh app-kernel build and the focused SecretGate/security-closure/deadline
+suite pass **64/64**. Full package `npm test` reports **420/422**: the same two
+`fuse-compose.test.mjs` signature-posture expectation failures, which encounter
+the required-revocation refusal first; clean-main baseline remains unverified.
+A new read-only Astra review of these exact changes is pending. The fix does
+not convert timeout into preemption, and still does not revoke bytes already
+transferred by a handler. All three RDs and composed adoption remain
+**HOLD / NON_AUTHORIZING**; no product checkbox is closed.
+
+Current source/test pins for this follow-up:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` —
+  `9BCF5F229BF10412E9A6E2E2260BEA73F297AB1B6CF41AF3D1ACACDD35950546`.
+- `packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs` —
+  `A585E8463EFF7BB1328151FEABED2E4199DAD4B709B0E9CD62E418075083563F`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
+  `56A652911D225786BF10362BC787CCE26BC030B125D1151C39FFEF309EBABD7B`.
+
+### 2026-10-05 Astra second challenge follow-up — local TypeScript candidate
+
+Astra then demonstrated three adjacent hostile-handler cases: mutable
+`Map.prototype.get` exposed the private protected-route policy; replacing
+`AbortController.prototype.abort` could throw out of the timer before timeout
+settlement; and a replaced `Date.now()` callback ran after deadline arbitration
+during audit construction. Regressions reproduced all three before the fix.
+The kernel now routes its private Map/Set/WeakMap access through captured
+intrinsics, captures the abort constructor/method and wall-clock function, and
+rejects the timeout promise before notifying abort listeners.
+
+Fresh build and focused SecretGate/security-closure/deadline tests pass
+**67/67**. Full package `npm test` reports **423/425**, with only the two known
+`fuse-compose.test.mjs` signature-posture expectations failing at the earlier
+mandatory-revocation refusal; clean-main baseline remains unverified. A new
+independent Astra review of this exact delta is pending. This is still
+TypeScript seam hardening only: it does not establish the selected Fungi-owned
+runtime, protected route, host profile, physical cleanup, or authorized
+release; all RD-1413–1415 and composed adoption remain **HOLD /
+NON_AUTHORIZING**.
+
+Current source/test pins for this follow-up:
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` —
+  `C686D7AA7374D009AD80A0F781EC811AF45E3BADFA74758973E94B06C1436232`.
+- `packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs` —
+  `7EDDA6D1366DE5955F92F2F4E0D9586C0958FC88ADF71A28E0D601C8D93B222F`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
+  `3CB08F21EDFDC62EF5D420AE2981A40E4E1C30E11AEF1DC3D94D9DE4E6D8CE51`.
+
+### 2026-10-05 Astra third challenge follow-up — local TypeScript candidate
+
+An independent source review identified three adjacent hostile-handler paths:
+an inherited `Object.prototype.then` getter could access and weaken the private
+route policy; replaced `Array.prototype.push` could suppress required audit
+retention; and replacing `Promise.race` could strand timeout settlement. New
+isolated-process regressions reproduced all three against the previous build.
+The candidate now returns null-prototype pipeline envelopes, captures array
+queue operations and `Promise.race`, and passes those controlled attacks.
+
+Fresh typecheck/build and the focused SecretGate/security/deadline set pass
+**70/70**. Full app-kernel `npm test` passes **426/428**; the only failures are
+the same two `fuse-compose.test.mjs` signature-posture expectations reaching
+the earlier mandatory-revocation refusal. A clean-main baseline is still
+unverified. Astra's independent source audit returned **HOLD** with four more
+gaps in the same-realm hostile-handler boundary:
+
+- `Object.defineProperty` descriptor conversion can expose the policy through
+  inherited descriptor getters even though the envelope has a null prototype.
+- Native array insertion still invokes inherited numeric setters, exposing the
+  private required-audit queue despite captured `push`/`shift` methods.
+- Captured `Promise.race` still obtains mutable `Promise.resolve` and depends on
+  mutable iteration/then machinery for timeout settlement.
+- The public async `handle()` response can be changed by inherited `then`
+  accessors after audit and deadline checks, desynchronizing response and audit.
+
+These are source-review findings; Astra did not execute the attacks. The three
+new tests prove only their named earlier hooks, not complete hostile-intrinsic
+resistance. Treat this as an architecture stop signal: do not call the
+same-realm TypeScript candidate hardened or merge-ready by adding unbounded
+intrinsic patches. Revisit isolation/runtime ownership and the actual Fungi
+route. The real protected route, Fungi-owned byte runtime, attested host
+profile, physical cleanup, and authorized release remain open. RD-1413–1415 and
+composed adoption remain **HOLD / NON_AUTHORIZING**.
+
+- `packages-ts/galerina-framework-app-kernel/src/kernel.ts` —
+  `5C8F2EDA750F54016A6A996FD1172AE7C95D4D4FF7C7755F7BE989B50B5974EE`.
+- `packages-ts/galerina-framework-app-kernel/tests/rd1414-hostile-intrinsics.test.mjs` —
+  `81CA3E8DF6FF548DC90C561A89DFCF5268CCAFDA47A2C8EB3E1217F4A35BC781`.
+
+**Fresh full app-kernel rerun, 2026-10-05:** `npm test` completed typecheck and
+build, then reported **429/431** tests passing, **2 failing**, zero skipped.
+Both failures are unchanged `tests/fuse-compose.test.mjs` assertions; current
+`fuse-loader.ts` refuses first with `FUNGI-FUSE-REVOCATION-REQUIRED`, before
+the assertions' expected signature-posture errors. The test file is unchanged
+from this worktree's `HEAD`, but no clean-`HEAD` baseline run was performed, so
+do not call these failures pre-existing. Pins: `fuse-loader.ts`
+`03C1EA2E80F15A1448C38885BC8D2F6676AA5341FD04634CC7AFC08F4CE05334`, and
+`fuse-compose.test.mjs`
+`499A1133A6C03B265629F4DCE605DAEDE029199CF6D4355B18AAD6748DF2FCDC`.
+This package result is not RD-1413–1415 route evidence and changes no product
+hold.
+
+### 2026-10-05 coupled review and typed-array brand regression
+
+The source-bound comparative review is recorded in
+[`reports/rd1413-1415-coupled-review-20261005.md`](reports/rd1413-1415-coupled-review-20261005.md).
+It reconciles the existing SuperGrok scenario answer with Astra's source review,
+the approved zero-trust decisions, and local test results. It does not close an
+RD. In particular, the real protected operation and parties, Fungi-owned
+runtime/byte lease, measured Amazon Linux profile, complete cleanup/reuse, and
+recipient-bound release/recovery are still absent. The review also records the
+unresolved contract for a real operation requiring multiple secrets: do not
+weaken the single-acquisition refusal; either specify one bounded atomic bundle
+lease or refuse that operation until the ABI supports it.
+
+Astra found that the local TypeScript candidate's mutable `instanceof`
+Uint8Array check could be passed by a prototype-spoofed Uint16Array. A regression
+first failed on the pre-fix build, then passed after checking the typed-array
+brand through a captured intrinsic. This is a narrow TypeScript-boundary
+candidate only; it establishes no Fungi/runtime/host or product security.
+Focused verification passed 3/3; `npm test` completed build/typecheck but had
+**433/435** tests pass, with two unresolved `fuse-compose.test.mjs` failures.
+No clean-HEAD baseline was run. Astra's independent source review of the exact
+final patch found no remaining brand-check bypass, but did not execute the
+tests. Its source/spec review recommends focused cases for Proxy and
+revoked-Proxy refusal, cross-realm Uint8Array acceptance, detached or
+out-of-bounds refusal, and post-import intrinsic tampering. Intrinsic capture
+does not protect against poisoning before module initialization; trusted
+initialization remains an explicit assumption. SharedArrayBuffer-backed bytes
+may be mutated during copying, so the brand check does not prove exclusive
+ownership or a coherent snapshot. These are test/architecture follow-ups, not
+evidence of another brand-check bypass. See the report for exact source/test
+pins and review provenance. RD-1413–1415 remain **HOLD / NON_AUTHORIZING**.
+
+**Owner-approved ECC/RAM-integrity direction, 2026-10-05:** use ECC/RAS as a
+host reliability layer and a bounded protected staging-and-verification
+protocol in Galerina; do not treat ECC or a second plaintext copy as zero-trust
+protection. The proposed realization is one bounded protected quarantine
+region, authentication of the exact bytes and canonical request context before
+effects, promotion into a single Fungi-owned opaque lease, and fail-closed
+cleanup before reuse. Exact integrity primitive, runtime/TCB support, bounds,
+lease ABI, and trusted ECC evidence remain to be source-validated. An untrusted
+host's reported ECC/status Boolean is not authority. A locator-only memory graph
+may help reconcile allocation lifecycle but may not own bytes or capabilities.
+This is an approved design direction, not implemented behavior or RD closure.
+Sources and trade-offs are in
+[`reports/rd1413-1415-coupled-review-20261005.md`](reports/rd1413-1415-coupled-review-20261005.md#ecc-analogy-hardware-reliability-versus-adversarial-integrity).
+
+**Fresh coupled-source finding, 2026-10-05:** Astra's exact-head review and
+Codex's independent synthetic replay show that the current name-only provider
+can replace secret A with B during synchronous `use`; the final `has(name)`
+still returns true and the consumer receives staged A (HTTP 200). This proves
+that presence revalidation does not bind bytes to the authorized object/version;
+it is a synthetic interface counterexample, not a production exploit. After a
+fresh app-kernel build, the focused SecretGate/security-closure/deadline set
+passes **74/74**; the inline replay against that build returned 200 with consumer
+marker A after provider replacement with marker B. The suite does not cover this
+replacement case or prove Fungi/runtime behavior. Next implementation
+boundary: generation-bound atomic Fungi lease acquisition with explicit
+revocation ordering, bounded opaque ownership and fail-closed retirement; no
+TypeScript authority fallback and no plaintext through the adapter. The
+approved governed `/secure` route can be the synthetic harness, not evidence of
+the real protected operation. See the coupled report's same-name replacement
+finding and next bounded action. RD-1413–1415 remain **HOLD / NON_AUTHORIZING**.
+
+### 2026-10-05 Astra/SuperGrok architecture reviews and v0.7 design delta
+
+**Provenance correction:** `astra-ecc-stage-review-20261005.answer.md`,
+SHA-256 `800F3AC94F09ABA7EFF0C418959E7F0EFAF980F7C0270A23675675F7F65C39EB`,
+is the ECC/RAS and staged-byte follow-up, not the seven-item v0.1 review
+previously attributed to it. Its recorded `kernel.ts` hash (`3473AA79…`) and
+coupled-report hash (`C4CFC47D…`) do not match current pins (`68CF8ACA…` and
+`37506772…`). The seven initial corrections are therefore labeled Codex design
+synthesis in the draft; no separate source artifact for that synthesis is
+currently pinned.
+
+Astra's exact-delta reviews came through agents
+`01a10e20-d54f-7a30-bba4-abf1c32d5573` and
+`01a10e2c-1849-7b60-ad24-2bab119b1f90`. The first reviewed v0.2 SHA-256
+`E0A8953171433B37787EEB1391414945D12A999634B0AD23576587F6D12C7DCA`, branch
+`codex/rd1413-1415-coupled-route-20261004`, HEAD
+`e1c2496f3f36d154a445ba9c302401ccaaf74bae`, and returned **PARTIAL** for
+lifecycle, byte/trust-boundary and source/evidence; **NOT_VERIFIABLE** for a
+loaded protected operation/platform enforcement. Its v0.4 review was bound to
+design SHA-256 `FCEE68175E12F1176646907E82FC6A8F96E866FC0471A152186A273EA93C4595`;
+the response arrived through the reviewer task, not a separately hashed report,
+and returned **PARTIAL** with no tests/injections executed. It identified seven
+design deltas: atomic destination/write-authority/revocation enforcement; full
+plaintext/key custody mapping; dependent-result invalidation after late faults;
+review-provenance correction; authenticated recovery identity binding; opaque
+ingress before protected semantic parsing plus named endpoint roots; and late
+fault/control-state invalidation with truthful post-effect accounting. These
+are design constraints, not product attack findings.
+
+The design draft is now version 0.7 and contains those constraints, with
+discriminating future tests. Private RD owners were reopened read-only; the
+RD-1415 owner explicitly requires current write authority plus expected
+destination version and separate storage commit/graph publication. The Fungi
+`secret-gate.fungi` source is a listed package asset and its focused test emits,
+admits and instantiates a WASM decision artifact. It remains a presence fold,
+not wired into the live kernel path, where `kernel.ts` still executes
+TypeScript `createSecretGate`. The exact owner hashes/states and source pins remain in the draft;
+this review did not change private records or RD dispositions. SuperGrok and
+Grok-Bot reports were reused, not re-dispatched. The owner-approved ECC/RAS plus
+bounded protected-staging choice remains a scoped design decision, not approval
+of the whole architecture.
+
+Current candidate evidence: from the owning app-kernel package directory,
+`npm test` completed typecheck, build, and the full package suite **439/439**;
+the focused route strict CLI, SecretGate, hostile-handler and deadline subset
+also passed **81/81**. An earlier targeted invocation from the repository root
+failed because isolated test children resolved package `./dist/index.js`
+against the wrong working directory; the proper package-root run passed. This
+is TypeScript candidate evidence, not Fungi/runtime/host proof. Anti-Drift on
+`docs` passed. The required code graph search returned `project not found or
+not indexed`; freshness remains **UNKNOWN**, and no index was refreshed.
+
+The v0.6 Astra review (agent `01a10e2c-1849-7b60-ad24-2bab119b1f90`) was bound to
+design SHA-256 `EC9F7489407C5E2339255FEDA543CF9AA4122B1A051DA57D964D0F6B30786422`
+and returned **PARTIAL** for lifecycle, trust boundary, and implementation
+readiness; loaded operation/platform enforcement is **NOT_VERIFIABLE**. It
+identified ambiguities in request/provider record length domains and validation
+order, pre-admission scratch accounting, mutation prevention before consumer
+effects, endpoint/grant binding order, historical recovery evidence versus new
+incarnation authority, and Windows plaintext policy. No tests, injections,
+source execution, or product inspection were performed.
+
+The v0.7 draft incorporates those exact v0.4/v0.6 Astra deltas and the scoped owner choice
+that ECC/RAS is host reliability only, alongside bounded protected staging;
+neither a second plaintext copy nor ECC/RAS is treated as the zero-trust control.
+The existing SuperGrok ECC/RAS follow-up is reused as scenario-only advice: the
+ingress reservation is fixed/hard-capped rather than sized from an unauthenticated
+length; each request/provider record has an authenticated length/count contract;
+ECC/RAS cannot replace AEAD or Signet/schema validation; a post-correction byte
+set must be re-authenticated; and writes through aliases/mappings/DMA must be
+prevented before consumer use (otherwise refuse; post-effect faults are recorded
+truthfully).
+It did not inspect source or run tests. The Astra v0.7 follow-up returned
+**PASS for the bounded v0.6→v0.7 design corrections** (lifecycle/trust-boundary
+delta); implementation readiness remains **PARTIAL** and loaded-operation/
+platform enforcement **NOT_VERIFIABLE**. It was document/hash inspection only,
+with no source execution, tests, injections, or product evidence. The whole
+document is still pending owner
+approval. Concrete
+operation/object/version, principal and custody owners, exact Amazon Linux
+TCB/profile, protected-channel and revocation mechanisms, rollback-freshness
+authority, Fungi allocation/lease ABI, output/storage contract, cryptographic
+policy, and finite workload bounds remain unresolved. No product code or
+private RD owner was changed; RD-1413, RD-1414 and RD-1415 remain
+**HOLD / NON_AUTHORIZING**.
 
 Current outstanding and blockers:
 [outstanding-and-blockers-2026-09-23.md](reports/outstanding-and-blockers-2026-09-23.md).
@@ -573,6 +2541,19 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
   (`docs/independent-audits/2026-09-22-zero-copy-mapper-hold.md`). Residual:
   mapped views stay mutable after map. Scan `csf_78294e1131c5f50b6041a758`
   PARTIAL_THIS_TREE.
+- **Current-source addendum, 2026-10-06:** the exact branch has local
+  private-snapshot cleanup, backing `dispose()`/remap wipe, generation-based
+  handle invalidation, and `CLEANUP_FAILED` refusal. After Astra flagged a
+  malformed source SHA transcription, the exact original report was preserved,
+  the current source/test hashes were recomputed, and the owning package was
+  rebuilt and rerun at **48/48**. The `buffer` getter and mutable views remain;
+  copying survives disposal, and `shared:true` has no demonstrated borrower
+  quiescence protocol. A bounded `packages-ts` source search found no app-kernel
+  runtime use. Exact pins, test scope and limits are in
+  [`reports/rd1414-zero-copy-mapper-current-state-20261005.md`](reports/rd1414-zero-copy-mapper-current-state-20261005.md).
+  This improves local staging evidence but does not establish protected Fungi
+  custody, runtime wiring, or RD-1414 closure; all coupled RDs remain HOLD /
+  NON_AUTHORIZING.
 - [x] LocalSramBus channel read/write refuse outside the 2048-byte stride
   (`LSM-PBI-003`). Overflowing write cannot mutate the next channel.
   Tests `pbi.test.mjs` **8/8**. Independent scoped PASS `01a0cc70-16dd`

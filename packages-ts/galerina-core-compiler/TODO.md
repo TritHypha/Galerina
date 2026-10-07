@@ -379,6 +379,7 @@ until v1 ships. The Int64 / UInt64 row is a separate open question, not part of 
 ```text
 [ ] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
 [ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
+    Security admission gate: every self-hosted parser AST must pass `checkValueStates` or a proven semantically equivalent checker before lowering/admission; refuse closed if that checker path is absent or fails. Add parity tests using actual self-hosted ASTs for direct secret egress, aliases, secret-dependent control, ordinary secret comparisons, and match-arm value egress, plus public and sanctioned-declassification controls. Current bootstrap TypeScript-parser tests are not proof of this connection or of loaded Fungi runtime enforcement.
 [ ] LSP (Language Server Protocol) — diagnostics on save
 [ ] Int64 / UInt64 full compiler gate lift (currently owner-gated, one line)
     Reconciled 2026-10-06 (Grok Bot, docs/tests only, no compiler source change; Codex/owner decide closure):

@@ -109,6 +109,39 @@ describe("compiler package-owned Fungi host resolution", () => {
           false,
           "the Fungi host profile must not claim no-swap without runtime enforcement evidence",
         );
+        assert.equal(
+          unwrapRecord(interpreted.value).canNoDisk,
+          false,
+          "mlock alone must not claim no-disk without a separate persistence control",
+        );
+      }
+    }
+
+    // Literal expectations prevent the TypeScript bootstrap table and the Fungi source
+    // from agreeing on an unsupported physical-capability claim.
+    for (const [name, expected] of [
+      ["register_pinned", {
+        canRegisterPin: false,
+        canNoDramSpill: false,
+        canNoSwap: false,
+        canNoDisk: false,
+      }],
+      ["browser_secure_context", {
+        canRegisterPin: false,
+        canNoDramSpill: false,
+        canNoSwap: false,
+        canNoDisk: false,
+      }],
+    ]) {
+      const interpreted = await executeFlow(
+        "resolveHostFungi",
+        new Map([["name", { __tag: "string", value: name }]]),
+        program.ast,
+        program.flows,
+      );
+      const actual = unwrapRecord(interpreted.value);
+      for (const [field, value] of Object.entries(expected)) {
+        assert.equal(actual[field], value, `${name}.${field}`);
       }
     }
   });
