@@ -1,5 +1,7 @@
 import {
   CRYPTO_PROVIDER_SCHEMA,
+  MAX_BCRYPT_PASSWORD_BYTES,
+  isBcryptInputWithinLimit,
   type CryptoProvider,
   type CryptoProviderRequest,
   type CryptoProviderResult,
@@ -60,6 +62,13 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
     schema: CRYPTO_PROVIDER_SCHEMA,
     async invoke(request: CryptoProviderRequest): Promise<CryptoProviderResult> {
       if (request.algorithm === "bcrypt") {
+        if (!isBcryptInputWithinLimit(request.plaintext)) {
+          return {
+            ok: false,
+            code: "FUNGI_CRYPTO_BCRYPT_INPUT_TOO_LONG",
+            message: "bcrypt input exceeds 72 UTF-8 bytes and is refused.",
+          };
+        }
         const bcryptMod = await import("bcryptjs");
         const bcrypt = (bcryptMod.default ?? bcryptMod) as BcryptJs;
         if (request.op === "password-hash") {

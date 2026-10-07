@@ -1,6 +1,6 @@
 # Galerina beta v1 to SLIDE roadmap
 
-## Current Fungi-first memory review — 2026-10-06
+## Fungi-first memory review snapshot — 2026-10-06
 
 At review pin `e26b1e3ea084a1439a4c939edaa29357892a132f`, initial Astra and
 Grok.com reviews plus Astra's Grok.com-only delta adjudication are complete.
@@ -14,22 +14,41 @@ release milestone: **RD-1413/1414/1415 stay HOLD / NON_AUTHORIZING**. Fungi can
 define stronger semantics than the TypeScript bootstrap; implementation and
 end-to-end evidence must establish them. Keep the dated history below intact.
 
-Current actions are in [TODO](TODO.md#current-memory-review-checkpoint--2026-10-06)
+Current actions are in [TODO](TODO.md#current-memory-review-checkpoint--2026-10-07)
 and the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md).
 
+### Owner decision update — 2026-10-07
+
+Phillip fixed `POST /auth/verify` as the first protected operation; webhook HMAC
+is a separate later candidate. This supersedes the historical `/secure` route
+selection in the checkpoint below and does not make `/auth/verify` a live
+protected operation: its current example remains fixture-backed and its Deno
+adapter returns 503. The first slice uses a controlled provider and sink only;
+no live protected data or deployment is authorized. The owner's authority,
+trust-boundary, output, provisional-limit and retention answers are recorded in
+the [current TODO checkpoint](TODO.md).
+RD-1413/1414/1415 remain unresolved pending source-mapped criteria and composed
+compiler/runtime/FFI/host/provider/sink evidence plus independent adjudication.
+
 ## Memory-security dependency checkpoint — 2026-09-28
+
+Historical route selection: the `/secure` choice and the statements below that
+call `/auth/verify` unselected were superseded by Phillip's 2026-10-07 owner
+decision at the top of this roadmap. The implementation and evidence gaps below
+remain relevant; do not treat the old route choice as current direction.
 
 The former RD-1296 combined memory programme was split, not solved. Product
 adoption now has three ordered boundaries: RD-1413 governed incoming access,
 RD-1414 transient ownership and cleanup, then RD-1415 authorized output and
 live release. The KB owners accept bounded isolated/synthetic evidence; this
-checkout does not yet contain a wired real protected application operation.
-The owner has selected a governed `/secure` route as the intended V1 surface,
-but current non-test application source contains no `/secure` route definition;
-the existing match is test-fixture coverage only. The route-name choice does
-not yet identify its caller, object/version grant, provider/key custodian,
-permitted recipient, or operation semantics. The `/auth/verify` demo remains a
-separate login fixture, not the protected operation.
+checkout did not yet contain a wired real protected application operation.
+This 2026-09-28 snapshot records the then-selected governed `/secure` route and
+the then-separate `/auth/verify` login fixture. Phillip superseded that route
+choice on 2026-10-07 with `POST /auth/verify`; see the current owner-decision
+update above. The snapshot's implementation findings remain historical leads,
+not current-source proof: recheck caller/object-version/provider/key-owner,
+recipient, and operation wiring at the present source head before relying on
+them.
 The four explicit product holds are in [docs/TODO.md](TODO.md). Do not infer
 integration from an AGENTS candidate packet or turn the original guest-byte
 Wasm obligations into a host-only PASS without an explicit disposition.

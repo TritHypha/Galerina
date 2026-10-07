@@ -1,6 +1,28 @@
 import { after, before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import http from "node:http";
 import { serve } from "../dist/index.js";
+
+function postRawPath(port, path, body = new Uint8Array([0x00, 0xa5, 0xff])) {
+  return new Promise((resolve, reject) => {
+    const request = http.request({
+      hostname: "127.0.0.1",
+      port,
+      method: "POST",
+      path,
+      headers: { "content-type": "application/json" },
+    }, (response) => {
+      const chunks = [];
+      response.on("data", (chunk) => chunks.push(chunk));
+      response.on("end", () => resolve({
+        status: response.statusCode,
+        body: Buffer.concat(chunks).toString("utf8"),
+      }));
+    });
+    request.on("error", reject);
+    request.end(body);
+  });
+}
 
 const SOURCE = `secure flow accept(request: Request) -> Response
 contract {
@@ -26,12 +48,51 @@ contract { intent { "Wide route cap." } limits { max request size 16 bytes } eff
 route POST "/narrow" { request Request response Response flow narrow }
 route POST "/wide" { request Request response Response flow wide }`;
 
-async function assertServeRefuses(source, config, label) {
+const RAW_BODY_SOURCE = `secure flow inspectCiphertext(request: Request) -> Response
+contract {
+  intent { "Inspect only the size of synthetic ciphertext bytes." }
+  limits { max request size 16 bytes }
+  effects {}
+}
+{
+  return {
+    receivedBytes: request.rawBody.length(),
+    receivedHex: request.rawBody.toHex(),
+  }
+}
+route POST "/auth/verify" {
+  request Request
+  response Response
+  flow inspectCiphertext
+}`;
+
+const AMBIGUOUS_AUTH_VERIFY_SOURCE = `secure flow genericAuth(request: Request) -> Response
+contract { intent { "Generic auth route." } limits { max request size 16 bytes } effects {} }
+{ return { value: request.jsonBody.value } }
+route POST "/auth/{operation}" { request Request response Response flow genericAuth }`;
+
+const AUTH_VERIFY_TEST_FLOW = `secure flow genericAuth(request: Request) -> Response
+contract { intent { "Route ownership regression test." } limits { max request size 16 bytes } effects {} }
+{ return { outcome: "test" } }`;
+
+function authVerifyRouteSource(bindings) {
+  const routes = bindings.map(({ method, path }) =>
+    `route ${method} "${path}" { request Request response Response flow genericAuth }`,
+  );
+  return `${AUTH_VERIFY_TEST_FLOW}\n${routes.join("\n")}`;
+}
+
+async function assertServeRefuses(
+  source,
+  config,
+  label,
+  expectedError = /maxBodyBytes must be a positive safe integer|invalid or duplicate request-size contract|FUNGI-PARSE-001/u,
+) {
   let server;
   try {
     server = await serve(source, "route-request-size.fungi", config);
   } catch (error) {
-    assert.match(String(error), /maxBodyBytes must be a positive safe integer|invalid or duplicate request-size contract|FUNGI-PARSE-001/u, label);
+    assert.match(String(error), expectedError, label);
     return;
   }
   if (server !== undefined) await server.close();
@@ -189,6 +250,105 @@ describe("route contract request-size limit", () => {
 
     for (const [label, source] of cases) {
       await assertServeRefuses(source, { port: 0 }, label);
+    }
+  });
+});
+
+describe("POST /auth/verify raw request bytes", () => {
+  let server;
+
+  before(async () => {
+    server = await serve(RAW_BODY_SOURCE, "auth-verify-raw-body.fungi", {
+      port: 0,
+      maxBodyBytes: 1024,
+    });
+  });
+
+  after(async () => {
+    if (server !== undefined) await server.close();
+  });
+
+  it("keeps /auth/verify request bytes as Bytes without automatic JSON decoding", async () => {
+    const response = await fetch(`http://127.0.0.1:${server.port}/auth/verify`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: new Uint8Array([0x00, 0xa5, 0xff]),
+    });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { receivedBytes: 3, receivedHex: "00a5ff" });
+  });
+
+  it("matches only the exact raw path, while allowing a query string", async () => {
+    const canonical = await postRawPath(server.port, "/auth/verify?request=one");
+    assert.equal(canonical.status, 200);
+    assert.deepEqual(JSON.parse(canonical.body), { receivedBytes: 3, receivedHex: "00a5ff" });
+
+    for (const path of [
+      "/auth/verify/",
+      "//auth/verify",
+      "/%61uth/verify",
+      "/auth/verify/extra",
+      "/:operation/verify",
+    ]) {
+      const response = await postRawPath(server.port, path);
+      assert.equal(response.status, 404, `unexpected route match for raw path ${path}`);
+    }
+  });
+
+  it("refuses a generic POST route that also claims the protected endpoint", async () => {
+    let unexpectedServer;
+    try {
+      unexpectedServer = await serve(
+        AMBIGUOUS_AUTH_VERIFY_SOURCE,
+        "ambiguous-auth-verify.fungi",
+        { port: 0 },
+      );
+    } catch (error) {
+      assert.match(String(error), /POST \/auth\/verify is reserved and must have one exact route binding/u);
+      return;
+    }
+    if (unexpectedServer !== undefined) await unexpectedServer.close();
+    assert.fail("generic POST route unexpectedly claimed the protected endpoint");
+  });
+
+  it("refuses every overlapping POST route shape regardless of declaration order", async () => {
+    const refusedBindings = [
+      [
+        { method: "POST", path: "/auth/{operation}" },
+        { method: "POST", path: "/auth/verify" },
+      ],
+      [
+        { method: "POST", path: "/auth/verify" },
+        { method: "POST", path: "/auth/{operation}" },
+      ],
+      [
+        { method: "POST", path: "/auth/verify" },
+        { method: "POST", path: "/auth/verify" },
+      ],
+      [{ method: "POST", path: "/{resource}/{operation}" }],
+      [{ method: "POST", path: "/auth/{prefix}fy" }],
+    ];
+
+    for (const bindings of refusedBindings) {
+      await assertServeRefuses(
+        authVerifyRouteSource(bindings),
+        { port: 0 },
+        `overlapping bindings: ${bindings.map(({ path }) => path).join(", ")}`,
+        /POST \/auth\/verify is reserved and must have one exact route binding/u,
+      );
+    }
+  });
+
+  it("allows one exact binding and non-overlapping or other-method templates", async () => {
+    const allowedBindings = [
+      [{ method: "POST", path: "/auth/verify" }],
+      [{ method: "POST", path: "/auth/{operation}/details" }],
+      [{ method: "GET", path: "/auth/{operation}" }],
+    ];
+
+    for (const bindings of allowedBindings) {
+      const server = await serve(authVerifyRouteSource(bindings), "auth-verify-route-control.fungi", { port: 0 });
+      await server.close();
     }
   });
 });

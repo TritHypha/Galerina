@@ -121,9 +121,17 @@ export async function startServer(
       throw new Error("Galerina: invalid per-route request-size limit");
     }
   }
+  const registry = buildRouteRegistry(ast);
+  const authVerifyRoutes = registry.routes.filter(
+    (route) => route.method === "POST" && route.pathPattern.test("/auth/verify"),
+  );
+  if (authVerifyRoutes.length > 0 && (
+    authVerifyRoutes.length !== 1 || authVerifyRoutes[0]?.path !== "/auth/verify"
+  )) {
+    throw new Error("Galerina: POST /auth/verify is reserved and must have one exact route binding");
+  }
   // W2: the network stack loads only when a server actually starts (see header comment).
   const { createServer } = await import("node:http");
-  const registry = buildRouteRegistry(ast);
   const mode          = config.mode ?? "dev";
   // OWASP F5: rate limit — production/deterministic default 60 req/min; dev 200
   const rateLimit     = config.rateLimit ?? (mode === "dev" ? 200 : 60);
@@ -276,7 +284,14 @@ function hydrateRequest(
   // Auto-parse JSON body if Content-Type is application/json
   let parsedBody: GalerinaValue = bodyBytes;  // default: raw bytes
   const contentType = (req.headers["content-type"] ?? "").toLowerCase();
-  if (contentType.includes("application/json") && body.length > 0) {
+  // /auth/verify is the owner-selected protected verification ingress. Keep
+  // its wire body opaque here; transport decoding would create host strings or
+  // objects before Fungi-side verification. This does not establish ciphertext-
+  // only input: the verifier still needs Fungi-side envelope/auth checks before
+  // any provider call or outcome. Other routes retain legacy JSON parsing.
+  const preserveVerificationWireBytes =
+    req.method?.toUpperCase() === "POST" && rawPath === "/auth/verify";
+  if (!preserveVerificationWireBytes && contentType.includes("application/json") && body.length > 0) {
     try {
       const text = new TextDecoder("utf-8", { fatal: true }).decode(body);
       const parsed = JSON.parse(text);
