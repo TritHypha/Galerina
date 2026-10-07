@@ -97,6 +97,51 @@ before(async () => {
   canonicalBytes = vector.value.value;
 });
 
+describe("SLIDE V2-C runtime store absence", () => {
+  it("does not represent missing or out-of-range slots as an integer", async () => {
+    const empty = await run("emptySLIDEV2CRuntimeStore");
+    assert.equal(empty.audit.result, "ok");
+    for (const index of [-2147483648, -1, 0, 47, 48, 2147483647]) {
+      const result = await run("slideV2CRuntimeRead", new Map([
+        ["store", empty.value], ["resultId", intValue(index)],
+      ]));
+      assert.equal(result.audit.result, "ok", JSON.stringify(result.audit));
+      assert.deepEqual(result.value, { __tag: "none" });
+    }
+  });
+
+  it("does not turn a short value or definedness array into a present zero", async () => {
+    const empty = await run("emptySLIDEV2CRuntimeStore");
+    assert.equal(empty.audit.result, "ok");
+    for (const [values, defined] of [[[], [1]], [[0], []], [[7], [0]]]) {
+      const fields = new Map(empty.value.fields);
+      fields.set("values", { __tag: "array", items: values.map(intValue) });
+      fields.set("defined", { __tag: "array", items: defined.map(intValue) });
+      const result = await run("slideV2CRuntimeRead", new Map([
+        ["store", { ...empty.value, fields }], ["resultId", intValue(0)],
+      ]));
+      assert.equal(result.audit.result, "ok", JSON.stringify(result.audit));
+      assert.deepEqual(result.value, { __tag: "none" });
+    }
+  });
+
+  it("preserves zero and both Int32 endpoints as present values", async () => {
+    for (const value of [-2147483648, -1, 0, 2147483647]) {
+      const empty = await run("emptySLIDEV2CRuntimeStore");
+      const written = await run("slideV2CRuntimeStoreValue", new Map([
+        ["store", empty.value], ["resultId", intValue(47)],
+        ["value", intValue(value)], ["failureId", intValue(0)],
+      ]));
+      assert.equal(written.audit.result, "ok");
+      const result = await run("slideV2CRuntimeRead", new Map([
+        ["store", written.value], ["resultId", intValue(47)],
+      ]));
+      assert.equal(result.audit.result, "ok", JSON.stringify(result.audit));
+      assert.deepEqual(result.value, { __tag: "some", value: intValue(value) });
+    }
+  });
+});
+
 describe("validated SLIDE V2-C immutable aggregate execution", () => {
   it("instruction-drives checked-index success through record and variant projection", async () => {
     for (const [index, expected] of [[0, 3], [1, 5], [2, 8]]) {
