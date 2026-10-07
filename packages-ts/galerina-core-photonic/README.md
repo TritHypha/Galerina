@@ -18,6 +18,28 @@ Until those are reconciled, older three-value transport examples, v0.2 enum
 examples and governance-layer enum examples are documentation candidates, not
 stable public contracts.
 
+## O1 non-executing surface (2026-10-07)
+
+Owner O1 (Phillip, 2026-10-06 10:14 BST; ADDENDUM 23:07 BST): this package may
+ship contracts, types, schemas, docs, refusal paths and tests. It does not
+execute, simulate, transport, schedule or route photonic work, and it does not
+mint authority.
+
+Live refusal gates (`src/governance/capabilities.ts`):
+
+- `PhotonicCapability` is a closed string union of TODO L60 labels.
+- `validateCapability` returns `false` for every label, including
+  `ExperimentalRouting`. No capability is ever granted.
+- `admitExperimentalTransport` is always `false`.
+- `refuseCapability` and `refuseExperimentalTransport` emit frozen
+  `fungi.photonic.diagnostic.v1` records with fixed codes and no echo of
+  caller input.
+
+`OpticalTransportMode`, `PhotonicRuntimeTarget`, `PhotonicExecutionPlan` and
+`buildPhotonicPlan` are not admitted from this package. FUNGI-PHOTONIC-001..006
+meanings are unchanged (C10 table). Historical v0.2 sketches below remain
+documentation candidates.
+
 It belongs in:
 
 ```text
