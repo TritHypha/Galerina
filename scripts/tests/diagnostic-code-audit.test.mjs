@@ -102,3 +102,60 @@ test("an over-broad severity declaration is stale and refused", () => {
     item.code === "V4_POLICY_STALE"
     && item.subject === "FUNGI-GOV-999"));
 });
+
+test("Rust runtime error metadata participates in uniqueness and severity audit", () => {
+  const root = fixture("");
+  const rustPath = join(root, "packages-ts", "fixture", "src", "secret_arena.rs");
+  writeFileSync(rustPath, [
+    "pub struct RuntimeErrorCode {",
+    "    pub code: &'static str,",
+    "    pub name: &'static str,",
+    "    pub severity: &'static str,",
+    "    pub message: &'static str,",
+    "}",
+    "pub const ERR_EXAMPLE_REFUSED: RuntimeErrorCode = RuntimeErrorCode {",
+    '    code: "ERR_EXAMPLE_REFUSED",',
+    '    name: "EXAMPLE_REFUSED",',
+    '    severity: "error",',
+    '    message: "example refused",',
+    "};",
+    "",
+  ].join("\n"));
+
+  const { result, report } = run(root);
+  assert.equal(result.status, 0, JSON.stringify(report.violations));
+  assert.deepEqual(report.violations, []);
+});
+
+test("Rust runtime error metadata refuses invalid severity and overloaded names", () => {
+  const root = fixture("");
+  const rustPath = join(root, "packages-ts", "fixture", "src", "secret_arena.rs");
+  writeFileSync(rustPath, [
+    "pub struct RuntimeErrorCode {",
+    "    pub code: &'static str,",
+    "    pub name: &'static str,",
+    "    pub severity: &'static str,",
+    "    pub message: &'static str,",
+    "}",
+    "pub const ERR_EXAMPLE_REFUSED: RuntimeErrorCode = RuntimeErrorCode {",
+    '    code: "ERR_EXAMPLE_REFUSED",',
+    '    name: "EXAMPLE_REFUSED",',
+    '    severity: "fatal",',
+    '    message: "example refused",',
+    "};",
+    "pub const ERR_EXAMPLE_ALSO_REFUSED: RuntimeErrorCode = RuntimeErrorCode {",
+    '    code: "ERR_EXAMPLE_ALSO_REFUSED",',
+    '    name: "EXAMPLE_REFUSED",',
+    '    severity: "error",',
+    '    message: "also refused",',
+    "};",
+    "",
+  ].join("\n"));
+
+  const { result, report } = run(root);
+  assert.equal(result.status, 2);
+  assert.ok(report.violations.some((item) =>
+    item.code === "V2_NAME_COLLISION" && item.subject === "EXAMPLE_REFUSED"));
+  assert.ok(report.violations.some((item) =>
+    item.code === "V3_SEVERITY_VOCAB" && item.subject === "ERR_EXAMPLE_REFUSED"));
+});

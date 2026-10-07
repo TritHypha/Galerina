@@ -13,6 +13,7 @@ import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 
 import { join, relative } from "node:path";
 import { extractCodes, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
 import { classifyDescriptiveDiagnosticIdentities } from "./lib/descriptive-diagnostic-identities.mjs";
+import { parseRustRuntimeErrorDefinitions } from "./lib/rust-runtime-error-codes.mjs";
 import {
   generatedOutputMatches,
   provenance,
@@ -47,7 +48,7 @@ const CHECK = process.argv.includes("--check");
 const SCAN = ["packages-ts", "docs", "scripts", "governance"].map((d) => join(ROOT, d));
 const ROOT_SOURCES = [join(ROOT, "galerina.mjs")];
 const OUT = join(ROOT, "build", "code-index");
-const EXT = /\.(ts|mjs|cjs|fungi|md)$/;
+const EXT = /\.(ts|mjs|cjs|fungi|md|rs)$/;
 const SKIP = new Set(["node_modules", "dist", ".git"]);
 // Numeric CODE_RE / CODE_TEST / familyOf / nsOf come from the shared codes
 // module. Descriptive identities use the bounded lexical classifier rather
@@ -113,6 +114,25 @@ function captureObjectMetadata(lines, start, entry, limit = 10) {
   }
 }
 
+function rustBlockRange(lines, startPattern) {
+  const start = lines.findIndex((line) => startPattern.test(line));
+  if (start < 0) return null;
+  let depth = 0;
+  let opened = false;
+  for (let index = start; index < lines.length; index += 1) {
+    for (const char of lines[index]) {
+      if (char === "{") {
+        depth += 1;
+        opened = true;
+      } else if (char === "}") {
+        depth -= 1;
+      }
+    }
+    if (opened && depth === 0) return [start + 1, index + 1];
+  }
+  return [start + 1, lines.length];
+}
+
 const FILES = [
   ...SCAN.flatMap(walk),
   ...ROOT_SOURCES.filter((path) => existsSync(path)),
@@ -140,6 +160,46 @@ for (const file of FILES) {
   const isFungi = rel.endsWith(".fungi");
     const source = readFileSync(file, "utf8");
     const lines = source.split(/\r?\n/);
+    if (rel.endsWith(".rs")) {
+      const definitions = parseRustRuntimeErrorDefinitions(source);
+      const byConstant = new Map();
+      for (const definition of definitions) {
+        if (!definition.code || !/^ERR_[A-Z0-9_]+$/.test(definition.code)) continue;
+        const entry = get(definition.code);
+        entry.occ.push({ file: rel, line: definition.line, role: "def" });
+        if (definition.name) entry.names.add(definition.name);
+        if (definition.severity) entry.sevs.add(definition.severity);
+        byConstant.set(definition.constant, definition.code);
+      }
+      const definitionLines = new Set();
+      for (const definition of definitions) {
+        for (let line = definition.line; line <= definition.endLine; line += 1) {
+          definitionLines.add(line);
+        }
+      }
+      const isRustTest = /(?:\/tests\/|\/tests\.rs$|\.test\.rs$)/.test(rel);
+      const runtimeEmitRanges = [
+        rustBlockRange(lines, /\bfn\s+runtime_code\s*\(/),
+        rustBlockRange(lines, /\bimpl\s+fmt::Display\s+for\s+/),
+      ].filter(Boolean);
+      for (let index = 0; index < lines.length; index += 1) {
+        const lineNumber = index + 1;
+        if (definitionLines.has(lineNumber)) continue;
+        for (const [constant, code] of byConstant) {
+          if (new RegExp(`\\b${constant}\\b`).test(lines[index])) {
+            const role = isRustTest ? "test"
+              : runtimeEmitRanges.some(([start, end]) => lineNumber >= start && lineNumber <= end)
+                ? "emit" : "ref";
+            get(code).occ.push({ file: rel, line: lineNumber, role });
+          }
+        }
+        for (const literal of lines[index].matchAll(/\bERR_[A-Z0-9_]+\b/g)) {
+          if ([...byConstant.values()].includes(literal[0])) continue;
+          get(literal[0]).occ.push({ file: rel, line: lineNumber, role: isRustTest ? "test" : "ref" });
+        }
+      }
+      continue;
+    }
     const descriptive = isDoc || isFungi
       ? { identities: [] }
       : classifyDescriptiveDiagnosticIdentities(source, { testOnly: isTest });
