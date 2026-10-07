@@ -1,33 +1,45 @@
 # TODO
 
-## Current memory-review checkpoint — 2026-10-06
+## Current memory-review checkpoint — 2026-10-07
 
-This checkpoint supersedes older *current-state* wording below, not the dated
-receipts or their evidence limits. Review pin:
-`e26b1e3ea084a1439a4c939edaa29357892a132f` on
-`codex/rd1413-1415-coupled-route-20261004`.
+Current Galerina review pin: `f7751c852444285ae74562b1dbf59778817b6117` on
+`codex/rd1413-1415-coupled-route-20261004` (local branch matches origin; checkout
+was clean at review). This is a new-language effort: design Fungi's memory,
+ownership, aliasing, allocation and effects deliberately. TypeScript/bootstrap
+tests are evidence about the prototype, not an inherent ceiling on Fungi
+guarantees and not proof of runtime/FFI/host enforcement.
 
-- [x] Initial independent Astra review, Grok.com follow-up, and separate Astra
-  adjudication of the Grok.com-only delta are retained with distinct identities.
-- [x] Grok-Bot's matching Fungi-first answer was received at
-  `2026-10-06T08:55:49.417Z`; its envelope and report hashes were verified.
-- [ ] Source-check and independently adjudicate Grok-Bot's newly reported
-  checker/declassifier, staging-custody and output-mediation claims. Receipt is
-  not adoption, and this documentation update did not run their proposed tests.
-- [ ] Await the existing SuperGrok assignment's matching reply; do not redispatch.
-- [ ] Complete the bounded review sequence and publish the final blocker list,
-  separating engineering work, runtime/host evidence and genuine owner decisions.
-- [ ] Resolve the housekeeping instrument refusal before claiming a clean session:
-  bounded-execution findings remain and context-cost failed before inventory.
-  This checkpoint records the failure; it does not authorize broad repairs.
-- [!] RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING**. Fungi's memory,
-  allocation, aliasing and effect semantics are designable; TypeScript exposure
-  tests characterize bootstrap behavior, not an inherent Fungi limitation.
-- [!] Still establish one real protected operation and its full authority chain,
-  actual provider/open and sink/revocation ordering, exact accepted host/TCB and
-  freshness profile, cleanup/reuse evidence, permitted output/storage contract,
-  crypto policy and workload bounds. Neither a greeting route nor a fixture
-  satisfies the operation requirement.
+- [x] Initial Astra/Grok.com reviews and the expanded owner-context review
+  sequence were already delivered; do not dispatch them again. Reuse the exact
+  identities in the linked review checkpoint.
+- [x] The Grok.com follow-up withdrew its alleged source/test contradiction;
+  independent Astra adjudication confirms that the modeled behavior and test
+  agree. The conservative rule to refuse disk-backed swap under `no_disk` is
+  supportable without weakening the secret default. The full storage-medium
+  contract and authority for any secret-loosening exception remain unresolved.
+- [x] SuperGrok returned its bounded residency answer. Grok-Bot's corresponding
+  answer is pinned to the earlier `d3f645fe2` revision and marked stale because
+  HEAD advanced; it supplies no current review of the changed vectors. Do not
+  infer review from delivery.
+- [!] A real secret-using bootstrap operation is verified:
+  `packages-ts/galerina-framework-api-server/src/webhook-admission.ts::admitWebhookReplay`
+  reads a configured key for HMAC and replay identity. The operation's inputs
+  are ordinary TypeScript `string | Uint8Array`; no principal-bound grant,
+  canonical protected object/version, provider/key custodian, revocation
+  generation, Fungi-owned lease, or authorized durable recipient is bound to
+  it. It is a candidate, not an implemented qualifying RD operation. The
+  owner-selected `/secure` route shape is not a live handler. Decide whether to
+  nominate the webhook operation for protected integration or name the actual
+  `/secure` handler/object; do not substitute `/auth/verify` or a fixture.
+- [!] Then bind the full authority chain, provider-open/revocation and effect/sink
+  ordering, measured host/TCB and freshness authority, cleanup/reuse accounting,
+  recipient/output/storage and recovery contract, crypto policy, and finite
+  workload bounds. Cross-repository SLIDE/VOK, Lyth-Weaver, and relevant KB
+  owner evidence still needs exact-head reconciliation.
+- [!] RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING** until a real Fungi
+  operation passes end-to-end compiler/runtime/FFI/host evidence and receives
+  independent owner adjudication. A design choice, model answer, or bootstrap
+  test alone does not close them.
 
 See the [review checkpoint](reports/rd1413-1415-fungi-first-review-checkpoint-20261006.md)
 for receipt identities, scope limits and the next bounded actions. Historical

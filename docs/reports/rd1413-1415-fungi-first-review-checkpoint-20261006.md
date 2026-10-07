@@ -104,3 +104,96 @@ The current work remains native-Windows-only. No WSL, code implementation,
 commit, push, merge, private RD-owner mutation or product clearance occurred in
 this documentation reconciliation. The final blocker report remains pending the
 bounded review completion above.
+
+## 2026-10-07 follow-up — operation candidate and residency delta
+
+This dated addendum supersedes the preceding checkpoint's volatile review pin
+and pending-review statuses only. It does not replace the original receipts or
+their limits. Current Galerina pin is
+`f7751c852444285ae74562b1dbf59778817b6117` on
+`codex/rd1413-1415-coupled-route-20261004`; local HEAD matched origin and the
+checkout was clean at this check.
+
+### Exact-source correction: a real candidate, not yet the protected operation
+
+The API-server bootstrap has a real secret-using operation candidate, so the
+older blanket wording “no real secret-consuming operation” is too broad. The
+verified symbol is
+`packages-ts/galerina-framework-api-server/src/webhook-admission.ts::admitWebhookReplay`.
+It uses `input.secret` for HMAC verification and replay identity before accepting
+the request; `src/index.ts::handleRequest` passes the configured webhook secret
+and dispatches only after admission. These three source/test files have no diff
+between `d3f645fe2bb7ff4d0370608f6f4a13123d09fc1d` and current HEAD:
+`packages-ts/galerina-framework-api-server/src/webhook-admission.ts`,
+`packages-ts/galerina-framework-api-server/src/index.ts`, and
+`packages-ts/galerina-framework-api-server/tests/webhook-admission.test.mjs`.
+The earlier line-level source review therefore remains applicable at this pin.
+This does not
+make the candidate a qualifying RD-1413/1414/1415 protected operation: the
+interface is an ordinary TypeScript `string | Uint8Array`, and does not bind a
+principal, canonical protected object/version, grant issuer/revoker, provider
+or key custodian, revocation generation, Fungi-owned lease, or authorized
+durable recipient. The optional principal-resolution path is separate and is
+not passed to `admitWebhookReplay`; its replay claim orders duplicate admission,
+not provider revocation or output release.
+
+The owner-selected `/secure` route shape has no live API-server handler. The
+remaining owner choice is concrete: nominate the webhook path for protected
+integration, or identify the exact `/secure` handler and protected object by
+source path, symbol and commit. Do not substitute `/auth/verify`, a greeting
+route or a fixture. Selection alone will not close an RD.
+
+### Residency review delta and adjudication
+
+- Grok.com responses `d68b1303-08a5-4f68-8453-bf678b1d5f60` and
+  `970adc83-17ca-4267-adf1-d9664fa8e517` are distinct responses in the existing
+  conversation. The latter withdraws the claimed source/test contradiction;
+  the model behavior and its test agree. These browser response IDs are
+  retained, but no local response-byte digest is recorded here.
+- SuperGrok answer `supergrok-residency-wording-grok-astra-delta-20261007-01-answer-01`
+  is retained in
+  `AGENTS/coordination/model-reviews/supergrok-rd1413-1415-coupled-lifecycle-contract-20261005/reports/residency-wording-grok-astra-delta-supergrok-20261007.md`,
+  SHA-256 `30B0F83107462A229AF28E62653E9A5FF3FC09FDA8A6CD56AA95EB03B5271D68`.
+- Grok-Bot answer `grok-bot-residency-wording-20261007-answer-01` is retained
+  in `AGENTS/coordination/session-exchange/reports/grok-bot-residency-wording-20261007-answer-01.md`,
+  SHA-256 `4D95D468B4D1F744015C827B84D119CEEC1ACE1F01B7505694D87226F908323C`.
+  It explicitly marks itself stale against `d3f645fe2`; it does not review the
+  later HEAD. Do not count delivery as pickup or as a current-pin review.
+- Independent Astra adjudication (reviewer task
+  `01a11580-1bf1-7342-a04e-8849ef384103`) confirms that refusing disk-backed
+  swap is a supportable conservative `no_disk` rule without weakening the
+  secret default, and corrects Astra's earlier overstatement that this narrow
+  refusal itself needs a new owner choice. The full media contract—including
+  non-disk swap/persistence cases—and who may authorize any secret-loosening
+  exception remain unresolved. The Astra result's response-byte digest is not
+  retained in this repository; do not treat this line as a hash-verified review
+  receipt.
+
+The compiler model currently orders `no_disk` below `no_swap` and permits swap
+under the former; its tests establish that model's reconciliation behavior, not
+the physical storage medium or host enforcement. Disk-backed swap must refuse
+for a conservative `no_disk` interpretation; the complete media matrix and
+loosen-exception authority still need an explicit contract. The native Windows
+focused residency test passed 20/20 in this session; that is bootstrap evidence,
+not a runtime/FFI/host or physical-residency proof.
+
+### Remaining work at this pin
+
+1. Obtain the operation selection above and bind the full authority chain:
+   authenticated principal; object and version; issuer and revoker; provider/key
+   custodian; recipient or storage sink.
+2. Implement the selected Fungi memory/ownership/aliasing/allocation/effect
+   rules across the compiler, lowering, loaded runtime, FFI and accepted host;
+   prove provider-open versus revocation and sink/release ordering at the actual
+   effect boundary, plus cleanup, copy/alias accounting, quarantine and reuse.
+3. Obtain the exact measured host/TCB and freshness authority; define output,
+   storage/recovery, crypto and finite workload contracts; run discriminating
+   end-to-end tests on the admitted profile. A bootstrap test or model review is
+   not substitute evidence.
+4. Reconcile current owner evidence in SLIDE/VOK, Lyth-Weaver and relevant KB
+   research. That cross-repository reconciliation was not performed by this
+   addendum.
+
+RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING** until the selected real
+operation has the required end-to-end evidence and owner adjudication. No RD
+disposition, private owner file or product-clearance status changed here.
