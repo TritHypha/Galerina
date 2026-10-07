@@ -2324,6 +2324,10 @@ class Interpreter {
         const elseBlock = node.children?.[2];
         if (condition === undefined || thenBlock === undefined) return undefined;
         const condVal = await this.evalExpr(condition);
+        // A failed condition evaluation is not the same as `false`. In particular, a missing
+        // request-record field must fail the flow closed instead of selecting the else/fallthrough
+        // path and being mistaken for a valid negative authentication result.
+        if (condVal.__tag === "runtimeError") return condVal;
         // Truthy check: bool true, non-zero int/float, some, ok, non-void/non-none value
         const isTruthy =
           (condVal.__tag === "bool" && condVal.value) ||
@@ -2884,6 +2888,10 @@ class Interpreter {
     }
 
     const left = await this.evalExpr(leftNode);
+    // Equality is a decision boundary for admitted String comparisons too: a soft runtime error
+    // (for example, a missing JSON record field) must not be collapsed into ordinary inequality.
+    // Preserve left-to-right evaluation and do not run a right-side effect after this refusal.
+    if ((op === "==" || op === "!=") && left.__tag === "runtimeError") return left;
     const right = await this.evalExpr(rightNode);
 
     // 0038: a CHECKED-OP trap operand (IntegerOverflow / DivisionByZero) PROPAGATES through the
@@ -2892,6 +2900,8 @@ class Interpreter {
     // before failing). Soft runtimeErrors keep the fallthrough so graceful handling is unaffected.
     if (isCheckedTrap(left)) return left;
     if (isCheckedTrap(right)) return right;
+
+    if ((op === "==" || op === "!=") && right.__tag === "runtimeError") return right;
 
     // Enum variants are represented as unresolved names until the enum runtime
     // type is lifted. Compare their identity before numeric dispatch because an
