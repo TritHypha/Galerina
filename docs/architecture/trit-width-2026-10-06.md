@@ -10,10 +10,12 @@ RD-0855 is a private KB record and is cited by ID and line only.
 Owner inputs (Phillip, 2026-10-06, BST): the component request (16:57), the
 three-step fallback order (16:52), "for non science work the 2/3/8 ... may only be
 needed (8-bit for API)" (16:59) and "the rest ... should be automatic sorting ie
-what's best depending on the logic" (16:59). The 16:59 inputs are his stated
-understanding, not yet final decisions; section 12 keeps the details as HOLD.
-Package placement B (a module inside `galerina-tri-pipe`) is owner-confirmed
-(Phillip, 2026-10-06 22:50 BST); see section 9.
+what's best depending on the logic" (16:59). The 16:59 inputs were his stated
+understanding at that time. Owner decisions at 23:12 BST supersede contradicting
+defaults; unanswered section-12 items stay HOLD. Package placement B (a module
+inside `galerina-tri-pipe`) is owner-confirmed (Phillip, 2026-10-06 22:50 BST);
+see section 9. Owner decisions 2026-10-06 23:12 BST (after an Astra review of
+Galerina PR #148 at `68e81b9c8`) are recorded in the section of that name.
 
 Revision (2026-10-06): design polish from the SuperGrok review
 `supergrok-grok-design-trit-width-20261006-answer-01` (authority boundary PASS
@@ -22,6 +24,14 @@ change, placement B, nothing blocking). Changes: one candidate per
 `WidthProposalV1` with ranking kept as evidence only; `AttemptLinkV1` renamed and
 extended; trit-width is a pure function with no retry loop of its own; the
 `GENERAL` first attempt is scalar only; six refusal codes and tests 15-24 added.
+
+Revision (2026-10-06 23:12 BST): owner answers after an Astra review of Galerina
+PR #148 at `68e81b9c8`. Recorded in Owner decisions 2026-10-06 23:12 BST.
+Section 12 Q6 and Q10 are ANSWERED; Q7 is NARROWED and stays HOLD; Q1-Q5, Q8,
+Q9 and Q11 stay HOLD. Q12 remains resolved (placement B). Contradicting
+defaults in sections 4, 6, 7, 11 and 14 are updated. Docs only;
+non-authorizing. This patch does not impersonate Astra; it records that the
+review occurred, as stated in the owner decision record.
 
 ## 1. Purpose and pipeline position
 
@@ -96,6 +106,10 @@ candidate (section 8). SLIDE can never skip between candidates within one plan.
    - **Saturation semantics for packed trit vectors are not defined anywhere in
      the inspected code: HOLD.** Trit-width must not invent them.
 
+Owner 2026-10-06 23:12 BST decision 5 (ownership and activation) is recorded in
+Owner decisions 2026-10-06 23:12 BST. This patch does not register, activate, or
+set any authority flag true.
+
 ## 3. Non-responsibilities (fail-closed)
 
 Trit-width has the same authority ceiling as Tri-Pipe (RD-0855 L335-351;
@@ -122,6 +136,10 @@ Trit-width has the same authority ceiling as Tri-Pipe (RD-0855 L335-351;
   profile rewrite) as input; only a `createTriPipeEngine` `PROPOSAL` is accepted
   (`TW_ROUTER_FLOOR_NOT_A_PROPOSAL`, section 13).
 
+Owner 2026-10-06 23:12 BST decision 5 does not lift these ceilings. SLIDE owns
+its registry and physical admission; VOK authorises each attempt; trit-width
+stays propose-only.
+
 ## 4. The three-step floor (owner order, 2026-10-06 16:52 BST)
 
 Field name is `step` (1, 2, 3), not `tier`, to avoid collision with the hardware
@@ -133,7 +151,7 @@ tier named `binary` is a capability class, not permission to use step 3.
 |---|---|---|
 | 1 | Run at the requested or ranked (non-scalar) trit-width profile | `trit.bitplane32/64/256.v1` registered but `INACTIVE` (registry `:55-57`), so step 1 has no eligible candidate today |
 | 2 | Standard Galerina K3 Trit logic: the scalar reference profile | `trit.scalar.v1`, `ACTIVE_REFERENCE` (registry `:54`); `trit.scalar.v1` is always `step: 2` |
-| 3 | Binary implementation of the **same** task semantics, K3 still deciding permission | none: no binary profile is registered; step 3 is HOLD until one is |
+| 3 | Binary implementation of the **same** task semantics, K3 still deciding permission | none: binary step 3 is an unresolved alternative (owner 2026-10-06 23:12 BST). It stays HOLD. A later candidate must name a distinct provider/implementation and a reusable contract bound via admission; a checked artifact is necessary, alongside the registered contract, consumer, evidence and lifecycle decision |
 
 Rules:
 
@@ -158,19 +176,27 @@ Rules:
 - Width set is **registry-driven**. Phillip's example list (1/8/16/32/64/256)
   includes 8 and 16, which are not registered in SLIDE (registry `:9-15`) or
   Tri-Pipe (`tri-pipe.ts:14`). A request for an unregistered width refuses
-  `TW_WIDTH_NOT_REGISTERED`; registering 8 or 16 is an owner decision. 128/512
-  stay experimental with no ABI (`tri-pipe.ts:16`; RD-0855 L27).
+  `TW_WIDTH_NOT_REGISTERED`. 8-trit and 16-trit execution profiles stay
+  research-only and unregistered before v1 (owner 2026-10-06 23:12 BST,
+  decision 1); this document does not register or activate them. A bare numeric
+  `8` without units refuses `TW_WIDTH_UNITS_UNSPECIFIED` (decision 2).
+  Activation of any width needs a checked artifact plus the registered contract,
+  consumer, evidence and lifecycle decision. 128/512 stay experimental with no
+  ABI (`tri-pipe.ts:16`; RD-0855 L27).
 
 ### 4.1 Workload class and default width sets
 
-Phillip's 16:59 understanding: general (non-science) work needs only binary
-(2-state), a single K3 trit (3-state, -1/0/+1) and 8-bit at API boundaries;
-wider widths (32/64/256) are mainly for science/compute.
+Phillip's 16:59 understanding (historical): general (non-science) work needs
+only binary (2-state), a single K3 trit (3-state, -1/0/+1) and 8-bit at API
+boundaries; wider widths (32/64/256) are mainly for science/compute. Owner
+2026-10-06 23:12 BST decision 1: wider execution is not science-only. Selection
+follows the operations, workload size, providers and admitted constraints.
+This patch adds no registration or activation.
 
 | Workload class | First attempt (attempt 0) | Opt-in |
 |---|---|---|
-| `GENERAL` | `trit.scalar.v1` only (step 2). An 8-bit API boundary encoding, if requested, is a packing of that same attempt's values, not a separate candidate | none by default |
-| `SCIENCE` | as `GENERAL` while no wide profile is `ACTIVE_REFERENCE` | registered `ACTIVE_REFERENCE` wide profiles (32/64/256) via ranking |
+| `GENERAL` | `trit.scalar.v1` only (step 2). An 8-bit API boundary encoding is a packing of that same attempt's values, not a separate candidate, and only when explicitly declared with its named codec; unspecified units refuse | none by default |
+| `SCIENCE` | as `GENERAL` while no wide profile is `ACTIVE_REFERENCE` | registered `ACTIVE_REFERENCE` wide profiles (32/64/256) via ranking. Workload class is one input among operations, size, providers and admitted constraints; it does not confine wider execution to science |
 
 Binary (step 3) is never in a first proposal for any workload class. No
 `ACTIVE_REFERENCE` wide profile exists today (SLIDE 32/64/256 are all `INACTIVE`,
@@ -180,8 +206,10 @@ not be read as emitting an `INACTIVE` 256 as attempt 0.
 
 - "2" and "3" are state counts, not trit widths: binary is a step-3 carrier,
   "3" is profile 1.
-- Whether "8" means 8-bit or 8-trit is HOLD. This design treats it as an
-  **8-bit binary encoding at an API boundary**, so section 6 applies.
+- A bare `8` (unspecified units) refuses `TW_WIDTH_UNITS_UNSPECIFIED`.
+  `laneCount` means logical trits per operation. Explicitly declared 8-bit
+  packing uses its named codec (section 6) and is never silently inferred.
+  8-trit and 16-trit execution profiles are not registered before v1.
 - Who declares the workload class (task policy, snapshot annotation, caller) is
   HOLD. An undeclared class is `GENERAL` (smallest set). A caller claim of
   `SCIENCE` widens only the opt-in set and is bound into the proposal digest.
@@ -231,7 +259,8 @@ a task by itself, and a high rank never skips admission.
 
 These apply to step 3 and to any binary boundary encoding (including 8-bit API).
 They follow `rd0855-fallback-astra-adjudication-20261006` (answer 3) and reuse
-existing encodings rather than adding one.
+existing encodings rather than adding one. Packing is an encoding, not an
+execution-width profile (owner 2026-10-06 23:12 BST, decision 4).
 
 1. At least 2 bits per independently encoded trit value.
 2. Exactly three legal codes. The fourth code refuses (`TW_BINARY_ILLEGAL_CODE`),
@@ -248,10 +277,16 @@ existing encodings rather than adding one.
 4. Numeric zero and binary false are not K3 UNKNOWN; integer/bit/Boolean
    operations already declared as such keep their own semantics, with K3 still
    governing permission.
-5. 8-bit API packing: fail-closed default is four 2-bit trits per byte under rule
-   2. Base-3 packing (five trits per byte, codes 243-255 refuse) is not adopted:
-   HOLD. 8-bit packing is an encoding of the current attempt's values, not a
-   step-3 candidate.
+5. 8-bit API packing: there is no implicit default codec (owner 2026-10-06
+   23:12 BST, decisions 2 and 4). Four 2-bit trits per byte under rule 2 is one
+   named codec; a 5-trit block codec (`3^5 = 243 <= 256`, codes 243-255 refuse)
+   is a different named codec. Each named codec is a separate versioned encoding
+   contract with admission evidence (legal codes, lengths, padding, canonical
+   encoding, round-trip checks). The 2-bit code table belongs to each codec's
+   contract. Explicitly declared 8-bit packing uses its named codec; unspecified
+   units refuse `TW_WIDTH_UNITS_UNSPECIFIED`. Packed execution operations need
+   their own execution-profile evidence. 8-bit packing of the current attempt's
+   values is not a step-3 candidate.
 
 ## 7. Typed contracts (sketch only, not code)
 
@@ -331,7 +366,8 @@ Refusal codes (all terminal for this request):
 | `TW_TRIPIPE_REFUSED` | Tri-Pipe returned `REFUSED` |
 | `TW_TRIPIPE_DIGEST_MISMATCH` | recomputed Tri-Pipe digest differs |
 | `TW_SNAPSHOT_MISMATCH` | snapshot digest differs from the parent attempt |
-| `TW_WIDTH_NOT_REGISTERED` | requested width not in the registry (e.g. 8, 16) |
+| `TW_WIDTH_NOT_REGISTERED` | requested width not in the registry (e.g. 8-trit, 16-trit) |
+| `TW_WIDTH_UNITS_UNSPECIFIED` | requested width is a bare number (e.g. `8`) with unspecified units (bit vs trit) |
 | `TW_WIDTH_EXPERIMENTAL` | 128/512/adaptive |
 | `TW_WORKLOAD_CLASS_EXCLUDES_WIDTH` | width outside the class set |
 | `TW_EVIDENCE_UNAUTHENTICATED` / `TW_EVIDENCE_STALE` | registry or target evidence fails |
@@ -420,11 +456,22 @@ Options considered:
 B is kept as a logical component inside Tri-Pipe's existing proposal-only
 boundary. Trit-width is not the replanning coordinator in any option.
 
+Owner 2026-10-06 23:12 BST decision 5: SLIDE owns the registry and physical
+admission; Galerina's semantic owner supplies the op spec and reference
+behaviour; Codex/implementers make authorised changes; providers cannot
+self-activate; VOK authorises each attempt. Placement B does not change that
+split.
+
 ## 10. Security and zero-trust analysis
 
 Defaults: undeclared workload class is `GENERAL`; missing or stale evidence
-refuses; policy `HOLD` allows no step down at all; unknown widths refuse; unregistered
-encodings refuse; every output is non-authorizing.
+refuses; policy `HOLD` allows no step down at all; unknown widths refuse;
+unspecified units refuse (`TW_WIDTH_UNITS_UNSPECIFIED`); unregistered
+encodings refuse; every output is non-authorizing. Activation needs a registered
+consumer, exact artifact/provider/target/toolchain identities, semantic and
+refusal parity, resource bounds, integrity checks and negative tests (owner
+2026-10-06 23:12 BST decision 5). Registration, reference activation and
+production eligibility stay separate milestones.
 
 | Threat | Mitigation |
 |---|---|
@@ -455,7 +502,7 @@ encodings refuse; every output is non-authorizing.
 5. Fourth binary code at decode and at the 8-bit API boundary -> `TW_BINARY_ILLEGAL_CODE`.
 6. Early UNKNOWN collapse followed by NOT -> refuses; final-boundary collapse
    maps only ALLOW to true and keeps the UNKNOWN diagnostic.
-7. Requested width 8 or 16 -> `TW_WIDTH_NOT_REGISTERED`; 128/512 -> `TW_WIDTH_EXPERIMENTAL`.
+7. Requested width 8-trit or 16-trit (unregistered) -> `TW_WIDTH_NOT_REGISTERED`; 128/512 -> `TW_WIDTH_EXPERIMENTAL`.
 8. Same input twice -> byte-identical proposal and digest; permuting caller hint
    order inside step 1 does not cross steps.
 9. Caller-supplied `SCIENCE` with `GENERAL` policy -> wide widths excluded with reasons.
@@ -482,24 +529,106 @@ encodings refuse; every output is non-authorizing.
 23. Hardware `tier: "binary"` does not add a step-3 candidate.
 24. The trit-width module has no export that calls `dispatchTriPipeEngine` or
     `ExecutionRouter.route`.
+25. Bare requested width `8` with unspecified units -> `TW_WIDTH_UNITS_UNSPECIFIED`.
 
 Tests 1-4, 8, 11 and 14 are the authority-critical set.
 
+## Owner decisions 2026-10-06 23:12 BST
+
+Owner: Phillip. Decided 2026-10-06 23:12 BST, after an Astra review of Galerina
+PR #148 at `68e81b9c820c1812713b5a5f35f5524340537e52` (this document at that
+head). Recorded here so the answers are durable. This section authorises **no
+implementation, no registration and no activation**. Nothing here registers a
+width profile, a codec or a provider. SuperGrok records the decisions; it does
+not speak as Astra.
+
+RD references (private KB records, cited by ID only): RD-0836, RD-0837, RD-0843,
+RD-0855, RD-0858, RD-0873, RD-0946, RD-1008. The RD index metadata is stale;
+check each RD's own record rather than the index entry.
+
+### Decisions
+
+1. **No 8/16-trit execution profiles before v1.** No 8-trit or 16-trit execution
+   profile is registered or activated before v1. They stay research-only until a
+   concrete workload shows benefit. The existing scalar and 32/64/256 contracts
+   are kept. Wider execution is not science-only: selection follows the
+   operations, workload size, providers and admitted constraints.
+2. **A bare "8" refuses; units are explicit.** A bare `8` (unspecified units)
+   refuses. `laneCount` means logical trits per operation. Packing uses a
+   versioned `encodingId` with explicit storage dimensions. 8-bit API packing
+   is allowed only when explicitly declared with its named codec, and is never
+   silently inferred. Refusal code `TW_WIDTH_UNITS_UNSPECIFIED` and test-plan
+   case 25 record this in this document; no implementation is added.
+3. **Binary step 3 is an unresolved alternative.** Scalar K3 already runs on
+   binary silicon, so step 3 must name a distinct provider/implementation and a
+   reusable contract bound via admission. The requested -> K3 -> binary order is
+   kept, step 3 stays HOLD, and K3 governs permission throughout.
+4. **Packing is an encoding, not an execution width.** Packing does not create
+   an execution-width profile. It needs a versioned encoding contract with
+   admission evidence: legal codes, lengths, padding, canonical encoding and
+   round-trip checks. Four 2-bit trits per byte is one codec; a 5-trit block
+   codec (`3^5 = 243 <= 256`) is a different codec. Packed execution operations
+   need their own execution-profile evidence.
+5. **Ownership and activation.** SLIDE owns its registry and physical admission.
+   Galerina's semantic owner supplies the op spec and reference behaviour.
+   Codex/implementers make authorised changes, and providers cannot
+   self-activate. Activation needs a registered consumer, exact
+   artifact/provider/target/toolchain identities, semantic and refusal parity,
+   resource bounds, integrity checks and negative tests. Registration, reference
+   activation and production eligibility are separate milestones. VOK authorises
+   each attempt. Decision 5 bears on sections 2, 3, 9 and 10; it does not
+   directly answer a remaining numbered section-12 HOLD.
+
+### Changed defaults
+
+| Topic | Previous position (#148 at 68e81b9c8) | New default (owner, 23:12 BST) |
+|---|---|---|
+| Meaning of "8" / 8-bit packing | this doc treated "8" as an 8-bit API boundary encoding; fail-closed packing default was four 2-bit trits per byte | Unspecified units refuse; explicitly declared 8-bit packing uses its named codec |
+| What activation needs | 8/16 widths and step 3 keyed on profile registration | A checked artifact is necessary, alongside the registered contract, consumer, evidence and lifecycle decision |
+| Binary step 3 | no binary profile registered, "step 3 is HOLD until one is" | Binary step 3 is an unresolved alternative (stays HOLD; must name a distinct provider/implementation and a reusable contract bound via admission) |
+
 ## 12. Open questions (HOLD)
 
-1. Who issues the task policy that permits step-downs.
-2. Which package coordinates replanning (not trit-width).
-3. Who owns the retry/attempt budget.
-4. What evidence proves non-execution / no prior effect.
+1. Who issues the task policy that permits step-downs. Still HOLD. Owner
+   2026-10-06 23:12 BST did not answer this item.
+2. Which package coordinates replanning (not trit-width). Still HOLD. Owner
+   2026-10-06 23:12 BST did not answer this item.
+3. Who owns the retry/attempt budget. Still HOLD. Owner 2026-10-06 23:12 BST
+   did not answer this item.
+4. What evidence proves non-execution / no prior effect. Still HOLD. Owner
+   2026-10-06 23:12 BST did not answer this item.
 5. Exact default width sets per workload class, and who declares the class.
-6. Is "8" 8-bit (API encoding) or 8-trit; should 8 and/or 16 trit widths be registered.
-7. Which registered binary profile serves step 3 (none exists).
-8. Ranking weights.
-9. Step-1 descent through intermediate widths (RD-0855 L488) vs straight to step 2.
-10. 8-bit packing (2-bit x4 default vs base-3 x5) and which 2-bit code table at API boundaries.
-11. Packed-vector saturation semantics.
+   Still HOLD. Owner 2026-10-06 23:12 BST did not answer this item (decision 1
+   says wider execution is not science-only; it does not freeze the per-class
+   sets or the declarer).
+6. Is "8" 8-bit (API encoding) or 8-trit; should 8 and/or 16 trit widths be
+   registered. ANSWERED 2026-10-06 23:12 BST (owner, decisions 1+2): a bare `8`
+   (unspecified units) refuses `TW_WIDTH_UNITS_UNSPECIFIED`. 8-trit and 16-trit
+   execution profiles are not registered or activated before v1; they stay
+   research-only. Explicit 8-bit packing uses a named codec. See Owner
+   decisions 2026-10-06 23:12 BST.
+7. Which registered binary profile serves step 3 (none exists). NARROWED
+   2026-10-06 23:12 BST (owner, decision 3): binary step 3 is an unresolved
+   alternative and stays HOLD. A later step-3 candidate must name a distinct
+   provider/implementation and a reusable contract bound via admission. Scalar
+   K3 already runs on binary silicon, so that mapping is not a distinct step-3
+   profile. See Owner decisions 2026-10-06 23:12 BST.
+8. Ranking weights. Still HOLD. Owner 2026-10-06 23:12 BST did not answer this
+   item.
+9. Step-1 descent through intermediate widths (RD-0855 L488) vs straight to
+   step 2. Still HOLD. Owner 2026-10-06 23:12 BST did not answer this item.
+10. 8-bit packing (2-bit x4 default vs base-3 x5) and which 2-bit code table at
+    API boundaries. ANSWERED 2026-10-06 23:12 BST (owner, decisions 2+4): no
+    implicit default codec. Four 2-bit trits per byte and a 5-trit block codec
+    (`3^5 = 243 <= 256`) are different named codecs. The 2-bit code table
+    belongs to each codec's versioned encoding contract. See Owner decisions
+    2026-10-06 23:12 BST.
+11. Packed-vector saturation semantics. Still HOLD. Owner 2026-10-06 23:12 BST
+    did not answer this item.
 12. Package placement: resolved, B (module inside `galerina-tri-pipe`),
-    owner-confirmed 2026-10-06 22:50 BST (section 9). Items 1-11 stay owner HOLDs.
+    owner-confirmed 2026-10-06 22:50 BST (section 9). Q6 and Q10 ANSWERED
+    2026-10-06 23:12 BST; Q7 NARROWED and stays HOLD; items 1-5, 8, 9 and 11
+    stay owner HOLDs.
 
 ## 13. Conflicts with existing code or docs
 
@@ -533,8 +662,8 @@ Tests 1-4, 8, 11 and 14 are the authority-critical set.
 - tri-pipe: `[HOLD] Binary-carrier rules: >=2 bits per trit, fourth code refuses, named encodingId, final-boundary-only UNKNOWN collapse`.
 - tri-pipe (follow-up, no code change in this PR): `[HOLD] Reconcile ExecutionRouter.route in-band profile floor (unknown profile -> profile 1) with the createTriPipeEngine typed refusal`.
 - core-compute: `[HOLD] Workload class (GENERAL/SCIENCE) and default width sets; class declarer`.
-- SLIDE: `[HOLD] Register a binary step-3 profile (same semantics, K3 permission) before any step-3 proposal`.
-- SLIDE: `[HOLD] Owner decision on registering 8/16 trit widths`.
+- SLIDE: `[HOLD] Binary step 3 is an unresolved alternative (owner 2026-10-06 23:12 BST decision 3). A later registration must name a distinct provider/implementation and a reusable contract bound via admission; a checked artifact is necessary, alongside the registered contract, consumer, evidence and lifecycle decision. Still not a step-3 proposal. Not added to any TODO file`.
+- SLIDE: `[HOLD] No 8-trit or 16-trit execution profile is registered or activated before v1 (owner 2026-10-06 23:12 BST decision 1). They stay research-only until a concrete workload shows benefit. Not added to any TODO file`.
 - SLIDE/VOK: `[HOLD] Receipt binds step, attemptIndex, parentPlanIdentity`.
 - docs/TODO RD-0855 section: `[HOLD] Link trit-width to the admission-time replanning row (#146)`.
 
@@ -549,3 +678,5 @@ Tests 1-4, 8, 11 and 14 are the authority-critical set.
   `galerina2-rd0855-astra-fallback-20261006`.
 - RD-0855 (private; ID and line only): L23-31, L192-200, L202-210, L335-351,
   L365-374, L488, section 4.3.
+- Owner 2026-10-06 23:12 BST also cites by ID only: RD-0836, RD-0837, RD-0843,
+  RD-0858, RD-0873, RD-0946, RD-1008. RD index metadata is stale.
