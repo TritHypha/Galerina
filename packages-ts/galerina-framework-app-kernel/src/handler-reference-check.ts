@@ -13,8 +13,12 @@
  * Zero-trust choices:
  * - Only an OWN data property whose value is a function counts. Inherited
  *   properties and accessors are refused. Accessors are never invoked.
+ * - Route arrays are walked by integer index through own data-property
+ *   descriptors. Overridden `forEach` cannot skip checks. Index accessors
+ *   and Proxy routes or dispatch objects are refused without invoking traps.
  * - Diagnostics carry a code and the route index only, never the handler name.
  */
+import { types as nodeUtilTypes } from "node:util";
 import type { RouteDeclaration } from "./types.js";
 import type { HandlerDispatch } from "./kernel.js";
 
@@ -49,6 +53,7 @@ function refused(diagnostics: HandlerReferenceDiagnostic[]): HandlerReferenceRes
 function hasInherited(dispatch: object, name: string): boolean {
   let proto: object | null = Object.getPrototypeOf(dispatch) as object | null;
   while (proto !== null) {
+    if (nodeUtilTypes.isProxy(proto)) return true;
     if (Object.prototype.hasOwnProperty.call(proto, name)) return true;
     proto = Object.getPrototypeOf(proto) as object | null;
   }
@@ -64,29 +69,56 @@ export function checkHandlerReferences(
   if (typeof dispatch !== "object" || dispatch === null || Array.isArray(dispatch)) {
     return refused([diag(FUNGI_APPK_HRC_001, "dispatch must be a non-array object")]);
   }
+  if (nodeUtilTypes.isProxy(routes)) {
+    return refused([diag(FUNGI_APPK_HRC_001, "routes must not be a Proxy")]);
+  }
+  if (nodeUtilTypes.isProxy(dispatch)) {
+    return refused([diag(FUNGI_APPK_HRC_001, "dispatch must not be a Proxy")]);
+  }
+  const lengthDesc = Object.getOwnPropertyDescriptor(routes, "length");
+  if (
+    lengthDesc === undefined ||
+    !("value" in lengthDesc) ||
+    typeof lengthDesc.value !== "number" ||
+    !Number.isInteger(lengthDesc.value) ||
+    lengthDesc.value < 0
+  ) {
+    return refused([diag(FUNGI_APPK_HRC_001, "routes length must be a non-negative integer data property")]);
+  }
   const diagnostics: HandlerReferenceDiagnostic[] = [];
-  routes.forEach((route: unknown, index: number) => {
+  const len = lengthDesc.value;
+  for (let i = 0; i < len; i++) {
+    const indexDesc = Object.getOwnPropertyDescriptor(routes, String(i));
+    if (indexDesc === undefined || !("value" in indexDesc)) {
+      diagnostics.push(diag(FUNGI_APPK_HRC_001, "route entry must be a data property", i));
+      continue;
+    }
+    const route = indexDesc.value;
+    if (nodeUtilTypes.isProxy(route) || typeof route !== "object" || route === null) {
+      diagnostics.push(diag(FUNGI_APPK_HRC_001, "route must be a non-proxy object", i));
+      continue;
+    }
     const handler =
-      typeof route === "object" && route !== null && Object.prototype.hasOwnProperty.call(route, "handler")
-        ? (Object.getOwnPropertyDescriptor(route, "handler") as PropertyDescriptor).value
+      Object.prototype.hasOwnProperty.call(route, "handler")
+        ? (Object.getOwnPropertyDescriptor(route, "handler") as PropertyDescriptor | undefined)?.value
         : undefined;
     if (typeof handler !== "string" || handler.length === 0) {
-      diagnostics.push(diag(FUNGI_APPK_HRC_001, "route handler must be a non-empty string data property", index));
-      return;
+      diagnostics.push(diag(FUNGI_APPK_HRC_001, "route handler must be a non-empty string data property", i));
+      continue;
     }
     const own = Object.getOwnPropertyDescriptor(dispatch, handler);
     if (own === undefined) {
       diagnostics.push(
         hasInherited(dispatch, handler)
-          ? diag(FUNGI_APPK_HRC_003, "handler resolves only through the prototype chain", index)
-          : diag(FUNGI_APPK_HRC_002, "no dispatch entry for the route handler", index),
+          ? diag(FUNGI_APPK_HRC_003, "handler resolves only through the prototype chain", i)
+          : diag(FUNGI_APPK_HRC_002, "no dispatch entry for the route handler", i),
       );
-      return;
+      continue;
     }
     if (!("value" in own) || typeof own.value !== "function") {
-      diagnostics.push(diag(FUNGI_APPK_HRC_004, "dispatch entry must be a function data property", index));
+      diagnostics.push(diag(FUNGI_APPK_HRC_004, "dispatch entry must be a function data property", i));
     }
-  });
+  }
   return diagnostics.length === 0 ? Object.freeze({ ok: true as const }) : refused(diagnostics);
 }
 
