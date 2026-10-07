@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "fd360129af25cdda1e016c51ab6058ed4d463f6dd3821e9a9e9967e444c71a86",
+    "aggregateSha256": "ee250f212396a9307bc93ef8c0c92854faef60f7a57ba3eb3eb8add9525b5a75",
     "algorithm": "sha256",
     "files": [
       {
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "cb57a073ed86859b4979fea09d7aaf73ef2c845a452aee4e5b502fe9e29ccf5b"
+        "sha256": "0687d374d422ccf20b1d99cfea9fa0f82a2195d5590780f4486768ed1fe7dab8"
       },
       {
         "path": "TODO.md",
-        "sha256": "a745b930574669185feb761b98f5b323e9bad0551fec0bcdc1837ce640deda99"
+        "sha256": "c18b73249f05db549f1dfa723fd838d4b94a34af57f373a3bbdef0b55cac12d9"
       },
       {
         "path": "examples/tri-optical-mapping-plan.json",
@@ -55,12 +55,20 @@
         "sha256": "b14f9b5452a21d1d5257cb6cff910b16d34952da9e30637f42cb777a20493cea"
       },
       {
+        "path": "src/governance/capabilities.ts",
+        "sha256": "af93d8ba1de2be553df56417f9515fc3f7b6a33f9e0cfec33f8fa6beaa73f582"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "a1b92acb5c4812e6d4ae9e9c996d09f98f20c539156bab6b5066440e22d430cd"
+        "sha256": "5675d6fa71618090d9e1967062eff3906ae7b169d9ee41960d52629844d39810"
       },
       {
         "path": "tests/photonic-contracts.test.mjs",
         "sha256": "1321020764a2b77d6493700eb04bb9deb44e8e401ab9bb23063f8896428285d1"
+      },
+      {
+        "path": "tests/photonic-o1-refusals.test.mjs",
+        "sha256": "c12d6d8294d14b646f5f04c9b04c391b899a11dcebb179d34ce51925acc8568b"
       },
       {
         "path": "tsconfig.json",

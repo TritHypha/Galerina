@@ -343,3 +343,17 @@ export function decodePhotonicDiagnostic(
     ),
   };
 }
+
+export {
+  PHOTONIC_CAPABILITIES,
+  PHOTONIC_CAPABILITY_REFUSED_CODE,
+  PHOTONIC_CAPABILITY_REFUSED_MESSAGE,
+  EXPERIMENTAL_TRANSPORT_REFUSED_CODE,
+  EXPERIMENTAL_TRANSPORT_REFUSED_MESSAGE,
+  admitExperimentalTransport,
+  isPhotonicCapability,
+  refuseCapability,
+  refuseExperimentalTransport,
+  validateCapability,
+} from "./governance/capabilities.js";
+export type { PhotonicCapability } from "./governance/capabilities.js";
