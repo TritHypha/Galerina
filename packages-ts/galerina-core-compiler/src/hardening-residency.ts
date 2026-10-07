@@ -386,16 +386,13 @@ const HOST_PROFILE_MAP = new Map<string, HostResidencyCapability>([
   // The profile name alone does not prove a live mlock hook is registered and succeeds.
   // Keep no-swap false until the runtime supplies current enforcement evidence.
   ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "env-spore" }],
-  // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
-  // keyCustody: "hardware-signer" because a register-pinned target implies an HSM for key ops.
-  ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true, keyCustody: "hardware-signer" }],
-  // Browser / WASM secure context: JavaScript sandbox guarantees no persistent disk writes (no filesystem
-  // access from WASM without an explicit JS host bridge). Cannot mlock (no syscall surface), cannot forbid
-  // DRAM. Satisfies `no_disk` only — the ceiling for browser-deployed WASM flows handling secrets.
-  // Note: the "no persistent disk" guarantee is the browser sandbox, not a kernel primitive; this seam
-  // is only appropriate for in-browser WASM deployments (target-wasm + browser runtime).
-  // keyCustody: "env-spore" — browser sessions cannot provide TPM/HSM; L1 is the ceiling.
-  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
+  // This is a design-stage target name, not a registered host or evidence of physical enforcement.
+  // Keep every residency capability false until a concrete native provider is verified.
+  // keyCustody remains a non-authorizing design claim and requires a current native attestation.
+  ["register_pinned", { name: "register_pinned", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "hardware-signer" }],
+  // A secure browser context alone does not rule out persistent origin storage or host bridges.
+  // No residency guarantee is admitted until the exact runtime and its storage boundary are proven.
+  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "env-spore" }],
 ]);
 
 // Host capability records are registry-owned identities. Freeze each record so callers cannot

@@ -91,11 +91,25 @@ test("H-2: mlock_posix refuses no_disk without residency evidence but permits un
   assert.equal(L.canHonour("unrestricted", host).ok, true);
 });
 
+test("H-2: design-stage host profiles cannot claim physical residency guarantees", () => {
+  const browser = L.resolveHost("browser_secure_context");
+  const registerPinned = L.resolveHost("register_pinned");
+
+  assert.equal(L.canHonour("no_disk", browser).ok, false);
+  assert.equal(L.canHonour("no_disk", browser).rejection.code, "FUNGI-HARDEN-005");
+  for (const ceiling of ["register_only", "no_dram_spill", "no_swap", "no_disk"]) {
+    const result = L.canHonour(ceiling, registerPinned);
+    assert.equal(result.ok, false, `${ceiling} must require a verified host capability`);
+    assert.equal(result.rejection.code, "FUNGI-HARDEN-005");
+  }
+  assert.equal(L.canHonour("unrestricted", registerPinned).ok, true);
+});
+
 test("H-6: an UNDECLARED host cannot honour any real ceiling — fail-closed", () => {
   assert.equal(L.canHonour("no_swap", L.UNKNOWN_HOST).ok, false);
   assert.equal(L.canHonour("no_disk", L.resolveHost("bogus_unknown_host")).ok, false);
-  // register_pinned honours everything (design-stage TRESOR-class target)
-  assert.equal(L.canHonour("register_only", L.resolveHost("register_pinned")).ok, true);
+  // A design-stage target name is not evidence of a physical capability.
+  assert.equal(L.canHonour("register_only", L.resolveHost("register_pinned")).ok, false);
   // `unrestricted` needs no guarantee — always honourable
   assert.equal(L.canHonour("unrestricted", L.UNKNOWN_HOST).ok, true);
 });

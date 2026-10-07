@@ -116,6 +116,34 @@ describe("compiler package-owned Fungi host resolution", () => {
         );
       }
     }
+
+    // Literal expectations prevent the TypeScript bootstrap table and the Fungi source
+    // from agreeing on an unsupported physical-capability claim.
+    for (const [name, expected] of [
+      ["register_pinned", {
+        canRegisterPin: false,
+        canNoDramSpill: false,
+        canNoSwap: false,
+        canNoDisk: false,
+      }],
+      ["browser_secure_context", {
+        canRegisterPin: false,
+        canNoDramSpill: false,
+        canNoSwap: false,
+        canNoDisk: false,
+      }],
+    ]) {
+      const interpreted = await executeFlow(
+        "resolveHostFungi",
+        new Map([["name", { __tag: "string", value: name }]]),
+        program.ast,
+        program.flows,
+      );
+      const actual = unwrapRecord(interpreted.value);
+      for (const [field, value] of Object.entries(expected)) {
+        assert.equal(actual[field], value, `${name}.${field}`);
+      }
+    }
   });
 
   it("preserves the complete host honour decision and rejects hostile ceilings", async () => {
