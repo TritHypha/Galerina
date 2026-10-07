@@ -13,6 +13,8 @@ export interface ServerConfig {
   readonly port: number;
   readonly host?: string;
   readonly maxBodyBytes?: number;
+  /** Per-flow request caps derived from admitted Fungi contract limits. */
+  readonly routeBodyLimits?: ReadonlyMap<string, number>;
   readonly mode?: "dev" | "production" | "deterministic";
   /** Request timeout ms — default 30000 (30s). OWASP F4: prevents slowloris. */
   readonly requestTimeoutMs?: number;
@@ -109,10 +111,19 @@ export async function startServer(
       "Standalone compiler server refuses external binding; use the authenticated app-kernel boundary",
     );
   }
+  const maxBodyBytes = config.maxBodyBytes ?? 1_048_576;
+  if (!Number.isSafeInteger(maxBodyBytes) || maxBodyBytes <= 0) {
+    throw new Error("Galerina: maxBodyBytes must be a positive safe integer");
+  }
+  const routeBodyLimits = new Map(config.routeBodyLimits ?? []);
+  for (const [flowName, limit] of routeBodyLimits) {
+    if (flowName.length === 0 || !Number.isSafeInteger(limit) || limit <= 0) {
+      throw new Error("Galerina: invalid per-route request-size limit");
+    }
+  }
   // W2: the network stack loads only when a server actually starts (see header comment).
   const { createServer } = await import("node:http");
   const registry = buildRouteRegistry(ast);
-  const maxBodyBytes  = config.maxBodyBytes ?? 1_048_576;
   const mode          = config.mode ?? "dev";
   // OWASP F5: rate limit — production/deterministic default 60 req/min; dev 200
   const rateLimit     = config.rateLimit ?? (mode === "dev" ? 200 : 60);
@@ -150,6 +161,11 @@ export async function startServer(
       return;
     }
 
+    const routeBodyLimit = routeBodyLimits.get(match.route.flowName);
+    const effectiveMaxBodyBytes = routeBodyLimit === undefined
+      ? maxBodyBytes
+      : Math.min(maxBodyBytes, routeBodyLimit);
+
     const chunks: Uint8Array[] = [];
     let bodySize = 0;
     let settled = false;
@@ -157,7 +173,7 @@ export async function startServer(
     req.on("data", (chunk: Uint8Array) => {
       if (settled) return;
       bodySize += chunk.length;
-      if (bodySize > maxBodyBytes) {
+      if (bodySize > effectiveMaxBodyBytes) {
         settled = true;
         res.statusCode = 413;
         res.setHeader("Content-Type", "application/json");
