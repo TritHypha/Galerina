@@ -46,6 +46,7 @@ runtime work.
 [ ] Extend the bounded floor into the general RD-0656 VEO object/linker profile
 [ ] Obtain independent live Linux and macOS W^X/entropy receipts
 [ ] Prove hostile-memory isolation/integrity and physical-erasure policy
+SuperGrok 2026-10-07: L45-L48 stay [ ]. TS public surface refuses opaque VM/component-resource transfer and non-closed-profile objects (admitBoundedNativeFloorTransfer; PROPOSED Galerina_RUNTIME_OPAQUE_VM_TRANSFER / NON_CLOSED_PROFILE / VEO_PROFILE_UNBUILT / FLOOR_TRANSFER_UNBOUND). No Rust/Cargo change. No native/wamr-host design. L47/L48 are PROPOSED frozen checklists, not producers.
 [x] Define runtime error format
 [x] Define target fallback runtime contract
     src/runtime-contracts.ts decideTargetFallback (opt-in, declared chain, exact semantics only); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
