@@ -1110,9 +1110,12 @@ not a separate successful product slice.
   package-level SecretGate return contract, GCM update-buffer cleanup and
   copy/alias accounting. A wiped handed view is not proof that handler-created
   copies or immutable strings were erased; unresolved storage stays charged.
-  The current `secret-gate.fungi` source explicitly marks itself NOT
-  build-wired and leaves plaintext `has/use` in the host provider seam; it is
-  a decision twin, not proof of Fungi-owned secret bytes.
+  `secret-gate.fungi` is a listed package asset, and its focused differential
+  test emits, admits and instantiates a WASM decision artifact. It is not the
+  live app-kernel decision path: `kernel.ts` still executes TypeScript
+  `createSecretGate`. The Fungi flow folds presence evidence only; plaintext
+  `has/use` remains in the host provider seam, so this is not proof of
+  Fungi-owned secret bytes, allocation, cleanup or release.
 - [!] **RD-1415 outgoing release:** bind an actual consumer, revoker and output
   inventory; prove release policy, authenticated storage/graph recovery and
   revocation against the same issued source. Synthetic field-challenge and
@@ -1964,8 +1967,10 @@ The design draft is now version 0.7 and contains those constraints, with
 discriminating future tests. Private RD owners were reopened read-only; the
 RD-1415 owner explicitly requires current write authority plus expected
 destination version and separate storage commit/graph publication. The Fungi
-`secret-gate.fungi` source is still only a presence fold and is not
-build-wired. The exact owner hashes/states and source pins remain in the draft;
+`secret-gate.fungi` source is a listed package asset and its focused test emits,
+admits and instantiates a WASM decision artifact. It remains a presence fold,
+not wired into the live kernel path, where `kernel.ts` still executes
+TypeScript `createSecretGate`. The exact owner hashes/states and source pins remain in the draft;
 this review did not change private records or RD dispositions. SuperGrok and
 Grok-Bot reports were reused, not re-dispatched. The owner-approved ECC/RAS plus
 bounded protected-staging choice remains a scoped design decision, not approval
