@@ -80,7 +80,13 @@ core.worktree setting. The erroneous entry was removed; candidate HEAD,
 reflog and staged path set remained unchanged, and the legacy staged-tree
 identity remained exact. The broad run also emitted a failure named
 "classical CLI refuses a legacy CBOR signature and an untrustworthy revocation
-registry" before interruption. Its cause is not adjudicated here. The broad
+registry" before interruption. An isolated rerun with both Git variables unset
+reproduced the failure on this candidate and on the preceding clean source
+branch at `5cb651189a3d693d96a350c1891518de39d1f6e5`. Its production positive
+control expects success without a pinned signed revocation snapshot; the CLI
+refuses. The test and CLI source are unchanged across this consolidation.
+This establishes a baseline failure, not a passing positive control; neither
+the expected result nor the production admission gate was weakened. The broad
 run is INCOMPLETE, not a suite pass; further broad testing must isolate Git
 fixtures from the checkout. Subsequent focused tests ran with both variables
 unset and passed.
