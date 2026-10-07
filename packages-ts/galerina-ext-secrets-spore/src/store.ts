@@ -33,6 +33,7 @@ import {
 } from "./schema.js";
 import type { Manifest, SecretMeta } from "./schema.js";
 import { withWiped } from "./arena.js";
+import { wipeBytes } from "./wipe.js";
 
 /** Deterministic epoch bound into every section's AEAD context (see header note). */
 const SECTION_EPOCH = 0;
@@ -262,7 +263,7 @@ export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3
   try {
     manifest = withWiped(manifestPlain, (b) => parseManifest(new Uint8Array(b)));
   } finally {
-    manifestPlain.fill(0);
+    wipeBytes(manifestPlain);
   }
   return { manifest, sectionByCoord: byCoord };
 }
@@ -284,7 +285,7 @@ export function openValue<T>(
   try {
     return withWiped(plain, (b) => fn(b));
   } finally {
-    plain.fill(0);
+    wipeBytes(plain);
   }
 }
 
@@ -339,8 +340,19 @@ function editInArena(
     const bytes = reseal(recipientPub, newManifest, values);
     return { bytes, manifest: newManifest };
   } finally {
-    for (const v of values.values()) v.fill(0); // zero-wipe every plaintext on every path
+    for (const v of values.values()) wipeBytes(v); // zero-wipe every plaintext on every path
   }
+}
+
+/** @internal Replace an owned plaintext map entry without stranding the prior buffer. */
+export function replaceSecretValue(
+  values: Map<string, Uint8Array>,
+  coordHex: string,
+  replacement: Uint8Array,
+): void {
+  const previous = values.get(coordHex);
+  if (previous !== undefined && previous !== replacement) wipeBytes(previous);
+  values.set(coordHex, replacement);
 }
 
 /** set NAME=value (value bytes from stdin/no-echo prompt — NEVER argv; enforced in cli.ts). */
@@ -351,7 +363,7 @@ export function setSecret(
   return editInArena(buf, recipientSec, recipientPub, token, (manifest, values) => {
     const coord = coordForName(name);
     const coordHex = toHex(coord);
-    values.set(coordHex, Uint8Array.from(valueBytes)); // copy; caller wipes its own source
+    replaceSecretValue(values, coordHex, Uint8Array.from(valueBytes)); // copy; caller wipes its own source
     const prev = manifest.entries[name];
     const meta: SecretMeta = {
       coordHex,
@@ -373,7 +385,7 @@ export function rmSecret(
     const meta = manifest.entries[name];
     if (meta === undefined) throw new SporeCryptoError("MalformedCrypto", `no such secret: ${name}`);
     const v = values.get(meta.coordHex);
-    if (v !== undefined) { v.fill(0); values.delete(meta.coordHex); }
+    if (v !== undefined) { wipeBytes(v); values.delete(meta.coordHex); }
     const entries = { ...manifest.entries };
     delete entries[name];
     return { ...manifest, entries };
@@ -399,7 +411,7 @@ export function rotateRecipient(
     const bytes = reseal(newRecipientPub, newManifest, values);
     return { bytes, manifest: newManifest };
   } finally {
-    for (const v of values.values()) v.fill(0);
+    for (const v of values.values()) wipeBytes(v);
   }
 }
 
