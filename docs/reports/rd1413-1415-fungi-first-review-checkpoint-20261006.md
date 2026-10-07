@@ -197,3 +197,126 @@ not a runtime/FFI/host or physical-residency proof.
 RD-1413/1414/1415 remain **HOLD / NON_AUTHORIZING** until the selected real
 operation has the required end-to-end evidence and owner adjudication. No RD
 disposition, private owner file or product-clearance status changed here.
+
+## 2026-10-07 follow-up — native WSL verification and cross-repository evidence
+
+This addendum records focused local verification and current source findings.
+It does not replace the earlier code pin, establish Fungi runtime guarantees,
+or change any RD disposition. The Galerina checkout is on
+`codex/rd1413-1415-coupled-route-20261004` at HEAD
+`2a4ae02600d71ae7fdae4f6898199eee5fef9079`, matching its upstream branch and
+clean before this documentation-only addition. The previously recorded source
+pin remains `f7751c852444285ae74562b1dbf59778817b6117`; do not conflate that
+source pin with the later documentation HEAD.
+
+### Focused local tests (not Git CI)
+
+- In WSL, `npm run typecheck`, `npm run build`, and
+  `node --test tests/webhook-admission.test.mjs tests/api-server.test.mjs`
+  passed in `packages-ts/galerina-framework-api-server` (21/21 tests). This
+  checks the bootstrap API's HMAC/replay admission and dispatch behavior. It
+  does not demonstrate a production `/secure` operation, a Fungi authority
+  chain, or secret-byte custody at a Fungi/FFI/host boundary.
+- In WSL, `cargo test --locked --offline --manifest-path
+  packages-ts/galerina-core-runtime/native/vok-authority/Cargo.toml --
+  --include-ignored` passed (33 unit tests, 2 integration tests, 15 doctests;
+  50 total). The suite includes
+  `secret_arena_owned_copy_survives_arena_cleanup`: a copied secret survives
+  arena cleanup. This is a useful counterexample for copy accounting, not a
+  Fungi integration result or a claim that cleanup is complete. The build also
+  reports `with_bytes_mut` as unused in the Rust library build, so these tests
+  do not establish a production caller for that primitive.
+- In WSL, SLIDE's focused dirty-delta tests
+  `tests/tri-pipe-alternative-admission.test.mjs`,
+  `tests/tri-pipe-alternative-vok.test.mjs`, and
+  `tests/vok-live-gate-profile.test.mjs` passed (69/69). The existing owner
+  delta adds process-local admission provenance/reservation and fail-closed
+  terminal handling for post-sink receipt or revocation failures, with
+  re-entry, duplicate-evaluation, lease-reuse and receipt-publication tests.
+  These tests concern Tri-Pipe/VOK admission and ordering; they do not prove
+  secret-memory custody or Galerina Fungi integration. The six modified SLIDE
+  source/test files were pre-existing owner changes and were preserved, not
+  staged or committed by this review.
+
+### Cross-project boundary checks
+
+- SLIDE's `contracts/v2/25-V2-D-SAFE-VALUE-MEMORY-INCREMENT.md` describes a
+  bounded semantic-memory model. It explicitly does not establish native
+  allocation, optimized wiping, FFI/host-call effects, or protected secret
+  memory. Do not treat that plan as the RD-1413/1414/1415 implementation.
+- Lyth-Weaver is clean at `main` / `origin/main`, HEAD
+  `c5c8c67dc51619c1439f7dc287b3e06c732ee420`. Current TODO source records
+  owner decision OD-1733 unblocking previously held memory rows for completion;
+  that is not evidence that all Lyth TODOs are complete. Reconcile and verify
+  the specific relevant rows rather than relying on historical handover text.
+- The exact protected `/secure` handler/object remains absent from the inspected
+  API-server source. `admitWebhookReplay` remains a real secret-using bootstrap
+  candidate, but it still lacks the bound principal, object/version,
+  grant-issuer/revoker, provider/key-custodian, Fungi lease and authorized sink
+  required to qualify as the protected operation. The owner must either
+  nominate this candidate for protected integration or identify the actual
+  `/secure` handler and object by path, symbol and source commit.
+- Current-head call-site check at `2a4ae02600d71ae7fdae4f6898199eee5fef9079`:
+  among non-test source under `packages-ts`, the only `createApiServer(...)`
+  construction found is `packages-ts/galerina-framework-example-app/host/server.ts:165`,
+  and it passes no `webhook` option. The API-server's webhook path is real and
+  conditionally wired in `src/index.ts`, but this repository does not currently
+  show a non-test caller configuring it. This narrows the finding: there is a
+  concrete secret-using implementation candidate, but no demonstrated
+  first-party configured protected operation at this pin.
+- This pass did not refresh or mutate Myco/KB indexes, change SLIDE owner files,
+  or reconcile the relevant KB and all cross-project TODO/RD owners. Those
+  remain explicit work, not inferred absence or completion.
+
+No Git CI was run. Local WSL test results are bounded to the named packages and
+fixtures. They provide implementation evidence for the tested bootstrap
+components only; design intent, compiler enforcement, loaded runtime/FFI/host
+enforcement, physical residency and end-to-end protected-operation evidence
+remain separate proof obligations. RD-1413/1414/1415 remain **HOLD /
+NON_AUTHORIZING**; no RD disposition or private owner file changed.
+
+## 2026-10-07 follow-up — source-pinned Fungi ownership and Wasm boundary
+
+Rechecked the live Galerina checkout at HEAD
+`2a4ae02600d71ae7fdae4f6898199eee5fef9079` (branch
+`codex/rd1413-1415-coupled-route-20261004`). The source evidence narrows an
+important design/implementation gap:
+
+- `packages-ts/galerina-core-compiler/src/parser.ts` labels
+  `parseResourceDecl()` as structural capture and explicitly says Phase 17
+  semantics/enforcement are deferred (around lines 6106-6111). The matching
+  `tests/resource-decl.test.mjs` asserts that a `resourceDecl` AST node and its
+  child blocks are parsed. This proves syntax/AST capture only; it does not
+  prove affine ownership, alias prevention, mandatory cleanup, or lowering into
+  runtime obligations.
+- `packages-ts/galerina-core-compiler/src/wat-emitter.ts` unconditionally emits
+  `(export "memory" (memory 0))` for the current module (around line 805).
+  `packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts` binds the
+  instance's exported `WebAssembly.Memory` to the host (around lines 1004-1008)
+  and `snapshotMemory()` returns a new byte-array copy of the complete buffer
+  (around lines 937-939). Thus this current ordinary-Wasm-memory route cannot
+  substantiate a claim that protected bytes in that memory are inaccessible to
+  the host or that copies are accounted for. The snapshot is documented for a
+  trap observer; whether/when it is invoked is a separate question and this
+  finding does not claim every normal run snapshots memory.
+- On WSL and native Windows, the focused local command
+  `node --test tests/resource-decl.test.mjs tests/wat-memory-runtime-bounds.test.mjs`
+  passed 14/14 on each platform. The assertions cover resource lexing/AST
+  capture and ordinary arena bounds/handle lifetime; they do not assert affine
+  ownership, mandatory cleanup, protected-memory isolation, or complete copy
+  tracking. These were local test runs, not Git CI.
+- The source search for the supplied
+  `memory-rd-owner-context-20261006.md` filename and for RD-1413/1414/1415 text
+  in Markdown, text and JSON under `D:\moving` returned no matches. This is a
+  scoped search result, not proof that no equivalent exists in another format
+  or under another root/name. The owner-pasted part-1 inventory remains
+  unverified discovery context; no private RD body was copied into this report.
+
+This establishes a concrete compiler/runtime proof gap, not a limit on what
+Fungi may guarantee. To close it, the language/compiler needs an owner-approved
+protected-memory representation and ownership/effect contract, and the selected
+runtime/FFI/host profile must enforce it. The current resource AST node and
+exported-memory bootstrap are not that implementation. No syntax, ABI, or
+enforcement rule is selected by this note; the existing design decision remains
+open. No tests, source code, RD status, or private owner files were changed in
+this follow-up.
