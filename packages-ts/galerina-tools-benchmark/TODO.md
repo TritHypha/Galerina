@@ -165,12 +165,12 @@ generator existed is superseded by the 2026-10-05 note above.)
 ## Phase 9: External Runtime Comparisons
 
 ```text
-[ ] Add optional external runtime comparison runner
-[ ] Add optional external compiled-output comparison runner
-[ ] Use same generated input data
-[ ] Record runtime version
-[ ] Record compiler version and flags where applicable
-[ ] Write comparison report
+[ ] Add optional external runtime comparison runner -- open: no runner yet; the report contract below is what it must feed (argv composition is in parked draft #149)
+[ ] Add optional external compiled-output comparison runner -- open: needs compiled .fungi benchmark sources and an admitted artifact path (owner/Codex decision); no runner yet
+[x] Use same generated input data -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): every side carries the SHA-256 of the generated input it fed; any mismatch or malformed digest refuses the report (FUNGI-BENCH-CMP-002), so no comparison is ever made across different inputs. Enforced at the report contract; runners still open
+[x] Record runtime version -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): each side must record runtime {name, version} as short closed tokens (no spaces/paths), else FUNGI-BENCH-CMP-003
+[x] Record compiler version and flags where applicable -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): the compiled side must record compiler {name, version, flags[]} (<=32 unique --flag[=value] tokens, no paths/spaces); a compiler on the runtime side is refused (FUNGI-BENCH-CMP-003)
+[x] Write comparison report -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): closed galerina.tools-benchmark.comparison/v1 report (sides ordered runtime, compiled; sameInput true; runtime/compiled duration ratio only when both passed); shareable always false, authority NON_AUTHORIZING; closed shapes, never throws or echoes; FUNGI-BENCH-CMP-001..005. Report built in memory; --save stays with the in-package runner follow-ups
 ```
 
 ## Notes (Grok 2026-10-05 Bool logic benchmark)
