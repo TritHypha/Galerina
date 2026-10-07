@@ -677,7 +677,8 @@ export function isBenchmarkReportShareable(
 // `process.platform`, `process.arch`, `os.availableParallelism()`), so this
 // package keeps its node-core border unchanged. Output is a closed vocabulary
 // or a coarse bucket, never a raw probe string: no hostname, username, CPU
-// model, serial or path can pass through. RAM detection is deliberately absent.
+// model, serial or path can pass through. RAM bucket and vector
+// features live in src/target-detection.ts (separate probes; this probe stays closed).
 
 export type BenchmarkOsFamily = "linux" | "macos" | "windows" | "android" | "bsd" | "other" | "unknown";
 
@@ -799,6 +800,29 @@ export function detectBenchmarkSystem(probe: unknown): BenchmarkSystemDetection 
     diagnostics: Object.freeze(diagnostics),
   });
 }
+
+// Target detection, second slice (Phase 4): RAM bucket and vector features.
+export {
+  BENCHMARK_MEMORY_BUCKETS,
+  BENCHMARK_MEMORY_PROBE_FIELDS,
+  MIN_BENCHMARK_TOTAL_MEMORY_BYTES,
+  BENCHMARK_VECTOR_FEATURES,
+  BENCHMARK_VECTOR_PROBE_FIELDS,
+  MAX_BENCHMARK_CPU_FLAGS,
+  bucketTotalMemory,
+  detectBenchmarkMemory,
+  detectBenchmarkVectorFeatures,
+  wasmSimd128ProbeBytes,
+  type BenchmarkMemoryBucket,
+  type BenchmarkMemoryProbe,
+  type BenchmarkMemoryDetection,
+  type BenchmarkVectorFeature,
+  type BenchmarkVectorBackend,
+  type BenchmarkVectorProbe,
+  type BenchmarkVectorDetection,
+  type TargetDetectionDiagnostic,
+  type TargetDetectionSeverity,
+} from "./target-detection.js";
 
 // ── shareable reports, version-trigger state and submit placeholder (TODO pass, Grok 2026-10-05) ──
 // Pure and fail-closed. The shareable generator REBUILDS a report from the closed
