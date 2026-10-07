@@ -16,6 +16,14 @@ function verifyResult(matches: boolean): CryptoProviderResult {
   return { ok: true, kind: "verify", matches };
 }
 
+function verifyFailure(algorithm: "bcrypt" | "argon2id"): CryptoProviderResult {
+  return {
+    ok: false,
+    code: "KDF_VERIFY_FAILED",
+    message: `${algorithm} verification backend failed`,
+  };
+}
+
 /**
  * Host adapter that lazily loads bcryptjs / argon2 when invoked.
  * Importing this module does not load native C bindings; calling invoke does.
@@ -64,7 +72,7 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
         try {
           return verifyResult(await bcryptCompareAsync(bcrypt, request.plaintext, request.hash));
         } catch {
-          return verifyResult(false);
+          return verifyFailure("bcrypt");
         }
       }
       const argon2 = await import("argon2");
@@ -74,7 +82,7 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
       try {
         return verifyResult(await argon2.verify(request.hash, request.plaintext));
       } catch {
-        return verifyResult(false);
+        return verifyFailure("argon2id");
       }
     },
   };
