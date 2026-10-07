@@ -10,7 +10,13 @@ mod native;
 #[allow(unsafe_code)]
 mod secret_arena;
 
-pub use secret_arena::{MemoryStatus, SecretArena, SecretArenaError};
+pub use secret_arena::{
+    MemoryStatus, RuntimeErrorCode, SecretArena, SecretArenaError, ERR_SECRET_ARENA_CLEANUP_FAILED,
+    ERR_SECRET_ARENA_CREATE_REFUSED, ERR_SECRET_ARENA_INVALID_LENGTH, ERR_SECRET_ARENA_MAP_REFUSED,
+    ERR_SECRET_ARENA_NOT_ACTIVE, ERR_SECRET_ARENA_NOT_ALLOCATED,
+    ERR_SECRET_ARENA_PAGE_SIZE_REFUSED, ERR_SECRET_ARENA_RESIZE_REFUSED,
+    ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM,
+};
 
 pub const MAX_AUTHORITY_TAG_BYTES: usize = 96;
 pub const MAX_TABLE_CAPACITY: usize = 65_536;

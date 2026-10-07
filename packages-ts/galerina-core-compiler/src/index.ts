@@ -742,6 +742,16 @@ export const FUNGI_AFFINE_004 = {
   suggestedFix: "Pass authority directly and store only non-authorizing identity or evidence in ordinary data.",
 } as const;
 
+/** FUNGI-AFFINE-005: secret leases are refused until Fungi cleanup is bound to a real runtime. */
+export const FUNGI_AFFINE_005 = {
+  code: "FUNGI-AFFINE-005",
+  name: "SECRET_LEASE_RUNTIME_UNWIRED",
+  severity: "error" as const,
+  message: "A secret lease cannot be used until compiler-enforced cleanup is bound to a runtime.",
+  why: "Single-use transfer does not wipe or retire secret storage when the owning scope exits.",
+  suggestedFix: "Keep secret-lease use on hold until cleanup semantics, path-sensitive discharge, and the runtime binding are implemented together.",
+} as const;
+
 // ---------------------------------------------------------------------------
 // Gate diagnostics — FUNGI-GATE-003 (RESERVED)
 //
@@ -1298,6 +1308,7 @@ export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
   invokeAdmittedExport, finalizeSecretExportResult,
+  WASM_EFFECT_GRANT_ABI, FUNGI_WASM_GRANT_001,
 } from "@galerina/core-runtime-wasm";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,

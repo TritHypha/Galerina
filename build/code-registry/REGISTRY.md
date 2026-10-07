@@ -13,41 +13,232 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 211 | emitted with an exported constant |
-| inline | 446 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 123 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
-| dead | 26 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 91 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 277 | referenced only (no def/emit) |
+| live | 230 | emitted with an exported constant |
+| inline | 450 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 161 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| dead | 217 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
+| phantom | 76 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 286 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
+- `FUNGI-APPK-001`
+- `FUNGI-APPK-002`
+- `FUNGI-APPK-003`
+- `FUNGI-APPK-004`
+- `FUNGI-APPK-005`
+- `FUNGI-APPK-APB-001`
+- `FUNGI-APPK-APB-002`
+- `FUNGI-APPK-APB-003`
+- `FUNGI-APPK-APB-004`
+- `FUNGI-APPK-APB-005`
+- `FUNGI-APPK-ASH-001`
+- `FUNGI-APPK-ASH-002`
+- `FUNGI-APPK-ASH-003`
+- `FUNGI-APPK-ASH-004`
+- `FUNGI-APPK-ASH-005`
+- `FUNGI-APPK-IDR-001`
+- `FUNGI-APPK-IDR-002`
+- `FUNGI-APPK-IDR-003`
+- `FUNGI-APPK-IDR-004`
+- `FUNGI-APPK-IDR-005`
+- `FUNGI-APPK-QJC-001`
+- `FUNGI-APPK-QJC-002`
+- `FUNGI-APPK-QJC-003`
+- `FUNGI-APPK-QJC-004`
+- `FUNGI-APPK-QJC-005`
+- `FUNGI-APPK-RAR-001`
+- `FUNGI-APPK-RAR-002`
+- `FUNGI-APPK-RAR-003`
+- `FUNGI-APPK-RAR-004`
+- `FUNGI-APPK-RAR-005`
+- `FUNGI-APPK-RLW-001`
+- `FUNGI-APPK-RLW-002`
+- `FUNGI-APPK-RLW-003`
+- `FUNGI-APPK-RLW-004`
+- `FUNGI-APPK-RLW-005`
+- `FUNGI-APPK-RVP-001`
+- `FUNGI-APPK-RVP-002`
+- `FUNGI-APPK-RVP-003`
+- `FUNGI-APPK-RVP-004`
+- `FUNGI-APPK-RVP-005`
+- `FUNGI-APPK-SAW-001`
+- `FUNGI-APPK-SAW-002`
+- `FUNGI-APPK-SAW-003`
+- `FUNGI-APPK-SAW-004`
+- `FUNGI-APPK-SAW-005`
+- `FUNGI-APPK-SRP-001`
+- `FUNGI-APPK-SRP-002`
+- `FUNGI-APPK-SRP-003`
+- `FUNGI-APPK-SRP-004`
+- `FUNGI-APPK-SRP-005`
 - `FUNGI-ASYNC-002`
 - `FUNGI-ASYNC-003`
 - `FUNGI-ASYNC-004`
 - `FUNGI-ASYNC-005`
 - `FUNGI-ASYNC-006`
+- `FUNGI-BENCH-BOOL-001`
+- `FUNGI-BENCH-BOOL-002`
+- `FUNGI-BENCH-BOOL-003`
+- `FUNGI-BENCH-BOOL-004`
+- `FUNGI-BENCH-BOOL-005`
+- `FUNGI-BENCH-CPU-ARITH-001`
+- `FUNGI-BENCH-CPU-ARITH-002`
+- `FUNGI-BENCH-CPU-ARITH-003`
+- `FUNGI-BENCH-CPU-ARITH-004`
+- `FUNGI-BENCH-CPU-ARITH-005`
+- `FUNGI-BENCH-JSON-001`
+- `FUNGI-BENCH-JSON-002`
+- `FUNGI-BENCH-JSON-003`
+- `FUNGI-BENCH-JSON-004`
+- `FUNGI-BENCH-JSON-005`
+- `FUNGI-BENCH-JSONG-001`
+- `FUNGI-BENCH-JSONG-002`
+- `FUNGI-BENCH-JSONG-003`
+- `FUNGI-BENCH-JSONG-004`
+- `FUNGI-BENCH-JSONG-005`
+- `FUNGI-BENCH-JSONS-001`
+- `FUNGI-BENCH-JSONS-002`
+- `FUNGI-BENCH-JSONS-003`
+- `FUNGI-BENCH-JSONS-004`
+- `FUNGI-BENCH-JSONS-005`
+- `FUNGI-BENCH-MAT-001`
+- `FUNGI-BENCH-MAT-002`
+- `FUNGI-BENCH-MAT-003`
+- `FUNGI-BENCH-MAT-004`
+- `FUNGI-BENCH-MAT-005`
+- `FUNGI-BENCH-RO-001`
+- `FUNGI-BENCH-RO-002`
+- `FUNGI-BENCH-RO-003`
+- `FUNGI-BENCH-RO-004`
+- `FUNGI-BENCH-RO-005`
+- `FUNGI-BENCH-RUN-001`
+- `FUNGI-BENCH-RUN-002`
+- `FUNGI-BENCH-RUN-003`
+- `FUNGI-BENCH-RUN-004`
+- `FUNGI-BENCH-RUN-005`
+- `FUNGI-BENCH-SHA-001`
+- `FUNGI-BENCH-SHA-002`
+- `FUNGI-BENCH-SHA-003`
+- `FUNGI-BENCH-SHA-004`
+- `FUNGI-BENCH-SHA-005`
+- `FUNGI-BENCH-TRI-001`
+- `FUNGI-BENCH-TRI-002`
+- `FUNGI-BENCH-TRI-003`
+- `FUNGI-BENCH-TRI-004`
+- `FUNGI-BENCH-TRI-005`
+- `FUNGI-BENCH-VEC-001`
+- `FUNGI-BENCH-VEC-002`
+- `FUNGI-BENCH-VEC-003`
+- `FUNGI-BENCH-VEC-004`
+- `FUNGI-BENCH-VEC-005`
 - `FUNGI-BLOCK-003`
+- `FUNGI-BUILD-003`
+- `FUNGI-BUILD-004`
 - `FUNGI-BYTE-002`
 - `FUNGI-BYTE-003`
 - `FUNGI-BYTE-005`
 - `FUNGI-CHAR-002`
 - `FUNGI-CHAR-004`
 - `FUNGI-CLI-001`
+- `FUNGI-CLI-BUILD-001`
+- `FUNGI-CLI-BUILD-002`
+- `FUNGI-CLI-BUILD-003`
+- `FUNGI-CLI-BUILD-005`
+- `FUNGI-CLI-DEPLOY-001`
+- `FUNGI-CLI-DEPLOY-002`
+- `FUNGI-CLI-DEPLOY-003`
+- `FUNGI-CLI-DEPLOY-004`
+- `FUNGI-CLI-DEPLOY-005`
 - `FUNGI-CLI-ENV-002`
 - `FUNGI-CLI-ENV-003`
+- `FUNGI-CLI-EXPLAIN-001`
+- `FUNGI-CLI-EXPLAIN-002`
+- `FUNGI-CLI-EXPLAIN-003`
+- `FUNGI-CLI-EXPLAIN-005`
 - `FUNGI-CLI-INIT-001`
 - `FUNGI-CLI-INIT-002`
 - `FUNGI-CLI-INIT-003`
 - `FUNGI-CLI-INIT-004`
+- `FUNGI-CLI-PLAN-001`
+- `FUNGI-CLI-PLAN-002`
+- `FUNGI-CLI-PLAN-003`
+- `FUNGI-CLI-PLAN-005`
+- `FUNGI-CLI-PROMOTE-001`
+- `FUNGI-CLI-PROMOTE-002`
+- `FUNGI-CLI-PROMOTE-003`
+- `FUNGI-CLI-VDEPLOY-001`
+- `FUNGI-CLI-VDEPLOY-002`
+- `FUNGI-CLI-VDEPLOY-003`
+- `FUNGI-CLI-VERIFY-001`
+- `FUNGI-CLI-VERIFY-002`
+- `FUNGI-CLI-VERIFY-003`
+- `FUNGI-CLI-VERIFY-004`
+- `FUNGI-CLI-VERIFY-005`
+- `FUNGI-DEPLOY-002`
+- `FUNGI-DEPLOY-005`
+- `FUNGI-EXPLAIN-002`
+- `FUNGI-EXPLAIN-003`
+- `FUNGI-EXPLAIN-005`
 - `FUNGI-JSON-001`
+- `FUNGI-PLAN-001`
+- `FUNGI-PLAN-002`
+- `FUNGI-PLAN-003`
+- `FUNGI-PLAN-004`
+- `FUNGI-PROMOTE-002`
+- `FUNGI-PROMOTE-004`
+- `FUNGI-PROMOTE-005`
+- `FUNGI-SEC-ASG-001`
+- `FUNGI-SEC-ASG-002`
+- `FUNGI-SEC-ASG-003`
+- `FUNGI-SEC-ASG-004`
+- `FUNGI-SEC-ASG-005`
+- `FUNGI-SEC-CAP-001`
+- `FUNGI-SEC-CAP-002`
+- `FUNGI-SEC-CAP-003`
+- `FUNGI-SEC-CAP-004`
+- `FUNGI-SEC-CAP-005`
+- `FUNGI-SEC-CIV-001`
+- `FUNGI-SEC-CIV-002`
+- `FUNGI-SEC-CIV-003`
+- `FUNGI-SEC-CIV-004`
+- `FUNGI-SEC-CIV-005`
+- `FUNGI-SEC-CLA-001`
+- `FUNGI-SEC-CLA-002`
+- `FUNGI-SEC-CLA-003`
+- `FUNGI-SEC-CLA-004`
+- `FUNGI-SEC-CLA-005`
+- `FUNGI-SEC-OWC-001`
+- `FUNGI-SEC-OWC-002`
+- `FUNGI-SEC-OWC-003`
+- `FUNGI-SEC-OWC-004`
+- `FUNGI-SEC-OWC-005`
+- `FUNGI-SEC-POL-001`
+- `FUNGI-SEC-POL-002`
+- `FUNGI-SEC-POL-004`
+- `FUNGI-SEC-POL-005`
+- `FUNGI-SEC-SRN-001`
+- `FUNGI-SEC-SRN-002`
+- `FUNGI-SEC-SRN-003`
+- `FUNGI-SEC-SRN-004`
+- `FUNGI-SEC-SRN-005`
 - `FUNGI-STRING-003`
 - `FUNGI-STRING-004`
-- `FUNGI-VERIFY-001`
+- `FUNGI-VDEPLOY-004`
+- `FUNGI-VDEPLOY-005`
 - `FUNGI-VERIFY-002`
-- `FUNGI-VERIFY-003`
 - `FUNGI-VERIFY-004`
 - `FUNGI-VERIFY-005`
+- `FUNGI-VERIFY-006`
+- `FUNGI-VERIFY-007`
+- `FUNGI-VERIFY-008`
+- `FUNGI-VERIFY-010`
+- `FUNGI-VERIFY-011`
+- `FUNGI-VERIFY-012`
+- `FUNGI-VERIFY-013`
+- `FUNGI-VERIFY-014`
+- `FUNGI-VERIFY-015`
+- `FUNGI-VERIFY-016`
 
 ## Catalog (by family)
 
@@ -84,7 +275,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | GATE-ADMIT-010 | inline | GATE_V3_ADMISSION_NOT_A_STATEMENT | — |
 | GATE-ADMIT-011 | inline | GATE_V3_ADMISSION_VERDICT_NOT_ADMITTED | — |
 
-### AFFINE (4)
+### AFFINE (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -92,6 +283,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-AFFINE-002 | live | AUTHORITY_CONSUMED_TWICE | error |
 | FUNGI-AFFINE-003 | live | AUTHORITY_PERSISTENCE_FORBIDDEN | error |
 | FUNGI-AFFINE-004 | live | AUTHORITY_CONTAINMENT_FORBIDDEN | error |
+| FUNGI-AFFINE-005 | live | SECRET_LEASE_RUNTIME_UNWIRED | error |
 
 ### AMD (1)
 
@@ -104,6 +296,61 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-ANTI-ABUSE-001 | referenced | UNGOVERNES_BACKGROUND_EXECUTION | error |
+
+### APPK (50)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-APPK-001 | dead | — | — |
+| FUNGI-APPK-002 | dead | — | — |
+| FUNGI-APPK-003 | dead | — | — |
+| FUNGI-APPK-004 | dead | — | — |
+| FUNGI-APPK-005 | dead | — | — |
+| FUNGI-APPK-APB-001 | dead | — | — |
+| FUNGI-APPK-APB-002 | dead | — | — |
+| FUNGI-APPK-APB-003 | dead | — | — |
+| FUNGI-APPK-APB-004 | dead | — | — |
+| FUNGI-APPK-APB-005 | dead | — | — |
+| FUNGI-APPK-ASH-001 | dead | — | — |
+| FUNGI-APPK-ASH-002 | dead | — | — |
+| FUNGI-APPK-ASH-003 | dead | — | — |
+| FUNGI-APPK-ASH-004 | dead | — | — |
+| FUNGI-APPK-ASH-005 | dead | — | — |
+| FUNGI-APPK-IDR-001 | dead | — | — |
+| FUNGI-APPK-IDR-002 | dead | — | — |
+| FUNGI-APPK-IDR-003 | dead | — | — |
+| FUNGI-APPK-IDR-004 | dead | — | — |
+| FUNGI-APPK-IDR-005 | dead | — | — |
+| FUNGI-APPK-QJC-001 | dead | — | — |
+| FUNGI-APPK-QJC-002 | dead | — | — |
+| FUNGI-APPK-QJC-003 | dead | — | — |
+| FUNGI-APPK-QJC-004 | dead | — | — |
+| FUNGI-APPK-QJC-005 | dead | — | — |
+| FUNGI-APPK-RAR-001 | dead | — | — |
+| FUNGI-APPK-RAR-002 | dead | — | — |
+| FUNGI-APPK-RAR-003 | dead | — | — |
+| FUNGI-APPK-RAR-004 | dead | — | — |
+| FUNGI-APPK-RAR-005 | dead | — | — |
+| FUNGI-APPK-RLW-001 | dead | — | — |
+| FUNGI-APPK-RLW-002 | dead | — | — |
+| FUNGI-APPK-RLW-003 | dead | — | — |
+| FUNGI-APPK-RLW-004 | dead | — | — |
+| FUNGI-APPK-RLW-005 | dead | — | — |
+| FUNGI-APPK-RVP-001 | dead | — | — |
+| FUNGI-APPK-RVP-002 | dead | — | — |
+| FUNGI-APPK-RVP-003 | dead | — | — |
+| FUNGI-APPK-RVP-004 | dead | — | — |
+| FUNGI-APPK-RVP-005 | dead | — | — |
+| FUNGI-APPK-SAW-001 | dead | — | — |
+| FUNGI-APPK-SAW-002 | dead | — | — |
+| FUNGI-APPK-SAW-003 | dead | — | — |
+| FUNGI-APPK-SAW-004 | dead | — | — |
+| FUNGI-APPK-SAW-005 | dead | — | — |
+| FUNGI-APPK-SRP-001 | dead | — | — |
+| FUNGI-APPK-SRP-002 | dead | — | — |
+| FUNGI-APPK-SRP-003 | dead | — | — |
+| FUNGI-APPK-SRP-004 | dead | — | — |
+| FUNGI-APPK-SRP-005 | dead | — | — |
 
 ### ARCH (2)
 
@@ -186,6 +433,73 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-BACKEND-001 | live | BACKEND_ERROR | error |
 
+### BENCH (62)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-BENCH-BOOL-001 | dead | — | — |
+| FUNGI-BENCH-BOOL-002 | dead | — | — |
+| FUNGI-BENCH-BOOL-003 | dead | — | — |
+| FUNGI-BENCH-BOOL-004 | dead | — | — |
+| FUNGI-BENCH-BOOL-005 | dead | — | — |
+| FUNGI-BENCH-CMP-00 | ref | — | — |
+| FUNGI-BENCH-CMP-001 | referenced | — | — |
+| FUNGI-BENCH-CMP-002 | referenced | — | — |
+| FUNGI-BENCH-CMP-003 | referenced | — | — |
+| FUNGI-BENCH-CMP-004 | referenced | — | — |
+| FUNGI-BENCH-CMP-005 | referenced | — | — |
+| FUNGI-BENCH-CPU-ARITH-001 | dead | — | — |
+| FUNGI-BENCH-CPU-ARITH-002 | dead | — | — |
+| FUNGI-BENCH-CPU-ARITH-003 | dead | — | — |
+| FUNGI-BENCH-CPU-ARITH-004 | dead | — | — |
+| FUNGI-BENCH-CPU-ARITH-005 | dead | — | — |
+| FUNGI-BENCH-JSON-001 | dead | — | — |
+| FUNGI-BENCH-JSON-002 | dead | — | — |
+| FUNGI-BENCH-JSON-003 | dead | — | — |
+| FUNGI-BENCH-JSON-004 | dead | — | — |
+| FUNGI-BENCH-JSON-005 | dead | — | — |
+| FUNGI-BENCH-JSONG-001 | dead | — | — |
+| FUNGI-BENCH-JSONG-002 | dead | — | — |
+| FUNGI-BENCH-JSONG-003 | dead | — | — |
+| FUNGI-BENCH-JSONG-004 | dead | — | — |
+| FUNGI-BENCH-JSONG-005 | dead | — | — |
+| FUNGI-BENCH-JSONS-001 | dead | — | — |
+| FUNGI-BENCH-JSONS-002 | dead | — | — |
+| FUNGI-BENCH-JSONS-003 | dead | — | — |
+| FUNGI-BENCH-JSONS-004 | dead | — | — |
+| FUNGI-BENCH-JSONS-005 | dead | — | — |
+| FUNGI-BENCH-MAT-001 | dead | — | — |
+| FUNGI-BENCH-MAT-002 | dead | — | — |
+| FUNGI-BENCH-MAT-003 | dead | — | — |
+| FUNGI-BENCH-MAT-004 | dead | — | — |
+| FUNGI-BENCH-MAT-005 | dead | — | — |
+| FUNGI-BENCH-RO-001 | dead | — | — |
+| FUNGI-BENCH-RO-002 | dead | — | — |
+| FUNGI-BENCH-RO-003 | dead | — | — |
+| FUNGI-BENCH-RO-004 | dead | — | — |
+| FUNGI-BENCH-RO-005 | dead | — | — |
+| FUNGI-BENCH-RUN-001 | dead | — | — |
+| FUNGI-BENCH-RUN-002 | dead | — | — |
+| FUNGI-BENCH-RUN-003 | dead | — | — |
+| FUNGI-BENCH-RUN-004 | dead | — | — |
+| FUNGI-BENCH-RUN-005 | dead | — | — |
+| FUNGI-BENCH-RUN-006 | referenced | — | — |
+| FUNGI-BENCH-SHA-001 | dead | — | — |
+| FUNGI-BENCH-SHA-002 | dead | — | — |
+| FUNGI-BENCH-SHA-003 | dead | — | — |
+| FUNGI-BENCH-SHA-004 | dead | — | — |
+| FUNGI-BENCH-SHA-005 | dead | — | — |
+| FUNGI-BENCH-TRI-001 | dead | — | — |
+| FUNGI-BENCH-TRI-002 | dead | — | — |
+| FUNGI-BENCH-TRI-003 | dead | — | — |
+| FUNGI-BENCH-TRI-004 | dead | — | — |
+| FUNGI-BENCH-TRI-005 | dead | — | — |
+| FUNGI-BENCH-VEC-001 | dead | — | — |
+| FUNGI-BENCH-VEC-002 | dead | — | — |
+| FUNGI-BENCH-VEC-003 | dead | — | — |
+| FUNGI-BENCH-VEC-004 | dead | — | — |
+| FUNGI-BENCH-VEC-005 | dead | — | — |
+
 ### BF (2)
 
 | code | status | name(s) | severity |
@@ -246,16 +560,18 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-BOUNDARY-005 | phantom | — | — |
 | FUNGI-BOUNDARY-006 | phantom | — | — |
 | FUNGI-BOUNDARY-007 | phantom | — | — |
-| FUNGI-BOUNDARY-008 | phantom | — | — |
+| FUNGI-BOUNDARY-008 | ref | — | — |
 | FUNGI-BOUNDARY-009 | phantom | — | — |
 
-### BUILD (3)
+### BUILD (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-BUILD-001 | referenced | NON_DETERMINISTIC_BUILD | error |
-| FUNGI-BUILD-002 | ref | — | — |
-| FUNGI-BUILD-005 | phantom | — | — |
+| FUNGI-BUILD-002 | referenced | — | — |
+| FUNGI-BUILD-003 | dead | — | — |
+| FUNGI-BUILD-004 | dead | — | — |
+| FUNGI-BUILD-005 | referenced | — | — |
 
 ### BYTE (5)
 
@@ -279,7 +595,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-CAP-001 | inline | NETWORK_WILDCARD_BANNED | — |
-| FUNGI-CAP-002 | phantom | — | — |
+| FUNGI-CAP-002 | ref | — | — |
 
 ### CAPABILITY (1)
 
@@ -303,22 +619,56 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-CHECK-001 | inline | NON_EXHAUSTIVE_CHECK | — |
 | FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | error |
 
-### CLI (12)
+### CLI (46)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-CLI-001 | dead | — | — |
 | FUNGI-CLI-002 | referenced | — | — |
 | FUNGI-CLI-003 | live | — | — |
+| FUNGI-CLI-BUILD-001 | dead | — | — |
+| FUNGI-CLI-BUILD-002 | dead | — | — |
+| FUNGI-CLI-BUILD-003 | dead | — | — |
+| FUNGI-CLI-BUILD-004 | referenced | — | — |
+| FUNGI-CLI-BUILD-005 | dead | — | — |
+| FUNGI-CLI-DEPLOY-001 | dead | — | — |
+| FUNGI-CLI-DEPLOY-002 | dead | — | — |
+| FUNGI-CLI-DEPLOY-003 | dead | — | — |
+| FUNGI-CLI-DEPLOY-004 | dead | — | — |
+| FUNGI-CLI-DEPLOY-005 | dead | — | — |
 | FUNGI-CLI-ENV-001 | referenced | — | — |
 | FUNGI-CLI-ENV-002 | dead | — | — |
 | FUNGI-CLI-ENV-003 | dead | — | — |
+| FUNGI-CLI-EXPLAIN-001 | dead | — | — |
+| FUNGI-CLI-EXPLAIN-002 | dead | — | — |
+| FUNGI-CLI-EXPLAIN-003 | dead | — | — |
+| FUNGI-CLI-EXPLAIN-004 | referenced | — | — |
+| FUNGI-CLI-EXPLAIN-005 | dead | — | — |
 | FUNGI-CLI-INIT-001 | dead | — | — |
 | FUNGI-CLI-INIT-002 | dead | — | — |
 | FUNGI-CLI-INIT-003 | dead | — | — |
 | FUNGI-CLI-INIT-004 | dead | — | — |
 | FUNGI-CLI-INIT-005 | live | — | — |
+| FUNGI-CLI-PLAN-001 | dead | — | — |
+| FUNGI-CLI-PLAN-002 | dead | — | — |
+| FUNGI-CLI-PLAN-003 | dead | — | — |
+| FUNGI-CLI-PLAN-004 | referenced | — | — |
+| FUNGI-CLI-PLAN-005 | dead | — | — |
+| FUNGI-CLI-PROMOTE-001 | dead | — | — |
+| FUNGI-CLI-PROMOTE-002 | dead | — | — |
+| FUNGI-CLI-PROMOTE-003 | dead | — | — |
+| FUNGI-CLI-PROMOTE-004 | referenced | — | — |
 | FUNGI-CLI-REDACT-001 | referenced | — | — |
+| FUNGI-CLI-VDEPLOY-001 | dead | — | — |
+| FUNGI-CLI-VDEPLOY-002 | dead | — | — |
+| FUNGI-CLI-VDEPLOY-003 | dead | — | — |
+| FUNGI-CLI-VDEPLOY-004 | referenced | — | — |
+| FUNGI-CLI-VDEPLOY-005 | live | — | — |
+| FUNGI-CLI-VERIFY-001 | dead | — | — |
+| FUNGI-CLI-VERIFY-002 | dead | — | — |
+| FUNGI-CLI-VERIFY-003 | dead | — | — |
+| FUNGI-CLI-VERIFY-004 | dead | — | — |
+| FUNGI-CLI-VERIFY-005 | dead | — | — |
 
 ### COMMAND (2)
 
@@ -342,12 +692,12 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-COMPUTE-001 | referenced | COMPUTE_TARGET_INCOMPATIBLE_PATTERN | warning |
-| FUNGI-COMPUTE-002 | phantom | — | — |
-| FUNGI-COMPUTE-003 | phantom | — | — |
-| FUNGI-COMPUTE-004 | phantom | — | — |
-| FUNGI-COMPUTE-005 | phantom | — | — |
-| FUNGI-COMPUTE-006 | phantom | — | — |
-| FUNGI-COMPUTE-007 | phantom | — | — |
+| FUNGI-COMPUTE-002 | ref | — | — |
+| FUNGI-COMPUTE-003 | ref | — | — |
+| FUNGI-COMPUTE-004 | inline | — | — |
+| FUNGI-COMPUTE-005 | ref | — | — |
+| FUNGI-COMPUTE-006 | inline | — | — |
+| FUNGI-COMPUTE-007 | inline | — | — |
 
 ### COND (1)
 
@@ -474,12 +824,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-DENIAL-003 | inline | — | — |
 | FUNGI-DENIAL-004 | inline | — | — |
 
-### DEPLOY (2)
+### DEPLOY (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-DEPLOY-001 | phantom | — | — |
-| FUNGI-DEPLOY-005 | phantom | — | — |
+| FUNGI-DEPLOY-001 | referenced | — | — |
+| FUNGI-DEPLOY-002 | dead | — | — |
+| FUNGI-DEPLOY-003 | referenced | — | — |
+| FUNGI-DEPLOY-004 | referenced | — | — |
+| FUNGI-DEPLOY-005 | dead | — | — |
 
 ### DRCM (1)
 
@@ -536,7 +889,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EMIT-STUB | inline | — | — |
 
-### ERR_* (159)
+### ERR_* (184)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -597,6 +950,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_EMPTY_SEAL | ref | — | — |
 | ERR_EMPTY_SOURCE_HASH | ref | — | — |
 | ERR_EMPTY_USER_ID | ref | — | — |
+| ERR_EXAMPLE_ALSO_REFUSED | ref | — | — |
+| ERR_EXAMPLE_REFUSED | ref | — | — |
 | ERR_FORBIDDEN_OPERATION | ref | — | — |
 | ERR_FX_THING | ref | — | — |
 | ERR_FX_THROWN | ref | — | — |
@@ -678,8 +1033,31 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_RUNTIME_AWAIT_TIMEOUT | live | — | — |
 | ERR_RUNTIME_AWAIT_TIME_REGRESSION | live | — | — |
 | ERR_RUNTIME_AWAIT_UNKNOWN_TASK | live | — | — |
+| ERR_RUNTIME_ISOLATED_CONFIG | live | — | — |
+| ERR_RUNTIME_ISOLATED_RECEIPT | live | — | — |
+| ERR_RUNTIME_ISOLATED_SPEC | referenced | — | — |
+| ERR_RUNTIME_ISOLATED_UNCONFIRMED | referenced | — | — |
+| ERR_RUNTIME_RECEIPT_CAPACITY | live | — | — |
+| ERR_RUNTIME_RECEIPT_CAUSE | referenced | — | — |
+| ERR_RUNTIME_RECEIPT_CONFIG | live | — | — |
+| ERR_RUNTIME_RECEIPT_HMAC | live | — | — |
+| ERR_RUNTIME_RECEIPT_KEY | referenced | — | — |
+| ERR_RUNTIME_RECEIPT_MAC | referenced | — | — |
+| ERR_RUNTIME_RECEIPT_REPLAY | referenced | — | — |
+| ERR_RUNTIME_RECEIPT_SEQUENCE_STORE | live | — | — |
+| ERR_RUNTIME_RECEIPT_SHAPE | live | — | — |
+| ERR_RUNTIME_RECEIPT_VERSION | referenced | — | — |
 | ERR_SCHEMA | inline | — | — |
 | ERR_SCHEMA_UNSUPPORTED_INPUT_TYPE | inline | — | — |
+| ERR_SECRET_ARENA_CLEANUP_FAILED | live | SECRET_ARENA_CLEANUP_FAILED | error |
+| ERR_SECRET_ARENA_CREATE_REFUSED | live | SECRET_ARENA_CREATE_REFUSED | error |
+| ERR_SECRET_ARENA_INVALID_LENGTH | live | SECRET_ARENA_INVALID_LENGTH | error |
+| ERR_SECRET_ARENA_MAP_REFUSED | live | SECRET_ARENA_MAP_REFUSED | error |
+| ERR_SECRET_ARENA_NOT_ACTIVE | live | SECRET_ARENA_NOT_ACTIVE | error |
+| ERR_SECRET_ARENA_NOT_ALLOCATED | live | SECRET_ARENA_NOT_ALLOCATED | error |
+| ERR_SECRET_ARENA_PAGE_SIZE_REFUSED | live | SECRET_ARENA_PAGE_SIZE_REFUSED | error |
+| ERR_SECRET_ARENA_RESIZE_REFUSED | live | SECRET_ARENA_RESIZE_REFUSED | error |
+| ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM | live | SECRET_ARENA_UNSUPPORTED_PLATFORM | error |
 | ERR_SIZE_EXCEEDED | ref | — | — |
 | ERR_SOME_CODE | ref | — | — |
 | ERR_STRING_TOO_LONG | ref | — | — |
@@ -725,12 +1103,20 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EXAMPLE-001 | inline | — | — |
 
-### EXPLAIN (2)
+### EXPLAIN (10)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-EXPLAIN-001 | phantom | — | — |
-| FUNGI-EXPLAIN-004 | phantom | — | — |
+| FUNGI-EXPLAIN-001 | referenced | — | — |
+| FUNGI-EXPLAIN-002 | dead | — | — |
+| FUNGI-EXPLAIN-003 | dead | — | — |
+| FUNGI-EXPLAIN-004 | referenced | — | — |
+| FUNGI-EXPLAIN-005 | dead | — | — |
+| FUNGI-EXPLAIN-006 | referenced | — | — |
+| FUNGI-EXPLAIN-007 | referenced | — | — |
+| FUNGI-EXPLAIN-008 | referenced | — | — |
+| FUNGI-EXPLAIN-009 | referenced | — | — |
+| FUNGI-EXPLAIN-010 | referenced | — | — |
 
 ### EXPR (1)
 
@@ -1260,7 +1646,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PARSE-00 | ref | — | — |
-| FUNGI-PARSE-001 | inline | CONTENT_BLOCK_TOKEN_INVALID / UNEXPECTED_TOKEN | error |
+| FUNGI-PARSE-001 | inline | CONTENT_BLOCK_TOKEN_INVALID / UNEXPECTED_TOKEN / ROUTE_FLOW_BINDING_INVALID / CONTRACT_LIMIT_INVALID | error |
 | FUNGI-PARSE-002 | inline | EXPECTED_FLOW_KEYWORD | — |
 | FUNGI-PARSE-003 | ref | — | — |
 | FUNGI-PARSE-004 | ref | — | — |
@@ -1416,12 +1802,14 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PKGSTD-015 | live | PKG_STD_TS_SOURCE_SHIPPED | error |
 | FUNGI-PKGSTD-016 | live | PKG_STD_NODE_MODULES_SHIPPED | error |
 
-### PLAN (2)
+### PLAN (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-PLAN-001 | phantom | — | — |
-| FUNGI-PLAN-004 | phantom | — | — |
+| FUNGI-PLAN-001 | dead | — | — |
+| FUNGI-PLAN-002 | dead | — | — |
+| FUNGI-PLAN-003 | dead | — | — |
+| FUNGI-PLAN-004 | dead | — | — |
 
 ### PLUGIN (1)
 
@@ -1478,6 +1866,16 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-PROFILE-006 | referenced | MISSING_RUNTIME_BUDGET | warning |
 | FUNGI-PROFILE-007 | referenced | DYNAMIC_RUNTIME_MUTATION_PROHIBITED | error |
 | FUNGI-PROFILE-UNRECOGNIZED | inline | — | — |
+
+### PROMOTE (5)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-PROMOTE-001 | referenced | — | — |
+| FUNGI-PROMOTE-002 | dead | — | — |
+| FUNGI-PROMOTE-003 | referenced | — | — |
+| FUNGI-PROMOTE-004 | dead | — | — |
+| FUNGI-PROMOTE-005 | dead | — | — |
 
 ### PROOF (8)
 
@@ -1540,10 +1938,11 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | GATE-REGISTRY-015 | inline | GATE_V3_REGISTRY_BAD_VOCABULARY | — |
 | GATE-REGISTRY-016 | inline | GATE_V3_REGISTRY_VARIANT_VIOLATION | — |
 
-### REPORT (5)
+### REPORT (6)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
+| FUNGI-REPORT-00 | ref | — | — |
 | FUNGI-REPORT-001 | inline | — | — |
 | FUNGI-REPORT-002 | inline | — | — |
 | FUNGI-REPORT-003 | inline | — | — |
@@ -1663,14 +2062,49 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-SCAN-UNANALYZABLE | inline | — | — |
 
-### SEC (4)
+### SEC (39)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-SEC-014 | inline | FN_CANNOT_DECLARE_EFFECTS | — |
 | FUNGI-SEC-020 | live | RUNTIME_MUTATION_PROHIBITED | error |
 | FUNGI-SEC-021 | live | PROTOTYPE_MUTATION_PROHIBITED | error |
+| FUNGI-SEC-ASG-001 | dead | — | — |
+| FUNGI-SEC-ASG-002 | dead | — | — |
+| FUNGI-SEC-ASG-003 | dead | — | — |
+| FUNGI-SEC-ASG-004 | dead | — | — |
+| FUNGI-SEC-ASG-005 | dead | — | — |
+| FUNGI-SEC-CAP-001 | dead | — | — |
+| FUNGI-SEC-CAP-002 | dead | — | — |
+| FUNGI-SEC-CAP-003 | dead | — | — |
+| FUNGI-SEC-CAP-004 | dead | — | — |
+| FUNGI-SEC-CAP-005 | dead | — | — |
+| FUNGI-SEC-CIV-001 | dead | — | — |
+| FUNGI-SEC-CIV-002 | dead | — | — |
+| FUNGI-SEC-CIV-003 | dead | — | — |
+| FUNGI-SEC-CIV-004 | dead | — | — |
+| FUNGI-SEC-CIV-005 | dead | — | — |
+| FUNGI-SEC-CLA-001 | dead | — | — |
+| FUNGI-SEC-CLA-002 | dead | — | — |
+| FUNGI-SEC-CLA-003 | dead | — | — |
+| FUNGI-SEC-CLA-004 | dead | — | — |
+| FUNGI-SEC-CLA-005 | dead | — | — |
+| FUNGI-SEC-OWC-001 | dead | — | — |
+| FUNGI-SEC-OWC-002 | dead | — | — |
+| FUNGI-SEC-OWC-003 | dead | — | — |
+| FUNGI-SEC-OWC-004 | dead | — | — |
+| FUNGI-SEC-OWC-005 | dead | — | — |
 | FUNGI-SEC-PATCH-001 | phantom | — | — |
+| FUNGI-SEC-POL-001 | dead | — | — |
+| FUNGI-SEC-POL-002 | dead | — | — |
+| FUNGI-SEC-POL-003 | referenced | — | — |
+| FUNGI-SEC-POL-004 | dead | — | — |
+| FUNGI-SEC-POL-005 | dead | — | — |
+| FUNGI-SEC-SRN-001 | dead | — | — |
+| FUNGI-SEC-SRN-002 | dead | — | — |
+| FUNGI-SEC-SRN-003 | dead | — | — |
+| FUNGI-SEC-SRN-004 | dead | — | — |
+| FUNGI-SEC-SRN-005 | dead | — | — |
 
 ### SECRET (8)
 
@@ -1977,21 +2411,43 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-VAULT-007 | referenced | VAULT_READONLY_WRITE | error |
 | FUNGI-VAULT-008 | live | VAULT_MISSING_SCOPE | error |
 
+### VDEPLOY (5)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-VDEPLOY-001 | referenced | — | — |
+| FUNGI-VDEPLOY-002 | live | — | error |
+| FUNGI-VDEPLOY-003 | referenced | — | — |
+| FUNGI-VDEPLOY-004 | dead | — | — |
+| FUNGI-VDEPLOY-005 | dead | — | — |
+
 ### VER (1)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-VER-001 | phantom | — | — |
 
-### VERIFY (5)
+### VERIFY (17)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-VERIFY-001 | dead | — | — |
+| FUNGI-VERIFY-00 | ref | — | — |
+| FUNGI-VERIFY-001 | referenced | — | — |
 | FUNGI-VERIFY-002 | dead | — | — |
-| FUNGI-VERIFY-003 | dead | — | — |
+| FUNGI-VERIFY-003 | referenced | — | — |
 | FUNGI-VERIFY-004 | dead | — | — |
 | FUNGI-VERIFY-005 | dead | — | — |
+| FUNGI-VERIFY-006 | dead | — | — |
+| FUNGI-VERIFY-007 | dead | — | — |
+| FUNGI-VERIFY-008 | dead | — | — |
+| FUNGI-VERIFY-009 | referenced | — | — |
+| FUNGI-VERIFY-010 | dead | — | — |
+| FUNGI-VERIFY-011 | dead | — | — |
+| FUNGI-VERIFY-012 | dead | — | — |
+| FUNGI-VERIFY-013 | dead | — | — |
+| FUNGI-VERIFY-014 | dead | — | — |
+| FUNGI-VERIFY-015 | dead | — | — |
+| FUNGI-VERIFY-016 | dead | — | — |
 
 ### VIS (5)
 
@@ -2003,7 +2459,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-VIS-004 | phantom | — | — |
 | FUNGI-VIS-005 | phantom | — | — |
 
-### WASM (33)
+### WASM (34)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -2038,6 +2494,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-WASM-029 | ref | — | — |
 | FUNGI-WASM-030 | ref | — | — |
 | FUNGI-WASM-CLEANUP-001 | inline | — | — |
+| FUNGI-WASM-GRANT-001 | inline | EFFECT_GRANT_NOT_ALLOWLISTED | error |
 | FUNGI-WASM-HOST-001 | inline | — | — |
 | FUNGI-WASM-RET-001 | inline | — | — |
 

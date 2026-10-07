@@ -5,9 +5,9 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import * as L from "../dist/index.js";
@@ -16,11 +16,19 @@ import { watLoweringLadderAsync } from "../../../scripts/lib/wat-lowering-ladder
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC = join(__dir, "../src");
 const SH = join(SRC, "self-hosted");
-const ROOT = join(__dir, "../../..");
-// The AGENTS checkout is a sibling repository: AGENTS_ROOT overrides (worktrees, CI); else ../AGENTS.
-const AGENTS = typeof process.env.AGENTS_ROOT === "string" && process.env.AGENTS_ROOT.length > 0
-  ? process.env.AGENTS_ROOT
-  : join(ROOT, "..", "AGENTS");
+const ROOT = resolve(__dir, "../../..");
+const findAgentsRoot = (root) => {
+  const configuredRoot = process.env.GALERINA_AGENTS_ROOT || process.env.AGENTS_ROOT;
+  if (configuredRoot) return resolve(configuredRoot);
+  let ancestor = root;
+  for (let depth = 0; depth < 8; depth += 1) {
+    const candidate = resolve(ancestor, "..", "AGENTS");
+    if (existsSync(join(candidate, "tools/grok-probe/q8-codex-zone-hash.mjs"))) return candidate;
+    ancestor = resolve(ancestor, "..");
+  }
+  throw new Error("AGENTS probe repo not found; set AGENTS_ROOT or GALERINA_AGENTS_ROOT to its root");
+};
+const AGENTS = findAgentsRoot(ROOT);
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 const ZONE = {

@@ -61,21 +61,26 @@ describe("#105 WASM admission gate", () => {
     tampered[tampered.length - 1] ^= 0xff;
 
     let violated = null;
-    let linkedHost = false;
+    let instantiateAttempted = false;
     const host = createHostRuntime();
-    // Wrap a host fn to detect if linking was ever reached (it must NOT be).
-    const origCreate = host.imports.host.__int_to_str;
-    host.imports.host.__int_to_str = (...a) => { linkedHost = true; return origCreate(...a); };
-
-    await assert.rejects(
-      () => admitAndInstantiate({
-        wasm: tampered, attestation, policy: { requireSigned: true, publicKeyPem }, host,
-        observe: { onViolation: (reason) => { violated = reason; } },
-      }),
-      /CRITICAL_SECURITY_VIOLATION/,
-    );
+    const originalInstantiate = WebAssembly.instantiate;
+    WebAssembly.instantiate = async (...args) => {
+      instantiateAttempted = true;
+      return originalInstantiate(...args);
+    };
+    try {
+      await assert.rejects(
+        () => admitAndInstantiate({
+          wasm: tampered, attestation, policy: { requireSigned: true, publicKeyPem }, host,
+          observe: { onViolation: (reason) => { violated = reason; } },
+        }),
+        /CRITICAL_SECURITY_VIOLATION/,
+      );
+    } finally {
+      WebAssembly.instantiate = originalInstantiate;
+    }
     assert.ok(violated, "onViolation fired before throwing");
-    assert.equal(linkedHost, false, "host functions were NEVER linked for the rejected binary");
+    assert.equal(instantiateAttempted, false, "attestation refusal precedes WebAssembly linking");
   });
 
   it("REFUSES an unsigned binary under requireSigned", async () => {

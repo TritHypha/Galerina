@@ -35,6 +35,7 @@
 // =============================================================================
 
 import { type AstNode, type SourceLocation } from "./parser.js";
+import { genericArgumentKind } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js"; // Q2: governed-aware shadow-floor scan
 import { buildModuleAliasMap } from "./effect-checker.js"; // C1: resolve `let x = Module` aliases at sinks
 import { numericBaseType, BACKEND_UNLOWERABLE_SCALAR } from "./numeric-lowering.js";
@@ -1923,22 +1924,144 @@ interface BindingInfo {
   readonly consumedAt?: SourceLocation;
 }
 
-/** Collect named aliases whose direct RHS is Authority<Tag>. */
+/** Resolve named aliases backed directly or transitively by Authority<Tag>. */
 function collectAuthorityTypes(ast: AstNode): ReadonlySet<string> {
   const authorityTypes = new Set<string>();
+  const aliasesByTarget = new Map<string, Set<string>>();
 
   const visit = (node: AstNode): void => {
     if (node.kind === "typeDecl" && node.value !== undefined) {
       const rhs = node.children?.[0];
-      if (rhs?.kind === "typeRef" && /^Authority\s*</.test(rhs.value ?? "")) {
-        authorityTypes.add(node.value.trim());
+      if (rhs?.kind === "typeRef") {
+        const aliasName = node.value.trim();
+        const targetName = (rhs.value ?? "").trim();
+        if (/^Authority\s*</.test(targetName)) {
+          authorityTypes.add(aliasName);
+        } else if (/^[A-Za-z_]\w*$/.test(targetName)) {
+          const aliases = aliasesByTarget.get(targetName) ?? new Set<string>();
+          aliases.add(aliasName);
+          aliasesByTarget.set(targetName, aliases);
+        }
       }
     }
     for (const child of node.children ?? []) visit(child);
   };
 
   visit(ast);
+
+  const pending = [...authorityTypes];
+  while (pending.length > 0) {
+    const targetName = pending.pop();
+    if (targetName === undefined) continue;
+    for (const aliasName of aliasesByTarget.get(targetName) ?? []) {
+      if (authorityTypes.has(aliasName)) continue;
+      authorityTypes.add(aliasName);
+      pending.push(aliasName);
+    }
+  }
+
   return authorityTypes;
+}
+
+/** Resolve only the reserved secret lease identity and its named aliases. */
+function collectSecretLeaseTypes(ast: AstNode): ReadonlySet<string> {
+  const secretLeaseTypes = new Set<string>();
+  const aliases = new Map<string, string>();
+
+  const visit = (node: AstNode): void => {
+    if (node.kind === "typeDecl" && node.value !== undefined) {
+      const rhs = node.children?.[0];
+      if (rhs?.kind === "typeRef") {
+        aliases.set(node.value.trim(), rhs.value ?? "");
+      }
+    }
+    for (const child of node.children ?? []) visit(child);
+  };
+
+  visit(ast);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [aliasName, targetType] of aliases) {
+      if (secretLeaseTypes.has(aliasName) || !referencesSecretLease(targetType, secretLeaseTypes)) continue;
+      secretLeaseTypes.add(aliasName);
+      changed = true;
+    }
+  }
+  return secretLeaseTypes;
+}
+
+/** Type aliases may be wrapped in containers and may spell the reserved tag quoted or bare. */
+function referencesSecretLease(typeRef: string, aliases: ReadonlySet<string>): boolean {
+  let input = typeRef.trim();
+  while (input.startsWith("protected ") || input.startsWith("redacted ")) {
+    input = input.slice(input.indexOf(" ") + 1).trim();
+  }
+  // Generic arguments can be literal payloads (for example a Brand tag). Do not
+  // parse type-looking text inside a complete quoted literal as a type expression.
+  if (/^(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')$/.test(input)) return false;
+
+  const genericStart = input.indexOf("<");
+  const base = (genericStart === -1 ? input : input.slice(0, genericStart)).trim().split(/\s+/)[0] ?? "";
+  if (aliases.has(base)) return true;
+  if (genericStart === -1) return false;
+
+  const args: string[] = [];
+  let current = "";
+  let depth = 0;
+  let quote: "\"" | "'" | undefined;
+  let escaped = false;
+  for (let i = genericStart + 1; i < input.length; i++) {
+    const char = input[i];
+    if (char === undefined) continue;
+    if (quote !== undefined) {
+      current += char;
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === quote) quote = undefined;
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      current += char;
+    } else if (char === "<" || char === "[") {
+      depth++;
+      current += char;
+    } else if (char === ">" || char === "]") {
+      if (depth === 0 && char === ">") {
+        args.push(current.trim());
+        break;
+      }
+      depth--;
+      current += char;
+    } else if (char === "," && depth === 0) {
+      args.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  if (base === "Authority" && args.length === 1) {
+    const tag = args[0]?.trim().replace(/^["']|["']$/g, "");
+    if (tag === "galerina.secret.lease.v1") return true;
+  }
+  return args.some((arg, index) =>
+    genericArgumentKind(base, index) === "type" && referencesSecretLease(arg, aliases)
+  );
+}
+
+/** Direct generic annotations bypass the named-alias set, so recognize the reserved type itself too. */
+function declaredTypeFromBinding(value: string): string {
+  let rest = value.trim();
+  if (rest.startsWith("unsafe ")) rest = rest.slice("unsafe ".length).trim();
+  else if (rest.startsWith("safe ")) rest = rest.slice("safe ".length).trim();
+  const colonIdx = rest.indexOf(":");
+  if (colonIdx === -1) return "";
+  let typeText = rest.slice(colonIdx + 1).split("=", 1)[0]?.trim() ?? "";
+  const sourceFromClause = /\s+source_from\b/.exec(typeText);
+  if (sourceFromClause !== null) typeText = typeText.slice(0, sourceFromClause.index).trim();
+  return typeText;
 }
 
 function parseBindingValue(value: string): BindingInfo {
@@ -2173,6 +2296,8 @@ class ValueStateChecker {
   private readonly userFlows: ReadonlySet<string>;
   // RD-0659: opt-in aliases backed by Authority<Tag>.
   private readonly authorityTypes: ReadonlySet<string>;
+  // RD-1414: secret leases stay unavailable until compiler cleanup has a real runtime binding.
+  private readonly secretLeaseTypes: ReadonlySet<string>;
   // R&D 0093: the flow-kind currently being walked, so registerParamBinding knows whether
   // a bare param sits at a posture-gated entry boundary (secure/guarded → boundary-untrusted).
   private currentFlowKind: string | undefined;
@@ -2196,12 +2321,14 @@ class ValueStateChecker {
     userGates: ReadonlySet<string> = new Set(),
     userFlows: ReadonlySet<string> = new Set(),
     authorityTypes: ReadonlySet<string> = new Set(),
+    secretLeaseTypes: ReadonlySet<string> = new Set(),
     mode: "production" | "development" = "development",
     matchedRequirementValidators: ReadonlySet<AstNode> = new Set(),
   ) {
     this.userGates = userGates;
     this.userFlows = userFlows;
     this.authorityTypes = authorityTypes;
+    this.secretLeaseTypes = secretLeaseTypes;
     this.mode = mode;
     this.matchedRequirementValidators = matchedRequirementValidators;
   }
@@ -2392,6 +2519,19 @@ class ValueStateChecker {
 
   // ── AST walker ───────────────────────────────────────────────────────────
 
+  private rejectUnwiredSecretLease(node: AstNode, declaredType: string, subject: string): void {
+    if (!referencesSecretLease(declaredType, this.secretLeaseTypes)) return;
+    this.diagnostics.push(makeVSDiag(
+      "FUNGI-AFFINE-005",
+      "SECRET_LEASE_RUNTIME_UNWIRED",
+      `Secret lease '${subject}' cannot enter executable Fungi: no compiler-owned cleanup operation is bound to a runtime that can retire its secret bytes.`,
+      node.location,
+      "Keep secret-lease use on hold until the Fungi cleanup primitive, path-sensitive discharge check, and host runtime binding are implemented together.",
+      undefined,
+      { why: "Affine transfer alone does not wipe or retire secret storage; accepting this handle would permit an apparently valid flow with no enforced cleanup.", risk: "A live secret allocation could escape the flow or remain charged after its apparent owner exits." },
+    ));
+  }
+
   private walkNode(node: AstNode): void {
     switch (node.kind) {
       case "program":
@@ -2412,6 +2552,8 @@ class ValueStateChecker {
       // params reached governed sinks with no FUNGI-VALUESTATE-003/004/005 (the 0093 fail-open class).
       // A governed flow IS a posture-gated boundary, so it registers params + is treated like secure/guarded.
       case "governedFlowDecl":
+      // Helpers own their return and control context, just like flow bodies.
+      case "fnDecl":
       case "guardedFlowDecl": {
         this.pushScope();
         const prevFlowKind = this.currentFlowKind;
@@ -2428,6 +2570,10 @@ class ValueStateChecker {
             if (child.kind === "paramDecl") {
               this.registerParamBinding(child);
             }
+          }
+          const returnType = (node.children ?? []).find((child) => child.kind === "typeRef");
+          if (returnType !== undefined) {
+            this.rejectUnwiredSecretLease(returnType, returnType.value ?? "", `${node.value ?? "flow"} return type`);
           }
           this.walkChildren(node);
         } finally {
@@ -2485,6 +2631,9 @@ class ValueStateChecker {
         for (const field of node.children ?? []) {
           if (field.kind !== "paramDecl") continue;
           const fieldType = String(field.value ?? "").split(":").slice(1).join(":").trim();
+          if (referencesSecretLease(fieldType, this.secretLeaseTypes)) {
+            this.rejectUnwiredSecretLease(field, fieldType, `${node.value ?? "record"}.${field.value ?? "field"}`);
+          }
           if (!this.authorityTypes.has(fieldType)) continue;
           this.diagnostics.push(makeVSDiag(
             "FUNGI-AFFINE-004",
@@ -2499,6 +2648,7 @@ class ValueStateChecker {
       }
 
       case "mutDecl":
+        this.rejectUnwiredSecretLease(node, declaredTypeFromBinding(node.value ?? ""), "mutable local");
         this.handleMutDecl(node);
         break;
 
@@ -3036,15 +3186,18 @@ class ValueStateChecker {
 
     // Phase 4.4: detect `source_from` annotation in the type section
     // Format: "Type source_from Origin" (e.g. "String source_from Network.ClientSocket")
-    const sourceFromIdx = typeSection.indexOf("source_from");
+    const sourceFromClause = /\s+source_from\b/.exec(typeSection);
+    const declaredType = sourceFromClause !== null ? typeSection.slice(0, sourceFromClause.index).trim() : typeSection;
     let typeName: string;
     let sourceFromOrigin: string | undefined;
-    if (sourceFromIdx !== -1) {
-      typeName = typeSection.slice(0, sourceFromIdx).trim().split(/[<\s]/)[0] ?? "";
-      sourceFromOrigin = typeSection.slice(sourceFromIdx + "source_from".length).trim();
+    if (sourceFromClause !== null) {
+      typeName = declaredType.split(/[<\s]/)[0] ?? "";
+      sourceFromOrigin = typeSection.slice(sourceFromClause.index + sourceFromClause[0].length).trim();
     } else {
-      typeName = typeSection.split(/[<\s]/)[0] ?? typeSection;
+      typeName = declaredType.split(/[<\s]/)[0] ?? declaredType;
     }
+
+    this.rejectUnwiredSecretLease(node, declaredType, name);
 
     const locField = node.location !== undefined ? { declaredAt: node.location } : {};
     const authorityField = this.authorityTypes.has(typeName) ? { authorityType: typeName } : {};
@@ -3073,7 +3226,8 @@ class ValueStateChecker {
   }
 
   private handleLetDecl(node: AstNode): void {
-    const info = parseBindingValue(node.value ?? "");
+    const bindingValue = node.value ?? "";
+    const info = parseBindingValue(bindingValue);
     // Attach declaration location for Rust-style "declared here" diagnostics
     const locField = node.location !== undefined ? { declaredAt: node.location } : {};
 
@@ -3092,6 +3246,8 @@ class ValueStateChecker {
     const declaredAuthority = this.authorityTypes.has(info.typeName) ? info.typeName : undefined;
     const authorityType = declaredAuthority ?? movedAuthority;
     const authorityField = authorityType !== undefined ? { authorityType } : {};
+    const declaredType = declaredTypeFromBinding(bindingValue);
+    this.rejectUnwiredSecretLease(node, declaredType || authorityType || "", info.name);
     const taintField: { tainted?: boolean; taintSource?: string } = {};
     if (init !== undefined && info.safetyPrefix !== "unsafe") {
       // unsafe bindings already have safetyPrefix tracking; we only need taint
@@ -4246,10 +4402,12 @@ export function checkValueStates(
   // Phase 4.3: collect user-defined flow names for inter-flow call-site warnings
   const userFlows = collectUserFlows(analysisAst);
   const authorityTypes = collectAuthorityTypes(analysisAst);
+  const secretLeaseTypes = collectSecretLeaseTypes(analysisAst);
   const checker = new ValueStateChecker(
     userGates,
     userFlows,
     authorityTypes,
+    secretLeaseTypes,
     mode,
     requirementAnalysis.matchedValidatorCalls,
   );

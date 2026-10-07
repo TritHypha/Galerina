@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parseProgram, resolveSymbols, checkTypes, executeFlow, tryWhileFastPath } from "../dist/index.js";
+import { createContractEnforcer, parseProgram, resolveSymbols, checkTypes, executeFlow, tryWhileFastPath } from "../dist/index.js";
 
 async function parseAndRun(source, flowName, runtimeOptions) {
   const parsed = parseProgram(source, "while-fast.fungi");
@@ -87,5 +87,34 @@ describe("tryWhileFastPath", () => {
     const w = findWhile(parsed.ast);
     const scope = new Map([["i", { __tag: "int", value: 0 }]]);
     assert.throws(() => tryWhileFastPath(w.children[0], w.children[1], scope, undefined, 8), /maximum iteration count/);
+  });
+
+  it("hostile: an eligible fast-path loop honors the real deadline enforcer and fails closed", async (t) => {
+    const source = `pure flow spin() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 100000 {
+    i = i + 1
+  }
+  return i
+}`;
+    const parsed = parseProgram(source, "deadline-fast.fungi");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+    const loop = findWhile(parsed.ast);
+    assert.ok(loop);
+    const eligibilityProbe = new Map([["i", { __tag: "int", value: 0 }]]);
+    assert.equal(tryWhileFastPath(loop.children[0], loop.children[1], eligibilityProbe), true);
+
+    const now = Date.now();
+    const enforcer = createContractEnforcer(undefined, "spin", { deadlineMs: now + 2 });
+    let clockTicks = 0;
+    t.mock.method(Date, "now", () => now + clockTicks++);
+
+    const result = await executeFlow("spin", new Map(), parsed.ast, parsed.flows, enforcer);
+
+    assert.equal(result.value.__tag, "runtimeError");
+    assert.match(result.value.message, /FUNGI-TIMEOUT/);
+    assert.ok(result.diagnostics.some((diagnostic) => diagnostic.message.includes("FUNGI-TIMEOUT")));
+    assert.equal(result.audit.result, "error");
   });
 });

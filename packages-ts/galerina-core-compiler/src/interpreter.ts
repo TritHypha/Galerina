@@ -2529,6 +2529,7 @@ class Interpreter {
             fastScope,
             (n) => this.chargeSteps(n),
             MAX_ITERATIONS,
+            () => this.enforcer?.checkDeadline(),
           );
           if (ran) {
             for (const [name, value] of fastScope) this.assign(name, value);
@@ -4941,6 +4942,7 @@ export function tryWhileFastPath(
   scope: Map<string, GalerinaValue>,
   charge: (n: number) => void = () => undefined,
   maxIterations = 100_000,
+  checkDeadline: () => void = () => undefined,
 ): boolean {
   const cond = parseFastWhileCond(condNode);
   const assigns = parseFastWhileBody(bodyNode);
@@ -4960,6 +4962,7 @@ export function tryWhileFastPath(
     if (iterations++ > maxIterations) {
       throw new Error(`Loop exceeded maximum iteration count (${maxIterations}) — fail-closed`);
     }
+    checkDeadline();
     charge(1);
     const counter = scope.get(cond.name);
     if (counter === undefined || counter.__tag !== "int") {

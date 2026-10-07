@@ -44,6 +44,7 @@
 // =============================================================================
 
 import { type AstNode, type SourceLocation } from "./parser.js";
+import { GENERIC_ARG_KINDS, type GenericArgKind } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js";
 import {
   resolveTypeId,
@@ -350,17 +351,6 @@ const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
 // Tensor-shape). Generics whose args are ALL types (Option, Result, Array, Map,
 // ReadOnlyView, Channel, Set, List, Secret) are omitted — the default kind is "type".
 // Each row's length matches GENERIC_ARITY for that base.
-type GenericArgKind = "type" | "tag" | "shape" | "dim";
-const GENERIC_ARG_KINDS: ReadonlyMap<string, readonly GenericArgKind[]> = new Map([
-  ["Brand",     ["type", "tag"]],        // Brand<T, Tag> — nominal identity tag (bare or quoted)
-  ["Authority", ["tag"]],                // Authority<Tag> — opaque runtime authority identity
-  ["Tensor",    ["type", "shape"]],      // Tensor<Elem, [d0, d1, ...]> — shape literal
-  ["Vector",    ["type", "dim"]],        // Vector<Elem, N> — dimension (numeric or named)
-  ["Matrix",    ["type", "dim", "dim"]], // Matrix<Elem, R, C> — row/col dimensions
-  ["Money",     ["tag"]],                // Money<GBP> — currency tag
-  ["Embedding", ["dim"]],                // Embedding<768> — dimension
-]);
-
 // ---------------------------------------------------------------------------
 // Type string parser
 //
