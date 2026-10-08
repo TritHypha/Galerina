@@ -174,6 +174,21 @@ export async function startServer(config?: AppConfig, fuseOpts: FuseOptions = {}
 export { loadConfig, parseConfig } from "./config.js";
 export type { AppConfig, AppEnv, AppPosture } from "./config.js";
 
+export {
+  EXAMPLE_APP_HOLD_PIN_SCHEMA,
+  prepareExampleAppRouteRequest,
+  addExampleAppRoute,
+  grantExampleAppCapability,
+  wireFuseBorder,
+  wireCentralPackageRegistry,
+} from "./hold-pin.js";
+export type {
+  ExampleAppHoldRefusalCode,
+  ExampleAppHoldRefusal,
+  ExampleAppRouteRequestV1,
+  ExampleAppRouteRequestResult,
+} from "./hold-pin.js";
+
 // ── Runnable entry ──────────────────────────────────────────────────────────────
 // Start the server when this module is executed directly (the container / CLI
 // entrypoint `node dist/server.js`), but NOT when imported (tests import startServer
