@@ -22,6 +22,9 @@ import { types as nodeUtilTypes } from "node:util";
 import type { RouteDeclaration } from "./types.js";
 import type { HandlerDispatch } from "./kernel.js";
 
+/** Same governed table size as typed-api-boundary MAX_ROUTES. */
+export const HANDLER_REFERENCE_MAX_ROUTES = 256;
+
 /** Input shape is wrong: routes not an array, dispatch not an object, or a route/handler name malformed. */
 export const FUNGI_APPK_HRC_001 = "FUNGI-APPK-HRC-001";
 /** No own dispatch entry for the route's handler name. */
@@ -87,6 +90,9 @@ export function checkHandlerReferences(
   }
   const diagnostics: HandlerReferenceDiagnostic[] = [];
   const len = lengthDesc.value;
+  if (len > HANDLER_REFERENCE_MAX_ROUTES) {
+    return refused([diag(FUNGI_APPK_HRC_001, "routes exceed the route-table bound")]);
+  }
   for (let i = 0; i < len; i++) {
     const indexDesc = Object.getOwnPropertyDescriptor(routes, String(i));
     if (indexDesc === undefined || !("value" in indexDesc)) {
