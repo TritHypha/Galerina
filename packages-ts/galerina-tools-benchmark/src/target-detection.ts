@@ -24,8 +24,10 @@
 //  - Detected vector features are host-reported hints. The package's vector
 //    cases stay scalar Float32 (`benchmarkVectorBackend` is always "scalar");
 //    nothing here selects or runs a SIMD kernel.
-//  - GPU, AI-accelerator and low-bit backend detection are not here (owner hold
-//    O1 keeps GPU / AI-accelerator targets parked post-v1).
+//  - GPU, AI-accelerator and optical I/O detectors exist as O1 non-executing
+//    probes: they never admit availability. Low-bit admits only `none` /
+//    `cpu-reference` / `unknown` from a host-injected token. No WebGPU,
+//    navigator.gpu, child process, OS/file/env/network, kernel or vendor call.
 
 import { isProxy } from "node:util/types";
 
@@ -400,4 +402,109 @@ export function wasmSimd128ProbeBytes(): Uint8Array {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x0b, // end
   ]);
+}
+
+// -- O1 parked backends (GPU / AI accelerator / optical I/O) ------------------
+// Host-injected facts only. Availability is never admitted. A claimed vendor
+// name is refused unread (unknown keys) or ignored (known `claimed` token);
+// the result stays unavailable or unknown.
+
+export const BENCHMARK_O1_AVAILABILITY = Object.freeze(["unavailable", "unknown"] as const);
+export type BenchmarkO1Availability = (typeof BENCHMARK_O1_AVAILABILITY)[number];
+export const BENCHMARK_O1_BACKEND_PROBE_FIELDS = Object.freeze(["claimed"] as const);
+
+export interface BenchmarkO1BackendDetection {
+  readonly availability: BenchmarkO1Availability;
+  readonly diagnostics: readonly TargetDetectionDiagnostic[];
+}
+
+const CLAIMED_TOKEN = /^[a-z0-9_-]{1,32}$/;
+
+function detectO1ParkedBackend(probe: unknown): BenchmarkO1BackendDetection {
+  const diagnostics: TargetDetectionDiagnostic[] = [];
+  const snap = snapshotProbe(probe, BENCHMARK_O1_BACKEND_PROBE_FIELDS, diagnostics);
+  if (!snap.ok || diagnostics.some((d) => d.severity === "error")) {
+    return Object.freeze({
+      availability: "unknown" as const,
+      diagnostics: Object.freeze(diagnostics),
+    });
+  }
+  if (snap.values.has("claimed")) {
+    const claimed = snap.values.get("claimed");
+    if (typeof claimed !== "string" || !CLAIMED_TOKEN.test(claimed)) {
+      diagnostics.push(diag(
+        "Galerina_BENCHMARK_PROBE_CLAIMED_INVALID",
+        "warning",
+        "O1 backend claim must be a short lowercase token; availability stays unknown.",
+        "probe.claimed",
+      ));
+      return Object.freeze({
+        availability: "unknown" as const,
+        diagnostics: Object.freeze(diagnostics),
+      });
+    }
+  }
+  return Object.freeze({
+    availability: "unavailable" as const,
+    diagnostics: Object.freeze(diagnostics),
+  });
+}
+
+export function detectBenchmarkGpuBackend(probe: unknown): BenchmarkO1BackendDetection {
+  return detectO1ParkedBackend(probe);
+}
+
+export function detectBenchmarkAiAcceleratorBackend(probe: unknown): BenchmarkO1BackendDetection {
+  return detectO1ParkedBackend(probe);
+}
+
+export function detectBenchmarkOpticalIoBackend(probe: unknown): BenchmarkO1BackendDetection {
+  return detectO1ParkedBackend(probe);
+}
+
+// -- Low-bit backend (not O1; still pure / host-injected) ---------------------
+// Closed backends: none | cpu-reference | unknown. cpu-reference means an
+// in-process TypeScript CPU path may exist later; this detector does not run it.
+
+export const BENCHMARK_LOW_BIT_BACKENDS = Object.freeze(["none", "cpu-reference", "unknown"] as const);
+export type BenchmarkLowBitBackend = (typeof BENCHMARK_LOW_BIT_BACKENDS)[number];
+export const BENCHMARK_LOW_BIT_PROBE_FIELDS = Object.freeze(["backend"] as const);
+
+export interface BenchmarkLowBitDetection {
+  readonly backend: BenchmarkLowBitBackend;
+  readonly diagnostics: readonly TargetDetectionDiagnostic[];
+}
+
+export function detectBenchmarkLowBitBackend(probe: unknown): BenchmarkLowBitDetection {
+  const diagnostics: TargetDetectionDiagnostic[] = [];
+  const snap = snapshotProbe(probe, BENCHMARK_LOW_BIT_PROBE_FIELDS, diagnostics);
+  if (!snap.ok || diagnostics.some((d) => d.severity === "error")) {
+    return Object.freeze({
+      backend: "unknown" as const,
+      diagnostics: Object.freeze(diagnostics),
+    });
+  }
+  if (!snap.values.has("backend")) {
+    return Object.freeze({
+      backend: "none" as const,
+      diagnostics: Object.freeze(diagnostics),
+    });
+  }
+  const backend = snap.values.get("backend");
+  if (backend === "none" || backend === "cpu-reference") {
+    return Object.freeze({
+      backend,
+      diagnostics: Object.freeze(diagnostics),
+    });
+  }
+  diagnostics.push(diag(
+    "Galerina_BENCHMARK_PROBE_LOW_BIT_BACKEND_INVALID",
+    "warning",
+    "Low-bit backend must be none or cpu-reference; reported unknown.",
+    "probe.backend",
+  ));
+  return Object.freeze({
+    backend: "unknown" as const,
+    diagnostics: Object.freeze(diagnostics),
+  });
 }

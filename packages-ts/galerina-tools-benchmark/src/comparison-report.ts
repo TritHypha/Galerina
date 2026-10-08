@@ -25,8 +25,8 @@
 //  - Output is evidence, not a verdict: `shareable` is always false and
 //    `authority` is always "NON_AUTHORIZING".
 //
-// Not here (TODO rows stay open): the runtime and compiled comparison runners,
-// and any `--save` of the comparison report.
+// Runtime/compiled runners live in `comparison-runner.ts`. `--save` of the
+// comparison report stays with parked draft #149.
 
 import { isProxy } from "node:util/types";
 

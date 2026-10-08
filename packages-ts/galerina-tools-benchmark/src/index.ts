@@ -812,7 +812,15 @@ export {
   bucketTotalMemory,
   detectBenchmarkMemory,
   detectBenchmarkVectorFeatures,
+  detectBenchmarkGpuBackend,
+  detectBenchmarkAiAcceleratorBackend,
+  detectBenchmarkOpticalIoBackend,
+  detectBenchmarkLowBitBackend,
   wasmSimd128ProbeBytes,
+  BENCHMARK_O1_AVAILABILITY,
+  BENCHMARK_O1_BACKEND_PROBE_FIELDS,
+  BENCHMARK_LOW_BIT_BACKENDS,
+  BENCHMARK_LOW_BIT_PROBE_FIELDS,
   type BenchmarkMemoryBucket,
   type BenchmarkMemoryProbe,
   type BenchmarkMemoryDetection,
@@ -822,6 +830,10 @@ export {
   type BenchmarkVectorDetection,
   type TargetDetectionDiagnostic,
   type TargetDetectionSeverity,
+  type BenchmarkO1Availability,
+  type BenchmarkO1BackendDetection,
+  type BenchmarkLowBitBackend,
+  type BenchmarkLowBitDetection,
 } from "./target-detection.js";
 
 // ── shareable reports, version-trigger state and submit placeholder (TODO pass, Grok 2026-10-05) ──
@@ -1417,6 +1429,27 @@ export {
   type BenchmarkComparisonReport,
   type BenchmarkComparisonResult,
 } from "./comparison-report.js";
+
+export {
+  FUNGI_BENCH_CMP_RUN_001,
+  FUNGI_BENCH_CMP_RUN_002,
+  FUNGI_BENCH_CMP_RUN_003,
+  FUNGI_BENCH_CMP_RUN_004,
+  RUNTIME_COMPARISON_CASE_IDS,
+  RUNTIME_COMPARISON_INPUT_KIND,
+  DEFAULT_RUNTIME_COMPARISON_OPERATIONS,
+  MAX_RUNTIME_COMPARISON_OPERATIONS,
+  DEFAULT_RUNTIME_COMPARISON_MAX_DURATION_MS,
+  MAX_RUNTIME_COMPARISON_MAX_DURATION_MS,
+  RUNTIME_COMPARISON_INPUT_FIELDS,
+  COMPILED_COMPARISON_INPUT_FIELDS,
+  ADMITTED_ARTIFACT_FIELDS,
+  runRuntimeComparison,
+  runCompiledComparison,
+  type RuntimeComparisonCaseId,
+  type ComparisonRunnerDiagnostic,
+  type ComparisonRunnerResult,
+} from "./comparison-runner.js";
 
 export {
   FUNGI_BENCH_BOOL_001,
