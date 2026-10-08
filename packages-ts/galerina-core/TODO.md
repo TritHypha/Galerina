@@ -428,7 +428,8 @@ Reason for additions:
 [x] Document Pattern and UnsafeRegex syntax in docs/sytax
 [x] Start per-feature syntax example files under docs/sytax-examples
 [x] Document Pattern and UnsafeRegex good/bad examples in docs/sytax-examples
-[ ] Add docs/sytax examples for existing syntax features
+[x] Add docs/sytax examples for existing syntax features
+    src/v1-scope-contract.ts admitV1SyntaxExampleFile catalogs the ten files in docs/syntax-examples/README.md; admitV1SyntaxDocsDir admits live docs/syntax and docs/syntax-examples and refuses historical docs/sytax spelling. SuperGrok 2026-10-08f
 [HOLD] Define Pattern parser support
 [HOLD] Define pattern_policy parser support
 [HOLD] Define unsafe regex parser support
@@ -907,8 +908,10 @@ Reason for additions:
 ## Compiler TODO
 
 ```text
-[ ] Choose compiler implementation language
-[ ] Define compiler folder structure
+[x] Choose compiler implementation language
+    src/v1-scope-contract.ts admitV1CompilerImplementationLanguage admits typescript_contracts and cjs_prototype (src/index.ts contracts + compiler/ CJS prototype). SuperGrok 2026-10-08f
+[x] Define compiler folder structure
+    src/v1-scope-contract.ts admitV1CompilerFolder admits compiler, src, tests, grammar, schemas, docs, examples. SuperGrok 2026-10-08f
 [x] Create lexer
 [ ] Create parser
 [ ] Create AST

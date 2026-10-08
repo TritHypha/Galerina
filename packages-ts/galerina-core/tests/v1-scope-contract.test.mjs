@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import scope from "../dist/v1-scope-contract.js";
+
+const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const {
   V1_SCOPE_SCHEMA,
@@ -46,6 +51,15 @@ const {
   admitV1TestKind,
   admitV1TestAssertion,
   admitV1VectorOrder,
+  V1_ADMITTED_COMPILER_LANGUAGES,
+  V1_ADMITTED_COMPILER_FOLDERS,
+  V1_ADMITTED_SYNTAX_DOC_DIRS,
+  V1_HISTORICAL_SYNTAX_DOC_DIRS,
+  V1_ADMITTED_SYNTAX_EXAMPLE_FILES,
+  admitV1CompilerImplementationLanguage,
+  admitV1CompilerFolder,
+  admitV1SyntaxDocsDir,
+  admitV1SyntaxExampleFile,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -383,5 +397,62 @@ describe("v1 vector order policy", () => {
     const reorder = admitV1VectorOrder("reorder");
     assert.equal(reorder.status, "REFUSED");
     assert.ok(codes(reorder).includes("Galerina_CORE_V1_VECTOR_ORDER_UNKNOWN"));
+  });
+});
+
+describe("v1 compiler implementation language", () => {
+  it("admits typescript_contracts and cjs_prototype only", () => {
+    assert.deepEqual([...V1_ADMITTED_COMPILER_LANGUAGES], ["typescript_contracts", "cjs_prototype"]);
+    for (const name of V1_ADMITTED_COMPILER_LANGUAGES) {
+      assert.equal(admitV1CompilerImplementationLanguage(name).status, "ADMITTED", name);
+    }
+    const rust = admitV1CompilerImplementationLanguage("rust");
+    assert.equal(rust.status, "REFUSED");
+    assert.ok(codes(rust).includes("Galerina_CORE_V1_COMPILER_LANGUAGE_UNKNOWN"));
+    const empty = admitV1CompilerImplementationLanguage("");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_COMPILER_LANGUAGE_REQUIRED"));
+  });
+});
+
+describe("v1 compiler folder structure", () => {
+  it("admits the closed scaffold folders and they exist on disk", () => {
+    assert.deepEqual([...V1_ADMITTED_COMPILER_FOLDERS], [
+      "compiler", "src", "tests", "grammar", "schemas", "docs", "examples",
+    ]);
+    for (const name of V1_ADMITTED_COMPILER_FOLDERS) {
+      assert.equal(admitV1CompilerFolder(name).status, "ADMITTED", name);
+      assert.ok(existsSync(join(packageRoot, name)), name);
+    }
+    const dist = admitV1CompilerFolder("dist");
+    assert.equal(dist.status, "REFUSED");
+    assert.ok(codes(dist).includes("Galerina_CORE_V1_COMPILER_FOLDER_UNKNOWN"));
+  });
+});
+
+describe("v1 syntax example files", () => {
+  it("admits live docs/syntax paths and refuses the historical sytax spelling", () => {
+    assert.deepEqual([...V1_ADMITTED_SYNTAX_DOC_DIRS], ["docs/syntax", "docs/syntax-examples"]);
+    for (const name of V1_ADMITTED_SYNTAX_DOC_DIRS) {
+      assert.equal(admitV1SyntaxDocsDir(name).status, "ADMITTED", name);
+      assert.ok(existsSync(join(packageRoot, name)), name);
+    }
+    for (const name of V1_HISTORICAL_SYNTAX_DOC_DIRS) {
+      const d = admitV1SyntaxDocsDir(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_SYNTAX_DIR_HISTORICAL"), name);
+    }
+  });
+
+  it("admits the README example files and they exist under both live folders", () => {
+    assert.equal(V1_ADMITTED_SYNTAX_EXAMPLE_FILES.length, 10);
+    for (const name of V1_ADMITTED_SYNTAX_EXAMPLE_FILES) {
+      assert.equal(admitV1SyntaxExampleFile(name).status, "ADMITTED", name);
+      assert.ok(existsSync(join(packageRoot, "docs", "syntax-examples", name)), name);
+      assert.ok(existsSync(join(packageRoot, "docs", "syntax", name)), name);
+    }
+    const missing = admitV1SyntaxExampleFile("let-binding.md");
+    assert.equal(missing.status, "REFUSED");
+    assert.ok(codes(missing).includes("Galerina_CORE_V1_SYNTAX_EXAMPLE_UNKNOWN"));
   });
 });

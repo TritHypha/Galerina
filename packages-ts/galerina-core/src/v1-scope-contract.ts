@@ -637,6 +637,146 @@ export function admitV1VectorOrder(name: unknown): V1ScopeDecision {
   ]);
 }
 
+/**
+ * This package's compiler language split from src/index.ts and compiler/README.md.
+ * Typed contracts live in TypeScript; the v0.1 CLI stays plain CJS.
+ */
+export const V1_ADMITTED_COMPILER_LANGUAGES = Object.freeze([
+  "typescript_contracts",
+  "cjs_prototype",
+] as const);
+
+export type V1AdmittedCompilerLanguage = (typeof V1_ADMITTED_COMPILER_LANGUAGES)[number];
+
+/** Closed package folders that form the compiler/docs scaffold. */
+export const V1_ADMITTED_COMPILER_FOLDERS = Object.freeze([
+  "compiler",
+  "src",
+  "tests",
+  "grammar",
+  "schemas",
+  "docs",
+  "examples",
+] as const);
+
+export type V1AdmittedCompilerFolder = (typeof V1_ADMITTED_COMPILER_FOLDERS)[number];
+
+/** Live syntax-doc folders. Historical docs/sytax spelling is recorded, not admitted. */
+export const V1_ADMITTED_SYNTAX_DOC_DIRS = Object.freeze([
+  "docs/syntax",
+  "docs/syntax-examples",
+] as const);
+
+export const V1_HISTORICAL_SYNTAX_DOC_DIRS = Object.freeze([
+  "docs/sytax",
+  "docs/sytax-examples",
+] as const);
+
+/** Per-feature example files listed in docs/syntax-examples/README.md. */
+export const V1_ADMITTED_SYNTAX_EXAMPLE_FILES = Object.freeze([
+  "async-dart-flutter.md",
+  "structured-await.md",
+  "api-data-security-and-load-control.md",
+  "api-duplicate-detection-and-idempotency.md",
+  "auth-token-verification.md",
+  "backend-compute-targets.md",
+  "device-capability-boundaries.md",
+  "js-ts-framework-targets.md",
+  "patterns-and-regex.md",
+  "text-ai-package-boundaries.md",
+] as const);
+
+export type V1AdmittedSyntaxExampleFile = (typeof V1_ADMITTED_SYNTAX_EXAMPLE_FILES)[number];
+
+export function admitV1CompilerImplementationLanguage(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_COMPILER_LANGUAGE_REQUIRED",
+        "A v1 compiler implementation language is required.",
+        "language",
+      ),
+    ]);
+  }
+  if ((V1_ADMITTED_COMPILER_LANGUAGES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_COMPILER_LANGUAGE_UNKNOWN",
+      "v1 compiler languages in this package are typescript_contracts and cjs_prototype only.",
+      "language",
+    ),
+  ]);
+}
+
+export function admitV1CompilerFolder(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_COMPILER_FOLDER_REQUIRED", "A compiler folder name is required.", "folder"),
+    ]);
+  }
+  if ((V1_ADMITTED_COMPILER_FOLDERS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_COMPILER_FOLDER_UNKNOWN",
+      "Compiler folder is not an admitted v1 scaffold folder.",
+      "folder",
+    ),
+  ]);
+}
+
+export function admitV1SyntaxDocsDir(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_SYNTAX_DIR_REQUIRED", "A syntax docs directory path is required.", "dir"),
+    ]);
+  }
+  if ((V1_ADMITTED_SYNTAX_DOC_DIRS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_HISTORICAL_SYNTAX_DOC_DIRS as readonly string[]).includes(token)) {
+    return decide(token, "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_SYNTAX_DIR_HISTORICAL",
+        "docs/sytax is the historical spelling; live folders are docs/syntax and docs/syntax-examples.",
+        "dir",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_SYNTAX_DIR_UNKNOWN", "Syntax docs directory is not an admitted live path.", "dir"),
+  ]);
+}
+
+export function admitV1SyntaxExampleFile(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_SYNTAX_EXAMPLE_REQUIRED",
+        "A syntax example file name is required.",
+        "example",
+      ),
+    ]);
+  }
+  if ((V1_ADMITTED_SYNTAX_EXAMPLE_FILES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_SYNTAX_EXAMPLE_UNKNOWN",
+      "Example file is not listed in docs/syntax-examples/README.md.",
+      "example",
+    ),
+  ]);
+}
+
 export function claimProductionMaturity(input: ProductionMaturityClaim): V1ScopeDecision {
   const path = asToken(input.checklistPath) ?? "";
   if (path !== MATURITY_CHECKLIST_PATH) {
