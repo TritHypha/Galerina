@@ -8,6 +8,10 @@ export {
   FUNGI_DEPLOY_003,
   FUNGI_DEPLOY_004,
   FUNGI_DEPLOY_005,
+  FUNGI_DEPLOY_006,
+  FUNGI_DEPLOY_007,
+  FUNGI_DEPLOY_008,
+  FUNGI_DEPLOY_009,
   DEPLOYMENT_TARGETS,
   DEPLOYMENT_RESULT_FIELDS,
   EFFECTS_POLICY_FIELDS,
@@ -36,6 +40,7 @@ export {
   DEPLOYMENT_REPORT_SCHEMA,
   DEPLOYMENT_REPORT_FILE,
   DEPLOYMENT_REPORT_LIMITATIONS,
+  LIVE_DEPLOYMENT_REPORT_LIMITATIONS,
 } from "./deploy/deploy-report.js";
 
 export type {
@@ -64,3 +69,19 @@ export type { DeployCommandOptions, DeployFlagName } from "./deploy/deploy-comma
 
 export { verifyDeployModuleHashes } from "./deploy/deploy-module-hash.js";
 export type { DeployModuleHashResult } from "./deploy/deploy-module-hash.js";
+
+export {
+  readDeployPolicy,
+  DEPLOY_POLICY_SCHEMA,
+  DEPLOY_POLICY_ENVIRONMENTS,
+  DEPLOY_POLICY_V1_FIELDS,
+} from "./deploy/deploy-policy.js";
+export type { DeployPolicy, DeployPolicyEnvironment } from "./deploy/deploy-policy.js";
+
+export {
+  readDeployRuntimeProfile,
+  checkDeployRuntimeConsistency,
+  DEPLOY_RUNTIME_SCHEMA,
+  DEPLOY_RUNTIME_PROFILE_FIELDS,
+} from "./deploy/deploy-runtime.js";
+export type { DeployRuntimeProfile } from "./deploy/deploy-runtime.js";

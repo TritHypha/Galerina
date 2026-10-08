@@ -11,6 +11,7 @@ import {
   parseDeployArgs,
   runDeployCommand,
   FUNGI_CLI_DEPLOY_001,
+  FUNGI_CLI_DEPLOY_002,
   FUNGI_CLI_DEPLOY_003,
   DEPLOY_EXIT_OK,
   DEPLOY_EXIT_USAGE_OR_POLICY,
@@ -225,7 +226,7 @@ describe("galerina deploy --artefacts (module-hash gate)", () => {
       assert.ok(empty.details.some((d) => d.includes(FUNGI_VERIFY_005)));
     }));
 
-  it("still refuses without --dry-run even when modules verify (live deploy not in this slice)", () =>
+  it("live with only --artefacts still refuses 002 until --runtime/--audit/--report are given", () =>
     withTemp(async (base) => {
       seed(base);
       writeInputs(base, [art("mod/app.wasm", "module-bytes-v1")]);
@@ -233,6 +234,7 @@ describe("galerina deploy --artefacts (module-hash gate)", () => {
       const r = await runDeployCommand({ cwd: base, env: "test", args: [...args, "--artefacts", "a.json", "--root", "build"] });
       assert.equal(r.ok, false);
       assert.equal(r.code, DEPLOY_EXIT_USAGE_OR_POLICY);
-      assert.equal(r.error.code, FUNGI_CLI_DEPLOY_001);
+      assert.equal(r.error.code, FUNGI_CLI_DEPLOY_002);
+      assert.equal(JSON.stringify(r).includes(base), false);
     }));
 });

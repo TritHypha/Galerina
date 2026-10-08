@@ -44,15 +44,16 @@ galerina graph query       Ã¢â‚¬â€ query generated graph
 galerina graph explain     Ã¢â‚¬â€ explain graph node
 galerina graph path        Ã¢â‚¬â€ show path between nodes
 galerina fmt               Ã¢â‚¬â€ format source files
+galerina verify            Ã¢â‚¬â€ artefact / manifest / report verification (HOLD: pass-14 signatures)
+galerina deploy            Ã¢â‚¬â€ dry-run or local live receipt (no remote host)
+galerina explain           Ã¢â‚¬â€ closed-shape traces and denial reasoning
+galerina plan              Ã¢â‚¬â€ advisory compute plan (no live probe)
+galerina promote           Ã¢â‚¬â€ closed-shape promote plan (no live apply)
 ```
 
 ### Planned / Not Yet Implemented
 
 ```text
-galerina deploy            Ã¢â‚¬â€ deploy verified build to target environment
-galerina explain           Ã¢â‚¬â€ explain build decisions, authority model, effects
-galerina verify deploy     Ã¢â‚¬â€ verify running version against build manifest
-galerina promote           Ã¢â‚¬â€ promote artifact from one environment to another
 galerina rollback          Ã¢â‚¬â€ rollback to previous deployment
 ```
 
@@ -76,8 +77,8 @@ Codes: `FUNGI-BUILD-001` shape, `002` domain, `003` path token, `004` artefact s
 `galerina verify` validates compiler and runtime artefact integrity.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
-Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-016`.
-Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts landed; verify deploy closed-shape receipt compare landed (live process probe still open).
+Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-018`.
+Status: HOLD on remaining pass-14 `runtime-manifest.json` producer and file-container signatures (all-zero operational pins; no keys). Hash checks, closed-shape artefact integrity, runtime manifest record checks, `galerina verify` wiring, runtime compatibility / capability / audit-report validation, and unsigned `galerina.manifest.v1` refuse (`FUNGI-VERIFY-017`/`018`) landed. Verify deploy closed-shape receipt compare landed (live process probe still open).
 
 Artefact integrity (`src/verify/verify-integrity.ts`, zero-trust defaults, owner may
 revisit): `readBuildArtefact`, `verifyArtefactIntegrity` and `verifyArtefactIntegritySet`
@@ -95,9 +96,10 @@ the governance flag mask the way the compiler derives them. `verified: false` ne
 a set must not list a flow twice. Codes: `FUNGI-VERIFY-006` shape, `007` schemaVersion, `008`
 domain, `009` consistency, `010` not verified, `011` set. Diagnostics name a field but never
 echo a value or an unknown key. `createVerificationReport(result, { manifests })` adds a
-`manifests` section and recomputes its success. Not covered: the `runtime-manifest.json` file
-container (the v0.2 manifest from compiler pass 14 is not built) and signature checks
-(GovernanceSignature, Phase 39).
+`manifests` section and recomputes its success. A JSON object with `schemaVersion` `galerina.manifest.v1` is refused unsigned
+(`FUNGI-VERIFY-017`) or unverifiable under all-zero operational pins
+(`FUNGI-VERIFY-018`). Nested README fields are not interpreted. Remaining HOLD:
+pass-14 producer and signatures (no keys).
 
 
 Verify command (`src/verify/verify-command.ts`, zero-trust defaults, owner may revisit):
@@ -108,7 +110,7 @@ duplicates, `--flag=value`, and positionals refuse (`FUNGI-CLI-VERIFY-001`/`002`
 Input files must be dense JSON arrays (`003`). The command composes
 `verifyArtefactIntegritySet` and optional `verifyRuntimeManifestSet`, can write
 `verification-report.json` exclusively (`005`), and never echoes paths or values.
-Exit codes: `0` success, `2` usage, `3` audit report failure, `4` runtime-compatibility failure, `5` capability/policy report failure, `6` artefact verify failure, `7` manifest integrity failure. Runtime report validation (`src/verify/verify-runtime.ts`, zero-trust defaults, owner may revisit): closed-shape `galerina.report.audit.v1` / `galerina.report.capability.v1` via descriptors; FUNGI-VERIFY-012..016; complete:false never verifies. Deploy still open.
+Exit codes: `0` success, `2` usage, `3` audit report failure, `4` runtime-compatibility failure, `5` capability/policy report failure, `6` artefact verify failure, `7` manifest integrity failure. Runtime report validation (`src/verify/verify-runtime.ts`, zero-trust defaults, owner may revisit): closed-shape `galerina.report.audit.v1` / `galerina.report.capability.v1` via descriptors; FUNGI-VERIFY-012..016; complete:false never verifies.
 The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
 avoiding whole-file allocations, and checks root resolution plus opened-file
 identity. `O_NOFOLLOW` is used where Node supports it. This is not a portable
@@ -117,13 +119,20 @@ directory/reparse-point swap on Windows and Linux. A successful result means the
 bytes read from the checked handle matched the supplied digest; it does not prove
 trusted provenance, prevent concurrent modification, or resist a compromised OS.
 
-`galerina deploy` (dry-run) validates effects, target compatibility, and the
-verified gate against a closed EffectsPolicy + DeployManifestSlice. Live deploy
-is not admitted (`--dry-run` required). Exit codes: `0` success, `2` usage or
-policy denial, `3` target incompatibility, `4` validation failure, `6` verified-gate
-failure. Flags: `--manifest`, `--policy`, `--target`, `--hash`, `--report`,
-`--json`, `--dry-run`, `--strict`. Produces optional `deployment-report.json`.
-Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
+`galerina deploy` validates effects, target compatibility, and the verified
+gate against a closed EffectsPolicy (or `galerina.deploy-policy/v1`) +
+DeployManifestSlice. `--dry-run` is optional. Live (no `--dry-run`) writes a
+local exclusive-create `deployment-report.json` with `dryRun: false` and
+requires `--artefacts`, `--runtime` (`galerina.deploy-runtime/v1` declared
+workspace profile), `--audit` (`galerina.report.capability.v1`), and `--report`.
+Module hashes on disk are the mandatory pre-deploy gate. Live deploy does not
+copy artefacts, attach to a host or process, or open a network. Exit codes:
+`0` success, `2` usage or policy denial, `3` target incompatibility,
+`4` validation failure, `5` capability failure, `6` verified-gate failure,
+`7` module-hash failure. Flags: `--manifest`, `--policy`, `--target`, `--hash`,
+`--artefacts`, `--root`, `--runtime`, `--audit`, `--report`, `--json`,
+`--dry-run`, `--strict`. Diagnostic codes: `FUNGI-DEPLOY-001` through
+`FUNGI-DEPLOY-009`. `FUNGI-CLI-DEPLOY-004` is reserved.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
 declarations, boundary violations, and why deployment was denied.
