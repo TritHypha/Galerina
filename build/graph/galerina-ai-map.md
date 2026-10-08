@@ -59,18 +59,18 @@ Provides:
 Galerina execution engine contracts for checked and compiled runtime execution.
 
 Provides:
-- RuntimeMode
-- RuntimeEnvironment
-- RuntimeDiagnosticSeverity
-- RuntimeContext
-- RuntimeDiagnostic
-- RuntimeError
-- RuntimeResult
-- RuntimeEffectKind
-- RuntimeEffect
-- RuntimeEffectPolicy
-- RuntimeEffectDecision
-- RuntimeReport
+- MAX_PLAN_LIST_ITEMS
+- GOVERNED_EXECUTION_PLAN_SCHEMA
+- GOVERNED_EXECUTION_STAGES
+- GovernedExecutionStage
+- RuntimeTrustZone
+- GovernedActorKind
+- GovernedExecutionPlan
+- validateGovernedExecutionPlan
+- GovernedExecutionState
+- GovernedExecutionEvent
+- startGovernedExecution
+- advanceGovernedExecution
 
 ## galerina-core-network
 
@@ -95,18 +95,18 @@ Provides:
 Reusable Galerina security primitives, redaction helpers, permission models and security report contracts.
 
 Provides:
-- CRYPTO_PROVIDER_SCHEMA
-- PasswordKdfAlgorithm
-- CryptoProviderRequest
-- CryptoProviderResult
-- CryptoProvider
-- FUNGI_CRYPTO_PROVIDER_REQUIRED
-- FUNGI_CRYPTO_PROVIDER_THREW
-- FUNGI_CRYPTO_PROVIDER_MALFORMED
-- FUNGI_CRYPTO_PROVIDER_SCHEMA
-- DAGEdgeResult
-- DSSState
-- DWIHandle
+- FUNGI_SEC_ASG_001
+- FUNGI_SEC_ASG_002
+- FUNGI_SEC_ASG_003
+- FUNGI_SEC_ASG_004
+- FUNGI_SEC_ASG_005
+- AI_AUTHORITY_REQUEST_SCHEMA
+- TRUST_ROOT_MODIFICATION_SCHEMA
+- AI_ACTOR_TYPES
+- AiActorType
+- AI_AUTHORITY_DECISIONS
+- AiAuthorityDecision
+- TRUST_ROOT_OPERATIONS
 
 ## galerina-core-config
 
@@ -119,12 +119,12 @@ Provides:
 - isGovernanceMode
 - ResolvedProjectGovernance
 - resolveProjectGovernance
-- GALERINA_ENVIRONMENT_MODES
-- EnvironmentMode
-- ConfigDiagnosticSeverity
-- ConfigDiagnostic
-- ProjectPackageReference
-- ProductionPackageOverride
+- CORE_CONFIG_HOLD_PIN_SCHEMA
+- CORE_CONFIG_HOLD_TOPICS
+- CoreConfigHoldTopic
+- CoreConfigHoldRefusalCode
+- CoreConfigHoldRefusal
+- CoreConfigHoldRequestV1
 
 ## galerina-core-reports
 
@@ -185,18 +185,18 @@ Provides:
 Galerina compute planning, capability and target selection concepts.
 
 Provides:
+- COMPUTE_RUNTIME_CAPABILITIES
+- ComputeRuntimeCapabilityName
+- V1_ACTIVE_COMPUTE_CAPABILITIES
+- V1ActiveComputeCapability
+- ComputeCapabilityAvailability
+- ComputeRuntimeCapabilityClaim
+- isComputeRuntimeCapabilityName
+- isV1ActiveComputeCapability
+- validateComputeRuntimeCapabilityClaim
 - CompatibilityReport
 - buildCompatibilityReport
 - FUNGI_COMPAT_FORBIDDEN_EFFECT
-- FUNGI_COMPAT_UNSUPPORTED_EFFECT
-- FUNGI_COMPAT_MISSING_CAPABILITY
-- FUNGI_COMPAT_MEMORY_LIMIT
-- FUNGI_COMPAT_SENSITIVE_DATA
-- CompatDiagnosticEntry
-- COMPAT_DIAGNOSTIC_REGISTRY
-- CompatibilityLevel
-- COMPATIBILITY_LEVELS
-- CompatibilityBlocker
 
 ## galerina-ai
 
@@ -704,18 +704,18 @@ Provides:
 Galerina photonic and wavelength concepts, models, APIs and simulation contracts.
 
 Provides:
-- Wavelength
-- Phase
-- Amplitude
-- OpticalSignal
-- OpticalChannel
-- PhotonicMapping
-- PhotonicMode
-- PHOTONIC_DIAGNOSTIC_SCHEMA
-- PhotonicDiagnosticSeverity
-- PhotonicDiagnostic
-- PhotonicDiagnosticDecode
-- PhotonicPlan
+- CORE_PHOTONIC_HOLD_PIN_SCHEMA
+- CORE_PHOTONIC_HOLD_TOPICS
+- CorePhotonicHoldTopic
+- CorePhotonicHoldRefusalCode
+- CorePhotonicHoldRefusal
+- CorePhotonicHoldRequestV1
+- CorePhotonicHoldRequestResult
+- prepareCorePhotonicHoldRequest
+- implementPostV1PhotonicSimulation
+- admitOpticalTransportMode
+- implementPhotonicRuntimePlanner
+- rewriteFungiPhotonicMeanings
 
 ## galerina-target-cpu
 
@@ -766,10 +766,10 @@ Provides:
 - NativeTargetReport
 - NativeDiagnosticSeverity
 - NativeDiagnostic
-- validateNativeTarget
-- validateNativeArtifact
-- createNativeTargetReport
-- createHash
+- NATIVE_DIAGNOSTIC_REGISTRY
+- NativeDiagnosticCode
+- NATIVE_DIAGNOSTIC_CODES
+- isNativeDiagnosticCode
 
 ## galerina-target-js
 
@@ -812,32 +812,36 @@ Provides:
 Galerina GPU target planning and output contracts.
 
 Provides:
-- GpuTargetCapability
-- GpuKernelPlan
-- GpuTargetReport
-- GpuDiagnosticSeverity
-- GpuDiagnostic
-- validateGpuKernelPlan
-- createGpuTargetReport
-- isProxy
+- GPU_HOLD_PIN_SCHEMA
+- GpuHoldRefusalCode
+- GpuHoldRefusal
+- GpuAdmissionRequestV1
+- GpuAdmissionRequestResult
+- prepareGpuAdmissionRequest
+- admitGpuCapability
+- dispatchGpuKernel
+- executeGpuFallback
+- claimPhysicalGpuEvidence
+- promoteGpuDiagnosticsToFungi
+- implementPostV1GpuContract
 
 ## galerina-target-ai-accelerator
 
 Galerina NPU, TPU and AI accelerator target planning contracts.
 
 Provides:
-- AiAcceleratorKind
-- AiAcceleratorWorkloadKind
-- AiAcceleratorPrecision
-- AiAcceleratorFramework
-- AiAcceleratorModelFormat
-- AiAcceleratorAdapterId
-- AiAcceleratorDiagnosticSeverity
-- AiAcceleratorDiagnostic
-- AiAcceleratorTopology
-- AiAcceleratorMemoryProfile
-- AiAcceleratorBackendProfile
-- AiAcceleratorCapability
+- AI_ACCELERATOR_HOLD_PIN_SCHEMA
+- PARKED_AI_ACCELERATOR_KINDS
+- PARKED_AI_ACCELERATOR_TOPOLOGY_TOKENS
+- ADMITTED_AI_ACCELERATOR_REQUEST_KINDS
+- AiAcceleratorHoldRefusalCode
+- AiAcceleratorHoldRefusal
+- AiAcceleratorAdmissionRequestV1
+- AiAcceleratorAdmissionRequestResult
+- prepareAiAcceleratorAdmissionRequest
+- admitAiAcceleratorCapability
+- claimPhysicalAcceleratorEvidence
+- dispatchAiAcceleratorKernel
 
 ## galerina-target-photonic
 
@@ -863,35 +867,35 @@ Optional Galerina secure App Kernel: the fixed, non-bypassable governed request 
 
 Provides:
 - VideoJob
-- canonicalJson
-- FuseDescriptor
-- FusedComponent
-- FusePackageOptions
-- HybridManifestVerdict
-- HybridManifestVerifier
-- CapabilityImportFactory
-- BUILTIN_CAPABILITY_NAMES
-- buildCapabilityImports
-- admitFusePackageName
-- CompositionMember
+- FUNGI_APPK_ASH_001
+- FUNGI_APPK_ASH_002
+- FUNGI_APPK_ASH_003
+- FUNGI_APPK_ASH_004
+- FUNGI_APPK_ASH_005
+- API_SERVER_HANDOFF_SCHEMA
+- KERNEL_HANDOFF_METHODS
+- KERNEL_HANDOFF_REQUEST_REQUIRED_FIELDS
+- KERNEL_HANDOFF_REQUEST_OPTIONAL_FIELDS
+- KERNEL_HANDOFF_RESPONSE_REQUIRED_FIELDS
+- KERNEL_HANDOFF_RESPONSE_OPTIONAL_FIELDS
 
 ## galerina-framework-api-server
 
 Galerina HTTP API-server adapter: a thin node:http transport that buffers the request body under a hard DoS cap and hands every request to the non-bypassable App Kernel. It never pre-empts a kernel gate except the additive body cap.
 
 Provides:
-- DEFAULT_MAX_BODY_BYTES
-- DEFAULT_REQUEST_TIMEOUT_MS
-- DEFAULT_HEADERS_TIMEOUT_MS
-- DEFAULT_IDLE_TIMEOUT_MS
-- RevocationResolution
-- PrincipalResolution
-- ApiServerTlsOptions
-- CreateApiServerOptions
-- ApiServerWebhookOptions
-- createApiServer
-- listen
-- MemoryReplayStoreOptions
+- API_SERVER_HOLD_PIN_SCHEMA
+- API_SERVER_HOLD_TOPICS
+- ApiServerHoldTopic
+- ApiServerHoldRefusalCode
+- ApiServerHoldRefusal
+- ApiServerHoldRequestV1
+- ApiServerHoldRequestResult
+- prepareApiServerHoldRequest
+- installDurableReplayStore
+- addHistoricalCliBin
+- recreateThirteenModuleLayout
+- enableSafeDetails
 
 ## galerina-auth
 
@@ -913,36 +917,36 @@ Provides:
 Galerina API documentation generator: emits a valid OpenAPI 3.x document from the App Kernel's governed route table (EffectiveRoutePolicy / RouteDeclaration) and contract metadata. The generated spec documents exactly the gates the kernel enforces — auth, body limits, idempotency, rate limits, and the error contract — and fails closed rather than emit an invalid or misleading governance contract.
 
 Provides:
-- generateOpenApi
-- exportOpenApi
-- exportOpenApiYaml
-- Reference
-- SchemaOrRef
-- SchemaObject
-- ContractSchemaExport
-- MediaTypeObject
-- RequestBodyObject
-- ResponseObject
-- ParameterLocation
-- ParameterObject
+- DOCS_HOLD_PIN_SCHEMA
+- DOCS_HOLD_TOPICS
+- DocsHoldTopic
+- DocsHoldRefusalCode
+- DocsHoldRefusal
+- DocsHoldRequestV1
+- DocsHoldRequestResult
+- prepareDocsHoldRequest
+- mapOptionResultDecimalSchemas
+- closeAuditedHoldWithoutOwner
+- emitOAuthOidcSchemes
+- addDocsOpenApiCli
 
 ## galerina-core-cli
 
 Galerina developer command-line interface for checking, building, serving, reporting and running safe tasks.
 
 Provides:
-- FUNGI_CLI_ENV_001
-- FUNGI_CLI_ENV_002
-- FUNGI_CLI_ENV_003
-- FUNGI_CLI_001
-- FUNGI_CLI_002
-- FUNGI_CLI_003
-- EnvironmentResolution
-- parseEnvironment
-- commands
-- findCommand
-- createCoreCommandRunner
-- relativeCoreCompilerPath
+- FUNGI_CLI_BUILD_001
+- FUNGI_CLI_BUILD_002
+- FUNGI_CLI_BUILD_003
+- FUNGI_CLI_BUILD_004
+- FUNGI_CLI_BUILD_005
+- BUILD_EXIT_OK
+- BUILD_EXIT_USAGE
+- BUILD_EXIT_VALIDATION
+- BuildFlagName
+- BuildCommandOptions
+- parseBuildArgs
+- FUNGI_BUILD_001
 
 ## galerina-core-tasks
 
@@ -968,17 +972,17 @@ Galerina benchmark and diagnostics contracts for logic, compute targets, fallbac
 
 Provides:
 - BenchmarkRequest
-- BenchmarkMode
-- BenchmarkTrigger
-- BenchmarkTarget
-- BenchmarkStatus
-- BenchmarkPrivacyPolicy
-- BenchmarkConfig
-- BenchmarkSystemInfo
-- BenchmarkTestResult
-- BenchmarkScores
-- BenchmarkReport
-- BenchmarkSubmitPayload
+- FUNGI_BENCH_RUN_001
+- FUNGI_BENCH_RUN_002
+- FUNGI_BENCH_RUN_003
+- FUNGI_BENCH_RUN_004
+- FUNGI_BENCH_RUN_005
+- FUNGI_BENCH_RUN_006
+- BENCHMARK_RUNNER_INPUT_FIELDS
+- LIGHT_BENCHMARK_CASE_IDS
+- BENCHMARK_RUNNER_REASONS
+- BenchmarkRunnerDiagnostic
+- BenchmarkRunnerInput
 
 ## galerina-tools-myco
 
@@ -1048,10 +1052,13 @@ Provides:
 - AppConfig
 - parseConfig
 - loadConfig
-- paths
-- FuseOptions
-- createGreetingKernel
-- StartedServer
+- EXAMPLE_APP_HOLD_PIN_SCHEMA
+- ExampleAppHoldRefusalCode
+- ExampleAppHoldRefusal
+- ExampleAppRouteRequestV1
+- ExampleAppRouteRequestResult
+- prepareExampleAppRouteRequest
+- addExampleAppRoute
 
 ## galerina-api-protocol-rest
 
@@ -1221,18 +1228,18 @@ Provides:
 Tri-Pipe proposal, routing and composition layer (RD-0855). createTriPipeEngine() proposes a digest-bound route; it does not construct an engine or authorise dispatch. ExecutionRouter composes hardware-tier, precision and photonic net-win axes. Fail-closed to binary.
 
 Provides:
-- CapabilityInput
-- ExecutionRouteInput
-- ExecutionDecision
-- ExecutionRouter
-- createExecutionRouter
-- ADMITTED_REPRESENTATION_PROFILES
-- RepresentationProfile
-- EXPERIMENTAL_REPRESENTATION_PROFILES
-- COMPUTE_TRANSFER_SCHEMA
-- ComputeTransferV1
-- TriPipeOptions
-- TriPipeProposal
+- TASK_POLICY_SCHEMA
+- INITIAL_ATTEMPT_REQUEST_SCHEMA
+- ALTERNATIVE_REQUEST_SCHEMA
+- ATTEMPT_PROPOSAL_SCHEMA
+- MAX_ATTEMPTS_HARD_CAP
+- FallbackStep
+- LogicCarrier
+- PermittedReason
+- WorkloadClass
+- ParentOutcome
+- PERMITTED_REASONS
+- TaskPolicyV1
 
 ## galerina-tri-regex
 
@@ -1362,9 +1369,9 @@ Provides:
 - SealArena
 - withWiped
 - readStdinBytes
+- readStdinBytesWith
 - EchoingLineReader
 - atomicWriteCiphertext
-- setMlockHook
 
 ## galerina-ext-tritsocket
 
