@@ -19,17 +19,21 @@ Use this file as a practical checklist while the project moves from concept to d
 ## V1 Package Freeze And Core Focus
 
 ```text
-[ ] Freeze non-essential package expansion while core syntax and grammar are defined
-[ ] Keep v1 target scope to CPU and WASM
-[ ] Treat GPU, AI accelerator, photonic, optical I/O and domain packages as post-v1
+[x] Freeze non-essential package expansion while core syntax and grammar are defined
+    src/v1-scope-contract.ts admitV1CorePackage / V1_POST_DOMAIN_PACKAGES (image, video, search, text_ai, device, flutter_ui refuse as v1-core). SuperGrok 2026-10-08
+[x] Keep v1 target scope to CPU and WASM
+    src/v1-scope-contract.ts V1_ADMITTED_TARGETS cpu|wasm; admitV1CoreTarget. SuperGrok 2026-10-08
+[x] Treat GPU, AI accelerator, photonic, optical I/O and domain packages as post-v1
+    src/v1-scope-contract.ts V1_POST_TARGETS; classifyV1Scope returns post_v1. SuperGrok 2026-10-08
 [ ] Work actively on core syntax, grammar and logic semantics
 [ ] Commit the hybrid ownership memory-safety model
 [ ] Finalise Bool, Tri, Decision, Option and Result semantics
 [x] Add at least 20 real .fungi examples for the v1 syntax subset
 [ ] Build parser coverage for those examples
 [ ] Reject post-v1 syntax with clear diagnostics
-[ ] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
+[x] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
     claiming production maturity
+    src/v1-scope-contract.ts claimProductionMaturity (claimed true always refuses; checklist path must match). SuperGrok 2026-10-08
 ```
 
 ---
@@ -116,52 +120,54 @@ Current syntax/target documentation additions:
 [x] Add docs/sytax-examples/async-dart-flutter.md
 [x] Implement parser support for async flow
 [ ] Implement await-outside-async diagnostics
-[ ] Implement target dart report/output support
-[ ] Implement target flutter package report/output support
-[ ] Implement Bytes to Dart.Uint8List interop checks
-[ ] Implement Dart type mapping report for Flutter targets
-[ ] Implement Flutter package/plugin layout generation
-[ ] Implement platform channel parser/report support
-[ ] Implement Pigeon-style typed platform API generation or equivalent schema output
-[ ] Implement permission metadata reports for Flutter package/plugin targets
-[ ] Implement flutter-ffi target planning and unsupported-platform diagnostics
-[ ] Implement source maps from generated Dart/native bindings back to .fungi files
-[ ] Defer Flutter UI component syntax until Dart package, FFI and platform-channel layers are stable
+[HOLD] Implement target dart report/output support
+[HOLD] Implement target flutter package report/output support
+[HOLD] Implement Bytes to Dart.Uint8List interop checks
+[HOLD] Implement Dart type mapping report for Flutter targets
+[HOLD] Implement Flutter package/plugin layout generation
+[HOLD] Implement platform channel parser/report support
+[HOLD] Implement Pigeon-style typed platform API generation or equivalent schema output
+[HOLD] Implement permission metadata reports for Flutter package/plugin targets
+[HOLD] Implement flutter-ffi target planning and unsupported-platform diagnostics
+[HOLD] Implement source maps from generated Dart/native bindings back to .fungi files
+[HOLD] Defer Flutter UI component syntax until Dart package, FFI and platform-channel layers are stable
 [x] Add docs/javascript-typescript-framework-targets.md
 [x] Add docs/sytax/js-ts-framework-targets.md
 [x] Add docs/sytax-examples/js-ts-framework-targets.md
-[ ] Implement target javascript ESM report/output support
-[ ] Implement TypeScript declaration output for framework-facing exports
-[ ] Implement target node report/output support
-[ ] Implement browser/Node WASM bridge reports
-[ ] Implement client_safe, server_only and worker_safe export markers
-[ ] Implement client/server split diagnostics for forbidden effects
-[ ] Implement worker-safe export diagnostics for clone/transfer unsafe data
-[ ] Implement React adapter manifest/hook/client generator as package output
-[ ] Implement React Native adapter manifest/hook/client/native-boundary generator as package output
-[ ] Implement Angular adapter manifest/service/client generator as package output
-[ ] Implement framework-adapter-manifest.json
+[HOLD] Implement target javascript ESM report/output support
+[HOLD] Implement TypeScript declaration output for framework-facing exports
+[HOLD] Implement target node report/output support
+[HOLD] Implement browser/Node WASM bridge reports
+[HOLD] Implement client_safe, server_only and worker_safe export markers
+[HOLD] Implement client/server split diagnostics for forbidden effects
+[HOLD] Implement worker-safe export diagnostics for clone/transfer unsafe data
+[HOLD] Implement React adapter manifest/hook/client generator as package output
+[HOLD] Implement React Native adapter manifest/hook/client/native-boundary generator as package output
+[HOLD] Implement Angular adapter manifest/service/client generator as package output
+[HOLD] Implement framework-adapter-manifest.json
 [x] Add docs/device-capability-boundaries.md
 [x] Add docs/sytax/device-capability-boundaries.md
 [x] Add docs/sytax-examples/device-capability-boundaries.md
-[ ] Implement device permission/effect boundary checks
-[ ] Implement device-capability-report.json
-[ ] Implement device-privacy-report.json
-[ ] Implement native device boundary diagnostics
-[ ] Implement mobile-native target planning without mobile framework syntax
-[ ] Keep camera, microphone, Bluetooth, GPS, notifications, media players and mobile UI out of Galerina core
+[HOLD] Implement device permission/effect boundary checks
+[HOLD] Implement device-capability-report.json
+[HOLD] Implement device-privacy-report.json
+[HOLD] Implement native device boundary diagnostics
+[HOLD] Implement mobile-native target planning without mobile framework syntax
+[x] Keep camera, microphone, Bluetooth, GPS, notifications, media players and mobile UI out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/text-ai-package-boundaries-and-compute-auto.md
 [x] Add docs/sytax/text-ai-package-boundaries.md
 [x] Add docs/sytax-examples/text-ai-package-boundaries.md
-[ ] Define text_policy parser/report support
-[ ] Define token_policy parser/report support
-[ ] Define prompt_safety policy report support
-[ ] Define text_redaction policy report support
-[ ] Define generated-text-not-executable diagnostics
-[ ] Define token-report.json schema
-[ ] Define text-security-report.json schema
-[ ] Define text-package-target-report.json schema
-[ ] Keep summarisation, generation, embeddings, moderation, translation and NLP tasks out of Galerina core
+[HOLD] Define text_policy parser/report support
+[HOLD] Define token_policy parser/report support
+[HOLD] Define prompt_safety policy report support
+[HOLD] Define text_redaction policy report support
+[HOLD] Define generated-text-not-executable diagnostics
+[HOLD] Define token-report.json schema
+[HOLD] Define text-security-report.json schema
+[HOLD] Define text-package-target-report.json schema
+[x] Keep summarisation, generation, embeddings, moderation, translation and NLP tasks out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/auth-token-verification-boundaries.md
 [x] Add docs/sytax/auth-token-verification.md
 [x] Add docs/sytax-examples/auth-token-verification.md
@@ -177,7 +183,8 @@ Current syntax/target documentation additions:
 [ ] Define post-quantum and hybrid crypto policy report support
 [ ] Define experimental hardware proof policy flags
 [ ] Define auth, token, proof and crypto policy AI guide summaries
-[ ] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
+[x] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-data-security-and-load-control.md
 [x] Add docs/sytax/api-data-security-and-load-control.md
 [x] Add docs/sytax-examples/api-data-security-and-load-control.md
@@ -196,7 +203,8 @@ Current syntax/target documentation additions:
 [ ] Define route concurrency and connection pool alignment warnings
 [ ] Define API security, API memory and load-control report schemas
 [ ] Define API data boundary AI guide summaries
-[ ] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
+[x] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax-examples/api-duplicate-detection-and-idempotency.md
@@ -215,7 +223,8 @@ Current syntax/target documentation additions:
 [ ] Define outbound duplicate payload warning support
 [ ] Define API version conflict diagnostics
 [ ] Define API duplicate/idempotency AI guide summaries
-[ ] Keep fixed routers, controller frameworks, middleware stacks, API gateways and idempotency storage backends out of Galerina core
+[x] Keep fixed routers, controller frameworks, middleware stacks, API gateways and idempotency storage backends out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 ```
 
 Additional recommended files:
