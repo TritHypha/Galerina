@@ -20,6 +20,10 @@
       {
         "path": "src/load-graph.ts",
         "reason": "Isolation checker consumed by package tests via dist/load-graph.js; not a public package export."
+      },
+      {
+        "path": "src/rd1295-hold-pin.ts",
+        "reason": "RD-1295 HOLD pin consumed by package tests via dist/rd1295-hold-pin.js; not a cluster entry. Refuses extract/sign/convert/admit/authorise."
       }
     ],
     "loadedAssets": [
