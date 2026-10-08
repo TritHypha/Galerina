@@ -777,6 +777,311 @@ export function admitV1SyntaxExampleFile(name: unknown): V1ScopeDecision {
   ]);
 }
 
+/**
+ * Auth catalogs from docs/auth-token-verification-boundaries.md.
+ * Parser/runtime verification stays with core-security and the app kernel.
+ * Post-quantum and hardware_proof stay out of this freeze.
+ */
+export const V1_ADMITTED_AUTH_PROVIDER_TYPES = Object.freeze(["oauth2"] as const);
+
+export const V1_REFUSED_AUTH_PROVIDER_TYPES = Object.freeze([
+  "identity_provider",
+  "oidc_provider",
+  "login_product",
+] as const);
+
+export const V1_ADMITTED_AUTH_POLICY_FAMILIES = Object.freeze([
+  "bearer",
+  "jwt",
+  "oauth2",
+  "proof_of_possession",
+  "capability_tokens",
+  "reports",
+] as const);
+
+export const V1_EXPERIMENTAL_AUTH_POLICY_FAMILIES = Object.freeze(["hardware_proof"] as const);
+
+export const V1_ADMITTED_AUTH_TOKEN_KINDS = Object.freeze(["bearer", "jwt"] as const);
+
+export const V1_ADMITTED_JWT_ALGORITHMS = Object.freeze(["RS256", "ES256", "EdDSA"] as const);
+
+export const V1_REFUSED_JWT_ALGORITHMS = Object.freeze(["none"] as const);
+
+export const V1_ADMITTED_JWT_DIAGNOSTICS = Object.freeze([
+  "alg_none",
+  "expired",
+  "wrong_issuer",
+  "wrong_audience",
+  "missing_signature",
+  "unknown_algorithm",
+  "untrusted_key",
+  "missing_required_claims",
+  "unverified_claim_use",
+] as const);
+
+export const V1_ADMITTED_BEARER_DIAGNOSTICS = Object.freeze([
+  "logged",
+  "local_storage",
+  "client_safe",
+  "missing_expiry",
+] as const);
+
+export const V1_ADMITTED_OAUTH_CHECKS = Object.freeze([
+  "issuer",
+  "audience",
+  "scope",
+  "jwks",
+  "pkce",
+] as const);
+
+export const V1_ADMITTED_PROOF_OF_POSSESSION = Object.freeze(["dpop", "mtls"] as const);
+
+export const V1_ADMITTED_PROOF_CONSTRAINTS = Object.freeze([
+  "bind_method",
+  "bind_path",
+  "bind_body",
+  "replay_cache",
+  "nonce",
+] as const);
+
+export const V1_ADMITTED_CAPABILITY_CONSTRAINTS = Object.freeze([
+  "bind_action",
+  "bind_resource",
+  "bind_request_hash",
+  "nonce",
+] as const);
+
+export const V1_ADMITTED_AUTH_REPORTS = Object.freeze([
+  "auth_report",
+  "token_report",
+  "jwt_validation_report",
+  "oauth_security_report",
+  "proof_report",
+  "capability_token_report",
+  "request_proof_report",
+  "ai_guide",
+] as const);
+
+export function admitV1AuthProviderType(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_AUTH_PROVIDER_REQUIRED", "An auth_provider type is required.", "provider"),
+    ]);
+  }
+  if ((V1_ADMITTED_AUTH_PROVIDER_TYPES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_AUTH_PROVIDER_TYPES as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_AUTH_PROVIDER_EXCLUDED",
+        "Identity, OIDC-provider and login products stay out of Galerina core.",
+        "provider",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_AUTH_PROVIDER_UNKNOWN", "v1 auth_provider type is oauth2 only.", "provider"),
+  ]);
+}
+
+export function admitV1AuthPolicyFamily(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_AUTH_POLICY_REQUIRED", "An auth_policy family name is required.", "auth_policy"),
+    ]);
+  }
+  if ((V1_ADMITTED_AUTH_POLICY_FAMILIES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_EXPERIMENTAL_AUTH_POLICY_FAMILIES as readonly string[]).includes(token)) {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_AUTH_HARDWARE_EXPERIMENTAL",
+        "hardware_proof is experimental and stays out of the v1 auth_policy freeze.",
+        "auth_policy",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_AUTH_POLICY_UNKNOWN", "auth_policy family is not an admitted v1 family.", "auth_policy"),
+  ]);
+}
+
+export function admitV1AuthTokenKind(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_AUTH_TOKEN_REQUIRED", "An auth token kind is required.", "token"),
+    ]);
+  }
+  if ((V1_ADMITTED_AUTH_TOKEN_KINDS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_AUTH_TOKEN_UNKNOWN", "v1 auth token kinds are bearer and jwt only.", "token"),
+  ]);
+}
+
+export function admitV1JwtAlgorithm(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_JWT_ALG_REQUIRED", "A JWT algorithm name is required.", "algorithm"),
+    ]);
+  }
+  if ((V1_ADMITTED_JWT_ALGORITHMS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_JWT_ALGORITHMS as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag("Galerina_CORE_V1_JWT_ALG_NONE", "JWT algorithm none is denied.", "algorithm"),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_JWT_ALG_UNKNOWN",
+      "v1 JWT algorithms are RS256, ES256 and EdDSA only.",
+      "algorithm",
+    ),
+  ]);
+}
+
+export function admitV1JwtDiagnostic(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_JWT_DIAGNOSTIC_REQUIRED", "A JWT diagnostic name is required.", "jwt"),
+    ]);
+  }
+  if ((V1_ADMITTED_JWT_DIAGNOSTICS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_JWT_DIAGNOSTIC_UNKNOWN",
+      "JWT diagnostic is not in the closed docs/auth-token-verification-boundaries.md set.",
+      "jwt",
+    ),
+  ]);
+}
+
+export function admitV1BearerDiagnostic(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_BEARER_DIAGNOSTIC_REQUIRED", "A bearer-token diagnostic name is required.", "bearer"),
+    ]);
+  }
+  if ((V1_ADMITTED_BEARER_DIAGNOSTICS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_BEARER_DIAGNOSTIC_UNKNOWN",
+      "Bearer diagnostics are logged, local_storage, client_safe and missing_expiry.",
+      "bearer",
+    ),
+  ]);
+}
+
+export function admitV1OauthCheck(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_OAUTH_CHECK_REQUIRED", "An OAuth policy check name is required.", "oauth"),
+    ]);
+  }
+  if ((V1_ADMITTED_OAUTH_CHECKS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_OAUTH_CHECK_UNKNOWN",
+      "v1 OAuth checks are issuer, audience, scope, jwks and pkce.",
+      "oauth",
+    ),
+  ]);
+}
+
+export function admitV1ProofOfPossession(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_POP_REQUIRED", "A proof-of-possession name is required.", "pop"),
+    ]);
+  }
+  if ((V1_ADMITTED_PROOF_OF_POSSESSION as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_POP_UNKNOWN", "v1 proof-of-possession forms are dpop and mtls.", "pop"),
+  ]);
+}
+
+export function admitV1ProofConstraint(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_PROOF_CONSTRAINT_REQUIRED", "A request-proof constraint is required.", "proof"),
+    ]);
+  }
+  if ((V1_ADMITTED_PROOF_CONSTRAINTS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_PROOF_CONSTRAINT_UNKNOWN",
+      "Request-proof constraints are bind_method, bind_path, bind_body, replay_cache and nonce.",
+      "proof",
+    ),
+  ]);
+}
+
+export function admitV1CapabilityConstraint(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_CAPABILITY_CONSTRAINT_REQUIRED",
+        "A capability-token constraint is required.",
+        "capability",
+      ),
+    ]);
+  }
+  if ((V1_ADMITTED_CAPABILITY_CONSTRAINTS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_CAPABILITY_CONSTRAINT_UNKNOWN",
+      "Capability constraints are bind_action, bind_resource, bind_request_hash and nonce.",
+      "capability",
+    ),
+  ]);
+}
+
+export function admitV1AuthReport(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_AUTH_REPORT_REQUIRED", "An auth report name is required.", "report"),
+    ]);
+  }
+  if ((V1_ADMITTED_AUTH_REPORTS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_AUTH_REPORT_UNKNOWN",
+      "Auth report is not in the closed v1 set; hardware_proof and crypto_policy reports stay out.",
+      "report",
+    ),
+  ]);
+}
+
 export function claimProductionMaturity(input: ProductionMaturityClaim): V1ScopeDecision {
   const path = asToken(input.checklistPath) ?? "";
   if (path !== MATURITY_CHECKLIST_PATH) {
@@ -798,4 +1103,294 @@ export function claimProductionMaturity(input: ProductionMaturityClaim): V1Scope
     ]);
   }
   return decide(path, "admitted", []);
+}
+
+/**
+ * API catalogs from docs/api-data-security-and-load-control.md and
+ * docs/api-duplicate-detection-and-idempotency.md.
+ * Parser/runtime stay with core-compiler, core-security, and the app kernel.
+ * Post-quantum and hardware_proof stay post-v1 refuse.
+ */
+export const V1_ADMITTED_API_POLICY_FAMILIES = Object.freeze([
+  "api_policy",
+  "body_policy",
+  "route_limits",
+  "queue_handoff",
+  "client_identity",
+  "duplicate_detection",
+  "idempotency",
+  "reports",
+] as const);
+
+export const V1_ADMITTED_API_BODY_POLICY_FIELDS = Object.freeze([
+  "content_type",
+  "max_size",
+  "parse_mode",
+  "unknown_fields",
+] as const);
+
+export const V1_ADMITTED_API_PARSE_MODES = Object.freeze(["strict"] as const);
+
+export const V1_ADMITTED_API_UNKNOWN_FIELD_POLICIES = Object.freeze(["deny"] as const);
+
+export const V1_ADMITTED_API_BODY_DIAGNOSTICS = Object.freeze([
+  "content_type_mismatch",
+  "strict_body_decode",
+  "unknown_field",
+  "duplicate_key",
+  "unsafe_coercion",
+  "request_scoped_body_lifetime",
+  "large_body_streaming",
+] as const);
+
+export const V1_ADMITTED_API_ROUTE_LIMITS = Object.freeze([
+  "rate",
+  "max_concurrent",
+  "timeout",
+  "memory",
+] as const);
+
+export const V1_ADMITTED_API_LOAD_DIAGNOSTICS = Object.freeze([
+  "concurrency_pool_alignment",
+  "trusted_proxy",
+  "x_forwarded_for",
+] as const);
+
+export const V1_ADMITTED_API_DUPLICATE_DIAGNOSTICS = Object.freeze([
+  "duplicate_route",
+  "duplicate_route_name",
+  "duplicate_schema_shape",
+  "duplicate_external_client",
+  "duplicate_outbound_payload",
+  "api_version_conflict",
+  "webhook_duplicate_event",
+  "idempotency_payload_mismatch",
+] as const);
+
+export const V1_ADMITTED_API_SHAPE_MARKERS = Object.freeze([
+  "intentionally_same_shape_as",
+  "intentionally_same_base_as",
+] as const);
+
+export const V1_ADMITTED_IDEMPOTENCY_CONFLICTS = Object.freeze([
+  "return_previous_response",
+  "reject_duplicate",
+  "hold_for_review",
+  "raise_error",
+] as const);
+
+export const V1_ADMITTED_IDEMPOTENCY_EXCEPTIONS = Object.freeze([
+  "not_required",
+] as const);
+
+export const V1_ADMITTED_IDEMPOTENCY_RECOMMENDATIONS = Object.freeze([
+  "database.write",
+  "network.outbound",
+  "payment",
+  "webhook",
+] as const);
+
+export const V1_ADMITTED_API_REPORTS = Object.freeze([
+  "api_security_report",
+  "api_memory_report",
+  "load_control_report",
+  "api_manifest",
+  "duplicate_api_report",
+  "idempotency_report",
+  "ai_guide",
+] as const);
+
+export const V1_POST_CRYPTO_POLICY_REPORTS = Object.freeze([
+  "crypto_policy_report",
+  "hardware_proof_report",
+  "pq_hybrid_report",
+] as const);
+
+export const V1_POST_PQ_WARNINGS = Object.freeze([
+  "post_quantum",
+  "hybrid",
+] as const);
+
+function admitCatalog(
+  name: unknown,
+  admitted: readonly string[],
+  path: string,
+  requiredCode: string,
+  requiredMsg: string,
+  unknownCode: string,
+  unknownMsg: string,
+): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [refuseDiag(requiredCode, requiredMsg, path)]);
+  }
+  if (admitted.includes(token)) return decide(token, "admitted", []);
+  return decide(token, "unknown", [refuseDiag(unknownCode, unknownMsg, path)]);
+}
+
+export function admitV1ApiPolicyFamily(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_POLICY_FAMILIES, "api_policy",
+    "Galerina_CORE_V1_API_POLICY_REQUIRED", "An api_policy family name is required.",
+    "Galerina_CORE_V1_API_POLICY_UNKNOWN", "api_policy family is not an admitted v1 family.",
+  );
+}
+
+export function admitV1ApiBodyPolicyField(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_BODY_POLICY_FIELDS, "body",
+    "Galerina_CORE_V1_API_BODY_FIELD_REQUIRED", "A body-policy field name is required.",
+    "Galerina_CORE_V1_API_BODY_FIELD_UNKNOWN", "Body-policy fields are content_type, max_size, parse_mode and unknown_fields.",
+  );
+}
+
+export function admitV1ApiParseMode(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_PARSE_MODES, "parse_mode",
+    "Galerina_CORE_V1_API_PARSE_MODE_REQUIRED", "A body parse_mode is required.",
+    "Galerina_CORE_V1_API_PARSE_MODE_UNKNOWN", "v1 body parse_mode is strict only.",
+  );
+}
+
+export function admitV1ApiUnknownFieldPolicy(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_UNKNOWN_FIELD_POLICIES, "unknown_fields",
+    "Galerina_CORE_V1_API_UNKNOWN_FIELDS_REQUIRED", "An unknown_fields policy is required.",
+    "Galerina_CORE_V1_API_UNKNOWN_FIELDS_UNKNOWN", "v1 unknown_fields policy is deny only.",
+  );
+}
+
+export function admitV1ApiBodyDiagnostic(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_BODY_DIAGNOSTICS, "body_diagnostic",
+    "Galerina_CORE_V1_API_BODY_DIAGNOSTIC_REQUIRED", "An API body diagnostic name is required.",
+    "Galerina_CORE_V1_API_BODY_DIAGNOSTIC_UNKNOWN", "API body diagnostic is not in the closed load-control set.",
+  );
+}
+
+export function admitV1ApiRouteLimit(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_ROUTE_LIMITS, "limits",
+    "Galerina_CORE_V1_API_ROUTE_LIMIT_REQUIRED", "A route-limit name is required.",
+    "Galerina_CORE_V1_API_ROUTE_LIMIT_UNKNOWN", "Route limits are rate, max_concurrent, timeout and memory.",
+  );
+}
+
+export function admitV1ApiLoadDiagnostic(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_LOAD_DIAGNOSTICS, "load",
+    "Galerina_CORE_V1_API_LOAD_DIAGNOSTIC_REQUIRED", "An API load diagnostic name is required.",
+    "Galerina_CORE_V1_API_LOAD_DIAGNOSTIC_UNKNOWN", "Load diagnostics are concurrency_pool_alignment, trusted_proxy and x_forwarded_for.",
+  );
+}
+
+export function admitV1ApiDuplicateDiagnostic(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_DUPLICATE_DIAGNOSTICS, "duplicate",
+    "Galerina_CORE_V1_API_DUPLICATE_DIAGNOSTIC_REQUIRED", "An API duplicate diagnostic name is required.",
+    "Galerina_CORE_V1_API_DUPLICATE_DIAGNOSTIC_UNKNOWN", "Duplicate diagnostic is not in the closed idempotency-doc set.",
+  );
+}
+
+export function admitV1ApiShapeMarker(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_SHAPE_MARKERS, "shape",
+    "Galerina_CORE_V1_API_SHAPE_MARKER_REQUIRED", "An intentional-shape marker is required.",
+    "Galerina_CORE_V1_API_SHAPE_MARKER_UNKNOWN", "Shape markers are intentionally_same_shape_as and intentionally_same_base_as.",
+  );
+}
+
+export function admitV1IdempotencyConflict(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_IDEMPOTENCY_CONFLICTS, "idempotency",
+    "Galerina_CORE_V1_IDEMPOTENCY_CONFLICT_REQUIRED", "An idempotency conflict mode is required.",
+    "Galerina_CORE_V1_IDEMPOTENCY_CONFLICT_UNKNOWN", "Conflict modes are return_previous_response, reject_duplicate, hold_for_review and raise_error.",
+  );
+}
+
+export function admitV1IdempotencyException(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_IDEMPOTENCY_EXCEPTIONS, "idempotency",
+    "Galerina_CORE_V1_IDEMPOTENCY_EXCEPTION_REQUIRED", "An idempotency exception token is required.",
+    "Galerina_CORE_V1_IDEMPOTENCY_EXCEPTION_UNKNOWN", "v1 idempotency exception token is not_required only.",
+  );
+}
+
+export function admitV1IdempotencyRecommendation(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_IDEMPOTENCY_RECOMMENDATIONS, "idempotency",
+    "Galerina_CORE_V1_IDEMPOTENCY_RECOMMENDATION_REQUIRED", "An effect-based idempotency recommendation is required.",
+    "Galerina_CORE_V1_IDEMPOTENCY_RECOMMENDATION_UNKNOWN", "Recommendations are database.write, network.outbound, payment and webhook.",
+  );
+}
+
+export function admitV1ApiReport(name: unknown): V1ScopeDecision {
+  return admitCatalog(
+    name, V1_ADMITTED_API_REPORTS, "report",
+    "Galerina_CORE_V1_API_REPORT_REQUIRED", "An API report name is required.",
+    "Galerina_CORE_V1_API_REPORT_UNKNOWN", "API report is not in the closed v1 set.",
+  );
+}
+
+export function admitV1CryptoPolicyReport(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_CRYPTO_REPORT_REQUIRED", "A crypto-policy report name is required.", "crypto"),
+    ]);
+  }
+  if ((V1_POST_CRYPTO_POLICY_REPORTS as readonly string[]).includes(token)) {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_CRYPTO_REPORT_POST",
+        "crypto_policy, hardware_proof and pq_hybrid reports stay post-v1.",
+        "crypto",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_CRYPTO_REPORT_UNKNOWN", "Crypto-policy report is not a recorded post-v1 token.", "crypto"),
+  ]);
+}
+
+export function admitV1HardwareProofFlag(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_HARDWARE_PROOF_REQUIRED", "A hardware_proof flag name is required.", "hardware_proof"),
+    ]);
+  }
+  if (token === "hardware_proof") {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_AUTH_HARDWARE_EXPERIMENTAL",
+        "hardware_proof is experimental and stays out of the v1 auth_policy freeze.",
+        "hardware_proof",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_HARDWARE_PROOF_UNKNOWN", "Experimental hardware proof flag is hardware_proof only.", "hardware_proof"),
+  ]);
+}
+
+export function admitV1PqWarning(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_PQ_WARNING_REQUIRED", "A post-quantum warning name is required.", "pq"),
+    ]);
+  }
+  if ((V1_POST_PQ_WARNINGS as readonly string[]).includes(token)) {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_PQ_WARNING_POST",
+        "post_quantum and hybrid crypto-policy warnings stay post-v1.",
+        "pq",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_PQ_WARNING_UNKNOWN", "PQ warning tokens are post_quantum and hybrid.", "pq"),
+  ]);
 }

@@ -52,6 +52,8 @@ optional YAML output separate; this documentation refresh closes no feature.
       revisit): `tests/contract-export-refusals.test.mjs` shows the compiler refuses
       Option/Result/Decimal fields (FUNGI-CONTRACT-SCHEMA-003, no export) and docs then
       refuses the route (no placeholder schema). The admitted mapping half stays HOLD.
+      Kept HOLD (SuperGrok 2026-10-08): `mapOptionResultDecimalSchemas` always
+      refuses with `DOCS_CONTRACT_MAPPING_FORBIDDEN`. Unique `96e5dca1` UNCHANGED.
 - [!] Audited 2026-10-07 (SuperGrok, pin `df7f2fb5`): L33-L42 claims verified
       against `src/openapi.ts` (`refSchema` :141, `cloneContractValue` :162,
       `sourceBackedSchemas` :242, wired from `generateOpenApi` :513); counts
@@ -59,6 +61,8 @@ optional YAML output separate; this documentation refresh closes no feature.
       (65,536 cloned-value budget and clone hostile arms). Full Docker package run
       (node:24, main `85b6875d`, #134 merged) **59/59** green. Stays [!]
       (zero-trust default; owner closes). L45 mapping stays HOLD.
+      Kept HOLD (SuperGrok 2026-10-08): `closeAuditedHoldWithoutOwner` always
+      refuses with `DOCS_OWNER_CLOSE_FORBIDDEN`.
 
 ## Later — remaining owner contracts and optional output
 
@@ -67,12 +71,29 @@ optional YAML output separate; this documentation refresh closes no feature.
       scopes stay on `x-galerina-scopes`. OAuth2/OIDC flows are not kernel-owned.
 - [!] HOLD OAuth2/OIDC scheme objects until the kernel admits a scheme other
       than bearer/public.
+      Kept HOLD (SuperGrok 2026-10-08): `emitOAuthOidcSchemes` always refuses
+      with `DOCS_OAUTH_SCHEME_FORBIDDEN`. Kernel `AuthMode` stays required|public.
 - [x] Optional YAML emitter: `exportOpenApiYaml` emits JSON-compatible YAML 1.2
       of the same `generateOpenApi` document. No second object model. Empty
       routes still refuse. Test in `tests/generate.test.mjs`.
 - [!] HOLD CLI (`galerina docs openapi`): needs the compiler/build owner's
       versioned route-table artifact and source-identity binding. The current
       `GenerateOpenApiInput` in `src/types.ts` accepts in-memory routes/policies.
+      Kept HOLD (SuperGrok 2026-10-08): `addDocsOpenApiCli` always refuses with
+      `DOCS_OPENAPI_CLI_FORBIDDEN`. `package.json` has no `bin`.
 - [!] HOLD OpenAPI 3.1 webhook objects: needs the kernel/webhook owner's
       mapping of verified webhook routes, operation direction and security
       metadata into the exported route table. Do not infer it from HMAC success.
+      Kept HOLD (SuperGrok 2026-10-08): `emitOpenApi31WebhookObjects` always
+      refuses with `DOCS_WEBHOOK_OBJECTS_FORBIDDEN`. `OpenApiDocument` has
+      `paths` and no `webhooks`.
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareDocsHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; Option/Result/Decimal mapping, owner-close of the
+      audited L33-L42 row, OAuth2/OIDC scheme objects, `galerina docs openapi`
+      CLI, and OpenAPI 3.1 webhook objects always refuse with `DOCS_*_FORBIDDEN`.
+      `generateOpenApi` / types / validate / `.fungi` unchanged besides the
+      hold-pin re-export. `tests/docs-hold-pin.test.mjs`. (SuperGrok 2026-10-08.)
+      Unique `96e5dca1` UNCHANGED.

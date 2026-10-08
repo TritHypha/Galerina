@@ -10,7 +10,7 @@
 // Any of these failing means a PAT-NEU-01 stop-and-review, not a test update.
 // Zero-trust default; the owner may revisit after v1.
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
@@ -21,23 +21,41 @@ import * as neuromorphic from "../dist/index.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(HERE, "..");
-const SOURCE_PATH = join(PACKAGE_ROOT, "src", "index.ts");
+const SRC_DIR = join(PACKAGE_ROOT, "src");
 
 const AUTHORITY_NAME = /(?:^|[^a-z])(?:execut|run|start|spawn|implant|actuat|reconfigur|evolv|deploy|dispatch|invoke|fire|stimulat|train|learn|delay|refractor|topolog|admit|authori[sz]|grant)/iu;
 
-async function parsedSource() {
-  const text = await readFile(SOURCE_PATH, "utf8");
-  return { text, file: ts.createSourceFile(SOURCE_PATH, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS) };
+async function sourceFiles() {
+  const names = (await readdir(SRC_DIR)).filter((name) => name.endsWith(".ts")).sort();
+  const files = [];
+  for (const name of names) {
+    const path = join(SRC_DIR, name);
+    const text = await readFile(path, "utf8");
+    files.push({
+      name,
+      path,
+      text,
+      file: ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS),
+    });
+  }
+  return files;
+}
+
+function namedDeclaration(node) {
+  return ts.isVariableDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)
+    || ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertyAssignment(node)
+    || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)
+    || ts.isGetAccessor(node) || ts.isSetAccessor(node) || ts.isEnumMember(node)
+    || ts.isShorthandPropertyAssignment(node)
+    || ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isEnumDeclaration(node);
 }
 
 function allDeclaredNames(file) {
   const names = [];
   const visit = (node) => {
-    if ((ts.isVariableDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)
-      || ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertyAssignment(node)
-      || ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isEnumDeclaration(node))
-      && node.name !== undefined && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name))) {
-      names.push(node.name.text);
+    if (namedDeclaration(node) && node.name !== undefined) {
+      if (ts.isComputedPropertyName(node.name)) names.push("[computed]");
+      else if (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) names.push(node.name.text);
     }
     ts.forEachChild(node, visit);
   };
@@ -50,30 +68,40 @@ function stripComments(text) {
 }
 
 describe("PAT-NEU-01 surface guard (O2 non-executing)", () => {
+  it("keeps src to a single index.ts (extra files are a PAT-NEU-01 stop)", async () => {
+    const files = await sourceFiles();
+    assert.deepEqual(files.map((entry) => entry.name), ["index.ts"]);
+  });
+
   it("has no import, require, dynamic import or module side door", async () => {
-    const { file } = await parsedSource();
-    const found = [];
-    const visit = (node) => {
-      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node)) found.push("import");
-      if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined) found.push("re-export");
-      if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) found.push("dynamic import");
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "require") found.push("require");
-      ts.forEachChild(node, visit);
-    };
-    visit(file);
-    assert.deepEqual(found, []);
+    for (const entry of await sourceFiles()) {
+      const found = [];
+      const visit = (node) => {
+        if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node)) found.push("import");
+        if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined) found.push("re-export");
+        if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) found.push("dynamic import");
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "require") found.push("require");
+        ts.forEachChild(node, visit);
+      };
+      visit(entry.file);
+      assert.deepEqual(found, [], entry.name);
+    }
   });
 
   it("references no execution, I/O, timer or global-object primitive", async () => {
-    const { text } = await parsedSource();
-    const code = stripComments(text);
     const banned = /\b(?:eval|Function|WebAssembly|process|globalThis|window|self|setTimeout|setInterval|setImmediate|queueMicrotask|fetch|Worker|SharedArrayBuffer|Atomics|Reflect|Proxy)\b/gu;
-    assert.deepEqual(code.match(banned) ?? [], []);
+    for (const entry of await sourceFiles()) {
+      const code = stripComments(entry.text);
+      assert.deepEqual(code.match(banned) ?? [], [], entry.name);
+    }
   });
 
   it("declares no authority-shaped name anywhere (functions, consts, methods, types, fields)", async () => {
-    const { file } = await parsedSource();
-    assert.deepEqual(allDeclaredNames(file).filter((name) => AUTHORITY_NAME.test(name)), []);
+    for (const entry of await sourceFiles()) {
+      const names = allDeclaredNames(entry.file);
+      assert.equal(names.includes("[computed]"), false, entry.name);
+      assert.deepEqual(names.filter((name) => AUTHORITY_NAME.test(name)), [], entry.name);
+    }
   });
 
   it("keeps the runtime export surface to the four pure validators/report builder", () => {

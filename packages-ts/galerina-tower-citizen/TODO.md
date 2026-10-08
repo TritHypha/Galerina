@@ -46,15 +46,37 @@ the core-network *package* install are not this package's remaining source work.
     (`docs/independent-audits/2026-09-23-appkernel-tower-subpath-hold.md`).
     Residual: core-network still *installs* the package; registry modules
     still load the custody cluster.
+[x] Tower side of core-network install extract: always refuse
+    extractCoreNetworkTowerInstall returns TW_CORE_NETWORK_INSTALL_EXTRACT_FORBIDDEN
+    for every input. This package does not depend on core-network. The extract act
+    stays architecture (core-network's file: install). tests/rd1295-hold-pin.test.mjs.
+    (SuperGrok 2026-10-08.)
 [!] HOLD extract core-network's Tower package install (architecture; runtime
     graphs already use /governance only).
+    Kept HOLD: RD-1295 does not authorize a package split. Tower's side is the
+    typed refuse; the file: install lives in core-network. (SuperGrok pin 2026-10-08.)
+[x] Tower side of signed certified deployment: typed request only; never sign
+    prepareCertifiedDeploymentRequest emits REQUESTED_NOT_SIGNED with
+    requires.v1ReleaseSigningCeremony. Authority keys, private/throwaway/ceremony
+    key material, and allowUnsignedLoad refuse. signCertifiedDeployment always
+    TW_CERTIFIED_DEPLOYMENT_SIGN_FORBIDDEN. createCertifiedTower still forbids
+    allowUnsignedLoad. tests/rd1295-hold-pin.test.mjs. (SuperGrok 2026-10-08.)
 [!] HOLD successful signed certified deployment (no keys in this package).
     Owner decision 2026-10-06 10:14 BST (O4, Phillip): wait for the v1 release-signing ceremony; no throwaway
-    keys and no allowUnsigned.
+    keys and no allowUnsigned. Tower's side is done (typed request + refuse sign);
+    the ceremony itself is not this package. (SuperGrok pin 2026-10-08.)
 [x] Certified photonic coupon: snapshot own-data before verify; re-run
     couponRevocationCheck on every infer against the snapshot identity.
     Focused photonic+bridge tests 24/24 (audit pending).
+[x] Tower side of independent audit / .fungi / SLIDE/VOK / hardware evidence: refuse
+    convertTowerToFungi, admitTowerArtifact, authoriseTowerArtifact,
+    claimHardwareEvidence, claimIndependentAudit always refuse. Walker read now
+    uses O_NOFOLLOW fd + size match (lstat→read TOCTOU residual).
+    tests/rd1295-hold-pin.test.mjs, tests/load-graph-bounds.test.mjs.
+    (SuperGrok 2026-10-08.)
 [!] HOLD independent audit, .fungi conversion, SLIDE/VOK, hardware evidence.
+    Kept HOLD: those acts are not this package. Tower's side is the typed refuse.
+    (SuperGrok pin 2026-10-08.)
 ```
 
 Verification from this directory:

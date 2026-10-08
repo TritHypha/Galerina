@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 7 |
-| Internal edges | 6 |
+| Files | 8 |
+| Internal edges | 7 |
 | External dependencies | 2 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 1 |
@@ -37,7 +37,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts`
+- `src/index.ts` (re-exports `src/hold-pin.ts`)
 
 ## Loaded Assets
 - `src/self-hosted/bearer-scheme.fungi`

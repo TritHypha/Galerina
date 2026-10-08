@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 42 |
-| Internal edges | 43 |
+| Files | 43 |
+| Internal edges | 45 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
@@ -39,8 +39,8 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 ## Entry Points
 - `src/bool-boundary/index.ts`
 - `src/decision/index.ts`
-- `src/index.ts`
-- `src/omni/index.ts`
+- `src/index.ts` (re-exports `src/hold-pin.ts`)
+- `src/omni/index.ts` (re-exports `src/hold-pin.ts`)
 - `src/tri/index.ts`
 
 ## Loaded Assets

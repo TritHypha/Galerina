@@ -48,9 +48,18 @@
     HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): no Phase 3 authorization exists. Phase 2
     traces (traceOmniDecision) are the advisory input such an integration would consume. Reopen as [ ] when authorized.
     Owner decision 2026-10-06 10:14 BST (O3, Phillip): no Phase 3 (AI orchestration consuming Omni traces) before v1.
+    Kept HOLD (SuperGrok 2026-10-08): integrateAiOrchestration / driveRuntimeFromOmni / overrideCompilerFromOmni always refuse with LOGIC_*_FORBIDDEN. Phase 2 traceOmniDecision unchanged.
 [x] Define initial Tri conversion rules
 [x] Define initial truth table report format
 [x] Move or cross-reference relevant galerina-core logic docs when package extraction is ready
 [x] Add examples
 [x] Add tests
 ```
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareCoreLogicHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; AI orchestration, Omni-driven runtime control,
+      and Omni compiler override always refuse with `LOGIC_*_FORBIDDEN`.
+      Phase 2 `traceOmniDecision` unchanged. `tests/core-logic-hold-pin.test.mjs`.
+      (SuperGrok 2026-10-08.)

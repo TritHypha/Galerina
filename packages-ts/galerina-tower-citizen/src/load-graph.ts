@@ -6,7 +6,7 @@
  * import, re-export and string-literal dynamic import, resolves destinations,
  * and refuses edges it cannot establish.
  */
-import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import { closeSync, existsSync, fstatSync, lstatSync, openSync, readFileSync, realpathSync, constants as fsConstants } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type * as Ts from "typescript";
@@ -146,6 +146,48 @@ function tryRealFile(candidate: string): string | undefined {
   if (st.isSymbolicLink() || !st.isFile()) return undefined;
   if (!Number.isSafeInteger(st.size) || st.size > MAX_LOAD_GRAPH_FILE_BYTES) return undefined;
   return realpathSync.native(candidate);
+}
+
+/**
+ * Read a graph file through an O_NOFOLLOW fd so a symlink swap between lstat
+ * and read cannot be followed. Size is capped before the UTF-8 decode.
+ */
+function readGraphFile(path: string): { readonly ok: true; readonly source: string } | { readonly ok: false; readonly reason: string } {
+  let lst;
+  try {
+    lst = lstatSync(path);
+  } catch {
+    return { ok: false, reason: `unreadable:${path}` };
+  }
+  if (lst.isSymbolicLink()) return { ok: false, reason: `symlink:${path}` };
+  if (!lst.isFile()) return { ok: false, reason: `unreadable:${path}` };
+  if (!Number.isSafeInteger(lst.size) || lst.size > MAX_LOAD_GRAPH_FILE_BYTES) {
+    return { ok: false, reason: `file-too-large:${path}` };
+  }
+  const nofollow = typeof fsConstants.O_NOFOLLOW === "number" ? fsConstants.O_NOFOLLOW : 0;
+  let fd: number;
+  try {
+    fd = openSync(path, fsConstants.O_RDONLY | nofollow);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "ELOOP" || code === "EMLINK") return { ok: false, reason: `symlink:${path}` };
+    return { ok: false, reason: `unreadable:${path}` };
+  }
+  try {
+    const st = fstatSync(fd);
+    if (st.isSymbolicLink() || !st.isFile()) return { ok: false, reason: `symlink:${path}` };
+    if (!Number.isSafeInteger(st.size) || st.size > MAX_LOAD_GRAPH_FILE_BYTES) {
+      return { ok: false, reason: `file-too-large:${path}` };
+    }
+    if (st.size !== lst.size) return { ok: false, reason: `load-graph-toctou:${path}` };
+    const source = readFileSync(fd, "utf8");
+    if (Buffer.byteLength(source, "utf8") > MAX_LOAD_GRAPH_FILE_BYTES) {
+      return { ok: false, reason: `file-too-large:${path}` };
+    }
+    return { ok: true, source };
+  } finally {
+    closeSync(fd);
+  }
 }
 
 /**
@@ -315,15 +357,11 @@ export async function walkLoadGraph(entry: string): Promise<LoadGraphResult> {
       return { ok: false, reason: "load-graph-file-cap" };
     }
     files.add(file);
-    let source: string;
-    try {
-      source = readFileSync(file, "utf8");
-    } catch {
-      return { ok: false, reason: `unreadable:${file}` };
+    const read = readGraphFile(file);
+    if (!read.ok) {
+      return { ok: false, reason: read.reason };
     }
-    if (Buffer.byteLength(source, "utf8") > MAX_LOAD_GRAPH_FILE_BYTES) {
-      return { ok: false, reason: `file-too-large:${file}` };
-    }
+    const source = read.source;
     const extracted = extractImportEdges(source, file);
     if (!Array.isArray(extracted)) {
       return { ok: false, reason: extracted.reason, edge: { from: file, specifier: "", kind: "static", line: extracted.line } };

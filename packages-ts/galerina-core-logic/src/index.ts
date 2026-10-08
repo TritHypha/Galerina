@@ -458,3 +458,4 @@ function maxTri(left: Tri, right: Tri): Tri {
 function isSafeGalerinaame(name: string): boolean {
   return /^[A-Za-z_][A-Za-z0-9_]*$/.test(name);
 }
+export * from "./hold-pin.js";

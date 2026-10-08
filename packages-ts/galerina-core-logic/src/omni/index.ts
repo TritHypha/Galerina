@@ -42,3 +42,4 @@ export {
   omniDiagnosticMalformedEvidence,
   omniDiagnosticInvalidState,
 } from "./omni-diagnostics.js";
+export * from "../hold-pin.js";

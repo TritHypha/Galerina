@@ -31,6 +31,28 @@ test("hostile: oversize source is refused before parse", async () => {
   }
 });
 
+test("hostile: replacing a regular entry with a symlink refuses the second walk", async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "lg-swap-"));
+  const real = join(dir, "real.js");
+  const entry = join(dir, "entry.js");
+  writeFileSync(real, "export const n = 1;\n");
+  writeFileSync(entry, "export const n = 1;\n");
+  try {
+    const first = await walkLoadGraph(entry);
+    assert.equal(first.ok, true);
+    rmSync(entry);
+    try { symlinkSync(real, entry); } catch (err) {
+      t.skip(`symlink refused: ${err instanceof Error ? err.message : err}`);
+      return;
+    }
+    const second = await walkLoadGraph(entry);
+    assert.equal(second.ok, false);
+    assert.match(second.reason, /unresolved-entry|symlink/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("hostile: symlink entry is refused", async (t) => {
   const dir = mkdtempSync(join(tmpdir(), "lg-link-"));
   const real = join(dir, "real.js");

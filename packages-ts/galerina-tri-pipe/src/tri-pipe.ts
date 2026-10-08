@@ -59,19 +59,50 @@ export interface TriPipeProposal {
   readonly transfer: ComputeTransferV1;
   /** Well-formed proposal, not an admitted or dispatched route. */
   readonly routeSafety: "SAFE";
+  readonly requires: {
+    readonly freshSlideAdmission: true;
+    readonly freshVokDecision: true;
+    readonly freshVokLease: true;
+    readonly linkedTerminalReceipt: true;
+  };
   readonly authorityReleased: false;
+  readonly admissionAuthority: false;
   readonly dataBrand: "Trit";
   readonly governanceBrand: "Verdict";
 }
 
-export interface TriPipeRefusal {
-  readonly kind: "REFUSED";
-  readonly code: "REPRESENTATION_PROFILE_NOT_ADMITTED";
-  readonly requested: number;
-  readonly authorityReleased: false;
-}
+export type TriPipeRefusal =
+  | {
+      readonly kind: "REFUSED";
+      readonly code: "REPRESENTATION_PROFILE_NOT_ADMITTED";
+      readonly requested: number;
+      readonly authorityReleased: false;
+      readonly admissionAuthority: false;
+    }
+  | {
+      readonly kind: "REFUSED";
+      readonly code: "TP_ROUTE_AUTHORITY_FIELD_PRESENT";
+      readonly authorityReleased: false;
+      readonly admissionAuthority: false;
+    };
 
 export type TriPipeResult = TriPipeProposal | TriPipeRefusal;
+
+const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
+  "lease", "vokLease", "vokDecision", "decision", "grant", "receipt", "admission",
+  "admissionToken", "capabilityToken", "executor", "dispatch", "allow", "authority",
+]);
+
+function hasAuthorityField(value: unknown, depth: number): boolean {
+  if (depth > 8 || value === null || typeof value !== "object") return false;
+  for (const key of Reflect.ownKeys(value)) {
+    if (typeof key === "string" && AUTHORITY_KEYS.has(key)) return true;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !("value" in descriptor)) return true;
+    if (hasAuthorityField(descriptor.value, depth + 1)) return true;
+  }
+  return false;
+}
 
 function isAdmittedProfile(value: number): value is RepresentationProfile {
   return (ADMITTED_REPRESENTATION_PROFILES as readonly number[]).includes(value);
@@ -83,6 +114,14 @@ function isAdmittedProfile(value: number): value is RepresentationProfile {
  * its own route; representation profiles are candidates only.
  */
 export function createTriPipeEngine(opts: TriPipeOptions): TriPipeResult {
+  if (hasAuthorityField(opts, 0)) {
+    return Object.freeze({
+      kind: "REFUSED",
+      code: "TP_ROUTE_AUTHORITY_FIELD_PRESENT",
+      authorityReleased: false,
+      admissionAuthority: false,
+    });
+  }
   const requested = opts.representationProfile ?? 1;
   if (!isAdmittedProfile(requested)) {
     return Object.freeze({
@@ -90,6 +129,7 @@ export function createTriPipeEngine(opts: TriPipeOptions): TriPipeResult {
       code: "REPRESENTATION_PROFILE_NOT_ADMITTED",
       requested,
       authorityReleased: false,
+      admissionAuthority: false,
     });
   }
   const tier = resolveHardware({
@@ -123,7 +163,14 @@ export function createTriPipeEngine(opts: TriPipeOptions): TriPipeResult {
       digest: candidateRouteDigest,
     }),
     routeSafety: "SAFE",
+    requires: Object.freeze({
+      freshSlideAdmission: true,
+      freshVokDecision: true,
+      freshVokLease: true,
+      linkedTerminalReceipt: true,
+    }),
     authorityReleased: false,
+    admissionAuthority: false,
     dataBrand: "Trit",
     governanceBrand: "Verdict",
   });

@@ -31,6 +31,26 @@ admission. No fresh tests were run for this TODO refresh.
 [x] Define app-kernel to galerina-framework-api-server contract -- src/api-server-handoff-contract.ts, tests/api-server-handoff-contract.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): records the shipped handoff (api-server normalises one request -> AppKernel.handle once -> writes GalerinaKernelResponse); schema galerina.app-kernel.api-server-handoff/v1; checkKernelHandoffRequest / checkKernelHandoffResponse closed shapes via descriptors; FUNGI-APPK-ASH-001..005; field lists pinned by test to kernel.ts GalerinaKernelRequest/Response and types.ts HttpMethod, and the api-server kreq builder is checked to set contract fields only; channelVerdict is K3 data (evidence, never admission; RD-0855); principalId + principalScopes travel together; records (does not fix) that api-server normaliseMethod casts any verb to HttpMethod (kernel then 404/405). Not wired; kernel.ts (RD-1413) and api-server untouched
 [x] Add examples
 [x] Add tests
+[x] Package-side HOLD pin: `prepareProtectedMemoryRouteRequest` emits
+    REQUESTED_NOT_ADMITTED; `addSecretAuthority` /
+    `bindProtectedMemoryLifecycle` / `wireFuseBorderIntoKernel` /
+    `installKernelDefaultRegistryCheck` / `bindGovernedRuntime` /
+    `installDurableReplayStore` / `enqueueQueueJob` /
+    `executeStructuredAwait` / `emitRuntimeAuditReport` always refuse
+    with APPK_*_FORBIDDEN. kernel.ts and secret-gate.ts unchanged.
+    tests/app-kernel-hold-pin.test.mjs. (SuperGrok 2026-10-08.)
+[HOLD] RD-1413 / RD-1414 / RD-1415 coupled protected-memory path --
+    HOLD / NON_AUTHORIZING. Do not add TypeScript secret-authority.
+    Kept HOLD: SuperGrok's side is the typed refuse. Unique `bbeb067a` UNCHANGED.
+[HOLD] Wire fuse-border / central package registry as kernel.ts defaults --
+    fuse-loader already accepts host-injected revocationCheck / registryCheck.
+    Kept HOLD: kernel.ts stays unwired. Unique `bbeb067a` UNCHANGED.
+[HOLD] Wire CoreRuntimeHandoff / bindGovernedRuntime into createAppKernel --
+    descriptor exists; CreateAppKernelOptions has no executor field.
+    Kept HOLD: not wired. Unique `bbeb067a` UNCHANGED.
+[HOLD] Durable replay store and live SAW / queue / audit execution --
+    descriptors stay deny-only; no live kernel acts.
+    Kept HOLD: SuperGrok's side is the typed refuse. Unique `bbeb067a` UNCHANGED.
 ```
 
 ## Coupled RD-1413–1415 protected-memory path — 2026-10-05
@@ -86,3 +106,6 @@ the implementation plan and discriminating tests for one loaded route. Windows
 10 is remote-only and may not fall back to local plaintext. RD-1413, RD-1414,
 and RD-1415 remain **HOLD / NON_AUTHORIZING** until the coupled route and
 independent owner adjudications pass.
+Package-side pin (SuperGrok 2026-10-08): `src/hold-pin.ts` refuses the
+TypeScript secret-authority and protected-memory acts. The `[HOLD]` rows
+above stay HOLD. Unique `bbeb067a` UNCHANGED.

@@ -20,8 +20,21 @@ loading/durability evidence are separate obligations.
     architecture equals the first token, os is a later token
     (`src/index.ts` `validateDecodedNativeTarget`). This is metadata
     rejection, not a physical loader or complete OS/ABI map.
+[x] Package-side PROPOSED OS/arch vocabulary in
+    `src/proposed-os-arch-vocabulary.ts` (arch: aarch64, x86_64; os: linux,
+    windows). Helper `proposedNativeVocabularyDiagnostics` stays UNWIRED from
+    `validateNativeTarget`. Tests:
+    `tests/proposed-os-arch-vocabulary.test.mjs`. (SuperGrok 2026-10-08.)
+[x] Package-side physical open/TOCTOU: `prepareNativeOpenRequest` emits
+    REQUESTED_NOT_OPENED; `openNativeArtifact` always
+    `NT_PHYSICAL_OPEN_FORBIDDEN`. This package never loads `node:fs`.
+    tests/native-hold-pin.test.mjs. (SuperGrok 2026-10-08.)
 [!] HOLD a full owner-approved OS/architecture vocabulary and physical
     open/TOCTOU. Consistency checks do not prove native execution.
+    Kept HOLD: owner Phillip approves the vocabulary; a TOCTOU-safe open
+    whose bytes match the bound digest plus a current VOK receipt is not
+    this package. SuperGrok's side is the UNWIRED helper plus the typed
+    refuse. (SuperGrok pin 2026-10-08.)
 [x] Define ABI constraint model (`src/index.ts:5,56-60,346-379`; tests
     `tests/native-contracts.test.mjs:55-61,200-213`).
 [x] Define native artifact report format (`src/index.ts:21-39,418-509,511-633`;
@@ -41,8 +54,9 @@ loading/durability evidence are separate obligations.
     report snapshot; hostile records, arrays and retained-alias controls pass
     in `src/index.ts:103-189`, `:191-290`, `:337-384`, `:511-633` and
     `tests/native-contracts.test.mjs:41-89`, `:167-280`.
-[x] Current bounded package verification is **33/33** with clean typecheck/build
-    (24 contract tests + 4 example tests + 5 closed-set tests, 2026-10-07).
+[x] Current bounded package verification is **46/46** with clean typecheck/build
+    (24 contract + 4 example + 5 closed-set + 6 proposed-vocab + 7 hold-pin,
+    2026-10-08).
 [x] C09 `fungi.native.artifact.v1` binds relative locator, bytes digest, VOK
     subject, ABI/profile (`RD-1281`). Identity tests cover escape locators,
     empty bytes, empty VOK receipt, digest/VOK mismatch, stale VOK, ABI
@@ -55,8 +69,16 @@ loading/durability evidence are separate obligations.
     `tests/native-diagnostic-closed-set.test.mjs` pin the set, refuse unknown
     and `FUNGI-NATIVE-*` names, require every code to be emitted, and check
     determinism. Source still emits the legacy names.
+[x] Package-side FUNGI mapping frozen as PROPOSED_NOT_ADMITTED in
+    `src/proposed-fungi-native-mapping.ts` (21 rows, first-emission order).
+    `promoteNativeDiagnosticsToFungi` always
+    `NT_FUNGI_NATIVE_PROMOTION_FORBIDDEN`. Closed-set still refuses
+    `FUNGI-NATIVE-*` names. tests/native-hold-pin.test.mjs.
+    (SuperGrok 2026-10-08.)
 [!] Legacy `Galerina_NATIVE_*` diagnostics still require owner-approved
     `FUNGI-CATEGORY-NNN` registry ownership before promotion. A PROPOSED
     `FUNGI-NATIVE-001`..`021` mapping is recorded in the SuperGrok 2026-10-07
     answer.md and is not claimed final.
+    Kept HOLD: registry ownership is not this package. SuperGrok's side is
+    the frozen catalog plus the typed refuse. (SuperGrok pin 2026-10-08.)
 ```

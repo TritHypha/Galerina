@@ -600,3 +600,4 @@ export * from "./runtime-contracts.js";
 export * from "./governed-plan-contracts.js";
 export * from "./isolated-host.js";
 export * from "./native-floor-contracts.js";
+export * from "./hold-pin.js";

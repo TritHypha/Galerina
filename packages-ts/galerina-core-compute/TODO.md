@@ -98,8 +98,11 @@ active v1 runtime target.
     11-value RuntimeTarget vocabulary, so planning rules would invent a target. Treated like the O1
     post-v1 targets (photonic, AI-accelerator, GPU) until decided; asked in session-exchange
     grok-bot-packages-hold-batch1-20261006-question-01 (Q3). Reopen as [ ] when the owner adds a quantum target or rules it in scope for v1.
+    Kept HOLD 2026-10-08 SuperGrok: package-side pin src/hold-pin.ts schema galerina.core-compute.hold-pin.v1. Completing as [x] would invent a quantum RuntimeTarget. prepareCoreComputeHoldRequest is always REQUESTED_NOT_ADMITTED. admitQuantumRuntimeTarget / implementQuantumPlanningRules / executeQuantumCompute always REFUSED with COMPUTE_QUANTUM_*_FORBIDDEN; authorityReleased false. RUNTIME_TARGETS stays 11 values. Reopen as [ ] when the owner adds a quantum target or rules it in scope for v1.
 [x] Add examples
 [x] Add tests
+[x] Package-side HOLD pin - 2026-10-08
+    src/hold-pin.ts prepareCoreComputeHoldRequest always REQUESTED_NOT_ADMITTED; admitQuantumRuntimeTarget / implementQuantumPlanningRules / executeQuantumCompute always REFUSED. tests/core-compute-hold-pin.test.mjs. SuperGrok 2026-10-08
 ```
 
 ### WASM rows superseded (2026-09-29, Grok Bot, owner-approved; AGENTS session-exchange grok-bot-pkg-todo-work-20260929/LEDGER.md)

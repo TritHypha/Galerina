@@ -48,3 +48,5 @@ export * from "./handler-reference-check.js";
 // Pure `:param` route-pattern grammar and matcher; not wired into createAppKernel.
 export * from "./route-pattern.js";
 export * from "./idempotency-replay-policy.js";
+// HOLD pin: typed refuse of RD-1413–1415 secret-authority and unwired kernel acts.
+export * from "./hold-pin.js";

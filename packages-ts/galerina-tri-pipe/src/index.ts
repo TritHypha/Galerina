@@ -10,6 +10,15 @@ export {
   createTriPipeEngine, dispatchTriPipeEngine,
 } from "./tri-pipe.js";
 
+// Typed SLIDE/VOK admission *request* only. admitProposedRoute always refuses.
+export {
+  type SlideAdmissionRequestStatus, type SlideAdmissionRequestV1,
+  type SlideAdmissionRequestRefusal, type SlideAdmissionRequestResult,
+  type SlideAdmissionActRefusal,
+  SLIDE_ADMISSION_REQUEST_SCHEMA,
+  prepareSlideAdmissionRequest, admitProposedRoute,
+} from "./slide-admission-request.js";
+
 // The Galerina Execution Router — one decision across all routing axes (tier × precision × offload).
 export {
   type CapabilityInput, type ExecutionRouteInput, type ExecutionDecision, type Lane,

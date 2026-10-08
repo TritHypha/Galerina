@@ -8,3 +8,4 @@
 export * from "./types.js";
 export { generateOpenApi, exportOpenApi, exportOpenApiYaml } from "./openapi.js";
 export { OpenApiGenerationError, validateOpenApiDocument } from "./validate.js";
+export * from "./hold-pin.js";

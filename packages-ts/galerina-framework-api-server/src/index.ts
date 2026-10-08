@@ -70,6 +70,7 @@ export {
   type WebhookAdmissionOutcome,
   type WebhookAdmissionRefusal,
 } from "./webhook-admission.js";
+export * from "./hold-pin.js";
 import {
   admitWebhookReplay,
   type WebhookAdmissionHooks,

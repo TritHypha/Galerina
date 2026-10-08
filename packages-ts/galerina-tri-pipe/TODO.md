@@ -17,12 +17,20 @@ authorise its own route. SLIDE/VOK admission is a later independent act.
 [x] Trit (data) and Verdict (governance) kept as distinct brands on proposal and decision
 [x] README matches proposal-only architecture (no engine.infer fiction)
 [x] prove-tri-pipe.mjs: tier == hardware(); photonicEnabled IFF hybrid|photonic
+[x] Tri-Pipe side of SLIDE/VOK admission: typed request only; never admit
+    createTriPipeEngine proposals now carry admissionAuthority false and
+    requires.freshSlideAdmission/freshVokDecision/freshVokLease/linkedTerminalReceipt.
+    Authority-bearing option keys refuse TP_ROUTE_AUTHORITY_FIELD_PRESENT.
+    prepareSlideAdmissionRequest emits galerina.tri-pipe.slide-admission-request.v1
+    with status REQUESTED_NOT_ADMITTED. admitProposedRoute always refuses
+    TP_SLIDE_ADMISSION_FORBIDDEN (the admission act is not this package).
+    tests/slide-admission-request.test.mjs. (SuperGrok 2026-10-08.)
 [!] HOLD SLIDE/VOK admission of a proposed route (not this package)
     Kept HOLD (owner authority, not a soft block): RD-0855 lets Tri-Pipe only propose,
     route and compose; SLIDE admits, VOK authorises, Tower is evidence. Admitting or
     authorising here would break that. Tri-Pipe's side is done (attempt and alternative
-    proposals below carry requires.freshSlideAdmission/freshVokDecision/freshVokLease);
-    the admission act itself belongs to SLIDE and VOK. (Grok 2026-10-06.)
+    proposals, plus the typed admission-request export); the admission act itself
+    belongs to SLIDE and VOK. (Grok 2026-10-06; SuperGrok pin 2026-10-08.)
 [SUPERSEDED] Tri-Fuse as a separate optimisation package. Reason: settled by RD-0855
     §4.3 and §11 item 14 unless the owner reopens it. Tri-Fuse keeps its bounded
     role as a backend-neutral, proof-constrained optimisation CONTRACT and is not
