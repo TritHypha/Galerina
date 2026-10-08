@@ -314,3 +314,30 @@ export function createGpuTargetReport(input: {
     diagnostics: Object.freeze(diagnostics),
   };
 }
+
+// PROPOSED native-to-Fungi catalog. Not a live diagnostic registry.
+export {
+  PROPOSED_FUNGI_GPU_MAPPING_SCHEMA,
+  PROPOSED_FUNGI_GPU_STATUS,
+  PROPOSED_FUNGI_GPU_MAPPING,
+} from "./proposed-fungi-gpu-mapping.js";
+export type { ProposedFungiGpuRow } from "./proposed-fungi-gpu-mapping.js";
+
+// Package-side HOLD pin: request only; never admit, dispatch, or promote.
+export {
+  GPU_HOLD_PIN_SCHEMA,
+  prepareGpuAdmissionRequest,
+  admitGpuCapability,
+  dispatchGpuKernel,
+  executeGpuFallback,
+  claimPhysicalGpuEvidence,
+  promoteGpuDiagnosticsToFungi,
+  implementPostV1GpuContract,
+} from "./gpu-hold-pin.js";
+export type {
+  GpuHoldRefusalCode,
+  GpuHoldRefusal,
+  GpuAdmissionRequestV1,
+  GpuAdmissionRequestResult,
+} from "./gpu-hold-pin.js";
+
