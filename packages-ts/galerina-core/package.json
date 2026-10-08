@@ -18,6 +18,7 @@
     "tokens": "node compiler/galerina.js tokens examples/hello.fungi",
     "fmt": "node compiler/galerina.js fmt examples",
     "fmt:check": "node compiler/galerina.js fmt examples --check",
+    "lint": "node compiler/galerina.js lint examples --exclude source-map-error.fungi",
     "test": "node compiler/galerina.js test examples && npm run build:types && node --test tests/*.test.mjs",
     "generate:dev": "node compiler/galerina.js generate examples --exclude source-map-error.fungi --out .build-dev",
     "dev": "node compiler/galerina.js dev examples/hello.fungi --out .build-dev",

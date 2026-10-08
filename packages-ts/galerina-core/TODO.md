@@ -996,19 +996,28 @@ Reason for additions:
     compiler/symbol-table.js buildSymbolTable. SuperGrok 2026-10-08i
 [x] Create type checker
 [ ] Create memory checker
-[ ] Create security checker
-[ ] Create effect checker
-[ ] Create JSON/API checker
-[ ] Create IR format
-[ ] Create optimiser
-[ ] Create linker
-[ ] Create CPU output prototype
-[ ] Create WASM output prototype
+[x] Create security checker
+    compiler/security-checker.js checkSecurity / checkTargetCapabilityImports. SuperGrok 2026-10-08j
+[x] Create effect checker
+    compiler/effect-checker.js checkEffects. SuperGrok 2026-10-08j
+[x] Create JSON/API checker
+    compiler/json-api-checker.js checkJsonApi. SuperGrok 2026-10-08j
+[x] Create IR format
+    compiler/ir.js galerina.core.ir.v1 structured AST units, not a bytecode ISA. SuperGrok 2026-10-08j
+[x] Create optimiser
+    compiler/optimiser.js identity pass; refuses when vector/offload errors exist; does not rewrite source. SuperGrok 2026-10-08j
+[x] Create linker
+    compiler/linker.js links IR units with the symbol table. SuperGrok 2026-10-08j
+[x] Create CPU output prototype
+    compiler/cpu-output.js documented app.bin placeholder, executable false. SuperGrok 2026-10-08j
+[x] Create WASM output prototype
+    compiler/wasm-output.js documented app.wasm placeholder, not a runnable module. SuperGrok 2026-10-08j
 [x] Create GPU plan generator
 [x] Create photonic plan generator
 [x] Create ternary simulation generator
 [x] Create source-map generator
-[ ] Create report generator
+[x] Create report generator
+    compiler/report-generator.js app.compiler-report.json. SuperGrok 2026-10-08j
 [x] Create AI context generator
 ```
 
@@ -1068,8 +1077,10 @@ Reason for additions:
 [x] Define app.test-report.json
 [x] Define app.ai-suggestions.md
 [x] Define app.ai-suggestions.json
-[ ] Integrate vector/offload safety checks into build pipeline
-[ ] Integrate target/capability import checks into build pipeline
+[x] Integrate vector/offload safety checks into build pipeline
+    compiler/vector-offload-safety.js via compiler/build-pipeline.js applyBuildPipelineChecks. SuperGrok 2026-10-08j
+[x] Integrate target/capability import checks into build pipeline
+    compiler/security-checker.js checkTargetCapabilityImports via applyBuildPipelineChecks. SuperGrok 2026-10-08j
 ```
 
 ---
@@ -1086,7 +1097,8 @@ Reason for additions:
 [x] Galerina fmt
 [x] Galerina test
 [x] Galerina fmt
-[ ] Galerina lint
+[x] Galerina lint
+    compiler/galerina.js lint command runs analyseProject checkers without writing artefacts. SuperGrok 2026-10-08j
 [x] Galerina explain
 [x] Galerina explain --for-ai
 [x] Galerina verify

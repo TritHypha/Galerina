@@ -12,6 +12,11 @@ It is not a production compiler. It is a practical v0.1 scaffold that can:
 - diagnose `await` outside an `async` flow
 - parse `vectorize rows { column = .field }` blocks
 - suggest vector syntax with `Galerina suggest vector` without rewriting files
+- run dedicated security, effect and JSON/API checkers
+- lower the program to `galerina.core.ir.v1`, run an identity optimiser and link units
+- emit documented CPU and WASM placeholders via `compiler/cpu-output.js` and `compiler/wasm-output.js`
+- write `app.compiler-report.json` from `compiler/report-generator.js`
+- lint with `Galerina lint` without writing artefacts
 - extract `/// @tag` strict comments into AST, source-map and AI-context reports
 - run prototype smoke tests for parser, formatter and target diagnostics
 - check `undefined`, silent `null`, truthy/falsy conditions and compute-block I/O
@@ -51,6 +56,7 @@ node compiler/galerina.js serve examples --dev
 node compiler/galerina.js init my-galerina-app
 node compiler/galerina.js explain examples/source-map-error.fungi --for-ai
 node compiler/galerina.js suggest vector examples
+node compiler/galerina.js lint examples --exclude source-map-error.fungi
 ```
 
 The generated `app.bin` and `app.wasm` files are placeholders. They prove the
@@ -150,6 +156,49 @@ It validates:
 - exhaustive `match` branches for enum values, `Option<T>` and `Result<T, E>`
 
 It does not yet infer expression types or validate handler return expressions.
+
+## Security, effect and JSON/API checkers
+
+`compiler/security-checker.js` refuses server-only imports in a browser target
+and blocked capabilities, and warns on webhooks without HMAC or idempotency.
+
+`compiler/effect-checker.js` refuses I/O markers in `pure` flows and undeclared
+markers when a flow lists `effects [...]`. Flows with no effects list are not
+required to invent one.
+
+`compiler/json-api-checker.js` refuses mutating routes without `handler` or
+`max_body_size`, handlers that are not declared flows, and `json_policy`
+`unknown_fields` other than `deny`.
+
+## IR, optimiser, linker, CPU and WASM prototypes
+
+`compiler/ir.js` emits `galerina.core.ir.v1`, a structured list of admitted AST
+units. It is not a bytecode ISA.
+
+`compiler/optimiser.js` runs an identity pass and does not rewrite `.fungi`
+source. Vector/offload safety errors refuse optimisation.
+
+`compiler/linker.js` links IR units with the symbol table. Same-file symbol
+duplicates refuse linking.
+
+`compiler/cpu-output.js` and `compiler/wasm-output.js` write the documented
+`app.bin` and `app.wasm` placeholders. They are not native executables or
+runnable WebAssembly modules.
+
+`compiler/report-generator.js` writes `app.compiler-report.json` recording
+pipeline stages.
+
+`compiler/build-pipeline.js` runs vector/offload safety and target/capability
+import checks during analyse and build.
+
+## Galerina lint
+
+```bash
+node compiler/galerina.js lint examples --exclude source-map-error.fungi
+```
+
+`Galerina lint` runs the same analysis checkers as `Galerina check` and does
+not write build artefacts.
 
 ## Strict Comments
 

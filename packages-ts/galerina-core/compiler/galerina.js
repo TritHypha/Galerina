@@ -13,6 +13,10 @@ const { parseFile, coverExampleSources } = require("./parser");
 const { createProgramAst, fileRecord, mergeFileAst } = require("./ast");
 const { buildSymbolTable } = require("./symbol-table");
 const { admitSuggestCommand, suggestVector, formatVectorSuggestions } = require("./vector-suggest");
+const { isServerOnlyImport: securityIsServerOnlyImport, checkTargetCapabilityImports } = require("./security-checker");
+const { applyCompilerCheckers, runCompilerPipeline } = require("./build-pipeline");
+const { PLACEHOLDER_TEXT: CPU_PLACEHOLDER_TEXT } = require("./cpu-output");
+const { PLACEHOLDER_TEXT: WASM_PLACEHOLDER_TEXT } = require("./wasm-output");
 
 const VERSION = "0.1.0-prototype";
 const DEFAULT_OUT = path.join("build", "debug");
@@ -57,6 +61,7 @@ const GENERATED_OUTPUTS = [
   { path: "app.execution-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.target-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.security-report.json", kind: "report", format: "json", cleanup: true },
+  { path: "app.compiler-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.failure-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.source-map.json", kind: "report", format: "json", cleanup: true },
   { path: "app.tokens.json", kind: "report", format: "json", cleanup: true },
@@ -236,7 +241,11 @@ const DIAGNOSTIC_CATALOG = {
   RunEntryMissing: { category: "RUNTIME", number: "003", recoveryAction: "add_secure_main_flow" },
   AwaitOutsideAsync: { category: "ASYNC", number: "001", recoveryAction: "mark_flow_async_or_remove_await" },
   VectorizeParseError: { category: "VECTOR", number: "001", recoveryAction: "fix_vectorize_column_binding" },
-  SymbolTableDuplicate: { category: "BUILD", number: "004", recoveryAction: "rename_or_remove_duplicate_symbol" }
+  VectorOffloadSafetyError: { category: "VECTOR", number: "002", recoveryAction: "keep_vector_or_offload_pure" },
+  SymbolTableDuplicate: { category: "BUILD", number: "004", recoveryAction: "rename_or_remove_duplicate_symbol" },
+  PureFlowEffect: { category: "EFFECT", number: "001", recoveryAction: "remove_io_or_drop_pure" },
+  UndeclaredEffect: { category: "EFFECT", number: "002", recoveryAction: "declare_effect_or_remove_operation" },
+  JsonApiCheckError: { category: "API", number: "002", recoveryAction: "add_handler_or_max_body_size" }
 };
 const EXECUTION_MODE_MATRIX = [
   {
@@ -442,6 +451,12 @@ function main(argv) {
       return;
     }
 
+    if (command === "lint") {
+      printDiagnostics(result);
+      process.exitCode = result.diagnostics.some(isFailureDiagnostic) ? 1 : 0;
+      return;
+    }
+
     if (command === "tokens" || command === "lex") {
       process.stdout.write(JSON.stringify(result.tokens, null, 2) + "\n");
       process.exitCode = result.diagnostics.some((d) => d.errorType === "LexError") ? 1 : 0;
@@ -492,6 +507,7 @@ function main(argv) {
     }
 
     if (command === "build") {
+      result.pipeline = result.pipeline || runCompilerPipeline(result);
       const written = build(result, outDir);
       printDiagnostics(result);
       console.log(`Build prototype wrote ${written.length} files to ${path.resolve(outDir)}`);
@@ -516,6 +532,7 @@ Usage:
   Galerina dev <file-or-dir> [--watch] [--out .build-dev]
   Galerina serve <dir> [--dev]
   Galerina check <file-or-dir>
+  Galerina lint <file-or-dir>
   Galerina tokens <file-or-dir>
   Galerina fmt <file-or-dir> [--check]
   Galerina test <examples-dir>
@@ -1115,11 +1132,14 @@ function analyseProject(project) {
 
   const symbols = buildSymbolTable(ast, diagnostics);
   applyProjectChecks(project, ast, diagnostics);
+  applyCompilerCheckers(project, ast, symbols, diagnostics);
   diagnostics.push(...validateTypes(project, ast));
 
   normaliseDiagnostics(diagnostics);
 
-  return { project, ast, diagnostics, tokens, symbols };
+  const result = { project, ast, diagnostics, tokens, symbols };
+  result.pipeline = runCompilerPipeline(result);
+  return result;
 }
 function runPrototypeTests(project) {
   const root = fs.statSync(project.input).isFile() ? path.dirname(project.input) : project.input;
@@ -2103,34 +2123,8 @@ function applyProjectChecks(project, ast, diagnostics) {
     }
   }
 
-  applyImportCapabilityChecks(ast, diagnostics);
   applyLogicTargetChecks(ast, diagnostics);
   applyMemoryVariableUseChecks(project, diagnostics);
-
-  for (const webhook of ast.webhooks) {
-    if (!webhook.hmacHeader) {
-      diagnostics.push({
-        severity: "warning",
-        errorType: "WebhookSecurityWarning",
-        file: webhook.file,
-        line: webhook.line,
-        column: webhook.column,
-        problem: `Webhook ${webhook.name} does not declare an HMAC header.`,
-        suggestedFix: "Add hmac_header, env.secret, max_age, max_body_size, replay_protection and idempotency_key."
-      });
-    }
-    if (!webhook.idempotencyKey) {
-      diagnostics.push({
-        severity: "warning",
-        errorType: "WebhookIdempotencyWarning",
-        file: webhook.file,
-        line: webhook.line,
-        column: webhook.column,
-        problem: `Webhook ${webhook.name} does not declare an idempotency key.`,
-        suggestedFix: "Add idempotency_key json.path(\"$.id\")."
-      });
-    }
-  }
 
   applyGlobalRegistryChecks(ast, diagnostics);
 
@@ -2140,45 +2134,11 @@ function applyProjectChecks(project, ast, diagnostics) {
 }
 
 function applyImportCapabilityChecks(ast, diagnostics) {
-  const browserTargets = ast.targets.filter((target) => target.enabled && target.name === "browser");
-  if (browserTargets.length === 0) return;
-
-  const blockedCapabilities = new Set(ast.capabilities?.block || []);
-  const browserTargetFiles = new Set(browserTargets.map((target) => target.file));
-  const browserDeclaredInBoot = browserTargets.some((target) => target.file === "boot.fungi");
-  for (const imported of ast.imports) {
-    if (!browserDeclaredInBoot && !browserTargetFiles.has(imported.file)) continue;
-    const capability = capabilityForImport(imported.module);
-    if (isServerOnlyImport(imported.module)) {
-      diagnostics.push({
-        severity: "error",
-        errorType: "BrowserImportBlocked",
-        file: imported.file,
-        line: imported.line,
-        column: imported.column,
-        target: "browser",
-        problem: `Server-only import "${imported.module}" cannot be used in browser target.`,
-        suggestedFix: "Move server-only access behind an API endpoint or compile this code for a server/native target."
-      });
-      continue;
-    }
-    if (capability && blockedCapabilities.has(capability)) {
-      diagnostics.push({
-        severity: "error",
-        errorType: "CapabilityBlockedImport",
-        file: imported.file,
-        line: imported.line,
-        column: imported.column,
-        target: "browser",
-        problem: `Import "${imported.module}" requires blocked capability "${capability}".`,
-        suggestedFix: `Remove the import or change the capabilities block if ${capability} is intentionally aLOwed for this target.`
-      });
-    }
-  }
+  checkTargetCapabilityImports(ast, diagnostics);
 }
 
 function isServerOnlyImport(moduleName) {
-  return SERVER_ONLY_IMPORTS.some((blocked) => moduleName === blocked || moduleName.startsWith(`${blocked}.`));
+  return securityIsServerOnlyImport(moduleName);
 }
 
 function capabilityForImport(moduleName) {
@@ -2846,6 +2806,8 @@ function categoryName(category) {
     IO: "io",
     NET: "network",
     API: "api",
+    EFFECT: "effect",
+    VECTOR: "vector",
     BUILD: "build",
     RUNTIME: "runtime"
   }[category] || category.toLowerCase();
@@ -2887,9 +2849,10 @@ function printDiagnostics(result) {
 function build(result, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   const success = !result.diagnostics.some(isFailureDiagnostic);
+  const pipeline = result.pipeline || runCompilerPipeline(result);
   const reports = {
-    "app.bin": "Galerina prototype CPU-compatible output\nThis file is a placeholder manifest, not a native binary.\n",
-    "app.wasm": "Galerina prototype WASM output placeholder\n",
+    "app.bin": (pipeline.cpu && pipeline.cpu.text) || CPU_PLACEHOLDER_TEXT,
+    "app.wasm": (pipeline.wasm && pipeline.wasm.text) || WASM_PLACEHOLDER_TEXT,
     "app.gpu.plan": planText(result, "gpu"),
     "app.photonic.plan": planText(result, "photonic"),
     "app.ternary.sim": planText(result, "ternary"),
@@ -2905,6 +2868,7 @@ function build(result, outDir) {
     "app.execution-report.json": JSON.stringify(buildExecutionReport(result), null, 2),
     "app.target-report.json": JSON.stringify(buildTargetReport(result), null, 2),
     "app.security-report.json": JSON.stringify(buildSecurityReport(result), null, 2),
+    "app.compiler-report.json": JSON.stringify(pipeline.report, null, 2),
     "app.failure-report.json": JSON.stringify(buildFailureReport(result), null, 2),
     "app.source-map.json": JSON.stringify(buildSourceMap(result), null, 2),
     "app.tokens.json": JSON.stringify(buildTokenReport(result), null, 2),
@@ -2958,6 +2922,7 @@ export const LOBrowserTarget = {
 
 function generateDevelopmentOutputs(result, outDir) {
   const success = !result.diagnostics.some(isFailureDiagnostic);
+  const pipeline = result.pipeline || runCompilerPipeline(result);
   const reports = {
     "app.openapi.json": JSON.stringify(buildOpenApi(result), null, 2),
     "app.api-report.json": JSON.stringify(buildApiReport(result), null, 2),
@@ -2965,6 +2930,7 @@ function generateDevelopmentOutputs(result, outDir) {
     "app.map-manifest.json": JSON.stringify(buildMapManifest(result), null, 2),
     "app.memory-report.json": JSON.stringify(buildMemoryReport(result), null, 2),
     "app.security-report.json": JSON.stringify(buildSecurityReport(result), null, 2),
+    "app.compiler-report.json": JSON.stringify(pipeline.report, null, 2),
     "app.failure-report.json": JSON.stringify(buildFailureReport(result), null, 2),
     "app.source-map.json": JSON.stringify(buildSourceMap(result), null, 2),
     "app.schemas.json": JSON.stringify(buildJsonSchemaReport(result.ast), null, 2),
@@ -4978,6 +4944,7 @@ function buildManifest(result, outputs = {}) {
       "app.schemas.json",
       "app.target-report.json",
       "app.security-report.json",
+      "app.compiler-report.json",
       "app.failure-report.json",
       "app.source-map.json",
       "app.tokens.json",
