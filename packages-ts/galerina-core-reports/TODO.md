@@ -14,9 +14,12 @@
 [x] Add package-owned `ReportStatusCounts` and `selectReportStatus` Fungi semantic twin
 [x] Prove all 27 bounded priority combinations through interpretation, signed Wasm and physical SLIDE/VOK
 [x] Keep the TypeScript selector and `summarizeDiagnostics` consumer active pending an authorised switch
-[ ] Define policy index, definitions, effective, conflict and AI-summary report contracts
-[ ] Define malicious data, exploit-resistance, resource-budget, taint-flow and hardware-risk report contracts
-[ ] Define specialist hardware, AI accelerator capability, accelerator fallback, data-sensitivity and precision-compatibility report contracts
+[x] Define policy index, definitions, effective, conflict and AI-summary report contracts
+      src/reports/policy-risk-specialist-reports.ts createPolicyIndex/Definitions/Effective/Conflict/AiSummaryReport; closed kinds/decisions/tokens; free-text AI fields refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define malicious data, exploit-resistance, resource-budget, taint-flow and hardware-risk report contracts
+      src/reports/policy-risk-specialist-reports.ts createMaliciousData/ExploitResistance/ResourceBudget/TaintFlow/HardwareRiskReport; schema galerina.report.risk.v1; payload/sample/message refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define specialist hardware, AI accelerator capability, accelerator fallback, data-sensitivity and precision-compatibility report contracts
+      src/reports/policy-risk-specialist-reports.ts createSpecialistHardware/AcceleratorCapability/AcceleratorFallback/DataSensitivity/PrecisionCompatibilityReport; v1 freeze non-cpu available refused; tests/policy-risk-specialist-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Upgrade RuntimeAuditStatus to v0.2: allowed|denied|warning|error|executed|verified
 [x]   - document v0.1 form as active until reconciliation: started|running|completed|denied|failed|fallback|deferred
 [x] Define RuntimeAuditEvent v0.2: schemaVersion "galerina.runtime.audit.v1", eventId, timestamp, category (8 values), status, message, runtime, effect?, capability?, destination?, references?, metadata?
@@ -29,11 +32,16 @@
 [x] Create audit/ dir: audit-events.ts, audit-jsonl.ts, audit-runtime.ts, audit-validator.ts, audit-redaction.ts
 [x] Create shared/ dir: audit-reference.ts, audit-status.ts
 [ ] Define runtime audit log format (JSONL, event categories, trace correlation, FUNGI-AUDIT codes)
+      Parent stays open (Grok 2026-10-06): all listed sub-items are done, but two parent terms are owner decisions, not code: (1) "event categories" - docs section 16 lists 10 categories (runtime, execution, effect, capability, denial, fallback, scheduler, deployment, health, integrity) while the frozen v1 RuntimeAuditCategory has 8 (effect, capability, boundary, secret, network, policy, denial, proof); (2) "FUNGI-AUDIT codes" - none exist, the package uses FUNGI-REPORT-001..005. Fail-closed default until decided: keep the 8-category v1 set and FUNGI-REPORT codes; scheduler evidence stays its own record, not a v1 audit event.
+      SuperGrok 2026-10-07 pin: row stays [ ]. Owner still decides 10-vs-8 and FUNGI-AUDIT. Fail-closed default kept. tests/runtime-audit-closed-set.test.mjs (5 tests; package suite 119/119 pass, Docker node:24) pins the frozen 8-category set, JSONL determinism, refusal of docs-only/unknown categories, refusal of a traceId field, and src/ absence of FUNGI-AUDIT. PROPOSED (not claimed final): keep v1 8 + FUNGI-REPORT-001..005; do not mint FUNGI-AUDIT-* or a v1 trace-correlation key until the owner picks; docs section 16 remains documentation, not an admitted vocabulary.
 [x]   - runtime-audit.jsonl schema with all required fields
 [x]   - status values aligned with RuntimeAuditStatus v0.2
-[ ]   - capability and effect evidence event shapes
-[ ]   - scheduler evidence event shape
-[ ]   - runtime health schema
+[x]   - capability and effect evidence event shapes
+      src/reports/evidence-reports.ts capabilityEvidenceAuditEvent / effectEvidenceAuditEvent (validated evidence -> v1 audit event, fixed message, evidence reference, reason not copied); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x]   - scheduler evidence event shape
+      src/reports/scheduler-evidence.ts validateSchedulerEvidence / serializeSchedulerEvidence (exact per-event shapes from docs/runtime-audit-log-schema-and-execution-proof.md section 31 execution_queued and section 17 task_scheduled; closed 2-event vocabulary, closed per-event keys, target from REPORT_RUNTIME_TARGETS, other fields audit-id tokens; priority not a closed vocabulary; not mapped to a v1 audit event because v1 has no scheduler category); tests/scheduler-evidence.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit)
+[x]   - runtime health schema
+      src/reports/runtime-health.ts validateRuntimeHealth / serializeRuntimeHealth (exact 8-field shape from docs/runtime-audit-log-schema-and-execution-proof.md section 30; runtime-health.json per section 33; types/ranges and FUNGI-REPORT-002/003/004 reuse are owner-revisit picks); tests/runtime-health.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit)
 [x] Define ExecutionProofHashes: manifestSha256, auditSha256, evidenceSha256, denialSha256, artefactSha256
 [x] Define ExecutionProof v0.2: schemaVersion "galerina.proof.v1", proofId, generatedAt, hashes: ExecutionProofHashes
 [x]   - document v0.1 form: { executionProofVersion, manifestHash, graphHash, policyHash, auditHash, runtimeHash }
@@ -51,10 +59,14 @@
 [x] Implement buildRuntimeEvidence(params): Promise<RuntimeEvidence>
 [x] Define FUNGI-EVIDENCE-001 through FUNGI-EVIDENCE-004 diagnostic codes
 [x] Create evidence/ dir: capability-evidence.ts, effect-evidence.ts, runtime-evidence.ts, evidence-aggregator.ts, evidence-validator.ts
-[ ] Define audit report contract (audit-report.json) fed from runtime audit log
-[ ] Define capability report contract (capability-report.json)
-[ ] Define effect report contract (effect-report.json)
-[ ] Define denial report contract (denial-report.json)
+[x] Define audit report contract (audit-report.json) fed from runtime audit log
+      src/reports/evidence-reports.ts createAuditReport (JSONL lines; counts by category/status, time range; bad/duplicate lines rejected by number only; bounded); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define capability report contract (capability-report.json)
+      src/reports/evidence-reports.ts createCapabilityReport; tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define effect report contract (effect-report.json)
+      src/reports/evidence-reports.ts createEffectReport (undeclared-inferred, denied, conflicting); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define denial report contract (denial-report.json)
+      src/reports/evidence-reports.ts createDenialReportSummary (DenialReport stays the single record; code-shaped diagnostics only); tests/evidence-reports.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define target report contract
 [x] Define runtime report contract
 [x] Define async/concurrency report contract

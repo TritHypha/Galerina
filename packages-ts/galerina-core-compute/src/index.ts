@@ -180,7 +180,7 @@ export function selectComputeTarget(
   capabilities: readonly ComputeCapability[],
 ): ComputeTargetSelection {
   for (const target of policy.prefer) {
-    const capability = capabilities.find((item) => item.target === target); // perf-allow: loop-array-find — bounded by the small fixed set of hardware compute targets
+    const capability = capabilities.find((item) => item.target === target); // perf-allow: loop-array-find â€” bounded by the small fixed set of hardware compute targets
     if (capability?.available === true) {
       return {
         requested: "compute auto",
@@ -372,3 +372,15 @@ export * from "./compatibility/target-compatibility.js";
 export * from "./compatibility/compatibility-rules.js";
 export * from "./compatibility/target-validator.js";
 export * from "./compatibility/compatibility-report.js";
+
+// Compute effects, runtime capabilities, and GPU planning (TODO pass, Grok 2026-10-05).
+export * from "./effects/compute-effects.js";
+export * from "./capabilities/compute-runtime-capabilities.js";
+export * from "./gpu/index.js";
+
+// Optical/photonic planning (TODO pass, Grok 2026-10-05).
+export * from "./photonic/index.js";
+
+// Scheduler / planner responsibilities + compute audit event shapes (TODO pass, Grok 2026-10-05).
+export * from "./scheduling/index.js";
+export * from "./specialist/specialist-hardware.js";

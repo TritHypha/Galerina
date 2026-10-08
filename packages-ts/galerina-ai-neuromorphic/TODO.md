@@ -19,4 +19,11 @@
 [HOLD] Obtain a new element map, provenance review and qualified counsel decision before adding any execution, dynamic topology, delay/refractory, implantation or actuator surface
     HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): needs a qualified counsel decision that no agent
     can supply. Until then tests/pat-neu-01-boundary.test.mjs keeps the package non-executing.
+    Owner decision 2026-10-06 10:14 BST (O2, Phillip): no legal opinion will be sought now; the package stays
+    private, post-v1 and non-executing.
+    2026-10-06 (Grok Bot): PAT-NEU-01 guard widened, tests only (tests/pat-neu-01-surface.test.mjs, 6 tests):
+    no import/require/dynamic import; no eval/Function/WebAssembly/process/timer/global-object reference; no
+    authority-shaped name in any declaration (const arrows, methods, types, fields included); runtime exports
+    pinned to the four pure helpers; reports add no authority fields and never admit request data. Sabotage
+    control: `export const startSpikes` passes the old boundary test and fails this one. HOLD unchanged (O2).
 ```

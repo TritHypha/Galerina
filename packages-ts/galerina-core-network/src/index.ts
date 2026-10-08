@@ -664,3 +664,4 @@ export * from "./webhook.js"; // compatibility shim -> webhook/webhook-verificat
 export * from "./diagnostics/network-codes.js";
 export * from "./runtime/governed-network.js";
 export * from "./reports/network-policy-report.js";
+export * from "./reports/network-report-runtime-wire.js";

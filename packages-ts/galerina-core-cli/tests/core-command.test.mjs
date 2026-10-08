@@ -19,17 +19,19 @@ describe("Galerina core command integrations", () => {
     assert.match(run.details?.join("\n") ?? "", /hello from Galerina/);
   });
 
-  it("runs build and reports through galerina-core", async () => {
+  it("runs closed-shape build admission and reports through galerina-core", async () => {
     const cwd = await createProject();
-    const build = await runCli(["build", "src", "--out", "build/debug"], cwd);
+    // build is the closed-shape CLI (14-pass pipeline not admitted); see build-command.test.mjs
+    const build = await runCli(
+      ["build", "--workspace", "apps/demo", "--target", "node", "--out", "dist"],
+      cwd,
+    );
     const reports = await runCli(["reports", "src", "--out", ".build-dev"], cwd);
 
-    assert.equal(build.ok, true);
-    assert.match(build.details?.join("\n") ?? "", /Build prototype wrote/);
-    assert.match(
-      await readFile(join(cwd, "build", "debug", "app.build-manifest.json"), "utf8"),
-      /artifactStatus/,
-    );
+    assert.equal(build.ok, false);
+    assert.equal(build.code, 4);
+    assert.match(build.message, /Build refused/);
+    assert.equal(JSON.stringify(build).includes("apps/demo"), false);
     assert.equal(reports.ok, true);
     assert.match(reports.details?.join("\n") ?? "", /Development outputs wrote/);
     assert.match(

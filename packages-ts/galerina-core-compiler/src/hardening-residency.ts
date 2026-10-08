@@ -113,11 +113,29 @@ export const FUNGI_HARDEN_008 = {
     "after reviewing, or wait for #143 to land.",
 } as const;
 
+/**
+ * FUNGI-HARDEN-009 (RD-0365 §3, KV4): a `hardening { host <name> }` profile claims a key-custody
+ * rung above the env-spore baseline (L1), but no current attestation was verified for it. The
+ * claim is DENIED fail-closed — the effective custody is env-spore — and the build continues:
+ * keyCustody is advisory in v1 (a reserved profile slot, no execution), so this never fails a
+ * compile and never mints a rung. Elevated custody is admitted only by `evaluateKeyCustody` with
+ * a current attestation and an injected native verifier, at the admission boundary.
+ */
+export const FUNGI_HARDEN_009 = {
+  code: "FUNGI-HARDEN-009",
+  name: "KEY_CUSTODY_CLAIM_UNPROVEN",
+  severity: "warning" as const,
+  message:
+    "The declared host profile claims a key-custody rung above the env-spore baseline (L1), but no " +
+    "current custody attestation was verified for it. Fail-closed (RD-0365): the claim is denied and " +
+    "custody is treated as env-spore. Advisory only — keyCustody does not gate compilation.",
+} as const;
+
 /** Every hardening diagnostic constant — for registry tests + tooling. */
 export const HARDENING_DIAGNOSTICS = [
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003,
   FUNGI_HARDEN_004, FUNGI_HARDEN_005, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
-  FUNGI_HARDEN_008,
+  FUNGI_HARDEN_008, FUNGI_HARDEN_009,
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -330,7 +348,8 @@ function pickTwoValued<T extends string>(
  *    env-spore   — sealed-at-rest (env.spore SealArena); current shipped baseline (L1).
  *    os-keystore — OS keystore wraps the KEK (Windows DPAPI / macOS keychain); L2.
  *    tpm-sealed  — TPM 2.0 PCR-sealed KEK; key is bound to machine + measured boot; L3.
- *    hardware-signer — key never leaves TPM/HSM/YubiKey; signing happens inside device; L4.
+ *    hardware-signer — key never leaves TPM/HSM/YubiKey; this limits key extraction, but does not
+ *                      prevent a compromised caller from requesting a signing operation; L4.
  *  A host claiming a rung it cannot prove is refused at custody admission (H-5/H-6). */
 export type KeyCustody = "env-spore" | "os-keystore" | "tpm-sealed" | "hardware-signer";
 
@@ -366,17 +385,14 @@ export const UNKNOWN_HOST: HostResidencyCapability = Object.freeze({
 const HOST_PROFILE_MAP = new Map<string, HostResidencyCapability>([
   // The profile name alone does not prove a live mlock hook is registered and succeeds.
   // Keep no-swap false until the runtime supplies current enforcement evidence.
-  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
-  // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
-  // keyCustody: "hardware-signer" because a register-pinned target implies an HSM for key ops.
-  ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true, keyCustody: "hardware-signer" }],
-  // Browser / WASM secure context: JavaScript sandbox guarantees no persistent disk writes (no filesystem
-  // access from WASM without an explicit JS host bridge). Cannot mlock (no syscall surface), cannot forbid
-  // DRAM. Satisfies `no_disk` only — the ceiling for browser-deployed WASM flows handling secrets.
-  // Note: the "no persistent disk" guarantee is the browser sandbox, not a kernel primitive; this seam
-  // is only appropriate for in-browser WASM deployments (target-wasm + browser runtime).
-  // keyCustody: "env-spore" — browser sessions cannot provide TPM/HSM; L1 is the ceiling.
-  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
+  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "env-spore" }],
+  // This is a design-stage target name, not a registered host or evidence of physical enforcement.
+  // Keep every residency capability false until a concrete native provider is verified.
+  // keyCustody remains a non-authorizing design claim and requires a current native attestation.
+  ["register_pinned", { name: "register_pinned", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "hardware-signer" }],
+  // A secure browser context alone does not rule out persistent origin storage or host bridges.
+  // No residency guarantee is admitted until the exact runtime and its storage boundary are proven.
+  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false, keyCustody: "env-spore" }],
 ]);
 
 // Host capability records are registry-owned identities. Freeze each record so callers cannot
@@ -423,22 +439,28 @@ export interface KeyCustodyDecision {
 const ELEVATED_CUSTODY: ReadonlySet<string> = new Set(["os-keystore", "tpm-sealed", "hardware-signer"]);
 const ATTESTATION_KEYS = ["challengeDigest", "expiresAtMs", "hostName", "issuedAtMs", "keyCustody", "pcrProfile", "quoteDigest", "schema"] as const;
 
-function validKeyCustodyAttestation(value: unknown): value is KeyCustodyAttestation {
+function snapshotKeyCustodyAttestation(value: unknown): KeyCustodyAttestation | undefined {
   try {
-    if (value === null || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) return false;
-    const candidate = value as Record<string, unknown>;
-    const keys = Object.keys(candidate).sort();
-    if (keys.length !== ATTESTATION_KEYS.length || keys.some((key, index) => key !== ATTESTATION_KEYS[index])) return false;
-    if (candidate.schema !== "galerina.key-custody-attestation.v1" || typeof candidate.hostName !== "string" || candidate.hostName.length < 1 || candidate.hostName.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.hostName)) return false;
-    if (typeof candidate.keyCustody !== "string" || !ELEVATED_CUSTODY.has(candidate.keyCustody)) return false;
-    if (typeof candidate.pcrProfile !== "string" || candidate.pcrProfile.length < 1 || candidate.pcrProfile.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.pcrProfile)) return false;
-    if (typeof candidate.quoteDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.quoteDigest)) return false;
-    if (typeof candidate.challengeDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.challengeDigest)) return false;
-    if (typeof candidate.issuedAtMs !== "number" || !Number.isSafeInteger(candidate.issuedAtMs) || candidate.issuedAtMs < 0) return false;
-    if (typeof candidate.expiresAtMs !== "number" || !Number.isSafeInteger(candidate.expiresAtMs) || candidate.expiresAtMs <= candidate.issuedAtMs) return false;
-    return true;
+    if (value === null || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) return undefined;
+    const keys = Object.keys(value).sort();
+    if (keys.length !== ATTESTATION_KEYS.length || keys.some((key, index) => key !== ATTESTATION_KEYS[index])) return undefined;
+    const snapshot: Record<string, unknown> = {};
+    for (const key of ATTESTATION_KEYS) {
+      const property = Object.getOwnPropertyDescriptor(value, key);
+      if (property === undefined || !("value" in property)) return undefined;
+      snapshot[key] = property.value;
+    }
+    const candidate = Object.freeze(snapshot) as unknown as KeyCustodyAttestation;
+    if (candidate.schema !== "galerina.key-custody-attestation.v1" || typeof candidate.hostName !== "string" || candidate.hostName.length < 1 || candidate.hostName.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.hostName)) return undefined;
+    if (typeof candidate.keyCustody !== "string" || !ELEVATED_CUSTODY.has(candidate.keyCustody)) return undefined;
+    if (typeof candidate.pcrProfile !== "string" || candidate.pcrProfile.length < 1 || candidate.pcrProfile.length > 128 || /[\u0000-\u001f\u007f]/u.test(candidate.pcrProfile)) return undefined;
+    if (typeof candidate.quoteDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.quoteDigest)) return undefined;
+    if (typeof candidate.challengeDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(candidate.challengeDigest)) return undefined;
+    if (typeof candidate.issuedAtMs !== "number" || !Number.isSafeInteger(candidate.issuedAtMs) || candidate.issuedAtMs < 0) return undefined;
+    if (typeof candidate.expiresAtMs !== "number" || !Number.isSafeInteger(candidate.expiresAtMs) || candidate.expiresAtMs <= candidate.issuedAtMs) return undefined;
+    return candidate;
   } catch {
-    return false;
+    return undefined;
   }
 }
 
@@ -468,27 +490,69 @@ export function evaluateKeyCustody(
   if (!ELEVATED_CUSTODY.has(host.keyCustody)) {
     return { admitted: false, enforced: false, reason: "host declares an unknown custody rung" };
   }
-  if (!validKeyCustodyAttestation(attestation)) {
+  const evidence = snapshotKeyCustodyAttestation(attestation);
+  if (evidence === undefined) {
     return { admitted: false, enforced: false, reason: "elevated custody requires a valid attestation" };
   }
-  if (attestation.hostName !== host.name) {
+  if (evidence.hostName !== host.name) {
     return { admitted: false, enforced: false, reason: "attestation host does not match declared profile" };
   }
-  if (attestation.keyCustody !== host.keyCustody) {
+  if (evidence.keyCustody !== host.keyCustody) {
     return { admitted: false, enforced: false, reason: "attestation custody rung does not match host" };
   }
-  if (!Number.isSafeInteger(nowMs) || nowMs < attestation.issuedAtMs || nowMs >= attestation.expiresAtMs) {
+  if (!Number.isSafeInteger(nowMs) || nowMs < evidence.issuedAtMs || nowMs >= evidence.expiresAtMs) {
     return { admitted: false, enforced: false, reason: "custody attestation is stale or not yet valid" };
   }
   if (typeof verifier !== "function") {
     return { admitted: false, enforced: false, reason: "elevated custody has no native verifier" };
   }
   try {
-    if (verifier(attestation, host) !== true) return { admitted: false, enforced: false, reason: "native custody verifier refused attestation" };
+    if (verifier(evidence, host) !== true) return { admitted: false, enforced: false, reason: "native custody verifier refused attestation" };
   } catch {
     return { admitted: false, enforced: false, reason: "native custody verifier failed" };
   }
   return { admitted: true, enforced: true, reason: "attested custody verified" };
+}
+
+/** RD-0365 — what a consumer learns when it resolves a declared host name for key custody. */
+export interface HostKeyCustodyResolution {
+  /** The registry profile, or UNKNOWN_HOST for an undeclared name (H-6). */
+  readonly host: HostResidencyCapability;
+  /** The rung the profile label claims. A claim is never evidence by itself. */
+  readonly claimed: KeyCustody;
+  /**
+   * The selected policy rung. When elevated evidence is refused this preserves the historical
+   * env-spore fallback label; consult effectiveStatus before treating that label as established.
+   */
+  readonly effective: KeyCustody;
+  /** Whether `effective` is verified, an unenforced declared baseline, a fallback, or unavailable. */
+  readonly effectiveStatus: "attested" | "unenforced-baseline" | "unproven-fallback" | "unavailable";
+  readonly decision: KeyCustodyDecision;
+}
+
+/**
+ * RD-0365 §3 — resolve a host NAME to its profile and evaluate its custody claim in one step, so an
+ * authorization consumer never handles a caller-built profile object. Fail-closed: an undeclared
+ * host resolves to UNKNOWN_HOST, and any claim above env-spore that `evaluateKeyCustody` does not
+ * admit as enforced retains the historical env-spore fallback label, but the new status explicitly
+ * marks that fallback unproven. Only an explicitly declared env-spore baseline is labelled as such;
+ * an undeclared host is marked unavailable. This raises no authority: the result is a fact for the
+ * consumer to report.
+ */
+export function resolveHostKeyCustody(
+  name: string,
+  attestation?: KeyCustodyAttestation,
+  verifier?: KeyCustodyVerifier,
+  nowMs: number = Date.now(),
+): HostKeyCustodyResolution {
+  const host = resolveHost(name);
+  const decision = evaluateKeyCustody(host, attestation, verifier, nowMs);
+  const effective: KeyCustody = decision.admitted && decision.enforced ? host.keyCustody : "env-spore";
+  const effectiveStatus: HostKeyCustodyResolution["effectiveStatus"] =
+    decision.admitted && decision.enforced ? "attested"
+      : decision.admitted && host.keyCustody === "env-spore" ? "unenforced-baseline"
+        : host === UNKNOWN_HOST ? "unavailable" : "unproven-fallback";
+  return { host, claimed: host.keyCustody, effective, effectiveStatus, decision };
 }
 
 /**

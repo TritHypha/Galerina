@@ -38,13 +38,13 @@
 //     }
 //   }
 
-import {
-  validateAgentDefinition,
-  type AgentDefinition,
-  type AgentDiagnostic,
-  type AgentFailureBehaviour,
-  type AgentLimits,
-  type AgentToolPermission,
+import { validateAgentDefinition } from "./agent-validation.js";
+import type {
+  AgentDefinition,
+  AgentDiagnostic,
+  AgentFailureBehaviour,
+  AgentLimits,
+  AgentToolPermission,
 } from "./index.js";
 
 export const AGENT_DECLARATION_SCHEMA = "galerina.ai-agent.declaration.v1";
@@ -97,6 +97,9 @@ const FAILURE_BEHAVIOURS: readonly AgentFailureBehaviour[] = Object.freeze([
 ]);
 const TIME_UNITS: Readonly<Record<string, number>> = Object.freeze({ ms: 1, s: 1_000, m: 60_000 });
 const SIZE_UNITS: Readonly<Record<string, number>> = Object.freeze({ kb: 1_024, mb: 1_048_576, gb: 1_073_741_824 });
+const AGENT_NODE_FIELDS = ["kind", "schema", "name", "span", "inputType", "outputType", "tools", "effects", "permissions", "limits", "failureBehaviour"] as const;
+const AGENT_TOOL_FIELDS = ["tool", "decision", "scope"] as const;
+const AGENT_LIMIT_FIELDS = ["timeoutMs", "memoryBytes", "maxToolCalls", "maxTokens", "rateLimitPerMinute"] as const;
 const LIMIT_KEYS = ["timeout", "memory", "max_tool_calls", "max_tokens", "rate_limit_per_minute"] as const;
 type LimitKey = (typeof LIMIT_KEYS)[number];
 
@@ -276,6 +279,11 @@ export function parseAgentDeclarations(source: string): AgentDeclarationParseRes
         while (!(rows.at(-1) ?? "").includes("]")) {
           const more = next();
           if (more === undefined) break;
+          if (more.text.includes("{") || more.text.includes("}")) {
+            // An unclosed list must not swallow a later block or agent: re-read this line.
+            index = more.line - 1;
+            break;
+          }
           rows.push(more.text);
         }
         if (!once(clause, line)) continue;
@@ -418,11 +426,58 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
     };
   }
   const extra: AgentDiagnostic[] = [];
+  // Exact shape on a hand-built node: unknown node or tool keys are refused (keys are not echoed).
+  if (Object.keys(node).some((key) => !(AGENT_NODE_FIELDS as readonly string[]).includes(key))) {
+    extra.push({ code: "Galerina_AGENT_DECL_FIELD_UNKNOWN", severity: "error", message: `Agent declaration nodes may only carry: ${AGENT_NODE_FIELDS.join(", ")}.`, path: "node" });
+  }
+  node.tools.forEach((tool, position) => {
+    if (typeof tool !== "object" || tool === null || Object.keys(tool).some((key) => !(AGENT_TOOL_FIELDS as readonly string[]).includes(key))) {
+      extra.push({ code: "Galerina_AGENT_DECL_FIELD_UNKNOWN", severity: "error", message: `Tool entries may only carry: ${AGENT_TOOL_FIELDS.join(", ")}.`, path: `tools.${position}` });
+    }
+  });
   if (!TYPE_NAME.test(node.name)) {
     extra.push({ code: "Galerina_AGENT_DECL_NAME_INVALID", severity: "error", message: "Agent name must be an UpperCamel identifier.", path: "name" });
   }
+  for (const field of ["inputType", "outputType"] as const) {
+    if (!TYPE_NAME.test(node[field])) {
+      extra.push({ code: "Galerina_AGENT_DECL_TYPE_INVALID", severity: "error", message: "Agent input and output types must be UpperCamel type names.", path: field });
+    }
+  }
+  node.tools.forEach((tool, position) => {
+    if (!TOOL_NAME.test(tool.tool) || (tool.decision !== "allow" && tool.decision !== "deny")) {
+      extra.push({ code: "Galerina_AGENT_DECL_TOOL_INVALID", severity: "error", message: "Tool entries need a lower-case dotted tool name and an allow or deny decision.", path: `tools.${position}` });
+    }
+  });
+  if (node.tools.length > MAX_AGENT_TOOLS) {
+    extra.push({ code: "Galerina_AGENT_DECL_LIMIT_EXCEEDED", severity: "error", message: `At most ${MAX_AGENT_TOOLS} tool entries are allowed per agent.`, path: "tools" });
+  }
+  for (const field of ["effects", "permissions"] as const) {
+    const items = node[field];
+    if (!items.every((item) => LIST_ITEM.test(item)) || new Set(items).size !== items.length) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIST_INVALID", severity: "error", message: `The ${field} list needs unique lower-case dotted names.`, path: field });
+    }
+  }
   if (!FAILURE_BEHAVIOURS.includes(node.failureBehaviour)) {
     extra.push({ code: "Galerina_AGENT_DECL_FAILURE_INVALID", severity: "error", message: `Failure behaviour must be one of: ${FAILURE_BEHAVIOURS.join(", ")}.`, path: "failureBehaviour" });
+  }
+  // Limits on a hand-built node: only the five known keys, each a positive safe integer
+  // (validateAgentLimits alone uses `> 0`, which a string such as "5" or Infinity passes;
+  // zero and negative values stay with validateAgentLimits so each problem is reported once).
+  const limitsRecord: Record<string, unknown> = typeof node.limits === "object" && node.limits !== null && !Array.isArray(node.limits) ? node.limits as unknown as Record<string, unknown> : {};
+  if (limitsRecord !== (node.limits as unknown)) {
+    extra.push({ code: "Galerina_AGENT_DECL_LIMIT_INVALID", severity: "error", message: "Agent limits must be a plain record.", path: "limits" });
+  }
+  for (const key of Object.keys(limitsRecord)) {
+    if (!(AGENT_LIMIT_FIELDS as readonly string[]).includes(key)) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIMIT_UNKNOWN", severity: "error", message: `Limits may only set: ${AGENT_LIMIT_FIELDS.join(", ")}.`, path: "limits" });
+      break;
+    }
+  }
+  for (const key of AGENT_LIMIT_FIELDS) {
+    const value = limitsRecord[key];
+    if (value !== undefined && !(typeof value === "number" && Number.isSafeInteger(value))) {
+      extra.push({ code: "Galerina_AGENT_DECL_LIMIT_INVALID", severity: "error", message: "Each limit must be a whole number.", path: `limits.${key}` });
+    }
   }
   node.tools.forEach((tool, position) => {
     if (tool.scope !== undefined && (tool.decision !== "allow" || !isSafeScope(tool.scope))) {
@@ -433,10 +488,11 @@ export function lowerAgentDeclaration(node: AgentDeclarationNode): AgentDeclarat
     name: node.name,
     inputType: node.inputType,
     outputType: node.outputType,
-    tools: Object.freeze(node.tools.map((tool) => Object.freeze({ ...tool }))),
+    tools: Object.freeze(node.tools.map((tool) => Object.freeze({ tool: tool.tool, decision: tool.decision, ...(tool.scope === undefined ? {} : { scope: tool.scope }) }))),
     effects: Object.freeze([...node.effects]),
     permissions: Object.freeze([...node.permissions]),
-    limits: Object.freeze({ ...node.limits }),
+    // Copy only the known limit fields so an unknown key can never ride into the definition.
+    limits: Object.freeze(Object.fromEntries(AGENT_LIMIT_FIELDS.filter((key) => limitsRecord[key] !== undefined).map((key) => [key, limitsRecord[key]]))) as unknown as AgentLimits,
     failureBehaviour: node.failureBehaviour,
   });
   const diagnostics = [...extra, ...validateAgentDefinition(definition)];

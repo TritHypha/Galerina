@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 import { keygen, KEM_PROFILE, SporeCryptoError } from "../dist/spore.js";
 import {
-  initEnvSpore, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, assertKemProfile, validateManifest, K3,
+  initEnvSpore, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, assertKemProfile, validateManifest, replaceSecretValue, K3,
 } from "../dist/store.js";
 import { contextFor } from "../dist/schema.js";
 import { loadAll } from "../dist/runtime.js";
@@ -33,6 +33,32 @@ const CLI = join(HERE, "..", "dist", "cli.js");
 const KP = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
 const enc = (s) => new TextEncoder().encode(s);
 const dec = (b) => Buffer.from(b).toString();
+
+function runWithPartialBufferCopyFailure(run) {
+  const originalAlloc = Buffer.alloc;
+  let staged;
+  let error;
+  try {
+    Buffer.alloc = function (size, ...args) {
+      staged = originalAlloc(size, ...args);
+      return staged;
+    };
+    try {
+      run({
+        length: 4,
+        0: 0xa1,
+        get 1() { throw new Error("synthetic staged-copy failure"); },
+        2: 0xc3,
+        3: 0xd4,
+      });
+    } catch (caught) {
+      error = caught;
+    }
+  } finally {
+    Buffer.alloc = originalAlloc;
+  }
+  return { staged, error };
+}
 
 function freshFile(name, ...kvs) {
   let buf = initEnvSpore(KP.publicKey);
@@ -152,11 +178,82 @@ test("SealArena use exposes only a transient copy and wipes it at callback exit"
   assert.equal(original, "wipe-me-please", "mutating a transient view must not alter arena state");
 });
 
+test("replacing a decrypted map entry wipes the displaced plaintext before dropping it", () => {
+  const values = new Map();
+  const previous = enc("old credential bytes");
+  const replacement = enc("new credential bytes");
+  values.set("credential", previous);
+
+  replaceSecretValue(values, "credential", replacement);
+
+  assert.ok(previous.every((byte) => byte === 0), "the displaced plaintext buffer must be wiped");
+  assert.equal(values.get("credential"), replacement, "the replacement remains available for reseal");
+  assert.equal(dec(values.get("credential")), "new credential bytes");
+});
+
+test("SealArena put wipes a partial copy and does not install it when staging fails", () => {
+  const arena = new SealArena();
+  const { staged, error } = runWithPartialBufferCopyFailure((source) => arena.put("S", source));
+  try {
+    assert.match(String(error?.message), /synthetic staged-copy failure/);
+    assert.deepEqual([...staged], [0, 0, 0, 0], "the partial stored-secret copy must be wiped");
+    assert.equal(arena.has("S"), false, "an incomplete copy must not become an arena entry");
+  } finally {
+    staged?.fill(0);
+    arena.dispose();
+  }
+});
+
+test("SealArena rotateValue wipes a partial staging copy and preserves the old value", () => {
+  const arena = new SealArena();
+  arena.put("S", enc("old-value"));
+  const { staged, error } = runWithPartialBufferCopyFailure((source) => arena.rotateValue("S", source));
+  try {
+    assert.match(String(error?.message), /synthetic staged-copy failure/);
+    assert.deepEqual([...staged], [0, 0, 0, 0], "the partial replacement copy must be wiped");
+    let retained = "";
+    arena.use("S", (value) => { retained = dec(value); });
+    assert.equal(retained, "old-value", "failed rotation must preserve the previous value");
+  } finally {
+    staged?.fill(0);
+    arena.dispose();
+  }
+});
+
 test("SealArena use refuses callback return and asynchronous escape channels", () => {
   const arena = new SealArena();
   arena.put("S", enc("secret"));
   assert.throws(() => arena.use("S", (b) => b), /return|escape/i);
   assert.throws(() => arena.use("S", async () => {}), /async|promise|escape/i);
+});
+
+test("SealArena staging ignores a callback-poisoned typed-array copy method", () => {
+  const arena = new SealArena();
+  const originalSet = Uint8Array.prototype.set;
+  const originalFill = Uint8Array.prototype.fill;
+  const stolen = [];
+  let setCalled = false;
+  try {
+    Uint8Array.prototype.set = function (source, ...args) {
+      setCalled = true;
+      stolen.push(...source);
+      return originalSet.call(this, source, ...args);
+    };
+    arena.put("S", enc("secret"));
+    arena.use("S", () => {});
+  } finally {
+    Uint8Array.prototype.set = originalSet;
+  }
+  try {
+    assert.equal(setCalled, false, "secret staging must use the captured typed-array intrinsic");
+    assert.deepEqual(stolen, [], "replaced prototype methods must not receive secret source bytes");
+    let value = "";
+    arena.use("S", (bytes) => { value = dec(bytes); });
+    assert.equal(value, "secret");
+  } finally {
+    stolen.fill(0);
+    arena.dispose();
+  }
 });
 
 test("anchor: Argon2id wrap/unwrap round-trips; wrong passphrase fails closed", () => {
@@ -179,9 +276,8 @@ test("fail-closed: KEM-profile substitution is rejected before open() (crypto-fa
   assert.doesNotThrow(() => assertKemProfile(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, ctx));
 });
 
-test("CLI keygen REFUSES to emit the secret key to a TTY without --force (leak-hunter #1)", () => {
-  // stderr is a pipe here (spawnSync captures it), so isTTY is false and keygen succeeds without
-  // --force; assert it emits the raw-byte marker (NOT a hex string) and never a toHex secret.
+test("CLI keygen streams the raw-byte marker on non-TTY stderr without secret hex", () => {
+  // spawnSync captures stderr through a pipe, so this covers the permitted non-TTY branch.
   const r = spawnSync(process.execPath, [CLI, "keygen"], { encoding: "buffer" });
   assert.equal(r.status, 0);
   const err = r.stderr.toString("latin1");

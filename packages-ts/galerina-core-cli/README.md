@@ -31,31 +31,29 @@ generate project graphs
 ### Implemented (Prototype)
 
 ```text
-galerina check             — validate source without producing artefacts
-galerina build             — compile and produce artefacts (partial)
-galerina run               — run compiled output
-galerina serve             — start server
-galerina reports           — generate reports
-galerina security:check    — run security scan
-galerina routes            — list route table
-galerina benchmark         — placeholder command
-galerina task              — run project automation tasks
-galerina graph             — generate project dependency graph
-galerina graph query       — query generated graph
-galerina graph explain     — explain graph node
-galerina graph path        — show path between nodes
-galerina fmt               — format source files
+galerina check             Ã¢â‚¬â€ validate source without producing artefacts
+galerina build             Ã¢â‚¬â€ compile and produce artefacts (partial)
+galerina run               Ã¢â‚¬â€ run compiled output
+galerina serve             Ã¢â‚¬â€ start server
+galerina reports           Ã¢â‚¬â€ generate reports
+galerina security:check    Ã¢â‚¬â€ run security scan
+galerina routes            Ã¢â‚¬â€ list route table
+galerina task              Ã¢â‚¬â€ run project automation tasks
+galerina graph             Ã¢â‚¬â€ generate project dependency graph
+galerina graph query       Ã¢â‚¬â€ query generated graph
+galerina graph explain     Ã¢â‚¬â€ explain graph node
+galerina graph path        Ã¢â‚¬â€ show path between nodes
+galerina fmt               Ã¢â‚¬â€ format source files
 ```
 
 ### Planned / Not Yet Implemented
 
 ```text
-galerina deploy            — deploy verified build to target environment
-galerina explain           — explain build decisions, authority model, effects
-galerina plan              — preview deployment actions without applying changes
-galerina verify deploy     — verify running version against build manifest
-galerina promote           — promote artifact from one environment to another
-galerina rollback          — rollback to previous deployment
+galerina deploy            Ã¢â‚¬â€ deploy verified build to target environment
+galerina explain           Ã¢â‚¬â€ explain build decisions, authority model, effects
+galerina verify deploy     Ã¢â‚¬â€ verify running version against build manifest
+galerina promote           Ã¢â‚¬â€ promote artifact from one environment to another
+galerina rollback          Ã¢â‚¬â€ rollback to previous deployment
 ```
 
 `galerina build` compiles source into governed runtime artefacts through a
@@ -65,12 +63,52 @@ galerina rollback          — rollback to previous deployment
 `audit-report.json`, `build-hash.txt`. Diagnostic codes: `FUNGI-BUILD-001`
 through `FUNGI-BUILD-005`. Status: partial implementation.
 
+Build contracts (`src/build/build-contracts.ts`, zero-trust defaults, owner may revisit):
+`BuildResult` / `BuildWorkspaceInput` / `buildWorkspace` closed-shape via property
+descriptors (no getters). Nested artefacts use `readBuildArtefact`. Targets match the
+deploy/plan vocabulary. `buildWorkspace` never throws and never opens the workspace;
+a valid input returns `FUNGI-BUILD-005` (14-pass pipeline not admitted on this tip).
+
+Build CLI + reporter (`src/build/build-command.ts`, `src/build/build-reporter.ts`, zero-trust defaults, owner may revisit): `galerina build` admits `--workspace` / `--target` / `--out` / `--strict` / `--profile` / `--report` / `--json`; `--audit` refuses `FUNGI-CLI-BUILD-004`. Calls `buildWorkspace` (never opens the workspace). Optional `build-report.json` (`galerina.build-report/v1`) exclusive-create with messages withheld and limitations noting no 14-pass / no artefact emit. Exit 0/2/4.
+Codes: `FUNGI-BUILD-001` shape, `002` domain, `003` path token, `004` artefact set,
+`005` pipeline-not-admitted / success consistency. No CLI / reporter / emit yet.
+
 `galerina verify` validates compiler and runtime artefact integrity.
 Flags: `--json`, `--strict`, `--manifest`, `--hash`, `--policy`, `--audit`.
 Produces verification status with `manifestHash` and `graphHash`.
-Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-005`.
-Status: partial — hash checks only.
+Diagnostic codes: `FUNGI-VERIFY-001` through `FUNGI-VERIFY-016`.
+Status: partial. Hash checks, closed-shape artefact integrity (below), plus runtime manifest record checks (below), plus `galerina verify` command wiring (below). Runtime compatibility / capability / audit-report validation and verify-runtime.ts landed; verify deploy closed-shape receipt compare landed (live process probe still open).
 
+Artefact integrity (`src/verify/verify-integrity.ts`, zero-trust defaults, owner may
+revisit): `readBuildArtefact`, `verifyArtefactIntegrity` and `verifyArtefactIntegritySet`
+read BuildArtefact metadata through property descriptors (no getters run), require the
+exact closed key list and kind vocabulary, refuse malformed sha256: digests before any
+filesystem open, and require dense artefact sets. Codes stay FUNGI-VERIFY-001..005.
+
+Runtime manifest checks (`src/verify/verify-manifest.ts`, zero-trust defaults, owner may
+revisit): `verifyRuntimeManifest(record)` and `verifyRuntimeManifestSet(records)` validate the
+per-flow `fungi.runtime.manifest.v1` record that the compiler ships today (`RuntimeManifest` in
+`galerina-core-compiler/src/type-registry.ts`). A record must be a plain data object with exactly
+the v1 keys; values are read once through property descriptors, so getters never run. The
+schemaVersion must match exactly, every field has a closed domain, and the fields must agree with
+the governance flag mask the way the compiler derives them. `verified: false` never verifies, and
+a set must not list a flow twice. Codes: `FUNGI-VERIFY-006` shape, `007` schemaVersion, `008`
+domain, `009` consistency, `010` not verified, `011` set. Diagnostics name a field but never
+echo a value or an unknown key. `createVerificationReport(result, { manifests })` adds a
+`manifests` section and recomputes its success. Not covered: the `runtime-manifest.json` file
+container (the v0.2 manifest from compiler pass 14 is not built) and signature checks
+(GovernanceSignature, Phase 39).
+
+
+Verify command (`src/verify/verify-command.ts`, zero-trust defaults, owner may revisit):
+`parseVerifyArgs` + `runVerifyCommand` wire `galerina verify`. Admitted flags:
+`--artefacts` (required), `--root`, `--manifest`, `--report`, `--json`, `--strict`,
+`--hash`, `--policy <capability-report.json>`, `--audit <audit-report.json>`. Unknown flags,
+duplicates, `--flag=value`, and positionals refuse (`FUNGI-CLI-VERIFY-001`/`002`).
+Input files must be dense JSON arrays (`003`). The command composes
+`verifyArtefactIntegritySet` and optional `verifyRuntimeManifestSet`, can write
+`verification-report.json` exclusively (`005`), and never echoes paths or values.
+Exit codes: `0` success, `2` usage, `3` audit report failure, `4` runtime-compatibility failure, `5` capability/policy report failure, `6` artefact verify failure, `7` manifest integrity failure. Runtime report validation (`src/verify/verify-runtime.ts`, zero-trust defaults, owner may revisit): closed-shape `galerina.report.audit.v1` / `galerina.report.capability.v1` via descriptors; FUNGI-VERIFY-012..016; complete:false never verifies. Deploy still open.
 The current hash helper reads from one opened file handle in fixed 64 KiB chunks,
 avoiding whole-file allocations, and checks root resolution plus opened-file
 identity. `O_NOFOLLOW` is used where Node supports it. This is not a portable
@@ -79,36 +117,41 @@ directory/reparse-point swap on Windows and Linux. A successful result means the
 bytes read from the checked handle matched the supplied digest; it does not prove
 trusted provenance, prevent concurrent modification, or resist a compromised OS.
 
-`galerina deploy` validates the runtime manifest, effects, capabilities, policy,
-target compatibility, and module hashes before deploying. Exit codes: `0`
-success, `2` policy denial, `3` runtime incompatibility, `4` deployment
-validation failure, `5` capability resolution failure, `7` manifest integrity
-failure. Flags: `--dry-run`, `--json`, `--report`, `--audit`, `--strict`,
-`--profile`, `--policy`, `--target`. Produces `deployment-report.json`.
+`galerina deploy` (dry-run) validates effects, target compatibility, and the
+verified gate against a closed EffectsPolicy + DeployManifestSlice. Live deploy
+is not admitted (`--dry-run` required). Exit codes: `0` success, `2` usage or
+policy denial, `3` target incompatibility, `4` validation failure, `6` verified-gate
+failure. Flags: `--manifest`, `--policy`, `--target`, `--hash`, `--report`,
+`--json`, `--dry-run`, `--strict`. Produces optional `deployment-report.json`.
 Diagnostic codes: `FUNGI-DEPLOY-001` through `FUNGI-DEPLOY-005`.
 
 `galerina explain` explains compiler decisions, runtime authority, effect
 declarations, boundary violations, and why deployment was denied.
-Flags: `--tree` (dependency graph), `--trace` (execution reasoning chain),
-`--effects`, `--capabilities`, `--runtime`, `--policy`, `--audit`, `--json`.
-Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-004`.
+Explain CLI wired (`galerina explain`): closed-shape manifest facets,
+`deployment-denial.json` reasoning, declared dependency-tree (`--tree`), and
+declared runtime profile (`--runtime`); emits `explain-report.json`. Admitted
+flags: `--manifest`, `--denial`, `--tree`, `--runtime`, `--report`, `--json`,
+`--trace`, `--effects`, `--capabilities`. Still refuse: `--policy`, `--audit`
+(`FUNGI-CLI-EXPLAIN-004`). Does not walk a live package graph or probe a live
+runtime. Diagnostic codes: `FUNGI-EXPLAIN-001` through `FUNGI-EXPLAIN-010`.
 
-`galerina plan` estimates how execution will be coordinated — CPU/GPU suitability,
+`galerina plan` estimates how execution will be coordinated Ã¢â‚¬â€ CPU/GPU suitability,
 memory pressure, parallelism, and fallback options. The planner recommends;
 the runtime decides final execution.
 Flags: `--json`, `--runtime`, `--memory`, `--parallelism`, `--energy`,
 `--target`, `--graph`, `--compatibility`. Produces `compute-plan.json`.
 Diagnostic codes: `FUNGI-PLAN-001` through `FUNGI-PLAN-004`.
 
-Implementation order: Phase 1 build → Phase 2 verify → Phase 3 explain →
-Phase 4 deploy → Phase 5 plan.
+Implementation order: Phase 1 build Ã¢â€ â€™ Phase 2 verify Ã¢â€ â€™ Phase 3 explain Ã¢â€ â€™
+Phase 4 deploy Ã¢â€ â€™ Phase 5 plan.
 
 See `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-cli-deploy-explain-plan.md` for the
 full specification including all examples, exit codes, output modes, and
 report file definitions.
 
-`Galerina benchmark` is currently a placeholder command. The benchmark contracts,
-recommended modes and report shape live in `packages-ts/galerina-tools-benchmark/README.md`.
+There is no `Galerina benchmark` command. Benchmarks live in the independent
+`packages-ts/galerina-tools-benchmark` package (contracts, modes and report shape in its
+README); core-cli does not depend on it and does not expose it (owner decision 2026-10-06).
 
 ## Graph Command
 
@@ -265,6 +308,30 @@ export async function verifyHash(
 
 ### Deploy Contracts
 
+Deploy contracts (`src/deploy.ts` / `src/deploy/deploy-validator.ts`, zero-trust defaults, owner may
+revisit): closed `DeploymentTarget` vocabulary (`node|wasm|native|serverless|edge|gpu|photonic`),
+`DeploymentResult` (`createDeploymentResult` / `readDeploymentResult`), `EffectsPolicy`,
+`DeployManifestSlice` (`allowedEffects` + `verified`), and `validateEffects`. Shapes are read through
+property descriptors (no getters). Diagnostics never echo effect names, targets, hashes or unknown
+keys. Codes: `FUNGI-DEPLOY-001` shape, `002` domain, `003` policy effect denial, `004` target
+incompatibility, `005` verified gate. Command wiring (`src/deploy/deploy-command.ts`, zero-trust defaults, owner may revisit):
+`parseDeployArgs` + `runDeployCommand` wire `galerina deploy` as **dry-run only**.
+Admitted flags: `--manifest`, `--policy`, `--target`, `--hash`, `--artefacts`, `--root`,
+`--report`, `--json`, `--dry-run` (required), `--strict`. `--audit` refuses `FUNGI-CLI-DEPLOY-004`.
+Exit codes: `0` success, `2` usage or policy denial, `3` target incompatibility,
+`4` validation failure, `6` verified-gate failure, `7` module-hash failure (`5` reserved). Report writer
+(`src/deploy/deploy-report.ts`): exclusive-create `deployment-report.json` with
+messages withheld and `dryRun:true`. Module hashes on disk (`src/deploy/deploy-module-hash.ts`,
+2026-10-06, zero-trust defaults, owner may revisit): `--artefacts <file>` (JSON array of closed
+`BuildArtefact` records) with optional `--root <dir>` (default: working directory) runs
+`verifyDeployModuleHashes`, which reuses `verifyArtefactIntegritySet` / `verifyHash` unchanged
+(sha256 only, root-confined, regular non-symlink files, no-follow where supported). It runs before
+effects validation and before any report write; a failure exits `7` with `FUNGI-VERIFY-001..005`
+codes only (no paths, hashes or bytes) and writes nothing. Owner decision 2026-10-06 10:15 BST:
+live deploy is authorised for a follow-up PR and this check is its mandatory pre-deploy gate.
+Not covered: live deploy, capability/audit validation, deploy-policy.ts / deploy-runtime.ts.
+
+
 ```ts
 export type DeploymentTarget =
     | "node"
@@ -297,7 +364,7 @@ export function validateEffects(
     input: ValidateEffectsInput
 ): CompilerDiagnostic[]
 // For each function in manifest.functions:
-//   effectiveEffects = declaredEffects ∪ inferredEffects
+//   effectiveEffects = declaredEffects Ã¢Ë†Âª inferredEffects
 //   check each effect against policy.allowedEffects
 //   check capabilities present for each effect
 //   emit FUNGI-EFFECT-001 through FUNGI-EFFECT-004 as needed
@@ -305,48 +372,46 @@ export function validateEffects(
 
 ### Explain Contracts
 
-```ts
-export interface ExplainTrace {
-    step: number
-    label: string
-    input: string
-    output: string
-    diagnostics: CompilerDiagnostic[]
-}
+Explain contracts (`src/explain.ts` / `src/explain/explain-trace.ts`, zero-trust defaults, owner may
+revisit): closed `ExplainTrace` (`step`, `label`, `input`, `output`, `diagnostics[]`) with label
+vocabulary `import|effect|capability|boundary|dependency|denial`; closed `ExplainResult`
+(`traces`, `effects`, `capabilities`, `boundaries`, `diagnostics`); `ExplainManifestSlice` +
+`ExplainOptions`; `buildTrace` / `explainManifest` / `createExplainResult` / `readExplainResult`.
+Shapes via property descriptors (no getters). Unknown keys refuse without echo. Diagnostic messages
+never echo tokens/keys. Codes: `FUNGI-EXPLAIN-001` shape, `002` domain, `003` options facet refuse,
+`004` result consistency (contiguous steps). Does not wire `galerina explain`, write
+walk a live dependency tree, or probe runtime/policy/audit (`--tree`/`--runtime`/`--policy`/`--audit` refuse). Denial reader + report writer landed.
 
-export interface ExplainResult {
-    traces: ExplainTrace[]
-    effects: string[]
-    capabilities: string[]
-    boundaries: string[]
-    diagnostics: CompilerDiagnostic[]
-}
-
-export function buildTrace(
-    manifest: RuntimeManifest,
-    options: ExplainOptions
-): ExplainTrace[]
-```
 
 ### Compute Plan Contracts
 
+Closed-shape `ComputePlan` / `PlanGpuPlan` / `PlanOpticalPlan` / `PlanCompatibility`
+landed in `src/plan/plan-contracts.ts` (Grok 2026-10-05; zero-trust defaults, owner may
+revisit). Shapes via property descriptors (no getters). Unknown keys refuse without echo.
+Numeric fields refuse `NaN` / `Infinity` / non-integers. `GpuPlan.recommendedTarget` is
+frozen to `"node"` under v1 (advisory suitability only — never an execution admission).
+`estimateTarget(workspace, options)` never throws. Codes: `FUNGI-PLAN-001` shape,
+`002` domain, `003` options facet refuse, `004` result consistency / v1 freeze.
+`galerina plan` CLI + `compute-plan.json` reporter landed (`src/plan/plan-command.ts`, `src/plan/plan-reporter.ts`; Grok 2026-10-05; zero-trust defaults, owner may revisit). Admitted flags: `--workspace`, `--target`, `--memory`, `--parallelism`, `--report`, `--json`, `--compatibility`. `--runtime` / `--energy` / `--graph` refuse `FUNGI-CLI-PLAN-004` (live probe HOLD). Does not probe live GPU/optical/memory/energy or walk a plan-graph.
+
 ```ts
 export interface ComputePlan {
-    target: RuntimeTarget
-    gpu: GpuPlan
-    optical: OpticalPlan
-    wasm: WasmTarget | null
-    compatibility: CompatibilityReport
+    target: PlanRuntimeTarget
+    gpu: PlanGpuPlan | null
+    optical: PlanOpticalPlan | null
+    wasm: PlanWasmTarget | null
+    compatibility: PlanCompatibility | null
     estimatedMemoryMb: number
     parallelism: number
-    diagnostics: CompilerDiagnostic[]
+    diagnostics: PlanDiagnostic[]
 }
 
 export function estimateTarget(
-    workspace: Workspace,
+    workspace: PlanWorkspaceInput,
     options: PlanOptions
 ): ComputePlan
 ```
+
 
 ### Exit Codes
 
@@ -401,7 +466,7 @@ packages-ts/galerina-core-cli/src/
     explain-contracts.ts
     plan-contracts.ts
   output/
-    safe-output.ts       ← redact SecureString, tokens
+    safe-output.ts       Ã¢â€ Â redact SecureString, tokens
     json-output.ts
   index.ts
 ```

@@ -1,0 +1,87 @@
+{
+  "schema": "galerina.security.secure-random-examples/v1",
+  "examples": [
+    {
+      "purpose": "key",
+      "source": "Random",
+      "verdict": "denied",
+      "severity": "error",
+      "code": "example.random.forbidden",
+      "safeMessage": "Random must not be used for secrets, keys, tokens, salts or nonces."
+    },
+    {
+      "purpose": "key",
+      "source": "SecureRandom",
+      "verdict": "allowed",
+      "severity": "info",
+      "code": "example.secure-random.required",
+      "safeMessage": "SecureRandom is required for security randomness."
+    },
+    {
+      "purpose": "nonce",
+      "source": "Random",
+      "verdict": "denied",
+      "severity": "error",
+      "code": "example.random.forbidden",
+      "safeMessage": "Random must not be used for secrets, keys, tokens, salts or nonces."
+    },
+    {
+      "purpose": "nonce",
+      "source": "SecureRandom",
+      "verdict": "allowed",
+      "severity": "info",
+      "code": "example.secure-random.required",
+      "safeMessage": "SecureRandom is required for security randomness."
+    },
+    {
+      "purpose": "salt",
+      "source": "Random",
+      "verdict": "denied",
+      "severity": "error",
+      "code": "example.random.forbidden",
+      "safeMessage": "Random must not be used for secrets, keys, tokens, salts or nonces."
+    },
+    {
+      "purpose": "salt",
+      "source": "SecureRandom",
+      "verdict": "allowed",
+      "severity": "info",
+      "code": "example.secure-random.required",
+      "safeMessage": "SecureRandom is required for security randomness."
+    },
+    {
+      "purpose": "secret",
+      "source": "Random",
+      "verdict": "denied",
+      "severity": "error",
+      "code": "example.random.forbidden",
+      "safeMessage": "Random must not be used for secrets, keys, tokens, salts or nonces."
+    },
+    {
+      "purpose": "secret",
+      "source": "SecureRandom",
+      "verdict": "allowed",
+      "severity": "info",
+      "code": "example.secure-random.required",
+      "safeMessage": "SecureRandom is required for security randomness."
+    },
+    {
+      "purpose": "token",
+      "source": "Random",
+      "verdict": "denied",
+      "severity": "error",
+      "code": "example.random.forbidden",
+      "safeMessage": "Random must not be used for secrets, keys, tokens, salts or nonces."
+    },
+    {
+      "purpose": "token",
+      "source": "SecureRandom",
+      "verdict": "allowed",
+      "severity": "info",
+      "code": "example.secure-random.required",
+      "safeMessage": "SecureRandom is required for security randomness."
+    }
+  ],
+  "complete": true,
+  "diagnostics": []
+}

@@ -73,6 +73,11 @@ boolean not truly sensitive) with a trailing comment:
 
 ## Status — what the compiler does vs what you do today
 
+- The current TypeScript bootstrap value-state checker emits `FUNGI-SECRET-004`
+  warnings for the secret-dependent `if` and `match` conditions it recognizes.
+  This is advisory diagnostic coverage only: it is not a proof that every
+  secret-dependent path is detected, does not reject all such programs, and
+  says nothing about runtime, FFI, or host enforcement.
 - **Today:** the discipline is **yours to apply**; `audit-oblivious` makes violations visible. There is no automatic
   rewrite yet.
 - **Held (owner-gated):** a compiler-enforced **`@oblivious`** attribute + a lowering pass that rewrites secret-dependent

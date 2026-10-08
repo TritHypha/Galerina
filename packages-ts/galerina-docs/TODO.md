@@ -40,12 +40,25 @@ optional YAML output separate; this documentation refresh closes no feature.
       missing/inherited/accessor definitions, proxies, malformed refs and
       component collisions (including the shared Error envelope) refuse.
       Bounds: 1,024 referenced schemas, depth 64, 65,536 cloned values.
-      `tests/nested-contracts.test.mjs` **10/10**; package **41/41**, skipped
-      **0**, with clean `npm.cmd test` typecheck/build (2026-09-21).
+      `tests/nested-contracts.test.mjs` **12** tests at pin `df7f2fb5`
+      (the 2026-09-21 **10/10** figure is stale). Package **41/41** from
+      2026-09-21 is stale: pin `validate.test.mjs` "not absolute" still
+      sees a kernel `Error` (PR #134 wraps it as `OpenApiGenerationError`;
+      not duplicated here).
 - [!] HOLD: Option/Result and Decimal schema semantics still need the compiler
       contract export owner's admitted mapping and refusal fixtures. C17
       nested record/array support does not supply those mappings.
-- [!] Independent audit pending; these are bounded source/test results.
+      Refusal fixtures landed 2026-10-06 (Grok Bot; zero-trust defaults, owner may
+      revisit): `tests/contract-export-refusals.test.mjs` shows the compiler refuses
+      Option/Result/Decimal fields (FUNGI-CONTRACT-SCHEMA-003, no export) and docs then
+      refuses the route (no placeholder schema). The admitted mapping half stays HOLD.
+- [!] Audited 2026-10-07 (SuperGrok, pin `df7f2fb5`): L33-L42 claims verified
+      against `src/openapi.ts` (`refSchema` :141, `cloneContractValue` :162,
+      `sourceBackedSchemas` :242, wired from `generateOpenApi` :513); counts
+      corrected above. Added `tests/contract-clone-bounds.test.mjs` **6/6**
+      (65,536 cloned-value budget and clone hostile arms). Full Docker package run
+      (node:24, main `85b6875d`, #134 merged) **59/59** green. Stays [!]
+      (zero-trust default; owner closes). L45 mapping stays HOLD.
 
 ## Later — remaining owner contracts and optional output
 

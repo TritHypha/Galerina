@@ -30,6 +30,7 @@ policy belongs in `galerina-framework-app-kernel`.
 [x] Add tests
 [x] Add examples
 [ ] Wire network reports into compiler/runtime reports
+    SuperGrok 2026-10-07 pin: producer `networkPolicyReportToRuntimeAuditEvent` maps galerina.network.report.v1 onto galerina.runtime.audit.v1 category network (caller supplies eventId/timestamp/runtime; no clock). `networkReportToRuntimeAuditEvent` maps the unversioned NetworkReport the same way. core-reports and core-compiler do not import this slice. Compiler fungi.runtime.audit.v1 mapping is PROPOSED, not implemented. Row stays [ ]. Tests: tests/network-report-runtime-wire.test.mjs (5 tests; package suite 272/272 pass, node:24, core-compiler built so RD-0361 suites run).
 [x] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
     (2026-09-29 correction: the live union at src/index.ts:5-12 is
     https|http|tls|tcp|udp|websocket|rawSocket. It has no `grpc` and does have `tls` and
@@ -69,6 +70,7 @@ policy belongs in `galerina-framework-app-kernel`.
 [!] Reconcile observational IdempotencyStore get/put with the app-kernel atomic
     IdempotencyStore.seen gate before wiring; never implement admission as an
     unprotected read-then-write pair
+    SuperGrok 2026-10-07 pin: HOLD. Reconcile needs app-kernel IdempotencyStore.claim/.seen (Codex RD-1413; PR #80 leaves this HOLD). Observational get/put remains a record interface only. `refuseObservationalIdempotencyAdmission` always refuses and never calls get/put. Admission stays AtomicAdmissionStore.claim (`validateIdempotency` / `validateReplayProtection`). Do not mark [x]. Tests: tests/idempotency-observational-refusal.test.mjs (5 tests).
 [x] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]> (atomic claim in its own scope; not wired to app-kernel, the [!] reconciliation row above stays open) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
 [x] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[] (heuristic; current provider allowlist is openai only; fail-closed 1 MiB hard prompt cap with allocation-free UTF-8 preflight, invalid explicit-cap refusal, secret-shaped 006, e-mail/phone 006; bounded linear-time patterns with a ReDoS regression; still not proof of outbound authorization/redaction) -- src/runtime/governed-network.ts, tests/governed-network.test.mjs (Grok 2026-10-05; Codex follow-up 2026-10-05)
 [x] Define NetworkDiagnostic: code, message, severity, destination? (exists at src/index.ts:29-34

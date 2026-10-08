@@ -20,17 +20,22 @@ runtime work.
 [x] Define timeout enforcement decision contract with deadline equality
 [x] Define stream backpressure runtime contract
     src/runtime-contracts.ts validateStreamBackpressurePolicy / decideStreamBackpressure (no drop mode); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
-[ ] Add isolated hard-termination adapter for untrusted/non-cooperative work
-[ ] Authenticate task-event and termination receipts at the host boundary
+[x] Add isolated hard-termination adapter for untrusted/non-cooperative work
+    src/isolated-host.ts createIsolatedHost (separate Node process under --permission with entry-only fs read, no eval; empty env; SIGKILL/TerminateProcess on deadline, host cancel or output flood with no grace period; termination claimed only after "close", else termination_unconfirmed with no receipt; spawn capability injected). Non-claims: not an OS sandbox, network not confined, CPU bounded only by the wall-clock deadline; tests/isolated-host.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Authenticate task-event and termination receipts at the host boundary
+    src/isolated-host.ts createReceiptSigner / createReceiptVerifier (HMAC-SHA256 under a host-held >=32-byte key, injected primitive checked against RFC 4231; exact closed receipt shape; kind/cause agreement; constant-time MAC check; strict per-scope sequence via injected ReceiptSequenceStore refuses replay/reordering and, when the store is durable, refuses replay across verifier restarts; createMemoryReceiptSequenceStore is process-local only; forgeries burn no sequence; verified receipt -> exact StructuredAwaitEvent); tests/isolated-host.test.mjs incl. durable-restart + store-failure cases and reducer end-to-end (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Define runtime memory policy contract
     src/runtime-contracts.ts validateRuntimeMemoryPolicy / decideRuntimeAllocation (zero-on-free, no shared/executable memory); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define Node-hosted runtime adapter contract
     src/runtime-contracts.ts validateNodeHostAdapter + NODE_HOST_BUILTIN_ALLOWLIST; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define host-runtime overhead report contract
     src/runtime-contracts.ts createHostOverheadReport (integer permille; UNMEASURED/REFUSED); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
-[ ] Define Securely Governed Runtime execution plan contract
-[ ] Define verified fast path execution signature and invalidation contract
-[ ] Define AI compute plan runtime hook contract
+[x] Define Securely Governed Runtime execution plan contract
+    src/governed-plan-contracts.ts validateGovernedExecutionPlan / startGovernedExecution / advanceGovernedExecution (strict request->planning->verification->capability locking->execution->audit proof; out-of-order is terminal; exact capability lock; AI actors need a lease, never trusted-core); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define verified fast path execution signature and invalidation contract
+    src/governed-plan-contracts.ts createFastPathSignature / checkFastPath (context-tagged policy/package/output-contract hashes + model/hardware/trust; 1 h lease cap; expiry, revocation and every context change invalidate; FAST_PATH_NEVER_BYPASSES; signatures not authenticated here); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
+[x] Define AI compute plan runtime hook contract
+    src/governed-plan-contracts.ts admitAiComputePlan pre-execution hook (default policy admits nothing; per-target sensitivity cap; tools subset; audit required) / checkAiComputeOutput typed-output hook (literal true only, no echo); tests/governed-plan-contracts.test.mjs (Grok 2026-10-05; zero-trust defaults, owner may revisit)
 [x] Implement RD-0660 `.fungi` nine-gate VOK authority fold
 [x] Implement RD-0660 bounded safe VOK handle-table API
 [x] Verify native VOK forged/stale/replay/context/capacity hostile corpus

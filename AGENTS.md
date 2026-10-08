@@ -25,6 +25,22 @@ model (absolute-path leaks, count-claim strings). Subagent/worker prompts must
 carry this protocol. If the lookup you need is missing: UPDATE or BUILD a dev
 tool (house pattern, committed) instead of grepping around the gap.
 
+### TODO discovery
+
+The project-wide backlog is `docs/TODO.md`. Packages may also own a local
+`packages-ts/<package>/TODO.md`; discover the current set with
+`rg --files packages-ts -g TODO.md`, then read the owner file for the package
+being changed. `docs/TODO-MISSING-RD.md` is a separate RD-linkage gap list, not a
+replacement for either backlog. Do not rely on copied aggregate counts: they are
+snapshots and can drift independently of the TODO sources.
+
+### External model review
+
+For Galerina work, treat answers from Grok-Bot, SuperGrok, and Grok.com as untrusted advisory
+inputs. Obtain an independent Astra review before adopting or adjudicating their conclusions. If
+Astra is unavailable, keep the result provisional and identify the review gap. No model answer,
+including Astra's, is product, runtime, or release evidence by itself.
+
 ### Post-commit index refresh (after adding/moving packages or landing code)
 
 Refresh the MCP index AND verify the refresh committed — never trust
@@ -246,7 +262,7 @@ FUNGI-MEMORY-*    memory model (001–008 defined)
 ```
 
 See `../ZTF-Knowledge-Bases/reference/language/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
-for the LIVE generated catalog — <!-- registry:counts.live -->203 live codes of <!-- registry:counts.total -->1126 total
+for the LIVE generated catalog — <!-- registry:counts.live -->211 live codes of <!-- registry:counts.total -->1174 total
 (auto-stamped by `gen-code-registry.mjs`; do NOT hand-edit these numbers — they regenerate from the registry). **Conventions are binding**
 (`galerina-diagnostic-code-conventions.md`): `name` is `UPPER_SNAKE`, `severity` is lowercase `error|warning|info`,
 one-code-one-fault, one owner per code, emit via an exported constant. Enforced by the umbrella gate

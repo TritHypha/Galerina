@@ -9,6 +9,7 @@
 import { writeFileSync, renameSync, openSync, fsyncSync, closeSync, readSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { dirname, basename, join } from "node:path";
+import { copyBytes, wipeBytes } from "./wipe.js";
 
 /**
  * Read a secret value from STDIN (no TTY echo concern — piped/redirected input). Returns the
@@ -16,29 +17,48 @@ import { dirname, basename, join } from "node:path";
  * `promptNoEcho` instead. This reads to EOF.
  */
 export function readStdinBytes(): Uint8Array {
+  return readStdinBytesWith(readSync);
+}
+
+/** @internal Reader injection keeps scratch-buffer cleanup testable without touching real stdin. */
+export function readStdinBytesWith(reader: typeof readSync): Uint8Array {
   const chunks: Buffer[] = [];
   const buf = Buffer.alloc(65536);
-  // fd 0 = stdin
-  for (;;) {
-    let n: number;
-    try {
-      n = readSync(0, buf, 0, buf.length, null);
-    } catch (e) {
-      if ((e as NodeJS.ErrnoException).code === "EAGAIN") continue;
-      if ((e as NodeJS.ErrnoException).code === "EOF") break;
-      throw e;
+  try {
+    // fd 0 = stdin
+    for (;;) {
+      let n: number;
+      try {
+        n = reader(0, buf, 0, buf.length, null);
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code === "EAGAIN") continue;
+        if ((e as NodeJS.ErrnoException).code === "EOF") break;
+        throw e;
+      }
+      if (n === 0) break;
+      chunks.push(Buffer.from(buf.subarray(0, n)));
     }
-    if (n === 0) break;
-    chunks.push(Buffer.from(buf.subarray(0, n)));
+    const out = Buffer.concat(chunks);
+    try {
+      // strip a single trailing newline (operator convenience; raw bytes otherwise preserved)
+      let end = out.length;
+      if (end > 0 && out[end - 1] === 0x0a) end -= 1;
+      if (end > 0 && out[end - 1] === 0x0d) end -= 1;
+      const res = new Uint8Array(end);
+      try {
+        copyBytes(res, out.subarray(0, end));
+        return res;
+      } catch (error) {
+        wipeBytes(res);
+        throw error;
+      }
+    } finally {
+      wipeBytes(out);
+    }
+  } finally {
+    wipeBytes(buf);
+    for (const chunk of chunks) wipeBytes(chunk);
   }
-  const out = Buffer.concat(chunks);
-  // strip a single trailing newline (operator convenience; raw bytes otherwise preserved)
-  let end = out.length;
-  if (end > 0 && out[end - 1] === 0x0a) end -= 1;
-  if (end > 0 && out[end - 1] === 0x0d) end -= 1;
-  const res = new Uint8Array(out.subarray(0, end));
-  out.fill(0);
-  return res;
 }
 
 /**
@@ -60,50 +80,96 @@ export async function promptNoEcho(prompt: string): Promise<Uint8Array> {
   const wasRaw = stdin.isRaw ?? false;
   let rawChanged = false;
   const bytes: number[] = [];
+  let onData: ((d: Buffer) => void) | undefined;
+  let onEnd: (() => void) | undefined;
+  let onClose: (() => void) | undefined;
+  let onError: ((error: Error) => void) | undefined;
   try {
-    stdin.setRawMode(true);
-    rawChanged = true;
-    stdin.resume();
-    await new Promise<void>((resolve, reject) => {
-      const onData = (d: Buffer): void => {
-        for (const ch of d) {
-          if (ch === 0x0d || ch === 0x0a) { // CR/LF = end of line
-            stdin.removeListener("data", onData);
-            resolve();
-            return;
+    try {
+      stdin.setRawMode(true);
+      rawChanged = true;
+      stdin.resume();
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const removePromptListeners = (): void => {
+          if (onData !== undefined) stdin.removeListener("data", onData);
+          if (onEnd !== undefined) stdin.removeListener("end", onEnd);
+          if (onClose !== undefined) stdin.removeListener("close", onClose);
+          if (onError !== undefined) stdin.removeListener("error", onError);
+        };
+        const settleError = (error: unknown): void => {
+          if (settled) return;
+          settled = true;
+          removePromptListeners();
+          reject(error);
+        };
+        const settleLine = (): void => {
+          if (settled) return;
+          settled = true;
+          removePromptListeners();
+          resolve();
+        };
+        onData = (d: Buffer): void => {
+          let lineComplete = false;
+          let aborted = false;
+          try {
+            for (const ch of d) {
+              if (ch === 0x0d || ch === 0x0a) { // CR/LF = end of line
+                lineComplete = true;
+                break;
+              }
+              if (ch === 0x7f || ch === 0x08) { // backspace/del
+                if (bytes.length > 0) {
+                  const last = bytes.length - 1;
+                  bytes[last] = 0;
+                  bytes.length = last;
+                }
+                continue;
+              }
+              if (ch === 0x03) { // Ctrl-C
+                aborted = true;
+                break;
+              }
+              bytes.push(ch);
+            }
+          } catch (error) {
+            settleError(error);
+          } finally {
+            try { wipeBytes(d); } catch (error) { settleError(error); }
           }
-          if (ch === 0x7f || ch === 0x08) { // backspace/del
-            if (bytes.length > 0) bytes.pop();
-            continue;
-          }
-          if (ch === 0x03) { // Ctrl-C
-            stdin.removeListener("data", onData);
-            reject(new Error("aborted"));
-            return;
-          }
-          bytes.push(ch);
+          if (aborted) settleError(new Error("aborted"));
+          else if (lineComplete) settleLine();
+        };
+        onEnd = () => settleError(new Error("stdin ended before a complete secret line"));
+        onClose = () => settleError(new Error("stdin closed before a complete secret line"));
+        onError = (error) => settleError(error);
+        stdin.on("data", onData);
+        stdin.on("end", onEnd);
+        stdin.on("close", onClose);
+        stdin.on("error", onError);
+      });
+    } finally {
+      if (onEnd !== undefined) stdin.removeListener("end", onEnd);
+      if (onClose !== undefined) stdin.removeListener("close", onClose);
+      if (onError !== undefined) stdin.removeListener("error", onError);
+      stdin.removeAllListeners("data");
+      stdin.removeAllListeners("keypress");
+      for (const listener of stolenData) stdin.on("data", listener);
+      for (const listener of stolenKeypress) stdin.on("keypress", listener);
+      if (rawChanged) {
+        try {
+          stdin.setRawMode(wasRaw);
+        } catch {
+          try { stdin.setRawMode(false); } catch { /* best-effort echo restore */ }
         }
-      };
-      stdin.on("data", onData);
-    });
-  } finally {
-    stdin.removeAllListeners("data");
-    stdin.removeAllListeners("keypress");
-    for (const listener of stolenData) stdin.on("data", listener);
-    for (const listener of stolenKeypress) stdin.on("keypress", listener);
-    if (rawChanged) {
-      try {
-        stdin.setRawMode(wasRaw);
-      } catch {
-        try { stdin.setRawMode(false); } catch { /* best-effort echo restore */ }
       }
+      try { stdin.pause(); } catch { /* ignore */ }
+      try { process.stderr.write("\n"); } catch { /* ignore */ }
     }
-    try { stdin.pause(); } catch { /* ignore */ }
-    try { process.stderr.write("\n"); } catch { /* ignore */ }
+    return Uint8Array.from(bytes);
+  } finally {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = 0;
   }
-  const res = Uint8Array.from(bytes);
-  bytes.fill(0);
-  return res;
 }
 
 /** Readline (or similar) that would echo keypresses onto an output stream. */

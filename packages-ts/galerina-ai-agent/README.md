@@ -257,7 +257,7 @@ agent DocumentationAgent {
 |---|---|
 | `AgentDeclarationNode` | `kind: "AgentDeclaration"`, `schema: "galerina.ai-agent.declaration.v1"`, name, span, input/output types, tools, effects, permissions, limits, failure behaviour. |
 | `parseAgentDeclarations(source)` | Reference parser. Returns only declarations with no error, plus diagnostics with line numbers and codes (source text is never echoed). |
-| `lowerAgentDeclaration(node)` | Treats the node as untrusted, re-checks kind, schema, name, failure behaviour and scopes, then runs `validateAgentDefinition`. Returns an `AgentDefinition` only when there is no error. |
+| `lowerAgentDeclaration(node)` | Treats the node as untrusted, re-checks kind, schema, name, types, tool names and decisions, scopes and list items, then runs `validateAgentDefinition`. Returns an `AgentDefinition` only when there is no error. |
 
 Rules: input, output and `limits { timeout, memory, max_tool_calls }` are required. Tools that are not listed are
 denied. An allow scope must be exact and relative (no wildcard, absolute path, drive letter, URL or `..`). `failure`
