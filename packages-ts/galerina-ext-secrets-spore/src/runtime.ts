@@ -15,6 +15,7 @@ import type { K3Token } from "./store.js";
 import { SealArena } from "./arena.js";
 import { unpackSeal, contextFor } from "./schema.js";
 import { open, SporeCryptoError } from "./spore.js";
+import { wipeBytes } from "./wipe.js";
 
 const SECTION_EPOCH = 0;
 
@@ -44,7 +45,7 @@ export function loadAll(buf: Uint8Array, recipientSec: Uint8Array, token: K3Toke
       try {
         arena.put(name, plain);
       } finally {
-        plain.fill(0);
+        wipeBytes(plain);
       }
     }
     return arena;

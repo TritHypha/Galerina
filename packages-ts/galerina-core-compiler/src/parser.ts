@@ -4719,6 +4719,7 @@ class Parser {
     let requestType = "";
     let responseType = "";
     let flowName = "";
+    let flowClauseCount = 0;
     let unsupportedPermission = false;
     if (this.currentIs("symbol", "{")) {
       this.advance(); // consume {
@@ -4744,6 +4745,7 @@ class Parser {
             this.advance();
           }
         } else if (isClauseToken && clauseName === "flow") {
+          flowClauseCount += 1;
           this.advance();
           this.skipNewlines();
           if (this.current().kind === "identifier") {
@@ -4763,6 +4765,15 @@ class Parser {
       }
 
       this.expect("symbol", "}");
+    }
+
+    if (flowClauseCount !== 1 || flowName === "") {
+      this.emit(
+        "FUNGI-PARSE-001",
+        "ROUTE_FLOW_BINDING_INVALID",
+        "A route must declare exactly one non-empty flow binding.",
+        loc,
+      );
     }
 
     const children: AstNode[] = [];
@@ -5522,6 +5533,14 @@ class Parser {
     const children: AstNode[] = [];
 
     if (!this.currentIs("symbol", "{")) {
+      if (subBlockName === "limits") {
+        this.emit(
+          "FUNGI-PARSE-001",
+          "CONTRACT_LIMIT_INVALID",
+          "A contract limits section must use braces and contain recognized limit declarations.",
+          loc,
+        );
+      }
       return { kind: "identifier", value: `${subBlockName}:`, location: loc, children };
     }
 
@@ -5530,6 +5549,48 @@ class Parser {
 
     while (!this.currentIs("symbol", "}") && !this.isEof()) {
       const tok = this.current();
+
+      // `limits` is an executable policy section, so parse it before generic
+      // handlers (emits/exposes/denies/etc.) can consume or discard its tokens.
+      // Preserve identifier-led declarations for the shared runtime grammar;
+      // diagnose every other content shape instead of silently erasing it.
+      if (subBlockName === "limits") {
+        const stmtLoc = this.loc();
+        if (tok.kind !== "identifier" && tok.kind !== "keyword") {
+          const invalidParts: string[] = [];
+          while (!this.isEof() && this.current().kind !== "newline" && !this.currentIs("symbol", "}")) {
+            if (this.currentIs("symbol", "{")) {
+              invalidParts.push(this.collectBalancedText());
+              break;
+            }
+            invalidParts.push(this.current().value);
+            this.advance();
+          }
+          this.emit(
+            "FUNGI-PARSE-001",
+            "CONTRACT_LIMIT_INVALID",
+            `Unsupported content in contract limits: '${invalidParts.join(" ")}'.`,
+            stmtLoc,
+          );
+          this.skipNewlines();
+          continue;
+        }
+
+        const parts: string[] = [];
+        while (!this.isEof() && this.current().kind !== "newline" && !this.currentIs("symbol", "}")) {
+          if (this.currentIs("symbol", "{")) {
+            parts.push(this.collectBalancedText());
+            break;
+          }
+          parts.push(this.current().value);
+          this.advance();
+        }
+        if (parts.length > 0) {
+          children.push({ kind: "identifier", value: `decl:${parts.join(" ")}`, location: stmtLoc });
+        }
+        this.skipNewlines();
+        continue;
+      }
 
       if (tok.kind === "keyword" && tok.value === "type") {
         // Type alias inside contract.types — parse like a normal typeDecl
@@ -5814,6 +5875,31 @@ class Parser {
         const effectLoc = this.loc();
         this.advance();
         children.push({ kind: "identifier", value: "effect:*", location: effectLoc });
+        this.skipNewlines();
+        continue;
+      }
+
+      // Limit declarations are security-relevant executable bounds. Preserve
+      // the historical generic parsing for identifier-led phrases, but never
+      // silently discard quoted/numeric/punctuation-led content from limits:
+      // doing so can erase an authored request cap before runtime validation.
+      if (subBlockName === "limits" && tok.kind !== "identifier" && tok.kind !== "keyword") {
+        const invalidLoc = this.loc();
+        const invalidParts: string[] = [];
+        while (!this.isEof() && this.current().kind !== "newline" && !this.currentIs("symbol", "}")) {
+          if (this.currentIs("symbol", "{")) {
+            invalidParts.push(this.collectBalancedText());
+            break;
+          }
+          invalidParts.push(this.current().value);
+          this.advance();
+        }
+        this.emit(
+          "FUNGI-PARSE-001",
+          "CONTRACT_LIMIT_INVALID",
+          `Unsupported content in contract limits: '${invalidParts.join(" ")}'.`,
+          invalidLoc,
+        );
         this.skipNewlines();
         continue;
       }

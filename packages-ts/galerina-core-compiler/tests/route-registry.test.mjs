@@ -71,11 +71,29 @@ route POST "/orders" { flow createOrder }
     assert.equal(registry.routes.length, 2);
   });
 
-  it("excludes route with no flow clause", () => {
-    const registry = buildRegistry(`
+  it("refuses a route with no flow clause", () => {
+    assert.throws(() => buildRegistry(`
 route GET "/nothing" { request T response U }
-`);
-    assert.equal(registry.routes.length, 0);
+`), /exactly one flow binding/u);
+  });
+
+  it("refuses ambiguous duplicate flow bindings", () => {
+    assert.throws(() => buildRouteRegistry({
+      kind: "program",
+      children: [{
+        kind: "routeDecl",
+        value: "POST /ambiguous",
+        children: [
+          { kind: "identifier", value: "flow:narrow" },
+          { kind: "identifier", value: "flow:wide" },
+        ],
+      }],
+    }), /exactly one flow binding/u);
+  });
+
+  it("parser rejects duplicate flow clauses rather than retaining only the last one", () => {
+    const parsed = parseProgram(`route POST "/ambiguous" { flow narrow flow wide }`, "test.fungi");
+    assert.ok(parsed.diagnostics.some((diagnostic) => diagnostic.name === "ROUTE_FLOW_BINDING_INVALID"));
   });
 
   it("builds regex for multiple path params", () => {

@@ -353,6 +353,13 @@ test("a validly-signed manifest whose signing key is REVOKED is refused (fail-cl
       () => fusePackage(pkg, { governanceDir: govDir, warn: () => {}, revocationCheck: () => { throw new Error("registry untrusted"); } }),
       /FUNGI-FUSE-REVOCATION-UNVERIFIABLE/,
     );
+    for (const malformed of [undefined, null, 0, "false", { revoked: false }]) {
+      await assert.rejects(
+        () => fusePackage(pkg, { governanceDir: govDir, warn: () => {}, revocationCheck: () => malformed }),
+        /FUNGI-FUSE-REVOCATION-UNVERIFIABLE/,
+        `malformed revocation result ${String(malformed)} must refuse rather than act as not-revoked`,
+      );
+    }
     // A NON-revoked key still fuses — the gate blocks ONLY revoked keys.
     const ok = await fusePackage(pkg, { governanceDir: govDir, warn: () => {}, revocationCheck: () => false });
     assert.equal(ok.invoke("main"), 200);

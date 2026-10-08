@@ -192,6 +192,32 @@ export interface PhotonicTargetReport {
 
 export const PHOTONIC_DIAGNOSTIC_SCHEMA = "fungi.photonic.diagnostic.v1";
 
+/**
+ * Closed C10 token set. Meanings are unresolved (prior vs v0.2 tables).
+ * This package still emits `Galerina_PHOTONIC_*` codes. FUNGI-PHOTONIC-001..006
+ * ownership is PROPOSED only and is not promotion beyond planning evidence.
+ */
+export const FUNGI_PHOTONIC_DIAGNOSTIC_CODES = Object.freeze([
+  "FUNGI-PHOTONIC-001",
+  "FUNGI-PHOTONIC-002",
+  "FUNGI-PHOTONIC-003",
+  "FUNGI-PHOTONIC-004",
+  "FUNGI-PHOTONIC-005",
+  "FUNGI-PHOTONIC-006",
+] as const);
+
+export type FungiPhotonicDiagnosticCode = (typeof FUNGI_PHOTONIC_DIAGNOSTIC_CODES)[number];
+
+const FUNGI_PHOTONIC_DIAGNOSTIC_CODE_SET: ReadonlySet<string> = new Set(
+  FUNGI_PHOTONIC_DIAGNOSTIC_CODES,
+);
+
+export function isFungiPhotonicDiagnosticCode(
+  code: string,
+): code is FungiPhotonicDiagnosticCode {
+  return FUNGI_PHOTONIC_DIAGNOSTIC_CODE_SET.has(code);
+}
+
 export type PhotonicDiagnosticSeverity = "warning" | "error";
 
 export interface PhotonicDiagnostic {
@@ -508,7 +534,8 @@ export function decodePhotonicDiagnostic(
       !PHOTONIC_DIAGNOSTIC_SEVERITIES.includes(severity as PhotonicDiagnosticSeverity) ||
       typeof message !== "string" || message.trim().length === 0 ||
       (locator !== undefined && (typeof locator !== "string" || locator.trim().length === 0)) ||
-      (suggestedFix !== undefined && (typeof suggestedFix !== "string" || suggestedFix.trim().length === 0))) {
+      (suggestedFix !== undefined && (typeof suggestedFix !== "string" || suggestedFix.trim().length === 0)) ||
+      (code.startsWith("FUNGI-PHOTONIC-") && !isFungiPhotonicDiagnosticCode(code))) {
     return invalid();
   }
 

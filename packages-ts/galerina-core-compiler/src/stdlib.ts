@@ -26,12 +26,17 @@ import {
 } from "@galerina/data-json";
 import { admitPatternCapability } from "./pattern-capability.js";
 import {
+  MAX_BCRYPT_PASSWORD_BYTES,
   invokeCryptoProvider,
+  invokeCryptoProviderV2,
   type CryptoProvider,
   type CryptoProviderRequest,
+  type CryptoProviderV2,
+  type CryptoProviderV2Request,
+  type PasswordKdfAlgorithm,
 } from "@galerina/core-security";
 
-export type { CryptoProvider };
+export type { CryptoProvider, CryptoProviderV2 };
 // Phase 33: segment-safe path helpers.
 // Import resolve from node:path (named export works in TS); implement relative and
 // isAbsolute inline to avoid TypeScript's ESM named-export limitation.
@@ -61,6 +66,15 @@ import {
   decFromInt, isCanonicalDecimal, isDecTrap, parseDec,
 } from "./decimal-arith.js";
 import { i32FromIntegralChecked, i32AbsChecked, isI32Trap } from "./i32-arith.js";
+
+// Capture these before any injected crypto provider can replace the instance or
+// prototype methods used to clean the bootstrap transfer buffer.
+const _reflectApply = Reflect.apply;
+const _uint8ArrayConstructor = Uint8Array;
+const _uint8ArrayFill = Uint8Array.prototype.fill;
+const _typedArrayPrototype = Object.getPrototypeOf(Uint8Array.prototype);
+const _typedArrayByteLengthGetter = Object.getOwnPropertyDescriptor(_typedArrayPrototype, "byteLength")!.get!;
+const _typedArrayTagGetter = Object.getOwnPropertyDescriptor(_typedArrayPrototype, Symbol.toStringTag)!.get!;
 
 /** A named, propagating Decimal/Money/Int trap value (the shared R6 vocabulary). */
 function exactTrap(label: string): GalerinaValue {
@@ -139,6 +153,10 @@ export interface StdlibContext {
    * closed. Native KDF bindings are not loaded by this module.
    */
   readonly cryptoProvider?: CryptoProvider;
+  /** V2 is explicit so the frozen text-provider v1 contract remains unchanged. */
+  readonly cryptoProviderV2?: CryptoProviderV2;
+  /** Host-owned plaintext ceiling for Password.verify; defaults to the provisional 1024-byte policy. */
+  readonly maxPasswordVerifyBytes?: number;
   /**
    * Charge `n` interpreter compute steps before a stdlib allocation.
    * Interpreter supplies the shared budget. Direct callStdlib without this
@@ -3225,12 +3243,98 @@ function kdfPlain(value: GalerinaValue): string {
   return value.__tag === "secure" ? value.value : strVal(value);
 }
 
+// Owner-approved provisional limit. A signed-off policy revision must update
+// this ceiling; runtime configuration may tighten it but cannot silently raise it.
+const MAX_APPROVED_PASSWORD_VERIFY_BYTES = 1024;
+const DEFAULT_MAX_PASSWORD_VERIFY_BYTES = MAX_APPROVED_PASSWORD_VERIFY_BYTES;
+
+type PasswordVerifyInput =
+  | { readonly kind: "text"; readonly value: string; readonly byteLength: number }
+  | { readonly kind: "bytes"; readonly value: Uint8Array; readonly byteLength: number };
+
+function passwordVerifyInput(value: GalerinaValue): PasswordVerifyInput | undefined {
+  const unwrapped = value.__tag === "protected" ? value.value : value;
+  if (unwrapped.__tag === "bytes") {
+    const bytes = unwrapped.value;
+    try {
+      const tag = _reflectApply(_typedArrayTagGetter, bytes, []) as string | undefined;
+      if (tag !== "Uint8Array") return undefined;
+      const byteLength = _reflectApply(_typedArrayByteLengthGetter, bytes, []) as number;
+      return { kind: "bytes", value: bytes, byteLength };
+    } catch {
+      return undefined;
+    }
+  }
+  const text = unwrapped.__tag === "secure" ? unwrapped.value : strVal(unwrapped);
+  return { kind: "text", value: text, byteLength: new TextEncoder().encode(text).byteLength };
+}
+
+async function verifyPasswordInput(
+  ctx: StdlibContext,
+  input: PasswordVerifyInput,
+  hash: string,
+  algorithm: PasswordKdfAlgorithm,
+): Promise<GalerinaValue> {
+  const maxPasswordVerifyBytes = ctx.maxPasswordVerifyBytes ?? DEFAULT_MAX_PASSWORD_VERIFY_BYTES;
+  if (
+    !Number.isSafeInteger(maxPasswordVerifyBytes) ||
+    maxPasswordVerifyBytes <= 0 ||
+    maxPasswordVerifyBytes > MAX_APPROVED_PASSWORD_VERIFY_BYTES
+  ) {
+    return err("PasswordError: invalid host password-verification byte limit");
+  }
+  if (input.byteLength > maxPasswordVerifyBytes) {
+    return err(`PasswordError: plaintext exceeds ${maxPasswordVerifyBytes} bytes`);
+  }
+  if (algorithm === "bcrypt" && input.byteLength > MAX_BCRYPT_PASSWORD_BYTES) {
+    return err("PasswordError: bcrypt verification input exceeds 72 UTF-8 bytes");
+  }
+  if (input.kind === "bytes") {
+    // The provider receives a bounded transfer copy, never the caller's buffer.
+    // Clearing this buffer is bootstrap best-effort only: a provider can still
+    // make an owned copy, so Fungi's affine/runtime boundary must enforce this
+    // property for the protected implementation.
+      const transferBytes = new _uint8ArrayConstructor(input.value);
+      try {
+        const stagedByteLength = _reflectApply(_typedArrayByteLengthGetter, transferBytes, []) as number;
+        if (stagedByteLength !== input.byteLength || stagedByteLength > maxPasswordVerifyBytes) {
+          return err("PasswordError: invalid staged byte length");
+        }
+        return await invokeKdfV2(ctx, {
+        op: "password-verify-bytes",
+        algorithm,
+        plaintextBytes: transferBytes,
+        hash,
+      }, "PasswordError");
+    } finally {
+      _reflectApply(_uint8ArrayFill, transferBytes, [0]);
+    }
+  }
+  return invokeKdf(ctx, {
+    op: "password-verify",
+    algorithm,
+    plaintext: input.value,
+    hash,
+  }, "PasswordError");
+}
+
 async function invokeKdf(
   ctx: StdlibContext,
   request: CryptoProviderRequest,
   label: string,
 ): Promise<GalerinaValue> {
   const result = await invokeCryptoProvider(ctx.cryptoProvider, request);
+  if (!result.ok) return err(`${label}: ${result.message}`);
+  if (result.kind === "hash") return { __tag: "string", value: result.hash };
+  return { __tag: "bool", value: result.matches };
+}
+
+async function invokeKdfV2(
+  ctx: StdlibContext,
+  request: CryptoProviderV2Request,
+  label: string,
+): Promise<GalerinaValue> {
+  const result = await invokeCryptoProviderV2(ctx.cryptoProviderV2, request);
   if (!result.ok) return err(`${label}: ${result.message}`);
   if (result.kind === "hash") return { __tag: "string", value: result.hash };
   return { __tag: "bool", value: result.matches };
@@ -3323,12 +3427,13 @@ async function passwordModule(
 ): Promise<GalerinaValue | undefined> {
   switch (method) {
     case "verify": {
-      const plain = kdfPlain(args[0] ?? FUNGI_VOID);
+      const input = passwordVerifyInput(args[0] ?? FUNGI_VOID);
+      if (!input) return err("PasswordError: plaintext bytes must be a Uint8Array");
       const hash = kdfPlain(args[1] ?? FUNGI_VOID);
       if (hash.startsWith("$argon2")) {
-        return argon2Module("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }], ctx);
+        return verifyPasswordInput(ctx, input, hash, "argon2id");
       }
-      return bcryptModule("verify", [{ __tag: "string", value: plain }, { __tag: "string", value: hash }], ctx);
+      return verifyPasswordInput(ctx, input, hash, "bcrypt");
     }
     case "hash": {
       return argon2Module("hash", [args[0] ?? FUNGI_VOID], ctx);

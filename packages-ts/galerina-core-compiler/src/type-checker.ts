@@ -1775,8 +1775,13 @@ class TypeChecker {
           return declared === undefined || declared === "" ? undefined : declared;
         }
 
-        // Request object fields — any field access on Request → String
-        if (receiverType === "Request") return "String";
+        // Request fields retain legacy String sugar except rawBody, which is the exact
+        // byte array the route dispatcher supplies at runtime. Protected binary ingress
+        // must not be typed as a String and accidentally encourage decoding/copying it.
+        if (receiverType === "Request") {
+          if (field === "rawBody") return "Bytes";
+          return "String";
+        }
 
         // Protected/redacted wrapper: protected Email → access returns String
         if (receiverType.startsWith("protected ") || receiverType.startsWith("redacted ")) {
