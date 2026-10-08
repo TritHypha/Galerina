@@ -20,6 +20,18 @@ const {
   admitV1CoreLogicType,
   admitV1SyntaxFamily,
   admitV1WasmTargetContract,
+  admitV1BindingKind,
+  admitV1Visibility,
+  admitV1MatchForm,
+  admitV1PatternFamily,
+  admitV1ConsoleMode,
+  admitV1LanguageForm,
+  V1_ADMITTED_BINDINGS,
+  V1_ADMITTED_VISIBILITY,
+  V1_ADMITTED_MATCH_FORMS,
+  V1_ADMITTED_PATTERN_FAMILIES,
+  V1_ADMITTED_CONSOLE_MODES,
+  V1_EXCLUDED_LANGUAGE_FORMS,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -191,5 +203,83 @@ describe("v1 wasm target contract", () => {
     const bad = admitV1WasmTargetContract("galerina.core.v1-gpu-target.v1");
     assert.equal(bad.status, "REFUSED");
     assert.ok(codes(bad).includes("Galerina_CORE_V1_WASM_CONTRACT_UNKNOWN"));
+  });
+});
+describe("v1 binding keywords", () => {
+  it("admits let, mut and readonly", () => {
+    assert.deepEqual([...V1_ADMITTED_BINDINGS], ["let", "mut", "readonly"]);
+    for (const name of V1_ADMITTED_BINDINGS) {
+      assert.equal(admitV1BindingKind(name).status, "ADMITTED", name);
+    }
+  });
+
+  it("refuses var and const", () => {
+    for (const name of ["var", "const"]) {
+      const d = admitV1BindingKind(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.equal(d.scopeClass, "excluded_from_core", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_BINDING_EXCLUDED"), name);
+    }
+    const empty = admitV1BindingKind(" ");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_BINDING_REQUIRED"));
+  });
+});
+
+describe("v1 visibility catalog", () => {
+  it("admits private, module, package and public only", () => {
+    assert.deepEqual([...V1_ADMITTED_VISIBILITY], ["private", "module", "package", "public"]);
+    for (const name of V1_ADMITTED_VISIBILITY) {
+      assert.equal(admitV1Visibility(name).status, "ADMITTED", name);
+    }
+    const d = admitV1Visibility("export");
+    assert.equal(d.status, "REFUSED");
+    assert.ok(codes(d).includes("Galerina_CORE_V1_VISIBILITY_UNKNOWN"));
+  });
+});
+
+describe("v1 match form", () => {
+  it("admits match and refuses switch/case", () => {
+    assert.deepEqual([...V1_ADMITTED_MATCH_FORMS], ["match"]);
+    assert.equal(admitV1MatchForm("match").status, "ADMITTED");
+    for (const name of ["switch", "case"]) {
+      const d = admitV1MatchForm(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_MATCH_EXCLUDED"), name);
+    }
+  });
+});
+
+describe("v1 pattern family production gate", () => {
+  it("admits Pattern identity and refuses UnsafeRegex", () => {
+    assert.deepEqual([...V1_ADMITTED_PATTERN_FAMILIES], ["Pattern"]);
+    assert.equal(admitV1PatternFamily("Pattern").status, "ADMITTED");
+    for (const name of ["UnsafeRegex", "javascript_regexp"]) {
+      const d = admitV1PatternFamily(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_PATTERN_UNSAFE"), name);
+    }
+  });
+});
+
+describe("v1 console mode", () => {
+  it("admits run/dev debug sinks and refuses production", () => {
+    assert.deepEqual([...V1_ADMITTED_CONSOLE_MODES], ["run", "dev"]);
+    assert.equal(admitV1ConsoleMode("run").status, "ADMITTED");
+    assert.equal(admitV1ConsoleMode("dev").status, "ADMITTED");
+    const prod = admitV1ConsoleMode("production");
+    assert.equal(prod.status, "REFUSED");
+    assert.ok(codes(prod).includes("Galerina_CORE_V1_CONSOLE_PRODUCTION"));
+  });
+});
+
+describe("excluded language forms", () => {
+  it("keeps classes, inheritance and raw object dumps out of core", () => {
+    assert.deepEqual([...V1_EXCLUDED_LANGUAGE_FORMS], ["classes", "inheritance", "raw_object_dump"]);
+    for (const name of V1_EXCLUDED_LANGUAGE_FORMS) {
+      const d = admitV1LanguageForm(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_LANGUAGE_FORM_EXCLUDED"), name);
+    }
   });
 });

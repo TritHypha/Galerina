@@ -287,6 +287,175 @@ export function admitV1WasmTargetContract(schema: unknown): V1ScopeDecision {
   return decide(token, "admitted", []);
 }
 
+/** Closed v1 binding keywords. var/const stay excluded (FUNGI-SYNTAX-001/002). */
+export const V1_ADMITTED_BINDINGS = Object.freeze(["let", "mut", "readonly"] as const);
+
+export type V1AdmittedBinding = (typeof V1_ADMITTED_BINDINGS)[number];
+
+export const V1_REFUSED_BINDINGS = Object.freeze(["var", "const"] as const);
+
+/** Planned visibility catalog from docs/modules-and-visibility.md. Module syntax form stays HOLD. */
+export const V1_ADMITTED_VISIBILITY = Object.freeze(["private", "module", "package", "public"] as const);
+
+export type V1AdmittedVisibility = (typeof V1_ADMITTED_VISIBILITY)[number];
+
+/** Exhaustive match is the v1 form. switch/case are not Galerina core syntax. */
+export const V1_ADMITTED_MATCH_FORMS = Object.freeze(["match"] as const);
+
+export const V1_REFUSED_MATCH_FORMS = Object.freeze(["switch", "case"] as const);
+
+/** Named Pattern identity only. Parser support stays HOLD (W13 C20). */
+export const V1_ADMITTED_PATTERN_FAMILIES = Object.freeze(["Pattern"] as const);
+
+export const V1_REFUSED_PATTERN_FAMILIES = Object.freeze(["UnsafeRegex", "javascript_regexp"] as const);
+
+/** Debug sinks allowed in run/dev. Production console is refused. */
+export const V1_ADMITTED_CONSOLE_MODES = Object.freeze(["run", "dev"] as const);
+
+export const V1_REFUSED_CONSOLE_MODES = Object.freeze(["production"] as const);
+
+export const V1_EXCLUDED_LANGUAGE_FORMS = Object.freeze([
+  "classes",
+  "inheritance",
+  "raw_object_dump",
+] as const);
+
+export function admitV1BindingKind(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_BINDING_REQUIRED", "A v1 binding keyword is required.", "binding"),
+    ]);
+  }
+  if ((V1_ADMITTED_BINDINGS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_BINDINGS as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_BINDING_EXCLUDED",
+        "var and const are not Galerina binding keywords.",
+        "binding",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_BINDING_UNKNOWN", "Binding keyword is not an admitted v1 form.", "binding"),
+  ]);
+}
+
+export function admitV1Visibility(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_VISIBILITY_REQUIRED", "A visibility name is required.", "visibility"),
+    ]);
+  }
+  if ((V1_ADMITTED_VISIBILITY as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_VISIBILITY_UNKNOWN",
+      "v1 visibility names are private, module, package and public only.",
+      "visibility",
+    ),
+  ]);
+}
+
+export function admitV1MatchForm(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_MATCH_REQUIRED", "A match form name is required.", "match"),
+    ]);
+  }
+  if ((V1_ADMITTED_MATCH_FORMS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_MATCH_FORMS as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_MATCH_EXCLUDED",
+        "switch and case are not v1 core syntax; use exhaustive match.",
+        "match",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_MATCH_UNKNOWN", "Match form is not an admitted v1 form.", "match"),
+  ]);
+}
+
+export function admitV1PatternFamily(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_PATTERN_REQUIRED", "A pattern family name is required.", "pattern"),
+    ]);
+  }
+  if ((V1_ADMITTED_PATTERN_FAMILIES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_PATTERN_FAMILIES as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_PATTERN_UNSAFE",
+        "UnsafeRegex and JavaScript RegExp are refused as v1 core production gates.",
+        "pattern",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_PATTERN_UNKNOWN", "Pattern family is not an admitted v1 family.", "pattern"),
+  ]);
+}
+
+export function admitV1ConsoleMode(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_CONSOLE_REQUIRED", "A console mode name is required.", "console"),
+    ]);
+  }
+  if ((V1_ADMITTED_CONSOLE_MODES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_REFUSED_CONSOLE_MODES as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_CONSOLE_PRODUCTION",
+        "Production console debug sinks are refused.",
+        "console",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_CONSOLE_UNKNOWN", "Console mode is not an admitted v1 debug sink.", "console"),
+  ]);
+}
+
+export function admitV1LanguageForm(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_LANGUAGE_FORM_REQUIRED", "A language form name is required.", "form"),
+    ]);
+  }
+  if ((V1_EXCLUDED_LANGUAGE_FORMS as readonly string[]).includes(token)) {
+    return decide(token, "excluded_from_core", [
+      refuseDiag(
+        "Galerina_CORE_V1_LANGUAGE_FORM_EXCLUDED",
+        "Classes, inheritance and raw object dumps stay out of Galerina core.",
+        "form",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_LANGUAGE_FORM_UNKNOWN", "Language form is not an excluded-from-core catalog entry.", "form"),
+  ]);
+}
+
 export function claimProductionMaturity(input: ProductionMaturityClaim): V1ScopeDecision {
   const path = asToken(input.checklistPath) ?? "";
   if (path !== MATURITY_CHECKLIST_PATH) {

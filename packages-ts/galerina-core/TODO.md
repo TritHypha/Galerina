@@ -415,7 +415,8 @@ Reason for additions:
 [x] Warn on obvious strict comment mismatches
 [x] Decide import vs use direction
 [x] Decide final import syntax
-[ ] Decide module syntax
+[HOLD] Decide module syntax
+    Owner/Codex language-contract decision remains open. Visibility catalog private|module|package|public pinned by admitV1Visibility. SuperGrok 2026-10-08c
 [/] Decide package syntax
 [x] Decide type syntax
 [x] Decide enum syntax
@@ -428,15 +429,16 @@ Reason for additions:
 [x] Start per-feature syntax example files under docs/sytax-examples
 [x] Document Pattern and UnsafeRegex good/bad examples in docs/sytax-examples
 [ ] Add docs/sytax examples for existing syntax features
-[ ] Define Pattern parser support
-[ ] Define pattern_policy parser support
-[ ] Define unsafe regex parser support
-[ ] Define pattern_set parser support
-[ ] Define denied regex feature diagnostics
-[ ] Define regex compile-inside-loop warning
-[ ] Define pattern report schema
-[ ] Define pattern map-manifest entries
-[ ] Define UnsafeRegex production gates
+[HOLD] Define Pattern parser support
+[HOLD] Define pattern_policy parser support
+[HOLD] Define unsafe regex parser support
+[HOLD] Define pattern_set parser support
+[HOLD] Define denied regex feature diagnostics
+[HOLD] Define regex compile-inside-loop warning
+[HOLD] Define pattern report schema
+[HOLD] Define pattern map-manifest entries
+[x] Define UnsafeRegex production gates
+    src/v1-scope-contract.ts admitV1PatternFamily refuses UnsafeRegex and javascript_regexp (Galerina_CORE_V1_PATTERN_UNSAFE). SuperGrok 2026-10-08c
 [x] Decide map syntax (pattern matching)
 [x] Decide if syntax
 [x] Decide loop syntax
@@ -842,15 +844,15 @@ Reason for additions:
 
 ```text
 [x] Add debug console documentation
-[ ] Define console.log/info/warn/error/debug syntax
-[ ] Define console.here source-map output
+[HOLD] Define console.log/info/warn/error/debug syntax
+[HOLD] Define console.here source-map output
 [x] Define console.scope and console.vars safety rules
 [x] Define console.dump size limits
 [x] Define SecureString redaction for console output
 [x] Define large JSON console summaries
 [x] Define production console policy
 [x] Define console report schema
-[ ] Add console diagnostics to compiler prototype
+[HOLD] Add console diagnostics to compiler prototype
 ```
 
 ---
@@ -949,7 +951,7 @@ Reason for additions:
 [x] Generate memory report and memory pressure guide
 [x] Generate global report and global registry guide
 [x] Generate docs manifest
-[ ] Define build signing possibility
+[HOLD] Define build signing possibility
 [x] Define source-map output rules
 [x] Define generated file naming
 [x] Define generated file cleanup
@@ -962,7 +964,7 @@ Reason for additions:
 ```text
 [x] Add security-first build system documentation
 [x] Add startup validation documentation
-[ ] Define startup block syntax
+[HOLD] Define startup block syntax
 [x] Define startup report schema
 [x] Validate required env variables before main()
 [x] Validate required secrets before main()
@@ -975,7 +977,7 @@ Reason for additions:
 [x] Define Galerina build --with-tests
 [x] Define Galerina build --security
 [x] Define Galerina build --strict
-[ ] Define compiler block syntax
+[HOLD] Define compiler block syntax
 [x] Define fail_on_warning behavior
 [x] Define fail_on_test_failure behavior
 [x] Define app.test-report.json
@@ -1007,7 +1009,7 @@ Reason for additions:
 [x] Galerina ai-context
 [x] Galerina schema
 [x] Galerina openapi
-[ ] Galerina deploy
+[HOLD] Galerina deploy
 ```
 
 ---
@@ -1056,18 +1058,18 @@ Reason for additions:
 ## Deployment TODO
 
 ```text
-[ ] Define build-once deploy-many workflow
-[ ] Define .env handling
-[ ] Define .env.example
-[ ] Define secrets manager guidance
-[ ] Define container deployment guidance
-[ ] Define server deployment guidance
+[HOLD] Define build-once deploy-many workflow
+[HOLD] Define .env handling
+[HOLD] Define .env.example
+[HOLD] Define secrets manager guidance
+[HOLD] Define container deployment guidance
+[HOLD] Define server deployment guidance
 [x] Define build manifest verification
-[ ] Define artefact rollback
-[ ] Define health check model
-[ ] Define multi-server deployment model
-[ ] Define source maps in production
-[ ] Define compiled app Git workflow
+[HOLD] Define artefact rollback
+[HOLD] Define health check model
+[HOLD] Define multi-server deployment model
+[HOLD] Define source maps in production
+[HOLD] Define compiled app Git workflow
 ```
 
 ---
