@@ -26,6 +26,10 @@ export const V1_POST_TARGETS = Object.freeze([
   "node",
   "browser",
   "mobile_native",
+  "wavelength",
+  "onnx",
+  "server",
+  "native",
 ] as const);
 
 export type V1PostTarget = (typeof V1_POST_TARGETS)[number];
@@ -171,6 +175,116 @@ export function admitV1CorePackage(name: unknown): V1ScopeDecision {
 export interface ProductionMaturityClaim {
   readonly checklistPath: string;
   readonly claimed: boolean;
+}
+
+/** Closed v1 logic/algebra names. Int/String/Bytes stay outside this catalog. */
+export const V1_CORE_LOGIC_TYPES = Object.freeze([
+  "Bool",
+  "Tri",
+  "Decision",
+  "Option",
+  "Result",
+] as const);
+
+export type V1CoreLogicType = (typeof V1_CORE_LOGIC_TYPES)[number];
+
+export const V1_WASM_TARGET_CONTRACT_SCHEMA = "galerina.core.v1-wasm-target.v1" as const;
+
+export const V1_POST_SYNTAX_FAMILIES = Object.freeze([
+  "dart",
+  "flutter",
+  "javascript_esm",
+  "node",
+  "browser",
+  "react",
+  "react_native",
+  "angular",
+  "device",
+  "flutter_ui",
+  "text_ai",
+  "image",
+  "video",
+  "search",
+  "wavelength",
+  "onnx",
+  "gpu",
+  "ai_accelerator",
+  "photonic",
+  "optical_io",
+  "dom_event",
+  "form_validation",
+  "safe_html",
+  "service_worker",
+  "push_notification",
+  "camera",
+  "nlp",
+] as const);
+
+export function admitV1CoreLogicType(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_LOGIC_TYPE_REQUIRED", "A v1 core logic type name is required.", "type"),
+    ]);
+  }
+  if ((V1_CORE_LOGIC_TYPES as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_LOGIC_TYPE_UNKNOWN",
+      "v1 core logic types are Bool, Tri, Decision, Option and Result only.",
+      "type",
+    ),
+  ]);
+}
+
+export function admitV1SyntaxFamily(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_SYNTAX_REQUIRED", "A syntax family name is required.", "syntax"),
+    ]);
+  }
+  if ((V1_ADMITTED_TARGETS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_POST_SYNTAX_FAMILIES as readonly string[]).includes(token) || classifyV1Scope(token) === "post_v1") {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_SYNTAX_POST",
+        "Post-v1 syntax is refused until the v1 cpu/wasm grammar settles.",
+        "syntax",
+      ),
+    ]);
+  }
+  if (classifyV1Scope(token) === "excluded_from_core") {
+    return decide(token, "excluded_from_core", [
+      refuseDiag("Galerina_CORE_V1_SYNTAX_EXCLUDED", "This syntax family stays out of Galerina core.", "syntax"),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_SYNTAX_UNKNOWN", "Syntax family is not an admitted v1 core family.", "syntax"),
+  ]);
+}
+
+export function admitV1WasmTargetContract(schema: unknown): V1ScopeDecision {
+  const token = asToken(schema);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_WASM_CONTRACT_REQUIRED", "The v1 wasm target contract schema is required.", "schema"),
+    ]);
+  }
+  if (token !== V1_WASM_TARGET_CONTRACT_SCHEMA) {
+    return decide(token, "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_WASM_CONTRACT_UNKNOWN",
+        "v1 wasm target syntax/report identity is galerina.core.v1-wasm-target.v1 only.",
+        "schema",
+      ),
+    ]);
+  }
+  return decide(token, "admitted", []);
 }
 
 export function claimProductionMaturity(input: ProductionMaturityClaim): V1ScopeDecision {

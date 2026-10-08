@@ -14,6 +14,12 @@ const {
   admitV1CoreTarget,
   admitV1CorePackage,
   claimProductionMaturity,
+  V1_CORE_LOGIC_TYPES,
+  V1_POST_SYNTAX_FAMILIES,
+  V1_WASM_TARGET_CONTRACT_SCHEMA,
+  admitV1CoreLogicType,
+  admitV1SyntaxFamily,
+  admitV1WasmTargetContract,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -134,5 +140,56 @@ describe("maturity checklist", () => {
     });
     assert.equal(d.status, "ADMITTED");
     assert.deepEqual(d.diagnostics, []);
+  });
+});
+
+describe("v1 core logic types", () => {
+  it("admits Bool, Tri, Decision, Option and Result only", () => {
+    assert.deepEqual([...V1_CORE_LOGIC_TYPES], ["Bool", "Tri", "Decision", "Option", "Result"]);
+    for (const name of V1_CORE_LOGIC_TYPES) {
+      const d = admitV1CoreLogicType(name);
+      assert.equal(d.status, "ADMITTED", name);
+      assert.equal(d.v1Core, true, name);
+    }
+  });
+
+  it("refuses Decimal, Float, Verdict and empty names", () => {
+    for (const name of ["Decimal", "Float", "Verdict", "Int"]) {
+      const d = admitV1CoreLogicType(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_LOGIC_TYPE_UNKNOWN"), name);
+    }
+    const empty = admitV1CoreLogicType("  ");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_LOGIC_TYPE_REQUIRED"));
+  });
+});
+
+describe("post-v1 syntax refuse", () => {
+  it("admits cpu and wasm syntax families", () => {
+    assert.equal(admitV1SyntaxFamily("cpu").status, "ADMITTED");
+    assert.equal(admitV1SyntaxFamily("wasm").status, "ADMITTED");
+  });
+
+  it("refuses dart, wavelength, onnx, DOM and NLP as post-v1 or excluded", () => {
+    for (const name of ["dart", "wavelength", "onnx", "dom_event", "gpu", "image"]) {
+      const d = admitV1SyntaxFamily(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_SYNTAX_POST"), name);
+      assert.ok(V1_POST_SYNTAX_FAMILIES.includes(name), name);
+    }
+    const nlp = admitV1SyntaxFamily("nlp");
+    assert.equal(nlp.status, "REFUSED");
+    assert.ok(codes(nlp).includes("Galerina_CORE_V1_SYNTAX_POST") || codes(nlp).includes("Galerina_CORE_V1_SYNTAX_EXCLUDED"));
+  });
+});
+
+describe("v1 wasm target contract", () => {
+  it("admits the closed wasm syntax/report schema and refuses others", () => {
+    const ok = admitV1WasmTargetContract(V1_WASM_TARGET_CONTRACT_SCHEMA);
+    assert.equal(ok.status, "ADMITTED");
+    const bad = admitV1WasmTargetContract("galerina.core.v1-gpu-target.v1");
+    assert.equal(bad.status, "REFUSED");
+    assert.ok(codes(bad).includes("Galerina_CORE_V1_WASM_CONTRACT_UNKNOWN"));
   });
 });

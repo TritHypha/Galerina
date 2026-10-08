@@ -27,10 +27,12 @@ Use this file as a practical checklist while the project moves from concept to d
     src/v1-scope-contract.ts V1_POST_TARGETS; classifyV1Scope returns post_v1. SuperGrok 2026-10-08
 [ ] Work actively on core syntax, grammar and logic semantics
 [ ] Commit the hybrid ownership memory-safety model
-[ ] Finalise Bool, Tri, Decision, Option and Result semantics
+[x] Finalise Bool, Tri, Decision, Option and Result semantics
+    src/v1-scope-contract.ts admitV1CoreLogicType / V1_CORE_LOGIC_TYPES Bool|Tri|Decision|Option|Result (Decimal/Float/Verdict/Int refuse). SuperGrok 2026-10-08b
 [x] Add at least 20 real .fungi examples for the v1 syntax subset
 [ ] Build parser coverage for those examples
-[ ] Reject post-v1 syntax with clear diagnostics
+[x] Reject post-v1 syntax with clear diagnostics
+    src/v1-scope-contract.ts admitV1SyntaxFamily (cpu|wasm admitted; dart/wavelength/onnx/DOM/gpu/image refuse Galerina_CORE_V1_SYNTAX_POST). SuperGrok 2026-10-08b
 [x] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
     claiming production maturity
     src/v1-scope-contract.ts claimProductionMaturity (claimed true always refuses; checklist path must match). SuperGrok 2026-10-08
@@ -549,30 +551,30 @@ Reason for additions:
 [x] Document search and translation provider boundaries
 [x] Document image AI package boundaries and compute auto
 [x] Document video package boundaries and compute auto
-[ ] Define package-defined effect registration for provider packages
-[ ] Define image package effect registration
-[ ] Define image policy and validation schema
-[ ] Define image decoder sandbox policy schema
-[ ] Define image memory report schema
-[ ] Define image security report schema
-[ ] Define image package target and precision report schemas
-[ ] Define image package map-manifest entries
-[ ] Define AI guide image package summary output
-[ ] Add image package examples after package parser support exists
-[ ] Define video package effect registration
-[ ] Define camera/screen/media runtime permission policy schema
-[ ] Define video privacy report schema
-[ ] Define video memory report schema
-[ ] Define video package target-stage report schema
-[ ] Define video package map-manifest entries
-[ ] Define AI guide video package summary output
-[ ] Add video package examples after package parser support exists
-[ ] Define search provider package report schema
-[ ] Define translation provider package report schema
-[ ] Define provider redaction policy schema
-[ ] Define provider rate-limit policy schema
-[ ] Define AI guide provider-boundary summary output
-[ ] Add search/translation provider examples after package parser support exists
+[HOLD] Define package-defined effect registration for provider packages
+[HOLD] Define image package effect registration
+[HOLD] Define image policy and validation schema
+[HOLD] Define image decoder sandbox policy schema
+[HOLD] Define image memory report schema
+[HOLD] Define image security report schema
+[HOLD] Define image package target and precision report schemas
+[HOLD] Define image package map-manifest entries
+[HOLD] Define AI guide image package summary output
+[HOLD] Add image package examples after package parser support exists
+[HOLD] Define video package effect registration
+[HOLD] Define camera/screen/media runtime permission policy schema
+[HOLD] Define video privacy report schema
+[HOLD] Define video memory report schema
+[HOLD] Define video package target-stage report schema
+[HOLD] Define video package map-manifest entries
+[HOLD] Define AI guide video package summary output
+[HOLD] Add video package examples after package parser support exists
+[HOLD] Define search provider package report schema
+[HOLD] Define translation provider package report schema
+[HOLD] Define provider redaction policy schema
+[HOLD] Define provider rate-limit policy schema
+[HOLD] Define AI guide provider-boundary summary output
+[HOLD] Add search/translation provider examples after package parser support exists
 [x] Define secret handling
 [x] Define SecureString restrictions
 [x] Define safe logging rules
@@ -730,7 +732,8 @@ Reason for additions:
 [x] Define fallback gpu
 [x] Define fallback cpu
 [x] Define CPU target syntax/report contract
-[ ] Define WASM target syntax/report contract
+[x] Define WASM target syntax/report contract
+    src/v1-scope-contract.ts admitV1WasmTargetContract / V1_WASM_TARGET_CONTRACT_SCHEMA. SuperGrok 2026-10-08b
 [ ] Define compute auto parser support
 [ ] Define generic compute target category parser support
 [ ] Define target plugin boundary schema contract
@@ -738,13 +741,13 @@ Reason for additions:
 [ ] Define fallback report schema contract
 [ ] Define cloud deployment profile mapping report
 [ ] Define backend compute target catalogue parser support
-[ ] Define AI accelerator target syntax/report contract
-[ ] Define memory/interconnect target syntax/report contract
-[ ] Define photonic variant target discovery report contract
-[ ] Define CPU/GPU/AI/photonic capability map report contract
-[ ] Define data movement cost reporting contract
-[ ] Define target calibration and health reporting contract
-[ ] Define precision/tolerance report contract for backend compute targets
+[HOLD] Define AI accelerator target syntax/report contract
+[HOLD] Define memory/interconnect target syntax/report contract
+[HOLD] Define photonic variant target discovery report contract
+[HOLD] Define CPU/GPU/AI/photonic capability map report contract
+[HOLD] Define data movement cost reporting contract
+[HOLD] Define target calibration and health reporting contract
+[HOLD] Define precision/tolerance report contract for backend compute targets
 [x] Define GPU plan output contract
 [x] Define photonic plan output contract
 [x] Document wavelength compute planning
@@ -756,7 +759,7 @@ Reason for additions:
 [x] Define vector operation syntax/report contract
 [x] Define tensor operation syntax/report contract
 [x] Define model inference support
-[ ] Define ONNX import possibility
+[HOLD] Define ONNX import possibility
 [x] Define target compatibility report contract
 [ ] Expand target compatibility report contract for backend compute support targets
 ```
@@ -794,15 +797,15 @@ Reason for additions:
 
 ```text
 [x] Add hybrid logic and wavelength compute documentation
-[ ] Define wavelength target syntax
-[ ] Define wavelength target capability report fields
-[ ] Define analogue precision policy schema
-[ ] Define wavelength CPU-reference verification checks
-[ ] Define wavelength fallback diagnostics
-[ ] Define blocked side-effect diagnostics for wavelength compute
-[ ] Define AI guide hybrid compute section
-[ ] Define target report hybridCompute section
-[ ] Add wavelength examples after parser support exists
+[HOLD] Define wavelength target syntax
+[HOLD] Define wavelength target capability report fields
+[HOLD] Define analogue precision policy schema
+[HOLD] Define wavelength CPU-reference verification checks
+[HOLD] Define wavelength fallback diagnostics
+[HOLD] Define blocked side-effect diagnostics for wavelength compute
+[HOLD] Define AI guide hybrid compute section
+[HOLD] Define target report hybridCompute section
+[HOLD] Add wavelength examples after parser support exists
 ```
 
 ---
@@ -814,22 +817,22 @@ Reason for additions:
 [x] Add browser DOM and web platform primitives documentation
 [x] Define browser target syntax
 [x] Define browser-safe imports
-[ ] Define browser security report schema
+[HOLD] Define browser security report schema
 [/] Define JavaScript output target
 [x] Add compiled browser-safe example
-[ ] Define WebAssembly frontend wrapper output
-[ ] Define hybrid JavaScript + WebAssembly output
-[ ] Define frontend source-map output
-[ ] Define SafeHtml and safe HTML policy schema
-[ ] Define dom.read/dom.write effect checking
-[ ] Define browser permission policy schema
-[ ] Define browser fetch/storage/cookie policy schemas
-[ ] Define DOM event syntax
-[ ] Define form validation syntax
-[ ] Define push notification and service worker report schemas
-[ ] Define browser map-manifest entries
-[ ] Define AI guide browser summary output
-[ ] Define browser fetch/http rules
+[HOLD] Define WebAssembly frontend wrapper output
+[HOLD] Define hybrid JavaScript + WebAssembly output
+[HOLD] Define frontend source-map output
+[HOLD] Define SafeHtml and safe HTML policy schema
+[HOLD] Define dom.read/dom.write effect checking
+[HOLD] Define browser permission policy schema
+[HOLD] Define browser fetch/storage/cookie policy schemas
+[HOLD] Define DOM event syntax
+[HOLD] Define form validation syntax
+[HOLD] Define push notification and service worker report schemas
+[HOLD] Define browser map-manifest entries
+[HOLD] Define AI guide browser summary output
+[HOLD] Define browser fetch/http rules
 [x] Define server-only import blocking for browser target
 ```
 
@@ -858,9 +861,10 @@ Reason for additions:
 [x] Add target and capability model documentation
 [x] Add status labels for implemented, draft, planned and research features
 [x] Define target browser syntax
-[ ] Define target server syntax
-[ ] Define target native syntax
-[ ] Define target wasm syntax
+[HOLD] Define target server syntax
+[HOLD] Define target native syntax
+[x] Define target wasm syntax
+    V1_ADMITTED_TARGETS wasm + admitV1WasmTargetContract. SuperGrok 2026-10-08b
 [x] Define capability block syntax
 [x] Define browser-safe import list
 [x] Define server-only import list
