@@ -5,12 +5,24 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
+mod memory_policy;
 #[allow(unsafe_code)]
 mod native;
+mod resource;
 #[allow(unsafe_code)]
 mod secret_arena;
+mod sha256;
+mod veo;
 
+pub use memory_policy::{
+    admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
+};
+pub use resource::{VmResourceHandle, VmResourceKind, MAX_RESOURCES_PER_LEASE};
 pub use secret_arena::{MemoryStatus, SecretArena, SecretArenaError};
+pub use veo::{
+    admit_general_veo_linker, admit_veo_object, AdmittedVeoObject, VeoActionIdentity,
+    VeoAdmissionRequest, VeoProfile,
+};
 
 pub const MAX_AUTHORITY_TAG_BYTES: usize = 96;
 pub const MAX_TABLE_CAPACITY: usize = 65_536;
@@ -227,6 +239,23 @@ impl MintRequest {
             gates,
             native::encode_return_u64_object(value, target).to_vec(),
         ))
+    }
+
+    /// Bounded RD-0656 return-u64 profile only. The general linker cannot
+    /// mint through this constructor.
+    pub fn new_from_veo(
+        tag: AuthorityTag,
+        context: AuthorityContext,
+        gates: [Trit; 8],
+        object: veo::AdmittedVeoObject,
+    ) -> Result<Self, VokFailure> {
+        if object.profile() != veo::VeoProfile::ReturnU64 {
+            return Err(VokFailure::new(
+                Trit::Unknown,
+                "VOK_VEO_PROFILE_UNSUPPORTED",
+            ));
+        }
+        Self::new_return_u64(tag, context, gates, object.return_value())
     }
 }
 
@@ -471,6 +500,7 @@ pub struct VokExecutionReceipt {
     revocation_epoch: u64,
     executable_at_call: bool,
     writable_at_call: bool,
+    transferred_resource_count: usize,
 }
 
 impl VokExecutionReceipt {
@@ -517,6 +547,11 @@ impl VokExecutionReceipt {
     #[must_use]
     pub const fn authority_released(&self) -> bool {
         false
+    }
+
+    #[must_use]
+    pub const fn transferred_resource_count(&self) -> usize {
+        self.transferred_resource_count
     }
 }
 
@@ -589,6 +624,9 @@ pub struct AuthorityTable<N: NonceSource> {
     slots: Vec<Slot>,
     free_slots: Vec<usize>,
     live_count: usize,
+    resource_slots: Vec<resource::ResourceSlot>,
+    free_resources: Vec<usize>,
+    live_resources: usize,
     thread_marker: PhantomData<Rc<()>>,
 }
 
@@ -622,6 +660,10 @@ impl<N: NonceSource> AuthorityTable<N> {
             })
             .collect();
         let free_slots = (0..capacity).rev().collect();
+        let resource_slots = (0..capacity)
+            .map(|_| resource::ResourceSlot::fresh())
+            .collect();
+        let free_resources = (0..capacity).rev().collect();
         Ok(Self {
             nonce_source,
             table_nonce,
@@ -632,6 +674,9 @@ impl<N: NonceSource> AuthorityTable<N> {
             slots,
             free_slots,
             live_count: 0,
+            resource_slots,
+            free_resources,
+            live_resources: 0,
             thread_marker: PhantomData,
         })
     }
@@ -832,6 +877,7 @@ impl<N: NonceSource> AuthorityTable<N> {
                 revocation_epoch: entry.context.revocation_epoch,
                 executable_at_call: evidence.executable_at_call(),
                 writable_at_call: evidence.writable_at_call(),
+                transferred_resource_count: 0,
             })
         };
         self.clear_and_advance_slot(slot_index);
@@ -1033,9 +1079,13 @@ impl<N: NonceSource> Drop for AuthorityTable<N> {
             slot.lease = None;
             slot.retired = true;
         }
+        for index in 0..self.resource_slots.len() {
+            self.clear_resource_slot(index);
+        }
         self.table_nonce.fill(0);
         self.seen_nonces.clear();
         self.live_count = 0;
+        self.live_resources = 0;
     }
 }
 

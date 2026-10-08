@@ -1,7 +1,7 @@
 use super::*;
 use std::collections::VecDeque;
 
-struct SequenceNonce {
+pub(crate) struct SequenceNonce {
     values: VecDeque<Result<[u8; 16], NonceFailure>>,
 }
 
@@ -27,7 +27,7 @@ impl NonceSource for SequenceNonce {
     }
 }
 
-fn context(seed: u8, policy_epoch: u64, revocation_epoch: u64) -> AuthorityContext {
+pub(crate) fn context(seed: u8, policy_epoch: u64, revocation_epoch: u64) -> AuthorityContext {
     AuthorityContext::new(
         [seed; 32],
         [seed.wrapping_add(1); 32],
@@ -46,7 +46,7 @@ fn mint_request(gates: [Trit; 8], bytes: Vec<u8>) -> MintRequest {
     )
 }
 
-fn return_u64_request(value: u64) -> MintRequest {
+pub(crate) fn return_u64_request(value: u64) -> MintRequest {
     MintRequest::new_return_u64(
         AuthorityTag::parse("slide.vok.execute.v1").expect("canonical test tag"),
         context(7, 3, 5),
@@ -56,11 +56,11 @@ fn return_u64_request(value: u64) -> MintRequest {
     .expect("supported test architecture")
 }
 
-fn all_admit() -> [Trit; 8] {
+pub(crate) fn all_admit() -> [Trit; 8] {
     [Trit::Admit; 8]
 }
 
-fn table_with_nonces(
+pub(crate) fn table_with_nonces(
     capacity: usize,
     nonces: impl IntoIterator<Item = [u8; 16]>,
 ) -> AuthorityTable<SequenceNonce> {
