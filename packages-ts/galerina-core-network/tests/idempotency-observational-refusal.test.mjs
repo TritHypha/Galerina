@@ -13,7 +13,7 @@ import {
 } from "../dist/index.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const WEBHOOK_SRC = join(ROOT, "src", "webhook.ts");
+const WEBHOOK_SRC = join(ROOT, "src", "webhook", "webhook-verification.ts");
 const INDEX_SRC = join(ROOT, "src", "index.ts");
 
 describe("observational IdempotencyStore is not admission", () => {
