@@ -123,6 +123,7 @@ OpenAPI generator.
     as production authority. Blocker: no admitted durable store exists
     (`isAdmittedDurableReplayStore` admit-list is empty, src/replay-store.ts:37-39)
     and RD-1286 / a separately authorized storage owner is still deferred.
+    Kept HOLD: SuperGrok's side is the typed refuse (`installDurableReplayStore`).
 ```
 
 ## Historical v0.2 architecture record (retained, non-authorizing)
@@ -331,13 +332,24 @@ is visible. They are not a request to recreate the superseded architecture.
 ## Remaining bounded work
 
 ```text
+[x] Package-side HOLD pin: `prepareApiServerHoldRequest` emits
+    REQUESTED_NOT_ADMITTED; durable-replay / cli-bin / historical-layout /
+    safeDetails / timestamp-window / request-id header / safe-log /
+    OpenAPI integration / webhook example / kernel handler-network /
+    manifest scaffold / .fungi authoring / conversion overlay acts always
+    refuse with API_*_FORBIDDEN. src/index.ts transport path unchanged.
+    tests/api-server-hold-pin.test.mjs. (SuperGrok 2026-10-08.)
+    R5 unique `07bbd963` UNCHANGED.
 [HOLD] Replace process-local replay with a separately authorized durable,
        multi-process storage owner and receipt chain. Genuine: same blocker as
        the webhook/replay row above (empty durable admit-list; RD-1286 deferred).
+       Kept HOLD: SuperGrok's side is the typed refuse.
 [HOLD] Reopen the v0.2 manifest scaffold only after an authoritative manifest,
        route, OpenAPI, and ownership contract is supplied. Historical guard, kept.
+       Kept HOLD: SuperGrok's side is the typed refuse.
 [HOLD] Do not create or modify `.fungi` sources in this package as part of this
        reconciliation. Process guard, kept (this pass edited TODO.md only).
+       Kept HOLD: `authorFungiInAdapter` always refuses.
 [HOLD] Sync the galerina-test conversion overlay with the duplicate-query refusal
        (PR #136). `packages-ts/galerina-test/src/self-hosted/conversion-overlays/`
        `url-query-last-wins.fungi` still encodes `replace_last` for a repeated
@@ -348,4 +360,5 @@ is visible. They are not a request to recreate the superseded architecture.
        changes its intent text in `docs/contract-registry/`. Those generated
        artifacts need an owner-approved regeneration. The .fungi file is outside
        this package, so the process guard above does not apply.
+       Kept HOLD: `syncConversionOverlay` always refuses; overlay lives in galerina-test.
 ```

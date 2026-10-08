@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 6 |
-| Internal edges | 2 |
+| Files | 7 |
+| Internal edges | 3 |
 | External dependencies | 8 |
 | ├─ Node core | 5 |
 | ├─ Workspace (@galerina/*) | 3 |
@@ -43,7 +43,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts`
+- `src/index.ts` (re-exports `src/hold-pin.ts`)
 
 ## Loaded Assets
 - `src/self-hosted/default-idle-timeout-ms.fungi`
