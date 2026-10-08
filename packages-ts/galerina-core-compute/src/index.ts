@@ -387,3 +387,5 @@ export * from "./specialist/specialist-hardware.js";
 
 // RD-0855 alternative-plan planning (proposal only; SuperGrok 2026-10-08).
 export * from "./rd0855-alternative-plan.js";
+export * from "./hold-pin.js";
+
