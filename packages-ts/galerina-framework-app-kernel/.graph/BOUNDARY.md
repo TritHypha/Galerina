@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 77 |
-| Internal edges | 54 |
+| Files | 78 |
+| Internal edges | 55 |
 | External dependencies | 3 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 2 |
@@ -38,7 +38,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts`
+- `src/index.ts` (re-exports `src/hold-pin.ts`)
 
 ## Loaded Assets
 - `src/self-hosted/err-registry-delegation-bad-signature.fungi`
