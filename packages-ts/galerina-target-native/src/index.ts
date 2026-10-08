@@ -750,3 +750,42 @@ function nativeSnapshotReport(
     warnings: Object.freeze([...warnings]),
   });
 }
+
+// PROPOSED OS/arch vocabulary. Not wired into validateDecodedNativeTarget.
+export {
+  PROPOSED_NATIVE_ARCHITECTURES,
+  PROPOSED_NATIVE_OPERATING_SYSTEMS,
+  PROPOSED_NATIVE_ARCHITECTURE_UNAPPROVED,
+  PROPOSED_NATIVE_OS_UNAPPROVED,
+  isProposedNativeArchitecture,
+  isProposedNativeOperatingSystem,
+  proposedNativeVocabularyDiagnostics,
+} from "./proposed-os-arch-vocabulary.js";
+export type {
+  ProposedNativeArchitecture,
+  ProposedNativeOperatingSystem,
+  ProposedNativeVocabularyDiagnostic,
+} from "./proposed-os-arch-vocabulary.js";
+
+// PROPOSED native-to-Fungi catalog. Not a live diagnostic registry.
+export {
+  PROPOSED_FUNGI_NATIVE_MAPPING_SCHEMA,
+  PROPOSED_FUNGI_NATIVE_STATUS,
+  PROPOSED_FUNGI_NATIVE_MAPPING,
+} from "./proposed-fungi-native-mapping.js";
+export type { ProposedFungiNativeRow } from "./proposed-fungi-native-mapping.js";
+
+// Package-side HOLD pin: request only; never open; never promote.
+export {
+  NATIVE_HOLD_PIN_SCHEMA,
+  prepareNativeOpenRequest,
+  openNativeArtifact,
+  promoteNativeDiagnosticsToFungi,
+} from "./native-hold-pin.js";
+export type {
+  NativeHoldRefusalCode,
+  NativeHoldRefusal,
+  NativeOpenRequestV1,
+  NativeOpenRequestResult,
+} from "./native-hold-pin.js";
+
