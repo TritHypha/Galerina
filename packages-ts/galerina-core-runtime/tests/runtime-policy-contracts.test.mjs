@@ -78,6 +78,228 @@ describe("target fallback (opt-in, exact semantics, recorded)", () => {
   });
 });
 
+describe("RD-0855 governed target fallback (classified skips, bounded attempts)", () => {
+  const cand = (over = {}) => ({
+    target: "cpu",
+    available: true,
+    semantics: "exact",
+    skipClass: "none",
+    tritWidth: 1,
+    tier: "k3-trit",
+    effectOccurred: false,
+    provedNonExecution: false,
+    admittedIdempotency: false,
+    ...over,
+  });
+  const pol = (over = {}) => ({
+    ...R.DEFAULT_GOVERNED_TARGET_FALLBACK_POLICY,
+    preferred: "w32",
+    fallbackChain: ["k3"],
+    allowFallback: true,
+    requestedTritWidth: 32,
+    ...over,
+  });
+  const w32 = cand({ target: "w32", tritWidth: 32, tier: "requested-width" });
+  const k3 = cand({ target: "k3", tritWidth: 1, tier: "k3-trit" });
+  const binary = cand({ target: "bin", tritWidth: 1, tier: "binary-same-semantics" });
+
+  it("selects the preferred admitted width without fallback", () => {
+    const d = R.decideGovernedTargetFallback([w32, k3], pol());
+    assert.equal(d.status, "PREFERRED");
+    assert.equal(d.target, "w32");
+    assert.equal(d.selectedTier, "requested-width");
+    assert.equal(d.authorityReleased, false);
+    assert.equal(d.slideAdmission, "not-evaluated");
+    assert.equal(d.vokDecision, "not-evaluated");
+    assert.equal(d.attemptsUsed, 1);
+    assert.equal(d.remainingAttempts, 1);
+  });
+
+  it("proposes K3 fallback only for authenticated pre-effect unavailability", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "FALLBACK");
+    assert.equal(d.target, "k3");
+    assert.equal(d.skipClass, "unavailable");
+    assert.equal(d.selectedTier, "k3-trit");
+    assert.equal(d.attemptsUsed, 2);
+    assert.equal(d.keptRefusal, "");
+  });
+
+  it("proposes K3 fallback for authenticated pre-effect incompatibility", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "incompatible" }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "FALLBACK");
+    assert.equal(d.target, "k3");
+    assert.equal(d.skipClass, "incompatible");
+  });
+
+  it("refuses DENY, revocation, integrity, unknown, partial and cleanup without selecting the next target", () => {
+    for (const skipClass of ["deny", "revoked", "integrity_invalid", "unknown_outcome", "partial_effect", "cleanup_failure"]) {
+      const d = R.decideGovernedTargetFallback([
+        cand({ ...w32, available: false, skipClass }),
+        k3,
+      ], pol());
+      assert.equal(d.status, "REFUSED", skipClass);
+      assert.equal(d.target, "", skipClass);
+      assert.equal(d.keptRefusal, skipClass);
+      assert.equal(d.skipClass, skipClass);
+      assert.ok(d.reasons.some((r) => r.includes(skipClass)), skipClass);
+    }
+  });
+
+  it("refuses when available:false has no skip class (unknown is not unavailability)", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "none" }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "skip_class_required");
+    assert.equal(d.target, "");
+  });
+
+  it("refuses an effect that already occurred, even if labelled unavailable", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable", effectOccurred: true }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "effect_occurred");
+    assert.equal(d.keptRefusal, "effect_occurred");
+  });
+
+  it("refuses contradictory provedNonExecution with effectOccurred", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable", effectOccurred: true, provedNonExecution: true }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "replay_uncertain");
+  });
+
+  it("does not treat admittedIdempotency as a licence to replay an uncertain effect", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unknown_outcome", admittedIdempotency: true }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.keptRefusal, "unknown_outcome");
+  });
+
+  it("may retry a proved non-execution of the preferred target", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: true, skipClass: "none", provedNonExecution: true }),
+      k3,
+    ], pol());
+    assert.equal(d.status, "PREFERRED");
+    assert.equal(d.target, "w32");
+  });
+
+  it("never selects binary step 3; K3 still remains selectable ahead of it", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      binary,
+      k3,
+    ], pol({ fallbackChain: ["bin", "k3"] }));
+    assert.equal(d.status, "FALLBACK");
+    assert.equal(d.target, "k3");
+    assert.ok(d.reasons.includes("bin: binary_step_unresolved"));
+  });
+
+  it("refuses when the only remaining alternative is unresolved binary step 3", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      binary,
+    ], pol({ fallbackChain: ["bin"] }));
+    assert.equal(d.status, "REFUSED");
+    assert.ok(d.reasons.includes("bin: binary_step_unresolved"));
+    assert.ok(d.reasons.includes("fallback chain exhausted"));
+  });
+
+  it("refuses unregistered 8 and 16 trit-width requests and a bare 8", () => {
+    for (const width of [8, 16]) {
+      const d = R.decideGovernedTargetFallback([w32, k3], pol({ requestedTritWidth: width }));
+      assert.equal(d.status, "REFUSED", String(width));
+      assert.equal(d.skipClass, "unregistered_width", String(width));
+      assert.ok(codes(d).includes("Galerina_RUNTIME_FALLBACK_WIDTH_UNREGISTERED"), String(width));
+    }
+    assert.deepEqual(R.ADMITTED_TRIT_WIDTHS_V1, [1, 32, 64, 256]);
+  });
+
+  it("skips an unregistered-width chain candidate and does not activate it", () => {
+    const eight = cand({ target: "w8", tritWidth: 8, tier: "requested-width", available: true, skipClass: "none" });
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      eight,
+      k3,
+    ], pol({ fallbackChain: ["w8", "k3"] }));
+    assert.equal(d.status, "FALLBACK");
+    assert.equal(d.target, "k3");
+    assert.ok(d.reasons.includes("w8: unregistered_width"));
+  });
+
+  it("stops the chain on a terminal skip and keeps that refusal", () => {
+    const denied = cand({ target: "denied", tritWidth: 1, tier: "k3-trit", available: false, skipClass: "deny" });
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      denied,
+      k3,
+    ], pol({ fallbackChain: ["denied", "k3"] }));
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.keptRefusal, "deny");
+    assert.equal(d.target, "");
+  });
+
+  it("bounds attempts by count: maxAttempts 1 cannot take a fallback", () => {
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      k3,
+    ], pol({ attemptBudget: { maxAttempts: 1, deadlineMs: 10_000 } }));
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "budget_exhausted");
+    assert.equal(d.keptRefusal, "unavailable");
+  });
+
+  it("bounds attempts by deadline", () => {
+    const d = R.decideGovernedTargetFallback([w32, k3], pol(), { attemptsAlready: 0, elapsedMs: 10_000 });
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "deadline_exceeded");
+  });
+
+  it("refuses a spent attempt budget before evaluating targets", () => {
+    const d = R.decideGovernedTargetFallback([w32, k3], pol(), { attemptsAlready: 2, elapsedMs: 0 });
+    assert.equal(d.status, "REFUSED");
+    assert.equal(d.skipClass, "budget_exhausted");
+  });
+
+  it("records OWNER-REVISIT as the retry budget owner and keeps fallback off by default", () => {
+    assert.equal(R.ALTERNATIVE_ATTEMPT_BUDGET_OWNER, "OWNER-REVISIT");
+    assert.deepEqual(R.DEFAULT_ALTERNATIVE_ATTEMPT_BUDGET, { maxAttempts: 2, deadlineMs: 10_000 });
+    assert.equal(R.DEFAULT_GOVERNED_TARGET_FALLBACK_POLICY.allowFallback, false);
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      k3,
+    ], pol({ allowFallback: false }));
+    assert.equal(d.status, "REFUSED");
+    assert.ok(d.reasons.includes("fallback disabled"));
+  });
+
+  it("never lands on approximate semantics", () => {
+    const approx = cand({ target: "approx", semantics: "approximate", tritWidth: 1, tier: "k3-trit" });
+    const d = R.decideGovernedTargetFallback([
+      cand({ ...w32, available: false, skipClass: "unavailable" }),
+      approx,
+    ], pol({ fallbackChain: ["approx"] }));
+    assert.equal(d.status, "REFUSED");
+    assert.ok(d.reasons.includes("approx: approximate_semantics"));
+  });
+});
+
+
 describe("runtime resource budget", () => {
   it("the default budget is valid and grants no network, tools or accelerator time", () => {
     const b = R.DEFAULT_RUNTIME_RESOURCE_BUDGET;

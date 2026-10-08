@@ -59,14 +59,13 @@ runtime work.
 [x] Define runtime error format
 [x] Define target fallback runtime contract
     src/runtime-contracts.ts decideTargetFallback (opt-in, declared chain, exact semantics only); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
-[HOLD] RD-0855: separate pre-execution unavailability from denial, revocation, integrity failure and unknown execution (proposed 2026-10-06, owner decision pending)
-    Extends decideTargetFallback (src/runtime-contracts.ts L192-213). Today `available: false` is the only skip reason and the decision proves no
-    SLIDE admission or VOK authority. Only authenticated candidate-local unavailability or incompatibility before any effect may yield a FALLBACK
-    proposal; DENY, revoked, invalid integrity, unknown outcome, partial effect and cleanup failure REFUSE with the original refusal kept and
-    never select the next target. Each alternative still needs its own SLIDE admission and fresh VOK decision, lease and receipt.
-    Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry. Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
-[HOLD] RD-0855: bound alternative attempts by count and deadline; never replay an uncertain effect (proposed 2026-10-06, owner decision pending)
-    Replay needs proved non-execution or admitted idempotency/reconciliation; post-effect retry is excluded. Retry budget owner is open; unresolved = HOLD.
+[x] RD-0855: separate pre-execution unavailability from denial, revocation, integrity failure and unknown execution
+    src/runtime-contracts.ts classifyTargetSkip / decideGovernedTargetFallback (only authenticated pre-effect unavailable/incompatible may FALLBACK; DENY, revoked, integrity_invalid, unknown_outcome, partial_effect, cleanup_failure REFUSE with original kept and never select the next target; proposal records authorityReleased false, slideAdmission and vokDecision not-evaluated). Owner 16:52 BST three-tier order recorded as FALLBACK_TIER_ORDER. SuperGrok 2026-10-08
+[HOLD] RD-0855: register 8/16-trit execution profiles (owner 2026-10-06 23:12 BST: research-only until v1; ADMITTED_TRIT_WIDTHS_V1 is 1/32/64/256; bare 8 refuses)
+[HOLD] RD-0855: binary same-semantics step 3 (unresolved alternative; must name a distinct provider/implementation and reusable admission-bound contract; K3 still decides permission; decideGovernedTargetFallback never selects tier binary-same-semantics)
+[x] RD-0855: bound alternative attempts by count and deadline; never replay an uncertain effect
+    src/runtime-contracts.ts validateAlternativeAttemptBudget / decideGovernedTargetFallback (fail-closed DEFAULT_ALTERNATIVE_ATTEMPT_BUDGET maxAttempts=2 deadlineMs=10000; post-effect retry excluded; unknown/partial never replay; provedNonExecution may retry a non-effect). SuperGrok 2026-10-08
+[HOLD] RD-0855: retry budget owner (who owns maxAttempts/deadlineMs; ALTERNATIVE_ATTEMPT_BUDGET_OWNER is OWNER-REVISIT; admitted idempotent replay of a completed effect stays excluded)
 [x] Define runtime resource budget contract for CPU, wall time, memory, recursion, loops, tasks, network, tools and accelerator work
     src/runtime-contracts.ts DEFAULT_RUNTIME_RESOURCE_BUDGET / validateRuntimeResourceBudget / checkRuntimeResourceUsage; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define malicious-data intake pipeline contract for policy bounds, size, depth, schema, canonicalisation, ownership and taint checks
