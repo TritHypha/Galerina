@@ -236,7 +236,7 @@ export function observationalIdempotencyStoreLooksLikeGetPut(value: unknown): bo
 
 /**
  * Always refuses. Does not call get or put. Observational IdempotencyStore is
- * not an admission gate; wiring to app-kernel IdempotencyStore.seen stays HOLD.
+ * not an admission gate; wiring to app-kernel IdempotencyStore.claim stays HOLD.
  */
 export function refuseObservationalIdempotencyAdmission(store: unknown): readonly NetworkDiagnostic[] {
   void store;
