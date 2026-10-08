@@ -397,21 +397,26 @@ export type BoundedFloorTransferKind = (typeof BOUNDED_FLOOR_TRANSFER_KINDS)[num
 const CLOSED_PROFILE_KEYS = Object.freeze(["kind", "magic", "objectBytes", "profile"] as const);
 
 function snapshotPlain(record: unknown): { readonly ok: true; readonly values: ReadonlyMap<string, unknown> } | { readonly ok: false } {
-  if (record === null || typeof record !== "object" || Array.isArray(record)) return { ok: false };
-  const proto = Object.getPrototypeOf(record);
-  if (proto !== Object.prototype && proto !== null) return { ok: false };
-  const values = new Map<string, unknown>();
-  for (const key of Object.keys(record as object)) {
-    const desc = Object.getOwnPropertyDescriptor(record, key);
-    if (desc === undefined || desc.get !== undefined || desc.set !== undefined) return { ok: false };
-    values.set(key, desc.value);
+  try {
+    if (record === null || typeof record !== "object" || Array.isArray(record)) return { ok: false };
+    const proto = Object.getPrototypeOf(record);
+    if (proto !== Object.prototype && proto !== null) return { ok: false };
+    const values = new Map<string, unknown>();
+    for (const key of Object.keys(record as object)) {
+      const desc = Object.getOwnPropertyDescriptor(record, key);
+      if (desc === undefined || desc.get !== undefined || desc.set !== undefined) return { ok: false };
+      values.set(key, desc.value);
+    }
+    return { ok: true, values };
+  } catch {
+    return { ok: false };
   }
-  return { ok: true, values };
 }
 
 /**
  * Extra fail-closed check: the public TS surface refuses opaque VM/component-resource
- * transfer and any non-closed-profile object. Never allowed:true. Never throws.
+ * transfer and any non-closed-profile object. Never allowed:true. Hostile object
+ * reflection traps are converted to a coded shape refusal.
  */
 export function admitBoundedNativeFloorTransfer(record: unknown): RuntimePolicyVerdict {
   const d: RuntimePolicyDiagnostic[] = [];

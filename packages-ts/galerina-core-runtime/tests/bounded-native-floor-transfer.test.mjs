@@ -56,6 +56,24 @@ describe("bounded native floor transfer (NON-EXECUTING)", () => {
     assert.deepEqual(codes(R.admitBoundedNativeFloorTransfer({ ...closed, extra: 1 })), ["Galerina_RUNTIME_FLOOR_TRANSFER_SHAPE"]);
   });
 
+  it("turns proxy reflection traps and revoked proxies into a coded refusal", () => {
+    const throwingPrototype = new Proxy({}, { getPrototypeOf() { throw new Error("prototype trap"); } });
+    const throwingKeys = new Proxy({}, { ownKeys() { throw new Error("keys trap"); } });
+    const throwingDescriptor = new Proxy({ kind: "bounded-floor" }, {
+      getPrototypeOf() { return Object.prototype; },
+      ownKeys() { return ["kind"]; },
+      getOwnPropertyDescriptor() { throw new Error("descriptor trap"); },
+    });
+    const revoked = Proxy.revocable({}, {});
+    revoked.revoke();
+    for (const hostile of [throwingPrototype, throwingKeys, throwingDescriptor, revoked.proxy]) {
+      let result;
+      assert.doesNotThrow(() => { result = R.admitBoundedNativeFloorTransfer(hostile); });
+      assert.equal(result.allowed, false);
+      assert.deepEqual(codes(result), ["Galerina_RUNTIME_FLOOR_TRANSFER_SHAPE"]);
+    }
+  });
+
   it("pins GVEO / 16-byte closed profile to the native source", () => {
     const native = readFileSync(join(HERE, "..", "native", "vok-authority", "src", "native.rs"), "utf8");
     assert.match(native, /pub\(crate\) const OBJECT_BYTES: usize = 16;/);
