@@ -60,6 +60,28 @@ const {
   admitV1CompilerFolder,
   admitV1SyntaxDocsDir,
   admitV1SyntaxExampleFile,
+  V1_ADMITTED_AUTH_PROVIDER_TYPES,
+  V1_ADMITTED_AUTH_POLICY_FAMILIES,
+  V1_ADMITTED_AUTH_TOKEN_KINDS,
+  V1_ADMITTED_JWT_ALGORITHMS,
+  V1_ADMITTED_JWT_DIAGNOSTICS,
+  V1_ADMITTED_BEARER_DIAGNOSTICS,
+  V1_ADMITTED_OAUTH_CHECKS,
+  V1_ADMITTED_PROOF_OF_POSSESSION,
+  V1_ADMITTED_PROOF_CONSTRAINTS,
+  V1_ADMITTED_CAPABILITY_CONSTRAINTS,
+  V1_ADMITTED_AUTH_REPORTS,
+  admitV1AuthProviderType,
+  admitV1AuthPolicyFamily,
+  admitV1AuthTokenKind,
+  admitV1JwtAlgorithm,
+  admitV1JwtDiagnostic,
+  admitV1BearerDiagnostic,
+  admitV1OauthCheck,
+  admitV1ProofOfPossession,
+  admitV1ProofConstraint,
+  admitV1CapabilityConstraint,
+  admitV1AuthReport,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -454,5 +476,120 @@ describe("v1 syntax example files", () => {
     const missing = admitV1SyntaxExampleFile("let-binding.md");
     assert.equal(missing.status, "REFUSED");
     assert.ok(codes(missing).includes("Galerina_CORE_V1_SYNTAX_EXAMPLE_UNKNOWN"));
+  });
+});
+
+describe("v1 auth provider and policy", () => {
+  it("admits oauth2 and refuses identity/OIDC/login products", () => {
+    assert.deepEqual([...V1_ADMITTED_AUTH_PROVIDER_TYPES], ["oauth2"]);
+    assert.equal(admitV1AuthProviderType("oauth2").status, "ADMITTED");
+    const idp = admitV1AuthProviderType("identity_provider");
+    assert.equal(idp.status, "REFUSED");
+    assert.ok(codes(idp).includes("Galerina_CORE_V1_AUTH_PROVIDER_EXCLUDED"));
+    const empty = admitV1AuthProviderType("");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_AUTH_PROVIDER_REQUIRED"));
+  });
+
+  it("admits the closed auth_policy families and parks hardware_proof", () => {
+    assert.deepEqual([...V1_ADMITTED_AUTH_POLICY_FAMILIES], [
+      "bearer", "jwt", "oauth2", "proof_of_possession", "capability_tokens", "reports",
+    ]);
+    for (const name of V1_ADMITTED_AUTH_POLICY_FAMILIES) {
+      assert.equal(admitV1AuthPolicyFamily(name).status, "ADMITTED", name);
+    }
+    const hw = admitV1AuthPolicyFamily("hardware_proof");
+    assert.equal(hw.status, "REFUSED");
+    assert.equal(hw.scopeClass, "post_v1");
+    assert.ok(codes(hw).includes("Galerina_CORE_V1_AUTH_HARDWARE_EXPERIMENTAL"));
+  });
+
+  it("admits bearer and jwt token kinds", () => {
+    assert.deepEqual([...V1_ADMITTED_AUTH_TOKEN_KINDS], ["bearer", "jwt"]);
+    assert.equal(admitV1AuthTokenKind("bearer").status, "ADMITTED");
+    assert.equal(admitV1AuthTokenKind("session_cookie").status, "REFUSED");
+  });
+});
+
+describe("v1 JWT algorithms and diagnostics", () => {
+  it("admits RS256 ES256 EdDSA and denies alg none", () => {
+    assert.deepEqual([...V1_ADMITTED_JWT_ALGORITHMS], ["RS256", "ES256", "EdDSA"]);
+    for (const name of V1_ADMITTED_JWT_ALGORITHMS) {
+      assert.equal(admitV1JwtAlgorithm(name).status, "ADMITTED", name);
+    }
+    const none = admitV1JwtAlgorithm("none");
+    assert.equal(none.status, "REFUSED");
+    assert.ok(codes(none).includes("Galerina_CORE_V1_JWT_ALG_NONE"));
+    const hs = admitV1JwtAlgorithm("HS256");
+    assert.equal(hs.status, "REFUSED");
+    assert.ok(codes(hs).includes("Galerina_CORE_V1_JWT_ALG_UNKNOWN"));
+  });
+
+  it("admits the closed JWT diagnostic set including unverified_claim_use", () => {
+    assert.ok(V1_ADMITTED_JWT_DIAGNOSTICS.includes("alg_none"));
+    assert.ok(V1_ADMITTED_JWT_DIAGNOSTICS.includes("unverified_claim_use"));
+    for (const name of V1_ADMITTED_JWT_DIAGNOSTICS) {
+      assert.equal(admitV1JwtDiagnostic(name).status, "ADMITTED", name);
+    }
+    const extra = admitV1JwtDiagnostic("weak_secret");
+    assert.equal(extra.status, "REFUSED");
+    assert.ok(codes(extra).includes("Galerina_CORE_V1_JWT_DIAGNOSTIC_UNKNOWN"));
+  });
+});
+
+describe("v1 bearer, OAuth, proof and reports", () => {
+  it("admits bearer SecureString diagnostics", () => {
+    assert.deepEqual([...V1_ADMITTED_BEARER_DIAGNOSTICS], [
+      "logged", "local_storage", "client_safe", "missing_expiry",
+    ]);
+    for (const name of V1_ADMITTED_BEARER_DIAGNOSTICS) {
+      assert.equal(admitV1BearerDiagnostic(name).status, "ADMITTED", name);
+    }
+  });
+
+  it("admits OAuth issuer audience scope jwks pkce checks", () => {
+    assert.deepEqual([...V1_ADMITTED_OAUTH_CHECKS], ["issuer", "audience", "scope", "jwks", "pkce"]);
+    for (const name of V1_ADMITTED_OAUTH_CHECKS) {
+      assert.equal(admitV1OauthCheck(name).status, "ADMITTED", name);
+    }
+    const device = admitV1OauthCheck("device_code");
+    assert.equal(device.status, "REFUSED");
+    assert.ok(codes(device).includes("Galerina_CORE_V1_OAUTH_CHECK_UNKNOWN"));
+  });
+
+  it("admits DPoP and mTLS only", () => {
+    assert.deepEqual([...V1_ADMITTED_PROOF_OF_POSSESSION], ["dpop", "mtls"]);
+    assert.equal(admitV1ProofOfPossession("dpop").status, "ADMITTED");
+    assert.equal(admitV1ProofOfPossession("mtls").status, "ADMITTED");
+    const puf = admitV1ProofOfPossession("photonic_puf");
+    assert.equal(puf.status, "REFUSED");
+    assert.ok(codes(puf).includes("Galerina_CORE_V1_POP_UNKNOWN"));
+  });
+
+  it("admits request-proof and capability constraints including nonce/replay_cache", () => {
+    assert.ok(V1_ADMITTED_PROOF_CONSTRAINTS.includes("replay_cache"));
+    assert.ok(V1_ADMITTED_PROOF_CONSTRAINTS.includes("nonce"));
+    for (const name of V1_ADMITTED_PROOF_CONSTRAINTS) {
+      assert.equal(admitV1ProofConstraint(name).status, "ADMITTED", name);
+    }
+    for (const name of V1_ADMITTED_CAPABILITY_CONSTRAINTS) {
+      assert.equal(admitV1CapabilityConstraint(name).status, "ADMITTED", name);
+    }
+  });
+
+  it("admits the closed auth report set and refuses hardware/crypto_policy reports", () => {
+    assert.ok(V1_ADMITTED_AUTH_REPORTS.includes("auth_report"));
+    assert.ok(V1_ADMITTED_AUTH_REPORTS.includes("token_report"));
+    assert.ok(V1_ADMITTED_AUTH_REPORTS.includes("proof_report"));
+    assert.ok(V1_ADMITTED_AUTH_REPORTS.includes("ai_guide"));
+    for (const name of V1_ADMITTED_AUTH_REPORTS) {
+      assert.equal(admitV1AuthReport(name).status, "ADMITTED", name);
+    }
+    const hw = admitV1AuthReport("hardware_proof_report");
+    assert.equal(hw.status, "REFUSED");
+    assert.ok(codes(hw).includes("Galerina_CORE_V1_AUTH_REPORT_UNKNOWN"));
+    const pq = admitV1AuthReport("crypto_policy_report");
+    assert.equal(pq.status, "REFUSED");
+    assert.ok(codes(pq).includes("Galerina_CORE_V1_AUTH_REPORT_UNKNOWN"));
   });
 });

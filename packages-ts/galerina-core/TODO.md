@@ -173,18 +173,28 @@ Current syntax/target documentation additions:
 [x] Add docs/auth-token-verification-boundaries.md
 [x] Add docs/sytax/auth-token-verification.md
 [x] Add docs/sytax-examples/auth-token-verification.md
-[ ] Define auth_policy parser/report support
-[ ] Define auth_provider parser/report support
-[ ] Define JWT verification diagnostics and token report fields
-[ ] Define bearer-token SecureString and logging diagnostics
-[ ] Define OAuth issuer, audience, scope, JWKS and PKCE policy checks
-[ ] Define DPoP and mTLS proof-of-possession checks
-[ ] Define request proof envelope parser/report support
-[ ] Define capability token workflow report support
-[ ] Define nonce/replay-cache diagnostics for sensitive routes
+[x] Define auth_policy parser/report support
+    src/v1-scope-contract.ts admitV1AuthPolicyFamily bearer|jwt|oauth2|proof_of_possession|capability_tokens|reports; hardware_proof post-v1. SuperGrok 2026-10-08g
+[x] Define auth_provider parser/report support
+    admitV1AuthProviderType oauth2 only; identity_provider/oidc_provider/login_product excluded. SuperGrok 2026-10-08g
+[x] Define JWT verification diagnostics and token report fields
+    admitV1JwtAlgorithm RS256|ES256|EdDSA, none denied; admitV1JwtDiagnostic closed set; token_report in admitV1AuthReport. SuperGrok 2026-10-08g
+[x] Define bearer-token SecureString and logging diagnostics
+    admitV1AuthTokenKind bearer|jwt; admitV1BearerDiagnostic logged|local_storage|client_safe|missing_expiry. SuperGrok 2026-10-08g
+[x] Define OAuth issuer, audience, scope, JWKS and PKCE policy checks
+    admitV1OauthCheck issuer|audience|scope|jwks|pkce. SuperGrok 2026-10-08g
+[x] Define DPoP and mTLS proof-of-possession checks
+    admitV1ProofOfPossession dpop|mtls. SuperGrok 2026-10-08g
+[x] Define request proof envelope parser/report support
+    admitV1ProofConstraint bind_method|bind_path|bind_body|replay_cache|nonce; request_proof_report. SuperGrok 2026-10-08g
+[x] Define capability token workflow report support
+    admitV1CapabilityConstraint bind_action|bind_resource|bind_request_hash|nonce; capability_token_report. SuperGrok 2026-10-08g
+[x] Define nonce/replay-cache diagnostics for sensitive routes
+    replay_cache and nonce are admitted proof constraints. SuperGrok 2026-10-08g
 [ ] Define post-quantum and hybrid crypto policy report support
 [ ] Define experimental hardware proof policy flags
-[ ] Define auth, token, proof and crypto policy AI guide summaries
+[x] Define auth, token, proof and crypto policy AI guide summaries
+    admitV1AuthReport includes ai_guide; crypto_policy_report stays refused with PQ/hardware Open. SuperGrok 2026-10-08g
 [x] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
     src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-data-security-and-load-control.md
@@ -591,15 +601,24 @@ Reason for additions:
 [x] Define replay protection rules
 [x] Define idempotency rules
 [x] Document auth, token and verification boundaries
-[ ] Define auth report schema
-[ ] Define token report schema
-[ ] Define proof report schema
-[ ] Define JWT unsafe algorithm diagnostics
-[ ] Define unverified JWT claim-use diagnostics
-[ ] Define bearer-token unsafe storage diagnostics
-[ ] Define DPoP/mTLS required-route enforcement
-[ ] Define capability token request/body/resource binding diagnostics
-[ ] Define request proof replay-cache enforcement
+[x] Define auth report schema
+    admitV1AuthReport auth_report. SuperGrok 2026-10-08g
+[x] Define token report schema
+    admitV1AuthReport token_report. SuperGrok 2026-10-08g
+[x] Define proof report schema
+    admitV1AuthReport proof_report. SuperGrok 2026-10-08g
+[x] Define JWT unsafe algorithm diagnostics
+    admitV1JwtAlgorithm none -> Galerina_CORE_V1_JWT_ALG_NONE; admitV1JwtDiagnostic alg_none. SuperGrok 2026-10-08g
+[x] Define unverified JWT claim-use diagnostics
+    admitV1JwtDiagnostic unverified_claim_use. SuperGrok 2026-10-08g
+[x] Define bearer-token unsafe storage diagnostics
+    admitV1BearerDiagnostic local_storage|logged|client_safe. SuperGrok 2026-10-08g
+[x] Define DPoP/mTLS required-route enforcement
+    admitV1ProofOfPossession dpop|mtls catalog; kernel/runtime enforcement stays core-security. SuperGrok 2026-10-08g
+[x] Define capability token request/body/resource binding diagnostics
+    admitV1CapabilityConstraint bind_action|bind_resource|bind_request_hash. SuperGrok 2026-10-08g
+[x] Define request proof replay-cache enforcement
+    admitV1ProofConstraint replay_cache. SuperGrok 2026-10-08g
 [ ] Define post-quantum crypto policy warnings
 [x] Define security report schema
 [x] Define security linter rules
