@@ -25,6 +25,14 @@ export const FUNGI_DEPLOY_003 = "FUNGI-DEPLOY-003";
 export const FUNGI_DEPLOY_004 = "FUNGI-DEPLOY-004";
 /** Verified gate failed (requireVerified and manifest.verified is not true). */
 export const FUNGI_DEPLOY_005 = "FUNGI-DEPLOY-005";
+/** Runtime profile is not a closed data object / wrong schema / missing fields. */
+export const FUNGI_DEPLOY_006 = "FUNGI-DEPLOY-006";
+/** Runtime profile domain refuse (token / target / memoryMb). */
+export const FUNGI_DEPLOY_007 = "FUNGI-DEPLOY-007";
+/** Runtime profile target does not match --target. */
+export const FUNGI_DEPLOY_008 = "FUNGI-DEPLOY-008";
+/** Capability report deniedCapabilities is non-empty, or a runtime capability is missing from the report. */
+export const FUNGI_DEPLOY_009 = "FUNGI-DEPLOY-009";
 
 export const DEPLOYMENT_TARGETS = Object.freeze([
   "node",
@@ -76,7 +84,14 @@ export type DeployDiagnosticField =
   | "manifestHash"
   | "diagnostics"
   | "reportPath"
-  | "success";
+  | "success"
+  | "schema"
+  | "capabilities"
+  | "environment"
+  | "profile"
+  | "runtime"
+  | "audit"
+  | "effects";
 
 export interface DeployDiagnostic {
   readonly code: string;

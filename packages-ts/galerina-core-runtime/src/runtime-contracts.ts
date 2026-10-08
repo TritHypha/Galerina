@@ -212,6 +212,256 @@ export function decideTargetFallback(targets: readonly RuntimeTargetCapability[]
   return { status: "REFUSED", target: "", reasons };
 }
 
+// ── RD-0855 governed target fallback ────────────────────────────────────────
+// decideTargetFallback stays the availability-only helper. This extension classifies
+// skip reasons, bounds attempts, and never grants SLIDE admission or VOK authority.
+// 8/16-trit execution profiles are unregistered before v1. Binary step 3 stays HOLD.
+
+export const ADMITTED_TRIT_WIDTHS_V1: readonly number[] = Object.freeze([1, 32, 64, 256]);
+
+export type TargetSkipClass =
+  | "unavailable"
+  | "incompatible"
+  | "deny"
+  | "revoked"
+  | "integrity_invalid"
+  | "unknown_outcome"
+  | "partial_effect"
+  | "cleanup_failure"
+  | "approximate_semantics"
+  | "undeclared"
+  | "unregistered_width"
+  | "binary_step_unresolved"
+  | "budget_exhausted"
+  | "deadline_exceeded"
+  | "effect_occurred"
+  | "replay_uncertain"
+  | "skip_class_required";
+
+export const FALLBACK_ELIGIBLE_SKIP_CLASSES: readonly TargetSkipClass[] = Object.freeze(["unavailable", "incompatible", "approximate_semantics"]);
+
+export const TERMINAL_TARGET_SKIP_CLASSES: readonly TargetSkipClass[] = Object.freeze([
+  "deny", "revoked", "integrity_invalid", "unknown_outcome", "partial_effect", "cleanup_failure",
+  "effect_occurred", "replay_uncertain", "skip_class_required",
+]);
+
+export type FallbackTier = "requested-width" | "k3-trit" | "binary-same-semantics";
+
+export const FALLBACK_TIER_ORDER: readonly FallbackTier[] = Object.freeze([
+  "requested-width", "k3-trit", "binary-same-semantics",
+]);
+
+export interface AlternativeAttemptBudget {
+  readonly maxAttempts: number;
+  readonly deadlineMs: number;
+}
+
+export const DEFAULT_ALTERNATIVE_ATTEMPT_BUDGET: AlternativeAttemptBudget = Object.freeze({
+  maxAttempts: 2,
+  deadlineMs: 10_000,
+});
+
+export const ALTERNATIVE_ATTEMPT_BUDGET_OWNER = "OWNER-REVISIT" as const;
+
+export interface AlternativeAttemptState {
+  readonly attemptsAlready: number;
+  readonly elapsedMs: number;
+}
+
+export const DEFAULT_ALTERNATIVE_ATTEMPT_STATE: AlternativeAttemptState = Object.freeze({
+  attemptsAlready: 0,
+  elapsedMs: 0,
+});
+
+export interface GovernedTargetCandidate {
+  readonly target: string;
+  readonly available: boolean;
+  readonly semantics: "exact" | "approximate";
+  readonly skipClass: TargetSkipClass | "none";
+  readonly tritWidth: number;
+  readonly tier: FallbackTier;
+  readonly effectOccurred: boolean;
+  readonly provedNonExecution: boolean;
+  readonly admittedIdempotency: boolean;
+}
+
+export interface GovernedTargetFallbackPolicy {
+  readonly preferred: string;
+  readonly fallbackChain: readonly string[];
+  readonly allowFallback: boolean;
+  readonly requestedTritWidth: number;
+  readonly attemptBudget: AlternativeAttemptBudget;
+}
+
+export const DEFAULT_GOVERNED_TARGET_FALLBACK_POLICY: GovernedTargetFallbackPolicy = Object.freeze({
+  preferred: "cpu",
+  fallbackChain: [],
+  allowFallback: false,
+  requestedTritWidth: 1,
+  attemptBudget: DEFAULT_ALTERNATIVE_ATTEMPT_BUDGET,
+});
+
+export interface GovernedTargetFallbackDecision {
+  readonly status: "PREFERRED" | "FALLBACK" | "REFUSED";
+  readonly target: string;
+  readonly reasons: readonly string[];
+  readonly skipClass: TargetSkipClass | "none";
+  readonly keptRefusal: string;
+  readonly selectedTier: FallbackTier | "";
+  readonly attemptsUsed: number;
+  readonly remainingAttempts: number;
+  readonly authorityReleased: false;
+  readonly slideAdmission: "not-evaluated";
+  readonly vokDecision: "not-evaluated";
+  readonly diagnostics: readonly RuntimePolicyDiagnostic[];
+}
+
+const governedBase = {
+  authorityReleased: false as const,
+  slideAdmission: "not-evaluated" as const,
+  vokDecision: "not-evaluated" as const,
+};
+
+export function validateAlternativeAttemptBudget(budget: AlternativeAttemptBudget): RuntimePolicyVerdict {
+  const d: RuntimePolicyDiagnostic[] = [];
+  if (!isPositiveInt(budget.maxAttempts)) d.push(refuse("Galerina_RUNTIME_FALLBACK_BUDGET_INVALID", "Attempt budget maxAttempts must be a positive safe integer.", "maxAttempts"));
+  if (!isPositiveInt(budget.deadlineMs)) d.push(refuse("Galerina_RUNTIME_FALLBACK_DEADLINE_INVALID", "Attempt budget deadlineMs must be a positive safe integer.", "deadlineMs"));
+  return verdictOf(d);
+}
+
+export function validateGovernedTargetFallbackPolicy(policy: GovernedTargetFallbackPolicy): RuntimePolicyVerdict {
+  const d: RuntimePolicyDiagnostic[] = [...validateAlternativeAttemptBudget(policy.attemptBudget).diagnostics];
+  if (typeof policy.preferred !== "string" || policy.preferred.trim().length === 0) d.push(refuse("Galerina_RUNTIME_FALLBACK_PREFERRED", "Preferred target must be a non-empty name.", "preferred"));
+  if (!Array.isArray(policy.fallbackChain) || policy.fallbackChain.some((name) => typeof name !== "string" || name.trim().length === 0)) {
+    d.push(refuse("Galerina_RUNTIME_FALLBACK_CHAIN", "Fallback chain must be a list of non-empty names.", "fallbackChain"));
+  }
+  if (policy.allowFallback !== true && policy.allowFallback !== false) d.push(refuse("Galerina_RUNTIME_FALLBACK_FLAG", "allowFallback must be a boolean.", "allowFallback"));
+  if (!isPositiveInt(policy.requestedTritWidth)) d.push(refuse("Galerina_RUNTIME_FALLBACK_WIDTH_INVALID", "Requested trit-width must be a positive safe integer.", "requestedTritWidth"));
+  else if (!ADMITTED_TRIT_WIDTHS_V1.includes(policy.requestedTritWidth)) d.push(refuse("Galerina_RUNTIME_FALLBACK_WIDTH_UNREGISTERED", "Requested trit-width is not an admitted v1 execution profile.", "requestedTritWidth"));
+  return verdictOf(d);
+}
+
+export function classifyTargetSkip(candidate: GovernedTargetCandidate): TargetSkipClass | "none" {
+  if (typeof candidate.target !== "string" || candidate.target.trim().length === 0) return "skip_class_required";
+  if (candidate.tier !== "requested-width" && candidate.tier !== "k3-trit" && candidate.tier !== "binary-same-semantics") return "skip_class_required";
+  if (!isPositiveInt(candidate.tritWidth) || !ADMITTED_TRIT_WIDTHS_V1.includes(candidate.tritWidth)) return "unregistered_width";
+  if (candidate.tier === "binary-same-semantics") return "binary_step_unresolved";
+  if (candidate.effectOccurred && candidate.provedNonExecution) return "replay_uncertain";
+  if (candidate.effectOccurred) return "effect_occurred";
+  if (candidate.skipClass === "unknown_outcome" || candidate.skipClass === "partial_effect") return candidate.skipClass;
+  if (candidate.skipClass === "deny" || candidate.skipClass === "revoked" || candidate.skipClass === "integrity_invalid" || candidate.skipClass === "cleanup_failure") return candidate.skipClass;
+  if (candidate.semantics !== "exact") return "approximate_semantics";
+  if (!candidate.available) {
+    if (candidate.skipClass === "unavailable" || candidate.skipClass === "incompatible") return candidate.skipClass;
+    return "skip_class_required";
+  }
+  if (candidate.skipClass !== "none") return candidate.skipClass;
+  return "none";
+}
+
+function remainingAttemptsOf(used: number, maxAttempts: number): number {
+  return used >= maxAttempts ? 0 : maxAttempts - used;
+}
+
+function governedDecision(
+  status: "PREFERRED" | "FALLBACK" | "REFUSED",
+  target: string,
+  reasons: readonly string[],
+  skipClass: TargetSkipClass | "none",
+  keptRefusal: string,
+  selectedTier: FallbackTier | "",
+  attemptsUsed: number,
+  maxAttempts: number,
+  diagnostics: readonly RuntimePolicyDiagnostic[],
+): GovernedTargetFallbackDecision {
+  return {
+    status,
+    target,
+    reasons,
+    skipClass,
+    keptRefusal,
+    selectedTier,
+    attemptsUsed,
+    remainingAttempts: remainingAttemptsOf(attemptsUsed, maxAttempts),
+    diagnostics,
+    ...governedBase,
+  };
+}
+
+export function decideGovernedTargetFallback(
+  candidates: readonly GovernedTargetCandidate[],
+  policy: GovernedTargetFallbackPolicy,
+  state: AlternativeAttemptState = DEFAULT_ALTERNATIVE_ATTEMPT_STATE,
+): GovernedTargetFallbackDecision {
+  const policyVerdict = validateGovernedTargetFallbackPolicy(policy);
+  const maxAttempts = isPositiveInt(policy.attemptBudget.maxAttempts) ? policy.attemptBudget.maxAttempts : 1;
+  if (!policyVerdict.allowed) {
+    const widthRefused = policyVerdict.diagnostics.some((d) => d.code === "Galerina_RUNTIME_FALLBACK_WIDTH_UNREGISTERED" || d.code === "Galerina_RUNTIME_FALLBACK_WIDTH_INVALID");
+    return governedDecision("REFUSED", "", ["policy invalid"], widthRefused ? "unregistered_width" : "skip_class_required", widthRefused ? "unregistered_width" : "skip_class_required", "", state.attemptsAlready, maxAttempts, policyVerdict.diagnostics);
+  }
+  if (!isNonNegativeInt(state.attemptsAlready) || !isNonNegativeInt(state.elapsedMs)) {
+    return governedDecision("REFUSED", "", ["attempt state invalid"], "skip_class_required", "skip_class_required", "", state.attemptsAlready, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_STATE_INVALID", "Attempt state must use non-negative safe integers.", "attemptsAlready")]);
+  }
+  if (state.attemptsAlready >= policy.attemptBudget.maxAttempts) {
+    return governedDecision("REFUSED", "", ["attempt budget exhausted"], "budget_exhausted", "budget_exhausted", "", state.attemptsAlready, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_BUDGET_EXHAUSTED", "No remaining alternative attempts.", "maxAttempts")]);
+  }
+  if (state.elapsedMs >= policy.attemptBudget.deadlineMs) {
+    return governedDecision("REFUSED", "", ["attempt deadline exceeded"], "deadline_exceeded", "deadline_exceeded", "", state.attemptsAlready, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_DEADLINE", "Alternative-attempt deadline has already elapsed.", "deadlineMs")]);
+  }
+
+  const reasons: string[] = [];
+  const findCandidate = (name: string): GovernedTargetCandidate | undefined => candidates.find((c) => c.target === name);
+
+  const classifyNamed = (name: string): { candidate: GovernedTargetCandidate | undefined; skip: TargetSkipClass | "none" } => {
+    const candidate = findCandidate(name);
+    if (candidate === undefined) return { candidate: undefined, skip: "undeclared" };
+    return { candidate, skip: classifyTargetSkip(candidate) };
+  };
+
+  const preferred = classifyNamed(policy.preferred);
+  if (preferred.skip === "none" && preferred.candidate !== undefined) {
+    const used = state.attemptsAlready + 1;
+    return governedDecision("PREFERRED", policy.preferred, reasons, "none", "", preferred.candidate.tier, used, maxAttempts, []);
+  }
+  reasons.push(`${policy.preferred}: ${preferred.skip}`);
+  if (TERMINAL_TARGET_SKIP_CLASSES.includes(preferred.skip as TargetSkipClass)) {
+    const used = state.attemptsAlready + 1;
+    return governedDecision("REFUSED", "", reasons, preferred.skip, preferred.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_TERMINAL", "Terminal skip refuses fallback and keeps the original refusal.", "skipClass")]);
+  }
+  if (!FALLBACK_ELIGIBLE_SKIP_CLASSES.includes(preferred.skip as TargetSkipClass)) {
+    const used = state.attemptsAlready + 1;
+    return governedDecision("REFUSED", "", reasons, preferred.skip, preferred.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_NOT_ELIGIBLE", "Only authenticated pre-effect unavailability or incompatibility may propose fallback.", "skipClass")]);
+  }
+  if (!policy.allowFallback) {
+    reasons.push("fallback disabled");
+    const used = state.attemptsAlready + 1;
+    return governedDecision("REFUSED", "", reasons, preferred.skip, preferred.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_DISABLED", "Fallback is disabled.", "allowFallback")]);
+  }
+  if (state.attemptsAlready + 2 > policy.attemptBudget.maxAttempts) {
+    reasons.push("attempt budget exhausted");
+    const used = state.attemptsAlready + 1;
+    return governedDecision("REFUSED", "", reasons, "budget_exhausted", preferred.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_BUDGET_EXHAUSTED", "Fallback would exceed the attempt budget.", "maxAttempts")]);
+  }
+
+  for (const name of policy.fallbackChain) {
+    if (name === policy.preferred) continue;
+    const next = classifyNamed(name);
+    if (next.skip === "undeclared") { reasons.push(`${name}: undeclared`); continue; }
+    reasons.push(`${name}: ${next.skip}`);
+    if (TERMINAL_TARGET_SKIP_CLASSES.includes(next.skip as TargetSkipClass)) {
+      const used = state.attemptsAlready + 1;
+      return governedDecision("REFUSED", "", reasons, next.skip, next.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_TERMINAL", "Terminal skip refuses fallback and keeps the original refusal.", "skipClass")]);
+    }
+    if (next.skip === "none" && next.candidate !== undefined) {
+      const used = state.attemptsAlready + 2;
+      return governedDecision("FALLBACK", name, reasons, preferred.skip, "", next.candidate.tier, used, maxAttempts, []);
+    }
+  }
+  reasons.push("fallback chain exhausted");
+  const used = state.attemptsAlready + 1;
+  return governedDecision("REFUSED", "", reasons, preferred.skip, preferred.skip, "", used, maxAttempts, [refuse("Galerina_RUNTIME_FALLBACK_CHAIN_EXHAUSTED", "No admitted alternative remains after classified skips.", "fallbackChain")]);
+}
+
 // ── resource budget ─────────────────────────────────────────────────────────
 export interface RuntimeResourceBudget {
   readonly cpuMs: number;

@@ -384,3 +384,6 @@ export * from "./photonic/index.js";
 // Scheduler / planner responsibilities + compute audit event shapes (TODO pass, Grok 2026-10-05).
 export * from "./scheduling/index.js";
 export * from "./specialist/specialist-hardware.js";
+
+// RD-0855 alternative-plan planning (proposal only; SuperGrok 2026-10-08).
+export * from "./rd0855-alternative-plan.js";

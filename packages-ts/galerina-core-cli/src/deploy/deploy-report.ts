@@ -22,6 +22,12 @@ export const DEPLOYMENT_REPORT_LIMITATIONS: readonly string[] = Object.freeze([
   "does not prove trusted provenance",
 ]);
 
+export const LIVE_DEPLOYMENT_REPORT_LIMITATIONS: readonly string[] = Object.freeze([
+  "local exclusive-create receipt; no remote host, process attach, or artefact copy",
+  "module hashes on disk are the mandatory pre-deploy gate",
+  "does not prove trusted provenance",
+]);
+
 export interface DeploymentReportDiagnostic {
   readonly code: string;
   readonly severity: "error";
@@ -34,7 +40,7 @@ export interface DeploymentReport {
   readonly success: boolean;
   readonly target: DeploymentTarget;
   readonly manifestHash: string;
-  readonly dryRun: true;
+  readonly dryRun: boolean;
   readonly diagnostics: readonly DeploymentReportDiagnostic[];
   readonly limitations: readonly string[];
   readonly generatedAt?: string;
@@ -75,7 +81,7 @@ function copyDiagnostic(d: unknown): DeploymentReportDiagnostic {
 /** Build a frozen, JSON-safe deployment report. Throws RangeError for a malformed generatedAt. */
 export function createDeploymentReport(
   result: DeploymentResult,
-  options: { readonly generatedAt?: string } = {},
+  options: { readonly generatedAt?: string; readonly dryRun?: boolean } = {},
 ): DeploymentReport {
   const generatedAt = options.generatedAt;
   if (
@@ -91,14 +97,15 @@ export function createDeploymentReport(
   const manifestHash =
     typeof hashRaw === "string" && SHA256.test(hashRaw) ? hashRaw : ("sha256:" + "0".repeat(64));
   const success = diagnostics.length === 0 && get(result, "success") === true;
+  const dryRun = options.dryRun !== false;
   const report: DeploymentReport = {
     schema: DEPLOYMENT_REPORT_SCHEMA,
     success,
     target,
     manifestHash,
-    dryRun: true,
+    dryRun,
     diagnostics: Object.freeze(diagnostics),
-    limitations: DEPLOYMENT_REPORT_LIMITATIONS,
+    limitations: dryRun ? DEPLOYMENT_REPORT_LIMITATIONS : LIVE_DEPLOYMENT_REPORT_LIMITATIONS,
     ...(generatedAt !== undefined ? { generatedAt } : {}),
   };
   return Object.freeze(report);
@@ -115,7 +122,7 @@ export function renderDeploymentReport(report: DeploymentReport): string {
 export async function writeDeploymentReport(
   result: DeploymentResult,
   outDir: string,
-  options: { readonly generatedAt?: string } = {},
+  options: { readonly generatedAt?: string; readonly dryRun?: boolean } = {},
 ): Promise<{ readonly report: DeploymentReport }> {
   if (typeof outDir !== "string" || outDir.length === 0) throw new TypeError("outDir must be a non-empty string.");
   const dir = await realpath(outDir);

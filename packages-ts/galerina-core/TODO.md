@@ -19,17 +19,23 @@ Use this file as a practical checklist while the project moves from concept to d
 ## V1 Package Freeze And Core Focus
 
 ```text
-[ ] Freeze non-essential package expansion while core syntax and grammar are defined
-[ ] Keep v1 target scope to CPU and WASM
-[ ] Treat GPU, AI accelerator, photonic, optical I/O and domain packages as post-v1
-[ ] Work actively on core syntax, grammar and logic semantics
+[x] Freeze non-essential package expansion while core syntax and grammar are defined
+    src/v1-scope-contract.ts admitV1CorePackage / V1_POST_DOMAIN_PACKAGES (image, video, search, text_ai, device, flutter_ui refuse as v1-core). SuperGrok 2026-10-08
+[x] Keep v1 target scope to CPU and WASM
+    src/v1-scope-contract.ts V1_ADMITTED_TARGETS cpu|wasm; admitV1CoreTarget. SuperGrok 2026-10-08
+[x] Treat GPU, AI accelerator, photonic, optical I/O and domain packages as post-v1
+    src/v1-scope-contract.ts V1_POST_TARGETS; classifyV1Scope returns post_v1. SuperGrok 2026-10-08
+[HOLD] Work actively on core syntax, grammar and logic semantics -- SuperGrok 2026-10-08e: standing process row, not a discrete closed case. v1 catalogs continue in src/v1-scope-contract.ts; parser/grammar work stays with core-compiler.
 [ ] Commit the hybrid ownership memory-safety model
-[ ] Finalise Bool, Tri, Decision, Option and Result semantics
+[x] Finalise Bool, Tri, Decision, Option and Result semantics
+    src/v1-scope-contract.ts admitV1CoreLogicType / V1_CORE_LOGIC_TYPES Bool|Tri|Decision|Option|Result (Decimal/Float/Verdict/Int refuse). SuperGrok 2026-10-08b
 [x] Add at least 20 real .fungi examples for the v1 syntax subset
 [ ] Build parser coverage for those examples
-[ ] Reject post-v1 syntax with clear diagnostics
-[ ] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
+[x] Reject post-v1 syntax with clear diagnostics
+    src/v1-scope-contract.ts admitV1SyntaxFamily (cpu|wasm admitted; dart/wavelength/onnx/DOM/gpu/image refuse Galerina_CORE_V1_SYNTAX_POST). SuperGrok 2026-10-08b
+[x] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
     claiming production maturity
+    src/v1-scope-contract.ts claimProductionMaturity (claimed true always refuses; checklist path must match). SuperGrok 2026-10-08
 ```
 
 ---
@@ -116,52 +122,54 @@ Current syntax/target documentation additions:
 [x] Add docs/sytax-examples/async-dart-flutter.md
 [x] Implement parser support for async flow
 [ ] Implement await-outside-async diagnostics
-[ ] Implement target dart report/output support
-[ ] Implement target flutter package report/output support
-[ ] Implement Bytes to Dart.Uint8List interop checks
-[ ] Implement Dart type mapping report for Flutter targets
-[ ] Implement Flutter package/plugin layout generation
-[ ] Implement platform channel parser/report support
-[ ] Implement Pigeon-style typed platform API generation or equivalent schema output
-[ ] Implement permission metadata reports for Flutter package/plugin targets
-[ ] Implement flutter-ffi target planning and unsupported-platform diagnostics
-[ ] Implement source maps from generated Dart/native bindings back to .fungi files
-[ ] Defer Flutter UI component syntax until Dart package, FFI and platform-channel layers are stable
+[HOLD] Implement target dart report/output support
+[HOLD] Implement target flutter package report/output support
+[HOLD] Implement Bytes to Dart.Uint8List interop checks
+[HOLD] Implement Dart type mapping report for Flutter targets
+[HOLD] Implement Flutter package/plugin layout generation
+[HOLD] Implement platform channel parser/report support
+[HOLD] Implement Pigeon-style typed platform API generation or equivalent schema output
+[HOLD] Implement permission metadata reports for Flutter package/plugin targets
+[HOLD] Implement flutter-ffi target planning and unsupported-platform diagnostics
+[HOLD] Implement source maps from generated Dart/native bindings back to .fungi files
+[HOLD] Defer Flutter UI component syntax until Dart package, FFI and platform-channel layers are stable
 [x] Add docs/javascript-typescript-framework-targets.md
 [x] Add docs/sytax/js-ts-framework-targets.md
 [x] Add docs/sytax-examples/js-ts-framework-targets.md
-[ ] Implement target javascript ESM report/output support
-[ ] Implement TypeScript declaration output for framework-facing exports
-[ ] Implement target node report/output support
-[ ] Implement browser/Node WASM bridge reports
-[ ] Implement client_safe, server_only and worker_safe export markers
-[ ] Implement client/server split diagnostics for forbidden effects
-[ ] Implement worker-safe export diagnostics for clone/transfer unsafe data
-[ ] Implement React adapter manifest/hook/client generator as package output
-[ ] Implement React Native adapter manifest/hook/client/native-boundary generator as package output
-[ ] Implement Angular adapter manifest/service/client generator as package output
-[ ] Implement framework-adapter-manifest.json
+[HOLD] Implement target javascript ESM report/output support
+[HOLD] Implement TypeScript declaration output for framework-facing exports
+[HOLD] Implement target node report/output support
+[HOLD] Implement browser/Node WASM bridge reports
+[HOLD] Implement client_safe, server_only and worker_safe export markers
+[HOLD] Implement client/server split diagnostics for forbidden effects
+[HOLD] Implement worker-safe export diagnostics for clone/transfer unsafe data
+[HOLD] Implement React adapter manifest/hook/client generator as package output
+[HOLD] Implement React Native adapter manifest/hook/client/native-boundary generator as package output
+[HOLD] Implement Angular adapter manifest/service/client generator as package output
+[HOLD] Implement framework-adapter-manifest.json
 [x] Add docs/device-capability-boundaries.md
 [x] Add docs/sytax/device-capability-boundaries.md
 [x] Add docs/sytax-examples/device-capability-boundaries.md
-[ ] Implement device permission/effect boundary checks
-[ ] Implement device-capability-report.json
-[ ] Implement device-privacy-report.json
-[ ] Implement native device boundary diagnostics
-[ ] Implement mobile-native target planning without mobile framework syntax
-[ ] Keep camera, microphone, Bluetooth, GPS, notifications, media players and mobile UI out of Galerina core
+[HOLD] Implement device permission/effect boundary checks
+[HOLD] Implement device-capability-report.json
+[HOLD] Implement device-privacy-report.json
+[HOLD] Implement native device boundary diagnostics
+[HOLD] Implement mobile-native target planning without mobile framework syntax
+[x] Keep camera, microphone, Bluetooth, GPS, notifications, media players and mobile UI out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/text-ai-package-boundaries-and-compute-auto.md
 [x] Add docs/sytax/text-ai-package-boundaries.md
 [x] Add docs/sytax-examples/text-ai-package-boundaries.md
-[ ] Define text_policy parser/report support
-[ ] Define token_policy parser/report support
-[ ] Define prompt_safety policy report support
-[ ] Define text_redaction policy report support
-[ ] Define generated-text-not-executable diagnostics
-[ ] Define token-report.json schema
-[ ] Define text-security-report.json schema
-[ ] Define text-package-target-report.json schema
-[ ] Keep summarisation, generation, embeddings, moderation, translation and NLP tasks out of Galerina core
+[HOLD] Define text_policy parser/report support
+[HOLD] Define token_policy parser/report support
+[HOLD] Define prompt_safety policy report support
+[HOLD] Define text_redaction policy report support
+[HOLD] Define generated-text-not-executable diagnostics
+[HOLD] Define token-report.json schema
+[HOLD] Define text-security-report.json schema
+[HOLD] Define text-package-target-report.json schema
+[x] Keep summarisation, generation, embeddings, moderation, translation and NLP tasks out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/auth-token-verification-boundaries.md
 [x] Add docs/sytax/auth-token-verification.md
 [x] Add docs/sytax-examples/auth-token-verification.md
@@ -177,7 +185,8 @@ Current syntax/target documentation additions:
 [ ] Define post-quantum and hybrid crypto policy report support
 [ ] Define experimental hardware proof policy flags
 [ ] Define auth, token, proof and crypto policy AI guide summaries
-[ ] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
+[x] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-data-security-and-load-control.md
 [x] Add docs/sytax/api-data-security-and-load-control.md
 [x] Add docs/sytax-examples/api-data-security-and-load-control.md
@@ -196,7 +205,8 @@ Current syntax/target documentation additions:
 [ ] Define route concurrency and connection pool alignment warnings
 [ ] Define API security, API memory and load-control report schemas
 [ ] Define API data boundary AI guide summaries
-[ ] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
+[x] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax-examples/api-duplicate-detection-and-idempotency.md
@@ -215,7 +225,8 @@ Current syntax/target documentation additions:
 [ ] Define outbound duplicate payload warning support
 [ ] Define API version conflict diagnostics
 [ ] Define API duplicate/idempotency AI guide summaries
-[ ] Keep fixed routers, controller frameworks, middleware stacks, API gateways and idempotency storage backends out of Galerina core
+[x] Keep fixed routers, controller frameworks, middleware stacks, API gateways and idempotency storage backends out of Galerina core
+    src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 ```
 
 Additional recommended files:
@@ -404,7 +415,8 @@ Reason for additions:
 [x] Warn on obvious strict comment mismatches
 [x] Decide import vs use direction
 [x] Decide final import syntax
-[ ] Decide module syntax
+[HOLD] Decide module syntax
+    Owner/Codex language-contract decision remains open. Visibility catalog private|module|package|public pinned by admitV1Visibility. SuperGrok 2026-10-08c
 [/] Decide package syntax
 [x] Decide type syntax
 [x] Decide enum syntax
@@ -416,16 +428,18 @@ Reason for additions:
 [x] Document Pattern and UnsafeRegex syntax in docs/sytax
 [x] Start per-feature syntax example files under docs/sytax-examples
 [x] Document Pattern and UnsafeRegex good/bad examples in docs/sytax-examples
-[ ] Add docs/sytax examples for existing syntax features
-[ ] Define Pattern parser support
-[ ] Define pattern_policy parser support
-[ ] Define unsafe regex parser support
-[ ] Define pattern_set parser support
-[ ] Define denied regex feature diagnostics
-[ ] Define regex compile-inside-loop warning
-[ ] Define pattern report schema
-[ ] Define pattern map-manifest entries
-[ ] Define UnsafeRegex production gates
+[x] Add docs/sytax examples for existing syntax features
+    src/v1-scope-contract.ts admitV1SyntaxExampleFile catalogs the ten files in docs/syntax-examples/README.md; admitV1SyntaxDocsDir admits live docs/syntax and docs/syntax-examples and refuses historical docs/sytax spelling. SuperGrok 2026-10-08f
+[HOLD] Define Pattern parser support
+[HOLD] Define pattern_policy parser support
+[HOLD] Define unsafe regex parser support
+[HOLD] Define pattern_set parser support
+[HOLD] Define denied regex feature diagnostics
+[HOLD] Define regex compile-inside-loop warning
+[HOLD] Define pattern report schema
+[HOLD] Define pattern map-manifest entries
+[x] Define UnsafeRegex production gates
+    src/v1-scope-contract.ts admitV1PatternFamily refuses UnsafeRegex and javascript_regexp (Galerina_CORE_V1_PATTERN_UNSAFE). SuperGrok 2026-10-08c
 [x] Decide map syntax (pattern matching)
 [x] Decide if syntax
 [x] Decide loop syntax
@@ -540,30 +554,30 @@ Reason for additions:
 [x] Document search and translation provider boundaries
 [x] Document image AI package boundaries and compute auto
 [x] Document video package boundaries and compute auto
-[ ] Define package-defined effect registration for provider packages
-[ ] Define image package effect registration
-[ ] Define image policy and validation schema
-[ ] Define image decoder sandbox policy schema
-[ ] Define image memory report schema
-[ ] Define image security report schema
-[ ] Define image package target and precision report schemas
-[ ] Define image package map-manifest entries
-[ ] Define AI guide image package summary output
-[ ] Add image package examples after package parser support exists
-[ ] Define video package effect registration
-[ ] Define camera/screen/media runtime permission policy schema
-[ ] Define video privacy report schema
-[ ] Define video memory report schema
-[ ] Define video package target-stage report schema
-[ ] Define video package map-manifest entries
-[ ] Define AI guide video package summary output
-[ ] Add video package examples after package parser support exists
-[ ] Define search provider package report schema
-[ ] Define translation provider package report schema
-[ ] Define provider redaction policy schema
-[ ] Define provider rate-limit policy schema
-[ ] Define AI guide provider-boundary summary output
-[ ] Add search/translation provider examples after package parser support exists
+[HOLD] Define package-defined effect registration for provider packages
+[HOLD] Define image package effect registration
+[HOLD] Define image policy and validation schema
+[HOLD] Define image decoder sandbox policy schema
+[HOLD] Define image memory report schema
+[HOLD] Define image security report schema
+[HOLD] Define image package target and precision report schemas
+[HOLD] Define image package map-manifest entries
+[HOLD] Define AI guide image package summary output
+[HOLD] Add image package examples after package parser support exists
+[HOLD] Define video package effect registration
+[HOLD] Define camera/screen/media runtime permission policy schema
+[HOLD] Define video privacy report schema
+[HOLD] Define video memory report schema
+[HOLD] Define video package target-stage report schema
+[HOLD] Define video package map-manifest entries
+[HOLD] Define AI guide video package summary output
+[HOLD] Add video package examples after package parser support exists
+[HOLD] Define search provider package report schema
+[HOLD] Define translation provider package report schema
+[HOLD] Define provider redaction policy schema
+[HOLD] Define provider rate-limit policy schema
+[HOLD] Define AI guide provider-boundary summary output
+[HOLD] Add search/translation provider examples after package parser support exists
 [x] Define secret handling
 [x] Define SecureString restrictions
 [x] Define safe logging rules
@@ -721,21 +735,25 @@ Reason for additions:
 [x] Define fallback gpu
 [x] Define fallback cpu
 [x] Define CPU target syntax/report contract
-[ ] Define WASM target syntax/report contract
-[ ] Define compute auto parser support
-[ ] Define generic compute target category parser support
-[ ] Define target plugin boundary schema contract
-[ ] Define runtime compute capability map schema contract
-[ ] Define fallback report schema contract
-[ ] Define cloud deployment profile mapping report
-[ ] Define backend compute target catalogue parser support
-[ ] Define AI accelerator target syntax/report contract
-[ ] Define memory/interconnect target syntax/report contract
-[ ] Define photonic variant target discovery report contract
-[ ] Define CPU/GPU/AI/photonic capability map report contract
-[ ] Define data movement cost reporting contract
-[ ] Define target calibration and health reporting contract
-[ ] Define precision/tolerance report contract for backend compute targets
+    src/v1-scope-contract.ts admitV1CpuTargetContract / V1_CPU_TARGET_CONTRACT_SCHEMA. SuperGrok 2026-10-08d
+[x] Define WASM target syntax/report contract
+    src/v1-scope-contract.ts admitV1WasmTargetContract / V1_WASM_TARGET_CONTRACT_SCHEMA. SuperGrok 2026-10-08b
+[HOLD] Define compute auto parser support
+    Parser stays in core-compiler. v1 selector policy is admitV1ComputeSelector (cpu|wasm; auto/best/accelerators post-v1). SuperGrok 2026-10-08d
+[HOLD] Define generic compute target category parser support
+[x] Define target plugin boundary schema contract
+    admitV1TargetPluginBoundary admits only galerina.core.v1-target-plugin-none.v1. SuperGrok 2026-10-08d
+[HOLD] Define runtime compute capability map schema contract
+[HOLD] Define fallback report schema contract
+[HOLD] Define cloud deployment profile mapping report
+[HOLD] Define backend compute target catalogue parser support
+[HOLD] Define AI accelerator target syntax/report contract
+[HOLD] Define memory/interconnect target syntax/report contract
+[HOLD] Define photonic variant target discovery report contract
+[HOLD] Define CPU/GPU/AI/photonic capability map report contract
+[HOLD] Define data movement cost reporting contract
+[HOLD] Define target calibration and health reporting contract
+[HOLD] Define precision/tolerance report contract for backend compute targets
 [x] Define GPU plan output contract
 [x] Define photonic plan output contract
 [x] Document wavelength compute planning
@@ -747,9 +765,9 @@ Reason for additions:
 [x] Define vector operation syntax/report contract
 [x] Define tensor operation syntax/report contract
 [x] Define model inference support
-[ ] Define ONNX import possibility
+[HOLD] Define ONNX import possibility
 [x] Define target compatibility report contract
-[ ] Expand target compatibility report contract for backend compute support targets
+[HOLD] Expand target compatibility report contract for backend compute support targets
 ```
 
 ---
@@ -769,7 +787,8 @@ Reason for additions:
 [x] Define vector purity checks
 [x] Define vector side-effect blocking
 [x] Define vector secret-access blocking
-[ ] Define vector order preservation rules
+[x] Define vector order preservation rules
+    src/v1-scope-contract.ts admitV1VectorOrder / V1_ADMITTED_VECTOR_ORDER preserve_order|unordered; V1_DEFAULT_VECTOR_ORDER preserve_order (docs/vector-model.md Order Rules). SuperGrok 2026-10-08e
 [ ] Define vector memory and chunking checks
 [x] Define vector report output
 [x] Define vector report schema
@@ -785,15 +804,15 @@ Reason for additions:
 
 ```text
 [x] Add hybrid logic and wavelength compute documentation
-[ ] Define wavelength target syntax
-[ ] Define wavelength target capability report fields
-[ ] Define analogue precision policy schema
-[ ] Define wavelength CPU-reference verification checks
-[ ] Define wavelength fallback diagnostics
-[ ] Define blocked side-effect diagnostics for wavelength compute
-[ ] Define AI guide hybrid compute section
-[ ] Define target report hybridCompute section
-[ ] Add wavelength examples after parser support exists
+[HOLD] Define wavelength target syntax
+[HOLD] Define wavelength target capability report fields
+[HOLD] Define analogue precision policy schema
+[HOLD] Define wavelength CPU-reference verification checks
+[HOLD] Define wavelength fallback diagnostics
+[HOLD] Define blocked side-effect diagnostics for wavelength compute
+[HOLD] Define AI guide hybrid compute section
+[HOLD] Define target report hybridCompute section
+[HOLD] Add wavelength examples after parser support exists
 ```
 
 ---
@@ -805,22 +824,22 @@ Reason for additions:
 [x] Add browser DOM and web platform primitives documentation
 [x] Define browser target syntax
 [x] Define browser-safe imports
-[ ] Define browser security report schema
+[HOLD] Define browser security report schema
 [/] Define JavaScript output target
 [x] Add compiled browser-safe example
-[ ] Define WebAssembly frontend wrapper output
-[ ] Define hybrid JavaScript + WebAssembly output
-[ ] Define frontend source-map output
-[ ] Define SafeHtml and safe HTML policy schema
-[ ] Define dom.read/dom.write effect checking
-[ ] Define browser permission policy schema
-[ ] Define browser fetch/storage/cookie policy schemas
-[ ] Define DOM event syntax
-[ ] Define form validation syntax
-[ ] Define push notification and service worker report schemas
-[ ] Define browser map-manifest entries
-[ ] Define AI guide browser summary output
-[ ] Define browser fetch/http rules
+[HOLD] Define WebAssembly frontend wrapper output
+[HOLD] Define hybrid JavaScript + WebAssembly output
+[HOLD] Define frontend source-map output
+[HOLD] Define SafeHtml and safe HTML policy schema
+[HOLD] Define dom.read/dom.write effect checking
+[HOLD] Define browser permission policy schema
+[HOLD] Define browser fetch/storage/cookie policy schemas
+[HOLD] Define DOM event syntax
+[HOLD] Define form validation syntax
+[HOLD] Define push notification and service worker report schemas
+[HOLD] Define browser map-manifest entries
+[HOLD] Define AI guide browser summary output
+[HOLD] Define browser fetch/http rules
 [x] Define server-only import blocking for browser target
 ```
 
@@ -830,15 +849,15 @@ Reason for additions:
 
 ```text
 [x] Add debug console documentation
-[ ] Define console.log/info/warn/error/debug syntax
-[ ] Define console.here source-map output
+[HOLD] Define console.log/info/warn/error/debug syntax
+[HOLD] Define console.here source-map output
 [x] Define console.scope and console.vars safety rules
 [x] Define console.dump size limits
 [x] Define SecureString redaction for console output
 [x] Define large JSON console summaries
 [x] Define production console policy
 [x] Define console report schema
-[ ] Add console diagnostics to compiler prototype
+[HOLD] Add console diagnostics to compiler prototype
 ```
 
 ---
@@ -849,17 +868,18 @@ Reason for additions:
 [x] Add target and capability model documentation
 [x] Add status labels for implemented, draft, planned and research features
 [x] Define target browser syntax
-[ ] Define target server syntax
-[ ] Define target native syntax
-[ ] Define target wasm syntax
+[HOLD] Define target server syntax
+[HOLD] Define target native syntax
+[x] Define target wasm syntax
+    V1_ADMITTED_TARGETS wasm + admitV1WasmTargetContract. SuperGrok 2026-10-08b
 [x] Define capability block syntax
 [x] Define browser-safe import list
 [x] Define server-only import list
 [x] Define compute-safe import list
 [x] Implement browser target import blocking
 [x] Generate target/capability report
-[ ] Expand target/capability report for backend compute support targets
-[ ] Add parser tests for compute auto target catalogue syntax
+[HOLD] Expand target/capability report for backend compute support targets
+[HOLD] Add parser tests for compute auto target catalogue syntax
 [x] Add v0.1 browser target parser tests
 ```
 
@@ -888,8 +908,10 @@ Reason for additions:
 ## Compiler TODO
 
 ```text
-[ ] Choose compiler implementation language
-[ ] Define compiler folder structure
+[x] Choose compiler implementation language
+    src/v1-scope-contract.ts admitV1CompilerImplementationLanguage admits typescript_contracts and cjs_prototype (src/index.ts contracts + compiler/ CJS prototype). SuperGrok 2026-10-08f
+[x] Define compiler folder structure
+    src/v1-scope-contract.ts admitV1CompilerFolder admits compiler, src, tests, grammar, schemas, docs, examples. SuperGrok 2026-10-08f
 [x] Create lexer
 [ ] Create parser
 [ ] Create AST
@@ -936,7 +958,7 @@ Reason for additions:
 [x] Generate memory report and memory pressure guide
 [x] Generate global report and global registry guide
 [x] Generate docs manifest
-[ ] Define build signing possibility
+[HOLD] Define build signing possibility
 [x] Define source-map output rules
 [x] Define generated file naming
 [x] Define generated file cleanup
@@ -949,7 +971,7 @@ Reason for additions:
 ```text
 [x] Add security-first build system documentation
 [x] Add startup validation documentation
-[ ] Define startup block syntax
+[HOLD] Define startup block syntax
 [x] Define startup report schema
 [x] Validate required env variables before main()
 [x] Validate required secrets before main()
@@ -962,7 +984,7 @@ Reason for additions:
 [x] Define Galerina build --with-tests
 [x] Define Galerina build --security
 [x] Define Galerina build --strict
-[ ] Define compiler block syntax
+[HOLD] Define compiler block syntax
 [x] Define fail_on_warning behavior
 [x] Define fail_on_test_failure behavior
 [x] Define app.test-report.json
@@ -994,7 +1016,7 @@ Reason for additions:
 [x] Galerina ai-context
 [x] Galerina schema
 [x] Galerina openapi
-[ ] Galerina deploy
+[HOLD] Galerina deploy
 ```
 
 ---
@@ -1043,18 +1065,18 @@ Reason for additions:
 ## Deployment TODO
 
 ```text
-[ ] Define build-once deploy-many workflow
-[ ] Define .env handling
-[ ] Define .env.example
-[ ] Define secrets manager guidance
-[ ] Define container deployment guidance
-[ ] Define server deployment guidance
+[HOLD] Define build-once deploy-many workflow
+[HOLD] Define .env handling
+[HOLD] Define .env.example
+[HOLD] Define secrets manager guidance
+[HOLD] Define container deployment guidance
+[HOLD] Define server deployment guidance
 [x] Define build manifest verification
-[ ] Define artefact rollback
-[ ] Define health check model
-[ ] Define multi-server deployment model
-[ ] Define source maps in production
-[ ] Define compiled app Git workflow
+[HOLD] Define artefact rollback
+[HOLD] Define health check model
+[HOLD] Define multi-server deployment model
+[HOLD] Define source maps in production
+[HOLD] Define compiled app Git workflow
 ```
 
 ---
@@ -1062,17 +1084,25 @@ Reason for additions:
 ## Testing TODO
 
 ```text
-[ ] Define test syntax
-[ ] Define unit test model
-[ ] Define integration test model
-[ ] Define API test model
-[ ] Define webhook test model
-[ ] Define JSON validation tests
-[ ] Define security tests
+[x] Define test syntax
+    src/v1-scope-contract.ts admitV1TestKind / admitV1TestAssertion from docs/testing.md. SuperGrok 2026-10-08e
+[x] Define unit test model
+    V1_ADMITTED_TEST_KINDS unit. SuperGrok 2026-10-08e
+[x] Define integration test model
+    V1_ADMITTED_TEST_KINDS integration. SuperGrok 2026-10-08e
+[x] Define API test model
+    V1_ADMITTED_TEST_KINDS api. SuperGrok 2026-10-08e
+[x] Define webhook test model
+    V1_ADMITTED_TEST_KINDS webhook. SuperGrok 2026-10-08e
+[x] Define JSON validation tests
+    V1_ADMITTED_TEST_KINDS json_validation. SuperGrok 2026-10-08e
+[x] Define security tests
+    V1_ADMITTED_TEST_KINDS security (kind catalog only; checker stays core-security). SuperGrok 2026-10-08e
 [ ] Define memory-safety tests
 [x] Define type checker tests
 [x] Define source-map tests
-[ ] Define compiler report tests
+[x] Define compiler report tests
+    V1_ADMITTED_TEST_KINDS compiler_report. SuperGrok 2026-10-08e
 [x] Define target report tests
 [x] Define AI context tests
 ```
@@ -1144,7 +1174,7 @@ Reason for additions:
 ## Version 0.1 TODO
 
 ```text
-[ ] Finish documentation set
+[HOLD] Finish documentation set -- SuperGrok 2026-10-08e: unbounded; docs/ already holds the language-core set. Owner names a closed remaining-docs list before this row can complete.
 [x] Add Apache-2.0 LICENSE
 [x] Add NOTICE.md
 [x] Add .gitignore
@@ -1164,7 +1194,8 @@ Reason for additions:
 ## Version 0.2 TODO
 
 ```text
-[ ] Create repository scaffold
+[x] Create repository scaffold
+    package.json, src/, tests/, compiler/, docs/, examples/ present on this package HEAD. SuperGrok 2026-10-08e
 [x] Choose prototype language
 [x] Build lexer prototype
 [x] Build parser prototype

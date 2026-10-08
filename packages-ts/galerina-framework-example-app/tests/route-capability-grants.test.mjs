@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,7 @@ function readJson(rel) {
   return JSON.parse(readUtf8(rel));
 }
 
-describe("example-app least-capability grants (L19; L20-L21 HOLD)", () => {
+describe("example-app least-capability grants (L19 HOLD; L21 HOLD)", () => {
   it("pins empty capabilities at every grant site", () => {
     assert.deepEqual(readJson("App.manifest").capabilities, []);
     assert.deepEqual(readJson("galerina-package.json").capabilities, []);
@@ -43,6 +43,13 @@ describe("example-app least-capability grants (L19; L20-L21 HOLD)", () => {
     assert.equal(config.greeting.route, "/hello");
   });
 
+  it("src/flows contains only greeting.fungi", () => {
+    const names = readdirSync(join(ROOT, "src/flows")).filter((n) => !n.startsWith(".")).sort();
+    assert.deepEqual(names, ["greeting.fungi"]);
+    assert.deepEqual(readJson("package.json").packageGraph.loadedAssets, ["src/flows/greeting.fungi"]);
+    assert.equal(readJson("App.manifest").flows, "src/flows/");
+  });
+
   it("confirms the empty grant set lists none of the unlisted capability names", () => {
     const granted = Object.freeze([...readJson("App.manifest").capabilities]);
     assert.deepEqual(granted, []);
@@ -51,9 +58,12 @@ describe("example-app least-capability grants (L19; L20-L21 HOLD)", () => {
     }
   });
 
-  it("does not edit framework-app-kernel (L20-L21 HOLD)", () => {
+  it("does not edit framework-app-kernel (L21 HOLD)", () => {
     const server = readUtf8("host/server.ts");
     assert.match(server, /from "\.\.\/\.\.\/galerina-framework-app-kernel\/dist\/index\.js"/);
+    assert.match(server, /async function loadRevocationGate\(/);
+    assert.match(server, /revocationCheck/);
+    assert.match(server, /fusePackage\(/);
     assert.equal(server.includes("src/kernel.ts"), false);
   });
 });

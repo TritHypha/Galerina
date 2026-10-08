@@ -29,8 +29,8 @@ policy belongs in `galerina-framework-app-kernel`.
 [x] Define network report contract
 [x] Add tests
 [x] Add examples
-[ ] Wire network reports into compiler/runtime reports
-    SuperGrok 2026-10-07 pin: producer `networkPolicyReportToRuntimeAuditEvent` maps galerina.network.report.v1 onto galerina.runtime.audit.v1 category network (caller supplies eventId/timestamp/runtime; no clock). `networkReportToRuntimeAuditEvent` maps the unversioned NetworkReport the same way. core-reports and core-compiler do not import this slice. Compiler fungi.runtime.audit.v1 mapping is PROPOSED, not implemented. Row stays [ ]. Tests: tests/network-report-runtime-wire.test.mjs (5 tests; package suite 272/272 pass, node:24, core-compiler built so RD-0361 suites run).
+[x] Wire network reports into runtime audit events -- SuperGrok 2026-10-08: producer `networkPolicyReportToRuntimeAuditEvent` / `networkReportToRuntimeAuditEvent` maps onto galerina.runtime.audit.v1 category network (caller supplies eventId/timestamp/runtime; no clock). In-package consumer pin: tests/network-report-runtime-wire.test.mjs and tests/hold-core-network-claim-and-consumer-pin.test.mjs. This package does not import core-reports or core-compiler.
+[HOLD] Wire network reports into compiler/core-reports consumers -- SuperGrok 2026-10-08: core-reports and core-compiler still do not import this slice. Compiler fungi.runtime.audit.v1 mapping is PROPOSED. Owner/Codex adds a consumer import. Fail-closed default: producer-only.
 [x] Extend NetworkProtocol to add "quic": "http"|"https"|"tcp"|"udp"|"grpc"|"websocket"|"quic"
     (2026-09-29 correction: the live union at src/index.ts:5-12 is
     https|http|tls|tcp|udp|websocket|rawSocket. It has no `grpc` and does have `tls` and
@@ -68,6 +68,7 @@ policy belongs in `galerina-framework-app-kernel`.
     IdempotencyStore.seen gate before wiring; never implement admission as an
     unprotected read-then-write pair
     SuperGrok 2026-10-07 pin: HOLD. Reconcile needs app-kernel IdempotencyStore.claim/.seen (Codex RD-1413; PR #80 leaves this HOLD). Observational get/put remains a record interface only. `refuseObservationalIdempotencyAdmission` always refuses and never calls get/put. Admission stays AtomicAdmissionStore.claim (`validateIdempotency` / `validateReplayProtection`). Do not mark [x]. Tests: tests/idempotency-observational-refusal.test.mjs (5 tests).
+    SuperGrok 2026-10-07d: AtomicAdmissionStore.claim(scope,key,ttlSeconds)->claimed|duplicate MATCHES app-kernel IdempotencyStore.claim at pin kernel.ts:100-106; seen() is @deprecated at :148-150. HOLD remains: observational get/put still record-only (owner keep/rename/remove); no shared type; no kernel.ts edits (Codex RD-1413). PR #80 does not cover this row. Tests: tests/hold-core-network-claim-and-consumer-pin.test.mjs.
 [x] Implement validateIdempotency(key, store): Promise<NetworkDiagnostic[]> (atomic claim in its own scope; not wired to app-kernel, the [!] reconciliation row above stays open) -- src/webhook.ts, tests/webhook-verification.test.mjs (Grok 2026-10-05)
 [x] Implement validateAiPrompt(prompt, policy): NetworkDiagnostic[] (heuristic; current provider allowlist is openai only; fail-closed 1 MiB hard prompt cap with allocation-free UTF-8 preflight, invalid explicit-cap refusal, secret-shaped 006, e-mail/phone 006; bounded linear-time patterns with a ReDoS regression; still not proof of outbound authorization/redaction) -- src/runtime/governed-network.ts, tests/governed-network.test.mjs (Grok 2026-10-05; Codex follow-up 2026-10-05)
 [x] Define NetworkDiagnostic: code, message, severity, destination? (exists at src/index.ts:29-34

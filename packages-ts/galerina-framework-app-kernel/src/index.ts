@@ -35,6 +35,7 @@ export * from "./production-slide-restore-admission.js";
 export * from "./production-boot-composition-candidate.js";
 export * from "./typed-api-boundary.js";
 export * from "./api-server-handoff-contract.js";
+export * from "./core-runtime-handoff-contract.js";
 export * from "./request-validation-policy.js";
 export * from "./auth-provider-boundary.js";
 export * from "./scope-role-policy.js";

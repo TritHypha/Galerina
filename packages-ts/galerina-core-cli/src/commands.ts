@@ -55,7 +55,7 @@ export const commands: readonly CliCommand[] = [
   },
   {
     name: "deploy",
-    description: "Dry-run deploy effects validation against a closed policy (fail-closed; no live deploy).",
+    description: "Deploy effects validation; live local receipt requires --artefacts/--runtime/--audit/--report (fail-closed; no remote host).",
     run: runDeployCommand
   },
   {

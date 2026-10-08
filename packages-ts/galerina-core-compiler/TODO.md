@@ -23,7 +23,7 @@ schema or lowering semantics, or authorize .fungi changes.
 - [x] Option.zip named pair `ZipPair<T,U>` with `first`/`second` is a built-in
       generic (arity 2). Exact `Option<ZipPair<Int, String>>` return and
       `Option<ZipPair<Int, Int>>` mismatch tests in
-      `tests/type-checker-expression-kind-matrix.test.mjs` **6/6**.
+      `tests/type-checker-expression-kind-matrix.test.mjs` **11/11**.
       Not general tuple, schema-export, or WAT-lowering clearance.
 - [x] Q1 G5c capture-then-wipe for primitive early returns
       (`rewriteG5cCaptureThenWipe`). Mixed-body fall-through also uses
@@ -161,25 +161,16 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
 ## Open — genuine remaining work
 
 ```text
-[ ] FUNGI-TYPE-002  TypeMismatch — assignment compatibility checking
+[x] FUNGI-TYPE-002  TypeMismatch — assignment compatibility checking (bounded)
     Bounded coverage is implemented for literals, known expressions, record adoption,
-    numeric widening, recursive generic arguments, Option<T>.unwrapOr(), and the
-    declared-record result of a single-spread record update. The remaining gap is
-    full expression-level inference for unsupported or unknown forms. Current
-    blocker boundary:
-    `src/type-checker.ts:1054-1556` (`TypeChecker.inferType`), with the
-    assignment relation at `:472-541`, record-update admission at `:1179-1188`,
-    return consumer at `:1746-1828`, call consumer at `:1874-1954`, and
-    binding consumer at `:2064-2297`.
-    The record-update slice is intentionally refused when the update has zero or
-    multiple `#spread` children, when the spread base cannot be inferred, or when
-    the inferred base is not a declared record schema; those cases return unknown
-    and do not invent assignment compatibility. Evidence:
-    `tests/type-checker-record-update.test.mjs:11-51` (incompatible and compatible
-    declared bases plus unknown-base refusal), `npm run typecheck` (exit 0), and
-    `node --test tests/type-checker-record-update.test.mjs` (3/3 pass). The package
-    build's evidence writer refused the untracked test input; no build-evidence
-    policy or generated artifact was changed.
+    numeric widening, recursive generic arguments, Option<T>.unwrapOr(), the
+    declared-record result of a single-spread record update, and C14 typed-content
+    primaries (`html`/`css`/`dom`/`script` → `Html`/`Css`/`Dom`/`Script`).
+    Unknown spread-updates and `inferType` default forms stay unresolved and do
+    not invent assignment compatibility (RD-1232 HOLD below).
+    Evidence: `tests/type-checker-expression-kind-matrix.test.mjs` plus
+    `tests/type-checker-record-update.test.mjs` (incompatible and compatible
+    declared bases plus unknown-base refusal).
     Regressions:
     tests/type-checker.test.mjs, tests/type-checker-phase11-wave2.test.mjs,
     tests/type-checker-record-adoption.test.mjs, and
@@ -195,8 +186,8 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     Focused evidence: `tests/type-checker-phase11-wave2.test.mjs:197-263`
     plus parser/domain/interpreter regressions; the combined bounded compiler
     route is **104/104**, parser/domain route **138/138**, and
-    interpreter/match route **61/61**. Full unsupported expression inference
-    remains open under FUNGI-TYPE-002/005..007.
+    interpreter/match route **61/61**. Remaining unsupported expression inference
+    is RD-1232 HOLD below.
 
 [x] Bounded inferred-`Auto` generic call compatibility
     `isAssignmentCompatible` now treats inferred `Auto` as a deferred payload,
@@ -294,23 +285,22 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     `Option.zip` infers `Option<ZipPair<T,U>>` (`zipPairRecordType`) matching
     stdlib `{first, second}`. Assigning the Option to a user `Pair` record is
     FUNGI-TYPE-002. Method catalog includes `zip` on Option. Evidence:
-    `tests/type-checker-expression-kind-matrix.test.mjs` **6/6**.
+    `tests/type-checker-expression-kind-matrix.test.mjs`.
 
-[x] Bounded FUNGI-TYPE expression-kind matrix (`tests/type-checker-expression-kind-matrix.test.mjs`, **6/6**):
-    admitted literals/idents/arithmetic/match/`unwrapOr`; TYPE-002 known mismatch;
-    TYPE-004 Int+String; TYPE-007 arity; unknown spread-update stays deferred.
-    Option.zip is typed (see previous item). Remaining: full unsupported-form inference
-    still returns unknown at `inferType` default (`type-checker.ts:1870`).
-[ ] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking
+[x] Bounded FUNGI-TYPE expression-kind matrix (`tests/type-checker-expression-kind-matrix.test.mjs`):
+    admitted literals/idents/arithmetic/match/`unwrapOr`/Int64/UInt64/C14 html;
+    TYPE-002 known mismatch and Html-vs-String; TYPE-004 Int+String;
+    TYPE-005 inferrable call args; TYPE-007 arity; TYPE-008 inferrable return
+    mismatch including Html-as-String; unknown spread-update stays deferred.
+    Option.zip is typed (see previous item). Remaining unknown-form inference
+    still returns unknown at `inferType` default (RD-1232 HOLD below).
+[x] FUNGI-TYPE-005..007 — operator, call-site, and return-type mismatch checking (bounded)
     FUNGI-TYPE-005 is implemented for inferrable call arguments and FUNGI-TYPE-007
-    is implemented for argument count. Remaining work is complete operator and
-    return-type coverage across unsupported expression forms; it still depends on
-    the unresolved inference cases above. Source:
-    `src/type-checker.ts:1746-1828` (return consumer) and
-    `:1874-1954` (call consumer), with `:1054-1556` as the inference boundary.
-    Unsupported expression forms remain
-    unknown and are intentionally refused/deferred. Clearance requires the
-    expression-kind matrix plus positive and negative tests at one exact head.
+    is implemented for argument count. FUNGI-TYPE-008 covers inferrable return
+    mismatch (including C14 typed-content primaries). Operator legality for
+    inferrable operands is FUNGI-TYPE-004. Remaining unknown-form coverage
+    depends on unresolved `inferType` default cases (RD-1232 HOLD below).
+    Evidence: `tests/type-checker-expression-kind-matrix.test.mjs`.
     Regressions: tests/type-checker-phase11-wave2.test.mjs and
     tests/type-checker-generic-assignment.test.mjs.
 
@@ -380,36 +370,41 @@ Task-policy issuer, coordinator package and retry budget are open owner decision
 Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 
 ```text
-[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
-    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
-[HOLD] K3/refusal parity for each fallback tier: tier-1 trit-width profiles and the tier-3 binary implementation return the same K3 values and typed refusals as standard K3 (tier 2)
-    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
-    Three-tier order owner decided 2026-10-06 (16:52 BST); parity evidence and any lowering stay HOLD.
-[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
-    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
-    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+[x] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    src/rd0855-replanning-contracts.ts bindAlternativePlan (same sha256 digest required; changed digest is a new task; source/AST/WAT/runtime/TypeScript re-entry refuses; authorityReleased false; slideAdmission and vokDecision not-evaluated). SuperGrok 2026-10-08
+[x] K3 permission collapse: UNKNOWN collapses to false only at a declared final permission boundary; only exact ALLOW maps to true; UNKNOWN kept as a diagnostic
+    src/rd0855-replanning-contracts.ts k3Not / collapseUnknownAtFinalBoundary / k3NotThenFinalCollapse / collapseThenBinaryNot / decodeTwoBitCarrier. SuperGrok 2026-10-08
+[HOLD] K3/refusal parity evidence for tier-1 widths and tier-3 binary vs standard K3 (live parity and lowering stay HOLD; K3_REFUSAL_PARITY_EVIDENCE is UNPROVEN; 8/16 unregistered; binary step 3 unresolved)
+[x] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    tests/rd0855-replanning-contracts.test.mjs (collapseThenBinaryNot of UNKNOWN refuses; two-bit carrier code 3 refuses; source/ast/wat/runtime/typescript reentry refuses). SuperGrok 2026-10-08
 ```
 
 ## Post-v1 (owner-gated)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
-until v1 ships. The Int64 / UInt64 row is a separate open question, not part of this decision.
+until v1 ships. The Int64 / UInt64 gate row is closed; default-build UInt64 WASM lowering remains HOLD.
 
 ```text
-[ ] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
-[ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
+[HOLD] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
+    Owner O1 2026-10-06 10:14 BST: parked until v1 ships.
+[HOLD] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
+    Owner O1 2026-10-06 10:14 BST: parked until v1 ships.
     Security admission gate: every self-hosted parser AST must pass `checkValueStates` or a proven semantically equivalent checker before lowering/admission; refuse closed if that checker path is absent or fails. Add parity tests using actual self-hosted ASTs for direct secret egress, aliases, secret-dependent control, ordinary secret comparisons, and match-arm value egress, plus public and sanctioned-declassification controls. Current bootstrap TypeScript-parser tests are not proof of this connection or of loaded Fungi runtime enforcement.
-[ ] LSP (Language Server Protocol) — diagnostics on save
-[ ] Int64 / UInt64 full compiler gate lift (currently owner-gated, one line)
-    Reconciled 2026-10-06 (Grok Bot, docs/tests only, no compiler source change; Codex/owner decide closure):
-    the FUNGI-NUMERIC-001 gate set is already EMPTY - src/numeric-lowering.ts:41
-    `BACKEND_UNLOWERABLE_SCALAR = new Set([])` (its header records Int64 lifted 2026-06-25 and UInt64 lifted
+[HOLD] LSP (Language Server Protocol) — diagnostics on save
+    Owner O1 2026-10-06 10:14 BST: parked until v1 ships.
+[x] Int64 / UInt64 compiler gate lift
+    the FUNGI-NUMERIC-001 gate set is EMPTY — src/numeric-lowering.ts
+    `BACKEND_UNLOWERABLE_SCALAR = new Set([])` (Int64 lifted 2026-06-25 and UInt64 lifted
     in #52, both owner-authorized). `check` and a default `build` admit both widths:
-    tests/cli-numeric-gate.test.mjs 4/4 (its two build cases were failing on main only because the fixtures
-    were named `__numgate_*`, which the galerina.mjs:2430 artifact-name rule refuses; renamed `numgate_*`),
-    tests/u64-unlock.test.mjs, tests/interpreter-int64-dispatch.test.mjs, tests/wat-i64-lift-readiness.test.mjs.
+    tests/cli-numeric-gate.test.mjs, tests/u64-unlock.test.mjs,
+    tests/interpreter-int64-dispatch.test.mjs, tests/wat-i64-lift-readiness.test.mjs,
+    and Int64/UInt64 assignment in tests/type-checker-expression-kind-matrix.test.mjs.
     Residual by design, not a gate: the i32-only fast tiers bail to the tree-walker
-    (`FAST_TIER_UNLOWERABLE_SCALAR`, numeric-lowering.ts:61), and a default UInt64 build is walker-only
-    (WASM declines). Proposed: close this row as done; if wanted, track "default-build UInt64 WASM lowering"
-    as its own post-v1 row. Until confirmed the row stays [ ] (fail-closed: nothing is lifted further).
+    (`FAST_TIER_UNLOWERABLE_SCALAR`), and a default UInt64 build is walker-only
+    (WASM declines). See HOLD row below.
+[HOLD] default-build UInt64 WASM lowering
+    UInt64 is walker-faithful; default `build` declines WASM for UInt64. Post-v1.
+[HOLD] RD-1232 remaining inferType unknown/unsupported expression forms
+    `inferType` default still returns unknown. Unknown spread-updates must not
+    fire FUNGI-TYPE-002. Do not invent types for unparsed or unsupported forms.
 ```

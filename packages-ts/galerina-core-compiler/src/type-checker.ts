@@ -26,10 +26,13 @@
 //   FUNGI-BINDING-005  ImmutableBindingReassigned — let/param reassignment rejected (Phase 11A.2)
 //
 // Deferred (require full expression type inference or call graph):
-//   FUNGI-TYPE-002  TypeMismatch               — remaining unsupported expression forms (bounded
-//                                              literal, known-expression, record and generic checks live)
+//   FUNGI-TYPE-002  TypeMismatch               — remaining unsupported inferType default forms
+//                                              (RD-1232). Bounded known forms live, including C14
+//                                              typed-content primaries (html/css/dom/script).
 //   FUNGI-TYPE-034  GovernanceQualifierMismatch — protected/redacted label laundering
-//   FUNGI-TYPE-005..007  Operator / call / return type checking (call arguments/count are partial)
+//   FUNGI-TYPE-005..007  remaining unknown-form operator/call/return coverage (RD-1232).
+//                        Call arguments (005) and arity (007) are implemented for inferrable forms;
+//                        return mismatch for inferrable forms is FUNGI-TYPE-008.
 //   FUNGI-TYPE-010  UnsatisfiedGenericConstraint — generic constraint checks
 //   FUNGI-TYPE-012..016  ResultType, SecretOp, MissingEffect, GovernedSink, TensorShape
 //   FUNGI-TYPE-018  InvalidRuntimeTargetType
@@ -250,6 +253,10 @@ const BUILT_IN_TYPES: ReadonlySet<string> = new Set([
   // ── Phase 11E: Record / request / response types ─────────────────────────
   "PatientReadRequest", "PatientProfileResponse", "PatientProfileRequest",
   "CreatePatientRequest", "CreateOrderRequest", "CreateOrderResponse",
+  // C14 typed-content primaries (html/css/dom/script <<MARKER). These names
+  // already appear as stdlib module prefixes and as flow return annotations
+  // in typed-content fixtures; inferType maps the block kind onto them.
+  "Html", "Css", "Dom", "Script",
   // ── Phase 11E: import-resolved types (populated at runtime via import declarations) ──
   // These are registered here so the type checker accepts them without a local declaration.
   "PatientRecord", "HealthRecord", "ClinicalActor", "HealthRecord",
@@ -2279,6 +2286,17 @@ class TypeChecker {
 
         // Different non-numeric arm types still require a real inference rule;
         // preserve the existing fail-closed deferral until that contract exists.
+        return undefined;
+      }
+
+      case "typedContentBlockExpr": {
+        // C14 typed content is a parsePrimary expression. The lexer block kind
+        // is the type name; an unknown kind stays unresolved.
+        const blockType = node.blockType ?? node.value ?? "";
+        if (blockType === "html") return "Html";
+        if (blockType === "css") return "Css";
+        if (blockType === "dom") return "Dom";
+        if (blockType === "script") return "Script";
         return undefined;
       }
 

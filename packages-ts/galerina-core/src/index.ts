@@ -473,3 +473,5 @@ export function filterBySeverity(
 ): readonly CompilerDiagnostic[] {
   return diagnostics.filter((d) => d.severity === severity);
 }
+
+export * from "./v1-scope-contract";

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -17,10 +18,19 @@ import {
   DEPLOY_EXIT_USAGE_OR_POLICY,
   DEPLOY_EXIT_TARGET,
   DEPLOY_EXIT_VALIDATION,
+  DEPLOY_EXIT_CAPABILITY,
   DEPLOY_EXIT_VERIFY,
 } from "../dist/deploy/deploy-command.js";
 import { DEPLOYMENT_REPORT_FILE } from "../dist/deploy/deploy-report.js";
-import { FUNGI_DEPLOY_003, FUNGI_DEPLOY_004, FUNGI_DEPLOY_005 } from "../dist/deploy/deploy-validator.js";
+import {
+  FUNGI_DEPLOY_003,
+  FUNGI_DEPLOY_004,
+  FUNGI_DEPLOY_005,
+  FUNGI_DEPLOY_008,
+  FUNGI_DEPLOY_009,
+} from "../dist/deploy/deploy-validator.js";
+import { DEPLOY_RUNTIME_SCHEMA } from "../dist/deploy/deploy-runtime.js";
+import { CAPABILITY_REPORT_SCHEMA } from "../dist/verify/verify-runtime.js";
 
 const HASH = "sha256:" + "ab".repeat(32);
 
@@ -73,15 +83,28 @@ describe("parseDeployArgs", () => {
     assert.equal(ok.options.dryRun, true);
   });
 
-  it("refuses --audit as not admitted", () => {
-    const r = parseDeployArgs([...required, "--audit", "a.json"]);
+  it("admits --audit <file> and --runtime <file>", () => {
+    const r = parseDeployArgs([...required, "--audit", "a.json", "--runtime", "r.json"]);
+    assert.equal(r.ok, true);
+    assert.equal(r.options.auditPath, "a.json");
+    assert.equal(r.options.runtimePath, "r.json");
+  });
+
+  it("refuses --audit without a value", () => {
+    const r = parseDeployArgs([...required, "--audit"]);
     assert.equal(r.ok, false);
-    assert.equal(r.result.error.code, FUNGI_CLI_DEPLOY_004);
+    assert.equal(r.result.error.code, FUNGI_CLI_DEPLOY_001);
+  });
+
+  it("parses without --dry-run as live (dryRun false)", () => {
+    const r = parseDeployArgs(["--manifest", "m.json", "--policy", "p.json", "--target", "wasm", "--hash", HASH]);
+    assert.equal(r.ok, true);
+    assert.equal(r.options.dryRun, false);
   });
 });
 
 describe("runDeployCommand / galerina deploy", () => {
-  it("requires --dry-run and refuses without echoing paths", async () => {
+  it("live without required flags refuses 002 without echoing paths", async () => {
     await withTemp(async (dir) => {
       writeFileSync(join(dir, "m.json"), JSON.stringify(goodManifest()));
       writeFileSync(join(dir, "p.json"), JSON.stringify(goodPolicy()));
@@ -91,7 +114,7 @@ describe("runDeployCommand / galerina deploy", () => {
       );
       assert.equal(result.ok, false);
       assert.equal(result.code, DEPLOY_EXIT_USAGE_OR_POLICY);
-      assert.equal(result.error.code, FUNGI_CLI_DEPLOY_001);
+      assert.equal(result.error.code, FUNGI_CLI_DEPLOY_002);
       assert.equal(JSON.stringify(result).includes(dir), false);
     });
   });
@@ -243,6 +266,176 @@ describe("runDeployCommand / galerina deploy", () => {
       assert.equal(second.ok, false);
       assert.equal(second.error.code, FUNGI_CLI_DEPLOY_005);
       assert.equal(JSON.stringify(second).includes(dir), false);
+    });
+  });
+
+  it("keeps FUNGI-CLI-DEPLOY-004 reserved after --audit admission", () => {
+    assert.equal(FUNGI_CLI_DEPLOY_004, "FUNGI-CLI-DEPLOY-004");
+  });
+});
+
+const sha = (text) => "sha256:" + createHash("sha256").update(text).digest("hex");
+
+function goodRuntime(overrides = {}) {
+  return {
+    schema: DEPLOY_RUNTIME_SCHEMA,
+    profile: "workspace.default",
+    target: "wasm",
+    effects: ["audit.write"],
+    capabilities: ["db.read"],
+    ...overrides,
+  };
+}
+
+function goodCapability(overrides = {}) {
+  return {
+    schema: CAPABILITY_REPORT_SCHEMA,
+    generatedAt: "2026-10-05T12:00:00.000Z",
+    capabilities: [{ capability: "db.read", allowed: 2, denied: 0 }],
+    deniedCapabilities: [],
+    policyIds: ["policy.default"],
+    rejectedIndices: [],
+    rejectedCodes: [],
+    truncated: false,
+    complete: true,
+    ...overrides,
+  };
+}
+
+function seedLive(dir) {
+  mkdirSync(join(dir, "build", "mod"), { recursive: true });
+  mkdirSync(join(dir, "out"));
+  writeFileSync(join(dir, "build", "mod", "app.wasm"), "module-bytes-v1");
+  writeFileSync(join(dir, "m.json"), JSON.stringify(goodManifest({ allowedEffects: ["audit.write"] })));
+  writeFileSync(
+    join(dir, "p.json"),
+    JSON.stringify({ allowedEffects: ["audit.write"], allowedTargets: ["wasm"], requireVerified: true }),
+  );
+  writeFileSync(
+    join(dir, "a.json"),
+    JSON.stringify([{ path: "mod/app.wasm", kind: "bundle", hash: sha("module-bytes-v1"), target: "wasm" }]),
+  );
+  writeFileSync(join(dir, "r.json"), JSON.stringify(goodRuntime()));
+  writeFileSync(join(dir, "c.json"), JSON.stringify(goodCapability()));
+}
+
+describe("galerina deploy live local receipt", () => {
+  it("succeeds with artefacts/runtime/audit/report and writes dryRun:false", async () => {
+    await withTemp(async (dir) => {
+      seedLive(dir);
+      const result = await runCli(
+        [
+          "deploy",
+          "--manifest",
+          "m.json",
+          "--policy",
+          "p.json",
+          "--target",
+          "wasm",
+          "--hash",
+          HASH,
+          "--artefacts",
+          "a.json",
+          "--root",
+          "build",
+          "--runtime",
+          "r.json",
+          "--audit",
+          "c.json",
+          "--report",
+          "out",
+        ],
+        dir,
+      );
+      assert.equal(result.ok, true, result.message);
+      assert.equal(result.code, DEPLOY_EXIT_OK);
+      assert.equal(result.message.includes("dry-run"), false);
+      const report = JSON.parse(readFileSync(join(dir, "out", DEPLOYMENT_REPORT_FILE), "utf8"));
+      assert.equal(report.success, true);
+      assert.equal(report.dryRun, false);
+      assert.ok(report.limitations.some((l) => l.includes("no remote host")));
+      assert.equal(JSON.stringify(result).includes(dir), false);
+    });
+  });
+
+  it("refuses denied capabilities at exit 5 without echoing names", async () => {
+    await withTemp(async (dir) => {
+      seedLive(dir);
+      writeFileSync(
+        join(dir, "c.json"),
+        JSON.stringify(
+          goodCapability({
+            capabilities: [
+              { capability: "db.read", allowed: 1, denied: 0 },
+              { capability: "net.http", allowed: 0, denied: 1 },
+            ],
+            deniedCapabilities: ["net.http"],
+          }),
+        ),
+      );
+      const result = await runCli(
+        [
+          "deploy",
+          "--manifest",
+          "m.json",
+          "--policy",
+          "p.json",
+          "--target",
+          "wasm",
+          "--hash",
+          HASH,
+          "--artefacts",
+          "a.json",
+          "--root",
+          "build",
+          "--runtime",
+          "r.json",
+          "--audit",
+          "c.json",
+          "--report",
+          "out",
+        ],
+        dir,
+      );
+      assert.equal(result.ok, false);
+      assert.equal(result.code, DEPLOY_EXIT_CAPABILITY);
+      assert.equal(JSON.stringify(result).includes("net.http"), false);
+      void FUNGI_DEPLOY_009;
+    });
+  });
+
+  it("refuses runtime target mismatch at exit 3 without echoing the token", async () => {
+    await withTemp(async (dir) => {
+      seedLive(dir);
+      writeFileSync(join(dir, "r.json"), JSON.stringify(goodRuntime({ target: "node" })));
+      const result = await runCli(
+        [
+          "deploy",
+          "--manifest",
+          "m.json",
+          "--policy",
+          "p.json",
+          "--target",
+          "wasm",
+          "--hash",
+          HASH,
+          "--artefacts",
+          "a.json",
+          "--root",
+          "build",
+          "--runtime",
+          "r.json",
+          "--audit",
+          "c.json",
+          "--report",
+          "out",
+        ],
+        dir,
+      );
+      assert.equal(result.ok, false);
+      assert.equal(result.code, DEPLOY_EXIT_TARGET);
+      assert.equal(JSON.stringify(result).includes("node"), false);
+      void FUNGI_DEPLOY_008;
     });
   });
 });

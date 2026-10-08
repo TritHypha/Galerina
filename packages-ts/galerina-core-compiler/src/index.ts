@@ -181,6 +181,27 @@ export {
 } from "./string-match-gir-emitter-v1.js";
 
 export {
+  ADMITTED_TRIT_WIDTHS_V1,
+  FALLBACK_TIER_ORDER,
+  K3_REFUSAL_PARITY_EVIDENCE,
+  RD0855_REPLAN_SCHEMA,
+  bindAlternativePlan,
+  collapseThenBinaryNot,
+  collapseUnknownAtFinalBoundary,
+  decodeTwoBitCarrier,
+  k3Not,
+  k3NotThenFinalCollapse,
+  type AlternativeReplanPlan,
+  type CompilerReplanDiagnostic,
+  type FallbackTier,
+  type K3Trit,
+  type PermissionDecision,
+  type ReplanBindDecision,
+  type ReplanReentry,
+  type SealedReplanTask,
+} from "./rd0855-replanning-contracts.js";
+
+export {
   loadProductRegistry,
   resolveProductProfile,
   type ProductId,
