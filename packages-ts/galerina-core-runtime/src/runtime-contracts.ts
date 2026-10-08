@@ -362,3 +362,118 @@ export function admitUntrustedData(text: string, policy: DataIntakePolicy, owner
   if (typeof owner !== "string" || owner.trim().length === 0) return fail("ownership", "Galerina_RUNTIME_INTAKE_OWNER", "Admitted data needs an explicit owner.");
   return { admitted: true, failedStage: "none", diagnostics: [], owner, taint: "untrusted", value: deepFreeze(record) };
 }
+
+// ── bounded native floor transfer (L45/L46; NON-EXECUTING; PROPOSED codes) ──
+// The TypeScript public surface has no native floor binding. Transfer is always
+// refused. Opaque VM/component-resource handles and non-closed-profile objects
+// get distinct PROPOSED codes. This path does not execute, mmap, or call Rust.
+// Codex untracked native/wamr-host is HOLD — not designed around here.
+
+/** PROPOSED: opaque VM/component-resource handle transfer into the RD-0662 floor. */
+export const GALERINA_RUNTIME_OPAQUE_VM_TRANSFER = "Galerina_RUNTIME_OPAQUE_VM_TRANSFER";
+/** PROPOSED: object is not the closed 16-byte GVEO return-u64 profile. */
+export const GALERINA_RUNTIME_NON_CLOSED_PROFILE = "Galerina_RUNTIME_NON_CLOSED_PROFILE";
+/** PROPOSED: general RD-0656 VEO object/linker profile is not admitted. */
+export const GALERINA_RUNTIME_VEO_PROFILE_UNBUILT = "Galerina_RUNTIME_VEO_PROFILE_UNBUILT";
+/** PROPOSED: TS surface has no native floor binding, so even a named closed profile cannot transfer. */
+export const GALERINA_RUNTIME_FLOOR_TRANSFER_UNBOUND = "Galerina_RUNTIME_FLOOR_TRANSFER_UNBOUND";
+/** PROPOSED: transfer request is not a plain data object. */
+export const GALERINA_RUNTIME_FLOOR_TRANSFER_SHAPE = "Galerina_RUNTIME_FLOOR_TRANSFER_SHAPE";
+
+export const BOUNDED_NATIVE_FLOOR_OBJECT_BYTES = 16;
+export const BOUNDED_NATIVE_FLOOR_MAGIC = "GVEO";
+export const BOUNDED_NATIVE_FLOOR_PROFILE = "return-u64";
+
+export const BOUNDED_FLOOR_TRANSFER_KINDS = Object.freeze([
+  "owned-bytes-closed-profile",
+  "opaque-vm-resource",
+  "component-resource",
+  "veo-object",
+  "unknown",
+] as const);
+
+export type BoundedFloorTransferKind = (typeof BOUNDED_FLOOR_TRANSFER_KINDS)[number];
+
+const CLOSED_PROFILE_KEYS = Object.freeze(["kind", "magic", "objectBytes", "profile"] as const);
+
+function snapshotPlain(record: unknown): { readonly ok: true; readonly values: ReadonlyMap<string, unknown> } | { readonly ok: false } {
+  try {
+    if (record === null || typeof record !== "object" || Array.isArray(record)) return { ok: false };
+    const proto = Object.getPrototypeOf(record);
+    if (proto !== Object.prototype && proto !== null) return { ok: false };
+    const values = new Map<string, unknown>();
+    for (const key of Object.keys(record as object)) {
+      const desc = Object.getOwnPropertyDescriptor(record, key);
+      if (desc === undefined || desc.get !== undefined || desc.set !== undefined) return { ok: false };
+      values.set(key, desc.value);
+    }
+    return { ok: true, values };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/**
+ * Extra fail-closed check: the public TS surface refuses opaque VM/component-resource
+ * transfer and any non-closed-profile object. Never allowed:true. Hostile object
+ * reflection traps are converted to a coded shape refusal.
+ */
+export function admitBoundedNativeFloorTransfer(record: unknown): RuntimePolicyVerdict {
+  const d: RuntimePolicyDiagnostic[] = [];
+  const snap = snapshotPlain(record);
+  if (!snap.ok) {
+    d.push(refuse(GALERINA_RUNTIME_FLOOR_TRANSFER_SHAPE, "Transfer request must be a plain data object (no accessors, arrays or custom prototype).", "record"));
+    return verdictOf(d);
+  }
+  const kind = snap.values.get("kind");
+  if (kind === "opaque-vm-resource" || kind === "component-resource") {
+    d.push(refuse(GALERINA_RUNTIME_OPAQUE_VM_TRANSFER, "Opaque Galerina VM/component-resource transfer into the bounded native floor is refused.", "kind"));
+    return verdictOf(d);
+  }
+  if (kind === "veo-object") {
+    d.push(refuse(GALERINA_RUNTIME_VEO_PROFILE_UNBUILT, "The general RD-0656 VEO object/linker profile is not admitted on the bounded native floor.", "kind"));
+    return verdictOf(d);
+  }
+  if (kind !== "owned-bytes-closed-profile") {
+    d.push(refuse(GALERINA_RUNTIME_NON_CLOSED_PROFILE, "Only the closed 16-byte GVEO return-u64 profile is named; this kind is not that profile.", "kind"));
+    return verdictOf(d);
+  }
+  const extra = [...snap.values.keys()].filter((key) => !(CLOSED_PROFILE_KEYS as readonly string[]).includes(key));
+  if (extra.length > 0) {
+    d.push(refuse(GALERINA_RUNTIME_FLOOR_TRANSFER_SHAPE, "Closed-profile transfer requests refuse unknown keys.", "record"));
+    return verdictOf(d);
+  }
+  const magic = snap.values.get("magic");
+  const objectBytes = snap.values.get("objectBytes");
+  const profile = snap.values.get("profile");
+  if (magic !== BOUNDED_NATIVE_FLOOR_MAGIC || objectBytes !== BOUNDED_NATIVE_FLOOR_OBJECT_BYTES || profile !== BOUNDED_NATIVE_FLOOR_PROFILE) {
+    d.push(refuse(GALERINA_RUNTIME_NON_CLOSED_PROFILE, "Object is not the closed 16-byte GVEO return-u64 profile.", "profile"));
+    return verdictOf(d);
+  }
+  d.push(refuse(GALERINA_RUNTIME_FLOOR_TRANSFER_UNBOUND, "The TypeScript public surface has no native floor binding; transfer is refused (NON-EXECUTING).", "kind"));
+  return verdictOf(d);
+}
+
+/** L47 PROPOSED: fields an independent live Linux/macOS W^X + entropy receipt must carry. Not a producer. */
+export const PROPOSED_INDEPENDENT_WX_ENTROPY_RECEIPT_FIELDS = Object.freeze([
+  "hostOs",
+  "hostKind",
+  "kernel",
+  "arch",
+  "executableAtCall",
+  "writableAtCall",
+  "authorityReleased",
+  "entropySource",
+  "attestorIdentity",
+  "relatedCommit",
+] as const);
+
+export const PROPOSED_INDEPENDENT_WX_ENTROPY_HOST_OS = Object.freeze(["linux", "macos"] as const);
+export const PROPOSED_INDEPENDENT_WX_ENTROPY_HOST_KIND = Object.freeze(["physical", "independent-vm"] as const);
+
+/** L48 PROPOSED: unmet proof obligations. Names the TODO row; does not implement erasure. */
+export const PROPOSED_HOSTILE_MEMORY_PROOF_OBLIGATIONS = Object.freeze([
+  "isolation-from-caller-alias",
+  "integrity-of-owned-bytes-at-call",
+  "physical-erasure-policy",
+] as const);

@@ -7,6 +7,7 @@ import { assertScalarClassifierAsset, proveScalarClassifier } from "../../../scr
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PRODUCT_ROOT = join(PACKAGE_ROOT, "..", "..", "packages", "fungi", "products", "galerina", "rd0873-core-runtime");
+const PRODUCT_TREE = "packages/fungi/products/galerina/rd0873-core-runtime";
 const ASSET = "terminal-scope.fungi";
 const CASES = Object.freeze([
   ...["succeeded", "failed", "timed_out", "cancelled"].map((value) => ({ value, expected: true })),
@@ -19,6 +20,7 @@ describe("core-runtime package-owned terminal scope decision", () => {
       packageRoot: PACKAGE_ROOT,
       assetRoot: PRODUCT_ROOT,
       assetRelative: ASSET,
+      productTree: PRODUCT_TREE,
       referenceRelative: "src/structured-await.ts",
       assertReference(reference) {
         assert.match(reference, /export type StructuredAwaitScopeStatus =\s*\| "running"\s*\| "cancelling"\s*\| StructuredAwaitTerminalOutcome;/u);
