@@ -48,24 +48,41 @@ runtime work.
     native/vok-authority/src/veo.rs admit_veo_object + domain-separated action_id/object_id; src/native-floor-contracts.ts admitVeoReturnU64Profile (SuperGrok 2026-10-08)
 [HOLD] General RD-0656 VEO object/linker (imports, relocations, constructors, GIR lowering, independent verifier)
     admit_general_veo_linker / admitGeneralVeoLinker always refuse VOK_VEO_GENERAL_LINKER_UNAVAILABLE / Galerina_RUNTIME_VEO_GENERAL_LINKER
+    Kept HOLD (SuperGrok 2026-10-08): runGeneralVeoLinker always RT_VEO_GENERAL_LINKER_FORBIDDEN. Unique 07396a98 UNCHANGED.
 [x] Obtain independent live Linux W^X/entropy receipt
     vok-live-evidence os+entropy fields; Docker rust linux/amd64 receipt native/vok-authority/evidence/linux-x86_64-wx-live-20261008.json (SuperGrok 2026-10-08)
 [HOLD] Obtain independent live macOS W^X/entropy receipt
     Hardened-runtime VM-region inspection is not available from this Windows SuperGrok session; platform.rs still treats macOS query as the bounded mprotect transition
+    Kept HOLD (SuperGrok 2026-10-08): obtainMacosWxLiveReceipt always RT_MACOS_WX_RECEIPT_FORBIDDEN.
 [x] Prove hostile-memory isolation/integrity of opaque handles and logical wipe
     forged/stale/cross-table/resource-as-code; admit_isolation_claim LogicalWipeVerified; src/memory_policy.rs (SuperGrok 2026-10-08)
 [HOLD] Physical-erasure policy
     claim_physical_erasure returns VOK_MEMORY_PHYSICAL_ERASURE_UNPROVEN; userspace logical clear+unmap only; media wipe is not a userspace proof
+    Kept HOLD (SuperGrok 2026-10-08): claimPhysicalMediaWipe always RT_PHYSICAL_ERASURE_FORBIDDEN. Unique 07396a98 UNCHANGED.
 [x] Define runtime error format
 [x] Define target fallback runtime contract
     src/runtime-contracts.ts decideTargetFallback (opt-in, declared chain, exact semantics only); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] RD-0855: separate pre-execution unavailability from denial, revocation, integrity failure and unknown execution
     src/runtime-contracts.ts classifyTargetSkip / decideGovernedTargetFallback (only authenticated pre-effect unavailable/incompatible may FALLBACK; DENY, revoked, integrity_invalid, unknown_outcome, partial_effect, cleanup_failure REFUSE with original kept and never select the next target; proposal records authorityReleased false, slideAdmission and vokDecision not-evaluated). Owner 16:52 BST three-tier order recorded as FALLBACK_TIER_ORDER. SuperGrok 2026-10-08
 [HOLD] RD-0855: register 8/16-trit execution profiles (owner 2026-10-06 23:12 BST: research-only until v1; ADMITTED_TRIT_WIDTHS_V1 is 1/32/64/256; bare 8 refuses)
+    Kept HOLD (SuperGrok 2026-10-08): registerTritWidths8And16 always RT_TRIT_WIDTH_8_16_FORBIDDEN. Unique 57b7c8ee UNCHANGED.
 [HOLD] RD-0855: binary same-semantics step 3 (unresolved alternative; must name a distinct provider/implementation and reusable admission-bound contract; K3 still decides permission; decideGovernedTargetFallback never selects tier binary-same-semantics)
+    Kept HOLD (SuperGrok 2026-10-08): selectBinarySameSemantics always RT_BINARY_SAME_SEMANTICS_FORBIDDEN. Unique 57b7c8ee UNCHANGED.
 [x] RD-0855: bound alternative attempts by count and deadline; never replay an uncertain effect
     src/runtime-contracts.ts validateAlternativeAttemptBudget / decideGovernedTargetFallback (fail-closed DEFAULT_ALTERNATIVE_ATTEMPT_BUDGET maxAttempts=2 deadlineMs=10000; post-effect retry excluded; unknown/partial never replay; provedNonExecution may retry a non-effect). SuperGrok 2026-10-08
 [HOLD] RD-0855: retry budget owner (who owns maxAttempts/deadlineMs; ALTERNATIVE_ATTEMPT_BUDGET_OWNER is OWNER-REVISIT; admitted idempotent replay of a completed effect stays excluded)
+    Kept HOLD (SuperGrok 2026-10-08): assignAlternativeAttemptBudgetOwner always RT_RETRY_BUDGET_OWNER_FORBIDDEN. Unique 57b7c8ee UNCHANGED.
+
+## Package-side HOLD pin — 2026-10-08b
+
+- [x] Package-side HOLD pin: `prepareCoreRuntimeHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; general VEO linker, macOS live W^X receipt,
+      physical media wipe, 8/16-trit v1 registration, binary same-semantics,
+      and retry-budget owner assignment always refuse with `RT_*_FORBIDDEN`.
+      `admitGeneralVeoLinker`, `claimPhysicalErasure`, `ADMITTED_TRIT_WIDTHS_V1`,
+      and `decideGovernedTargetFallback` unchanged besides the hold-pin
+      re-export. `tests/core-runtime-hold-pin.test.mjs`. (SuperGrok 2026-10-08.)
+      Uniques `07396a98` / `57b7c8ee` UNCHANGED.
 [x] Define runtime resource budget contract for CPU, wall time, memory, recursion, loops, tasks, network, tools and accelerator work
     src/runtime-contracts.ts DEFAULT_RUNTIME_RESOURCE_BUDGET / validateRuntimeResourceBudget / checkRuntimeResourceUsage; tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)
 [x] Define malicious-data intake pipeline contract for policy bounds, size, depth, schema, canonicalisation, ownership and taint checks
