@@ -82,6 +82,33 @@ const {
   admitV1ProofConstraint,
   admitV1CapabilityConstraint,
   admitV1AuthReport,
+  V1_ADMITTED_API_POLICY_FAMILIES,
+  V1_ADMITTED_API_BODY_POLICY_FIELDS,
+  V1_ADMITTED_API_BODY_DIAGNOSTICS,
+  V1_ADMITTED_API_ROUTE_LIMITS,
+  V1_ADMITTED_API_LOAD_DIAGNOSTICS,
+  V1_ADMITTED_API_DUPLICATE_DIAGNOSTICS,
+  V1_ADMITTED_IDEMPOTENCY_CONFLICTS,
+  V1_ADMITTED_IDEMPOTENCY_RECOMMENDATIONS,
+  V1_ADMITTED_API_REPORTS,
+  V1_POST_CRYPTO_POLICY_REPORTS,
+  V1_POST_PQ_WARNINGS,
+  admitV1ApiPolicyFamily,
+  admitV1ApiBodyPolicyField,
+  admitV1ApiParseMode,
+  admitV1ApiUnknownFieldPolicy,
+  admitV1ApiBodyDiagnostic,
+  admitV1ApiRouteLimit,
+  admitV1ApiLoadDiagnostic,
+  admitV1ApiDuplicateDiagnostic,
+  admitV1ApiShapeMarker,
+  admitV1IdempotencyConflict,
+  admitV1IdempotencyException,
+  admitV1IdempotencyRecommendation,
+  admitV1ApiReport,
+  admitV1CryptoPolicyReport,
+  admitV1HardwareProofFlag,
+  admitV1PqWarning,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -591,5 +618,122 @@ describe("v1 bearer, OAuth, proof and reports", () => {
     const pq = admitV1AuthReport("crypto_policy_report");
     assert.equal(pq.status, "REFUSED");
     assert.ok(codes(pq).includes("Galerina_CORE_V1_AUTH_REPORT_UNKNOWN"));
+  });
+});
+
+describe("v1 API body policy and load-control catalogs", () => {
+  it("admits api_policy families from the load-control and duplicate-detection docs", () => {
+    assert.deepEqual([...V1_ADMITTED_API_POLICY_FAMILIES], [
+      "api_policy", "body_policy", "route_limits", "queue_handoff",
+      "client_identity", "duplicate_detection", "idempotency", "reports",
+    ]);
+    for (const name of V1_ADMITTED_API_POLICY_FAMILIES) {
+      assert.equal(admitV1ApiPolicyFamily(name).status, "ADMITTED", name);
+    }
+    const gw = admitV1ApiPolicyFamily("api_gateway");
+    assert.equal(gw.status, "REFUSED");
+    assert.ok(codes(gw).includes("Galerina_CORE_V1_API_POLICY_UNKNOWN"));
+  });
+
+  it("admits body-policy fields, strict parse_mode and deny unknown_fields", () => {
+    assert.deepEqual([...V1_ADMITTED_API_BODY_POLICY_FIELDS], [
+      "content_type", "max_size", "parse_mode", "unknown_fields",
+    ]);
+    for (const name of V1_ADMITTED_API_BODY_POLICY_FIELDS) {
+      assert.equal(admitV1ApiBodyPolicyField(name).status, "ADMITTED", name);
+    }
+    assert.equal(admitV1ApiParseMode("strict").status, "ADMITTED");
+    assert.equal(admitV1ApiParseMode("loose").status, "REFUSED");
+    assert.equal(admitV1ApiUnknownFieldPolicy("deny").status, "ADMITTED");
+    assert.equal(admitV1ApiUnknownFieldPolicy("allow").status, "REFUSED");
+  });
+
+  it("admits closed body diagnostics and route limits including memory budget name", () => {
+    for (const name of V1_ADMITTED_API_BODY_DIAGNOSTICS) {
+      assert.equal(admitV1ApiBodyDiagnostic(name).status, "ADMITTED", name);
+    }
+    const sniff = admitV1ApiBodyDiagnostic("content_sniff");
+    assert.equal(sniff.status, "REFUSED");
+    assert.ok(codes(sniff).includes("Galerina_CORE_V1_API_BODY_DIAGNOSTIC_UNKNOWN"));
+    assert.deepEqual([...V1_ADMITTED_API_ROUTE_LIMITS], [
+      "rate", "max_concurrent", "timeout", "memory",
+    ]);
+    for (const name of V1_ADMITTED_API_ROUTE_LIMITS) {
+      assert.equal(admitV1ApiRouteLimit(name).status, "ADMITTED", name);
+    }
+    for (const name of V1_ADMITTED_API_LOAD_DIAGNOSTICS) {
+      assert.equal(admitV1ApiLoadDiagnostic(name).status, "ADMITTED", name);
+    }
+    const xff = admitV1ApiLoadDiagnostic("x_forwarded_for");
+    assert.equal(xff.status, "ADMITTED");
+    const spoof = admitV1ApiLoadDiagnostic("trust_all_proxies");
+    assert.equal(spoof.status, "REFUSED");
+  });
+});
+
+describe("v1 API duplicate, idempotency and report catalogs", () => {
+  it("admits duplicate diagnostics and intentional-shape markers", () => {
+    for (const name of V1_ADMITTED_API_DUPLICATE_DIAGNOSTICS) {
+      assert.equal(admitV1ApiDuplicateDiagnostic(name).status, "ADMITTED", name);
+    }
+    assert.equal(admitV1ApiShapeMarker("intentionally_same_shape_as").status, "ADMITTED");
+    assert.equal(admitV1ApiShapeMarker("intentionally_same_base_as").status, "ADMITTED");
+    const extra = admitV1ApiDuplicateDiagnostic("duplicate_controller");
+    assert.equal(extra.status, "REFUSED");
+    assert.ok(codes(extra).includes("Galerina_CORE_V1_API_DUPLICATE_DIAGNOSTIC_UNKNOWN"));
+  });
+
+  it("admits idempotency conflict modes, not_required exception and effect recommendations", () => {
+    assert.deepEqual([...V1_ADMITTED_IDEMPOTENCY_CONFLICTS], [
+      "return_previous_response", "reject_duplicate", "hold_for_review", "raise_error",
+    ]);
+    for (const name of V1_ADMITTED_IDEMPOTENCY_CONFLICTS) {
+      assert.equal(admitV1IdempotencyConflict(name).status, "ADMITTED", name);
+    }
+    assert.equal(admitV1IdempotencyException("not_required").status, "ADMITTED");
+    assert.equal(admitV1IdempotencyException("skip").status, "REFUSED");
+    for (const name of V1_ADMITTED_IDEMPOTENCY_RECOMMENDATIONS) {
+      assert.equal(admitV1IdempotencyRecommendation(name).status, "ADMITTED", name);
+    }
+  });
+
+  it("admits closed API report set including manifest, duplicate, load-control and ai_guide", () => {
+    assert.deepEqual([...V1_ADMITTED_API_REPORTS], [
+      "api_security_report", "api_memory_report", "load_control_report",
+      "api_manifest", "duplicate_api_report", "idempotency_report", "ai_guide",
+    ]);
+    for (const name of V1_ADMITTED_API_REPORTS) {
+      assert.equal(admitV1ApiReport(name).status, "ADMITTED", name);
+    }
+    const store = admitV1ApiReport("rate_limit_store_report");
+    assert.equal(store.status, "REFUSED");
+    assert.ok(codes(store).includes("Galerina_CORE_V1_API_REPORT_UNKNOWN"));
+  });
+});
+
+describe("v1 post-quantum and hardware_proof stay post-v1", () => {
+  it("refuses crypto_policy, hardware_proof and pq_hybrid reports as post-v1", () => {
+    for (const name of V1_POST_CRYPTO_POLICY_REPORTS) {
+      const d = admitV1CryptoPolicyReport(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.equal(d.scopeClass, "post_v1", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_CRYPTO_REPORT_POST"), name);
+    }
+    const extra = admitV1CryptoPolicyReport("kyber_report");
+    assert.equal(extra.status, "REFUSED");
+    assert.ok(codes(extra).includes("Galerina_CORE_V1_CRYPTO_REPORT_UNKNOWN"));
+  });
+
+  it("refuses hardware_proof flag and post_quantum/hybrid warnings as post-v1", () => {
+    const hw = admitV1HardwareProofFlag("hardware_proof");
+    assert.equal(hw.status, "REFUSED");
+    assert.equal(hw.scopeClass, "post_v1");
+    assert.ok(codes(hw).includes("Galerina_CORE_V1_AUTH_HARDWARE_EXPERIMENTAL"));
+    const pq = admitV1PqWarning("post_quantum");
+    const hybrid = admitV1PqWarning("hybrid");
+    assert.equal(pq.status, "REFUSED");
+    assert.equal(hybrid.status, "REFUSED");
+    assert.equal(pq.scopeClass, "post_v1");
+    assert.ok(codes(pq).includes("Galerina_CORE_V1_PQ_WARNING_POST"));
   });
 });

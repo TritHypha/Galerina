@@ -191,8 +191,10 @@ Current syntax/target documentation additions:
     admitV1CapabilityConstraint bind_action|bind_resource|bind_request_hash|nonce; capability_token_report. SuperGrok 2026-10-08g
 [x] Define nonce/replay-cache diagnostics for sensitive routes
     replay_cache and nonce are admitted proof constraints. SuperGrok 2026-10-08g
-[ ] Define post-quantum and hybrid crypto policy report support
-[ ] Define experimental hardware proof policy flags
+[x] Define post-quantum and hybrid crypto policy report support
+    admitV1CryptoPolicyReport crypto_policy_report|hardware_proof_report|pq_hybrid_report always post_v1. SuperGrok 2026-10-08h
+[x] Define experimental hardware proof policy flags
+    admitV1HardwareProofFlag hardware_proof always post_v1. SuperGrok 2026-10-08h
 [x] Define auth, token, proof and crypto policy AI guide summaries
     admitV1AuthReport includes ai_guide; crypto_policy_report stays refused with PQ/hardware Open. SuperGrok 2026-10-08g
 [x] Keep identity providers, login products, MFA products and new crypto algorithms out of Galerina core
@@ -200,41 +202,71 @@ Current syntax/target documentation additions:
 [x] Add docs/api-data-security-and-load-control.md
 [x] Add docs/sytax/api-data-security-and-load-control.md
 [x] Add docs/sytax-examples/api-data-security-and-load-control.md
-[ ] Define api_policy parser/report support
-[ ] Define route body policy parser/report support
-[ ] Define route limits parser/report support
-[ ] Define route memory budget parser/report support
-[ ] Define route queue handoff parser/report support
-[ ] Define content-type mismatch diagnostics
-[ ] Define strict API body decode diagnostics
-[ ] Define unknown-field and duplicate-key API diagnostics
-[ ] Define unsafe API coercion diagnostics
-[ ] Define trusted proxy and X-Forwarded-For diagnostics
-[ ] Define request-scoped body reference lifetime diagnostics
-[ ] Define large-body streaming diagnostics
-[ ] Define route concurrency and connection pool alignment warnings
-[ ] Define API security, API memory and load-control report schemas
-[ ] Define API data boundary AI guide summaries
+[x] Define api_policy parser/report support
+    admitV1ApiPolicyFamily closed catalog; parser stays core-compiler/kernel. SuperGrok 2026-10-08h
+[x] Define route body policy parser/report support
+    admitV1ApiBodyPolicyField content_type|max_size|parse_mode|unknown_fields. SuperGrok 2026-10-08h
+[x] Define route limits parser/report support
+    admitV1ApiRouteLimit rate|max_concurrent|timeout|memory. SuperGrok 2026-10-08h
+[x] Define route memory budget parser/report support
+    route limit token memory in admitV1ApiRouteLimit; no memory-safety model. SuperGrok 2026-10-08h
+[x] Define route queue handoff parser/report support
+    api_policy family queue_handoff; backends stay excluded_from_core. SuperGrok 2026-10-08h
+[x] Define content-type mismatch diagnostics
+    admitV1ApiBodyDiagnostic content_type_mismatch. SuperGrok 2026-10-08h
+[x] Define strict API body decode diagnostics
+    admitV1ApiParseMode strict; admitV1ApiBodyDiagnostic strict_body_decode. SuperGrok 2026-10-08h
+[x] Define unknown-field and duplicate-key API diagnostics
+    admitV1ApiBodyDiagnostic unknown_field|duplicate_key; unknown_fields deny. SuperGrok 2026-10-08h
+[x] Define unsafe API coercion diagnostics
+    admitV1ApiBodyDiagnostic unsafe_coercion. SuperGrok 2026-10-08h
+[x] Define trusted proxy and X-Forwarded-For diagnostics
+    admitV1ApiLoadDiagnostic trusted_proxy|x_forwarded_for. SuperGrok 2026-10-08h
+[x] Define request-scoped body reference lifetime diagnostics
+    admitV1ApiBodyDiagnostic request_scoped_body_lifetime. SuperGrok 2026-10-08h
+[x] Define large-body streaming diagnostics
+    admitV1ApiBodyDiagnostic large_body_streaming. SuperGrok 2026-10-08h
+[x] Define route concurrency and connection pool alignment warnings
+    admitV1ApiLoadDiagnostic concurrency_pool_alignment. SuperGrok 2026-10-08h
+[x] Define API security, API memory and load-control report schemas
+    admitV1ApiReport api_security_report|api_memory_report|load_control_report. SuperGrok 2026-10-08h
+[x] Define API data boundary AI guide summaries
+    admitV1ApiReport ai_guide. SuperGrok 2026-10-08h
 [x] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
     src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 [x] Add docs/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax/api-duplicate-detection-and-idempotency.md
 [x] Add docs/sytax-examples/api-duplicate-detection-and-idempotency.md
-[ ] Define duplicate route detection diagnostics
-[ ] Define duplicate route name diagnostics
-[ ] Define duplicate API type shape warnings
-[ ] Define intentionally_same_shape_as parser/check support
-[ ] Define API manifest output schema
-[ ] Define duplicate API report schema
-[ ] Define idempotency block parser/report support
-[ ] Define idempotency exception parser/report support
-[ ] Define effect-based idempotency recommendations
-[ ] Define idempotency payload mismatch diagnostics
-[ ] Define webhook duplicate event diagnostics
-[ ] Define duplicate external_api client diagnostics
-[ ] Define outbound duplicate payload warning support
-[ ] Define API version conflict diagnostics
-[ ] Define API duplicate/idempotency AI guide summaries
+[x] Define duplicate route detection diagnostics
+    admitV1ApiDuplicateDiagnostic duplicate_route. SuperGrok 2026-10-08h
+[x] Define duplicate route name diagnostics
+    admitV1ApiDuplicateDiagnostic duplicate_route_name. SuperGrok 2026-10-08h
+[x] Define duplicate API type shape warnings
+    admitV1ApiDuplicateDiagnostic duplicate_schema_shape. SuperGrok 2026-10-08h
+[x] Define intentionally_same_shape_as parser/check support
+    admitV1ApiShapeMarker intentionally_same_shape_as|intentionally_same_base_as. SuperGrok 2026-10-08h
+[x] Define API manifest output schema
+    admitV1ApiReport api_manifest. SuperGrok 2026-10-08h
+[x] Define duplicate API report schema
+    admitV1ApiReport duplicate_api_report. SuperGrok 2026-10-08h
+[x] Define idempotency block parser/report support
+    admitV1IdempotencyConflict closed catalog; storage backends stay excluded. SuperGrok 2026-10-08h
+[x] Define idempotency exception parser/report support
+    admitV1IdempotencyException not_required. SuperGrok 2026-10-08h
+[x] Define effect-based idempotency recommendations
+    admitV1IdempotencyRecommendation database.write|network.outbound|payment|webhook. SuperGrok 2026-10-08h
+[x] Define idempotency payload mismatch diagnostics
+    admitV1ApiDuplicateDiagnostic idempotency_payload_mismatch. SuperGrok 2026-10-08h
+[x] Define webhook duplicate event diagnostics
+    admitV1ApiDuplicateDiagnostic webhook_duplicate_event. SuperGrok 2026-10-08h
+[x] Define duplicate external_api client diagnostics
+    admitV1ApiDuplicateDiagnostic duplicate_external_client. SuperGrok 2026-10-08h
+[x] Define outbound duplicate payload warning support
+    admitV1ApiDuplicateDiagnostic duplicate_outbound_payload. SuperGrok 2026-10-08h
+[x] Define API version conflict diagnostics
+    admitV1ApiDuplicateDiagnostic api_version_conflict. SuperGrok 2026-10-08h
+[x] Define API duplicate/idempotency AI guide summaries
+    admitV1ApiReport ai_guide. SuperGrok 2026-10-08h
 [x] Keep fixed routers, controller frameworks, middleware stacks, API gateways and idempotency storage backends out of Galerina core
     src/v1-scope-contract.ts EXCLUDED_FROM_CORE; admitV1CorePackage refuses. SuperGrok 2026-10-08
 ```
@@ -619,7 +651,8 @@ Reason for additions:
     admitV1CapabilityConstraint bind_action|bind_resource|bind_request_hash. SuperGrok 2026-10-08g
 [x] Define request proof replay-cache enforcement
     admitV1ProofConstraint replay_cache. SuperGrok 2026-10-08g
-[ ] Define post-quantum crypto policy warnings
+[x] Define post-quantum crypto policy warnings
+    admitV1PqWarning post_quantum|hybrid always post_v1. SuperGrok 2026-10-08h
 [x] Define security report schema
 [x] Define security linter rules
 [x] Add docs/ransomware-resistant-design.md
@@ -678,31 +711,50 @@ Reason for additions:
 [x] Define replay protection
 [x] Define idempotency key
 [x] Document API duplicate detection and idempotency
-[ ] Define duplicate API route check
-[ ] Define duplicate API route-name check
-[ ] Define duplicate API schema-shape warning
-[ ] Define API manifest generation
-[ ] Define duplicate-api-report.json schema
-[ ] Define idempotency-report.json schema
-[ ] Define side-effect idempotency recommendations
-[ ] Define duplicate external API client warnings
-[ ] Define duplicate outbound API call warnings
+[x] Define duplicate API route check
+    admitV1ApiDuplicateDiagnostic duplicate_route. SuperGrok 2026-10-08h
+[x] Define duplicate API route-name check
+    admitV1ApiDuplicateDiagnostic duplicate_route_name. SuperGrok 2026-10-08h
+[x] Define duplicate API schema-shape warning
+    admitV1ApiDuplicateDiagnostic duplicate_schema_shape. SuperGrok 2026-10-08h
+[x] Define API manifest generation
+    admitV1ApiReport api_manifest catalog; generator stays compiler/docs. SuperGrok 2026-10-08h
+[x] Define duplicate-api-report.json schema
+    admitV1ApiReport duplicate_api_report. SuperGrok 2026-10-08h
+[x] Define idempotency-report.json schema
+    admitV1ApiReport idempotency_report. SuperGrok 2026-10-08h
+[x] Define side-effect idempotency recommendations
+    admitV1IdempotencyRecommendation closed catalog. SuperGrok 2026-10-08h
+[x] Define duplicate external API client warnings
+    admitV1ApiDuplicateDiagnostic duplicate_external_client. SuperGrok 2026-10-08h
+[x] Define duplicate outbound API call warnings
+    admitV1ApiDuplicateDiagnostic duplicate_outbound_payload. SuperGrok 2026-10-08h
 [x] Define payload size limit
 [x] Define API timeout rules
 [x] Define retry rules
 [x] Define circuit breaker rules
 [x] Define rate limit rules
 [x] Document API data security and load control
-[ ] Define API body policy parser support
-[ ] Define content-type validation checks
-[ ] Define request body streaming policy checks
-[ ] Define route memory budget checks
-[ ] Define API concurrency limit checks
-[ ] Define backpressure policy checks
-[ ] Define queue handoff report entries
-[ ] Define load-control report schema
-[ ] Define API memory report schema
-[ ] Define client identity trusted proxy checks
+[x] Define API body policy parser support
+    admitV1ApiBodyPolicyField catalog; parser stays core-compiler. SuperGrok 2026-10-08h
+[x] Define content-type validation checks
+    admitV1ApiBodyDiagnostic content_type_mismatch. SuperGrok 2026-10-08h
+[x] Define request body streaming policy checks
+    admitV1ApiBodyDiagnostic large_body_streaming. SuperGrok 2026-10-08h
+[x] Define route memory budget checks
+    admitV1ApiRouteLimit memory catalog; memory checker stays Open. SuperGrok 2026-10-08h
+[x] Define API concurrency limit checks
+    admitV1ApiRouteLimit max_concurrent; admitV1ApiLoadDiagnostic concurrency_pool_alignment. SuperGrok 2026-10-08h
+[x] Define backpressure policy checks
+    api_policy family route_limits; queue backends stay excluded_from_core. SuperGrok 2026-10-08h
+[x] Define queue handoff report entries
+    admitV1ApiPolicyFamily queue_handoff; admitV1ApiReport load_control_report. SuperGrok 2026-10-08h
+[x] Define load-control report schema
+    admitV1ApiReport load_control_report. SuperGrok 2026-10-08h
+[x] Define API memory report schema
+    admitV1ApiReport api_memory_report; no memory-safety model. SuperGrok 2026-10-08h
+[x] Define client identity trusted proxy checks
+    admitV1ApiLoadDiagnostic trusted_proxy|x_forwarded_for. SuperGrok 2026-10-08h
 [x] Define API report output
 [x] Define OpenAPI output
 [x] Define generated client SDK scope
