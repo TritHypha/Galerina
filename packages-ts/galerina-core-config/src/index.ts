@@ -1777,3 +1777,4 @@ export async function loadEnvironmentConfig(
 export function isSecretCategory(value: unknown): value is SecretCategory {
   return typeof value === "string" && SECRET_CATEGORY_SET.has(value);
 }
+export * from "./hold-pin.js";

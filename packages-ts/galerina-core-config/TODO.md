@@ -42,6 +42,7 @@
 [x] Define SecretRedactionPolicy with DEFAULT_SECRET_REDACTION_POLICY (2026-05-26)
 [HOLD] Create internal dir structure: environment/, secrets/, loaders/, types/ — DEFERRED by the RD-1285 v0.2 freeze; symbols remain intentionally in src/index.ts and no split receipt authorizes this work
     HOLD 2026-10-05 (Grok Bot; zero-trust default, owner may revisit): no split without a receipt. Reopen as [ ] when RD-1285 lifts or a split receipt exists.
+    Kept HOLD (SuperGrok 2026-10-08): splitInternalConfigDirs / admitFileSecretStoreRuntimeInjected / admitUnderscoreSecretCategories always refuse with CONFIG_*_FORBIDDEN. Symbols stay in src/index.ts.
 ```
 
 ## v0.2 freeze (2026-09-21) — `RD-1285`
@@ -76,3 +77,11 @@
   preserved above for traceability.
 - Independent audit remains pending. The source encoding check still flags
   pre-existing mojibake; this bounded repair does not rewrite those comments.
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareCoreConfigHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; internal dir split, file/secretStore/runtimeInjected
+      sources, and underscore categories always refuse with `CONFIG_*_FORBIDDEN`.
+      RD-1285 v2 freeze otherwise unchanged. `tests/core-config-hold-pin.test.mjs`.
+      (SuperGrok 2026-10-08.)
