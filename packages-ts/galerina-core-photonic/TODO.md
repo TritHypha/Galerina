@@ -32,12 +32,14 @@ Canonical ownership (2026-09-22 reconciliation):
 [!] POST-V1 Define Mach-Zehnder / WDM / optical-matmul model helpers
     (PhotonicMode names exist; no v1 simulation APIs).
     Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
+    Kept HOLD (SuperGrok 2026-10-08): implementPostV1PhotonicSimulation always refuses with PHOTONIC_POST_V1_SIMULATION_FORBIDDEN.
 [x] Define optical signal reports
 [x] Define mappings from galerina-core-logic states
 [!] POST-V1 simulation APIs, OpticalTransportMode, runtime/planner/routing
     packages, and execution-plan helpers. C10 diagnostics already exist.
     Do not implement these on the v1 surface.
     Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
+    Kept HOLD (SuperGrok 2026-10-08): admitOpticalTransportMode / implementPhotonicRuntimePlanner always refuse.
 [x] Add examples
 [x] Add tests
 [x] C10 `fungi.photonic.diagnostic.v1` shared with target-photonic (`RD-1282`).
@@ -73,6 +75,7 @@ reflects the O1 decision above. No row was implemented, removed or reworded. Reo
 [HOLD] Create targets/OpticalTransportMode.ts
 [HOLD] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
 [HOLD] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
+      Kept HOLD (SuperGrok 2026-10-08): admitOpticalTransportMode, implementPhotonicRuntimePlanner, rewriteFungiPhotonicMeanings, and addExperimentalPhotonicTransport always refuse with PHOTONIC_*_FORBIDDEN. Two [!] POST-V1 rows stay parked.
 ```
 
 ## Live reconciliation (2026-09-21)
@@ -127,3 +130,12 @@ Status" still describes the conflict as open. HOLD-PHOTONIC-BOUNDARY's
 place until the owner confirms whether the 09-22 rows are the receipt.
 Pointer fixed 2026-10-06 (Grok Bot, doc only): HOLD-PHOTONIC-BOUNDARY now names
 the "Ownership:" row; no HOLD state changed.
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareCorePhotonicHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; POST-V1 simulation, OpticalTransportMode,
+      v0.2 runtime planner, C10 meaning rewrite, and experimental transport
+      always refuse with `PHOTONIC_*_FORBIDDEN`. PhotonicMode and
+      `fungi.photonic.diagnostic.v1` unchanged besides the hold-pin re-export.
+      `tests/core-photonic-hold-pin.test.mjs`. (SuperGrok 2026-10-08.)
