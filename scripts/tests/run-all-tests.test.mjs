@@ -1110,3 +1110,56 @@ test("a held checkout lease refuses before a package child starts", () => {
   );
   assert.equal(lease.release(), true);
 });
+
+test("Git repository overrides refuse before any package child starts", () => {
+  const root = workspaceFixture("must-not-run", {
+    name: "@galerina/must-not-run",
+    scripts: { test: "node --test tests/must-not-run.test.mjs" },
+  }, {
+    "tests/must-not-run.test.mjs": [
+      "import { test } from 'node:test';",
+      "import { writeFileSync } from 'node:fs';",
+      "test('package test started', () => writeFileSync('ran.txt', 'started'));",
+    ].join("\n") + "\n",
+  });
+  const keys = ["GIT_COMMON_DIR", "GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE"];
+  const poisoned = [
+    ["GIT_COMMON_DIR", join(root, "poison-git-common-dir")],
+    ["git_dir", join(root, "poison-git-dir")],
+    ["GIT_INDEX_FILE", ""],
+    ["GIT_WORK_TREE", join(root, "poison-git-work-tree")],
+  ];
+
+  for (const [key, value] of poisoned) {
+    const environment = { ...process.env };
+    for (const inheritedKey of Object.keys(environment)) {
+      if (keys.includes(inheritedKey.toUpperCase())) delete environment[inheritedKey];
+    }
+    delete environment.NODE_TEST_CONTEXT;
+    environment[key] = value;
+    const result = runWithEnvironment(root, environment, "--json");
+
+    assert.equal(result.status, 3, `${key}: ${result.stderr}\n${result.stdout}`);
+    assert.match(result.stderr, /TEST-GIT-ENVIRONMENT-REFUSED/u);
+    assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "ran.txt")), false);
+  }
+
+  const positiveEnvironment = { ...process.env, GIT_PAGER: "cat" };
+  for (const inheritedKey of Object.keys(positiveEnvironment)) {
+    if (keys.includes(inheritedKey.toUpperCase())) delete positiveEnvironment[inheritedKey];
+  }
+  delete positiveEnvironment.NODE_TEST_CONTEXT;
+  const positive = spawnSync(
+    process.execPath,
+    ["--test", join(root, "packages-ts", "must-not-run", "tests", "must-not-run.test.mjs")],
+    {
+      cwd: join(root, "packages-ts", "must-not-run"),
+      encoding: "utf8",
+      env: positiveEnvironment,
+      timeout: 15_000,
+      windowsHide: true,
+    },
+  );
+  assert.equal(positive.status, 0, positive.stderr || positive.stdout);
+  assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "ran.txt")), true);
+});

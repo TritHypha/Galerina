@@ -33,6 +33,12 @@ const MAX_DIAGNOSTIC_LINES = 32;
 const MAX_DIAGNOSTIC_LINE_LENGTH = 1024;
 const MAX_FALLBACK_PLAN_STEPS = 128;
 const MAX_FALLBACK_PLAN_DEPTH = 16;
+const GIT_REPOSITORY_OVERRIDE_KEYS = Object.freeze([
+  "GIT_COMMON_DIR",
+  "GIT_DIR",
+  "GIT_INDEX_FILE",
+  "GIT_WORK_TREE",
+]);
 
 function refuseToolchain(detail) {
   return Object.assign(new Error(detail), { code: "TEST-TOOLCHAIN-REFUSED" });
@@ -383,6 +389,11 @@ function parseArguments(argv) {
     throw new Error("--core cannot be combined with named packages");
   }
   return options;
+}
+
+function inheritedGitRepositoryOverrides(environment) {
+  const present = new Set(Object.keys(environment).map((key) => key.toUpperCase()));
+  return GIT_REPOSITORY_OVERRIDE_KEYS.filter((key) => present.has(key));
 }
 
 function parseCounts(output) {
@@ -899,6 +910,16 @@ async function main() {
     options = parseArguments(process.argv.slice(2));
   } catch (error) {
     process.stderr.write(`run-all-tests: ${error.message}\n`);
+    process.exit(3);
+  }
+
+  const inheritedGitOverrides = inheritedGitRepositoryOverrides(process.env);
+  if (inheritedGitOverrides.length > 0) {
+    process.stderr.write(
+      `TEST-GIT-ENVIRONMENT-REFUSED: remove inherited `
+      + `${inheritedGitOverrides.join(", ")} before running package tests; `
+      + "scope any required Git overrides to build-only commands.\n",
+    );
     process.exit(3);
   }
 
