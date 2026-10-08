@@ -32,6 +32,13 @@ const {
   V1_ADMITTED_PATTERN_FAMILIES,
   V1_ADMITTED_CONSOLE_MODES,
   V1_EXCLUDED_LANGUAGE_FORMS,
+  V1_CPU_TARGET_CONTRACT_SCHEMA,
+  V1_ADMITTED_COMPUTE_SELECTORS,
+  V1_POST_COMPUTE_SELECTORS,
+  V1_TARGET_PLUGIN_NONE_SCHEMA,
+  admitV1CpuTargetContract,
+  admitV1ComputeSelector,
+  admitV1TargetPluginBoundary,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -281,5 +288,44 @@ describe("excluded language forms", () => {
       assert.equal(d.status, "REFUSED", name);
       assert.ok(codes(d).includes("Galerina_CORE_V1_LANGUAGE_FORM_EXCLUDED"), name);
     }
+  });
+});
+
+describe("v1 cpu target contract", () => {
+  it("admits only galerina.core.v1-cpu-target.v1", () => {
+    assert.equal(V1_CPU_TARGET_CONTRACT_SCHEMA, "galerina.core.v1-cpu-target.v1");
+    assert.equal(admitV1CpuTargetContract(V1_CPU_TARGET_CONTRACT_SCHEMA).status, "ADMITTED");
+    const unknown = admitV1CpuTargetContract("galerina.core.v1-wasm-target.v1");
+    assert.equal(unknown.status, "REFUSED");
+    assert.ok(codes(unknown).includes("Galerina_CORE_V1_CPU_CONTRACT_UNKNOWN"));
+    const empty = admitV1CpuTargetContract("");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_CPU_CONTRACT_REQUIRED"));
+  });
+});
+
+describe("v1 compute selector", () => {
+  it("admits cpu and wasm; refuses auto, best and accelerator selectors", () => {
+    assert.deepEqual([...V1_ADMITTED_COMPUTE_SELECTORS], ["cpu", "wasm"]);
+    for (const name of V1_ADMITTED_COMPUTE_SELECTORS) {
+      assert.equal(admitV1ComputeSelector(name).status, "ADMITTED", name);
+    }
+    for (const name of V1_POST_COMPUTE_SELECTORS) {
+      const d = admitV1ComputeSelector(name);
+      assert.equal(d.status, "REFUSED", name);
+      assert.equal(d.scopeClass, "post_v1", name);
+      assert.ok(codes(d).includes("Galerina_CORE_V1_COMPUTE_SELECTOR_POST"), name);
+    }
+  });
+});
+
+describe("v1 target plugin boundary", () => {
+  it("admits only the closed none-plugin schema", () => {
+    assert.equal(V1_TARGET_PLUGIN_NONE_SCHEMA, "galerina.core.v1-target-plugin-none.v1");
+    assert.equal(admitV1TargetPluginBoundary(V1_TARGET_PLUGIN_NONE_SCHEMA).status, "ADMITTED");
+    const plugin = admitV1TargetPluginBoundary("galerina.core.v1-target-plugin.v1");
+    assert.equal(plugin.status, "REFUSED");
+    assert.equal(plugin.scopeClass, "post_v1");
+    assert.ok(codes(plugin).includes("Galerina_CORE_V1_PLUGIN_POST"));
   });
 });

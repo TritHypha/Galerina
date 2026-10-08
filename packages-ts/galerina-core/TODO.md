@@ -734,15 +734,18 @@ Reason for additions:
 [x] Define fallback gpu
 [x] Define fallback cpu
 [x] Define CPU target syntax/report contract
+    src/v1-scope-contract.ts admitV1CpuTargetContract / V1_CPU_TARGET_CONTRACT_SCHEMA. SuperGrok 2026-10-08d
 [x] Define WASM target syntax/report contract
     src/v1-scope-contract.ts admitV1WasmTargetContract / V1_WASM_TARGET_CONTRACT_SCHEMA. SuperGrok 2026-10-08b
-[ ] Define compute auto parser support
-[ ] Define generic compute target category parser support
-[ ] Define target plugin boundary schema contract
-[ ] Define runtime compute capability map schema contract
-[ ] Define fallback report schema contract
-[ ] Define cloud deployment profile mapping report
-[ ] Define backend compute target catalogue parser support
+[HOLD] Define compute auto parser support
+    Parser stays in core-compiler. v1 selector policy is admitV1ComputeSelector (cpu|wasm; auto/best/accelerators post-v1). SuperGrok 2026-10-08d
+[HOLD] Define generic compute target category parser support
+[x] Define target plugin boundary schema contract
+    admitV1TargetPluginBoundary admits only galerina.core.v1-target-plugin-none.v1. SuperGrok 2026-10-08d
+[HOLD] Define runtime compute capability map schema contract
+[HOLD] Define fallback report schema contract
+[HOLD] Define cloud deployment profile mapping report
+[HOLD] Define backend compute target catalogue parser support
 [HOLD] Define AI accelerator target syntax/report contract
 [HOLD] Define memory/interconnect target syntax/report contract
 [HOLD] Define photonic variant target discovery report contract
@@ -763,7 +766,7 @@ Reason for additions:
 [x] Define model inference support
 [HOLD] Define ONNX import possibility
 [x] Define target compatibility report contract
-[ ] Expand target compatibility report contract for backend compute support targets
+[HOLD] Expand target compatibility report contract for backend compute support targets
 ```
 
 ---
@@ -873,8 +876,8 @@ Reason for additions:
 [x] Define compute-safe import list
 [x] Implement browser target import blocking
 [x] Generate target/capability report
-[ ] Expand target/capability report for backend compute support targets
-[ ] Add parser tests for compute auto target catalogue syntax
+[HOLD] Expand target/capability report for backend compute support targets
+[HOLD] Add parser tests for compute auto target catalogue syntax
 [x] Add v0.1 browser target parser tests
 ```
 

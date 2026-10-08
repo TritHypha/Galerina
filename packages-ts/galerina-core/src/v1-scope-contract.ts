@@ -287,6 +287,91 @@ export function admitV1WasmTargetContract(schema: unknown): V1ScopeDecision {
   return decide(token, "admitted", []);
 }
 
+export const V1_CPU_TARGET_CONTRACT_SCHEMA = "galerina.core.v1-cpu-target.v1" as const;
+
+/** Named cpu|wasm only. `auto` / `best` / accelerator selectors stay post-v1. */
+export const V1_ADMITTED_COMPUTE_SELECTORS = Object.freeze(["cpu", "wasm"] as const);
+
+export const V1_POST_COMPUTE_SELECTORS = Object.freeze([
+  "auto",
+  "best",
+  "gpu",
+  "photonic",
+  "prefer_photonic",
+  "fallback_gpu",
+  "onnx",
+  "ai_accelerator",
+] as const);
+
+/** v1 admits no target plugins. This schema is the closed none-boundary. */
+export const V1_TARGET_PLUGIN_NONE_SCHEMA = "galerina.core.v1-target-plugin-none.v1" as const;
+
+export function admitV1CpuTargetContract(schema: unknown): V1ScopeDecision {
+  const token = asToken(schema);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_CPU_CONTRACT_REQUIRED", "The v1 cpu target contract schema is required.", "schema"),
+    ]);
+  }
+  if (token !== V1_CPU_TARGET_CONTRACT_SCHEMA) {
+    return decide(token, "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_CPU_CONTRACT_UNKNOWN",
+        "v1 cpu target syntax/report identity is galerina.core.v1-cpu-target.v1 only.",
+        "schema",
+      ),
+    ]);
+  }
+  return decide(token, "admitted", []);
+}
+
+export function admitV1ComputeSelector(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_COMPUTE_SELECTOR_REQUIRED", "A v1 compute selector is required.", "selector"),
+    ]);
+  }
+  if ((V1_ADMITTED_COMPUTE_SELECTORS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  if ((V1_POST_COMPUTE_SELECTORS as readonly string[]).includes(token)) {
+    return decide(token, "post_v1", [
+      refuseDiag(
+        "Galerina_CORE_V1_COMPUTE_SELECTOR_POST",
+        "v1 compute selectors are cpu and wasm only; auto, best and accelerator selectors stay post-v1.",
+        "selector",
+      ),
+    ]);
+  }
+  return decide(token, "unknown", [
+    refuseDiag("Galerina_CORE_V1_COMPUTE_SELECTOR_UNKNOWN", "Compute selector is not an admitted v1 selector.", "selector"),
+  ]);
+}
+
+export function admitV1TargetPluginBoundary(schema: unknown): V1ScopeDecision {
+  const token = asToken(schema);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag(
+        "Galerina_CORE_V1_PLUGIN_REQUIRED",
+        "A v1 target-plugin boundary schema is required.",
+        "schema",
+      ),
+    ]);
+  }
+  if (token === V1_TARGET_PLUGIN_NONE_SCHEMA) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "post_v1", [
+    refuseDiag(
+      "Galerina_CORE_V1_PLUGIN_POST",
+      "v1 admits no target plugins; only galerina.core.v1-target-plugin-none.v1 is the closed boundary.",
+      "schema",
+    ),
+  ]);
+}
+
 /** Closed v1 binding keywords. var/const stay excluded (FUNGI-SYNTAX-001/002). */
 export const V1_ADMITTED_BINDINGS = Object.freeze(["let", "mut", "readonly"] as const);
 
