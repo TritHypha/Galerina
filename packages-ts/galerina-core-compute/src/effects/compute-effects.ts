@@ -5,6 +5,7 @@
 // backend is admitted by the owner.
 
 import type { ComputeDiagnostic } from "../index.js";
+import { isQuantumTargetToken, quantumTargetRefusalDiagnostic } from "../quantum/quantum-refusal.js";
 
 /** Closed compute-effect names named by the package TODO. */
 export const COMPUTE_EFFECTS = Object.freeze([
@@ -61,6 +62,10 @@ export function validateComputeEffectNames(
   for (let i = 0; i < value.length; i += 1) {
     const item = value[i];
     const p = `${path}.${i}`;
+    if (isQuantumTargetToken(item)) {
+      out.push(quantumTargetRefusalDiagnostic(p));
+      continue;
+    }
     if (!isComputeEffectName(item)) {
       out.push(diag("Galerina_COMPUTE_EFFECT_UNKNOWN", "Compute effect name is not in the closed vocabulary.", p));
       continue;
