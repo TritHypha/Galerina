@@ -42,6 +42,8 @@ export * from "./rate-limit-workload-policy.js";
 export * from "./structured-await-policy.js";
 export * from "./queue-job-contract.js";
 export * from "./runtime-audit-report-format.js";
+// Boot-time handler-reference check (own callable entries only); not wired into createAppKernel.
+export * from "./handler-reference-check.js";
 // Pure `:param` route-pattern grammar and matcher; not wired into createAppKernel.
 export * from "./route-pattern.js";
 export * from "./idempotency-replay-policy.js";
