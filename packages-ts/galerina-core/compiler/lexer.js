@@ -55,6 +55,7 @@ const KEYWORDS = new Set([
   "test",
   "type",
   "use",
+  "vectorize",
   "wait",
   "webhook",
   "while",

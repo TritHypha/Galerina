@@ -49,10 +49,14 @@ Implemented: parse/check/build command skeleton
 Implemented: type, target, memory, security and source-map diagnostics
 Implemented: generated reports and docs
 Implemented: prototype test command
+Implemented: dedicated security, effect and JSON/API checkers
+Implemented: prototype IR, identity optimiser, linker and CPU/WASM placeholders
+Implemented: build-time vector/offload safety and target/capability import checks
+Implemented: Galerina lint
+Implemented: app.compiler-report.json
 Planned: build --with-tests
 Planned: build --strict
 Planned: full startup validation report
-Planned: build-time vector/offload safety checks
 Planned: AI suggestions report
 Planned: test report output
 ```

@@ -9,6 +9,14 @@ const { lexSource } = require("./lexer");
 const { formatProject } = require("./formatter");
 const { validateTypes } = require("./type-checker");
 const { buildJsonSchemaReport } = require("./schema-generator");
+const { parseFile, coverExampleSources } = require("./parser");
+const { createProgramAst, fileRecord, mergeFileAst } = require("./ast");
+const { buildSymbolTable } = require("./symbol-table");
+const { admitSuggestCommand, suggestVector, formatVectorSuggestions } = require("./vector-suggest");
+const { isServerOnlyImport: securityIsServerOnlyImport, checkTargetCapabilityImports } = require("./security-checker");
+const { applyCompilerCheckers, runCompilerPipeline } = require("./build-pipeline");
+const { PLACEHOLDER_TEXT: CPU_PLACEHOLDER_TEXT } = require("./cpu-output");
+const { PLACEHOLDER_TEXT: WASM_PLACEHOLDER_TEXT } = require("./wasm-output");
 
 const VERSION = "0.1.0-prototype";
 const DEFAULT_OUT = path.join("build", "debug");
@@ -53,6 +61,7 @@ const GENERATED_OUTPUTS = [
   { path: "app.execution-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.target-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.security-report.json", kind: "report", format: "json", cleanup: true },
+  { path: "app.compiler-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.failure-report.json", kind: "report", format: "json", cleanup: true },
   { path: "app.source-map.json", kind: "report", format: "json", cleanup: true },
   { path: "app.tokens.json", kind: "report", format: "json", cleanup: true },
@@ -229,7 +238,14 @@ const DIAGNOSTIC_CATALOG = {
   GlobalStateAccessWarning: { category: "RUNTIME", number: "001", recoveryAction: "guard_global_state_mutation" },
   GlobalSecretExposureError: { category: "SEC", number: "004", recoveryAction: "remove_secret_logging" },
   GlobalMutationError: { category: "RUNTIME", number: "002", recoveryAction: "use_controlled_state_mutation" },
-  RunEntryMissing: { category: "RUNTIME", number: "003", recoveryAction: "add_secure_main_flow" }
+  RunEntryMissing: { category: "RUNTIME", number: "003", recoveryAction: "add_secure_main_flow" },
+  AwaitOutsideAsync: { category: "ASYNC", number: "001", recoveryAction: "mark_flow_async_or_remove_await" },
+  VectorizeParseError: { category: "VECTOR", number: "001", recoveryAction: "fix_vectorize_column_binding" },
+  VectorOffloadSafetyError: { category: "VECTOR", number: "002", recoveryAction: "keep_vector_or_offload_pure" },
+  SymbolTableDuplicate: { category: "BUILD", number: "004", recoveryAction: "rename_or_remove_duplicate_symbol" },
+  PureFlowEffect: { category: "EFFECT", number: "001", recoveryAction: "remove_io_or_drop_pure" },
+  UndeclaredEffect: { category: "EFFECT", number: "002", recoveryAction: "declare_effect_or_remove_operation" },
+  JsonApiCheckError: { category: "API", number: "002", recoveryAction: "add_handler_or_max_body_size" }
 };
 const EXECUTION_MODE_MATRIX = [
   {
@@ -323,6 +339,19 @@ function main(argv) {
 
     if (command === "init") {
       initProject(target);
+      return;
+    }
+
+    if (command === "suggest") {
+      const kind = argv[3];
+      const admitted = admitSuggestCommand(kind);
+      if (admitted.status !== "ADMITTED") {
+        fail(admitted.problem + " " + admitted.suggestedFix);
+      }
+      const suggestTarget = firstNonFlag(argv.slice(4)) || ".";
+      const suggestProject = loadProject(suggestTarget, exclude);
+      const report = suggestVector(suggestProject);
+      console.log(formatVectorSuggestions(report));
       return;
     }
 
@@ -422,6 +451,12 @@ function main(argv) {
       return;
     }
 
+    if (command === "lint") {
+      printDiagnostics(result);
+      process.exitCode = result.diagnostics.some(isFailureDiagnostic) ? 1 : 0;
+      return;
+    }
+
     if (command === "tokens" || command === "lex") {
       process.stdout.write(JSON.stringify(result.tokens, null, 2) + "\n");
       process.exitCode = result.diagnostics.some((d) => d.errorType === "LexError") ? 1 : 0;
@@ -472,6 +507,7 @@ function main(argv) {
     }
 
     if (command === "build") {
+      result.pipeline = result.pipeline || runCompilerPipeline(result);
       const written = build(result, outDir);
       printDiagnostics(result);
       console.log(`Build prototype wrote ${written.length} files to ${path.resolve(outDir)}`);
@@ -496,6 +532,7 @@ Usage:
   Galerina dev <file-or-dir> [--watch] [--out .build-dev]
   Galerina serve <dir> [--dev]
   Galerina check <file-or-dir>
+  Galerina lint <file-or-dir>
   Galerina tokens <file-or-dir>
   Galerina fmt <file-or-dir> [--check]
   Galerina test <examples-dir>
@@ -508,6 +545,7 @@ Usage:
   Galerina ai-context <file-or-dir> [--out build/debug]
   Galerina explain <file-or-dir> [--for-ai]
   Galerina init <dir>
+  Galerina suggest vector <file-or-dir>
 
 This is a v0.1 design prototype. It lexes and parses a documented Galerina subset,
 checks core safety rules, and writes CPU-compatible target/report artefacts plus GPU,
@@ -1079,34 +1117,7 @@ function createDevWatcher(inputPath, outDir, singleFileInput, onChange) {
 }
 
 function analyseProject(project) {
-  const ast = {
-    language: "Galerina",
-    compiler: VERSION,
-    root: project.root,
-    files: [],
-    project: null,
-    entry: null,
-    imports: [],
-    targets: [],
-    capabilities: { aLOw: [], block: [], entries: [] },
-    security: {},
-    permissions: {},
-    logic: null,
-    globals: [],
-    jsonPolicies: [],
-    runtime: null,
-    documentation: null,
-    aiGuide: null,
-    manifests: {},
-    buildContract: {},
-    types: [],
-    enums: [],
-    flows: [],
-    apis: [],
-    webhooks: [],
-    computeBlocks: [],
-    strictComments: []
-  };
+  const ast = createProgramAst(VERSION, project.root);
   const diagnostics = [];
   const tokens = [];
 
@@ -1115,18 +1126,21 @@ function analyseProject(project) {
     tokens.push(...lexed.tokens);
     diagnostics.push(...lexed.diagnostics);
     const fileAst = parseFile(source, diagnostics);
-    ast.files.push({ path: source.relativePath, sha256: sha256(source.content), lines: linesOf(source.content).length });
-    mergeAst(ast, fileAst);
+    ast.files.push(fileRecord(source.relativePath, sha256(source.content), linesOf(source.content).length));
+    mergeFileAst(ast, fileAst);
   }
 
+  const symbols = buildSymbolTable(ast, diagnostics);
   applyProjectChecks(project, ast, diagnostics);
+  applyCompilerCheckers(project, ast, symbols, diagnostics);
   diagnostics.push(...validateTypes(project, ast));
 
   normaliseDiagnostics(diagnostics);
 
-  return { project, ast, diagnostics, tokens };
+  const result = { project, ast, diagnostics, tokens, symbols };
+  result.pipeline = runCompilerPipeline(result);
+  return result;
 }
-
 function runPrototypeTests(project) {
   const root = fs.statSync(project.input).isFile() ? path.dirname(project.input) : project.input;
   const tests = [];
@@ -1171,6 +1185,108 @@ effects [network.outbound] {
     assert(asyncFlow.qualifier === "async", "Expected async flow qualifier.");
     assert(asyncFlow.async === true, "Expected async flow flag.");
     assert(asyncFlow.effects.includes("network.outbound"), "Expected async flow effects to be parsed.");
+  });
+
+  test("parser coverage for v1 examples", () => {
+    const fungi = project.files.filter((file) => file.relativePath.endsWith(".fungi"));
+    assert(fungi.length >= 20, `Expected at least 20 .fungi examples, found ${fungi.length}.`);
+    const coverage = coverExampleSources(fungi);
+    assert(coverage.parsed === fungi.length, "Expected every example to be parsed.");
+    assert(coverage.declarations.flows > 0, "Expected parser coverage to record flow declarations.");
+    const valid = fungi.filter((file) => path.basename(file.relativePath) !== "source-map-error.fungi");
+    const validResult = analyseProject({ ...project, files: valid, input: project.input, root: project.root });
+    const parserErrors = validResult.diagnostics.filter((item) =>
+      item.severity === "error" && (item.errorType === "AwaitOutsideAsync" || item.errorType === "VectorizeParseError")
+    );
+    assert(parserErrors.length === 0, `Expected valid examples to have no parser errors, found ${parserErrors.length}.`);
+  });
+
+  test("await outside async flow is an error", () => {
+    const result = analyseProject(projectFromSource("await-outside-async.fungi", `secure flow loadUser(id: UserId) -> Result<User, ApiError> {
+  let response = await api.get("/users/{id}")
+  return User.fromJson(response)
+}
+`));
+    const diagnostic = result.diagnostics.find((item) => item.errorType === "AwaitOutsideAsync");
+    assert(diagnostic, "Expected AwaitOutsideAsync diagnostic.");
+    assert(diagnostic.severity === "error", "Expected await-outside-async to fail closed.");
+    assert(diagnostic.code === "galerina-ERR-ASYNC-001", `Expected async error code, found ${diagnostic?.code}.`);
+  });
+
+  test("await inside async flow is aLOwed", () => {
+    const result = analyseProject(projectFromSource("await-inside-async.fungi", `async flow loadUser(id: UserId) -> Result<User, ApiError>
+effects [network.outbound] {
+  let response = await api.get("/users/{id}")
+  return User.fromJson(response)
+}
+`));
+    const diagnostic = result.diagnostics.find((item) => item.errorType === "AwaitOutsideAsync");
+    assert(!diagnostic, "Did not expect AwaitOutsideAsync inside async flow.");
+  });
+
+  test("parse vectorize column bindings", () => {
+    const result = analyseProject(projectFromSource("vectorize.fungi", `pure flow analyseCustomersFast(rows: Array<CustomerDumpRow>) -> Int {
+  let columns = vectorize rows {
+    spend = .spend
+    orders: Int = .orders
+    refunds: Int = toInt(.refunds)
+  }
+  return 0
+}
+`));
+    assertNoLexErrors(result);
+    assert(result.ast.vectorizeBlocks.length === 1, "Expected one vectorize block.");
+    const block = result.ast.vectorizeBlocks[0];
+    assert(block.source === "rows", "Expected vectorize source rows.");
+    assert(block.columns.length === 3, `Expected three columns, found ${block.columns.length}.`);
+    assert(block.columns[0].name === "spend" && block.columns[0].expression === ".spend", "Expected spend = .spend.");
+    assert(block.columns[1].type === "Int", "Expected typed orders column.");
+    assert(result.symbols.vectorizeBlocks.length === 1, "Expected symbol table to record vectorize blocks.");
+  });
+
+  test("vectorize unknown binding fails closed", () => {
+    const result = analyseProject(projectFromSource("vectorize-bad.fungi", `pure flow bad(rows: Array<Int>) -> Int {
+  let columns = vectorize rows {
+    not a binding
+  }
+  return 0
+}
+`));
+    const diagnostic = result.diagnostics.find((item) => item.errorType === "VectorizeParseError");
+    assert(diagnostic, "Expected VectorizeParseError diagnostic.");
+    assert(diagnostic.code === "galerina-ERR-VECTOR-001", `Expected vectorize error code, found ${diagnostic?.code}.`);
+  });
+
+  test("symbol table records flows and duplicate names", () => {
+    const result = analyseProject(projectFromSource("dup-flow.fungi", `flow once() -> Int {
+  return 1
+}
+
+flow once() -> Int {
+  return 2
+}
+`));
+    assert(result.symbols.schema === "galerina.core.symbol-table.v1", "Expected symbol table schema.");
+    assert(result.symbols.flows.once, "Expected flow once in the symbol table.");
+    const diagnostic = result.diagnostics.find((item) => item.errorType === "SymbolTableDuplicate");
+    assert(diagnostic, "Expected duplicate flow diagnostic.");
+  });
+
+  test("vector suggestion command reports independent loops", () => {
+    const projectSource = projectFromSource("suggest-vector.fungi", `secure flow totals(order: Order) -> Int {
+  let totals = []
+  for item in order.items {
+    totals.add(item.price * item.quantity)
+  }
+  return 0
+}
+`);
+    const report = suggestVector(projectSource);
+    assert(report.rewritten === false, "Suggestion command must not rewrite source.");
+    assert(report.suggestions.length === 1, `Expected one vector suggestion, found ${report.suggestions.length}.`);
+    assert(report.suggestions[0].suggested.includes("vector order.items"), "Expected vector collection suggestion.");
+    const refused = admitSuggestCommand("rewrite");
+    assert(refused.status === "REFUSED", "Expected unknown suggest command to be refused.");
   });
 
   test("portable boot source cannot mint manifest authority", () => {
@@ -1745,192 +1861,9 @@ function assert(condition, message) {
   }
 }
 
-function parseFile(source, diagnostics) {
-  const content = stripComments(source.content);
-  const lines = linesOf(source.content);
-  const ast = {
-    project: null,
-    entry: null,
-    imports: [],
-    targets: [],
-    security: {},
-    permissions: {},
-    globals: [],
-    jsonPolicies: [],
-    runtime: null,
-    documentation: null,
-    aiGuide: null,
-    manifests: {},
-    buildContract: {},
-    types: [],
-    enums: [],
-    flows: [],
-    apis: [],
-    webhooks: [],
-    computeBlocks: [],
-    strictComments: []
-  };
-
-  scanForbiddenTokens(source, diagnostics);
-  ast.strictComments = extractStrictComments(source, diagnostics);
-
-  const projectMatch = content.match(/\bproject\s+"([^"]+)"/);
-  if (projectMatch) ast.project = projectMatch[1];
-
-  const entryMatch = content.match(/\bentry\s+"([^"]+)"/);
-  if (entryMatch) ast.entry = entryMatch[1];
-
-  ast.logic = parseLogicDirective(source, content);
-
-  ast.imports = matches(content, /\b(?:use|import)\s+([A-Za-z_][A-Za-z0-9_.]*)/g).map((m) => ({
-    module: m[1],
-    ...loc(source, m.index)
-  }));
-
-  const targetsBlock = findNamedBlock(content, "targets");
-  if (targetsBlock) {
-    for (const section of TARGET_BLOCKS) {
-      const block = findNamedBlock(targetsBlock.body, section);
-      if (block) {
-        ast.targets.push(parseTargetDeclaration(source, section, block.body, targetsBlock.index + block.index));
-      }
-    }
-  }
-
-  for (const block of findBlocks(content, /\btarget\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{/g)) {
-    ast.targets.push(parseTargetDeclaration(source, block.name, block.body, block.index));
-  }
-
-  const capabilities = findNamedBlock(content, "capabilities");
-  if (capabilities) ast.capabilities = parseCapabilitiesBlock(source, capabilities.body, capabilities.index);
-
-  const security = findNamedBlock(content, "security");
-  if (security) ast.security = parseSettings(security.body);
-
-  const permissions = findNamedBlock(content, "permissions");
-  if (permissions) ast.permissions = parseSettings(permissions.body);
-
-  const globals = findNamedBlock(source.content, "globals");
-  if (globals) ast.globals = parseGlobalRegistryBlock(source, globals);
-
-  const runtime = findNamedBlock(content, "runtime");
-  if (runtime) ast.runtime = parseRuntimeBlock(runtime.body);
-
-  const documentation = findNamedBlock(content, "documentation");
-  if (documentation) ast.documentation = parseDocumentationBlock(documentation.body);
-
-  const aiGuide = findNamedBlock(content, "ai_guide");
-  if (aiGuide) ast.aiGuide = parseAiGuideBlock(aiGuide.body);
-
-  const manifests = findNamedBlock(content, "manifests");
-  if (manifests) ast.manifests = parseManifestsBlock(manifests.body);
-
-  const buildContract = findNamedBlock(content, "build");
-  if (buildContract) ast.buildContract = parseBuildContractBlock(buildContract.body);
-
-  for (const block of findBlocks(content, /\bjson_policy\s*\{/g)) {
-    ast.jsonPolicies.push({ settings: parseSettings(block.body), ...loc(source, block.index) });
-  }
-
-  for (const block of findBlocks(content, /\brecord\s+([A-Z][A-Za-z0-9_]*)\s*\{/g)) {
-    ast.types.push({
-      name: block.name,
-      fields: parseFields(block.body),
-      ...loc(source, block.index)
-    });
-  }
-
-  for (const match of matches(content, /\btype\s+([A-Z][A-Za-z0-9_]*)\s*=\s*([A-Za-z_][A-Za-z0-9_<>, ]*)/g)) {
-    ast.types.push({ name: match[1], alias: match[2].trim(), fields: [], ...loc(source, match.index) });
-  }
-
-  for (const block of findBlocks(content, /\benum\s+([A-Z][A-Za-z0-9_]*)\s*\{/g)) {
-    ast.enums.push({
-      name: block.name,
-      cases: block.body.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
-      ...loc(source, block.index)
-    });
-  }
-
-  for (const match of matches(content, /\b(async\s+)?(?:(secure|pure(?:\s+vector(?:\s+required)?)?)\s+)?flow\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)\s*->\s*([A-Za-z_][A-Za-z0-9_<>, ]*)/g)) {
-    const qualifier = flowQualifier(match[1], match[2]);
-    ast.flows.push({
-      name: match[3],
-      qualifier,
-      vectorMode: flowVectorMode(qualifier),
-      async: qualifier.includes("async"),
-      params: parseParams(match[4]),
-      returns: match[5].trim(),
-      effects: parseEffects(content.slice(match.index, match.index + 300)),
-      ...loc(source, match.index)
-    });
-  }
-
-  for (const block of findBlocks(content, /\bapi\s+([A-Z][A-Za-z0-9_]*)\s*\{/g)) {
-    ast.apis.push({
-      name: block.name,
-      routes: parseRoutes(block.body),
-      ...loc(source, block.index)
-    });
-  }
-
-  for (const block of findBlocks(content, /\bwebhook\s+([A-Z][A-Za-z0-9_]*)\s*\{/g)) {
-    ast.webhooks.push({
-      name: block.name,
-      path: stringSetting(block.body, "path"),
-      method: wordSetting(block.body, "method"),
-      hmacHeader: stringSetting(block.body, "hmac_header"),
-      maxAge: wordSetting(block.body, "max_age"),
-      maxBodySize: wordSetting(block.body, "max_body_size"),
-      replayProtection: wordSetting(block.body, "replay_protection"),
-      idempotencyKey: expressionSetting(block.body, "idempotency_key"),
-      handler: wordSetting(block.body, "handler"),
-      ...loc(source, block.index)
-    });
-  }
-
-  for (const block of findBlocks(content, /\bcompute\s+target\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s+verify\s+([A-Za-z_][A-Za-z0-9_]*))?\s*\{/g)) {
-    const target = block.name.trim();
-    const banned = BANNED_COMPUTE_OPS.filter((op) => block.body.includes(op));
-    ast.computeBlocks.push({
-      target,
-      verify: block.extra || null,
-      prefers: matches(block.body, /\bprefer\s+([A-Za-z_][A-Za-z0-9_]*)/g).map((m) => m[1]),
-      fallbacks: matches(block.body, /\bfallback\s+([A-Za-z_][A-Za-z0-9_]*)/g).map((m) => m[1]),
-      bannedOperations: banned,
-      ...loc(source, block.index)
-    });
-
-    for (const op of banned) {
-      diagnostics.push(diagnostic("error", "TargetCompatibilityError", source, block.index, `${op} cannot run inside a compute block.`, "Move I/O, secrets and environment access outside the compute block, then pass typed values in."));
-    }
-
-    if ((target.includes("photonic") || block.body.includes("prefer photonic")) && !/\bfallback\s+cpu\b|\bfallback\s+binary\b/.test(block.body)) {
-      diagnostics.push(diagnostic("warning", "TargetFallbackWarning", source, block.index, "Photonic compute block has no explicit CPU or binary fallback.", "Add fallback cpu or fallback binary to preserve backwards compatibility."));
-    }
-  }
-
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const truthy = line.match(/\bif\s+([A-Za-z_][A-Za-z0-9_.]*)\s*\{/);
-    if (truthy) {
-      diagnostics.push({
-        severity: "warning",
-        errorType: "TruthyFalsyCheck",
-        file: source.relativePath,
-        line: i + 1,
-        column: line.indexOf(truthy[1]) + 1,
-        problem: `if ${truthy[1]} uses an implicit truthy/falsy check.`,
-        suggestedFix: "Compare a Bool explicitly or use match for Option, Result and enum values."
-      });
-    }
-  }
-
-  applyStrictCommentChecks(source, ast, diagnostics);
-
-  return ast;
+function parseFileLegacyRemoved() {
+  throw new Error("parseFile lives in compiler/parser.js");
 }
-
 function parseTargetDeclaration(source, name, body, index) {
   const target = name === "cpu" ? "binary" : name;
   return {
@@ -2190,34 +2123,8 @@ function applyProjectChecks(project, ast, diagnostics) {
     }
   }
 
-  applyImportCapabilityChecks(ast, diagnostics);
   applyLogicTargetChecks(ast, diagnostics);
   applyMemoryVariableUseChecks(project, diagnostics);
-
-  for (const webhook of ast.webhooks) {
-    if (!webhook.hmacHeader) {
-      diagnostics.push({
-        severity: "warning",
-        errorType: "WebhookSecurityWarning",
-        file: webhook.file,
-        line: webhook.line,
-        column: webhook.column,
-        problem: `Webhook ${webhook.name} does not declare an HMAC header.`,
-        suggestedFix: "Add hmac_header, env.secret, max_age, max_body_size, replay_protection and idempotency_key."
-      });
-    }
-    if (!webhook.idempotencyKey) {
-      diagnostics.push({
-        severity: "warning",
-        errorType: "WebhookIdempotencyWarning",
-        file: webhook.file,
-        line: webhook.line,
-        column: webhook.column,
-        problem: `Webhook ${webhook.name} does not declare an idempotency key.`,
-        suggestedFix: "Add idempotency_key json.path(\"$.id\")."
-      });
-    }
-  }
 
   applyGlobalRegistryChecks(ast, diagnostics);
 
@@ -2227,45 +2134,11 @@ function applyProjectChecks(project, ast, diagnostics) {
 }
 
 function applyImportCapabilityChecks(ast, diagnostics) {
-  const browserTargets = ast.targets.filter((target) => target.enabled && target.name === "browser");
-  if (browserTargets.length === 0) return;
-
-  const blockedCapabilities = new Set(ast.capabilities?.block || []);
-  const browserTargetFiles = new Set(browserTargets.map((target) => target.file));
-  const browserDeclaredInBoot = browserTargets.some((target) => target.file === "boot.fungi");
-  for (const imported of ast.imports) {
-    if (!browserDeclaredInBoot && !browserTargetFiles.has(imported.file)) continue;
-    const capability = capabilityForImport(imported.module);
-    if (isServerOnlyImport(imported.module)) {
-      diagnostics.push({
-        severity: "error",
-        errorType: "BrowserImportBlocked",
-        file: imported.file,
-        line: imported.line,
-        column: imported.column,
-        target: "browser",
-        problem: `Server-only import "${imported.module}" cannot be used in browser target.`,
-        suggestedFix: "Move server-only access behind an API endpoint or compile this code for a server/native target."
-      });
-      continue;
-    }
-    if (capability && blockedCapabilities.has(capability)) {
-      diagnostics.push({
-        severity: "error",
-        errorType: "CapabilityBlockedImport",
-        file: imported.file,
-        line: imported.line,
-        column: imported.column,
-        target: "browser",
-        problem: `Import "${imported.module}" requires blocked capability "${capability}".`,
-        suggestedFix: `Remove the import or change the capabilities block if ${capability} is intentionally aLOwed for this target.`
-      });
-    }
-  }
+  checkTargetCapabilityImports(ast, diagnostics);
 }
 
 function isServerOnlyImport(moduleName) {
-  return SERVER_ONLY_IMPORTS.some((blocked) => moduleName === blocked || moduleName.startsWith(`${blocked}.`));
+  return securityIsServerOnlyImport(moduleName);
 }
 
 function capabilityForImport(moduleName) {
@@ -2484,34 +2357,8 @@ function applyGlobalRegistryChecks(ast, diagnostics) {
 }
 
 function mergeAst(target, source) {
-  if (source.project) target.project = source.project;
-  if (source.entry) target.entry = source.entry;
-  target.imports.push(...source.imports);
-  target.targets.push(...source.targets);
-  target.capabilities.aLOw.push(...(source.capabilities?.allow || []));
-  target.capabilities.block.push(...(source.capabilities?.block || []));
-  target.capabilities.entries.push(...(source.capabilities?.entries || []));
-  target.capabilities.allow = Array.from(new Set(target.capabilities.aLOw));
-  target.capabilities.block = Array.from(new Set(target.capabilities.block));
-  Object.assign(target.security, source.security);
-  Object.assign(target.permissions, source.permissions);
-  if (source.logic) target.logic = source.logic;
-  if (source.runtime) target.runtime = source.runtime;
-  if (source.documentation) target.documentation = source.documentation;
-  if (source.aiGuide) target.aiGuide = source.aiGuide;
-  Object.assign(target.manifests, source.manifests);
-  Object.assign(target.buildContract, source.buildContract);
-  target.jsonPolicies.push(...source.jsonPolicies);
-  target.globals.push(...source.globals);
-  target.types.push(...source.types);
-  target.enums.push(...source.enums);
-  target.flows.push(...source.flows);
-  target.apis.push(...source.apis);
-  target.webhooks.push(...source.webhooks);
-  target.computeBlocks.push(...source.computeBlocks);
-  target.strictComments.push(...source.strictComments);
+  return mergeFileAst(target, source);
 }
-
 function stripComments(content) {
   return content.replace(/\/\/.*$/gm, "");
 }
@@ -2959,6 +2806,8 @@ function categoryName(category) {
     IO: "io",
     NET: "network",
     API: "api",
+    EFFECT: "effect",
+    VECTOR: "vector",
     BUILD: "build",
     RUNTIME: "runtime"
   }[category] || category.toLowerCase();
@@ -3000,9 +2849,10 @@ function printDiagnostics(result) {
 function build(result, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   const success = !result.diagnostics.some(isFailureDiagnostic);
+  const pipeline = result.pipeline || runCompilerPipeline(result);
   const reports = {
-    "app.bin": "Galerina prototype CPU-compatible output\nThis file is a placeholder manifest, not a native binary.\n",
-    "app.wasm": "Galerina prototype WASM output placeholder\n",
+    "app.bin": (pipeline.cpu && pipeline.cpu.text) || CPU_PLACEHOLDER_TEXT,
+    "app.wasm": (pipeline.wasm && pipeline.wasm.text) || WASM_PLACEHOLDER_TEXT,
     "app.gpu.plan": planText(result, "gpu"),
     "app.photonic.plan": planText(result, "photonic"),
     "app.ternary.sim": planText(result, "ternary"),
@@ -3018,6 +2868,7 @@ function build(result, outDir) {
     "app.execution-report.json": JSON.stringify(buildExecutionReport(result), null, 2),
     "app.target-report.json": JSON.stringify(buildTargetReport(result), null, 2),
     "app.security-report.json": JSON.stringify(buildSecurityReport(result), null, 2),
+    "app.compiler-report.json": JSON.stringify(pipeline.report, null, 2),
     "app.failure-report.json": JSON.stringify(buildFailureReport(result), null, 2),
     "app.source-map.json": JSON.stringify(buildSourceMap(result), null, 2),
     "app.tokens.json": JSON.stringify(buildTokenReport(result), null, 2),
@@ -3071,6 +2922,7 @@ export const LOBrowserTarget = {
 
 function generateDevelopmentOutputs(result, outDir) {
   const success = !result.diagnostics.some(isFailureDiagnostic);
+  const pipeline = result.pipeline || runCompilerPipeline(result);
   const reports = {
     "app.openapi.json": JSON.stringify(buildOpenApi(result), null, 2),
     "app.api-report.json": JSON.stringify(buildApiReport(result), null, 2),
@@ -3078,6 +2930,7 @@ function generateDevelopmentOutputs(result, outDir) {
     "app.map-manifest.json": JSON.stringify(buildMapManifest(result), null, 2),
     "app.memory-report.json": JSON.stringify(buildMemoryReport(result), null, 2),
     "app.security-report.json": JSON.stringify(buildSecurityReport(result), null, 2),
+    "app.compiler-report.json": JSON.stringify(pipeline.report, null, 2),
     "app.failure-report.json": JSON.stringify(buildFailureReport(result), null, 2),
     "app.source-map.json": JSON.stringify(buildSourceMap(result), null, 2),
     "app.schemas.json": JSON.stringify(buildJsonSchemaReport(result.ast), null, 2),
@@ -5091,6 +4944,7 @@ function buildManifest(result, outputs = {}) {
       "app.schemas.json",
       "app.target-report.json",
       "app.security-report.json",
+      "app.compiler-report.json",
       "app.failure-report.json",
       "app.source-map.json",
       "app.tokens.json",
@@ -5862,6 +5716,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  analyseProject,
+  parseFile,
   writeReportFiles,
   normaliseBuildOutputPath,
   loadProject,

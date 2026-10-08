@@ -43,7 +43,7 @@ enum_case        = type_name [ "(" parameters ")" ] ;
 flow_decl        = [ flow_qualifier ] "flow" identifier
                    "(" [ parameters ] ")" "->" type_ref
                    [ effects_decl ] block [ rollback_block ] ;
-flow_qualifier   = "secure" | "pure" ;
+flow_qualifier   = "secure" | "pure" | "async" | "pure" "vector" [ "required" ] ;
 parameters       = parameter { "," parameter } ;
 parameter        = identifier ":" type_ref ;
 effects_decl     = "effects" "[" effect_name { "," effect_name } "]" ;
@@ -149,7 +149,10 @@ json_policy_block = "json_policy" "{" { setting } "}" ;
 string_list_setting = identifier "[" { string } "]" ;
 
 statement        = let_stmt | mut_stmt | return_stmt | match_stmt | if_stmt
-                 | for_stmt | while_stmt | wait_until_stmt | expression ;
+                 | for_stmt | while_stmt | wait_until_stmt | vectorize_stmt | await_stmt | expression ;
+vectorize_stmt   = "vectorize" identifier block ;
+vectorize_column = identifier [ ":" type_ref ] "=" expression ;
+await_stmt       = "await" expression ;
 let_stmt         = "let" identifier ":" type_ref "=" expression ;
 mut_stmt         = "mut" identifier ":" type_ref "=" expression ;
 return_stmt      = "return" expression ;

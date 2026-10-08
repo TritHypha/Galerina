@@ -30,7 +30,8 @@ Use this file as a practical checklist while the project moves from concept to d
 [x] Finalise Bool, Tri, Decision, Option and Result semantics
     src/v1-scope-contract.ts admitV1CoreLogicType / V1_CORE_LOGIC_TYPES Bool|Tri|Decision|Option|Result (Decimal/Float/Verdict/Int refuse). SuperGrok 2026-10-08b
 [x] Add at least 20 real .fungi examples for the v1 syntax subset
-[ ] Build parser coverage for those examples
+[x] Build parser coverage for those examples
+    compiler/parser.js coverExampleSources; prototype test parser coverage for v1 examples. SuperGrok 2026-10-08i
 [x] Reject post-v1 syntax with clear diagnostics
     src/v1-scope-contract.ts admitV1SyntaxFamily (cpu|wasm admitted; dart/wavelength/onnx/DOM/gpu/image refuse Galerina_CORE_V1_SYNTAX_POST). SuperGrok 2026-10-08b
 [x] Use docs/language-core-maturity-roadmap.md as the maturity checklist before
@@ -121,7 +122,8 @@ Current syntax/target documentation additions:
 [x] Add docs/sytax/async-dart-flutter.md
 [x] Add docs/sytax-examples/async-dart-flutter.md
 [x] Implement parser support for async flow
-[ ] Implement await-outside-async diagnostics
+[x] Implement await-outside-async diagnostics
+    compiler/parser.js diagnoseAwaitOutsideAsync; AwaitOutsideAsync / galerina-ERR-ASYNC-001. SuperGrok 2026-10-08i
 [HOLD] Implement target dart report/output support
 [HOLD] Implement target flutter package report/output support
 [HOLD] Implement Bytes to Dart.Uint8List interop checks
@@ -851,7 +853,8 @@ Reason for additions:
 [x] Add simple vector syntax and compute auto documentation
 [x] Define vector block syntax
 [x] Define vector optimisation modes
-[ ] Define vectorize parser support
+[x] Define vectorize parser support
+    compiler/parser.js parseVectorizeBlocks; docs/vectorised-dataset-syntax.md column form. SuperGrok 2026-10-08i
 [x] Define pure vector flow parser support
 [x] Define pure vector required flow parser support
 [x] Define scalar fallback lowering
@@ -864,7 +867,8 @@ Reason for additions:
 [x] Define vector report output
 [x] Define vector report schema
 [x] Define AI guide vector section
-[ ] Define vector suggestion command
+[x] Define vector suggestion command
+    compiler/vector-suggest.js; Galerina suggest vector (no source rewrite). SuperGrok 2026-10-08i
 [x] Add vector examples after parser support exists
 [x] Add vector parser tests
 ```
@@ -984,24 +988,36 @@ Reason for additions:
 [x] Define compiler folder structure
     src/v1-scope-contract.ts admitV1CompilerFolder admits compiler, src, tests, grammar, schemas, docs, examples. SuperGrok 2026-10-08f
 [x] Create lexer
-[ ] Create parser
-[ ] Create AST
-[ ] Create symbol table
+[x] Create parser
+    compiler/parser.js parseFile used by analyseProject. SuperGrok 2026-10-08i
+[x] Create AST
+    compiler/ast.js createProgramAst / mergeFileAst / fileRecord. SuperGrok 2026-10-08i
+[x] Create symbol table
+    compiler/symbol-table.js buildSymbolTable. SuperGrok 2026-10-08i
 [x] Create type checker
 [ ] Create memory checker
-[ ] Create security checker
-[ ] Create effect checker
-[ ] Create JSON/API checker
-[ ] Create IR format
-[ ] Create optimiser
-[ ] Create linker
-[ ] Create CPU output prototype
-[ ] Create WASM output prototype
+[x] Create security checker
+    compiler/security-checker.js checkSecurity / checkTargetCapabilityImports. SuperGrok 2026-10-08j
+[x] Create effect checker
+    compiler/effect-checker.js checkEffects. SuperGrok 2026-10-08j
+[x] Create JSON/API checker
+    compiler/json-api-checker.js checkJsonApi. SuperGrok 2026-10-08j
+[x] Create IR format
+    compiler/ir.js galerina.core.ir.v1 structured AST units, not a bytecode ISA. SuperGrok 2026-10-08j
+[x] Create optimiser
+    compiler/optimiser.js identity pass; refuses when vector/offload errors exist; does not rewrite source. SuperGrok 2026-10-08j
+[x] Create linker
+    compiler/linker.js links IR units with the symbol table. SuperGrok 2026-10-08j
+[x] Create CPU output prototype
+    compiler/cpu-output.js documented app.bin placeholder, executable false. SuperGrok 2026-10-08j
+[x] Create WASM output prototype
+    compiler/wasm-output.js documented app.wasm placeholder, not a runnable module. SuperGrok 2026-10-08j
 [x] Create GPU plan generator
 [x] Create photonic plan generator
 [x] Create ternary simulation generator
 [x] Create source-map generator
-[ ] Create report generator
+[x] Create report generator
+    compiler/report-generator.js app.compiler-report.json. SuperGrok 2026-10-08j
 [x] Create AI context generator
 ```
 
@@ -1061,8 +1077,10 @@ Reason for additions:
 [x] Define app.test-report.json
 [x] Define app.ai-suggestions.md
 [x] Define app.ai-suggestions.json
-[ ] Integrate vector/offload safety checks into build pipeline
-[ ] Integrate target/capability import checks into build pipeline
+[x] Integrate vector/offload safety checks into build pipeline
+    compiler/vector-offload-safety.js via compiler/build-pipeline.js applyBuildPipelineChecks. SuperGrok 2026-10-08j
+[x] Integrate target/capability import checks into build pipeline
+    compiler/security-checker.js checkTargetCapabilityImports via applyBuildPipelineChecks. SuperGrok 2026-10-08j
 ```
 
 ---
@@ -1079,7 +1097,8 @@ Reason for additions:
 [x] Galerina fmt
 [x] Galerina test
 [x] Galerina fmt
-[ ] Galerina lint
+[x] Galerina lint
+    compiler/galerina.js lint command runs analyseProject checkers without writing artefacts. SuperGrok 2026-10-08j
 [x] Galerina explain
 [x] Galerina explain --for-ai
 [x] Galerina verify
