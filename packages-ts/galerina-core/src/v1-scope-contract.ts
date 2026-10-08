@@ -541,6 +541,102 @@ export function admitV1LanguageForm(name: unknown): V1ScopeDecision {
   ]);
 }
 
+/** Closed v1 test kinds from docs/testing.md. memory_safety stays out (memory-model). */
+export const V1_ADMITTED_TEST_KINDS = Object.freeze([
+  "unit",
+  "integration",
+  "api",
+  "webhook",
+  "json_validation",
+  "security",
+  "diagnostic_format",
+  "target_fallback",
+  "source_map",
+  "ai_context",
+  "type_checker",
+  "compiler_report",
+] as const);
+
+export type V1AdmittedTestKind = (typeof V1_ADMITTED_TEST_KINDS)[number];
+
+/** Closed v1 test assertions from docs/testing.md. */
+export const V1_ADMITTED_TEST_ASSERTIONS = Object.freeze([
+  "expected_success",
+  "expected_diagnostics",
+  "expected_target_fallback",
+  "expected_source_map_location",
+  "expected_generated_report_fields",
+] as const);
+
+export type V1AdmittedTestAssertion = (typeof V1_ADMITTED_TEST_ASSERTIONS)[number];
+
+/** Vector output order from docs/vector-model.md Order Rules. Default preserve_order. */
+export const V1_ADMITTED_VECTOR_ORDER = Object.freeze([
+  "preserve_order",
+  "unordered",
+] as const);
+
+export type V1AdmittedVectorOrder = (typeof V1_ADMITTED_VECTOR_ORDER)[number];
+
+export const V1_DEFAULT_VECTOR_ORDER = "preserve_order" as const;
+
+export function admitV1TestKind(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_TEST_KIND_REQUIRED", "A v1 test kind name is required.", "testKind"),
+    ]);
+  }
+  if ((V1_ADMITTED_TEST_KINDS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_TEST_KIND_UNKNOWN",
+      "Test kind is not an admitted v1 kind from docs/testing.md.",
+      "testKind",
+    ),
+  ]);
+}
+
+export function admitV1TestAssertion(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_TEST_ASSERTION_REQUIRED", "A v1 test assertion name is required.", "assertion"),
+    ]);
+  }
+  if ((V1_ADMITTED_TEST_ASSERTIONS as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_TEST_ASSERTION_UNKNOWN",
+      "Test assertion is not an admitted v1 assertion from docs/testing.md.",
+      "assertion",
+    ),
+  ]);
+}
+
+export function admitV1VectorOrder(name: unknown): V1ScopeDecision {
+  const token = asToken(name);
+  if (token === undefined) {
+    return decide("", "unknown", [
+      refuseDiag("Galerina_CORE_V1_VECTOR_ORDER_REQUIRED", "A v1 vector order policy is required.", "order"),
+    ]);
+  }
+  if ((V1_ADMITTED_VECTOR_ORDER as readonly string[]).includes(token)) {
+    return decide(token, "admitted", []);
+  }
+  return decide(token, "unknown", [
+    refuseDiag(
+      "Galerina_CORE_V1_VECTOR_ORDER_UNKNOWN",
+      "v1 vector order policies are preserve_order and unordered only.",
+      "order",
+    ),
+  ]);
+}
+
 export function claimProductionMaturity(input: ProductionMaturityClaim): V1ScopeDecision {
   const path = asToken(input.checklistPath) ?? "";
   if (path !== MATURITY_CHECKLIST_PATH) {

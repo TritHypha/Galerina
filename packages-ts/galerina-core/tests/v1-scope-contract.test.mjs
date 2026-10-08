@@ -39,6 +39,13 @@ const {
   admitV1CpuTargetContract,
   admitV1ComputeSelector,
   admitV1TargetPluginBoundary,
+  V1_ADMITTED_TEST_KINDS,
+  V1_ADMITTED_TEST_ASSERTIONS,
+  V1_ADMITTED_VECTOR_ORDER,
+  V1_DEFAULT_VECTOR_ORDER,
+  admitV1TestKind,
+  admitV1TestAssertion,
+  admitV1VectorOrder,
 } = scope;
 
 const codes = (d) => d.diagnostics.map((x) => x.code).sort();
@@ -327,5 +334,54 @@ describe("v1 target plugin boundary", () => {
     assert.equal(plugin.status, "REFUSED");
     assert.equal(plugin.scopeClass, "post_v1");
     assert.ok(codes(plugin).includes("Galerina_CORE_V1_PLUGIN_POST"));
+  });
+});
+describe("v1 test kinds", () => {
+  it("admits the closed docs/testing.md kinds and refuses memory_safety", () => {
+    assert.deepEqual([...V1_ADMITTED_TEST_KINDS], [
+      "unit", "integration", "api", "webhook", "json_validation", "security",
+      "diagnostic_format", "target_fallback", "source_map", "ai_context",
+      "type_checker", "compiler_report",
+    ]);
+    for (const name of V1_ADMITTED_TEST_KINDS) {
+      assert.equal(admitV1TestKind(name).status, "ADMITTED", name);
+    }
+    const memory = admitV1TestKind("memory_safety");
+    assert.equal(memory.status, "REFUSED");
+    assert.ok(codes(memory).includes("Galerina_CORE_V1_TEST_KIND_UNKNOWN"));
+    const empty = admitV1TestKind("");
+    assert.equal(empty.status, "REFUSED");
+    assert.ok(codes(empty).includes("Galerina_CORE_V1_TEST_KIND_REQUIRED"));
+  });
+});
+
+describe("v1 test assertions", () => {
+  it("admits the closed docs/testing.md assertions", () => {
+    assert.deepEqual([...V1_ADMITTED_TEST_ASSERTIONS], [
+      "expected_success",
+      "expected_diagnostics",
+      "expected_target_fallback",
+      "expected_source_map_location",
+      "expected_generated_report_fields",
+    ]);
+    for (const name of V1_ADMITTED_TEST_ASSERTIONS) {
+      assert.equal(admitV1TestAssertion(name).status, "ADMITTED", name);
+    }
+    const unknown = admitV1TestAssertion("expected_timeout");
+    assert.equal(unknown.status, "REFUSED");
+    assert.ok(codes(unknown).includes("Galerina_CORE_V1_TEST_ASSERTION_UNKNOWN"));
+  });
+});
+
+describe("v1 vector order policy", () => {
+  it("admits preserve_order and unordered; default is preserve_order", () => {
+    assert.equal(V1_DEFAULT_VECTOR_ORDER, "preserve_order");
+    assert.deepEqual([...V1_ADMITTED_VECTOR_ORDER], ["preserve_order", "unordered"]);
+    for (const name of V1_ADMITTED_VECTOR_ORDER) {
+      assert.equal(admitV1VectorOrder(name).status, "ADMITTED", name);
+    }
+    const reorder = admitV1VectorOrder("reorder");
+    assert.equal(reorder.status, "REFUSED");
+    assert.ok(codes(reorder).includes("Galerina_CORE_V1_VECTOR_ORDER_UNKNOWN"));
   });
 });

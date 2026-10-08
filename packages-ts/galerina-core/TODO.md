@@ -25,7 +25,7 @@ Use this file as a practical checklist while the project moves from concept to d
     src/v1-scope-contract.ts V1_ADMITTED_TARGETS cpu|wasm; admitV1CoreTarget. SuperGrok 2026-10-08
 [x] Treat GPU, AI accelerator, photonic, optical I/O and domain packages as post-v1
     src/v1-scope-contract.ts V1_POST_TARGETS; classifyV1Scope returns post_v1. SuperGrok 2026-10-08
-[ ] Work actively on core syntax, grammar and logic semantics
+[HOLD] Work actively on core syntax, grammar and logic semantics -- SuperGrok 2026-10-08e: standing process row, not a discrete closed case. v1 catalogs continue in src/v1-scope-contract.ts; parser/grammar work stays with core-compiler.
 [ ] Commit the hybrid ownership memory-safety model
 [x] Finalise Bool, Tri, Decision, Option and Result semantics
     src/v1-scope-contract.ts admitV1CoreLogicType / V1_CORE_LOGIC_TYPES Bool|Tri|Decision|Option|Result (Decimal/Float/Verdict/Int refuse). SuperGrok 2026-10-08b
@@ -786,7 +786,8 @@ Reason for additions:
 [x] Define vector purity checks
 [x] Define vector side-effect blocking
 [x] Define vector secret-access blocking
-[ ] Define vector order preservation rules
+[x] Define vector order preservation rules
+    src/v1-scope-contract.ts admitV1VectorOrder / V1_ADMITTED_VECTOR_ORDER preserve_order|unordered; V1_DEFAULT_VECTOR_ORDER preserve_order (docs/vector-model.md Order Rules). SuperGrok 2026-10-08e
 [ ] Define vector memory and chunking checks
 [x] Define vector report output
 [x] Define vector report schema
@@ -1080,17 +1081,25 @@ Reason for additions:
 ## Testing TODO
 
 ```text
-[ ] Define test syntax
-[ ] Define unit test model
-[ ] Define integration test model
-[ ] Define API test model
-[ ] Define webhook test model
-[ ] Define JSON validation tests
-[ ] Define security tests
+[x] Define test syntax
+    src/v1-scope-contract.ts admitV1TestKind / admitV1TestAssertion from docs/testing.md. SuperGrok 2026-10-08e
+[x] Define unit test model
+    V1_ADMITTED_TEST_KINDS unit. SuperGrok 2026-10-08e
+[x] Define integration test model
+    V1_ADMITTED_TEST_KINDS integration. SuperGrok 2026-10-08e
+[x] Define API test model
+    V1_ADMITTED_TEST_KINDS api. SuperGrok 2026-10-08e
+[x] Define webhook test model
+    V1_ADMITTED_TEST_KINDS webhook. SuperGrok 2026-10-08e
+[x] Define JSON validation tests
+    V1_ADMITTED_TEST_KINDS json_validation. SuperGrok 2026-10-08e
+[x] Define security tests
+    V1_ADMITTED_TEST_KINDS security (kind catalog only; checker stays core-security). SuperGrok 2026-10-08e
 [ ] Define memory-safety tests
 [x] Define type checker tests
 [x] Define source-map tests
-[ ] Define compiler report tests
+[x] Define compiler report tests
+    V1_ADMITTED_TEST_KINDS compiler_report. SuperGrok 2026-10-08e
 [x] Define target report tests
 [x] Define AI context tests
 ```
@@ -1162,7 +1171,7 @@ Reason for additions:
 ## Version 0.1 TODO
 
 ```text
-[ ] Finish documentation set
+[HOLD] Finish documentation set -- SuperGrok 2026-10-08e: unbounded; docs/ already holds the language-core set. Owner names a closed remaining-docs list before this row can complete.
 [x] Add Apache-2.0 LICENSE
 [x] Add NOTICE.md
 [x] Add .gitignore
@@ -1182,7 +1191,8 @@ Reason for additions:
 ## Version 0.2 TODO
 
 ```text
-[ ] Create repository scaffold
+[x] Create repository scaffold
+    package.json, src/, tests/, compiler/, docs/, examples/ present on this package HEAD. SuperGrok 2026-10-08e
 [x] Choose prototype language
 [x] Build lexer prototype
 [x] Build parser prototype
