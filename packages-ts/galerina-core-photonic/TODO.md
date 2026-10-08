@@ -48,29 +48,31 @@ Canonical ownership (2026-09-22 reconciliation):
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): every row in this v0.2 section stays parked until
 v1 ships; no implementation. The HOLD groups below are unchanged.
+Marker sync 2026-10-06 (Grok Bot): the 22 rows below changed from `[ ]` to `[HOLD]` so the open count
+reflects the O1 decision above. No row was implemented, removed or reworded. Reopen as `[ ]` after v1 ships.
 
-[ ] Replace OpticalTransportMode string union with 6-value enum (Waveguide/Coherent/Mesh/FreeSpace/Hybrid/Experimental)
-[ ] Update PhotonicRuntimeTarget to v0.2 fields (id/transport/realtime/deterministic/supportsIsolation/maxPropagationDepth)
-[ ] Update PhotonicExecutionPlan to v0.2 fields (target/topology/propagationDepth/estimatedLatencyNs/isolated/warnings[])
-[ ] Update buildPhotonicPlan() signature to accept PhotonicRuntimeTarget and return v0.2 plan
-[ ] Implement validateIsolation(target: PhotonicRuntimeTarget): boolean
-[ ] Implement validatePropagation(depth: number, target: PhotonicRuntimeTarget): boolean
-[ ] Implement validateHybridMode(target: PhotonicRuntimeTarget): boolean
-[ ] Implement validateRealtime(plan: PhotonicExecutionPlan): boolean
-[ ] Define PhotonicCapability enum (OpticalExecution/HybridExecution/ExperimentalRouting/RealtimeScheduling)
-[ ] Implement validateCapability(capability: PhotonicCapability): boolean — blocks ExperimentalRouting by default
-[ ] Define optical topologies list (OpticalMesh/WaveguideBus/CoherentRing/HybridBridge)
-[ ] Update FUNGI-PHOTONIC-001–006 meanings to v0.2 (001=isolation missing, 002=propagation exceeded, 003=experimental prohibited, 004=invalid topology, 005=non-deterministic, 006=unsafe hybrid)
-[ ] Create runtime/transport.ts (OpticalTransportMode enum)
-[ ] Create runtime/isolation.ts (validateIsolation)
-[ ] Create planning/topology.ts (topologies list)
-[ ] Create planning/scheduling.ts (validateRealtime)
-[ ] Create governance/validation.ts (validatePropagation, validateHybridMode)
-[ ] Create governance/capabilities.ts (PhotonicCapability enum, validateCapability)
-[ ] Create targets/runtimeTargets.ts (PhotonicRuntimeTarget)
-[ ] Create targets/OpticalTransportMode.ts
-[ ] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
-[ ] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
+[HOLD] Replace OpticalTransportMode string union with 6-value enum (Waveguide/Coherent/Mesh/FreeSpace/Hybrid/Experimental)
+[HOLD] Update PhotonicRuntimeTarget to v0.2 fields (id/transport/realtime/deterministic/supportsIsolation/maxPropagationDepth)
+[HOLD] Update PhotonicExecutionPlan to v0.2 fields (target/topology/propagationDepth/estimatedLatencyNs/isolated/warnings[])
+[HOLD] Update buildPhotonicPlan() signature to accept PhotonicRuntimeTarget and return v0.2 plan
+[HOLD] Implement validateIsolation(target: PhotonicRuntimeTarget): boolean
+[HOLD] Implement validatePropagation(depth: number, target: PhotonicRuntimeTarget): boolean
+[HOLD] Implement validateHybridMode(target: PhotonicRuntimeTarget): boolean
+[HOLD] Implement validateRealtime(plan: PhotonicExecutionPlan): boolean
+[HOLD] Define PhotonicCapability enum (OpticalExecution/HybridExecution/ExperimentalRouting/RealtimeScheduling)
+[HOLD] Implement validateCapability(capability: PhotonicCapability): boolean — blocks ExperimentalRouting by default
+[HOLD] Define optical topologies list (OpticalMesh/WaveguideBus/CoherentRing/HybridBridge)
+[HOLD] Update FUNGI-PHOTONIC-001–006 meanings to v0.2 (001=isolation missing, 002=propagation exceeded, 003=experimental prohibited, 004=invalid topology, 005=non-deterministic, 006=unsafe hybrid)
+[HOLD] Create runtime/transport.ts (OpticalTransportMode enum)
+[HOLD] Create runtime/isolation.ts (validateIsolation)
+[HOLD] Create planning/topology.ts (topologies list)
+[HOLD] Create planning/scheduling.ts (validateRealtime)
+[HOLD] Create governance/validation.ts (validatePropagation, validateHybridMode)
+[HOLD] Create governance/capabilities.ts (PhotonicCapability enum, validateCapability)
+[HOLD] Create targets/runtimeTargets.ts (PhotonicRuntimeTarget)
+[HOLD] Create targets/OpticalTransportMode.ts
+[HOLD] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
+[HOLD] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
 ```
 
 ## Live reconciliation (2026-09-21)

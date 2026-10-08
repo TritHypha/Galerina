@@ -41,14 +41,22 @@ loading/durability evidence are separate obligations.
     report snapshot; hostile records, arrays and retained-alias controls pass
     in `src/index.ts:103-189`, `:191-290`, `:337-384`, `:511-633` and
     `tests/native-contracts.test.mjs:41-89`, `:167-280`.
-[x] Current bounded package verification is **28/28** with clean typecheck/build
-    (24 contract tests + 4 example tests, 2026-09-29).
+[x] Current bounded package verification is **33/33** with clean typecheck/build
+    (24 contract tests + 4 example tests + 5 closed-set tests, 2026-10-07).
 [x] C09 `fungi.native.artifact.v1` binds relative locator, bytes digest, VOK
     subject, ABI/profile (`RD-1281`). Identity tests cover escape locators,
     empty bytes, empty VOK receipt, digest/VOK mismatch, stale VOK, ABI
     mismatch, profile escape/collision, and duplicate digest at
     `tests/native-contracts.test.mjs:91-165`, `:168-222`. Physical open and
     VOK verification remain outside this package.
+[x] Inventory of current legacy `Galerina_NATIVE_*` codes at pin `df7f2fb5`:
+    21 codes in `src/index.ts`, exported as `NATIVE_DIAGNOSTIC_REGISTRY` /
+    `NATIVE_DIAGNOSTIC_CODES` (first-emission order). Closed-set tests in
+    `tests/native-diagnostic-closed-set.test.mjs` pin the set, refuse unknown
+    and `FUNGI-NATIVE-*` names, require every code to be emitted, and check
+    determinism. Source still emits the legacy names.
 [!] Legacy `Galerina_NATIVE_*` diagnostics still require owner-approved
-    `FUNGI-CATEGORY-NNN` registry ownership before promotion.
+    `FUNGI-CATEGORY-NNN` registry ownership before promotion. A PROPOSED
+    `FUNGI-NATIVE-001`..`021` mapping is recorded in the SuperGrok 2026-10-07
+    answer.md and is not claimed final.
 ```

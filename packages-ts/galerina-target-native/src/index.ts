@@ -47,10 +47,52 @@ export interface NativeTargetReport {
 export type NativeDiagnosticSeverity = "warning" | "error";
 
 export interface NativeDiagnostic {
-  readonly code: string;
+  readonly code: NativeDiagnosticCode;
   readonly severity: NativeDiagnosticSeverity;
   readonly message: string;
   readonly path?: string;
+}
+
+/**
+ * Closed set of current legacy `Galerina_NATIVE_*` diagnostic codes.
+ * A FUNGI-NATIVE-NNN mapping is PROPOSED only and is not owner-approved;
+ * this package still emits the legacy names. Do not treat these labels as
+ * a FUNGI-CATEGORY-NNN registry.
+ */
+export const NATIVE_DIAGNOSTIC_REGISTRY = Object.freeze({
+  Galerina_NATIVE_INPUT_INVALID: "input refused",
+  Galerina_NATIVE_TARGET_FIELD_REQUIRED: "target field required",
+  Galerina_NATIVE_TARGET_TRIPLE_INVALID: "target triple invalid",
+  Galerina_NATIVE_TARGET_TRIPLE_ARCHITECTURE_MISMATCH: "target architecture mismatch",
+  Galerina_NATIVE_TARGET_TRIPLE_OS_MISMATCH: "target os mismatch",
+  Galerina_NATIVE_TARGET_ABI_INVALID: "target ABI invalid",
+  Galerina_NATIVE_TARGET_EXECUTION_MODE_INVALID: "target execution mode invalid",
+  Galerina_NATIVE_SCHEMA_INVALID: "artifact schema invalid",
+  Galerina_NATIVE_ARTIFACT_PATH_REQUIRED: "artifact path required",
+  Galerina_NATIVE_ARTIFACT_PATH_ESCAPES: "artifact path escapes",
+  Galerina_NATIVE_ARTIFACT_FORMAT_INVALID: "artifact format invalid",
+  Galerina_NATIVE_DIGEST_INVALID: "digest invalid",
+  Galerina_NATIVE_BYTES_REQUIRED: "bytes required",
+  Galerina_NATIVE_DIGEST_MISMATCH: "digest mismatch",
+  Galerina_NATIVE_VOK_RECEIPT_REQUIRED: "VOK receipt required",
+  Galerina_NATIVE_VOK_SUBJECT_MISMATCH: "VOK subject mismatch",
+  Galerina_NATIVE_ABI_MISMATCH: "ABI mismatch",
+  Galerina_NATIVE_PROFILE_PATH_COLLIDES: "profile path collides",
+  Galerina_NATIVE_DIGEST_DUPLICATE: "digest duplicate",
+  Galerina_NATIVE_PROFILE_PATH_REQUIRED: "profile path required",
+  Galerina_NATIVE_PROFILE_PATH_ESCAPES: "profile path escapes",
+} as const);
+
+export type NativeDiagnosticCode = keyof typeof NATIVE_DIAGNOSTIC_REGISTRY;
+
+export const NATIVE_DIAGNOSTIC_CODES: readonly NativeDiagnosticCode[] = Object.freeze(
+  Object.keys(NATIVE_DIAGNOSTIC_REGISTRY) as NativeDiagnosticCode[],
+);
+
+const NATIVE_DIAGNOSTIC_CODE_SET: ReadonlySet<string> = new Set(NATIVE_DIAGNOSTIC_CODES);
+
+export function isNativeDiagnosticCode(code: string): code is NativeDiagnosticCode {
+  return NATIVE_DIAGNOSTIC_CODE_SET.has(code);
 }
 
 const NATIVE_ABIS: readonly NativeAbi[] = ["c", "wasm", "system", "plugin"];
@@ -69,11 +111,14 @@ type NativeDecodeResult<T> =
   | { readonly diagnostic: NativeDiagnostic };
 
 function nativeDiagnostic(
-  code: string,
+  code: NativeDiagnosticCode,
   severity: NativeDiagnosticSeverity,
   message: string,
   path?: string,
 ): NativeDiagnostic {
+  if (!isNativeDiagnosticCode(code)) {
+    throw new TypeError(`unknown native diagnostic code: ${String(code)}`);
+  }
   return { code, severity, message, ...(path === undefined ? {} : { path }) };
 }
 

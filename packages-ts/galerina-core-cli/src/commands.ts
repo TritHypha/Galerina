@@ -1,4 +1,4 @@
-import type { CliCommand, CliContext, CliResult } from "./types.js";
+import type { CliCommand } from "./types.js";
 import { createCoreCommandRunner } from "./core-command.js";
 import { runGraphCommand } from "./graph-command.js";
 import { runTaskCommand } from "./task-command.js";
@@ -72,15 +72,6 @@ export const commands: readonly CliCommand[] = [
     name: "promote",
     description: "Admit a closed-shape promote plan between environments (fail-closed; no live apply/sign/push).",
     run: runPromoteCommand
-  },
-  {
-    name: "benchmark",
-    description: "Run Galerina benchmark diagnostics.",
-    run: async (_context: CliContext): Promise<CliResult> => ({
-      ok: false,
-      code: 2,
-      message: "Galerina benchmark is defined but not implemented yet."
-    })
   }
 ];
 

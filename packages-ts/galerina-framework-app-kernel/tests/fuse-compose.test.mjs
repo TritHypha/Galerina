@@ -165,7 +165,7 @@ test("fusePackages: WITHOUT the provider, the consumer's clock.read falls back t
 // ── R&D 0051: posture-derived import profile (requireSignature) + import-closure report ──
 test("requireSignature OVERRIDES allowUnsigned (fail-secure) — fusePackages refuses an unsigned set", async () => {
   await assert.rejects(
-    () => fusePackages([PROVIDER_DIR, CONSUMER_DIR], { allowUnsigned: true, requireSignature: true, warn: () => {} }),
+    () => fusePackages([PROVIDER_DIR, CONSUMER_DIR], { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
     /FUNGI-FUSE-SET-UNSIGNED/,
     "posture 'on' (requireSignature) must refuse unsigned even when allowUnsigned was passed (set-signed invariant fires)",
   );
@@ -173,7 +173,7 @@ test("requireSignature OVERRIDES allowUnsigned (fail-secure) — fusePackages re
 
 test("requireSignature OVERRIDES allowUnsigned for a single fusePackage too", async () => {
   await assert.rejects(
-    () => fusePackage(DEMO_DIR, { allowUnsigned: true, requireSignature: true, warn: () => {} }),
+    () => fusePackage(DEMO_DIR, { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
     /posture requires a signature/,
   );
 });

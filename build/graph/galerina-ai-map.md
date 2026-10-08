@@ -23,18 +23,18 @@ Provides:
 Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI and (next brick) the attested WASM instantiation TCB that the kernel/DSS reach WITHOUT importing the compiler.
 
 Provides:
-- WAT_HEAP_BASE
-- WAT_REC_FIELD_SIZE
-- hashArtifact
-- serializeAttestation
-- parseAttestation
-- createWasmAdmissionVerifier
-- createLowLevelWasmExecutor
-- createBorderSafeRuntimeDeps
-- AdmissionPolicy
-- RunnerProfile
-- WasmAttestation
-- AdmissionVerdict
+- DecTrapKind
+- DEC_TRAP_KINDS
+- MoneyTrapKind
+- MONEY_TRAP_KINDS
+- DecResult
+- DecCompare
+- MAX_DECIMAL_SCALE
+- MAX_DECIMAL_DIGITS
+- RoundMode
+- ROUND_MODES
+- isRoundMode
+- isDecTrap
 
 ## galerina-core-compiler
 
@@ -131,18 +131,18 @@ Provides:
 Shared Galerina report schemas and report-writing contracts.
 
 Provides:
-- ReportSeverity
-- ReportStatus
-- ReportKind
-- ReportGenerator
-- ReportMetadata
-- ReportSourceLocation
-- ReportDiagnostic
-- DiagnosticSummary
-- LoReportBase
-- BuildReport
-- SecurityReport
-- TargetReport
+- AI_DIGEST_MAX_TEXT
+- AI_DIGEST_MAX_ITEMS
+- AI_DIGEST_MAX_INPUT
+- AiDigestList
+- AiDigest
+- aiSafeText
+- aiSafePath
+- AiErrorItem
+- aiErrorDigest
+- AiProjectInput
+- AiProjectDigest
+- aiProjectDigest
 
 ## galerina-core-logic
 
@@ -185,18 +185,18 @@ Provides:
 Galerina compute planning, capability and target selection concepts.
 
 Provides:
-- ComputeTarget
-- ComputeWorkloadKind
-- ComputeDiagnosticSeverity
-- ComputeDiagnostic
-- ComputeCapability
-- ComputeBudget
-- ComputePlan
-- ComputeAutoPolicy
-- ComputeTargetSelection
-- ComputeTargetPreference
-- ComputeDataLocation
-- ComputeDataMovement
+- CompatibilityReport
+- buildCompatibilityReport
+- FUNGI_COMPAT_FORBIDDEN_EFFECT
+- FUNGI_COMPAT_UNSUPPORTED_EFFECT
+- FUNGI_COMPAT_MISSING_CAPABILITY
+- FUNGI_COMPAT_MEMORY_LIMIT
+- FUNGI_COMPAT_SENSITIVE_DATA
+- CompatDiagnosticEntry
+- COMPAT_DIAGNOSTIC_REGISTRY
+- CompatibilityLevel
+- COMPATIBILITY_LEVELS
+- CompatibilityBlocker
 
 ## galerina-ai
 
@@ -239,18 +239,18 @@ Provides:
 Galerina supervised AI agent, tool permission, task group and report contracts.
 
 Provides:
-- AgentToolDecision
-- AgentFailureBehaviour
-- AgentToolPermission
-- AgentLimits
-- AgentDefinition
-- AgentTaskGroupPlan
-- AgentFinding
-- AgentResult
-- AgentMergePolicy
-- AgentReport
-- AgentDiagnosticSeverity
-- AgentDiagnostic
+- AGENT_DECLARATION_SCHEMA
+- MAX_AGENT_SOURCE_BYTES
+- MAX_AGENT_DECLARATIONS
+- MAX_AGENT_TOOLS
+- MAX_AGENT_LINE_LENGTH
+- AgentSourceSpan
+- AgentDeclarationNode
+- AgentDeclarationParseResult
+- AgentDeclarationLowering
+- parseAgentDeclarations
+- lowerAgentDeclaration
+- GovernanceVerdict
 
 ## galerina-ai-neural
 
@@ -779,6 +779,7 @@ Provides:
 - JsRuntime
 - JsModuleFormat
 - SourceMapMode
+- JsBuildMode
 - SourceMapRule
 - JsOutputPlan
 - EsModuleMetadata
@@ -787,7 +788,6 @@ Provides:
 - JsBundleReport
 - JsTargetDiagnosticSeverity
 - JsTargetDiagnostic
-- isServerOnlyImport
 
 ## galerina-target-wasm
 
@@ -795,6 +795,9 @@ Galerina WebAssembly target planning and output contracts.
 
 Provides:
 - WASM_ARTEFACT_SCHEMA
+- WASM_FALLBACK_SCHEMA
+- WASM_HANDOFF_SCHEMA
+- WASM_DIAGNOSTIC_REGISTRY
 - WasmTarget
 - WasmSectionKind
 - WasmSectionExport
@@ -803,9 +806,6 @@ Provides:
 - WasmArtefactAttestation
 - WasmArtefact
 - WasmRefusedArtefact
-- WasmTargetReport
-- WasmDiagnosticSeverity
-- WasmDiagnostic
 
 ## galerina-target-gpu
 
@@ -872,8 +872,8 @@ Provides:
 - CapabilityImportFactory
 - BUILTIN_CAPABILITY_NAMES
 - buildCapabilityImports
+- admitFusePackageName
 - CompositionMember
-- CapabilitySource
 
 ## galerina-framework-api-server
 
@@ -915,6 +915,7 @@ Galerina API documentation generator: emits a valid OpenAPI 3.x document from th
 Provides:
 - generateOpenApi
 - exportOpenApi
+- exportOpenApiYaml
 - Reference
 - SchemaOrRef
 - SchemaObject
@@ -924,25 +925,24 @@ Provides:
 - ResponseObject
 - ParameterLocation
 - ParameterObject
-- SecurityRequirementObject
 
 ## galerina-core-cli
 
 Galerina developer command-line interface for checking, building, serving, reporting and running safe tasks.
 
 Provides:
+- FUNGI_CLI_ENV_001
+- FUNGI_CLI_ENV_002
+- FUNGI_CLI_ENV_003
+- FUNGI_CLI_001
+- FUNGI_CLI_002
+- FUNGI_CLI_003
+- EnvironmentResolution
 - parseEnvironment
 - commands
 - findCommand
 - createCoreCommandRunner
 - relativeCoreCompilerPath
-- spawn
-- Dirent
-- Stats
-- mkdir
-- readdir
-- readFile
-- stat
 
 ## galerina-core-tasks
 
@@ -955,12 +955,12 @@ Provides:
 - DryRunPlan
 - createDryRunPlan
 - dryRunTask
-- LoadedTasks
-- parseTasksSource
-- readFile
-- RunTaskOptions
-- TaskReport
-- TaskRunReport
+- DEFAULT_TASK_TIMEOUT_MS
+- MAX_TASK_TIMEOUT_MS
+- TaskOperationInvocation
+- TaskOperationHandler
+- TaskOperationHandlers
+- ExecuteTaskOperationsOptions
 
 ## galerina-tools-benchmark
 
@@ -987,16 +987,16 @@ grep, but it grows a graph — a graph-indexed search tool for file contents and
 Provides:
 - MAX_INDEX_PATH_LENGTH
 - MAX_INDEX_TERM_LENGTH
-- MAX_INDEX_FILES
 - MAX_INDEX_TERMS_PER_FILE
-- MAX_INDEX_TERM_EDGES
-- MAX_INDEX_BYTES
 - IndexLimits
 - DEFAULT_INDEX_LIMITS
 - StoredContentSkip
 - StoredFile
 - StoredIndex
 - isCanonicalIndexPath
+- validateStoredIndex
+- FileId
+- ContentSkip
 
 ## galerina-devtools-benchmarks
 
@@ -1175,9 +1175,11 @@ Provides:
 Galerina Sentinel State (LSS) — atomic, HMAC-verified state snapshots + cold-boot recovery. Citizen Protocol v1.5.
 
 Provides:
+- refuseSnapshotSpecialFile
 - AtomicWriter
 - RESTORE_VERDICT_PACKAGE_IDENTITY
 - RESTORE_VERDICT_EXPORT_NAME
+- ROLLBACK_FLOOR_NAME
 - RestoreVerdictAuthority
 - ColdBootOrchestrator
 - SecurityTrap
@@ -1185,8 +1187,6 @@ Provides:
 - Snapshot
 - SnapshotKeyHandle
 - SnapshotKeyProvider
-- StateSerializerOptions
-- StateSerializer
 
 ## galerina-core-sentinel-time
 
@@ -1218,7 +1218,7 @@ Provides:
 
 ## galerina-tri-pipe
 
-The Tri-Pipe capstone: createTriPipeEngine() composes the hardware() capability directive + the photonic backend/router + the governed HybridInferenceEngine into one call, selecting the digital registry and photonic offload by the resolved {binary|hybrid|photonic} tier. Digital is the default; photonic only on a proven net win; fail-closed to binary.
+Tri-Pipe proposal, routing and composition layer (RD-0855). createTriPipeEngine() proposes a digest-bound route; it does not construct an engine or authorise dispatch. ExecutionRouter composes hardware-tier, precision and photonic net-win axes. Fail-closed to binary.
 
 Provides:
 - CapabilityInput
@@ -1226,10 +1226,13 @@ Provides:
 - ExecutionDecision
 - ExecutionRouter
 - createExecutionRouter
+- ADMITTED_REPRESENTATION_PROFILES
+- RepresentationProfile
+- EXPERIMENTAL_REPRESENTATION_PROFILES
+- COMPUTE_TRANSFER_SCHEMA
+- ComputeTransferV1
 - TriPipeOptions
 - TriPipeProposal
-- createTriPipeEngine
-- dispatchTriPipeEngine
 
 ## galerina-tri-regex
 
@@ -1242,12 +1245,12 @@ Provides:
 - inRangesWithCost
 - inRanges
 - TriStream
+- NO_CHAR_RANGES
+- AutomatonTables
 - TriMatcher
 - VERSION
 - CompileOptions
 - CompileOk
-- PatternCapability
-- CompileCapabilityOk
 
 ## galerina-ext-spore
 
@@ -1285,15 +1288,16 @@ Native CPU/GPU execution bridges (BitNet ternary) implementing the Tower Inferen
 Provides:
 - BitNetNativeAddon
 - AddonLoadResult
+- MAX_ADDON_BYTES
+- AddonSnapshot
+- snapshotAddonFile
+- stageAddonBytes
 - loadNativeAddon
 - BitNetCpuBridge
 - BitNetGpuBridge
 - CpuCapability
 - GpuCapability
 - detectCpu
-- detectGpu
-- selectTernaryBridge
-- createCppBridgeRegistry
 
 ## galerina-ext-photonic-emulator
 
@@ -1358,9 +1362,9 @@ Provides:
 - SealArena
 - withWiped
 - readStdinBytes
+- EchoingLineReader
 - atomicWriteCiphertext
 - setMlockHook
-- tryMlock
 
 ## galerina-ext-tritsocket
 
@@ -1442,6 +1446,7 @@ Context Receipt generator for Galerina: produces minimal AI-consumable structura
 
 Provides:
 - DEVTOOLS_CONTEXT_VERSION
+- md
 - renderReceiptMarkdown
 - renderFileReceiptsMarkdown
 - generateReceipts
@@ -1569,14 +1574,14 @@ Provides:
 - ExternalDep
 - PackageGraph
 - buildGraph
-- BoundaryPolicy
-- CheckResult
-- writeJson
-- renderJson
-- runBoundaryGate
-- writeBoundaryMarkdown
-- renderBoundaryMarkdown
-- EdgeKind
+- PACKAGE_MANIFEST_SCHEMA
+- PACKAGE_BUILD_MANIFEST_SCHEMA
+- PACKAGE_STANDARD_GENERATOR
+- PACKAGE_STANDARD_FILES
+- FUNGI_PKGSTD_001
+- FUNGI_PKGSTD_002
+- FUNGI_PKGSTD_003
+- FUNGI_PKGSTD_004
 
 ## galerina-devtools-pci
 
@@ -1621,6 +1626,8 @@ Data lineage and provenance tracker for Galerina: maps data sources, transformat
 Provides:
 - FileProvenanceResult
 - analyzeFile
+- FungiCollection
+- collectFungiCorpus
 - collectFungiFiles
 - buildProvenanceGraph
 - DEVTOOLS_PROVENANCE_VERSION
@@ -1629,8 +1636,6 @@ Provides:
 - ProvReportOptions
 - renderProvReport
 - DataSourceKind
-- DataSinkKind
-- TransformKind
 
 ## galerina-devtools-security
 
