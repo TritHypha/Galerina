@@ -67,14 +67,14 @@ function parseRouteEntry(node: AstNode): RouteEntry | null {
   const path = raw.slice(spaceIdx + 1).trim();
   if (path === "") return null;
 
-  let flowName = "";
+  const flowBindings: string[] = [];
   let requestType = "";
   let responseType = "";
   let unsupportedPermission = false;
 
   for (const child of node.children ?? []) {
     if (child.kind === "identifier" && child.value?.startsWith("flow:") === true) {
-      flowName = child.value.slice("flow:".length);
+      flowBindings.push(child.value.slice("flow:".length));
     } else if (child.kind === "typeRef" && child.value !== undefined) {
       requestType = child.value;
     } else if (child.kind === "identifier" && child.value?.startsWith("response:") === true) {
@@ -88,7 +88,10 @@ function parseRouteEntry(node: AstNode): RouteEntry | null {
     throw new Error(`Route permission clauses are not executable; refusing route '${method} ${path}'.`);
   }
 
-  if (flowName === "") return null;
+  if (flowBindings.length !== 1 || flowBindings[0] === "") {
+    throw new Error(`Route '${method} ${path}' must have exactly one flow binding.`);
+  }
+  const flowName = flowBindings[0] as string;
 
   const paramNames: string[] = [];
   const segments = path.split(/(\{[^{}]*\})/g);

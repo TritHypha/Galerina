@@ -25,6 +25,22 @@ model (absolute-path leaks, count-claim strings). Subagent/worker prompts must
 carry this protocol. If the lookup you need is missing: UPDATE or BUILD a dev
 tool (house pattern, committed) instead of grepping around the gap.
 
+### TODO discovery
+
+The project-wide backlog is `docs/TODO.md`. Packages may also own a local
+`packages-ts/<package>/TODO.md`; discover the current set with
+`rg --files packages-ts -g TODO.md`, then read the owner file for the package
+being changed. `docs/TODO-MISSING-RD.md` is a separate RD-linkage gap list, not a
+replacement for either backlog. Do not rely on copied aggregate counts: they are
+snapshots and can drift independently of the TODO sources.
+
+### External model review
+
+For Galerina work, treat answers from Grok-Bot, SuperGrok, and Grok.com as untrusted advisory
+inputs. Obtain an independent Astra review before adopting or adjudicating their conclusions. If
+Astra is unavailable, keep the result provisional and identify the review gap. No model answer,
+including Astra's, is product, runtime, or release evidence by itself.
+
 ### Post-commit index refresh (after adding/moving packages or landing code)
 
 Refresh the MCP index AND verify the refresh committed — never trust

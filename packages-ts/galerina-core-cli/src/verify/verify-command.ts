@@ -23,7 +23,7 @@ import {
   VERIFICATION_REPORT_FILE,
 } from "./verify-reporter.js";
 import { verifyArtefactIntegritySet } from "./verify-integrity.js";
-import { verifyRuntimeManifestSet } from "./verify-manifest.js";
+import { FILE_CONTAINER_SCHEMA, verifyFileContainer, verifyRuntimeManifestSet } from "./verify-manifest.js";
 import type { RuntimeManifestVerification } from "./verify-manifest.js";
 import type { VerificationResult } from "../verify.js";
 import {
@@ -197,6 +197,39 @@ async function readJsonArray(filePath: string, cwd: string): Promise<
   return { ok: true, value: parsed };
 }
 
+async function readManifestJson(filePath: string, cwd: string): Promise<
+  | { readonly ok: true; readonly kind: "set"; readonly value: unknown }
+  | { readonly ok: true; readonly kind: "container"; readonly value: unknown }
+  | { readonly ok: false; readonly result: CliResult }
+> {
+  const absolute = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
+  let text: string;
+  try {
+    text = await readFile(absolute, "utf8");
+  } catch {
+    return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file could not be read.", "Ensure --artefacts / --manifest names a readable UTF-8 JSON file.") };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file was not valid JSON.", "Provide a JSON array of closed-shape records.") };
+  }
+  if (Array.isArray(parsed)) {
+    if (Object.keys(parsed).length !== parsed.length) {
+      return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input array must be dense.", "Remove holes from the JSON array.") };
+    }
+    return { ok: true, kind: "set", value: parsed };
+  }
+  if (parsed !== null && typeof parsed === "object") {
+    const schema: unknown = (parsed as { readonly schemaVersion?: unknown }).schemaVersion;
+    if (schema === FILE_CONTAINER_SCHEMA) {
+      return { ok: true, kind: "container", value: parsed };
+    }
+  }
+  return { ok: false, result: refuse(FUNGI_CLI_VERIFY_003, VERIFY_EXIT_USAGE, "A verify input file must be a JSON array.", "Provide a dense JSON array (not an object or sparse array wrapper).") };
+}
+
 async function readJsonObject(filePath: string, cwd: string): Promise<
   | { readonly ok: true; readonly value: unknown }
   | { readonly ok: false; readonly result: CliResult }
@@ -245,9 +278,21 @@ export async function runVerifyCommand(context: CliContext): Promise<CliResult> 
 
   let manifests: RuntimeManifestVerification | undefined;
   if (options.manifestPath !== undefined) {
-    const manifestLoad = await readJsonArray(options.manifestPath, context.cwd);
+    const manifestLoad = await readManifestJson(options.manifestPath, context.cwd);
     if (!manifestLoad.ok) return manifestLoad.result;
-    manifests = verifyRuntimeManifestSet(manifestLoad.value);
+    if (manifestLoad.kind === "container") {
+      const container = verifyFileContainer(manifestLoad.value);
+      if (!container.success) {
+        return Object.freeze({
+          ok: false as const,
+          code: VERIFY_EXIT_MANIFEST,
+          message: "Verify failed: runtime-manifest file container did not verify.",
+          details: Object.freeze(container.diagnostics.map((d) => d.code)),
+        });
+      }
+    } else {
+      manifests = verifyRuntimeManifestSet(manifestLoad.value);
+    }
   }
 
   const artefactResult: VerificationResult = await verifyArtefactIntegritySet(artefactsLoad.value, root);

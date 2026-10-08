@@ -38,7 +38,6 @@ galerina serve             Ã¢â‚¬â€ start server
 galerina reports           Ã¢â‚¬â€ generate reports
 galerina security:check    Ã¢â‚¬â€ run security scan
 galerina routes            Ã¢â‚¬â€ list route table
-galerina benchmark         Ã¢â‚¬â€ placeholder command
 galerina task              Ã¢â‚¬â€ run project automation tasks
 galerina graph             Ã¢â‚¬â€ generate project dependency graph
 galerina graph query       Ã¢â‚¬â€ query generated graph
@@ -150,8 +149,9 @@ See `../../../ZTF-Knowledge-Bases/reference/galerina/galerina-core-cli-deploy-ex
 full specification including all examples, exit codes, output modes, and
 report file definitions.
 
-`Galerina benchmark` is currently a placeholder command. The benchmark contracts,
-recommended modes and report shape live in `packages-ts/galerina-tools-benchmark/README.md`.
+There is no `Galerina benchmark` command. Benchmarks live in the independent
+`packages-ts/galerina-tools-benchmark` package (contracts, modes and report shape in its
+README); core-cli does not depend on it and does not expose it (owner decision 2026-10-06).
 
 ## Graph Command
 

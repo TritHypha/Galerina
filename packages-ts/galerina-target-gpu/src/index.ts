@@ -33,9 +33,17 @@ export interface GpuDiagnostic {
   readonly path?: string;
 }
 
-const GPU_BACKENDS: readonly GpuTargetCapability["backend"][] = [
+export const GPU_BACKENDS: readonly GpuTargetCapability["backend"][] = Object.freeze([
   "cuda", "rocm", "webgpu", "vulkan", "plan-only",
-];
+]);
+
+export const GPU_DIAGNOSTIC_CODES = Object.freeze([
+  "Galerina_GPU_INPUT_REFUSED",
+  "Galerina_GPU_PLAN_FLOW_REQUIRED",
+  "Galerina_GPU_PLAN_BACKEND_INVALID",
+  "Galerina_GPU_PLAN_BACKEND_UNAVAILABLE",
+  "Galerina_GPU_PLAN_NO_OPERATIONS",
+] as const);
 
 function gpuDiagnostic(
   code: string,

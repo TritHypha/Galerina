@@ -19,9 +19,17 @@
 
 ## Phase 2: CLI Integration
 
+Owner decision 2026-10-06 17:28 BST: tools-benchmark stays an independent
+TypeScript package. core-cli must not depend on it, no `Galerina benchmark`
+command is wired into core-cli, and the benchmark is not converted to `.fungi`.
+"CLI" in this phase means the package's own argv contract
+(`parseBenchmarkCliArgs`) and in-package composition only.
+
 ```text
-[x] Add Galerina benchmark command placeholder
-[ ] Implement Galerina benchmark command runner
+[SUPERSEDED] Add Galerina benchmark command placeholder -- SUPERSEDED for core-cli (owner decision 2026-10-06 17:28 BST): no further core-cli wiring. The core-cli placeholder (galerina-core-cli/src/commands.ts:77-83) predates the decision; its removal is proposed on branch grok/core-cli-remove-benchmark-placeholder-20261006.
+[SUPERSEDED] Implement Galerina benchmark command runner -- progress (Grok 2026-10-06; zero-trust defaults, owner may revisit): src/benchmark-runner.ts runLightBenchmark runs the README light list in order through the existing case modules, and the result must pass validateBenchmarkReport. Host-injected benchmarkId/loVersion/system/clock; no OS/file/network reads. Parked, not-implemented and *_if_available cases are skipped with fixed reasons; the total budget skips the remaining cases as skipped_timeout. Score mean is an OWNER-REVISIT pick; shareable is always false. FUNGI-BENCH-RUN-001..005; tests/benchmark-runner.test.mjs. Remaining: full/stress modes (refused FUNGI-BENCH-RUN-002), CLI wiring of parseBenchmarkCliArgs into the runner, --save via BenchmarkReportFileWriter. Wiring into core-cli (replacing the core-cli benchmark placeholder) is SUPERSEDED / won't-do per owner decision 2026-10-06 17:28 BST; argv composition stays inside tools-benchmark.
+[ ] In-package runner follow-ups (not a core-cli command; split out of the superseded row above, Grok 2026-10-06) -- full/stress modes (refused FUNGI-BENCH-RUN-002 today), argv composition of parseBenchmarkCliArgs into runLightBenchmark inside tools-benchmark (draft #149, parked by owner), --save via BenchmarkReportFileWriter.
+[x] C72 review test gaps (SuperGrok, 2026-10-06) -- src/benchmark-runner.ts + tests/benchmark-runner.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): an availability-gated target set to true now fails closed (requiredUnavailable) while "optional" stays skipped; a throwing case ends failed (refused), never passed, without echo; the 60 s per-case cap is reached under a fake clock (no real wait) and the total budget then skips the rest; createLightBenchmarkRunner case-override seam (FUNGI-BENCH-RUN-006); a source check keeps the runner free of fs/env/network access.
 [x] Add --light flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --light; conflicts with --full refused Galerina_BENCHMARK_CLI_002; never echoes refused tokens
 [x] Add --full flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --full; mutual exclusion with --light; default mode light when neither set
 [x] Add --json flag -- src/index.ts parseBenchmarkCliArgs (Grok 2026-10-05; zero-trust defaults, owner may revisit): admits --json boolean; duplicates/equals-form refused Galerina_BENCHMARK_CLI_001
@@ -48,8 +56,8 @@
 ```text
 [x] Detect CPU architecture
 [x] Detect logical core count
-[ ] Detect RAM bucket
-[ ] Detect vector features where possible
+[x] Detect RAM bucket -- src/target-detection.ts bucketTotalMemory / detectBenchmarkMemory, tests/target-detection.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): host-injected totalMemoryBytes (e.g. os.totalmem()) -> closed README buckets <8GB|8GB|16GB|32GB|64GB+|unknown; OWNER-REVISIT 7/8 tolerance (firmware/iGPU reservations); exact byte count never echoed; closed probe, accessors/unknown keys refused unread; detectBenchmarkSystem probe unchanged
+[x] Detect vector features where possible -- src/target-detection.ts detectBenchmarkVectorFeatures / wasmSimd128ProbeBytes, tests/target-detection.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): host-injected arch + cpuFlags (Linux /proc/cpuinfo spellings: sse..sse4_2, pni=sse3, avx, avx2, avx512f, asimd/neon, sve, sve2) + wasmSimd128 (host runs WebAssembly.validate on the probe bytes) -> closed feature list + bestVectorBackend; x86-64 SSE/SSE2 and AArch64 NEON baselines; cross-ISA flags ignored; unknown arch reports no CPU feature; hints only: benchmarkVectorBackend stays "scalar" (no SIMD kernel selected or claimed)
 [ ] Detect GPU backend availability
 [ ] Detect low-bit backend availability
 ```
@@ -64,6 +72,17 @@ through. Unknown probe keys are refused unread. The package border is unchanged
 (no `node:os` import); a runner wires in the real probe. Tests:
 tests/system-detection.test.mjs. The RAM bucket is left out on purpose
 (memory-adjacent), and vector/GPU/low-bit detection needs hardware probing.
+
+Phase 4 update (2026-10-06, Grok Bot; zero-trust defaults, owner may revisit):
+the RAM bucket and vector features now have their own pure probes in
+src/target-detection.ts (`detectBenchmarkMemory`, `detectBenchmarkVectorFeatures`),
+so the closed `detectBenchmarkSystem` probe and its tests are unchanged. The
+package border is unchanged (`node:util/types` only; a test checks the module
+source). Still open: GPU backend availability (owner hold O1 keeps the GPU
+target parked post-v1) and low-bit backend availability (galerina-ai-lowbit
+defines backend adapter contracts only; no backend implementation exists to
+detect, and its gpu/npu kernels fall under O1). Until then the runner keeps
+reporting those cases as skipped.
 
 ## Phase 5: Reports
 
@@ -153,13 +172,17 @@ generator existed is superseded by the 2026-10-05 note above.)
 
 ## Phase 9: External Runtime Comparisons
 
+Owner decision 2026-10-06 17:29 BST: `--compare` takes `runtime|compiled`, not
+`python|cpp`. `runtime` = run the test in TypeScript (`.ts`); `compiled` = run
+the test against the compiled `.fungi` output.
+
 ```text
-[ ] Add optional external runtime comparison runner
-[ ] Add optional external compiled-output comparison runner
-[ ] Use same generated input data
-[ ] Record runtime version
-[ ] Record compiler version and flags where applicable
-[ ] Write comparison report
+[ ] Add optional external runtime comparison runner -- open: no runner yet; the report contract below is what it must feed (argv composition is in parked draft #149)
+[ ] Add optional external compiled-output comparison runner -- open: needs compiled .fungi benchmark sources and an admitted artifact path (owner/Codex decision); no runner yet
+[x] Use same generated input data -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): every side carries the SHA-256 of the generated input it fed; any mismatch or malformed digest refuses the report (FUNGI-BENCH-CMP-002), so no comparison is ever made across different inputs. Enforced at the report contract; runners still open
+[x] Record runtime version -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): each side must record runtime {name, version} as short closed tokens (no spaces/paths), else FUNGI-BENCH-CMP-003
+[x] Record compiler version and flags where applicable -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): the compiled side must record compiler {name, version, flags[]} (<=32 unique --flag[=value] tokens, no paths/spaces); a compiler on the runtime side is refused (FUNGI-BENCH-CMP-003)
+[x] Write comparison report -- src/comparison-report.ts createBenchmarkComparisonReport, tests/comparison-report.test.mjs (Grok 2026-10-06; zero-trust defaults, owner may revisit): closed galerina.tools-benchmark.comparison/v1 report (sides ordered runtime, compiled; sameInput true; runtime/compiled duration ratio only when both passed); shareable always false, authority NON_AUTHORIZING; closed shapes, never throws or echoes; FUNGI-BENCH-CMP-001..005. Report built in memory; --save stays with the in-package runner follow-ups
 ```
 
 ## Notes (Grok 2026-10-05 Bool logic benchmark)

@@ -206,7 +206,7 @@ contract { intent { "m3" } effects { secret.read } secrets { credential k { prov
     assert.equal(hits[0].severity, "error");
   });
 
-  it("A3. shadowed method receiver env.get still SECRET-006", () => {
+  it("A3. a local method receiver named env is not the secret-provider namespace", () => {
     const src = `@version 1
 pure flow sink(x: String) -> String
 contract { intent { "identity sink" } }
@@ -221,8 +221,54 @@ contract { intent { "a3" } }
 }
 `;
     const vs = L.checkValueStates(L.parseProgram(src, "a3.fungi").ast, "production");
-    const hits = s006(vs.diagnostics);
-    assert.ok(hits.length >= 1, (vs.diagnostics || []).map((d) => d.code + ":" + d.message).join(" | "));
+    assert.equal(s006(vs.diagnostics).length, 0,
+      (vs.diagnostics || []).map((d) => d.code + ":" + d.message).join(" | "));
+  });
+
+  it("does not treat local collection methods or non-accessor namespace methods as secret reads", () => {
+    const localArray = `@version 1
+pure flow readIndex(env: Array<Int>, index: Int) -> Option<Int>
+contract { intent { "read a local array element" } }
+{
+  return env.get(index)
+}
+pure flow appendValue(env: Array<Int>, value: Int) -> Array<Int>
+contract { intent { "append to a local array" } }
+{
+  return env.append(value)
+}
+`;
+    const local = L.checkProgram(localArray, "local-env-array-methods.fungi");
+    assert.equal(s006(local.diagnostics).length, 0, codes(local));
+
+    const wrongAccessor = `@version 1
+secure flow appendVault(value: Int) -> Int
+contract { intent { "call an unrelated method on a namespace-like name" } effects { secret.read } }
+{
+  return vault.append(value)
+}
+`;
+    const namespace = L.checkValueStates(
+      L.parseProgram(wrongAccessor, "vault-append-not-secret.fungi").ast,
+      "production",
+    );
+    assert.equal(s006(namespace.diagnostics).length, 0,
+      (namespace.diagnostics || []).map((d) => d.code + ":" + d.message).join(" | "));
+
+    const alias = `@version 1
+secure flow readAliasedCredential() -> String
+contract { intent { "read through the supported Env module alias" } effects { secret.read } secrets { credential k { provider "vault" } } }
+{
+  let env = Env
+  return env.get("k")
+}
+`;
+    const aliased = L.checkValueStates(
+      L.parseProgram(alias, "aliased-env-secret-source.fungi").ast,
+      "production",
+    );
+    assert.ok(s006(aliased.diagnostics).length >= 1,
+      (aliased.diagnostics || []).map((d) => d.code + ":" + d.message).join(" | "));
   });
 
   it("P2. bare namespace env via checkValueStates still SECRET-006", () => {
@@ -267,7 +313,7 @@ contract { intent { "secret crossing" } secrets { credential k { provider "vault
     assert.equal(s006(redacted.diagnostics).length, 0, (redacted.diagnostics || []).map((d) => d.code + ":" + d.message).join(" | "));
   });
 
-  it("D1. match Env.get does not add SECRET-006 this job", () => {
+  it("D1. match Env.get cannot escape through an identity flow as ordinary String", () => {
     const src = `@version 1
 pure flow sink(x: String) -> String
 contract { intent { "identity sink" } }
@@ -284,6 +330,85 @@ contract { intent { "d1" } effects { secret.read } secrets { credential k { prov
 }
 `;
     const r = L.checkProgram(src, "d1.fungi");
+    const hits = s006(r.diagnostics);
+    assert.ok(hits.length >= 1, codes(r));
+    assert.ok(hits.every((diagnostic) => diagnostic.severity === "error"), JSON.stringify(hits));
+  });
+
+  it("does not let a secure flow return a secret source through an ordinary String result", () => {
+    const src = `@version 1
+secure flow readCredential() -> String
+contract { intent { "read a credential" } effects { secret.read } secrets { credential k { provider "vault" } } }
+{
+  return Env.get("k")
+}
+`;
+    const r = L.checkProgram(src, "secret-return-as-string.fungi");
+    const hits = s006(r.diagnostics);
+    assert.ok(hits.length >= 1, codes(r));
+    assert.equal(hits[0]?.severity, "error", JSON.stringify(hits));
+  });
+
+  it("preserves explicitly secret-typed returns and permits explicit redaction", () => {
+    const cases = [
+      [`@version 1
+secure flow keepCredential(key: SecureString) -> SecureString
+contract { intent { "retain the secret type" } }
+{ return key }`, "secure-return.fungi"],
+      [`@version 1
+secure flow redactCredential(key: SecureString) -> String
+contract { intent { "redact before returning" } }
+{ return redact(key) }`, "redacted-return.fungi"],
+    ];
+    for (const [src, file] of cases) {
+      const r = L.checkProgram(src, file);
+      assert.equal(s006(r.diagnostics).length, 0, `${file}: ${codes(r)}`);
+    }
+  });
+
+  it("retains secret provenance when distinct constant returns are selected by a secret branch", () => {
+    const src = `@version 1
+pure flow sink(value: Bool) -> Bool
+contract { intent { "identity sink" } }
+{
+  return value
+}
+secure flow f(key: SecureString) -> Bool
+contract { intent { "secret-dependent result" } }
+{
+  let result = match 0 {
+    _ => {
+      if !key { return true }
+      else { return false }
+    }
+  }
+  return sink(result)
+}
+`;
+    const r = L.checkProgram(src, "secret-selected-return.fungi");
+    assert.ok(s006(r.diagnostics).length >= 1, codes(r));
+  });
+
+  it("does not mark an identical constant return secret merely because a secret branch chose it", () => {
+    const src = `@version 1
+pure flow sink(value: Bool) -> Bool
+contract { intent { "identity sink" } }
+{
+  return value
+}
+secure flow f(key: SecureString) -> Bool
+contract { intent { "constant secret-controlled result" } }
+{
+  let result = match 0 {
+    _ => {
+      if !key { return true }
+      else { return true }
+    }
+  }
+  return sink(result)
+}
+`;
+    const r = L.checkProgram(src, "same-constant-secret-branch.fungi");
     assert.equal(s006(r.diagnostics).length, 0, codes(r));
   });
 
@@ -300,8 +425,12 @@ contract { intent { "d1" } effects { secret.read } secrets { credential k { prov
   });
 
   it("S1. sink helper pins unchanged", () => {
-    const sha = (rel) => createHash("sha256").update(readFileSync(join(__dir, rel))).digest("hex");
-    assert.equal(sha("../src/security-gate.ts"), "4b0b683f457a27b8f2bffe3caaa60b7b12ed6cc5847717cbbc50007447e2ee99");
+    // Git's Windows checkout may translate repository LF bytes to CRLF. Hash
+    // canonical source text so this invariant is independent of checkout EOLs.
+    const sha = (rel) => createHash("sha256")
+      .update(readFileSync(join(__dir, rel), "utf8").replace(/\r\n/g, "\n"))
+      .digest("hex");
+    assert.equal(sha("../src/security-gate.ts"), "9f537d9adef482f2786ca8c517aec772ea7a189fd9d20f50cdbfdef0b8492741");
     assert.equal(sha("../src/checked-program.ts"), "fcb26657e6d7ab1332cd7d14adde8c5546f163169e51eb1b9ce21427a8d7a7d5");
     const src = readFileSync(join(__dir, "../src/value-state-checker.ts"), "utf8");
     assert.match(src, /function receiverSegment\(/);

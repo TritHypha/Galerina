@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 
 import {
-  parseProgram, executeFlow,
+  parseProgram, executeFlow, run as runRuntime,
   buildProofGraph, computeExecutionSignature,
   signProofGraph, verifyGovernanceSignature, generateGovernanceKeyPair,
   createNodePasswordKdfProvider,
@@ -61,6 +61,7 @@ describe("Phase 33A: execution tier telemetry", () => {
 
 describe("Phase 35: Password.verify — stable facade", () => {
   const VER_SRC = "secure flow v(p: String, h: String) -> Bool contract { effects { crypto.verify } } { return Password.verify(p, h) }";
+  const BYTE_VER_SRC = "secure flow v(p: Bytes, h: String) -> Bool contract { effects { crypto.verify } } { return Password.verify(p, h) }";
   const HASH_SRC = "secure flow h(p: String) -> String contract { effects { crypto.verify } } { return Password.hash(p) }";
   const NEEDS_SRC = "pure flow n(h: String) -> Bool contract { effects {} } { return Password.needsMigration(h) }";
 
@@ -76,6 +77,308 @@ describe("Phase 35: Password.verify — stable facade", () => {
     const prog = parseProgram(VER_SRC, "t.fungi");
     const r = await executeFlow("v", new Map([["p",{__tag:"string",value:"wrong"}],["h",{__tag:"string",value:hash}]]), prog.ast, prog.flows, undefined, undefined, kdf);
     assert.deepEqual(r.value, { __tag: "bool", value: false });
+  });
+
+  it("Password.verify refuses bcrypt inputs over 72 UTF-8 bytes before provider use", async () => {
+    let calls = 0;
+    const provider = {
+      schema: "fungi.security.crypto-provider.v1",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(VER_SRC, "t.fungi");
+    const run = (password) => executeFlow("v", new Map([
+      ["p", { __tag: "string", value: password }],
+      ["h", { __tag: "string", value: "$2b$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProvider: provider });
+
+    const exactLimit = await run("x".repeat(72));
+    assert.deepEqual(exactLimit.value, { __tag: "bool", value: true });
+    assert.equal(calls, 1, "the exact bcrypt byte limit remains usable");
+
+    const asciiOverflow = await run("x".repeat(73));
+    assert.equal(asciiOverflow.value.__tag, "err");
+    const utf8Overflow = await run("x".repeat(71) + "é");
+    assert.equal(utf8Overflow.value.__tag, "err", "limits count UTF-8 bytes, not characters");
+    assert.equal(calls, 1, "over-limit verification must be refused before provider use");
+  });
+
+  it("legacy BCrypt.verify and Password.migrate cannot bypass the bcrypt byte limit", async () => {
+    let calls = 0;
+    const provider = {
+      schema: "fungi.security.crypto-provider.v1",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const overLimit = "x".repeat(73);
+    const bcryptProg = parseProgram(
+      "secure flow v(p: String, h: String) -> Bool contract { effects { crypto.verify } } { return BCrypt.verify(p, h) }",
+      "t.fungi",
+    );
+    const directBcrypt = await executeFlow("v", new Map([
+      ["p", { __tag: "string", value: overLimit }],
+      ["h", { __tag: "string", value: "$2b$fixture" }],
+    ]), bcryptProg.ast, bcryptProg.flows, undefined, undefined, { cryptoProvider: provider });
+    assert.equal(directBcrypt.value.__tag, "err");
+
+    const migrateProg = parseProgram(
+      "secure flow m(p: String, h: String) -> Response contract { effects { crypto.verify } } { return Password.migrate(p, h) }",
+      "t.fungi",
+    );
+    const migrate = await executeFlow("m", new Map([
+      ["p", { __tag: "string", value: overLimit }],
+      ["h", { __tag: "string", value: "$2b$fixture" }],
+    ]), migrateProg.ast, migrateProg.flows, undefined, undefined, { cryptoProvider: provider });
+    assert.equal(migrate.value.__tag, "err");
+    assert.equal(calls, 0, "legacy entry points must refuse before provider use");
+  });
+
+  it("Password.verify forwards Bytes without converting them to text", async () => {
+    const plaintextBytes = new Uint8Array([0x00, 0x80, 0xff]);
+    let seen;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke(request) {
+        seen = request;
+        request.plaintextBytes.fill = () => request.plaintextBytes;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const r = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: plaintextBytes }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.deepEqual(r.value, { __tag: "bool", value: true });
+    assert.equal(seen.op, "password-verify-bytes");
+    assert.notStrictEqual(seen.plaintextBytes, plaintextBytes);
+    assert.deepEqual(plaintextBytes, new Uint8Array([0x00, 0x80, 0xff]));
+    assert.deepEqual(Array.from(seen.plaintextBytes), [0, 0, 0], "provider transfer copy must be cleared after completion");
+    assert.equal(Object.hasOwn(seen, "plaintext"), false);
+  });
+
+  it("Password.verify stages Buffer bytes without aliasing caller storage", async () => {
+    const plaintextBytes = Buffer.from([0x01, 0x02, 0x03]);
+    let providerBytes;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke(request) {
+        providerBytes = request.plaintextBytes;
+        providerBytes[0] = 0xff;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const r = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: plaintextBytes }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.deepEqual(r.value, { __tag: "bool", value: true });
+    assert.deepEqual(plaintextBytes, Buffer.from([0x01, 0x02, 0x03]), "provider writes and cleanup must not alter caller bytes");
+    assert.deepEqual(Array.from(providerBytes), [0, 0, 0], "owned provider transfer must be cleared after completion");
+  });
+
+  it("Password.verify ignores an overridden Bytes.slice when staging provider input", async () => {
+    const plaintextBytes = new Uint8Array([0x01, 0x02, 0x03]);
+    plaintextBytes.slice = () => new Uint8Array(1025).fill(0xa5);
+    let providerBytes;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke(request) {
+        providerBytes = Array.from(request.plaintextBytes);
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const r = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: plaintextBytes }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.deepEqual(r.value, { __tag: "bool", value: true });
+    assert.deepEqual(providerBytes, [0x01, 0x02, 0x03], "provider receives the checked source bytes, not an attacker-sized replacement");
+  });
+
+  it("Password.verify refuses byte and UTF-8 text inputs over 1024 bytes before provider use", async () => {
+    let calls = 0;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const tooManyBytes = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: new Uint8Array(1025) }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+    assert.equal(tooManyBytes.value.__tag, "err");
+
+    const textProg = parseProgram(VER_SRC, "t.fungi");
+    const tooManyUtf8Bytes = await executeFlow("v", new Map([
+      ["p", { __tag: "string", value: "😀".repeat(257) }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), textProg.ast, textProg.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+    assert.equal(tooManyUtf8Bytes.value.__tag, "err");
+    assert.equal(calls, 0, "oversize input must be refused before crossing the provider boundary");
+  });
+
+  it("Password.verify uses the intrinsic Uint8Array extent instead of an overridden byteLength", async () => {
+    let calls = 0;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const oversized = new Uint8Array(1025);
+    Object.defineProperty(oversized, "byteLength", { value: 3 });
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+
+    const result = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: oversized }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.equal(result.value.__tag, "err");
+    assert.equal(calls, 0, "the provider must not see bytes beyond the owner-approved limit");
+  });
+
+  it("Password.verify rejects non-Uint8Array values tagged as Bytes before provider use", async () => {
+    let calls = 0;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const iterable = {
+      byteLength: 3,
+      *[Symbol.iterator]() {
+        yield* new Uint8Array(1025).fill(0xa5);
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+
+    const result = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: iterable }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.equal(result.value.__tag, "err");
+    assert.equal(calls, 0, "an arbitrary iterable must not cross the byte-provider boundary");
+  });
+
+  it("Password.verify captures a Bytes payload once before validating and staging it", async () => {
+    let payloadReads = 0;
+    let providerBytes;
+    const checkedBytes = new Uint8Array([0x01, 0x02, 0x03]);
+    const substitutedBytes = new Uint8Array([0xa5, 0xa5, 0xa5]);
+    const byteValue = {
+      __tag: "bytes",
+      get value() {
+        payloadReads += 1;
+        return payloadReads === 1 ? checkedBytes : substitutedBytes;
+      },
+    };
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke(request) {
+        providerBytes = Array.from(request.plaintextBytes);
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+
+    const result = await executeFlow("v", new Map([
+      ["p", byteValue],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, { cryptoProviderV2: byteProvider });
+
+    assert.deepEqual(result.value, { __tag: "bool", value: true });
+    assert.equal(payloadReads, 1, "validation and staging must use one captured payload identity");
+    assert.deepEqual(providerBytes, [0x01, 0x02, 0x03], "provider receives only the bytes whose brand and size were checked");
+  });
+
+  it("Password.verify applies the host-configured byte limit and refuses invalid policy", async () => {
+    let calls = 0;
+    const byteProvider = {
+      schema: "fungi.security.crypto-provider.v2",
+      async invoke() {
+        calls += 1;
+        return { ok: true, kind: "verify", matches: true };
+      },
+    };
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const args = new Map([
+      ["p", { __tag: "bytes", value: new Uint8Array([1, 2, 3]) }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]);
+
+    const belowConfiguredLimit = await executeFlow(
+      "v", args, prog.ast, prog.flows, undefined, undefined,
+      { cryptoProviderV2: byteProvider, maxPasswordVerifyBytes: 2 },
+    );
+    assert.equal(belowConfiguredLimit.value.__tag, "err");
+    assert.equal(calls, 0, "over-limit bytes must be refused before provider use");
+
+    const atConfiguredLimit = await executeFlow(
+      "v", args, prog.ast, prog.flows, undefined, undefined,
+      { cryptoProviderV2: byteProvider, maxPasswordVerifyBytes: 3 },
+    );
+    assert.deepEqual(atConfiguredLimit.value, { __tag: "bool", value: true });
+    assert.equal(calls, 1);
+
+    const invalidPolicy = await executeFlow(
+      "v", args, prog.ast, prog.flows, undefined, undefined,
+      { cryptoProviderV2: byteProvider, maxPasswordVerifyBytes: 0 },
+    );
+    assert.equal(invalidPolicy.value.__tag, "err");
+    assert.equal(calls, 1, "invalid policy must be refused before provider use");
+
+    const aboveOwnerApprovedCeiling = await executeFlow(
+      "v",
+      new Map([
+        ["p", { __tag: "bytes", value: new Uint8Array(1025) }],
+        ["h", { __tag: "string", value: "$argon2id$fixture" }],
+      ]),
+      prog.ast,
+      prog.flows,
+      undefined,
+      undefined,
+      { cryptoProviderV2: byteProvider, maxPasswordVerifyBytes: 1025 },
+    );
+    assert.equal(aboveOwnerApprovedCeiling.value.__tag, "err");
+    assert.equal(calls, 1, "configuration must not raise the owner-approved ceiling before sign-off");
+
+    const frameworkRuntime = await runRuntime(
+      BYTE_VER_SRC,
+      "t.fungi",
+      "v",
+      args,
+      { cryptoProviderV2: byteProvider, maxPasswordVerifyBytes: 2 },
+    );
+    assert.equal(frameworkRuntime.execution?.value.__tag, "err");
+    assert.equal(calls, 1, "RuntimeOptions must carry the host policy to Password.verify");
+  });
+
+  it("byte verification does not fall back to a v1 text provider", async () => {
+    const prog = parseProgram(BYTE_VER_SRC, "t.fungi");
+    const r = await executeFlow("v", new Map([
+      ["p", { __tag: "bytes", value: new Uint8Array([0x00, 0xff]) }],
+      ["h", { __tag: "string", value: "$argon2id$fixture" }],
+    ]), prog.ast, prog.flows, undefined, undefined, kdf);
+    assert.equal(r.value.__tag, "err");
+    assert.match(r.value.error.value, /injected CryptoProvider/u);
   });
 
   it("Password.needsMigration returns true for bcrypt hash", async () => {

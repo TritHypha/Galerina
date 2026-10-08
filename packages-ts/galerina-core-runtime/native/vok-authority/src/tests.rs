@@ -699,3 +699,29 @@ fn secret_arena_callback_panic_cleans_and_consumes_the_arena() {
     assert_eq!(arena.unresolved_bytes(), 0);
     assert_eq!(arena.allocate_pages(), Err(SecretArenaError::NotActive));
 }
+
+#[test]
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "64",
+    any(target_arch = "x86_64", target_arch = "aarch64")
+))]
+#[ignore = "counterexample: requires memfd_secret and intentionally demonstrates copy escape"]
+fn secret_arena_owned_copy_survives_arena_cleanup() {
+    let mut arena = SecretArena::reserve(4097).expect("supported Linux secretmem");
+    arena
+        .allocate_pages()
+        .expect("secret pages must be faulted in");
+
+    let mut copied = Vec::new();
+    arena
+        .with_bytes_mut(|bytes| {
+            bytes[0] = 0xA5;
+            copied.extend_from_slice(&bytes[..1]);
+        })
+        .expect("the in-crate callback can access the arena");
+
+    arena.cleanup().expect("the arena cleanup must succeed");
+    assert_eq!(arena.status(), MemoryStatus::Cleaned);
+    assert_eq!(copied, [0xA5], "the owned copy is outside arena cleanup");
+}

@@ -14,42 +14,48 @@ test("unknown commands get a structured error that never echoes the raw name", a
   assert.match(result.error.suggestedFix, /help/);
 });
 
-test("a throwing command becomes FUNGI-CLI-002 with no internal detail", async () => {
-  const benchmark = commands.find((c) => c.name === "benchmark");
-  const original = benchmark.run;
-  benchmark.run = async () => { throw new Error("secret internal path <home>/x/token"); };
+// These tests stub the `routes` command's run function and restore it afterwards.
+// (They used the `benchmark` placeholder until it was removed from core-cli.)
+async function withStubbedRun(name, run, fn) {
+  const command = commands.find((c) => c.name === name);
+  assert.ok(command, `${name} must be a registered command`);
+  const original = command.run;
+  command.run = run;
   try {
-    const result = await runCli(["benchmark"], process.cwd());
+    await fn();
+  } finally {
+    command.run = original;
+  }
+}
+
+test("a throwing command becomes FUNGI-CLI-002 with no internal detail", async () => {
+  await withStubbedRun("routes", async () => { throw new Error("secret internal path <home>/x/token"); }, async () => {
+    const result = await runCli(["routes"], process.cwd());
     assert.equal(result.ok, false);
     assert.equal(result.error.code, FUNGI_CLI_002);
     assert.ok(!JSON.stringify(result).includes("secret internal"));
-  } finally {
-    benchmark.run = original;
-  }
+  });
 });
 
 test("a failing command without its own error gets FUNGI-CLI-003 and keeps its exit code", async () => {
-  const result = await runCli(["benchmark"], process.cwd());
-  assert.equal(result.ok, false);
-  assert.equal(result.code, 2);
-  assert.equal(result.error.code, FUNGI_CLI_003);
-  assert.match(result.message, /not implemented/);
+  await withStubbedRun("routes", async () => ({ ok: false, code: 2, message: "routes stub is not implemented" }), async () => {
+    const result = await runCli(["routes"], process.cwd());
+    assert.equal(result.ok, false);
+    assert.equal(result.code, 2);
+    assert.equal(result.error.code, FUNGI_CLI_003);
+    assert.match(result.message, /not implemented/);
+  });
 });
 
 test("a failure reported with exit code 0 is never treated as success", async () => {
-  const benchmark = commands.find((c) => c.name === "benchmark");
-  const original = benchmark.run;
-  benchmark.run = async () => ({ ok: false, code: 0, message: "bad" });
-  try {
-    const result = await runCli(["benchmark"], process.cwd());
+  await withStubbedRun("routes", async () => ({ ok: false, code: 0, message: "bad" }), async () => {
+    const result = await runCli(["routes"], process.cwd());
     assert.equal(result.code, 1);
     assert.equal(result.error.code, FUNGI_CLI_003);
-  } finally {
-    benchmark.run = original;
-  }
+  });
 });
 
 test("environment errors keep their own structured error", async () => {
-  const result = await runCli(["benchmark", "--env", "prodution"], process.cwd());
+  const result = await runCli(["routes", "--env", "prodution"], process.cwd());
   assert.equal(result.error.code, "FUNGI-CLI-ENV-001");
 });

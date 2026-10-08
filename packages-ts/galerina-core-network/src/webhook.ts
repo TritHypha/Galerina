@@ -221,6 +221,35 @@ export function validateIdempotency(key: string, store: AtomicAdmissionStore, tt
   return claimOnce("idempotency", key, store, ttlSeconds, "Galerina_NETWORK_IDEMPOTENCY");
 }
 
+/** True only when `claim` is present. get/put alone is observational, not admission. */
+export function isAtomicAdmissionStore(value: unknown): value is AtomicAdmissionStore {
+  if (value === null || typeof value !== "object") return false;
+  return typeof (value as { claim?: unknown }).claim === "function";
+}
+
+/** Observational IdempotencyStore shape: get+put and no claim. Never treat as admission. */
+export function observationalIdempotencyStoreLooksLikeGetPut(value: unknown): boolean {
+  if (value === null || typeof value !== "object") return false;
+  const rec = value as { get?: unknown; put?: unknown; claim?: unknown };
+  return typeof rec.get === "function" && typeof rec.put === "function" && typeof rec.claim !== "function";
+}
+
+/**
+ * Always refuses. Does not call get or put. Observational IdempotencyStore is
+ * not an admission gate; wiring to app-kernel IdempotencyStore.seen stays HOLD.
+ */
+export function refuseObservationalIdempotencyAdmission(store: unknown): readonly NetworkDiagnostic[] {
+  void store;
+  return Object.freeze([
+    Object.freeze({
+      code: "Galerina_NETWORK_IDEMPOTENCY_STORE_FAILED",
+      severity: "error" as const,
+      message: "Observational IdempotencyStore get/put is not admission. Use AtomicAdmissionStore.claim; never read-then-write.",
+      path: "store",
+    }),
+  ]);
+}
+
 export interface WebhookAdmissionInput {
   readonly payload: string | Uint8Array;
   readonly signature: string;

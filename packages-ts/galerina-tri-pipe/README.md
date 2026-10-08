@@ -84,6 +84,27 @@ const decision = router.route({
 **∧** the dispatched lane is granted. Capability is checked against the
 **dispatched** backend (RD-0236 #6), not the declared `kernel.lane`.
 
+## RD-0855 admission-time alternatives
+
+`proposeInitialAttempt()` and `proposeAlternative()` return **attempt proposals**,
+never admission. The owner's three-tier order is fixed:
+
+| Tier | Candidate | When |
+|---|---|---|
+| 1 | requested trit width (32/64/256, `SCIENCE` only) | first attempt |
+| 2 | standard K3 scalar (profile 1) | first attempt for a width-1 request, or after a refused tier 1 |
+| 3 | binary carrier, same K3 semantics, K3 decides permission | only after a refused tier 2 |
+
+An alternative needs a parent refused **before any effect** for an
+authenticated candidate-local reason (`CANDIDATE_LOCAL_UNAVAILABLE` or
+`CANDIDATE_LOCAL_INCOMPATIBLE`) permitted by the same task policy. The host
+injects `verifyReasonEvidence`, which must return exactly `true`. DENY,
+revocation, invalid evidence, unknown outcome, partial effect and cleanup
+failure refuse `TP_ALT_PRIOR_OUTCOME_TERMINAL`; the parent's typed refusal is
+kept. Every proposal has `authorityReleased: false`, `admissionAuthority: false`
+and `requires` fresh SLIDE admission, a fresh VOK decision and lease, and a
+linked terminal receipt. `dispatchTriPipeEngine` refuses it like any other input.
+
 ## Proofs
 
 ```

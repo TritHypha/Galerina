@@ -21,15 +21,17 @@ contract { intent { "Resolve only exact declared host profiles and fail closed t
       canNoDramSpill: false
       // A profile label cannot prove the lock hook is registered or succeeds.
       canNoSwap: false
-      canNoDisk: true
+      // mlock does not prevent persistence through other process or host paths.
+      canNoDisk: false
       keyCustody: "env-spore"
     }
     "register_pinned" => return HostResidencyCapabilityFungi {
       name: "register_pinned"
-      canRegisterPin: true
-      canNoDramSpill: true
-      canNoSwap: true
-      canNoDisk: true
+      // A design-stage target name is not a registered provider or physical enforcement evidence.
+      canRegisterPin: false
+      canNoDramSpill: false
+      canNoSwap: false
+      canNoDisk: false
       keyCustody: "hardware-signer"
     }
     "browser_secure_context" => return HostResidencyCapabilityFungi {
@@ -37,7 +39,8 @@ contract { intent { "Resolve only exact declared host profiles and fail closed t
       canRegisterPin: false
       canNoDramSpill: false
       canNoSwap: false
-      canNoDisk: true
+      // Secure context alone does not rule out persistent origin storage or host bridges.
+      canNoDisk: false
       keyCustody: "env-spore"
     }
     _ => return HostResidencyCapabilityFungi {

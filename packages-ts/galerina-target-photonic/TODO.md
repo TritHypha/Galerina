@@ -39,7 +39,11 @@ hardware execution. See `docs/reports/security-q1q2-continuation-2026-09-22.md`.
     `tests/photonic-contracts.test.mjs:52-123`. Package route is **16/16**.
     Legacy `safeMessage` is refused. Execution/hardware authority remains held.
 [!] Register owned FUNGI diagnostic codes before promotion beyond planning
-    evidence; `FUNGI-PHOTONIC-001..006` remains open.
+    evidence; `FUNGI-PHOTONIC-001..006` remains open. SuperGrok 2026-10-07
+    pin `df7f2fb5`: closed-set of the six tokens is exported as
+    `FUNGI_PHOTONIC_DIAGNOSTIC_CODES`; `decodePhotonicDiagnostic` refuses
+    unknown `FUNGI-PHOTONIC-*` codes. Live emit remains `Galerina_PHOTONIC_*`.
+    Meanings and FUNGI-CATEGORY ownership stay owner-blocked. Not promotion.
 [x] Add the closed runtime decoder for the six-label `PhotonicActualTarget`
     vocabulary; `src/index.ts` `decodePhotonicActualTarget` and
     `tests/photonic-contracts.test.mjs:28-50` pass as part of the **16/16**

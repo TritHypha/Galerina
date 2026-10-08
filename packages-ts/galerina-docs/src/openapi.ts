@@ -485,7 +485,17 @@ export function generateOpenApi(input: GenerateOpenApiInput): OpenApiDocument {
 
   // Resolve declarations through the kernel's secure defaults; append verbatim policies.
   const resolveOpts = input.posture !== undefined ? { posture: input.posture } : {};
-  const fromRoutes = (input.routes ?? []).map((r) => resolveEffectiveRoutePolicy(r, resolveOpts));
+  const fromRoutes = (input.routes ?? []).map((r) => {
+    try {
+      return resolveEffectiveRoutePolicy(r, resolveOpts);
+    } catch (error) {
+      // The kernel refuses an invalid declaration (e.g. a path that is not absolute)
+      // with a plain Error. Re-throw it as OpenApiGenerationError so every generator
+      // refusal has the one documented type. Still fail-closed: nothing is emitted.
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new OpenApiGenerationError(`Route declaration refused: ${detail}`);
+    }
+  });
   const policies: readonly EffectiveRoutePolicy[] = [...(input.policies ?? []), ...fromRoutes];
   if (policies.length === 0) {
     throw new OpenApiGenerationError("No routes or policies supplied — refusing to emit an empty API document.");

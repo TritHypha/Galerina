@@ -2,6 +2,14 @@
 
 Install Galerina on Windows, Linux, or macOS. The `galerina` command lets you compile `.fungi` programs to WebAssembly, run them, and type-check with full governance.
 
+## Memory-review setup decision — password verification limit
+
+**Status (2026-10-07): provisional policy and TypeScript-bootstrap configuration seam.** The current runtime exposes `maxPasswordVerifyBytes` as a host-supplied runtime option. It defaults to **1,024 bytes**; a host may configure a lower positive safe-integer limit, but the current policy ceiling rejects invalid values and values above 1,024. Inputs over the configured limit are refused, never truncated. This limit applies to the password plaintext passed to verification; it is separate from the HTTP request-body limit, which covers the whole request.
+
+This records a provisional owner decision, not a permanent language limit. Revisit the ceiling only after measuring the protected operation's workload and cleanup deadline, then obtain owner sign-off. Do not treat a configuration override as permission to exceed the approved ceiling.
+
+The option is presently implemented in the TypeScript bootstrap runtime at `packages-ts/galerina-core-compiler/src/runtime.ts` and enforced at the verifier boundary in `packages-ts/galerina-core-compiler/src/stdlib.ts`; regression coverage is in `packages-ts/galerina-core-compiler/tests/phase35-39-features.test.mjs`. This is **not yet a specified `.fungi` configuration contract or proof of native Fungi runtime, FFI, provider, or host enforcement**. Those must be designed and verified separately; no `.fungi` syntax or production guarantee is implied here.
+
 ---
 
 ## Prerequisites — all platforms

@@ -2332,28 +2332,28 @@ export const FUNGI_BYTE_DIAGNOSTICS = [
 // must declare a reason + fallback). FUNGI-MEMORY-001..007 are RESERVED / NOT
 // EMITTED: no compiler pass produces them and none is planned.
 //
-// WHY (and why that is correct, not a gap): Galerina is VALUE-SEMANTICS — no shared
-// mutable aliasing (a mutated copy never affects its source), no references, no
-// raw pointers, no manual malloc/free. The live runtime is a GC tree-walker; the
-// production path is WASM (monotonic per-flow bump heap + capability-sandboxed,
-// bounds-checked linear memory — no free). So the Rust-borrow-checker bug classes
-// these codes name — 001 use-after-move, 002 borrow-after-move, 003
-// borrow-escapes-scope, 004 readonly-mutation-through-a-ref, 005 mutable-alias —
-// cannot occur by construction. 006 BOUNDS_VIOLATION names a COMPILE-TIME bounds
-// proof we do not ship; bounds are enforced at RUNTIME (WASM trap / interpreter
-// guard). 007 unchecked-access-outside-unsafe has no scanner (008 covers the
-// unsafe-block obligation that matters).
+// WHY (limited scope): the ordinary value model does not expose shared mutable
+// references or manual deallocation, so these reserved diagnostics do not
+// implement a general borrow checker. That does NOT establish protected-secret
+// confinement: independently copied or derived secret values can outlive a wiped
+// source. `FUNGI-AFFINE-001` checks consume-once passport use and
+// `FUNGI-AFFINE-002` checks Authority transfer use-state; these bounded checks do
+// not enforce generic secret-byte copy/escape, lifetime, cleanup, or release.
+// `move`/`borrow`/`pinned` remain reserved lexer keywords, currently unenforced.
 //
-// The ONE linear-resource guarantee Galerina genuinely needs — consume-once
-// ("a passport used twice") — ships + is enforced as FUNGI-AFFINE-001
-// (value-state-checker.ts), NOT via these codes. `move`/`borrow`/`pinned` are
-// reserved lexer keywords: parsed, currently unenforced.
+// 006 BOUNDS_VIOLATION names a COMPILE-TIME bounds proof we do not ship; bounds
+// are enforced at RUNTIME (WASM trap / interpreter guard). 007
+// unchecked-access-outside-unsafe has no scanner (008 covers the unsafe-block
+// obligation that matters). Keep 001..007 out of PRODUCTION_BLOCKERS unless a
+// wired pass actually emits the named diagnostic; a reserved code is not a
+// capability claim. Any future protected-memory guarantee needs its own explicit
+// Fungi rules and compiler/runtime/FFI enforcement evidence.
 //
 // DO NOT add 001..007 to PRODUCTION_BLOCKERS (production-check.ts): a blocker no
 // pass can emit is a FALSE capability claim (RD-0124; enforced by
 // scripts/audit-production-blockers.mjs, and the phase29 reserved-codes tripwire).
-// Re-classify one as live ONLY if Galerina ever gains shared mutable references AND
-// a real detector is wired. They stay defined (namespace stability — the
+// Re-classify one as live only when a real detector for its named property is
+// wired. They stay defined (namespace stability — the
 // catalog/registry/expected-diagnostics reference them), not deleted. Canonical
 // stance: ../ZTF-Knowledge-Bases/galerina-memory-safety-model.md.
 // ---------------------------------------------------------------------------

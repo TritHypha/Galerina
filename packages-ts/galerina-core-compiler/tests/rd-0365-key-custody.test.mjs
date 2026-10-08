@@ -16,10 +16,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseProgram, checkEffects, verifyGovernance } from "../dist/index.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const COMPILER = join(HERE, "..", "dist", "index.js");
+// Keep this focused custody contract independent of unrelated compiler entry-point imports.
+const CUSTODY_MODULE = join(HERE, "..", "dist", "hardening-residency.js");
 
 let L;
-test.before(async () => { L = await import(pathToFileURL(COMPILER).href); });
+test.before(async () => { L = await import(pathToFileURL(CUSTODY_MODULE).href); });
 
 const VALID_RUNGS = ["env-spore", "os-keystore", "tpm-sealed", "hardware-signer"];
 

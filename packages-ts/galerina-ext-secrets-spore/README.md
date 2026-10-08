@@ -31,6 +31,7 @@ paper verdict is defensive-pub (or none).
 |---|---|
 | decrypt only into wiped Buffers / a SealTaint arena | `arena.ts` (`SealArena`, `withWiped`) — mirrors `ext-secrets-vault` rotation-manager:45-49/:95 |
 | no live arena-buffer alias or callback return channel | `SealArena.use` copies into a transient buffer, rejects callback returns/async callbacks, and wipes on every exit |
+| captured byte-copy and wipe intrinsics; package-owned scratch copies are wiped on exit | `wipe.ts` captures typed-array `set`/`fill` at module load; `arena.ts`, `io.ts`, `store.ts`, `runtime.ts`, and `cli.ts` wipe reachable staging/input buffers on success and failure |
 | zero-wipe on replace / save / quit / error | `arena.ts`, `store.ts` (`finally` wipes), `cli.ts` |
 | `mlock` pages vs swap where the platform allows (best-effort hook) | `mlock.ts` |
 | NEVER plaintext to a temp file (SOPS #624 class) | `io.ts` `atomicWriteCiphertext` writes **ciphertext only** |
@@ -131,10 +132,19 @@ key (`kemdem.ts:190`); the engine has zero custody logic. KEM-DEM moves the boot
 Once decrypted for the app to use, the secret is plaintext in process memory. `mlock` + zero-wipe
 shrink the window; they do not eliminate memory-scraping / core-dump exposure. `mlock` is a
 best-effort hook (`mlock.ts`) — the confidentiality guarantee does NOT depend on it.
+The captured typed-array intrinsics reduce exposure to prototype replacement after this module is
+loaded; they do not protect against code that ran before module initialization, copies made by
+native crypto/runtime code, garbage-collector behavior, or an untrusted host/FFI boundary. This is
+bootstrap hardening, not a Fungi memory-semantics or production-isolation guarantee.
 
-**Secret VALUES** are held only in zero-wiped / `mlock`'d arena Buffers and wiped on every
-replace/remove/quit/error path. The zero-wipe guarantee covers values. Two narrower residuals,
-documented honestly (audited, accepted — not value leaks):
+**Secret VALUES** pass through package-owned input, staging, crypto-result, and arena buffers.
+Reachable package-owned byte buffers and the no-echo prompt's numeric accumulator are explicitly
+overwritten on normal and exceptional exits; arena values are also offered to the best-effort
+`mlock` hook. This does not prove that Node, the terminal stream, the OS, native crypto, the garbage
+collector, or a host/FFI boundary made no other copies. It is bootstrap cleanup evidence, not a
+Fungi memory guarantee or complete physical erasure claim.
+
+Additional limits, documented honestly:
 
 - **Secret NAMES transiently exist as un-wipeable JS strings.** Every read decrypts the manifest
   and `JSON.parse(TextDecoder().decode(bytes))`, which materialises an immutable JS string of the
@@ -144,9 +154,8 @@ documented honestly (audited, accepted — not value leaks):
   sensitive than values — but if your threat model treats names as secret, note that a name briefly
   exists as an un-wipeable heap string during every `list`/`get`/edit. Values are NOT affected.
 - The unwrapped recipient key and decrypted value bytes pass through Node-internal cipher Buffers
-  (`createDecipheriv.update`/`final`, `Buffer.concat`); `anchor.ts`/`store.ts` now explicitly
-  `fill(0)` each intermediate they can reach, but Node may still allocate transient copies the JS
-  layer cannot address (a platform limitation of `node:crypto`, not a logic gap).
+  (`createDecipheriv.update`/`final`, `Buffer.concat`); the code wipes each intermediate it can
+  reach, but Node may allocate transient copies the JS layer cannot address.
 
 ## Build / test / bench
 

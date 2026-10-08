@@ -240,9 +240,9 @@ type DecodedSelectionInput = {
   readonly adapter: AiAcceleratorAdapterId;
 };
 
-const AI_ACCELERATOR_KINDS: readonly AiAcceleratorKind[] = [
+export const AI_ACCELERATOR_KINDS: readonly AiAcceleratorKind[] = Object.freeze([
   "npu", "tpu", "ane", "dsp", "ai-chip", "inference-accelerator", "training-accelerator", "plan-only",
-];
+]);
 const AI_ACCELERATOR_WORKLOADS: readonly AiAcceleratorWorkloadKind[] = [
   "llm_inference", "llm_finetuning", "rag", "embedding", "multimodal", "image_video_preprocess", "tensor_batching",
 ];
@@ -254,7 +254,7 @@ const AI_ACCELERATOR_FRAMEWORKS: readonly AiAcceleratorFramework[] = [
 const AI_ACCELERATOR_ADAPTERS: readonly AiAcceleratorAdapterId[] = [
   "onnxruntime", "onnxruntime-coreml", "onnxruntime-directml", "onnxruntime-qnn", "webnn", "coreml", "android-tflite", "plan-only",
 ];
-const AI_ACCELERATOR_TOPOLOGIES: readonly AiAcceleratorTopology[] = ["single-card", "pooled_1x4", "pooled_2x4", "independent_4x1", "unknown"];
+export const AI_ACCELERATOR_TOPOLOGIES: readonly AiAcceleratorTopology[] = Object.freeze(["single-card", "pooled_1x4", "pooled_2x4", "independent_4x1", "unknown"]);
 const AI_ACCELERATOR_FALLBACKS: readonly ("gpu" | "cpu" | "low_bit_ai" | AiAcceleratorKind)[] = [
   "gpu", "cpu", "low_bit_ai", ...AI_ACCELERATOR_KINDS,
 ];

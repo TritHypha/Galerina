@@ -81,7 +81,7 @@ pure flow read(item: Item) -> Decimal {
     );
   });
 
-  it("keeps declared record fields and Request sugar", () => {
+  it("keeps Request sugar and types the explicit rawBody field as Bytes", () => {
     const errors = check(`
 record Item {
   amount: Decimal
@@ -94,8 +94,22 @@ pure flow priced(item: Item) -> Decimal {
 pure flow fromRequest(request: Request) -> String {
   return request.body
 }
+
+pure flow fromRawRequest(request: Request) -> Bytes {
+  return request.rawBody
+}
 `);
-    assert.deepEqual(errors, [], `declared fields and Request must remain typed: ${errors.map((error) => error.code).join(", ")}`);
+    assert.deepEqual(errors, [], `Request sugar and explicit raw-body typing must remain available: ${errors.map((error) => error.code).join(", ")}`);
+  });
+
+  it("rejects treating raw Request bytes as a String", () => {
+    const errors = check(`
+pure flow fromRequest(request: Request) -> String {
+  return request.rawBody
+}
+`);
+    assert.ok(errors.some((error) => error.code === "FUNGI-TYPE-008"),
+      `raw Request bytes must not typecheck as String: ${errors.map((error) => `${error.code}:${error.message}`).join(" | ")}`);
   });
 
   it("preserves nested Map.get and Option ? payloads", () => {

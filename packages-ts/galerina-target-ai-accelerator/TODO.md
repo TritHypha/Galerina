@@ -23,6 +23,7 @@ must not be part of the active v1 build surface.
 [x] Define framework adapter planning examples
 [!] POST-V1 HBM and topology report examples.
     Owner decision 2026-10-06 10:14 BST (O1, Phillip): stays parked until v1 ships; no implementation.
+      SuperGrok 2026-10-07 pin: L20-L21 and L24-L25 stay [!]. O1 non-executing. tests/o1-parked-closed-set.test.mjs pins frozen AI_ACCELERATOR_KINDS (8, no vpu/fpga/asic) and AI_ACCELERATOR_TOPOLOGIES (5), refuses parked kinds and unknown topology tokens with Galerina_AI_ACCELERATOR_INPUT_REFUSED, and pins Gaudi 3 HBM numbers as passive profile fields. No isolation-level vocabulary in src. Docker node:24 2026-10-07: 5/5 new O1 tests, package 15/15 tests (2 suites) PASS. PROPOSED (not claimed final): keep those closed sets until v1; do not add VPU/FPGA/ASIC kinds or isolation-level reports.
 [x] Define fallback report examples
 [x] Add examples
 [x] Add tests

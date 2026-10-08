@@ -129,10 +129,20 @@ Galerina benchmark --network --light
 Galerina benchmark --network --full
 Galerina benchmark --json
 Galerina benchmark --save
-Galerina benchmark --compare python
-Galerina benchmark --compare cpp
+Galerina benchmark --compare runtime
+Galerina benchmark --compare compiled
 Galerina benchmark submit
 ```
+
+Owner decision 2026-10-06 17:28 BST: tools-benchmark is an independent
+TypeScript package. The commands above are the package's recommended argv
+surface (partly implemented by `parseBenchmarkCliArgs`); core-cli does not depend on
+tools-benchmark and does not wire `Galerina benchmark` to it. The benchmark
+stays TypeScript and is not converted to `.fungi`.
+
+`--compare` takes `runtime`, `compiled` or `runtime,compiled` (owner decision
+2026-10-06 17:29 BST): `runtime` tests in TypeScript (`.ts`); `compiled` tests
+the compiled `.fungi` output.
 
 Default mode:
 
@@ -685,6 +695,10 @@ Galerina benchmark --compare runtime
 Galerina benchmark --compare compiled
 Galerina benchmark --compare runtime,compiled
 ```
+
+`runtime` tests in TypeScript (`.ts`); `compiled` tests the compiled `.fungi`
+output (owner decision 2026-10-06 17:29 BST). `--compare` takes `runtime`,
+`compiled` or `runtime,compiled`; earlier `python` / `cpp` wording is superseded.
 
 Purpose:
 

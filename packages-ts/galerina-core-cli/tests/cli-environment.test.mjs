@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { parseEnvironment, runCli, FUNGI_CLI_ENV_001, FUNGI_CLI_ENV_002, FUNGI_CLI_ENV_003 } from "../dist/cli.js";
+import { commands } from "../dist/commands.js";
 
 describe("Galerina CLI --env resolution (fail-closed)", () => {
   it("defaults to development only when --env is absent", () => {
@@ -45,7 +46,7 @@ describe("Galerina CLI --env resolution (fail-closed)", () => {
   });
 
   it("runCli refuses before any command runs and returns a structured CliError", async () => {
-    const result = await runCli(["benchmark", "--env", "prodution"], process.cwd());
+    const result = await runCli(["routes", "--env", "prodution"], process.cwd());
     assert.equal(result.ok, false);
     assert.equal(result.code, 1);
     assert.equal(result.error.code, FUNGI_CLI_ENV_001);
@@ -54,11 +55,24 @@ describe("Galerina CLI --env resolution (fail-closed)", () => {
   });
 
   it("runCli still runs the command when --env is valid or absent", async () => {
-    const withEnv = await runCli(["benchmark", "--env", "production"], process.cwd());
-    const withoutEnv = await runCli(["benchmark"], process.cwd());
-    // benchmark is not implemented, so it now carries FUNGI-CLI-003 (structured CLI errors), never an ENV error.
-    assert.equal(withEnv.error.code, "FUNGI-CLI-003");
-    assert.equal(withoutEnv.error.code, "FUNGI-CLI-003");
-    assert.match(withEnv.message, /benchmark/i);
+    // Stub `routes` (restored afterwards) so the test observes the resolved env without side effects.
+    const routes = commands.find((c) => c.name === "routes");
+    const original = routes.run;
+    const seen = [];
+    routes.run = async (context) => {
+      seen.push(context.env);
+      return { ok: false, code: 2, message: "routes stub is not implemented" };
+    };
+    try {
+      const withEnv = await runCli(["routes", "--env", "production"], process.cwd());
+      const withoutEnv = await runCli(["routes"], process.cwd());
+      // The stub fails without its own error, so it carries FUNGI-CLI-003 (structured CLI errors), never an ENV error.
+      assert.equal(withEnv.error.code, "FUNGI-CLI-003");
+      assert.equal(withoutEnv.error.code, "FUNGI-CLI-003");
+      assert.match(withEnv.message, /routes stub/);
+      assert.deepEqual(seen, ["production", "development"]);
+    } finally {
+      routes.run = original;
+    }
   });
 });

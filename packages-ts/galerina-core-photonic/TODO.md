@@ -49,44 +49,47 @@ Canonical ownership (2026-09-22 reconciliation):
 ## v0.2 Governance Architecture (from galerina-core-photonic-v02.md)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): every row in this v0.2 section stays parked until
-v1 ships; no implementation. The HOLD groups below are unchanged.
+v1 ships; no v0.2 implementation. The refusal-only O1 surface documented below does not implement
+or admit the v0.2 architecture. The HOLD groups below are unchanged.
+Marker sync 2026-10-06 (Grok Bot): the 22 rows below changed from `[ ]` to `[HOLD]` so the open count
+reflects the O1 decision above. No row was implemented, removed or reworded. Reopen as `[ ]` after v1 ships.
 
-[ ] Replace OpticalTransportMode string union with 6-value enum (Waveguide/Coherent/Mesh/FreeSpace/Hybrid/Experimental)
-[ ] Update PhotonicRuntimeTarget to v0.2 fields (id/transport/realtime/deterministic/supportsIsolation/maxPropagationDepth)
-[ ] Update PhotonicExecutionPlan to v0.2 fields (target/topology/propagationDepth/estimatedLatencyNs/isolated/warnings[])
-[ ] Update buildPhotonicPlan() signature to accept PhotonicRuntimeTarget and return v0.2 plan
-[ ] Implement validateIsolation(target: PhotonicRuntimeTarget): boolean
+[HOLD] Replace OpticalTransportMode string union with 6-value enum (Waveguide/Coherent/Mesh/FreeSpace/Hybrid/Experimental)
+[HOLD] Update PhotonicRuntimeTarget to v0.2 fields (id/transport/realtime/deterministic/supportsIsolation/maxPropagationDepth)
+[HOLD] Update PhotonicExecutionPlan to v0.2 fields (target/topology/propagationDepth/estimatedLatencyNs/isolated/warnings[])
+[HOLD] Update buildPhotonicPlan() signature to accept PhotonicRuntimeTarget and return v0.2 plan
+[HOLD] Implement validateIsolation(target: PhotonicRuntimeTarget): boolean
     2026-10-07 SuperGrok: PARKED. Input type is HOLD-PHOTONIC-BOUNDARY (L53/L70 UNTOUCHED).
-[ ] Implement validatePropagation(depth: number, target: PhotonicRuntimeTarget): boolean
+[HOLD] Implement validatePropagation(depth: number, target: PhotonicRuntimeTarget): boolean
     2026-10-07 SuperGrok: PARKED. Input type is HOLD-PHOTONIC-BOUNDARY (L53/L70 UNTOUCHED).
-[ ] Implement validateHybridMode(target: PhotonicRuntimeTarget): boolean
+[HOLD] Implement validateHybridMode(target: PhotonicRuntimeTarget): boolean
     2026-10-07 SuperGrok: PARKED. Input type is HOLD-PHOTONIC-BOUNDARY (L53/L70 UNTOUCHED).
-[ ] Implement validateRealtime(plan: PhotonicExecutionPlan): boolean
+[HOLD] Implement validateRealtime(plan: PhotonicExecutionPlan): boolean
     2026-10-07 SuperGrok: PARKED. Input type is HOLD-PHOTONIC-BOUNDARY (L54 UNTOUCHED).
-[x] Define PhotonicCapability enum (OpticalExecution/HybridExecution/ExperimentalRouting/RealtimeScheduling)
-    2026-10-07 SuperGrok: refusal-only string union in src/governance/capabilities.ts. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
-[x] Implement validateCapability(capability: PhotonicCapability): boolean — blocks ExperimentalRouting by default
-    2026-10-07 SuperGrok: always returns false; ExperimentalRouting always refused; no capability granted. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
-[ ] Define optical topologies list (OpticalMesh/WaveguideBus/CoherentRing/HybridBridge)
+[HOLD] Define PhotonicCapability enum (OpticalExecution/HybridExecution/ExperimentalRouting/RealtimeScheduling)
+    2026-10-07 SuperGrok: O1 refusal-only string union exists in src/governance/capabilities.ts; it does not implement or admit the v0.2 capability model. Evidence: tests/photonic-o1-refusals.test.mjs.
+[HOLD] Implement validateCapability(capability: PhotonicCapability): boolean — blocks ExperimentalRouting by default
+    2026-10-07 SuperGrok: current O1 helper always returns false; ExperimentalRouting is refused and no capability is granted. This is not the parked v0.2 implementation. Evidence: tests/photonic-o1-refusals.test.mjs.
+[HOLD] Define optical topologies list (OpticalMesh/WaveguideBus/CoherentRing/HybridBridge)
     2026-10-07 SuperGrok: PARKED. Planner/topology surface is L37 POST-V1 / HOLD-PHOTONIC-BOUNDARY.
-[ ] Update FUNGI-PHOTONIC-001–006 meanings to v0.2 (001=isolation missing, 002=propagation exceeded, 003=experimental prohibited, 004=invalid topology, 005=non-deterministic, 006=unsafe hybrid)
-[ ] Create runtime/transport.ts (OpticalTransportMode enum)
-[ ] Create runtime/isolation.ts (validateIsolation)
+[HOLD] Update FUNGI-PHOTONIC-001–006 meanings to v0.2 (001=isolation missing, 002=propagation exceeded, 003=experimental prohibited, 004=invalid topology, 005=non-deterministic, 006=unsafe hybrid)
+[HOLD] Create runtime/transport.ts (OpticalTransportMode enum)
+[HOLD] Create runtime/isolation.ts (validateIsolation)
     2026-10-07 SuperGrok: PARKED. Isolation validator input is HOLD-PHOTONIC-BOUNDARY.
-[ ] Create planning/topology.ts (topologies list)
+[HOLD] Create planning/topology.ts (topologies list)
     2026-10-07 SuperGrok: PARKED. Planner/topology surface is L37 POST-V1.
-[ ] Create planning/scheduling.ts (validateRealtime)
+[HOLD] Create planning/scheduling.ts (validateRealtime)
     2026-10-07 SuperGrok: PARKED. Realtime validator input is HOLD-PHOTONIC-BOUNDARY.
-[ ] Create governance/validation.ts (validatePropagation, validateHybridMode)
+[HOLD] Create governance/validation.ts (validatePropagation, validateHybridMode)
     2026-10-07 SuperGrok: PARKED. Validator inputs are HOLD-PHOTONIC-BOUNDARY.
-[x] Create governance/capabilities.ts (PhotonicCapability enum, validateCapability)
-    2026-10-07 SuperGrok: src/governance/capabilities.ts refusal-only. Evidence: tests/photonic-o1-refusals.test.mjs (npm test).
-[ ] Create targets/runtimeTargets.ts (PhotonicRuntimeTarget)
-[ ] Create targets/OpticalTransportMode.ts
-[ ] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
-    2026-10-07 O1 subset only, row stays OPEN: tests pin identical outputs of existing concept functions (validate*/createPhotonicReport/decodePhotonicDiagnostic). Execution plans/routes/schedules are not admitted (L37 POST-V1). Evidence: tests/photonic-o1-refusals.test.mjs.
-[ ] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
-    2026-10-07 O1 refusal-only subset, row stays OPEN: admitExperimentalTransport always false; refuseExperimentalTransport emits a fixed REFUSED diagnostic. No sandboxing, production restriction, capability-backed transport or audit logging is implemented. HOLD-PHOTONIC-TRANSPORT stays HOLD.
+[HOLD] Create governance/capabilities.ts (PhotonicCapability enum, validateCapability)
+    2026-10-07 SuperGrok: the O1 refusal-only surface exists in src/governance/capabilities.ts and its tests; it does not satisfy the parked v0.2 API. Evidence: tests/photonic-o1-refusals.test.mjs.
+[HOLD] Create targets/runtimeTargets.ts (PhotonicRuntimeTarget)
+[HOLD] Create targets/OpticalTransportMode.ts
+[HOLD] Enforce determinism rule: identical inputs must produce identical execution plans/routes/schedules/diagnostics
+    2026-10-07 O1 determinism tests cover only current concept functions (validate*/createPhotonicReport/decodePhotonicDiagnostic). Execution plans/routes/schedules are not admitted (L37 POST-V1); this broader row remains HOLD. Evidence: tests/photonic-o1-refusals.test.mjs.
+[HOLD] Add experimental transport restrictions (no production deployment, sandboxed only, explicit capability required, full audit logging)
+    2026-10-07 O1 refusal-only evidence: admitExperimentalTransport always refuses and refuseExperimentalTransport emits a fixed REFUSED diagnostic. No sandboxing, production restriction, capability-backed transport or audit logging is implemented; HOLD-PHOTONIC-TRANSPORT stays HOLD.
 ```
 
 ## Live reconciliation (2026-09-21)

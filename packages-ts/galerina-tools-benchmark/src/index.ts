@@ -677,7 +677,8 @@ export function isBenchmarkReportShareable(
 // `process.platform`, `process.arch`, `os.availableParallelism()`), so this
 // package keeps its node-core border unchanged. Output is a closed vocabulary
 // or a coarse bucket, never a raw probe string: no hostname, username, CPU
-// model, serial or path can pass through. RAM detection is deliberately absent.
+// model, serial or path can pass through. RAM bucket and vector
+// features live in src/target-detection.ts (separate probes; this probe stays closed).
 
 export type BenchmarkOsFamily = "linux" | "macos" | "windows" | "android" | "bsd" | "other" | "unknown";
 
@@ -799,6 +800,29 @@ export function detectBenchmarkSystem(probe: unknown): BenchmarkSystemDetection 
     diagnostics: Object.freeze(diagnostics),
   });
 }
+
+// Target detection, second slice (Phase 4): RAM bucket and vector features.
+export {
+  BENCHMARK_MEMORY_BUCKETS,
+  BENCHMARK_MEMORY_PROBE_FIELDS,
+  MIN_BENCHMARK_TOTAL_MEMORY_BYTES,
+  BENCHMARK_VECTOR_FEATURES,
+  BENCHMARK_VECTOR_PROBE_FIELDS,
+  MAX_BENCHMARK_CPU_FLAGS,
+  bucketTotalMemory,
+  detectBenchmarkMemory,
+  detectBenchmarkVectorFeatures,
+  wasmSimd128ProbeBytes,
+  type BenchmarkMemoryBucket,
+  type BenchmarkMemoryProbe,
+  type BenchmarkMemoryDetection,
+  type BenchmarkVectorFeature,
+  type BenchmarkVectorBackend,
+  type BenchmarkVectorProbe,
+  type BenchmarkVectorDetection,
+  type TargetDetectionDiagnostic,
+  type TargetDetectionSeverity,
+} from "./target-detection.js";
 
 // ── shareable reports, version-trigger state and submit placeholder (TODO pass, Grok 2026-10-05) ──
 // Pure and fail-closed. The shareable generator REBUILDS a report from the closed
@@ -1371,6 +1395,28 @@ export function formatBenchmarkSummary(report: unknown): readonly string[] {
   ]);
 }
 
+// Phase 9 comparison report contract (runtime|compiled; report side only, no runner).
+export {
+  BENCHMARK_COMPARISON_SCHEMA,
+  BENCHMARK_COMPARE_SIDES,
+  BENCHMARK_COMPARISON_STATUSES,
+  BENCHMARK_COMPARISON_LIMITS,
+  FUNGI_BENCH_CMP_SHAPE,
+  FUNGI_BENCH_CMP_INPUT_MISMATCH,
+  FUNGI_BENCH_CMP_VERSION_RECORD,
+  FUNGI_BENCH_CMP_SIDES,
+  FUNGI_BENCH_CMP_RESULT,
+  createBenchmarkComparisonReport,
+  type BenchmarkCompareSide,
+  type BenchmarkComparisonStatus,
+  type BenchmarkComparisonDiagnostic,
+  type BenchmarkToolIdentity,
+  type BenchmarkCompilerIdentity,
+  type BenchmarkComparisonSideResult,
+  type BenchmarkComparisonInput,
+  type BenchmarkComparisonReport,
+  type BenchmarkComparisonResult,
+} from "./comparison-report.js";
 
 export {
   FUNGI_BENCH_BOOL_001,
@@ -1654,3 +1700,22 @@ export {
   type RunJsonStreamGeneratedResult,
   type GeneratedJsonLinesSummary,
 } from "./json-stream-generated-benchmark.js";
+
+// Light benchmark command runner (in-process; host-injected facts; light mode only).
+export {
+  FUNGI_BENCH_RUN_001,
+  FUNGI_BENCH_RUN_002,
+  FUNGI_BENCH_RUN_003,
+  FUNGI_BENCH_RUN_004,
+  FUNGI_BENCH_RUN_005,
+  FUNGI_BENCH_RUN_006,
+  BENCHMARK_RUNNER_INPUT_FIELDS,
+  BENCHMARK_RUNNER_REASONS,
+  LIGHT_BENCHMARK_CASE_IDS,
+  LIGHT_BENCHMARK_RUN_GROUPS,
+  createLightBenchmarkRunner,
+  runLightBenchmark,
+  type BenchmarkRunnerDiagnostic,
+  type BenchmarkRunnerInput,
+  type BenchmarkRunnerResult,
+} from "./benchmark-runner.js";

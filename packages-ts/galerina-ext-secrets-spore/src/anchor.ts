@@ -18,6 +18,7 @@
 import { argon2id } from "@noble/hashes/argon2.js";
 import { randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
 import { withWiped } from "./arena.js";
+import { copyBytes, wipeBytes } from "./wipe.js";
 
 /** Mirror of core-config SecretConfigSource (index.ts:1142-1146) — we consume, not redefine. */
 export type SecretConfigSource =
@@ -54,12 +55,17 @@ export function wrapRecipientSecret(recipientSec: Uint8Array, passphrase: Uint8A
   const iv = new Uint8Array(randomBytes(12));
   const wrapKey = deriveWrapKey(passphrase, salt);
   try {
-    const cipher = createCipheriv("aes-256-gcm", wrapKey, iv, { authTagLength: 16 });
-    const enc = Buffer.concat([cipher.update(Buffer.from(recipientSec)), cipher.final()]);
-    const tag = cipher.getAuthTag();
-    return { salt, iv, ct: new Uint8Array(Buffer.concat([enc, tag])) };
+    const plaintext = Buffer.from(recipientSec);
+    try {
+      const cipher = createCipheriv("aes-256-gcm", wrapKey, iv, { authTagLength: 16 });
+      const enc = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+      const tag = cipher.getAuthTag();
+      return { salt, iv, ct: new Uint8Array(Buffer.concat([enc, tag])) };
+    } finally {
+      wipeBytes(plaintext);
+    }
   } finally {
-    wrapKey.fill(0);
+    wipeBytes(wrapKey);
   }
 }
 
@@ -87,17 +93,19 @@ export function unwrapRecipientSecret<T>(wrapped: WrappedKey, passphrase: Uint8A
     // and hand the SINGLE assembled Buffer straight to withWiped — no extra new Uint8Array()
     // copy (leak-hunter #4 minimises un-tracked plaintext copies).
     const upd = decipher.update(Buffer.from(body)) as Buffer;
-    const fin = decipher.final() as Buffer; // throws on bad key BEFORE any plaintext is served
-    const plain = Buffer.concat([upd, fin]);
+    let fin: Buffer | undefined;
+    let plain: Buffer | undefined;
     try {
+      fin = decipher.final() as Buffer; // throws on bad key BEFORE any plaintext is served
+      plain = Buffer.concat([upd, fin]);
       return withWiped(plain, (b) => fn(b)); // withWiped copies into an mlock'd buffer + wipes it
     } finally {
-      upd.fill(0);   // wipe the update() intermediate
-      fin.fill(0);   // wipe the final() intermediate
-      plain.fill(0); // wipe the concatenated copy
+      wipeBytes(upd); // wipe the update() intermediate
+      if (fin !== undefined) wipeBytes(fin); // wipe final() intermediate when available
+      if (plain !== undefined) wipeBytes(plain); // wipe concatenated copy when available
     }
   } finally {
-    wrapKey.fill(0);
+    wipeBytes(wrapKey);
   }
 }
 
@@ -119,12 +127,21 @@ export async function anchorProdSecret<T>(
     throw new Error(`anchorProdSecret: prod anchor must be kms|vault, got "${source.kind}" (fail-closed)`);
   }
   const raw = await fetcher(source);
-  const buf = Buffer.alloc(raw.length);
-  buf.set(raw);
-  raw.fill?.(0);
+  let buf: Buffer | undefined;
   try {
+    buf = Buffer.alloc(raw.length);
+    copyBytes(buf, raw);
+    // Wipe the provider-owned buffer before entering callback-controlled code. Keep the
+    // attempt in this protected region as well as finally below: allocation/copy/wipe
+    // failures must never bypass cleanup, and a failed pre-callback wipe must not expose
+    // the staged bytes to the callback.
+    wipeBytes(raw);
     return await fn(buf);
   } finally {
-    buf.fill(0);
+    try {
+      wipeBytes(raw);
+    } finally {
+      if (buf !== undefined) wipeBytes(buf);
+    }
   }
 }

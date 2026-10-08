@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   CRYPTO_PROVIDER_SCHEMA,
+  CRYPTO_PROVIDER_V2_SCHEMA,
   createSafeCookieReference,
   createSafeHeaderReference,
   createSafeTokenReference,
@@ -12,6 +13,7 @@ import {
   decidePermission,
   definePermissionModel,
   invokeCryptoProvider,
+  invokeCryptoProviderV2,
   redactText,
   validateCryptographicPolicy,
   validatePermissionModel,
@@ -306,5 +308,47 @@ describe("C19-C CryptoProvider — absent and throwing refuse closed", () => {
     if (!result.ok) return;
     assert.equal(result.kind, "hash");
     assert.equal(result.hash.startsWith("$argon2"), true);
+  });
+
+  it("keeps v1 text-only and refuses a v2 byte provider without invoking it", async () => {
+    let calls = 0;
+    const result = await invokeCryptoProvider(
+      {
+        schema: CRYPTO_PROVIDER_V2_SCHEMA,
+        invoke: async () => {
+          calls += 1;
+          return { ok: true, kind: "verify", matches: true };
+        },
+      },
+      { op: "password-hash", algorithm: "argon2id", plaintext: "secret" },
+    );
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "FUNGI-CRYPTO-004");
+    assert.equal(calls, 0);
+  });
+
+  it("accepts the v2 byte-verification operation only with a closed verify result", async () => {
+    const plaintextBytes = new Uint8Array([0x00, 0xff]);
+    let seen;
+    const result = await invokeCryptoProviderV2(
+      {
+        schema: CRYPTO_PROVIDER_V2_SCHEMA,
+        async invoke(request) {
+          seen = request;
+          return { ok: true, kind: "verify", matches: false };
+        },
+      },
+      {
+        op: "password-verify-bytes",
+        algorithm: "argon2id",
+        plaintextBytes,
+        hash: "$argon2id$fixture",
+      },
+    );
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.kind, "verify");
+    assert.strictEqual(seen.plaintextBytes, plaintextBytes);
   });
 });

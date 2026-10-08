@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "ee250f212396a9307bc93ef8c0c92854faef60f7a57ba3eb3eb8add9525b5a75",
+    "aggregateSha256": "bfb2fb61ea5bbc7890efedee9e6659de1f89e95b9aa321e07796ab4fe4714699",
     "algorithm": "sha256",
     "files": [
       {
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "c18b73249f05db549f1dfa723fd838d4b94a34af57f373a3bbdef0b55cac12d9"
+        "sha256": "affa7f8d14f8bd86166fc02efd985ea5ea38d8fa37719a8225327552306bce36"
       },
       {
         "path": "examples/tri-optical-mapping-plan.json",

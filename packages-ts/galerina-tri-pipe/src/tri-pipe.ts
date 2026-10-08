@@ -129,8 +129,11 @@ export function createTriPipeEngine(opts: TriPipeOptions): TriPipeResult {
   });
 }
 
-/** Dispatch is structurally refused. Independent SLIDE/TLL admission is the only later act. */
-export function dispatchTriPipeEngine(_proposal: TriPipeResult): {
+/**
+ * Dispatch is structurally refused for every input, including route, attempt and
+ * alternative proposals. Independent SLIDE/TLL admission is the only later act.
+ */
+export function dispatchTriPipeEngine(_proposal: unknown): {
   readonly refused: true;
   readonly code: "ROUTE_DISPATCH_FORBIDDEN";
 } {

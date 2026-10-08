@@ -7,8 +7,8 @@
 type RouteResult = Result<Response, String>
 
 // Check if a path matches a known route pattern
-;; Returns whether an HTTP request path matches a registered route path; safe as a pure string comparison with no side effects.
-;; Pure — no runtime authority / no effects.
+// Returns whether an HTTP request path matches a registered route path; safe as a pure string comparison with no side effects.
+// Pure — no runtime authority / no effects.
 // @cause  [Library helper] -> called by flows needing request-path/route-path matching.
 // @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow pathMatches(requestPath: String, routePath: String) -> Bool
@@ -23,8 +23,8 @@ contract {
 }
 
 // Determine which flow handles a given HTTP method + path
-;; Maps an HTTP method+path pair to the governing flow name via the dispatch table; safe as a pure lookup returning "" for unknown routes.
-;; Pure — no runtime authority / no effects.
+// Maps an HTTP method+path pair to the governing flow name via the dispatch table; safe as a pure lookup returning "" for unknown routes.
+// Pure — no runtime authority / no effects.
 // @cause  [dispatchRequest] -> called to map the method+path pair onto the dispatch table.
 // @effect [Verdict only] -> returns the governing flow name ("" when unmatched); no state mutated.
 pure flow resolveRoute(method: String, path: String) -> String
@@ -54,8 +54,8 @@ contract {
 }
 
 // Determine the governance profile for a given flow
-;; Returns the deployment profile for a flow name, defaulting to "denied" for unknown flows; safe as a pure match over a fixed table.
-;; Pure — no runtime authority / no effects.
+// Returns the deployment profile for a flow name, defaulting to "denied" for unknown flows; safe as a pure match over a fixed table.
+// Pure — no runtime authority / no effects.
 // @cause  [dispatchRequest] -> called to look up the resolved flow's deployment profile.
 // @effect [Verdict only] -> returns the profile String ("denied" for unknown flows); no state mutated.
 pure flow flowGovernanceProfile(flowName: String) -> String
@@ -74,9 +74,9 @@ contract {
   }
 }
 
-;; Validate an untrusted HTTP method against the allowed set before it drives dispatch — admit only the
-;; recognised verbs, returning a constant (never the raw input). Validate untrusted input before it
-;; drives a decision; a pure lookup only propagates taint. Pure — no runtime authority / no effects.
+// Validate an untrusted HTTP method against the allowed set before it drives dispatch — admit only the
+// recognised verbs, returning a constant (never the raw input). Validate untrusted input before it
+// drives a decision; a pure lookup only propagates taint. Pure — no runtime authority / no effects.
 // @cause  [Route dispatch receives an untrusted HTTP method] -> validate before route selection.
 // @effect [Method verdict] -> returns one admitted verb or an empty refusal marker.
 pure flow validateMethod(method: String) -> String
@@ -88,8 +88,8 @@ pure flow validateMethod(method: String) -> String
   }
 }
 
-;; Validate an untrusted request path against the registered route allowlist — admit only known paths,
-;; returning a constant. Pure — no runtime authority / no effects.
+// Validate an untrusted request path against the registered route allowlist — admit only known paths,
+// returning a constant. Pure — no runtime authority / no effects.
 // @cause  [Route dispatch receives an untrusted path] -> validate against the fixed route set.
 // @effect [Path verdict] -> returns one admitted path or an empty refusal marker.
 pure flow validatePath(path: String) -> String
@@ -106,8 +106,8 @@ pure flow validatePath(path: String) -> String
 }
 
 // The governed route dispatcher -- makes routing decisions and audits them
-;; Accepts an incoming HTTP request, resolves the route, and returns a dispatch decision; permitted because the untrusted method and path are trapped-on-empty and redacted before the audit write.
-;; V_DPM capability required: network.inbound, audit.write
+// Accepts an incoming HTTP request, resolves the route, and returns a dispatch decision; permitted because the untrusted method and path are trapped-on-empty and redacted before the audit write.
+// V_DPM capability required: network.inbound, audit.write
 // @cause  [POST /dispatch] -> HTTP route invokes the governed dispatcher with method+path metadata.
 // @effect [Audit log] -> appends a "RouteDispatched" event (fields redacted); returns the dispatch decision, Err for unknown routes.
 secure flow dispatchRequest(readonly request: Request) -> RouteResult
@@ -134,7 +134,7 @@ contract {
 
   trap rawMethod == "" : ERR_EMPTY_HTTP_METHOD
   trap rawPath == "" : ERR_EMPTY_PATH
-  ;; validate the untrusted method + path before they drive the dispatch decision — the gates clear the taint
+  // validate the untrusted method + path before they drive the dispatch decision — the gates clear the taint
   let validMethod: String = validateMethod(rawMethod)
   let validPath: String = validatePath(rawPath)
   trap validMethod == "" : ERR_INVALID_HTTP_METHOD
@@ -160,7 +160,7 @@ contract {
     profile: auditProfile
   })
 
-  if denied {
+  if denied == true {
     return Err("Route not admitted")
   }
 

@@ -22,10 +22,12 @@
 //  - Diagnostics are closed: a fixed code, a fixed message and a field name from the v1 list.
 //    They never echo a value or an unknown key name.
 //
-// Not covered here (still open, see TODO.md): the `runtime-manifest.json` file container. The
-// compiler README plans a v0.2 `galerina.manifest.v1` document from pass 14, which is not built.
-// The `--manifest` flag also waits for it. No cryptographic signature check is done here:
-// GovernanceSignature (Phase 39) does not exist yet.
+// File-container check (SuperGrok 2026-10-07): a JSON object with schemaVersion
+// `galerina.manifest.v1` is the planned pass-14 `runtime-manifest.json` (compiler README v0.2).
+// Nested routes/functions/effects/permissions are PROPOSED only — there is no producer to pin.
+// GovernanceSignature exists for ProofGraph (compiler proof-graph.ts); it is not a file-container
+// signature. This module refuses that object as unsigned (FUNGI-VERIFY-017) or unverifiable under
+// all-zero operational pins (FUNGI-VERIFY-018). Nested fields are not interpreted.
 
 export const RUNTIME_MANIFEST_SCHEMA = "fungi.runtime.manifest.v1";
 
@@ -82,7 +84,7 @@ export const RUNTIME_MANIFEST_QUALIFIERS: readonly string[] = Object.freeze(["fl
  */
 export const RUNTIME_MANIFEST_COMPUTE_TARGETS: readonly string[] = Object.freeze(["best"]);
 
-export type ManifestDiagnosticField = RuntimeManifestField | "record" | "set";
+export type ManifestDiagnosticField = RuntimeManifestField | "record" | "set" | "signature" | "container";
 
 export interface ManifestDiagnostic {
   readonly code: string;
@@ -345,4 +347,56 @@ export function verifyRuntimeManifestSet(records: unknown): RuntimeManifestVerif
   }
   const diagnostics = [...setDiagnostics, ...manifests.flatMap((m) => m.diagnostics)];
   return Object.freeze({ success: diagnostics.length === 0, manifests: Object.freeze(manifests), diagnostics: Object.freeze(diagnostics) });
+}
+
+/** Planned pass-14 file container (compiler README v0.2). Nested fields are not interpreted. */
+export const FILE_CONTAINER_SCHEMA = "galerina.manifest.v1";
+
+/** 64-zero hex: operational Ed25519 / ML-DSA / delegation pins in governance/beta-v1-platform-policy.json. */
+export const ALL_ZERO_OPERATIONAL_PIN = "0000000000000000000000000000000000000000000000000000000000000000";
+
+/** File container is not `galerina.manifest.v1`, or it is unsigned. */
+export const FUNGI_VERIFY_017 = "FUNGI-VERIFY-017";
+/** Operational pins are all-zero, so a file-container signature cannot verify. */
+export const FUNGI_VERIFY_018 = "FUNGI-VERIFY-018";
+
+export interface FileContainerVerification {
+  readonly success: boolean;
+  readonly diagnostics: readonly ManifestDiagnostic[];
+}
+
+function hasNonEmptySignature(values: ReadonlyMap<string, unknown>): boolean {
+  if (!values.has("signature")) return false;
+  const sig = values.get("signature");
+  if (typeof sig === "string") return sig.length > 0;
+  if (sig !== null && typeof sig === "object" && !Array.isArray(sig)) return true;
+  return false;
+}
+
+/**
+ * Extra fail-closed check for a `galerina.manifest.v1` file container.
+ * Does not read nested README fields. Does not call compiler crypto. Never throws.
+ * Today operational pins are all-zero, so a container never verifies.
+ */
+export function verifyFileContainer(record: unknown): FileContainerVerification {
+  const out: ManifestDiagnostic[] = [];
+  const done = (): FileContainerVerification =>
+    Object.freeze({ success: false, diagnostics: Object.freeze([...out]) });
+
+  const snap = snapshotRecord(record);
+  if (!snap.ok) {
+    out.push(diag(FUNGI_VERIFY_017, "File container must be a plain data object (no accessors, symbols or custom prototype).", "container", -1));
+    return done();
+  }
+  const schemaVersion = snap.values.get("schemaVersion");
+  if (typeof schemaVersion !== "string" || schemaVersion !== FILE_CONTAINER_SCHEMA) {
+    out.push(diag(FUNGI_VERIFY_017, "File container schemaVersion is not galerina.manifest.v1; nested fields are not interpreted.", "schemaVersion", -1));
+    return done();
+  }
+  if (!hasNonEmptySignature(snap.values)) {
+    out.push(diag(FUNGI_VERIFY_017, "File container is unsigned; verify refuses it.", "signature", -1));
+    return done();
+  }
+  out.push(diag(FUNGI_VERIFY_018, "Operational pins are all-zero; a file-container signature cannot verify.", "signature", -1));
+  return done();
 }

@@ -42,19 +42,19 @@ const DEFAULT_LIMIT_CONFIG: LimitConfig = {};
 // parser below AND the FUNGI-GOV-019 verifier (via isRecognizedLimitDecl) use these regexes, so they cannot
 // drift. (RD-0121 found governance-verifier's snake_case KNOWN_LIMITS_FIELDS allowlist disagreed with this
 // runtime grammar — it false-fired GOV-019 on the idiomatic `max request size N MB` form; CWE-1287.)
-const LIMIT_REQUEST_SIZE_RE = /max\s+request\s+size\s+(\d+(?:\.\d+)?)\s*(bytes?|kb|mb|gb)/;
-const LIMIT_BATCH_SIZE_RE   = /max\s+batch\s+size\s+(\d+)/;
-const LIMIT_MEMORY_RE       = /max\s+memory\s+(\d+(?:\.\d+)?)\s*(bytes?|kb|mb|gb)/;
-const LIMIT_PROMPT_RE       = /max\s+prompt\s+(\d+)\s*(?:chars?)?/;
+const LIMIT_REQUEST_SIZE_RE = /^max\s+request\s+size\s+(\d+(?:\.\d+)?)\s*(bytes?|kb|mb|gb)$/i;
+const LIMIT_BATCH_SIZE_RE   = /^max\s+batch\s+size\s+(\d+)$/i;
+const LIMIT_MEMORY_RE       = /^max\s+memory\s+(\d+(?:\.\d+)?)\s*(bytes?|kb|mb|gb)$/i;
+const LIMIT_PROMPT_RE       = /^max\s+prompt\s+(\d+)\s*(?:chars?)?$/i;
 // BUG B (RD-0234c): previously-inert kinds. Registering them in ALL_LIMIT_PATTERNS is what makes
 // isRecognizedLimitDecl (and therefore the FUNGI-GOV-019 verifier) accept them — the prod-correct
 // single-source approach (NOT a separate KNOWN_LIMITS_PHRASES set). None is a prefix of another or of
 // the four above, so at most one matches per decl line; keep the parse branches in this same order.
-const LIMIT_RESULTS_RE      = /max\s+results\s+(\d+)/;
-const LIMIT_QUERY_LENGTH_RE = /max\s+query\s+length\s+(\d+)\s*(?:characters?|chars?)?/;
-const LIMIT_AMOUNT_RE       = /max\s+amount\s+(\d+(?:\.\d+)?)/;
-const LIMIT_CONCURRENT_RE   = /concurrent[_\s]tasks\s+(\d+)/;
-const LIMIT_RATE_RE         = /rate\s+(\d+)\s+per\s+(seconds?|sec|minutes?|min|hours?|hr|days?)(?:\s+per\s+(actor|ip|global))?/;
+const LIMIT_RESULTS_RE      = /^max\s+results\s+(\d+)$/i;
+const LIMIT_QUERY_LENGTH_RE = /^max\s+query\s+length\s+(\d+)\s*(?:characters?|chars?)?$/i;
+const LIMIT_AMOUNT_RE       = /^max\s+amount\s+(\d+(?:\.\d+)?)$/i;
+const LIMIT_CONCURRENT_RE   = /^concurrent[_\s]tasks\s+(\d+)$/i;
+const LIMIT_RATE_RE         = /^rate\s+(\d+)\s+per\s+(seconds?|sec|minutes?|min|hours?|hr|days?)(?:\s+per\s+(actor|ip|global))?$/i;
 const ALL_LIMIT_PATTERNS = [
   LIMIT_REQUEST_SIZE_RE, LIMIT_BATCH_SIZE_RE, LIMIT_MEMORY_RE, LIMIT_PROMPT_RE,
   LIMIT_RESULTS_RE, LIMIT_QUERY_LENGTH_RE, LIMIT_AMOUNT_RE, LIMIT_CONCURRENT_RE, LIMIT_RATE_RE,
@@ -66,7 +66,7 @@ const ALL_LIMIT_PATTERNS = [
  * positives on the idiomatic space-separated form, real typos still flagged.
  */
 export function isRecognizedLimitDecl(decl: string): boolean {
-  const v = decl.toLowerCase();
+  const v = decl.trim();
   return ALL_LIMIT_PATTERNS.some((re) => re.test(v));
 }
 

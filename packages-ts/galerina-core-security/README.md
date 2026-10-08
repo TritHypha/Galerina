@@ -33,6 +33,7 @@ Use this package for:
 
 ```text
 injected CryptoProvider (fungi.security.crypto-provider.v1)
+versioned byte-capable CryptoProvider v2 (`fungi.security.crypto-provider.v2`) for byte-preserving password verification
 SecureString model helpers
 Secret<T> / protected secret reference contracts
 redaction primitives
@@ -72,6 +73,14 @@ compiler security rules -> galerina-core / galerina-core-compiler
 ```
 
 ## Contracts
+
+`fungi.security.crypto-provider.v1` remains the frozen text-based contract.
+`fungi.security.crypto-provider.v2` is an explicit opt-in extension that adds
+`password-verify-bytes`; it does not decode those bytes as text and is configured
+separately from the v1 provider. The compiler bootstrap bounds verification
+input to 1,024 bytes and clears its provider-transfer buffer after the provider
+settles. This is best-effort host behavior, not proof of erasure or of Fungi
+ownership/aliasing enforcement; a provider can still make another owned copy.
 
 The package defines:
 

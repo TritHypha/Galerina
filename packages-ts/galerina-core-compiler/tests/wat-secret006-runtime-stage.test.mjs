@@ -197,11 +197,13 @@ contract { intent { "secret crossing" } secrets { credential k { provider "vault
     const runtime = readFileSync(join(SH, "runtime.fungi"), "utf8");
     assert.equal(/redact\s*\(\s*scopeEnv/.test(runtime), false);
     const sha = (rel) =>
-      createHash("sha256").update(readFileSync(join(__dir, rel))).digest("hex");
+      createHash("sha256")
+        .update(readFileSync(join(__dir, rel), "utf8").replace(/\r\n/g, "\n"), "utf8")
+        .digest("hex");
     const checker = readFileSync(join(__dir, "../src/value-state-checker.ts"), "utf8");
     assert.match(checker, /function sourceReceiverSegment\(/);
     assert.equal(/callStyle:\s*"plain"/.test(checker), false);
-    assert.equal(sha("../src/security-gate.ts"), "4b0b683f457a27b8f2bffe3caaa60b7b12ed6cc5847717cbbc50007447e2ee99");
+    assert.equal(sha("../src/security-gate.ts"), "9f537d9adef482f2786ca8c517aec772ea7a189fd9d20f50cdbfdef0b8492741");
     assert.equal(sha("../src/checked-program.ts"), "fcb26657e6d7ab1332cd7d14adde8c5546f163169e51eb1b9ce21427a8d7a7d5");
   });
 });

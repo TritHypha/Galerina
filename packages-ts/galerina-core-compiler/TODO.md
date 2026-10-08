@@ -371,6 +371,25 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     **4/4**. Residual: node adapter lazy-loads KDF only when invoked.
 ```
 
+## RD-0855 admission-time replanning (proposed 2026-10-06, owner decision pending)
+
+No new lowering for alternative plans until these rows pass. A failed attempt keeps
+its typed refusal; an alternative plan reuses the sealed checked input and never
+re-enters TypeScript, AST or WAT (no rescue). Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry.
+Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
+
+```text
+[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
+[HOLD] K3/refusal parity for each fallback tier: tier-1 trit-width profiles and the tier-3 binary implementation return the same K3 values and typed refusals as standard K3 (tier 2)
+    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
+    Three-tier order owner decided 2026-10-06 (16:52 BST); parity evidence and any lowering stay HOLD.
+[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
+    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+```
+
 ## Post-v1 (owner-gated)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
@@ -379,6 +398,18 @@ until v1 ships. The Int64 / UInt64 row is a separate open question, not part of 
 ```text
 [ ] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
 [ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
+    Security admission gate: every self-hosted parser AST must pass `checkValueStates` or a proven semantically equivalent checker before lowering/admission; refuse closed if that checker path is absent or fails. Add parity tests using actual self-hosted ASTs for direct secret egress, aliases, secret-dependent control, ordinary secret comparisons, and match-arm value egress, plus public and sanctioned-declassification controls. Current bootstrap TypeScript-parser tests are not proof of this connection or of loaded Fungi runtime enforcement.
 [ ] LSP (Language Server Protocol) — diagnostics on save
 [ ] Int64 / UInt64 full compiler gate lift (currently owner-gated, one line)
+    Reconciled 2026-10-06 (Grok Bot, docs/tests only, no compiler source change; Codex/owner decide closure):
+    the FUNGI-NUMERIC-001 gate set is already EMPTY - src/numeric-lowering.ts:41
+    `BACKEND_UNLOWERABLE_SCALAR = new Set([])` (its header records Int64 lifted 2026-06-25 and UInt64 lifted
+    in #52, both owner-authorized). `check` and a default `build` admit both widths:
+    tests/cli-numeric-gate.test.mjs 4/4 (its two build cases were failing on main only because the fixtures
+    were named `__numgate_*`, which the galerina.mjs:2430 artifact-name rule refuses; renamed `numgate_*`),
+    tests/u64-unlock.test.mjs, tests/interpreter-int64-dispatch.test.mjs, tests/wat-i64-lift-readiness.test.mjs.
+    Residual by design, not a gate: the i32-only fast tiers bail to the tree-walker
+    (`FAST_TIER_UNLOWERABLE_SCALAR`, numeric-lowering.ts:61), and a default UInt64 build is walker-only
+    (WASM declines). Proposed: close this row as done; if wanted, track "default-build UInt64 WASM lowering"
+    as its own post-v1 row. Until confirmed the row stays [ ] (fail-closed: nothing is lifted further).
 ```

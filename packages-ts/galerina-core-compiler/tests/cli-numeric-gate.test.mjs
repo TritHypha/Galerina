@@ -48,8 +48,8 @@ after(() => {
   // Remove fixtures + any build artifacts the Int64 build emitted.
   for (const p of fixtures) { try { rmSync(p, { force: true }); } catch { /* ignore */ } }
   for (const ext of [".wasm", ".wat", ".lmanifest", ".lmanifest.json", ".fuse.json", ".governance-impact.json"]) {
-    try { rmSync(join(BUILD, `__numgate_u64${ext}`), { force: true }); } catch { /* ignore */ }
-    try { rmSync(join(BUILD, `__numgate_i64${ext}`), { force: true }); } catch { /* ignore */ }
+    try { rmSync(join(BUILD, `numgate_u64${ext}`), { force: true }); } catch { /* ignore */ }
+    try { rmSync(join(BUILD, `numgate_i64${ext}`), { force: true }); } catch { /* ignore */ }
   }
 });
 
@@ -57,14 +57,14 @@ const U64 = `pure flow wideU() -> UInt64 contract { effects {} } { let x: UInt64
 const I64 = `pure flow wideI(n: Int) -> Int64 contract { effects {} } { return n }\n`;
 
 test("check: a LIFTED width (UInt64) is admitted — no FUNGI-NUMERIC-001, exit 0 (#52 unlock)", () => {
-  const f = fixture("__numgate_u64.fungi", U64);
+  const f = fixture("numgate_u64.fungi", U64);
   const r = cli("check", f);
   assert.doesNotMatch(r.out, /FUNGI-NUMERIC-001/, "UInt64 must NOT be gated post-unlock");
   assert.equal(r.status, 0, `check of a UInt64 flow must succeed\n${r.out}`);
 });
 
 test("check: a LIFTED width (Int64) is admitted — clean, exit 0 (no false rejection)", () => {
-  const f = fixture("__numgate_i64.fungi", I64);
+  const f = fixture("numgate_i64.fungi", I64);
   const r = cli("check", f);
   assert.doesNotMatch(r.out, /FUNGI-NUMERIC-001/, "Int64 must NOT be gated post-lift");
   assert.match(r.out, /0 errors/, "check must report Int64 clean");
@@ -72,14 +72,14 @@ test("check: a LIFTED width (Int64) is admitted — clean, exit 0 (no false reje
 });
 
 test("build: a LIFTED width (UInt64) is admitted in the default profile (walker-only; WASM declines)", () => {
-  const f = fixture("__numgate_u64.fungi", U64);
+  const f = fixture("numgate_u64.fungi", U64);
   const r = cli("build", f, { GALERINA_PROFILE: "" });
   assert.doesNotMatch(r.out, /FUNGI-NUMERIC-001/, "UInt64 must NOT be rejected by the build gate (it is unlocked)");
   assert.equal(r.status, 0, `default build of a UInt64 flow must succeed (walker carries it; WASM declines)\n${r.out}`);
 });
 
 test("build: a LIFTED width (Int64) builds in the default profile (lift end-to-end)", () => {
-  const f = fixture("__numgate_i64.fungi", I64);
+  const f = fixture("numgate_i64.fungi", I64);
   const r = cli("build", f, { GALERINA_PROFILE: "" });
   assert.doesNotMatch(r.out, /FUNGI-NUMERIC-001/, "Int64 must NOT be rejected by the build gate");
   assert.equal(r.status, 0, `default build of an Int64 flow must succeed (faithful i64 emission)\n${r.out}`);

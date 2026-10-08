@@ -13,11 +13,24 @@
 //   - a faulted entry is NEVER served (fail-closed)
 //   - best-effort mlock against swap where the platform allows (see mlock.ts)
 import { tryMlock } from "./mlock.js";
+import { copyBytes, wipeBytes } from "./wipe.js";
 
 interface ArenaEntry {
   value: Buffer;            // plaintext, zero-wiped on replace/remove/dispose
   staging: Buffer | null;  // for atomic-swap rotation; zero-wiped after swap
   faulted: boolean;        // a faulted entry fails closed (never served)
+}
+
+function stageSecretCopy(source: Uint8Array): Buffer {
+  const staged = Buffer.alloc(source.length);
+  try {
+    copyBytes(staged, source);
+    tryMlock(staged);
+    return staged;
+  } catch (error) {
+    wipeBytes(staged);
+    throw error;
+  }
 }
 
 /**
@@ -32,13 +45,11 @@ export class SealArena {
   /** Copy `value` into a fresh arena Buffer, mlock it, wipe nothing of the caller's, store it. */
   put(name: string, value: Uint8Array): void {
     this.assertLive();
-    const buf = Buffer.alloc(value.length);
-    buf.set(value);
-    tryMlock(buf);
+    const buf = stageSecretCopy(value);
     const existing = this.entries.get(name);
     if (existing !== undefined) {
-      existing.value.fill(0);                       // rotation-manager.ts:45-49 replace-wipe
-      if (existing.staging !== null) existing.staging.fill(0);
+      wipeBytes(existing.value);                     // rotation-manager.ts:45-49 replace-wipe
+      if (existing.staging !== null) wipeBytes(existing.staging);
     }
     this.entries.set(name, { value: buf, staging: null, faulted: false });
   }
@@ -52,16 +63,14 @@ export class SealArena {
     this.assertLive();
     const e = this.entries.get(name);
     if (e === undefined || e.faulted) return undefined; // rotation-manager.ts:108-110
-    const transient = Buffer.alloc(e.value.length);
-    transient.set(e.value);
-    tryMlock(transient);
+    const transient = stageSecretCopy(e.value);
     try {
       const result: unknown = (fn as (value: Buffer) => unknown)(transient);
       if (result !== undefined) {
         throw new Error("SealArena: callback return/async escape channel is forbidden");
       }
     } finally {
-      transient.fill(0);
+      wipeBytes(transient);
     }
   }
 
@@ -85,14 +94,12 @@ export class SealArena {
     this.assertLive();
     const e = this.entries.get(name);
     if (e === undefined) { this.put(name, newValue); return; }
-    const staging = Buffer.alloc(newValue.length);
-    staging.set(newValue);
-    tryMlock(staging);
+    const staging = stageSecretCopy(newValue);
     e.staging = staging;
     const old = e.value;          // atomic swap (JS single-threaded; no lock needed)
     e.value = e.staging;
     e.staging = null;
-    old.fill(0);                  // rotation-manager.ts:95 zero-wipe stale
+    wipeBytes(old);               // rotation-manager.ts:95 zero-wipe stale
     e.faulted = false;
   }
 
@@ -100,8 +107,8 @@ export class SealArena {
   fault(name: string): void {
     const e = this.entries.get(name);
     if (e === undefined) return;
-    e.value.fill(0);
-    if (e.staging !== null) { e.staging.fill(0); e.staging = null; }
+    wipeBytes(e.value);
+    if (e.staging !== null) { wipeBytes(e.staging); e.staging = null; }
     e.faulted = true;
   }
 
@@ -109,16 +116,16 @@ export class SealArena {
   remove(name: string): void {
     const e = this.entries.get(name);
     if (e === undefined) return;
-    e.value.fill(0);
-    if (e.staging !== null) e.staging.fill(0);
+    wipeBytes(e.value);
+    if (e.staging !== null) wipeBytes(e.staging);
     this.entries.delete(name);
   }
 
   /** Zero-wipe ALL entries and clear (rotation-manager.ts:212-220 dispose). Idempotent. */
   dispose(): void {
     for (const e of this.entries.values()) {
-      e.value.fill(0);
-      if (e.staging !== null) e.staging.fill(0);
+      wipeBytes(e.value);
+      if (e.staging !== null) wipeBytes(e.staging);
     }
     this.entries.clear();
     this.disposed = true;
@@ -135,12 +142,10 @@ export class SealArena {
  * that must NOT persist in the arena (e.g. `get` piping to stdout, a re-seal source).
  */
 export function withWiped<T>(plain: Uint8Array, fn: (b: Buffer) => T): T {
-  const buf = Buffer.alloc(plain.length);
-  buf.set(plain);
-  tryMlock(buf);
+  const buf = stageSecretCopy(plain);
   try {
     return fn(buf);
   } finally {
-    buf.fill(0); // zero-wipe on every path (success / error)
+    wipeBytes(buf); // zero-wipe on every path (success / error)
   }
 }
