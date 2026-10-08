@@ -22,13 +22,20 @@
  * - A compiled pattern is an object issued by compileRoutePattern. match and
  *   conflict checks accept only those issued objects. A Proxy wrapper or a
  *   forged shape is not a compiled pattern.
+ * - The conflict table is an ordinary dense array of at most
+ *   ROUTE_PATTERN_MAX_TABLE entries. Proxy containers, index accessors, and
+ *   sparse holes are refused before any trap or getter runs.
  */
+
+import { types } from "node:util";
 
 export const ROUTE_PATTERN_MAX_PATH_CHARS = 2048;
 export const ROUTE_PATTERN_MAX_SEGMENTS = 32;
 export const ROUTE_PATTERN_MAX_PARAMS = 16;
 export const ROUTE_PATTERN_MAX_PARAM_NAME_CHARS = 64;
 export const ROUTE_PATTERN_MAX_VALUE_CHARS = 256;
+/** Same governed table size as typed-api-boundary MAX_ROUTES. Conflict scan is pairwise. */
+export const ROUTE_PATTERN_MAX_TABLE = 256;
 
 /** Pattern is not a string, not absolute, too long, or has an empty or trailing segment. */
 export const FUNGI_APPK_RPT_001 = "FUNGI-APPK-RPT-001";
@@ -36,7 +43,7 @@ export const FUNGI_APPK_RPT_001 = "FUNGI-APPK-RPT-001";
 export const FUNGI_APPK_RPT_002 = "FUNGI-APPK-RPT-002";
 /** A parameter name repeats within one pattern. */
 export const FUNGI_APPK_RPT_003 = "FUNGI-APPK-RPT-003";
-/** Segment or parameter count exceeds the bound. */
+/** Segment, parameter, or table count exceeds the bound. */
 export const FUNGI_APPK_RPT_004 = "FUNGI-APPK-RPT-004";
 /** Two patterns could match the same request path (ambiguous or duplicate). */
 export const FUNGI_APPK_RPT_005 = "FUNGI-APPK-RPT-005";
@@ -221,16 +228,59 @@ function overlaps(a: RoutePattern, b: RoutePattern): boolean {
  * precedence rules, an overlap is always a configuration error. Callers check
  * per method: two methods may share one pattern.
  */
+function capturePatternTable(patterns: unknown): RoutePattern[] | RoutePatternDiagnostic {
+  if (patterns === null || typeof patterns !== "object" || types.isProxy(patterns)) {
+    return diag(FUNGI_APPK_RPT_001, "pattern table must be an ordinary array");
+  }
+  if (!Array.isArray(patterns)) {
+    return diag(FUNGI_APPK_RPT_001, "pattern table must be an ordinary array");
+  }
+  const lengthDesc = Object.getOwnPropertyDescriptor(patterns, "length");
+  if (
+    lengthDesc === undefined
+    || !Object.hasOwn(lengthDesc, "value")
+    || lengthDesc.get !== undefined
+    || lengthDesc.set !== undefined
+    || typeof lengthDesc.value !== "number"
+    || !Number.isInteger(lengthDesc.value)
+    || lengthDesc.value < 0
+  ) {
+    return diag(FUNGI_APPK_RPT_001, "pattern table length must be a non-negative integer data property");
+  }
+  const length = lengthDesc.value;
+  if (length > ROUTE_PATTERN_MAX_TABLE) {
+    return diag(FUNGI_APPK_RPT_004, "pattern table exceeds the route-table bound");
+  }
+  const captured: RoutePattern[] = [];
+  for (let i = 0; i < length; i += 1) {
+    const indexDesc = Object.getOwnPropertyDescriptor(patterns, i);
+    if (
+      indexDesc === undefined
+      || !Object.hasOwn(indexDesc, "value")
+      || indexDesc.get !== undefined
+      || indexDesc.set !== undefined
+    ) {
+      return diag(FUNGI_APPK_RPT_001, "pattern table index is not an own data property", i);
+    }
+    captured.push(indexDesc.value as RoutePattern);
+  }
+  return captured;
+}
+
 export function checkRoutePatternConflicts(patterns: readonly RoutePattern[]): RoutePatternConflictResult {
+  const captured = capturePatternTable(patterns);
+  if (!Array.isArray(captured)) {
+    return Object.freeze({ ok: false as const, diagnostics: Object.freeze([captured]) });
+  }
   const diagnostics: RoutePatternDiagnostic[] = [];
-  for (let i = 0; i < patterns.length; i += 1) {
-    const current = patterns[i];
+  for (let i = 0; i < captured.length; i += 1) {
+    const current = captured[i];
     if (!isIssuedPattern(current)) {
       diagnostics.push(diag(FUNGI_APPK_RPT_001, "pattern must be issued by compileRoutePattern", i));
       continue;
     }
     for (let j = 0; j < i; j += 1) {
-      const earlier = patterns[j];
+      const earlier = captured[j];
       if (!isIssuedPattern(earlier)) continue;
       if (overlaps(earlier, current)) {
         diagnostics.push(diag(FUNGI_APPK_RPT_005, "patterns can match the same request path", i, j));
