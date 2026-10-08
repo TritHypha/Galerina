@@ -1,0 +1,1 @@
+{"schema":"galerina.vok.native-wx-live.v1","verdict":"PASS","os":"linux","target":"x86_64","k3Vectors":19683,"result":42,"executableAtCall":true,"writableAtCall":false,"authorityReleased":false,"entropyNonzero":true,"entropyDistinct":true}

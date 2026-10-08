@@ -147,9 +147,13 @@ and not writable immediately before its one call. See
 This is a linked bounded native floor, not the general VEO backend. Caller
 bytes cannot describe machine instructions, imports, relocations, constructors
 or paths; the adapter emits one fixed return-value stub and never requests
-RWX. Opaque Galerina VM-resource transfer, hostile-memory isolation, physical-
-erasure proof, general GIR/object lowering and independent live Linux/macOS
-receipts remain open. No receipt can set `authority_released` true.
+RWX. Opaque VM/component-resource handles transfer into the floor as kind-only
+affine tokens and never become code. The first RD-0656 VEO envelope binds
+domain-separated action and object identities around the return-u64 profile;
+the general linker remains HOLD. Hostile handle isolation and logical wipe are
+enforced; physical media erasure stays unproven. Independent live Linux W^X and
+entropy receipts are collected via `vok-live-evidence`; macOS live receipts
+remain HOLD. No receipt can set `authority_released` true.
 
 See `../../../ZTF-Knowledge-Bases/reference/language/node-hosted-runtime-roadmap.md`.
 

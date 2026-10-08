@@ -42,10 +42,20 @@ runtime work.
 [x] Benchmark native VOK against null and simpler checked-map baselines
 [x] Add verified Windows/Linux/macOS OS CSPRNG adapters after table evidence
 [x] Add bounded closed-profile owned-byte W^X execution floor (RD-0662)
-[ ] Add opaque Galerina VM/component-resource transfer to the bounded native floor
-[ ] Extend the bounded floor into the general RD-0656 VEO object/linker profile
-[ ] Obtain independent live Linux and macOS W^X/entropy receipts
-[ ] Prove hostile-memory isolation/integrity and physical-erasure policy
+[x] Add opaque Galerina VM/component-resource transfer to the bounded native floor
+    native/vok-authority/src/resource.rs admit_vm_resource / execute_lease_with_resources (kind-only affine handles; no pointer/path/code); src/native-floor-contracts.ts admitVmResourceTransfer (SuperGrok 2026-10-08)
+[x] Bind the bounded floor to the RD-0656 VEO identity envelope (return-u64 profile; empty imports/relocs)
+    native/vok-authority/src/veo.rs admit_veo_object + domain-separated action_id/object_id; src/native-floor-contracts.ts admitVeoReturnU64Profile (SuperGrok 2026-10-08)
+[HOLD] General RD-0656 VEO object/linker (imports, relocations, constructors, GIR lowering, independent verifier)
+    admit_general_veo_linker / admitGeneralVeoLinker always refuse VOK_VEO_GENERAL_LINKER_UNAVAILABLE / Galerina_RUNTIME_VEO_GENERAL_LINKER
+[x] Obtain independent live Linux W^X/entropy receipt
+    vok-live-evidence os+entropy fields; Docker rust linux/amd64 receipt native/vok-authority/evidence/linux-x86_64-wx-live-20261008.json (SuperGrok 2026-10-08)
+[HOLD] Obtain independent live macOS W^X/entropy receipt
+    Hardened-runtime VM-region inspection is not available from this Windows SuperGrok session; platform.rs still treats macOS query as the bounded mprotect transition
+[x] Prove hostile-memory isolation/integrity of opaque handles and logical wipe
+    forged/stale/cross-table/resource-as-code; admit_isolation_claim LogicalWipeVerified; src/memory_policy.rs (SuperGrok 2026-10-08)
+[HOLD] Physical-erasure policy
+    claim_physical_erasure returns VOK_MEMORY_PHYSICAL_ERASURE_UNPROVEN; userspace logical clear+unmap only; media wipe is not a userspace proof
 [x] Define runtime error format
 [x] Define target fallback runtime contract
     src/runtime-contracts.ts decideTargetFallback (opt-in, declared chain, exact semantics only); tests/runtime-policy-contracts.test.mjs (Grok 2026-10-05)

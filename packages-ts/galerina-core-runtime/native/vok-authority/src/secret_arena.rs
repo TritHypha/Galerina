@@ -182,6 +182,7 @@ impl SecretArena {
     /// Retention is conservatively charged for the full allocated arena after
     /// first use. Keep this crate-private: a public callback could copy bytes
     /// out or retain them through captured state.
+    #[allow(dead_code)]
     pub(crate) fn with_bytes_mut<T>(
         &mut self,
         operation: impl FnOnce(&mut [u8]) -> T,
