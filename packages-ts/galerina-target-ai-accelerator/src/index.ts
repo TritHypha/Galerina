@@ -1036,3 +1036,25 @@ function adapterSupportsFormat(adapter: AiAcceleratorAdapterId, format: AiAccele
       return true;
   }
 }
+
+// Package-side HOLD pin: request only; never admit parked POST-V1 kinds.
+export {
+  AI_ACCELERATOR_HOLD_PIN_SCHEMA,
+  PARKED_AI_ACCELERATOR_KINDS,
+  PARKED_AI_ACCELERATOR_TOPOLOGY_TOKENS,
+  ADMITTED_AI_ACCELERATOR_REQUEST_KINDS,
+  prepareAiAcceleratorAdmissionRequest,
+  admitAiAcceleratorCapability,
+  claimPhysicalAcceleratorEvidence,
+  dispatchAiAcceleratorKernel,
+  implementPostV1VpuFpgaAsic,
+  implementPostV1IsolationReport,
+  implementPostV1HbmTopologyReport,
+} from "./ai-accelerator-hold-pin.js";
+export type {
+  AiAcceleratorHoldRefusalCode,
+  AiAcceleratorHoldRefusal,
+  AiAcceleratorAdmissionRequestV1,
+  AiAcceleratorAdmissionRequestResult,
+} from "./ai-accelerator-hold-pin.js";
+

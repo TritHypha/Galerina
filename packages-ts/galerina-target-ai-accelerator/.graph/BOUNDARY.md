@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 1 |
-| Internal edges | 0 |
+| Files | 2 |
+| Internal edges | 1 |
 | External dependencies | 1 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 0 |
@@ -37,7 +37,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts`
+- `src/index.ts` (re-exports `src/ai-accelerator-hold-pin.ts`)
 
 ## Loaded Assets
 _none declared_
