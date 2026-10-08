@@ -17,6 +17,8 @@ export {
   type PasswordKdfAlgorithm,
 } from "./crypto-provider.js";
 
+export * from "./hold-pin.js";
+
 export type SecuritySeverity = "info" | "warning" | "error" | "critical";
 
 export type SecretClassification =

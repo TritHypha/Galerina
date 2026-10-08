@@ -13,6 +13,10 @@ SecretReference v0.2, no taint types, no hardware-risk vocabulary), and the note
 to build a secret subsystem from them. Marking them HOLD makes the open count show only buildable work;
 nothing was implemented or removed. Asked in session-exchange grok-bot-packages-hold-batch1-20261006-question-01 (Q4).
 Reopen a row as `[ ]` only when the owner specifies that part of the model.
+Kept HOLD (SuperGrok 2026-10-08): package-side typed refuse pin. SecretReference v0.2,
+taint types, hardware-risk vocabulary, `secrets/`/`checks/`/`runtime/` dirs, and
+compiler-owned secret diagnostics stay do-not-invent. Uniques `1f27c6c5` / `cb41a6ed`
+/ `e0ca3f7f` UNCHANGED.
 
 ```text
 [x] Canonical ProtectedSecret<T> unwrap API resolved: unwrapForApprovedSink(sink); private revealUnsafeForRuntimeOnly() for internal use only (2026-05-26)
@@ -98,3 +102,17 @@ Reopen a row as `[ ]` only when the owner specifies that part of the model.
 - Purpose vocab = rule list only: key|nonce|salt|secret|token. Sources: SecureRandom|Random.
 - Deny-first matrix: Random → denied/error/`example.random.forbidden`; SecureRandom → allowed/info/`example.secure-random.required`.
 - EXAMPLES ONLY: no CSPRNG, scanner, report writer, or new Galerina_SECURITY_* codes. SecretReference v0.2 / taint / hardware-risk still open or do-not-invent.
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareCoreSecurityHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; SecretReference v0.2 / secret vocabulary /
+      SecureString upgrade / ProtectedSecret / SecretSafeSink / serialization
+      marker / sink-flow helpers / compiler-owned secret diagnostics /
+      SecretTaint / `secrets/` `checks/` `runtime/` dirs / malicious taint-flow
+      diagnostics / hardware-risk report inputs always refuse with
+      `SEC_*_FORBIDDEN`. `redactText`, `createSecureStringReference`,
+      crypto-provider, and contract readers unchanged besides the hold-pin
+      re-export. `tests/core-security-hold-pin.test.mjs`. (SuperGrok 2026-10-08.)
+      Uniques `1f27c6c5` / `cb41a6ed` / `e0ca3f7f` UNCHANGED.
+      The twenty-six `[HOLD]` rows in the scan block above stay HOLD.
