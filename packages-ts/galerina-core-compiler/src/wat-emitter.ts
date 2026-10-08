@@ -769,6 +769,7 @@ export function renderWAT(module: WATModule): string {
   const allBodyText = module.functions.map((fn) => fn.body ?? "").join("\n");
   const usesTmpArr = allBodyText.includes("$__fungi_tmp_arr");
   const usesHeap = allBodyText.includes("$__fungi_heap"); // P9.4b: record bump-allocator
+  const moduleHasSecret = module.functions.some((fn) => fn.handlesSecrets === true);
 
   const lines: string[] = ["(module"];
 
@@ -819,10 +820,12 @@ export function renderWAT(module: WATModule): string {
     lines.push(`  (global $__fungi_heap (mut i32) (i32.const ${WAT_HEAP_BASE}))`);
     lines.push(`  (func $__fungi_heap_get (result i32) (global.get $__fungi_heap))`);
     lines.push(`  (export "__fungi_heap_get" (func $__fungi_heap_get))`);
-    lines.push(`  (func $__fungi_wipe_owned`);
-    lines.push(`    (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`);
-    lines.push(`  )`);
-    lines.push(`  (export "__fungi_wipe_owned" (func $__fungi_wipe_owned))`);
+    if (moduleHasSecret) {
+      lines.push(`  (func $__fungi_wipe_owned`);
+      lines.push(`    (memory.fill (i32.const ${WAT_HEAP_BASE}) (i32.const 0) (i32.sub (global.get $__fungi_heap) (i32.const ${WAT_HEAP_BASE})))`);
+      lines.push(`  )`);
+      lines.push(`  (export "__fungi_wipe_owned" (func $__fungi_wipe_owned))`);
+    }
     lines.push(`  (global $__fungi_ret_is_heap (mut i32) (i32.const 0))`);
     lines.push(`  (func $__fungi_ret_is_heap_get (result i32) (global.get $__fungi_ret_is_heap))`);
     lines.push(`  (export "__fungi_ret_is_heap_get" (func $__fungi_ret_is_heap_get))`);
@@ -866,7 +869,6 @@ export function renderWAT(module: WATModule): string {
   // B2b (R&D 0055): zero the reclaimed arena on the per-flow reset ONLY when the module contains a
   // secret-handling flow (privacy/secrets block). Any prior top-level invocation could have been that flow,
   // and the module EXPORTS its linear memory, so otherwise the reclaimed secret bytes are host-readable.
-  const moduleHasSecret = module.functions.some((f) => f.handlesSecrets === true);
   // B2b zero-on-EXIT: Galerina return types that lower to a non-heap i32 VALUE (not an opaque heap handle).
   // Only these are safe to zero-on-exit — the result is a value on the stack, unaffected by zeroing the heap.
   const PRIMITIVE_RETURN_TYPES = new Set(["Int", "Int8", "Int16", "Int32", "Byte", "Bool"]);
@@ -875,6 +877,14 @@ export function renderWAT(module: WATModule): string {
   // Pure flows with a real body (fn.body !== "unreachable") emit actual instructions.
   // All other flows use (unreachable) which is valid WAT — polymorphic bottom type.
   // Signature "(result i32)" etc. with unreachable is well-formed per WASM spec.
+  const usedFunctionNames = new Set([
+    ...module.functions.map((fn) => fn.name),
+    ...Object.keys(ALL_CHECKED_HELPERS),
+    "__fungi_heap_get",
+    "__fungi_wipe_owned",
+    "__fungi_ret_is_heap_get",
+    "__fungi_ret_words_get",
+  ]);
   for (const fn of module.functions) {
     // Build param strings: prefer namedParams when present (pure flows), else index-based.
     const paramStr = fn.namedParams !== undefined
@@ -882,7 +892,34 @@ export function renderWAT(module: WATModule): string {
       : fn.type.params.map((p, i) => `(param $p${i} ${p})`).join(" ");
     const resultStr = fn.type.results.map((r) => `(result ${r})`).join(" ");
     const sig = [paramStr, resultStr].filter(Boolean).join(" ");
-    const funcSig = sig ? `(func $${fn.name} ${sig}` : `(func $${fn.name}`;
+    const wrapsScalarResultTag = usesHeap && moduleHasSecret
+      && fn.returnType !== undefined
+      && PRIMITIVE_RETURN_TYPES.has(fn.returnType)
+      && fn.type.results.length === 1
+      && fn.type.results[0] === "i32";
+    let implementationName = fn.name;
+    if (wrapsScalarResultTag) {
+      let suffix = `${fn.name}_impl`;
+      let collision = 1;
+      while (usedFunctionNames.has(suffix)) suffix = `${fn.name}_impl_${collision++}`;
+      implementationName = suffix;
+      usedFunctionNames.add(implementationName);
+    }
+    const funcSig = sig ? `(func $${implementationName} ${sig}` : `(func $${implementationName}`;
+    const emitScalarResultWrapper = () => {
+      if (!wrapsScalarResultTag) return;
+      const callArgs = fn.namedParams !== undefined
+        ? fn.namedParams.map((p) => `(local.get ${p.name})`)
+        : fn.type.params.map((_, i) => `(local.get $p${i})`);
+      const call = `(call $${implementationName}${callArgs.length > 0 ? ` ${callArgs.join(" ")}` : ""})`;
+      lines.push(`  ;; Scalar return metadata belongs to this completed call, not a nested callee.`);
+      lines.push(`  (func $${fn.name}${sig ? ` ${sig}` : ""}`);
+      lines.push(`    (local $__fungi_scalar_result i32)`);
+      lines.push(`    (local.set $__fungi_scalar_result ${call})`);
+      lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
+      lines.push(`    (local.get $__fungi_scalar_result)`);
+      lines.push(`  )`);
+    };
     lines.push(`  ;; ${fn.isPure ? "pure" : "effectful"} flow: ${fn.name}`);
     lines.push(`  ${funcSig}`);
     // Use the real body when available; fall back to unreachable for stubs.
@@ -978,6 +1015,7 @@ export function renderWAT(module: WATModule): string {
         lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
         lines.push(`    (local.get $__fungi_ret)`);
         lines.push(`  )`);
+        emitScalarResultWrapper();
         if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
         lines.push("");
         continue; // this flow is fully emitted via the zero-on-exit path
@@ -1007,6 +1045,7 @@ export function renderWAT(module: WATModule): string {
         lines.push(`    ))`);
         for (const line of flatten.body) lines.push(line);
         lines.push(`  )`);
+        emitScalarResultWrapper();
         if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
         lines.push("");
         continue;
@@ -1066,6 +1105,7 @@ export function renderWAT(module: WATModule): string {
       lines.push(`    unreachable ;; emitter cannot lower`);
     }
     lines.push(`  )`);
+    emitScalarResultWrapper();
     if (fn.isEntryPoint) {
       lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
     }

@@ -249,6 +249,58 @@ contract { intent { "outer scalar" } privacy { contains PII } }
   assert.equal(r.result, 1024, "inner heap return must not leave ret_is_heap set for the outer Int");
 });
 
+test("Q1 public scalar export after a secret heap export is not decoded with stale heap metadata", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "secret record export" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicScalar() -> Int
+contract { intent { "public scalar export after secret record" } }
+{ return 2048 }
+`;
+  const { instance } = await build(src, "mixed-export-return-metadata.fungi");
+
+  const secretPointer = instance.exports.secretRecord(7);
+  assert.equal(finalizeSecretExportResult(instance, secretPointer), 7);
+
+  const scalar = instance.exports.publicScalar();
+  assert.equal(finalizeSecretExportResult(instance, scalar), 2048,
+    "a later public scalar export must not inherit a previous export's heap-result tag");
+});
+
+test("Q1 public scalar export clears heap metadata set by a nested secret record call", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "nested secret record" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicAfterNested(s: Int) -> Int
+contract { intent { "public scalar after nested record" } }
+{ let _record: Sec = secretRecord(s) return 2048 }
+`;
+  const { instance } = await build(src, "nested-return-metadata.fungi");
+
+  const scalar = instance.exports.publicAfterNested(7);
+  assert.equal(finalizeSecretExportResult(instance, scalar), 2048,
+    "the caller's scalar return must overwrite metadata changed by an internal callee");
+});
+
+test("Q1 scalar metadata wrapper names do not collide with Fungi flow names", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "secret record for wrapper naming" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicScalar() -> Int
+contract { intent { "scalar wrapper name collision control" } }
+{ return 17 }
+pure flow publicScalar_impl() -> Int
+contract { intent { "source flow uses generated suffix" } }
+{ return 23 }
+`;
+  const { instance } = await build(src, "wrapper-name-collision.fungi");
+  assert.equal(instance.exports.publicScalar(), 17);
+  assert.equal(instance.exports.publicScalar_impl(), 23);
+});
+
 test("Q1 production executor early heap return still copies the field", async () => {
   const src = `record Sec { a: Int }
 pure flow h(s: Int) -> Sec
