@@ -4911,6 +4911,29 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
 - [ ] Establish scalar as the reference physical profile, then admit 64 and
   finally 256. A fallback is admission-time replanning with a new plan identity,
   never an unrecorded runtime rescue or semantic reinterpretation.
+  - [HOLD] 2026-10-06 proposal, owner decision pending: coordinate the RD-0855
+    admission-fallback rows in `galerina-core-compute`, `galerina-tri-pipe`,
+    `galerina-core-compiler` and `galerina-core-runtime` TODOs and the SLIDE
+    reference-candidate and VOK rows. A failed attempt keeps its typed refusal.
+    A separate alternative plan is allowed only for authenticated candidate-local
+    unavailability or incompatibility, under the unchanged admitted task policy
+    and with no prior effect, with its own SLIDE admission and a fresh VOK
+    decision, lease and receipt. DENY, revocation, invalid evidence, unknown
+    outcome, partial effects and cleanup failure never become retry permission;
+    post-effect or uncertain-outcome retry is excluded. Tri-Pipe stays
+    proposal-only; no TypeScript/AST/WAT rescue. Owner decided 2026-10-06
+    (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary"
+    wording), three-tier fallback order: (1) run at the requested trit-width
+    profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall
+    back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be
+    processed at all, fall back to binary implementing the same task semantics,
+    with K3 still deciding permission (no different two-valued algorithm, no
+    semantic degradation). Each step down is a separate, independently admitted
+    attempt under the rules above. Task-policy issuer, coordinator
+    package and retry budget are open; unresolved = HOLD. Src: RD-0855 (private;
+    ID+line only) L23-31, L192-200, L335-351, L365-374, L488;
+    `codex-rd0855-fallback-astra-20261006-answer-01`;
+    `galerina2-rd0855-astra-fallback-20261006`.
 - [ ] Resume the sandbox converter only in ten-source trials. Keep every `.ts`
   input, log refusals, and run duplicate/shadow checks on every proposed output.
   Normal conversion commits require at least 40 unique new or updated real

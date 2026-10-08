@@ -371,6 +371,25 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     **4/4**. Residual: node adapter lazy-loads KDF only when invoked.
 ```
 
+## RD-0855 admission-time replanning (proposed 2026-10-06, owner decision pending)
+
+No new lowering for alternative plans until these rows pass. A failed attempt keeps
+its typed refusal; an alternative plan reuses the sealed checked input and never
+re-enters TypeScript, AST or WAT (no rescue). Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry.
+Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
+
+```text
+[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
+[HOLD] K3/refusal parity for each fallback tier: tier-1 trit-width profiles and the tier-3 binary implementation return the same K3 values and typed refusals as standard K3 (tier 2)
+    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
+    Three-tier order owner decided 2026-10-06 (16:52 BST); parity evidence and any lowering stay HOLD.
+[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
+    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+```
+
 ## Post-v1 (owner-gated)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
