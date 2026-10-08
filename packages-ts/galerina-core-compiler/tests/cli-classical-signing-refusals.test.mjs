@@ -55,7 +55,9 @@ function run(args, env, cwd) {
 }
 
 function writeTrustedEmptyRevocationSnapshot(rootDir) {
-  const keyId = "test-revocation-root";
+  // Production snapshots require the same 16-character lowercase-hex key IDs
+  // emitted by governance/key-lifecycle.mjs.
+  const keyId = "74657374726f6f74";
   const { privateKey, publicKey } = generateKeyPairSync("ed25519");
   const governance = join(rootDir, "governance");
   mkdirSync(governance, { recursive: true });
