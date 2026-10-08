@@ -31,9 +31,9 @@
 [x] Define FUNGI-REPORT-001 through FUNGI-REPORT-005 diagnostic codes
 [x] Create audit/ dir: audit-events.ts, audit-jsonl.ts, audit-runtime.ts, audit-validator.ts, audit-redaction.ts
 [x] Create shared/ dir: audit-reference.ts, audit-status.ts
-[ ] Define runtime audit log format (JSONL, event categories, trace correlation, FUNGI-AUDIT codes)
-      Parent stays open (Grok 2026-10-06): all listed sub-items are done, but two parent terms are owner decisions, not code: (1) "event categories" - docs section 16 lists 10 categories (runtime, execution, effect, capability, denial, fallback, scheduler, deployment, health, integrity) while the frozen v1 RuntimeAuditCategory has 8 (effect, capability, boundary, secret, network, policy, denial, proof); (2) "FUNGI-AUDIT codes" - none exist, the package uses FUNGI-REPORT-001..005. Fail-closed default until decided: keep the 8-category v1 set and FUNGI-REPORT codes; scheduler evidence stays its own record, not a v1 audit event.
-      SuperGrok 2026-10-07 pin: row stays [ ]. Owner still decides 10-vs-8 and FUNGI-AUDIT. Fail-closed default kept. tests/runtime-audit-closed-set.test.mjs (5 tests; package suite 119/119 pass, Docker node:24) pins the frozen 8-category set, JSONL determinism, refusal of docs-only/unknown categories, refusal of a traceId field, and src/ absence of FUNGI-AUDIT. PROPOSED (not claimed final): keep v1 8 + FUNGI-REPORT-001..005; do not mint FUNGI-AUDIT-* or a v1 trace-correlation key until the owner picks; docs section 16 remains documentation, not an admitted vocabulary.
+[HOLD] Define runtime audit log format (JSONL, event categories, trace correlation, FUNGI-AUDIT codes)
+      Parent terms are owner decisions, not code (Grok 2026-10-06): (1) "event categories" - docs section 16 lists 10 categories (runtime, execution, effect, capability, denial, fallback, scheduler, deployment, health, integrity) while the frozen v1 RuntimeAuditCategory has 8 (effect, capability, boundary, secret, network, policy, denial, proof); (2) "FUNGI-AUDIT codes" - none exist, the package uses FUNGI-REPORT-001..005. Fail-closed default: keep the 8-category v1 set and FUNGI-REPORT codes; scheduler evidence stays its own record, not a v1 audit event.
+      SuperGrok 2026-10-08: Open checkbox closed as HOLD. Owner still picks 10-vs-8 and FUNGI-AUDIT. Do not mint FUNGI-AUDIT-* or a v1 trace-correlation key. docs section 16 remains documentation, not an admitted vocabulary. Tests: tests/runtime-audit-closed-set.test.mjs.
 [x]   - runtime-audit.jsonl schema with all required fields
 [x]   - status values aligned with RuntimeAuditStatus v0.2
 [x]   - capability and effect evidence event shapes
@@ -99,6 +99,7 @@
   `buildRuntimeEvidence` (invalid, contradictory, duplicate or unsafe entries are kept
   out of the evidence arrays and listed as FUNGI-EVIDENCE codes), validators and
   `summarizeRuntimeEvidence`.
-- Tests: `tests/runtime-audit-v02.test.mjs`. Still open: FUNGI-AUDIT codes and trace
-  correlation, audit-log evidence/scheduler/health event shapes, the four report-file
-  contracts and the three broad contract rows at the top.
+- Tests: `tests/runtime-audit-v02.test.mjs` and `tests/runtime-audit-closed-set.test.mjs`.
+  FUNGI-AUDIT codes, 10-vs-8 categories, and a v1 trace-correlation key stay HOLD.
+  Evidence, scheduler, and health event shapes plus the report-file contracts are
+  implemented; scheduler evidence remains its own record.
