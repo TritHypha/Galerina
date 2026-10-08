@@ -75,6 +75,7 @@ import {
   type WebhookAdmissionHooks,
 } from "./webhook-admission.js";
 import { isAdmittedDurableReplayStore } from "./replay-store.js";
+import { admitQueryOnce, DuplicateQueryKeyError } from "./query-admission.js";
 
 /** Default hard cap on buffered body bytes (8 MiB). Additive to the kernel's own body-size gate. */
 export const DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024;
@@ -257,6 +258,11 @@ const WEBHOOK_REPLAY_BODY = Buffer.from(
   JSON.stringify({ error: "replay" }),
   "utf8",
 );
+/** 400 for a repeated decoded query name. Never echoes the name or any value. */
+const DUPLICATE_QUERY_BODY = Buffer.from(
+  JSON.stringify({ error: "bad_request", message: "Duplicate query parameter." }),
+  "utf8",
+);
 
 /** Buffer the request body up to `maxBodyBytes`. Resolves with the bytes, or
  *  rejects with a sentinel once the cap is exceeded (caller writes 413). */
@@ -328,7 +334,8 @@ class RequestTargetError extends Error {
   }
 }
 
-/** Parse `req.url` into a kernel path + flat query Record. */
+/** Parse `req.url` into a kernel path + flat query Record (one decoded value per decoded
+ *  name; a repeated name throws `DuplicateQueryKeyError`, never last-value-wins). */
 function parseUrl(rawUrl: string | undefined): {
   path: string;
   query: Record<string, string>;
@@ -346,10 +353,7 @@ function parseUrl(rawUrl: string | undefined): {
   if (url.protocol !== "http:" || url.hostname !== "x" || url.port !== "" || url.username !== "" || url.password !== "") {
     throw new RequestTargetError();
   }
-  const query: Record<string, string> = {};
-  for (const [k, v] of url.searchParams.entries()) {
-    query[k] = v;
-  }
+  const query = admitQueryOnce(url.searchParams);
   return { path: url.pathname, query };
 }
 
@@ -777,6 +781,14 @@ async function handleRequest(
   try {
     ({ path, query } = parseUrl(req.url));
   } catch (err) {
+    if (err instanceof DuplicateQueryKeyError) {
+      // Fail closed on an ambiguous query: the kernel, webhook HMAC and replay claim never run.
+      if (!res.headersSent && !res.writableEnded) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(DUPLICATE_QUERY_BODY);
+      }
+      return;
+    }
     if (err instanceof RequestTargetError || err instanceof TypeError) {
       if (!res.headersSent && !res.writableEnded) {
         res.writeHead(400, { "content-type": "application/json" });

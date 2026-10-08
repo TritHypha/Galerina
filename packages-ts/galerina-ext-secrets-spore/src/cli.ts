@@ -31,6 +31,8 @@ import { readStdinBytes, promptNoEcho, promptNoEchoExclusive, atomicWriteCiphert
 import type { EchoingLineReader } from "./io.js";
 import { unwrapRecipientSecret } from "./anchor.js";
 import type { WrappedKey } from "./anchor.js";
+import { wipeBytes } from "./wipe.js";
+import { generateKeypairForOutput } from "./keygen-policy.js";
 
 interface Args {
   cmd: string;
@@ -93,7 +95,7 @@ async function withRecipientSecret<T>(fn: (sec: Buffer) => T, lineReader?: Echoi
   try {
     return unwrapRecipientSecret(wrapped, pass, fn);
   } finally {
-    pass.fill(0);
+    wipeBytes(pass);
   }
 }
 
@@ -124,7 +126,7 @@ async function main(): Promise<void> {
         });
         process.stderr.write(`set ${name}\n`);
       } finally {
-        value.fill(0);
+        wipeBytes(value);
       }
       break;
     }
@@ -195,16 +197,18 @@ async function main(): Promise<void> {
       //     zero-wiped and survives in the GC heap). Instead stream the raw bytes through a
       //     zero-wiped Buffer with a SYNCHRONOUS writeSync(2,...) so no copy outlives the wipe.
       //     Consumers pipe stderr to `wrapRecipientSecret` / a 0600 sink, never to a screen.
-      const kp = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
+      const kp = generateKeypairForOutput(
+        process.stderr.isTTY,
+        a.force,
+        () => keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768),
+        () => die(
+          "REFUSED: keygen would emit the recipient SECRET KEY to a TTY (scrollback/shoulder-surf). " +
+          "This is secret-zero — anchor it externally, never on screen. Pipe stderr to a 0600 sink " +
+          "(e.g. `galerina-secrets-spore keygen 2>key.sec` then wrap+wipe), or pass --force to override.",
+        ),
+      );
       try {
         process.stdout.write(`pub=${toHex(kp.publicKey)}\n`);
-        if (process.stderr.isTTY && !a.force) {
-          die(
-            "REFUSED: keygen would emit the recipient SECRET KEY to a TTY (scrollback/shoulder-surf). " +
-            "This is secret-zero — anchor it externally, never on screen. Pipe stderr to a 0600 sink " +
-            "(e.g. `galerina-secrets-spore keygen 2>key.sec` then wrap+wipe), or pass --force to override.",
-          );
-        }
         // raw secret-key bytes through a Buffer view we OWN and wipe in finally — no hex string.
         const sec = Buffer.from(kp.secretKey.buffer, kp.secretKey.byteOffset, kp.secretKey.length);
         process.stderr.write("SEC-RAW (anchor externally, do NOT co-locate with env.spore):");
@@ -212,7 +216,7 @@ async function main(): Promise<void> {
         while (off < sec.length) off += writeSync(2, sec, off, sec.length - off);
         process.stderr.write("\n");
       } finally {
-        kp.secretKey.fill(0); // wipes the underlying bytes shared with the `sec` view above
+        wipeBytes(kp.secretKey); // wipes the underlying bytes shared with the `sec` view above
       }
       break;
     }
@@ -258,7 +262,7 @@ async function runShell(file: string, pub: Uint8Array): Promise<void> {
             const res = setSecret(readFile(file), sec, pub, K3.ALLOW, name, value);
             atomicWriteCiphertext(file, res.bytes);
           }, rl);
-        } finally { value.fill(0); }
+        } finally { wipeBytes(value); }
         process.stderr.write(`  set ${name}\n`);
       } else if (t.startsWith("get ")) {
         const name = t.slice(4).trim();

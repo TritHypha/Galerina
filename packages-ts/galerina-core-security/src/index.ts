@@ -1,13 +1,19 @@
 export {
   CRYPTO_PROVIDER_SCHEMA,
+  CRYPTO_PROVIDER_V2_SCHEMA,
+  MAX_BCRYPT_PASSWORD_BYTES,
+  isBcryptInputWithinLimit,
   FUNGI_CRYPTO_PROVIDER_MALFORMED,
   FUNGI_CRYPTO_PROVIDER_REQUIRED,
   FUNGI_CRYPTO_PROVIDER_SCHEMA,
   FUNGI_CRYPTO_PROVIDER_THREW,
   invokeCryptoProvider,
+  invokeCryptoProviderV2,
   type CryptoProvider,
   type CryptoProviderRequest,
   type CryptoProviderResult,
+  type CryptoProviderV2,
+  type CryptoProviderV2Request,
   type PasswordKdfAlgorithm,
 } from "./crypto-provider.js";
 

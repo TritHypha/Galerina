@@ -43,6 +43,157 @@ import type { SecurityPosture, ResolvedPosture, EnvironmentMode } from "@galerin
 import { decideAtBoundary } from "@galerina/tower-citizen/governance";
 import type { Verdict } from "@galerina/tower-citizen/governance";
 
+// Capture the intrinsic typed-array byteLength getter before handler code can run. A returned
+// Uint8Array may shadow its public `byteLength` property with an accessor.
+const typedArrayByteLengthGetter = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Uint8Array.prototype),
+  "byteLength",
+)?.get;
+const intrinsicReflectApply = Reflect.apply;
+const intrinsicUint8Array = Uint8Array;
+const intrinsicArray = Array;
+const intrinsicArrayPush = Array.prototype.push;
+const intrinsicArrayShift = Array.prototype.shift;
+const intrinsicDefineProperty = Object.defineProperty;
+const intrinsicObjectCreate = Object.create;
+const intrinsicPerformance = performance;
+const intrinsicPerformanceNow = performance.now;
+const intrinsicDateNow = Date.now;
+const intrinsicMapGet = Map.prototype.get;
+const intrinsicMapSet = Map.prototype.set;
+const intrinsicMapHas = Map.prototype.has;
+const intrinsicMapDelete = Map.prototype.delete;
+const intrinsicMapForEach = Map.prototype.forEach;
+const intrinsicMapSizeGetter = Object.getOwnPropertyDescriptor(Map.prototype, "size")?.get;
+const intrinsicSetHas = Set.prototype.has;
+const intrinsicSetAdd = Set.prototype.add;
+const intrinsicSetDelete = Set.prototype.delete;
+const intrinsicSetSizeGetter = Object.getOwnPropertyDescriptor(Set.prototype, "size")?.get;
+const intrinsicWeakMapGet = WeakMap.prototype.get;
+const intrinsicWeakMapSet = WeakMap.prototype.set;
+const intrinsicWeakMapHas = WeakMap.prototype.has;
+const intrinsicAbortController = AbortController;
+const intrinsicAbort = AbortController.prototype.abort;
+const intrinsicPromise = Promise;
+const intrinsicPromiseRace = Promise.race;
+
+function arrayPush<T>(target: T[], value: T): number {
+  return intrinsicReflectApply(intrinsicArrayPush, target, [value]) as number;
+}
+
+function arrayShift<T>(target: T[]): T | undefined {
+  return intrinsicReflectApply(intrinsicArrayShift, target, []) as T | undefined;
+}
+
+function promiseRace<T>(values: readonly PromiseLike<T>[]): Promise<T> {
+  return intrinsicReflectApply(intrinsicPromiseRace, intrinsicPromise, [values]) as Promise<T>;
+}
+
+function mapGet<K, V>(map: Map<K, V>, key: K): V | undefined {
+  return intrinsicReflectApply(intrinsicMapGet, map, [key]) as V | undefined;
+}
+
+function mapSet<K, V>(map: Map<K, V>, key: K, value: V): void {
+  intrinsicReflectApply(intrinsicMapSet, map, [key, value]);
+}
+
+function mapHas<K, V>(map: Map<K, V>, key: K): boolean {
+  return intrinsicReflectApply(intrinsicMapHas, map, [key]) as boolean;
+}
+
+function mapDelete<K, V>(map: Map<K, V>, key: K): boolean {
+  return intrinsicReflectApply(intrinsicMapDelete, map, [key]) as boolean;
+}
+
+function mapSize<K, V>(map: Map<K, V>): number {
+  if (intrinsicMapSizeGetter === undefined) throw new Error("Map size intrinsic is unavailable.");
+  return intrinsicReflectApply(intrinsicMapSizeGetter, map, []) as number;
+}
+
+function mapForEach<K, V>(map: Map<K, V>, callback: (value: V, key: K) => void): void {
+  intrinsicReflectApply(intrinsicMapForEach, map, [callback]);
+}
+
+function setHas<T>(set: ReadonlySet<T>, value: T): boolean {
+  return intrinsicReflectApply(intrinsicSetHas, set, [value]) as boolean;
+}
+
+function setAdd<T>(set: Set<T>, value: T): void {
+  intrinsicReflectApply(intrinsicSetAdd, set, [value]);
+}
+
+function setDelete<T>(set: Set<T>, value: T): boolean {
+  return intrinsicReflectApply(intrinsicSetDelete, set, [value]) as boolean;
+}
+
+function setSize<T>(set: Set<T>): number {
+  if (intrinsicSetSizeGetter === undefined) throw new Error("Set size intrinsic is unavailable.");
+  return intrinsicReflectApply(intrinsicSetSizeGetter, set, []) as number;
+}
+
+function weakMapGet<K extends object, V>(map: WeakMap<K, V>, key: K): V | undefined {
+  return intrinsicReflectApply(intrinsicWeakMapGet, map, [key]) as V | undefined;
+}
+
+function weakMapSet<K extends object, V>(map: WeakMap<K, V>, key: K, value: V): void {
+  intrinsicReflectApply(intrinsicWeakMapSet, map, [key, value]);
+}
+
+function weakMapHas<K extends object, V>(map: WeakMap<K, V>, key: K): boolean {
+  return intrinsicReflectApply(intrinsicWeakMapHas, map, [key]) as boolean;
+}
+
+function abortDeadline(controller: AbortController): void {
+  try {
+    intrinsicReflectApply(intrinsicAbort, controller, []);
+  } catch {
+    // Deadline state and timeout settlement are kernel-private; cancellation notification is advisory.
+  }
+}
+
+function wallClockNow(): number {
+  return intrinsicReflectApply(intrinsicDateNow, Date, []) as number;
+}
+
+function monotonicNow(): number {
+  return intrinsicReflectApply(intrinsicPerformanceNow, intrinsicPerformance, []) as number;
+}
+
+function actualTypedArrayByteLength(value: Uint8Array): number {
+  if (typedArrayByteLengthGetter === undefined) {
+    throw new Error("Typed-array byteLength intrinsic is unavailable.");
+  }
+  return intrinsicReflectApply(typedArrayByteLengthGetter, value, []) as number;
+}
+
+function copyPolicyList<T>(source: readonly T[]): T[] {
+  const copy = new intrinsicArray(source.length) as T[];
+  for (let index = 0; index < source.length; index += 1) {
+    intrinsicDefineProperty(copy, index, {
+      value: source[index],
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    });
+  }
+  return copy;
+}
+
+/** Detach every nested policy collection/object from route declarations and external callers. */
+function copyEffectiveRoutePolicy(policy: EffectiveRoutePolicy): EffectiveRoutePolicy {
+  return {
+    ...policy,
+    auth: { ...policy.auth, scopes: copyPolicyList(policy.auth.scopes) },
+    body: { ...policy.body },
+    idempotency: { ...policy.idempotency },
+    limits: { ...policy.limits },
+    audit: { ...policy.audit },
+    secrets: { require: copyPolicyList(policy.secrets.require) },
+    appliedDefaults: copyPolicyList(policy.appliedDefaults),
+    relaxations: copyPolicyList(policy.relaxations),
+  };
+}
+
 /** Normalised inbound request the pipeline operates on. */
 export interface GalerinaKernelRequest {
   readonly method: HttpMethod;
@@ -115,7 +266,7 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
   constructor(opts: { readonly capacity?: number; readonly maxKeyBytes?: number; readonly now?: () => number } = {}) {
     this.#capacity = opts.capacity ?? 10_000;
     this.#maxKeyBytes = opts.maxKeyBytes ?? 256;
-    this.#now = opts.now ?? Date.now;
+    this.#now = opts.now ?? wallClockNow;
     if (!Number.isSafeInteger(this.#capacity) || this.#capacity < 1) throw new Error("Idempotency capacity must be a positive safe integer.");
     if (!Number.isSafeInteger(this.#maxKeyBytes) || this.#maxKeyBytes < 1) throw new Error("Idempotency key limit must be a positive safe integer.");
   }
@@ -132,16 +283,16 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
     }
     if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) throw new Error("Idempotency TTL must be finite and positive.");
     const now = this.#now();
-    for (const [entryKey, expiresAt] of this.#seen) {
-      if (expiresAt <= now) this.#seen.delete(entryKey);
-    }
+    mapForEach(this.#seen, (expiresAt, entryKey) => {
+      if (expiresAt <= now) mapDelete(this.#seen, entryKey);
+    });
     const composite = `${scope}\u0000${key}`;
-    const existing = this.#seen.get(composite);
+    const existing = mapGet(this.#seen, composite);
     if (existing !== undefined && existing > now) return "duplicate";
-    if (!this.#seen.has(composite) && this.#seen.size >= this.#capacity) {
+    if (!mapHas(this.#seen, composite) && mapSize(this.#seen) >= this.#capacity) {
       throw new Error("Idempotency store capacity reached.");
     }
-    this.#seen.set(composite, now + ttlSeconds * 1_000);
+    mapSet(this.#seen, composite, now + ttlSeconds * 1_000);
     return "claimed";
   }
 
@@ -187,6 +338,12 @@ export interface AuditReservation {
  */
 export interface AuditSink {
   reserve(): AuditReservation | undefined;
+  /**
+   * Synchronous acceptance boundary: returning means this exact event is retained once; throwing
+   * must mean it was not accepted. Scheduling/export failures after retention must not escape as
+   * an acceptance failure. Implementations that cannot provide this distinction need an
+   * authoritative bounded outbox in front of their fallible exporter.
+   */
   commit(reservation: AuditReservation, event: AuditEvent): void;
   cancel(reservation: AuditReservation): void;
   /** Best-effort admission for events whose route policy does not require a report. */
@@ -213,23 +370,26 @@ export class InMemoryAuditSink implements AuditSink {
   }
 
   reserve(): AuditReservation | undefined {
-    const retained = this.#queue.length + this.#drained.length + this.#reservations.size;
+    // If prior accepted events were left pending because both flush schedulers refused, retry
+    // before deciding whether another handler may run. Capacity remains charged until custody transfer.
+    if (this.#queue.length > 0 && !this.#scheduled) this.#schedule();
+    const retained = this.#queue.length + this.#drained.length + setSize(this.#reservations);
     if (retained >= this.#capacity) return undefined;
     const reservation = Object.freeze({ id: Symbol("galerina-audit-reservation") });
-    this.#reservations.add(reservation);
+    setAdd(this.#reservations, reservation);
     return reservation;
   }
 
   commit(reservation: AuditReservation, event: AuditEvent): void {
-    if (!this.#reservations.delete(reservation)) {
+    if (!setDelete(this.#reservations, reservation)) {
       throw new Error("Audit reservation is foreign, cancelled, or already consumed.");
     }
-    this.#queue.push(event);
+    arrayPush(this.#queue, event);
     this.#schedule();
   }
 
   cancel(reservation: AuditReservation): void {
-    if (!this.#reservations.delete(reservation)) {
+    if (!setDelete(this.#reservations, reservation)) {
       throw new Error("Audit reservation is foreign, committed, or already cancelled.");
     }
   }
@@ -245,13 +405,26 @@ export class InMemoryAuditSink implements AuditSink {
   #schedule(): void {
     if (this.#scheduled) return;
     this.#scheduled = true;
-    // Microtask first (runs after the response resolves); timer is a belt-and-braces fallback.
-    queueMicrotask(() => this.#flush());
-    const timer = setTimeout(() => this.#flush(), 0);
-    // Don't keep the event loop alive just to drain the audit queue.
-    if (typeof timer === "object" && timer !== null && "unref" in timer) {
-      (timer as { unref(): void }).unref();
+    let flushScheduled = false;
+    // The event is already accepted in the bounded in-memory queue. These are best-effort
+    // exporters, so their scheduling failure must not turn acceptance into a reported refusal.
+    try {
+      queueMicrotask(() => this.#flush());
+      flushScheduled = true;
+    } catch {
+      // Try the timer fallback; the accepted event remains charged to queue capacity.
     }
+    try {
+      const timer = setTimeout(() => this.#flush(), 0);
+      flushScheduled = true;
+      // Don't keep the event loop alive just to drain the audit queue.
+      if (typeof timer === "object" && timer !== null && "unref" in timer) {
+        (timer as { unref(): void }).unref();
+      }
+    } catch {
+      // A microtask may already be queued; otherwise a later commit can retry scheduling.
+    }
+    if (!flushScheduled) this.#scheduled = false;
   }
 
   #flush(): void {
@@ -259,7 +432,7 @@ export class InMemoryAuditSink implements AuditSink {
     this.#scheduled = false;
     while (this.#queue.length > 0) {
       // FIFO transfer. Retained evidence still owns capacity until explicitly taken.
-      this.#drained.push(this.#queue.shift() as AuditEvent);
+      arrayPush(this.#drained, arrayShift(this.#queue) as AuditEvent);
     }
   }
 
@@ -345,7 +518,7 @@ function errorResponse(status: number, code: KernelErrorCode, message: string): 
     headers: JSON_HEADERS,
     body: new TextEncoder().encode(JSON.stringify({ error: code, message })),
   };
-  kernelRefusalCodes.set(response, code);
+  weakMapSet(kernelRefusalCodes, response, code);
   return response;
 }
 
@@ -389,8 +562,8 @@ function hasDuplicateJsonKeys(text: string): boolean {
       const top = stack[stack.length - 1];
       if (top?.kind === "object" && top.expectingKey) {
         const key = JSON.parse(text.slice(start, i + 1)) as string;
-        if (top.keys.has(key)) return true;
-        top.keys.add(key);
+        if (setHas(top.keys, key)) return true;
+        setAdd(top.keys, key);
         top.expectingKey = false;
       }
       continue;
@@ -423,10 +596,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // honored as-is (and 'off' stays the default), so existing callers are unchanged. When 'auto'
   // is used, the full resolution (effective + controls + rationale) is recorded per audit event.
   // Unknown or wrong-case posture/env strings refuse; they never downgrade to 'off' (S3).
-  if (opts.posture !== undefined && (typeof opts.posture !== "string" || !KERNEL_POSTURES.has(opts.posture))) {
+  if (opts.posture !== undefined && (typeof opts.posture !== "string" || !setHas(KERNEL_POSTURES, opts.posture))) {
     throw new Error(`Unknown security posture '${String(opts.posture)}'. Expected 'off', 'auto' or 'on'.`);
   }
-  if (opts.env !== undefined && (typeof opts.env !== "string" || !KERNEL_ENVIRONMENTS.has(opts.env))) {
+  if (opts.env !== undefined && (typeof opts.env !== "string" || !setHas(KERNEL_ENVIRONMENTS, opts.env))) {
     throw new Error(`Unknown environment '${String(opts.env)}'. Expected one of ${[...KERNEL_ENVIRONMENTS].join(", ")}.`);
   }
   const requestedPosture: SecurityPosture | EffectivePosture = opts.posture ?? "off";
@@ -446,7 +619,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const ratesPerMinute = new Map<string, number>();
   let anyRouteRequiresSecret = false;
   for (const route of opts.routes) {
-    const policy = resolveEffectiveRoutePolicy(route, { posture });
+    // The resolver preserves some caller-owned arrays/default objects. The kernel must own its
+    // enforcement policy before any handler or original declaration can mutate those references.
+    const policy = copyEffectiveRoutePolicy(resolveEffectiveRoutePolicy(route, { posture }));
     if (
       policy.requestType !== undefined &&
       policy.body.unknownFields === "deny" &&
@@ -454,18 +629,18 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     ) {
       throw new Error(`A request validator is required for closed request type '${policy.requestType}'.`);
     }
-    ratesPerMinute.set(routeKey(policy.method, policy.path), parseRatePerMinute(policy.limits.rate));
+    mapSet(ratesPerMinute, routeKey(policy.method, policy.path), parseRatePerMinute(policy.limits.rate));
     if (policy.secrets.require.length > 0) anyRouteRequiresSecret = true;
-    let methods = byPath.get(route.path);
+    let methods = mapGet(byPath, route.path);
     if (methods === undefined) {
       methods = new Map<HttpMethod, EffectiveRoutePolicy>();
-      byPath.set(route.path, methods);
+      mapSet(byPath, route.path, methods);
     }
     // Two declarations for one method + path used to be silently last-wins (S4). Refuse instead.
-    if (methods.has(route.method)) {
+    if (mapHas(methods, route.method)) {
       throw new Error(`Duplicate route declaration for '${route.method} ${route.path}'.`);
     }
-    methods.set(route.method, policy);
+    mapSet(methods, route.method, policy);
   }
 
   // Fail-closed surfacing: if any route declares a required secret but NO provider was wired, those
@@ -489,6 +664,28 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     readonly response: GalerinaKernelResponse;
     /** Resolved policy for the matched route; `undefined` when no route matched (404/405). */
     readonly policy: EffectiveRoutePolicy | undefined;
+    /** Final monotonic deadline arbitration after the public entry point resumes its await. */
+    readonly recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined;
+  }
+
+  function pipelineOutcome(
+    response: GalerinaKernelResponse,
+    policy: EffectiveRoutePolicy | undefined,
+    recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined,
+  ): PipelineOutcome {
+    // Async-function promise resolution reads `then` from its returned value. A
+    // null-prototype envelope prevents hostile Object.prototype accessors from
+    // observing or mutating the private route policy across that boundary.
+    const outcome = intrinsicObjectCreate(null) as PipelineOutcome;
+    intrinsicDefineProperty(outcome, "response", { value: response, enumerable: true });
+    intrinsicDefineProperty(outcome, "policy", { value: policy, enumerable: true });
+    if (recheckPublicationDeadline !== undefined) {
+      intrinsicDefineProperty(outcome, "recheckPublicationDeadline", {
+        value: recheckPublicationDeadline,
+        enumerable: true,
+      });
+    }
+    return outcome;
   }
 
   async function runPipeline(req: GalerinaKernelRequest): Promise<PipelineOutcome> {
@@ -499,33 +696,33 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     const path = req.path;
 
     // ── 2 match route ──
-    const methods = byPath.get(path);
+    const methods = mapGet(byPath, path);
     if (methods === undefined) {
-      return { response: errorResponse(404, "route_not_found", `No route for path '${path}'.`), policy: undefined };
+      return pipelineOutcome(errorResponse(404, "route_not_found", `No route for path '${path}'.`), undefined);
     }
-    const policy = methods.get(method);
+    const policy = mapGet(methods, method);
     if (policy === undefined) {
-      return { response: errorResponse(405, "method_not_allowed", `Method '${method}' not allowed for '${path}'.`), policy: undefined };
+      return pipelineOutcome(errorResponse(405, "method_not_allowed", `Method '${method}' not allowed for '${path}'.`), undefined);
     }
 
     // ── 3 resolve policy ── (already resolved at construction; `policy` is it)
 
     // ── 4 body size ──
     if (req.body.byteLength > policy.body.maxSizeBytes) {
-      return { response: errorResponse(
+      return pipelineOutcome(errorResponse(
         413, "payload_too_large",
         `Body ${req.body.byteLength}B exceeds limit ${policy.body.maxSizeBytes}B.`,
-      ), policy };
+      ), policy);
     }
 
     // ── 5 content-type ── (only enforced when a body is present)
     if (req.body.byteLength > 0) {
       const ct = header(req.headers, "content-type");
       if (ct === undefined || baseContentType(ct) !== baseContentType(policy.body.contentType)) {
-        return { response: errorResponse(
+        return pipelineOutcome(errorResponse(
           415, "unsupported_media_type",
           `Expected content-type '${policy.body.contentType}'.`,
-        ), policy };
+        ), policy);
       }
     }
 
@@ -538,52 +735,66 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       req.channelVerdict !== undefined &&
       !decideAtBoundary(req.channelVerdict).authorized
     ) {
-      return { response: errorResponse(401, "unauthorized", "Channel/identity verdict denied admission."), policy };
+      return pipelineOutcome(errorResponse(401, "unauthorized", "Channel/identity verdict denied admission."), policy);
     }
 
     if (policy.auth.mode === "required") {
       if (req.channelVerdict !== undefined) {
         // The mandatory channel fold above already proved ALLOW.
       } else {
-        return { response: errorResponse(401, "unauthorized", "A channel/identity verdict is required (header presence is not sufficient)."), policy };
+        return pipelineOutcome(errorResponse(401, "unauthorized", "A channel/identity verdict is required (header presence is not sufficient)."), policy);
       }
       if (
         req.principalId === undefined ||
         req.principalId.trim().length === 0 ||
         new TextEncoder().encode(req.principalId).byteLength > 256
       ) {
-        return { response: errorResponse(401, "unauthorized", "An authenticated principal identity is required."), policy };
+        return pipelineOutcome(errorResponse(401, "unauthorized", "An authenticated principal identity is required."), policy);
       }
     }
 
     if (policy.auth.scopes.length > 0) {
-      const admittedScopes = new Set(req.principalScopes ?? []);
-      if (req.channelVerdict === undefined || policy.auth.scopes.some((scope) => !admittedScopes.has(scope))) {
-        return { response: errorResponse(403, "forbidden", "The authenticated principal lacks a required route scope."), policy };
+      let missingScope = false;
+      const principalScopes = req.principalScopes ?? [];
+      for (let requiredIndex = 0; requiredIndex < policy.auth.scopes.length; requiredIndex += 1) {
+        let present = false;
+        for (let principalIndex = 0; principalIndex < principalScopes.length; principalIndex += 1) {
+          if (principalScopes[principalIndex] === policy.auth.scopes[requiredIndex]) {
+            present = true;
+            break;
+          }
+        }
+        if (!present) {
+          missingScope = true;
+          break;
+        }
+      }
+      if (req.channelVerdict === undefined || missingScope) {
+        return pipelineOutcome(errorResponse(403, "forbidden", "The authenticated principal lacks a required route scope."), policy);
       }
     }
 
     // ── 7 rate ── counted BEFORE decode/validate (S7): a malformed or invalid body still uses up
     // the route's rate budget, so a 422 flood cannot bypass the limiter.
     const rk = routeKey(method, path);
-    const now = Date.now();
-    const rateLimit = ratesPerMinute.get(rk) as number;
+    const now = wallClockNow();
+    const rateLimit = mapGet(ratesPerMinute, rk) as number;
     const rateSubject = policy.auth.mode === "required" ? (req.principalId as string) : "public";
     const rateKey = `${rk}\u0000${rateSubject}`;
-    const window = rateWindows.get(rateKey);
+    const window = mapGet(rateWindows, rateKey);
     if (window === undefined || window.resetAt <= now) {
-      if (window !== undefined) rateWindows.delete(rateKey);
-      if (rateWindows.size >= maxRateWindows) {
-        for (const [key, candidate] of rateWindows) {
-          if (candidate.resetAt <= now) rateWindows.delete(key);
-        }
+      if (window !== undefined) mapDelete(rateWindows, rateKey);
+      if (mapSize(rateWindows) >= maxRateWindows) {
+        mapForEach(rateWindows, (candidate, key) => {
+          if (candidate.resetAt <= now) mapDelete(rateWindows, key);
+        });
       }
-      if (rateWindows.size >= maxRateWindows) {
-        return { response: errorResponse(429, "too_many_requests", "Rate-limit identity capacity reached."), policy };
+      if (mapSize(rateWindows) >= maxRateWindows) {
+        return pipelineOutcome(errorResponse(429, "too_many_requests", "Rate-limit identity capacity reached."), policy);
       }
-      rateWindows.set(rateKey, { count: 1, resetAt: now + 60_000 });
+      mapSet(rateWindows, rateKey, { count: 1, resetAt: now + 60_000 });
     } else if (window.count >= rateLimit) {
-      return { response: errorResponse(429, "too_many_requests", `Rate limit ${rateLimit}/minute reached for '${rk}'.`), policy };
+      return pipelineOutcome(errorResponse(429, "too_many_requests", `Rate limit ${rateLimit}/minute reached for '${rk}'.`), policy);
     } else {
       window.count += 1;
     }
@@ -595,26 +806,26 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       try {
         text = new TextDecoder("utf-8", { fatal: true }).decode(req.body);
       } catch {
-        return { response: errorResponse(422, "unprocessable_entity", "Body is not valid UTF-8."), policy };
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Body is not valid UTF-8."), policy);
       }
       try {
         if (policy.body.duplicateKeys === "deny" && hasDuplicateJsonKeys(text)) {
-          return { response: errorResponse(422, "unprocessable_entity", "Body contains duplicate JSON object keys."), policy };
+          return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Body contains duplicate JSON object keys."), policy);
         }
         json = JSON.parse(text);
       } catch {
-        return { response: errorResponse(422, "unprocessable_entity", "Body is not valid JSON."), policy };
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Body is not valid JSON."), policy);
       }
       if (json === null) {
-        return { response: errorResponse(422, "unprocessable_entity", "JSON null is forbidden."), policy };
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "JSON null is forbidden."), policy);
       }
       if (policy.requestType === undefined) {
-        return { response: errorResponse(422, "unprocessable_entity", "A closed request type is required for JSON bodies."), policy };
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "A closed request type is required for JSON bodies."), policy);
       }
       if (policy.requestType !== undefined) {
         const validator = opts.requestValidators?.[policy.requestType];
         if (validator === undefined) {
-          return { response: errorResponse(500, "internal_error", "Request validator is unavailable."), policy };
+          return pipelineOutcome(errorResponse(500, "internal_error", "Request validator is unavailable."), policy);
         }
         let valid = false;
         try {
@@ -623,7 +834,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           valid = false;
         }
         if (!valid) {
-          return { response: errorResponse(422, "unprocessable_entity", "Body does not match the admitted request type."), policy };
+          return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Body does not match the admitted request type."), policy);
         }
       }
     } else {
@@ -632,26 +843,31 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
 
     // ── 8.5 memory budget ──
     if (req.body.byteLength > policy.limits.memoryBytes) {
-      return { response: errorResponse(503, "resource_limit_exceeded", "Request exceeds the route memory budget."), policy };
+      return pipelineOutcome(errorResponse(503, "resource_limit_exceeded", "Request exceeds the route memory budget."), policy);
     }
 
     // ── 9 concurrency ──
-    const current = inFlight.get(rk) ?? 0;
+    const current = mapGet(inFlight, rk) ?? 0;
     if (current >= policy.limits.maxConcurrent) {
-      return { response: errorResponse(
+      return pipelineOutcome(errorResponse(
         429, "too_many_requests",
         `Concurrency limit ${policy.limits.maxConcurrent} reached for '${rk}'.`,
-      ), policy };
+      ), policy);
     }
-    inFlight.set(rk, current + 1);
+    mapSet(inFlight, rk, current + 1);
     let releaseWhenHandlerSettles = false;
     let slotReleased = false;
+    let secretAccessFailed = false;
+    let requestOutcomeSealed = false;
+    let secretAccessInProgress = false;
+    let secretAccessSpent = false;
+    let requestActive = false;
     const releaseSlot = (): void => {
       if (slotReleased) return;
       slotReleased = true;
-      const after = (inFlight.get(rk) ?? 1) - 1;
-      if (after <= 0) inFlight.delete(rk);
-      else inFlight.set(rk, after);
+      const after = (mapGet(inFlight, rk) ?? 1) - 1;
+      if (after <= 0) mapDelete(inFlight, rk);
+      else mapSet(inFlight, rk, after);
     };
 
     try {
@@ -662,100 +878,234 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       if (secretRefusal !== null) {
         // 503: an absent/faulted/unresolvable secret is a server-side UNAVAILABILITY, not a client
         // error. The handler is NEVER reached (gate 9.5 < gate 10), so no side effect can occur.
-        return { response: errorResponse(503, secretRefusal, "A required secret is unavailable."), policy };
+        return pipelineOutcome(errorResponse(503, secretRefusal, "A required secret is unavailable."), policy);
       }
 
       const fn = opts.dispatch[policy.handler];
       if (fn === undefined) {
         // Misconfiguration, not client error: do not consume an admission key
         // for a route that cannot dispatch.
-        return { response: errorResponse(500, "internal_error", `No handler '${policy.handler}' registered.`), policy };
+        return pipelineOutcome(errorResponse(500, "internal_error", `No handler '${policy.handler}' registered.`), policy);
       }
 
       // ── 9.75 idempotency ──
       // Claim only after every pre-handler refusal gate has passed. A rejected
-      // rate/resource/concurrency/secret/route attempt must not consume a key.
+      // rate/resource/concurrency/initial-secret/route attempt must not consume a key. Once
+      // atomically claimed, the key is intentionally burned even if a later fail-closed check
+      // refuses; IdempotencyStore has no ownership-bound rollback, so reusing it could replay an
+      // reservation without proving that this exact claim can be safely undone.
       if (policy.idempotency.enabled) {
         const key = header(req.headers, policy.idempotency.header);
         if (key === undefined || key.length === 0) {
-          return { response: errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy };
+          return pipelineOutcome(errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy);
         }
         let claim: IdempotencyClaimResult;
         try {
           claim = await idempotencyStore.claim(rk, key, policy.idempotency.ttlSeconds);
         } catch {
           // Fail closed: if the store errors or returns malformed data, reject.
-          return { response: errorResponse(409, "conflict", "Idempotency store unavailable."), policy };
+          return pipelineOutcome(errorResponse(409, "conflict", "Idempotency store unavailable."), policy);
         }
         if (claim !== "claimed" && claim !== "duplicate") {
-          return { response: errorResponse(409, "conflict", "Idempotency store returned an invalid claim."), policy };
+          return pipelineOutcome(errorResponse(409, "conflict", "Idempotency store returned an invalid claim."), policy);
         }
         if (claim === "duplicate") {
-          return { response: errorResponse(409, "conflict", `Duplicate idempotency key '${key}'.`), policy };
+          return pipelineOutcome(errorResponse(409, "conflict", `Duplicate idempotency key '${key}'.`), policy);
         }
       }
+
+      // Idempotency admission may await an external store. Re-check required secrets after that
+      // yield so a provider that was removed, faulted, or disposed while the claim was pending
+      // cannot reach developer dispatch on the basis of the earlier gate-9.5 snapshot.
+      const postWaitSecretRefusal = secretGate.admit(policy.secrets.require);
+      if (postWaitSecretRefusal !== null) {
+        // The reservation remains consumed. A caller must reconcile the operation and use a new
+        // idempotency key; the kernel never guesses that an external store claim can be undone.
+        return pipelineOutcome(errorResponse(503, postWaitSecretRefusal, "A required secret is unavailable."), policy);
+      }
+
+      // Retain the response budget in kernel-local state before exposing `policy` to handler code.
+      const responseMemoryBudgetBytes = policy.limits.memoryBytes;
 
       // ── 10 dispatch handler ── (ONLY now is developer code reached)
       let result: HandlerResult;
-      const deadline = new AbortController();
+      const deadline = new intrinsicAbortController();
+      requestActive = true;
+      const deadlineAt = monotonicNow() + policy.limits.timeoutMs;
+      let deadlineReached = false;
+      const deadlineExpired = (): boolean => {
+        // The signal is exposed to handler code; its properties are not trusted kernel state.
+        // Record deadline arbitration privately before dispatching any abort listeners.
+        if (deadlineReached) return true;
+        if (monotonicNow() < deadlineAt) return false;
+        deadlineReached = true;
+        abortDeadline(deadline);
+        return true;
+      };
+      const deadlineRefusal = () => pipelineOutcome(
+        errorResponse(504, "deadline_exceeded", "Route execution exceeded its deadline."),
+        policy,
+      );
+      const recheckAndSealRequestOutcome = (): GalerinaKernelResponse | undefined => {
+        if (secretAccessFailed) {
+          requestOutcomeSealed = true;
+          return errorResponse(500, "internal_error", "Handler failed.");
+        }
+        if (deadlineExpired()) {
+          const response = deadlineRefusal().response;
+          requestOutcomeSealed = true;
+          return response;
+        }
+        // One synchronous, kernel-owned terminal boundary precedes all injected audit hooks.
+        // Closed-capability calls still refuse afterward, but cannot rewrite this response/event.
+        requestOutcomeSealed = true;
+        return undefined;
+      };
+      const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
+        pipelineOutcome(response, policy, recheckAndSealRequestOutcome);
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
       let handlerPromise: Promise<HandlerResult> | undefined;
+      const timeoutPromise = new Promise<never>((_resolve, reject) => {
+        deadlineTimer = setTimeout(() => {
+          deadlineReached = true;
+          reject(new Error("GALERINA_ROUTE_DEADLINE"));
+          abortDeadline(deadline);
+        }, policy.limits.timeoutMs);
+      });
       try {
+        const handlerPolicy = copyEffectiveRoutePolicy(policy);
         handlerPromise = Promise.resolve(fn({
           request: req,
-          policy,
+          policy: handlerPolicy,
           json,
-          getSecret: (name, callback) => deadline.signal.aborted
-            ? undefined
-            : secretGate.getSecret(policy.secrets.require, name, callback),
+          getSecret: (name, callback) => {
+            if (!requestActive || deadlineExpired()) return undefined;
+            if (secretAccessFailed) {
+              throw new Error("secret access is unavailable after a prior request failure");
+            }
+            if (secretAccessInProgress) {
+              secretAccessFailed = true;
+              throw new Error("secret access is unavailable during re-entrant request use");
+            }
+            if (secretAccessSpent) {
+              secretAccessFailed = true;
+              throw new Error("secret access is unavailable after the request accessor was spent");
+            }
+            // Spend the request-scoped accessor before entering the provider. This state is
+            // monotonic: a successful first use does not restore authority for a later call.
+            secretAccessSpent = true;
+            secretAccessInProgress = true;
+            try {
+              // Provider.use is synchronous but untrusted and may consume the remaining budget.
+              // Recheck at the exact byte-delivery boundary, after staging and before handler code.
+              return secretGate.getSecret(policy.secrets.require, name, (view) => {
+                if (secretAccessFailed) {
+                  throw new Error("secret access is unavailable after a prior request failure");
+                }
+                if (deadlineExpired()) return undefined;
+                // deadlineExpired may synchronously dispatch abort listeners, which are
+                // handler-controlled and may trigger/catch a re-entrant refusal.
+                if (secretAccessFailed) {
+                  throw new Error("secret access is unavailable after a prior request failure");
+                }
+                return callback(view);
+              }, () => {
+                // Provider-owned callback violations can arrive later and be caught outside
+                // this synchronous call stack; they poison the request until its terminal
+                // response is sealed. Later closed-capability refusals cannot revise an
+                // outcome whose matching audit event may already be accepted.
+                if (!requestOutcomeSealed) secretAccessFailed = true;
+              });
+            } catch (error) {
+              // Latch the fault so a handler cannot catch a missing/invalid secret-use error and
+              // still return a success response. After sealing, the callback still refuses but
+              // cannot revise the already-selected response or its audit event.
+              if (!requestOutcomeSealed) secretAccessFailed = true;
+              throw error;
+            } finally {
+              secretAccessInProgress = false;
+            }
+          },
           deadlineSignal: deadline.signal,
         }));
-        const timeoutPromise = new Promise<never>((_resolve, reject) => {
-          deadlineTimer = setTimeout(() => {
-            deadline.abort();
-            reject(new Error("GALERINA_ROUTE_DEADLINE"));
-          }, policy.limits.timeoutMs);
-        });
-        result = await Promise.race([handlerPromise, timeoutPromise]);
+        // A same-thread synchronous handler cannot be preempted, but it cannot acquire a secret
+        // after the monotonic deadline or return a successful late result either.
+        if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
+        result = await promiseRace([handlerPromise, timeoutPromise]);
+        if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
       } catch {
-        if (deadline.signal.aborted) {
-          releaseWhenHandlerSettles = true;
+        if (deadlineExpired()) {
           if (handlerPromise !== undefined) {
+            releaseWhenHandlerSettles = true;
             void handlerPromise.finally(releaseSlot).catch(() => undefined);
           }
-          return { response: errorResponse(504, "deadline_exceeded", "Route execution exceeded its deadline."), policy };
+          return terminalOutcome(deadlineRefusal().response);
         }
         // Handler faults fail closed: a safe 500, no internal detail leaks.
-        return { response: errorResponse(500, "internal_error", "Handler failed."), policy };
+        return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
       } finally {
+        // Retire the capability when the kernel leaves dispatch waiting, before response
+        // preparation can invoke handler-controlled getters or JSON serialization. A queued
+        // handler microtask before this continuation is still inside the live request. Timeout
+        // cancellation also denies access immediately through deadline.signal.aborted.
+        requestActive = false;
         if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
       }
 
+      if (secretAccessFailed) {
+        return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+      }
+
       // ── 11 encode ──
-      const status = result.status ?? 200;
-      const headers: Record<string, string> = { ...JSON_HEADERS, ...(result.headers ?? {}) };
-      let body: Uint8Array | undefined;
-      if (result.body === undefined) {
-        body = undefined;
-      } else if (result.body instanceof Uint8Array) {
-        body = result.body;
-      } else {
-        try {
-          body = new TextEncoder().encode(JSON.stringify(result.body));
-        } catch {
-          return { response: errorResponse(500, "internal_error", "Response could not be encoded."), policy };
+      try {
+        const status = result.status ?? 200;
+        const headers: Record<string, string> = { ...JSON_HEADERS, ...(result.headers ?? {}) };
+        const bodyValue = result.body;
+        let body: Uint8Array | undefined;
+        let bodyByteLength: number | undefined;
+        if (bodyValue === undefined) {
+          body = undefined;
+        } else if (bodyValue instanceof Uint8Array) {
+          bodyByteLength = actualTypedArrayByteLength(bodyValue);
+          if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+          if (bodyByteLength > responseMemoryBudgetBytes) {
+            return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
+          }
+          // Publish a kernel-owned fixed-length snapshot; never expose the handler's mutable or
+          // resizable backing store across the async return boundary.
+          body = new intrinsicUint8Array(bodyValue);
+        } else {
+          body = new TextEncoder().encode(JSON.stringify(bodyValue));
+          bodyByteLength = actualTypedArrayByteLength(body);
         }
-      }
 
-      if (body !== undefined && body.byteLength > policy.limits.memoryBytes) {
-        return { response: errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."), policy };
-      }
+        // Handler-controlled response getters and toJSON methods run after dispatch has retired
+        // request capabilities; they must not turn a late encoding result into success.
+        // A provider callback can also run here, be refused, and have that refusal caught by
+        // handler-controlled serialization. Re-arbitrate its monotonic failure latch at the
+        // final encoded-response boundary, not only before serialization begins.
+        if (secretAccessFailed) {
+          return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+        }
+        if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
 
-      const response: GalerinaKernelResponse =
-        body === undefined ? { status, headers } : { status, headers, body };
-      return { response, policy };
+        if (bodyByteLength !== undefined && bodyByteLength > responseMemoryBudgetBytes) {
+          return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
+        }
+
+        const response: GalerinaKernelResponse =
+          body === undefined ? { status, headers } : { status, headers, body };
+        return terminalOutcome(response);
+      } catch {
+        if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+        return terminalOutcome(errorResponse(500, "internal_error", "Response could not be encoded."));
+      }
     } finally {
-      // A timed-out handler retains its active-compute lease until its actual
+      // Retire every captured per-request secret capability on all terminal outcomes, including
+      // normal success and handler failure. The deadline signal remains reserved for deadline
+      // cancellation; request capability lifetime is tracked independently.
+      requestActive = false;
+      // A timed-out handler retains its in-flight concurrency slot until its actual
       // Promise settles. This bounds non-cooperative zombie work.
       if (!releaseWhenHandlerSettles) releaseSlot();
     }
@@ -767,7 +1117,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
    * mistaken for a kernel refusal; success and handler responses resolve to no code.
    */
   function errorCodeOf(res: GalerinaKernelResponse): KernelErrorCode | undefined {
-    return kernelRefusalCodes.get(res);
+    return weakMapGet(kernelRefusalCodes, res);
   }
 
   /**
@@ -776,7 +1126,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
    * the eventual evidence flush remain asynchronous happy-path work.
    */
   async function handle(req: GalerinaKernelRequest): Promise<GalerinaKernelResponse> {
-    const declaredPolicy = byPath.get(req.path)?.get(req.method);
+    // Audit metadata must not be read from a request object after handler code receives it;
+    // a hostile handler can replace a field with a blocking or mutating getter.
+    const auditRequestId = req.requestId;
+    const auditMethod = req.method;
+    const auditPath = req.path;
+    const declaredMethods = mapGet(byPath, req.path);
+    const declaredPolicy = declaredMethods === undefined ? undefined : mapGet(declaredMethods, req.method);
     let reservation: AuditReservation | undefined;
     let reservationLive = false;
 
@@ -795,21 +1151,22 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
 
     try {
       const outcome = await runPipeline(req);
-      const { response, policy } = outcome;
+      const { policy } = outcome;
+      const response = outcome.recheckPublicationDeadline?.() ?? outcome.response;
 
       // ── 12 audit ── Build the event after the response is computed. A mandatory
       // event consumes its exact reservation synchronously; flushing stays off-path.
       const event: AuditEvent = {
-        requestId: req.requestId,
-        method: req.method,
-        path: req.path,
+        requestId: auditRequestId,
+        method: auditMethod,
+        path: auditPath,
         status: response.status,
         // Provenance comes from the kernel's own refusal table, never from the response body (S5).
         errorCode: errorCodeOf(response),
-        origin: kernelRefusalCodes.has(response) ? "kernel" : "handler",
+        origin: weakMapHas(kernelRefusalCodes, response) ? "kernel" : "handler",
         appliedDefaults: policy?.appliedDefaults ?? [],
         relaxations: policy?.relaxations ?? [],
-        at: Date.now(),
+        at: wallClockNow(),
         ...(resolvedPosture ? { resolvedPosture } : {}),
       };
 

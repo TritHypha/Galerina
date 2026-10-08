@@ -75,6 +75,69 @@ test("audit events are emitted and visible after a tick (default in-memory sink)
   assert.equal(typeof events[0].at, "number");
 });
 
+test("in-memory audit acceptance survives scheduler failure and retries before the next reservation", async () => {
+  const sink = new InMemoryAuditSink({ capacity: 1 });
+  const originalQueueMicrotask = Object.getOwnPropertyDescriptor(globalThis, "queueMicrotask");
+  const originalSetTimeout = Object.getOwnPropertyDescriptor(globalThis, "setTimeout");
+  let failFirstSchedule = true;
+  let effects = 0;
+  const k = createAppKernel({
+    routes: [{
+      method: "GET", path: "/health", handler: "health", auth: { mode: "public" },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      health: () => {
+        effects += 1;
+        if (failFirstSchedule) {
+          failFirstSchedule = false;
+          Object.defineProperty(globalThis, "queueMicrotask", {
+            configurable: true, writable: true,
+            value: () => { throw new Error("microtask scheduler unavailable"); },
+          });
+          Object.defineProperty(globalThis, "setTimeout", {
+            configurable: true, writable: true,
+            value: () => { throw new Error("timer scheduler unavailable"); },
+          });
+        }
+        return { status: 200, body: { ok: true } };
+      },
+    },
+    auditSink: sink,
+  });
+
+  let first;
+  try {
+    first = await k.handle(req({ requestId: "rq-schedule-refusal-1" }));
+  } finally {
+    Object.defineProperty(globalThis, "queueMicrotask", originalQueueMicrotask);
+    Object.defineProperty(globalThis, "setTimeout", originalSetTimeout);
+  }
+
+  assert.equal(first.status, 200, "bounded in-memory enqueue is acceptance; export scheduling is separate");
+  assert.equal(sink.pending(), 1, "accepted evidence remains retained if both schedulers refuse");
+  assert.equal(effects, 1);
+
+  const second = await k.handle(req({ requestId: "rq-schedule-refusal-2" }));
+  assert.equal(second.status, 503, "full retained evidence refuses before handler effects while retry is scheduled");
+  assert.equal(effects, 1);
+  await tick();
+  assert.equal(sink.pending(), 0, "a later successful schedule drains the retained event queue");
+  assert.deepEqual(sink.drained().map((event) => event.requestId), [
+    "rq-schedule-refusal-1",
+  ]);
+  const transferred = sink.takeDrained();
+  assert.deepEqual(transferred.map((event) => event.requestId), ["rq-schedule-refusal-1"]);
+
+  const third = await k.handle(req({ requestId: "rq-schedule-refusal-3" }));
+  assert.equal(third.status, 200, "admission resumes after retained evidence drains");
+  assert.equal(effects, 2);
+  await tick();
+  assert.deepEqual(sink.drained().map((event) => event.requestId), [
+    "rq-schedule-refusal-3",
+  ]);
+});
+
 test("audit event carries the typed error code for a rejected request", async () => {
   const sink = new InMemoryAuditSink();
   const k = createAppKernel({

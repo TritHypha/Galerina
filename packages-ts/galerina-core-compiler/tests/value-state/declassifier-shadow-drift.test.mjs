@@ -39,7 +39,7 @@ function clearingSet(src) {
   const names = new Set();
   // isRedactCall + isSealCall predicate bodies
   for (const fn of ["isRedactCall", "isSealCall"]) {
-    const body = new RegExp(`function ${fn}\\b[\\s\\S]{0,400}?\\n\\}`).exec(src);
+    const body = new RegExp(`function ${fn}\\b[\\s\\S]{0,1000}?\\n\\}`).exec(src);
     if (body) for (const m of body[0].matchAll(/node\.value === "([a-zA-Z][a-zA-Z0-9]*)"/g)) names.add(m[1]);
   }
   // the constantTimeEquals clearing site(s): a `=== "constantTimeEquals"` that RETURNS false

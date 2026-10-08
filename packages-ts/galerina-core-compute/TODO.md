@@ -97,7 +97,11 @@ active v1 runtime target.
 [x] Create compatibility/ dir: target-compatibility.ts, compatibility-report.ts, compatibility-rules.ts, target-validator.ts
 [x] Define FUNGI-COMPAT-001 through FUNGI-COMPAT-004 diagnostic codes
 [x] Define shared types: ComputeWorkload, DataShape, DeploymentShape, ComputeDiagnostic
-[ ] Define future quantum target planning rules after core compute reports stabilise
+[HOLD] Define future quantum target planning rules after core compute reports stabilise
+    HOLD 2026-10-06 (Grok Bot; zero-trust default, owner may revisit): no quantum target exists in the
+    11-value RuntimeTarget vocabulary, so planning rules would invent a target. Treated like the O1
+    post-v1 targets (photonic, AI-accelerator, GPU) until decided; asked in session-exchange
+    grok-bot-packages-hold-batch1-20261006-question-01 (Q3). Reopen as [ ] when the owner adds a quantum target or rules it in scope for v1.
 [x] Add examples
 [x] Add tests
 ```

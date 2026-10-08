@@ -1,5 +1,7 @@
 import {
   CRYPTO_PROVIDER_SCHEMA,
+  MAX_BCRYPT_PASSWORD_BYTES,
+  isBcryptInputWithinLimit,
   type CryptoProvider,
   type CryptoProviderRequest,
   type CryptoProviderResult,
@@ -14,6 +16,14 @@ function hashResult(
 
 function verifyResult(matches: boolean): CryptoProviderResult {
   return { ok: true, kind: "verify", matches };
+}
+
+function verifyFailure(algorithm: "bcrypt" | "argon2id"): CryptoProviderResult {
+  return {
+    ok: false,
+    code: "KDF_VERIFY_FAILED",
+    message: `${algorithm} verification backend failed`,
+  };
 }
 
 /**
@@ -52,6 +62,13 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
     schema: CRYPTO_PROVIDER_SCHEMA,
     async invoke(request: CryptoProviderRequest): Promise<CryptoProviderResult> {
       if (request.algorithm === "bcrypt") {
+        if (!isBcryptInputWithinLimit(request.plaintext)) {
+          return {
+            ok: false,
+            code: "FUNGI_CRYPTO_BCRYPT_INPUT_TOO_LONG",
+            message: "bcrypt input exceeds 72 UTF-8 bytes and is refused.",
+          };
+        }
         const bcryptMod = await import("bcryptjs");
         const bcrypt = (bcryptMod.default ?? bcryptMod) as BcryptJs;
         if (request.op === "password-hash") {
@@ -64,7 +81,7 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
         try {
           return verifyResult(await bcryptCompareAsync(bcrypt, request.plaintext, request.hash));
         } catch {
-          return verifyResult(false);
+          return verifyFailure("bcrypt");
         }
       }
       const argon2 = await import("argon2");
@@ -74,7 +91,7 @@ export function createNodePasswordKdfProvider(): CryptoProvider {
       try {
         return verifyResult(await argon2.verify(request.hash, request.plaintext));
       } catch {
-        return verifyResult(false);
+        return verifyFailure("argon2id");
       }
     },
   };
