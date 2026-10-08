@@ -72,6 +72,29 @@ test("a standard POSIX node test receives the bounded npm argument", () => {
   });
 });
 
+test("the core compiler package test scripts remain under the bounded Node test policy", () => {
+  const repositoryRoot = join(scriptsRoot, "..");
+  const packageManifest = JSON.parse(readFileSync(
+    join(repositoryRoot, "packages-ts", "galerina-core-compiler", "package.json"),
+    "utf8",
+  ));
+
+  for (const name of [
+    "test",
+    "test:checked-flow-artifact",
+    "test:requirement-process-protocol",
+    "test:requirement-process-adapter",
+  ]) {
+    const invocation = npmTestInvocation({
+      platform: "linux",
+      testScript: packageManifest.scripts[name],
+      concurrency: 2,
+    });
+    assert.equal(invocation.boundedNodeTest, true, `${name} must be recognized as a governed Node test`);
+    assert.ok(invocation.args.includes("--test-concurrency=2"), `${name} must receive the bounded worker count`);
+  }
+});
+
 test("a custom package runner receives no Node-only argument", () => {
   assert.deepEqual(npmTestInvocation({
     platform: "win32",
