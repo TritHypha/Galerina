@@ -42,4 +42,6 @@ export * from "./rate-limit-workload-policy.js";
 export * from "./structured-await-policy.js";
 export * from "./queue-job-contract.js";
 export * from "./runtime-audit-report-format.js";
+// Pure `:param` route-pattern grammar and matcher; not wired into createAppKernel.
+export * from "./route-pattern.js";
 export * from "./idempotency-replay-policy.js";
