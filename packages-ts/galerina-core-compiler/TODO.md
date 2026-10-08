@@ -370,14 +370,13 @@ Task-policy issuer, coordinator package and retry budget are open owner decision
 Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
 
 ```text
-[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
-    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
-[HOLD] K3/refusal parity for each fallback tier: tier-1 trit-width profiles and the tier-3 binary implementation return the same K3 values and typed refusals as standard K3 (tier 2)
-    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
-    Three-tier order owner decided 2026-10-06 (16:52 BST); parity evidence and any lowering stay HOLD.
-[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
-    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
-    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+[x] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    src/rd0855-replanning-contracts.ts bindAlternativePlan (same sha256 digest required; changed digest is a new task; source/AST/WAT/runtime/TypeScript re-entry refuses; authorityReleased false; slideAdmission and vokDecision not-evaluated). SuperGrok 2026-10-08
+[x] K3 permission collapse: UNKNOWN collapses to false only at a declared final permission boundary; only exact ALLOW maps to true; UNKNOWN kept as a diagnostic
+    src/rd0855-replanning-contracts.ts k3Not / collapseUnknownAtFinalBoundary / k3NotThenFinalCollapse / collapseThenBinaryNot / decodeTwoBitCarrier. SuperGrok 2026-10-08
+[HOLD] K3/refusal parity evidence for tier-1 widths and tier-3 binary vs standard K3 (live parity and lowering stay HOLD; K3_REFUSAL_PARITY_EVIDENCE is UNPROVEN; 8/16 unregistered; binary step 3 unresolved)
+[x] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    tests/rd0855-replanning-contracts.test.mjs (collapseThenBinaryNot of UNKNOWN refuses; two-bit carrier code 3 refuses; source/ast/wat/runtime/typescript reentry refuses). SuperGrok 2026-10-08
 ```
 
 ## Post-v1 (owner-gated)
