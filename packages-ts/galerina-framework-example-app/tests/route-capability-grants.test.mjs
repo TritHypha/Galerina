@@ -43,7 +43,7 @@ describe("example-app least-capability grants (L19; L20-L21 HOLD)", () => {
     assert.equal(config.greeting.route, "/hello");
   });
 
-  it("refuses unlisted capabilities against the closed empty grant set", () => {
+  it("confirms the empty grant set lists none of the unlisted capability names", () => {
     const granted = Object.freeze([...readJson("App.manifest").capabilities]);
     assert.deepEqual(granted, []);
     for (const cap of UNLISTED) {
