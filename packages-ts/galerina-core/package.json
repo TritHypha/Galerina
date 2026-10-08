@@ -25,7 +25,8 @@
     "openapi": "node compiler/galerina.js openapi examples/api-orders.fungi",
     "verify": "node compiler/galerina.js verify build/examples",
     "targets": "node compiler/galerina.js targets examples",
-    "ai-context": "node compiler/galerina.js ai-context examples --out build/examples"
+    "ai-context": "node compiler/galerina.js ai-context examples --out build/examples",
+    "suggest:vector": "node compiler/galerina.js suggest vector examples"
   },
   "engines": {
     "node": ">=18"

@@ -7,7 +7,11 @@ It is not a production compiler. It is a practical v0.1 scaffold that can:
 - discover `.fungi` source files
 - lex `.fungi` source into source-mapped tokens
 - format `.fungi` files with stable two-space indentation
-- parse core declarations into AST JSON
+- parse core declarations into AST JSON via `compiler/parser.js`
+- build a program AST in `compiler/ast.js` and a symbol table in `compiler/symbol-table.js`
+- diagnose `await` outside an `async` flow
+- parse `vectorize rows { column = .field }` blocks
+- suggest vector syntax with `Galerina suggest vector` without rewriting files
 - extract `/// @tag` strict comments into AST, source-map and AI-context reports
 - run prototype smoke tests for parser, formatter and target diagnostics
 - check `undefined`, silent `null`, truthy/falsy conditions and compute-block I/O
@@ -46,6 +50,7 @@ node compiler/galerina.js dev examples/hello.fungi --watch --out .build-dev
 node compiler/galerina.js serve examples --dev
 node compiler/galerina.js init my-galerina-app
 node compiler/galerina.js explain examples/source-map-error.fungi --for-ai
+node compiler/galerina.js suggest vector examples
 ```
 
 The generated `app.bin` and `app.wasm` files are placeholders. They prove the
@@ -124,6 +129,9 @@ The prototype test command validates the current examples:
 ```bash
 node compiler/galerina.js test examples
 ```
+
+The lexer lives in `compiler/lexer.js`. The parser lives in `compiler/parser.js`.
+AST merge lives in `compiler/ast.js`. The symbol table lives in `compiler/symbol-table.js`.
 
 It checks that `hello.fungi` parses as a secure `main` flow, `boot.fungi` parses the
 project entry and targets, valid examples have no error diagnostics, the
