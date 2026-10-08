@@ -34,6 +34,7 @@
 [HOLD] Define runtime audit log format (JSONL, event categories, trace correlation, FUNGI-AUDIT codes)
       Parent terms are owner decisions, not code (Grok 2026-10-06): (1) "event categories" - docs section 16 lists 10 categories (runtime, execution, effect, capability, denial, fallback, scheduler, deployment, health, integrity) while the frozen v1 RuntimeAuditCategory has 8 (effect, capability, boundary, secret, network, policy, denial, proof); (2) "FUNGI-AUDIT codes" - none exist, the package uses FUNGI-REPORT-001..005. Fail-closed default: keep the 8-category v1 set and FUNGI-REPORT codes; scheduler evidence stays its own record, not a v1 audit event.
       SuperGrok 2026-10-08: Open checkbox closed as HOLD. Owner still picks 10-vs-8 and FUNGI-AUDIT. Do not mint FUNGI-AUDIT-* or a v1 trace-correlation key. docs section 16 remains documentation, not an admitted vocabulary. Tests: tests/runtime-audit-closed-set.test.mjs.
+      Kept HOLD (SuperGrok 2026-10-08): mintFungiAuditCodes / expandRuntimeAuditCategoriesToTen / addV1TraceCorrelationKey / convertSchedulerEvidenceToV1Audit always refuse with REPORT_*_FORBIDDEN. Uniques f40544df / ac67d320 UNCHANGED.
 [x]   - runtime-audit.jsonl schema with all required fields
 [x]   - status values aligned with RuntimeAuditStatus v0.2
 [x]   - capability and effect evidence event shapes
@@ -103,3 +104,12 @@
   FUNGI-AUDIT codes, 10-vs-8 categories, and a v1 trace-correlation key stay HOLD.
   Evidence, scheduler, and health event shapes plus the report-file contracts are
   implemented; scheduler evidence remains its own record.
+
+## Package-side HOLD pin — 2026-10-08
+
+- [x] Package-side HOLD pin: `prepareCoreReportsHoldRequest` emits
+      REQUESTED_NOT_ADMITTED; FUNGI-AUDIT family, 10-category v1 expansion, v1
+      trace-correlation key, and scheduler-as-v1 conversion always refuse with
+      `REPORT_*_FORBIDDEN`. Frozen 8-category v1 set and FUNGI-REPORT-001..005
+      unchanged besides the hold-pin re-export. `tests/core-reports-hold-pin.test.mjs`.
+      (SuperGrok 2026-10-08.) Uniques `f40544df` / `ac67d320` UNCHANGED.
