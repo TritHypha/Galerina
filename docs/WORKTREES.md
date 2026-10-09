@@ -4,7 +4,23 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Verified checkpoint - 2026-10-09
+## Latest retirement checkpoint - 2026-10-10
+
+- Fresh registration count: **64 worktrees, 43 locked** after retiring the detached
+  `supergrok-wat-zt-q9b-fault006-test-flip-20261001` checkout.
+- All 160 changed source paths matched Git blobs at `05eb5c29be9592a42cdd48baaeb027279ff5299d`,
+  verified as an ancestor of remote main. Four generated outputs and the closure marker
+  were preserved with the entire original directory in the local recovery archive.
+- Source status and SHA-256 values were checked before relocation and all 165 changed
+  paths were checked again in the archive. Git administration and index were retained.
+  Only the now-absent original registration was removed; no source files were deleted.
+- The live 23-tree WAT comparison found differing source in the earlier variants.
+  Supersession notes alone do not close those reviews. Twenty-two variants remain.
+- Remote main and the integration branch were both verified at
+  `dde0e89efb12c2855c5ce87a3f1b237b0807e9d3` before this ledger update.
+  Archived Git markers and dependency junctions remain historical, not executable setups.
+
+## Earlier verified checkpoint - 2026-10-09
 
 - Remote main and `fix/absorbed-kb-links-20261009` both reached
   `087f8c172ff4ffe5803ad4ce4c8b87ec104af34c` through non-force fast-forward pushes.
