@@ -8,10 +8,15 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 - Remote main and `fix/absorbed-kb-links-20261009` both reached
   `087f8c172ff4ffe5803ad4ce4c8b87ec104af34c` through non-force fast-forward pushes.
-- Fresh Git registration count after package-TODO retirement: **79 worktrees, 57 locked**. This is not a fresh
+- Fresh Git registration count after package-TODO and WAT retirement: **78 worktrees, 57 locked**. This is not a fresh
   classification of every dirty or ignored file; the full inventory is separate.
 - Consolidation is incomplete. Package-TODO was recoverably retired after its source,
   saved index and independent Git-history restoration were verified.
+- WAT integration was also retired recoverably: 13,527 files retained, 160 changed paths
+  verified in main history, five generated outputs preserved separately, and all 166
+  status records matched through independent recovery. Its redundant local branch was
+  removed; no matching remote branch existed. Eight already-broken external dependency
+  junctions remain explicitly recorded, not claimed repaired.
 
 ## Preservation and integration slots
 
@@ -40,8 +45,8 @@ WSL tests. No force-push, reset of occupied dirty main, or deletion of unreconci
 ## Remaining consolidation
 
 1. Integrate verified generated indexes and this ledger.
-2. Capture and retire WAT next. Preserve WAT's five distinct
-   generated outputs as well as its historically covered source.
+2. Retain package-TODO and WAT recovery archives, including generated outputs and closure
+   records. Do not treat archived external dependencies as standalone executable setups.
 3. Retire individually verified marker-only trees. One failing target need not block others.
 4. Reconcile memory candidates, primary and occupied-main overlays using actual ancestors,
    preserving later-main corrections and testing affected boundaries.
