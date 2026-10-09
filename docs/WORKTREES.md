@@ -6,6 +6,27 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 ## Latest retirement checkpoint - 2026-10-10
 
+- Current verified registration count: **54 worktrees, 40 locked**. Consolidation
+  remains incomplete; the dated batches below explain the reduction, not a clean
+  estate claim.
+- Runtime-executor strict checkout was retired after independent source review
+  found its changes preserved in main. Its unique history remains in a complete
+  recovery bundle (SHA-256 `8117754af06cae1f9cc2a7f0050c611e6d73ef8589864145050576e92a9fbb4e`).
+  An independent bare restore passed strict Git integrity checks and matched all
+  74,133 reachable objects. The original directory, ignored contents, Git admin
+  and index remain in the local recovery archive. Its local branch was removed.
+- Three detached WAT checkouts were retired after their source-preservation PASS
+  and exact HEAD/status/raw-hash rechecks: `supergrok-wat-zt-q9-fault-recode-20261001`,
+  `supergrok-wat-zt-q8-null-build-20261001`, and `supergrok-wat-j1-20260929`.
+  Original directories and administrative/index records remain recoverable;
+  every inventoried changed file was hash-checked again after relocation.
+  Nineteen partially reconciled WAT variants remain; Int64 widening and stricter
+  runtime-parity test findings are still unresolved. Preservation is not runtime
+  correctness evidence.
+- Integration HEAD for these checks was `6638def79f46e2e3c492ff194d472b618881b9d0`.
+  The native memory/diagnostic slice remains uncommitted and under independent
+  corrected-patch review. It is not included in the published-main claim.
+
 - Registration count after the WAT snapshot retirement: **64 worktrees, 43 locked** after retiring the detached
   `supergrok-wat-zt-q9b-fault006-test-flip-20261001` checkout.
 - All 160 changed source paths matched Git blobs at `05eb5c29be9592a42cdd48baaeb027279ff5299d`,
@@ -15,7 +36,8 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
   paths were checked again in the archive. Git administration and index were retained.
   Only the now-absent original registration was removed; no source files were deleted.
 - The live 23-tree WAT comparison found differing source in the earlier variants.
-  Supersession notes alone do not close those reviews. Twenty-two variants remain.
+  Supersession notes alone do not close those reviews. Twenty-two variants remained
+  at that checkpoint, before the three reviewed retirements above.
 - Remote main and the integration branch were both verified at
   `dde0e89efb12c2855c5ce87a3f1b237b0807e9d3` before this ledger update.
   Archived Git markers and dependency junctions remain historical, not executable setups.
@@ -63,7 +85,7 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 |---|---|---|
 | Repository root | Detached at `9a26c71e60e491766ef351d0efe0405b0739c1b6`; 87 status records | Reconcile staged, unstaged and untracked work separately. Keep local-only GROK-BRANCHES.md unpublished. |
 | `.worktrees/rd-0873-native-fungi-bootstrap-implementation/` | Local main at `e1c2496f3f36d154a445ba9c302401ccaaf74bae`; locked; 50 status records | Preserve overlay before moving local main. Remote integration does not update this checkout. |
-| `.worktrees/memory-main-baseline-20261009/` | Reused branch `fix/absorbed-kb-links-20261009`; published through `087f8c172` | Finish generated indexes and ledger; reuse this integration slot. |
+| `.worktrees/memory-main-baseline-20261009/` | Reused branch `fix/absorbed-kb-links-20261009`; published through `6638def79`; native slice locally modified | Complete bounded independent review and verification before publishing the native slice; reuse this integration slot. |
 | `.worktrees/memory-consolidation-20261007/` and `.worktrees/memory-current-main-20261008/` | Historical candidates with distinct overlapping changes | Recheck exact bases and preserve both overlays during reconciliation. |
 | Former `.worktrees/grok-pkg-todos-20260929/` | Retired; redundant local branch removed; no matching remote branch existed | Original directory and independent recovery retained under the local Galerina-Recovery archive. Do not use obsolete path references. |
 
@@ -83,7 +105,8 @@ WSL tests. No force-push, reset of occupied dirty main, or deletion of unreconci
 
 ## Remaining consolidation
 
-1. Integrate verified generated indexes and this ledger.
+1. Complete native diagnostic index validation and independent corrected-patch review;
+   publish only the eligible source/artifact set and keep the ledger current.
 2. Retain package-TODO and WAT recovery archives, including generated outputs and closure
    records. Do not treat archived external dependencies as standalone executable setups.
 3. The thirteen identified marker-only trees are retired. Continue with separately
