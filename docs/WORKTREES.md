@@ -30,6 +30,14 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
   `codex/rd0873-pinned-upload-format-observation-source` and
   `codex/rd0873-task6c-frozen-frame-candidate`. Their exact remote tips were ancestors
   of main and neither had an open PR. Their commits remain recoverable in main history.
+- A second line-ending-only batch reduced the count to **58 worktrees, 43 locked**:
+  `grok-rd0365-custody-host-resolution-20261004` and `grok-wat-d4-e5-zippair-20261003`.
+  Every dirty file was compared with committed text after CRLF-to-LF normalization;
+  original raw bytes, ignored contents and Git administration were preserved on relocation.
+  Both local branches were removed. The RD-0365 remote had a different tip,
+  `79687f2f105d364803dd84e4d47e9b035e5f18c6`; this exact tip was separately verified
+  as an ancestor of main with no open PR before remote deletion. No matching remote
+  WAT D4/E5 branch existed. No workflow contents or behavior were changed.
 
 ## Earlier verified checkpoint - 2026-10-09
 
