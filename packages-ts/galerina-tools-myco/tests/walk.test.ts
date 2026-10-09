@@ -129,6 +129,40 @@ test("walk honours a leading `**/` ignore rule as match-at-any-depth", async () 
   }
 });
 
+test("walk preserves slash-double-star rules at any depth within their declaring subtree", async () => {
+  const dir = await tmpTree({
+    ".gitignore": "/**/build/\n",
+    "build/root.txt": "drop",
+    "nested/build/deep.txt": "drop",
+    "nested/keep.txt": "keep",
+    "sub/.gitignore": "/**/cache/\n/HANDOVER-*.md\n",
+    "sub/cache/root.txt": "drop",
+    "sub/deep/cache/item.txt": "drop",
+    "sub/HANDOVER-root.md": "drop",
+    "sub/deep/HANDOVER-kept.md": "keep",
+    "other/cache/kept.txt": "keep",
+  });
+  try {
+    const rels = new Set(
+      (await walk(dir, { maxFileSize: 1 << 20, useGitignore: true })).map((m) => m.relPath),
+    );
+    for (const ignored of ["build/root.txt", "nested/build/deep.txt", "sub/cache/root.txt",
+      "sub/deep/cache/item.txt", "sub/HANDOVER-root.md"]) {
+      assert.ok(!rels.has(ignored), `${ignored} must be excluded`);
+    }
+    for (const kept of ["nested/keep.txt", "sub/deep/HANDOVER-kept.md", "other/cache/kept.txt"]) {
+      assert.ok(rels.has(kept), `${kept} must remain visible`);
+    }
+    const unfiltered = new Set(
+      (await walk(dir, { maxFileSize: 1 << 20, useGitignore: false })).map((m) => m.relPath),
+    );
+    assert.ok(unfiltered.has("nested/build/deep.txt"), "control: ignored input exists");
+    assert.ok(unfiltered.has("sub/deep/cache/item.txt"), "control: nested ignored input exists");
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("walk lists over-size files as contentSkip=large AND reports them (no silent drop)", async () => {
   const dir = await tmpTree({ "small.txt": "x", "big.txt": "y".repeat(1000) });
   try {

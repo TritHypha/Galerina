@@ -11,7 +11,8 @@
 //   - another pattern containing "/" -> path prefix, anchored at that directory
 //   - a trailing "/"            -> directory-only
 //   - a leading "!"             -> negate (un-ignore); last match wins
-//   - "*" and "?" are globs; "**" and other advanced forms are NOT supported.
+//   - "*" and "?" are globs; leading "**/" is supported for basename rules;
+//     other advanced "**" forms are NOT supported.
 //
 // NESTED ignore files are honoured: descending into a directory that carries its
 // own .gitignore / .mycoignore loads those rules SCOPED to that subtree (a rule
@@ -105,14 +106,19 @@ function parseIgnore(text: string, base: string): Rule[] {
     if (negate) body = body.slice(1);
     const dirOnly = body.endsWith("/");
     if (dirOnly) body = body.slice(0, -1);
-    const anchored = body.startsWith("/");
+    let anchored = body.startsWith("/");
     if (anchored) body = body.slice(1);
     // A leading `**/` means "at any depth" — strip it so the remainder matches by
     // basename (git's very common `**/build/`, `**/.fungi-cache/`, `**/node_modules/`
     // idiom). This is the one `**` form worth honouring; deeper mid-path `**` stays
     // unsupported (documented) — but silently missing `**/x` was indexing build caches
     // a correct .gitignore already excluded (owner 2026-07-25, the .fungi-cache case).
-    if (body.startsWith("**/")) body = body.slice(3);
+    if (body.startsWith("**/")) {
+      body = body.slice(3);
+      // The explicit any-depth prefix overrides root-only basename matching.
+      // Rule.base still confines the match to the declaring ignore subtree.
+      anchored = false;
+    }
     if (body === "" || body.length > MAX_IGNORE_PATTERN) continue;
     if (rules.length >= MAX_IGNORE_RULES) break;
     const basename = !anchored && !body.includes("/");
