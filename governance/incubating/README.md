@@ -1,6 +1,6 @@
 # `governance/incubating/` — plugin drafts (NOT scanned by the border gate)
 
-`galerina border-check` scans only [`../plugins/`](../plugins/). This directory holds
+`galerina border-check` scans the fixed `governance/plugins/` path when present. This directory holds
 **unfinished plugin drafts** that are deliberately kept out of the admission path so
 the gate stays silent (a zero-trust gateway should raise nothing until there is a
 real breach — see the alert-fatigue rationale in the 2026-06-17 audit follow-up).
@@ -13,7 +13,7 @@ A draft here is **not trusted and not admitted** — its presence is inert.
 A schema-only draft (network-capable: `ai.inference`, `network.outbound`,
 `audit.write`) with a placeholder `sourceHash` (`sha256:pending-galerina-promote`).
 It correctly failed the border gate; rather than leave a permanent boot-time
-denial, it is parked here until it is real. Moved from `../plugins/` on 2026-06-17.
+denial, it is parked here until it is real. It was moved from the former `governance/plugins/` path on 2026-06-17; that path is absent from this checkout.
 
 ## Promotion path (draft → admitted)
 

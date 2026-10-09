@@ -1,12 +1,17 @@
 # `.spore` signature block + key custody — v0
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Spec **FROZEN v0** (byte format + custody + FIPS-204 verification semantics); structural golden
 vector reproduces (`gen_sig_block.py`, confirmed byte-for-byte); real signing/verification **impl Blocked**
 (needs a vetted FIPS-204/Ed25519 library — we do **not** hand-roll or fake crypto). **Directly consumable by
 Galerina task #34** — see §2.1. This fully specifies the signature block from
 [`spore-container-v0.md`](spore-container-v0.md) §5 and the key-custody lifecycle, reusing the Galerina
 `BridgeManifest` / `BridgeAttestation` idiom. A **structural** golden vector (placeholder keys, real sizes)
-is in [`_vectors/gen_sig_block.py`](_vectors/gen_sig_block.py).
+was produced by the historical upstream authoring generator `_vectors/gen_sig_block.py`.
 
 > **The one rule:** **sign *over* the 32-byte integrity root; never replace the hash with a signature, and
 > never use a signature as an address/key.** Integrity (TMX-256) answers *"are these the exact bytes?"*;

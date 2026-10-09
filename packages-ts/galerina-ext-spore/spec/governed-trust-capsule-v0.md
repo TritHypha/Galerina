@@ -1,5 +1,10 @@
 # Governed Trust Capsule — v0 (a CWT/COSE profile that bests JWT)
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Draft, buildable (deterministic parts golden-vectored with real `@noble` crypto; full COSE library
 wiring Blocked on the same vetted-lib gate as signing). The near-term deliverable of the photonic-signing
 research phase (`..\..\RESEARCH-PHASE-photonic-signing-and-trust-capsule.md` §2). A **profile of CWT (RFC 8392)
@@ -199,8 +204,8 @@ not wired here.
 ---
 
 ## 11. Golden vectors + adversarial review
-- **Golden vectors** (generator: [`tri-encription/bench/gen-trust-capsule.mjs`](../../tri-encription/bench/gen-trust-capsule.mjs);
-  output: [`_vectors/trust_capsule_vectors.txt`](_vectors/trust_capsule_vectors.txt); real `@noble`,
+- **Golden vectors** (historical upstream generator: `../../tri-encription/bench/gen-trust-capsule.mjs`;
+  output path: `_vectors/trust_capsule_vectors.txt`; these source artifacts are not present in this checkout); real `@noble`,
   RFC-9964-conformant): a fixed CWT claims set → deterministic CBOR → `Sig_structure` → **signed directly** (no
   pre-hash; ML-DSA empty ctx) → a **real, byte-reproducible** Ed25519 signature (deterministic) + a real
   ML-DSA-65 (`-49`) verify round-trip. Confirmed bytes: `body_protected = a1677375726661636574746d662d74727573742d63617073756c652d7630`

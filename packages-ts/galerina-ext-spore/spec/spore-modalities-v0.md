@@ -1,11 +1,16 @@
 # `.spore` modalities & codec registry — v0 (rich media + structured data)
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Draft, buildable. Extends [`spore-container-v0.md`](spore-container-v0.md) §4 (the `modality` plane +
 codec note) into a full **codec registry** so a `.spore` section can carry images, audio, video, streamed media,
 mathematical equations, chemical structures, JSON and XML — without changing the integrity, authenticity, or
 confidentiality layers. Companion to [`spore-encryption-v0.md`](spore-encryption-v0.md) (the STREAM mode large
-media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Reference generator:
-[`_vectors/gen_modality_codecs.py`](_vectors/gen_modality_codecs.py).
+media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Historical upstream reference generator:
+`_vectors/gen_modality_codecs.py`.
 
 > **The one rule (codec-agnostic integrity).** TMX-256 hashes a section's **payload bytes opaquely** — it
 > never parses or interprets them. So *every* modality and codec is integrity-protected and signable

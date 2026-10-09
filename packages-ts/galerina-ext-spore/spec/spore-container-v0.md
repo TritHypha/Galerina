@@ -1,15 +1,22 @@
 # `.spore` container format — v0 (byte-precise, buildable)
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Draft, buildable + **verified**. Companion to
 [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md) (the integrity/hash core). This file
 defines the **on-disk/on-wire byte layout**; TMX-256 defines how the integrity root over that layout
-is computed and signed. A reference writer/reader and the golden container vector below are produced by
-[`_vectors/gen_tmf_container.py`](_vectors/gen_tmf_container.py) — its `integrity_root` is **identical**
+is computed and signed. The upstream authoring generator `_vectors/gen_tmf_container.py` produces the
+reference writer/reader and golden container vector below — its `integrity_root` is **identical**
 to the TMX construction's golden root, so the two specs are provably consistent.
 
 Grounded only; nothing here depends on photonic/ternary hardware or any performance number. NVFP4 appears
-as **one opt-in payload codec**, never as a mandatory unit and never in the integrity bytes
-(see [external-repos-analysis.md](../research/external-repos-analysis.md) §2 — NVFP4 is real but lossy).
+as **one opt-in payload codec**, never as a mandatory unit and never in the integrity bytes.
+NVIDIA's [NVFP4 format documentation](https://docs.nvidia.com/deeplearning/transformer-engine/features/low_precision_training/nvfp4/nvfp4.html)
+describes the E2M1 values and block scaling; the local [NVFP4 codec spec](nvfp4-codec-v0.md#3-e2m1-element--the-exact-value-set)
+demonstrates lossy rounding (`0.75 → 0.5`).
 
 ---
 

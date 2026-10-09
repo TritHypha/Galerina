@@ -1,15 +1,20 @@
 # `.spore` encryption (confidentiality) layer — v0 (byte-precise, buildable)
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Draft, buildable + **partially verified** (the deterministic key-schedule / framing bytes are
 reproduced by a stdlib generator; the KEM/AEAD ciphertext bytes are **Blocked on a vetted lib** and shown as
 labelled placeholders — same posture as [`signature-custody-v0.md`](signature-custody-v0.md)). This is the
 **v1 confidentiality layer** deferred by [`spore-container-v0.md`](spore-container-v0.md) §10, now promoted from
-the [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) blueprint into the
+the `FUNGI-AMD-024` blueprint (historical source path: `../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md`) into the
 oracle-backed spec track. Companion: the integrity core [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md)
 and authenticity [`signature-custody-v0.md`](signature-custody-v0.md) (the gate this layer sits **under**).
 
 A reference generator + golden vector are produced by
-[`_vectors/gen_tmf_encryption.py`](_vectors/gen_tmf_encryption.py) (stdlib SHAKE256 + struct only).
+historical upstream `_vectors/gen_tmf_encryption.py` (stdlib SHAKE256 + struct only).
 
 > **The one rule (verify-before-decrypt).** Confidentiality is added **under** the existing TMX-256 +
 > ML-DSA-65 gate, never beside it. The integrity root is recomputed from the **ciphertext** leaves, the
@@ -41,7 +46,7 @@ only the *payload* a section carries. This layer therefore composes cleanly as a
 
 ## 2. Three orthogonal selector axes (the sketch's `0x01/0x02` collision, resolved)
 
-The [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) sketch overloaded
+The `FUNGI-AMD-024` sketch (historical source path: `../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md`) overloaded
 `0x01`/`0x02` across **three different axes** — KEM profile (§2.1), DEM single-shot-vs-STREAM (§2.3), and
 (after the 2026-06-16 ratification) the AEAD suite. A byte-precise format cannot keep them collapsed. v0
 splits them into **three independent selector bytes**, each with its own registry:
@@ -167,8 +172,8 @@ question #5.
 
 ## 5. Metadata minimization (the `coord`/TVCID is opaque)
 
-Per the ratified metadata verdict (`encryption-architecture.md` §0 #3,
-[`metadata-confidentiality.md`](../../tri-encription/research/metadata-confidentiality.md)): a **cleartext
+Per the ratified metadata verdict ([encryption architecture](https://github.com/TritHypha/ZTF-Knowledge-Bases/blob/e9b84970587c783ca8dce670e7bba16c1f3c2f2c/rd-absorbed/rd-tmf-research-encryption-architecture.md) §0 #3,
+[metadata confidentiality](https://github.com/TritHypha/ZTF-Knowledge-Bases/blob/e9b84970587c783ca8dce670e7bba16c1f3c2f2c/rd-absorbed/rd-tri-encription-research-metadata-confidentiality.md)): a **cleartext
 semantic embedding cannot survive zero-trust** (vec2text recovers ~92% of short text). So the Vector/Attribute
 (embedding) sections are **encrypted inside the DEM**; the only cleartext is integrity/authenticity metadata
 plus this layer's selector bytes and an **opaque, non-semantic** `coord`/TVCID. Fine semantic filtering
@@ -216,7 +221,7 @@ nonce (192 bit) = prefix16 (128-bit random) ‖ BE-u64( (index << 1) | last_flag
   reuse). The bound is **enforced** in the reference, not merely assumed.
 - **Single-shot `0x04`** (`dem_mode=0x01`) may instead carry a 24-byte **random** nonce — safe at this width
   without a counter. Both paths (single-shot + STREAM) are exercised in
-  [`bench/xchacha-suite.mjs`](../../tri-encription/bench/xchacha-suite.mjs) (round-trip, tamper, reorder,
+  historical upstream `../../tri-encription/bench/xchacha-suite.mjs` (round-trip, tamper, reorder,
   truncation — all fail-closed), and **CTX (§8.5) composes over `0x04` unchanged**.
 
 History append (`+1`, RD-DIRECTION §3.3): each appended segment is its own sealed+signed unit whose
@@ -296,7 +301,7 @@ on the wire: C ‖ T(16 B) ‖ commit_tag(32 B)              # +32 B/frame vs §
 
 Reader (extends §7 step 11): recompute `commit_tag'` from the derived `K_aead`, `nonce`, reconstructed
 `committed_aad`, and the received `T`; **constant-time compare** — mismatch ⇒ `CryptoError` (fail-closed) —
-**then** run `aead_suite.Open`. Reference: [`bench/cmt-ctx.mjs`](../../tri-encription/bench/cmt-ctx.mjs)
+**then** run `aead_suite.Open`. Historical upstream reference: `../../tri-encription/bench/cmt-ctx.mjs`
 (**10/10**: round-trip, ciphertext-tamper, commit-tamper, key-binding under 5000 random keys, nonce/AAD binding,
 STREAM compose, **and the no-silent-downgrade test** — `commit_mode` 01→00 strip fails the tag, §below).
 
@@ -361,20 +366,20 @@ self-checks          = KDF deterministic + context/epoch/secret-bound; STREAM no
 ```
 
 ### Reconciliation note (bench KDF) — ✅ DONE (2026-06-16)
-The bench [`bench/lib/kemdem.mjs`](../../tri-encription/bench/lib/kemdem.mjs) originally derived `K_aead` with
+The historical upstream bench `../../tri-encription/bench/lib/kemdem.mjs` originally derived `K_aead` with
 **HKDF-SHA256** + SHA-256 commitment (predating the SHAKE256 ratification). It is now **reconciled to the
 SHAKE256 schedule above** (suite-consistent — one Keccak family across TMX-256/ML-KEM/ML-DSA/DEM), and
 `spore-crypto.test.mjs` still passes **11/11** (the round-trip/tamper/AAD invariants don't pin derived key bytes).
 The reconciliation is cross-checked by
-[`bench/oracle-check.mjs`](../../tri-encription/bench/oracle-check.mjs): the **JS (`@noble`) and Python (stdlib)
+historical upstream `../../tri-encription/bench/oracle-check.mjs`: the **JS (`@noble`) and Python (stdlib)
 DEM key schedules are now byte-identical** — for `shared_secret = bytes(0..31)` and the 36-byte context, both
 produce `K_aead = 9b4fdce2…` and `key_commit = bc8eee3b…`. The conformance oracle is therefore airtight across
 both implementations.
 
 **CTX + XChaCha oracle (§8.5 / §6.1) — ✅ DONE (2026-06-16).** The new deterministic constructs are now
-oracle-backed too: [`_vectors/gen_cmt_ctx.py`](_vectors/gen_cmt_ctx.py) (stdlib SHAKE256) publishes the **CTX
+oracle-backed too: historical upstream `_vectors/gen_cmt_ctx.py` (stdlib SHAKE256) publishes the **CTX
 `commit_tag`** and the **XChaCha 24-byte STREAM nonce**, and
-[`bench/oracle-check-cmt.mjs`](../../tri-encription/bench/oracle-check-cmt.mjs) proves the JS (`@noble`,
+historical upstream `../../tri-encription/bench/oracle-check-cmt.mjs` proves the JS (`@noble`,
 `bench/lib/commit.mjs` — the same code `cmt-ctx.mjs`/`xchacha-suite.mjs` use) bytes are **byte-identical**
 (`commit_tag = ca22f4f5…`, STREAM nonce#2 `…0000000000000005`). The oracle now spans the key schedule **and** the
 committing/nonce layers; the generator count is **9**.
@@ -400,5 +405,5 @@ committing/nonce layers; the generator count is **9**.
   https://www.usenix.org/conference/usenixsecurity21/presentation/len (why non-committing AEAD is exploitable.)
 - Yevgeniy Dodis, Paul Grubbs, Thomas Ristenpart, Joanne Woodage, *Fast Message Franking: From Invisible
   Salamanders to Encryptment*, CRYPTO 2018 — https://eprint.iacr.org/2019/016 (the original two-key GCM collision.)
-- Blueprint: [`FUNGI-AMD-024-spore-confidentiality.md`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) ·
-  measured bench: [`tri-encription/bench/README.md`](../../tri-encription/bench/README.md)
+- Blueprint source path: `../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md` ·
+  measured-bench source path: `../../tri-encription/bench/README.md` (historical references, not active links)

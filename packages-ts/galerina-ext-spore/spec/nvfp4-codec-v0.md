@@ -1,9 +1,14 @@
 # NVFP4 `Vector`-modality codec — v0
 
+> **Evidence availability (2026-10-09):** referenced upstream generators and benches
+> are not included in this checkout. Verification and test-count claims below are
+> retained historical claims, not newly reproduced results. Repairing these links
+> does not restore the missing artifacts or establish current implementation readiness.
+
 **Status:** Draft, buildable + **verified** (executable reference + golden vector). This defines **one
 opt-in payload codec** for `modality = Vector` (§4.2 of [`spore-container-v0.md`](spore-container-v0.md)). It
-is grounded against the **verified** NVFP4 structure in NVIDIA Model-Optimizer / TransformerEngine (see
-[`../research/external-repos-analysis.md`](../research/external-repos-analysis.md) §2).
+is grounded against NVIDIA's [NVFP4 format documentation](https://docs.nvidia.com/deeplearning/transformer-engine/features/low_precision_training/nvfp4/nvfp4.html),
+which specifies the E2M1 value format and its block/global scaling.
 
 > **Three rules that bound this codec:**
 > 1. **Opt-in, never mandatory.** A `Vector` section MAY use NVFP4, or raw `f32`/`f16`, or any codec. Other
@@ -91,7 +96,7 @@ header, §1) times a per-block E4M3 scale (byte 0 of each block). Typical encode
 
 ## 5. Decode / encode (reference)
 
-Implemented and run by [`_vectors/gen_nvfp4_block.py`](_vectors/gen_nvfp4_block.py) (stdlib only):
+Implemented and run by the upstream stdlib generator `_vectors/gen_nvfp4_block.py`:
 
 ```
 decode_block(block9, global_scale):
