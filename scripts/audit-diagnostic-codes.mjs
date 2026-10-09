@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { CODE_TEST } from "./lib/codes.mjs";
+import { parseRustRuntimeErrorDefinitions } from "./lib/rust-runtime-error-codes.mjs";
 
 const argv = process.argv.slice(2);
 const asJson = argv.includes("--json");
@@ -33,7 +34,7 @@ function walk(directory) {
     const path = join(directory, entry);
     const stats = statSync(path);
     if (stats.isDirectory()) files.push(...walk(path));
-    else if (entry.endsWith(".ts") && !entry.endsWith(".d.ts")) files.push(path);
+    else if ((entry.endsWith(".ts") && !entry.endsWith(".d.ts")) || entry.endsWith(".rs")) files.push(path);
   }
   return files;
 }
@@ -69,9 +70,32 @@ const codeToNames = new Map();
 const nameToCodes = new Map();
 const codeToSeverities = new Map();
 const codeToAllowedSets = new Map();
+const violations = [];
 
 for (const file of walk(sourceRoot)) {
   const source = readFileSync(file, "utf8");
+  if (file.endsWith(".rs")) {
+    for (const definition of parseRustRuntimeErrorDefinitions(source)) {
+      const missing = ["code", "name", "severity", "message"]
+        .filter((field) => typeof definition[field] !== "string" || definition[field].length === 0);
+      if (missing.length > 0 || !/^ERR_[A-Z0-9_]+$/.test(definition.code ?? "")) {
+        violations.push({
+          code: "V6_RUNTIME_METADATA_INVALID",
+          subject: definition.constant,
+          detail: missing.length > 0
+            ? `Missing or empty fields: ${missing.join(", ")}`
+            : `Invalid runtime code: ${definition.code}`,
+        });
+        continue;
+      }
+      add(codeToNames, definition.code, definition.name);
+      add(nameToCodes, definition.name, definition.code);
+      add(codeToSeverities, definition.code, definition.severity);
+    }
+    // Rust has explicit parsed metadata; the TypeScript proximity scan below
+    // must not reinterpret it or associate fields from neighbouring constants.
+    continue;
+  }
   const lines = source.split(/\r?\n/);
   const registryEntry = /["']([^"']+)["']\s*:\s*\[((?:\s*"[^"]+"\s*,?)+)\]/g;
   for (const match of source.matchAll(registryEntry)) {
@@ -127,7 +151,6 @@ for (const file of walk(sourceRoot)) {
   }
 }
 
-const violations = [];
 for (const [code, names] of codeToNames) {
   if (names.size > 1) {
     violations.push({

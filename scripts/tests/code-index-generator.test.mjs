@@ -74,6 +74,60 @@ test("code-index --check refuses missing and drifted output without writing", ()
   }
 });
 
+test("code-index includes Rust runtime error definitions, mappings, and tests", () => {
+  const root = mkdtempSync(join(tmpdir(), "code-index-rust-runtime-errors-"));
+  try {
+    write(
+      root,
+      "packages-ts/example/native/src/errors.rs",
+      [
+        "pub struct RuntimeErrorCode {",
+        "    pub code: &'static str,",
+        "    pub name: &'static str,",
+        "    pub severity: &'static str,",
+        "    pub message: &'static str,",
+        "}",
+        "pub const ERR_EXAMPLE_REFUSED: RuntimeErrorCode = RuntimeErrorCode {",
+        '    code: "ERR_EXAMPLE_REFUSED",',
+        '    name: "EXAMPLE_REFUSED",',
+        '    severity: "error",',
+        '    message: "example refused",',
+        "};",
+        "fn runtime_code(error: Error) -> &'static RuntimeErrorCode {",
+        '    // } ERR_EXAMPLE_REFUSED must not close the function or emit',
+        '    let example = "} ERR_EXAMPLE_REFUSED";',
+        "    match error { Error::Example => &ERR_EXAMPLE_REFUSED }",
+        "}",
+        "fn merely_mentions_code() { let _ = ERR_EXAMPLE_REFUSED; }",
+        "",
+      ].join("\n"),
+    );
+    write(
+      root,
+      "packages-ts/example/native/src/tests.rs",
+      '#[test] fn code_is_stable() { assert_eq!(ERR_EXAMPLE_REFUSED.code, "ERR_EXAMPLE_REFUSED"); }\n',
+    );
+
+    const generated = run(root);
+    assert.equal(generated.status, 0, generated.stderr);
+
+    const index = JSON.parse(
+      readFileSync(join(root, "build", "code-index", "code-index.json"), "utf8"),
+    );
+    const item = index.find(({ code }) => code === "ERR_EXAMPLE_REFUSED");
+    assert.deepEqual(item?.names, ["EXAMPLE_REFUSED"]);
+    assert.deepEqual(item?.severities, ["error"]);
+    assert.deepEqual(item?.defs, ["packages-ts/example/native/src/errors.rs:7"]);
+    assert.deepEqual(item?.emits, ["packages-ts/example/native/src/errors.rs:16"]);
+    assert.deepEqual(item?.allSites.filter((site) => site.startsWith("ref ")), [
+      "ref packages-ts/example/native/src/errors.rs:18",
+    ]);
+    assert.equal(item?.tests, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("code-index keeps one-line diagnostic metadata inside its own definition", () => {
   const root = mkdtempSync(join(tmpdir(), "code-index-definition-boundary-"));
   try {
