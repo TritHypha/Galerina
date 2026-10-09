@@ -8,9 +8,10 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 - Remote main and `fix/absorbed-kb-links-20261009` both reached
   `087f8c172ff4ffe5803ad4ce4c8b87ec104af34c` through non-force fast-forward pushes.
-- Fresh Git registration count: **80 worktrees, 57 locked**. This is not a fresh
+- Fresh Git registration count after package-TODO retirement: **79 worktrees, 57 locked**. This is not a fresh
   classification of every dirty or ignored file; the full inventory is separate.
-- Consolidation is incomplete. No old worktree was retired in these integration batches.
+- Consolidation is incomplete. Package-TODO was recoverably retired after its source,
+  saved index and independent Git-history restoration were verified.
 
 ## Preservation and integration slots
 
@@ -20,7 +21,7 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 | `.worktrees/rd-0873-native-fungi-bootstrap-implementation/` | Local main at `e1c2496f3f36d154a445ba9c302401ccaaf74bae`; locked; 50 status records | Preserve overlay before moving local main. Remote integration does not update this checkout. |
 | `.worktrees/memory-main-baseline-20261009/` | Reused branch `fix/absorbed-kb-links-20261009`; published through `087f8c172` | Finish generated indexes and ledger; reuse this integration slot. |
 | `.worktrees/memory-consolidation-20261007/` and `.worktrees/memory-current-main-20261008/` | Historical candidates with distinct overlapping changes | Recheck exact bases and preserve both overlays during reconciliation. |
-| `.worktrees/grok-pkg-todos-20260929/` | Capture verifies 15,977 files, 630,678,720 bytes, 13 internal junctions and original index; not retired | Finish independent Git-object recovery, metadata and incoming-use checks, then retire recoverably. |
+| Former `.worktrees/grok-pkg-todos-20260929/` | Retired; redundant local branch removed; no matching remote branch existed | Original directory and independent recovery retained under the local Galerina-Recovery archive. Do not use obsolete path references. |
 
 Owner-authorized consolidation includes eligible commits, pushes and merges. Do not
 trigger GitHub Actions/CI; verify it remains disabled before publication. Use local
@@ -39,7 +40,7 @@ WSL tests. No force-push, reset of occupied dirty main, or deletion of unreconci
 ## Remaining consolidation
 
 1. Integrate verified generated indexes and this ledger.
-2. Finish package-TODO recovery and retire it, then WAT. Preserve WAT's five distinct
+2. Capture and retire WAT next. Preserve WAT's five distinct
    generated outputs as well as its historically covered source.
 3. Retire individually verified marker-only trees. One failing target need not block others.
 4. Reconcile memory candidates, primary and occupied-main overlays using actual ancestors,
@@ -49,5 +50,13 @@ WSL tests. No force-push, reset of occupied dirty main, or deletion of unreconci
 6. Verify main plus one working branch, remote equality, no unaccounted-for work and fresh
    indexes before reporting completion. Five deferred memory/consumer PRs remain separate.
 
-The package-TODO capture is not yet an independent repository: its copied `.git` marker
-still points to the original administrative directory. Do not run Git in that copy.
+Package-TODO recovery contains the preserved original directory and administrative
+metadata, a byte-verified copy with internal junctions retargeted within the copy,
+the saved index, a complete history bundle and independently restored bare repository.
+The restored repository passed full and cached-object checks; recovery status exactly
+matched all 33 original status records. File metadata checks covered 15,977 files;
+directory permissions were recorded and the original directory was moved, not deleted.
+The copied `.git` markers and original junction spellings are historical: recover using
+the independent bare repository, explicit work-tree and saved index, not plain Git in
+the copied directory. Process command-line checks found no named user of the old path;
+this is not an exhaustive open-handle or external-dependency proof.
