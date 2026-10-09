@@ -18,7 +18,13 @@ pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
 };
 pub use resource::{VmResourceHandle, VmResourceKind, MAX_RESOURCES_PER_LEASE};
-pub use secret_arena::{MemoryStatus, SecretArena, SecretArenaError};
+pub use secret_arena::{
+    MemoryStatus, RuntimeErrorCode, SecretArena, SecretArenaError, ERR_SECRET_ARENA_CLEANUP_FAILED,
+    ERR_SECRET_ARENA_CREATE_REFUSED, ERR_SECRET_ARENA_INVALID_LENGTH, ERR_SECRET_ARENA_MAP_REFUSED,
+    ERR_SECRET_ARENA_NOT_ACTIVE, ERR_SECRET_ARENA_NOT_ALLOCATED,
+    ERR_SECRET_ARENA_PAGE_SIZE_REFUSED, ERR_SECRET_ARENA_RESIZE_REFUSED,
+    ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM,
+};
 pub use veo::{
     admit_general_veo_linker, admit_veo_object, AdmittedVeoObject, VeoActionIdentity,
     VeoAdmissionRequest, VeoProfile,

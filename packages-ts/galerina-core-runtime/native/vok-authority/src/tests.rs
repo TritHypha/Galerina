@@ -725,3 +725,199 @@ fn secret_arena_owned_copy_survives_arena_cleanup() {
     assert_eq!(arena.status(), MemoryStatus::Cleaned);
     assert_eq!(copied, [0xA5], "the owned copy is outside arena cleanup");
 }
+
+#[test]
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "64",
+    any(target_arch = "x86_64", target_arch = "aarch64")
+))]
+#[ignore = "requires a memfd_secret-enabled 64-bit Linux kernel; run explicitly on the target"]
+fn secret_arena_cleans_nonzero_test_bytes_before_releasing_the_charge() {
+    const RESERVED: usize = 4097;
+    const MARKER: [u8; 8] = [0xA5, 0x5A, 0xC3, 0x3C, 0x96, 0x69, 0xF0, 0x0F];
+
+    let mut arena = SecretArena::reserve(RESERVED).expect("supported Linux secretmem");
+    arena
+        .allocate_pages()
+        .expect("secret pages must be faulted in");
+    assert_eq!(arena.status(), MemoryStatus::Allocated);
+    assert_eq!(arena.unresolved_bytes(), RESERVED);
+
+    let observed = arena
+        .with_bytes_mut(|bytes| {
+            bytes[..MARKER.len()].copy_from_slice(&MARKER);
+            let mut observed = [0; MARKER.len()];
+            observed.copy_from_slice(&bytes[..MARKER.len()]);
+            observed
+        })
+        .expect("owned secret-memory bytes must be accessible while active");
+    assert_eq!(observed, MARKER);
+    assert_eq!(arena.status(), MemoryStatus::Retained);
+    assert!(arena.allocated_bytes() >= RESERVED);
+    assert!(arena.retained_bytes() > 0);
+    assert_eq!(arena.retained_bytes(), arena.allocated_bytes());
+    assert_eq!(arena.unresolved_bytes(), RESERVED);
+
+    arena
+        .cleanup()
+        .expect("wipe, read-back, unmap and close must all succeed");
+    assert_eq!(arena.status(), MemoryStatus::Cleaned);
+    assert_eq!(arena.allocated_bytes(), 0);
+    assert_eq!(arena.retained_bytes(), 0);
+    assert_eq!(arena.unresolved_bytes(), 0);
+    assert_eq!(
+        arena.with_bytes_mut(|_| ()),
+        Err(SecretArenaError::NotActive)
+    );
+}
+
+#[test]
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "64",
+    any(target_arch = "x86_64", target_arch = "aarch64")
+))]
+#[ignore = "requires a memfd_secret-enabled 64-bit Linux kernel; run explicitly on the target"]
+fn cleanup_of_region_a_allows_region_b_to_compute_until_a_is_retired() {
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    use std::sync::{mpsc, Arc};
+    use std::thread;
+    use std::time::Duration;
+
+    // Leave room under this WSL runner's 64 MiB RLIMIT_MEMLOCK for region B.
+    const REGION_A_BYTES: usize = 48 * 1024 * 1024;
+    const REGION_B_BYTES: usize = 4096;
+
+    let cleanup_started = Arc::new(AtomicBool::new(false));
+    let cleanup_done = Arc::new(AtomicBool::new(false));
+    let b_steps_during_cleanup = Arc::new(AtomicUsize::new(0));
+    let (b_ready_tx, b_ready_rx) = mpsc::sync_channel(1);
+
+    // Arena B is created and remains owned by this worker thread; the !Send arena
+    // never crosses the thread boundary. Its actual secret-memory mapping is used
+    // continuously while arena A performs its real wipe/read-back/unmap/close path.
+    let b_cleanup_started = Arc::clone(&cleanup_started);
+    let b_cleanup_done = Arc::clone(&cleanup_done);
+    let b_progress = Arc::clone(&b_steps_during_cleanup);
+    let region_b = thread::spawn(move || {
+        let mut arena_b = SecretArena::reserve(REGION_B_BYTES).expect("reserve region B");
+        arena_b.allocate_pages().expect("allocate region B");
+        let outcome = arena_b
+            .with_bytes_mut(|bytes| {
+                bytes[0] = 0xB7;
+                b_ready_tx.send(()).expect("signal region B ready");
+                let mut compute_steps = 0usize;
+                while !b_cleanup_done.load(Ordering::Acquire) {
+                    if b_cleanup_started.load(Ordering::Acquire) {
+                        bytes[1] = bytes[1].wrapping_add(1);
+                        compute_steps = compute_steps.wrapping_add(1);
+                        b_progress.fetch_add(1, Ordering::Relaxed);
+                    }
+                    std::hint::spin_loop();
+                }
+                (bytes[0], compute_steps)
+            })
+            .expect("region B stays available while A is cleaned");
+
+        assert_eq!(arena_b.status(), MemoryStatus::Retained);
+        assert_eq!(arena_b.unresolved_bytes(), REGION_B_BYTES);
+        arena_b.cleanup().expect("clean region B independently");
+        (outcome, arena_b.status(), arena_b.unresolved_bytes())
+    });
+
+    let a_cleanup_started = Arc::clone(&cleanup_started);
+    let a_cleanup_done = Arc::clone(&cleanup_done);
+    let region_a = thread::spawn(move || {
+        let mut arena_a = SecretArena::reserve(REGION_A_BYTES).expect("reserve region A");
+        arena_a.allocate_pages().expect("allocate region A");
+        arena_a
+            .with_bytes_mut(|bytes| bytes[0] = 0xA3)
+            .expect("write region A");
+        b_ready_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("region B reached its compute loop");
+
+        a_cleanup_started.store(true, Ordering::Release);
+        let cleanup_result = arena_a.cleanup();
+        a_cleanup_done.store(true, Ordering::Release);
+        cleanup_result.expect("region A wipe, read-back and release succeed");
+        (arena_a.status(), arena_a.unresolved_bytes())
+    });
+
+    assert_eq!(
+        region_a.join().expect("region A worker completes"),
+        (MemoryStatus::Cleaned, 0)
+    );
+    let (b_outcome, b_status, b_unresolved) = region_b.join().expect("region B worker completes");
+    assert_eq!(b_outcome.0, 0xB7, "A cleanup must not alter B's bytes");
+    assert!(b_outcome.1 > 0, "B must make progress during A cleanup");
+    assert!(b_steps_during_cleanup.load(Ordering::Relaxed) > 0);
+    assert_eq!(b_status, MemoryStatus::Cleaned);
+    assert_eq!(b_unresolved, 0);
+}
+
+#[test]
+fn secret_arena_errors_have_unique_canonical_runtime_code_metadata() {
+    let cases = [
+        (
+            SecretArenaError::InvalidLength,
+            "ERR_SECRET_ARENA_INVALID_LENGTH",
+            "SECRET_ARENA_INVALID_LENGTH",
+        ),
+        (
+            SecretArenaError::UnsupportedPlatform,
+            "ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM",
+            "SECRET_ARENA_UNSUPPORTED_PLATFORM",
+        ),
+        (
+            SecretArenaError::CreateRefused { os_errno: 1 },
+            "ERR_SECRET_ARENA_CREATE_REFUSED",
+            "SECRET_ARENA_CREATE_REFUSED",
+        ),
+        (
+            SecretArenaError::ResizeRefused,
+            "ERR_SECRET_ARENA_RESIZE_REFUSED",
+            "SECRET_ARENA_RESIZE_REFUSED",
+        ),
+        (
+            SecretArenaError::MapRefused,
+            "ERR_SECRET_ARENA_MAP_REFUSED",
+            "SECRET_ARENA_MAP_REFUSED",
+        ),
+        (
+            SecretArenaError::PageSizeRefused,
+            "ERR_SECRET_ARENA_PAGE_SIZE_REFUSED",
+            "SECRET_ARENA_PAGE_SIZE_REFUSED",
+        ),
+        (
+            SecretArenaError::NotAllocated,
+            "ERR_SECRET_ARENA_NOT_ALLOCATED",
+            "SECRET_ARENA_NOT_ALLOCATED",
+        ),
+        (
+            SecretArenaError::NotActive,
+            "ERR_SECRET_ARENA_NOT_ACTIVE",
+            "SECRET_ARENA_NOT_ACTIVE",
+        ),
+        (
+            SecretArenaError::CleanupFailed,
+            "ERR_SECRET_ARENA_CLEANUP_FAILED",
+            "SECRET_ARENA_CLEANUP_FAILED",
+        ),
+    ];
+
+    let mut seen = std::collections::HashSet::new();
+    for (error, code, name) in cases {
+        let metadata = error.runtime_code();
+        assert_eq!(metadata.code, code);
+        assert_eq!(metadata.name, name);
+        assert_eq!(metadata.severity, "error");
+        assert!(!metadata.message.is_empty());
+        assert!(seen.insert(metadata.code), "runtime code must be unique");
+        // Display preserves the pre-registration identifier; canonical code
+        // consumers use runtime_code(), not formatted user-facing text.
+        assert!(format!("{error}").starts_with(metadata.name));
+    }
+    assert!(format!("{}", SecretArenaError::CreateRefused { os_errno: 13 }).ends_with(":13"));
+}
