@@ -327,6 +327,20 @@ test("scanText ignores links inside Markdown code spans and fences", () => {
   assert.deepEqual(out.map((finding) => finding.href), ["outside.md"]);
 });
 
+test("scanText still checks a Markdown link whose label contains inline code", () => {
+  const out = scanText(
+    "spec/page.md",
+    "See [`external-repos-analysis.md`](../research/external-repos-analysis.md).",
+    () => false,
+    new Map(),
+    REPO,
+  );
+
+  assert.equal(out.length, 1, "inline code in the label must not hide the live link target");
+  assert.equal(out[0]?.href, "../research/external-repos-analysis.md");
+  assert.equal(out[0]?.cls, "MISSING");
+});
+
 test("scanPrivateRefs ignores private links inside Markdown code", () => {
   const privateTarget = `private/reference/${privateDocName("secret")}`;
   const text = [

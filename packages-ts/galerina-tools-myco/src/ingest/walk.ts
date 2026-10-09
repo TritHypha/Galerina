@@ -7,7 +7,8 @@
 // Ignore handling is a *practical subset* of .gitignore, chosen to be
 // predictable rather than bug-for-bug compatible (see DESIGN.md):
 //   - a pattern with no "/"     -> basename glob, matched at any depth
-//   - a pattern containing "/"  -> path prefix, anchored at the root
+//   - a leading "/"             -> anchored to the ignore file's directory
+//   - another pattern containing "/" -> path prefix, anchored at that directory
 //   - a trailing "/"            -> directory-only
 //   - a leading "!"             -> negate (un-ignore); last match wins
 //   - "*" and "?" are globs; "**" and other advanced forms are NOT supported.
@@ -51,6 +52,7 @@ interface Rule {
   dirOnly: boolean;
   negate: boolean;
   basename: boolean; // no-slash rule -> test the basename, else the full path
+  anchored: boolean; // leading slash -> root of the ignore file, even for a basename pattern
   base: string; // relDir of the ignore file that declared this rule ("" = root); scopes it to that subtree
 }
 
@@ -103,7 +105,8 @@ function parseIgnore(text: string, base: string): Rule[] {
     if (negate) body = body.slice(1);
     const dirOnly = body.endsWith("/");
     if (dirOnly) body = body.slice(0, -1);
-    if (body.startsWith("/")) body = body.slice(1);
+    const anchored = body.startsWith("/");
+    if (anchored) body = body.slice(1);
     // A leading `**/` means "at any depth" — strip it so the remainder matches by
     // basename (git's very common `**/build/`, `**/.fungi-cache/`, `**/node_modules/`
     // idiom). This is the one `**` form worth honouring; deeper mid-path `**` stays
@@ -112,8 +115,8 @@ function parseIgnore(text: string, base: string): Rule[] {
     if (body.startsWith("**/")) body = body.slice(3);
     if (body === "" || body.length > MAX_IGNORE_PATTERN) continue;
     if (rules.length >= MAX_IGNORE_RULES) break;
-    const basename = !body.includes("/");
-    rules.push({ pattern: body, dirOnly, negate, basename, base });
+    const basename = !anchored && !body.includes("/");
+    rules.push({ pattern: body, dirOnly, negate, basename, anchored, base });
   }
   return rules;
 }
@@ -160,6 +163,7 @@ function isIgnored(rules: Rule[], relPath: string, isDir: boolean): boolean {
       sub = relPath.slice(r.base.length + 1);
     }
     const target = r.basename ? sub.slice(sub.lastIndexOf("/") + 1) : sub;
+    if (r.anchored && !r.pattern.includes("/") && target.includes("/")) continue;
     if (globMatch(r.pattern, target)) ignored = !r.negate;
   }
   return ignored;

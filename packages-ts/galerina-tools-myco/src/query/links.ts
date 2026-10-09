@@ -129,7 +129,9 @@ function markdownLinksOutsideCode(text: string): RegExpMatchArray[] {
     const end = start + match[0].length;
     while (ranges[rangeIndex] && ranges[rangeIndex]!.end <= start) rangeIndex++;
     const range = ranges[rangeIndex];
-    if (range && range.start < end) continue;
+    // Inline code is legal inside a Markdown link label (for example,
+    // [`type`](types.md)); only suppress a match when its opening `[` is inside code.
+    if (range && range.start <= start && start < range.end) continue;
     matches.push(match);
   }
   return matches;
