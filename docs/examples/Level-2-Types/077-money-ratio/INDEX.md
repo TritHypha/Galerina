@@ -10,7 +10,7 @@
 
 | Document | Description |
 |---|---|
-| [`notes.md`](notes.md) | Concept: Money<GBP> / Money<GBP> yields Decimal |
+| [`notes.md`](notes.md) | Concept: Money<GBP> / Money<GBP> yields Decimal — written a.divideBy(b, scale, mode), since a ratio must be rounded to a |
 
 ---
 

@@ -10,7 +10,7 @@
 
 | Document | Description |
 |---|---|
-| [`notes.md`](notes.md) | Money<C>  Decimal produces Money<C>. This is the correct pattern for rates, VAT, and percentage calculations. Note: Deci |
+| [`notes.md`](notes.md) | m.multiply(rate, "halfEven") produces Money<C>. This is the correct pattern for rates, VAT, and percentage calculations. |
 
 ---
 
