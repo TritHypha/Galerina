@@ -13,6 +13,26 @@ import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 import * as L from "../dist/index.js";
 
+function finiteNumber(x, label) {
+  let value = x;
+  for (let depth = 0; depth < 2; depth++) {
+    if (typeof value === "object" && value !== null && Object.hasOwn(value, "value")) {
+      value = value.value;
+    }
+  }
+  assert.equal(typeof value, "number", `${label}: expected numeric result`);
+  assert.ok(Number.isFinite(value), `${label}: expected finite result`);
+  return value;
+}
+
+it("parity result boundary refuses coercible and non-finite values", () => {
+  for (const value of ["7", null, undefined, true, NaN, Infinity, -Infinity, { value: "7" }]) {
+    assert.throws(() => finiteNumber(value, "negative control"));
+  }
+  assert.equal(finiteNumber(7, "positive control"), 7);
+  assert.equal(finiteNumber({ value: { value: 7 } }, "wrapped control"), 7);
+});
+
 const __dir = dirname(fileURLToPath(import.meta.url));
 const strip = (p) => {
   let s = readFileSync(join(__dir, "../src/self-hosted", p), "utf8");
@@ -112,12 +132,12 @@ function unresolvedMembers(wat) {
 
 async function interpFlow(name) {
   const res = await L.executeFlow(name, new Map(), prog.ast, prog.flows, undefined, undefined, { pureFastPath: true });
-  return Number(res?.value?.value ?? res?.value ?? res);
+  return finiteNumber(res, `j7 interp ${name}`);
 }
 
-let wasmCtx = null;
+let wasmCtx = { kind: "none", reason: "wasm-uninitialized" };
 async function ensureWasm() {
-  if (wasmCtx) return wasmCtx;
+  if (wasmCtx.kind === "found") return wasmCtx.value;
   const asm = await L.assembleWAT(WAT);
   assert.ok(asm.valid && (asm.diagnostics ?? []).length === 0,
     "J7 combined WAT assembles: " + JSON.stringify(asm.diagnostics));
@@ -132,21 +152,22 @@ async function ensureWasm() {
   const { instance } = await L.admitAndInstantiate({
     wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host,
   });
-  wasmCtx = { host, instance, nextH: maxH + 1 };
-  return wasmCtx;
+  const ctx = { host, instance, nextH: maxH + 1 };
+  wasmCtx = { kind: "found", value: ctx };
+  return ctx;
 }
 
 async function wasmFlow(name) {
   const ctx = await ensureWasm();
   const fn = ctx.instance.exports[name];
   assert.equal(typeof fn, "function", `${name} exported`);
-  return Number(fn());
+  return finiteNumber(fn(), `j7 wasm ${name}`);
 }
 
 async function interpRunProgram(src) {
   const args = new Map([["src", { __tag: "string", value: src }]]);
   const res = await L.executeFlow("runtimeProbe", args, prog.ast, prog.flows, undefined, undefined, { pureFastPath: true });
-  return Number(res?.value?.value ?? res?.value ?? res);
+  return finiteNumber(res, "j7 interp runtimeProbe");
 }
 
 async function wasmRunProgram(src) {
@@ -155,7 +176,7 @@ async function wasmRunProgram(src) {
   assert.equal(typeof fn, "function", "runtimeProbe exported");
   const srcH = ctx.nextH++;
   ctx.host.seedString(srcH, src);
-  return Number(fn(srcH));
+  return finiteNumber(fn(srcH), "j7 wasm runtimeProbe");
 }
 
 const PROBES = [

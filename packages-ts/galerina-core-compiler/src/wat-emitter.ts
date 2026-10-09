@@ -3511,9 +3511,9 @@ function emitBlockStatements(
         if (is64BitWatType(currentReturnBase) && watStackType(exprStr) === "i32") {
           // Check if the expr is a `(local.get $name)` where $name is already an i64 local.
           // localDecls entries look like: `(local $name i64)` or `(local $name i32)`.
-          const localGetGroups = [...exprStr.matchAll(/^\(local\.get \$([^\s)]+)\)/g)][0];
-          const isAlreadyI64 = localGetGroups !== undefined
-            ? localDecls.some((d) => d.includes(`${localGetGroups[1]}`) && d.endsWith(" i64)"))
+          const localGetGroups = /^\(local\.get \$([^\s)]+)\)$/.exec(exprStr);
+          const isAlreadyI64 = localGetGroups !== null
+            ? localDecls.some((d) => /^\(local\s+\$([^\s)]+)\s+i64\)$/.exec(d)?.[1] === localGetGroups[1])
             : false;
           // Also check: is it a parameter access? Parameters are not in localDecls — check recordVarTypes.
           // A param typed "Int64" or "UInt64" in recordVarTypes is already i64.
