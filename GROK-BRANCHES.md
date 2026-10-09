@@ -896,7 +896,7 @@ No local or remote grok/ branches, and no grok/ PRs.
 - Galerina #80 grok/core-network-hold-unlocks-20261005 tip -> **b1b61c9d4** ([skip ci]): SuperGrok C11 NB-2 refuse `allowPii:true` / `requireRedaction:false` on `aiProviders`. Worktree .worktrees/grok-net-c9. No schemaVersion bump.
 - Galerina **draft #81** grok/core-runtime-isolated-host-20261005 @ **6c6e8a7e3** (base #77 `grok/core-runtime-governed-plans-20261005`; worktree .worktrees/grok-runtime-isolated): isolated hard-termination host + authenticated receipts. core-runtime 6->4. SuperGrok C12 queued (c14 fixtures cited).
 - Galerina **draft #82** grok/core-cli-verify-report-20261005 @ **6545b333a** tip (commits bc5f11fc8, 394e3a85b; worktree .worktrees/grok-c6-nb): verification-report.json + hostile-getter harden. core-cli 48->47, bang 1->0.
-- Galerina **draft #83** grok/core-compute-taxonomy-20261005 @ **6126cb3ea** tip (commit e99ce5589; worktree `C:\Users\phill\AppData\Local\Temp\gal-compute-c11`): specialist AI hardware taxonomy + sensitivity/audit. core-compute 25->23.
+- Galerina **draft #83** grok/core-compute-taxonomy-20261005 @ **6126cb3ea** tip (commit e99ce5589): specialist AI hardware taxonomy + sensitivity/audit. core-compute 25->23. Current custody: worktree `gal-compute-c11` is no longer registered; branch remains local and on origin; PR #83 is closed, unmerged.
 - core-reports runtime-health on #79 **not started**: still owner schema / new audit-category decision (unchanged from #79 deferral). Never merged/approved/force-pushed.
 - #80 tip follow-up: webhook shim reachable from index (Hardened Border orphan fix) @ b0cb39b9f [skip ci].
 
