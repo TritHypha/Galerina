@@ -6,7 +6,7 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 ## Latest retirement checkpoint - 2026-10-10
 
-- Fresh registration count: **64 worktrees, 43 locked** after retiring the detached
+- Registration count after the WAT snapshot retirement: **64 worktrees, 43 locked** after retiring the detached
   `supergrok-wat-zt-q9b-fault006-test-flip-20261001` checkout.
 - All 160 changed source paths matched Git blobs at `05eb5c29be9592a42cdd48baaeb027279ff5299d`,
   verified as an ancestor of remote main. Four generated outputs and the closure marker
@@ -19,6 +19,17 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 - Remote main and the integration branch were both verified at
   `dde0e89efb12c2855c5ce87a3f1b237b0807e9d3` before this ledger update.
   Archived Git markers and dependency junctions remain historical, not executable setups.
+- Latest count after four further recoverable retirements: **60 worktrees, 43 locked**.
+  `codex-pr143-reconcile`, `grok-rd0349-zt-defaults-20261004`,
+  `grok-rd0361-slide-s1-20261004` and `grok-rd0361-slide-s5-20261004` each had one
+  dirty generated document whose normalized Git blob exactly matched its committed
+  version. All four HEADs were ancestors of main. Original directories, index and
+  administrative records were preserved; the three redundant local branches were
+  removed, and no matching remote branches existed.
+- Removed the two remaining remote counterparts from the earlier marker-only batch:
+  `codex/rd0873-pinned-upload-format-observation-source` and
+  `codex/rd0873-task6c-frozen-frame-candidate`. Their exact remote tips were ancestors
+  of main and neither had an open PR. Their commits remain recoverable in main history.
 
 ## Earlier verified checkpoint - 2026-10-09
 

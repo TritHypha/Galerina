@@ -86,7 +86,7 @@ build/graph/galerina-ai-map.md
 Run from the repository root:
 
 ```powershell
-cd C:\laragon\www\Galerina
+# Run in your Galerina checkout root; no fixed installation directory is required.
 node packages-ts\galerina-core-cli\dist\index.js graph --out build\graph
 ```
 
