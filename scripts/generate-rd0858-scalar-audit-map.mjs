@@ -189,10 +189,12 @@ export const buildAuditMapCandidate = () => {
       locator,
     },
     approval: {
-      status: "APPROVED",
-      planDigest,
-      authority: "authority://owner/rd0858-unit4-scalar-profile-1",
-      evidence: "receipt://galerina/rd0858-unit4-scalar-oracle/approved-plan",
+      // Generation supplies a proposal, not approval. planDigest below is
+      // governing-document provenance, not the shared tool's executable digest.
+      status: "DRAFT",
+      planDigest: null,
+      authority: null,
+      evidence: null,
     },
     audits: auditTemplates.map((entry) => ({ ...entry, build: locator })),
   };
@@ -232,7 +234,10 @@ const selfTest = () => {
   const locator = `git://galerina/${first.implementationCommit}`;
   if (
     decoded.subject.locator !== locator ||
-    decoded.approval.planDigest !== first.planDigest ||
+    decoded.approval.status !== "DRAFT" ||
+    decoded.approval.planDigest !== null ||
+    decoded.approval.authority !== null ||
+    decoded.approval.evidence !== null ||
     !decoded.audits.every((entry) => entry.build === locator)
   ) {
     throw new Error("AUDIT_MAP_BINDING_REFUSED");

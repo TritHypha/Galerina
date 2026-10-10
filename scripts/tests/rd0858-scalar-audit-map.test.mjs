@@ -61,13 +61,15 @@ describe("RD-0858 scalar audit-map generator", () => {
     }
   });
 
-  it("binds every audit to the same implementation commit and exact plan digest", async () => {
+  it("binds every audit to the implementation without manufacturing executable-plan approval", async () => {
     const generator = await loadGenerator();
     const candidate = generator.buildAuditMapCandidate();
     const decoded = JSON.parse(candidate.bytes.toString("utf8"));
     const locator = `git://galerina/${candidate.implementationCommit}`;
     assert.equal(decoded.subject.locator, locator);
-    assert.equal(decoded.approval.planDigest, candidate.planDigest);
+    assert.deepEqual(decoded.approval, {
+      status: "DRAFT", planDigest: null, authority: null, evidence: null,
+    }, "a governing-document hash is not approval of this executable audit plan");
     assert.ok(decoded.audits.length > 0);
     assert.ok(decoded.audits.every((audit) => audit.build === locator));
   });
