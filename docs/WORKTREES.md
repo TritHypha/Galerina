@@ -4,7 +4,62 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Latest retirement checkpoint - 2026-10-10, after rounding review
+## Latest integration checkpoint - 2026-10-10, matched comparison and retained ports
+
+- Fresh registration inspection shows **22 worktrees**. The target remains main
+  plus one active work branch; consolidation is not complete. Other dirty memory
+  candidates, the primary checkout and retained historical trees still require
+  reconciliation. A retained lock is not proof that source is absent from main.
+- Existing work branch `fix/absorbed-kb-links-20261009` contains the reviewed
+  comparison candidate `9ce35c719` and four subsequent scoped local commits:
+  `e92958ca6` (historical archive references), `742c9acba` (core-config asset
+  metadata and retained snapshot test), `a408a4a3e` (HOST residue tests), and
+  `e4f64e3bf` (guarded docs-index output-plan port). Publication is a separate
+  checkpoint; this entry does not claim a main merge or release clearance.
+- Core-config typecheck/build and all 97 package tests passed in WSL. HOST tests
+  finished with 56 passes, one Windows-only skip and no failures. Integrated
+  docs-index fixture tests passed 60/60 from the repository cwd; an earlier
+  wrong-cwd setup failure remains recorded. No real documentation corpus apply
+  was performed. These results do not close runtime or RD obligations.
+- Independent Astra review reconciled the earlier B/C test ambiguities and found
+  no newly demonstrated source regression in that bounded delta. The full
+  candidate still recorded 233 failures and 117 cancellations. Generator counts
+  were B11/C32; both generated-index checks reported drift, not PASS. Later ports
+  remain outside that review's exact revision scope.
+- Comparison originals, candidate build outputs and exact mixed-EOL copies were
+  preserved separately. Thirteen restored files were confirmed equal to committed
+  source after newline normalization, then returned to Git's checkout formatting.
+  No substantive compiler edits were discarded. The local-only branch record is
+  excluded from publication.
+
+## Earlier retirement checkpoint - 2026-10-10, historical documentation
+
+- Git now registers **28 worktrees**. This remains an incomplete consolidation,
+  not a claim that the remaining dirty overlays are reconciled.
+- `rd0873-pre-restart-docs-20260905` at
+  `4143efcb649ea65536c096e8db033442d2fb2cf1` and `rd0873-task6d-cumulative` at
+  `5b234d91b023f0ed1bc3e527994576c50278e68c` were retired after independent
+  historical-document disposition. No additional live port was identified;
+  historical external-owner caveats remain unresolved, not silently signed off.
+- Both whole original directories, including ignored contents, Git administration
+  and saved indexes, remain in the local recovery archive. All 9,369 and 9,883
+  regular files respectively matched their recorded hashes before and after
+  relocation. No links were encountered in these two inventories. Local branch
+  references remain; no remote references changed in this retirement.
+- Their complete history bundle has SHA-256
+  `264246cedda7f34bf82beb166c8ae98e183506d7576dad7a9fbd843105cb16e6`.
+  Independent restoration, full Git integrity checking and the seven reviewed
+  committed blob identities passed. Recovery working bytes and committed blobs
+  retain separate identities where line endings differ. Original Git pointers
+  require repair before a recovered checkout can operate normally.
+- The earlier broad ignore-rule equivalence claim is withdrawn: the current
+  rule covers a narrower specific toolchain directory. Retirement preserves the
+  historical alternative; it does not adopt that broader ignore pattern.
+- Visible process checks found no users of these two paths; this is not an
+  exhaustive open-handle guarantee. Same-volume recovery is not independent-device
+  disaster recovery. No runtime, RD or main-merge clearance follows from retirement.
+
+## Earlier retirement checkpoint - 2026-10-10, after rounding review
 
 - Fresh Git registration count: **30 worktrees, 20 locked**. Consolidation is
   incomplete; these counts do not establish that remaining work is reconciled.
