@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "3e00a642fbf23f504d531ded5462a455d6e1c43f4a16db36abb74c69293cbd26",
+    "aggregateSha256": "833cd51251b4692647f72d870a24fc1f6226734cb621f8782317d32ede29bc3b",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "580b011d23e75e57e96667ccad3bd30a8cf775d23d3ab873d251512ee6cb2a5f"
+        "sha256": "079140ea842c2cd92d73b08aaf0b348f3a5fbe809d9216be38315a22f576c63e"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -48,7 +48,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "59d17fc1b52414f1df7451ad42841a4e994cf88b5a46e6a6f98549b65e0972e4"
+        "sha256": "e972be3e238a05933744312ac84beead00852da617ba0be3f1c00109800545ab"
       },
       {
         "path": "examples/job.fungi",
@@ -191,20 +191,44 @@
         "sha256": "ad21fe6d7b779472ab3e4804d8ce088766697ea61fd58fc1a37b1f3ede4f5326"
       },
       {
+        "path": "src/api-server-handoff-contract.ts",
+        "sha256": "254373c49008fb642a58f1aff4ade9d0afa26bb562018ebda8fa4c79a0d05b96"
+      },
+      {
+        "path": "src/auth-provider-boundary.ts",
+        "sha256": "0a2d038ec2cedbe481015297cc51c620981c5959937c4b61bfaa2753c30a84a1"
+      },
+      {
+        "path": "src/core-runtime-handoff-contract.ts",
+        "sha256": "040e8c0eceddba32d1d2a0ce0d56844be0250dbfc0702593f1fd47686d4121e3"
+      },
+      {
         "path": "src/fuse-loader.ts",
-        "sha256": "1cf0fad84ba9a3caa4987596d465fd385206f4420317e8f687cb2cd857d650dc"
+        "sha256": "b70d17187dba71a8d9b145d8be5d1b269db2100f3c896efbc3c9b60fea4751da"
+      },
+      {
+        "path": "src/handler-reference-check.ts",
+        "sha256": "3fa63aacb7ec6791d8cbce2e2f997aa95e1fdc839c838586539fc5a6880f8c17"
+      },
+      {
+        "path": "src/hold-pin.ts",
+        "sha256": "d220f86b135c5c8ce316e47d004d70b990b87ec7dd11cd587a31043f7a82afff"
       },
       {
         "path": "src/host-floor.ts",
         "sha256": "edadba78cc637e49c4b5bd4743c8725ca5598c5011693fe88ecab312af6cb2ad"
       },
       {
+        "path": "src/idempotency-replay-policy.ts",
+        "sha256": "585f301627cc4d39c2f0f53248f91a28675bfbdef0eb5fc80d433e738c7ac1af"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "e9b4541e997e514b763dd762310e833fc95cffda9f615b233ccfabe37d0bfb9d"
+        "sha256": "d2e9aff17dd351c0ea4216427a1f2b4c4bc5c17c32e1e5fb70cc6970dc1bb829"
       },
       {
         "path": "src/kernel.ts",
-        "sha256": "c79bfebae8c161e1c9b2387490b8997d0d618eee6f88b0ac5bf3586b6360d36b"
+        "sha256": "ed446245ca8d4aa742e36be9dbede26c349a835bae8e30fb4e349d9ef9479d5a"
       },
       {
         "path": "src/node-util-shim.d.ts",
@@ -217,6 +241,14 @@
       {
         "path": "src/production-slide-restore-admission.ts",
         "sha256": "79cb490ef75bf3fb694871964ee055dc2476ca9b8253e6b185a3a66befd134c3"
+      },
+      {
+        "path": "src/queue-job-contract.ts",
+        "sha256": "8f2f7b23598f02b32f159a11826f66f51d61b121f95fee3b9d0bbd0fd1bb164e"
+      },
+      {
+        "path": "src/rate-limit-workload-policy.ts",
+        "sha256": "4b4f250ec4ebe8cac22457c534c9c0cc9b7916d606e66c569f457f171b153ed7"
       },
       {
         "path": "src/registry-activation-simulator.ts",
@@ -252,7 +284,7 @@
       },
       {
         "path": "src/registry-index.ts",
-        "sha256": "4efe782d542eff47d0bbac22b2ab8bd358b229d3e67192bec45a8a8343bfc32c"
+        "sha256": "513c7715b4112d9dcda5c7d08fa23cd345b8893811c07a1b72de31c9e9aa6d3c"
       },
       {
         "path": "src/registry-package-manifest.ts",
@@ -271,12 +303,28 @@
         "sha256": "11efbba52726853ff48d6352292e7277ea6c3cd578c3e51b55b24362a4379b17"
       },
       {
+        "path": "src/request-validation-policy.ts",
+        "sha256": "cc9be098c7ff4fb71ef9a5f5cb6696dd63f57ae65c32e38e231350711d42491f"
+      },
+      {
         "path": "src/route-defaults.ts",
         "sha256": "508abdcf780402e504ac2d2711039a17fd25fa8178ecac77404ce3de51b8e38c"
       },
       {
+        "path": "src/route-pattern.ts",
+        "sha256": "ab20afb1b37b708dc335677650950702a081ecbf710067bc1e310a6cdd4fdf09"
+      },
+      {
+        "path": "src/runtime-audit-report-format.ts",
+        "sha256": "af9409079468954d865a8fb7769a20953ecb7f03db0ae63f4066de7a9a952e99"
+      },
+      {
+        "path": "src/scope-role-policy.ts",
+        "sha256": "ce4ab0fbf9d75badbe1cbc32ad4cec94043724591f544d940480cd97f907ad95"
+      },
+      {
         "path": "src/secret-gate.ts",
-        "sha256": "d8b9da84a4a014d713ab8c31475e9601c780baced7b764f4ca660066d79c3251"
+        "sha256": "b467a779570366ec2e85b74e5d577edeeac839b53fc09a9cce0badf9ec60cb5f"
       },
       {
         "path": "src/self-hosted/err-registry-delegation-bad-signature.fungi",
@@ -480,7 +528,7 @@
       },
       {
         "path": "src/self-hosted/registry-index.fungi",
-        "sha256": "b98679ca9f5e6d23022282aca56e3a8aa0fea17dd5a7a282e031a24a138f2a38"
+        "sha256": "c547e589c6be8fea6597ae6cba50f5525d7a1f60bbe7377e093f0ad0aa9c37c3"
       },
       {
         "path": "src/self-hosted/registry-package-manifest-v1-context.fungi",
@@ -496,7 +544,15 @@
       },
       {
         "path": "src/self-hosted/secret-gate.fungi",
-        "sha256": "7317039dcd45912cea8a5a4eed32774f0ceb389a1f9519197b55c6062e6b7b66"
+        "sha256": "f62c6f939fbb5eae68face87048292fc9bbacbcda94d817d9c9e883eb7af347f"
+      },
+      {
+        "path": "src/structured-await-policy.ts",
+        "sha256": "af42da42c342e877e63ba0173ed9dee6945071697f9d835d2949e1e2a19695e5"
+      },
+      {
+        "path": "src/typed-api-boundary.ts",
+        "sha256": "1464d468f64b242c0ac70ed54beca6d3f97a0ecd197a958dfc47e0b80c48bdb1"
       },
       {
         "path": "src/types.ts",
@@ -507,12 +563,28 @@
         "sha256": "9736d1ec33dfd8421b294ce91b6c1e464c65220010e7c1945f59776e140e17ae"
       },
       {
+        "path": "tests/api-server-handoff-contract.test.mjs",
+        "sha256": "4bbdfd4f4415819a8a08df92983730b1ddd48bb25299c388538f94e2eda44cc5"
+      },
+      {
         "path": "tests/app-frame-hardening.test.mjs",
         "sha256": "59b2e4df91086fdcbd2f03bfebef864db007767556488dde58e0c058a5f43a39"
       },
       {
+        "path": "tests/app-kernel-hold-pin.test.mjs",
+        "sha256": "03630b08bc185beb5073448b5b94f5f1f0deaf701b69fc7a24227a6a56bc5ef9"
+      },
+      {
         "path": "tests/audit-async.test.mjs",
-        "sha256": "a13cd257372ba1d77074320166ea1a4373afe4377a1fa6e67d7c1818ca166ba5"
+        "sha256": "0c7bf26de3cd2b79e4438a32f6bd098d4013ea9df0c43643818a90d39215db8e"
+      },
+      {
+        "path": "tests/auth-provider-boundary.test.mjs",
+        "sha256": "905d9b59ac5b7d54904b876a06014c993b79ab374556caaba9ba5f750d88aace"
+      },
+      {
+        "path": "tests/core-runtime-handoff-contract.test.mjs",
+        "sha256": "68a94c36d410edf34fab94c8a26a4ecefff94a78f11b287b2e2704c5524c408a"
       },
       {
         "path": "tests/decimal-sum.fungi",
@@ -551,12 +623,44 @@
         "sha256": "61b85a176c49f68c2729eb91ddda961b2409127542eba35eea7bc62ed3de0152"
       },
       {
+        "path": "tests/fixtures/rd0361-registry-index.capture.mjs",
+        "sha256": "08bbb860c2e84fa44c863bd54e82f674b542cea0e02b6f6fd9680e059e4a8994"
+      },
+      {
+        "path": "tests/fixtures/rd0361-registry-index.frozen.json",
+        "sha256": "57000cacae6dc69a2789c6f574f831bf15887d46aa2ebd237b13f1cb9420cbf3"
+      },
+      {
+        "path": "tests/fixtures/rd0361-route-defaults.capture.mjs",
+        "sha256": "398dd19266e238d82ac3afad15d274ffe90730db82e3bcaf2874a96845e06109"
+      },
+      {
+        "path": "tests/fixtures/rd0361-route-defaults.frozen.json",
+        "sha256": "14f1a906880e2dd028b6e020f6f85fd8c80ed4c2199354bfd57117dc15224172"
+      },
+      {
+        "path": "tests/fixtures/rd0361-route-defaults.real-ts.mjs",
+        "sha256": "975821c021deb611e324a345f78b116c6399cf4b547aece797491f3a4a3e6a0d"
+      },
+      {
         "path": "tests/fuse-compose.test.mjs",
-        "sha256": "89e0fc9da6497ec4dad918885a84b9eeda23c5aacb41eadd9bdbaeeb915832ac"
+        "sha256": "ff459ee934a8b3e0660e334d8cd0721b2341dac5cf3f4120a176cba510e89f0d"
       },
       {
         "path": "tests/fuse-loader.test.mjs",
-        "sha256": "446477b8baa1f1cca7711de81d345e703814c4a7ce8822a66d64fa931dcfe1b8"
+        "sha256": "79b96855dac822b5f35494dc55b79e5f14069b33a041a5b3473c07621fc0cdc4"
+      },
+      {
+        "path": "tests/handler-reference-bound.test.mjs",
+        "sha256": "24802a76de7cb1bb14f8f966774148ff97dd10f7a114bbf4529f7b8e9088afdb"
+      },
+      {
+        "path": "tests/handler-reference-check-bypass.test.mjs",
+        "sha256": "8c8b67f0e986773322e03e0c877fc0d66b92fcc2a63cc5ca0ea9901ce7482947"
+      },
+      {
+        "path": "tests/handler-reference-check.test.mjs",
+        "sha256": "bdd59aba9b6fc65d1f3a34a493b3e42eae824774378195cca1b042140593f550"
       },
       {
         "path": "tests/hello-world.fungi",
@@ -567,12 +671,16 @@
         "sha256": "d51ee81ea6420c750a021817a0112e0c1ecd07febc6415a21a4aed74f6649c28"
       },
       {
+        "path": "tests/idempotency-replay-policy.test.mjs",
+        "sha256": "b90415988bc47f48663c82ec5e862091c94a207d0dba315bd1f90e26920d1379"
+      },
+      {
         "path": "tests/json-return.fungi",
         "sha256": "d07c4a1d862009d5d00cd9ccc9688128167b846bdaf61c07c0ffbd795dfc35d4"
       },
       {
         "path": "tests/kernel.test.mjs",
-        "sha256": "759513d32f29e7f81f3f717bf83cb3e04eef4e7a01c217dca4236115b94d9a0c"
+        "sha256": "c7ceb4fb6d442c63f4b358c8b162b0abcd38a03b3bcb6f5936c28850e28995e4"
       },
       {
         "path": "tests/literal-verification-success-fungi-conversion.test.mjs",
@@ -595,6 +703,14 @@
         "sha256": "d82490bf53b92d967ee95fccb2ca29f61687034ab5e9c16e92600cd196091c2f"
       },
       {
+        "path": "tests/queue-job-contract.test.mjs",
+        "sha256": "2505fb388b659883bc3cee23e38ac32e499f6b078a7c31bae48a4ae1bd3dc87a"
+      },
+      {
+        "path": "tests/rate-limit-workload-policy.test.mjs",
+        "sha256": "0f24ba0d5ad6852949eb97a2e0376750390a76b92c74b8f4b3b83fa07592aee9"
+      },
+      {
         "path": "tests/rd0361-fuse-admission-execution.test.mjs",
         "sha256": "3b8e95e96a1d58121e7476e0034201f7095189fb7cdf703309a8103b1f63eeba"
       },
@@ -607,12 +723,36 @@
         "sha256": "b1482c36a602a91d09b8ccdb5e5d11db538e1fe5682522dc8b94ee731fb1b8b9"
       },
       {
+        "path": "tests/rd0361-real-ts-frozen.test.mjs",
+        "sha256": "7b356434ebcc5c9b37e99a2fb25223f567918c84c4615a6c47535e9d7ad09372"
+      },
+      {
+        "path": "tests/rd0361-registry-index-frozen.test.mjs",
+        "sha256": "f91b4804e4dfa3360e0fcbaf4a6accc182116b38a70e7b43e662335d29f4fafe"
+      },
+      {
         "path": "tests/rd0361-route-defaults-execution.test.mjs",
         "sha256": "d1e0b36efc22fa88124fd2729b1b3d50c3c749ee0ece98cdca754aefd5d02cd1"
       },
       {
+        "path": "tests/rd0361-route-defaults-frozen.test.mjs",
+        "sha256": "b212475600ef4c47347a03271ef2ee0a4267d317ed17add11f99ae8b529e2239"
+      },
+      {
         "path": "tests/rd0361-secret-gate-execution.test.mjs",
         "sha256": "f424f75f2c52ae4a971d63156fda1451a1af9819393db07e64d0e193627d552a"
+      },
+      {
+        "path": "tests/rd1413-route-dispatcher-strict-cli.test.mjs",
+        "sha256": "0d6ef3ede70278234b4230ed19178ed27d4e8daa469e23272e1f0c7e0c4fe991"
+      },
+      {
+        "path": "tests/rd1414-hostile-intrinsics.test.mjs",
+        "sha256": "81ca3e8df6ff548dc90c561a89dfcf5268ccafda47a2c8eb3e1217f4a35bc781"
+      },
+      {
+        "path": "tests/rd1414-sync-deadline.test.mjs",
+        "sha256": "d27be9e4f614681b9b3549f345d64f66b8336126b58cc7d06f177f3b09930efd"
       },
       {
         "path": "tests/registry-activation-simulator.test.mjs",
@@ -656,7 +796,7 @@
       },
       {
         "path": "tests/registry-index.test.mjs",
-        "sha256": "e1c162e50a76bb16898f15f1e5dd4c7acd266d96fc77dd96b2ccc6a7074c3a3c"
+        "sha256": "005f82c8afc8401a93b60d841874b6b722700892693db325856a56b7928a8c43"
       },
       {
         "path": "tests/registry-package-manifest.test.mjs",
@@ -675,16 +815,44 @@
         "sha256": "607db821cd7cc7fe3cceee15dc3432274645204d5ac416571bcb990b47a41a85"
       },
       {
+        "path": "tests/request-validation-policy.test.mjs",
+        "sha256": "7432a9f4b3f8bd2c439339e81b2a51a421d8a78d0dd5d7a1bf732dd02a6950fd"
+      },
+      {
         "path": "tests/route-defaults.test.mjs",
         "sha256": "20a70aba4ba654df6ebe9aaab960e2448740397bb70daca9794c8a52ec93b620"
       },
       {
+        "path": "tests/route-pattern-container.test.mjs",
+        "sha256": "e9c4ff785671062770768338842084e0d13ee90c53a80a106fba16f1401e180b"
+      },
+      {
+        "path": "tests/route-pattern-issuance.test.mjs",
+        "sha256": "20fa44891bce6820b226f6f4200e236c8ca409f616520fa09a32b1b0936dadec"
+      },
+      {
+        "path": "tests/route-pattern.test.mjs",
+        "sha256": "756f0ea0d718af448c0bef34c320e0d86aa287bba371ae3bd234bb9e5769fdf0"
+      },
+      {
+        "path": "tests/runtime-audit-report-format.test.mjs",
+        "sha256": "26442f8c24cc8673c04c95ed62ee736a2a304110b0fe42a9f3de4d4bd6106263"
+      },
+      {
+        "path": "tests/scope-role-policy.test.mjs",
+        "sha256": "2a64ae27b5c7574c71bebde25ca59db72979aecede026dbb7cf70e6c7008b2d5"
+      },
+      {
         "path": "tests/secret-gate.test.mjs",
-        "sha256": "8df50ca8a4e2c9d5eb2584f8e3f24579a53a81cb3a047967b03ec7be38820dab"
+        "sha256": "34faf61dcd38a708691c55b1383c489558098026dcc81fc13efd30dd391e7a93"
       },
       {
         "path": "tests/security-closure.test.mjs",
-        "sha256": "19e6b62de617814b8336ceff7ad00de91cf3f628b6f6922a4563482bb67c86fd"
+        "sha256": "8fef79237e3fc2684c7a004d2da71aefbe20d0a8b5d51ff6cc414ec701b82684"
+      },
+      {
+        "path": "tests/structured-await-policy.test.mjs",
+        "sha256": "f6932a21e695b809b6de5843ea8cc29f65959052d172e0e993b772172bef4763"
       },
       {
         "path": "tests/sum.fungi",
@@ -693,6 +861,10 @@
       {
         "path": "tests/tower-subpath-imports.test.mjs",
         "sha256": "722c80ee4f4879b4a6510975bd1179007538b0d6f1c1a6b5a1328e9ae9e27320"
+      },
+      {
+        "path": "tests/typed-api-boundary.test.mjs",
+        "sha256": "84a7379904c2744f51ced7a2c21be9e64e72ebe25e623bbf71e5d4cb834a7411"
       },
       {
         "path": "tests/vector-function.fungi",

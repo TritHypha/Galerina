@@ -246,7 +246,7 @@ test("handler that throws -> safe 500, no leak", async () => {
   assert.equal(dec.decode(res.body).includes("secret internal detail"), false);
 });
 
-test("idempotency: duplicate key -> 409", async () => {
+test("idempotency: duplicate key -> 409 without echoing the key", async () => {
   const k = createAppKernel({
     routes: [{ method: "POST", path: "/pay", handler: "pay", requestType: "Payment", auth: { mode: "public" } }],
     requestValidators: {
@@ -266,6 +266,7 @@ test("idempotency: duplicate key -> 409", async () => {
   const second = await k.handle(mk());
   assert.equal(second.status, 409);
   assert.equal(errorOf(second), "conflict");
+  assert.equal(dec.decode(second.body).includes("key-abc"), false);
 });
 
 test("idempotency claim is deferred until rate admission succeeds", async () => {

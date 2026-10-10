@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "bff6ab11b8c4835ad9abe9a235c8271465e210bc362e368e6f4320b7c0c31b69",
+    "aggregateSha256": "848afa483f1148df3238ebf2c8f21927d8c32bbe6860a2faa8974449945c6a32",
     "algorithm": "sha256",
     "files": [
       {
@@ -2805,6 +2805,10 @@
       {
         "path": "tests/rd0873-first-native-slice.test.mjs",
         "sha256": "3172875fbd80ad2112b8957d9a45c3baa687cb63cad9fa514016b6fd59fd35cf"
+      },
+      {
+        "path": "tests/rd1413-auth-route-candidate-strict.test.mjs",
+        "sha256": "66b99042eebe016dd02124d8310cb9469b884162a826fff82f9a962cbbad273a"
       },
       {
         "path": "tests/readable-logic-forms.test.mjs",

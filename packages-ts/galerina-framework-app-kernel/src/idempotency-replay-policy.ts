@@ -33,8 +33,8 @@
 //
 // OWNER-REVISIT picks (not spec): the ttlSeconds ceiling (7 days), the
 // maxKeyBytes ceiling (1024; the in-memory store default is 256), and echoKey
-// "deny" (the shipped duplicate-key 409 message currently includes the key; see
-// the TODO row note).
+// "deny" (the kernel's duplicate-key 409 response is generic and does not echo
+// the caller's key; durable-store and replay behavior remain separate holds).
 
 /** Record / input is not a closed data object. */
 export const FUNGI_APPK_IDR_001 = "FUNGI-APPK-IDR-001";

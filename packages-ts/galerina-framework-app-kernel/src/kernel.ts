@@ -910,7 +910,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           return pipelineOutcome(errorResponse(409, "conflict", "Idempotency store returned an invalid claim."), policy);
         }
         if (claim === "duplicate") {
-          return pipelineOutcome(errorResponse(409, "conflict", `Duplicate idempotency key '${key}'.`), policy);
+          return pipelineOutcome(errorResponse(409, "conflict", "Duplicate request."), policy);
         }
       }
 
