@@ -13,6 +13,7 @@ import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 
 import { join, relative } from "node:path";
 import { extractCodes, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
 import { classifyDescriptiveDiagnosticIdentities } from "./lib/descriptive-diagnostic-identities.mjs";
+import { diagnosticObjectOccurrences } from "./lib/diagnostic-object-occurrences.mjs";
 import { parseRustRuntimeErrorDefinitions, rustLexicalMasks } from "./lib/rust-runtime-error-codes.mjs";
 import {
   generatedOutputMatches,
@@ -159,7 +160,7 @@ for (const file of FILES) {
   const isDoc = rel.endsWith(".md");
   const isFungi = rel.endsWith(".fungi");
     const source = readFileSync(file, "utf8");
-    const lines = source.split(/\r?\n/);
+    let lines = source.split(/\r?\n/);
     if (rel.endsWith(".rs")) {
       const rustLines = rustLexicalMasks(source).code.split(/\r?\n/);
       const definitions = parseRustRuntimeErrorDefinitions(source);
@@ -201,9 +202,22 @@ for (const file of FILES) {
       }
       continue;
     }
+    const structural = /\.(?:ts|mjs|cjs)$/.test(rel)
+      ? diagnosticObjectOccurrences(source, rel, { testOnly: isTest })
+      : { source, descriptiveSource: source, occurrences: [] };
+    if (structural.unsupported) console.error(`code-index: ${rel}: ${structural.unsupported}`);
+    for (const occurrence of structural.occurrences) {
+      const entry = get(occurrence.code);
+      entry.occ.push({ file: rel, line: occurrence.line, role: occurrence.role, catalogIdentity: occurrence.catalogIdentity });
+      if (occurrence.name !== undefined) entry.names.add(occurrence.name);
+      if (occurrence.severity !== undefined) entry.sevs.add(occurrence.severity);
+    }
+    // Exact spans already classified structurally are blanked, preserving line
+    // numbers. Both legacy passes see this view, never the handled code again.
+    lines = structural.source.split(/\r?\n/);
     const descriptive = isDoc || isFungi
       ? { identities: [] }
-      : classifyDescriptiveDiagnosticIdentities(source, { testOnly: isTest });
+      : classifyDescriptiveDiagnosticIdentities(structural.descriptiveSource, { testOnly: isTest });
     for (const identity of descriptive.identities) {
       get(identity.code).occ.push({
         file: rel,
