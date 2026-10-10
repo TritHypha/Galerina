@@ -4,7 +4,46 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Latest retirement checkpoint - 2026-10-10
+## Latest retirement checkpoint - 2026-10-10, after rounding review
+
+- Fresh Git registration count: **30 worktrees, 20 locked**. Consolidation is
+  incomplete; these counts do not establish that remaining work is reconciled.
+- `rd-0873-native-fungi-bootstrap-resume` was retired after confirming its clean
+  tracked tree and HEAD `4a940db252e0ae03d8769fe517549a61f206a589` were contained in
+  remote main `5b64928ca67b30279eae38e372398ba16acd8827`. Its 408 untracked files
+  (closure note and native build output) remain with the whole original directory
+  in local recovery. All 13,511 regular-file hashes and 15,044 inventory entries
+  matched before and after same-volume relocation. Git administration/index were
+  preserved. Ten absolute link targets retain historical spellings.
+- `grok-rounding-20260930` was retired after Astra dispositioned all 64 changed
+  paths: useful source/test work was preserved or superseded in the integration
+  candidate; no additional port was identified. The whole original directory,
+  including 27 untracked files, generated snapshots and Git administration/index,
+  remains in local recovery. All 10,918 regular-file hashes and 12,211 inventory
+  entries matched after relocation; 33 link targets were recorded without
+  traversal. The redundant local branch was deleted without force after checking
+  containing main history; no matching remote branch or open PR existed.
+- Recovery inventories are bound by SHA-256:
+  native resume `d9b72d472c4c24376ec7788f06f39d2c1095df24562d3fe6205ce07654adefb3`;
+  rounding `9371b9901411d65c592eeb479d3634da8891b6dd9d7349db1da76e69acc78132`.
+  Process checks covered visible Windows command lines and Linux working
+  directories, not every possible open handle. Original Git markers and absolute
+  junctions require repair in restored working copies. Same-volume retention is
+  not independent disaster recovery; retirement is not runtime or RD clearance.
+- Published integration source is `330e45149c358e61654d21f4ea150245a87ccacd` on
+  `fix/absorbed-kb-links-20261009`: 11 commits ahead, zero behind the checked remote
+  main. Its generated diagnostic index is now committed. Before this ledger edit,
+  only the explicitly local-only `GROK-BRANCHES.md` remained dirty in that checkout.
+- The full WSL compiler run at this exact source finished with exit 1, not timeout:
+  **8,104 tests: 7,751 passed, 236 failed, 117 cancelled, zero skipped**. Log
+  SHA-256 `f7ead08a730b70b09e7c48981bd0ce3a2e75d46629540276c47bd3a5eb7f51cb`.
+  This is not a passing merge gate. Test-count changes mean differences from the
+  earlier run do not directly count repaired defects. Classify inherited versus
+  introduced failures before integration; never refresh expected hashes blindly.
+- Historical documentation trees remain under separate review. The primary,
+  occupied-main and memory-candidate overlays still require reconciliation.
+
+## Earlier retirement checkpoint - 2026-10-10
 
 - Current verified registration count: **32 worktrees, 21 locked**. Nineteen
   detached WAT variants were retired after exact source-preservation review,
