@@ -36,7 +36,6 @@
 
 import { type AstNode, type SourceLocation } from "./parser.js";
 import { decodeFlowDecl } from "./flow-name.js"; // Q2: governed-aware shadow-floor scan
-import { buildModuleAliasMap } from "./effect-checker.js"; // C1: resolve `let x = Module` aliases at sinks
 import { numericBaseType, BACKEND_UNLOWERABLE_SCALAR } from "./numeric-lowering.js";
 import {
   analyzeRequirementTaintForValueState,
@@ -1893,6 +1892,8 @@ interface BindingInfo {
   readonly name: string;
   readonly safetyPrefix: "unsafe" | "safe" | "boundary-untrusted" | undefined;
   readonly typeName: string;
+  /** Receiver identity captured by an immutable bare-identifier initializer. */
+  readonly moduleAlias?: string;
   /** Location where this binding was declared — used for Rust-style related diagnostics. */
   readonly declaredAt?: SourceLocation;
   /**
@@ -2179,9 +2180,19 @@ class ValueStateChecker {
   // Preserve secret provenance across returns by comparing the expression with
   // the enclosing flow's declared result type.
   private currentFlowReturnType: string | undefined;
-  // C1: per-flow `let x = Module` alias map, set on flow entry; resolves an aliased sink receiver
-  // (`x.write` → `AuditLog.write`) so the taint/sink gates aren't smuggled past by a rename.
-  private moduleAliases: ReadonlyMap<string, string> = new Map();
+  // Resolve aliases from the same lexical bindings as value-state lookup. A
+  // parameter/non-alias local masks an outer alias; leaving its scope restores
+  // the capture. Never collect declarations from nested/sibling helper bodies.
+  private get moduleAliases(): ReadonlyMap<string, string> {
+    const aliases = new Map<string, string>();
+    for (const scope of this.scopes) {
+      for (const [name, binding] of scope) {
+        if (binding.moduleAlias !== undefined) aliases.set(name, binding.moduleAlias);
+        else aliases.delete(name);
+      }
+    }
+    return aliases;
+  }
   // R&D 0093 stage-2: production/deterministic builds escalate FUNGI-VALUESTATE-008 to error.
   private readonly mode: "production" | "development";
   // RD-0858: name-based gates are never declassifiers while traversing a
@@ -2412,17 +2423,17 @@ class ValueStateChecker {
       // params reached governed sinks with no FUNGI-VALUESTATE-003/004/005 (the 0093 fail-open class).
       // A governed flow IS a posture-gated boundary, so it registers params + is treated like secure/guarded.
       case "governedFlowDecl":
+      // Helpers own their parameter, return and control context independently.
+      case "fnDecl":
       case "guardedFlowDecl": {
         this.pushScope();
         const prevFlowKind = this.currentFlowKind;
         const prevFlowReturnType = this.currentFlowReturnType;
-        const prevAliases = this.moduleAliases;
         const prevSecretControlDepth = this.secretControlDepth;
         this.secretControlDepth = 0;
         try {
           this.currentFlowKind = node.kind; // R&D 0093: posture context for registerParamBinding
           this.currentFlowReturnType = (node.children ?? []).find((child) => child.kind === "typeRef")?.value;
-          this.moduleAliases = buildModuleAliasMap(node); // C1: flow-scoped `let x = Module` aliases
           // Register parameter bindings so SecureString params are tracked
           for (const child of node.children ?? []) {
             if (child.kind === "paramDecl") {
@@ -2432,7 +2443,6 @@ class ValueStateChecker {
           this.walkChildren(node);
         } finally {
           this.secretControlDepth = prevSecretControlDepth;
-          this.moduleAliases = prevAliases;
           this.currentFlowReturnType = prevFlowReturnType;
           this.currentFlowKind = prevFlowKind;
           this.popScope();
@@ -3173,7 +3183,12 @@ class ValueStateChecker {
       }
     }
     if (passportField.passportStage === undefined && /Passport/i.test(info.typeName)) passportField.passportStage = 0;
-    this.registerBinding({ ...info, ...locField, ...taintField, ...secretField, ...embeddingField, ...passportField, ...authorityField });
+    // Resolve before installing this binding: `let relay = sink` captures the
+    // current receiver identity, not a name to re-resolve after later shadowing.
+    const aliasField = init?.kind === "identifier" && init.value
+      ? { moduleAlias: this.moduleAliases.get(init.value) ?? init.value }
+      : {};
+    this.registerBinding({ ...info, ...locField, ...taintField, ...secretField, ...embeddingField, ...passportField, ...authorityField, ...aliasField });
     // Walk the init expression
     if (init !== undefined) this.walkNode(init);
   }
