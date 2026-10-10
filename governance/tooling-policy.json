@@ -274,9 +274,11 @@
     },
     "scripts/flat-package-root-lock.mjs": {
       "inputs": [
+        ".gitattributes",
         "packages-ts",
         "scripts/flat-package-root-lock.mjs",
-        "scripts/lib/flat-package-root-lock.mjs"
+        "scripts/lib/flat-package-root-lock.mjs",
+        "scripts/lib/flat-package-root-lock-collector.mjs"
       ],
       "outputs": [
         "governance/flat-package-root-lock.json"

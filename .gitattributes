@@ -59,6 +59,7 @@ packages-ts/galerina-registry/registry-index-v2.json text eol=lf
 
 # Product profile registry is a generated exact-byte admission input.
 product-registry/product-profiles.v1.json text eol=lf
+governance/flat-package-root-lock.json text eol=lf
 
 # Platform evidence receipts are hashed as raw UTF-8 bytes. Preserve the
 # Ubuntu-produced LF representation across every checkout.

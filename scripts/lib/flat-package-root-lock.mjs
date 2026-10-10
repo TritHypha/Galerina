@@ -7,6 +7,7 @@ const IDENTITY = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/;
 const DIRECTORY = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const SCOPES = new Set(["runtime", "optional", "peer", "development"]);
 const verifiedHandles = new WeakMap();
+const ordinal = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 
 function refuse(message) {
   throw new Error(`REFUSED: ${message}`);
@@ -148,7 +149,7 @@ function normalizePackage(value) {
       refuse(`${identity} manifest path is not admitted`);
     }
     return { path, digest: digest(entry.digest, `${identity} ${path} digest`) };
-  }).sort((a, b) => a.path.localeCompare(b.path));
+  }).sort((a, b) => ordinal(a.path, b.path));
   for (let index = 1; index < manifestDigests.length; index += 1) {
     if (manifestDigests[index - 1].path === manifestDigests[index].path) {
       refuse(`${identity} has a duplicate manifest path`);
@@ -157,7 +158,7 @@ function normalizePackage(value) {
   if (!Array.isArray(value.dependencies)) refuse(`${identity} dependencies must be an array`);
   const dependencies = value.dependencies
     .map((entry) => normalizeDependency(entry, identity))
-    .sort((a, b) => `${a.identity}\0${a.scope}\0${a.specifier}`.localeCompare(`${b.identity}\0${b.scope}\0${b.specifier}`));
+    .sort((a, b) => ordinal(`${a.identity}\0${a.scope}\0${a.specifier}`, `${b.identity}\0${b.scope}\0${b.specifier}`));
   for (let index = 1; index < dependencies.length; index += 1) {
     const before = dependencies[index - 1];
     const current = dependencies[index];
@@ -200,7 +201,7 @@ function dependencyOrder(packages, byIdentity) {
 
 export function buildFlatPackageRootLock(records) {
   if (!Array.isArray(records) || records.length === 0) refuse("package records must be a non-empty array");
-  const packages = records.map(normalizePackage).sort((a, b) => a.identity.localeCompare(b.identity));
+  const packages = records.map(normalizePackage).sort((a, b) => ordinal(a.identity, b.identity));
   const byIdentity = new Map();
   const byDirectory = new Map();
   for (const entry of packages) {
@@ -237,10 +238,10 @@ export function buildFlatPackageRootLock(records) {
       externalSpecs.set(key, specifiers);
     }
   }
-  external.sort((a, b) => `${a.identity}\0${a.owner}\0${a.scope}\0${a.specifier}`.localeCompare(`${b.identity}\0${b.owner}\0${b.scope}\0${b.specifier}`));
+  external.sort((a, b) => ordinal(`${a.identity}\0${a.owner}\0${a.scope}\0${a.specifier}`, `${b.identity}\0${b.owner}\0${b.scope}\0${b.specifier}`));
 
   const developmentVersionDrift = [];
-  for (const [key, specifiers] of [...externalSpecs].sort()) {
+  for (const [key, specifiers] of [...externalSpecs].sort((a, b) => ordinal(a[0], b[0]))) {
     const [identity, className] = key.split("\0");
     if (specifiers.size < 2) continue;
     if (className === "runtime") refuse(`conflicting external runtime dependency ${identity}`);
