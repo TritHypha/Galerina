@@ -241,15 +241,17 @@ describe("SecretsRotationManager", () => {
     const manager = new SecretsRotationManager();
 
     // Initial load
-    const secretMapV1 = new Map([["secret/secret/data/db", "v1_password"]]);
-    const mockClientV1 = new MockVaultClient(secretMapV1);
+    // Retain the exact synthetic allocation transferred by the provider, not
+    // a useActive() copy. Removing oldActive.fill(0) must fail this test.
+    const providerBufferV1 = Buffer.from('{"value":"v1_password"}', "utf8");
+    const mockClientV1 = { async readSecret() { return providerBufferV1; } };
     const cred = makeCred("db_password", "secret/data/db");
     await manager.load(cred, mockClientV1);
 
-    // Capture reference to the old buffer before rotation
+    // A separately owned caller snapshot must survive rotation unchanged.
     const oldBuf = activeCopyForTest(manager, "db_password");
     assert.ok(oldBuf !== undefined, "old buffer should exist before rotation");
-    const oldBufCopy = Buffer.from(oldBuf); // copy to check after wipe
+    assert.notEqual(oldBuf, providerBufferV1);
 
     // Now rotate with a new value
     const secretMapV2 = new Map([["secret/secret/data/db", "v2_password"]]);
@@ -262,10 +264,10 @@ describe("SecretsRotationManager", () => {
     const newParsed = JSON.parse(newActive.toString("utf8"));
     assert.equal(newParsed.value, "v2_password", "active value should be v2 after rotation");
 
-    // Old buffer content should have changed (old value is no longer "v1_password")
-    // (The copy lets us confirm the old value existed before the wipe)
-    const oldParsed = JSON.parse(oldBufCopy.toString("utf8"));
-    assert.equal(oldParsed.value, "v1_password", "copy confirms old value was v1");
+    assert.deepEqual(providerBufferV1, Buffer.alloc(providerBufferV1.length),
+      "rotation must zero the exact old provider allocation");
+    assert.equal(JSON.parse(oldBuf.toString("utf8")).value, "v1_password",
+      "wiping the managed allocation does not erase a separately owned copy");
   });
 
   // -------------------------------------------------------------------------
@@ -286,7 +288,7 @@ describe("SecretsRotationManager", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Test 8: After rotation, old buffer is zeroed
+  // Test 8: Caller-owned copies are outside the manager's wipe authority
   // -------------------------------------------------------------------------
   it("rotation does not mutate a caller-owned snapshot", async () => {
     const manager = new SecretsRotationManager();
