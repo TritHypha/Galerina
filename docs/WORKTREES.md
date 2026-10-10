@@ -4,6 +4,33 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
+## Current integration checkpoint - 2026-10-10, reviewed memory batch
+
+- The existing integration branch `fix/absorbed-kb-links-20261009` is published
+  through `0c146e27aca038ee86fcbfcedba85ca253c16780`, eight commits ahead of the
+  last verified remote main `08249019a555e5d613644bd9252cce30f0a04500` and zero
+  behind it. This batch is **not merged into main**. Recheck remote identities
+  before publication; this paragraph is a dated observation, not a live receipt.
+- Live registration inspection found 19 worktrees and **none holding local
+  main**. Local main matches the main revision above. The native implementation
+  checkout is detached at `e1c2496f3f36d154a445ba9c302401ccaaf74bae`, still locked
+  and retained. The primary checkout remains detached at `9a26c71e60e491766ef351d0efe0405b0739c1b6`.
+  Earlier occupied-main statements below describe historical checkpoints.
+- Independent review leaves two finite batch integration conditions: correct
+  the diagnostic catalog's frozen WASM-grant owner classification, and reconcile
+  the root-lock collector's byte contract with cross-platform Git text conversion
+  without ignoring working-file changes. The existing runtime freeze and secret
+  lease refusal remain intact. No root-lock acceptance or whole-memory closure
+  is established by this checkpoint.
+- The vault build-manifest correction in `0c146e27a` was independently checked
+  against the committed test blob and the generator's aggregate formula. The
+  post-commit owner check reports no generated-document drift for compiler,
+  runtime-WASM or vault, but retains 52 other drift entries and separate package
+  policy findings. Its overall result remains a finding, not an all-package pass.
+- Retained primary, native and historical memory overlays still need useful-work
+  accounting and integration. No checkout retirement follows from this batch.
+  GitHub Actions was disabled before its last push; no CI was run.
+
 ## Latest retirement checkpoint - 2026-10-10, native finalize
 
 - Git registers **19 worktrees** after retiring the historical
