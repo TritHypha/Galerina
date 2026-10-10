@@ -6,7 +6,28 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 ## Latest retirement checkpoint - 2026-10-10
 
-- Current verified registration count: **54 worktrees, 40 locked**. Consolidation
+- Current verified registration count: **35 worktrees, 21 locked**. Nineteen
+  detached WAT variants were retired after exact source-preservation review,
+  publication of the reviewed successor on the existing work branch, and recovery
+  verification. Original directories, including ignored content, and saved Git
+  administration/indexes remain in the local recovery archive. All nineteen
+  receipts were rechecked against live registration and filesystem state.
+- Published work branch: `fix/absorbed-kb-links-20261009` at
+  `86a5ea57a007b36e75d60fc6b8c288110eaac22a`. Remote main remains
+  `5b64928ca67b30279eae38e372398ba16acd8827`. The exact i64-local match and strict
+  parity assertions are committed in `ea549b3e2f0c3f05a83b0efffa14ba2f6680667b`;
+  the signed CLI test fixture is committed in `86a5ea57a`. Focused fixture tests
+  passed 6/6 in WSL, but the broader compiler run remains 7,540 passed, 250 failed
+  and 117 cancelled. This retirement does not claim main integration or runtime
+  correctness. Three generated code-index files remain separately uncommitted.
+- Recovery archives retain historical Git markers and junction targets; restore
+  requires metadata repair. Reviewed changed files were hash-verified, while the
+  full directory inventory checked metadata, not every ignored file's bytes.
+  Original directories were moved within the same volume, not deleted.
+
+### Earlier checkpoint within 2026-10-10
+
+- Then-verified registration count: **54 worktrees, 40 locked**. Consolidation
   remains incomplete; the dated batches below explain the reduction, not a clean
   estate claim.
 - Runtime-executor strict checkout was retired after independent source review
@@ -85,7 +106,7 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 |---|---|---|
 | Repository root | Detached at `9a26c71e60e491766ef351d0efe0405b0739c1b6`; 87 status records | Reconcile staged, unstaged and untracked work separately. Keep local-only GROK-BRANCHES.md unpublished. |
 | `.worktrees/rd-0873-native-fungi-bootstrap-implementation/` | Local main at `e1c2496f3f36d154a445ba9c302401ccaaf74bae`; locked; 50 status records | Preserve overlay before moving local main. Remote integration does not update this checkout. |
-| `.worktrees/memory-main-baseline-20261009/` | Reused branch `fix/absorbed-kb-links-20261009`; published through `6638def79`; native slice locally modified | Complete bounded independent review and verification before publishing the native slice; reuse this integration slot. |
+| `.worktrees/memory-main-baseline-20261009/` | Reused branch `fix/absorbed-kb-links-20261009`; published through `86a5ea57a`; native and diagnostic source fixes already in remote main `5b64928ca`; generated index changes retained separately | Diagnose remaining compiler failures, validate generated artifacts and continue consolidation; reuse this integration slot. |
 | `.worktrees/memory-consolidation-20261007/` and `.worktrees/memory-current-main-20261008/` | Historical candidates with distinct overlapping changes | Recheck exact bases and preserve both overlays during reconciliation. |
 | Former `.worktrees/grok-pkg-todos-20260929/` | Retired; redundant local branch removed; no matching remote branch existed | Original directory and independent recovery retained under the local Galerina-Recovery archive. Do not use obsolete path references. |
 
@@ -105,8 +126,9 @@ WSL tests. No force-push, reset of occupied dirty main, or deletion of unreconci
 
 ## Remaining consolidation
 
-1. Complete native diagnostic index validation and independent corrected-patch review;
-   publish only the eligible source/artifact set and keep the ledger current.
+1. Native and diagnostic source fixes are published; complete generated diagnostic
+   index validation and diagnose the remaining compiler failures before broader
+   integration. Keep source-preservation and runtime claims separate.
 2. Retain package-TODO and WAT recovery archives, including generated outputs and closure
    records. Do not treat archived external dependencies as standalone executable setups.
 3. The thirteen identified marker-only trees are retired. Continue with separately
