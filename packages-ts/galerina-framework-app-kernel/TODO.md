@@ -1,5 +1,18 @@
 # Galerina App Kernel TODO
 
+## Duplicate-key response reconciliation — 2026-10-10
+
+- [x] Independent review and integration of the retained no-key-echo fix.
+  Integrated into main in `65792296d`; the generic duplicate-request 409 preserves
+  the conflict code and atomic-claim ordering. The donor regression failed against
+  a fresh pre-fix build, then passed; fresh WSL typecheck/build and package tests
+  passed 579/579. Astra verified source preservation and retained green evidence;
+  the reported pre-fix failure has no retained standalone raw log.
+  The October 6 contract row below describes the earlier key-echo state; that
+  specific limitation is addressed by the integrated fix. Durable storage,
+  response replay, reserved audit/queue kinds and core-network reconciliation
+  remain open. This does not establish Fungi runtime or host memory guarantees.
+
 ## Tower import boundary — 2026-09-26
 
 The RD-0873 dirty worktree retargets the app-kernel request path to Tower

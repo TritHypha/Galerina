@@ -4,7 +4,28 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Current integration checkpoint - 2026-10-10, reviewed batch in main
+## Current integration checkpoint - 2026-10-10, auth/key donor ports in main
+
+- Main and the reused working branch were read back remotely at
+  `65792296dc79404f1ab8d0b3956dde03b3275102` after an atomic, non-force
+  fast-forward from `213772564df45ab7ddedc997101483c56cf75089`. Local main
+  was advanced only after confirming no registered checkout held it.
+  Actions was disabled immediately before publication.
+- The auth compatibility test preserves the legacy checker without claiming
+  that its ignored strict flags enforce current semantics. Fresh retained WSL
+  evidence covers three tests, including the separate root CLI controls.
+- The app-kernel duplicate response no longer echoes the caller's key.
+  Independent source review and the retained 579-test package result cover
+  the narrow port; durable idempotency and host-memory guarantees remain open.
+- Build manifests were regenerated from staged Git contents. The app-kernel
+  manifest also reconciled prior-main drift; its SBOM drift and the separate
+  TypeScript-migration policy finding were not silently declared resolved.
+- Nineteen registrations remain; no donor checkout was retired or modified.
+  The two retained vault proposal copies agree after line-ending normalization,
+  but their recovery, generation and integration obligations remain open.
+  Archive preservation still does not establish integration.
+
+## Earlier integration checkpoint - 2026-10-10, reviewed batch in main
 
 - Remote and local main were read back at
   `c74af0b3e7f73cf0f1713f79d612a21f7c7a374c` after a normal non-force

@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "833cd51251b4692647f72d870a24fc1f6226734cb621f8782317d32ede29bc3b",
+    "aggregateSha256": "b82533eb086f80e4bcd32141bcc18edcef07e3bd9ea0324abf3a7317640e4b1b",
     "algorithm": "sha256",
     "files": [
       {
@@ -48,7 +48,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "e972be3e238a05933744312ac84beead00852da617ba0be3f1c00109800545ab"
+        "sha256": "0b96ad551ac06b62d73acb3a3753319d771f5aed1da41d4a6094526bb9559105"
       },
       {
         "path": "examples/job.fungi",
