@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "0eacbba936efecb841a95e15b2779e3ce2c93a46745e499ce24bb6aeaa565a87",
+    "aggregateSha256": "948ecc0075fb9a3cd744b95f082debf04c05ccf868a25480089e642f88aa1c19",
     "algorithm": "sha256",
     "files": [
       {
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "5c087a2952cff86d11bdf5616172e0e32fa1c5335f8eb1295c780ac2eb6dcfc4"
+        "sha256": "dda976be0cb56218ee4a61918628ec4ebb19ce879e2d0cb64e3b1b0f2b094164"
       },
       {
         "path": "TOOLING_API.md",
@@ -232,7 +232,7 @@
       },
       {
         "path": "src/crypto-provider-node.ts",
-        "sha256": "f07a80fd8fe5af5c74b31cf53c707fdcc3fd328a7ab11d5e5ef914b8da40ad8e"
+        "sha256": "2e41c1104fca010c446fee38db20e4ae27187c56aa09faa5c13ad12752baf5a1"
       },
       {
         "path": "src/decimal-arith.ts",
@@ -359,6 +359,10 @@
         "sha256": "7625107b2298639d91f7511c7ee11933a96cc4b39da3f5a274a83dd2164eed5b"
       },
       {
+        "path": "src/generic-argument-kinds.ts",
+        "sha256": "3266f70fa80f7fab18d1b31636eab17f56ba59495ada698fc6ce9cb5bc29d6d7"
+      },
+      {
         "path": "src/gir-emitter.ts",
         "sha256": "75cfdfc39c93fd61f6d6f50c1a5c489ee41a4f8e83d70111c5419274173ff95c"
       },
@@ -380,7 +384,7 @@
       },
       {
         "path": "src/governance-verifier.ts",
-        "sha256": "cda05c5eff279ea9b8aa382a04d6df5c32ce3454e7648fd9f7bcb63535e0180a"
+        "sha256": "ab85c660254e613d3b0dde741fba518d6dfd9be163635a66f5a12a62c66ec0dc"
       },
       {
         "path": "src/gpu-plan.ts",
@@ -388,7 +392,7 @@
       },
       {
         "path": "src/hardening-residency.ts",
-        "sha256": "ab953062baaca84522dbb414227b026f16b4a65d327e3592c9c5a0599c87ab4d"
+        "sha256": "bb58907af6d140c35a5fa0525042690cb3426e0abd421885318b68c791b92414"
       },
       {
         "path": "src/i32-arith.ts",
@@ -404,11 +408,11 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "103620bf5db34982d5ccded48c3551580299ab0f7fdd88ec564f0acb8fbe1869"
+        "sha256": "7f0ab470c744930e2e03b2d478174b33c8b17a0140adfa592b2d00932d19a573"
       },
       {
         "path": "src/interpreter.ts",
-        "sha256": "31fff3661083d5393bfd9da7fcfa4a1fc23abcf4f2aecaa5176124d67d97b8d8"
+        "sha256": "f9cccc6e86dab9a013bef6718890414e9c7f7e60321e5995a90c53c75de97850"
       },
       {
         "path": "src/invariant-discharge.ts",
@@ -455,6 +459,10 @@
         "sha256": "1380675e2853297f9194441ecd87f52b2486aff45fc336b31cc899a798d252d5"
       },
       {
+        "path": "src/narrow-float.ts",
+        "sha256": "a1000fe2a29858fc741053a3e71ab3e3b5122dd30f3c68d310040b9bb887b64e"
+      },
+      {
         "path": "src/node-child-process-shim.d.ts",
         "sha256": "0ce3d2849090ee8540cf6abb73f102803b1e686ee9f3d9b9e173ae1559762b59"
       },
@@ -492,7 +500,7 @@
       },
       {
         "path": "src/numeric-lowering.ts",
-        "sha256": "5fbec71ff977da2d85e5ec8fd8e784c6c45416809b5ff412e7224074bb27cc87"
+        "sha256": "520c33a8f2ca1fa92bdc52dce8da8270bdfc6775faef05405f5b58d3ecd9832b"
       },
       {
         "path": "src/observability-inference.ts",
@@ -508,7 +516,7 @@
       },
       {
         "path": "src/parser.ts",
-        "sha256": "7b5bd8dca4dbc893ef51452db2195911970cb7da243014aca22693f9ec48a8f3"
+        "sha256": "34790b284334cb8fd1f2a6fc5fbb8ea7970b5af4be05f4d232c4912909fae5e2"
       },
       {
         "path": "src/pattern-capability.ts",
@@ -553,6 +561,10 @@
       {
         "path": "src/pure-flow-cache.ts",
         "sha256": "694791974a8d78917beca525b0ff77804ce644380dfe4c528d652cffb27cda74"
+      },
+      {
+        "path": "src/rd0855-replanning-contracts.ts",
+        "sha256": "39bbf04fcc900d34572799f9df302c8ae0fc8137bfeb63a366de477ca1811994"
       },
       {
         "path": "src/rd0858-scalar-compiler-entry.ts",
@@ -600,15 +612,15 @@
       },
       {
         "path": "src/route-dispatcher.ts",
-        "sha256": "0c25ab0d9dab43cf492ecfcfccd3ee58367429373349fb03d2ff2517e8d5d5fb"
+        "sha256": "21ad1b6c5666e2f721f47e558894342160484b6aa479e2473f299d9c6626c46f"
       },
       {
         "path": "src/route-registry.ts",
-        "sha256": "f6a70dfd33569f6038edae080437cb2d535a54f4484629035abc629115874f8c"
+        "sha256": "86fa6339f824a16d1a1cc720ee7c67d975a374086b2b782917972a3d874d3bf1"
       },
       {
         "path": "src/runtime.ts",
-        "sha256": "fa0450dd7045813ad4b1fbd742927c25e54efa84d8f3a01ab5fdc6b711659291"
+        "sha256": "e89687002d5a600239b39938eccf271c0b6f92f574792e1edd84131d56237219"
       },
       {
         "path": "src/runtime/canonicalHash.ts",
@@ -636,7 +648,7 @@
       },
       {
         "path": "src/runtime/limitPolicy.ts",
-        "sha256": "b5b9af88bca0f4284ba34c84d2c5512479458789ec2958b9a634f6f362b5b14e"
+        "sha256": "331cac197359d257ddbed0d990f2538a75f82aafd2a02ef5dc37b0748d3c5b3e"
       },
       {
         "path": "src/runtime/retryPolicy.ts",
@@ -828,7 +840,7 @@
       },
       {
         "path": "src/self-hosted/hardening-host-capability.fungi",
-        "sha256": "8f28f724589a832d4ea0856cb640678e77c2b7a91c4fcafeb5eb83bd62eb5544"
+        "sha256": "ebbd78351fbad451b41ae5a0fa5635ad78037734d9335d77876611b2556da584"
       },
       {
         "path": "src/self-hosted/hardening-trust-boundary.fungi",
@@ -1312,7 +1324,7 @@
       },
       {
         "path": "src/stdlib.ts",
-        "sha256": "7572c8854763223948b1949c863ab4d498e126f02dec51e3afbfb57f2f261446"
+        "sha256": "78c8f577d1cf0e2e595512e7611b6778a57de48c8608c74bcff7460ab61785bc"
       },
       {
         "path": "src/string-match-checked-module-snapshot-v2.ts",
@@ -1344,7 +1356,7 @@
       },
       {
         "path": "src/type-checker.ts",
-        "sha256": "d76d5d6114e5229c0b9ac2e4d48de25819fe5e2f9648a81d03e99aa91b84acc7"
+        "sha256": "d8e86e7242883ee76e5956fefbaa143af0ec76e8d5ec1c8892d92cc64c687b0b"
       },
       {
         "path": "src/type-registry.ts",
@@ -1368,7 +1380,7 @@
       },
       {
         "path": "src/value-state-checker.ts",
-        "sha256": "27f447c4d2467bc0c3a42fa77cb59cb9dfbcc4f7685c0668beacc5cbd58bea93"
+        "sha256": "6e45f444d4bd833410125f343d31f0bcfbe1867d5d3cdc4b32e6f32617b8e090"
       },
       {
         "path": "src/verified-loop-envelope.ts",
@@ -1388,7 +1400,7 @@
       },
       {
         "path": "src/wat-emitter-binary.ts",
-        "sha256": "0120c1e258359d971c472cd313c0e0fab068da0180452b918aa088c439c5fc66"
+        "sha256": "3da53c00d8ceb88c9b420d5fa00de9782c22991815d84f4cf20bf3ae45126b41"
       },
       {
         "path": "src/wat-emitter-gir.ts",
@@ -1400,19 +1412,23 @@
       },
       {
         "path": "src/wat-emitter-layouts.ts",
-        "sha256": "cad4686ecae7f22469cc19a73ce6e1fa09be883b2d8b8425beba2559e972aa8e"
+        "sha256": "2c08eb08f4eeb2f280ad7038f1a9144d199b1c46d0787e22556365886f8d32a1"
+      },
+      {
+        "path": "src/wat-emitter-pattern.ts",
+        "sha256": "5c6e52642a6c58157ec88dd6314f2e51499f7144a77fd9860449ad5655fa27ed"
       },
       {
         "path": "src/wat-emitter-refusals.ts",
-        "sha256": "338a9c256351bda27618a21c8df79e42990a5173a98e34718843f792b4bca0cd"
+        "sha256": "f3e1c4f1d2a44ae0608343fdf949314e63263fc28d964466d1e75208373a803d"
       },
       {
         "path": "src/wat-emitter-types.ts",
-        "sha256": "6e21f83833c8b1f5ddb37602b0a200de5c0188a34e045cd2f637d5d160ca4035"
+        "sha256": "7166dd60b7dd1279b201906d7aa131474812fbc2a8622fe114a6bae9676278df"
       },
       {
         "path": "src/wat-emitter.ts",
-        "sha256": "e27ce42e0d2189396a3ade2f40cdf9d34fb4817ff06d79703c514cd5e4b90053"
+        "sha256": "68cbdfb7c058b071cfdd5ebd522b73cc7ddd8297fa0a3f6857db416287e95bc2"
       },
       {
         "path": "test_lexer.mjs",
@@ -1472,7 +1488,7 @@
       },
       {
         "path": "tests/bcrypt-rounds-bound.test.mjs",
-        "sha256": "39f1665206456d3406ea25f34009f033f9d772d3d8b28e8a5c0707f57dc9bae3"
+        "sha256": "3c4ac724179ac78658a088f2db0a64c2c43afac5dedbdb7bd0ac8bd894432c1f"
       },
       {
         "path": "tests/binding-checker.test.mjs",
@@ -1560,11 +1576,11 @@
       },
       {
         "path": "tests/cli-classical-signing-refusals.test.mjs",
-        "sha256": "ac4a2f3ef3e7b6cd0eaf94d4eafb875e132376e6b4444c7ebd15a48fd32e2f32"
+        "sha256": "740a03fedba6ae7fb7919745317ba107c39fd11126a8ff8650787a6d2a64cb15"
       },
       {
         "path": "tests/cli-compatibility.test.mjs",
-        "sha256": "d9fdc308e72818a66694eec3485504dc69654936d474d6011beace66ffa769ec"
+        "sha256": "b557537f477bde0e51df2aeb74966847781a935756396eaa41ecf51d5808ec7a"
       },
       {
         "path": "tests/cli-diagnostic-cure-fields.test.mjs",
@@ -1596,7 +1612,7 @@
       },
       {
         "path": "tests/cli-numeric-gate.test.mjs",
-        "sha256": "a2966cbe3c4aaa4fb07b86a6ada65f5830ebf2bef6c519733210ffb2b3d1d1b9"
+        "sha256": "4c71e9de4adca3b1b9276db5af7c211e59e66662c0f7c3f632d00388b4b80e60"
       },
       {
         "path": "tests/cli-security-type-gate.test.mjs",
@@ -1612,7 +1628,7 @@
       },
       {
         "path": "tests/compiler-safety-contracts.test.mjs",
-        "sha256": "3ab20017f8451c208716f5f64f531d5b130aa9c2ca49b8f4d2db5458ee684455"
+        "sha256": "f9c7def545ef119692c8cecced8023b1426e34c3079607fd9e4aec593de69510"
       },
       {
         "path": "tests/condition-type-gate.test.mjs",
@@ -1796,7 +1812,7 @@
       },
       {
         "path": "tests/fixtures/arithmetic-conformance-baseline.json",
-        "sha256": "7c552110ee9194006fde13fd41517dd27eaee6b67b6c14359c1b88a30876ca37"
+        "sha256": "bdef066b4e85cd07d1db262555495ed53e11198c732e27d1ee745a8f1c8b18a0"
       },
       {
         "path": "tests/fixtures/auto-erasure-baseline.json",
@@ -1972,7 +1988,7 @@
       },
       {
         "path": "tests/fixtures/wat-lowering-baseline.json",
-        "sha256": "29a63e46abed8b826a49e9429f32cd0a46b6c7a381c3a0e749dccf4db0c7671b"
+        "sha256": "70b46cbad114ab01909bbc67863b028fe4f9f7a3a5f48717ae0c39b810c86c1f"
       },
       {
         "path": "tests/float-nonfinite-failopen.test.mjs",
@@ -2195,6 +2211,10 @@
         "sha256": "10f33ff83690cfe4caa7d2463a91e9c4411db39175b8f6b1b68417eb95532afb"
       },
       {
+        "path": "tests/governance-obligation-flow-bind.test.mjs",
+        "sha256": "536a342259dea353aa44e59e3f805ffd0171aaedb54393bb8f5fdd4651abbf53"
+      },
+      {
         "path": "tests/governance-qualifier-escalation-fungi-conversion.test.mjs",
         "sha256": "34c428ae282a2c5665c7d17e7d876b9f07580c59fd5c6e9095f32d2483aac53d"
       },
@@ -2332,11 +2352,11 @@
       },
       {
         "path": "tests/hardening-integration.test.mjs",
-        "sha256": "a2799920fe3364aa803ef55a386d41e2a7052925649673f8285a8ac685eed0fb"
+        "sha256": "f36388597af5720d591afc9a60c3bd36f91bd80d038321fc6ca4489dd5068e94"
       },
       {
         "path": "tests/hardening-residency.test.mjs",
-        "sha256": "e8e4db17ecb5fa66be79982b849ba358e5dc5599dfc483fac6b90dd919e3fbcb"
+        "sha256": "82adb09cce238ea7fad7d62f5fff0d6f7143314b08760e498cbfdc1e5286ee78"
       },
       {
         "path": "tests/hardening-trust-fungi-conversion.test.mjs",
@@ -2416,7 +2436,7 @@
       },
       {
         "path": "tests/interpreter-while-fastpath.test.mjs",
-        "sha256": "0676b12f4fe81ba7d8043208f2063eca3ebd5cc84678b965d4ff12beb1b68e14"
+        "sha256": "f69fbfde2b4d5d118b4965f07b203f2755265f9ef4a4129b3c2c72af84492426"
       },
       {
         "path": "tests/interpreter.test.mjs",
@@ -2496,7 +2516,7 @@
       },
       {
         "path": "tests/numeric-capability-refusal.test.mjs",
-        "sha256": "cad1f9fefd7a4191e5c3279c1883823c1ab96e1d1753ee4b5d8c7f13cfb04940"
+        "sha256": "bf7a8494e5b617cc02f06360ec27c1dc9f5ae432a3292657393f7323a56c8d49"
       },
       {
         "path": "tests/numeric-lowering.test.mjs",
@@ -2564,7 +2584,7 @@
       },
       {
         "path": "tests/pattern-c20-capability.test.mjs",
-        "sha256": "777f0d2ba82910722a19df43c5e8fb9a2452da8567981c213de685881e712bec"
+        "sha256": "50375e1ed73d97f2add11ec005876fbbb17559bea63a2c8f0faaea99aca0bc4a"
       },
       {
         "path": "tests/phase27-wasm-test.mjs",
@@ -2592,11 +2612,11 @@
       },
       {
         "path": "tests/phase34-verify-password-service.test.mjs",
-        "sha256": "45736326304fa140fac84098bfbdee097abed3326acec44e023f796fa68bce6f"
+        "sha256": "6551b78869498f184ae677bdd13a0e7e3aa2a457a11dc2a11dcd1074bcd0dd67"
       },
       {
         "path": "tests/phase35-39-features.test.mjs",
-        "sha256": "7b0c217581b8ac74e83050f136f86d9e67ce9a310330421c9d39a2c7ef62cb50"
+        "sha256": "d36ef39d24fd27994c168d998ba942a3c4f524475c98ab42295a0028ceecb755"
       },
       {
         "path": "tests/phase40-stage-b-bootstrap.test.mjs",
@@ -2744,7 +2764,7 @@
       },
       {
         "path": "tests/rd-0365-key-custody.test.mjs",
-        "sha256": "83e65a80758c7ab2a62e440bb9a8bd1bfb380de1b24a179ca894dbbce46ad093"
+        "sha256": "5b758856fab7cb583d2b7ead2df2df8f11ac1814a697e84256142923d6b83558"
       },
       {
         "path": "tests/rd-1296-host-registry.test.mjs",
@@ -2769,6 +2789,10 @@
       {
         "path": "tests/rd0528-unicode-decode-tokenize.test.mjs",
         "sha256": "92ddf35ee60a38a0fb511a79b5b9cc4133fd42f3b946f35333c0f6a5d0c26952"
+      },
+      {
+        "path": "tests/rd0855-replanning-contracts.test.mjs",
+        "sha256": "8cb4a219fa8ecc12f5c16e6a4f3fdf52073d81f31b11578cfab5ddcf8de6cc43"
       },
       {
         "path": "tests/rd0858-slide-gir-adapter.test.mjs",
@@ -2844,7 +2868,7 @@
       },
       {
         "path": "tests/resolve-host-fungi-conversion.test.mjs",
-        "sha256": "60704c616d60be6a4998c22ed74d39d192dd4355c7fede192608d6fc8a1ba260"
+        "sha256": "5b634305849bfebfcc55e0a145be61c0f9222df877345c8402cad0ad1af1ce47"
       },
       {
         "path": "tests/resource-decl.test.mjs",
@@ -2880,7 +2904,7 @@
       },
       {
         "path": "tests/route-registry.test.mjs",
-        "sha256": "6838c652a304a5e4b5b0aa326f5252cf82d3dfea4e24835055bcccec1794d32b"
+        "sha256": "21e2abb9614b02e9f91bcacc2b3b0cb35ba17a5c797ee8dc8922ebdf9c86e08d"
       },
       {
         "path": "tests/runtime-admission.test.mjs",
@@ -2905,6 +2929,10 @@
       {
         "path": "tests/runtime-policy-real-ast.test.mjs",
         "sha256": "686790cfe4fe4d70a832ec8bdc31c09545545b6dd95bdbd3c242d22b9a8e6790"
+      },
+      {
+        "path": "tests/runtime-route-request-size.test.mjs",
+        "sha256": "0d664e08a460a0f955c1f5f858962c094dedf86c4e2770996cd1bde889fc14fa"
       },
       {
         "path": "tests/runtime.test.mjs",
@@ -3264,7 +3292,7 @@
       },
       {
         "path": "tests/type-checker-c01-inference-matrix.test.mjs",
-        "sha256": "1dd0e696c38c9cd4938ba9c7a76fb6258be3948d6d62b3b564881a63444c3b19"
+        "sha256": "8d308b96c38a6984e4c7d7367a2888d85118fbdf38dbe7980387fecdebd598cd"
       },
       {
         "path": "tests/type-checker-duplicate-flow.test.mjs",
@@ -3284,7 +3312,7 @@
       },
       {
         "path": "tests/type-checker-expression-kind-matrix.test.mjs",
-        "sha256": "5aa81c221e5e1c73f3a9d8a4890af47b7371092fd14b84f728bef58db6add8d9"
+        "sha256": "54b8711e79be279d147594e611e7642d854fca46fe4a23f53fbd6626fcc4fa63"
       },
       {
         "path": "tests/type-checker-generic-assignment.test.mjs",
@@ -3404,11 +3432,11 @@
       },
       {
         "path": "tests/value-state-egress-hardening.test.mjs",
-        "sha256": "703492ec5dc3a537666cc2e1109a5728c781bf73d6710fdee0457f14404edf14"
+        "sha256": "9e69ba38715cd9cf37e1dc58d37e05f1d892cc9c7dd94626f44b53e43e781e02"
       },
       {
         "path": "tests/value-state-secret-source-precision.test.mjs",
-        "sha256": "1ffa1bcc121759bcc21464279d324c6165faff786b071b1793ca7fd46ea44048"
+        "sha256": "550b2a98fbcead1a205de0ec0dfa326ab8d4b2547db30a02b449ba3e5180a3dd"
       },
       {
         "path": "tests/value-state/affine-passport-typestate-0111.test.mjs",
@@ -3416,11 +3444,11 @@
       },
       {
         "path": "tests/value-state/authority-use-state.test.mjs",
-        "sha256": "d1aeb782dd9217eae22553c8caf04967e05ef274bd62410bdfb646824d87ac8c"
+        "sha256": "a41102061e5e66edd0f7973fbeb2e9f8aad286637e10ab6adc6002c3caa1fc24"
       },
       {
         "path": "tests/value-state/declassifier-shadow-drift.test.mjs",
-        "sha256": "155d320a85207933fb6227f766d44bc18154b9772302d1a573aa5fa875ed2ad3"
+        "sha256": "c09a78d99064b053c580fd8772ff783ea73f6399f6fa919d94500ad9853bdc37"
       },
       {
         "path": "tests/value-state/declassifier-shadow-floor.test.mjs",
@@ -3431,8 +3459,16 @@
         "sha256": "e73c2cecc22394cfce2066aa4c7b4ca59e7e80153c753cde6387fc3ff3d2be3a"
       },
       {
+        "path": "tests/value-state/helper-return-context.test.mjs",
+        "sha256": "1b6a20a1d4b4b3b6e5ec75e1e9c749c02d2bd98ac7d61a9840ef80e2688285a1"
+      },
+      {
         "path": "tests/value-state/numeric-lowering-gate.test.mjs",
         "sha256": "1cf35ed2c6392adf53a4d261daf4f7cce39856cd339253f16500f52ece3abcd1"
+      },
+      {
+        "path": "tests/value-state/secret-unary-derivation.test.mjs",
+        "sha256": "787a326e86da10681572f0e94d71e0c788957450a4621421b869dccc99ca970b"
       },
       {
         "path": "tests/value-state/valuestate-006-record-discharge.test.mjs",
@@ -3456,7 +3492,11 @@
       },
       {
         "path": "tests/wasm-admission-gate.test.mjs",
-        "sha256": "9ad7b64296a0bddc693df64624e8dd73a2914280522b1406f38dfab82ef780a1"
+        "sha256": "9e869387080b9b4288a8b184a775a0766f3211c54ac8e235c4728291ca2c929a"
+      },
+      {
+        "path": "tests/wasm-effect-grant-abi.test.mjs",
+        "sha256": "ba23eee4001f073e4ac102c428f3909970ce53ec5631bf4ef73514367629285f"
       },
       {
         "path": "tests/wasm-lane-governance-gate.test.mjs",
@@ -3547,8 +3587,16 @@
         "sha256": "150254dbcc83e009a1b97b4c82b8b503048164e96db1349b364da28de2939f91"
       },
       {
+        "path": "tests/wat-d4-pattern-lowering.test.mjs",
+        "sha256": "b3b2573e410ad04018efa70a7e4f143e2ff9149767ff48205b9a36ebc7e47a6c"
+      },
+      {
         "path": "tests/wat-decimal-decline.test.mjs",
         "sha256": "958a02d894a35fe1b908a7c6f85b7acb9ae253a0e20802419fbaf7e9698331f8"
+      },
+      {
+        "path": "tests/wat-e5-narrow-float.test.mjs",
+        "sha256": "ebc9c13f77db0e869545450565e8598a10276a8dd7cde3c638fec4d02039ee01"
       },
       {
         "path": "tests/wat-e7-stdlib-money-compile-oracle.test.mjs",
@@ -3592,7 +3640,7 @@
       },
       {
         "path": "tests/wat-float-record-refusal.test.mjs",
-        "sha256": "dfee8a813fff422cfa7a227a088aec225ce1ee2871a8880d30c89713c938afc3"
+        "sha256": "124842df44dd6d6b69c6065f10d009763502a595ced9efb459ae7db0314d5c1a"
       },
       {
         "path": "tests/wat-forin-execution.test.mjs",
@@ -3627,6 +3675,10 @@
         "sha256": "cf5820a04e53b9e2b336b924569798e2785f798e63fa49af76825083498fd241"
       },
       {
+        "path": "tests/wat-int64-local-name-collision.test.mjs",
+        "sha256": "a86b09f75213e2a95a272bc21f125bf6eff2cc9b26100f4a9ee37c7708cf2edd"
+      },
+      {
         "path": "tests/wat-j4-member-receiver.test.mjs",
         "sha256": "d87531e60865196c24c84ae534a9d338c94ac6f097dc37ae6aa89fd384a7ee43"
       },
@@ -3648,7 +3700,7 @@
       },
       {
         "path": "tests/wat-j7-runtime-gir-parity.test.mjs",
-        "sha256": "89be2be0f3beaab5c862dd26e396b60875d736d67f736096d94655400fcebe2d"
+        "sha256": "86ce716dc92c9361a63ea15613bb4a298ec4c83d460f041102cee1bcb65d183d"
       },
       {
         "path": "tests/wat-jr3-short-circuit.test.mjs",
@@ -3784,11 +3836,11 @@
       },
       {
         "path": "tests/wat-q3-d3-unknown-method.test.mjs",
-        "sha256": "78596b33fc2c7d9a814ceee46463895751bb225190061af1419a06179f062e8c"
+        "sha256": "48697b17496a614237d621a29ed69be3978e725415d070b38d28528eb56f99e9"
       },
       {
         "path": "tests/wat-q4n-d4-pattern-refusal.test.mjs",
-        "sha256": "c9d29f77049435302986c79565c9fdf86bd929e9a5570707236e651c2ddfd21d"
+        "sha256": "ece1ba8cd95241b2a091890e16dd82d755fa6d0d41563fc758438b828927a10e"
       },
       {
         "path": "tests/wat-q5n-d7-d8-refusal.test.mjs",
@@ -3796,7 +3848,7 @@
       },
       {
         "path": "tests/wat-q6-d2-d9-i4.test.mjs",
-        "sha256": "42e8a7bd524e0f412d2355fbb9162b65fb77ddd8f9021496866dbfa43806243c"
+        "sha256": "d2ee2b7ea1e1f34d793df732664b2c91733c0561ef2a66897198a20d8a6afdb1"
       },
       {
         "path": "tests/wat-q7-k5.test.mjs",
@@ -3820,7 +3872,7 @@
       },
       {
         "path": "tests/wat-secret006-runtime-stage.test.mjs",
-        "sha256": "ab92a7c4053866cac8acf49e68fe1ec72230e26f927ab1737051bad2e8e1ec9d"
+        "sha256": "4c2f5940242d1f187677011050eecaad52712074a76356e29c1388b264ebb8c0"
       },
       {
         "path": "tests/wat-string-eq-fields.test.mjs",
@@ -3877,6 +3929,10 @@
       {
         "path": "tests/wat-vector-type-parity.test.mjs",
         "sha256": "37e1542884368b6ca31c1fc16f92283f0ea516d44956e9f367a4a989f0056ed4"
+      },
+      {
+        "path": "tests/wat-zippair-lowering.test.mjs",
+        "sha256": "4c2f1fcc5608bbbd12a90eb82dac2cacd837104a6f56408fa8ceccada9640ba5"
       },
       {
         "path": "tests/where-filter.test.mjs",

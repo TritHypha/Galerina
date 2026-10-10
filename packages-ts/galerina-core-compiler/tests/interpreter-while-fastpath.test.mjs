@@ -24,6 +24,74 @@ function findWhile(node) {
 }
 
 describe("tryWhileFastPath", () => {
+  for (const [label, clockAfterTwoIterations, expires] of [
+    ["before the deadline", 99, false],
+    ["exactly at the deadline", 100, false],
+    ["past the deadline", 101, true],
+  ]) {
+    it(`uses the real deadline policy ${label} during fast-loop execution`, (t) => {
+      const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 10 { i = i + 1 }
+  return i
+}`, "real-deadline-policy.fungi");
+      assert.equal(parsed.diagnostics.length, 0);
+      const w = findWhile(parsed.ast);
+      assert.ok(w);
+      const scope = new Map([["i", { __tag: "int", value: 0 }]]);
+      // Time advances with actual loop progress, not unrelated Date.now calls.
+      // Removing the loop's check or disabling the real policy must lose refusal.
+      t.mock.method(Date, "now", () => scope.get("i").value < 2 ? 90 : clockAfterTwoIterations);
+      const enforcer = createContractEnforcer(undefined, "count", { deadlineMs: 100 });
+      assert.doesNotThrow(() => enforcer.checkDeadline());
+      const run = () => tryWhileFastPath(w.children[0], w.children[1], scope,
+        undefined, 100, () => enforcer.checkDeadline());
+      if (expires) {
+        assert.throws(run, /\[FUNGI-TIMEOUT\]/);
+        assert.equal(scope.get("i").value, 2);
+      } else {
+        assert.equal(run(), true);
+        assert.equal(scope.get("i").value, 10);
+      }
+    });
+  }
+
+  for (const expires of [false, true]) {
+    it(`executeFlow records ${expires ? "a real mid-loop timeout" : "successful real-policy completion"}`, async (t) => {
+      const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 10 { i = i + 1 }
+  return i
+}`, "real-deadline-execution.fungi");
+      assert.equal(parsed.diagnostics.length, 0);
+      resolveSymbols(parsed.ast);
+      checkTypes(parsed.ast);
+      let now = 90;
+      t.mock.method(Date, "now", () => now);
+      const base = createContractEnforcer(undefined, "count", { deadlineMs: 100 });
+      let checks = 0;
+      const enforcer = { ...base, checkDeadline() {
+        // The entry check succeeds; the real policy decides at later loop checks.
+        if (++checks === 4 && expires) now = 101;
+        base.checkDeadline();
+      } };
+      const result = await executeFlow("count", new Map(), parsed.ast, parsed.flows, enforcer);
+      if (expires) {
+        assert.equal(checks, 4);
+        assert.equal(result.value.__tag, "runtimeError");
+        assert.match(result.value.message, /FUNGI-TIMEOUT/);
+        assert.ok(result.diagnostics.some(diagnostic => diagnostic.message.includes("FUNGI-TIMEOUT")));
+        assert.equal(result.audit.result, "error");
+      } else {
+        assert.ok(checks > 4);
+        assert.equal(result.value.__tag, "int");
+        assert.equal(result.value.value, 10);
+        assert.equal(result.diagnostics.some(diagnostic => diagnostic.message.includes("FUNGI-TIMEOUT")), false);
+        assert.notEqual(result.audit.result, "error");
+      }
+    });
+  }
+
   it("executeFlow propagates a deadline refusal after entry into the fast loop", async () => {
     const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
   mut i = 0

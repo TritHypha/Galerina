@@ -12,11 +12,12 @@ export {
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
   MAX_WASM_ARRAYS, MAX_WASM_ARRAY_ITEMS, MAX_WASM_STRINGS, MAX_WASM_STRING_CHARS, MAX_WASM_HOST_RECORDS,
   MAX_RECORD_COPY_DEPTH, MAX_RECORD_COPY_NODES,
+  WASM_EFFECT_GRANT_ABI, FUNGI_WASM_GRANT_001,
   finalizeSecretExportResult, invokeAdmittedExport,
 } from "./wasm-runtime.js";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
-  Observer, HostRuntime, AdmissionResult, RecordCopyField,
+  Observer, HostRuntime, AdmissionResult, RecordCopyField, WasmEffectGrantAbiEntry,
 } from "./wasm-runtime.js";
 
 // The injectable seam adapters — what core-runtime's createGovernedRuntimeExecutor INJECTS (never imports) to

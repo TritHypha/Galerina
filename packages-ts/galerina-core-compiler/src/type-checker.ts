@@ -47,6 +47,7 @@
 // =============================================================================
 
 import { type AstNode, type SourceLocation } from "./parser.js";
+import { GENERIC_ARITY, GENERIC_ARG_KINDS } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js";
 import {
   resolveTypeId,
@@ -302,30 +303,9 @@ const EPISTEMIC_RESERVED: ReadonlySet<string> = new Set([
 const VALUE_UNIT_RESERVED: ReadonlySet<string> = new Set(["Commodity", "Crypto", "Security"]);
 
 // ---------------------------------------------------------------------------
-// Generic arity rules
+// Generic arity rules are imported from the shared generic-argument-kinds owner.
 // Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 3
 // ---------------------------------------------------------------------------
-
-const GENERIC_ARITY: ReadonlyMap<string, number> = new Map([
-  ["Option",       1],
-  ["Result",       2],
-  ["Array",        1],
-  ["List",         1],  // List<T> — ordered collection alias for Array<T>
-  ["Set",          1],
-  ["Map",          2],
-  ["Channel",      1],
-  ["Vector",       2],
-  ["Matrix",       3],
-  ["Money",        1],
-  ["Tensor",       2],  // Tensor<ElementType, Shape> — see galerina-tensor-arity-decision.md
-  ["ReadOnlyView", 1],  // ReadOnlyView<T>
-  ["Brand",        2],  // Brand<T, "Name">
-  ["Authority",    1],  // Authority<"domain.tag.v1"> — opaque runtime-minted authority
-  ["Embedding",    1],  // Embedding<768> — dimensioned embedding vector
-  ["Secret",       1],  // Secret<ApiKey> — parameterised secret wrapper
-  ["ZipPair",      2],  // ZipPair<T, U> — Option.zip named pair (first, second)
-]);
-
 // Example strings for each generic type — used in fix suggestions (suggestedFix prose)
 // and as suggestedCode (machine-applicable snippet)
 const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
@@ -351,22 +331,12 @@ const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
 // The KIND of each type-argument POSITION for a generic. A position that is anything but
 // "type" is PAYLOAD — a nominal tag, a shape literal, or a dimension — and is NEVER a
 // type reference, so checkTypeRef must not recurse into it. This declarative table is the
-// single source of truth that replaces the old per-case regex skips (Brand tag / Tensor
-// shape / numeric dim): a new generic with a non-type arg adds ONE row here and the type
+// shared source of truth that replaces the old per-case regex skips (Brand tag / Tensor
+// shape / numeric dim): a new non-type arg adds ONE row in generic-argument-kinds and the type
 // checker can never regress into that false-positive class again (057 Brand-tag, 401
 // Tensor-shape). Generics whose args are ALL types (Option, Result, Array, Map,
 // ReadOnlyView, Channel, Set, List, Secret) are omitted — the default kind is "type".
 // Each row's length matches GENERIC_ARITY for that base.
-type GenericArgKind = "type" | "tag" | "shape" | "dim";
-const GENERIC_ARG_KINDS: ReadonlyMap<string, readonly GenericArgKind[]> = new Map([
-  ["Brand",     ["type", "tag"]],        // Brand<T, Tag> — nominal identity tag (bare or quoted)
-  ["Authority", ["tag"]],                // Authority<Tag> — opaque runtime authority identity
-  ["Tensor",    ["type", "shape"]],      // Tensor<Elem, [d0, d1, ...]> — shape literal
-  ["Vector",    ["type", "dim"]],        // Vector<Elem, N> — dimension (numeric or named)
-  ["Matrix",    ["type", "dim", "dim"]], // Matrix<Elem, R, C> — row/col dimensions
-  ["Money",     ["tag"]],                // Money<GBP> — currency tag
-  ["Embedding", ["dim"]],                // Embedding<768> — dimension
-]);
 
 // ---------------------------------------------------------------------------
 // Type string parser

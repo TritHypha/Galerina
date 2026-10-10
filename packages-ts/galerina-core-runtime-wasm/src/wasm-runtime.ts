@@ -246,6 +246,8 @@ export interface HostRuntime {
   snapshotMemory(): Uint8Array | null;
 }
 
+const FACTORY_HOST_RUNTIMES = new WeakSet<HostRuntime>();
+
 type OptionKind = "i32" | "f64";
 type OptionEntry = { readonly kind: OptionKind; readonly value: number };
 
@@ -257,6 +259,102 @@ export type RecordCopyField =
 
 export const MAX_RECORD_COPY_DEPTH = 8;
 export const MAX_RECORD_COPY_NODES = 4096;
+
+/** Closed non-secret ABI for granted WASM host imports. */
+export interface WasmEffectGrantAbiEntry {
+  readonly module: "host";
+  readonly name: string;
+  readonly effect: string;
+  readonly params: readonly ["i32", "i32"];
+  readonly results: readonly ["i32"];
+}
+
+export const WASM_EFFECT_GRANT_ABI: readonly WasmEffectGrantAbiEntry[] = Object.freeze([
+  Object.freeze({ module: "host", name: "audit.write", effect: "audit.write", params: Object.freeze(["i32", "i32"] as const), results: Object.freeze(["i32"] as const) }),
+  Object.freeze({ module: "host", name: "audit.log", effect: "audit.write", params: Object.freeze(["i32", "i32"] as const), results: Object.freeze(["i32"] as const) }),
+]);
+
+const WASM_ABI_VALUE_TYPE = Object.freeze({ i32: 0x7f });
+
+function encodeWasmU32(value: number): number[] {
+  if (!Number.isSafeInteger(value) || value < 0 || value > 0xffff_ffff) {
+    throw new RangeError("Wasm section length is outside u32 range");
+  }
+  const bytes: number[] = [];
+  let remaining = value;
+  do {
+    let byte = remaining & 0x7f;
+    remaining = Math.floor(remaining / 0x80);
+    if (remaining !== 0) byte |= 0x80;
+    bytes.push(byte);
+  } while (remaining !== 0);
+  return bytes;
+}
+
+function encodeWasmName(value: string): number[] {
+  const bytes = Array.from(new TextEncoder().encode(value));
+  return [...encodeWasmU32(bytes.length), ...bytes];
+}
+
+const effectGrantSignatureModules = new Map<string, WebAssembly.Module>();
+
+function effectGrantSignatureModule(entry: WasmEffectGrantAbiEntry): WebAssembly.Module {
+  const key = `${entry.params.join(",")}->${entry.results.join(",")}`;
+  const existing = effectGrantSignatureModules.get(key);
+  if (existing) return existing;
+
+  const encodeTypes = (types: readonly "i32"[]): number[] => types.map((type) => {
+    const code = WASM_ABI_VALUE_TYPE[type];
+    if (code === undefined) throw new TypeError(`unsupported Wasm effect-grant type '${type}'`);
+    return code;
+  });
+  const signature = [
+    0x60,
+    ...encodeWasmU32(entry.params.length), ...encodeTypes(entry.params),
+    ...encodeWasmU32(entry.results.length), ...encodeTypes(entry.results),
+  ];
+  const typePayload = [...encodeWasmU32(1), ...signature];
+  const importPayload = [
+    ...encodeWasmU32(1), ...encodeWasmName("bridge"), ...encodeWasmName("callback"), 0x00, 0x00,
+  ];
+  const exportPayload = [...encodeWasmU32(1), ...encodeWasmName("callback"), 0x00, 0x00];
+  const section = (id: number, payload: readonly number[]): number[] => [
+    id, ...encodeWasmU32(payload.length), ...payload,
+  ];
+  const bytes = new Uint8Array([
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    ...section(1, typePayload),
+    ...section(2, importPayload),
+    ...section(7, exportPayload),
+  ]);
+  const compiled = new WebAssembly.Module(bytes);
+  effectGrantSignatureModules.set(key, compiled);
+  return compiled;
+}
+
+function typeEffectGrantHandler(
+  entry: WasmEffectGrantAbiEntry,
+  handler: (...args: number[]) => number,
+): (...args: number[]) => number {
+  const bridge = new WebAssembly.Instance(effectGrantSignatureModule(entry), {
+    bridge: { callback: handler },
+  });
+  const callback = bridge.exports.callback;
+  if (typeof callback !== "function") {
+    throw new TypeError(`Wasm effect-grant signature bridge did not export '${entry.name}'`);
+  }
+  return callback as (...args: number[]) => number;
+}
+
+export const FUNGI_WASM_GRANT_001 = Object.freeze({
+  code: "FUNGI-WASM-GRANT-001",
+  name: "EFFECT_GRANT_NOT_ALLOWLISTED",
+  severity: "error",
+} as const);
+
+function makeEffectGrantDiag(detail: string): Error {
+  return new Error(`${FUNGI_WASM_GRANT_001.code}: ${detail} (deny-by-default; fail-closed)`);
+}
 
 function refuseHostCopy(detail: string): never {
   throw new Error(`FUNGI-WASM-HOST-001: ${detail}`);
@@ -805,13 +903,23 @@ export function createHostRuntime(
 
   // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-
   // default. The stdlib bridge can never be shadowed by a grant — bridge names win.
+  const grantAbiByName = new Map(WASM_EFFECT_GRANT_ABI.map((entry) => [entry.name, entry]));
   for (const [effect, fn] of Object.entries(grants?.effectHandlers ?? {})) {
+    const abi = grantAbiByName.get(effect);
+    if (!abi) {
+      throw makeEffectGrantDiag(`effect grant '${effect}' is not in the closed non-secret WASM effect-grant ABI [${[...grantAbiByName.keys()].join(", ")}]`);
+    }
+    if (typeof fn !== "function") {
+      throw makeEffectGrantDiag(`effect grant '${effect}' handler is not a function`);
+    }
     if (Object.prototype.hasOwnProperty.call(host, effect)) continue;
-    host[effect] = (a: number, b: number) => tap(effect, [a, b], fn(a, b)) as number;
+    host[effect] = typeEffectGrantHandler(abi, (a: number, b: number) =>
+      tap(effect, [a, b], fn(a, b)) as number,
+    );
   }
 
-  return {
-    imports: { host },
+  const runtime: HostRuntime = {
+    imports: Object.freeze({ host: Object.freeze(host) }),
     internString(s: string): number {
       return internStringValue(s);
     },
@@ -938,6 +1046,8 @@ export function createHostRuntime(
       return memory === null ? null : new Uint8Array(memory.buffer.slice(0));
     },
   };
+  FACTORY_HOST_RUNTIMES.add(runtime);
+  return Object.freeze(runtime);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -976,6 +1086,9 @@ export async function admitAndInstantiate(opts: {
   /** Optional per-export nested return layout for wrapped secret finalize. */
   returnLayouts?: Readonly<Record<string, readonly RecordCopyField[]>>;
 }): Promise<AdmissionResult> {
+  // Capture once: callers may mutate options or expose a changing accessor while
+  // compilation is pending. Validate and use this same identity throughout.
+  const host = opts.host;
   const wasm = snapshotWasmBytes(opts.wasm);
   const verdict = verifyWasm(wasm, opts.attestation, opts.policy);
   if (!verdict.ok) {
@@ -986,6 +1099,11 @@ export async function admitAndInstantiate(opts: {
   if (wasmHash(wasm) !== verdict.hash) {
     throw new Error("CRITICAL_SECURITY_VIOLATION: admitted bytes changed before instantiate");
   }
+  if (!FACTORY_HOST_RUNTIMES.has(host)) {
+    const reason = "host runtime was not created by createHostRuntime";
+    opts.observe?.onViolation?.(reason, wasm);
+    throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
+  }
   // Instantiate with ONLY the closed host import object. A LinkError here means the
   // module declared a host import the closed set does NOT provide — i.e. it tried to
   // reach a capability outside its grant. Fail CLOSED: classify it as a CRITICAL
@@ -993,10 +1111,30 @@ export async function admitAndInstantiate(opts: {
   // LinkError that a caller might mistake for an ordinary runtime fault (#105).
   let wasmResult: unknown;
   try {
-    wasmResult = await WebAssembly.instantiate(wasm, opts.host.imports);
+    const compiled = await WebAssembly.compile(wasm as Uint8Array<ArrayBuffer>);
+    const provided = host.imports as unknown as Record<string, Record<string, unknown>>;
+    for (const imp of WebAssembly.Module.imports(compiled)) {
+      const effectGrant = WASM_EFFECT_GRANT_ABI.find(
+        (entry) => entry.module === imp.module && entry.name === imp.name,
+      );
+      if (effectGrant !== undefined && imp.kind !== "function") {
+        throw new WebAssembly.LinkError(
+          `effect grant import kind mismatch: ${imp.module}.${imp.name} is declared ${imp.kind}, expected function`,
+        );
+      }
+      const namespace = Object.prototype.hasOwnProperty.call(provided, imp.module)
+        ? provided[imp.module]
+        : undefined;
+      if (namespace === undefined || !Object.prototype.hasOwnProperty.call(namespace, imp.name)) {
+        throw new WebAssembly.LinkError(
+          `disallowed host import: import ${imp.module}.${imp.name} (${imp.kind}) is not provided`,
+        );
+      }
+    }
+    wasmResult = await WebAssembly.instantiate(compiled, host.imports);
   } catch (err) {
     const reason = err instanceof WebAssembly.LinkError
-      ? `disallowed host import (module requires an import outside the closed host set): ${err.message}`
+      ? `module import/link failed: ${err.message}`
       : `instantiation failed: ${err instanceof Error ? err.message : String(err)}`;
     opts.observe?.onViolation?.(reason, wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
@@ -1004,8 +1142,8 @@ export async function admitAndInstantiate(opts: {
   const instance = (wasmResult as { instance?: WebAssembly.Instance }).instance
     ?? (wasmResult as WebAssembly.Instance);
   const mem = (instance.exports as Record<string, unknown>)["memory"];
-  if (mem instanceof WebAssembly.Memory) opts.host.bindMemory(mem);
-  return { instance: wrapAdmittedExports(instance, opts.returnLayouts), host: opts.host, hash: verdict.hash };
+  if (mem instanceof WebAssembly.Memory) host.bindMemory(mem);
+  return { instance: wrapAdmittedExports(instance, opts.returnLayouts), host, hash: verdict.hash };
 }
 
 const SECRET_HELPER_EXPORTS = new Set([

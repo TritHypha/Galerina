@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "656152b17933acf4c61dfe4e21bf1bcbbdb086720075342c96c6c695ca26c6c0",
+    "aggregateSha256": "35b17ec76b64a340e587f23a1cbb1fd9401cd724cfb295053151cd7d02e3e72e",
     "algorithm": "sha256",
     "files": [
       {
@@ -48,7 +48,7 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "d7645b31cbb8f9d7bbf948829a6e2b1ec46b7ffafd86fc5bf6da3f18d39858ae"
+        "sha256": "f14ff3de90e03e864e6b9cf111920cac276bc99828e749ea41f44d0c09f61a52"
       },
       {
         "path": "src/record-abi.ts",
@@ -56,7 +56,7 @@
       },
       {
         "path": "src/seam-adapters.ts",
-        "sha256": "251d6542fb6e98cf6d4432f053250cef647d7f0275f6ae8f673e6e2470c485ea"
+        "sha256": "ce7a13706d54b26a458cfcef7418896085db1ad860372289fd1adc134a7c2b32"
       },
       {
         "path": "src/self-hosted/wasm-admit-domain.fungi",
@@ -72,7 +72,7 @@
       },
       {
         "path": "src/wasm-runtime.ts",
-        "sha256": "37138c839680a29af8852ed07c7c55e2787ecea9c5dd58191d9ecdd630c270b7"
+        "sha256": "4a6b2e215487506e1df2dc4a341d63b5f3159f78f5b631f7014ddea4b4307126"
       },
       {
         "path": "tests/record-abi.test.mjs",
@@ -80,7 +80,7 @@
       },
       {
         "path": "tests/seam-adapters.test.mjs",
-        "sha256": "d268cef2ed23b50e4f9899c926423830cd7e84e3322fe8c7508158e1811c2814"
+        "sha256": "ae7dafff34dfd1abb2431377d41269f033f823bc7c979942802b42f9e6ee06a7"
       },
       {
         "path": "tests/wasm-runtime.test.mjs",

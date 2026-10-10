@@ -724,6 +724,7 @@ export {
 // Phase 6 / 18C — Value-State Checker
 export {
   checkValueStates,
+  FUNGI_AFFINE_005,
   ValueStateFlags,
   SINK_REQUIREMENTS,
   getSinkRequirement,
@@ -1318,6 +1319,7 @@ export {
 export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, compareUtf16CodeUnits, admitAndInstantiate,
+  WASM_EFFECT_GRANT_ABI, FUNGI_WASM_GRANT_001,
   invokeAdmittedExport, finalizeSecretExportResult,
 } from "@galerina/core-runtime-wasm";
 export type {

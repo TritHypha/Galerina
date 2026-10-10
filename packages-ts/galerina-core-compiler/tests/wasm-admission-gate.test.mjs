@@ -51,7 +51,7 @@ describe("#105 WASM admission gate", () => {
     assert.ok(calls.some((c) => c.n === "__int_to_str"), "host call was observed");
   });
 
-  it("REFUSES a tampered binary before any host linking (CRITICAL_SECURITY_VIOLATION)", async () => {
+  it("REFUSES a tampered binary before any host linking (CRITICAL_SECURITY_VIOLATION)", async (t) => {
     const wasm = await compileToWasm(HOST_FLOW);
     const { publicKeyPem, privateKeyPem } = generateRunnerKeypair();
     const attestation = signWasm(wasm, privateKeyPem, "dev");
@@ -61,11 +61,14 @@ describe("#105 WASM admission gate", () => {
     tampered[tampered.length - 1] ^= 0xff;
 
     let violated = null;
-    let linkedHost = false;
+    let instantiations = 0;
     const host = createHostRuntime();
-    // Wrap a host fn to detect if linking was ever reached (it must NOT be).
-    const origCreate = host.imports.host.__int_to_str;
-    host.imports.host.__int_to_str = (...a) => { linkedHost = true; return origCreate(...a); };
+    // Observe instantiation itself: an uncalled import cannot prove no linking.
+    const instantiate = WebAssembly.instantiate;
+    t.mock.method(WebAssembly, "instantiate", (...args) => {
+      instantiations++;
+      return Reflect.apply(instantiate, WebAssembly, args);
+    });
 
     await assert.rejects(
       () => admitAndInstantiate({
@@ -75,7 +78,12 @@ describe("#105 WASM admission gate", () => {
       /CRITICAL_SECURITY_VIOLATION/,
     );
     assert.ok(violated, "onViolation fired before throwing");
-    assert.equal(linkedHost, false, "host functions were NEVER linked for the rejected binary");
+    assert.equal(instantiations, 0, "rejected bytes never reach instantiation");
+    const accepted = await admitAndInstantiate({
+      wasm, attestation, policy: { requireSigned: true, publicKeyPem }, host,
+    });
+    assert.equal(instantiations, 1, "the same observer sees the valid positive twin");
+    assert.equal(host.readString(accepted.instance.exports.numStr(42)), "42");
   });
 
   it("REFUSES an unsigned binary under requireSigned", async () => {

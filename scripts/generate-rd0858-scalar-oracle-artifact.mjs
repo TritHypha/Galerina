@@ -48,13 +48,14 @@ const textDecoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const nativeRequire = createRequire(import.meta.url);
 const admittedCompilerCache = new WeakMap();
 
-const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
+export const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
   "bounded-cache.ts",
   "capability-types.ts",
   "checked-flow-artifact.ts",
   "core-syntax-safety.ts",
   "effect-checker.ts",
   "flow-name.ts",
+  "generic-argument-kinds.ts",
   "governance-verifier.ts",
   "hardening-residency.ts",
   "i64-arith.ts",
