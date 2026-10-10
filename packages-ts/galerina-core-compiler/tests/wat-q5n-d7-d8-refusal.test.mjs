@@ -6,21 +6,18 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import * as L from "../dist/index.js";
 import { watLoweringLadderAsync } from "../../../scripts/lib/wat-lowering-ladder.mjs";
+import { runCodexZoneHashes } from "../../../scripts/lib/codex-zone-hash-runner.mjs";
+import { historicalCodexZoneHashes, CURRENT_CODEX_ZONE } from "../../../scripts/lib/codex-zone-freeze.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC = join(__dir, "../src");
 const SH = join(SRC, "self-hosted");
 const ROOT = join(__dir, "../../..");
-// The AGENTS checkout is a sibling repository: AGENTS_ROOT overrides (worktrees, CI); else ../AGENTS.
-const AGENTS = typeof process.env.AGENTS_ROOT === "string" && process.env.AGENTS_ROOT.length > 0
-  ? process.env.AGENTS_ROOT
-  : join(ROOT, "..", "AGENTS");
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 const ZONE = {
@@ -282,18 +279,16 @@ describe("pending PATTERN shrink + STMT/EFFECT add", () => {
   });
 });
 
-describe("T14 Codex zone hashes identical", () => {
-  it("Z1/Z2/Z3 match Q5n-DR capture", () => {
-    const r = spawnSync(
-      process.execPath,
-      [join(AGENTS, "tools/grok-probe/q8-codex-zone-hash.mjs"), ROOT],
-      { encoding: "utf8", cwd: AGENTS },
-    );
-    assert.equal(r.status, 0, r.stdout + r.stderr);
-    const rows = (r.stdout ?? "").trim().split(/\n/).filter(Boolean).map((l) => JSON.parse(l));
+describe("T14 Codex historical and current zone identities", () => {
+  it("original region texts still match Q5n-DR capture", () => {
+    const rows = historicalCodexZoneHashes();
     assert.equal(rows.length, 3);
     assert.equal(rows[0].sha256, ZONE.Z1);
     assert.equal(rows[1].sha256, ZONE.Z2);
     assert.equal(rows[2].sha256, ZONE.Z3);
+  });
+  it("current regions match the separately reviewed packing and length revision", () => {
+    const rows = runCodexZoneHashes(ROOT);
+    assert.deepEqual(rows.map(row => row.sha256), Object.values(CURRENT_CODEX_ZONE));
   });
 });

@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "f954215698281c0c2b21e6c27fa71264764775f9c2b215fea2364c17c21d4261",
+    "aggregateSha256": "bff6ab11b8c4835ad9abe9a235c8271465e210bc362e368e6f4320b7c0c31b69",
     "algorithm": "sha256",
     "files": [
       {
@@ -1819,6 +1819,10 @@
         "sha256": "bbbe8f7601c1290c3fb286bd1dc3e20435024726239d55293e71cddb6aa9185d"
       },
       {
+        "path": "tests/fixtures/codex-zones-05eb5c29.json",
+        "sha256": "996afbb4ac21d71d2af830abdec1e61c1a265b8d0a2e8dae235da13fe73e69b0"
+      },
+      {
         "path": "tests/fixtures/detached-scalar/branching-i32.fungi",
         "sha256": "4efb5b7ca87bbbce2c44c9b3444ca7e0afd368fafa1e19210be761569f37dcec"
       },
@@ -2696,7 +2700,7 @@
       },
       {
         "path": "tests/q1-secret-return-value.test.mjs",
-        "sha256": "01dba06cb468a93a3941749f1171a3b242d2a76d75150ecb74c56215771c6bfc"
+        "sha256": "2dc0102ff6b155b3c25157a32199a490018fb3e41b9e912021e2fbcd9efbec49"
       },
       {
         "path": "tests/r4-r6-enforcement.test.mjs",
@@ -3552,7 +3556,7 @@
       },
       {
         "path": "tests/wat-array-length-lowering.test.mjs",
-        "sha256": "59e02de063ccd3d476d74e14178a8b3727209ad549da45010757d17dc88d63df"
+        "sha256": "0f3f4d28f2a8b79d9ac001321e5f8bea74d874fb11d706cfe1e00b06b34b4a46"
       },
       {
         "path": "tests/wat-assembler-isolation.test.mjs",
@@ -3840,11 +3844,11 @@
       },
       {
         "path": "tests/wat-q4n-d4-pattern-refusal.test.mjs",
-        "sha256": "ece1ba8cd95241b2a091890e16dd82d755fa6d0d41563fc758438b828927a10e"
+        "sha256": "e5cd2418325728c070cbc338de8526672d9d07f55365119b8d2e20954024e602"
       },
       {
         "path": "tests/wat-q5n-d7-d8-refusal.test.mjs",
-        "sha256": "bf88da701836be39e97734f9c713d44cb5140a9f8feb43a4a523d6bf504e0d0e"
+        "sha256": "7e553731e85606264f269529303ab7743823b622c29fb9dbec7c598c3e7e7044"
       },
       {
         "path": "tests/wat-q6-d2-d9-i4.test.mjs",

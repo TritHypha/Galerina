@@ -17,6 +17,27 @@ function compile(src) {
 }
 
 describe("P9.4 type-directed length", () => {
+  for (const type of ["Array<Int>", "List<Int>", "String"]) {
+    it(`executes ${type}.length with actual host values, including empty`, async () => {
+      const wat = compile(`pure flow n(value: ${type}) -> Int contract { effects {} } { return value.length() }`);
+      const assembled = await L.assembleWAT(wat);
+      assert.equal(assembled.valid, true, JSON.stringify(assembled.diagnostics));
+      const runtime = L.createHostRuntime();
+      const { instance } = await WebAssembly.instantiate(assembled.wasm, runtime.imports);
+      assert.equal(typeof instance.exports.n, "function");
+      for (const count of [0, 3]) {
+        let handle;
+        if (type === "String") {
+          handle = runtime.internString(count === 0 ? "" : "abc");
+        } else {
+          handle = runtime.imports.host.__array_create();
+          for (let i = 0; i < count; i++) runtime.imports.host.__array_append(handle, i + 10);
+        }
+        assert.equal(instance.exports.n(handle), count, `${type} length ${count}`);
+      }
+    });
+  }
+
   it("positive: String.length lowers to __str_length", () => {
     const wat = compile(`pure flow n(s: String) -> Int contract { effects {} } { return s.length() }`);
     assert.match(wat, /\$host___str_length/);

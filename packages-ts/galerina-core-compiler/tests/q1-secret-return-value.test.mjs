@@ -19,6 +19,32 @@ import {
 
 const HEAP_BASE = 1024;
 
+// A flat record can still need packing: the Int64 field introduces padding.
+// Literal expected words are independent of the emitter's layout plan. This
+// covers bootstrap/Wasm behavior, not protected-host or full RD acceptance.
+for (const early of [false, true]) {
+  test(`Q1 padded Int/Int64/Int return preserves all fields before cleanup; early=${early}`, async () => {
+    const source = `record Wide { tag: Int, count: Int64, tail: Int }
+pure flow h(tag: Int, count: Int64, tail: Int) -> Wide
+contract { intent { "padded return regression" } privacy { contains PII } }
+{
+  let value: Wide = Wide { tag: tag, count: count, tail: tail }
+  ${early ? 'if tag > 0 { return value }' : ''}
+  return value
+}`;
+    const parsed = L.parseProgram(source, "padded-return.fungi");
+    assert.deepEqual(parsed.diagnostics.filter(d => d.severity === "error"), []);
+    assert.equal(parsed.flows.length, 1);
+    const { instance } = await build(source, "padded-return.fungi");
+    const pointer = instance.exports.h(7, 0x1122334455667788n, 9);
+    assert.deepEqual(finalizeSecretExportResult(instance, pointer),
+      [7, 0x55667788, 0x11223344, 9]);
+    const bytes = new Uint8Array(instance.exports.memory.buffer);
+    assert.ok(bytes.subarray(HEAP_BASE, HEAP_BASE + 40).every(byte => byte === 0),
+      "original padded record and packed owned result must be wiped after copy");
+  });
+}
+
 async function build(src, filename = "q1.fungi") {
   const prog = L.parseProgram(src, filename);
   const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");

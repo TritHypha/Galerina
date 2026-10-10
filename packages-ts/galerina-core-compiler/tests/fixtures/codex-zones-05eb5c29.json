@@ -1,0 +1,26 @@
+{
+  "regions": [
+    {
+      "id": "Z1",
+      "startLine": 321,
+      "path": "packages-ts/galerina-core-compiler/src/wat-emitter.ts",
+      "text": "function planHasNested(steps: readonly FlattenStep[]): boolean {\n  return steps.some((step) => step.nested !== undefined || step.zero === true);\n}\n\nfunction flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: string[]; body: string[] } {\n  const plan = fn.flattenPlan;\n  const words = fn.returnWordCount ?? 1;\n  const byteLen = words * 4;\n  const nested = plan !== undefined && planHasNested(plan);\n  const temps = nested",
+      "endLine": 330
+    },
+    {
+      "id": "Z2",
+      "startLine": 286,
+      "path": "packages-ts/galerina-core-compiler/src/wat-emitter-binary.ts",
+      "text": " * Stdlib method name → host import id (the `$host___…` WAT identifier).\n *\n * Receiver-passing rule: the receiver is emitted as the FIRST argument followed\n * by the call's own arguments — `s.charAt(i)` → `(call $host___str_char_at s i)`,\n * `n.toString()` → `(call $host___int_to_str n)`.\n *\n * P9.3 ambiguities (resolved pragmatically; do not block wat2wasm assembly):\n *   - `length`: String.length vs Array.length — both host funcs share the\n *     (param i32)(result i32) signature; default to str_length. (Array.length → P9.4)\n *   - `toString`: Int.toString vs Char.toString — same signature; default to\n *     int_to_str. Char/Int discrimination needs type info → P9.4.\n *   - `Array.empty()` is handled specially in emitWATExpr (zero-arg host call).\n */\nexport const STDLIB_HOST_MAP: Record<string, string> = {",
+      "endLine": 299
+    },
+    {
+      "id": "Z3",
+      "startLine": 2502,
+      "path": "packages-ts/galerina-core-compiler/src/wat-emitter.ts",
+      "text": "        if ((name === \"toString\" || name === \"toStr\") && realReceiver !== undefined) {\n          const recvType = isTypeRecv0 ? recvName0 : inferExprType(realReceiver);\n          if (recvType === \"Decimal\") {\n            return `(call $host___decimal_to_str ${emitWATExpr(realReceiver, vars, staticConsts)})`;\n          }\n          const fn = recvType === \"Char\"\n            ? \"$host___char_to_string\"\n            : FLOAT_WAT_TYPES.has(recvType ?? \"\")\n              ? \"$host___float_to_str\"\n              : \"$host___int_to_str\";\n          return `(call ${fn} ${emitWATExpr(realReceiver, vars, staticConsts)})`;\n        }\n\n        // #162: type-directed toUpper/toLower — Char → __char_to_upper/lower (Char→Char);\n        // String (or unknown, the common case) → __str_to_upper/lower (String→String).\n        if ((name === \"toUpper\" || name === \"toLower\") && realReceiver !== undefined) {\n          const recvType = isTypeRecv0 ? recvName0 : inferExprType(realReceiver);\n          const isChar = recvType === \"Char\";\n          const fn = name === \"toUpper\"\n            ? (isChar ? \"$host___char_to_upper\" : \"$host___str_to_upper\")\n            : (isChar ? \"$host___char_to_lower\" : \"$host___str_to_lower\");\n          return `(call ${fn} ${emitWATExpr(realReceiver, vars, staticConsts)})`;\n        }\n\n        // #160/#162: type-directed `contains`. String → __str_contains (substring),\n        // Array<String> → __array_contains_str (by-value), else __array_contains (handle).\n        if ((name === \"contains\" || name === \"includes\") && realReceiver !== undefined && argNodes.length === 1) {",
+      "endLine": 2528
+    }
+  ],
+  "revision": "05eb5c29be9592a42cdd48baaeb027279ff5299d"
+}
