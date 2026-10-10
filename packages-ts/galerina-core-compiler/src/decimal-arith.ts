@@ -16,7 +16,7 @@ export {
   isRoundMode, isDecTrap, isExactTrapLabel, parseDec, isCanonicalDecimal, formatDec, checkRoundMode,
   decAdd, decSub, decMul, decNeg, decAbs, decCompare, decDiv, decRem, decQuantize, decRescaleExact,
   decScale, decFromInt, decIsZero, admitMoneyAmount,
-} from "@galerina/core-runtime-wasm";
+} from "@galerina/core-runtime-wasm/dist/decimal-core.js";
 export type {
   DecTrapKind, MoneyTrapKind, DecResult, DecCompare, RoundMode, Dec, DecParse, MoneyAmount,
-} from "@galerina/core-runtime-wasm";
+} from "@galerina/core-runtime-wasm/dist/decimal-core.js";

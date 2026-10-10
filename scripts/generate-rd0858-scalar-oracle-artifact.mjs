@@ -28,6 +28,7 @@ const GENERATOR_RELATIVE = "scripts/generate-rd0858-scalar-oracle-artifact.mjs";
 const COMPILER_PACKAGE_RELATIVE = "packages-ts/galerina-core-compiler";
 const GRAPH_PACKAGE_RELATIVE = "packages-ts/galerina-devtools-graph-algorithms";
 const SUBSTRATE_PACKAGE_RELATIVE = "packages-ts/galerina-substrate-math";
+const DECIMAL_PACKAGE_RELATIVE = "packages-ts/galerina-core-runtime-wasm";
 const PACKAGE_LOCK_RELATIVE = "package-lock.json";
 const SOURCE_MAX_BYTES = 65_536;
 const CHILD_MAX_BYTES = 1_048_576;
@@ -53,6 +54,7 @@ export const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
   "capability-types.ts",
   "checked-flow-artifact.ts",
   "core-syntax-safety.ts",
+  "decimal-arith.ts",
   "effect-checker.ts",
   "flow-name.ts",
   "generic-argument-kinds.ts",
@@ -61,6 +63,7 @@ export const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
   "i64-arith.ts",
   "invariant-discharge.ts",
   "lexer.ts",
+  "method-chain-checker.ts",
   "module-registry.ts",
   "naming-policy-checker.ts",
   "numeric-lowering.ts",
@@ -83,6 +86,7 @@ export const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
   "taint-checker.ts",
   "type-checker.ts",
   "type-registry.ts",
+  "typed-content-block.ts",
   "u64-arith.ts",
   "unit-registry.generated.ts",
   "value-state-checker.ts",
@@ -639,11 +643,86 @@ export function compileAdmittedTypeScriptProject(admitted, project) {
   });
 }
 
-function runTypeScriptBuild(project, toolchain) {
-  return compileAdmittedTypeScriptProject(toolchain.compiler, Object.freeze({
-    ...project,
-    writeOutputs: true,
-  }));
+// Assemble the same closed projects for HEAD builds and source-level regressions.
+// This API compiles supplied bytes only; it grants no HEAD/artifact authority.
+export function compileScalarCompilerClosure(admitted, inputs) {
+  const { identityRoot, decimalPackageBytes } = inputs;
+  const stageRoot = join(identityRoot, "stage");
+  const runtimeRoot = join(identityRoot, "runtime");
+  const compilerStage = join(stageRoot, "compiler");
+  const graphStage = join(stageRoot, "graph");
+  const substrateStage = join(stageRoot, "substrate");
+  const decimalStage = join(stageRoot, "decimal");
+  const compilerFiles = { ...inputs.compilerFiles };
+  const graphFiles = { ...inputs.graphFiles };
+  const substrateFiles = { ...inputs.substrateFiles };
+  const decimalFiles = { ...inputs.decimalFiles };
+  let decimalPackage;
+  try {
+    decimalPackage = JSON.parse(boundedUtf8(decimalPackageBytes, SOURCE_MAX_BYTES, "DECIMAL_PACKAGE"));
+  } catch (error) {
+    if (error instanceof ScalarArtifactRefusal) throw error;
+    refuse("DECIMAL_PACKAGE");
+  }
+  // The real package currently admits legacy deep imports. Refuse a future
+  // exports boundary instead of replacing it with a synthetic package contract.
+  if (decimalPackage?.name !== "@galerina/core-runtime-wasm"
+    || decimalPackage.type !== "module" || Object.hasOwn(decimalPackage, "exports")) {
+    refuse("DECIMAL_PACKAGE_SUBPATH");
+  }
+  const modulePackageBytes = Buffer.from('{"type":"module"}\n', "utf8");
+  for (const [files, directory] of [[graphFiles, graphStage], [substrateFiles, substrateStage], [compilerFiles, compilerStage]]) {
+    files[join(directory, "package.json")] = modulePackageBytes;
+  }
+  decimalFiles[join(decimalStage, "package.json")] = decimalPackageBytes;
+  compilerFiles[join(compilerStage, "src", "rd0858-external-shim.d.ts")] = Buffer.from(
+    'declare module "@noble/post-quantum/ml-dsa.js" { export const ml_dsa65: any; }\n', "utf8",
+  );
+  const graphOut = join(runtimeRoot, "node_modules", "@galerina", "devtools-graph-algorithms");
+  const substrateOut = join(runtimeRoot, "node_modules", "@galerina", "substrate-math");
+  const decimalPackageOut = join(runtimeRoot, "node_modules", "@galerina", "core-runtime-wasm");
+  const decimalOut = join(decimalPackageOut, "dist");
+  const commonOptions = {
+    target: "ES2022", strict: true, skipLibCheck: true, declaration: true,
+    declarationMap: false, sourceMap: false, module: "NodeNext", moduleResolution: "NodeNext",
+  };
+  const build = (currentDirectory, files, outDir, options = {}) => compileAdmittedTypeScriptProject(admitted, {
+    currentDirectory, identityRoot, files,
+    rootNames: Object.keys(files).filter((path) => path.endsWith(".ts")),
+    options: { ...commonOptions, rootDir: join(currentDirectory, "src"), outDir, ...options },
+  });
+  const graphBuild = build(graphStage, graphFiles, graphOut);
+  const graphTypeOnlyOutput = join(graphOut, "core", "types.js");
+  if (graphBuild.outputFiles[graphTypeOnlyOutput] !== "export {};\n") refuse("COMPILER_BUILD_TYPE_ONLY");
+  const substrateBuild = build(substrateStage, substrateFiles, substrateOut);
+  const decimalBuild = build(decimalStage, decimalFiles, decimalOut);
+  for (const dependency of [graphBuild, substrateBuild, decimalBuild]) {
+    for (const [path, text] of Object.entries(dependency.outputFiles)) {
+      if (path.endsWith(".d.ts")) compilerFiles[path] = text;
+    }
+  }
+  const compilerBuild = build(compilerStage, compilerFiles, join(runtimeRoot, "core"), {
+    noUncheckedIndexedAccess: true, exactOptionalPropertyTypes: true, baseUrl: compilerStage,
+    paths: {
+      "@galerina/devtools-graph-algorithms": [join(graphOut, "index.d.ts")],
+      "@galerina/substrate-math": [join(substrateOut, "index.d.ts")],
+      "@galerina/core-runtime-wasm/dist/decimal-core.js": [join(decimalOut, "decimal-core.d.ts")],
+    },
+  });
+  const builds = [graphBuild, substrateBuild, decimalBuild, compilerBuild];
+  const hash = createHash("sha256");
+  hash.update("galerina.scalar-typescript-build-inputs.v1\0", "utf8");
+  for (const entry of builds) hash.update(`${entry.inputDigest}\n`, "utf8");
+  const outputFiles = Object.assign({}, ...builds.map((entry) => entry.outputFiles));
+  delete outputFiles[graphTypeOnlyOutput];
+  outputFiles[join(graphOut, "package.json")] = JSON.stringify({
+    name: "@galerina/devtools-graph-algorithms", type: "module", main: "index.js", types: "index.d.ts",
+  });
+  outputFiles[join(substrateOut, "package.json")] = JSON.stringify({
+    name: "@galerina/substrate-math", type: "module", main: "index.js", types: "index.d.ts", exports: "./index.js",
+  });
+  outputFiles[join(decimalPackageOut, "package.json")] = boundedUtf8(decimalPackageBytes, SOURCE_MAX_BYTES, "DECIMAL_PACKAGE");
+  return Object.freeze({ inputDigest: `sha256:${hash.digest("hex")}`, outputFiles: Object.freeze(outputFiles) });
 }
 
 function runtimeExecutableLocators(runtimeRoot) {
@@ -719,7 +798,7 @@ export function cleanupOwnedTemporary(directory, token) {
   rmSync(directory, { recursive: true, force: false });
 }
 
-const STRICT_LOADER_SOURCE = `
+export const STRICT_LOADER_SOURCE = `
 import { createHash } from "node:crypto";
 import { appendFileSync, readFileSync } from "node:fs";
 const configBytes = readFileSync(process.env.RD0858_LOADER_CONFIG);
@@ -759,6 +838,22 @@ export async function load(url, context, nextLoad) {
   return { ...result, source };
 }
 `;
+
+export function scalarCompilerBuiltinParents(runtimeRoot) {
+  const urls = (locators) => Object.freeze(locators.map((locator) =>
+    pathToFileURL(join(runtimeRoot, ...locator.split("/"))).href).sort());
+  return Object.freeze({
+    "node:crypto": urls([
+      "core/checked-flow-artifact.js", "core/proof-graph.js",
+      "core/requirement-validator-authority.js", "core/runtime/canonicalHash.js",
+    ]),
+    "node:fs": urls(["scalar-runner.mjs", "core/module-registry.js"]),
+    "node:path": urls(["core/module-registry.js"]),
+    // The already-admitted substrate owner rejects proxies with this intrinsic.
+    // No other parent, generic node:util import, or crypto authority is admitted.
+    "node:util/types": urls(["node_modules/@galerina/substrate-math/index.js"]),
+  });
+}
 
 export function buildStrictLoaderInvocation(source) {
   if (typeof source !== "string" || source.length < 1 || source.length > SOURCE_MAX_BYTES) {
@@ -1049,6 +1144,8 @@ export async function buildFreshHeadCompiler() {
     COMPILER_PACKAGE_RELATIVE,
     GRAPH_PACKAGE_RELATIVE,
     SUBSTRATE_PACKAGE_RELATIVE,
+    `${DECIMAL_PACKAGE_RELATIVE}/src/decimal-core.ts`,
+    `${DECIMAL_PACKAGE_RELATIVE}/package.json`,
     PACKAGE_LOCK_RELATIVE,
   ];
   requireHeadMatchesWorktree(governedPaths);
@@ -1093,113 +1190,17 @@ export async function buildFreshHeadCompiler() {
       allHeadTypeScriptLocators(SUBSTRATE_PACKAGE_RELATIVE),
     ) };
 
-    const modulePackageBytes = Buffer.from('{"type":"module"}\n', "utf8");
-    for (const [files, path] of [
-      [graphFiles, join(graphStage, "package.json")],
-      [substrateFiles, join(substrateStage, "package.json")],
-      [compilerFiles, join(compilerStage, "package.json")],
-    ]) {
-      writeExclusive(path, modulePackageBytes);
-      files[path] = Buffer.from(modulePackageBytes);
-    }
-    const externalShimPath = join(compilerStage, "src", "rd0858-external-shim.d.ts");
-    const externalShimBytes = Buffer.from(
-      'declare module "@noble/post-quantum/ml-dsa.js" { export const ml_dsa65: any; }\n',
-      "utf8",
+    const decimalFiles = materializeHeadFiles(
+      join(stageRoot, "decimal"), DECIMAL_PACKAGE_RELATIVE, ["decimal-core.ts"],
     );
-    writeExclusive(externalShimPath, externalShimBytes);
-    compilerFiles[externalShimPath] = Buffer.from(externalShimBytes);
-
-    const graphOut = join(runtimeRoot, "node_modules", "@galerina", "devtools-graph-algorithms");
-    const substrateOut = join(runtimeRoot, "node_modules", "@galerina", "substrate-math");
-    const compilerOut = join(runtimeRoot, "core");
-    const commonOptions = {
-      target: "ES2022",
-      strict: true,
-      skipLibCheck: true,
-      declaration: true,
-      declarationMap: false,
-      sourceMap: false,
-    };
-    const graphBuild = runTypeScriptBuild({
-      currentDirectory: graphStage,
-      identityRoot: temporaryRoot,
-      rootNames: Object.keys(graphFiles).filter((path) => path.endsWith(".ts")),
-      files: graphFiles,
-      options: {
-        ...commonOptions,
-        module: "NodeNext",
-        moduleResolution: "NodeNext",
-        rootDir: join(graphStage, "src"),
-        outDir: graphOut,
-      },
-    }, toolchain);
-    const graphTypeOnlyOutput = join(graphOut, "core", "types.js");
-    if (textDecoder.decode(stableRead(graphTypeOnlyOutput, 64, "COMPILER_BUILD")) !== "export {};\n") {
-      refuse("COMPILER_BUILD_TYPE_ONLY");
+    const closedBuild = compileScalarCompilerClosure(admittedCompiler, {
+      identityRoot: temporaryRoot, compilerFiles, graphFiles, substrateFiles, decimalFiles,
+      decimalPackageBytes: readHeadBlob(`${DECIMAL_PACKAGE_RELATIVE}/package.json`),
+    });
+    for (const [path, text] of Object.entries(closedBuild.outputFiles)) {
+      writeExclusive(path, Buffer.from(text, "utf8"));
     }
-    unlinkSync(graphTypeOnlyOutput);
-    writeExclusive(join(graphOut, "package.json"), Buffer.from(JSON.stringify({
-      name: "@galerina/devtools-graph-algorithms",
-      type: "module",
-      main: "index.js",
-      types: "index.d.ts",
-    }), "utf8"));
-
-    const substrateBuild = runTypeScriptBuild({
-      currentDirectory: substrateStage,
-      identityRoot: temporaryRoot,
-      rootNames: Object.keys(substrateFiles).filter((path) => path.endsWith(".ts")),
-      files: substrateFiles,
-      options: {
-        ...commonOptions,
-        module: "NodeNext",
-        moduleResolution: "NodeNext",
-        rootDir: join(substrateStage, "src"),
-        outDir: substrateOut,
-      },
-    }, toolchain);
-    writeExclusive(join(substrateOut, "package.json"), Buffer.from(JSON.stringify({
-      name: "@galerina/substrate-math",
-      type: "module",
-      main: "index.js",
-      types: "index.d.ts",
-      exports: "./index.js",
-    }), "utf8"));
-
-    for (const [path, text] of Object.entries({
-      ...graphBuild.outputFiles,
-      ...substrateBuild.outputFiles,
-    })) {
-      if (path.endsWith(".d.ts")) compilerFiles[path] = text;
-    }
-    const compilerBuild = runTypeScriptBuild({
-      currentDirectory: compilerStage,
-      identityRoot: temporaryRoot,
-      rootNames: Object.keys(compilerFiles).filter((path) => path.endsWith(".ts")),
-      files: compilerFiles,
-      options: {
-        ...commonOptions,
-        module: "NodeNext",
-        moduleResolution: "NodeNext",
-        noUncheckedIndexedAccess: true,
-        exactOptionalPropertyTypes: true,
-        rootDir: join(compilerStage, "src"),
-        outDir: compilerOut,
-        baseUrl: compilerStage,
-        paths: {
-          "@galerina/devtools-graph-algorithms": [join(graphOut, "index.d.ts")],
-          "@galerina/substrate-math": [join(substrateOut, "index.d.ts")],
-        },
-      },
-    }, toolchain);
-
-    const buildInputHash = createHash("sha256");
-    buildInputHash.update("galerina.scalar-typescript-build-inputs.v1\0", "utf8");
-    for (const build of [graphBuild, substrateBuild, compilerBuild]) {
-      buildInputHash.update(`${build.inputDigest}\n`, "utf8");
-    }
-    const buildInputsDigest = `sha256:${buildInputHash.digest("hex")}`;
+    const buildInputsDigest = closedBuild.inputDigest;
 
     writeExclusive(join(runtimeRoot, "scalar-runner.mjs"), Buffer.from(SCALAR_RUNNER_SOURCE, "utf8"));
     const executableLocators = runtimeExecutableLocators(runtimeRoot);
@@ -1222,19 +1223,7 @@ export async function buildFreshHeadCompiler() {
     const entryUrl = pathToFileURL(join(runtimeRoot, ...SCALAR_ENTRY_LOCATOR.split("/"))).href;
     if (!executableUrls.includes(entryUrl)) refuse("COMPILER_MODULE_ENTRY");
     const runnerUrl = pathToFileURL(join(runtimeRoot, "scalar-runner.mjs")).href;
-    const cryptoParents = [
-      "core/checked-flow-artifact.js",
-      "core/proof-graph.js",
-      "core/requirement-validator-authority.js",
-      "core/runtime/canonicalHash.js",
-    ].map((locator) => pathToFileURL(join(runtimeRoot, ...locator.split("/"))).href).sort();
-    const fsParents = [
-      "scalar-runner.mjs",
-      "core/module-registry.js",
-    ].map((locator) => pathToFileURL(join(runtimeRoot, ...locator.split("/"))).href).sort();
-    const pathParents = [
-      "core/module-registry.js",
-    ].map((locator) => pathToFileURL(join(runtimeRoot, ...locator.split("/"))).href).sort();
+    const builtinParents = scalarCompilerBuiltinParents(runtimeRoot);
     requireHeadMatchesWorktree(governedPaths);
     if (String(git(["rev-parse", "HEAD"])).trim() !== headBefore) refuse("HEAD_DRIFT");
 
@@ -1245,11 +1234,7 @@ export async function buildFreshHeadCompiler() {
       writeExclusive(tracePath, Buffer.from("", "utf8"));
       const configBytes = Buffer.from(JSON.stringify({
         files: executableHashes,
-        builtinParents: {
-          "node:crypto": cryptoParents,
-          "node:fs": fsParents,
-          "node:path": pathParents,
-        },
+        builtinParents,
         trace: tracePath,
       }), "utf8");
       writeExclusive(configPath, configBytes);
