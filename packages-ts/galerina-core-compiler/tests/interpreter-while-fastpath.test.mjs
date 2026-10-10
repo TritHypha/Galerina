@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseProgram, resolveSymbols, checkTypes, executeFlow, tryWhileFastPath } from "../dist/index.js";
+import { createContractEnforcer } from "../dist/runtime/contractEnforcer.js";
 
 async function parseAndRun(source, flowName, runtimeOptions) {
   const parsed = parseProgram(source, "while-fast.fungi");
@@ -23,6 +24,60 @@ function findWhile(node) {
 }
 
 describe("tryWhileFastPath", () => {
+  it("executeFlow propagates a deadline refusal after entry into the fast loop", async () => {
+    const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 10 { i = i + 1 }
+  return i
+}`, "deadline-wiring.fungi");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+    const base = createContractEnforcer(undefined, "count");
+    let checks = 0;
+    const enforcer = { ...base, checkDeadline() {
+      base.checkDeadline();
+      if (++checks === 4) throw new Error("controlled mid-loop deadline refusal");
+    } };
+    const result = await executeFlow("count", new Map(), parsed.ast, parsed.flows, enforcer);
+    assert.equal(checks, 4);
+    assert.equal(result.value.__tag, "runtimeError");
+    assert.match(result.value.message, /controlled mid-loop deadline refusal/);
+  });
+
+  it("checks the deadline before each condition, including loop exit", () => {
+    const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 10 { i = i + 1 }
+  return i
+}`, "deadline.fungi");
+    const w = findWhile(parsed.ast);
+    assert.ok(w);
+    const scope = new Map([["i", { __tag: "int", value: 0 }]]);
+    let checks = 0;
+    assert.equal(tryWhileFastPath(w.children[0], w.children[1], scope,
+      undefined, 100, () => { checks++; }), true);
+    assert.equal(scope.get("i").value, 10);
+    assert.equal(checks, 11);
+  });
+
+  it("propagates a deadline refusal before the next iteration executes", () => {
+    const parsed = parseProgram(`pure flow count() -> Int contract { effects {} } {
+  mut i = 0
+  while i < 10 { i = i + 1 }
+  return i
+}`, "deadline-refusal.fungi");
+    const w = findWhile(parsed.ast);
+    assert.ok(w);
+    const scope = new Map([["i", { __tag: "int", value: 0 }]]);
+    const expired = new Error("controlled deadline expired");
+    let checks = 0;
+    assert.throws(() => tryWhileFastPath(w.children[0], w.children[1], scope,
+      undefined, 100, () => { if (++checks === 3) throw expired; }),
+      (error) => error === expired);
+    assert.equal(checks, 3);
+    assert.equal(scope.get("i").value, 2);
+  });
+
   it("positive: counted Int loop reaches the bound", async () => {
     const r = await parseAndRun(`pure flow count() -> Int contract { effects {} } {
   mut i = 0
