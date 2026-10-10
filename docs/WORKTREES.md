@@ -4,6 +4,31 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
+## Scoped integration decision - 2026-10-10
+
+The coordinator accepts the reviewed twenty-commit source delta through
+`29e61be9bca0162b5fc138c21f70a1c347557889` for scoped integration over
+`5b64928ca67b30279eae38e372398ba16acd8827`, with the following explicit limits.
+Independent matched comparison and subsequent port reviews found no demonstrated
+new regression; they did not establish full-suite clearance. The matched candidate
+retains **233 failures and 117 cancellations**. CEC4, host-bound P9 failures, T14
+setup/hash findings, historical whole-file freezes, stale line assertions and
+assertions masked by earlier failures remain open debt. The missing packing-disabled
+and contiguous-producer controls remain prerequisites to replacing the historical
+freeze, not evidence supplied by this merge. Expected acceptance hashes are unchanged.
+
+HOST and docs-index ports have independent scoped approval, including the retained
+journal-failure controls and manual-recovery limitations. The diagnostic code-index
+reproduces under native Windows Node v24.18.0; cross-platform JSON equality has not
+been established. Documentation indexes are refreshed through their owner separately.
+This decision authorizes no production deployment, runtime-security claim or RD closure.
+
+Remote main may be fast-forwarded through the existing integration branch after
+fresh publication checks. Local main at `e1c2496f3` remains intentionally retained
+in its dirty legacy checkout; the detached primary and its changes also remain
+untouched. Remote integration does not itself reconcile either overlay. Actual
+publication and final commit identity require a separate verified receipt.
+
 ## Latest retirement checkpoint - 2026-10-10, docs-index
 
 - Git registers **20 worktrees** after retiring `rd0873-docs-index-manifest`.
