@@ -1,10 +1,18 @@
 @version 1
-/// @service: route dispatcher -- governs HTTP routing decisions
-/// @phase: 54
-/// @runtime-component: HTTP route dispatch layer (the 50% Runtime-in-Galerina milestone)
-/// @milestone: Phase 54 -- Route dispatcher in Galerina = 50% Runtime
+// @service: route dispatcher -- governs HTTP routing decisions
+// @phase: 54
+// Example routing metadata; this file does not establish production execution readiness.
 
-type RouteResult = Result<Response, String>
+record RouteDispatchResponse {
+  method: String
+  path: String
+  resolvedFlow: String
+  governanceProfile: String
+  dispatched: Bool
+  phase: Int
+}
+
+type RouteResult = Result<RouteDispatchResponse, String>
 
 // Check if a path matches a known route pattern
 // Returns whether an HTTP request path matches a registered route path; safe as a pure string comparison with no side effects.
@@ -164,7 +172,7 @@ contract {
     return Err("Route not admitted")
   }
 
-  return Ok({
+  return Ok(RouteDispatchResponse {
     method: retMethod
     path: retPath
     resolvedFlow: retResolvedFlow
