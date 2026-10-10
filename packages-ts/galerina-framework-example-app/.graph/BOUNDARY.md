@@ -40,7 +40,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `host/server.ts` (re-exports `host/hold-pin.ts`)
+- `host/server.ts`
 - `src/App.fungi`
 
 ## Loaded Assets

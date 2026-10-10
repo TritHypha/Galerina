@@ -34,8 +34,8 @@
 //              do NOT clear taint; taint propagates into both branches.
 // =============================================================================
 
-import { type AstNode, type SourceLocation } from "./parser.js";
-import { genericArgumentKind } from "./generic-argument-kinds.js";
+import { type AstNode, type SourceLocation, type TypeReferenceStructure } from "./parser.js";
+import { GENERIC_ARITY, genericArgumentKind } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js"; // Q2: governed-aware shadow-floor scan
 import { numericBaseType, BACKEND_UNLOWERABLE_SCALAR } from "./numeric-lowering.js";
 import {
@@ -1549,8 +1549,25 @@ function isCatchAllMatchArm(node: AstNode): boolean {
 }
 
 /** A declared SecureString component preserves the confidentiality label at return. */
-function returnTypePreservesSecretLabel(typeName: string | undefined): boolean {
-  return typeName !== undefined && /\bSecureString\b/.test(typeName);
+function returnTypePreservesSecretLabel(type: AstNode | undefined): boolean {
+  // Legacy/synthetic string-only nodes carry no parser identity evidence. Do not
+  // re-lex cooked values or let a quoted tag/unknown alias authorize preservation.
+  const classify = (node: TypeReferenceStructure | undefined, depth: number): boolean | undefined => {
+    if (depth > 64 || node?.kind !== "type") return undefined;
+    if (node.name === "SecureString") return !node.generic && node.args.length === 0 ? true : undefined;
+    const arity = GENERIC_ARITY.get(node.name);
+    if (arity === undefined) return !node.generic && node.args.length === 0 ? false : undefined;
+    if (!node.generic || node.args.length !== arity) return undefined;
+    let secret = false;
+    for (let i = 0; i < node.args.length; i++) {
+      if (genericArgumentKind(node.name, i) !== "type") continue;
+      const component = classify(node.args[i], depth + 1);
+      if (component === undefined) return undefined;
+      secret ||= component;
+    }
+    return secret;
+  };
+  return classify(type?.typeStructure, 0) === true;
 }
 
 function directLiteralReturnSignature(node: AstNode): string | undefined {
@@ -2333,7 +2350,7 @@ class ValueStateChecker {
   private currentFlowKind: string | undefined;
   // Preserve secret provenance across returns by comparing the expression with
   // the enclosing flow's declared result type.
-  private currentFlowReturnType: string | undefined;
+  private currentFlowReturnType: AstNode | undefined;
   // Resolve aliases from the same lexical bindings as value-state lookup. A
   // parameter/non-alias local masks an outer alias; leaving its scope restores
   // the capture. Never collect declarations from nested/sibling helper bodies.
@@ -2602,7 +2619,7 @@ class ValueStateChecker {
         this.secretControlDepth = 0;
         try {
           this.currentFlowKind = node.kind; // R&D 0093: posture context for registerParamBinding
-          this.currentFlowReturnType = (node.children ?? []).find((child) => child.kind === "typeRef")?.value;
+          this.currentFlowReturnType = (node.children ?? []).find((child) => child.kind === "typeRef");
           // Register parameter bindings so SecureString params are tracked
           for (const child of node.children ?? []) {
             if (child.kind === "paramDecl") {
@@ -2711,7 +2728,7 @@ class ValueStateChecker {
           && !returnTypePreservesSecretLabel(this.currentFlowReturnType)
           && derivesFromSecret(returned, (name) => this.lookupBinding(name), this.moduleAliases)
         ) {
-          const returnType = this.currentFlowReturnType ?? "an unqualified result";
+          const returnType = this.currentFlowReturnType?.value ?? "an unqualified result";
           this.diagnostics.push({
             code: "FUNGI-SECRET-006",
             name: "SECRET_CROSSES_FLOW_BOUNDARY",

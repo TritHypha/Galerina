@@ -19,16 +19,16 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "848afa483f1148df3238ebf2c8f21927d8c32bbe6860a2faa8974449945c6a32",
+    "aggregateSha256": "3f4a39131ef087083e8808d6beb5c701a0d0885b43657df19d18685b57b78611",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "6245fe0ba5b9349321058f197fde9534cc59d1144cf354093de570c353ba815c"
+        "sha256": "dcf6ebf854b59f45337005eb63b6e384308112b841845c63774fb118f8b1006c"
       },
       {
         "path": ".graph/boundary-policy.json",
-        "sha256": "e91db41f0d4be3226e48dc16fe00590a5911fa0c2c03647370bc17bb0cb564d4"
+        "sha256": "1623b4d26d0b63dae70091be7365822e482ec40324184f13f56ac63a8e540d20"
       },
       {
         "path": "LICENSE",
@@ -412,7 +412,7 @@
       },
       {
         "path": "src/interpreter.ts",
-        "sha256": "f9cccc6e86dab9a013bef6718890414e9c7f7e60321e5995a90c53c75de97850"
+        "sha256": "aa7f8e417218b83c1a5d6e29789e3e9b9d69920bd59f2f90e9737debd7029cb4"
       },
       {
         "path": "src/invariant-discharge.ts",
@@ -516,7 +516,7 @@
       },
       {
         "path": "src/parser.ts",
-        "sha256": "34790b284334cb8fd1f2a6fc5fbb8ea7970b5af4be05f4d232c4912909fae5e2"
+        "sha256": "e11989b2011bc60cdd14027fe6da715d7f5ecc2bbe9331596e58c34b948fc43c"
       },
       {
         "path": "src/pattern-capability.ts",
@@ -568,7 +568,7 @@
       },
       {
         "path": "src/rd0858-scalar-compiler-entry.ts",
-        "sha256": "6f7e5ffea8cb0a0b8ff8e8ae9defb4f4d3b48e26176aba467e6c07f3915fd154"
+        "sha256": "b9cda01ccb133301ccf173b709d07fbe8fbd715521284b1bb05e724f27492c74"
       },
       {
         "path": "src/rd0858-slide-gir-adapter.ts",
@@ -1348,7 +1348,7 @@
       },
       {
         "path": "src/taint-checker.ts",
-        "sha256": "32392364eedbe1d2cf6abfb1eef7eebe6ce8773fa2a83c1964c0f57de01bde51"
+        "sha256": "f0359a91ed22ccd5bcf952b41fee5f444fc692d5b02d68cb1ca13811663bda39"
       },
       {
         "path": "src/test-generator.ts",
@@ -1380,7 +1380,7 @@
       },
       {
         "path": "src/value-state-checker.ts",
-        "sha256": "6e45f444d4bd833410125f343d31f0bcfbe1867d5d3cdc4b32e6f32617b8e090"
+        "sha256": "309eb58cceb9c33755d4fcbff9025ba1edce419134c56d32571167ef94287a4a"
       },
       {
         "path": "src/verified-loop-envelope.ts",
@@ -1428,7 +1428,7 @@
       },
       {
         "path": "src/wat-emitter.ts",
-        "sha256": "68cbdfb7c058b071cfdd5ebd522b73cc7ddd8297fa0a3f6857db416287e95bc2"
+        "sha256": "4284c88cbe72083be7c1793f0bc499dd33badf9adcc1875d830edf696d9ce3a3"
       },
       {
         "path": "test_lexer.mjs",
@@ -1552,7 +1552,7 @@
       },
       {
         "path": "tests/checked-flow-artifact.test.mjs",
-        "sha256": "fb3041f377569365728ddf3d2a74f4dc7b05995470edf0414b9e1ef37247d57e"
+        "sha256": "ee43c61fd51350f55d286851c482f8fa2b265a26a1bd0c2e0d773c649813270e"
       },
       {
         "path": "tests/checked-module-snapshot-v1.test.mjs",
@@ -2420,7 +2420,7 @@
       },
       {
         "path": "tests/interpreter-int64-dispatch.test.mjs",
-        "sha256": "e9bdbe6f3600a8b2efef20d9b2eaafeb797f8088652ab41442266501a2061b78"
+        "sha256": "184a5b05cc65a192a8ad60746d90d84ec222b071fcca4b040db81445e06d3c33"
       },
       {
         "path": "tests/interpreter-int64-step1.test.mjs",
@@ -2700,7 +2700,7 @@
       },
       {
         "path": "tests/q1-secret-return-value.test.mjs",
-        "sha256": "2dc0102ff6b155b3c25157a32199a490018fb3e41b9e912021e2fbcd9efbec49"
+        "sha256": "68eb11c3bf160aa8ce6797687629a95c685e59f45a26cedff38361f7131080c6"
       },
       {
         "path": "tests/r4-r6-enforcement.test.mjs",
@@ -2828,7 +2828,7 @@
       },
       {
         "path": "tests/requirement-effect-taint.test.mjs",
-        "sha256": "4526c35c30692d80850e4b89b7c6bf1e1809fb273d0155eac6e6bf4ed6ba6956"
+        "sha256": "5a0a0213d35f39533056e908cc0dc1a00086a027aacb1120166213d387e0d30b"
       },
       {
         "path": "tests/requirement-interpreter.test.mjs",
@@ -3468,7 +3468,7 @@
       },
       {
         "path": "tests/value-state/helper-return-context.test.mjs",
-        "sha256": "1b6a20a1d4b4b3b6e5ec75e1e9c749c02d2bd98ac7d61a9840ef80e2688285a1"
+        "sha256": "7edcc205267dfe75c35d6b7d2cef5011076f1abcf000a0be25a0e6d7a6865718"
       },
       {
         "path": "tests/value-state/numeric-lowering-gate.test.mjs",
@@ -3504,7 +3504,7 @@
       },
       {
         "path": "tests/wasm-effect-grant-abi.test.mjs",
-        "sha256": "ba23eee4001f073e4ac102c428f3909970ce53ec5631bf4ef73514367629285f"
+        "sha256": "7b10cd923e22b6fd0816b9b7b8dd2a2cec66c45113e9468d71dfbbc28489e200"
       },
       {
         "path": "tests/wasm-lane-governance-gate.test.mjs",
@@ -3544,7 +3544,7 @@
       },
       {
         "path": "tests/wat-arena-memory-fill-g5.test.mjs",
-        "sha256": "946973b2f0cbf40b7caa6c31677912d90b621dd574213ddb37500d0622a3eb86"
+        "sha256": "9c3410299dd76bcd175e888269a182fcd16f646fa0be5578f2c1837e023f35f4"
       },
       {
         "path": "tests/wat-arena-reset-b2.test.mjs",
@@ -3644,7 +3644,7 @@
       },
       {
         "path": "tests/wat-float-positive-classifier.test.mjs",
-        "sha256": "cdb088d218b2c9853c0a6ccf6db6582751e901db2a7a1486160a9aeb872b1dea"
+        "sha256": "e5318f54196b4b8705e4a319dd5a354542d649660abafcfa39086accaca5673e"
       },
       {
         "path": "tests/wat-float-record-refusal.test.mjs",

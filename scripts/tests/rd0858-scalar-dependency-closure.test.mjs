@@ -51,6 +51,48 @@ function executableLocators(runtimeRoot, outputs) {
     .map(path => path.slice(runtimeRoot.length + 1).replaceAll("\\", "/")).sort();
 }
 
+// Breaks if the compiler policy omits its admitted Decimal leaf, or the gate
+// treats that exact permission (or the existing barrel permission) as a prefix.
+test("compiler boundary admits its Decimal leaf but refuses unrelated runtime subpaths", async () => {
+  const { scanPackage, buildGraph, runBoundaryGate } = await import("../../packages-ts/galerina-devtools-package-graph/dist/index.js");
+  const temporary = mkdtempSync(join(tmpdir(), "rd0858-decimal-boundary-"));
+  assert.equal(dirname(realpathSync(temporary)), realpathSync(tmpdir()));
+  try {
+    const policyBytes = readFileSync(join(compiler, ".graph/boundary-policy.json"));
+    const policyPath = join(temporary, ".graph/boundary-policy.json");
+    const sourcePath = join(temporary, "src/index.ts");
+    const facade = readFileSync(join(compiler, "src/decimal-arith.ts"), "utf8");
+    const leaf = "@galerina/core-runtime-wasm/dist/decimal-core.js";
+    writeFixture(join(temporary, "package.json"), JSON.stringify({ name: "@galerina/core-compiler", type: "module" }));
+    writeFixture(policyPath, policyBytes);
+    writeFixture(sourcePath, facade);
+    const graph = buildGraph(scanPackage(temporary));
+    assert.deepEqual(graph.externalDeps.map(entry => entry.specifier), [leaf]);
+    assert.deepEqual(runBoundaryGate(temporary, graph, true), { status: "PASS", violations: [], orphanWarnings: [] });
+
+    for (const denied of [
+      "@galerina/core-runtime-wasm/dist/index.js",
+      "@galerina/core-runtime-wasm/dist/wasm-runtime.js",
+      "@galerina/core-runtime-wasm/dist/seam-adapters.js",
+      "@galerina/core-runtime-wasm/src/decimal-core.ts",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js/extra",
+    ]) {
+      writeFixture(sourcePath, facade.replaceAll(leaf, denied));
+      const refusedGraph = buildGraph(scanPackage(temporary));
+      assert.deepEqual(refusedGraph.externalDeps.map(entry => entry.specifier), [denied]);
+      assert.deepEqual(runBoundaryGate(temporary, refusedGraph, true), { status: "FAIL", violations: [denied], orphanWarnings: [] });
+    }
+    // Reinstatement must pass without regenerating or changing the policy.
+    writeFixture(sourcePath, facade);
+    assert.deepEqual(runBoundaryGate(temporary, buildGraph(scanPackage(temporary)), true), { status: "PASS", violations: [], orphanWarnings: [] });
+    assert.deepEqual(readFileSync(policyPath), policyBytes);
+  } finally {
+    assert.equal(dirname(realpathSync(temporary)), realpathSync(tmpdir()));
+    assert.ok(temporary.startsWith(join(tmpdir(), "rd0858-decimal-boundary-")));
+    rmSync(temporary, { recursive: true });
+  }
+});
+
 // Breaks if any selected import disappears, an ambient file is admitted, or the
 // real leaf's emitted bytes are no longer part of the compiled/loaded identity.
 test("selected scalar closure compiles, loads under the closed loader, and refuses omissions", { timeout: 100_000 }, async t => {

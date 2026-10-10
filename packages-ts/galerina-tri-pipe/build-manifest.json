@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "a693bcaaacabaae4337359436c1d55473e6191ccd4b83d851c40d48c3b04ccda",
+    "aggregateSha256": "f69f8d37de63eaab23e29dbfc28b182464f11be9305e0d510b81307b61ffe994",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "fef026491663aee661a88816af5f9065cf832b25509059d5d7505c94f0dbe74e"
+        "sha256": "dba8a6c3c31a3f3d2c3a12b93f86577760072c10c227378983bbfb673c88dc71"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "3a2b68f96c5f43bfc99194dbd940d251409472c5591bf5c9244a5cf9b5a213a0"
+        "sha256": "434f94660672780e68a0dac990ff65e46ca3a19e95641a9ddd786f3f14eb3234"
       },
       {
         "path": "TODO.md",
-        "sha256": "9d1bb2eaad9a5c2e324a2875fa1b1d9c8ea5532ecb67ae216a817bcd69ab9582"
+        "sha256": "c5276920c0aefa4e55666ad2cd48bfc30de1326f097d3b0bd31067bf1473e8c7"
       },
       {
         "path": "package-lock.json",
@@ -55,20 +55,36 @@
         "sha256": "b8533bd9d52e3de3ea162c17b53c00e9bc472ee74b6729ed8d3ac95dc3d6dbac"
       },
       {
+        "path": "src/alternative-proposal.ts",
+        "sha256": "104e26679012e555eac17aacaf506fe111a8efeef7be5d7e9812dd671aca5d2d"
+      },
+      {
         "path": "src/execution-router.ts",
         "sha256": "47083341b4920da0a3e4e569445edf1eb4bee3eab9e9115686c7ef88571b8c1d"
       },
       {
         "path": "src/index.ts",
-        "sha256": "3c282b1596aadc3c96b155a44f1bf9f0a748b52a24dbdf1956468b177bb54c4d"
+        "sha256": "aca4af4fcfaec502383558e4ddc378e83d3551585e545928264d6cdd3caeff0a"
+      },
+      {
+        "path": "src/slide-admission-request.ts",
+        "sha256": "9fbabeb1f6cf825afe06d7d592702d8c23121094042152d4443b678bdf3655ee"
       },
       {
         "path": "src/tri-pipe.ts",
-        "sha256": "febf63d703d54710be62bb511edb27e4c756249e90dadb09d4a40c241a6eefcb"
+        "sha256": "7cc2c188ab3e05f00434527c885e050e6c0d44984d318fe318aaa2f9bce60342"
+      },
+      {
+        "path": "tests/alternative-proposal.test.mjs",
+        "sha256": "2d7909724a50d5d4d2bff350b45fb43f658d7930b6b3bc1ed84453a9811a9dae"
       },
       {
         "path": "tests/execution-router.test.mjs",
         "sha256": "b8a5adcdbee7bbc905325eca2eb1cadc207e7ab3b8f1bbacfd157cf2b6a56232"
+      },
+      {
+        "path": "tests/slide-admission-request.test.mjs",
+        "sha256": "771d9a83050dbc6dc9570b2b4d1aa068fd0f5c1deb8a7139ee44305e6ef4b6f7"
       },
       {
         "path": "tests/tri-pipe.test.mjs",

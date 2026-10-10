@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "35b17ec76b64a340e587f23a1cbb1fd9401cd724cfb295053151cd7d02e3e72e",
+    "aggregateSha256": "600426eeef0f30d3615f10ed31745abd7c6151dc276fe4047dae5eb547fba77b",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "da92f6fb8f15d0ecff5258988b365467b110da75bf88ce0f7a3f1c83aa0f934d"
+        "sha256": "9c93d78f2ab83c2d194e68a5094a7f110f810ddca5fab5bfb938fc96ea667a82"
       },
       {
         "path": ".graph/boundary-policy.json",

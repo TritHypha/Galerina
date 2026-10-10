@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "2950980dbd853ce3963ef41e2822fd38a8b04a8f99ab6b3d399072be229c3023",
+    "aggregateSha256": "f5be63ec1c466ca007ec3103471bd1a76ebe443cb14dc14cfd6e10fbe2da4cce",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "2ab9407ee3845f080c17fe4c4c5f0a387e8edee81f920a8a4ec04755b16595d0"
+        "sha256": "6f5b3794572cbb12a30e8d4f6e84b2259b6498349b0b093608dd4c03b11b90f3"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "c23f67ea07447fa252477e4c66648aeeff00385a7101b142f2fd355d0009a3ed"
+        "sha256": "2acf0c158180a4e320426af3e0af7dc348ee954c7faea560ae6f32bce6458ad6"
       },
       {
         "path": "examples/orders-api.mjs",
@@ -55,12 +55,16 @@
         "sha256": "0bdd0c98c231f0f69324554e555d5259fed821213c0f6b6a325f81363b7ae258"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "de7b9fe77f06a26b9b678cf6e6f5357d2768e28a541ded5be3f0804d2b04f6f2"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "90bbd93ad73eaae1ecde41b67026370531a97ca77311ba9abf674e20421bd7b8"
+        "sha256": "a7a3234c186f16fb4946dee0fb00ce807eddf47657ab0976b6d298d76ac2fa03"
       },
       {
         "path": "src/openapi.ts",
-        "sha256": "3a4d22e69f00235cbdaae26597e6499292b5a72bb7dbb26b0310227fd32e950e"
+        "sha256": "c68d5bf68854fb610761d8ceb856f848ce5620c47d3d093e9b98a245eebccbd5"
       },
       {
         "path": "src/self-hosted/bearer-scheme.fungi",
@@ -76,7 +80,7 @@
       },
       {
         "path": "src/types.ts",
-        "sha256": "6dd2c9c77d2f4bd4910c8c15c403ca6e6eb952f9c86653438c7659bc8bb8ada0"
+        "sha256": "3d4608b09f33b9424d100b272b452c7c829e34e7052db8db5c79de51d3733d70"
       },
       {
         "path": "src/validate.ts",
@@ -85,6 +89,18 @@
       {
         "path": "tests/compiler-contract-export.test.mjs",
         "sha256": "6a96569044c4517b9cfce2492e24d65278051034f94e5c77831c48e7a1f38466"
+      },
+      {
+        "path": "tests/contract-clone-bounds.test.mjs",
+        "sha256": "898249bd350d917d11a49b274c82d591644118b253fe49150b67be853b89dbb9"
+      },
+      {
+        "path": "tests/contract-export-refusals.test.mjs",
+        "sha256": "066af4de6458bdbd2266030603b89b6fd00fcfbc741ded46aac9d48b0ffd6a22"
+      },
+      {
+        "path": "tests/docs-hold-pin.test.mjs",
+        "sha256": "b835a69c90f9d8aa4b9a0ff86a829a7b8d12537502502a264a8f2eed75a9fb2e"
       },
       {
         "path": "tests/generate.test.mjs",

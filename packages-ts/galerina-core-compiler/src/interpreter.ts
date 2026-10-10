@@ -24,8 +24,8 @@ import { canonicalHash } from "./runtime/canonicalHash.js";
 import { requireFixedGalerinaProductContext } from "./product-cli.js";
 import type { ProductArtifactContext } from "./product-artifact-identity.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, i32AbsChecked, i32FromIntegralChecked, isI32Trap, type I32Result } from "./i32-arith.js";
-import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
-import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
+import { I64_MAX, I64_MIN, i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
+import { U64_MAX, u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
 import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
 import { numericBaseType, parseI64Literal, parseU64Literal, isI64LiteralError, flowDeclaresSyncTierUnlowerable } from "./numeric-lowering.js";
 import { type NarrowFloatWidth, narrowFloatWidthOf, roundToNarrowFloat } from "./narrow-float.js";
@@ -191,9 +191,21 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
       }
       return { __tag: "int64", value: lit };
     }
-    if (value.__tag === "int64" || value.__tag === "runtimeError") return value;
-    if (value.__tag === "int") return { __tag: "int64", value: BigInt(value.value) };
-    return { __tag: "runtimeError", message: `cannot represent ${value.__tag} as Int64` };
+    const valueTag = ownDataValue(value, "__tag");
+    if (valueTag === "int64") {
+      const payload = ownDataValue(value, "value");
+      if (typeof payload !== "bigint") return { __tag: "runtimeError", message: "Invalid Int64 payload" };
+      if (payload < I64_MIN || payload > I64_MAX) return { __tag: "runtimeError", message: "IntegerOverflow" };
+      return { __tag: "int64", value: payload };
+    }
+    if (valueTag === "runtimeError") return { __tag: "runtimeError", message: "Invalid Int64 argument" };
+    if (valueTag === "int") {
+      const payload = ownDataValue(value, "value");
+      return typeof payload === "number" && Number.isSafeInteger(payload)
+        ? { __tag: "int64", value: BigInt(payload) }
+        : { __tag: "runtimeError", message: "IntegerOverflow" };
+    }
+    return { __tag: "runtimeError", message: `cannot represent ${typeof valueTag === "string" ? valueTag : "unknown"} as Int64` };
   }
   if (declaredBase === "UInt64") {
     const lit = literalU64FromNode(initNode);
@@ -203,10 +215,22 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
       }
       return { __tag: "uint64", value: lit };
     }
-    if (value.__tag === "uint64" || value.__tag === "runtimeError") return value;
+    const valueTag = ownDataValue(value, "__tag");
+    if (valueTag === "uint64") {
+      const payload = ownDataValue(value, "value");
+      if (typeof payload !== "bigint") return { __tag: "runtimeError", message: "Invalid UInt64 payload" };
+      if (payload < 0n || payload > U64_MAX) return { __tag: "runtimeError", message: "IntegerOverflow" };
+      return { __tag: "uint64", value: payload };
+    }
+    if (valueTag === "runtimeError") return { __tag: "runtimeError", message: "Invalid UInt64 argument" };
     // a non-negative i32 widens exactly; a NEGATIVE i32 cannot be unsigned → fail-closed underflow trap.
-    if (value.__tag === "int") return value.value >= 0 ? { __tag: "uint64", value: BigInt(value.value) } : { __tag: "runtimeError", message: "IntegerOverflow" };
-    return { __tag: "runtimeError", message: `cannot represent ${value.__tag} as UInt64` };
+    if (valueTag === "int") {
+      const payload = ownDataValue(value, "value");
+      return typeof payload === "number" && Number.isSafeInteger(payload) && payload >= 0
+        ? { __tag: "uint64", value: BigInt(payload) }
+        : { __tag: "runtimeError", message: "IntegerOverflow" };
+    }
+    return { __tag: "runtimeError", message: `cannot represent ${typeof valueTag === "string" ? valueTag : "unknown"} as UInt64` };
   }
   // E5 (PROVISIONAL): a declared Float32/Float16 slot holds a binary32/binary16 value — round on entry
   // (Math.fround / f16round, ties-to-even). Overflow to ±Inf is the non-finite trap, never a silent Inf.
@@ -230,7 +254,26 @@ const proxyDetectorSentinel = runInNewContext(
   undefined,
   { timeout: 1_000 },
 ) as object;
-function ownDataValue(value: unknown, key: "__tag" | "value"): unknown {
+type OwnTagInspection =
+  | { readonly kind: "data"; readonly value: unknown }
+  | { readonly kind: "missing" }
+  | { readonly kind: "uninspectable" };
+
+function inspectOwnTag(value: unknown): OwnTagInspection {
+  if (typeof value !== "object" || value === null) return { kind: "missing" };
+  try {
+    if (!isNodeProxy(proxyDetectorSentinel) || isNodeProxy(value)) return { kind: "uninspectable" };
+    const descriptor = getOwnPropertyDescriptor(value, "__tag");
+    if (descriptor === undefined) return { kind: "missing" };
+    return "value" in descriptor
+      ? { kind: "data", value: descriptor.value }
+      : { kind: "uninspectable" };
+  } catch {
+    return { kind: "uninspectable" };
+  }
+}
+
+function ownDataValue(value: unknown, key: "__tag" | "value" | "message"): unknown {
   if (typeof value !== "object" || value === null) return undefined;
   try {
     if (!isNodeProxy(proxyDetectorSentinel) || isNodeProxy(value)) return undefined;
@@ -239,6 +282,24 @@ function ownDataValue(value: unknown, key: "__tag" | "value"): unknown {
   } catch {
     return undefined;
   }
+}
+
+/** Replace host-owned runtime-error values before any execution fast path can inspect them. */
+function snapshotHostRuntimeErrors(args: ReadonlyMap<string, GalerinaValue>): ReadonlyMap<string, GalerinaValue> {
+  // Existing untyped parameterless callers pass {}. Preserve only that empty
+  // plain-record convention; never enumerate/read record values or accessors.
+  if (typeof args === "object" && args !== null && !isNodeProxy(args)
+    && Object.getPrototypeOf(args) === Object.prototype && Reflect.ownKeys(args).length === 0) {
+    return new Map();
+  }
+  let snapshot: Map<string, GalerinaValue> | undefined;
+  for (const [name, value] of args) {
+    const tag = inspectOwnTag(value);
+    if (tag.kind !== "uninspectable" && !(tag.kind === "data" && (tag.value === "runtimeError" || tag.value === "error"))) continue;
+    snapshot ??= new Map(args);
+    snapshot.set(name, { __tag: "runtimeError", message: "Host-supplied runtime error" });
+  }
+  return snapshot ?? args;
 }
 
 /** Snapshot one exact Bool payload without invoking caller-owned accessors. */
@@ -761,6 +822,7 @@ class SyncReturn {
 class SyncInterpreter {
   /** Flat scope: variable name → current value. Supports shadowing via save/restore. */
   private readonly scope: Map<string, GalerinaValue>;
+  private readonly runtimeTypeAliases: RuntimeTypeScopes;
 
   /** Fail-closed GLOBAL compute-step counter for the sync fast path. */
   private steps = 0;
@@ -776,6 +838,7 @@ class SyncInterpreter {
     private readonly maxSteps: number = DEFAULT_MAX_STEPS,
   ) {
     this.scope = new Map();
+    this.runtimeTypeAliases = collectRuntimeTypeAliases(ast);
   }
 
   /** Run a named pure flow synchronously. Returns result or throws SyncNotSupported. */
@@ -789,7 +852,9 @@ class SyncInterpreter {
     // declaring any unlowerable 64-bit scalar bails to the async tree-walker (the int64-bigint tier).
     // K1 fast-path rounding (2026-10-01): the sync-specific scan admits Decimal params/return (exact
     // string-carried, same dispatch as the walker) but still bails Int64/UInt64 and Decimal-typed bindings.
-    if (flowDeclaresSyncTierUnlowerable(flowNode)) throw new SyncNotSupported("flow declares a 64-bit scalar (Int64/UInt64) or a Decimal binding — defer to the tree-walker");
+    if (flowDeclaresSyncTierUnlowerable(flowNode) || flowDeclaresRuntimeWideInteger(flowNode, this.runtimeTypeAliases)) {
+      throw new SyncNotSupported("flow declares a 64-bit scalar (Int64/UInt64), including a type alias, or a Decimal binding — defer to the tree-walker");
+    }
 
     // Set parameters in scope
     const paramNodes = (flowNode.children ?? []).filter(c => c.kind === "paramDecl");
@@ -1401,6 +1466,7 @@ class Interpreter {
   private readonly auditEntries: RuntimeAuditEntry[] = [];
   private readonly diagnostics: Array<{ code: string; message: string }> = [];
   private readonly flowIndex: ReadonlyMap<string, AstNode>;
+  private readonly runtimeTypeAliases: RuntimeTypeScopes;
   private readonly fnIndex = new Map<string, AstNode>();
   /** Compile-time constants from `static NAME = EXPR` declarations. Checked before scope lookup. */
   private readonly staticConstants: Map<string, GalerinaValue> = new Map();
@@ -1462,6 +1528,7 @@ class Interpreter {
     manifest?: RuntimeManifest,
   ) {
     this.flowIndex = buildFlowIndex(ast);
+    this.runtimeTypeAliases = collectRuntimeTypeAliases(ast);
     this.enforcer = enforcer;
     this.capabilityHost = capabilityHost;
     this.runtimeOptions = runtimeOptions ?? {};
@@ -1581,16 +1648,28 @@ class Interpreter {
           const innerFn = this.fnIndex.get(fn.name);
           const target = innerFn ?? this.flowIndex.get(fn.name);
           if (target !== undefined) {
-            const paramNames = (target.children ?? [])
-              .filter((c) => c.kind === "paramDecl")
-              .map((p) => extractParamName(p.value ?? ""))
-              .filter((n) => n !== "");
+            const paramNodes = (target.children ?? []).filter((c) => c.kind === "paramDecl");
+            const callbackValues: GalerinaValue[] = [];
             const callArgs = new Map<string, GalerinaValue>();
-            if (paramNames.length >= 2 && arg.__tag === "record" && arg.fields.size === 2 && arg.fields.has("acc") && arg.fields.has("item")) {
-              callArgs.set(paramNames[0]!, arg.fields.get("acc")!);   // reduce: (acc, item)
-              callArgs.set(paramNames[1]!, arg.fields.get("item")!);
-            } else if (paramNames.length >= 1) {
-              callArgs.set(paramNames[0]!, arg);                       // map/filter: single element
+            if (paramNodes.length >= 2 && arg.__tag === "record" && arg.fields.size === 2 && arg.fields.has("acc") && arg.fields.has("item")) {
+              callbackValues.push(arg.fields.get("acc")!, arg.fields.get("item")!); // reduce: (acc, item)
+            } else if (paramNodes.length >= 1) {
+              callbackValues.push(arg); // map/filter: single element
+            }
+            for (let index = 0; index < paramNodes.length && index < callbackValues.length; index += 1) {
+              const param = paramNodes[index];
+              const paramName = extractParamName(param?.value ?? "");
+              if (param === undefined || paramName === "") continue;
+              const paramBase = this.resolveRuntimeNumericBaseType(bindingTypeName(param.value ?? ""), param);
+              const value = callbackValues[index] ?? FUNGI_VOID;
+              if (paramBase === undefined) {
+                return { __tag: "runtimeError" as const, message: `Flow '${fn.name}' has an invalid or cyclic numeric type alias for parameter '${paramName}'` };
+              }
+              const admitted = paramBase === "Int64" || paramBase === "UInt64"
+                ? coerceToDeclaredNumeric(paramBase, value, undefined)
+                : value;
+              if ((paramBase === "Int64" || paramBase === "UInt64") && admitted.__tag === "runtimeError") return admitted;
+              callArgs.set(paramName, admitted);
             }
             if (innerFn !== undefined) {
               // inner fn: execute its body with the bound values in a fresh scope (lexically nested, so it
@@ -1599,12 +1678,22 @@ class Interpreter {
               this.callDepth += 1;
               try {
                 if (this.callDepth > maxCallDepth) return { __tag: "runtimeError" as const, message: `Recursion depth exceeded (${maxCallDepth}) applying fn '${fn.name}'` };
+                const previousReturnBase = this.flowReturnBase;
+                const returnType = (innerFn.children ?? []).find((c) => c.kind === "typeRef")?.value ?? "";
+                const resolvedReturnBase = this.resolveRuntimeNumericBaseType(returnType, innerFn);
+                if (returnType.trim() !== "" && resolvedReturnBase === undefined) {
+                  return { __tag: "runtimeError" as const, message: `Flow '${fn.name}' has an invalid or cyclic numeric type alias for its return type` };
+                }
+                this.flowReturnBase = resolvedReturnBase ?? "";
                 this.pushScope();
                 try {
                   for (const [k, v] of callArgs) this.declare(k, v);
                   const body = [...(innerFn.children ?? [])].reverse().find((c) => c.kind === "block");
                   return body === undefined ? FUNGI_VOID : (await this.executeBlock(body)) ?? FUNGI_VOID;
-                } finally { this.popScope(); }
+                } finally {
+                  this.flowReturnBase = previousReturnBase;
+                  this.popScope();
+                }
               } finally { this.callDepth -= 1; }
             }
             // top-level flow: run in a sub-interpreter, propagating effects + audit.
@@ -1632,6 +1721,17 @@ class Interpreter {
   }
 
   async runFlow(flowName: string, args: ReadonlyMap<string, GalerinaValue>): Promise<FlowExecutionResult> {
+    const previousReturnBase = this.flowReturnBase;
+    const previousFlowName = this.currentFlowName;
+    try {
+      return await this.runFlowFrame(flowName, args);
+    } finally {
+      this.flowReturnBase = previousReturnBase;
+      this.currentFlowName = previousFlowName;
+    }
+  }
+
+  private async runFlowFrame(flowName: string, args: ReadonlyMap<string, GalerinaValue>): Promise<FlowExecutionResult> {
     const startedAt = new Date().toISOString();
     // R1A: Record entry timestamp for request_time limit enforcement
     const flowStartMs = Date.now();
@@ -1644,8 +1744,17 @@ class Interpreter {
     {
       const kids = flowNode?.children ?? [];
       const np = kids.filter((c) => c.kind === "paramDecl").length;
-      const rt = kids[np]?.value;
-      this.flowReturnBase = typeof rt === "string" ? numericBaseType(rt) : "";
+      const returnType = kids[np]?.value;
+      const resolvedReturnBase = typeof returnType === "string"
+        ? this.resolveRuntimeNumericBaseType(returnType, flowNode)
+        : "";
+      if (typeof returnType === "string" && returnType.trim() !== "" && resolvedReturnBase === undefined) {
+        const message = `Flow '${flowName}' has an invalid or cyclic numeric type alias for its return type`;
+        this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+        const value: GalerinaValue = { __tag: "runtimeError", message };
+        return this.buildResult(flowName, qualifier, startedAt, value, message);
+      }
+      this.flowReturnBase = resolvedReturnBase ?? "";
     }
 
     // Step 2A: Check deadline before doing any work — emit FUNGI-RUNTIME-006
@@ -1676,9 +1785,15 @@ class Interpreter {
     const admittedArgs = new Map<string, GalerinaValue>();
     for (const child of flowNode.children ?? []) {
       if (child.kind !== "paramDecl") continue;
-      const paramType = bindingTypeName(child.value ?? "");
+      const paramType = this.resolveRuntimeNumericBaseType(bindingTypeName(child.value ?? ""), child);
       const paramName = extractParamName(child.value ?? "");
       const argVal = args.get(paramName) ?? FUNGI_VOID;
+      if (paramType === undefined) {
+        const message = `Flow '${flowName}' has an invalid or cyclic numeric type alias for parameter '${paramName}'`;
+        this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+        const value: GalerinaValue = { __tag: "runtimeError", message };
+        return this.buildResult(flowName, qualifier, startedAt, value, message);
+      }
       if (paramType === "Verdict") {
         const payload = snapshotCanonicalVerdict(argVal);
         if (payload !== undefined) {
@@ -1705,9 +1820,19 @@ class Interpreter {
         const value: GalerinaValue = { __tag: "runtimeError", message };
         return this.buildResult(flowName, qualifier, startedAt, value, message);
       }
+      if (paramType === "Int64" || paramType === "UInt64") {
+        const coerced = coerceToDeclaredNumeric(paramType, argVal, undefined);
+        if (coerced.__tag === "runtimeError") {
+          const message = `Flow '${flowName}' received invalid ${paramType} argument '${paramName}' — fail-closed`;
+          this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+          return this.buildResult(flowName, qualifier, startedAt, coerced, message);
+        }
+        admittedArgs.set(paramName, coerced);
+        continue;
+      }
       // E5 (PROVISIONAL): a Float32/Float16 parameter admits the nearest binary32/binary16 value (exactly what
       // a Float32Array/Float16Array store or the WASM entry rounding does); an overflow fails closed.
-      const narrowParam = narrowFloatWidthOf(numericBaseType(paramType));
+      const narrowParam = narrowFloatWidthOf(paramType);
       if (narrowParam !== undefined && (argVal.__tag === "float" || argVal.__tag === "int")) {
         const coerced = mkNarrowFloat(argVal.value, narrowParam);
         if (coerced.__tag === "runtimeError") {
@@ -1911,7 +2036,7 @@ class Interpreter {
     if (runtimeError === undefined && flowNode !== undefined && (returnValue.__tag === "float" || returnValue.__tag === "int")) {
       const kids = flowNode.children ?? [];
       const rt = kids[kids.filter((c) => c.kind === "paramDecl").length]?.value;
-      const narrowRet = narrowFloatWidthOf(typeof rt === "string" ? numericBaseType(rt) : "");
+      const narrowRet = narrowFloatWidthOf(typeof rt === "string" ? this.resolveRuntimeNumericBaseType(rt, flowNode) ?? "" : "");
       if (narrowRet !== undefined) returnValue = mkNarrowFloat(returnValue.value, narrowRet);
     }
 
@@ -1938,7 +2063,9 @@ class Interpreter {
     value: GalerinaValue,
     runtimeError: string | undefined,
   ): FlowExecutionResult {
-    const error = runtimeError ?? (isRuntimeError(value) ? value.message : undefined);
+    const observedError = inspectRuntimeError(value);
+    const error = runtimeError ?? (observedError.kind === "error" ? observedError.message : undefined);
+    const resultValue = observedError.kind === "error" ? observedError.value : value;
     // R6B: Include manifest metadata in audit record when manifest was used
     const manifestFields: Partial<ExecutionAuditRecord> =
       this.manifest !== undefined && this.manifest.verified
@@ -1962,7 +2089,7 @@ class Interpreter {
     };
 
     return {
-      value,
+      value: resultValue,
       effectsObserved: [...this.effectsObserved],
       auditEntries: [...this.auditEntries],
       diagnostics: [...this.diagnostics],
@@ -2129,7 +2256,8 @@ class Interpreter {
     if (scope !== undefined) {
       scope.set(name, { value, unsafe, typeName });
       // R4C: record governed binding source for cross-flow access detection
-      if ((value.__tag === "protected" || value.__tag === "redacted") && this.currentFlowName !== undefined) {
+      const valueTag = ownDataValue(value, "__tag");
+      if ((valueTag === "protected" || valueTag === "redacted") && this.currentFlowName !== undefined) {
         this.governedBindingSource.set(name, this.currentFlowName);
       }
     }
@@ -2225,7 +2353,12 @@ class Interpreter {
         const rv = await this.evalExprAsInt64(r);
         if (rv.__tag === "runtimeError") return rv;
         const fn = BINARY_DISPATCH.get(dispatchKey(lv.__tag, op, rv.__tag));
-        if (fn !== undefined) return fn(lv, rv);
+        if (fn !== undefined) {
+          // Comparisons dispatch on wide operands but return Bool. Complete declared-type
+          // admission here, before a caller can evaluate its next argument or bind the result.
+          const value = fn(lv, rv);
+          return isCheckedTrap(value) ? value : coerceToDeclaredNumeric("Int64", value, node);
+        }
       }
     }
     if (node.kind === "unaryExpr" && node.value === "-") {
@@ -2262,7 +2395,10 @@ class Interpreter {
         const rv = await this.evalExprAsUInt64(r);
         if (rv.__tag === "runtimeError") return rv;
         const fn = BINARY_DISPATCH.get(dispatchKey(lv.__tag, op, rv.__tag));
-        if (fn !== undefined) return fn(lv, rv);
+        if (fn !== undefined) {
+          const value = fn(lv, rv);
+          return isCheckedTrap(value) ? value : coerceToDeclaredNumeric("UInt64", value, node);
+        }
       }
     }
     if (node.kind === "unaryExpr" && node.value === "-") {
@@ -2284,7 +2420,11 @@ class Interpreter {
       case "readonlyDecl": {
         const initNode = node.children?.[0];
         const { name, safetyPrefix, typeName, rawType } = parseBindingValue(node.value ?? "");
-        const letDeclBase = numericBaseType(typeName);
+        const resolvedBase = this.resolveRuntimeNumericBaseType(typeName, node);
+        if (typeName !== "" && resolvedBase === undefined) {
+          return { __tag: "runtimeError", message: `Binding '${name}' has an invalid or cyclic numeric type alias` };
+        }
+        const letDeclBase = resolvedBase ?? "";
         const initVal = await this.evalBindingInit(initNode, letDeclBase);
         // 0038 fail-closed: a checked-op trap (overflow/div0) must FAIL THE FLOW where it occurs, not be
         // bound + silently discarded. Soft runtimeErrors (e.g. missing field) keep value semantics. A bad
@@ -2295,14 +2435,18 @@ class Interpreter {
         if (rawType.startsWith("protected ") || rawType.startsWith("redacted ")) {
           tagGovernedValue(wrappedVal, rawType.startsWith("protected ") ? "protected" : "redacted");
         }
-        this.declare(name, wrappedVal, safetyPrefix === "unsafe", typeName);
+        this.declare(name, wrappedVal, safetyPrefix === "unsafe", letDeclBase);
         return undefined;
       }
 
       case "mutDecl": {
         const initNode = node.children?.[0];
         const { name, safetyPrefix, typeName, rawType } = parseBindingValue(node.value ?? "");
-        const mutDeclBase = numericBaseType(typeName);
+        const resolvedBase = this.resolveRuntimeNumericBaseType(typeName, node);
+        if (typeName !== "" && resolvedBase === undefined) {
+          return { __tag: "runtimeError", message: `Binding '${name}' has an invalid or cyclic numeric type alias` };
+        }
+        const mutDeclBase = resolvedBase ?? "";
         const initVal = await this.evalBindingInit(initNode, mutDeclBase);
         if (isCheckedTrap(initVal) || ((mutDeclBase === "Int64" || mutDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
         const value = wrapGovernedValue(initVal, rawType);
@@ -2311,9 +2455,9 @@ class Interpreter {
           tagGovernedValue(value, rawType.startsWith("protected ") ? "protected" : "redacted");
         }
         if (safetyPrefix === "safe") {
-          if (!this.assign(name, value, false)) this.declare(name, value, false, typeName);
+          if (!this.assign(name, value, false)) this.declare(name, value, false, mutDeclBase);
         } else {
-          this.declare(name, value, safetyPrefix === "unsafe", typeName);
+          this.declare(name, value, safetyPrefix === "unsafe", mutDeclBase);
         }
         return undefined;
       }
@@ -2497,13 +2641,21 @@ class Interpreter {
         const targetName = node.value ?? "";
         const rhsNode = node.children?.[0];
         if (targetName === "" || rhsNode === undefined) return undefined;
-        const rawValue = await this.evalExpr(rhsNode);
+        const targetTypeName = this.lookup(targetName)?.typeName ?? "";
+        // Binding annotations were resolved at declaration, not at assignment's
+        // potentially shadowing lexical site.
+        const targetBase = numericBaseType(targetTypeName);
+        const rawValue = targetBase === "Int64" ? await this.evalExprAsInt64(rhsNode)
+          : targetBase === "UInt64" ? await this.evalExprAsUInt64(rhsNode)
+          : await this.evalExpr(rhsNode);
         // E5 (PROVISIONAL): assigning into a declared Float32/Float16 binding rounds to its width.
-        const targetBase = numericBaseType(this.lookup(targetName)?.typeName ?? "");
         const newValue = isCheckedTrap(rawValue) || narrowFloatWidthOf(targetBase) === undefined
           ? rawValue
           : coerceToDeclaredNumeric(targetBase, rawValue, rhsNode);
-        if (isCheckedTrap(newValue)) return newValue; // 0038 fail-closed: don't assign + discard a checked trap
+        if (
+          isCheckedTrap(newValue) ||
+          ((targetBase === "Int64" || targetBase === "UInt64") && newValue.__tag === "runtimeError")
+        ) return newValue; // fail closed: do not assign or discard a failed wide-integer conversion
         if (!this.assign(targetName, newValue)) {
           this.diagnostics.push({
             code: "FUNGI-RUNTIME-004",
@@ -3090,7 +3242,25 @@ class Interpreter {
 
     const evaluatedReceiver = receiver !== undefined ? await this.evalExpr(receiver) : undefined;
     const evaluatedArgs: GalerinaValue[] = [];
-    for (const arg of args) evaluatedArgs.push(await this.evalExpr(arg));
+    const argumentFlow = receiver === undefined && resolveCapabilityEffect(fullName) === undefined
+      ? this.flowIndex.get(methodName)
+      : undefined;
+    const argumentFlowParams = (argumentFlow?.children ?? []).filter((child) => child.kind === "paramDecl");
+    for (let index = 0; index < args.length; index += 1) {
+      const arg = args[index];
+      if (arg === undefined) {
+        evaluatedArgs.push(FUNGI_VOID);
+        continue;
+      }
+      const paramNode = argumentFlowParams[index];
+      const evaluatedArg = argumentFlow === undefined
+        ? await this.evalExpr(arg)
+        : await this.evalCallArgument(arg, paramNode);
+      evaluatedArgs.push(evaluatedArg);
+      if (argumentFlow !== undefined && this.isWideIntegerArgumentFailure(evaluatedArg, paramNode)) {
+        return evaluatedArg;
+      }
+    }
 
     // Route governed calls through the capability host when present
     if (this.capabilityHost !== undefined) {
@@ -3134,6 +3304,35 @@ class Interpreter {
       };
     }
 
+    // Dispatch the exact user flow already used to type-directedly prepare these
+    // arguments before trying stdlib/builtin fallbacks. Keeping signature choice
+    // and runtime callee choice on one resolution prevents a failed wide-value
+    // conversion from being consumed by a same-spelled builtin.
+    if (argumentFlow !== undefined) {
+      const maxCallDepth = this.runtimeOptions.maxCallDepth ?? 2000;
+      this.callDepth += 1;
+      try {
+        if (this.callDepth > maxCallDepth) {
+          throw new Error(`Recursion depth exceeded (${maxCallDepth}) calling flow '${methodName}' — fail-closed (prevents host stack/heap exhaustion)`);
+        }
+        const callArgs = new Map<string, GalerinaValue>();
+        const params = (argumentFlow.children ?? []).filter((child) => child.kind === "paramDecl");
+        for (let index = 0; index < args.length; index += 1) {
+          const arg = args[index];
+          if (arg === undefined) continue;
+          const param = params[index];
+          const argValue = evaluatedArgs[index] ?? FUNGI_VOID;
+          if (this.isWideIntegerArgumentFailure(argValue, param)) return argValue;
+          const paramName = extractParamName(param?.value ?? `arg${index}`);
+          callArgs.set(paramName, argValue);
+        }
+        const nestedResult = await this.runFlow(methodName, callArgs);
+        return nestedResult.value;
+      } finally {
+        this.callDepth -= 1;
+      }
+    }
+
     const stdlibResult = await callStdlib(
       fullName,
       evaluatedReceiver,
@@ -3144,8 +3343,9 @@ class Interpreter {
       // DRCM Phase 1 (task #31): register any secret values returned by stdlib
       // with the active sink monitor for cleartext prefix scanning.
       // Covers: Secrets.get(), env.secret, vault.read, kms.decrypt, etc.
-      if (stdlibResult.__tag === "secure" && stdlibResult.value !== "") {
-        activeSinkMonitor.register(stdlibResult.value);
+      if (ownDataValue(stdlibResult, "__tag") === "secure") {
+        const secret = ownDataValue(stdlibResult, "value");
+        if (typeof secret === "string" && secret !== "") activeSinkMonitor.register(secret);
       }
       return stdlibResult;
     }
@@ -3339,36 +3539,6 @@ class Interpreter {
     if (fullName === "ApiError.unauthorized" || (receiverName === "ApiError" && methodName === "unauthorized")) {
       const msg = args[0] !== undefined ? await this.evalExpr(args[0]) : FUNGI_VOID;
       return makeApiErrorValue(401, safeDisplay(msg));
-    }
-
-    if (this.flowIndex.has(methodName)) {
-      // Regular flow-to-flow call: evaluate args in current scope, then call on THIS interpreter.
-      // Do NOT create a new Interpreter — that breaks recursive flows and wastes memory.
-      // step:* creates a nested Interpreter; isolation is SIMULATED in Stage A (shared enforcer, capability host and step budget); see :2850.
-      //
-      // FAIL-CLOSED recursion-depth guard (2026-06-18, hazard fix): because a recursive flow re-enters
-      // runFlow on THIS interpreter, unbounded recursion grows the async-frame heap until V8 OOM-kills
-      // the host (~5000 deep) UNCATCHABLY — violating Goal C "no system crash". Trap catchably well below.
-      const maxCallDepth = this.runtimeOptions.maxCallDepth ?? 2000;
-      this.callDepth += 1;
-      try {
-        if (this.callDepth > maxCallDepth) {
-          throw new Error(`Recursion depth exceeded (${maxCallDepth}) calling flow '${methodName}' — fail-closed (prevents host stack/heap exhaustion)`);
-        }
-        const callArgs = new Map<string, GalerinaValue>();
-        const flowNode = this.flowIndex.get(methodName);
-        const params = (flowNode?.children ?? []).filter((c) => c.kind === "paramDecl");
-        for (let i = 0; i < args.length; i++) {
-          const arg = args[i];
-          if (arg === undefined) continue;
-          const paramName = extractParamName(params[i]?.value ?? `arg${i}`);
-          callArgs.set(paramName, await this.evalExpr(arg));
-        }
-        const nestedResult = await this.runFlow(methodName, callArgs);
-        return nestedResult.value;
-      } finally {
-        this.callDepth -= 1;
-      }
     }
 
     if (receiver !== undefined) {
@@ -3607,27 +3777,62 @@ class Interpreter {
       if (this.callDepth > maxCallDepth) {
         throw new Error(`Recursion depth exceeded (${maxCallDepth}) calling fn '${name}' — fail-closed (prevents host stack/heap exhaustion)`);
       }
+      const params = (fn.children ?? []).filter((child) => child.kind === "paramDecl");
+      const evaluatedArgs: GalerinaValue[] = [];
+      for (let index = 0; index < params.length; index += 1) {
+        const param = params[index];
+        if (param === undefined) continue;
+        const argNode = argNodes[index];
+        const argValue = argNode === undefined ? FUNGI_VOID : await this.evalCallArgument(argNode, param);
+        if (this.isWideIntegerArgumentFailure(argValue, param)) return argValue;
+        evaluatedArgs.push(argValue);
+      }
       this.pushScope();
+      const previousReturnBase = this.flowReturnBase;
       try {
-        const params = (fn.children ?? []).filter((child) => child.kind === "paramDecl");
+        const returnType = (fn.children ?? []).find((child) => child.kind === "typeRef")?.value ?? "";
+        const resolvedReturnBase = this.resolveRuntimeNumericBaseType(returnType, fn);
+        if (returnType.trim() !== "" && resolvedReturnBase === undefined) {
+          return { __tag: "runtimeError", message: `Flow '${name}' has an invalid or cyclic numeric type alias for its return type` };
+        }
+        this.flowReturnBase = resolvedReturnBase ?? "";
         for (let index = 0; index < params.length; index += 1) {
           const param = params[index];
           if (param === undefined) continue;
           const paramName = extractParamName(param.value ?? "");
           if (paramName !== "") {
-            const argNode = argNodes[index];
-            this.declare(paramName, argNode === undefined ? FUNGI_VOID : await this.evalExpr(argNode));
+            this.declare(paramName, evaluatedArgs[index] ?? FUNGI_VOID);
           }
         }
 
         const body = [...(fn.children ?? [])].reverse().find((child) => child.kind === "block");
         return body === undefined ? FUNGI_VOID : await this.executeBlock(body) ?? FUNGI_VOID;
       } finally {
+        this.flowReturnBase = previousReturnBase;
         this.popScope();
       }
     } finally {
       this.callDepth -= 1;
     }
+  }
+
+  /** Resolve bounded source-declared aliases before runtime numeric admission. */
+  private resolveRuntimeNumericBaseType(rawType: string, owner: AstNode | undefined): string | undefined {
+    return resolveRuntimeNumericBaseType(rawType, owner === undefined ? undefined : this.runtimeTypeAliases.get(owner));
+  }
+
+  /** Evaluate a call argument in the callee's declared wide-integer context before lossy generic evaluation. */
+  private async evalCallArgument(argNode: AstNode, paramNode: AstNode | undefined): Promise<GalerinaValue> {
+    const paramBase = this.resolveRuntimeNumericBaseType(bindingTypeName(paramNode?.value ?? ""), paramNode);
+    if (paramBase === undefined) return { __tag: "runtimeError", message: "Invalid or cyclic numeric type alias at call boundary" };
+    if (paramBase === "Int64") return this.evalExprAsInt64(argNode);
+    if (paramBase === "UInt64") return this.evalExprAsUInt64(argNode);
+    return this.evalExpr(argNode);
+  }
+
+  private isWideIntegerArgumentFailure(value: GalerinaValue, paramNode: AstNode | undefined): boolean {
+    const paramBase = this.resolveRuntimeNumericBaseType(bindingTypeName(paramNode?.value ?? ""), paramNode);
+    return (paramBase === undefined || paramBase === "Int64" || paramBase === "UInt64") && value.__tag === "runtimeError";
   }
 
   private async runNestedFlow(name: string, argNodes: readonly AstNode[]): Promise<GalerinaValue> {
@@ -3647,8 +3852,11 @@ class Interpreter {
     for (let index = 0; index < argNodes.length; index += 1) {
       const arg = argNodes[index];
       if (arg === undefined) continue;
-      const paramName = extractParamName(params[index]?.value ?? `arg${index}`);
-      callArgs.set(paramName, await this.evalExpr(arg));
+      const paramNode = params[index];
+      const argValue = await this.evalCallArgument(arg, paramNode);
+      if (this.isWideIntegerArgumentFailure(argValue, paramNode)) return argValue;
+      const paramName = extractParamName(paramNode?.value ?? `arg${index}`);
+      callArgs.set(paramName, argValue);
     }
 
     const nested = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
@@ -3881,6 +4089,88 @@ function bindingTypeName(value: string): string {
   return colonIdx === -1 ? "" : bindingBaseType(value.slice(colonIdx + 1).trim());
 }
 
+interface RuntimeAliasBinding {
+  // undefined is a non-alias declaration that shadows an outer alias; null is
+  // an invalid/same-scope duplicate. Neither permits falling through outward.
+  readonly target: string | null | undefined;
+}
+interface RuntimeAliasScope {
+  readonly parent: RuntimeAliasScope | undefined;
+  readonly declarations: Map<string, RuntimeAliasBinding>;
+}
+type RuntimeTypeScopes = WeakMap<AstNode, RuntimeAliasScope>;
+
+/** Index lexical ownership, not one global bag of descendant declarations.
+ * contract.types belongs to its flow; blocks and local functions nest scopes.
+ * An alias chain resumes in the alias declaration's scope, not its use site.
+ */
+function collectRuntimeTypeAliases(ast: AstNode): RuntimeTypeScopes {
+  const scopes: RuntimeTypeScopes = new WeakMap();
+  const root: RuntimeAliasScope = { parent: undefined, declarations: new Map() };
+  const pending: Array<{ node: AstNode; scope: RuntimeAliasScope }> = [{ node: ast, scope: root }];
+  const visited = new WeakSet<AstNode>();
+  while (pending.length > 0) {
+    const entry = pending.pop()!;
+    const { node } = entry;
+    if (visited.has(node)) continue;
+    visited.add(node);
+    const scope = node.kind === "flowDecl" || node.kind === "pureFlowDecl"
+      || node.kind === "secureFlowDecl" || node.kind === "guardedFlowDecl"
+      || node.kind === "governedFlowDecl"
+      || node.kind === "fnDecl" || node.kind === "block"
+      ? { parent: entry.scope, declarations: new Map<string, RuntimeAliasBinding>() }
+      : entry.scope;
+    scopes.set(node, scope);
+    if (["typeDecl", "recordDecl", "enumDecl", "hallmarkDecl"].includes(node.kind)) {
+      const name = node.value?.trim() ?? "";
+      if (name !== "") {
+        const target = node.kind === "typeDecl"
+          ? node.children?.find(child => child.kind === "typeRef")?.value?.trim() || null
+          : undefined;
+        scope.declarations.set(name, { target: scope.declarations.has(name) ? null : target });
+      }
+    }
+    for (const child of node.children ?? []) pending.push({ node: child, scope });
+  }
+  return scopes;
+}
+
+function resolveRuntimeNumericBaseType(rawType: string, scope: RuntimeAliasScope | undefined): string | undefined {
+  let current = numericBaseType(rawType);
+  const seen = new Set<RuntimeAliasBinding>();
+  for (let depth = 0; depth < 64; depth += 1) {
+    let owner = scope;
+    while (owner !== undefined && !owner.declarations.has(current)) owner = owner.parent;
+    const binding = owner?.declarations.get(current);
+    if (current === "Int64" || current === "UInt64") return binding === undefined ? current : undefined;
+    if (binding === undefined || binding.target === undefined) return current;
+    if (binding.target === null || seen.has(binding)) return undefined;
+    seen.add(binding);
+    current = numericBaseType(binding.target);
+    scope = owner;
+  }
+  return undefined;
+}
+
+function flowDeclaresRuntimeWideInteger(flowNode: AstNode, scopes: RuntimeTypeScopes): boolean {
+  const pending: AstNode[] = [flowNode];
+  const visited = new WeakSet<AstNode>();
+  while (pending.length > 0) {
+    const node = pending.pop()!;
+    if (visited.has(node)) continue;
+    visited.add(node);
+    const rawType = node.kind === "typeRef" ? node.value ?? ""
+      : node.kind === "paramDecl" || node.kind === "letDecl" || node.kind === "mutDecl" || node.kind === "readonlyDecl"
+        ? bindingTypeName(node.value ?? "") : "";
+    if (rawType !== "") {
+      const resolved = resolveRuntimeNumericBaseType(rawType, scopes.get(node));
+      if (resolved === undefined || resolved === "Int64" || resolved === "UInt64") return true;
+    }
+    for (const child of node.children ?? []) pending.push(child);
+  }
+  return false;
+}
+
 function bindingBaseType(typeSection: string): string {
   const stripped = typeSection.replace(/^(protected|redacted)\s+/, "");
   return stripped.split(/[<\s]/)[0] ?? stripped;
@@ -3969,8 +4259,32 @@ function qualifierFromFlowNode(node: AstNode): "flow" | "pure" | "guarded" | "se
   return "flow";
 }
 
-function isRuntimeError(value: GalerinaValue): value is { readonly __tag: "runtimeError" | "error"; readonly message: string } {
-  return value.__tag === "runtimeError" || value.__tag === "error";
+type RuntimeErrorInspection =
+  | { readonly kind: "not-error" }
+  | { readonly kind: "error"; readonly message: string; readonly value: GalerinaValue };
+
+function inspectRuntimeError(value: GalerinaValue): RuntimeErrorInspection {
+  const tag = inspectOwnTag(value);
+  if (tag.kind === "missing") return { kind: "not-error" };
+  if (tag.kind === "uninspectable") {
+    return {
+      kind: "error",
+      message: "Uninspectable host value refused",
+      value: { __tag: "runtimeError", message: "Uninspectable host value refused" },
+    };
+  }
+  if (tag.value !== "runtimeError" && tag.value !== "error") return { kind: "not-error" };
+  const message = ownDataValue(value, "message");
+  const safeMessage = typeof message === "string" ? message : "Malformed host runtime error refused";
+  return {
+    kind: "error",
+    message: safeMessage,
+    value: { __tag: "runtimeError", message: safeMessage },
+  };
+}
+
+function isRuntimeError(value: GalerinaValue): boolean {
+  return inspectRuntimeError(value).kind === "error";
 }
 
 /**
@@ -3982,8 +4296,9 @@ function isRuntimeError(value: GalerinaValue): value is { readonly __tag: "runti
  * NB: matches the two `I32TrapKind`s by message — a cleaner long-term design is a distinct trap tag (0038).
  */
 function isCheckedTrap(value: GalerinaValue): boolean {
-  if (value.__tag !== "runtimeError") return false;
-  const m = value.message;
+  if (ownDataValue(value, "__tag") !== "runtimeError") return false;
+  const m = ownDataValue(value, "message");
+  if (typeof m !== "string") return false;
   // HARD fail-closed traps must PROPAGATE through arithmetic (not fall through to "operator not
   // supported", which masks the real reason). The i32-arith value traps, plus the liveness traps that
   // a nested flow's runFlow catch converts to a runtimeError VALUE at the call boundary: if such a trap
@@ -4336,6 +4651,7 @@ export function executeFlowSync(
   ast: AstNode,
   knownFlows: readonly FlowMeta[],
 ): GalerinaValue | null {
+  args = snapshotHostRuntimeErrors(args);
   const flowMeta = knownFlows.find(f => f.name === flowName);
   if (flowMeta === undefined || flowMeta.qualifier !== "pure") return null;
   // The sync fast path does not model invariants, parameter admission, or
@@ -4463,6 +4779,7 @@ export async function executeFlow(
   executionPlans?: ReadonlyMap<string, PassiveExecutionPlan>,
   manifest?: RuntimeManifest,
 ): Promise<FlowExecutionResult> {
+  args = snapshotHostRuntimeErrors(args);
   const productContext = runtimeOptions?.productArtifactContext
     ?? requireFixedGalerinaProductContext();
   // Pure flow erasure fast path:

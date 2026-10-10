@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "7353b25271871bacf1c09ad7954c489db27a024476665afb1749b3924bcbddcf",
+    "aggregateSha256": "f7a2e87a7aec90e192d664b6fc86170010a91715be31199a40d132493cb22e4d",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "9ab1bcb2455ff52bf66cd63d6bd8bf3868b55ba85c3b9c5ce94b7f5187130443"
+        "sha256": "84ef6d545953588ceb34629125fa792398df138cea101d25c07c7fa859dc9d5e"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "f6711d5667e3a4cdae44dcc4046e0a59a2d182a4307fb60cb68cbca9f292c782"
+        "sha256": "738c9bd96280c578f8842f60ab8f52f6625cfe6afedadb0a4e63e83dcf15d67e"
       },
       {
         "path": "TODO.md",
-        "sha256": "bf76cd7814cad81b64a93532f13c84f93a8445b0acaac6c50d149338cd840730"
+        "sha256": "2f44d74a59334e9ce933b3af6c9d51ab2f3993fb46cf595bee06768ab66ad2d0"
       },
       {
         "path": "examples/BENCHMARK-V2-README.md",
@@ -119,12 +119,16 @@
         "sha256": "3b9e8631f13ea727285baeda3e12836616183e7c50926cd011a1bb1615600a30"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "9913174c5d0de517ff33a3f3d0090a2acdabebd2f0c0199cc578175c49697ff3"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "3de2cce84ccb93d88171ad85f5828d38e1b6d0169d12ac0a7bfe294b5c73100c"
+        "sha256": "3b21b4ecfab5684d8fe369e1f345fcd4722a405a633f6cc87a53d4d43f100069"
       },
       {
         "path": "src/omni/index.ts",
-        "sha256": "1b835a7991af02b6979a5a1b92233dd604ab2f9674992e325d00f0c83e04b088"
+        "sha256": "2f9cceaf8d24ca2b4ed02288ec524316fca9a9e2c79e67588bc1e80003131998"
       },
       {
         "path": "src/omni/omni-diagnostics.ts",
@@ -137,6 +141,10 @@
       {
         "path": "src/omni/omni-to-decision.ts",
         "sha256": "79c205e01916d35da52d3fac641d8c0f07d9853e8151a59eeb1942ef8fde6258"
+      },
+      {
+        "path": "src/omni/omni-trace.ts",
+        "sha256": "d02bec2320ad1f009d5592688c812f8b69d06f1fca65d55bce641a4b54c4450a"
       },
       {
         "path": "src/self-hosted/fungi-bool-boundary-001-failed-closed.fungi",
@@ -243,6 +251,10 @@
         "sha256": "9ceb39026b0afcee8c6a73c3834fc3d4e2fd493eee659208a3fe03fe7733e69b"
       },
       {
+        "path": "tests/core-logic-hold-pin.test.mjs",
+        "sha256": "7d24df9c524dba32ddfdb97cb92902cfd0236303446e1b9ca0577bb3adf89b3a"
+      },
+      {
         "path": "tests/is-tri-fungi-conversion.test.mjs",
         "sha256": "7f34bfddb15ffe085815aa44dd12ed625cbbe5ee3c02cc10ac56b5da69e32ff1"
       },
@@ -253,6 +265,10 @@
       {
         "path": "tests/logic-v02-contracts.test.mjs",
         "sha256": "f077f926962265dc0e98dbf89e21e940a8de01615c579d831c6ee6d257c0a835"
+      },
+      {
+        "path": "tests/omni-reasoning-trace.test.mjs",
+        "sha256": "0dd1e45fcc6821a95fc660121615ec7696d1931702d28b6a66d53cc4c78d9b1a"
       },
       {
         "path": "tests/omni-uncertain-fungi-conversion.test.mjs",

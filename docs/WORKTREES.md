@@ -4,7 +4,39 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Current integration checkpoint - 2026-10-10, auth/key donor ports in main
+## Earlier reconciliation checkpoint - 2026-10-10, generic/helper and WASM donor review
+
+- The reused integration checkout was reverified at
+  `a7bfa3cb4ee87e8a62ad447a59798927416b6a80`. No fresh remote equality
+  claim is made by this checkpoint. The compiler repair now in progress is
+  uncommitted and is not included in that commit identity.
+- Independent five-file comparison of the retained memory-current-main donor
+  found its generic metadata, type-checker, value-state and export changes
+  superseded by current implementations, and its helper-return tests retained.
+  This establishes no need for a wholesale five-file transplant; it does not
+  account for the donor's remaining files or authorise whole-tree retirement.
+- New counterexamples from that review remain open: quoted generic payload
+  parsing, helper module-shadow classification and secret-result metadata
+  classification. The last is reproduced through the strict root CLI and has
+  a focused parser-backed repair in progress. No runtime disclosure claim or
+  RD closure follows from those bootstrap checks.
+- The separate three-file WASM host/grant donor comparison favours current
+  host capture and admission controls; its disposition remains provisional
+  pending independent reconciliation. Focused local execution is not proof
+  of production secret-grant admission or complete memory guarantees.
+- A fresh comparison also accounts for three memory-consolidation app-kernel
+  paths: `src/idempotency-replay-policy.ts`, `src/kernel.ts` and
+  `tests/kernel.test.mjs` within `packages-ts/galerina-framework-app-kernel`.
+  Their donor working contents match the committed integration version after
+  CRLF-to-LF normalisation; the donor index equals its own HEAD, with no separate
+  staged delta for these paths. No additional port is needed for those files.
+  This source-preservation result is not a new runtime test result.
+- Integer invariant folding and the vault proposal's recovery/acknowledgement
+  contract remain separate unresolved repair units. Original donors and
+  recovery material remain retained. This checkpoint retires no worktree,
+  removes no branch and does not claim main-plus-one consolidation complete.
+
+## Earlier integration checkpoint - 2026-10-10, auth/key donor ports in main
 
 - Main and the reused working branch were read back remotely at
   `65792296dc79404f1ab8d0b3956dde03b3275102` after an atomic, non-force
@@ -441,3 +473,47 @@ The copied `.git` markers and original junction spellings are historical: recove
 the independent bare repository, explicit work-tree and saved index, not plain Git in
 the copied directory. Process command-line checks found no named user of the old path;
 this is not an exhaustive open-handle or external-dependency proof.
+
+## Compiler integration preparation checkpoint (2026-10-10)
+
+This dated checkpoint supplements, rather than replaces, the historical inventory
+above. The active integration checkout remains
+`.worktrees/memory-main-baseline-20261009/`, branch
+`fix/absorbed-kb-links-20261009`, at
+`a7bfa3cb4ee87e8a62ad447a59798927416b6a80` before the pending integration commit.
+
+- The reviewed compiler batch covers structural secret labels, scalar artifact
+  compatibility, exact wide-integer argument dispatch, WAT record/Float handling,
+  and the portable WASM grant-signature test oracle. It also admits only the exact
+  Decimal leaf dependency required by the existing closed scalar loader.
+- Coordinator verification retained 922 passing tests across 32 affected compiler
+  test files, plus a separate 12-test Decimal dependency/closed-loader run. These
+  are bounded bootstrap/compiler evidence, not complete Fungi runtime, host,
+  secret-erasure or end-to-end protected-operation proof.
+- The maintained package-graph generator and its check passed for 100 packages and
+  201 outputs. Changed tracked boundary reports were reviewed; ignored raw graphs
+  are not part of the staged batch. Twenty-seven affected package build manifests
+  were reproduced from the selected Git index. Twenty-eight other generated
+  document differences remain separate, as do the generator's 95 content findings.
+- Exact working-byte and prior-index recovery for the staged source and reports
+  is retained in the coordinator's `reviewed-stage-recovery-v1` evidence bundle;
+  the generated-manifest recovery and selected path receipt are retained in
+  `selected-manifest-reconciliation-v1`. These are local recovery locators, not
+  repository runtime inputs or proof that donor trees have been integrated.
+- The project-graph builder now maps validated audited subpath imports to their
+  exact registered package owner and retains the import spellings as provenance.
+  Unknown and malformed identities still refuse. Independent coordinator execution
+  passed all 13 maintained package tests; this proves neither exports nor runtime
+  admission. The two-file repair and its generated build manifest have separate
+  recovery in `graph-repair-stage-v1`.
+- Diagnostic catalog generation/checks and project-graph generation/checks passed
+  against the current candidate, with source and index stability checks. All five
+  project-graph outputs are current. Existing lexical diagnostic coverage warnings
+  remain findings, not execution evidence or resolved defects.
+- Final staged gates and root-lock reconciliation remain pending. No commit,
+  push, merge or donor retirement is claimed by this checkpoint.
+
+Keep vault status/acknowledgement and ABI adaptation, integer-invariant folding,
+protected-operation/host evidence, and remaining donor accounting open. Preserve
+unrelated work, local-only coordination material and all recovery copies. The
+remaining-work and main-plus-one requirements are not satisfied by this batch alone.

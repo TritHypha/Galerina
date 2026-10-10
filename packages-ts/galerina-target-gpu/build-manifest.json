@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "315dd0e99683dd66163507f75be55dd1f625b4da0a04cdc5c7eb94a2cb562af3",
+    "aggregateSha256": "62218c487333108cd2da1b74470fede0deaa2ab681bf569da787ec7841e8d8d7",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "8de86e6968d3ccc5cdc8be54b3959fbef8b883c8ed2293de044b46d82ccd2cc6"
+        "sha256": "8df820b16e34316372d7389fc660360b7244e7121487eb30718de7a82ea87927"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "24aa1c5c59ed5ed41afd1b321f85a5a035e0fb9987e675222bf010b779a4c7f4"
+        "sha256": "e9b86ee01f168f4edd320b09eadda83ce940b60868a71b9b99b8ee9b55ebe70f"
       },
       {
         "path": "package-lock.json",
@@ -51,16 +51,32 @@
         "sha256": "52c002f492f856f3f050b2b59b03490357abefb14b0d20370d94403e7cebffdc"
       },
       {
+        "path": "src/gpu-hold-pin.ts",
+        "sha256": "6fbec700e661625ea5f6fa82b684840f951c410c06d481f928b00d1d64644207"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "286e2074e26dd6e1cab58b92e392a0adc57e774e8003ef2cd2c8db8a26bcb7bd"
+        "sha256": "cfdea2de7f9759bb7b5a7bb40e9a25a8f1765bc379254de02b7550f49279927f"
       },
       {
         "path": "src/node-util-shim.d.ts",
         "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
       },
       {
+        "path": "src/proposed-fungi-gpu-mapping.ts",
+        "sha256": "70e0cac751a54d0e2e95e865017b86f9316732479c5a47bac5d8d04ea8e176f8"
+      },
+      {
         "path": "tests/gpu-contracts.test.mjs",
         "sha256": "06f11090ada892582ac34b3a6e62ba13dd282ab42e9f44f8ada0f928f49aacc0"
+      },
+      {
+        "path": "tests/gpu-hold-pin.test.mjs",
+        "sha256": "6eba95b1daae78bea6f17d9bd4d8182d9614f92b41c301652a26145bf68ac53b"
+      },
+      {
+        "path": "tests/o1-gpu-closed-set.test.mjs",
+        "sha256": "958d4bf5013369e9295b45832f98821a919b68cda0e7d4354202b3b4fb6c1c6c"
       },
       {
         "path": "tsconfig.json",

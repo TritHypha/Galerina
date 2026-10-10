@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "f1487759dae14d72e159a214a8738b27d84914ba46335c09b5f7f792b87b1a32",
+    "aggregateSha256": "9136af9f99b6be5d4440444eca5fa716670d66826c613d21e104cfa75424430e",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "7aa12df24139ab70670ec5387434f7ee5651197a7931486a477f69a6549fea12"
+        "sha256": "028ebbd37bfa33c0e21e26fe22bc53ae344b7cf49c59114252db80858f11c18c"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "eaeabacc5863cc1aa02ba84fdef14d480f8d8ad3fbd9ae06fb94be9f62493d0a"
+        "sha256": "ea6eae28b684de716f426ffee0eda64a33bc401692a6a694deaa5cfbd7c2f843"
       },
       {
         "path": "examples/npu-target-selection.json",
@@ -55,8 +55,12 @@
         "sha256": "18248d314c74402f292bcf65416c069a1f2937fee5113352b4ba75df3b7e6118"
       },
       {
+        "path": "src/ai-accelerator-hold-pin.ts",
+        "sha256": "ab0389e5a24d0b3805d76c8b7cbf9bfc65738ab611f8db01d8b0f2c6c9fad26a"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "22ad9b265220bb3a8db74e54b0ff0d0c4518cee8639b9c9c7c486890c2b2bdd3"
+        "sha256": "af2d372c4249b54e715b5f06687c367d449651a11ea5f726e3174de9340ffa27"
       },
       {
         "path": "src/node-util-shim.d.ts",
@@ -65,6 +69,14 @@
       {
         "path": "tests/ai-accelerator-contracts.test.mjs",
         "sha256": "c076df847fef22495d9e3024d2dbbb867c0c891f11a05ca21d06fe871a52981e"
+      },
+      {
+        "path": "tests/ai-accelerator-hold-pin.test.mjs",
+        "sha256": "76ce35346f9814a5ed9af676ed03f7fbfce04406e06b3ffc6eaf14fba1c6be46"
+      },
+      {
+        "path": "tests/o1-parked-closed-set.test.mjs",
+        "sha256": "a13e879bd1f4b46893f9c2fa018005cab42b6acd827f4b64901429705a6ecb98"
       },
       {
         "path": "tsconfig.json",

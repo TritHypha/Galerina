@@ -20,13 +20,13 @@ contract { intent { "narrow" }${privacy ? " privacy { contains PII }" : ""} }
 { let n: Narrow = Narrow { v: s } return n.v }
 `;
 
-async function build(src) {
+async function build(src, transformWAT = wat => wat) {
   const prog = L.parseProgram(src, "g5.fungi");
   const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
   assert.equal(errs.length, 0, `parse errors: ${errs.map((d) => d.message).join("; ")}`);
   const fx = L.checkEffects(prog.flows, prog.ast);
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
-  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", prog.ast, true));
+  const wat = transformWAT(L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", prog.ast, true)));
   const asm = await L.assembleWAT(wat);
   assert.ok(asm.valid && asm.diagnostics.length === 0,
     `must assemble faithfully: ${asm.diagnostics.map((d) => d.message).join("; ")}`);
@@ -72,12 +72,48 @@ test("G5(a): zeroing STILL clears host-readable secret remanence (memory.fill â‰
     "control: without the fill, wide's secret stays host-readable (proves the fill is what clears it)");
 });
 
-test("G5(a): a non-secret module emits NO memory.fill zeroing (it pays nothing)", async () => {
-  const { wat } = await build(mk(false));
+function assertPublicPathDoesNotWipe(instance) {
+  const bytes = new Uint8Array(instance.exports.memory.buffer);
+  bytes[1023] = 0x31;
+  bytes[1036] = 0x5a;
+  assert.equal(instance.exports.wide(0xAA11), 0xAA11);
+  assert.equal(instance.exports.narrow(0xBB22), 0xBB22);
+  assert.deepEqual(Array.from(bytes.subarray(1028, 1036)),
+    [0x11, 0xaa, 0, 0, 0x11, 0xaa, 0, 0],
+    'public path must retain the prior wide allocation bytes');
+  assert.equal(bytes[1023], 0x31, 'below-arena sentinel');
+  assert.equal(bytes[1036], 0x5a, 'outside-owned-range sentinel');
+}
+
+test("G5(a): non-secret public execution does not wipe; explicit owned wipe remains callable", async () => {
+  const { wat, instance } = await build(mk(false));
   assert.ok(!wat.includes("$__fungi_zl"), "no privacy/secrets â‡’ no secret-zeroing marker");
-  // A non-secret module still does the B2 per-flow heap REBASE (global.set $__fungi_heap) but no fill.
-  assert.ok(!/memory\.fill .*\$__fungi_heap/.test(wat),
-    "non-secret modules must not pay for a secret zero-fill");
+  assertPublicPathDoesNotWipe(instance);
+  assert.equal(typeof instance.exports.__fungi_wipe_owned, 'function');
+  // A callable helper definition is not an automatic wipe on the public path.
+  instance.exports.wide(0xAA11);
+  instance.exports.__fungi_wipe_owned();
+  const bytes = new Uint8Array(instance.exports.memory.buffer);
+  assert.deepEqual(Array.from(bytes.subarray(1024, 1036)), Array(12).fill(0));
+  assert.equal(bytes[1023], 0x31);
+  assert.equal(bytes[1036], 0x5a);
+});
+
+test("G5(a): public anti-wipe oracle rejects an executed wipe inserted before narrow's rebase", async () => {
+  const { instance } = await build(mk(false), wat => {
+    // Inject into one generated function, after locals but BEFORE its rebase;
+    // otherwise a zero-length wipe would not exercise the intended failure.
+    const target = /(\(func \$narrow\b[\s\S]*?)(\(global\.set \$__fungi_heap \(i32\.const 1024\)\))/g;
+    assert.equal([...wat.matchAll(target)].length, 1, 'exact mutation site');
+    return wat.replace(target, '$1(call $__fungi_wipe_owned)\n    $2');
+  });
+  assert.throws(() => assertPublicPathDoesNotWipe(instance), error =>
+    error instanceof assert.AssertionError
+      && error.message.includes('public path must retain the prior wide allocation bytes'));
+  const bytes = new Uint8Array(instance.exports.memory.buffer);
+  assert.deepEqual(Array.from(bytes.subarray(1028, 1036)), Array(8).fill(0), 'mutation really wiped');
+  assert.equal(bytes[1023], 0x31);
+  assert.equal(bytes[1036], 0x5a);
 });
 
 test("G5(a): the secret module still executes correctly under memory.fill", async () => {

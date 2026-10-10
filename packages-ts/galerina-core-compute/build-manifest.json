@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "14b68f65531cd36c23d8187619a381f21be99d429ceb200e4df02c6d1a4e8897",
+    "aggregateSha256": "67684daa7edf6d105318b0be0d02d5021c36cb24ab18b7e7c401f3d809e0855a",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "3f13fc81fb43ef3e794fbdb06cde79b4f697e0c60f2b17a5e3c8188892537940"
+        "sha256": "7fd1e72bdb98f8eea1392e482110c84c14fd2c99868c5e6aac5ed103eb4151d0"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "a7e8d8c64e067a9901e4cf1877ad7135ed4ec258e4c3597628bfcee1881917ab"
+        "sha256": "efe9faa36ee895c9252cd72c74e8c56ebeebf60ce62c71de095affc6b2d5973d"
       },
       {
         "path": "examples/lowbit-ai-offload-report.json",
@@ -55,12 +55,156 @@
         "sha256": "7d87f43295046cff31d2873fb048fa9ad6b64f7ea0dbac9e655c9b3bdf6dbcd3"
       },
       {
+        "path": "src/capabilities/compute-runtime-capabilities.ts",
+        "sha256": "8a072495484469e433089ab20da069a0382e2350f54454578178fdd85d0d50bd"
+      },
+      {
+        "path": "src/compatibility/compatibility-report.ts",
+        "sha256": "a0cc87fa6f58cdb11e19eb6b65ea6f398983373908e2a5986ddd293428c23380"
+      },
+      {
+        "path": "src/compatibility/compatibility-rules.ts",
+        "sha256": "694c6845c75c5d58a4335a11c64601f9b6545087a65f268767bbe1bb0c39dfa6"
+      },
+      {
+        "path": "src/compatibility/target-compatibility.ts",
+        "sha256": "af42cb1c4aba5d9e36aaf544e688d86471be30ca214d6a9a50984133fcd16545"
+      },
+      {
+        "path": "src/compatibility/target-validator.ts",
+        "sha256": "d6e517238e3021a0fc48fe3c51bd9716a58e4cd336d7ffd819a4167bd0bd540c"
+      },
+      {
+        "path": "src/effects/compute-effects.ts",
+        "sha256": "1262575b3ad1dd6cb977dc0e6c272f9d6cf331162bd94cc27b91b0c8c33a246a"
+      },
+      {
+        "path": "src/gpu/gpu-codes.ts",
+        "sha256": "b766c2ce7f6c48108e97718ddb086085ed149ebd36c9c126d1b6842da5a994b5"
+      },
+      {
+        "path": "src/gpu/gpu-estimator.ts",
+        "sha256": "b6af04dabf5c8999ac7db46756598b978414af7ff72655fe57fe741dbb32f78b"
+      },
+      {
+        "path": "src/gpu/gpu-fallback.ts",
+        "sha256": "cf5c8c8dbce6274627dfa231f2388fa1a140c3bf2311378ac4bc61a288734f00"
+      },
+      {
+        "path": "src/gpu/gpu-planner.ts",
+        "sha256": "7ac4279200704b231c6c23e08edc3586262f41b4c7712663c74489b53ab870fc"
+      },
+      {
+        "path": "src/gpu/gpu-reports.ts",
+        "sha256": "f1c9414f2b10a78b6e55537b816c86803dc558aa345bc00d0313272e05109768"
+      },
+      {
+        "path": "src/gpu/gpu-runtime.ts",
+        "sha256": "675a181a29c4e5433a4762a1506bcd4014e779002c145395d321c9489147e4c8"
+      },
+      {
+        "path": "src/gpu/gpu-types.ts",
+        "sha256": "35e6d16a85208e901a1f8f53e8c4d0561428f6189d171bb6154749c0c2b31160"
+      },
+      {
+        "path": "src/gpu/index.ts",
+        "sha256": "09ae89818552fd97bc35852ae4c05e3b7b555b051de0285c52436e0fa4807404"
+      },
+      {
+        "path": "src/hold-pin.ts",
+        "sha256": "57554a473f6c2c4c1bc082b460d3aa4853135d79c3c0d6a63996b62481df2bfe"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "246b53ec8c1e676c9018e29a9b80dffdb71e822278e616e75dd40ae66f5af1ea"
+        "sha256": "f1552103ea9d96809d07ac80ca7258494315297c7d505089caac9e6f5de0282a"
+      },
+      {
+        "path": "src/photonic/distributed-graph.ts",
+        "sha256": "c090fb445fbf93b24649f8844cf0619d6f2ec6f73f55305380e790f3ca69e700"
+      },
+      {
+        "path": "src/photonic/index.ts",
+        "sha256": "89bef955da94cdd01bb704b7330206f7af6cdc303a65160dfdb5acd142a82796"
+      },
+      {
+        "path": "src/photonic/optical-estimator.ts",
+        "sha256": "652bb7a9c928081ff0f5e9b5b752d251459a4211562a87fe2fceaa9c3b25ebcc"
+      },
+      {
+        "path": "src/photonic/optical-fallback.ts",
+        "sha256": "8085d9019361cbe490eb7e8e281e39081e303c73cb3f93aaa403b9faafa42d3c"
+      },
+      {
+        "path": "src/photonic/optical-routing.ts",
+        "sha256": "760586b74a111b076b8da19a8d2f30616197e839ccd4132ffa141d38d9bbfef7"
+      },
+      {
+        "path": "src/photonic/optical-runtime.ts",
+        "sha256": "96258e34663bacb270ef8efcdc224efcc33e27577d1309dbcb8cb34333773136"
+      },
+      {
+        "path": "src/photonic/optical-types.ts",
+        "sha256": "2d9fc2354715e0f5189329be4bd80c389f5b740110531b94b283c749ed1b100c"
+      },
+      {
+        "path": "src/photonic/photonic-audit.ts",
+        "sha256": "f4c47f4b278feea5d96ffe7858d32c92b6af79b01e55c2abda6a4b9136f7381a"
+      },
+      {
+        "path": "src/photonic/photonic-planner.ts",
+        "sha256": "6e7b52a82882abe8a3eded14ac3e08d7d9568d7537ebbf4306ed7d489c9ae826"
+      },
+      {
+        "path": "src/rd0855-alternative-plan.ts",
+        "sha256": "8ab4fb2bc0ce8a3edd3b3922baa5781fdad9db0a208dac47721fa95ea0c5f88e"
+      },
+      {
+        "path": "src/scheduling/index.ts",
+        "sha256": "fc09e4d7a59ef86197c6fa90662d8500ab958064230c522b62c388707f2e97e4"
+      },
+      {
+        "path": "src/scheduling/responsibilities.ts",
+        "sha256": "3404a389eb56435a6a897f1e2ded94b49c87948b60135f16bad69f82deedbfc6"
+      },
+      {
+        "path": "src/specialist/specialist-hardware.ts",
+        "sha256": "d336d685b130ba7dc5d848ac97556ca2a113c6e22bfb360decb9e179cdde24d2"
+      },
+      {
+        "path": "src/workload.ts",
+        "sha256": "ec5c68361ed062a3e05ae19b069e52b40890d144ed88b65e4b10ee4c10651487"
+      },
+      {
+        "path": "tests/compatibility.test.mjs",
+        "sha256": "cf9af869a3be9b8ad608896510b0eea0b87f7c63d89ae023e37a1e3ca260f1f6"
       },
       {
         "path": "tests/compute-contracts.test.mjs",
         "sha256": "8660fdd6054e049652460d19324b5fe9caacadc894a0c94f2db0f35ef9eaa0d5"
+      },
+      {
+        "path": "tests/core-compute-hold-pin.test.mjs",
+        "sha256": "773514ff763b74eebcf3e95752dd943e94b4e847174a259ecedb513929b2185b"
+      },
+      {
+        "path": "tests/gpu-plan.test.mjs",
+        "sha256": "5b61ae7e6f9e17cce07286f5690dc2eba639b98e34206b9abe6db093ce1cecec"
+      },
+      {
+        "path": "tests/optical-plan.test.mjs",
+        "sha256": "6de0f22ecfba48e709729baab879e640c601d33175ebe6edf38f794c4db5e54a"
+      },
+      {
+        "path": "tests/rd0855-alternative-plan.test.mjs",
+        "sha256": "30b0ce33923b84c7d0f3595e1f278ec26bdf2b15573f8a3a5c6b3cf5ccfdb7fc"
+      },
+      {
+        "path": "tests/scheduler-planner.test.mjs",
+        "sha256": "15ce23fa51b2f38f8440cdf29b9546c4680ecbc9f9f654b5e4c84463cb0234c3"
+      },
+      {
+        "path": "tests/specialist-hardware.test.mjs",
+        "sha256": "b2624ba9fa6b4e3906ebe1331a93771f250b1c36c800d5b3a37825a63c167d75"
       },
       {
         "path": "tsconfig.json",

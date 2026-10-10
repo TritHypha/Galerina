@@ -42,6 +42,76 @@ function refuse(code: string): never {
   throw new Rd0858ScalarCompilerRefusal(code);
 }
 
+/** @internal Fixed scalar-profile projection, not a general AST adapter or checker admission. */
+export function projectRd0858ScalarSnapshot(input: unknown): CheckedFlowArtifactNode {
+  // The finite template fixes every node, field and child position. In particular,
+  // only the parameter Verdict and result String can lose redundant type evidence.
+  const node = (kind: string, children: readonly CheckedFlowArtifactNode[] = [], value?: string): CheckedFlowArtifactNode =>
+    ({ kind, ...(value === undefined ? {} : { value }), children });
+  const profile: CheckedFlowArtifactNode = {
+    ...node("pureFlowDecl", [
+      node("paramDecl", [node("typeRef", [], "Verdict")], "subject: Verdict"),
+      node("typeRef", [], "String"),
+      node("contractDecl", [node("identifier", [], "effects:block")]),
+      node("block", [node("checkExpr", [
+        node("identifier", [], "subject"),
+        ...[["deny", '"deny"'], ["ambig", '"ambig"'], ["if", '"allow"']].map(([arm, value]) =>
+          node("checkArm", [node("block", [node("returnStmt", [node("stringLiteral", [], value)])])], arm)),
+      ])]),
+    ], "scalarOracle"),
+    flags: 33,
+  };
+  const fields = (value: unknown, keys: readonly string[], array = false): Record<string, unknown> => {
+    if (value === null || typeof value !== "object" || Array.isArray(value) !== array) refuse("TYPE_PROJECTION");
+    const prototype = Object.getPrototypeOf(value);
+    if (array ? prototype !== Array.prototype : prototype !== Object.prototype && prototype !== null) refuse("TYPE_PROJECTION");
+    const ownKeys = Reflect.ownKeys(value);
+    if (ownKeys.length !== keys.length || ownKeys.some(key => typeof key !== "string" || !keys.includes(key))) refuse("TYPE_PROJECTION");
+    const result: Record<string, unknown> = Object.create(null);
+    for (const key of keys) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor === undefined || !("value" in descriptor)
+        || descriptor.enumerable !== !(array && key === "length")) refuse("TYPE_PROJECTION");
+      result[key] = descriptor.value;
+    }
+    return result;
+  };
+  const items = (value: unknown, count: number): readonly unknown[] => {
+    if (!Array.isArray(value)) refuse("TYPE_PROJECTION");
+    const length = Object.getOwnPropertyDescriptor(value, "length");
+    // Refuse large/sparse input before enumerating its keys. The template bounds count.
+    if (length === undefined || !("value" in length) || length.value !== count) refuse("TYPE_PROJECTION");
+    const keys = Array.from({ length: count }, (_, index) => String(index));
+    const record = fields(value, ["length", ...keys], true);
+    return keys.map(key => record[key]);
+  };
+  const project = (value: unknown, expected: CheckedFlowArtifactNode): CheckedFlowArtifactNode => {
+    const isType = expected.kind === "typeRef";
+    const keys = Object.keys(expected);
+    const record = fields(value, isType ? [...keys, "typeStructure"] : keys);
+    for (const key of keys) {
+      if (key !== "children" && record[key] !== expected[key as keyof CheckedFlowArtifactNode]) refuse("TYPE_PROJECTION");
+    }
+    if (isType) {
+      const type = fields(record["typeStructure"], ["kind", "name", "generic", "args"]);
+      if ((expected.value !== "Verdict" && expected.value !== "String")
+        || type["kind"] !== "type" || type["name"] !== expected.value || type["generic"] !== false) refuse("TYPE_PROJECTION");
+      items(type["args"], 0);
+    }
+    const expectedChildren = expected.children ?? [];
+    const children = items(record["children"], expectedChildren.length);
+    return Object.freeze({ ...expected,
+      children: Object.freeze(expectedChildren.map((child, index) => project(children[index], child))),
+    });
+  };
+  try {
+    return project(input, profile);
+  } catch {
+    // A hostile descriptor/prototype trap is a refusal, not a partially projected AST.
+    return refuse("TYPE_PROJECTION");
+  }
+}
+
 function assertExactScalarAst(ast: CheckedFlowArtifactNode): void {
   const children = ast.children ?? [];
   const block = children.find((node) => node.kind === "block");
@@ -95,7 +165,7 @@ function compileCheckedAst(source: string): CheckedFlowArtifactNode {
   const snapshot = snapshotCheckedFlow(flow, flowNode);
   if (snapshot === undefined) refuse("CHECKED_SNAPSHOT");
   assertExactScalarAst(snapshot.ast);
-  return snapshot.ast;
+  return projectRd0858ScalarSnapshot(snapshot.ast);
 }
 
 export function buildRd0858ScalarArtifact(

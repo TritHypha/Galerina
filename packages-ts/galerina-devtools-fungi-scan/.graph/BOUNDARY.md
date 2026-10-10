@@ -13,8 +13,8 @@
 |---|---|
 | Files | 5 |
 | Internal edges | 8 |
-| External dependencies | 3 |
-| ├─ Node core | 2 |
+| External dependencies | 4 |
+| ├─ Node core | 3 |
 | ├─ Workspace (@galerina/*) | 1 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,6 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
+- `node:child_process`
 - `node:fs`
 - `node:path`
 

@@ -37,7 +37,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts` (re-exports `src/hold-pin.ts`)
+- `src/index.ts`
 
 ## Loaded Assets
 - `src/self-hosted/allow-localhost-env.fungi`
@@ -47,7 +47,7 @@ _none_ -- every file is reachable from an internal import or has an exact owners
 - `src/self-hosted/egress-allowed-hosts-env.fungi`
 
 ## Product Assets
-_none declared_
+- `packages/fungi/products/galerina/rd0873-core-config/environment-mode.fungi`
 
 ## Allowed Orphans
 _none declared_

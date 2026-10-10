@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "d245f92f7e2aaa0d57d4ff4730b7f4ed954bdb457de3391e4de0faa307a90598",
+    "aggregateSha256": "7624158bde40287bf5ed760e5f8d4f6c8ae8574a36464d3685242723e2b941d7",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "468748d59757b68700be7cc39b65200ac1435efe4c82327a02c5ad063a719d1c"
+        "sha256": "d788636ceb910eddd96da4f70683a370a086dadefedc013a5b7ea36cd0483200"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -48,7 +48,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "6acd6f4d26aa8ffd1e3b42f08aa151f504a87f9fe2801b81ff9e0bbacb62f153"
+        "sha256": "15a343d8117e8f2041b77e6eb9082b9b5492840228d746cacfa257d2ffdfe4c5"
       },
       {
         "path": "bench/flight-boot.mjs",
@@ -68,7 +68,7 @@
       },
       {
         "path": "package.json",
-        "sha256": "0e5b8f811377ad7610212d377980e79955457826d234d7c8dac16e5908828184"
+        "sha256": "c7b1365c1673059f206fff54cefe680b0273e8d7f48ad585b78da978766ff411"
       },
       {
         "path": "src/ai-governance.ts",
@@ -160,7 +160,7 @@
       },
       {
         "path": "src/load-graph.ts",
-        "sha256": "e98eaedcb44dee1f43898ca7eecff788b6c46d30025950ff3aa446e371f91bd3"
+        "sha256": "ab3d0b369b90e7bd1e24537874b8a182cc4d82898646445649e0402f04ee5537"
       },
       {
         "path": "src/partial-return.ts",
@@ -197,6 +197,10 @@
       {
         "path": "src/quorum.ts",
         "sha256": "317c790d8c8cab80a11e439c1742965b82e02f528c661acc19614cb857ad9afe"
+      },
+      {
+        "path": "src/rd1295-hold-pin.ts",
+        "sha256": "2ee0bfb804a4ed9deed09458de146de82bc1df495b801696fe2e2fc4ed47dcd2"
       },
       {
         "path": "src/registry-key-rotation.ts",
@@ -615,6 +619,14 @@
         "sha256": "0984612926acb989d70bb4adaf4c2929552708bffadde027f74b12eac58f4a38"
       },
       {
+        "path": "tests/fixtures/rd0361-transport-fsm.capture.mjs",
+        "sha256": "4f53a59e21ff8bf619b9b0d3796df53b41975ecaaabd681a63a981ba624960bd"
+      },
+      {
+        "path": "tests/fixtures/rd0361-transport-fsm.frozen.json",
+        "sha256": "ca14a0663b3d842cbe09701f4e752f20edadea632b2d975e401bc1caad454093"
+      },
+      {
         "path": "tests/flight-boot.test.mjs",
         "sha256": "23ac44cf2000bd551c42cdf3a76d734736b55e0ae88140ae9efb62dc337d0b35"
       },
@@ -652,7 +664,7 @@
       },
       {
         "path": "tests/load-graph-bounds.test.mjs",
-        "sha256": "a5ea1c9922269198521eb5da7540e6f1cc27da2b2128dcd524955877ff589ac5"
+        "sha256": "b5aab483df3e67457e5d3a26161b71a4d0acccccbba2954117e107184e0f91c9"
       },
       {
         "path": "tests/partial-return.test.mjs",
@@ -703,12 +715,20 @@
         "sha256": "d30132a4ac1b15ab8fe3dba985e59fc40b09301021318256c403518d201195be"
       },
       {
+        "path": "tests/rd0361-transport-fsm-frozen.test.mjs",
+        "sha256": "ceea279237542b2a67ab0266701cb5bd6de729deb295be20734da65ec3a1df91"
+      },
+      {
         "path": "tests/rd0364-inference-governance-execution.test.mjs",
         "sha256": "a5452626b6f91362f0de47774e374e894eaf6241fe0d4bfbf8b60e61a33eb64b"
       },
       {
         "path": "tests/rd0365-pq-admission-policy-execution.test.mjs",
         "sha256": "4f2a4588f1f283dbfb37f0bf4df4fb4d4f55a301940e314c5640789df633659e"
+      },
+      {
+        "path": "tests/rd1295-hold-pin.test.mjs",
+        "sha256": "bebb4540773f3ddf678047b18b71b63fe7f89ac7502a2f14dde35374a89a6c82"
       },
       {
         "path": "tests/registry-key-rotation.test.mjs",

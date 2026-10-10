@@ -105,7 +105,22 @@ contract { intent { "Do not reserve unrelated library method names." } }
   );
 });
 
-test("isPositive rejects malformed runtime values without coercion and propagates upstream errors", async () => {
+function assertDetachedHostError(result, original, originalDescriptors, accessorReads) {
+  assert.notStrictEqual(result.value, original, "host error must be detached");
+  assert.equal(accessorReads, 0, "caller accessors must not be read");
+  assert.deepEqual(
+    Object.getOwnPropertyDescriptors(result.value),
+    Object.getOwnPropertyDescriptors({ __tag: "runtimeError", message: "Host-supplied runtime error" }),
+    "host error must contain only inert generic data",
+  );
+  assert.deepEqual(
+    Object.getOwnPropertyDescriptors(original),
+    originalDescriptors,
+    "caller input must remain unchanged",
+  );
+}
+
+test("isPositive rejects malformed values without coercion and detaches caller-owned errors at entry", async () => {
   const program = L.parseProgram(`
 pure flow classify(value: Float64) -> Bool
 contract { intent { "Reject malformed runtime values before numeric classification." } }
@@ -124,8 +139,59 @@ contract { intent { "Reject malformed runtime values before numeric classificati
   }
 
   const upstream = { __tag: "runtimeError", message: "UpstreamClassifierFailure" };
-  const propagated = await L.executeFlow("classify", new Map([["value", upstream]]), program.ast, program.flows);
-  assert.strictEqual(propagated.value, upstream);
+  const originalDescriptors = Object.getOwnPropertyDescriptors(upstream);
+  const args = new Map([["value", upstream]]);
+  const propagated = await L.executeFlow("classify", args, program.ast, program.flows);
+  assertDetachedHostError(propagated, upstream, originalDescriptors, 0);
+  assert.strictEqual(args.get("value"), upstream, "caller argument map must remain unchanged");
+
+  for (const accessorTag of [false, true]) {
+    let reads = 0;
+    const hostile = {
+      get message() { reads += 1; throw new Error("CallerMessageGetterExecuted"); },
+    };
+    Object.defineProperty(hostile, "__tag", accessorTag
+      ? { enumerable: true, get() { reads += 1; throw new Error("CallerTagGetterExecuted"); } }
+      : { enumerable: true, value: "runtimeError" });
+    const before = Object.getOwnPropertyDescriptors(hostile);
+    const hostileArgs = new Map([["value", hostile]]);
+    const result = await L.executeFlow("classify", hostileArgs, program.ast, program.flows);
+    assertDetachedHostError(result, hostile, before, reads);
+    assert.strictEqual(hostileArgs.get("value"), hostile);
+  }
+
+  const valid = tagged(0.5);
+  const validBefore = Object.getOwnPropertyDescriptors(valid);
+  const positive = await L.executeFlow("classify", new Map([["value", valid]]), program.ast, program.flows);
+  assert.deepEqual(positive.value, { __tag: "bool", value: true });
+  assert.deepEqual(Object.getOwnPropertyDescriptors(valid), validBefore);
+});
+
+test("host-error admission oracle rejects identity leakage and caller accessor use", () => {
+  // Synthetic result controls test this oracle, not production fault injection.
+  const original = { __tag: "runtimeError", message: "Host-supplied runtime error" };
+  const before = Object.getOwnPropertyDescriptors(original);
+  const detached = { value: { ...original } };
+  assertDetachedHostError(detached, original, before, 0);
+  assert.throws(
+    () => assertDetachedHostError({ value: original }, original, before, 0),
+    (error) => error.code === "ERR_ASSERTION" && error.operator === "notStrictEqual"
+      && error.message.includes("host error must be detached"),
+  );
+
+  let reads = 0;
+  const hostile = {
+    __tag: "runtimeError",
+    get message() { reads += 1; return "Host-supplied runtime error"; },
+  };
+  const hostileBefore = Object.getOwnPropertyDescriptors(hostile);
+  assertDetachedHostError(detached, hostile, hostileBefore, reads);
+  const accessorUsingResult = { value: { __tag: "runtimeError", message: hostile.message } };
+  assert.throws(
+    () => assertDetachedHostError(accessorUsingResult, hostile, hostileBefore, reads),
+    (error) => error.code === "ERR_ASSERTION" && error.actual === 1 && error.expected === 0
+      && error.message.includes("caller accessors must not be read"),
+  );
 });
 
 test("isPositive runtime dispatch enforces exact arity while preserving an upstream error", async () => {
@@ -200,7 +266,18 @@ contract { intent { "Reject a lexical binding that masks a binary-float classifi
   }
 });
 
-test("binary-float classifier namespaces remain shadowed when local type inference is unknown", async (t) => {
+const unsupportedJoinMessage = "FUNGI-WAT-METHOD-001: method 'join' is not lowered to WASM. WAT emission refuses rather than emit an (unreachable) stub or an undefined callee (fail-closed).";
+
+function assertShadowDiagnostic(errors, receiver, inferredType) {
+  const shadows = errors.filter(diagnostic => diagnostic.code === "FUNGI-TYPE-005"
+    && diagnostic.message.includes("shadowed by a lexical binding"));
+  assert.deepEqual(shadows.map(({ code, name, severity, message }) => ({ code, name, severity, message })), [{
+    code: "FUNGI-TYPE-005", name: "INVALID_CALL_ARG_TYPE", severity: "error",
+    message: `Classifier namespace '${receiver}' is shadowed by a lexical binding of type '${inferredType}'.`,
+  }]);
+}
+
+test("checker-unknown classifier shadows retain exact unsupported-join WAT refusal", async (t) => {
   for (const { receiver, type } of aliases) {
     await t.test(`${receiver} unknown-inference local shadow`, async () => {
       const program = L.parseProgram(`
@@ -216,15 +293,20 @@ contract { intent { "Reject a classifier namespace shadow even when its binding 
       assert.equal(typeErrors.some((diagnostic) =>
         diagnostic.code === "FUNGI-TYPE-005" && diagnostic.message.includes("shadowed by a lexical binding")), true);
 
+      assertShadowDiagnostic(typeErrors, receiver, "unknown");
+
       const effects = L.checkEffects(program.flows, program.ast);
       const { gir } = L.emitGIR(program.ast, program.flows, effects);
-      const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", program.ast, true));
-      assert.match(wat, /isPositive namespace shadowed/);
+      // join refuses during initializer lowering, before the emitter records
+      // the binding. This is join refusal, NOT emitter namespace-shadow proof.
+      assert.throws(() => L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", program.ast, true), {
+        name: "Error", message: unsupportedJoinMessage,
+      });
     });
   }
 });
 
-test("unknown classifier-name bindings do not leak into a later flow scope", async () => {
+test("checker-unknown bindings stay flow-local even though join prevents WAT generation", async () => {
   const program = L.parseProgram(`
 pure flow shadowed(value: Float64) -> Bool
 contract { intent { "Keep the unknown binding inside this flow." } }
@@ -241,12 +323,92 @@ contract { intent { "Recover the builtin namespace in the next flow." } }
   const shadowErrors = L.checkTypes(program.ast).diagnostics.filter((diagnostic) =>
     diagnostic.code === "FUNGI-TYPE-005" && diagnostic.message.includes("shadowed by a lexical binding"));
   assert.equal(shadowErrors.length, 1);
+  assertShadowDiagnostic(shadowErrors, "Float64", "unknown");
 
   const effects = L.checkEffects(program.flows, program.ast);
   const { gir } = L.emitGIR(program.ast, program.flows, effects);
-  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", program.ast, true));
-  assert.match(wat, /isPositive namespace shadowed/);
-  assert.match(wat, /call \$fungi_is_positive_f64/);
+  assert.throws(() => L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", program.ast, true), {
+    name: "Error", message: unsupportedJoinMessage,
+  });
+});
+
+async function instantiateClassifierWat(wat) {
+  const assembled = await L.assembleWAT(wat);
+  assert.equal(assembled.valid, true, JSON.stringify(assembled.diagnostics));
+  const { instance } = await WebAssembly.instantiate(assembled.wasm, L.createHostRuntime().imports);
+  return instance;
+}
+
+function replaceSingleWatSite(wat, site, replacement) {
+  assert.equal(wat.split(site).length - 1, 1, "mutation must bind one exact WAT site");
+  return wat.replace(site, replacement);
+}
+
+function assertShadowTrap(instance) {
+  assert.throws(() => instance.exports.shadowed(1), WebAssembly.RuntimeError, "shadowed namespace must trap");
+}
+
+function assertLaterClassifier(instance) {
+  assert.equal(instance.exports.unshadowed(1), 1, "later positive input must classify true");
+  assert.equal(instance.exports.unshadowed(-1), 0, "later negative input must classify false");
+}
+
+test("emitter-unknown (checker Bool) shadows trap and later flow executes in the same Wasm instance", async (t) => {
+  for (const { receiver, type } of aliases) {
+    await t.test(`${receiver} supported initializer and discriminating mutations`, async () => {
+      // A DIFFERENT alias avoids shadowing the initializer at the checker.
+      // inferExprType in the emitter has no isPositive case; checker inference
+      // explicitly knows Bool. This rejected source exercises low-level defense.
+      const initializer = receiver === "Float64" ? "Double" : "Float64";
+      const program = L.parseProgram(`
+pure flow shadowed(value: ${type}) -> Bool
+contract { intent { "Refuse a lexical classifier shadow." } }
+{
+  let ${receiver} = ${initializer}.isPositive(value)
+  return ${receiver}.isPositive(value)
+}
+pure flow unshadowed(value: ${type}) -> Bool
+contract { intent { "Keep the later builtin classifier available." } }
+{ return ${receiver}.isPositive(value) }
+`, `float-positive-${receiver}-emitter-unknown.fungi`);
+      assert.deepEqual(program.diagnostics.filter(d => d.severity === "error"), []);
+      const errors = L.checkTypes(program.ast).diagnostics.filter(d => d.severity === "error");
+      assertShadowDiagnostic(errors, receiver, "Bool");
+      assert.deepEqual(errors.filter(d => d.code !== "FUNGI-TYPE-005").map(({ code, message }) => ({ code, message })), [{
+        code: "FUNGI-PIPELINE-001", message: "Unknown method 'isPositive' on receiver type 'Bool'.",
+      }]);
+      assert.equal(errors.length, 2);
+
+      const { gir } = L.emitGIR(program.ast, program.flows, L.checkEffects(program.flows, program.ast));
+      const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", program.ast, true));
+      const instance = await instantiateClassifierWat(wat);
+      assertShadowTrap(instance);
+      assertLaterClassifier(instance);
+
+      // Remove only the generated rejection expression. Assembly must succeed;
+      // the same trap oracle must fail because the shadow now returns a value.
+      const shadowSite = "(unreachable) (; isPositive namespace shadowed by lexical binding — fail closed (emitter cannot lower) ;)";
+      const admitted = await instantiateClassifierWat(replaceSingleWatSite(wat, shadowSite,
+        "(call $fungi_is_positive_f64 (local.get $p0))"));
+      assert.equal(admitted.exports.shadowed(1), 1);
+      assertLaterClassifier(admitted);
+      assert.throws(() => assertShadowTrap(admitted), error =>
+        error instanceof assert.AssertionError && error.code === "ERR_ASSERTION" && error.operator === "throws");
+
+      // Bind the later function, not the initializer's same-spelled call.
+      const laterSite = "(func $unshadowed (param $p0 f64) (result i32)\n    (call $fungi_is_positive_f64 (local.get $p0))\n  )";
+      for (const constant of [0, 1]) {
+        const broken = await instantiateClassifierWat(replaceSingleWatSite(wat, laterSite,
+          `(func $unshadowed (param $p0 f64) (result i32)\n    (i32.const ${constant})\n  )`));
+        assertShadowTrap(broken);
+        assert.equal(broken.exports.unshadowed(1), constant);
+        assert.equal(broken.exports.unshadowed(-1), constant);
+        assert.throws(() => assertLaterClassifier(broken), error =>
+          error instanceof assert.AssertionError && error.code === "ERR_ASSERTION"
+          && error.operator === "strictEqual" && error.actual === constant && error.expected === 1 - constant);
+      }
+    });
+  }
 });
 
 test("isPositive evaluates guarded arithmetic once and preserves non-finite operand failures", async (t) => {

@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "fd360129af25cdda1e016c51ab6058ed4d463f6dd3821e9a9e9967e444c71a86",
+    "aggregateSha256": "cd6ce838e0f56464f26be9b643dd2bd1df952659fb3ef663bb72058475e4f2ca",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "b110fcb6b4d70f8c06a1b9f2eb023bd48f16c4f8c679d82b3bc55857ae2079a8"
+        "sha256": "295791a692e69b3bdcc5d3fa9c304b2f0eb23e616e835cace806cc6b521711af"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "a745b930574669185feb761b98f5b323e9bad0551fec0bcdc1837ce640deda99"
+        "sha256": "43887061c731380880c83cf6a79227b51ef773f4f71d5729261eae7d7020b62e"
       },
       {
         "path": "examples/tri-optical-mapping-plan.json",
@@ -55,8 +55,16 @@
         "sha256": "b14f9b5452a21d1d5257cb6cff910b16d34952da9e30637f42cb777a20493cea"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "3ecdee7384ba6714d0976f9af224cb097a7ec6f871791beb4e9cdc58b8cd13dc"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "a1b92acb5c4812e6d4ae9e9c996d09f98f20c539156bab6b5066440e22d430cd"
+        "sha256": "6e5d2a9b5e7b13fd4922766f3fab7297006ad927147f640a09b5cc4dbdc2778f"
+      },
+      {
+        "path": "tests/core-photonic-hold-pin.test.mjs",
+        "sha256": "0b3329c64c647713253da5927c241d014884c486f3815315a39a66910f6208f3"
       },
       {
         "path": "tests/photonic-contracts.test.mjs",

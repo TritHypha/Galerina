@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "271b4f40f1c3b1d29030ad2e5b5cdb5c497ba13cb7902119612a9d1b3f6fd93e",
+    "aggregateSha256": "4e262495ce6217a5c96d288a31b1ac5cdfab27f85a7b7870f9cb430c2e0c95b3",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "04cf8f883226ab7ad86eaba6ac833eb83df45b2a9c04a96845a74a9383a4ea81"
+        "sha256": "5a70bbe9a943fea26b8bd85a8f39c9cadf57a9de8761f0b7c490d3da1b875d89"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "3f4375783491de1ca39ec51a8f73bcaffc1568e8a527ba070547e3849ed49760"
+        "sha256": "cca402ef2357abfb2484eea7f75b6fd9c429fa41f49f34656553e966cdd982d1"
       },
       {
         "path": "TODO.md",
-        "sha256": "1e091438c0685e1f68cb8a0e9fa3c8ef2a3448e80e9a90f96cb41a2a9c5162e9"
+        "sha256": "f8d0be818f3e91b0c1accbb862bd172f4fd083a93085a9e1311efc9eab5c5b95"
       },
       {
         "path": "examples/secure-api-network-policy.json",
@@ -79,16 +79,32 @@
         "sha256": "b9d27564accdba122b01e42be909991b1a014e1baa4436129c3e0c0381d14843"
       },
       {
+        "path": "src/diagnostics/network-codes.ts",
+        "sha256": "b116c6c07fb0a81aecda5ba350db7793e87b567bb3f27893965b2f8e8eab88a1"
+      },
+      {
         "path": "src/egress-guard.ts",
         "sha256": "2de70d9f9ae22185e3e0c9c29e88b4afdfbfd5004da1f482ccfc7bb6161b52e6"
       },
       {
         "path": "src/inbound-guard.ts",
-        "sha256": "afd0e92d71071068b121c75410d7ad661e5486ca474e734135f9e8d314e046b9"
+        "sha256": "71a424f5c5ae217f8088700f76499b57711122685f08a224c51226a29a900f49"
       },
       {
         "path": "src/index.ts",
-        "sha256": "9bc69e68ab5f167de66081a91fd4ef8d330279dfd9b5452460545631796ff30b"
+        "sha256": "690b56a759ff6f19d2e66a1fed28eccbe8bcb7178439162dec564dfcf2f36b9f"
+      },
+      {
+        "path": "src/reports/network-policy-report.ts",
+        "sha256": "7fb76ebd61777a23d9acc0d84471cd1a8321ebad3adbfe972be87c3f107d16f6"
+      },
+      {
+        "path": "src/reports/network-report-runtime-wire.ts",
+        "sha256": "35c3352b1def20fd2a7033b2a545b5e1d94d263da7424123f6546df03e154738"
+      },
+      {
+        "path": "src/runtime/governed-network.ts",
+        "sha256": "700ea380d05690540287dc100b0db3196492b71d194fedf3ebb495344abbfaa1"
       },
       {
         "path": "src/self-hosted/admission-feedback.fungi",
@@ -119,6 +135,10 @@
         "sha256": "8c80c5c60568c1f6e34fe071cf01c0ea2bce58c9b0c9041909485899b3c02457"
       },
       {
+        "path": "src/webhook.ts",
+        "sha256": "17ef1e32fddeb435aaedc5aa137d0388b7cddd58473dc3cadf56f61e1acb2e88"
+      },
+      {
         "path": "tests/admission-feedback.test.mjs",
         "sha256": "e7f0d95f216f7d5be454d5552d74c157a140a0261e82df60905a69a98fe7e3b8"
       },
@@ -143,6 +163,90 @@
         "sha256": "0f3a09238c291a4904c97ec766e4402062dd3e4ff1309bf59bd8fbde32c9fd75"
       },
       {
+        "path": "tests/fixtures/rd0361-admission-feedback.capture.mjs",
+        "sha256": "741fb53d6559c5bd5002de9117a60b04bffccf7af51aebda9b55f6d216b7a0d2"
+      },
+      {
+        "path": "tests/fixtures/rd0361-admission-feedback.frozen.json",
+        "sha256": "036b49a55edb58c264552bf088aa006d36d435037c521b48179822534727c810"
+      },
+      {
+        "path": "tests/fixtures/rd0361-admission-feedback.real-ts.mjs",
+        "sha256": "5290e20d3fe927e8469948afd17d85da0445ccf41ed94873226ed1db3fb24815"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cert-gate.capture.mjs",
+        "sha256": "1e61146105ff61f3d92c1f8ca34af06acec564887238c15d6c9bea8a9b2efc11"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cert-gate.frozen.json",
+        "sha256": "fa02fe0fc64ec7b7683c059fbae6d8558b42884079cec32db984e0d9e68f000e"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cert-gate.real-ts.mjs",
+        "sha256": "035575dbb6d57dd02736764159792d4c00a1b4c0593558df66b44b7949be5456"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cors-policy.capture.mjs",
+        "sha256": "8aa1bb6d39e6220933672a1aae7c9660cf8f5c42f121af9e303ad7db233f74e1"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cors-policy.frozen.json",
+        "sha256": "ae59f989542aeb05c2f64df6937e78c2e62f924ccae9da96120ff9936c777564"
+      },
+      {
+        "path": "tests/fixtures/rd0361-cors-policy.real-ts.mjs",
+        "sha256": "b3fa0dd40deb59c0e5be5bfe8536ab730d5bdcdd8beaab2470de6d84fe836358"
+      },
+      {
+        "path": "tests/fixtures/rd0361-defensive-controls.capture.mjs",
+        "sha256": "43c449a9c96cde9510e8fd87a9a6ea8c4ba38db315ad1548dab40b781d4b3836"
+      },
+      {
+        "path": "tests/fixtures/rd0361-defensive-controls.frozen.json",
+        "sha256": "3aebe47aecd0f0945ba5e523b98f12ca26f4f184b456f9acd0e62e436b9f056f"
+      },
+      {
+        "path": "tests/fixtures/rd0361-defensive-controls.real-ts.mjs",
+        "sha256": "c28f7f235e13b07c8cda2b7e22ead100879a023784bfc0502adb45cdb20dbb81"
+      },
+      {
+        "path": "tests/fixtures/rd0361-egress-guard.capture.mjs",
+        "sha256": "044026918577530e5e4470d0810067bc318540d1be0e62ebb0de5411678bc36e"
+      },
+      {
+        "path": "tests/fixtures/rd0361-egress-guard.frozen.json",
+        "sha256": "63e7957e530e82facc9856e76c7afcc307a1469205bca8db1227fb72d48ffb1b"
+      },
+      {
+        "path": "tests/fixtures/rd0361-egress-guard.real-ts.mjs",
+        "sha256": "e04b501fdb4aca354eca731a7efa1da597bd80b86b2b7c0edec3f7e9210da7c8"
+      },
+      {
+        "path": "tests/fixtures/rd0361-inbound-guard.capture.mjs",
+        "sha256": "5e7fbfe63efbe6c8712c8654d4bb410f3df37fc95f787e9a443db78ae4481717"
+      },
+      {
+        "path": "tests/fixtures/rd0361-inbound-guard.frozen.json",
+        "sha256": "5c45ec21d8f50b0dbb63cb0626dbc10868974d3d0924522dd3ef4e1ffdf4bd3e"
+      },
+      {
+        "path": "tests/fixtures/rd0361-inbound-guard.real-ts.mjs",
+        "sha256": "538efa194b732b4d44c04740103ace7e8440d1810be227202a5325aadfb1cb4b"
+      },
+      {
+        "path": "tests/governed-network-runtime.test.mjs",
+        "sha256": "3368aa24cb409a1bace42c4b423ff29811673ec8c5d57674347f572c0e48fdc9"
+      },
+      {
+        "path": "tests/hold-core-network-claim-and-consumer-pin.test.mjs",
+        "sha256": "452bec5e5f88cf9aeababd06d5a1ee43edfcfcf3c0102600b0c4d0ce47fb8d92"
+      },
+      {
+        "path": "tests/idempotency-observational-refusal.test.mjs",
+        "sha256": "a36a3b6d7d2ca2a355ab890e8d951ecafd4b3c0874958eb3b817cd3e93447da9"
+      },
+      {
         "path": "tests/inbound-guard.test.mjs",
         "sha256": "f2783a823803336a62ad5a9b338a608b5024481fe3583d20130651373b02a31d"
       },
@@ -155,8 +259,20 @@
         "sha256": "9558197af0d7c1d91453affb0871c96b05dd9d3a26b450aa6893869b9e3e0f0c"
       },
       {
+        "path": "tests/network-report-runtime-wire.test.mjs",
+        "sha256": "80963db15e3fa7d6c51eae7add3209b7e059ea7c0c920793829e31994697bcf0"
+      },
+      {
+        "path": "tests/quic-protocol.test.mjs",
+        "sha256": "32a72ee8c5fd8b806d121833ecca0e49b1a5e25803a835057cadc548f1645808"
+      },
+      {
         "path": "tests/rd0361-admission-feedback-execution.test.mjs",
         "sha256": "010fad8d3f9363443a8f11aba3e6130951a5f4c7b40914a4a27740c316582326"
+      },
+      {
+        "path": "tests/rd0361-admission-feedback-frozen.test.mjs",
+        "sha256": "f3a13d6f0cf07b6e24188d25aea19b02b671f591bb0d1b525c7751ea22ad5034"
       },
       {
         "path": "tests/rd0361-b8-admission-execution.test.mjs",
@@ -167,24 +283,52 @@
         "sha256": "5df341eebbacfbafc4ccf13086f1d0d5923a35b4e947154a074d9495c8de05d4"
       },
       {
+        "path": "tests/rd0361-cert-gate-frozen.test.mjs",
+        "sha256": "1298544656f68d6768c2b690ad653edbe27650e0ee9f741b1118d12f5591cf62"
+      },
+      {
         "path": "tests/rd0361-cors-policy-execution.test.mjs",
         "sha256": "41f3f655505cd85d3261c87e52d6d23f87544d380ccc72d29c8874162c0dd4fd"
+      },
+      {
+        "path": "tests/rd0361-cors-policy-frozen.test.mjs",
+        "sha256": "7a1cbcf651c1e70ca61a78e2fb94a67e863a8f45d047c5fe8e08d83dd0689b82"
       },
       {
         "path": "tests/rd0361-defensive-controls-execution.test.mjs",
         "sha256": "dcbbec001a7c335963b626a8810e2457d32bea544c5a16ddff7ac37c6ecd054b"
       },
       {
+        "path": "tests/rd0361-defensive-controls-frozen.test.mjs",
+        "sha256": "6a4ecaa30c2df06b0f0cbc3f7b3e61c622b8ae4d49b1202df63a1218b98e1607"
+      },
+      {
         "path": "tests/rd0361-egress-guard-execution.test.mjs",
         "sha256": "8bbf179bb99832af1646fe85c9064609063ad9056245f5dc027a51fe7126dd36"
+      },
+      {
+        "path": "tests/rd0361-egress-guard-frozen.test.mjs",
+        "sha256": "d457a28d3b3d838396d216dc687b00a5135e2a271416d0a77658e2eba8f7026b"
       },
       {
         "path": "tests/rd0361-inbound-guard-execution.test.mjs",
         "sha256": "a417267c827a2b08023709484efa93e4265ae819e3779d553ee7e91b8f86bd2d"
       },
       {
+        "path": "tests/rd0361-inbound-guard-frozen.test.mjs",
+        "sha256": "be508bc904a2354b9c51f2cf0fc869e7d92dbbb5807c2f071ed7000f1f4c46b9"
+      },
+      {
+        "path": "tests/rd0361-real-ts-frozen.test.mjs",
+        "sha256": "deca3b9cee1c3cc92b09311b0a7be9ed62bebf4f562bf86d789b779e46e0cbf6"
+      },
+      {
         "path": "tests/revocation-cadence.test.mjs",
         "sha256": "5867b06420b029f3b3c7a095506b4904a79fc90b54bee8199e298c5eab753497"
+      },
+      {
+        "path": "tests/webhook-verification.test.mjs",
+        "sha256": "010e191096f415e8094fd2759f029b084a15ffb6e466a7605c25b4cbfa74c278"
       },
       {
         "path": "tsconfig.json",

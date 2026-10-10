@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "a86363fe4bd0f8ede92aee3a46c165aeb99e009feee02b74156fe7fe4069f1fa",
+    "aggregateSha256": "26880d8fbe7c36aff291443914c3333e5aebc08f54319427b28e966812919e78",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "402c5e451fbfe287aabbe993a3612d96d82c559d4182e69a7e2e0dabf96dc183"
+        "sha256": "313fa44c6fc70ae4450adf49a2b60f5d5638a82152b311d29334dd62c97e017e"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "942cc0e187f334137cfec926b335dbc23bdb3eb780c00027e6c724f9870395a1"
+        "sha256": "363484238cfe188f5ec371aebd72c5fc85392fbbcb18dbd84b81e625ad23b4db"
       },
       {
         "path": "TODO.md",
-        "sha256": "d4f226bf8c67e6b3fc81bc1f5183de0d91c1deaa1a2e2701776462396e459c2a"
+        "sha256": "b5299edcee941bfc04fab505f43bd03e40b2d9623d1e7c534c69e4b44f590a70"
       },
       {
         "path": "examples/project-config.json",
@@ -52,15 +52,19 @@
       },
       {
         "path": "package.json",
-        "sha256": "0c12431687b522a0159ce1ed56b6d94f7c1a2afdadb861607c5e9ae9d7e78c69"
+        "sha256": "d7dc900b29a5642e64c8f975a5d7a4f85aacf5e29ede6faef476bb9454b3feac"
       },
       {
         "path": "src/governance.ts",
         "sha256": "c42ba2b580c9217622523281f847bae9da1bcddce64f1ddfa9853489907fd28a"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "298cef0f4dbea02f126044368378333c3be7aca378da0de782b5fa0b8ece3762"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "7721bdf8239e4c55a37b7fe57f9e29706c11b167e2a56874f404f0b010485596"
+        "sha256": "4fce5ff3d24836c96dd04472682581444d436649823fa1c32a859aa9a2c24cc7"
       },
       {
         "path": "src/node-util-shim.d.ts",
@@ -91,8 +95,16 @@
         "sha256": "7253b68f11200c7223bc514d39c0160fd124532a4fd33abd2b598d8f4d2f37b3"
       },
       {
+        "path": "src/startup.ts",
+        "sha256": "5beb84685b3fb92a71ebe76144fee5aeb91bf20e5159297c3ecf012310903366"
+      },
+      {
         "path": "tests/config-contracts.test.mjs",
         "sha256": "f7115e061a92e005c2a45036326336bb5289d2810ef5f6a130b33fd2b15e0ed7"
+      },
+      {
+        "path": "tests/core-config-hold-pin.test.mjs",
+        "sha256": "c498ef40f18ae522c6d1d3c26bcaa4beb50fea20ee309052774889e636b015d5"
       },
       {
         "path": "tests/egress-tls.test.mjs",
@@ -104,7 +116,11 @@
       },
       {
         "path": "tests/environment-mode-fungi-conversion.test.mjs",
-        "sha256": "1475f111cb9b963fe14adc2c0522e8f5e2aadebf0cd08f2eadd90f8f1f8b99c5"
+        "sha256": "5ed5b5fb91ab19c18525fe4dd0681a8dd932a8b8d9452dd9f756d12aa5780df6"
+      },
+      {
+        "path": "tests/environment-mode-string-route.test.mjs",
+        "sha256": "1b0c10a53e071c6c1094149146a4d3f5b7046d45136b51c246fbe1bbb2386010"
       },
       {
         "path": "tests/governance.test.mjs",
@@ -117,6 +133,10 @@
       {
         "path": "tests/secret-report-invariant.test.mjs",
         "sha256": "0db2b63f1ae69154414e7e82cc42f8653e3571f583a0113053cc62d092151492"
+      },
+      {
+        "path": "tests/startup-validation.test.mjs",
+        "sha256": "737634694f0a20b71468cf6c5ff8f29e28e05d316de3ccec29660860c4c4f6f2"
       },
       {
         "path": "tsconfig.json",

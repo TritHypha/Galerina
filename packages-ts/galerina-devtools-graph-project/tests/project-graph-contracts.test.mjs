@@ -51,6 +51,22 @@ const graph = {
   ],
 };
 
+function auditedRuntimeDependencies(specifiers) {
+  const packageNames = ["galerina-core-compiler", "galerina-core-runtime-wasm", "galerina-core-runtime-wasm-tools"];
+  return createWorkspaceProjectGraph({
+    workspace: { name: "audited-subpaths", packages: packageNames.map(name => ({ path: `packages-ts/${name}` })) },
+    generatedAt: "2026-10-10T00:00:00.000Z",
+    files: [{
+      path: "packages-ts/galerina-core-compiler/.graph/package-graph.json",
+      kind: "json",
+      text: JSON.stringify({
+        packageName: "@galerina/core-compiler",
+        externalDeps: specifiers.map(specifier => ({ specifier, kind: "workspace", importedBy: ["src/decimal-arith.ts"] })),
+      }),
+    }],
+  });
+}
+
 describe("galerina-devtools-project-graph contracts", () => {
   it("validates a package/document/type graph", () => {
     assert.deepEqual(validateProjectGraph(graph), []);
@@ -269,6 +285,93 @@ describe("galerina-devtools-project-graph contracts", () => {
         "packages-ts/galerina-beta/.graph/package-graph.json",
       ]],
     );
+  });
+
+  it("maps the exact Decimal leaf and root imports to the registered runtime package", () => {
+    for (const specifier of ["@galerina/core-runtime-wasm", "@galerina/core-runtime-wasm/dist/decimal-core.js"]) {
+      const result = auditedRuntimeDependencies([specifier]);
+      const dependencies = result.edges.filter(edge => edge.kind === "depends_on");
+      assert.equal(dependencies.length, 1);
+      assert.equal(dependencies[0].from, "package:galerina-core-compiler");
+      assert.equal(dependencies[0].to, "package:galerina-core-runtime-wasm");
+      assert.equal(dependencies[0].confidence, "EXTRACTED");
+      assert.equal(dependencies[0].evidencePath, "packages-ts/galerina-core-compiler/.graph/package-graph.json");
+      assert.deepEqual(result.nodes.filter(node => node.kind === "Package").map(node => node.id), [
+        "package:galerina-core-compiler", "package:galerina-core-runtime-wasm", "package:galerina-core-runtime-wasm-tools",
+      ]);
+      assert.deepEqual(validateProjectGraph(result), []);
+      if (specifier.endsWith("decimal-core.js")) {
+        assert.ok(dependencies[0].rationale.includes(specifier));
+      } else {
+        assert.equal(dependencies[0].rationale, undefined, "retain the root-only edge contract");
+      }
+    }
+  });
+
+  it("retains all exact audited import spellings when dependency edges coalesce", () => {
+    const specifiers = [
+      "@galerina/core-runtime-wasm/dist/record-abi.js",
+      "@galerina/core-runtime-wasm",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js",
+    ];
+    const dependencyEdges = input => auditedRuntimeDependencies(input).edges.filter(edge => edge.kind === "depends_on");
+    const forward = dependencyEdges(specifiers);
+    assert.equal(forward.length, 1);
+    assert.equal(forward[0].rationale,
+      'Audited import specifiers: ["@galerina/core-runtime-wasm","@galerina/core-runtime-wasm/dist/decimal-core.js","@galerina/core-runtime-wasm/dist/record-abi.js"]. Package ownership only; not export or runtime admission.');
+    assert.deepEqual(dependencyEdges([...specifiers].reverse()), forward, "no last-import-wins provenance loss");
+    assert.equal(forward[0].evidencePath, "packages-ts/galerina-core-compiler/.graph/package-graph.json");
+  });
+
+  it("keeps similar registered package names distinct", () => {
+    const result = auditedRuntimeDependencies([
+      "@galerina/core-runtime-wasm/dist/decimal-core.js",
+      "@galerina/core-runtime-wasm-tools/nested/Tool_v1.2.js",
+    ]);
+    assert.deepEqual(result.edges.filter(edge => edge.kind === "depends_on").map(edge => edge.to), [
+      "package:galerina-core-runtime-wasm", "package:galerina-core-runtime-wasm-tools",
+    ]);
+    // This is package ownership of an audited spelling, not proof that Tool_v1.2.js exists or is exported.
+    assert.deepEqual(validateProjectGraph(result), []);
+  });
+
+  it("refuses unknown workspace roots instead of matching a known package prefix", () => {
+    for (const specifier of [
+      "@galerina/missing", "@galerina/missing/dist/decimal-core.js",
+      "@galerina/core-runtime-wasm-extra/dist/decimal-core.js",
+      "@galerina/core-runtime-wasmtools/dist/decimal-core.js",
+      "@galerina/core-runtime/wasm/dist/decimal-core.js",
+    ]) {
+      assert.throws(() => auditedRuntimeDependencies([specifier]), {
+        message: `Package graph packages-ts/galerina-core-compiler/.graph/package-graph.json names unregistered workspace dependency ${specifier}.`,
+      });
+    }
+  });
+
+  it("refuses malformed or ambiguous workspace subpath syntax without normalization", () => {
+    for (const specifier of [
+      "@galerina/core-runtime-wasm/", "@galerina/core-runtime-wasm//decimal-core.js",
+      "@galerina/core-runtime-wasm/./decimal-core.js", "@galerina/core-runtime-wasm/../core-security/index.js",
+      "@galerina/core-runtime-wasm/dist/../decimal-core.js", "@galerina/core-runtime-wasm/dist/.",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js/..",
+      "@galerina/core-runtime-wasm/dist\\decimal-core.js",
+      "@galerina/core-runtime-wasm/dist/%2e%2e/decimal-core.js", "@galerina/core-runtime-wasm/dist%2fdecimal-core.js",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js?query", "@galerina/core-runtime-wasm/dist/decimal-core.js#fragment",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js:stream", "@galerina/core-runtime-wasm/dist/a b.js",
+      "@galerina/core-runtime-wasm/dist/a\u0000.js", "@galerina/core-runtime-wasm/dist/a\n.js",
+      "@galerina/core-runtime-wasm/node_modules/other/index.js",
+      "@galerina/core-runtime-wasm/Node_Modules/other/index.js",
+      "@galerina//dist/decimal-core.js", "@galerina/../dist/decimal-core.js",
+      "@galerina/Core-runtime-wasm/dist/decimal-core.js", "@other/core-runtime-wasm/dist/decimal-core.js",
+      " @galerina/core-runtime-wasm/dist/decimal-core.js", "@galerina/core-runtime-wasm/dist/decimal-core.js ",
+      "@galerina/core-runtime-wasm/dist/decimal-core.js\n", "@galerina/core-runtime-wasm/dist/decimal-core.js\r\n",
+      "@galerina/core-runtime-wasm/dist/decim\u0430l-core.js",
+    ]) {
+      assert.throws(() => auditedRuntimeDependencies([specifier]), {
+        message: `Package graph packages-ts/galerina-core-compiler/.graph/package-graph.json names malformed workspace dependency ${specifier}.`,
+      });
+    }
   });
 
   it("queries, explains and finds paths through a graph", () => {

@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "eae086b26e2edf8de96e88b647308ff989893443d076064d0af840de04fef05e",
+    "aggregateSha256": "1be7984802e8fd47fddaac26997d05826f20e84b6c2799bee716aef9b0ba5f09",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "fbd31ff223796ccf64480b0809bd42ccbce1c697fde18c3abbfcbd936e2a1c58"
+        "sha256": "396e61195daedf69c360c56723b8fff6fb460e278360e92a71f2894d6386b1cf"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "a3b68c3c46eeeda55d67f13691d3efa39b0393fb6f597ec3d348bc82655d2064"
+        "sha256": "c00ce853b272cffaa622c3aea666451dc646f869738d3ca72b739e90fa63d9e8"
       },
       {
         "path": "TODO.md",
-        "sha256": "fb80ac9054fc84d1aa9984b1f82f69409dfc6d3c1ba1a40b84918207e7690c36"
+        "sha256": "342538caa5685089784935a2cc070b5720d4f3fc987689f12597f5c7c0555489"
       },
       {
         "path": "examples/benchmark-report.example.json",
@@ -59,20 +59,148 @@
         "sha256": "595fb46723767380f68c7e97d3f0813aea433b2074d75ab1f0aeb58dab5774bb"
       },
       {
+        "path": "src/benchmark-runner.ts",
+        "sha256": "c662891ef02fc90e8e849f1c4b4bbdb18b176f8938df99df871433bf6faa7a29"
+      },
+      {
+        "path": "src/bool-logic-benchmark.ts",
+        "sha256": "a0aedc2ca744751b555f6feb2eae21e67a47b7083263f413947bb51067d71a40"
+      },
+      {
+        "path": "src/comparison-report.ts",
+        "sha256": "a768b3fcfc50144555635170e2fcd3d763e337827a2ac5a2b56d143d133a158e"
+      },
+      {
+        "path": "src/comparison-runner.ts",
+        "sha256": "72d996d3734df6b5fa0668db93e3df520d55b3bc07fdfcb4450b16ad16567097"
+      },
+      {
+        "path": "src/cpu-arithmetic-benchmark.ts",
+        "sha256": "642a984c92645cf757584125bf105ce5997bbd62e41b6df868e7167139bac1c9"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "44d9bd66e5ebc4ec9d4d6c51b64c3dea46b0ad469331279c9f64a72b6c427a4a"
+        "sha256": "50e56a9bd5ceb5c360b776ecad3da3bbcee78e2f0ea61cf1f50289be743ba58b"
+      },
+      {
+        "path": "src/json-1mb-benchmark.ts",
+        "sha256": "ff046839f73f75eb1306b95faf30ee6a15485a5f9488fbb845e85f618085701b"
+      },
+      {
+        "path": "src/json-stream-10mb-benchmark.ts",
+        "sha256": "1af750c1e0893549d1359934022176de50f2ae53fddda330d6023ce331d6201c"
+      },
+      {
+        "path": "src/json-stream-generated-benchmark.ts",
+        "sha256": "ef7b40459116926bcdb491950e0e77638634a90cbdb9bc33b9c96f0e6c56866d"
+      },
+      {
+        "path": "src/matrix-medium-benchmark.ts",
+        "sha256": "335ec07aefe8e2da48a780ec1ce291db66c410979cfca5dc9c15cf03d991dbfb"
       },
       {
         "path": "src/node-util-shim.d.ts",
         "sha256": "4440302a646b1eaad2eb670f44dee5f88a0832e286da46d81315f8bc4b91c677"
       },
       {
+        "path": "src/result-option-benchmark.ts",
+        "sha256": "e3bfb805d94ecb9df8535b9d1779fee874366781695df04b3a8bf7639942b7bc"
+      },
+      {
+        "path": "src/sha256-benchmark.ts",
+        "sha256": "dd367f215eb19bdab25313243fca0900addbbc0a332dc20d22634e4ebaa3d103"
+      },
+      {
+        "path": "src/small-vector-benchmark.ts",
+        "sha256": "b361f6c9306efc77158194d4e40f241ac112a3006d7b6b42864e1ea090df226c"
+      },
+      {
+        "path": "src/target-detection.ts",
+        "sha256": "425822d2ee2f662b02b9731c3ff8ee91d03b73adf562f32156e354c9b4faaa1e"
+      },
+      {
+        "path": "src/tri-logic-benchmark.ts",
+        "sha256": "a950753aac64174889855ca061a1d23037189dc97211ffa1ed210f756d4dca81"
+      },
+      {
         "path": "tests/benchmark-contracts.test.mjs",
         "sha256": "54b29ef3b4d2742aca8d240bbb6137608bd0839485ef4bc1f69d6f315abdcb7a"
       },
       {
+        "path": "tests/benchmark-governance.test.mjs",
+        "sha256": "e8713333913b8adee15cf7a4c4c7cce52eccce3e7072295fbe3935b964007f1c"
+      },
+      {
+        "path": "tests/benchmark-no-echo-unknown-keys.test.mjs",
+        "sha256": "95d95147c5e585a007ea700b221ad8f58b769db39ca9d2c2416dae7bf8ce7ff3"
+      },
+      {
+        "path": "tests/benchmark-report-write.test.mjs",
+        "sha256": "72cf09593c05641974c91f00aa32752fc7876f1551915c8f9afa684586072963"
+      },
+      {
+        "path": "tests/benchmark-runner.test.mjs",
+        "sha256": "54849923d172af5e733ebb7229d10203cbd818ffd1b8e2e8178ec930da48a27c"
+      },
+      {
+        "path": "tests/bool-logic-benchmark.test.mjs",
+        "sha256": "6166b664679b5df9ddfc3f80905d53ca93214be6be69d685939fef396caed74e"
+      },
+      {
+        "path": "tests/comparison-report.test.mjs",
+        "sha256": "31395313b6478a281d66d729002538112d52f4f5ab4b11a709ad5f98e7a482a7"
+      },
+      {
+        "path": "tests/comparison-runner.test.mjs",
+        "sha256": "8bc7e2ca0e32a02f020748855b936cfee7c3172d33ac03bf9df99331dabea195"
+      },
+      {
+        "path": "tests/cpu-arithmetic-benchmark.test.mjs",
+        "sha256": "ed89a0e7eb73efa80b926137de48e5ab001474a4fb1446356588d8429ca66864"
+      },
+      {
+        "path": "tests/json-1mb-benchmark.test.mjs",
+        "sha256": "fd5b5c4607004417a1615151a51f3ffe9db41494634588b7b50cda7fd69c49c1"
+      },
+      {
+        "path": "tests/json-stream-10mb-benchmark.test.mjs",
+        "sha256": "d8b2276c8900e0fcdd7921013cd1ca7145205422ee2ec4e43a3a2dd3a7838902"
+      },
+      {
+        "path": "tests/json-stream-generated-benchmark.test.mjs",
+        "sha256": "1c1219e4c4f5a9bd3d14409e135916e3b42b4f4e8fcf74a4c4437b22e0cf7fae"
+      },
+      {
+        "path": "tests/matrix-medium-benchmark.test.mjs",
+        "sha256": "ba9bbef5d9e46de0f7c65c1a44a5f71ecccf7018c4e885064154c630ea0dfd1e"
+      },
+      {
+        "path": "tests/o1-tools-benchmark-parked.test.mjs",
+        "sha256": "d0ca0f97ac7ff0198aece9f8a4998e35ef62ce3075afd491b35f46fa12ca58e2"
+      },
+      {
+        "path": "tests/result-option-benchmark.test.mjs",
+        "sha256": "cb5efd092e6b811139d9adbb663b0627e1a7dfb26cfb7b9b5d7a187fc115afd0"
+      },
+      {
+        "path": "tests/sha256-benchmark.test.mjs",
+        "sha256": "d9790739b7e28187d0224033cfaf7753d92172d3ef70210ec768ae80a04c09e3"
+      },
+      {
+        "path": "tests/small-vector-benchmark.test.mjs",
+        "sha256": "75b150c53737953a9ee20514327d3ae0215b674fad1c8ee41c82c38b6792e214"
+      },
+      {
         "path": "tests/system-detection.test.mjs",
         "sha256": "73a8bc59535e6f0fc3ed5e00fc652ca4ab197f3fa801625928d0d6615ea764b9"
+      },
+      {
+        "path": "tests/target-detection.test.mjs",
+        "sha256": "a4de553fb29dd87da22a2468d37929c6fe57c33f0d15e007b93c1a51197bc760"
+      },
+      {
+        "path": "tests/tri-logic-benchmark.test.mjs",
+        "sha256": "79bdd918fc65a054b210b05f9c5bad32e4f06cabee4b3f2cd3d1ece7e07c00eb"
       },
       {
         "path": "tsconfig.json",

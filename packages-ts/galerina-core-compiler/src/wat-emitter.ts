@@ -253,9 +253,9 @@ let recordLayouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("record
 let recordFieldTypes: Lookup<Map<string, Map<string, string>>> = none("recordFieldTypes:unset");
 const MAX_FLATTEN_DEPTH = 8;
 
-/** One closed expansion of a recursive field: nested records become zeros, scalars copy.
- *  Unsupported: runtime cycle walks and trees deeper than this single expansion;
- *  self-referential `let leaf = T { child: leaf }` may trap. */
+/** One closed expansion of a recursive field: null nested records become zeros, scalars copy.
+ *  Zero steps mark an expansion cutoff, not permission to discard a live pointer.
+ *  Non-null tails refuse at runtime; runtime cycle walks remain unsupported. */
 function flattenClosedRecursivePlan(
   typeName: string,
   layouts: ReadonlyMap<string, WATRecordLayout>,
@@ -353,8 +353,8 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
     : [];
   const nullThen = [
     `${indent}    (local.set $__fungi_flat (global.get $__fungi_heap))`,
+    ...reserveFlattenedReturn(byteLen, `${indent}    `),
     `${indent}    (memory.fill (local.get $__fungi_flat) (i32.const 0) (i32.const ${byteLen}))`,
-    `${indent}    (global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
   ];
   if (!nested) {
     return {
@@ -375,6 +375,7 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
     extraLocals: ["$__fungi_flat", ...temps],
     body: [
       `${indent}(local.set $__fungi_flat (global.get $__fungi_heap))`,
+      ...reserveFlattenedReturn(byteLen, indent),
       `${indent}(if (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))`,
       `${indent}  (then`,
       `${indent}    (memory.fill (local.get $__fungi_flat) (i32.const 0) (i32.const ${byteLen}))`,
@@ -382,12 +383,25 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
       `${indent}  (else`,
       ...stores,
       `${indent}  ))`,
-      `${indent}(global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
       `${indent}(global.set $__fungi_ret_is_heap (i32.const 1))`,
       `${indent}(global.set $__fungi_ret_words (i32.const ${words}))`,
       `${indent}(local.get $__fungi_flat)`,
     ],
   };
+}
+
+/** Both packed and null-result allocations reserve before any write, after both bounds checks.
+ *  Capacity alone is insufficient: an exclusive end of 2^32 wraps the i32 cleanup watermark. */
+function reserveFlattenedReturn(byteLen: number, indent: string): string[] {
+  return [
+    `${indent}(if (i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat)) (i64.const ${byteLen})) (i64.shl (i64.extend_i32_u (memory.size)) (i64.const 16)))`,
+    `${indent}  (then unreachable)`,
+    `${indent})`,
+    `${indent}(if (i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat)) (i64.const ${byteLen})) (i64.const 4294967295))`,
+    `${indent}  (then unreachable)`,
+    `${indent})`,
+    `${indent}(global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
+  ];
 }
 
 function emitFlattenStores(
@@ -402,6 +416,12 @@ function emitFlattenStores(
   const lines: string[] = [];
   for (const step of steps) {
     if (step.zero === true) {
+      // All zero steps produced by flattenPlanFor/flattenClosedRecursivePlan are
+      // recursive/depth cutoffs. Preserve the ABI's low-address null convention,
+      // but never turn a non-null arena record beyond the closed plan into zero.
+      lines.push(`${indent}(if (i32.ge_u (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))) (i32.const ${WAT_HEAP_BASE}))`);
+      lines.push(`${indent}  (then unreachable)`);
+      lines.push(`${indent})`);
       lines.push(`${indent}(i32.store (i32.add (local.get ${dest}) (i32.const ${destOff.value})) (i32.const 0))`);
       destOff.value += 4;
       continue;
@@ -869,12 +889,21 @@ export function renderWAT(module: WATModule): string {
   const moduleHasSecret = module.functions.some((f) => f.handlesSecrets === true);
   // B2b zero-on-EXIT: Galerina return types that lower to a non-heap i32 VALUE (not an opaque heap handle).
   // Only these are safe to zero-on-exit — the result is a value on the stack, unaffected by zeroing the heap.
-  const PRIMITIVE_RETURN_TYPES = new Set(["Int", "Int8", "Int16", "Int32", "Byte", "Bool"]);
+  const PRIMITIVE_RETURN_TYPES = new Set(["Int", "Int8", "Int16", "Int32", "UInt8", "UInt16", "UInt32", "Byte", "Bool"]);
 
   // Function definitions.
   // Pure flows with a real body (fn.body !== "unreachable") emit actual instructions.
   // All other flows use (unreachable) which is valid WAT — polymorphic bottom type.
   // Signature "(result i32)" etc. with unreachable is well-formed per WASM spec.
+  const usedFunctionNames = new Set([
+    ...module.functions.map((fn) => fn.name),
+    ...module.imports.map((imp) => `host_${imp.name.replace(/\./g, "_")}`),
+    ...Object.keys(ALL_CHECKED_HELPERS),
+    "__fungi_heap_get",
+    "__fungi_wipe_owned",
+    "__fungi_ret_is_heap_get",
+    "__fungi_ret_words_get",
+  ]);
   for (const fn of module.functions) {
     // Build param strings: prefer namedParams when present (pure flows), else index-based.
     const paramStr = fn.namedParams !== undefined
@@ -882,7 +911,41 @@ export function renderWAT(module: WATModule): string {
       : fn.type.params.map((p, i) => `(param $p${i} ${p})`).join(" ");
     const resultStr = fn.type.results.map((r) => `(result ${r})`).join(" ");
     const sig = [paramStr, resultStr].filter(Boolean).join(" ");
-    const funcSig = sig ? `(func $${fn.name} ${sig}` : `(func $${fn.name}`;
+    // i32 also carries heap handles: admit only known scalar source types and
+    // their existing ABI lane, never all i32 results. f64 integral Numbers can
+    // look like pointers to the host; i64 BigInts still own their result tag.
+    const scalarResultLane: WATValType | undefined = fn.returnType === undefined ? undefined
+      : PRIMITIVE_RETURN_TYPES.has(fn.returnType) ? "i32"
+      : FLOAT_WAT_TYPES.has(fn.returnType) ? "f64"
+      : is64BitWatType(numericBaseType(fn.returnType)) ? "i64"
+      : undefined;
+    const wrapsScalarResultTag = usesHeap && moduleHasSecret
+      && scalarResultLane !== undefined
+      && fn.type.results.length === 1
+      && fn.type.results[0] === scalarResultLane;
+    let implementationName = fn.name;
+    if (wrapsScalarResultTag) {
+      let suffix = `${fn.name}_impl`;
+      let collision = 1;
+      while (usedFunctionNames.has(suffix)) suffix = `${fn.name}_impl_${collision++}`;
+      implementationName = suffix;
+      usedFunctionNames.add(implementationName);
+    }
+    const funcSig = sig ? `(func $${implementationName} ${sig}` : `(func $${implementationName}`;
+    const emitScalarResultWrapper = () => {
+      if (!wrapsScalarResultTag) return;
+      const callArgs = fn.namedParams !== undefined
+        ? fn.namedParams.map((p) => `(local.get ${p.name})`)
+        : fn.type.params.map((_, i) => `(local.get $p${i})`);
+      const call = `(call $${implementationName}${callArgs.length > 0 ? ` ${callArgs.join(" ")}` : ""})`;
+      lines.push(`  ;; Scalar return metadata belongs to this completed call, not a nested callee.`);
+      lines.push(`  (func $${fn.name}${sig ? ` ${sig}` : ""}`);
+      lines.push(`    (local $__fungi_scalar_result ${scalarResultLane})`);
+      lines.push(`    (local.set $__fungi_scalar_result ${call})`);
+      lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
+      lines.push(`    (local.get $__fungi_scalar_result)`);
+      lines.push(`  )`);
+    };
     lines.push(`  ;; ${fn.isPure ? "pure" : "effectful"} flow: ${fn.name}`);
     lines.push(`  ${funcSig}`);
     // Use the real body when available; fall back to unreachable for stubs.
@@ -978,6 +1041,7 @@ export function renderWAT(module: WATModule): string {
         lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
         lines.push(`    (local.get $__fungi_ret)`);
         lines.push(`  )`);
+        emitScalarResultWrapper();
         if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
         lines.push("");
         continue; // this flow is fully emitted via the zero-on-exit path
@@ -1007,6 +1071,7 @@ export function renderWAT(module: WATModule): string {
         lines.push(`    ))`);
         for (const line of flatten.body) lines.push(line);
         lines.push(`  )`);
+        emitScalarResultWrapper();
         if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
         lines.push("");
         continue;
@@ -1066,6 +1131,7 @@ export function renderWAT(module: WATModule): string {
       lines.push(`    unreachable ;; emitter cannot lower`);
     }
     lines.push(`  )`);
+    emitScalarResultWrapper();
     if (fn.isEntryPoint) {
       lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
     }

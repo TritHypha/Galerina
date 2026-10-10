@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "c6e2dc7fca82c453b265e8c49e0e2dfa500df7b2bd078d21ec9e31b3f0f4a08a",
+    "aggregateSha256": "11de637a7453e9601080bab3098936959fcf8be98baaca49af60c7019c2c6dc8",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "cd0a53ee56494b4580d8c93806f4f31deab7cfab03e0fe744e6901dd55442aa6"
+        "sha256": "af4030c4fd35ffe62588e0b5297e75f9d8e64063dbfa071e6f87dd248752cd68"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,15 @@
       },
       {
         "path": "README.md",
-        "sha256": "8d38650515f298e045e6bd6af7b84e1146f18319604addc11eca02bd19400494"
+        "sha256": "3997648c5d13089191ffb78301e71e00baef5f3c395c96657bbc74df62985ac3"
       },
       {
         "path": "TODO.md",
-        "sha256": "9a89e7ad9d5c0b2d731770e37186065d3a07d7b92fce4479c329c174b79b0170"
+        "sha256": "8bca11246d25cc98cc98080d784bc5cd107ec715695f0c5c3706c852c050a9a8"
+      },
+      {
+        "path": "examples/secure-random-diagnostics.json",
+        "sha256": "ce27d487a1361921accd1c7a6e4ca2daef9dbe594ba86d059792446205bcce45"
       },
       {
         "path": "examples/security-report.json",
@@ -55,8 +59,24 @@
         "sha256": "82f022e0345405bacd210d0a07aa6edcef8ab08b0223a4a6299285cc1b202fd6"
       },
       {
+        "path": "src/ai-authority-contracts.ts",
+        "sha256": "181c361f58b09fffcda9321d99ea54a2af14b016cf6f2f6a2a8c9eadaa409251"
+      },
+      {
+        "path": "src/capability-contracts.ts",
+        "sha256": "ac96c6ed910df3cec07a9d42cdd9e9391f036cb14afbb2ac5906a334677c08cd"
+      },
+      {
+        "path": "src/capability-lease-contracts.ts",
+        "sha256": "ef56c540f6b3edd0e201f5950b85916c1c0eb1c21a2cb864fe8f39897e5f9151"
+      },
+      {
+        "path": "src/crypto-inventory.ts",
+        "sha256": "08ae2da6654fe27a0204ba9820814fb6bb366b229031d4c70b5b3436f7fb7ab8"
+      },
+      {
         "path": "src/crypto-provider.ts",
-        "sha256": "b992a2ac72319158d82587a0d597ffaadc058c031f70349c1ead105f77f5e1d0"
+        "sha256": "b68a85b3a7c1a6553aab515313d790de874e6b0a8641b5cedf8136ef8f86fcd8"
       },
       {
         "path": "src/dss/capability-map.fungi",
@@ -107,12 +127,48 @@
         "sha256": "978c02039676ea1fbd5f827a07534e5ea186a03099161d5d0d014ae6dbff83fb"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "cceffd1b2cf7075d5bf20e9fca371e533f34b854c59889b5181cf7eba4180d59"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "05af6bf39b40ca00599e7b2471b79d5bf42c9eb8440212ac6368b3eaa2690738"
+        "sha256": "401e5ae1771e251e6ae07e563616addc9156782daf79fc28126c9aad471e8c36"
       },
       {
         "path": "src/interim.fungi",
         "sha256": "876a33e5d328f144a19a1e4b9f40b43cd28ddd297c68b3ae9e0fc2a0c3f98a98"
+      },
+      {
+        "path": "src/owasp-cwe-mapping.ts",
+        "sha256": "e2b06a6124a15ccd0f6c34366f429c83b7bb7ea0aba862a368c30c1b47c07ab7"
+      },
+      {
+        "path": "src/policy-contracts.ts",
+        "sha256": "c06a8eb928716e79560ad7e8cd6c568df9679e7a22fccaf0b259bea8ec1cdf2d"
+      },
+      {
+        "path": "src/secure-random-examples.ts",
+        "sha256": "af94686d1901ab4d43feb2d6fad6c6421a025f29b0dc5ccdc95807460ce0ccc6"
+      },
+      {
+        "path": "tests/ai-authority-contracts.test.mjs",
+        "sha256": "0f8d35537d12ec06e0ee4d2132785c8ca1205c1a83ecc08f258e4a6829e37b63"
+      },
+      {
+        "path": "tests/capability-contracts.test.mjs",
+        "sha256": "e576e1a31cbe286270f79c304bef67daf9922b62fe94f430d99799715b3288d9"
+      },
+      {
+        "path": "tests/capability-lease-contracts.test.mjs",
+        "sha256": "4f132d73359217fb1b010948172631f0f0dd0b6439e162c6732a0c21cdb081ff"
+      },
+      {
+        "path": "tests/core-security-hold-pin.test.mjs",
+        "sha256": "9a7897330e98703b56182e3a312f36b24c06e09fe62a2333819da50b36518212"
+      },
+      {
+        "path": "tests/crypto-inventory.test.mjs",
+        "sha256": "d014ef9f808b2a5d52d1930ad350681f4820447c512bd4190867ff38fb08de4f"
       },
       {
         "path": "tests/dss-audit-effects.test.mjs",
@@ -123,12 +179,28 @@
         "sha256": "ab44ce4a506d9d541f26e57a7adc6117a82ba566961ce3dfa7c634da3a2270ba"
       },
       {
+        "path": "tests/owasp-cwe-mapping.test.mjs",
+        "sha256": "ceb6cea5f53b98185f447225d6369019f66584452217e266f642580aa8756ece"
+      },
+      {
+        "path": "tests/policy-contracts.test.mjs",
+        "sha256": "8f5d9db62e3022c2f3f0802da55c0a0f1fbd07670f9f7f43480c069ed47901cf"
+      },
+      {
+        "path": "tests/redaction-redos-guard.test.mjs",
+        "sha256": "4dbd72175d2b78da63bda9bc013f45517ca98151392737796f9392e735681d36"
+      },
+      {
         "path": "tests/repository-security-policy.test.mjs",
         "sha256": "056c61d7e124d392c4a6ab4518855cc4eec7ed99eb046efa9804e3cb27faa823"
       },
       {
+        "path": "tests/secure-random-examples.test.mjs",
+        "sha256": "210b33388efa267a24a5ab33454f641bbcab444394cb912736a948d9c0b38122"
+      },
+      {
         "path": "tests/security-contracts.test.mjs",
-        "sha256": "095e0895409a7d8e2c108becf588faacb7beb8b7ce4a17960ee703882b4a6a9c"
+        "sha256": "8e92e6dc0b8b2c858d187d616e403da18edb6964763d665ff90fd7483d873290"
       },
       {
         "path": "tsconfig.json",

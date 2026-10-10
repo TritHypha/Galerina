@@ -27,6 +27,98 @@ async function admit(wat, host) {
   return L.admitAndInstantiate(await admissionOptions(wat, host));
 }
 
+// Observe the real engine call; never manufacture its result or failure.
+async function observeAdmission(t, options) {
+  const compile = WebAssembly.compile;
+  const instantiate = WebAssembly.instantiate;
+  const observation = { compiled: [], attempts: [], result: undefined, error: undefined };
+  const compileMock = t.mock.method(WebAssembly, "compile", async (...args) => {
+    const module = await Reflect.apply(compile, WebAssembly, args);
+    observation.compiled.push({ module, bytes: new Uint8Array(args[0]) });
+    return module;
+  });
+  const instantiateMock = t.mock.method(WebAssembly, "instantiate", async (...args) => {
+    const attempt = { args, result: undefined, error: undefined };
+    observation.attempts.push(attempt);
+    try {
+      attempt.result = await Reflect.apply(instantiate, WebAssembly, args);
+      return attempt.result;
+    } catch (error) {
+      attempt.error = error;
+      throw error;
+    }
+  });
+  try {
+    observation.result = await L.admitAndInstantiate(options);
+  } catch (error) {
+    observation.error = error;
+  } finally {
+    instantiateMock.mock.restore();
+    compileMock.mock.restore();
+    assert.equal(WebAssembly.instantiate, instantiate, "restore the instantiate observer");
+    assert.equal(WebAssembly.compile, compile, "restore the compile observer");
+  }
+  return observation;
+}
+
+function assertObservedLink(observation, options) {
+  assert.equal(observation.compiled.length, 1, "one real compilation");
+  const { module, bytes } = observation.compiled[0];
+  assert.ok(module instanceof WebAssembly.Module);
+  assert.deepEqual(bytes, new Uint8Array(options.wasm), "compile the signed guest bytes");
+  assert.equal(observation.attempts.length, 1, "one real instantiation attempt");
+  const attempt = observation.attempts[0];
+  assert.equal(attempt.args.length, 2);
+  assert.equal(attempt.args[0], module, "instantiate the exact compiled module");
+  assert.equal(attempt.args[1], options.host.imports, "use the exact factory imports");
+  return attempt;
+}
+
+function assertSignatureRefusal(observation, options, calls, callbackCount) {
+  const attempt = assertObservedLink(observation, options);
+  assert.ok(attempt.error instanceof WebAssembly.LinkError, "engine must report LinkError");
+  assert.equal(attempt.result, undefined, "engine must not instantiate");
+  assert.equal(observation.result, undefined, "admission must not succeed");
+  assert.ok(observation.error instanceof Error);
+  assert.match(observation.error.message, /^CRITICAL_SECURITY_VIOLATION: module import\/link failed:/);
+  assert.equal(callbackCount, 0, "no start callback before failed linking");
+  assert.deepEqual(calls, []);
+}
+
+function startGrantModule(signature, a, b) {
+  return `(module
+    (import "host" "audit.write" (func $write ${signature}))
+    (import "host" "audit.log" (func $log (param i32 i32) (result i32)))
+    (func $start (drop (call $log (i32.const ${a}) (i32.const ${b}))))
+    (start $start))`;
+}
+
+async function assertSignatureTwins(t, signature, a = 1, b = 2) {
+  const calls = [];
+  let callbackCount = 0;
+  const host = L.createHostRuntime(undefined, {
+    effectHandlers: {
+      "audit.write": (x, y) => { callbackCount++; calls.push(["write", x, y]); return 7; },
+      "audit.log": (x, y) => { callbackCount++; calls.push(["log", x, y]); return 8; },
+    },
+  });
+  const options = await admissionOptions(startGrantModule(signature, a, b), host);
+  const refused = await observeAdmission(t, options);
+  assertSignatureRefusal(refused, options, calls, callbackCount);
+  const acceptedOptions = await admissionOptions(startGrantModule("(param i32 i32) (result i32)", a, b), host);
+  const accepted = await observeAdmission(t, acceptedOptions);
+  const attempt = assertObservedLink(accepted, acceptedOptions);
+  assert.equal(attempt.error, undefined);
+  assert.ok(attempt.result instanceof WebAssembly.Instance);
+  assert.equal(accepted.error, undefined);
+  assert.ok(accepted.result.instance instanceof WebAssembly.Instance);
+  assert.equal(accepted.result.host, host);
+  assert.deepEqual(WebAssembly.Module.imports(refused.compiled[0].module), WebAssembly.Module.imports(accepted.compiled[0].module), "twins have the same import roster");
+  assert.equal(callbackCount, 1, "exactly one independently counted start callback");
+  assert.deepEqual(calls, [["log", a, b]]);
+  return { refused, options };
+}
+
 describe("closed non-secret WASM effect-grant ABI", () => {
   it("exposes only the frozen audit grant signatures", () => {
     const abi = L.WASM_EFFECT_GRANT_ABI;
@@ -52,52 +144,37 @@ describe("closed non-secret WASM effect-grant ABI", () => {
     assert.deepEqual(calls, [[3, 4]]);
   });
 
-  it("refuses an allow-listed import with mismatched parameter types before the host callback can run", async () => {
-    const calls = [];
-    const host = L.createHostRuntime(undefined, {
-      effectHandlers: { "audit.write": (a, b) => { calls.push([a, b]); return 7; } },
-    });
-    const wrongSignature = `(module
-      (import "host" "audit.write" (func $fx (param i64 i64) (result i32)))
-      (func (export "call") (param $a i64) (param $b i64) (result i32)
-        (call $fx (local.get $a) (local.get $b)))
-    )`;
-
-    await assert.rejects(admit(wrongSignature, host), (error) => {
-      assert.match(error.message, /CRITICAL_SECURITY_VIOLATION/);
-      return true;
-    });
-    assert.deepEqual(calls, []);
+  it("refuses an allow-listed import with mismatched parameter types before the host callback can run", async (t) => {
+    await assertSignatureTwins(t, "(param i64 i64) (result i32)");
   });
 
-  it("refuses an allow-listed import with a mismatched arity before the host callback can run", async () => {
-    const calls = [];
-    const host = L.createHostRuntime(undefined, {
-      effectHandlers: { "audit.write": (a, b) => { calls.push([a, b]); return 7; } },
-    });
-    const wrongArity = `(module
-      (import "host" "audit.write" (func $fx (param i32) (result i32)))
-      (func (export "call") (param $value i32) (result i32)
-        (call $fx (local.get $value)))
-    )`;
-
-    await assert.rejects(admit(wrongArity, host), /expected type/i);
-    assert.deepEqual(calls, []);
+  it("refuses an allow-listed import with a mismatched arity before the host callback can run", async (t) => {
+    await assertSignatureTwins(t, "(param i32) (result i32)");
   });
 
-  it("refuses an allow-listed import with a mismatched result type before the host callback can run", async () => {
-    const calls = [];
-    const host = L.createHostRuntime(undefined, {
-      effectHandlers: { "audit.write": (a, b) => { calls.push([a, b]); return 7; } },
-    });
-    const wrongResult = `(module
-      (import "host" "audit.write" (func $fx (param i32 i32) (result i64)))
-      (func (export "call") (param $a i32) (param $b i32) (result i64)
-        (call $fx (local.get $a) (local.get $b)))
-    )`;
+  it("refuses an allow-listed import with a mismatched result type before the host callback can run", async (t) => {
+    await assertSignatureTwins(t, "(param i32 i32) (result i64)");
+  });
 
-    await assert.rejects(admit(wrongResult, host), /expected type/i);
-    assert.deepEqual(calls, []);
+  it("rejects synthetic invalid observation records with the same signature-refusal oracle", async (t) => {
+    const { refused, options } = await assertSignatureTwins(t, "(param i64 i64) (result i32)");
+    // A real observation is the positive oracle control; the following records
+    // are synthetic perturbations, NOT engine fault-injection evidence.
+    const check = record => assertSignatureRefusal(record, options, [], 0);
+    assert.doesNotThrow(() => check(refused));
+    const attempt = refused.attempts[0];
+    const invalid = [
+      ["pre-instantiation generic critical refusal", { ...refused, compiled: [], attempts: [], error: new Error("CRITICAL_SECURITY_VIOLATION: synthetic attestation refusal before compilation") }],
+      ["observed non-LinkError", { ...refused, attempts: [{ ...attempt, error: new Error("synthetic non-link failure") }] }],
+      ["unexpected successful admission", { ...refused, result: { instance: {} } }],
+      ["wrong compiled module identity", { ...refused, attempts: [{ ...attempt, args: [{}, options.host.imports] }] }],
+      ["wrong factory imports identity", { ...refused, attempts: [{ ...attempt, args: [attempt.args[0], {}] }] }],
+      ["wrong public failure phase", { ...refused, error: new Error("CRITICAL_SECURITY_VIOLATION: instantiation failed: synthetic failure") }],
+    ];
+    for (const [label, record] of invalid) {
+      assert.throws(() => check(record), { code: "ERR_ASSERTION" }, label);
+    }
+    assert.throws(() => assertSignatureRefusal(refused, options, [["log", 1, 2]], 1), { code: "ERR_ASSERTION" });
   });
 
   it("refuses an allow-listed effect name imported as a non-function before instantiation", async () => {
@@ -193,32 +270,15 @@ describe("closed non-secret WASM effect-grant ABI", () => {
     assert.deepEqual(calls, [["original", 3, 4]]);
   });
 
-  it("observes a positive start control and refuses mismatched imports before start", async () => {
-    const calls = [];
-    const host = L.createHostRuntime(undefined, {
-      effectHandlers: {
-        "audit.write": (a, b) => { calls.push(["write", a, b]); return 7; },
-        "audit.log": (a, b) => { calls.push(["log", a, b]); return 8; },
-      },
-    });
-    const validStart = `(module
-      (import "host" "audit.log" (func $fx (param i32 i32) (result i32)))
-      (func $start (call $fx (i32.const 1) (i32.const 2)) drop)
-      (start $start)
-    )`;
-    const admitted = await admit(validStart, host);
-    assert.deepEqual(calls, [["log", 1, 2]]);
-
-    calls.length = 0;
-    const mismatchedStart = `(module
-      (import "host" "audit.write" (func $wrong (param i64 i64) (result i32)))
-      (import "host" "audit.log" (func $right (param i32 i32) (result i32)))
-      (func $start (call $right (i32.const 3) (i32.const 4)) drop)
-      (start $start)
-    )`;
-    await assert.rejects(admit(mismatchedStart, host), /expected type/i);
-    assert.deepEqual(calls, []);
-    assert.ok(admitted.instance);
+  it("observes a positive start control and refuses mismatched imports before start", async (t) => {
+    const compile = WebAssembly.compile;
+    const instantiate = WebAssembly.instantiate;
+    await assertSignatureTwins(t, "(param i64 i64) (result i32)", 3, 4);
+    assert.equal(WebAssembly.compile, compile);
+    assert.equal(WebAssembly.instantiate, instantiate);
+    // An unobserved admission still reaches the original engine after both paths.
+    const { instance } = await admit(`(module (func (export "f") (result i32) (i32.const 5)))`, L.createHostRuntime());
+    assert.equal(instance.exports.f(), 5);
   });
 
   it("refuses secret and unknown grants before host creation", () => {

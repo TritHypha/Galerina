@@ -11,6 +11,7 @@
 // =============================================================================
 
 import { lex, type Token, type LexerDiagnostic } from "./lexer.js";
+import { genericArgumentKind } from "./generic-argument-kinds.js";
 import {
   FUNGI_REQUIREMENT_001,
   FUNGI_REQUIREMENT_005,
@@ -191,11 +192,19 @@ export interface SourceLocation {
   readonly length?: number;
 }
 
+/** Parser-owned identity; literal token contents are never reparsed as syntax. */
+export type TypeReferenceStructure =
+  | { readonly kind: "type"; readonly name: string; readonly generic: boolean; readonly args: readonly TypeReferenceStructure[] }
+  | { readonly kind: "payload" }
+  | { readonly kind: "invalid" };
+
 export interface AstNode {
   readonly kind: AstNodeKind;
   readonly location?: SourceLocation;
   readonly children?: readonly AstNode[];
   readonly value?: string;
+  /** Additive evidence for typeRef consumers; value/children retain their legacy shape. */
+  readonly typeStructure?: TypeReferenceStructure;
   /**
    * Stores the original readable form used by the developer when
    * Readable Logic Forms are adopted (see galerina-readable-logic-forms.md).
@@ -424,6 +433,53 @@ export const MAX_REQUIREMENT_CONSTRAINTS = 64;
 /** Thrown by the depth guard to unwind the recursion to parseProgram's per-declaration catch — fail-closed,
  *  never a host crash. The FUNGI-PARSE-DEPTH-001 diagnostic is recorded before the throw. */
 class ParseAborted extends Error {}
+
+/** Read only the tokens already consumed by parseTypeRef, never its cooked value. */
+function typeStructureFromTokens(input: readonly Token[]): TypeReferenceStructure {
+  const invalid: TypeReferenceStructure = { kind: "invalid" };
+  if (input.length > 8192) return invalid;
+  const tokens = input.filter(t => t.kind !== "newline");
+  const isSymbol = (i: number, value: string): boolean =>
+    (tokens[i]?.kind === "operator" || tokens[i]?.kind === "symbol") && tokens[i]?.value === value;
+  const read = (start: number, end: number, depth: number): TypeReferenceStructure => {
+    if (depth > 64 || start >= end) return invalid;
+    let pos = start;
+    let name = tokens[pos];
+    if (name?.kind !== "identifier" && name?.kind !== "keyword") return invalid;
+    if (name.value === "protected" || name.value === "redacted") name = tokens[++pos];
+    if (name?.kind !== "identifier" && name?.kind !== "keyword") return invalid;
+    pos++;
+    if (pos === end) return { kind: "type", name: name.value, generic: false, args: [] };
+    if (!isSymbol(pos, "<") || !isSymbol(end - 1, ">")) return invalid;
+    const args: TypeReferenceStructure[] = [];
+    const brackets: string[] = [];
+    let argStart = ++pos;
+    const append = (argEnd: number): void => {
+      if (argStart === argEnd) { args.push(invalid); return; }
+      const role = genericArgumentKind(name.value, args.length);
+      args.push(role !== undefined && role !== "type"
+        ? { kind: "payload" }
+        : read(argStart, argEnd, depth + 1));
+    };
+    for (; pos < end - 1; pos++) {
+      // Strings/chars/numbers are indivisible, even if their cooked value is a delimiter.
+      const token = tokens[pos];
+      if (token?.kind !== "operator" && token?.kind !== "symbol") continue;
+      if (token.value === "<" || token.value === "[") brackets.push(token.value);
+      else if (token.value === ">" || token.value === "]") {
+        if (brackets.pop() !== (token.value === ">" ? "<" : "[")) return invalid;
+      } else if (token.value === "," && brackets.length === 0) {
+        append(pos);
+        argStart = pos + 1;
+      }
+    }
+    if (brackets.length !== 0) return invalid;
+    append(end - 1);
+    if (args.some(arg => arg.kind === "invalid")) return invalid;
+    return { kind: "type", name: name.value, generic: true, args };
+  };
+  return read(0, tokens.length, 0);
+}
 
 class Parser {
   private pos = 0;
@@ -1312,6 +1368,7 @@ class Parser {
    */
   private parseTypeRef(): AstNode {
     const loc = this.loc();
+    const typeStart = this.pos;
     let value = "";
 
     // view(cap1 | cap2) — MMCP capability-masked pointer type (task #78 foundation)
@@ -1384,7 +1441,8 @@ class Parser {
       }
     }
 
-    return { kind: "typeRef", value, location: loc };
+    return { kind: "typeRef", value, location: loc,
+      typeStructure: typeStructureFromTokens(this.tokens.slice(typeStart, this.pos)) };
   }
 
   // ── Effects declaration ────────────────────────────────────────────────────
@@ -1820,7 +1878,7 @@ class Parser {
       this.advance();
     }
 
-    return { kind: "typeRef", value, location: loc };
+    return { ...typeRef, value, location: loc };
   }
 
   private parseReturnStmt(): AstNode {

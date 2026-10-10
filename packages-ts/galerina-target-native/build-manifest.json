@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "2e0b04a72bc6e0839de1881c396dad7b5f886c8d61bd7d5018281c4e46cbc8e7",
+    "aggregateSha256": "d5b38490c3fed6c25d0a2be5405535c20ef463bb10a099a7e3a1370f1f4e83b0",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "d5966af0ebdd1f0696c99fcea32a6e907e27fa3e10431c8778d4c92d46261c7a"
+        "sha256": "7d12ad230524808ae7bf6ac87e1dd3d40a092f8497c1651f91ce8676c7be0645"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "eb63afed460ea5f0b7262312607f98ec112679b8953cc4dbc48a2d44d57a6234"
+        "sha256": "f2ac6e063e5fe27cc9fa4320c64f7556d00efef09ed0bd32e2fa68cd93e567f1"
       },
       {
         "path": "examples/artifact.example.json",
@@ -64,19 +64,43 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "337b90526be3ce6b4ba7c9d13e93d8035d17c33ab18b09f4ed9c0300f0d5af97"
+        "sha256": "9fe760e31f11525ce53b145224da60cd4cdd06fe7365547ef4acd3761c10d77a"
+      },
+      {
+        "path": "src/native-hold-pin.ts",
+        "sha256": "8a87ae08f9d5973ee93dca8a363bb4f89c2ca536fc71103b19a163abf11e9dbd"
       },
       {
         "path": "src/node-crypto.d.ts",
         "sha256": "53cdae9e3f4c2988957d4297cd57931b631ff180bee8c455fa0b5a05598e7455"
       },
       {
+        "path": "src/proposed-fungi-native-mapping.ts",
+        "sha256": "f5eb39143bc8e93bc9c46235dcb6e4477ef386065fed39debb8610e53d4aec20"
+      },
+      {
+        "path": "src/proposed-os-arch-vocabulary.ts",
+        "sha256": "9254d368c8b38ce3c5fc5a106c1f7cf380c730dd506ac9b14db07694a6b7baf2"
+      },
+      {
         "path": "tests/native-contracts.test.mjs",
         "sha256": "c28b02fd23e639a305f1507aa318c949bc7a03f5fb71a53c73407861ade0ddf4"
       },
       {
+        "path": "tests/native-diagnostic-closed-set.test.mjs",
+        "sha256": "f38c7545a3550270ad81a6cd9b59d0e656df4b382d62d55d52edccc8b05ba591"
+      },
+      {
         "path": "tests/native-examples.test.mjs",
         "sha256": "b1cc792c00e8cef169485449ec1f9afa58b803a14de567fc56fce0edd760957e"
+      },
+      {
+        "path": "tests/native-hold-pin.test.mjs",
+        "sha256": "fcf8006078f84168fb1b3cb652e90132a5c6b7f9a00f9354e1372c39c8e26f45"
+      },
+      {
+        "path": "tests/proposed-os-arch-vocabulary.test.mjs",
+        "sha256": "e0731614eeb7800e2af50bf8bc6bd00b60d9b04c5169a5d279405137c6388351"
       },
       {
         "path": "tsconfig.json",

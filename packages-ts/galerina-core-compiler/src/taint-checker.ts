@@ -13,7 +13,7 @@
 // A value made SafeFor<HtmlContent> is still tainted for a SQL sink.
 // =============================================================================
 
-import { type AstNode, type FlowMeta, type SourceLocation } from "./parser.js";
+import { type AstNode, type FlowMeta, type SourceLocation, type TypeReferenceStructure } from "./parser.js";
 import { decodeFlowDecl, decodeFlowPosture } from "./flow-name.js";
 import { checkEffects, type EffectCheckResult } from "./effect-checker.js";
 import { hashSource } from "./runtime/canonicalHash.js";
@@ -289,7 +289,11 @@ export const MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_PARAMS = 256;
 export const MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_EFFECTS = 256;
 export const MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_ITEM_BYTES = 32_768;
 
-const REQUIREMENT_CHECKED_FLOW_DIGEST_DOMAIN = "galerina.requirement-validator.checked-flow.v1";
+// v2 binds parser-owned type identity. Old receipts must be re-derived and re-admitted.
+const REQUIREMENT_CHECKED_FLOW_DIGEST_DOMAIN = "galerina.requirement-validator.checked-flow.v2";
+
+type CanonicalTypeStructure = readonly ["payload" | "invalid"]
+  | readonly ["type", string, boolean, readonly CanonicalTypeStructure[]];
 
 type CanonicalCheckedFlowNode = readonly [
   string,
@@ -300,6 +304,7 @@ type CanonicalCheckedFlowNode = readonly [
   string | undefined,
   string | undefined,
   number | undefined,
+  CanonicalTypeStructure | undefined,
   readonly CanonicalCheckedFlowNode[],
 ];
 
@@ -393,6 +398,51 @@ function spendCheckedFlowCanonicalOptionalString(
     : spendCheckedFlowCanonicalString(budget, value);
 }
 
+/** One indexed, bounded read of caller-owned type evidence; never parse its cooked text. */
+function snapshotTypeStructure(
+  input: unknown,
+  depth: number,
+  remainingDepth: number,
+  budget: CheckedFlowCanonicalBudget,
+  nodeCounter: { value: number },
+  maxNodes: number,
+): TypeReferenceStructure | undefined {
+  if (depth > remainingDepth || ++nodeCounter.value > maxNodes
+    || input === null || typeof input !== "object" || Array.isArray(input)) return undefined;
+  const record = input as Record<string, unknown>;
+  const kind = record["kind"];
+  if (kind === "payload" || kind === "invalid") {
+    if (!spendCheckedFlowCanonicalText(budget, `["${kind}"]`)) return undefined;
+    return Object.freeze({ kind });
+  }
+  if (kind !== "type") return undefined;
+  const name = record["name"];
+  const generic = record["generic"];
+  const inputArgs = record["args"];
+  if (typeof generic !== "boolean" || !Array.isArray(inputArgs)) return undefined;
+  const count = inputArgs.length;
+  if (!Number.isSafeInteger(count) || count < 0 || count > maxNodes - nodeCounter.value
+    || !spendCheckedFlowCanonicalText(budget, '["type",')
+    || !spendCheckedFlowCanonicalString(budget, name)
+    || !spendCheckedFlowCanonicalText(budget, generic ? ',true,[' : ',false,[')) return undefined;
+  const args: TypeReferenceStructure[] = [];
+  for (let index = 0; index < count; index++) {
+    if (index > 0 && !spendCheckedFlowCanonicalText(budget, ",")) return undefined;
+    const arg = snapshotTypeStructure(inputArgs[index], depth + 1, remainingDepth, budget, nodeCounter, maxNodes);
+    if (arg === undefined) return undefined;
+    args.push(arg);
+  }
+  if (!spendCheckedFlowCanonicalText(budget, "]]")) return undefined;
+  return Object.freeze({ kind, name, generic, args: Object.freeze(args) });
+}
+
+/** Input is the validated frozen copy, not the caller's graph. */
+function canonicalTypeStructure(type: TypeReferenceStructure): CanonicalTypeStructure {
+  return type.kind === "type"
+    ? ["type", type.name, type.generic, type.args.map(canonicalTypeStructure)]
+    : [type.kind];
+}
+
 function snapshotCheckedFlowCanonicalNode(
   node: AstNode,
   depth: number,
@@ -408,6 +458,7 @@ function snapshotCheckedFlowCanonicalNode(
   const flowRef = node.flowRef;
   const claim = node.claim;
   const flags = node.flags;
+  const inputTypeStructure = node.typeStructure;
   const inputChildren = node.children;
   if (depth > MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_DEPTH
     || ++nodeCounter.value > MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_NODES
@@ -437,7 +488,15 @@ function snapshotCheckedFlowCanonicalNode(
     || !spendCheckedFlowCanonicalText(budget, flags === undefined
       ? "null"
       : JSON.stringify(flags))
-    || !spendCheckedFlowCanonicalText(budget, ",[")) return undefined;
+    || !spendCheckedFlowCanonicalText(budget, ",")) return undefined;
+  const typeStructure = inputTypeStructure === undefined ? undefined : snapshotTypeStructure(
+    inputTypeStructure, 0, Math.min(64, MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_DEPTH - depth),
+    budget, nodeCounter, MAX_REQUIREMENT_CHECKED_FLOW_DIGEST_NODES,
+  );
+  if (inputTypeStructure === undefined
+    ? !spendCheckedFlowCanonicalText(budget, "null")
+    : typeStructure === undefined) return undefined;
+  if (!spendCheckedFlowCanonicalText(budget, ",[")) return undefined;
   const children: AstNode[] = [];
   for (let index = 0; index < childCount; index += 1) {
     if (index > 0 && !spendCheckedFlowCanonicalText(budget, ",")) return undefined;
@@ -461,6 +520,7 @@ function snapshotCheckedFlowCanonicalNode(
     ...(flowRef === undefined ? {} : { flowRef }),
     ...(claim === undefined ? {} : { claim }),
     ...(flags === undefined ? {} : { flags }),
+    ...(typeStructure === undefined ? {} : { typeStructure }),
   });
 }
 
@@ -627,6 +687,7 @@ function canonicalCheckedFlowNode(node: AstNode): CanonicalCheckedFlowNode {
     node.flowRef,
     node.claim,
     node.flags,
+    node.typeStructure === undefined ? undefined : canonicalTypeStructure(node.typeStructure),
     children,
   ];
 }
@@ -1132,6 +1193,7 @@ function snapshotAnalysisAstNode(
   const flowRef = node.flowRef;
   const claim = node.claim;
   const flags = node.flags;
+  const inputTypeStructure = node.typeStructure;
   if (depth > MAX_REQUIREMENT_VALIDATOR_ANALYSIS_AST_DEPTH
     || ++nodeCounter.value > MAX_REQUIREMENT_VALIDATOR_ANALYSIS_AST_NODES
     || !boundedCheckedFlowString(kind)
@@ -1152,6 +1214,13 @@ function snapshotAnalysisAstNode(
     || !spendCheckedFlowCanonicalText(budget, flags === undefined ? "null" : String(flags))) {
     return undefined;
   }
+  const typeStructure = inputTypeStructure === undefined ? undefined : snapshotTypeStructure(
+    inputTypeStructure, 0, Math.min(64, MAX_REQUIREMENT_VALIDATOR_ANALYSIS_AST_DEPTH - depth),
+    budget, nodeCounter, MAX_REQUIREMENT_VALIDATOR_ANALYSIS_AST_NODES,
+  );
+  if (inputTypeStructure === undefined
+    ? !spendCheckedFlowCanonicalText(budget, "null")
+    : typeStructure === undefined) return undefined;
 
   const location = inputLocation === undefined
     ? undefined
@@ -1190,6 +1259,7 @@ function snapshotAnalysisAstNode(
     children: Object.freeze(children),
     ...(value === undefined ? {} : { value }),
     ...(readableForm === undefined ? {} : { readableForm }),
+    ...(typeStructure === undefined ? {} : { typeStructure }),
     ...(callStyle === undefined ? {} : { callStyle }),
     ...(typeName === undefined ? {} : { typeName }),
     ...(conformsTo === undefined ? {} : { conformsTo }),

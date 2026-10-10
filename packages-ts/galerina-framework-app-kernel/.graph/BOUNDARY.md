@@ -11,11 +11,11 @@
 
 | Metric | Count |
 |---|---|
-| Files | 78 |
-| Internal edges | 55 |
-| External dependencies | 3 |
+| Files | 91 |
+| Internal edges | 73 |
+| External dependencies | 4 |
 | ├─ Node core | 1 |
-| ├─ Workspace (@galerina/*) | 2 |
+| ├─ Workspace (@galerina/*) | 3 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -26,7 +26,8 @@
 
 ### Workspace (@galerina/*)
 - `@galerina/core-config`
-- `@galerina/tower-citizen`
+- `@galerina/tower-citizen/custody`
+- `@galerina/tower-citizen/governance`
 
 ### Third-party
 _none_
@@ -38,7 +39,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts` (re-exports `src/hold-pin.ts`)
+- `src/index.ts`
 
 ## Loaded Assets
 - `src/self-hosted/err-registry-delegation-bad-signature.fungi`

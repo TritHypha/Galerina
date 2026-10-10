@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "3a4fe5ad8848bc4ae3d997d44be4d69021ac39f99b4b05bf0984de472ea9cb31",
+    "aggregateSha256": "b1e66f635ca2af471dffad5e10c74a596e22cc870b1b0b2bd12c252eb0f6dcbe",
     "algorithm": "sha256",
     "files": [
       {
@@ -28,7 +28,7 @@
       },
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "c530c29d05b43de38d6d91d732735de76a653b8c1fa7eca7cff4bb8eadb85b50"
+        "sha256": "289f2d8fdc202e1ad42d772d6caa896d845d3ea10c01ae8ebcdecfec65262b4b"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -48,7 +48,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "7d3b3f72913d2a73eedc2f3afb8fb9bee83540b7326cfeb905e3f4759a9e8bd1"
+        "sha256": "b143371e5cd549e037e281126acde822adb470fe162134d01694e3ea485a0d23"
       },
       {
         "path": "config/app.config.json",
@@ -63,8 +63,12 @@
         "sha256": "9b18c5921e7486c5d1449489c1811ccc7b7a9ba36c780b6ebd05d5a38702eb51"
       },
       {
+        "path": "host/hold-pin.ts",
+        "sha256": "5075686eb637aab5a39c85dbfed9ce5860470370bec1109a94745497475980b6"
+      },
+      {
         "path": "host/server.ts",
-        "sha256": "d9890a7af48d969ce3905851501b5de0dccf928bd96cf2cf419f4b6be6cf5b45"
+        "sha256": "adbf001c697fb05a60e1cdcfeef77257cb04ff315df45aac6cbe0d25eeea3fbf"
       },
       {
         "path": "package-lock.json",
@@ -99,8 +103,16 @@
         "sha256": "fe80b0c87905dead9e61d305961f35d0bb863329b35bdcce7d7fde719edfbd14"
       },
       {
+        "path": "proofs/App.obligations.tap",
+        "sha256": "54f8956bed2e9f70654bc27421b31ad2500c9ec035f856f526e84f68ec6220ac"
+      },
+      {
         "path": "proofs/README.md",
         "sha256": "01ee5860e709528326566cc82ca62a8464eee22d051bd846168e56391cfddeb0"
+      },
+      {
+        "path": "proofs/greeting.obligations.tap",
+        "sha256": "54f8956bed2e9f70654bc27421b31ad2500c9ec035f856f526e84f68ec6220ac"
       },
       {
         "path": "src/App.fungi",
@@ -113,6 +125,18 @@
       {
         "path": "tests/e2e.test.mjs",
         "sha256": "e9796d6ce641b70773605fae6f842e0e783d726e9a2700ac88bb3eb0e161110b"
+      },
+      {
+        "path": "tests/example-app-hold-pin.test.mjs",
+        "sha256": "3d1393ae7841ee79b6a495fa195a3d69373de47b6cc7e74359634527022e16e1"
+      },
+      {
+        "path": "tests/proofs.test.mjs",
+        "sha256": "8a7ce4602f17e97878f92efa6623b5b948e9befe2d9d5f8b10e8816cad36c547"
+      },
+      {
+        "path": "tests/route-capability-grants.test.mjs",
+        "sha256": "420f46a1e0100554711d9a1b956dbbec3a4305fac90f3d4469050be0994e4fd1"
       },
       {
         "path": "tsconfig.json",

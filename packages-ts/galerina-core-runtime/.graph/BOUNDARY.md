@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 7 |
-| Internal edges | 2 |
+| Files | 11 |
+| Internal edges | 9 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
@@ -37,7 +37,7 @@ No boundary violations. All external imports are allowed and every scanned file 
 _none_ -- every file is reachable from an internal import or has an exact ownership declaration.
 
 ## Entry Points
-- `src/index.ts` (re-exports `src/hold-pin.ts`)
+- `src/index.ts`
 
 ## Loaded Assets
 - `src/self-hosted/governed-runtime-seam-version.fungi`

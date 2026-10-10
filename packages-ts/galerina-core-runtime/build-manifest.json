@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "767d6672505a916f9e4f431a656f4d103a2c4b3cde7948d7061a6f66c6bda3e4",
+    "aggregateSha256": "b749e02eeafc8170609cdb94faac563343d60505a6befb51c8e076061af06ada",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "3f3b87540333939063edea1343d2ab36cb304c5b4aa96cfe1a0ed8c233e16ed5"
+        "sha256": "a1d939eaa2f6ee171b8b755dd9280136fe169492775fc6fd1de40751efd82b0f"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,11 @@
       },
       {
         "path": "README.md",
-        "sha256": "a69ec8be85aab2b65e54dd07ddd4b6723867b73b5d9a94be4999506b78689196"
+        "sha256": "7c78db823341b27b1736a2cacaf2f4d75a4c0f680435e059c84b888138e5ab23"
       },
       {
         "path": "TODO.md",
-        "sha256": "547e21b7aa88f512ae272d00064c5e613a8cd51450a3287ae1077100202bdb6b"
+        "sha256": "3c511798adaebe4ac87c2576500f5580897cc8ff60a2bb4252a431f49d406417"
       },
       {
         "path": "examples/checked-runtime-context.json",
@@ -63,12 +63,16 @@
         "sha256": "380b53906188937ad911754dfa27a6d7df245f379ec112364ca198c1c54e6aec"
       },
       {
+        "path": "native/vok-authority/evidence/linux-x86_64-wx-live-20261008.json",
+        "sha256": "c358419bb8331cbad0e418050cba47c37a8c05738089ed0598ca4fb94ce5ad47"
+      },
+      {
         "path": "native/vok-authority/src/bin/vok-benchmark.rs",
         "sha256": "4594ff58fc2fd5b983368f0921274075e9b833911de96be62e10f7a3799dc0f7"
       },
       {
         "path": "native/vok-authority/src/bin/vok-live-evidence.rs",
-        "sha256": "d85b1de8499f1bcc87dac228875002832ba08855cf76330561bcd6447679c04c"
+        "sha256": "045f57bc308b2b788a26456f0442c4c0c4d3e4ec36748e7e42bee5ef5c69de0a"
       },
       {
         "path": "native/vok-authority/src/bin/vok-vector-runner.rs",
@@ -76,7 +80,11 @@
       },
       {
         "path": "native/vok-authority/src/lib.rs",
-        "sha256": "c6c1dbd590183514105b7620110385c0db8e9e0d2df501314acbdeb365b80473"
+        "sha256": "9f9110a961cd0ff20d46e7bbe36428c86e1dba1630b5c868cf14e3bc924b5c33"
+      },
+      {
+        "path": "native/vok-authority/src/memory_policy.rs",
+        "sha256": "a5574cde04e0ffcdd8712b356d621f9062394901b813f18fb6d47138956137f3"
       },
       {
         "path": "native/vok-authority/src/native.rs",
@@ -87,16 +95,36 @@
         "sha256": "ab6bd6f6a38c66e2e9664c506545ad5d3da96832a3661576b3d52bb4370ab3b8"
       },
       {
+        "path": "native/vok-authority/src/resource.rs",
+        "sha256": "c077f6a02b6bdf4cf44f0c33702e6b82b6eb99b4d32d9ba837d10c6b719ca2be"
+      },
+      {
         "path": "native/vok-authority/src/secret_arena.rs",
-        "sha256": "589b8ff54923a4f3cccc69a1af4057d22a9187498ca57d8a1b9cbada90fe96a1"
+        "sha256": "ae9f1eb85086fc40f8bbea0b2a287855a59377ce1148d9e7d57dda3db13e5bb5"
+      },
+      {
+        "path": "native/vok-authority/src/sha256.rs",
+        "sha256": "61587ed84ea04ecbc6d471ee5dc504fae65d2500888d5cc789437501317ab2f8"
       },
       {
         "path": "native/vok-authority/src/tests.rs",
-        "sha256": "f5f2251ac09b376fbed45502606aad1aed0bef183f4817fb8575fb62c3d0a3c9"
+        "sha256": "90dbaca8440fb9654db3cdfbfb7b0031d22c7f4f70def6ae149d9609d51025ab"
+      },
+      {
+        "path": "native/vok-authority/src/veo.rs",
+        "sha256": "c4126440cd8d5f72ebdf2ebeb34fa830c9c7f1d52a01e0d4299f7197245a9f09"
       },
       {
         "path": "native/vok-authority/tests/secret_arena.rs",
-        "sha256": "3de7defc2964aafb04ccbf6edd030ac32a045d5bc53bf3fe624b09bf78b796d9"
+        "sha256": "59906e96c86e18bc5e71bba6913c6a67ae6f2ba7386e18c22e03aa860e1ff703"
+      },
+      {
+        "path": "native/wamr-host/include/wamr_import_admission.h",
+        "sha256": "b5ead819ba9dea9aca33f8ecabea777605d6fb8bff64218dc1d7991b0b4294df"
+      },
+      {
+        "path": "native/wamr-host/src/wamr_import_admission.c",
+        "sha256": "7062f021599485d034c6476b76bd9c43d9ad471c0930ded35820c9c56d678189"
       },
       {
         "path": "package-lock.json",
@@ -107,8 +135,28 @@
         "sha256": "bf9b6e0defb708d0553233e6e2b0a9e73475413e1a53260e11b2b675f07f9798"
       },
       {
+        "path": "src/governed-plan-contracts.ts",
+        "sha256": "870250d98934667e2d625250116ee63dfcaa99c4c0faae63132b9dc54621e730"
+      },
+      {
+        "path": "src/hold-pin.ts",
+        "sha256": "60e4be428550de5167933a89cd9d46814fee3b58a144f26471c354ecb4106492"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "0a1bcde050b072225aabd676f59c34798ec5d07a6216da7ee9ad037664e7f82d"
+        "sha256": "bd6452680cf34e8be856794bfacb4ded05f8a55cf8d540b78dd9524197a3cfe7"
+      },
+      {
+        "path": "src/isolated-host.ts",
+        "sha256": "4aa4ff5e053088722d1c4228ece5d82cac514d29d3f0a465701f9041322ba62a"
+      },
+      {
+        "path": "src/native-floor-contracts.ts",
+        "sha256": "d31b3833ee121d5eec0540d4aad2ce5853e6f676d92e3c15084e5659ab032dad"
+      },
+      {
+        "path": "src/runtime-contracts.ts",
+        "sha256": "d9f95a181f846c0a29272533f25226a64b9677f8169f4747e9c23f20c01c525e"
       },
       {
         "path": "src/self-hosted/governed-runtime-seam-version.fungi",
@@ -131,6 +179,22 @@
         "sha256": "f25e514f34f409df8b3fe137269f1073444ea23971c76fec8d6e23fe4f15a0e7"
       },
       {
+        "path": "tests/core-runtime-hold-pin.test.mjs",
+        "sha256": "654e6b675f40dc70beae2692fc6c2c669d0e1ada670074f1a95774c6544de760"
+      },
+      {
+        "path": "tests/governed-plan-contracts.test.mjs",
+        "sha256": "9ef88ae80484f55d80cbd7ae092d9df33235e4b7b081b498812e306a166d8e9f"
+      },
+      {
+        "path": "tests/isolated-host.test.mjs",
+        "sha256": "997138f5238915e7bdbcb4cc7c605893747fd3b374b2186a46bd2f97366f7b03"
+      },
+      {
+        "path": "tests/native-floor-contracts.test.mjs",
+        "sha256": "22b938031de4902efdcc07c2cdf4cda23d6b0870d53e0f9c16a110c7f1cb13c5"
+      },
+      {
         "path": "tests/rd0363-passive-plan-replay-execution.test.mjs",
         "sha256": "1c662bd1262620a512f5e142454e839d8bc0ade017d1e0b514cc2371c0f589f8"
       },
@@ -144,7 +208,19 @@
       },
       {
         "path": "tests/runtime-executor-composition.test.mjs",
-        "sha256": "98ac672a784616766da1f824f7fcf054e01f2bb7a3ffc333fa518dade511c4d5"
+        "sha256": "dcc89461157302b7f76a043cc234c179c638002a263b7c8427d42af231506bcb"
+      },
+      {
+        "path": "tests/runtime-executor-rejected-promise.test.mjs",
+        "sha256": "d6804045d984b90602b8dd106d2be438b9fa5c402cf63ddd01596f11488717db"
+      },
+      {
+        "path": "tests/runtime-executor-strict-verdicts.test.mjs",
+        "sha256": "a2c781cfe1d8db3eb971e3672a0a35e97db6622ae79048d84a6e61ffe39a0e4f"
+      },
+      {
+        "path": "tests/runtime-policy-contracts.test.mjs",
+        "sha256": "b180a7637e7b89c27902bbba8df21e26ffbec3998084ac5dfede8d316d650c35"
       },
       {
         "path": "tests/runtime-seam.test.mjs",

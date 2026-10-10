@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkValueStates, parseProgram } from "../../dist/index.js";
+import { checkTypes, checkValueStates, parseProgram } from "../../dist/index.js";
 
 function secretReturns(source) {
   const parsed = parseProgram(`@version 1\n${source}`, "helper-return-context.fungi");
@@ -199,3 +199,99 @@ for (const [name, body] of aliasCases) {
     return true
   }`));
 }
+
+// Classification controls, not assertions of assignment soundness or execution.
+const cases = [
+  ['String', true],
+  ['Brand<String,"SecureString">', true],
+  ['Brand<String,SecureString>', true],
+  ['Option<Brand<String,"SecureString">>', true],
+  ['Authority<SecureString>', true],
+  ['SecureString', false],
+  ['Brand<SecureString,"public">', false],
+  ['Option<SecureString>', false],
+  ['Result<String,SecureString>', false],
+];
+
+function parseReturn(type) {
+  const source = `@version 1\nsecure flow outer(value: SecureString) -> Bool contract { intent { "Synthetic classification regression" } } { fn helper(payload: SecureString) -> ${type} { return payload } return true }`;
+  const parsed = parseProgram(source, "secret-return-metadata.fungi");
+  assert.deepEqual(parsed.diagnostics.filter(d => d.severity === "error"), [], "fixture must parse");
+  return parsed.ast;
+}
+
+function secretErrors(ast) {
+  return checkValueStates(ast, "production").diagnostics
+    .filter(d => d.code === "FUNGI-SECRET-006" && d.severity === "error");
+}
+
+for (const [type, refuse] of cases) {
+  test(`secret result confidentiality classification: ${type}`, () => {
+    const ast = parseReturn(type);
+    assert.deepEqual(checkTypes(ast).diagnostics.filter(d => d.severity === "error"), [], "fixture must reach confidentiality checking");
+    assert.equal(secretErrors(ast).length, refuse ? 1 : 0, "metadata is not a secret type component");
+  });
+}
+
+// These isolate confidentiality classification; some malformed types have an
+// independent type error. A false tag must not suppress SECRET-006 anyway.
+for (const type of [
+  'Money<SecureString>', 'Array<String,SecureString>', 'SecureString<String>',
+  'Brand<SecureString>', 'Result<SecureString,,String>',
+  'Result<SecureString,"not a type">', 'UnknownBox<SecureString>',
+  'Tensor<String,[SecureString]>', 'Vector<String,SecureString>',
+  'Matrix<String,1,SecureString>', 'Embedding<SecureString>',
+  String.raw`Brand<String,"x\" SecureString">`,
+  String.raw`Brand<String,"\u{22},SecureString,\u{22}">`,
+  'Option<Brand<String,"SecureString,<>,[]">>',
+]) {
+  test(`non-type or invalid structure cannot preserve a secret: ${type}`, () => {
+    assert.equal(secretErrors(parseReturn(type)).length, 1);
+  });
+}
+
+for (const type of [
+  'Array<SecureString>', 'Result<Option<SecureString>,String>',
+  'Map<String,Array<SecureString>>', 'Tensor<SecureString,[1,128]>',
+  'Vector<SecureString,N>', 'Matrix<SecureString,Rows,Cols>',
+  'Brand<SecureString,"a,b">', 'protected SecureString',
+  String.raw`Brand<SecureString,"\u{22},String,\u{22}">`,
+]) {
+  test(`real type component survives nesting and opaque payloads: ${type}`, () => {
+    assert.equal(secretErrors(parseReturn(type)).length, 0);
+  });
+}
+
+function findHelper(ast) {
+  if (ast.kind === "fnDecl") return ast;
+  for (const child of ast.children ?? []) {
+    const found = findHelper(child);
+    if (found) return found;
+  }
+}
+
+test("parser keeps compatibility text and children while retaining literal identity", () => {
+  const ast = parseReturn(String.raw`Brand<String,"\u{22},SecureString,\u{22}">`);
+  const type = findHelper(ast).children.find(c => c.kind === "typeRef");
+  assert.equal(type.value, 'Brand<String,"",SecureString,"">');
+  assert.equal(type.children, undefined);
+  assert.equal(type.typeStructure.kind, "type");
+  assert.equal(type.typeStructure.args.length, 2);
+  assert.equal(type.typeStructure.args[1].kind, "payload");
+  assert.equal(secretErrors(JSON.parse(JSON.stringify(ast))).length, 1);
+});
+
+test("legacy/synthetic typeRef strings do not authorize even genuine-looking types", () => {
+  for (const type of ['SecureString', 'Option<SecureString>', 'Brand<String,"SecureString">']) {
+    const ast = parseReturn(type);
+    delete findHelper(ast).children.find(c => c.kind === "typeRef").typeStructure;
+    assert.equal(secretErrors(ast).length, 1, type);
+  }
+});
+
+test("missing delimiters cannot produce authorizing type evidence", () => {
+  const parsed = parseProgram('@version 1\nflow f(x: SecureString) -> Option<SecureString', "incomplete.fungi");
+  const type = parsed.ast.children[0].children.find(c => c.kind === "typeRef");
+  assert.equal(type.typeStructure.kind, "invalid");
+  assert.ok(parsed.diagnostics.some(d => d.severity === "error"));
+});

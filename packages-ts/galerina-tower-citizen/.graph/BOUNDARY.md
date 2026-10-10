@@ -11,7 +11,7 @@
 
 | Metric | Count |
 |---|---|
-| Files | 65 |
+| Files | 66 |
 | Internal edges | 117 |
 | External dependencies | 9 |
 | ├─ Node core | 5 |
@@ -81,3 +81,4 @@ _none declared_
 
 ## Allowed Orphans
 - `src/load-graph.ts` -- Isolation checker consumed by package tests via dist/load-graph.js; not a public package export.
+- `src/rd1295-hold-pin.ts` -- RD-1295 HOLD pin consumed by package tests via dist/rd1295-hold-pin.js; not a cluster entry. Refuses extract/sign/convert/admit/authorise.

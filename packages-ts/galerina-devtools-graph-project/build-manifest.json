@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "9a48ec30873a7cc480d1a0abb83e8fbd8dd8212236e7df8f70ddd2bb9ab87024",
+    "aggregateSha256": "92687d490d05b8c6dc4533c99e09f4ad9b4088420dc95fcd0b4a8fedfbb2376b",
     "algorithm": "sha256",
     "files": [
       {
@@ -60,11 +60,11 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "2136df21b3d4e3c36204453776b6ed5157887d96544ab1dede4e806cafef7922"
+        "sha256": "3d8229dff349614fbb5bd579719563e0e15643a17f691847efa488d1ac7bdd29"
       },
       {
         "path": "tests/project-graph-contracts.test.mjs",
-        "sha256": "363fd8a0fdfc52086a8cca7a915c74cc1dbdb5757159b3c528c8c19ac81ce7db"
+        "sha256": "37ffc888df381426d8ccfb0b1dcbb5032be4d0b8833945194110cfe3b4eaa4e9"
       },
       {
         "path": "tsconfig.json",

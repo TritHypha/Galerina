@@ -19,6 +19,72 @@ import {
 
 const HEAP_BASE = 1024;
 
+// These are existing lowering lanes, not a claim of strict source admission.
+// In particular f64 integral Numbers can look like addresses to the finalizer;
+// i64 BigInts cannot, but must still publish this call's scalar metadata.
+for (const type of ['Int', 'Int8', 'Int16', 'Int32', 'Byte', 'Bool',
+  'UInt8', 'UInt16', 'UInt32', 'Float', 'Float64', 'Double', 'Float32', 'Float16', 'Int64', 'UInt64']) {
+  for (const mode of ['public-only', 'sequential', 'nested']) {
+    test(`Q1 scalar ABI metadata ${type} ${mode}`, async () => {
+      const wide = type === 'Int64' || type === 'UInt64';
+      const floating = type.startsWith('Float') || type === 'Double';
+      const values = wide ? [9007199254740993n] : floating ? [2048, 128.5, -0]
+        : ['Int8', 'UInt8', 'Byte'].includes(type) ? [127] : type === 'Bool' ? [1] : [2048];
+      const source = `${mode === 'public-only' ? '' : `record Sec { a: Int, b: Int }
+pure flow produceSecret() -> Sec
+contract { intent { "metadata producer" } privacy { contains PII } }
+{ return Sec { a: 7, b: 9 } }`}
+pure flow scalar(x: ${type}) -> ${type}
+contract { intent { "scalar metadata ownership" } }
+{ ${mode === 'nested' ? 'let inner: Sec = produceSecret()' : ''} return x }`;
+      const parsed = L.parseProgram(source, 'scalar-abi-metadata.fungi');
+      assert.deepEqual(parsed.diagnostics.filter(d => d.severity === 'error'), []);
+      assert.deepEqual(L.checkTypes(parsed.ast).diagnostics.filter(d => d.severity === 'error'), []);
+      const { instance } = await build(source, 'scalar-abi-metadata.fungi', module => {
+        assert.deepEqual(module.functions.find(fn => fn.name === 'scalar').type.results,
+          [wide ? 'i64' : floating ? 'f64' : 'i32']);
+        return module;
+      });
+      for (const value of values) {
+        if (mode !== 'public-only') {
+          const pointer = instance.exports.produceSecret();
+          assert.equal(instance.exports.__fungi_ret_is_heap_get(), 1, 'record must remain a pointer');
+          assert.deepEqual(finalizeSecretExportResult(instance, pointer), [7, 9]);
+        }
+        const raw = instance.exports.scalar(value);
+        assert.equal(typeof raw, wide ? 'bigint' : 'number');
+        assert.equal(raw, value, 'raw Wasm result must preserve exact scalar value');
+        const tag = instance.exports.__fungi_ret_is_heap_get?.();
+        assert.equal(finalizeSecretExportResult(instance, raw), value, 'finalization must not decode a scalar as a record');
+        if (mode !== 'public-only') assert.equal(tag, 0, 'completed scalar owns metadata even for BigInt');
+      }
+    });
+  }
+}
+
+for (const type of ['UInt8', 'UInt16', 'UInt32', 'Float', 'Float32', 'Int64', 'UInt64']) {
+  test(`Q1 secret scalar ${type} early return preserves its ABI value`, async () => {
+    const value = type.endsWith('64') ? 9007199254740993n : type === 'UInt8' ? 127 : 2048;
+    const source = `record Pair { a: Int, b: Int }
+pure flow scalar(x: ${type}, early: Bool) -> ${type}
+contract { intent { "secret scalar early return" } privacy { contains PII } }
+{ let pair: Pair = Pair { a: 7, b: 9 }
+  if early { return x }
+  return x }`;
+    const parsed = L.parseProgram(source, 'scalar-early.fungi');
+    assert.deepEqual(parsed.diagnostics.filter(d => d.severity === 'error'), []);
+    assert.deepEqual(L.checkTypes(parsed.ast).diagnostics.filter(d => d.severity === 'error'), []);
+    const { instance } = await build(source, 'scalar-early.fungi');
+    for (const early of [0, 1]) {
+      const raw = instance.exports.scalar(value, early);
+      assert.equal(raw, value);
+      assert.equal(instance.exports.__fungi_ret_is_heap_get(), 0);
+      assert.equal(finalizeSecretExportResult(instance, raw), value);
+      assert.ok(new Uint8Array(instance.exports.memory.buffer, HEAP_BASE, 8).every(b => b === 0));
+    }
+  });
+}
+
 // A flat record can still need packing: the Int64 field introduces padding.
 // Literal expected words are independent of the emitter's layout plan. This
 // covers bootstrap/Wasm behavior, not protected-host or full RD acceptance.
@@ -45,18 +111,177 @@ contract { intent { "padded return regression" } privacy { contains PII } }
   });
 }
 
-async function build(src, filename = "q1.fungi") {
+async function build(src, filename = "q1.fungi", transformModule = module => module) {
   const prog = L.parseProgram(src, filename);
   const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
   assert.equal(errs.length, 0, `parse errors: ${errs.map((d) => d.message).join("; ")}`);
   const fx = L.checkEffects(prog.flows, prog.ast);
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
-  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", prog.ast, true));
+  const wat = L.renderWAT(transformModule(L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", prog.ast, true)));
   const asm = await L.assembleWAT(wat);
   assert.ok(asm.valid, `must assemble: ${asm.valid ? "" : asm.diagnostics.map((d) => d.message).join("; ")}`);
   const { instance } = await WebAssembly.instantiate(asm.wasm);
   return { wat, instance, wasm: asm.wasm, memory: new Int32Array(instance.exports.memory.buffer) };
 }
+
+for (const packed of [true, false]) {
+test(`Q1 ${packed ? "packed" : "null-result"} reservation guards the i32 watermark at a simulated 4-GiB ceiling`, async () => {
+  const src = packed ? `record Node { n: Int, child: Node }
+pure flow h() -> Node
+contract { intent { "q1 wasm32 address ceiling" } privacy { contains PII } }
+{ return Node { n: 73, child: Node { n: 2, child: Node { n: 3 } } } }
+` : `record Triple { a: Int, b: Int, c: Int }
+pure flow h() -> Triple
+contract { intent { "q1 null reservation ceiling" } privacy { contains PII } }
+{ return Triple { a: 1, b: 2, c: 3 } }`;
+  const prog = L.parseProgram(src, "q1-wasm32-address-ceiling.fungi");
+  const errors = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
+  assert.equal(errors.length, 0, `parse errors: ${errors.map((d) => d.message).join("; ")}`);
+  const effects = L.checkEffects(prog.flows, prog.ast);
+  const { gir } = L.emitGIR(prog.ast, prog.flows, effects);
+  const module = L.buildWATModuleFromGIR(gir, undefined, "wasm-standalone", prog.ast, true);
+  const wat = L.renderWAT({ ...module, memory: { minPages: 2, maxPages: 65_536 } });
+
+  assert.ok(wat.includes("(memory 2 65536)"), "exercise the full wasm32 page-count ceiling without allocating 4 GiB");
+  const capacityGuard = wat.indexOf("(i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat))");
+  const representableEndGuard = wat.indexOf("(i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat)) (i64.const 12)) (i64.const 4294967295))");
+  const reserve = wat.indexOf("(global.set $__fungi_heap (i32.add (local.get $__fungi_flat)");
+  const refusingRepresentabilityGuard = /\(if \(i64\.gt_u \(i64\.add \(i64\.extend_i32_u \(local\.get \$__fungi_flat\)\) \(i64\.const 12\)\) \(i64\.const 4294967295\)\)\s*\(then unreachable\)\s*\)/g;
+  assert.equal(wat.match(refusingRepresentabilityGuard)?.length, 1,
+    "an unrepresentable i32 cleanup watermark must trap before reservation, not merely emit a comparison");
+  assert.ok(capacityGuard >= 0 && representableEndGuard > capacityGuard && reserve > representableEndGuard,
+    `the exclusive reservation end must fit the i32 cleanup watermark before ownership is advanced (capacity=${capacityGuard}, representable=${representableEndGuard}, reserve=${reserve}, guard=${wat.match(/i64\.const 4294967295/g)?.join(",") ?? "none"})`);
+
+  const extractGuard = (marker, from = 0) => {
+    const markerAt = wat.indexOf(marker, from);
+    assert.notEqual(markerAt, -1, `generated WAT must contain guard marker ${marker}`);
+    const guardStart = wat.lastIndexOf("(if ", markerAt);
+    let depth = 0;
+    for (let i = guardStart; i < wat.length; i += 1) {
+      if (wat[i] === "(") depth += 1;
+      else if (wat[i] === ")") {
+        depth -= 1;
+        if (depth === 0) return wat.slice(guardStart, i + 1);
+      }
+    }
+    assert.fail(`generated guard is not a balanced WAT expression: ${marker}`);
+  };
+  const capacityIf = extractGuard("(i64.shl (i64.extend_i32_u (memory.size)) (i64.const 16))");
+  const watermarkIf = extractGuard("(i64.const 4294967295)", representableEndGuard);
+  const probeGuard = (guard) => guard
+    .replaceAll("(local.get $__fungi_flat)", "(local.get $flat)")
+    .replaceAll("(memory.size)", "(local.get $pages)");
+  const probeWat = `(module
+    (memory 1)
+    (global $watermark (mut i32) (i32.const 1024))
+    (func (export "probe") (param $flat i32) (param $pages i32) (result i32)
+      ${probeGuard(capacityIf)}
+      ${probeGuard(watermarkIf)}
+      (global.set $watermark (i32.add (local.get $flat) (i32.const 12)))
+      (i32.const 1))
+    (export "watermark" (global $watermark)))`;
+  const probeAssembly = await L.assembleWAT(probeWat);
+  assert.ok(probeAssembly.valid, `boundary probe must assemble: ${probeAssembly.diagnostics.map((d) => d.message).join("; ")}`);
+  const { instance } = await WebAssembly.instantiate(probeAssembly.wasm);
+
+  assert.equal(instance.exports.probe(0xfffffff0, 65_536), 1,
+    "the highest aligned 12-byte extent ending at 0xfffffffc remains representable");
+  assert.equal(instance.exports.watermark.value >>> 0, 0xffff_fffc);
+
+  const wrapProbe = await WebAssembly.instantiate(probeAssembly.wasm);
+  assert.throws(() => wrapProbe.instance.exports.probe(0xfffffff4, 65_536), WebAssembly.RuntimeError,
+    "a 12-byte extent ending at 2^32 must refuse even when simulated memory capacity is exactly 4 GiB");
+  assert.equal(wrapProbe.instance.exports.watermark.value >>> 0, 1024,
+    "refusal at the wrap boundary must precede watermark mutation");
+
+  const capacityProbe = await WebAssembly.instantiate(probeAssembly.wasm);
+  assert.throws(() => capacityProbe.instance.exports.probe(65_528, 1), WebAssembly.RuntimeError,
+    "an extent one 12-byte allocation past one-page capacity must refuse");
+  assert.equal(capacityProbe.instance.exports.watermark.value >>> 0, 1024,
+    "capacity refusal must precede watermark mutation");
+
+  const exactCapacityProbe = await WebAssembly.instantiate(probeAssembly.wasm);
+  assert.equal(exactCapacityProbe.instance.exports.probe(65_524, 1), 1,
+    "an extent ending exactly at one-page capacity remains valid");
+  assert.equal(exactCapacityProbe.instance.exports.watermark.value >>> 0, 65_536,
+    "the exact-fit extent records its representable exclusive end");
+});
+}
+
+// Inject only a producer body to reach exact allocator states without a giant
+// allocation. The return adapter, guards, Wasm memory and runtime cleanup are real;
+// these low-level fixtures are not public typechecked-program admission evidence.
+for (const start of [65_524, 65_528]) {
+  test(`Q1 null-result reservation uses actual one-page memory; start=${start}`, async () => {
+    const source = `record Triple { a: Int, b: Int, c: Int }
+pure flow h() -> Triple
+contract { intent { "null-result boundary" } privacy { contains PII } }
+{ return Triple { a: 1, b: 2, c: 3 } }`;
+    const { instance } = await build(source, "null-reservation.fungi", module => ({
+      ...module, memory:{minPages:1,maxPages:1},
+      functions:module.functions.map(fn => ({...fn,
+        body:`(global.set $__fungi_heap (i32.const ${start}))\n(i32.const 0)`,
+      })),
+    }));
+    const bytes = new Uint8Array(instance.exports.memory.buffer);
+    bytes.fill(0x5a, HEAP_BASE);
+    bytes[HEAP_BASE - 1] = 0x31;
+    const result = invokeAdmittedExport(instance, "h", []);
+    assert.equal(result.ok, start === 65_524);
+    const end = start === 65_524 ? 65_536 : start;
+    if (result.ok) assert.deepEqual(result.result, [0,0,0]);
+    else assert.match(result.reason, /trap during 'h':.*unreachable/);
+    assert.equal(instance.exports.__fungi_heap_get() >>> 0, end);
+    assert.ok(bytes.subarray(HEAP_BASE, end).every(byte => byte === 0));
+    assert.ok(bytes.subarray(end).every(byte => byte === 0x5a), "unowned tail remains intact");
+    assert.equal(bytes[HEAP_BASE - 1], 0x31);
+  });
+}
+
+for (const start of [65_528, 65_532]) {
+  test(`Q1 packed reservation uses actual one-page memory; start=${start}`, async () => {
+    const source = `record Cell { n: Int }
+record Outer { inner: Cell, tail: Int }
+pure flow h() -> Outer
+contract { intent { "packed boundary" } privacy { contains PII } }
+{ return Outer { inner: Cell { n: 7 }, tail: 9 } }`;
+    const { instance } = await build(source, "packed-reservation.fungi", module => ({
+      ...module, memory:{minPages:1,maxPages:1},
+      functions:module.functions.map(fn => ({...fn,
+        body:`(i32.store (i32.const 1024) (i32.const 1032))
+(i32.store (i32.const 1028) (i32.const 9))
+(i32.store (i32.const 1032) (i32.const 7))
+(global.set $__fungi_heap (i32.const ${start}))
+(i32.const 1024)`,
+      })),
+    }));
+    const bytes = new Uint8Array(instance.exports.memory.buffer);
+    bytes.fill(0x5a, HEAP_BASE);
+    bytes[HEAP_BASE - 1] = 0x31;
+    const result = invokeAdmittedExport(instance, "h", []);
+    assert.equal(result.ok, start === 65_528);
+    const end = start === 65_528 ? 65_536 : start;
+    assert.equal(instance.exports.__fungi_heap_get() >>> 0, end);
+    assert.ok(bytes.subarray(HEAP_BASE, end).every(byte => byte === 0));
+    assert.ok(bytes.subarray(end).every(byte => byte === 0x5a), "no unreserved partial secret write");
+    assert.equal(bytes[HEAP_BASE - 1], 0x31);
+    if (result.ok) assert.deepEqual(result.result, [7,9]);
+    else assert.match(result.reason, /trap during 'h':.*unreachable/);
+  });
+}
+
+test("Q1 exact Int64 local recognition does not match an i32 name substring", async () => {
+  const source = `pure flow narrow(x: Int) -> Int64
+contract { intent { "exact local width" } }
+{ let prefix_a: Int64 = 9007199254740993 let a: Int = x if x > 0 { return a } return prefix_a }
+pure flow wide(x: Int64) -> Int64
+contract { intent { "wide local twin" } }
+{ let a: Int64 = x if x > 0 { return a } return a }`;
+  const { instance } = await build(source, "exact-i64-local.fungi");
+  assert.equal(instance.exports.narrow(7), 7n);
+  assert.equal(instance.exports.narrow(-1), 9007199254740993n);
+  assert.equal(instance.exports.wide(9007199254740993n), 9007199254740993n);
+});
 
 const EARLY_HEAP = (privacy) => `record Wide { a: Int, b: Int, c: Int }
 pure flow g(s: Int) -> Int
@@ -275,6 +500,79 @@ contract { intent { "outer scalar" } privacy { contains PII } }
   assert.equal(r.result, 1024, "inner heap return must not leave ret_is_heap set for the outer Int");
 });
 
+test("Q1 public scalar export after a secret heap export is not decoded with stale heap metadata", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "secret record export" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicScalar() -> Int
+contract { intent { "public scalar export after secret record" } }
+{ return 2048 }
+`;
+  const { instance } = await build(src, "mixed-export-return-metadata.fungi");
+
+  const secretPointer = instance.exports.secretRecord(7);
+  assert.equal(finalizeSecretExportResult(instance, secretPointer), 7);
+
+  const scalar = instance.exports.publicScalar();
+  assert.equal(finalizeSecretExportResult(instance, scalar), 2048,
+    "a later public scalar export must not inherit a previous export's heap-result tag");
+});
+
+test("Q1 public scalar export clears heap metadata set by a nested secret record call", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "nested secret record" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicAfterNested(s: Int) -> Int
+contract { intent { "public scalar after nested record" } }
+{ let _record: Sec = secretRecord(s) return 2048 }
+`;
+  const { instance } = await build(src, "nested-return-metadata.fungi");
+
+  const scalar = instance.exports.publicAfterNested(7);
+  assert.equal(finalizeSecretExportResult(instance, scalar), 2048,
+    "the caller's scalar return must overwrite metadata changed by an internal callee");
+});
+
+test("Q1 multi-field secret export cannot leave stale heap metadata for a later public scalar", async () => {
+  const src = `record Sec { a: Int, b: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "two-field secret record export" } privacy { contains PII } }
+{ return Sec { a: s, b: s + 2 } }
+pure flow publicScalar() -> Int
+contract { intent { "public scalar after two-field secret export" } }
+{ return 2048 }
+`;
+  const { instance } = await build(src, "multi-field-mixed-return-metadata.fungi");
+
+  assert.equal(finalizeSecretExportResult(instance, instance.exports.publicScalar()), 2048);
+  const copied = finalizeSecretExportResult(instance, instance.exports.secretRecord(7));
+  assert.deepEqual(copied, [7, 9]);
+  assert.equal(finalizeSecretExportResult(instance, instance.exports.publicScalar()), 2048);
+});
+
+test("Q1 scalar metadata wrapper names do not collide with Fungi flow names", async () => {
+  const src = `record Sec { a: Int }
+pure flow secretRecord(s: Int) -> Sec
+contract { intent { "secret record for wrapper naming" } privacy { contains PII } }
+{ return Sec { a: s } }
+pure flow publicScalar() -> Int
+contract { intent { "scalar wrapper name collision control" } }
+{ return 17 }
+pure flow publicScalar_impl() -> Int
+contract { intent { "source flow uses generated suffix" } }
+{ return 23 }
+pure flow publicScalar_impl_1() -> Int
+contract { intent { "source flow uses numbered suffix" } }
+{ return 29 }
+`;
+  const { instance } = await build(src, "wrapper-name-collision.fungi");
+  assert.equal(instance.exports.publicScalar(), 17);
+  assert.equal(instance.exports.publicScalar_impl(), 23);
+  assert.equal(instance.exports.publicScalar_impl_1(), 29);
+});
+
 test("Q1 production executor early heap return still copies the field", async () => {
   const src = `record Sec { a: Int }
 pure flow h(s: Int) -> Sec
@@ -395,6 +693,87 @@ contract { intent { "q1 omitted inner child" } privacy { contains PII } }
   );
   assert.equal(Array.isArray(r.result) && r.result.every((w) => typeof w === "number" && w < HEAP_BASE), true);
 });
+
+test("Q1 recursive flatten refuses a non-null child beyond its closed expansion", async () => {
+  const src = `record Node { child: Node, n: Int }
+pure flow h(s: Int) -> Node
+contract { intent { "q1 over-depth recursive return" } privacy { contains PII } }
+{ return Node { child: Node { child: Node { n: 3 }, n: 2 }, n: s } }
+`;
+  const { wasm } = await build(src, "deep-recursive-node-refusal.fungi");
+  const r = createLowLevelWasmExecutor().instantiateAndCall({
+    artifactBytes: wasm,
+    exportName: "h",
+    args: [1],
+  });
+  assert.equal(r.ok, false, "deeper non-null children must refuse instead of silently truncating the return value");
+});
+
+test("Q1 recursive flatten refusal wipes its partial secret copy without widening cleanup", async () => {
+  const src = `record Node { n: Int, child: Node }
+pure flow h() -> Node
+contract { intent { "q1 refused partial recursive return" } privacy { contains PII } }
+{ return Node { n: 73, child: Node { n: 2, child: Node { n: 3 } } } }
+`;
+  const { instance, memory, wat } = await build(src, "recursive-partial-copy-wipe.fungi");
+  const destinationWord = (HEAP_BASE + 24) / 4;
+  const unrelatedWord = HEAP_BASE / 4 + 32;
+  memory[unrelatedWord] = 0x12345678;
+
+  const capacityGuard = wat.indexOf("(i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat))");
+  const reserve = wat.indexOf("(global.set $__fungi_heap (i32.add (local.get $__fungi_flat)");
+  assert.ok(capacityGuard >= 0 && reserve > capacityGuard,
+    "packed-return capacity must be checked before its range is registered for cleanup");
+
+  // Establish that this fixture really writes a secret to the packed destination
+  // before refusing. A zero-initialized destination alone is not cleanup evidence.
+  assert.throws(() => instance.exports.h(), WebAssembly.RuntimeError);
+  assert.equal(memory[destinationWord], 73);
+  assert.equal(instance.exports.__fungi_heap_get(), HEAP_BASE + 36);
+  instance.exports.__fungi_wipe_owned();
+  assert.ok(memory.slice(HEAP_BASE / 4, destinationWord + 3).every(word => word === 0));
+  assert.equal(memory[unrelatedWord], 0x12345678);
+
+  const result = invokeAdmittedExport(instance, "h", []);
+
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.match(result.reason, /trap during 'h':.*unreachable/);
+  assert.deepEqual(Array.from(memory.slice(destinationWord, destinationWord + 3)), [0, 0, 0],
+    "partial flattened secret words outside the source-record range must be included in trap cleanup");
+  assert.equal(memory[unrelatedWord], 0x12345678,
+    "trap cleanup must not widen beyond the owned source and reserved return-copy allocation");
+});
+
+for (const nonNullTail of [true, false]) {
+test(`Q1 maximum flatten depth has a discriminating null twin; nonNullTail=${nonNullTail}`, async () => {
+  const declarations = ["record R10 { n: Int }"];
+  for (let i = 9; i >= 0; i -= 1) {
+    declarations.push(`record R${i} { child: R${i + 1}, n: Int }`);
+  }
+  let value = nonNullTail ? "R10 { n: 10 }" : "R8 { n: 8 }";
+  for (let i = nonNullTail ? 9 : 7; i >= 0; i -= 1) {
+    value = `R${i} { child: ${value}, n: ${i} }`;
+  }
+  const src = `${declarations.join("\n")}
+pure flow h() -> R0
+contract { intent { "q1 maximum flatten depth" } privacy { contains PII } }
+{ return ${value} }
+`;
+  const { instance } = await build(src, "maximum-flatten-depth-refusal.fungi");
+  const memory = new Uint8Array(instance.exports.memory.buffer);
+  memory[HEAP_BASE - 1] = 0x31;
+  memory[HEAP_BASE + 256] = 0x53;
+  const result = invokeAdmittedExport(instance, "h", []);
+  assert.equal(result.ok, !nonNullTail, "non-null cutoff must refuse, null cutoff must preserve representable fields");
+  if (!result.ok) assert.match(result.reason, /trap during 'h':.*unreachable/);
+  else assert.deepEqual(result.result, [0,8,7,6,5,4,3,2,1,0]);
+  const end = instance.exports.__fungi_heap_get();
+  assert.ok(end > HEAP_BASE && end < HEAP_BASE + 256);
+  assert.ok(memory.subarray(HEAP_BASE, end).every(byte => byte === 0));
+  assert.equal(memory[HEAP_BASE - 1], 0x31);
+  assert.equal(memory[HEAP_BASE + 256], 0x53);
+});
+}
 
 test("Q1 production executor flattens nested heap records", async () => {
   const src = `record Sec { a: Int }

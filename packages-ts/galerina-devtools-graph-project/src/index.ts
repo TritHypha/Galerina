@@ -1066,6 +1066,17 @@ function addMarkdownPackageReferenceEdges(
   }
 }
 
+// Identify a registered package owner, not an exported module or an admission grant.
+// Do not normalize/URL-decode ambiguous spellings into a trusted package identity.
+function auditedWorkspacePackageRoot(specifier: string): string | undefined {
+  const match = /^(@galerina\/[a-z0-9][a-z0-9._-]*)(?:\/[A-Za-z0-9._-]+)*$/u.exec(specifier);
+  if (match === null || match[0] !== specifier) return undefined;
+  if (specifier.split("/").slice(2).some((part) =>
+    part === "." || part === ".." || part.toLowerCase() === "node_modules"
+  )) return undefined;
+  return match[1];
+}
+
 function addAuditedPackageDependencyEdges(
   file: ProjectGraphWorkspaceFile,
   owner: ReturnType<typeof normalizeWorkspacePackage>,
@@ -1079,26 +1090,51 @@ function addAuditedPackageDependencyEdges(
     if (!packageBySpec.has(spec)) packageBySpec.set(spec, item);
   }
 
+  const importsByPackage = new Map<string, {
+    readonly target: (typeof packages)[number];
+    readonly specifiers: Set<string>;
+  }>();
   for (const dependency of packageGraph.externalDeps) {
     if (dependency.kind !== "workspace") {
       continue;
     }
-    const targetPackage = packageBySpec.get(dependency.specifier);
+    const packageSpecifier = auditedWorkspacePackageRoot(dependency.specifier);
+    if (packageSpecifier === undefined) {
+      throw new Error(
+        `Package graph ${file.path} names malformed workspace dependency ${dependency.specifier}.`,
+      );
+    }
+    const targetPackage = packageBySpec.get(packageSpecifier);
     if (targetPackage === undefined) {
       throw new Error(
         `Package graph ${file.path} names unregistered workspace dependency ${dependency.specifier}.`,
       );
     }
 
+    const imports = importsByPackage.get(packageSpecifier) ?? {
+      target: targetPackage, specifiers: new Set<string>(),
+    };
+    imports.specifiers.add(dependency.specifier);
+    importsByPackage.set(packageSpecifier, imports);
+  }
+
+  for (const [packageSpecifier, { target, specifiers }] of importsByPackage) {
+    const edge = createProjectGraphEdge(
+      packageNodeId(owner.name),
+      packageNodeId(target.name),
+      "depends_on",
+      "EXTRACTED",
+      file.path,
+    );
+    // addEdge coalesces package pairs. Keep every exact import spelling, rather
+    // than letting the last subpath overwrite the other's provenance.
+    const hasSubpath = [...specifiers].some((specifier) => specifier !== packageSpecifier);
     addEdge(
       edges,
-      createProjectGraphEdge(
-        packageNodeId(owner.name),
-        packageNodeId(targetPackage.name),
-        "depends_on",
-        "EXTRACTED",
-        file.path,
-      ),
+      hasSubpath ? {
+        ...edge,
+        rationale: `Audited import specifiers: ${JSON.stringify([...specifiers].sort())}. Package ownership only; not export or runtime admission.`,
+      } : edge,
     );
   }
 }

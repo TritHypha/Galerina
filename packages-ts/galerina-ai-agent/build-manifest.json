@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "1d5b2e1d52cd5ebd576ee03bd565459121f3907bea9d0739c020265afa60cf3d",
+    "aggregateSha256": "48b909f454676dfc675a30b5b7f8f149dcf321c8ac5e35a01918618d293f95bf",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "dde0ff7af0deac852c69325f7a24cde458496e53ba5858d91b2029f3a9f7ee78"
+        "sha256": "2e291ff4523a716fed1588480048975f58b60fc6ea93ba654c374b95f5060028"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -36,11 +36,35 @@
       },
       {
         "path": "README.md",
-        "sha256": "576d9229a476c2547428133d1066412acdeb05dc2e1dc1af6543d56ab620090a"
+        "sha256": "b1dbde928ecaecb8252954b83873b6d1de5ea6dfc34e7b93ea9de3f4122c8205"
       },
       {
         "path": "TODO.md",
-        "sha256": "fa6024bf32a6ec37c953995852e57884258a5019c0e4fe011e09e418164f069f"
+        "sha256": "7ec01c33e505370b0b407698422b63fbade5d596ade47fc2237da762fd060918"
+      },
+      {
+        "path": "examples/capability-separation.example.json",
+        "sha256": "8941717e9056c375228bc93e3179c273ea411709bf3c0971aafb7467d7d888f2"
+      },
+      {
+        "path": "examples/loop-protection.example.json",
+        "sha256": "bd85868e8132a9c48d5563dd79f334a6116b636c53a7bdfc99c49d2ecb51c6eb"
+      },
+      {
+        "path": "examples/merge-policy.example.json",
+        "sha256": "be93843ba1c090d7caafd0e65694b2116d53e8bf849e29c4bcb9af5b3369005b"
+      },
+      {
+        "path": "examples/sandbox-and-approval.example.json",
+        "sha256": "d2978b39c7ff77e463bc7ff10b9a4411787b3cb143a5770f65048e132e7b6973"
+      },
+      {
+        "path": "examples/security-report.example.json",
+        "sha256": "12af57ef5003cb0e2ab82078dccbed424e6db132e28172e590729b6cc6f17d32"
+      },
+      {
+        "path": "examples/trust-root-protection.example.json",
+        "sha256": "856e9a83be443ea49a139d95826dd10c9f80b853c82f6fd79c732a8c70f771b5"
       },
       {
         "path": "package-lock.json",
@@ -51,12 +75,44 @@
         "sha256": "fccf88754783b26eb3b8fa66d16fb698cbca0dd1be157bd3369070c90b65050f"
       },
       {
+        "path": "src/agent-declaration.ts",
+        "sha256": "7bcf1442d72fd2e4388449d8504ca6d02f49e831f4b8a29781870dbf38f709d5"
+      },
+      {
+        "path": "src/agent-governance.ts",
+        "sha256": "e0e951ec710c7463996ef1922ed6a91b876049ca34a4500f6c51e6b233406923"
+      },
+      {
+        "path": "src/agent-validation.ts",
+        "sha256": "e8b82d046319ca5ce6e536a5ce52915a07d7ca6746854065679a335e0c16972f"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "06f1c7f3cca1a6ed30551163b2a4f6d4e5bd1221c1f1ca3940afe6de135a385e"
+        "sha256": "555577584e3b3b76afec6e13c8fdc57f07bcad0ff3122bd172d5cd4db4b2a35f"
       },
       {
         "path": "tests/agent-contracts.test.mjs",
         "sha256": "34ebabfa286153c09612a3cdd1870988d8801636416cf7001bb68e4778c6e7cb"
+      },
+      {
+        "path": "tests/agent-cycle-limits.test.mjs",
+        "sha256": "5e6abd6ccb6015d5e0de89f0b9f6f924c8fb8174dbcbcfaa2b51c7c3bc6fbe3e"
+      },
+      {
+        "path": "tests/agent-declaration.test.mjs",
+        "sha256": "60ed8954f5248e9b025f85ce550db6a06d83250232edbb8e21c6319cf0600315"
+      },
+      {
+        "path": "tests/agent-governance.test.mjs",
+        "sha256": "2498682cdb0caa44ab2983008756413b96bc90f845536393b3050728f45a775c"
+      },
+      {
+        "path": "tests/example-outputs.mjs",
+        "sha256": "7008cc881ad9c83add792f0a73ee02805aecddd4ec1e8dec404a643dacbd4ea0"
+      },
+      {
+        "path": "tests/fixtures-agent-governance.mjs",
+        "sha256": "100d31c06d1d42671087569475b1bc87623bb1248f7a23ccca7d7f3993f051dd"
       },
       {
         "path": "tsconfig.json",

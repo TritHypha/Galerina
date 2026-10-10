@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "98d09a56f873899b9bb95e218dfd140ccbf64960c6573c929de1e57eaec26048",
+    "aggregateSha256": "c4de2ba160dee1f60e546b84fb068b8741b88a70d54c9aa6bc6c569e2d1670c3",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "65a0d3739aada1565764e24fe8d040e58d623bdaf9c8438dfdae565c2866f712"
+        "sha256": "6a903a97cee3d14efaba851342988b38882177ddb1f9c88b220d8658bad5e81c"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "494037c9ef8a275de1f30f1ababf5b3e60818122744a2c1b75d7a78ad44252b7"
+        "sha256": "91797eff7e38e490fb4fa9dfffe3446d012582f5aada7aa4fe1f7eecdcc1c3c3"
       },
       {
         "path": "examples/build-report.json",
@@ -55,12 +55,148 @@
         "sha256": "afb9c3dd3904bbbf8f9cd6a0438b5cff60b88f8e1b6afbae7aa525fb891961ec"
       },
       {
+        "path": "src/ai-digest.ts",
+        "sha256": "146bc009243db1273c6f6db02e23864f79dda19c1f6a064865e57d63fb75f47b"
+      },
+      {
+        "path": "src/audit/audit-events.ts",
+        "sha256": "baa4ec012b5494f8db816b74d025b8fd5c4e77f58b74a7badcb5efbba3dfc4dc"
+      },
+      {
+        "path": "src/audit/audit-jsonl.ts",
+        "sha256": "50501d350416969d883f24b49c19ca825691d76fdfbdd6d2e9cbd325ba24d3c4"
+      },
+      {
+        "path": "src/audit/audit-redaction.ts",
+        "sha256": "43f7c5d4297b9ca8511bd56662465122eb76d9c68b5829d132fa612f58ed2f1a"
+      },
+      {
+        "path": "src/audit/audit-runtime.ts",
+        "sha256": "c42f6b3a329e61174aee5a72c7fb19f0828248ed75c9f52944ecaa5684464a3c"
+      },
+      {
+        "path": "src/audit/audit-validator.ts",
+        "sha256": "43c6e7dfc6f8ec9862dbcf62585e9180136d6a36f5a2b208aa9877dbfa809fac"
+      },
+      {
+        "path": "src/console-policy.ts",
+        "sha256": "2965f584db41530bcc59b8b8cc4e96d71f68ecf0b7b646d140063aa7bec40d76"
+      },
+      {
+        "path": "src/denials/denial-report.ts",
+        "sha256": "8a81dec3016f8df16e3af654d3c4273b9a530790a59f735a7521a91a37069b7a"
+      },
+      {
+        "path": "src/denials/denial-runtime.ts",
+        "sha256": "bfa7c38288b24112a19aa52d9f84f41f8f9402eda16903deb8a6cd8cf56c2912"
+      },
+      {
+        "path": "src/denials/denial-serializer.ts",
+        "sha256": "b553ae2243390f4a654b223593ac0b1384e4e11bce599fa3ff07e4f8e51ce580"
+      },
+      {
+        "path": "src/denials/denial-validator.ts",
+        "sha256": "7658913784a8be7aeb1e43673f310e2e7c668f3e36f6fa829bf72b348a1df0a7"
+      },
+      {
+        "path": "src/evidence/capability-evidence.ts",
+        "sha256": "71c22512ef5202ab0d74db9af6d88fb51fd5b0238c7680a0fe95e6198573e396"
+      },
+      {
+        "path": "src/evidence/effect-evidence.ts",
+        "sha256": "bc143c479c5d84adbeca1fcf02a2360b15fce48d3d44db46427412066dcf4e1c"
+      },
+      {
+        "path": "src/evidence/evidence-aggregator.ts",
+        "sha256": "1c7f3104971693382326ce76f132a97af62216b20629db2646f964ed8084f29b"
+      },
+      {
+        "path": "src/evidence/evidence-validator.ts",
+        "sha256": "8840001e3fea630b3da48c10d75e800f46e40039f89ed45219ec1c63b51c1381"
+      },
+      {
+        "path": "src/evidence/runtime-evidence.ts",
+        "sha256": "dec94ef1a31c041645fb4f3d89c396da579fa97a60241de90cfa3b479ba0e8c9"
+      },
+      {
+        "path": "src/hold-pin.ts",
+        "sha256": "9c6a5ef80db34293070ddfea670ad29480f5b321e8f50173a7c9e6e872debde5"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "068c96abc0230e9400ec4b79aacf7184f07c0d36795f9e894bc49345eea38d80"
+        "sha256": "60954a47d5e06120a6dbb6959f4f673b186e06851cb3e9fff88a5690ce2f72b9"
+      },
+      {
+        "path": "src/proofs/execution-proof.ts",
+        "sha256": "58d4cbd60f6c23cb427796e8678190a52ae371ba0543504a93e412cde2d6da7e"
+      },
+      {
+        "path": "src/proofs/proof-hashing.ts",
+        "sha256": "6532ce146c0992f08c0bd911bd65d3df0d2d468929ace96fbf622e8ec60a1ebf"
+      },
+      {
+        "path": "src/proofs/proof-report.ts",
+        "sha256": "154a99534fcf4ce31867e7cc93659a81e0f35d681c9a44f3757f8f0bbae4c68a"
+      },
+      {
+        "path": "src/proofs/proof-runtime.ts",
+        "sha256": "5c890ae9c65c5db90886602f0fa012555a9f1a11cb1c8d837aa2796ac350c95b"
+      },
+      {
+        "path": "src/proofs/proof-validator.ts",
+        "sha256": "87490f78158f349005d85fefedcad4e43bd33d2c2fbbf39e4611199e444eee20"
+      },
+      {
+        "path": "src/reports/evidence-reports.ts",
+        "sha256": "37344a74f5dc77232c2cf80ea8a02c688bf8952b4898856f45996b035f6153bf"
+      },
+      {
+        "path": "src/reports/policy-risk-specialist-reports.ts",
+        "sha256": "e69b8fe59887b8cf7fa18432f79cdc376166d2e70e36be2a19bf1d4c047c5335"
+      },
+      {
+        "path": "src/reports/runtime-health.ts",
+        "sha256": "d68b8c214231475278920be32229bba8d58a62baa8499bf414cf9faf5d7034e9"
+      },
+      {
+        "path": "src/reports/scheduler-evidence.ts",
+        "sha256": "354378deb13fff38aa4c4fd4d31f69d1aaabe8c750b7aa136b0094010fe0c2b4"
       },
       {
         "path": "src/self-hosted/report-status.fungi",
         "sha256": "0347d792d17c4830e65b2ca7159c111f966f745fadaec22345b17467a9a87921"
+      },
+      {
+        "path": "src/shared/audit-reference.ts",
+        "sha256": "f9e589a7ed363b5b2683ae8a4916924a87d3fcbeee145eb9c42075499afc0fad"
+      },
+      {
+        "path": "src/shared/audit-status.ts",
+        "sha256": "9857480755dbea566ae26a2bb375e1269c781c5fde47f718dd4b21445b018b05"
+      },
+      {
+        "path": "src/shared/report-codes.ts",
+        "sha256": "0af297c23e63c4d22576b07c6bd5361992808d0bcb7935c6168f2ca68a15ccf7"
+      },
+      {
+        "path": "tests/ai-digest.test.mjs",
+        "sha256": "c7a7fc32825c9681a06c5c61ca9565494d9a50a9b13dad3e87d7b9f081504421"
+      },
+      {
+        "path": "tests/console-policy.test.mjs",
+        "sha256": "284b98eec34feece57452a8561ebce2ef583e826515298b2d5e497cfb64c5beb"
+      },
+      {
+        "path": "tests/core-reports-hold-pin.test.mjs",
+        "sha256": "b69214faf3f1cc386c0a14b867f63c4d15da320284b3e7d06f26759b2547a80d"
+      },
+      {
+        "path": "tests/evidence-reports.test.mjs",
+        "sha256": "08b59761a5399d296bde2e68e08d8062f0ee975951079ecb46bd8e963f950d5f"
+      },
+      {
+        "path": "tests/policy-risk-specialist-reports.test.mjs",
+        "sha256": "6fe79efae566ac4260673277a64c84a88f8b53ab8c49ba00cd7c18106603bcb7"
       },
       {
         "path": "tests/report-contracts.test.mjs",
@@ -69,6 +205,22 @@
       {
         "path": "tests/report-status-fungi-conversion.test.mjs",
         "sha256": "1da8921ba4a13c5203592af0caaf20cd4be836af7b85185a49df17086c633bc9"
+      },
+      {
+        "path": "tests/runtime-audit-closed-set.test.mjs",
+        "sha256": "60dce9ab9f4f7565b32717da28e56b9c52088efa7d987a44f2f85a855ab22e91"
+      },
+      {
+        "path": "tests/runtime-audit-v02.test.mjs",
+        "sha256": "c8f578dd852a5c2502fa9e89759b55f48070b2ba5521d898bde5ad7d58ff9181"
+      },
+      {
+        "path": "tests/runtime-health.test.mjs",
+        "sha256": "229fd9cd9e43dfa69efc02479d268d4723ec6d20f6d4e3a5ff5da3b53e3769f5"
+      },
+      {
+        "path": "tests/scheduler-evidence.test.mjs",
+        "sha256": "8b8abed07025ef31b598a3a6e9bdeb3aa05e66d1ac1b3dc912bbc0a693513015"
       },
       {
         "path": "tsconfig.json",

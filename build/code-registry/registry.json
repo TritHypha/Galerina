@@ -223,7 +223,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 1,
+      "tests": 7,
       "docs": 0
     },
     {
@@ -11222,7 +11222,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 51,
+      "tests": 52,
       "docs": 8
     },
     {
@@ -12664,7 +12664,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 8,
+      "tests": 9,
       "docs": 9
     },
     {
@@ -13916,7 +13916,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 70,
+      "tests": 76,
       "docs": 3
     },
     {
@@ -14101,7 +14101,7 @@
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 5,
+      "emits": 8,
       "tests": 11,
       "docs": 0
     },
@@ -14130,7 +14130,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 9,
+      "tests": 11,
       "docs": 0
     },
     {
@@ -14864,7 +14864,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 8,
+      "tests": 10,
       "docs": 0
     },
     {
@@ -16083,7 +16083,7 @@
       ],
       "defs": 0,
       "emits": 8,
-      "tests": 55,
+      "tests": 59,
       "docs": 9
     },
     {
@@ -17840,7 +17840,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 14,
+      "tests": 15,
       "docs": 0
     },
     {

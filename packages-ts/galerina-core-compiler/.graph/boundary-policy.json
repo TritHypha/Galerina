@@ -3,6 +3,7 @@
   "allowedExternal": [
     "@galerina/core-network",
     "@galerina/core-runtime-wasm",
+    "@galerina/core-runtime-wasm/dist/decimal-core.js",
     "@galerina/core-security",
     "@galerina/data-json",
     "@galerina/devtools-graph-algorithms",

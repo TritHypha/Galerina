@@ -19,12 +19,12 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "551c34938482cedb5ebc82221c204c4c0c22517a80926043af8aee14e40ca285",
+    "aggregateSha256": "9466f59120177ace83a87cad2b3ab6b2c2c99319ecf5e5e207759d334894c328",
     "algorithm": "sha256",
     "files": [
       {
         "path": ".graph/BOUNDARY.md",
-        "sha256": "ac928bcafb8d55f0454d919ca2501db24efa2fc8dc2d435cfc9a3faed680595a"
+        "sha256": "334161f9eae081f9556b073adabcc2863c9a8b2655f1a48f1a86f568bfec6a35"
       },
       {
         "path": ".graph/boundary-policy.json",
@@ -40,7 +40,7 @@
       },
       {
         "path": "TODO.md",
-        "sha256": "87bdcc3165497622a345f81b36e76bc38227de12b0fd409a731fd8cb63107981"
+        "sha256": "27244bd401b6ad679cd9133c2a274d12ce00d006db52d983ed2774a23d3e2716"
       },
       {
         "path": "package-lock.json",
@@ -51,12 +51,20 @@
         "sha256": "a4b7f69a9dab77545aba6e5818fb01ac397190955ac832e0872ec02bf99d44ea"
       },
       {
+        "path": "src/hold-pin.ts",
+        "sha256": "30922a4ee2c0ee6c6c209d682551f502ebea95c9419f58d4916fcc67f1472a2b"
+      },
+      {
         "path": "src/index.ts",
-        "sha256": "2569f150684d557917868d56fcf4e7018ecfc4af2e9c4e120a112baa2537692e"
+        "sha256": "274b2c2d5e048792c88927a098fc943e312d628a585d1c82f1409e78095d40a8"
+      },
+      {
+        "path": "src/query-admission.ts",
+        "sha256": "1ef8d0f45c93a62a14a534ba420f6e8650e8d8f0fbd707df6634a25a8e557180"
       },
       {
         "path": "src/replay-store.ts",
-        "sha256": "b1fd94a12565877553459955578ba4a40ae77b311a6f1aebd01297c502eb0b76"
+        "sha256": "178d6ea00e4bd6cf89f24fe99d33fe6419788ecbd0c6c39b84f993529477631b"
       },
       {
         "path": "src/self-hosted/default-idle-timeout-ms.fungi",
@@ -72,7 +80,11 @@
       },
       {
         "path": "src/webhook-admission.ts",
-        "sha256": "25a2d2c712e941dfce02b1a9b0660179f4102ac39da98c8f7496c77abf435eb1"
+        "sha256": "7e8450ad28d28bbf02bce53c2272edbf676bdf9b3cdb2cd1f20c1a8f7f2dc1b3"
+      },
+      {
+        "path": "tests/api-server-hold-pin.test.mjs",
+        "sha256": "39659b023058c0141cc4005793eb0ee90a039d6ebf998ca44adb41759b32af4c"
       },
       {
         "path": "tests/api-server-tls.test.mjs",
@@ -121,6 +133,10 @@
       {
         "path": "tests/q2-durable-replay-admission.test.mjs",
         "sha256": "0345f558b81597b4d4c46f05a34f5b46043cb28041ed0345ce60fbb9b7107ab4"
+      },
+      {
+        "path": "tests/query-duplicate-refusal.test.mjs",
+        "sha256": "cd4c8bf0adfb1634cec2eadd485e8df5ccf1ec58ea88fb15e81f3ec9f3b76615"
       },
       {
         "path": "tests/replay-store.test.mjs",

@@ -17,6 +17,223 @@ import {
 } from "../dist/index.js";
 import { compileFile } from "../dist/cli.js";
 import * as compiler from "../dist/index.js";
+import { analyzeRequirementTaintForValueState } from "../dist/taint-checker.js";
+
+describe("parser type structure snapshot identity", () => {
+  const pair = () => {
+    const parsed = parseProgram('@version 1\nflow preserve(value: SecureString) -> Option<SecureString> { return value }', "structure.fungi");
+    assert.deepEqual(parsed.diagnostics.filter(d => d.severity === "error"), []);
+    const node = parsed.ast.children[0];
+    const result = node.children.find(child => child.kind === "typeRef");
+    return { parsed, node, result, flow: parsed.flows[0] };
+  };
+  const digest = p => compiler.computeRequirementValidatorCheckedFlowDigest(p.flow, p.node);
+  const analysis = p => analyzeRequirementTaintForValueState(p.parsed.ast, []);
+  const resultOf = node => node.children.find(child => child.kind === "typeRef");
+  const assertDeepFrozen = value => {
+    if (value === null || typeof value !== "object") return;
+    assert.ok(Object.isFrozen(value));
+    for (const child of Object.values(value)) assertDeepFrozen(child);
+  };
+
+  it("retains detached deeply frozen structure in both snapshot consumers", () => {
+    const p = pair();
+    const original = structuredClone(p.result.typeStructure);
+    const checked = compiler.snapshotCheckedFlow(p.flow, p.node);
+    const analyzed = analysis(p);
+    for (const snapshot of [checked.ast, analyzed.ast.children[0]]) {
+      const structure = resultOf(snapshot).typeStructure;
+      assert.deepEqual(structure, original);
+      assert.notEqual(structure, p.result.typeStructure);
+      assertDeepFrozen(structure);
+    }
+    p.result.typeStructure.args[0].name = "String";
+    assert.deepEqual(resultOf(checked.ast).typeStructure, original);
+    assert.deepEqual(resultOf(analyzed.ast.children[0]).typeStructure, original);
+  });
+
+  for (const [label, change] of [
+    ["name", s => { s.args[0].name = "String"; }],
+    ["generic bit", s => { s.args[0].generic = true; }],
+    ["argument role", s => { s.args[0] = { kind: "payload" }; }],
+    ["argument count", s => { s.args.push({ kind: "invalid" }); }],
+  ]) {
+    it(`binds ${label} even when legacy text is unchanged`, () => {
+      const p = pair();
+      const before = digest(p);
+      assert.match(before, /^sha256:[0-9a-f]{64}$/);
+      change(p.result.typeStructure);
+      const after = digest(p);
+      assert.match(after, /^sha256:[0-9a-f]{64}$/);
+      assert.notEqual(after, before);
+    });
+  }
+
+  it("binds argument order and distinguishes absent, invalid and payload identity", () => {
+    const p = pair();
+    p.result.typeStructure = { kind: "type", name: "Result", generic: true,
+      args: [{ kind: "type", name: "SecureString", generic: false, args: [] }, { kind: "payload" }] };
+    const first = digest(p);
+    p.result.typeStructure.args.reverse();
+    assert.notEqual(digest(p), first);
+    const identities = [];
+    for (const structure of [undefined, { kind: "invalid" }, { kind: "payload" }]) {
+      p.result.typeStructure = structure;
+      identities.push(digest(p));
+    }
+    assert.ok(identities.every(d => /^sha256:[0-9a-f]{64}$/.test(d)));
+    assert.equal(new Set(identities).size, 3);
+  });
+
+  it("hashes an independently specified v2 preimage and rejects its old v1 identity", () => {
+    const flow = { name: "f", qualifier: "flow", params: [], returnType: "SecureString", declaredEffects: [] };
+    const node = { kind: "flowDecl", value: "f", children: [{ kind: "typeRef", value: "SecureString",
+      typeStructure: { kind: "type", name: "SecureString", generic: false, args: [] } }] };
+    const canonical = '{"domain":"galerina.requirement-validator.checked-flow.v2","flow":["f","flow",[],"SecureString",[],null],"ast":["flowDecl","f",null,null,null,null,null,null,null,[["typeRef","SecureString",null,null,null,null,null,null,["type","SecureString",false,[]],[]]]]}';
+    const old = '{"domain":"galerina.requirement-validator.checked-flow.v1","flow":["f","flow",[],"SecureString",[],null],"ast":["flowDecl","f",null,null,null,null,null,null,[["typeRef","SecureString",null,null,null,null,null,null,[]]]]}';
+    const hash = text => `sha256:${createHash("sha256").update(text).digest("hex")}`;
+    const actual = compiler.computeRequirementValidatorCheckedFlowDigest(flow, node);
+    assert.equal(actual, hash(canonical));
+    assert.notEqual(actual, hash(old));
+  });
+
+  it("reads structure fields and indexed arguments once, never their iterator", () => {
+    for (const consumer of [p => compiler.snapshotCheckedFlow(p.flow, p.node).ast, p => analysis(p).ast.children[0]]) {
+      const p = pair();
+      const input = p.result.typeStructure;
+      const counts = new Map();
+      const once = (object, label) => new Proxy(object, { get(target, key, receiver) {
+        if (key === Symbol.iterator) throw new Error("caller iterator must not execute");
+        const id = `${label}.${String(key)}`;
+        counts.set(id, (counts.get(id) ?? 0) + 1);
+        if (counts.get(id) > 1) throw new Error(`reread ${id}`);
+        return Reflect.get(target, key, receiver);
+      } });
+      input.args = once([once(input.args[0], "child")], "args");
+      p.result.typeStructure = once(input, "root");
+      assert.equal(resultOf(consumer(p)).typeStructure.args[0].name, "SecureString");
+      assert.ok(counts.size >= 10);
+      assert.ok([...counts.values()].every(count => count === 1));
+    }
+  });
+
+  for (const [label, structure] of [
+    ["null", () => null], ["unknown kind", () => ({ kind: "other" })],
+    ["missing arguments", () => ({ kind: "type", name: "SecureString", generic: false })],
+    ["nonboolean generic", () => ({ kind: "type", name: "SecureString", generic: "false", args: [] })],
+    ["overlong UTF8 name", () => ({ kind: "type", name: "é".repeat(16_385), generic: false, args: [] })],
+    ["cycle", () => { const s = { kind: "type", name: "Option", generic: true, args: [] }; s.args.push(s); return s; }],
+    ["throwing getter", () => ({ get kind() { throw new Error("hostile"); } })],
+  ]) {
+    it(`refuses ${label} structure rather than dropping it`, () => {
+      const p = pair();
+      p.result.typeStructure = structure();
+      assert.equal(digest(p), undefined);
+      assert.ok(analysis(p).analysis.diagnostics.some(d => d.code === "FUNGI-REQUIREMENT-010"));
+    });
+  }
+
+  it("charges structure nodes to the existing shared checked-flow node ceiling", () => {
+    const p = pair();
+    const count = node => 1 + (node.children ?? []).reduce((n, child) => n + count(child), 0);
+    // One parameter structure + result root; remaining nodes are result arguments.
+    const available = 4096 - count(p.node) - 2;
+    p.result.typeStructure.args = Array.from({ length: available }, () => ({ kind: "payload" }));
+    assert.match(digest(p), /^sha256:[0-9a-f]{64}$/);
+    p.result.typeStructure.args.push({ kind: "payload" });
+    assert.equal(digest(p), undefined);
+  });
+
+  it("stops structure byte accounting before reading later arguments", () => {
+    const p = pair();
+    let reads = 0;
+    p.result.typeStructure.args = new Proxy([], { get(target, key) {
+      if (key === "length") return 100;
+      if (/^\d+$/.test(String(key))) {
+        reads++;
+        if (reads > 16) throw new Error("unbounded structure allocation");
+        return { kind: "type", name: "x".repeat(32_768), generic: false, args: [] };
+      }
+      return Reflect.get(target, key);
+    } });
+    assert.equal(digest(p), undefined);
+    assert.ok(reads > 0 && reads <= 16);
+  });
+
+  it("keeps absent legacy structure absent and non-authorizing", () => {
+    const p = pair();
+    delete p.result.typeStructure;
+    const snapshot = analysis(p).ast;
+    assert.equal(resultOf(snapshot.children[0]).typeStructure, undefined);
+    assert.equal(checkValueStates(snapshot, "production").diagnostics.filter(d => d.code === "FUNGI-SECRET-006").length, 1);
+  });
+
+  it("admits depth 64 structure and refuses the next level without throwing", () => {
+    const p = pair();
+    let structure = { kind: "type", name: "SecureString", generic: false, args: [] };
+    for (let i = 0; i < 64; i++) structure = { kind: "type", name: "Option", generic: true, args: [structure] };
+    p.result.typeStructure = structure;
+    assert.match(digest(p), /^sha256:[0-9a-f]{64}$/);
+    assert.equal(analysis(p).analysis.diagnostics.length, 0);
+    p.result.typeStructure = { kind: "type", name: "Option", generic: true, args: [structure] };
+    assert.equal(digest(p), undefined);
+    assert.ok(analysis(p).analysis.diagnostics.some(d => d.code === "FUNGI-REQUIREMENT-010"));
+  });
+
+  it("refuses oversized argument cardinality before reading an index", () => {
+    const p = pair();
+    let reads = 0;
+    p.result.typeStructure.args = new Proxy([], { get(target, key) {
+      if (key === "length") return Number.MAX_SAFE_INTEGER;
+      reads++;
+      throw new Error("oversized input must not be traversed");
+    } });
+    assert.equal(digest(p), undefined);
+    assert.ok(analysis(p).analysis.diagnostics.some(d => d.code === "FUNGI-REQUIREMENT-010"));
+    assert.equal(reads, 0);
+  });
+
+  it("charges analysis structure bytes to its existing shared budget", () => {
+    const p = pair();
+    let reads = 0;
+    p.result.typeStructure.args = new Proxy([], { get(target, key) {
+      if (key === "length") return 600;
+      if (/^\d+$/.test(String(key))) {
+        reads++;
+        if (reads > 520) throw new Error("analysis read beyond budget");
+        return { kind: "type", name: "x".repeat(32_768), generic: false, args: [] };
+      }
+      return Reflect.get(target, key);
+    } });
+    assert.ok(analysis(p).analysis.diagnostics.some(d => d.code === "FUNGI-REQUIREMENT-010"));
+    assert.ok(reads > 0 && reads <= 520);
+  });
+
+  it("refuses old v1 authority and structure substitution through both public passes", () => {
+    const source = taintProgram("validateInput(input)");
+    const parsed = parseProgram(source, "structure-authority.fungi");
+    const { flow, node } = findFlowNode(parsed);
+    const canonical = JSON.parse(referenceCheckedFlowCanonical(flow, node));
+    const removeStructure = tuple => { const children = tuple[9]; tuple.splice(8, 1); children.forEach(removeStructure); };
+    removeStructure(canonical.ast);
+    canonical.domain = "galerina.requirement-validator.checked-flow.v1";
+    const oldDigest = `sha256:${createHash("sha256").update(JSON.stringify(canonical)).digest("hex")}`;
+    const exact = checkedFlowDigest(flow, node);
+    const changed = structuredClone(parsed.ast);
+    findFlowNode(parsed, "validateInput", changed).node.children.find(c => c.kind === "typeRef").typeStructure.name = "String";
+    const missing = structuredClone(parsed.ast);
+    delete findFlowNode(parsed, "validateInput", missing).node.children.find(c => c.kind === "typeRef").typeStructure;
+    for (const overrides of [{ digest: oldDigest }, { ast: changed, digest: exact }, { ast: missing, digest: exact }]) {
+      const checked = requirementTaintDiagnostics(source, overrides);
+      for (const diagnostics of [checked.taint, checked.valueState]) {
+        assert.deepEqual(diagnostics.map(d => d.code), ["FUNGI-REQUIREMENT-010"]);
+      }
+    }
+    const good = requirementTaintDiagnostics(source, { digest: exact });
+    assert.deepEqual(good.taint, []);
+    assert.deepEqual(good.valueState, []);
+  });
+});
 
 function checkRequirementEffects(source, file = "requirement-effects.fungi") {
   const parsed = parseProgram(source, file);
@@ -55,7 +272,8 @@ const TAINT_PROFILE = "slide.scalar-1";
 const TAINT_VERSION = "1.0.0";
 const TAINT_DIGEST = `sha256:${"a".repeat(64)}`;
 
-const CHECKED_FLOW_DIGEST_DOMAIN = "galerina.requirement-validator.checked-flow.v1";
+// v2 adds a nullable structure tuple before children; constants and ceilings are unchanged.
+const CHECKED_FLOW_DIGEST_DOMAIN = "galerina.requirement-validator.checked-flow.v2";
 const CHECKED_FLOW_MAX_NODES = 4_096;
 const CHECKED_FLOW_MAX_DEPTH = 128;
 const CHECKED_FLOW_MAX_BYTES = 262_144;
@@ -115,6 +333,8 @@ function referenceCheckedFlowCanonical(flow, flowNode) {
       if (normalized === undefined) return undefined;
       children.push(normalized);
     }
+    const normalizeType = type => type === undefined ? null : type.kind === "type"
+      ? ["type", type.name, type.generic, type.args.map(normalizeType)] : [type.kind];
     return [
       node.kind,
       node.value ?? null,
@@ -124,6 +344,7 @@ function referenceCheckedFlowCanonical(flow, flowNode) {
       node.flowRef ?? null,
       node.claim ?? null,
       node.flags ?? null,
+      normalizeType(node.typeStructure),
       children,
     ];
   };
@@ -1703,7 +1924,9 @@ describe("RD-0858 Task 3 fix round 3", () => {
     assert.equal(checkedFlowDigest(over.flow, over.node), undefined);
   });
 
-  const countNodes = (node) => 1 + (node.children ?? [])
+  const countTypeNodes = type => type === undefined ? 0 : 1
+    + (type.kind === "type" ? type.args.reduce((n, arg) => n + countTypeNodes(arg), 0) : 0);
+  const countNodes = (node) => 1 + countTypeNodes(node.typeStructure) + (node.children ?? [])
     .reduce((total, child) => total + countNodes(child), 0);
 
   it("admits the exact AST node ceiling and refuses one node over", () => {
