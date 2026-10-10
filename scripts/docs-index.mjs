@@ -20,16 +20,17 @@
  *   --apply       write the indexes
  */
 
+import * as fs from 'node:fs';
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
-import { join, resolve, dirname, relative, sep } from 'node:path';
+import { join, resolve, dirname, relative, sep, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DOCS = join(ROOT, 'docs');
-const GENERATED = 'INDEX.md';
+export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export const DOCS = join(ROOT, 'docs');
+export const GENERATED = 'INDEX.md';
 const SKIP_DIRS = new Set(['.myco', 'node_modules', '.git', 'generated']);
 
-const toPosix = (p) => p.split(sep).join('/');
+export const toPosix = (p) => p.split(sep).join('/');
 
 /**
  * First heading, or the first non-empty prose line, as the document's description.
@@ -52,9 +53,65 @@ export function titleOf(name) {
   return name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function listDir(dir) {
+
+// Guarded manifest mode only. Stable owner-controlled paths are required;
+// lstat/realpath plus O_NOFOLLOW do not defeat hostile ancestor renames.
+export function checkedPath(path, kind = 'file', io = fs, absent = false) {
+  const target = resolve(path);
+  const rel = relative(ROOT, target);
+  if (rel === '..' || rel.startsWith('..' + sep) || isAbsolute(rel)) throw new Error('REFUSED PATH_SCOPE');
+  const same = (a, b) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  if (!same(resolve(io.realpathSync(ROOT)), ROOT)) throw new Error('REFUSED ROOT_ALIAS');
+  const parts = rel ? rel.split(sep) : [];
+  let current = ROOT;
+  for (let i = -1; i < parts.length; i++) {
+    if (i >= 0) current = join(current, parts[i]);
+    let st;
+    try { st = io.lstatSync(current); }
+    catch (error) {
+      if (absent && error.code === 'ENOENT' && i === parts.length - 1) return null;
+      throw error;
+    }
+    const leaf = i === parts.length - 1;
+    if (st.isSymbolicLink() || !same(resolve(io.realpathSync(current)), resolve(current))) throw new Error('REFUSED PATH_LINK');
+    if ((!leaf || kind === 'dir') && !st.isDirectory()) throw new Error('REFUSED PATH_DIRECTORY');
+    if (leaf && kind === 'file' && (!st.isFile() || st.nlink !== 1)) throw new Error('REFUSED PATH_FILE');
+    if (leaf) return st;
+  }
+}
+
+export function readRegular(path, io = fs, limit = 4 * 1024 * 1024) {
+  const before = checkedPath(path, 'file', io);
+  if (before.size > limit) throw new Error('REFUSED BYTE_LIMIT');
+  const fd = io.openSync(path, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0));
+  try {
+    const held = io.fstatSync(fd);
+    if (!held.isFile() || held.nlink !== 1 || held.dev !== before.dev || held.ino !== before.ino) throw new Error('REFUSED FILE_IDENTITY');
+    const bytes = io.readFileSync(fd);
+    const after = io.fstatSync(fd);
+    if (bytes.length > limit || bytes.length !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) throw new Error('REFUSED FILE_DRIFT');
+    return bytes;
+  } finally { io.closeSync(fd); }
+}
+
+function strictEntries(dir, options) {
+  const io = options.io ?? fs;
+  checkedPath(dir, 'dir', io);
+  const entries = io.readdirSync(dir, { withFileTypes: true });
+  if (entries.length > 4096) throw new Error('REFUSED ENTRY_LIMIT');
+  for (const entry of entries) {
+    if (SKIP_DIRS.has(entry.name)) continue;
+    const path = join(dir, entry.name);
+    const st = checkedPath(path, 'any', io);
+    if (/\.md$/i.test(entry.name)) checkedPath(path, 'file', io);
+    if (st.isDirectory()) continue;
+  }
+  return entries;
+}
+
+export function listDir(dir, options) {
   const files = [], dirs = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
+  for (const e of options?.strict ? strictEntries(dir, options) : readdirSync(dir, { withFileTypes: true })) {
     if (SKIP_DIRS.has(e.name)) continue;
     if (e.isDirectory()) dirs.push(e.name);
     else if (/\.md$/i.test(e.name) && e.name !== GENERATED) files.push(e.name);
@@ -62,7 +119,12 @@ function listDir(dir) {
   return { files: files.sort(), dirs: dirs.sort() };
 }
 
-function countMd(dir) {
+function countMd(dir, options) {
+  if (options?.strict) {
+    let count = 0;
+    for (const d of allDirs(dir, [], options)) count += listDir(d, options).files.length;
+    return count;
+  }
   let n = 0;
   const stack = [dir];
   while (stack.length) {
@@ -83,15 +145,15 @@ function countMd(dir) {
  * loop's condition — if they disagree, a parent links an index that was never written.
  * That disagreement produced exactly five dead links on the first run.
  */
-export function willIndex(dir) {
+export function willIndex(dir, options) {
   try {
-    const { files, dirs } = listDir(dir);
+    const { files, dirs } = listDir(dir, options);
     return files.length > 0 || dirs.length > 0;
-  } catch { return false; }
+  } catch (error) { if (options?.strict) throw error; return false; }
 }
 
-function buildIndex(dir) {
-  const { files, dirs } = listDir(dir);
+export function buildIndex(dir, options) {
+  const { files, dirs } = listDir(dir, options);
   const rel = toPosix(relative(DOCS, dir)) || '.';
   const name = rel === '.' ? 'docs' : rel;
   const depth = rel === '.' ? 0 : rel.split('/').length;
@@ -106,11 +168,11 @@ function buildIndex(dir) {
   if (dirs.length) {
     L.push('---', '', '## Sections', '', '| Section | Documents |', '|---|---|');
     for (const d of dirs) {
-      const n = countMd(join(dir, d));
+      const n = countMd(join(dir, d), options);
       // A directory only receives an INDEX.md if it has something to index. Linking one
       // into a directory that holds only examples or fixtures is a dead link, so those
       // rows point at the directory itself and say what is in it.
-      const target = willIndex(join(dir, d)) ? `${d}/${GENERATED}` : `${d}/`;
+      const target = willIndex(join(dir, d), options) ? `${d}/${GENERATED}` : `${d}/`;
       L.push(`| [\`${d}/\`](${target}) | ${n === 0 ? '— (no documents; browse the directory)' : n} |`);
     }
     L.push('');
@@ -120,7 +182,7 @@ function buildIndex(dir) {
     L.push('---', '', '## Documents', '', '| Document | Description |', '|---|---|');
     for (const f of files) {
       let desc = f.replace(/\.md$/i, '').replace(/[-_]/g, ' ');
-      try { desc = describe(readFileSync(join(dir, f), 'utf8'), desc); } catch { /* keep fallback */ }
+      try { desc = describe(options?.strict ? readRegular(join(dir, f), options.io).toString('utf8') : readFileSync(join(dir, f), 'utf8'), desc); } catch (error) { if (options?.strict) throw error; /* legacy fallback */ }
       L.push(`| [\`${f}\`](${f}) | ${desc.replace(/\|/g, '\\|')} |`);
     }
     L.push('');
@@ -137,7 +199,17 @@ function buildIndex(dir) {
   return L.join('\n');
 }
 
-function allDirs(dir, out = []) {
+export function allDirs(dir, out = [], options) {
+  if (options?.strict) {
+    const stack = [dir];
+    while (stack.length) {
+      const current = stack.pop();
+      if (out.length >= 2048) throw new Error('REFUSED DIRECTORY_LIMIT');
+      out.push(current);
+      for (const e of strictEntries(current, options)) if (e.isDirectory() && !SKIP_DIRS.has(e.name)) stack.push(join(current, e.name));
+    }
+    return out;
+  }
   out.push(dir);
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.isDirectory() && !SKIP_DIRS.has(e.name)) allDirs(join(dir, e.name), out);
@@ -145,7 +217,7 @@ function allDirs(dir, out = []) {
   return out;
 }
 
-function selftest() {
+export function selftest() {
   let pass = 0, fail = 0;
   const eq = (l, g, w) => { if (g === w) pass++; else { fail++; console.log(`  FAIL ${l}\n    got  ${JSON.stringify(g)}\n    want ${JSON.stringify(w)}`); } };
 
@@ -183,14 +255,14 @@ function selftest() {
   return fail === 0;
 }
 
-const mode = process.argv[2];
-if (mode === '--selftest') process.exit(selftest() ? 0 : 1);
+export function main(mode = process.argv[2]) {
+if (mode === '--selftest') return selftest() ? 0 : 1;
 if (!['--dry-run', '--check', '--apply'].includes(mode)) {
   console.error('usage: docs-index.mjs <--selftest|--dry-run|--check|--apply>');
-  process.exit(2);
+  return 2;
 }
-if (!selftest()) { console.error('KATs failed — refusing to write indexes from an unproven generator.'); process.exit(1); }
-if (!existsSync(DOCS)) { console.error(`no docs/ at ${DOCS}`); process.exit(2); }
+if (!selftest()) { console.error('KATs failed — refusing to write indexes from an unproven generator.'); return 1; }
+if (!existsSync(DOCS)) { console.error(`no docs/ at ${DOCS}`); return 2; }
 
 const dry = mode === '--dry-run';
 const check = mode === '--check';
@@ -216,10 +288,14 @@ for (const d of allDirs(DOCS)) {
 if (check) {
   if (drifted > 0) {
     console.error(`[check] ${drifted} of ${written} INDEX.md file(s) missing or drifted; wrote 0`);
-    process.exitCode = 1;
+    return 1;
   } else {
     console.log(`[check] ${written} INDEX.md file(s) exact, linking ${linked} documents; wrote 0`);
   }
 } else {
   console.log(`${dry ? '[dry-run] would write' : 'wrote'} ${written} INDEX.md file(s), linking ${linked} documents`);
 }
+  return 0;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) process.exitCode = main();
