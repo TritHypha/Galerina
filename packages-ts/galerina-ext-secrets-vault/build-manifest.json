@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "8c1e65aaa6a3f41f8bb78e9651a0bcf3f25598eb1b13930939eb99408b877be4",
+    "aggregateSha256": "20eac354b4d1155bb2e40c315d815a5e1bff7b856c9a85326e559080a7186b75",
     "algorithm": "sha256",
     "files": [
       {
@@ -72,7 +72,7 @@
       },
       {
         "path": "tests/vault.test.mjs",
-        "sha256": "561a4c85e7865f673099507402eaa5fd209fb38be4226a13acf737826a542cd2"
+        "sha256": "c66c7850b9020ee62541736e5cfdac17390c5501a349077662e6986f9c8d7865"
       },
       {
         "path": "tsconfig.json",
