@@ -58,8 +58,41 @@ export function diagnosticObjectOccurrences(source, file, { testOnly = false } =
   // Conservative local binding check: shadowing, aliasing or writes to Object
   // disqualify freeze wrappers. This does not prove ambient builtins unmodified.
   const ordinaryObject = allNodes.filter((n) => identifier(n, "Object"))
-    .every((n) => ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n
-      && isFreeze(n.parent.parent) && n.parent.parent.expression === n.parent);
+    .every((n) => {
+      // Only these local call shapes are supported. In particular, a getter or
+      // setter replacement must not become safe merely because it is a call.
+      let access = n;
+      const parts = [];
+      while (ts.isPropertyAccessExpression(access.parent) && access.parent.expression === access) {
+        access = access.parent;
+        if (access.questionDotToken) return false;
+        parts.push(access.name.text);
+      }
+      const call = access.parent;
+      if (!ts.isCallExpression(call) || call.expression !== access || call.questionDotToken
+        || call.arguments.some(ts.isSpreadElement)) return false;
+      const method = parts.join(".");
+      if (["freeze", "entries", "getPrototypeOf", "create"].includes(method)) return call.arguments.length === 1;
+      if (method === "prototype.hasOwnProperty.call") return call.arguments.length === 2;
+      // The runtime's error-cause decoration is a literal data descriptor, not
+      // permission for arbitrary property replacement or accessor installation.
+      if (method !== "defineProperty" || call.arguments.length !== 3 || literal(call.arguments[1]) !== "cause") return false;
+      const descriptor = unwrap(call.arguments[2]);
+      return ts.isObjectLiteralExpression(descriptor) && descriptor.properties.length === 2
+        && descriptor.properties.every(ts.isPropertyAssignment)
+        && descriptor.properties.some((p) => key(p.name) === "value")
+        && descriptor.properties.some((p) => key(p.name) === "configurable" && p.initializer.kind === ts.SyntaxKind.TrueKeyword);
+    });
+  const frozenDefinitions = new Map();
+  for (const node of allNodes) {
+    if (!ordinaryObject || !isFreeze(node) || !exportedConst(node)) continue;
+    const object = unwrap(node.arguments[0]);
+    if (!ts.isObjectLiteralExpression(object)) continue;
+    let outer = node;
+    while (outer.parent && unwrap(outer.parent) === node) outer = outer.parent;
+    const decl = outer.parent;
+    if (ts.isIdentifier(decl.name)) frozenDefinitions.set(object, decl);
+  }
   const simpleArrow = (node) => node && ts.isArrowFunction(node) && node.parameters.length === 1
     && ts.isIdentifier(node.parameters[0].name) && !node.parameters[0].initializer
     && !node.parameters[0].dotDotDotToken && !node.modifiers?.length;
@@ -145,7 +178,7 @@ export function diagnosticObjectOccurrences(source, file, { testOnly = false } =
     // Preserve the existing descriptive-only annotation contract; it must not
     // become a new way to suppress numeric runtime diagnostics.
     const ref = registryObjects.has(object) || (!CODE_TEST.test(value) && markedReference(start));
-    const role = testOnly ? "test" : ref ? "ref" : exportedConst(object) ? "def" : "emit";
+    const role = testOnly ? "test" : ref ? "ref" : exportedConst(object) || frozenDefinitions.has(object) ? "def" : "emit";
     const entry = { code: value, start, line: lineAt(start), role, catalogIdentity: !CODE_TEST.test(value) };
     // Metadata is explicit, literal and local to this object. Dynamic/duplicate
     // keys and spreads leave it unknown; meaning is never a diagnostic name.
@@ -164,6 +197,68 @@ export function diagnosticObjectOccurrences(source, file, { testOnly = false } =
     occurrences.push(entry);
     handled.add(token);
     mask(start, token.end);
+  }
+  // Resolve only local frozen owners, not a project-global spelling map. Every
+  // use of that spelling must be the declaration or a direct property read;
+  // shadowing, aliases and writes conservatively disable sink resolution.
+  const readOnlyProperty = (node) => {
+    const access = node.parent;
+    if (!ts.isPropertyAccessExpression(access) || access.expression !== node) return false;
+    let target = access;
+    let container = false;
+    while (target.parent) {
+      const parent = target.parent;
+      if (unwrap(parent) === unwrap(target)
+        || (ts.isNonNullExpression(parent) && parent.expression === target)) {
+        target = parent;
+        continue;
+      }
+      if (ts.isBinaryExpression(parent) && parent.left === target
+        && parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment
+        && parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return false;
+      if ((ts.isForInStatement(parent) || ts.isForOfStatement(parent)) && parent.initializer === target) return false;
+      if (!container && (ts.isDeleteExpression(parent) || ts.isPrefixUnaryExpression(parent)
+        || ts.isPostfixUnaryExpression(parent))) return false;
+      // Follow only potential target edges, not computed keys, default-value
+      // expressions, assignment RHSs or loop iterables. A container is a write
+      // target only when a containing assignment/loop actually uses it as one.
+      if ((ts.isPropertyAssignment(parent) && parent.initializer === target)
+        || (ts.isObjectLiteralExpression(parent) && parent.properties.includes(target))
+        || (ts.isArrayLiteralExpression(parent) && parent.elements.includes(target))
+        || ((ts.isSpreadAssignment(parent) || ts.isSpreadElement(parent)) && parent.expression === target)) {
+        container = true;
+        target = parent;
+        continue;
+      }
+      return true;
+    }
+    return true;
+  };
+  const ordinaryError = allNodes.filter((n) => identifier(n, "Error"))
+    .every((n) => (ts.isNewExpression(n.parent) && n.parent.expression === n)
+      || ts.isTypeReferenceNode(n.parent)
+      || (ts.isBinaryExpression(n.parent) && n.parent.right === n
+        && n.parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword));
+  for (const [object, decl] of frozenDefinitions) {
+    const fields = object.properties;
+    if (!fields.every((p) => ts.isPropertyAssignment(p) && key(p.name))) continue;
+    if (new Set(fields.map((p) => key(p.name))).size !== fields.length) continue;
+    const value = literal(fields.find((p) => key(p.name) === "code")?.initializer);
+    if (!value || !identity(value) || !ordinaryError) continue;
+    const uses = allNodes.filter((n) => identifier(n, decl.name.text));
+    if (!uses.every((n) => n === decl.name || readOnlyProperty(n))) continue;
+    for (const node of allNodes) {
+      if (!ts.isNewExpression(node) || !identifier(node.expression, "Error") || !node.arguments?.length) continue;
+      // Only the message expression can establish this sink, and only direct
+      // code reads or direct template substitutions (not arbitrary callbacks).
+      const message = unwrap(node.arguments[0]);
+      const parts = ts.isTemplateExpression(message)
+        ? message.templateSpans.map((span) => unwrap(span.expression)) : [message];
+      if (!parts.some((part) => ts.isPropertyAccessExpression(part) && part.name.text === "code"
+        && identifier(part.expression, decl.name.text))) continue;
+      const start = node.getStart(sf);
+      occurrences.push({ code: value, start, line: lineAt(start), role: testOnly ? "test" : "emit", catalogIdentity: !CODE_TEST.test(value) });
+    }
   }
   // Only inert text is removed from the legacy numeric scan. Do not blank a
   // whole template: executable substitutions are separate AST children.

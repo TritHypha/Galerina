@@ -70,6 +70,8 @@ function run(root, args = []) {
   return spawnSync(process.execPath, [SCRIPT, ...args], {
     cwd: root,
     encoding: "utf8",
+    timeout: 30000,
+    maxBuffer: 1048576,
     env: { ...env, SOURCE_DATE_EPOCH: "1700000000" },
   });
 }
@@ -78,7 +80,143 @@ function run(root, args = []) {
 // a whole line, or suppressing a code globally must not satisfy these controls.
 const record = '{ code: "FUNGI-REPORT-002", meaning: "missing" }';
 const descriptiveRecord = '{ code: "FUNGI-REPORT-FIELD-MISSING", meaning: "missing" }';
+const frozenOwner = 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n';
 const fixtureCases = [
+  ...[
+    ['getter replacement', 'Object.__defineGetter__("freeze", () => emit);'],
+    ['setter replacement', 'Object.__defineSetter__("freeze", emit);'],
+    ['unknown mutator', 'Object.setPrototypeOf(target, replacement);'],
+    ['freeze descriptor replacement', 'Object.defineProperty(target, "freeze", { value: emit });'],
+    ['accessor descriptor', 'Object.defineProperty(target, "cause", { get: effect });'],
+    ['spread call shape', 'Object.entries(...input);'],
+    ['unsupported call chain', 'Object.freeze.call(target, input);'],
+  ].map(([name, operation]) => ({
+    name: `F1 ${name} retains diagnostic fallback`,
+    source: operation + '\n' + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [], emits: [2],
+  })),
+  {
+    name: "F1 getter replacement retains frozen-array fallback",
+    source: 'Object.__defineGetter__("freeze", () => emit);\n'
+      + `export const C = Object.freeze([${record}]);`,
+    refs: [], defs: [], emits: [2],
+  },
+  {
+    name: "F1 getter replacement retains helper-registry fallback",
+    source: 'Object.__defineGetter__("freeze", () => emit);\n'
+      + 'const freeze = entries => Object.freeze(entries);\n'
+      + `export const C = freeze([${record}]);`,
+    refs: [], defs: [], emits: [3],
+  },
+  {
+    name: "F1 supported ordinary calls preserve frozen owner and direct sink",
+    source: frozenOwner
+      + 'Object.entries({}); Object.getPrototypeOf(value); Object.create(null);\n'
+      + 'Object.prototype.hasOwnProperty.call(value, "key");\n'
+      + 'const failure = new Error("detail"); Object.defineProperty(failure, "cause", { value: cause, configurable: true });\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [1], emits: [5],
+  },
+  {
+    name: "F1 ordinary method twin preserves frozen-array registry references",
+    source: 'Object.entries({}); Object.prototype.hasOwnProperty.call({}, "key");\n'
+      + `export const C = Object.freeze([${record}]);\nfunction fail() { return ${record}; }`,
+    refs: [2], defs: [], emits: [3],
+  },
+  ...[
+    ['object destructuring', '({ code: C.code } = input);'],
+    ['array destructuring', '[C.code] = input;'],
+    ['nested destructuring', '({ nested: [{ value: C.code }] } = input);'],
+    ['wrapped destructuring', '[(C.code as string)] = input;'],
+    ['non-null wrapped target', '[C.code!] = input;'],
+    ['double wrapped target', '((C.code)) = input;'],
+    ['object rest target', '({ ...C.code } = input);'],
+    ['array rest target', '[...C.code] = input;'],
+    ['defaulted target', '[C.code = fallback] = input;'],
+    ['for-in target', 'for (C.code in input) {}'],
+    ['for-of target', 'for (C.code of input) {}'],
+  ].map(([name, operation]) => ({
+    name: `F2 ${name} disables constant sink resolution`,
+    source: frozenOwner + operation + '\nnew Error(C.code);',
+    refs: [], defs: [1], emits: [],
+  })),
+  ...[
+    ['object value', 'const read = { label: C.code };'],
+    ['nested wrapped value', 'const read = [{ label: ((C.code as string)) }];'],
+    ['negated container value', 'const read = !{ label: C.code };'],
+    ['computed destructuring key', '({ [C.code]: target } = input);'],
+    ['destructuring default value', '[target = C.code] = input;'],
+    ['for-of iterable', 'for (const value of [C.code]) {}'],
+    ['for-in expression', 'for (const key in { label: C.code }) {}'],
+  ].map(([name, operation]) => ({
+    name: `F2 ${name} preserves read and template sink`,
+    source: frozenOwner + operation + '\nnew Error(`${C.code}: detail`);',
+    refs: [], defs: [1], emits: [3],
+  })),
+  {
+    name: "frozen diagnostic definition and constant-backed Error have separate roles",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002", name: "FAILURE", severity: "error" } as const);\n'
+      + 'Object.entries({}); Object.prototype.hasOwnProperty.call({}, "x");\n'
+      + 'function fail(detail) { return new Error(`${C.code}: ${detail}`); }',
+    refs: [], defs: [1], emits: [3], names: ["FAILURE"], severities: ["error"],
+  },
+  {
+    name: "unused frozen diagnostic definition does not invent an emission",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\nconst read = C.code;',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "shadowed diagnostic binding cannot supply an Error identity",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'function fail(C) { return new Error(`${C.code}`); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "shadowed Error constructor cannot supply an emission",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'function fail(Error) { return new Error(`${C.code}`); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "replaced freeze gets no definition exemption",
+    source: 'Object.freeze = emit;\nexport const C = Object.freeze({ code: "FUNGI-REPORT-002" });',
+    refs: [], emits: [2],
+  },
+  {
+    name: "reassigned Error gets no constant-backed emission",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'Error = Custom;\nfunction fail() { return new Error(C.code); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "constant alias escape does not imply a resolved sink",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'const alias = C;\nfunction fail() { return new Error(C.code); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "constant property mutation disables sink resolution",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'C.code = other;\nfunction fail() { return new Error(C.code); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "nested callback in Error does not establish message evaluation",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'function fail() { return new Error(() => C.code); }',
+    refs: [], defs: [1], emits: [],
+  },
+  {
+    name: "direct code message is a resolved sink without template text",
+    source: 'export const C = Object.freeze({ code: "FUNGI-REPORT-002" });\n'
+      + 'function fail() { return new Error(C.code); }',
+    refs: [], defs: [1], emits: [2],
+  },
+  {
+    name: "arbitrary wrapper does not acquire definition authority",
+    source: 'export const C = wrap({ code: "FUNGI-REPORT-002" });',
+    refs: [], emits: [1],
+  },
   {
     name: "same-line registry then real return keeps both roles",
     source: `export const C = Object.freeze([${record}]); function fail() { return ${record}; }`,
@@ -189,10 +327,10 @@ for (const fixture of fixtureCases) {
       const item = index.find(({ code }) => code === (fixture.code ?? "FUNGI-REPORT-002"));
       assert.ok(item, "discovery must not be dropped to eliminate false emissions");
       assert.deepEqual(item.emits, fixture.emits.map((line) => `${path}:${line}`));
-      assert.deepEqual(item.defs, []);
+      assert.deepEqual(item.defs, (fixture.defs ?? []).map((line) => `${path}:${line}`));
       assert.deepEqual(item.allSites.filter((site) => site.startsWith("ref ")),
         fixture.refs.map((line) => `ref ${path}:${line}`));
-      assert.equal(item.occurrences, fixture.refs.length + fixture.emits.length, "no legacy double counting");
+      assert.equal(item.occurrences, fixture.refs.length + fixture.emits.length + (fixture.defs?.length ?? 0), "no legacy double counting");
       assert.deepEqual(item.names, fixture.names ?? []);
       assert.deepEqual(item.severities, fixture.severities ?? []);
     } finally {
@@ -219,6 +357,31 @@ test("code-index preserves metadata at a constant-identifier emission", () => {
     assert.deepEqual(item?.emits, ["packages-ts/example/src/runtime.ts:2"]);
     assert.deepEqual(item?.names, ["ACTUAL"]);
     assert.deepEqual(item?.severities, ["warning"]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("code-index locates the real frozen Wasm grant owner and Error sink", () => {
+  const root = mkdtempSync(join(tmpdir(), "code-index-wasm-grant-"));
+  const path = "packages-ts/example/src/arbitrary-runtime.ts";
+  try {
+    const source = readFileSync(resolve("packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts"), "utf8");
+    write(root, path, source);
+    const generated = run(root);
+    assert.equal(generated.status, 0, generated.stderr);
+    const index = JSON.parse(readFileSync(join(root, "build/code-index/code-index.json"), "utf8"));
+    const item = index.find(({ code }) => code === "FUNGI-WASM-GRANT-001");
+    // Locate the input witnesses independently; the output must point at the
+    // literal definition and the Error construction, not just mention the code.
+    const lines = source.split(/\r?\n/);
+    const definition = lines.findIndex((line) => line.includes('code: "FUNGI-WASM-GRANT-001"')) + 1;
+    const sink = lines.findIndex((line) => line.includes('new Error(`${FUNGI_WASM_GRANT_001.code}')) + 1;
+    assert.ok(definition > 0 && sink > definition);
+    assert.deepEqual(item?.defs, [`${path}:${definition}`]);
+    assert.deepEqual(item?.emits, [`${path}:${sink}`]);
+    assert.deepEqual(item?.names, ["EFFECT_GRANT_NOT_ALLOWLISTED"]);
+    assert.deepEqual(item?.severities, ["error"]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -253,6 +416,29 @@ test("code-index actual report registry and caller regenerate reproducibly witho
   }
 });
 
+function assertCheckRefusal(result, expectedMessage) {
+  assert.equal(result.error, undefined);
+  assert.equal(result.signal, null);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, expectedMessage);
+}
+
+test("code-index refusal oracle rejects failed children and unrelated failures", () => {
+  const expected = /code-index: missing generated output/;
+  const refusal = { status: 1, error: undefined, signal: null, stderr: "code-index: missing generated output build/code-index/CODE_INDEX.md" };
+  assert.doesNotThrow(() => assertCheckRefusal(refusal, expected));
+  for (const failed of [
+    { ...refusal, status: null, error: new Error("spawn ENOENT") },
+    { ...refusal, status: null, error: new Error("ETIMEDOUT"), signal: "SIGTERM" },
+    { ...refusal, error: new Error("ENOBUFS") },
+    { ...refusal, signal: "SIGTERM" },
+    { ...refusal, status: 2 },
+    { ...refusal, stderr: "unrelated generator failure" },
+  ]) {
+    assert.throws(() => assertCheckRefusal(failed, expected));
+  }
+});
+
 test("code-index --check refuses missing and drifted output without writing", () => {
   const root = mkdtempSync(join(tmpdir(), "code-index-generator-"));
   const markdown = join(root, "build", "code-index", "CODE_INDEX.md");
@@ -264,7 +450,7 @@ test("code-index --check refuses missing and drifted output without writing", ()
     );
 
     const missing = run(root, ["--check"]);
-    assert.notEqual(missing.status, 0);
+    assertCheckRefusal(missing, /code-index: missing generated output build\/code-index\/CODE_INDEX\.md/);
     assert.equal(existsSync(markdown), false);
 
     const generated = run(root);
@@ -275,7 +461,7 @@ test("code-index --check refuses missing and drifted output without writing", ()
 
     writeFileSync(markdown, "tampered\n");
     const drifted = run(root, ["--check"]);
-    assert.notEqual(drifted.status, 0);
+    assertCheckRefusal(drifted, /code-index: generated output drift build\/code-index\/CODE_INDEX\.md/);
     assert.equal(readFileSync(markdown, "utf8"), "tampered\n");
   } finally {
     rmSync(root, { recursive: true, force: true });

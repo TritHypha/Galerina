@@ -13,9 +13,9 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 229 | emitted with an exported constant |
-| inline | 453 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 159 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| live | 230 | emitted with an exported constant |
+| inline | 438 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 173 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 232 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 70 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 338 | referenced only (no def/emit) |
@@ -2207,20 +2207,20 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| GATE-SEM-001 | inline | GATE_V3_CYCLE_REACHED_SEMANTIC_TIER | — |
-| GATE-SEM-002 | inline | GATE_V3_CUT_DOES_NOT_DOMINATE_EGRESS | — |
-| GATE-SEM-003 | inline | GATE_V3_TAINT_REACHES_EGRESS_PAST_CUTS | — |
-| GATE-SEM-004 | inline | GATE_V3_UNDECLARED_DECISION_SHAPE | — |
-| GATE-SEM-005 | inline | GATE_V3_NON_SOURCE_TYPE_AS_PARAMETER | — |
-| GATE-SEM-006 | inline | GATE_V3_BUDGET_CEILING_EXCEEDED | — |
-| GATE-SEM-007 | inline | GATE_V3_REASON_OUTSIDE_VOCABULARY | — |
-| GATE-SEM-008 | inline | GATE_V3_REASONS_UNCHECKED | — |
-| GATE-SEM-009 | inline | GATE_V3_EFFECT_OUTSIDE_ENVELOPE | — |
-| GATE-SEM-010 | inline | GATE_V3_CAPABILITY_OUTSIDE_ENVELOPE | — |
-| GATE-SEM-011 | inline | GATE_V3_NON_ALLOW_ARM_REACHES_EGRESS | — |
-| GATE-SEM-012 | inline | GATE_V3_UNKNOWN_EFFECT_NAME | — |
-| GATE-SEM-013 | inline | GATE_V3_TAINT_REACHES_GOVERNED_SINK | — |
-| GATE-SEM-014 | inline | GATE_V3_SEMANTIC_ZONE_NOT_GATED | — |
+| GATE-SEM-001 | referenced | GATE_V3_CYCLE_REACHED_SEMANTIC_TIER | — |
+| GATE-SEM-002 | referenced | GATE_V3_CUT_DOES_NOT_DOMINATE_EGRESS | — |
+| GATE-SEM-003 | referenced | GATE_V3_TAINT_REACHES_EGRESS_PAST_CUTS | — |
+| GATE-SEM-004 | referenced | GATE_V3_UNDECLARED_DECISION_SHAPE | — |
+| GATE-SEM-005 | referenced | GATE_V3_NON_SOURCE_TYPE_AS_PARAMETER | — |
+| GATE-SEM-006 | referenced | GATE_V3_BUDGET_CEILING_EXCEEDED | — |
+| GATE-SEM-007 | referenced | GATE_V3_REASON_OUTSIDE_VOCABULARY | — |
+| GATE-SEM-008 | referenced | GATE_V3_REASONS_UNCHECKED | — |
+| GATE-SEM-009 | referenced | GATE_V3_EFFECT_OUTSIDE_ENVELOPE | — |
+| GATE-SEM-010 | referenced | GATE_V3_CAPABILITY_OUTSIDE_ENVELOPE | — |
+| GATE-SEM-011 | referenced | GATE_V3_NON_ALLOW_ARM_REACHES_EGRESS | — |
+| GATE-SEM-012 | referenced | GATE_V3_UNKNOWN_EFFECT_NAME | — |
+| GATE-SEM-013 | referenced | GATE_V3_TAINT_REACHES_GOVERNED_SINK | — |
+| GATE-SEM-014 | referenced | GATE_V3_SEMANTIC_ZONE_NOT_GATED | — |
 
 ### SLOP (5)
 
@@ -2580,7 +2580,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-WASM-029 | ref | — | — |
 | FUNGI-WASM-030 | ref | — | — |
 | FUNGI-WASM-CLEANUP-001 | inline | — | — |
-| FUNGI-WASM-GRANT-001 | inline | EFFECT_GRANT_NOT_ALLOWLISTED | error |
+| FUNGI-WASM-GRANT-001 | live | EFFECT_GRANT_NOT_ALLOWLISTED | error |
 | FUNGI-WASM-HOST-001 | inline | — | — |
 | FUNGI-WASM-RET-001 | inline | — | — |
 

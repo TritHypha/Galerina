@@ -3,10 +3,10 @@
   "total": 1481,
   "counts": {
     "ref": 338,
-    "inline": 453,
+    "inline": 438,
     "phantom": 70,
-    "live": 229,
-    "referenced": 159,
+    "live": 230,
+    "referenced": 173,
     "dead": 232
   },
   "entries": [
@@ -1015,7 +1015,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 2,
+      "tests": 3,
       "docs": 7
     },
     {
@@ -13708,7 +13708,7 @@
       "severities": [],
       "defs": 0,
       "emits": 23,
-      "tests": 67,
+      "tests": 79,
       "docs": 1
     },
     {
@@ -17681,16 +17681,16 @@
       "code": "FUNGI-WASM-GRANT-001",
       "family": "WASM",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "live",
       "names": [
         "EFFECT_GRANT_NOT_ALLOWLISTED"
       ],
       "severities": [
         "error"
       ],
-      "defs": 0,
+      "defs": 1,
       "emits": 1,
-      "tests": 1,
+      "tests": 3,
       "docs": 0
     },
     {
@@ -19293,13 +19293,13 @@
       "code": "GATE-SEM-001",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_CYCLE_REACHED_SEMANTIC_TIER"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 2,
       "docs": 8
     },
@@ -19307,13 +19307,13 @@
       "code": "GATE-SEM-002",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_CUT_DOES_NOT_DOMINATE_EGRESS"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 2,
       "docs": 6
     },
@@ -19321,13 +19321,13 @@
       "code": "GATE-SEM-003",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_TAINT_REACHES_EGRESS_PAST_CUTS"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 4
     },
@@ -19335,13 +19335,13 @@
       "code": "GATE-SEM-004",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_UNDECLARED_DECISION_SHAPE"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 4,
       "docs": 4
     },
@@ -19349,13 +19349,13 @@
       "code": "GATE-SEM-005",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_NON_SOURCE_TYPE_AS_PARAMETER"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 9
     },
@@ -19363,13 +19363,13 @@
       "code": "GATE-SEM-006",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_BUDGET_CEILING_EXCEEDED"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 5
     },
@@ -19377,13 +19377,13 @@
       "code": "GATE-SEM-007",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_REASON_OUTSIDE_VOCABULARY"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 4
     },
@@ -19391,13 +19391,13 @@
       "code": "GATE-SEM-008",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_REASONS_UNCHECKED"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 2,
       "docs": 3
     },
@@ -19405,13 +19405,13 @@
       "code": "GATE-SEM-009",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_EFFECT_OUTSIDE_ENVELOPE"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 6,
       "docs": 4
     },
@@ -19419,13 +19419,13 @@
       "code": "GATE-SEM-010",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_CAPABILITY_OUTSIDE_ENVELOPE"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 2,
       "docs": 1
     },
@@ -19433,13 +19433,13 @@
       "code": "GATE-SEM-011",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_NON_ALLOW_ARM_REACHES_EGRESS"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 2,
       "docs": 3
     },
@@ -19447,13 +19447,13 @@
       "code": "GATE-SEM-012",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_UNKNOWN_EFFECT_NAME"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 6
     },
@@ -19461,13 +19461,13 @@
       "code": "GATE-SEM-013",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_TAINT_REACHES_GOVERNED_SINK"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 2
     },
@@ -19475,13 +19475,13 @@
       "code": "GATE-SEM-014",
       "family": "SEM",
       "namespace": "GATE",
-      "status": "inline",
+      "status": "referenced",
       "names": [
         "GATE_V3_SEMANTIC_ZONE_NOT_GATED"
       ],
       "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "defs": 1,
+      "emits": 0,
       "tests": 6,
       "docs": 4
     },

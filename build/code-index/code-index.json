@@ -1258,14 +1258,14 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "test scripts/tests/code-index-generator.test.mjs:298",
-      "test scripts/tests/code-index-generator.test.mjs:299",
-      "test scripts/tests/code-index-generator.test.mjs:305",
-      "test scripts/tests/code-index-generator.test.mjs:306",
-      "test scripts/tests/code-index-generator.test.mjs:307",
-      "test scripts/tests/code-index-generator.test.mjs:309",
-      "test scripts/tests/code-index-generator.test.mjs:316",
-      "test scripts/tests/code-index-generator.test.mjs:325",
+      "test scripts/tests/code-index-generator.test.mjs:484",
+      "test scripts/tests/code-index-generator.test.mjs:485",
+      "test scripts/tests/code-index-generator.test.mjs:491",
+      "test scripts/tests/code-index-generator.test.mjs:492",
+      "test scripts/tests/code-index-generator.test.mjs:493",
+      "test scripts/tests/code-index-generator.test.mjs:495",
+      "test scripts/tests/code-index-generator.test.mjs:502",
+      "test scripts/tests/code-index-generator.test.mjs:511",
       "test scripts/tests/diagnostic-code-audit.test.mjs:154",
       "test scripts/tests/diagnostic-code-audit.test.mjs:155",
       "test scripts/tests/diagnostic-code-audit.test.mjs:178",
@@ -1758,11 +1758,11 @@
     "code": "ERR_MODULE_NOT_FOUND",
     "namespace": "ERR",
     "family": "ERR_*",
-    "occurrences": 9,
+    "occurrences": 10,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 2,
+    "tests": 3,
     "refs": 0,
     "docs": 7,
     "names": [],
@@ -1775,6 +1775,7 @@
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:764",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:859",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:23",
+      "test scripts/tests/auth-route-dispatch-example.test.mjs:43",
       "test scripts/tests/logic-aig-source-origin-local-producer.test.mjs:29",
       "test scripts/tests/logic-aig-source-origin-local-source.test.mjs:31"
     ]
@@ -14667,7 +14668,7 @@
     "severities": [],
     "allSites": [
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:1523",
-      "test scripts/tests/code-index-generator.test.mjs:210",
+      "test scripts/tests/code-index-generator.test.mjs:348",
       "test scripts/tests/ts-to-fungi-sandbox.test.mjs:168",
       "test scripts/tests/ts-to-fungi-sandbox.test.mjs:171",
       "test scripts/tests/ts-to-fungi-sandbox.test.mjs:170"
@@ -24468,8 +24469,8 @@
     "severities": [],
     "allSites": [
       "emit packages-ts/galerina-core-compiler/src/pattern-capability.ts:63",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:292",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:278",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:289",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:275",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:267"
     ]
   },
@@ -24494,7 +24495,7 @@
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:56",
       "test packages-ts/galerina-core-compiler/tests/wat-d4-pattern-lowering.test.mjs:246",
       "test packages-ts/galerina-core-compiler/tests/wat-d4-pattern-lowering.test.mjs:243",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:176",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:173",
       "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:14"
     ]
   },
@@ -27071,7 +27072,7 @@
       "test packages-ts/galerina-core-compiler/tests/security-boundary.test.mjs:138",
       "test packages-ts/galerina-core-compiler/tests/security-boundary.test.mjs:140",
       "test packages-ts/galerina-core-compiler/tests/security-boundary.test.mjs:145",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:267",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:264",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:110",
       "ref packages-ts/galerina-devtools-security/src/regex-guard.ts:32",
       "test packages-ts/galerina-devtools-security/tests/security-devtools.test.mjs:179",
@@ -27638,7 +27639,7 @@
     "code": "FUNGI-REPORT-002",
     "namespace": "FUNGI",
     "family": "REPORT",
-    "occurrences": 121,
+    "occurrences": 133,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -27666,7 +27667,7 @@
       "packages-ts/galerina-core-reports/src/reports/scheduler-evidence.ts:144",
       "packages-ts/galerina-core-reports/src/reports/scheduler-evidence.ts:164"
     ],
-    "tests": 67,
+    "tests": 79,
     "refs": 30,
     "docs": 1,
     "names": [],
@@ -27776,23 +27777,35 @@
       "test packages-ts/galerina-core-reports/tests/scheduler-evidence.test.mjs:110",
       "test packages-ts/galerina-core-reports/tests/scheduler-evidence.test.mjs:111",
       "doc packages-ts/galerina-core-reports/TODO.md:45",
-      "test scripts/tests/code-index-generator.test.mjs:79",
-      "test scripts/tests/code-index-generator.test.mjs:131",
-      "test scripts/tests/code-index-generator.test.mjs:136",
-      "test scripts/tests/code-index-generator.test.mjs:138",
-      "test scripts/tests/code-index-generator.test.mjs:144",
-      "test scripts/tests/code-index-generator.test.mjs:150",
-      "test scripts/tests/code-index-generator.test.mjs:155",
-      "test scripts/tests/code-index-generator.test.mjs:160",
-      "test scripts/tests/code-index-generator.test.mjs:161",
+      "test scripts/tests/code-index-generator.test.mjs:81",
+      "test scripts/tests/code-index-generator.test.mjs:83",
+      "test scripts/tests/code-index-generator.test.mjs:158",
+      "test scripts/tests/code-index-generator.test.mjs:165",
+      "test scripts/tests/code-index-generator.test.mjs:170",
       "test scripts/tests/code-index-generator.test.mjs:176",
+      "test scripts/tests/code-index-generator.test.mjs:182",
+      "test scripts/tests/code-index-generator.test.mjs:187",
+      "test scripts/tests/code-index-generator.test.mjs:193",
+      "test scripts/tests/code-index-generator.test.mjs:199",
+      "test scripts/tests/code-index-generator.test.mjs:205",
+      "test scripts/tests/code-index-generator.test.mjs:211",
+      "test scripts/tests/code-index-generator.test.mjs:217",
+      "test scripts/tests/code-index-generator.test.mjs:269",
+      "test scripts/tests/code-index-generator.test.mjs:274",
+      "test scripts/tests/code-index-generator.test.mjs:276",
+      "test scripts/tests/code-index-generator.test.mjs:282",
+      "test scripts/tests/code-index-generator.test.mjs:288",
+      "test scripts/tests/code-index-generator.test.mjs:293",
+      "test scripts/tests/code-index-generator.test.mjs:298",
+      "test scripts/tests/code-index-generator.test.mjs:299",
+      "test scripts/tests/code-index-generator.test.mjs:314",
       "test scripts/tests/code-index-generator.test.mjs:27",
       "test scripts/tests/code-index-generator.test.mjs:29",
       "test scripts/tests/code-index-generator.test.mjs:35",
-      "test scripts/tests/code-index-generator.test.mjs:189",
-      "test scripts/tests/code-index-generator.test.mjs:207",
-      "test scripts/tests/code-index-generator.test.mjs:218",
-      "test scripts/tests/code-index-generator.test.mjs:239"
+      "test scripts/tests/code-index-generator.test.mjs:327",
+      "test scripts/tests/code-index-generator.test.mjs:345",
+      "test scripts/tests/code-index-generator.test.mjs:356",
+      "test scripts/tests/code-index-generator.test.mjs:402"
     ]
   },
   {
@@ -27925,7 +27938,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "test scripts/tests/code-index-generator.test.mjs:94"
+      "test scripts/tests/code-index-generator.test.mjs:232"
     ]
   },
   {
@@ -32735,11 +32748,11 @@
       "ref scripts/audit-fungi-corpus-check.mjs:1114",
       "ref scripts/audit-fungi-corpus-check.mjs:1129",
       "ref scripts/audit-fungi-corpus-check.mjs:1131",
-      "test scripts/tests/code-index-generator.test.mjs:263",
-      "test scripts/tests/code-index-generator.test.mjs:346",
-      "test scripts/tests/code-index-generator.test.mjs:362",
-      "test scripts/tests/code-index-generator.test.mjs:378",
-      "test scripts/tests/code-index-generator.test.mjs:414",
+      "test scripts/tests/code-index-generator.test.mjs:449",
+      "test scripts/tests/code-index-generator.test.mjs:532",
+      "test scripts/tests/code-index-generator.test.mjs:548",
+      "test scripts/tests/code-index-generator.test.mjs:564",
+      "test scripts/tests/code-index-generator.test.mjs:600",
       "test scripts/tests/code-registry-generator.test.mjs:52",
       "test scripts/tests/code-registry-generator.test.mjs:85",
       "test scripts/tests/fungi-corpus-shard-execution.test.mjs:99",
@@ -32764,9 +32777,9 @@
       "test packages-ts/galerina-core/tests/core-contracts.test.mjs:45",
       "ref scripts/audit-fungi-corpus-check.mjs:1115",
       "ref scripts/audit-fungi-corpus-check.mjs:1130",
-      "test scripts/tests/code-index-generator.test.mjs:348",
-      "test scripts/tests/code-index-generator.test.mjs:405",
-      "test scripts/tests/code-index-generator.test.mjs:415"
+      "test scripts/tests/code-index-generator.test.mjs:534",
+      "test scripts/tests/code-index-generator.test.mjs:591",
+      "test scripts/tests/code-index-generator.test.mjs:601"
     ]
   },
   {
@@ -32785,8 +32798,8 @@
     "allSites": [
       "test packages-ts/galerina-core/tests/core-contracts.test.mjs:57",
       "ref scripts/audit-fungi-corpus-check.mjs:1137",
-      "test scripts/tests/code-index-generator.test.mjs:396",
-      "test scripts/tests/code-index-generator.test.mjs:416"
+      "test scripts/tests/code-index-generator.test.mjs:582",
+      "test scripts/tests/code-index-generator.test.mjs:602"
     ]
   },
   {
@@ -38578,13 +38591,15 @@
     "code": "FUNGI-WASM-GRANT-001",
     "namespace": "FUNGI",
     "family": "WASM",
-    "occurrences": 2,
+    "occurrences": 5,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:350"
     ],
-    "tests": 1,
+    "emits": [
+      "packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:356"
+    ],
+    "tests": 3,
     "refs": 0,
     "docs": 0,
     "names": [
@@ -38595,7 +38610,10 @@
     ],
     "allSites": [
       "test packages-ts/galerina-core-compiler/tests/wasm-effect-grant-abi.test.mjs:5",
-      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:350"
+      "def packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:350",
+      "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:356",
+      "test scripts/tests/code-index-generator.test.mjs:374",
+      "test scripts/tests/code-index-generator.test.mjs:378"
     ]
   },
   {
@@ -38741,8 +38759,8 @@
       "emit packages-ts/galerina-core-compiler/src/checked-program.ts:110",
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:63",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:264",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:129",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:158",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:126",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:155",
       "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:145",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:99",
       "ref scripts/audit-unlowered-nodes.mjs:110"
@@ -38800,8 +38818,8 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:126",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:129",
       "test packages-ts/galerina-core-compiler/tests/wasm-effect-grant-abi.test.mjs:254",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:43",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:211",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:40",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:208",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:266"
     ]
   },
@@ -38956,10 +38974,10 @@
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:291",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:334",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:205",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:208",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:188",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:197",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:203",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:205",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:185",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:194",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:200",
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:9",
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:196",
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:214"
@@ -39026,11 +39044,11 @@
       "test packages-ts/galerina-core-compiler/tests/wat-d4-pattern-lowering.test.mjs:4",
       "test packages-ts/galerina-core-compiler/tests/wat-d4-pattern-lowering.test.mjs:18",
       "test packages-ts/galerina-core-compiler/tests/wat-d4-pattern-lowering.test.mjs:227",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:42",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:164",
-      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:182",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:273",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:277",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:39",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:161",
+      "test packages-ts/galerina-core-compiler/tests/wat-q4n-d4-pattern-refusal.test.mjs:179",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:270",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:274",
       "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:228"
     ]
   },
@@ -39056,9 +39074,9 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:110",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:113",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:42",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:171",
-      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:184",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:39",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:168",
+      "test packages-ts/galerina-core-compiler/tests/wat-q5n-d7-d8-refusal.test.mjs:181",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:265",
       "test packages-ts/galerina-core-compiler/tests/wat-readonlydecl-plain-types.test.mjs:119",
       "test packages-ts/galerina-core-compiler/tests/wat-readonlydecl-plain-types.test.mjs:99",
@@ -41394,10 +41412,10 @@
     "family": "SEM",
     "occurrences": 13,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:53"
     ],
+    "emits": [],
     "tests": 2,
     "refs": 2,
     "docs": 8,
@@ -41407,7 +41425,7 @@
     "severities": [],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-v3-budget.ts:84",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:53",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:53",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:187",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-condense.test.mjs:112",
       "doc docs/examples/gate/CODES.md:164",
@@ -41427,10 +41445,10 @@
     "family": "SEM",
     "occurrences": 11,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:28"
     ],
+    "emits": [],
     "tests": 2,
     "refs": 2,
     "docs": 6,
@@ -41440,7 +41458,7 @@
     "severities": [],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:95",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:28",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:28",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-zone.ts:10",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-dominate.test.mjs:106",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-dominate.test.mjs:131",
@@ -41458,10 +41476,10 @@
     "family": "SEM",
     "occurrences": 9,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:36"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 1,
     "docs": 4,
@@ -41471,7 +41489,7 @@
     "severities": [],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:100",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:36",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:36",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-g4.test.mjs:172",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-separator.test.mjs:80",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-separator.test.mjs:139",
@@ -41487,10 +41505,10 @@
     "family": "SEM",
     "occurrences": 10,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:36"
     ],
+    "emits": [],
     "tests": 4,
     "refs": 1,
     "docs": 4,
@@ -41499,7 +41517,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:36",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:36",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:105",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-decision-shape.test.mjs:6",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-decision-shape.test.mjs:61",
@@ -41517,10 +41535,10 @@
     "family": "SEM",
     "occurrences": 13,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-construction.ts:37"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 0,
     "docs": 9,
@@ -41529,7 +41547,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-construction.ts:37",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-construction.ts:37",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-construction.test.mjs:56",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-construction.test.mjs:61",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-construction.test.mjs:94",
@@ -41550,10 +41568,10 @@
     "family": "SEM",
     "occurrences": 9,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-budget.ts:36"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 0,
     "docs": 5,
@@ -41562,7 +41580,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-budget.ts:36",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-budget.ts:36",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-budget.test.mjs:71",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-budget.test.mjs:85",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-budget.test.mjs:111",
@@ -41579,10 +41597,10 @@
     "family": "SEM",
     "occurrences": 10,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:51"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 2,
     "docs": 4,
@@ -41593,7 +41611,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-from-pattern.ts:53",
       "ref packages-ts/galerina-core-compiler/src/gate-from-pattern.ts:215",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:51",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:51",
       "test packages-ts/galerina-core-compiler/tests/gate-pattern-admission.test.mjs:95",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-vocabulary.test.mjs:51",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-vocabulary.test.mjs:95",
@@ -41609,10 +41627,10 @@
     "family": "SEM",
     "occurrences": 6,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:61"
     ],
+    "emits": [],
     "tests": 2,
     "refs": 0,
     "docs": 3,
@@ -41621,7 +41639,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:61",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:61",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-vocabulary.test.mjs:64",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-vocabulary.test.mjs:74",
       "doc docs/examples/gate/CODES.md:171",
@@ -41635,10 +41653,10 @@
     "family": "SEM",
     "occurrences": 15,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:91"
     ],
+    "emits": [],
     "tests": 6,
     "refs": 4,
     "docs": 4,
@@ -41648,7 +41666,7 @@
     "severities": [],
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:41",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:91",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:91",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:6",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:17",
       "ref packages-ts/galerina-core-compiler/src/gir-emitter.ts:145",
@@ -41670,10 +41688,10 @@
     "family": "SEM",
     "occurrences": 4,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:98"
     ],
+    "emits": [],
     "tests": 2,
     "refs": 0,
     "docs": 1,
@@ -41682,7 +41700,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:98",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:98",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-differential.test.mjs:96",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-g4.test.mjs:51",
       "doc docs/examples/gate/CODES.md:173"
@@ -41694,10 +41712,10 @@
     "family": "SEM",
     "occurrences": 8,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:117"
     ],
+    "emits": [],
     "tests": 2,
     "refs": 2,
     "docs": 3,
@@ -41706,7 +41724,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:117",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-authority.ts:117",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:110",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-zone.ts:144",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-g4.test.mjs:90",
@@ -41722,10 +41740,10 @@
     "family": "SEM",
     "occurrences": 10,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:30"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 0,
     "docs": 6,
@@ -41734,7 +41752,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:30",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-envelope.ts:30",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-effect-names.test.mjs:67",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-effect-names.test.mjs:76",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-effect-names.test.mjs:101",
@@ -41752,10 +41770,10 @@
     "family": "SEM",
     "occurrences": 6,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:141"
     ],
+    "emits": [],
     "tests": 3,
     "refs": 0,
     "docs": 2,
@@ -41764,7 +41782,7 @@
     ],
     "severities": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:141",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-privacy.ts:141",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-sinks.test.mjs:103",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-sinks.test.mjs:116",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-sinks.test.mjs:136",
@@ -41778,10 +41796,10 @@
     "family": "SEM",
     "occurrences": 13,
     "docOnly": false,
-    "defs": [],
-    "emits": [
+    "defs": [
       "packages-ts/galerina-core-compiler/src/gate-v3-zone.ts:33"
     ],
+    "emits": [],
     "tests": 6,
     "refs": 2,
     "docs": 4,
@@ -41792,7 +41810,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/gate-v3-gir.ts:115",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-registry.ts:221",
-      "emit packages-ts/galerina-core-compiler/src/gate-v3-zone.ts:33",
+      "def packages-ts/galerina-core-compiler/src/gate-v3-zone.ts:33",
       "test packages-ts/galerina-core-compiler/tests/gate-pattern-admission.test.mjs:14",
       "test packages-ts/galerina-core-compiler/tests/gate-pattern-admission.test.mjs:55",
       "test packages-ts/galerina-core-compiler/tests/gate-pattern-admission.test.mjs:68",
