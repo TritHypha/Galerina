@@ -21,6 +21,7 @@ describe("core-config package-owned environment mode decision", () => {
     assertScalarClassifierAsset({
       packageRoot: PACKAGE_ROOT,
       assetRoot: PRODUCT_ROOT,
+      productTree: "packages/fungi/products/galerina/rd0873-core-config",
       assetRelative: ASSET,
       referenceRelative: "src/index.ts",
       assertReference(reference) {
