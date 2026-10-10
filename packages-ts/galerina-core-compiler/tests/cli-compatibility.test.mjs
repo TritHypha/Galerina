@@ -274,17 +274,21 @@ describe("CLI compatibility — galerina deploy", () => {
 describe("CLI compatibility — verify signature-required policy", () => {
   // AUDIT: an unsigned (placeholder) manifest is fine for dev but must fail-closed under
   // GALERINA_PROFILE=production. Default profile is dev, so existing behaviour is unchanged.
-  it("a placeholder (unsigned) manifest passes verify in dev but is REJECTED under GALERINA_PROFILE=production", () => {
+  it("a placeholder (unsigned) manifest passes verify in dev but is REJECTED under GALERINA_PROFILE=production", async () => {
     mkdirSync(join(ROOT, "build"), { recursive: true });
     const built = galerina("build", BENCH);
     assert.equal(built.code, 0, `build failed: ${built.stdout}`);
+    const cborPath = join(ROOT, "build", "benchmark.lmanifest");
     const jsonPath = join(ROOT, "build", "benchmark.lmanifest.json");
-    if (!existsSync(jsonPath)) return; // manifest generation is non-fatal; skip if absent
+    assert.ok(existsSync(cborPath) && existsSync(jsonPath), "build must produce both manifest representations for this refusal control");
 
-    // Force a placeholder signature so the test is deterministic regardless of whether a signing key
-    // is configured in this environment (a configured key would produce a real signature instead).
-    const manifest = JSON.parse(readFileSync(jsonPath, "utf8"));
-    writeFileSync(jsonPath, JSON.stringify({ ...manifest, governanceSignature: "placeholder" }, null, 2));
+    // Mutate the authoritative CBOR as well as its inspection sidecar. Changing
+    // only JSON does not create the unsigned artifact this refusal test needs.
+    const { decodeCBOR, serializeManifestCBOR } = await import("../dist/manifest-generator.js");
+    const manifest = decodeCBOR(new Uint8Array(readFileSync(cborPath))).value;
+    writeFileSync(cborPath, Buffer.from(serializeManifestCBOR({ ...manifest, governanceSignature: "placeholder" })));
+    const jsonManifest = JSON.parse(readFileSync(jsonPath, "utf8"));
+    writeFileSync(jsonPath, JSON.stringify({ ...jsonManifest, governanceSignature: "placeholder" }, null, 2));
 
     // DEV (default profile): a placeholder is informational → verify still succeeds.
     const dev = galerina("verify", BENCH);
