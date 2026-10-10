@@ -4,7 +4,35 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Latest integration checkpoint - 2026-10-10, matched comparison and retained ports
+## Latest retirement checkpoint - 2026-10-10, Task6CR
+
+- Git registers **21 worktrees** after retiring the old Task6CR checkout
+  `rd0873-task6cr-hosted-evidence`. This is not overall consolidation completion.
+- Its branch `codex/rd0873-local-integration` remains at
+  `0ee686214619372c9cd87d6d58db72cf388ab651`. Ten unique historical commits were
+  preserved in a complete bundle and recovered into an independent bare repository;
+  full object checks and the exact head tree comparison passed. Bundle SHA-256:
+  `81d88b184c85594b7dece1d45854646bd097153cdb9ec6c855f04abf20516579`.
+- The original directory, including ignored files, was moved into the local recovery
+  archive. All 32,456 entries, including 28,909 regular-file hashes and 40 link
+  spellings, matched before and after the move. Original index and Git administration
+  are retained separately. Recovery is on the same volume, not an off-device backup.
+- The 40 absolute dependency junctions originally pointed within the old checkout.
+  Their original spellings are preserved, not silently rewritten. They and the Git
+  marker require remapping before reuse; this archive is not a runnable checkout.
+- Independent Astra source review accounted for the identified useful Task6CR port:
+  `742c9acba` retains the environment test with the moved product-asset declaration.
+  Newer compiler and retained-capture owners remain intact. This does not prove
+  emitted String-GIR execution, real checker receipts or SLIDE/VOK admission.
+- Bounded Windows command-line and Linux process checks found no visible reference;
+  inaccessible system-process details were not proven inactive. No source was deleted,
+  no main merge occurred, and the retained historical branch was not deleted.
+- Published integration head before this ledger update was `b153cc8ae`; remote main
+  remained `5b64928ca`. HOST and docs-index need non-author independent review;
+  their original Astra author cannot provide that approval. Other dirty overlays
+  remain unreconciled.
+
+## Earlier integration checkpoint - 2026-10-10, matched comparison and retained ports
 
 - Fresh registration inspection shows **22 worktrees**. The target remains main
   plus one active work branch; consolidation is not complete. Other dirty memory
