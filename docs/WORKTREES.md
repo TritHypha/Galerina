@@ -4,7 +4,34 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Latest retirement checkpoint - 2026-10-10, Task6CR
+## Latest retirement checkpoint - 2026-10-10, docs-index
+
+- Git registers **20 worktrees** after retiring `rd0873-docs-index-manifest`.
+  Its branch `codex/rd0873-docs-index-manifest` remains at
+  `34907348c5d948c2ced23a841802e181176b6015`; no branch history was deleted.
+- The two unique historical commits and exact head tree were independently
+  recovered from a complete bundle, SHA-256
+  `71352b2538b46c799bb560ab95569613d9f578712a009560e4c6a18925554fd2`.
+  The old generated write plan remains historical evidence, not current authority.
+- All 10,411 directory entries, including 9,388 regular files and no links,
+  matched before and after moving the original directory into local recovery.
+  Original Git administration and index are separately preserved. This same-volume
+  recovery is not an off-device backup; the old Git marker needs repair before reuse.
+- The useful source port is retained in `e4f64e3bf`. Independent non-author Astra
+  review approved the scoped HOST port, and required two docs-index follow-ups.
+  Commit `131f9dbc1` adds journal-after-rename regression controls and
+  [recovery guidance](reports/docs-index-recovery-contract.md). Both conditions
+  received a subsequent independent PASS bound to the exact file hashes.
+- The full manifest test file passed 61 tests in WSL. The reviewer separately
+  executed the new parent and its two cases (three test entries), not the full suite.
+  This is tooling evidence, not Fungi runtime or crash-durability proof.
+- Visible Windows command-line and Linux process checks found no reference to the
+  old checkout. Inaccessible system-process details remain outside that observation.
+  The original directory was preserved; only its Git worktree registration was removed.
+- Integration commit `131f9dbc1` was verified equal to its remote; no main merge
+  occurred. Primary and other dirty memory overlays remain unreconciled.
+
+## Earlier retirement checkpoint - 2026-10-10, Task6CR
 
 - Git registers **21 worktrees** after retiring the old Task6CR checkout
   `rd0873-task6cr-hosted-evidence`. This is not overall consolidation completion.
