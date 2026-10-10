@@ -6,7 +6,7 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 ## Latest retirement checkpoint - 2026-10-10
 
-- Current verified registration count: **34 worktrees, 21 locked**. Nineteen
+- Current verified registration count: **32 worktrees, 21 locked**. Nineteen
   detached WAT variants were retired after exact source-preservation review,
   publication of the reviewed successor on the existing work branch, and recovery
   verification. Original directories, including ignored content, and saved Git
@@ -21,14 +21,26 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
   unbundled and checked. Original directory and Git index/admin remain recoverable.
   Its already-dangling compiler dependency junction was retained as metadata,
   not represented as recovered dependency contents. No open PR used that branch.
-- Published work branch: `fix/absorbed-kb-links-20261009` at
-  `86a5ea57a007b36e75d60fc6b8c288110eaac22a`. Remote main remains
+- The `grok-interpreter-i2-i3-20261002` and `grok-diag-constants-20261002`
+  checkouts were recoverably retired, not declared merged. Their complete original
+  directories, including ignored local files, and copied Git indexes/admin remain
+  in the local recovery archive. Commits `ce68d618` and `c9f0453` are retained in
+  the independently restored candidate-history bundle, SHA-256
+  `465b114d754e9fa33df56c1cd60599c814a87a80aac481d35990104e795c2cef`.
+  Branch refs remain. Remaining ports: timeout quarantine/re-entry handling,
+  body-local invariant admission/enforcement with matching WAT refusal, and
+  diagnostic metadata consolidation. Do not replace current source wholesale.
+- Published work branch at this checkpoint: `fix/absorbed-kb-links-20261009` at
+  `46bcd8c5975882f0cf151a02af24ed550e10be8d`. Remote main remains
   `5b64928ca67b30279eae38e372398ba16acd8827`. The exact i64-local match and strict
   parity assertions are committed in `ea549b3e2f0c3f05a83b0efffa14ba2f6680667b`;
   the signed CLI test fixture is committed in `86a5ea57a`. Focused fixture tests
   passed 6/6 in WSL, but the broader compiler run remains 7,540 passed, 250 failed
   and 117 cancelled. This retirement does not claim main integration or runtime
-  correctness. Three generated code-index files remain separately uncommitted.
+  correctness. The missing counted-loop deadline callback was separately ported
+  in `46bcd8c59`, independently reviewed, with 64/64 focused WSL tests passing.
+  Three generated code-index files remain separately uncommitted; a new failing
+  generator regression reproduces a registry-entry false emission pending repair.
 - Recovery archives retain historical Git markers and junction targets; restore
   requires metadata repair. Reviewed changed files were hash-verified, while the
   full directory inventory checked metadata, not every ignored file's bytes.
