@@ -4,7 +4,28 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
-## Current integration checkpoint - 2026-10-10, reviewed memory batch
+## Current integration checkpoint - 2026-10-10, reviewed batch in main
+
+- Remote and local main were read back at
+  `c74af0b3e7f73cf0f1713f79d612a21f7c7a374c` after a normal non-force
+  fast-forward from `08249019a555e5d613644bd9252cce30f0a04500`. The eleven
+  reviewed commits are integrated; the reused working branch matches that head.
+  Actions was verified disabled immediately before publication.
+- The earlier frozen diagnostic-owner and canonical root-lock conditions below
+  are resolved for this batch. The final native root-lock check returned
+  `REFERENCE_LOCK_VERIFIED`, with `authorityReleased: false`. Independent
+  external-delta adjudication found no additional scoped integration blocker.
+  Explicit LF policy still refuses CRLF; declaration discovery does not imply
+  complete diagnostic sink inference.
+- Nineteen worktree registrations remain. None held local main when its ref was
+  advanced; no dirty primary/native working files were reset or synchronized.
+  The local-only coordination file and untracked Myco exclusion remain excluded.
+- This is partial integration, not whole-memory completion or a full compiler
+  suite pass. Retained primary/native/memory overlays, other compiler failures,
+  lease/runtime/host evidence and useful-work reconciliation remain open.
+  Archive preservation is not integration. No checkout was retired by this update.
+
+## Earlier integration checkpoint - 2026-10-10, reviewed memory batch
 
 - The existing integration branch `fix/absorbed-kb-links-20261009` is published
   through `0c146e27aca038ee86fcbfcedba85ca253c16780`, eight commits ahead of the
