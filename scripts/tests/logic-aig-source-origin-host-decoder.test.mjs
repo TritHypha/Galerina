@@ -45,7 +45,7 @@ function row(path, bytes) {
   };
 }
 
-async function fixtureOptions(sourceTexts) {
+async function fixtureOptions(sourceTexts, resolutionTexts = {}) {
   const [repositoryIdentity, sourcePolicy, resolutionPolicy, parserPolicy, pins] = await Promise.all([
     policy("logic-aig-source-origin-repository-identity.json"),
     policy("logic-aig-source-origin-source-policy.json"),
@@ -59,6 +59,9 @@ async function fixtureOptions(sourceTexts) {
     .map(([path, text]) => [path, Buffer.from(text, "utf8")])
     .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
   const rows = entries.map(([path, bytes], index) => row(path, bytes, index + 1));
+  const resolutionEntries = Object.entries(resolutionTexts)
+    .map(([path, text]) => [path, Buffer.from(text, "utf8")])
+    .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
   const sourceBody = {
     schema: "galerina.logic-aig-source-manifest.v1",
     repositoryId: `repository:${repositoryIdentity.identityDigest}`,
@@ -85,7 +88,7 @@ async function fixtureOptions(sourceTexts) {
     expectedHead: sourceBody.expectedHead,
     expectedTree: sourceBody.expectedTree,
     policyDigest: resolutionPolicy.policyDigest,
-    rows: [],
+    rows: resolutionEntries.map(([path, bytes]) => row(path, bytes)),
     authorizing: false,
   };
   const resolutionInputs = { ...resolutionBody, resolutionInputsDigest: sha256Canonical(resolutionBody.schema, resolutionBody) };
@@ -99,7 +102,7 @@ async function fixtureOptions(sourceTexts) {
     sourceManifest,
     sourceBlobs: new Map(entries),
     resolutionInputs,
-    resolutionBlobs: new Map(),
+    resolutionBlobs: new Map(resolutionEntries),
     toolchainBlobs: new Map([[record.typescript.entryLocator, typescriptBytes]]),
     platform: record.platform,
     arch: record.arch,
@@ -1089,4 +1092,102 @@ test("HOST refuses source or runtime byte drift before returning semantic or too
   let evaluations = 0;
   await expectRefusal(decodeHostProject({ ...options, evaluate() { evaluations += 1; } }), /^SOURCE_ORIGIN_HOST_SCHEMA$/);
   assert.equal(evaluations, 0);
+});
+
+test("HOST residue preserves nine exact suffix paths and isolates a malformed source", async () => {
+  const sourceTexts = {
+    "src/suffix.cjs": "exports.cjsValue = 1;\n",
+    "src/suffix.cts": "export const ctsValue: number = 2;\n",
+    "src/suffix.d.ts": "export interface Declared { value: string }\n",
+    "src/suffix.js": "export const jsValue = 4;\n",
+    "src/suffix.jsx": "export const JsxView = <div />;\n",
+    "src/suffix.mjs": "export const mjsValue = 6;\n",
+    "src/suffix.mts": "export const mtsValue: number = 7;\n",
+    "src/suffix.ts": "export const tsValue: number = 8;\n",
+    "src/suffix.tsx": "export const TsxView = <span />;\n",
+  };
+  const expectedPaths = [
+    "src/suffix.cjs",
+    "src/suffix.cts",
+    "src/suffix.d.ts",
+    "src/suffix.js",
+    "src/suffix.jsx",
+    "src/suffix.mjs",
+    "src/suffix.mts",
+    "src/suffix.ts",
+    "src/suffix.tsx",
+  ];
+  const valid = await decodeHostProject(await fixtureOptions(sourceTexts));
+  assert.equal(valid.authorizing, false);
+  assert.deepEqual(
+    valid.nodes.filter((node) => node.kind === "FILE").map((node) => node.locator).sort(),
+    expectedPaths,
+  );
+  assert.deepEqual(
+    valid.parseResults.map((item) => [item.path, item.status, [...item.diagnosticCodes]]),
+    expectedPaths.map((path) => [path, "PARSED", []]),
+  );
+  assert(valid.nodes.some((node) => node.kind !== "FILE" && node.locator.startsWith("src/suffix.ts#")));
+
+  // Rebuild the manifest for malformed source bytes; this is not a custody mismatch.
+  const malformed = await decodeHostProject(await fixtureOptions({
+    ...sourceTexts,
+    "src/suffix.ts": "/* unterminated",
+  }));
+  assert.equal(malformed.authorizing, false);
+  assert.deepEqual(
+    malformed.nodes.filter((node) => node.kind === "FILE").map((node) => node.locator).sort(),
+    expectedPaths,
+  );
+  assert.deepEqual(
+    malformed.parseResults.map((item) => [item.path, item.status]),
+    expectedPaths.map((path) => [path, path === "src/suffix.ts" ? "REFUSED" : "PARSED"]),
+  );
+  const refused = malformed.parseResults.find((item) => item.path === "src/suffix.ts");
+  assert(refused.diagnosticCodes.length > 0);
+  for (const item of malformed.parseResults) {
+    if (item.path !== "src/suffix.ts") assert.deepEqual([...item.diagnosticCodes], []);
+  }
+  assert.equal(
+    malformed.nodes.some((node) => node.kind !== "FILE" && node.locator.startsWith("src/suffix.ts#")),
+    false,
+  );
+  assert(malformed.nodes.some((node) => node.kind === "INTERFACE" && node.locator.startsWith("src/suffix.d.ts#")));
+});
+
+test("HOST residue admits nonempty resolution inputs and refuses held-byte drift", async () => {
+  const options = await fixtureOptions(
+    { "src/clean.ts": "export const clean = true;\n" },
+    {
+      // Intentionally reverse insertion order; admitted rows must be sorted.
+      "tsconfig.json": '{"compilerOptions":{"target":"ES2022"}}\n',
+      "package.json": '{"name":"fixture","type":"module"}\n',
+    },
+  );
+  assert.deepEqual(options.resolutionInputs.rows.map((item) => item.path), ["package.json", "tsconfig.json"]);
+  assert.equal(options.resolutionBlobs.size, 2);
+
+  // A schema/toolchain refusal here must fail the pair before either negative runs.
+  const valid = await decodeHostProject(options);
+  assert.equal(valid.authorizing, false);
+  assert.deepEqual(
+    valid.parseResults.map((item) => [item.path, item.status, [...item.diagnosticCodes]]),
+    [["src/clean.ts", "PARSED", []]],
+  );
+  assert(valid.nodes.some((node) => node.kind === "SYMBOL" && node.locator.startsWith("src/clean.ts#")));
+
+  for (const [path, text] of [
+    ["package.json", '{"name":"fixturE","type":"module"}\n'],
+    ["tsconfig.json", '{"compilerOptions":{"target":"ES2021"}}\n'],
+  ]) {
+    const original = options.resolutionBlobs.get(path);
+    const changed = Buffer.from(text, "utf8");
+    assert.equal(changed.length, original.length, path);
+    assert.notDeepEqual(changed, original, path);
+    const hostile = { ...options, resolutionBlobs: mutableBlobSnapshot(options.resolutionBlobs) };
+    hostile.resolutionBlobs.set(path, changed);
+    // Leave both manifests, all rows/digests and every other held byte unchanged.
+    await expectRefusal(decodeHostProject(hostile), /^SOURCE_ORIGIN_GIT_BLOB_SET$/);
+    assert.deepEqual(options.resolutionBlobs.get(path), original, path);
+  }
 });
