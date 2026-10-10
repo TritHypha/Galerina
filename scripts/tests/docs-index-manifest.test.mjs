@@ -301,6 +301,52 @@ test('preparation failure publishes nothing; second rename failure has exact rec
     unchanged(f);
   });
 });
+test('journal failure after rename preserves accurate returned progress and unresolved disk intent', async (t) => {
+  for (const persistent of [false, true]) await t.test(persistent ? 'persistent' : 'transient', async () => {
+    const f = fixture(t), plan = create(f), mod = await api(f);
+    let renamed = false, failures = 0;
+    const io = { ...fs,
+      renameSync(a, b) { fs.renameSync(a, b); renamed = true; },
+      openSync(p, flags, ...rest) {
+        if (renamed && /receipt-[^/\\]+\.json$/.test(String(p)) &&
+            (flags & fs.constants.O_WRONLY) && (persistent || failures === 0)) {
+          failures++;
+          throw Error('JOURNAL_AFTER_RENAME_CONTROL');
+        }
+        return fs.openSync(p, flags, ...rest);
+      },
+    };
+    const r = failure(() => mod.execute(args(f, '--apply'), io), /JOURNAL_AFTER_RENAME_CONTROL/);
+    assert.equal(renamed, true);
+    assert.equal(failures, persistent ? 2 : 1);
+    assert.equal(r.outcome, 'PARTIAL');
+    assert.deepEqual(r.completed, [TARGETS[0]]);
+    assert.deepEqual(r.remaining, [TARGETS[1]]);
+    assert.equal(r.pending, null);
+    if (persistent) assert.match(r.journalError, /JOURNAL_AFTER_RENAME_CONTROL/);
+    else assert.equal(r.journalError, undefined);
+    const published = fs.readFileSync(join(f.root, TARGETS[0]));
+    assert.equal(published.length, plan.entries[0].byteLength);
+    assert.equal(sha(published), plan.entries[0].sha256);
+    assert.equal(fs.existsSync(join(f.root, TARGETS[1])), false);
+    const recovery = join(f.root, r.recovery);
+    const names = fs.readdirSync(recovery).filter(p => /^receipt-.*\.json$/.test(p)).sort();
+    const persisted = JSON.parse(fs.readFileSync(join(recovery, names.at(-1))));
+    assert.equal(persisted.planSha256, sha(fs.readFileSync(f.plan)));
+    assert.deepEqual(persisted.completed, persistent ? [] : [TARGETS[0]]);
+    assert.deepEqual(persisted.remaining, persistent ? TARGETS : [TARGETS[1]]);
+    assert.equal(persisted.pending, persistent ? TARGETS[0] : null);
+    if (persistent) {
+      assert.equal(persisted.phase, 'PUBLISHING');
+      assert.equal(persisted.outcome, undefined);
+    } else assert.equal(persisted.outcome, 'PARTIAL');
+    const beforeReplay = tree(f.root);
+    refused(f, /PREIMAGE_DRIFT/);
+    assert.deepEqual(tree(f.root), beforeReplay, 'blind replay must not change published or recovery bytes');
+    unchanged(f);
+  });
+});
+
 test('source drift during preparation and after publication is reported truthfully', async (t) => {
   for (const stage of ['prepare', 'published']) await t.test(stage, async () => {
     const f = fixture(t); create(f); const mod = await api(f); let fired = false;
