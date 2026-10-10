@@ -6,12 +6,21 @@ receipt. A lock is a preservation notice, not proof of an active worker or a mer
 
 ## Latest retirement checkpoint - 2026-10-10
 
-- Current verified registration count: **35 worktrees, 21 locked**. Nineteen
+- Current verified registration count: **34 worktrees, 21 locked**. Nineteen
   detached WAT variants were retired after exact source-preservation review,
   publication of the reviewed successor on the existing work branch, and recovery
   verification. Original directories, including ignored content, and saved Git
   administration/indexes remain in the local recovery archive. All nineteen
   receipts were rechecked against live registration and filesystem state.
+- The redundant roadmap checkout and local/remote branch
+  `grok/roadmap-wat-l1-label-20261006` were subsequently retired. Independent review
+  verified all twelve added lines and four deletions, including their surrounding
+  behavior, in published remote main `5b64928ca`. Original commit `420645da2` is
+  retained in a complete history bundle (SHA-256
+  `46bf043c39a540bf03a9770444bde64e3e85d79de9feb580424b8eb6093771c5`), independently
+  unbundled and checked. Original directory and Git index/admin remain recoverable.
+  Its already-dangling compiler dependency junction was retained as metadata,
+  not represented as recovered dependency contents. No open PR used that branch.
 - Published work branch: `fix/absorbed-kb-links-20261009` at
   `86a5ea57a007b36e75d60fc6b8c288110eaac22a`. Remote main remains
   `5b64928ca67b30279eae38e372398ba16acd8827`. The exact i64-local match and strict
