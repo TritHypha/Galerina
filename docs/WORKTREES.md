@@ -4,6 +4,33 @@ This is a dated consolidation record, not live Git authority. Before integration
 retirement, reopen the named checkout, its HEAD, index, working files and recovery
 receipt. A lock is a preservation notice, not proof of an active worker or a merge.
 
+## Latest retirement checkpoint - 2026-10-10, native finalize
+
+- Git registers **19 worktrees** after retiring the historical
+  `rd-0873-native-fungi-bootstrap-finalize` checkout. Its committed head
+  `5faf6e2653199ae2174ddec30994e757be79c685` is contained in published main
+  `ca4bed8946805e823f0d993f4dda1f7f3afab6c1`.
+- The redundant local and remote branch
+  `codex/rd-0873-native-fungi-bootstrap-implementation` were removed after
+  verifying exact remote-tip ancestry and no open PR. GitHub Actions remained
+  disabled. The commit remains in main history and the original directory is retained.
+- Five uncommitted documentation changes were preserved, not merged wholesale.
+  They roll back later progress records; their dependency-closure,
+  negative-fixture and same-head evidence requirements remain in the current
+  AGENTS source-origin design/plan. That reconciliation does not close those
+  execution requirements or privately owned RD criteria.
+- The complete original directory and Git administration remain in local
+  recovery. All 15,945 entries, including 14,330 regular-file hashes and 12 link
+  spellings, matched before and after relocation. Inventory SHA-256:
+  `83f40354499ad96329c735aef8137b4f85a90abb79b9bb99a6a8456be331f945`.
+  Historical Git markers and link targets need repair before reuse. Same-volume
+  preservation is not an off-device backup.
+- Visible Windows and WSL process checks found no reference to the old checkout;
+  inaccessible system processes remain outside that observation. No source file
+  was deleted. Primary, local-main and memory overlays remain unreconciled.
+- The preceding scoped integration is now published on remote main and the work
+  branch at `ca4bed894`; the old local main remains intentionally unchanged.
+
 ## Scoped integration decision - 2026-10-10
 
 The coordinator accepts the reviewed twenty-commit source delta through
