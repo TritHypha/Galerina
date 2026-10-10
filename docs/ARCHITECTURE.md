@@ -245,9 +245,10 @@ tooling lives in `packages-ts/galerina-core-cli/`, and safe project automation l
 `packages-ts/galerina-framework-example-app/`.
 
  Finance, electrical and
-operational-technology package planning is archived outside the active
-workspace under `C:\laragon\www\Galerina_Archive\packages-ts\` and is not part of the
-v1 build graph.
+operational-technology package planning remains outside the active v1 build
+graph. The previously recorded machine-local archive location is not a verified
+current locator. Locate and verify the retained package contents before any
+future restoration; this documentation does not establish that they are lost.
 
  App planning and operational documentation live in `docs/`.
 
@@ -2435,9 +2436,11 @@ Cross-package capability inheritance warnings: `../../ZTF-Knowledge-Bases/refere
 
 ## FUNGI-Graph
 
-The `fungi-graph` standalone library (Apache 2.0) lives at `C:\laragon\www\FUNGI-Graph\` and
-provides: graph data structures, BFS/DFS/topoSort/fixpoint algorithms, Galerina-specific
+The historical `fungi-graph` standalone-library description records an Apache 2.0
+license and the following scope: graph data structures, BFS/DFS/topoSort/fixpoint algorithms, Galerina-specific
 graph types (EffectGraph, BoundaryGraph, ProjectGraph, DependencyGraph), and the runtime
 logging pipeline (JSONL audit writer, proof chain, event causality DAG).
 
-Status: **complete** — 90 tests passing, built and published to `dist/`.
+Current source location, license, build and test status are **not verified** by this
+document. The earlier completion and 90-test statement is historical, not a current
+receipt. Verify the exact library source and its evidence before relying on it.

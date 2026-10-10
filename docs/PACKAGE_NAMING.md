@@ -153,8 +153,9 @@ Galerina-electrical-core
 Galerina-ot-core
 ```
 
-These packages are preserved under `C:\laragon\www\Galerina_Archive\packages-ts\`
-and must not be part of the active v1 build graph.
+These historical package names must not be part of the active v1 build graph.
+Their current archive location is unverified; locate and verify retained contents
+before restoration rather than using the former machine-local path as authority.
 
 ## Devtools Rule
 

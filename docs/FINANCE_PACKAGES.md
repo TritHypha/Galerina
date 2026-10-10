@@ -2,11 +2,10 @@
 
 Status: archived post-v2 planning.
 
-Finance package folders have been moved out of the active workspace to:
-
-```text
-C:\laragon\www\Galerina_Archive\packages-ts\Galerina-finance-core
-```
+The historical archive name is `Galerina-finance-core`. Its previously recorded
+machine-local archive location is not a verified current locator. Locate and
+verify the retained contents before any restoration; this document does not
+establish a replacement package or prove that archived work has been lost.
 
 This document is retained as planning context only. Finance packages must not
 be part of the active v1 build graph.

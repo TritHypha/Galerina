@@ -935,8 +935,9 @@ The app package must remain deliberately small until a product domain is chosen.
 - The exact developer package folder name remains provisional, but its boundary
   must stay separate from production runtime package manifests.
 - Finance, electrical and OT package planning must stay archived outside the
-  active workspace under `C:\laragon\www\Galerina_Archive\packages-ts\` until post-v2
-  package planning resumes.
+  active workspace until post-v2 package planning resumes. The former machine-local
+  archive path is not a verified current locator; locate and verify retained
+  contents before restoration without changing this exclusion from active scope.
 - Finance, electrical and OT packages must not be part of active v1 package
   resolution, build graph generation, compiler targets or runtime profiles.
 - Any future restoration of finance, electrical or OT packages must require a

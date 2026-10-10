@@ -2,13 +2,11 @@
 
 Status: archived post-v2 planning.
 
-Electrical and OT package folders have been moved out of the active workspace
-to:
-
-```text
-C:\laragon\www\Galerina_Archive\packages-ts\Galerina-electrical-core
-C:\laragon\www\Galerina_Archive\packages-ts\Galerina-ot-core
-```
+The historical archive names are `Galerina-electrical-core` and `Galerina-ot-core`.
+Their previously recorded machine-local archive location is not a verified
+current locator. Locate and verify the retained contents before any restoration;
+do not infer that an active package is their replacement or that the archived
+work has been lost.
 
 This document is retained as planning context only. Electrical and OT packages
 must not be part of the active v1 build graph.
