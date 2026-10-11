@@ -13,6 +13,14 @@ const {
   admitInheritedSuiteLease,
 } = require("./lib/suite-run-lease.cjs");
 const {
+  cleanGitEnvironment,
+  createIsolatedGitEnvironment,
+  createWslTestGitEnvironment,
+  assertWslWindowsGitEnvironmentClean,
+  inheritedGitEnvironment,
+  isWslEnvironment,
+} = require("./lib/test-git-environment.cjs");
+const {
   npmTestInvocation,
   parsePackageConcurrency,
   parseTestConcurrency,
@@ -20,6 +28,14 @@ const {
 const { runOwnedProcess } = require("./lib/owned-process-tree.cjs");
 
 const DEFAULT_ROOT = path.join(__dirname, "..");
+const TEST_GIT_ENVIRONMENT_PRELOAD = pathToFileURL(path.join(
+  __dirname,
+  "..",
+  "packages-ts",
+  "galerina-core-compiler",
+  "scripts",
+  "isolate-test-git-environment.mjs",
+)).href;
 const CORE = Object.freeze([
   "galerina-devtools-graph-algorithms",
   "galerina-core-economics",
@@ -33,7 +49,6 @@ const MAX_DIAGNOSTIC_LINES = 32;
 const MAX_DIAGNOSTIC_LINE_LENGTH = 1024;
 const MAX_FALLBACK_PLAN_STEPS = 128;
 const MAX_FALLBACK_PLAN_DEPTH = 16;
-
 function refuseToolchain(detail) {
   return Object.assign(new Error(detail), { code: "TEST-TOOLCHAIN-REFUSED" });
 }
@@ -385,6 +400,10 @@ function parseArguments(argv) {
   return options;
 }
 
+function inheritedGitLocalEnvironment(environment) {
+  return inheritedGitEnvironment(environment).filter((name) => name !== "GIT_TEMPLATE_DIR");
+}
+
 function parseCounts(output) {
   if (typeof output !== "string" || Buffer.byteLength(output, "utf8") > 64 * 1024 * 1024) {
     return { tests: null, pass: null, fail: null };
@@ -407,7 +426,7 @@ function parseCounts(output) {
 }
 
 function cleanChildEnvironment() {
-  const childEnv = { ...process.env };
+  const childEnv = cleanGitEnvironment(process.env);
   // A runner invoked by node:test must start a new top-level test process.
   // Inheriting this marker makes Node treat the package suite as recursive
   // and silently skip every file.
@@ -416,6 +435,7 @@ function cleanChildEnvironment() {
   delete childEnv.GALERINA_SUITE_LEASE_ROOT_ID;
   delete childEnv.GALERINA_SUITE_LEASE_OWNER_PID;
   delete childEnv.GALERINA_SUITE_LEASE_MEDIATOR_PID;
+  childEnv.NODE_OPTIONS = `--import=${TEST_GIT_ENVIRONMENT_PRELOAD}`;
   return childEnv;
 }
 
@@ -427,6 +447,17 @@ function cleanFallbackEnvironment() {
     }
   }
   return childEnv;
+}
+
+function isolatedGitChildEnvironment(isolatedGit) {
+  if (isWslEnvironment()) {
+    return createWslTestGitEnvironment({
+      environment: isolatedGit.env,
+      configPath: isolatedGit.configPath,
+      templateDirectory: isolatedGit.templateDirectory,
+    });
+  }
+  return isolatedGit.env;
 }
 
 function admitFallbackPlatform(platform) {
@@ -486,37 +517,125 @@ function ownedProcessError(owned) {
   return null;
 }
 
+function combineFallbackStepFailures({
+  processError = null,
+  verificationError = null,
+  outputError = null,
+  cleanupResult,
+  isolatedRoot,
+}) {
+  const failures = [processError, verificationError, outputError].filter(Boolean);
+  if (!cleanupResult?.cleaned) {
+    const otherFailures = failures.map((failure) =>
+      `${failure.code || failure.name || "Error"}: ${failure.message}`);
+    const message = "Isolated Git configuration cleanup was refused: "
+      + `${cleanupResult?.reason || "unknown reason"}; `
+      + `retained=${cleanupResult?.retainedPath || "unverified"}; `
+      + `last-known=${isolatedRoot}.`
+      + (otherFailures.length ? `; additional failure(s): ${otherFailures.join("; ")}` : "");
+    return Object.assign(new Error(message), {
+      code: "TEST-GIT-ENVIRONMENT-CLEANUP-REFUSED",
+      cause: failures[0],
+      failures,
+    });
+  }
+  if (failures.length === 0) return null;
+  if (failures.length === 1) return failures[0];
+  return Object.assign(new AggregateError(
+    failures,
+    `Fallback step had multiple failures: ${failures.map((failure) => failure.message).join("; ")}`,
+  ), {
+    code: failures[0].code || "TEST-FALLBACK-STEP-FAILED",
+    failures,
+  });
+}
+
+async function executeFallbackStep({ execute, verify = null, cleanup }) {
+  let owned = null;
+  let processError = null;
+  let verificationError = null;
+  let cleanupResult = null;
+  try {
+    owned = await execute();
+  } catch (caught) {
+    processError = caught;
+  }
+  try {
+    if (owned !== null && verify !== null) verify(owned);
+  } catch (caught) {
+    verificationError = caught;
+  } finally {
+    try {
+      cleanupResult = cleanup();
+    } catch (caught) {
+      cleanupResult = {
+        cleaned: false,
+        reason: `cleanup threw (${caught?.code || caught?.message || "unknown error"})`,
+        retainedPath: null,
+      };
+    }
+  }
+  return { owned, processError, verificationError, cleanupResult };
+}
+
 async function runNpmTest(directory, testScript, testConcurrency) {
-  const common = {
-    cwd: directory,
-    env: cleanChildEnvironment(),
-    timeoutMs: TIMEOUT_MS,
-    maxOutputBytes: 64 * 1024 * 1024,
-    windowsHide: true,
-  };
-  const invocation = npmTestInvocation({
-    platform: process.platform,
-    commandShell: process.env.ComSpec,
-    testScript,
-    concurrency: testConcurrency,
-  });
-  const owned = await runOwnedProcess({
-    command: invocation.command,
-    args: invocation.args,
-    ...common,
-  });
-  const error = ownedProcessError(owned);
+  const isolatedGit = createIsolatedGitEnvironment(cleanChildEnvironment());
+  let invocation = null;
+  let owned = null;
+  let executionError = null;
+  let gitEnvironmentCleanup = null;
+  try {
+    invocation = npmTestInvocation({
+      platform: process.platform,
+      commandShell: process.env.ComSpec,
+      testScript,
+      concurrency: testConcurrency,
+    });
+    owned = await runOwnedProcess({
+      command: invocation.command,
+      args: invocation.args,
+      cwd: directory,
+      env: isolatedGitChildEnvironment(isolatedGit),
+      timeoutMs: TIMEOUT_MS,
+      maxOutputBytes: 64 * 1024 * 1024,
+      windowsHide: true,
+    });
+  } catch (error) {
+    executionError = error;
+  } finally {
+    try {
+      gitEnvironmentCleanup = isolatedGit.cleanup();
+    } catch (error) {
+      gitEnvironmentCleanup = {
+        cleaned: false,
+        reason: `cleanup threw (${error?.code || error?.message || "unknown error"})`,
+        retainedPath: null,
+      };
+    }
+  }
+  const processError = owned === null ? executionError : ownedProcessError(owned);
+  const cleanupError = !gitEnvironmentCleanup?.cleaned
+    ? Object.assign(new Error(
+      `Isolated Git configuration cleanup was refused: ${gitEnvironmentCleanup?.reason || "unknown reason"}`
+      + `; retained=${gitEnvironmentCleanup?.retainedPath || "unverified"}.`
+      + (processError ? `; process also failed: ${processError.message}` : ""),
+    ), {
+      code: "TEST-GIT-ENVIRONMENT-CLEANUP-REFUSED",
+      cause: processError || undefined,
+    })
+    : null;
+  const error = cleanupError || processError;
   return {
     child: {
-      status: owned.status,
-      signal: owned.signal,
-      stdout: owned.stdout,
-      stderr: owned.stderr,
+      status: owned?.status ?? null,
+      signal: owned?.signal ?? null,
+      stdout: owned?.stdout || "",
+      stderr: owned?.stderr || "",
       ...(error ? { error } : {}),
       owned,
     },
-    boundedNodeTest: invocation.boundedNodeTest,
-    countOutput: `${owned.stdout || ""}\n${owned.stderr || ""}`,
+    boundedNodeTest: invocation?.boundedNodeTest ?? false,
+    countOutput: `${owned?.stdout || ""}\n${owned?.stderr || ""}`,
   };
 }
 
@@ -569,30 +688,47 @@ async function runFallbackTestPlan(record, testConcurrency, typeScriptFallback) 
       args.unshift(typeScriptFallback.compilerPath);
       protectedReadTree = typeScriptFallback.compilerDirectory;
     }
-    const owned = await runOwnedProcess({
-      command,
-      args,
-      cwd: record.absolutePath,
-      env: cleanFallbackEnvironment(),
-      timeoutMs: remaining,
-      maxOutputBytes: 64 * 1024 * 1024,
-      windowsHide: true,
-      protectedReadTree,
+    const childEnvironment = cleanFallbackEnvironment();
+    if (nodeTest) {
+      childEnvironment.NODE_OPTIONS = `--import=${TEST_GIT_ENVIRONMENT_PRELOAD}`;
+    }
+    const isolatedGit = createIsolatedGitEnvironment(cleanFallbackEnvironment());
+    Object.assign(isolatedGit.env, childEnvironment);
+    const stepOutcome = await executeFallbackStep({
+      execute: () => runOwnedProcess({
+        command,
+        args,
+        cwd: record.absolutePath,
+        env: isolatedGit.env,
+        timeoutMs: remaining,
+        maxOutputBytes: 64 * 1024 * 1024,
+        windowsHide: true,
+        protectedReadTree,
+      }),
+      verify: step.kind === "tsc" ? () => typeScriptFallback.verifyCanonical() : null,
+      cleanup: () => isolatedGit.cleanup(),
     });
-    lastOwned = owned;
-    stdout += owned.stdout || "";
-    stderr += owned.stderr || "";
-    if (nodeTest) countOutput = owned.stdout || "";
+    const { owned, processError: executionError, verificationError, cleanupResult: gitEnvironmentCleanup } = stepOutcome;
+    lastOwned = owned || { status: null, signal: null, stdout: "", stderr: "" };
+    stdout += owned?.stdout || "";
+    stderr += owned?.stderr || "";
+    if (nodeTest) countOutput = owned?.stdout || "";
+    let outputError = null;
     if (Buffer.byteLength(stdout, "utf8") + Buffer.byteLength(stderr, "utf8")
         > 64 * 1024 * 1024) {
-      error = Object.assign(new Error("Fallback plan output exceeded its bounded limit."), {
+      outputError = Object.assign(new Error("Fallback plan output exceeded its bounded limit."), {
         code: "OWNED-PROCESS-OUTPUT-LIMIT",
       });
-      break;
     }
-    if (step.kind === "tsc") typeScriptFallback.verifyCanonical();
-    error = ownedProcessError(owned);
-    if (error !== null || owned.status !== 0 || owned.signal !== null) break;
+    const processError = executionError || (owned === null ? null : ownedProcessError(owned));
+    error = combineFallbackStepFailures({
+      processError,
+      verificationError,
+      outputError,
+      cleanupResult: gitEnvironmentCleanup,
+      isolatedRoot: isolatedGit.root,
+    });
+    if (error !== null || owned === null || owned.status !== 0 || owned.signal !== null) break;
   }
 
   return {
@@ -616,6 +752,9 @@ function failureFor(child, counts) {
   }
   if (child.error?.code === "OWNED-PROCESS-TREE-CLEANUP-REFUSED") {
     return ["TEST-TREE-CLEANUP-REFUSED", child.error.message];
+  }
+  if (child.error?.code === "TEST-GIT-ENVIRONMENT-CLEANUP-REFUSED") {
+    return [child.error.code, child.error.message];
   }
   if (child.error) {
     return ["TEST-SPAWN-ERROR", child.error.message];
@@ -902,6 +1041,29 @@ async function main() {
     process.exit(3);
   }
 
+  const inheritedGitEnvironment = inheritedGitLocalEnvironment(process.env);
+  if (inheritedGitEnvironment.length > 0) {
+    process.stderr.write(
+      `TEST-GIT-ENVIRONMENT-REFUSED: remove inherited local Git environment `
+      + `(${inheritedGitEnvironment.join(", ")}) before running package tests; `
+      + "scope any required Git overrides to build-only commands.\n",
+    );
+    process.exit(3);
+  }
+  try {
+    assertWslWindowsGitEnvironmentClean([
+      "GIT_CONFIG_GLOBAL",
+      "GIT_CONFIG_NOSYSTEM",
+      "GIT_TEMPLATE_DIR",
+    ]);
+  } catch (error) {
+    process.stderr.write(
+      (error.code || "TEST-GIT-WINDOWS-PARENT-ENVIRONMENT-REFUSED")
+      + ": " + error.message + "\n",
+    );
+    process.exit(3);
+  }
+
   let suiteLease;
   try {
     const hasInheritedLease =
@@ -1131,5 +1293,7 @@ if (require.main === module) {
 
 module.exports = Object.freeze({
   admitFallbackPlatform,
+  combineFallbackStepFailures,
+  executeFallbackStep,
   parseCounts,
 });

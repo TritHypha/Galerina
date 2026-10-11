@@ -1,8 +1,12 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
+const { cleanGitEnvironment, createWslInteropGitEnvironment } = require("../../../scripts/lib/test-git-environment.cjs");
 
 const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 const COMPILER = "packages-ts/galerina-core-compiler";
@@ -53,6 +57,105 @@ function locatorEscapes(locator) {
 
 function sha256Bytes(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
+}
+
+function wslPath(args, env) {
+  const result = spawnSync("wslpath", args, { encoding: "utf8", timeout: 5_000, env });
+  if (result.error || result.status !== 0 || result.signal) {
+    throw new Error(`cannot validate WSL Git path mapping: ${result.stderr || result.error?.message || "wslpath failed"}`);
+  }
+  return result.stdout.trim();
+}
+
+function windowsPathKey(value) {
+  return value.replace(/\//gu, "\\").replace(/\\+$/u, "").toLowerCase();
+}
+
+function resolveGitInvocation(root, env) {
+  if (process.platform !== "linux") {
+    return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+  }
+
+  let kernelVersion;
+  try {
+    kernelVersion = readFileSync("/proc/version", "utf8");
+  } catch {
+    return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+  }
+  if (!/microsoft/iu.test(kernelVersion)) {
+    return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+  }
+
+  const worktreeGitFile = join(root, ".git");
+  let pointer;
+  try {
+    const metadata = lstatSync(worktreeGitFile);
+    if (!metadata.isFile() || metadata.isSymbolicLink()) {
+      return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+    }
+    pointer = readFileSync(worktreeGitFile, "utf8");
+  } catch (error) {
+    if (error?.code === "EISDIR" || error?.code === "ENOENT") {
+      return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+    }
+    throw error;
+  }
+
+  const match = /^gitdir:\s*([a-zA-Z]:[\\/][^\r\n]+)\s*$/mu.exec(pointer);
+  if (match === null) {
+    return { command: "git", root, configPath: fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url)) };
+  }
+
+  const windowsRoot = wslPath(["-w", root], env);
+  const configPath = fileURLToPath(new URL("../../../scripts/test-isolated.gitconfig", import.meta.url));
+  const gitDirectory = wslPath(["-u", match[1].replace(/\\/gu, "/")], env);
+  const gitDirectoryInfo = lstatSync(gitDirectory);
+  if (!gitDirectoryInfo.isDirectory() || gitDirectoryInfo.isSymbolicLink()) {
+    throw new Error("refusing WSL Git mapping: linked-worktree metadata is not a real directory");
+  }
+
+  const backPointer = readFileSync(join(gitDirectory, "gitdir"), "utf8").trim();
+  const mappedBackPointer = wslPath(["-u", backPointer.replace(/\\/gu, "/")], env);
+  if (resolve(mappedBackPointer) !== resolve(worktreeGitFile)) {
+    throw new Error("refusing WSL Git mapping: linked-worktree metadata does not point back to this checkout");
+  }
+  const commonDirectory = resolve(gitDirectory, readFileSync(join(gitDirectory, "commondir"), "utf8").trim());
+  const commonDirectoryInfo = lstatSync(commonDirectory);
+  if (!commonDirectoryInfo.isDirectory() || commonDirectoryInfo.isSymbolicLink()) {
+    throw new Error("refusing WSL Git mapping: common Git metadata is not a real directory");
+  }
+
+  const windowsGitEnv = createWslInteropGitEnvironment(env, configPath);
+  const probe = (args) => {
+    const result = spawnSync("git.exe", ["-C", windowsRoot, "rev-parse", ...args], {
+      encoding: "utf8",
+      timeout: 15_000,
+      env: windowsGitEnv,
+    });
+    if (result.error || result.status !== 0 || result.signal) {
+      throw new Error(`cannot validate native Git worktree mapping: ${result.stderr || result.error?.message || "git.exe probe failed"}`);
+    }
+    return result.stdout.trim();
+  };
+  const reportedRoot = probe(["--show-toplevel"]);
+  const reportedGitDirectory = probe(["--absolute-git-dir"]);
+  const reportedCommonDirectory = probe(["--path-format=absolute", "--git-common-dir"]);
+  const configProbe = spawnSync("git.exe", ["config", "--global", "--list"], {
+    encoding: "utf8",
+    timeout: 15_000,
+    env: windowsGitEnv,
+  });
+  if (configProbe.error || configProbe.status !== 0 || configProbe.signal
+    || configProbe.stdout !== "" || configProbe.stderr !== "") {
+    throw new Error(`refusing WSL Git mapping: native Git did not receive an empty isolated global config (${configProbe.stderr || configProbe.error?.message || "unexpected global config entries"})`);
+  }
+  if (windowsPathKey(reportedRoot) !== windowsPathKey(windowsRoot)
+    || windowsPathKey(reportedGitDirectory) !== windowsPathKey(wslPath(["-w", gitDirectory], env))
+    || windowsPathKey(reportedCommonDirectory) !== windowsPathKey(wslPath(["-w", commonDirectory], env))) {
+    throw new Error("refusing WSL Git mapping: native Git metadata does not match the validated checkout pointers");
+  }
+
+  return { command: "git.exe", root: windowsRoot, configPath, env: windowsGitEnv };
 }
 
 function lengthPrefixedDigest(label, entries) {
@@ -198,11 +301,16 @@ export function assertNoDuplicateJsonKeys(json) {
   if (index !== json.length) failSyntax();
 }
 
-function gitPaths(root, compiler, args) {
+export function gitPaths(root, compiler, args) {
+  let env = cleanGitEnvironment(process.env);
+  env.GIT_CONFIG_NOSYSTEM = "1";
+  const invocation = resolveGitInvocation(root, env);
+  env = invocation.env ?? env;
+  env.GIT_CONFIG_GLOBAL = invocation.configPath;
   const result = spawnSync(
-    "git",
-    ["-C", root, ...args, "-z", "--", `${compiler}/src`, `${compiler}/tests`],
-    { encoding: "utf8", timeout: 30_000 },
+    invocation.command,
+    ["-C", invocation.root, ...args, "-z", "--", `${compiler}/src`, `${compiler}/tests`],
+    { encoding: "utf8", timeout: 30_000, env },
   );
   if (result.error || result.status !== 0 || result.signal) {
     throw new Error(`cannot enumerate compiler inputs: ${result.stderr || result.error?.message || "git failed"}`);

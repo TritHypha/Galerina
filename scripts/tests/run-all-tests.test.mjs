@@ -21,7 +21,7 @@ const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const RUNNER = join(TEST_DIR, "..", "run-all-tests.cjs");
 const require = createRequire(import.meta.url);
 const { acquireSuiteLease } = require("../lib/suite-run-lease.cjs");
-const { admitFallbackPlatform } = require("../run-all-tests.cjs");
+const { admitFallbackPlatform, combineFallbackStepFailures, executeFallbackStep } = require("../run-all-tests.cjs");
 const roots = [];
 
 after(() => {
@@ -89,7 +89,7 @@ function parallelWorkspaceFixture() {
       `const waitCell = new Int32Array(new SharedArrayBuffer(4));`,
       `while (!fs.existsSync(peer) && Date.now() < deadline) Atomics.wait(waitCell, 0, 0, 25);`,
       `if (!fs.existsSync(peer)) process.exit(2);`,
-      `console.log("tests 1\\npass 1\\nfail 0");`,
+      `console.log("# tests 1\\n# pass 1\\n# fail 0");`,
     ].join("\n") + "\n");
   }
   return root;
@@ -125,7 +125,7 @@ function compilerIsolationFixture() {
     `Atomics.wait(waitCell, 0, 0, 500);`,
     `fs.rmSync(active);`,
     `fs.writeFileSync(done, "done");`,
-    `console.log("tests 1\\npass 1\\nfail 0");`,
+    `console.log("# tests 1\\n# pass 1\\n# fail 0");`,
   ].join("\n") + "\n");
   write(root, "packages-ts/galerina-dependent/package.json", JSON.stringify({
     name: "@galerina/dependent",
@@ -141,7 +141,7 @@ function compilerIsolationFixture() {
     `const waitCell = new Int32Array(new SharedArrayBuffer(4));`,
     `while (!fs.existsSync(active) && !fs.existsSync(done) && Date.now() < deadline) Atomics.wait(waitCell, 0, 0, 25);`,
     `if (fs.existsSync(active) || !fs.existsSync(done)) process.exit(2);`,
-    `console.log("tests 1\\npass 1\\nfail 0");`,
+    `console.log("# tests 1\\n# pass 1\\n# fail 0");`,
   ].join("\n") + "\n");
   return root;
 }
@@ -237,7 +237,7 @@ function typescriptFallbackFixture({ lockVersion = "5.9.3" } = {}) {
   write(
     root,
     "packages-ts/galerina-core-compiler/compiler-pass.cjs",
-    "console.log('tests 1\\npass 1\\nfail 0');\n",
+    "console.log('# tests 1\\n# pass 1\\n# fail 0');\n",
   );
   write(root, "packages-ts/galerina-core-compiler/package-lock.json", JSON.stringify({
     lockfileVersion: 3,
@@ -277,7 +277,7 @@ function crossPackageTypeScriptMutationFixture() {
       "    \"fs.writeFileSync(path.join(process.cwd(), 'hijacked-tsc.txt'), 'executed');\",",
       "  ].join('\\n') + '\\n');",
       "}",
-      "console.log('tests 1\\npass 1\\nfail 0');",
+      "console.log('# tests 1\\n# pass 1\\n# fail 0');",
     ].join("\n") + "\n",
   );
   return root;
@@ -298,7 +298,7 @@ function canonicalTypeScriptMutationFixture() {
       "  \"const path = require('node:path');\",",
       "  \"fs.writeFileSync(path.join(process.cwd(), 'canonical-source-hijacked.txt'), 'executed');\",",
       "].join('\\n') + '\\n');",
-      "console.log('tests 1\\npass 1\\nfail 0');",
+      "console.log('# tests 1\\n# pass 1\\n# fail 0');",
     ].join("\n") + "\n",
   );
   return root;
@@ -481,7 +481,11 @@ function fallbackCountIsolationFixture() {
   write(
     root,
     "packages-ts/needs-tsc/fake-counts.cjs",
-    "console.log('tests 99\\npass 99\\nfail 0');\n",
+    [
+      "require('node:fs').writeFileSync('lifecycle-ran.marker', 'ran');",
+      "console.log('# tests 99\\n# pass 99\\n# fail 0');",
+      "",
+    ].join("\n"),
   );
   return root;
 }
@@ -489,9 +493,21 @@ function fallbackCountIsolationFixture() {
 function fallbackNodeTestCountForgeryFixture() {
   const root = typescriptFallbackFixture();
   write(root, "packages-ts/needs-tsc/tests/current.test.mjs", [
-    "console.log('tests 999\\npass 999\\nfail 0');",
+    "console.log('# tests 999\\n# pass 999\\n# fail 0');",
     "import test from 'node:test';",
     "test('current', () => {});",
+  ].join("\n") + "\n");
+  return root;
+}
+
+function fallbackFailingNodeTestCountForgeryFixture() {
+  const root = typescriptFallbackFixture();
+  write(root, "packages-ts/needs-tsc/tests/current.test.mjs", [
+    "console.log('# tests 999\\n# pass 999\\n# fail 0');",
+    "import test from 'node:test';",
+    "test('current fails despite forged success counters', () => {",
+    "  throw new Error('planted failure');",
+    "});",
   ].join("\n") + "\n");
   return root;
 }
@@ -629,7 +645,7 @@ test("an existing dist directory never bypasses the declared test and build chai
   });
 });
 
-test("a validated canonical TypeScript fallback outranks a hostile ambient launcher", () => {
+test("a validated canonical TypeScript fallback outranks a hostile ambient launcher", { skip: process.platform !== "win32" }, () => {
   const root = typescriptFallbackFixture();
   const result = runWithEnvironment(
     root,
@@ -679,7 +695,7 @@ test("a byte-substituted canonical TypeScript fallback refuses before execution"
   assert.equal(existsSync(join(root, "packages-ts", "needs-tsc", "hostile-tsc.txt")), false);
 });
 
-test("an earlier package cannot replace the authenticated fallback used by a later package", () => {
+test("an earlier package cannot replace the authenticated fallback used by a later package", { skip: process.platform !== "win32" }, () => {
   const root = crossPackageTypeScriptMutationFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -712,7 +728,7 @@ test("canonical fallback drift between packages refuses before the changed compi
   );
 });
 
-test("private fallback mutation is blocked and converts an apparent pass into failure", () => {
+test("private fallback mutation is blocked and converts an apparent pass into failure", { skip: process.platform !== "win32" }, () => {
   const root = selfMutatingTypeScriptFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -726,7 +742,7 @@ test("private fallback mutation is blocked and converts an apparent pass into fa
   );
 });
 
-test("transient replace-execute-restore cannot substitute the protected fallback compiler", () => {
+test("transient replace-execute-restore cannot substitute the protected fallback compiler", { skip: process.platform !== "win32" }, () => {
   const root = transientTypeScriptSubstitutionFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -746,7 +762,7 @@ test("transient replace-execute-restore cannot substitute the protected fallback
   );
 });
 
-test("a transient higher-priority launcher cannot shadow the protected fallback compiler", () => {
+test("a transient higher-priority launcher cannot shadow the protected fallback compiler", { skip: process.platform !== "win32" }, () => {
   const root = shadowTypeScriptSubstitutionFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -766,7 +782,7 @@ test("a transient higher-priority launcher cannot shadow the protected fallback 
   );
 });
 
-test("a caller PATHEXT cannot add an unprotected fallback compiler alias", () => {
+test("a caller PATHEXT cannot add an unprotected fallback compiler alias", { skip: process.platform !== "win32" }, () => {
   const root = typescriptFallbackFixture();
   const result = runWithEnvironment(
     root,
@@ -812,7 +828,7 @@ test("a package script cannot replace the admitted fallback command grammar", ()
   );
 });
 
-test("a package-local npm bin cannot outrank the authenticated fallback compiler", () => {
+test("a package-local npm bin cannot outrank the authenticated fallback compiler", { skip: process.platform !== "win32" }, () => {
   const root = localBinTypeScriptSubstitutionFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -827,7 +843,7 @@ test("a package-local npm bin cannot outrank the authenticated fallback compiler
   );
 });
 
-test("fallback lifecycle output cannot forge the node:test counters", () => {
+test("fallback lifecycle output cannot forge the node:test counters", { skip: process.platform !== "win32" }, () => {
   const root = fallbackCountIsolationFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -837,9 +853,49 @@ test("fallback lifecycle output cannot forge the node:test counters", () => {
   assert.equal(dependent.tests, 1);
   assert.equal(dependent.pass, 1);
   assert.equal(dependent.fail, 0);
+  assert.equal(
+    existsSync(join(root, "packages-ts", "needs-tsc", "lifecycle-ran.marker")),
+    true,
+    "the planted pretest must actually execute for its forged-output control to be meaningful",
+  );
 });
 
-test("fallback node:test output cannot forge the structured test counters", () => {
+test("fallback orchestration preserves child-process rejection alongside cleanup refusal", async () => {
+  const processError = Object.assign(new Error("owned runner rejected"), { code: "RUNNER-REJECTED" });
+  const cleanupResult = { cleaned: false, reason: "ownership marker changed", retainedPath: null };
+  const outcome = await executeFallbackStep({
+    execute: () => Promise.reject(processError),
+    cleanup: () => cleanupResult,
+  });
+  const error = combineFallbackStepFailures({ ...outcome, isolatedRoot: "last-known-root" });
+
+  assert.equal(outcome.processError, processError);
+  assert.equal(outcome.cleanupResult, cleanupResult);
+  assert.equal(error.code, "TEST-GIT-ENVIRONMENT-CLEANUP-REFUSED");
+  assert.equal(error.cause, processError);
+  assert.match(error.message, /retained=unverified; last-known=last-known-root/u);
+  assert.match(error.message, /RUNNER-REJECTED: owned runner rejected/u);
+});
+
+test("fallback orchestration preserves verifier failure alongside cleanup refusal", async () => {
+  const verificationError = Object.assign(new Error("canonical compiler changed"), { code: "TEST-TOOLCHAIN-REFUSED" });
+  const cleanupResult = { cleaned: false, reason: "cleanup could not verify ownership", retainedPath: "verified-quarantine" };
+  const outcome = await executeFallbackStep({
+    execute: async () => ({ status: 0, stdout: "", stderr: "" }),
+    verify: () => { throw verificationError; },
+    cleanup: () => cleanupResult,
+  });
+  const error = combineFallbackStepFailures({ ...outcome, isolatedRoot: "last-known-root" });
+
+  assert.equal(outcome.verificationError, verificationError);
+  assert.equal(outcome.cleanupResult, cleanupResult);
+  assert.equal(error.code, "TEST-GIT-ENVIRONMENT-CLEANUP-REFUSED");
+  assert.equal(error.cause, verificationError);
+  assert.match(error.message, /retained=verified-quarantine; last-known=last-known-root/u);
+  assert.match(error.message, /TEST-TOOLCHAIN-REFUSED: canonical compiler changed/u);
+});
+
+test("fallback node:test output cannot forge the structured test counters", { skip: process.platform !== "win32" }, () => {
   const root = fallbackNodeTestCountForgeryFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -851,7 +907,18 @@ test("fallback node:test output cannot forge the structured test counters", () =
   assert.equal(dependent.fail, 0);
 });
 
-test("fallback structured counters admit a valid nested node:test suite", () => {
+test("fallback refuses a failing node:test despite forged success counters", { skip: process.platform !== "win32" }, () => {
+  const root = fallbackFailingNodeTestCountForgeryFixture();
+  const result = run(root, "--json", "--package-concurrency", "1");
+
+  assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`);
+  const dependent = JSON.parse(result.stdout).results
+    .find((item) => item.package === "galerina-needs-tsc");
+  assert.equal(dependent.failureCode, "TEST-CHILD-FAILED");
+  assert.deepEqual([dependent.tests, dependent.pass, dependent.fail], [1, 0, 1]);
+});
+
+test("fallback structured counters admit a valid nested node:test suite", { skip: process.platform !== "win32" }, () => {
   const root = fallbackNestedSuiteFixture();
   const result = run(root, "--json", "--package-concurrency", "1");
 
@@ -1024,7 +1091,7 @@ test("a zero-test summary is refused rather than treated as an empty pass", () =
     scripts: { test: "node empty-pass.mjs" },
   }, {
     "empty-pass.mjs":
-      "console.log('tests 0\\npass 0\\nfail 0');\n",
+      "console.log('# tests 0\\n# pass 0\\n# fail 0');\n",
   });
 
   const result = run(root, "--json");
@@ -1068,7 +1135,7 @@ test("--emit-counts replaces stale package-count narrative with derived scope", 
     name: "@galerina/counted",
     scripts: { test: "node counted.mjs" },
   }, {
-    "counted.mjs": "console.log('tests 1\\npass 1\\nfail 0');\n",
+    "counted.mjs": "console.log('# tests 1\\n# pass 1\\n# fail 0');\n",
   });
   write(root, "version.json", JSON.stringify({
     testCount: 99,
@@ -1109,4 +1176,153 @@ test("a held checkout lease refuses before a package child starts", () => {
     false,
   );
   assert.equal(lease.release(), true);
+});
+
+test("local Git environment refuses before any package child starts", () => {
+  const root = workspaceFixture("must-not-run", {
+    name: "@galerina/must-not-run",
+    scripts: { test: "node --test tests/must-not-run.test.mjs" },
+  }, {
+    "tests/must-not-run.test.mjs": [
+      "import assert from 'node:assert/strict';",
+      "import { test } from 'node:test';",
+      "import { spawnSync } from 'node:child_process';",
+      "import { existsSync, writeFileSync } from 'node:fs';",
+      "import { join } from 'node:path';",
+      "writeFileSync('started-at-module-entry.marker', 'started');",
+      "test('package test started in isolated Git config', () => {",
+      `  assert.notEqual(process.env.GIT_CONFIG_GLOBAL, ${JSON.stringify(join(TEST_DIR, "..", "test-isolated.gitconfig"))});`,
+      '  assert.notEqual(process.env.GIT_TEMPLATE_DIR, process.env.POISON_TEMPLATE_DIR);',
+      '  assert.equal(process.env.GIT_CONFIG_SYSTEM, undefined);',
+      '  assert.equal(process.env.GIT_CONFIG_NOSYSTEM, "1");',
+      '  writeFileSync("git-config-path.marker", process.env.GIT_CONFIG_GLOBAL);',
+      '  const effectiveGlobal = spawnSync("git", ["config", "--global", "--get", "codex.testProbe"], { encoding: "utf8" });',
+      '  assert.equal(effectiveGlobal.status, 1, effectiveGlobal.stderr || effectiveGlobal.stdout);',
+      '  assert.equal(effectiveGlobal.stdout, "", "ambient user Git config must not reach test workers");',
+      '  const initialized = spawnSync("git", ["init", "-q", "fixture-repo"], { encoding: "utf8" });',
+      '  assert.equal(initialized.status, 0, initialized.stderr || initialized.stdout);',
+      '  assert.equal(existsSync(join("fixture-repo", ".git", "hooks", "pre-commit")), false, "ambient Git template hook must not be copied");',
+      "  writeFileSync('completed.marker', 'completed');",
+      "});",
+    ].join("\n") + "\n",
+  });
+  const hostileTemplate = join(root, "hostile-template");
+  mkdirSync(join(hostileTemplate, "hooks"), { recursive: true });
+  writeFileSync(join(hostileTemplate, "hooks", "pre-commit"), "#!/bin/sh\necho hostile\n");
+  const keys = [
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_CONFIG",
+    "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_IMPLICIT_WORK_TREE",
+    "GIT_GRAFT_FILE",
+    "GIT_INDEX_FILE",
+    "GIT_NO_REPLACE_OBJECTS",
+    "GIT_REPLACE_REF_BASE",
+    "GIT_PREFIX",
+    "GIT_SHALLOW_FILE",
+    "GIT_COMMON_DIR",
+    "GIT_TEMPLATE_DIR",
+    "GIT_NAMESPACE",
+    "GIT_CEILING_DIRECTORIES",
+    "GIT_DISCOVERY_ACROSS_FILESYSTEM",
+    "GIT_CONFIG_GLOBAL",
+    "GIT_CONFIG_SYSTEM",
+    "GIT_CONFIG_KEY_0",
+    "GIT_CONFIG_VALUE_0",
+  ];
+  const poisoned = keys.map((key) => [
+    key === "GIT_DIR" ? "git_dir" : key,
+    join(root, `poison-${key.toLowerCase()}`),
+  ]);
+
+  for (const [key, value] of poisoned) {
+    if (key === "GIT_TEMPLATE_DIR") continue;
+    const environment = { ...process.env };
+    for (const inheritedKey of Object.keys(environment)) {
+      if (keys.includes(inheritedKey.toUpperCase())) delete environment[inheritedKey];
+    }
+    delete environment.NODE_TEST_CONTEXT;
+    environment[key] = value;
+    const result = runWithEnvironment(root, environment, "--json");
+
+    assert.equal(result.status, 3, `${key}: ${result.stderr}\n${result.stdout}`);
+    assert.match(result.stderr, /TEST-GIT-ENVIRONMENT-REFUSED/u);
+    assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "started-at-module-entry.marker")), false);
+    assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "completed.marker")), false);
+  }
+
+  const isolatedHome = join(root, "isolated-home");
+  mkdirSync(isolatedHome, { recursive: true });
+  writeFileSync(join(isolatedHome, ".gitconfig"), "[codex]\n  testProbe = inherited-user-config\n");
+  const positiveEnvironment = {
+    ...process.env,
+    GIT_PAGER: "cat",
+    HOME: isolatedHome,
+    USERPROFILE: isolatedHome,
+    GIT_TEMPLATE_DIR: hostileTemplate,
+    POISON_TEMPLATE_DIR: hostileTemplate,
+  };
+  const rawTemplateControlEnvironment = { ...positiveEnvironment };
+  for (const inheritedKey of Object.keys(rawTemplateControlEnvironment)) {
+    const normalizedKey = inheritedKey.toUpperCase();
+    if (keys.includes(normalizedKey) && normalizedKey !== "GIT_TEMPLATE_DIR") {
+      delete rawTemplateControlEnvironment[inheritedKey];
+    }
+  }
+  delete rawTemplateControlEnvironment.NODE_TEST_CONTEXT;
+  rawTemplateControlEnvironment.GIT_CONFIG_NOSYSTEM = "1";
+  for (const inheritedKey of Object.keys(positiveEnvironment)) {
+    const normalizedKey = inheritedKey.toUpperCase();
+    if (keys.includes(normalizedKey) && normalizedKey !== "GIT_TEMPLATE_DIR") {
+      delete positiveEnvironment[inheritedKey];
+    }
+  }
+  delete positiveEnvironment.NODE_TEST_CONTEXT;
+  const poisonControl = spawnSync(
+    "git",
+    ["config", "--global", "--get", "codex.testProbe"],
+    { cwd: root, encoding: "utf8", env: positiveEnvironment },
+  );
+  assert.equal(poisonControl.status, 0, poisonControl.stderr || poisonControl.stdout);
+  assert.equal(poisonControl.stdout.trim(), "inherited-user-config");
+  const rawTemplateControlRepo = join(root, "raw-template-control");
+  const rawTemplateControl = spawnSync(
+    "git",
+    ["init", "-q", rawTemplateControlRepo],
+    { cwd: root, encoding: "utf8", env: rawTemplateControlEnvironment },
+  );
+  assert.equal(rawTemplateControl.status, 0, rawTemplateControl.stderr || rawTemplateControl.stdout);
+  assert.equal(
+    readFileSync(join(rawTemplateControlRepo, ".git", "hooks", "pre-commit"), "utf8"),
+    readFileSync(join(hostileTemplate, "hooks", "pre-commit"), "utf8"),
+    "raw Git positive control must prove the hostile template's exact hook was copied",
+  );
+  const noTemplateControlEnvironment = { ...rawTemplateControlEnvironment };
+  delete noTemplateControlEnvironment.GIT_TEMPLATE_DIR;
+  const noTemplateControlRepo = join(root, "raw-no-template-control");
+  const noTemplateControl = spawnSync(
+    "git",
+    ["init", "-q", noTemplateControlRepo],
+    { cwd: root, encoding: "utf8", env: noTemplateControlEnvironment },
+  );
+  assert.equal(noTemplateControl.status, 0, noTemplateControl.stderr || noTemplateControl.stdout);
+  assert.equal(
+    existsSync(join(noTemplateControlRepo, ".git", "hooks", "pre-commit")),
+    false,
+    "raw Git negative control must not install the fixture hook without GIT_TEMPLATE_DIR",
+  );
+  const positive = runWithEnvironment(root, positiveEnvironment, "--json");
+  assert.equal(positive.status, 0, JSON.stringify({
+    status: positive.status,
+    stderr: positive.stderr,
+    stdout: positive.stdout,
+  }));
+  assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "started-at-module-entry.marker")), true);
+  assert.equal(existsSync(join(root, "packages-ts", "must-not-run", "completed.marker")), true);
+  const configPath = readFileSync(join(root, "packages-ts", "must-not-run", "git-config-path.marker"), "utf8");
+  assert.equal(existsSync(configPath), false, "per-invocation Git config is removed after the package child exits");
 });
