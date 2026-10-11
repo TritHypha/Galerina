@@ -114,12 +114,19 @@ function effectPackage({ start }) {
   return { root, pkg };
 }
 
-function effectOptions(effect) {
+function effectOptions(effect, onFactory = () => {}) {
   return {
     allowUnsigned: true,
     warn: () => {},
     capabilityRegistry: {
-      "test.effect": () => ({ namespace: "host", functions: { effect } }),
+      "test.effect": {
+        namespace: "host",
+        functionNames: ["effect"],
+        create: () => {
+          onFactory();
+          return { effect };
+        },
+      },
     },
   };
 }
@@ -255,6 +262,153 @@ test("startup refusal remains sticky if the WASM engine catches the import excep
   }
 });
 
+test("a startup refusal does not invoke the host capability factory", async () => {
+  const { root, pkg } = effectPackage({ start: true });
+  let factoryEffects = 0;
+  try {
+    await assert.rejects(
+      () => fusePackage(pkg, {
+        allowUnsigned: true,
+        warn: () => {},
+        capabilityRegistry: {
+          "test.effect": {
+            namespace: "host",
+            functionNames: ["effect"],
+            create: () => {
+              factoryEffects += 1;
+              return { effect: () => 7 };
+            },
+          },
+        },
+      }),
+      /FUNGI-FUSE-STARTUP-EFFECT/,
+    );
+    assert.equal(factoryEffects, 0, "a refused start must not trigger host factory side effects");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("capability descriptor mutation after admission cannot replace its captured factory", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let originalBuilds = 0;
+  let replacementBuilds = 0;
+  const registry = {
+    "test.effect": {
+      namespace: "host",
+      functionNames: ["effect"],
+      create: () => { originalBuilds += 1; return { effect: () => 11 }; },
+    },
+  };
+  try {
+    const component = await fusePackage(pkg, { allowUnsigned: true, warn: () => {}, capabilityRegistry: registry });
+    registry["test.effect"].create = () => { replacementBuilds += 1; return { effect: () => 22 }; };
+    assert.equal(component.invoke("run"), 0);
+    assert.equal(originalBuilds, 1);
+    assert.equal(replacementBuilds, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("capability registry descriptors are snapshotted before asynchronous admission", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let originalBuilds = 0;
+  let replacementBuilds = 0;
+  const registry = {
+    "test.effect": {
+      namespace: "host",
+      functionNames: ["effect"],
+      create: () => { originalBuilds += 1; return { effect: () => 11 }; },
+    },
+  };
+  try {
+    const pending = fusePackage(pkg, { allowUnsigned: true, warn: () => {}, capabilityRegistry: registry });
+    registry["test.effect"].create = () => { replacementBuilds += 1; return { effect: () => 22 }; };
+    const component = await pending;
+    component.invoke("run");
+    assert.equal(originalBuilds, 1);
+    assert.equal(replacementBuilds, 0, "mutation after the call cannot alter the in-flight admission snapshot");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("successful handler construction is cached and its source map cannot replace dispatch", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let builds = 0;
+  let originalCalls = 0;
+  let replacementCalls = 0;
+  const handlers = { effect: () => { originalCalls += 1; return 1; } };
+  try {
+    const component = await fusePackage(pkg, {
+      allowUnsigned: true,
+      warn: () => {},
+      capabilityRegistry: {
+        "test.effect": { namespace: "host", functionNames: ["effect"], create: () => { builds += 1; return handlers; } },
+      },
+    });
+    component.invoke("run");
+    handlers.effect = () => { replacementCalls += 1; return 2; };
+    component.invoke("run");
+    assert.equal(builds, 1);
+    assert.equal(originalCalls, 2);
+    assert.equal(replacementCalls, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a failed capability handler build is terminal and is not retried", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let builds = 0;
+  try {
+    const component = await fusePackage(pkg, {
+      allowUnsigned: true,
+      warn: () => {},
+      capabilityRegistry: {
+        "test.effect": {
+          namespace: "host",
+          functionNames: ["effect"],
+          create: () => { builds += 1; throw new Error("synthetic host setup failure"); },
+        },
+      },
+    });
+    assert.throws(() => component.invoke("run"), /synthetic host setup failure/);
+    assert.throws(() => component.invoke("run"), /synthetic host setup failure/);
+    assert.equal(builds, 1, "a failed builder with possible side effects must not be retried implicitly");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a successfully initialized component rejects a factory result with inherited handlers", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let builds = 0;
+  try {
+    const component = await fusePackage(pkg, {
+      allowUnsigned: true,
+      warn: () => {},
+      capabilityRegistry: {
+        "test.effect": {
+          namespace: "host",
+          functionNames: ["effect"],
+          create: () => {
+            builds += 1;
+            return Object.assign(Object.create({ effect: () => 99 }), { unrelated: () => 1 });
+          },
+        },
+      },
+    });
+    assert.equal(builds, 0);
+    assert.throws(() => component.invoke("run"), /FUNGI-FUSE-IMPORT-KIND/);
+    assert.throws(() => component.invoke("run"), /FUNGI-FUSE-IMPORT-KIND/);
+    assert.equal(builds, 1, "malformed handler construction is cached as terminal");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("set startup cannot call an earlier provider's host-backed import before the full set initializes", async () => {
   const provider = compositionPackage(COMPOSE_PROVIDER_DIR, {
     name: "clockprovider",
@@ -269,18 +423,24 @@ test("set startup cannot call an earlier provider's host-backed import before th
     capabilities: ["clock.read"],
   });
   let effects = 0;
+  let factories = 0;
   try {
     await assert.rejects(
       () => fusePackages([consumer.pkg, provider.pkg], {
         allowUnsigned: true,
         warn: () => {},
         capabilityRegistry: {
-          "test.effect": () => ({ namespace: "host", functions: { effect: () => { effects += 1; return 9; } } }),
+          "test.effect": {
+            namespace: "host",
+            functionNames: ["effect"],
+            create: () => { factories += 1; return { effect: () => { effects += 1; return 9; } }; },
+          },
         },
       }),
       /FUNGI-FUSE-STARTUP-EFFECT/,
     );
     assert.equal(effects, 0, "peer routing cannot reopen effects between members' start functions");
+    assert.equal(factories, 0, "a refused composition start must not build host capability handlers");
   } finally {
     rmSync(provider.root, { recursive: true, force: true });
     rmSync(consumer.root, { recursive: true, force: true });
@@ -301,17 +461,29 @@ test("set imports activate only after every member has initialized successfully"
     capabilities: ["clock.read"],
   });
   let effects = 0;
+  let factories = 0;
+  let replacementFactories = 0;
+  const registry = {
+    "test.effect": {
+      namespace: "host",
+      functionNames: ["effect"],
+      create: () => { factories += 1; return { effect: () => { effects += 1; return 9; } }; },
+    },
+  };
   try {
-    const components = await fusePackages([provider.pkg, consumer.pkg], {
+    const pending = fusePackages([provider.pkg, consumer.pkg], {
       allowUnsigned: true,
       warn: () => {},
-      capabilityRegistry: {
-        "test.effect": () => ({ namespace: "host", functions: { effect: () => { effects += 1; return 9; } } }),
-      },
+      capabilityRegistry: registry,
     });
+    registry["test.effect"].create = () => { replacementFactories += 1; return { effect: () => 8 }; };
+    const components = await pending;
     assert.equal(effects, 0, "no host effects occurred while the composition set initialized");
+    assert.equal(factories, 0, "composition initialization does not construct handlers");
     components.get("clockconsumer").invoke("main");
     assert.equal(effects, 1, "the provider-backed effect is enabled after the complete set is returned");
+    assert.equal(factories, 1, "handler construction begins on explicit post-init use");
+    assert.equal(replacementFactories, 0, "the composition uses the registry snapshot captured before admission");
   } finally {
     rmSync(provider.root, { recursive: true, force: true });
     rmSync(consumer.root, { recursive: true, force: true });
@@ -321,11 +493,14 @@ test("set imports activate only after every member has initialized successfully"
 test("explicit host import calls remain available after successful initialization", async () => {
   const { root, pkg } = effectPackage({ start: false });
   let effects = 0;
+  let factories = 0;
   try {
-    const component = await fusePackage(pkg, effectOptions(() => { effects += 1; return 7; }));
+    const component = await fusePackage(pkg, effectOptions(() => { effects += 1; return 7; }, () => { factories += 1; }));
     assert.equal(effects, 0, "initialization itself did not call the imported handler");
+    assert.equal(factories, 0, "capability handlers are not constructed during initialization");
     assert.equal(component.invoke("run"), 0, "the void WASM export is normalized to zero by the loader ABI");
     assert.equal(effects, 1, "the import is activated for an explicit call after initialization");
+    assert.equal(factories, 1, "the capability handler is constructed on the first post-init call");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -438,9 +613,9 @@ test("a tampered .wasm (sha256 mismatch vs signed descriptor) is rejected", asyn
 test("a host import for a NON-declared capability is absent (deny-by-default)", () => {
   // The demo declares ONLY network.inbound. Build its import object directly.
   const builtin = {
-    "network.inbound": () => ({ namespace: "network_inbound", functions: { __net_in_accept: () => -1 } }),
-    "network.outbound": () => ({ namespace: "network_outbound", functions: { __net_out_connect: () => -1 } }),
-    "clock.read": () => ({ namespace: "clock", functions: { __clock_now_ms: () => 0 } }),
+    "network.inbound": { namespace: "network_inbound", functionNames: ["__net_in_accept"], create: () => ({ __net_in_accept: () => -1 }) },
+    "network.outbound": { namespace: "network_outbound", functionNames: ["__net_out_connect"], create: () => ({ __net_out_connect: () => -1 }) },
+    "clock.read": { namespace: "clock", functionNames: ["__clock_now_ms"], create: () => ({ __clock_now_ms: () => 0 }) },
   };
 
   const { imports, grantedNamespaces } = buildCapabilityImports(["network.inbound"], builtin);
@@ -460,7 +635,9 @@ test("a host import for a NON-declared capability is absent (deny-by-default)", 
 // An undeclarable capability (no factory) is refused outright — deny-by-default.
 test("a capability with no host-import factory is refused (FUNGI-FUSE-UNKNOWN-CAP)", () => {
   assert.throws(
-    () => buildCapabilityImports(["storage.write"], { "network.inbound": () => ({ namespace: "n", functions: {} }) }),
+    () => buildCapabilityImports(["storage.write"], {
+      "network.inbound": { namespace: "n", functionNames: [], create: () => ({}) },
+    }),
     /FUNGI-FUSE-UNKNOWN-CAP/,
   );
 });

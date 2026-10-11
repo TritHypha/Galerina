@@ -113,28 +113,71 @@ test("plan: a provider cycle is refused", () => {
 
 test("makeProviderFactory mirrors the capability shape and routes every function to the provider", () => {
   const registry = {
-    "math.add": () => ({ namespace: "math_add", functions: { compute: () => 0, reset: () => 0 } }),
+    "math.add": {
+      namespace: "math_add",
+      functionNames: ["compute", "reset"],
+      create: () => ({ compute: () => 0, reset: () => 0 }),
+    },
   };
   const calls = [];
   const fakeProvider = { name: "mathlib", seam: null, capabilities: [], invoke: (fn, ...a) => { calls.push([fn, a]); return 99; } };
 
-  const group = makeProviderFactory("math.add", registry, () => fakeProvider)();
+  const group = makeProviderFactory("math.add", registry, () => fakeProvider);
   assert.equal(group.namespace, "math_add", "namespace mirrors the registered shape");
-  assert.deepEqual(Object.keys(group.functions).sort(), ["compute", "reset"], "function names mirror the shape");
+  assert.deepEqual([...group.functionNames].sort(), ["compute", "reset"], "function names mirror the shape");
 
-  const ret = group.functions.compute(2, 3);
+  const ret = group.create().compute(2, 3);
   assert.equal(ret, 99, "the routed call returns the provider's invoke() result");
   assert.deepEqual(calls, [["compute", [2, 3]]], "routed to provider.invoke('compute', 2, 3)");
 });
 
 test("buildCapabilityImports treats prototype-shaped namespaces as own, closed maps", () => {
   const { imports } = buildCapabilityImports(["test.effect"], {
-    "test.effect": () => ({ namespace: "__proto__", functions: { effect: () => 1 } }),
+    "test.effect": {
+      namespace: "__proto__",
+      functionNames: ["effect"],
+      create: () => ({ effect: () => 1 }),
+    },
   });
   assert.equal(Object.getPrototypeOf(imports), null, "no inherited namespaces can satisfy a WASM import");
   assert.equal(Object.hasOwn(imports, "__proto__"), true, "the unusual namespace is data, not a prototype mutation");
   assert.equal(Object.getPrototypeOf(imports["__proto__"]), null, "import function names have no inherited defaults");
   assert.equal(imports.toString, undefined, "an undeclared inherited namespace is absent");
+});
+
+test("buildCapabilityImports output cannot bypass the initialization lifecycle", () => {
+  let builds = 0;
+  const { imports } = buildCapabilityImports(["test.effect"], {
+    "test.effect": {
+      namespace: "host",
+      functionNames: ["effect"],
+      create: () => { builds += 1; return { effect: () => 1 }; },
+    },
+  });
+  assert.throws(() => imports.host.effect(), /FUNGI-FUSE-STARTUP-EFFECT/);
+  assert.equal(builds, 0, "raw helper output must not construct or call host handlers");
+});
+
+test("buildCapabilityImports refuses a declared handler inherited from a factory result", () => {
+  let builds = 0;
+  const inherited = Object.assign(Object.create({ effect: () => 1 }), { unrelated: () => 2 });
+  const { imports } = buildCapabilityImports(["test.effect"], {
+    "test.effect": {
+      namespace: "host",
+      functionNames: ["effect"],
+      create: () => { builds += 1; return inherited; },
+    },
+  });
+
+  assert.throws(() => imports.host.effect(), /FUNGI-FUSE-STARTUP-EFFECT/);
+  assert.equal(builds, 0, "raw imports cannot execute factories outside the guarded fuse lifecycle");
+});
+
+test("buildCapabilityImports refuses namespace collisions between capabilities", () => {
+  assert.throws(() => buildCapabilityImports(["test.first", "test.second"], {
+    "test.first": { namespace: "host", functionNames: ["first"], create: () => ({ first: () => 1 }) },
+    "test.second": { namespace: "host", functionNames: ["second"], create: () => ({ second: () => 2 }) },
+  }), /FUNGI-FUSE-IMPORT-COLLISION/);
 });
 
 // ───────────────────── fusePackages orchestrator (real demo) ─────────────────────

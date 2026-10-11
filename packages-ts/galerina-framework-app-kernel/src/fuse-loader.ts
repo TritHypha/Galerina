@@ -231,14 +231,16 @@ export type HybridManifestVerifier = (input: {
 }) => HybridManifestVerdict | Promise<HybridManifestVerdict>;
 
 /**
- * Builds the host import group a single capability grants. Returns a namespace name
- * and the functions exposed under it. Deny-by-default: a capability with no factory
- * grants NOTHING (and fusion throws — an undeclarable capability is a misconfiguration).
+ * Declarative host import shape for one capability. The shape is available before
+ * instantiation; `create` is deferred until an explicit post-initialization import call.
+ * Deny-by-default: a capability with no descriptor grants NOTHING.
  */
-export type CapabilityImportFactory = () => {
+export interface CapabilityImportFactory {
   readonly namespace: string;
-  readonly functions: Readonly<Record<string, (...a: number[]) => number | void>>;
-};
+  readonly functionNames: readonly string[];
+  /** Construct handlers lazily, only after the component's WASM start has succeeded. */
+  readonly create: () => Readonly<Record<string, (...a: number[]) => number | void>>;
+}
 
 const SHA256_RE = /^sha256:[0-9a-f]{64}$/;
 
@@ -252,35 +254,113 @@ const SHA256_RE = /^sha256:[0-9a-f]{64}$/;
  * implementation. Real network/clock/log backends are wired by the host at a later slice.
  */
 const BUILTIN_CAPABILITY_REGISTRY: Readonly<Record<string, CapabilityImportFactory>> = Object.freeze({
-  "network.inbound": () => ({
+  "network.inbound": {
     namespace: "network_inbound",
-    functions: {
+    functionNames: ["__net_in_accept", "__net_in_peer"],
+    create: () => ({
       // Accept-side shims: a fused inbound-protocol component may read the next
       // queued request handle. No outbound reach — that is a different capability.
       __net_in_accept: () => -1,
       __net_in_peer: () => -1,
-    },
-  }),
-  "network.outbound": () => ({
+    }),
+  },
+  "network.outbound": {
     namespace: "network_outbound",
-    functions: {
+    functionNames: ["__net_out_connect", "__net_out_send"],
+    create: () => ({
       __net_out_connect: () => -1,
       __net_out_send: () => -1,
-    },
-  }),
-  "clock.read": () => ({
+    }),
+  },
+  "clock.read": {
     namespace: "clock",
-    functions: {
+    functionNames: ["__clock_now_ms"],
+    create: () => ({
       __clock_now_ms: () => 0,
-    },
-  }),
-  "log.write": () => ({
+    }),
+  },
+  "log.write": {
     namespace: "log",
-    functions: {
+    functionNames: ["__log_emit"],
+    create: () => ({
       __log_emit: () => 0,
-    },
-  }),
+    }),
+  },
 });
+
+/** Capture host-provided capability descriptors before any asynchronous package loading. */
+function snapshotCapabilityRegistry(
+  custom: Readonly<Record<string, CapabilityImportFactory>> | undefined,
+): Readonly<Record<string, CapabilityImportFactory>> {
+  const snapshot = Object.assign(Object.create(null), BUILTIN_CAPABILITY_REGISTRY) as Record<string, CapabilityImportFactory>;
+  if (custom === undefined) return Object.freeze(snapshot);
+  if (custom === null || typeof custom !== "object" || Array.isArray(custom)) {
+    return fuseError("FUNGI-FUSE-IMPORT-SHAPE", "capability registry must be a plain data record — refusing");
+  }
+  try {
+    const prototype = Object.getPrototypeOf(custom);
+    if (prototype !== Object.prototype && prototype !== null) {
+      return fuseError("FUNGI-FUSE-IMPORT-SHAPE", "capability registry has an unsupported prototype — refusing");
+    }
+    for (const key of Reflect.ownKeys(custom)) {
+      if (typeof key !== "string") {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", "capability registry contains a symbol key — refusing");
+      }
+      const entry = Object.getOwnPropertyDescriptor(custom, key);
+      if (entry === undefined || !Object.hasOwn(entry, "value")) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' is not an own data descriptor — refusing`);
+      }
+      const descriptor = entry.value as unknown;
+      if (descriptor === null || typeof descriptor !== "object" || Array.isArray(descriptor)) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' has an invalid import descriptor — refusing`);
+      }
+      const descriptorPrototype = Object.getPrototypeOf(descriptor);
+      if (descriptorPrototype !== Object.prototype && descriptorPrototype !== null) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' descriptor has an unsupported prototype — refusing`);
+      }
+      const namespaceProperty = Object.getOwnPropertyDescriptor(descriptor, "namespace");
+      const namesProperty = Object.getOwnPropertyDescriptor(descriptor, "functionNames");
+      const createProperty = Object.getOwnPropertyDescriptor(descriptor, "create");
+      if (namespaceProperty === undefined || !Object.hasOwn(namespaceProperty, "value")
+        || typeof namespaceProperty.value !== "string" || namespaceProperty.value.length === 0
+        || namesProperty === undefined || !Object.hasOwn(namesProperty, "value")
+        || !Array.isArray(namesProperty.value)
+        || createProperty === undefined || !Object.hasOwn(createProperty, "value")
+        || typeof createProperty.value !== "function") {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' has an invalid import descriptor — refusing`);
+      }
+      const namesValue = namesProperty.value as unknown[];
+      if (Object.getPrototypeOf(namesValue) !== Array.prototype) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' function names have an unsupported prototype — refusing`);
+      }
+      const names = new Array<string>(namesValue.length);
+      for (let index = 0; index < namesValue.length; index += 1) {
+        const nameProperty = Object.getOwnPropertyDescriptor(namesValue, String(index));
+        if (nameProperty === undefined || !Object.hasOwn(nameProperty, "value")
+          || typeof nameProperty.value !== "string" || nameProperty.value.length === 0) {
+          return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' has invalid function names — refusing`);
+        }
+        names[index] = nameProperty.value;
+      }
+      if (new Set(names).size !== names.length) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' has duplicate function names — refusing`);
+      }
+      const extraNameKeys = Reflect.ownKeys(namesValue).filter((name) => name !== "length"
+        && !(typeof name === "string" && /^(0|[1-9][0-9]*)$/.test(name) && Number(name) < namesValue.length));
+      if (extraNameKeys.length > 0) {
+        return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${key}' function list has extra properties — refusing`);
+      }
+      snapshot[key] = Object.freeze({
+        namespace: namespaceProperty.value,
+        functionNames: Object.freeze(names),
+        create: createProperty.value,
+      });
+    }
+  } catch {
+    return fuseError("FUNGI-FUSE-IMPORT-SHAPE", "capability registry snapshot failed — refusing");
+  }
+  return Object.freeze(snapshot);
+}
 
 /**
  * The capability NAMES the built-in fusion registry exposes. Published so the
@@ -519,29 +599,113 @@ function governanceKeysPresent(
  * capabilities in `capabilities` contribute a namespace; everything else is absent.
  * Returns the import object AND the set of namespaces granted (for inspection/tests).
  */
+const capabilityImportLifecycles = new WeakMap<object, { enabled: boolean }>();
+
+function activateCapabilityImports(imports: WebAssembly.Imports): void {
+  const lifecycle = imports !== null && typeof imports === "object"
+    ? capabilityImportLifecycles.get(imports)
+    : undefined;
+  if (lifecycle !== undefined) lifecycle.enabled = true;
+}
+
 export function buildCapabilityImports(
   capabilities: readonly string[],
   registry: Readonly<Record<string, CapabilityImportFactory>>,
 ): { readonly imports: WebAssembly.Imports; readonly grantedNamespaces: readonly string[] } {
   const imports = Object.create(null) as Record<string, Record<string, (...a: number[]) => number | void>>;
+  const lifecycle = { enabled: false };
+  capabilityImportLifecycles.set(imports, lifecycle);
   const grantedNamespaces: string[] = [];
   for (const cap of capabilities) {
-    const factory = registry[cap];
-    if (factory === undefined) {
+    if (!Object.hasOwn(registry, cap)) {
       return fuseError(
         "FUNGI-FUSE-UNKNOWN-CAP",
-        `package declares capability '${cap}' with no host-import factory — refusing to fuse (deny-by-default)`,
+        `package declares capability '${cap}' with no host-import descriptor — refusing to fuse (deny-by-default)`,
       );
     }
-    const group = factory();
-    // A capability never silently shares another's namespace.
+    const descriptor = registry[cap];
+    if (descriptor === null || typeof descriptor !== "object"
+      || typeof descriptor.namespace !== "string" || descriptor.namespace.length === 0
+      || !Array.isArray(descriptor.functionNames)
+      || typeof descriptor.create !== "function") {
+      return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${cap}' has an invalid import descriptor — refusing`);
+    }
+    const namespace = descriptor.namespace;
+    const createHandlers = descriptor.create;
+    const names = [...descriptor.functionNames];
+    if (names.some((name) => typeof name !== "string" || name.length === 0)
+      || new Set(names).size !== names.length) {
+      return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `capability '${cap}' has invalid or duplicate import names — refusing`);
+    }
+    if (Object.hasOwn(imports, namespace)) {
+      return fuseError(
+        "FUNGI-FUSE-IMPORT-COLLISION",
+        `capability '${cap}' reuses host namespace '${namespace}' — refusing ambiguous import ownership`,
+      );
+    }
+    let handlers: Readonly<Record<string, (...a: number[]) => number | void>> | undefined;
+    let resolving = false;
+    let resolved = false;
+    let resolutionError: unknown;
+    const resolveHandlers = (): Readonly<Record<string, (...a: number[]) => number | void>> => {
+      if (!lifecycle.enabled) {
+        return fuseError("FUNGI-FUSE-STARTUP-EFFECT", `capability '${cap}' called before component initialization completed`);
+      }
+      if (resolved) {
+        if (resolutionError !== undefined) throw resolutionError;
+        if (handlers !== undefined) return handlers;
+        return fuseError("FUNGI-FUSE-IMPORT-KIND", `capability '${cap}' has no resolved handlers — refusing`);
+      }
+      if (resolving) {
+        return fuseError("FUNGI-FUSE-IMPORT-REENTRY", `capability '${cap}' handler construction re-entered — refusing`);
+      }
+      resolving = true;
+      try {
+        const produced = Reflect.apply(createHandlers, undefined, []) as unknown;
+        if (produced === null || typeof produced !== "object" || Array.isArray(produced)) {
+          return fuseError("FUNGI-FUSE-IMPORT-KIND", `capability '${cap}' did not create a callable import group — refusing`);
+        }
+        const created = produced as Record<string, unknown>;
+        const ownKeys = Reflect.ownKeys(created);
+        if (ownKeys.length !== names.length
+          || ownKeys.some((key) => typeof key !== "string" || !names.includes(key))) {
+          return fuseError("FUNGI-FUSE-IMPORT-KIND", `capability '${cap}' created handlers outside its declared import shape — refusing`);
+        }
+        const snapshot = Object.create(null) as Record<string, (...a: number[]) => number | void>;
+        for (const name of names) {
+          const property = Object.getOwnPropertyDescriptor(created, name);
+          if (property === undefined || !Object.hasOwn(property, "value") || typeof property.value !== "function") {
+            return fuseError("FUNGI-FUSE-IMPORT-KIND", `capability '${cap}' did not create own data handler '${name}' — refusing`);
+          }
+          snapshot[name] = property.value as (...a: number[]) => number | void;
+        }
+        handlers = Object.freeze(snapshot);
+        resolved = true;
+        return handlers;
+      } catch (error) {
+        resolutionError = error;
+        resolved = true;
+        throw error;
+      } finally {
+        resolving = false;
+      }
+    };
+    const lazyFunctions = Object.create(null) as Record<string, (...a: number[]) => number | void>;
+    for (const name of names) {
+      lazyFunctions[name] = (...args: number[]): number | void => {
+        const handler = resolveHandlers()[name];
+        if (typeof handler !== "function") {
+          return fuseError("FUNGI-FUSE-IMPORT-KIND", `capability '${cap}' lost handler '${name}' — refusing`);
+        }
+        return Reflect.apply(handler, undefined, args);
+      };
+    }
     const functions = Object.assign(
       Object.create(null) as Record<string, (...a: number[]) => number | void>,
-      Object.hasOwn(imports, group.namespace) ? imports[group.namespace] : undefined,
-      group.functions,
+      lazyFunctions,
     );
-    imports[group.namespace] = functions;
-    grantedNamespaces.push(group.namespace);
+    imports[namespace] = functions;
+    grantedNamespaces.push(namespace);
   }
   return { imports: imports as unknown as WebAssembly.Imports, grantedNamespaces };
 }
@@ -724,6 +888,7 @@ async function instantiateComponent(
     );
   }
   effectsEnabled = true;
+  activateCapabilityImports(imports);
   const instance =
     (result as { instance?: WebAssembly.Instance }).instance ?? (result as WebAssembly.Instance);
   const exportsObj = instance.exports as Record<string, unknown>;
@@ -782,13 +947,9 @@ export async function fusePackage(dir: string, opts: FusePackageOptions = {}): P
     );
   }
   const warn = opts.warn ?? ((m: string) => console.warn(m));
+  const registry = snapshotCapabilityRegistry(opts.capabilityRegistry);
   const node = await loadNode();
   const { fs, path } = node;
-  const registry: Record<string, CapabilityImportFactory> = {
-    ...BUILTIN_CAPABILITY_REGISTRY,
-    ...(opts.capabilityRegistry ?? {}),
-  };
-
   const admitted = await loadAndVerifyPackage(node, dir, opts, warn);
 
   // ── Gate 2 policy (single package): fail-closed unless allowUnsigned ──────────
@@ -1019,19 +1180,22 @@ export function makeProviderFactory(
   registry: Readonly<Record<string, CapabilityImportFactory>>,
   getProvider: () => FusedComponent,
 ): CapabilityImportFactory {
-  const shapeFactory = registry[cap];
-  if (shapeFactory === undefined) {
+  const shape = registry[cap];
+  if (!Object.hasOwn(registry, cap) || shape === undefined) {
     // Unreachable when called via planComposition (a provider cap is always known-shape),
     // but fail-closed if used directly.
     return fuseError("FUNGI-FUSE-PROVIDES-UNKNOWN", `cannot back capability '${cap}': no registered host-import shape`);
   }
-  const shape = shapeFactory();
-  return () => {
-    const routed: Record<string, (...a: number[]) => number | void> = {};
-    for (const fname of Object.keys(shape.functions)) {
-      routed[fname] = (...a: number[]): number | void => getProvider().invoke(fname, ...a);
-    }
-    return { namespace: shape.namespace, functions: routed };
+  return {
+    namespace: shape.namespace,
+    functionNames: shape.functionNames,
+    create: () => {
+      const routed: Record<string, (...a: number[]) => number | void> = {};
+      for (const fname of shape.functionNames) {
+        routed[fname] = (...a: number[]): number | void => getProvider().invoke(fname, ...a);
+      }
+      return routed;
+    },
   };
 }
 
@@ -1059,11 +1223,8 @@ export async function fusePackages(
     );
   }
   const warn = opts.warn ?? ((m: string) => console.warn(m));
+  const registry = snapshotCapabilityRegistry(opts.capabilityRegistry);
   const node = await loadNode();
-  const registry: Record<string, CapabilityImportFactory> = {
-    ...BUILTIN_CAPABILITY_REGISTRY,
-    ...(opts.capabilityRegistry ?? {}),
-  };
   const known = new Set(Object.keys(registry));
 
   // 1 — load + verify EVERY package (Gates 1+2), no instantiation yet.
