@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test tests/*.test.mjs",
+    "generate:wit-fungi": "npm run build && node ../../scripts/generate-secrets-gateway-wit.mjs --write",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
