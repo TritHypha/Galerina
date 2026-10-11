@@ -186,7 +186,7 @@ export interface FusePackageOptions {
     readonly version: string;
     readonly sourceHash: string;
     readonly keyId?: string | undefined;
-  }) => { readonly ok: boolean; readonly code?: string; readonly reason?: string };
+  }) => unknown;
 
   /**
    * H3/H4 (#49) — INJECTED hybrid (Ed25519+ML-DSA-65) manifest-signature verifier. The kernel verifies the
@@ -523,7 +523,7 @@ export function buildCapabilityImports(
   capabilities: readonly string[],
   registry: Readonly<Record<string, CapabilityImportFactory>>,
 ): { readonly imports: WebAssembly.Imports; readonly grantedNamespaces: readonly string[] } {
-  const imports: Record<string, Record<string, (...a: number[]) => number | void>> = {};
+  const imports = Object.create(null) as Record<string, Record<string, (...a: number[]) => number | void>>;
   const grantedNamespaces: string[] = [];
   for (const cap of capabilities) {
     const factory = registry[cap];
@@ -535,7 +535,12 @@ export function buildCapabilityImports(
     }
     const group = factory();
     // A capability never silently shares another's namespace.
-    imports[group.namespace] = { ...(imports[group.namespace] ?? {}), ...group.functions };
+    const functions = Object.assign(
+      Object.create(null) as Record<string, (...a: number[]) => number | void>,
+      Object.hasOwn(imports, group.namespace) ? imports[group.namespace] : undefined,
+      group.functions,
+    );
+    imports[group.namespace] = functions;
     grantedNamespaces.push(group.namespace);
   }
   return { imports: imports as unknown as WebAssembly.Imports, grantedNamespaces };
@@ -667,10 +672,58 @@ async function instantiateComponent(
   admitted: AdmittedPackage,
   imports: WebAssembly.Imports,
 ): Promise<FusedComponent> {
-  const result: unknown = await instantiateWasmHostFloor(
-    admitted.wasmBytes as BufferSource,
-    imports,
-  );
+  // WASM start executes before instantiate() resolves. Give start a closed view of every import:
+  // no imported callable may run until initialization succeeds. A denied attempt is sticky even
+  // if guest code catches the thrown host exception. Null-prototype maps also prevent inherited
+  // JavaScript properties from silently satisfying an import name.
+  let effectsEnabled = false;
+  let startupImportAttempted = false;
+  const gatedImports = Object.create(null) as Record<string, Record<string, unknown>>;
+  for (const [namespace, rawGroup] of Object.entries(imports)) {
+    if (rawGroup === null || typeof rawGroup !== "object" || Array.isArray(rawGroup)) {
+      return fuseError("FUNGI-FUSE-IMPORT-SHAPE", `host import namespace '${namespace}' is not a plain import group — refusing`);
+    }
+    const gatedGroup = Object.create(null) as Record<string, unknown>;
+    for (const [name, value] of Object.entries(rawGroup as Record<string, unknown>)) {
+      if (typeof value !== "function") {
+        return fuseError(
+          "FUNGI-FUSE-IMPORT-KIND",
+          `host import '${namespace}.${name}' is not a callable capability import — refusing`,
+        );
+      }
+      gatedGroup[name] = (...args: unknown[]): unknown => {
+        if (!effectsEnabled) {
+          startupImportAttempted = true;
+          throw new Error(`FUNGI-FUSE-STARTUP-EFFECT: '${namespace}.${name}' called before initialization completed`);
+        }
+        return Reflect.apply(value, undefined, args);
+      };
+    }
+    gatedImports[namespace] = Object.freeze(gatedGroup);
+  }
+
+  let result: unknown;
+  try {
+    result = await instantiateWasmHostFloor(
+      admitted.wasmBytes as BufferSource,
+      Object.freeze(gatedImports) as WebAssembly.Imports,
+    );
+  } catch (error) {
+    if (startupImportAttempted) {
+      return fuseError(
+        "FUNGI-FUSE-STARTUP-EFFECT",
+        `component '${admitted.name}' attempted to call a host import during WASM start — refusing`,
+      );
+    }
+    throw error;
+  }
+  if (startupImportAttempted) {
+    return fuseError(
+      "FUNGI-FUSE-STARTUP-EFFECT",
+      `component '${admitted.name}' attempted to call a host import during WASM start — refusing`,
+    );
+  }
+  effectsEnabled = true;
   const instance =
     (result as { instance?: WebAssembly.Instance }).instance ?? (result as WebAssembly.Instance);
   const exportsObj = instance.exports as Record<string, unknown>;
@@ -708,8 +761,26 @@ function requireProductionRevocation(opts: FusePackageOptions): void {
   }
 }
 
+function registryAllows(verdict: unknown): boolean {
+  return typeof verdict === "object" && verdict !== null &&
+    (verdict as { readonly ok?: unknown }).ok === true;
+}
+
+function registryDetail(verdict: unknown, key: "code" | "reason"): string | undefined {
+  if (typeof verdict !== "object" || verdict === null) return undefined;
+  const value = (verdict as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
+
 export async function fusePackage(dir: string, opts: FusePackageOptions = {}): Promise<FusedComponent> {
   requireProductionRevocation(opts);
+  const registryCheck = opts.registryCheck;
+  if (typeof registryCheck !== "function") {
+    return fuseError(
+      "FUNGI-FUSE-REGISTRY-REQUIRED",
+      "fusion requires a central ALLOW decision for every package before instantiation — refusing (no implicit allow fallback)",
+    );
+  }
   const warn = opts.warn ?? ((m: string) => console.warn(m));
   const node = await loadNode();
   const { fs, path } = node;
@@ -745,20 +816,18 @@ export async function fusePackage(dir: string, opts: FusePackageOptions = {}): P
   // ── Gate 2c (B5a): CENTRAL signed-registry admission — fail-closed ───────────
   // A package may be validly self-signed yet not be the certified, listed artifact. When a registry
   // gate is injected, the package must ALSO pass it (verified index + pinned-hash match + policy).
-  if (opts.registryCheck !== undefined) {
-    const verdict = opts.registryCheck({
-      name: admitted.name,
-      version: admitted.descriptor.version,
-      sourceHash: admitted.descriptor.wasmSha256,
-      keyId: admitted.keyId,
-    });
-    // Strict boolean (S9): only a literal `true` admits; a truthy non-boolean refuses.
-    if (verdict.ok !== true) {
-      return fuseError(
-        verdict.code ?? "FUNGI-FUSE-REGISTRY-DENIED",
-        `central registry refused '${admitted.name}@${admitted.descriptor.version}': ${verdict.reason ?? "not admissible"}`,
-      );
-    }
+  const verdict = registryCheck({
+    name: admitted.name,
+    version: admitted.descriptor.version,
+    sourceHash: admitted.descriptor.wasmSha256,
+    keyId: admitted.keyId,
+  });
+  // Strict boolean (S9): only a literal `true` admits; a truthy non-boolean refuses.
+  if (!registryAllows(verdict)) {
+    return fuseError(
+      registryDetail(verdict, "code") ?? "FUNGI-FUSE-REGISTRY-DENIED",
+      `central registry refused '${admitted.name}@${admitted.descriptor.version}': ${registryDetail(verdict, "reason") ?? "not admissible"}`,
+    );
   }
 
   // ── Gate 3: instantiate with ONLY capability-permitted host imports ──────────
@@ -982,6 +1051,13 @@ export async function fusePackages(
   opts: FusePackageOptions = {},
 ): Promise<Map<string, FusedComponent>> {
   requireProductionRevocation(opts);
+  const registryCheck = opts.registryCheck;
+  if (typeof registryCheck !== "function") {
+    return fuseError(
+      "FUNGI-FUSE-REGISTRY-REQUIRED",
+      "composition requires a central ALLOW decision for every package before any member is instantiated — refusing (no implicit allow fallback)",
+    );
+  }
   const warn = opts.warn ?? ((m: string) => console.warn(m));
   const node = await loadNode();
   const registry: Record<string, CapabilityImportFactory> = {
@@ -1004,17 +1080,15 @@ export async function fusePackages(
   // Gate 2c (B5a) for the SET: every member must ALSO pass the central registry. One unlisted/forked
   // member refuses the WHOLE composition (set-level fail-closed) — the multi-module path must not be a
   // bypass of the single-module allow-list.
-  if (opts.registryCheck !== undefined) {
-    for (const a of admitted) {
-      const verdict = opts.registryCheck({
-        name: a.name, version: a.descriptor.version, sourceHash: a.descriptor.wasmSha256, keyId: a.keyId,
-      });
-      if (!verdict.ok) {
-        return fuseError(
-          verdict.code ?? "FUNGI-FUSE-REGISTRY-DENIED",
-          `central registry refused composition member '${a.name}@${a.descriptor.version}': ${verdict.reason ?? "not admissible"} — refusing the whole set`,
-        );
-      }
+  for (const a of admitted) {
+    const verdict = registryCheck({
+      name: a.name, version: a.descriptor.version, sourceHash: a.descriptor.wasmSha256, keyId: a.keyId,
+    });
+    if (!registryAllows(verdict)) {
+      return fuseError(
+        registryDetail(verdict, "code") ?? "FUNGI-FUSE-REGISTRY-DENIED",
+        `central registry refused composition member '${a.name}@${a.descriptor.version}': ${registryDetail(verdict, "reason") ?? "not admissible"} — refusing the whole set`,
+      );
     }
   }
 

@@ -10,13 +10,119 @@ import {
 } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
-import { generateKeyPairSync, sign as cryptoSign, createPrivateKey } from "node:crypto";
+import { createHash, generateKeyPairSync, sign as cryptoSign, createPrivateKey } from "node:crypto";
 
-import { fusePackage, fusePackages, buildCapabilityImports, admitFusePackageName } from "../dist/index.js";
+import {
+  fusePackage as fusePackageUnderTest,
+  fusePackages as fusePackagesUnderTest,
+  buildCapabilityImports,
+  admitFusePackageName,
+} from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 // tests/  →  package dir  →  packages-ts  →  repo root  →  examples/…
 const DEMO_DIR = join(here, "..", "..", "..", "examples", "fuse-demo", "my-custom-api-rest");
+const COMPOSE_PROVIDER_DIR = join(here, "fixtures", "compose", "clockprovider");
+const COMPOSE_CONSUMER_DIR = join(here, "fixtures", "compose", "clockconsumer");
+
+// Existing behavioral cases use synthetic packages. This fixture authority explicitly ALLOWs
+// those test artifacts; dedicated missing/deny tests call the raw exports below.
+const fixtureRegistryAllow = () => ({ ok: true });
+const fusePackage = (dir, opts = {}) => fusePackageUnderTest(dir, { registryCheck: fixtureRegistryAllow, ...opts });
+const fusePackages = (dirs, opts = {}) => fusePackagesUnderTest(dirs, { registryCheck: fixtureRegistryAllow, ...opts });
+
+// Minimal real WASM module: imports host.effect, exports run() which calls it, and optionally
+// names run() as the module start function. The import is deliberately called during instantiation
+// in the start variant, before the loader can return the component to its caller.
+function effectWasmBytes({ start }) {
+  const bytes = [
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+    0x02, 0x0f, 0x01, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x06, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x00, 0x00,
+    0x03, 0x02, 0x01, 0x00,
+    0x07, 0x07, 0x01, 0x03, 0x72, 0x75, 0x6e, 0x00, 0x01,
+  ];
+  if (start) bytes.push(0x08, 0x01, 0x01);
+  bytes.push(0x0a, 0x06, 0x01, 0x04, 0x00, 0x10, 0x00, 0x0b);
+  return Buffer.from(bytes);
+}
+
+// Composition probes: provider exports the host-backed clock function; the consumer imports it
+// and may call it from its own WASM start section. The call crosses a package boundary before
+// fusePackages has completed initialization of the full admitted set.
+function clockProviderWasmBytes() {
+  const name = Buffer.from("__clock_now_ms");
+  return Buffer.from([
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+    0x02, 0x0f, 0x01, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x06, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x00, 0x00,
+    0x03, 0x02, 0x01, 0x00,
+    0x07, 0x12, 0x01, name.length, ...name, 0x00, 0x01,
+    0x0a, 0x06, 0x01, 0x04, 0x00, 0x10, 0x00, 0x0b,
+  ]);
+}
+
+function clockConsumerWasmBytes({ start }) {
+  const bytes = [
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+    0x02, 0x18, 0x01, 0x05, 0x63, 0x6c, 0x6f, 0x63, 0x6b,
+    0x0e, 0x5f, 0x5f, 0x63, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x6e, 0x6f, 0x77, 0x5f, 0x6d, 0x73,
+    0x00, 0x00,
+    0x03, 0x02, 0x01, 0x00,
+    0x07, 0x08, 0x01, 0x04, 0x6d, 0x61, 0x69, 0x6e, 0x00, 0x01,
+  ];
+  if (start) bytes.push(0x08, 0x01, 0x01);
+  bytes.push(0x0a, 0x06, 0x01, 0x04, 0x00, 0x10, 0x00, 0x0b);
+  return Buffer.from(bytes);
+}
+
+function compositionPackage(sourceDir, { name, wasmBytes, provides, capabilities }) {
+  const root = mkdtempSync(join(tmpdir(), `fungi-fuse-${name}-`));
+  const pkg = join(root, name);
+  cpSync(sourceDir, pkg, { recursive: true });
+  writeFileSync(join(pkg, "package.fungi.json"), JSON.stringify({ name }));
+  const wasmPath = join(pkg, "dist", `${name}.wasm`);
+  writeFileSync(wasmPath, wasmBytes);
+  const manifestPath = join(pkg, "dist", `${name}.lmanifest.json`);
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  manifest.fuse.name = name;
+  manifest.fuse.provides = provides;
+  manifest.fuse.capabilities = capabilities;
+  manifest.fuse.wasmSha256 = `sha256:${createHash("sha256").update(wasmBytes).digest("hex")}`;
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  return { root, pkg };
+}
+
+function effectPackage({ start }) {
+  const { root, pkg } = copyDemo();
+  const wasmPath = join(pkg, "dist", "my-custom-api-rest.wasm");
+  const wasmBytes = effectWasmBytes({ start });
+  writeFileSync(wasmPath, wasmBytes);
+  const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  manifest.fuse.wasmSha256 = `sha256:${createHash("sha256").update(wasmBytes).digest("hex")}`;
+  manifest.fuse.capabilities = ["test.effect"];
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  const sidecarPath = join(pkg, "dist", "my-custom-api-rest.fuse.json");
+  if (existsSync(sidecarPath)) {
+    const sidecar = JSON.parse(readFileSync(sidecarPath, "utf8"));
+    sidecar.wasmSha256 = manifest.fuse.wasmSha256;
+    sidecar.capabilities = ["test.effect"];
+    writeFileSync(sidecarPath, JSON.stringify(sidecar, null, 2));
+  }
+  return { root, pkg };
+}
+
+function effectOptions(effect) {
+  return {
+    allowUnsigned: true,
+    warn: () => {},
+    capabilityRegistry: {
+      "test.effect": () => ({ namespace: "host", functions: { effect } }),
+    },
+  };
+}
 
 // A loader-supplied warn sink so WARN output is captured, not printed.
 function capturingWarn() {
@@ -35,6 +141,20 @@ function copyDemo() {
 }
 
 // ── B5a — central signed-registry gate (registryCheck), fail-closed ──────────
+test("single fusion refuses before package access when no central ALLOW authority is supplied", async () => {
+  await assert.rejects(
+    () => fusePackageUnderTest(DEMO_DIR, { allowUnsigned: true, warn: () => {} }),
+    /FUNGI-FUSE-REGISTRY-REQUIRED/,
+  );
+});
+
+test("set fusion refuses before package access when no central ALLOW authority is supplied", async () => {
+  await assert.rejects(
+    () => fusePackagesUnderTest([COMPOSE_PROVIDER_DIR, COMPOSE_CONSUMER_DIR], { allowUnsigned: true, warn: () => {} }),
+    /FUNGI-FUSE-REGISTRY-REQUIRED/,
+  );
+});
+
 test("registryCheck DENY refuses the fuse even for an otherwise-admissible package", async () => {
   assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
   await assert.rejects(
@@ -71,12 +191,159 @@ test("fusePackages (multi-module) ALSO enforces registryCheck — an unlisted me
   );
 });
 
+test("fusePackages refuses malformed ALLOW verdicts before instantiating any set member", async () => {
+  let checks = 0;
+  let instantiations = 0;
+  const instantiate = WebAssembly.instantiate;
+  WebAssembly.instantiate = async (...args) => {
+    instantiations += 1;
+    return instantiate(...args);
+  };
+  try {
+    await assert.rejects(
+      () => fusePackages([COMPOSE_PROVIDER_DIR, COMPOSE_CONSUMER_DIR], {
+        allowUnsigned: true,
+        warn: () => {},
+        registryCheck: () => (++checks === 1 ? { ok: true } : { ok: { state: "UNKNOWN" } }),
+      }),
+      /FUNGI-FUSE-REGISTRY-DENIED|central registry refused/,
+    );
+  } finally {
+    WebAssembly.instantiate = instantiate;
+  }
+  assert.equal(checks, 2, "every set member reaches the admission barrier before a malformed verdict refuses it");
+  assert.equal(instantiations, 0, "the admission barrier refuses the set before any WASM instantiation");
+});
+
+for (const route of ["single", "set"]) {
+  test(`${route} fusion refuses a module whose start function calls a host import`, async () => {
+    const { root, pkg } = effectPackage({ start: true });
+    let effects = 0;
+    try {
+      const load = () => route === "single"
+        ? fusePackage(pkg, effectOptions(() => { effects += 1; return 7; }))
+        : fusePackages([pkg], effectOptions(() => { effects += 1; return 7; }));
+      await assert.rejects(load, /FUNGI-FUSE-STARTUP-EFFECT/);
+      assert.equal(effects, 0, "the host effect handler is not called during WASM start");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+}
+
+test("startup refusal remains sticky if the WASM engine catches the import exception", async () => {
+  const { root, pkg } = effectPackage({ start: true });
+  const instantiate = WebAssembly.instantiate;
+  try {
+    // Model a host engine that lets guest exception handling swallow the import exception and
+    // then reports successful instantiation. The loader must still reject using its sticky latch.
+    WebAssembly.instantiate = async (_bytes, imports) => {
+      try {
+        imports.host.effect();
+      } catch {
+        // Simulated guest catch; the runtime reports a successfully initialized module.
+      }
+      return { instance: { exports: Object.create(null) } };
+    };
+    await assert.rejects(
+      () => fusePackage(pkg, effectOptions(() => 7)),
+      /FUNGI-FUSE-STARTUP-EFFECT/,
+    );
+  } finally {
+    WebAssembly.instantiate = instantiate;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("set startup cannot call an earlier provider's host-backed import before the full set initializes", async () => {
+  const provider = compositionPackage(COMPOSE_PROVIDER_DIR, {
+    name: "clockprovider",
+    wasmBytes: clockProviderWasmBytes(),
+    provides: "clock.read",
+    capabilities: ["test.effect"],
+  });
+  const consumer = compositionPackage(COMPOSE_CONSUMER_DIR, {
+    name: "clockconsumer",
+    wasmBytes: clockConsumerWasmBytes({ start: true }),
+    provides: null,
+    capabilities: ["clock.read"],
+  });
+  let effects = 0;
+  try {
+    await assert.rejects(
+      () => fusePackages([consumer.pkg, provider.pkg], {
+        allowUnsigned: true,
+        warn: () => {},
+        capabilityRegistry: {
+          "test.effect": () => ({ namespace: "host", functions: { effect: () => { effects += 1; return 9; } } }),
+        },
+      }),
+      /FUNGI-FUSE-STARTUP-EFFECT/,
+    );
+    assert.equal(effects, 0, "peer routing cannot reopen effects between members' start functions");
+  } finally {
+    rmSync(provider.root, { recursive: true, force: true });
+    rmSync(consumer.root, { recursive: true, force: true });
+  }
+});
+
+test("set imports activate only after every member has initialized successfully", async () => {
+  const provider = compositionPackage(COMPOSE_PROVIDER_DIR, {
+    name: "clockprovider",
+    wasmBytes: clockProviderWasmBytes(),
+    provides: "clock.read",
+    capabilities: ["test.effect"],
+  });
+  const consumer = compositionPackage(COMPOSE_CONSUMER_DIR, {
+    name: "clockconsumer",
+    wasmBytes: clockConsumerWasmBytes({ start: false }),
+    provides: null,
+    capabilities: ["clock.read"],
+  });
+  let effects = 0;
+  try {
+    const components = await fusePackages([provider.pkg, consumer.pkg], {
+      allowUnsigned: true,
+      warn: () => {},
+      capabilityRegistry: {
+        "test.effect": () => ({ namespace: "host", functions: { effect: () => { effects += 1; return 9; } } }),
+      },
+    });
+    assert.equal(effects, 0, "no host effects occurred while the composition set initialized");
+    components.get("clockconsumer").invoke("main");
+    assert.equal(effects, 1, "the provider-backed effect is enabled after the complete set is returned");
+  } finally {
+    rmSync(provider.root, { recursive: true, force: true });
+    rmSync(consumer.root, { recursive: true, force: true });
+  }
+});
+
+test("explicit host import calls remain available after successful initialization", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let effects = 0;
+  try {
+    const component = await fusePackage(pkg, effectOptions(() => { effects += 1; return 7; }));
+    assert.equal(effects, 0, "initialization itself did not call the imported handler");
+    assert.equal(component.invoke("run"), 0, "the void WASM export is normalized to zero by the loader ABI");
+    assert.equal(effects, 1, "the import is activated for an explicit call after initialization");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // ── 1 — the built demo package fuses, and invoke('main') runs the governed wasm ──
 test("requireSignature without a revocation check refuses production fusion", async () => {
   assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
   await assert.rejects(
     () => fusePackage(DEMO_DIR, { requireSignature: true, warn: () => {} }),
     /FUNGI-FUSE-REVOCATION-REQUIRED/,
+  );
+});
+
+test("requireSignature refuses production fusion when central ALLOW authority is missing", async () => {
+  await assert.rejects(
+    () => fusePackageUnderTest(DEMO_DIR, { requireSignature: true, revocationCheck: () => false, warn: () => {} }),
+    /FUNGI-FUSE-REGISTRY-REQUIRED/,
   );
 });
 
@@ -281,7 +548,7 @@ test("a package cannot supply the trust anchor used to admit its own signature",
     }, null, 2));
 
     await assert.rejects(
-      () => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn: () => {} }),
+      () => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn: () => {} }),
       /FUNGI-FUSE-(UNSIGNED|NO-PUBKEY|TRUST)/,
       "only a caller-admitted external governance root may authorize a package",
     );
@@ -315,7 +582,7 @@ test("a path-shaped keyId cannot escape the admitted governance directory", asyn
     }, null, 2));
 
     await assert.rejects(
-      () => fusePackage(pkg, { governanceDir: govDir, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
+      () => fusePackage(pkg, { governanceDir: govDir, requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn: () => {} }),
       /FUNGI-FUSE-(UNSIGNED|NO-PUBKEY|TRUST|SIG)/,
       "keyId path components must not select a public key outside governanceDir",
     );
@@ -538,7 +805,7 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
   // (d) "unverifiable" → treated as UNSIGNED: refused without allowUnsigned, admitted with it.
   { const { root, pkg } = mkHybrid();
     try {
-      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn: () => {}, hybridVerifier: () => "unverifiable" }), /FUNGI-FUSE-UNSIGNED/);
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn: () => {}, hybridVerifier: () => "unverifiable" }), /FUNGI-FUSE-UNSIGNED/);
       const c = await fusePackage(pkg, { allowUnsigned: true, warn: () => {}, hybridVerifier: () => "unverifiable" });
       assert.equal(c.invoke("main"), 200);
     } finally { rmSync(root, { recursive: true, force: true }); } }
@@ -547,7 +814,7 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
   { const { root, pkg } = mkHybrid();
     try {
       const { warn, lines } = capturingWarn();
-      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, warn }), /FUNGI-FUSE-UNSIGNED/);
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn }), /FUNGI-FUSE-UNSIGNED/);
       assert.ok(lines.some((l) => l.includes("FUNGI-FUSE-HYBRID-UNVERIFIED")), "must warn hybrid-unverified when no verifier is injected");
     } finally { rmSync(root, { recursive: true, force: true }); } }
 

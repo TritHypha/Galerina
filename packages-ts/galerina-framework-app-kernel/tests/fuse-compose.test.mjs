@@ -7,7 +7,20 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 
-import { planComposition, makeProviderFactory, fusePackages, fusePackage, buildImportClosure } from "../dist/index.js";
+import {
+  planComposition,
+  makeProviderFactory,
+  fusePackages as fusePackagesUnderTest,
+  fusePackage as fusePackageUnderTest,
+  buildCapabilityImports,
+  buildImportClosure,
+} from "../dist/index.js";
+
+// These tests use unsigned local fixtures; they still provide an explicit synthetic ALLOW
+// decision because registry admission is required independently of manifest signatures.
+const fixtureRegistryAllow = () => ({ ok: true });
+const fusePackages = (dirs, opts = {}) => fusePackagesUnderTest(dirs, { registryCheck: fixtureRegistryAllow, ...opts });
+const fusePackage = (dir, opts = {}) => fusePackageUnderTest(dir, { registryCheck: fixtureRegistryAllow, ...opts });
 
 const here = dirname(fileURLToPath(import.meta.url));
 const DEMO_DIR = join(here, "..", "..", "..", "examples", "fuse-demo", "my-custom-api-rest");
@@ -114,6 +127,16 @@ test("makeProviderFactory mirrors the capability shape and routes every function
   assert.deepEqual(calls, [["compute", [2, 3]]], "routed to provider.invoke('compute', 2, 3)");
 });
 
+test("buildCapabilityImports treats prototype-shaped namespaces as own, closed maps", () => {
+  const { imports } = buildCapabilityImports(["test.effect"], {
+    "test.effect": () => ({ namespace: "__proto__", functions: { effect: () => 1 } }),
+  });
+  assert.equal(Object.getPrototypeOf(imports), null, "no inherited namespaces can satisfy a WASM import");
+  assert.equal(Object.hasOwn(imports, "__proto__"), true, "the unusual namespace is data, not a prototype mutation");
+  assert.equal(Object.getPrototypeOf(imports["__proto__"]), null, "import function names have no inherited defaults");
+  assert.equal(imports.toString, undefined, "an undeclared inherited namespace is absent");
+});
+
 // ───────────────────── fusePackages orchestrator (real demo) ─────────────────────
 
 test("fusePackages: the set-signed invariant refuses a placeholder-signed package without allowUnsigned", async () => {
@@ -165,7 +188,7 @@ test("fusePackages: WITHOUT the provider, the consumer's clock.read falls back t
 // ── R&D 0051: posture-derived import profile (requireSignature) + import-closure report ──
 test("requireSignature OVERRIDES allowUnsigned (fail-secure) — fusePackages refuses an unsigned set", async () => {
   await assert.rejects(
-    () => fusePackages([PROVIDER_DIR, CONSUMER_DIR], { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
+    () => fusePackages([PROVIDER_DIR, CONSUMER_DIR], { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn: () => {} }),
     /FUNGI-FUSE-SET-UNSIGNED/,
     "posture 'on' (requireSignature) must refuse unsigned even when allowUnsigned was passed (set-signed invariant fires)",
   );
@@ -173,7 +196,7 @@ test("requireSignature OVERRIDES allowUnsigned (fail-secure) — fusePackages re
 
 test("requireSignature OVERRIDES allowUnsigned for a single fusePackage too", async () => {
   await assert.rejects(
-    () => fusePackage(DEMO_DIR, { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, warn: () => {} }),
+    () => fusePackage(DEMO_DIR, { allowUnsigned: true, requireSignature: true, revocationCheck: () => false, registryCheck: () => ({ ok: true }), warn: () => {} }),
     /posture requires a signature/,
   );
 });
