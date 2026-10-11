@@ -1,6 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# WSL-run regression probe must remain directly executable from Windows checkouts.
+scripts/tests/run-rd1413-wamr-context-probe.sh text eol=lf
+
 # Workflow source locks and embedded shell scripts require identical LF bytes.
 .github/workflows/*.yml text eol=lf
 
