@@ -12,10 +12,17 @@
 // =============================================================================
 
 import { createHash } from "node:crypto";
+import { isProxy as isNodeProxy } from "node:util/types";
 import type { GalerinaValue } from "./interpreter.js";
 import { productArtifactKey, type ProductArtifactContext } from "./product-artifact-identity.js";
 
 const MAX_ENTRIES = 1000;
+const MAP_FOR_EACH = Map.prototype.forEach;
+const MAP_SIZE_GETTER = Object.getOwnPropertyDescriptor(Map.prototype, "size")?.get;
+const TYPED_ARRAY_LENGTH_GETTER = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Uint8Array.prototype), "length",
+)?.get;
+const UINT8_ARRAY_CONSTRUCTOR = Uint8Array;
 
 // LRU doubly-linked list node
 interface LRUNode {
@@ -239,38 +246,135 @@ export function composeSourceBoundTag(sourceHash: string, extra: string): string
   return `${sourceHash}:x:${x}`;
 }
 
+const UNREADABLE = Symbol("unreadable-own-data");
+const ABSENT = Symbol("absent-own-data");
+const MAX_ENCODED_TEXT_BYTES = 65_536;
+
+function ownOptionalDataValue(value: unknown, key: string): unknown | typeof ABSENT | typeof UNREADABLE {
+  if (typeof value !== "object" || value === null) return UNREADABLE;
+  try {
+    if (isNodeProxy(value)) return UNREADABLE;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined) return ABSENT;
+    return "value" in descriptor ? descriptor.value : UNREADABLE;
+  } catch {
+    return UNREADABLE;
+  }
+}
+
+type CachedFloatWidth = { width: 16 | 32 | undefined };
+
+function narrowFloatWidthForCache(value: unknown): CachedFloatWidth | null {
+  const ownWidth = ownOptionalDataValue(value, "width");
+  if (ownWidth === UNREADABLE) return null;
+  let width: unknown;
+  if (ownWidth !== ABSENT) {
+    width = ownWidth;
+  } else {
+    if (typeof value !== "object" || value === null || isNodeProxy(value)) return null;
+    let prototype: object | null;
+    try {
+      prototype = Object.getPrototypeOf(value);
+    } catch {
+      return null;
+    }
+    if (prototype === Object.prototype) {
+      let inherited: PropertyDescriptor | undefined;
+      try {
+        inherited = Object.getOwnPropertyDescriptor(Object.prototype, "width");
+      } catch {
+        return null;
+      }
+      if (inherited !== undefined && !("value" in inherited)) return null;
+      width = inherited?.value;
+    } else if (prototype !== null) {
+      return null;
+    }
+  }
+  if (width === undefined) return { width: undefined };
+  return width === 16 || width === 32 ? { width } : null;
+}
+
+function boundedUtf8Length(value: string, max = MAX_ENCODED_TEXT_BYTES): number | null {
+  if (value.length > max) return null;
+  const bytes = new TextEncoder().encode(value).byteLength;
+  return bytes <= max ? bytes : null;
+}
+
+function ownDataValue(value: unknown, key: string): unknown | typeof UNREADABLE {
+  if (typeof value !== "object" || value === null) return UNREADABLE;
+  try {
+    if (isNodeProxy(value)) return UNREADABLE;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return descriptor !== undefined && "value" in descriptor ? descriptor.value : UNREADABLE;
+  } catch {
+    return UNREADABLE;
+  }
+}
+
 function encodeValue(v: GalerinaValue, depth: number, nodes: { n: number }, seen: WeakSet<object>): string | null {
   if (depth > MAX_EXACT_DEPTH || nodes.n >= MAX_EXACT_NODES) return null;
   nodes.n += 1;
-  switch (v.__tag) {
+  const tag = ownDataValue(v, "__tag");
+  if (typeof tag !== "string") return null;
+  const payload = ownDataValue(v, tag === "list" ? "items" : tag === "record" ? "fields" : "value");
+  switch (tag) {
     case "int":
-      if (!Number.isSafeInteger(v.value)) return null;
-      return `I${v.value}`;
+      if (typeof payload !== "number" || !Number.isSafeInteger(payload)) return null;
+      return `I${payload}`;
     case "byte":
-      if (!Number.isInteger(v.value) || v.value < 0 || v.value > 255) return null;
-      return `U${v.value}`;
+      if (typeof payload !== "number" || !Number.isInteger(payload) || payload < 0 || payload > 255) return null;
+      return `U${payload}`;
     case "bool":
-      return v.value ? "Bt" : "Bf";
+      if (typeof payload !== "boolean") return null;
+      return payload ? "Bt" : "Bf";
     case "verdict":
-      return `V${v.value}`;
+      if (payload !== -1 && payload !== 0 && payload !== 1) return null;
+      return `V${payload}`;
     case "char":
-      return `Y${v.value.length}:${v.value}`;
+      if (typeof payload !== "string" || boundedUtf8Length(payload) === null) return null;
+      return `Y${payload.length}:${payload}`;
     case "string":
-      return `S${v.value.length}:${v.value}`;
+      if (typeof payload !== "string" || boundedUtf8Length(payload) === null) return null;
+      return `S${payload.length}:${payload}`;
     case "decimal":
-      return `D${v.value.length}:${v.value}`;
+      if (typeof payload !== "string" || boundedUtf8Length(payload) === null) return null;
+      return `D${payload.length}:${payload}`;
     case "float": {
+      if (typeof payload !== "number" || !Number.isFinite(payload)) return null;
+      const floatWidth = narrowFloatWidthForCache(v);
+      if (floatWidth === null) return null;
       const buf = new ArrayBuffer(8);
-      new DataView(buf).setFloat64(0, v.value, false);
+      new DataView(buf).setFloat64(0, payload, false);
       const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-      return `F${hex}`;
+      return `F${floatWidth.width ?? 64}:${hex}`;
     }
     case "int64":
-    case "uint64":
-      return `J${v.__tag[0]}${v.value.toString()}`;
+    case "uint64": {
+      if (typeof payload !== "bigint") return null;
+      if (tag === "int64" && BigInt.asIntN(64, payload) !== payload) return null;
+      if (tag === "uint64" && BigInt.asUintN(64, payload) !== payload) return null;
+      return `J${tag[0]}${payload.toString()}`;
+    }
     case "bytes": {
-      const hex = [...v.value].map((b) => b.toString(16).padStart(2, "0")).join("");
-      return `X${v.value.length}:${hex}`;
+      if (payload === null || typeof payload !== "object" || isNodeProxy(payload)
+          || Object.getPrototypeOf(payload) !== Uint8Array.prototype
+          || typeof TYPED_ARRAY_LENGTH_GETTER !== "function") return null;
+      let length: number;
+      try {
+        length = Reflect.apply(TYPED_ARRAY_LENGTH_GETTER, payload, []) as number;
+      } catch {
+        return null;
+      }
+      if (!Number.isSafeInteger(length) || length < 0 || length > Math.floor((MAX_EXACT_BYTES - 16) / 2)) return null;
+      const byteView = payload as Uint8Array;
+      const bytes: string[] = [];
+      for (let index = 0; index < length; index += 1) {
+        const byte = byteView[index];
+        if (typeof byte !== "number" || !Number.isInteger(byte) || byte < 0 || byte > 255) return null;
+        bytes.push(byte.toString(16).padStart(2, "0"));
+      }
+      return `X${length}:${bytes.join("")}`;
     }
     case "void":
       return "0";
@@ -278,44 +382,94 @@ function encodeValue(v: GalerinaValue, depth: number, nodes: { n: number }, seen
       return "N";
     case "some":
     case "ok": {
-      if (typeof v === "object" && v !== null) {
-        if (seen.has(v)) return null;
-        seen.add(v);
-      }
-      const inner = encodeValue(v.value, depth + 1, nodes, seen);
+      if (seen.has(v)) return null;
+      seen.add(v);
+      if (payload === UNREADABLE) return null;
+      const inner = encodeValue(payload as GalerinaValue, depth + 1, nodes, seen);
       if (inner === null) return null;
-      return `${v.__tag === "some" ? "M" : "K"}${inner}`;
+      return `${tag === "some" ? "M" : "K"}${inner}`;
     }
     case "err": {
       if (seen.has(v)) return null;
       seen.add(v);
-      const inner = encodeValue(v.error, depth + 1, nodes, seen);
+      const error = ownDataValue(v, "error");
+      if (error === UNREADABLE) return null;
+      const inner = encodeValue(error as GalerinaValue, depth + 1, nodes, seen);
       if (inner === null) return null;
       return `E${inner}`;
     }
     case "list": {
+      if (payload === UNREADABLE || payload === null || typeof payload !== "object"
+          || isNodeProxy(payload) || !Array.isArray(payload)) return null;
       if (seen.has(v)) return null;
       seen.add(v);
+      const length = ownDataValue(payload, "length");
+      if (typeof length !== "number" || !Number.isSafeInteger(length) || length < 0) return null;
+      if (length > MAX_EXACT_NODES - nodes.n) return null;
       const items: string[] = [];
-      for (const item of v.items) {
-        const enc = encodeValue(item, depth + 1, nodes, seen);
+      let itemBytes = 0;
+      for (let index = 0; index < length; index += 1) {
+        const item = ownDataValue(payload, String(index));
+        if (item === UNREADABLE) return null;
+        const enc = encodeValue(item as GalerinaValue, depth + 1, nodes, seen);
         if (enc === null) return null;
+        const encBytes = boundedUtf8Length(enc);
+        if (encBytes === null || itemBytes > MAX_EXACT_BYTES - encBytes) return null;
+        itemBytes += encBytes;
         items.push(enc);
       }
+      if (itemBytes > MAX_EXACT_BYTES - Math.min(MAX_EXACT_BYTES, length * 4 + 16)) return null;
       return `L${items.length}:[${items.join(",")}]`;
     }
     case "record": {
+      if (payload === UNREADABLE || payload === null || typeof payload !== "object"
+          || isNodeProxy(payload) || typeof MAP_SIZE_GETTER !== "function"
+          || Object.getPrototypeOf(payload) !== Map.prototype) return null;
+      let size: unknown;
+      try {
+        size = Reflect.apply(MAP_SIZE_GETTER, payload, []);
+      } catch {
+        return null;
+      }
+      if (typeof size !== "number" || !Number.isSafeInteger(size)
+          || size < 0 || size > MAX_EXACT_NODES - nodes.n) return null;
       if (seen.has(v)) return null;
       seen.add(v);
-      const keys = [...v.fields.keys()].sort();
+      const entries: Array<[string, GalerinaValue]> = [];
+      let keyBytes = 0;
+      let invalidKey = false;
+      Reflect.apply(MAP_FOR_EACH, payload, [(fieldValue: GalerinaValue, fieldKey: unknown) => {
+        if (invalidKey) return;
+        if (typeof fieldKey !== "string") {
+          invalidKey = true;
+          return;
+        }
+        const fieldKeyBytes = boundedUtf8Length(fieldKey);
+        if (fieldKeyBytes === null) {
+          invalidKey = true;
+          return;
+        }
+        keyBytes += fieldKeyBytes;
+        if (keyBytes > MAX_EXACT_BYTES) {
+          invalidKey = true;
+          return;
+        }
+        entries.push([fieldKey, fieldValue]);
+      }]);
+      if (invalidKey || entries.length !== size) return null;
+      entries.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
       const fields: string[] = [];
-      for (const k of keys) {
-        const fv = v.fields.get(k);
-        if (fv === undefined) return null;
+      let fieldBytes = 0;
+      for (const [k, fv] of entries) {
         const enc = encodeValue(fv, depth + 1, nodes, seen);
         if (enc === null) return null;
+        const encBytes = boundedUtf8Length(enc);
+        const fieldOverhead = new TextEncoder().encode(`${k.length}:${k}=`).byteLength;
+        if (encBytes === null || fieldBytes > MAX_EXACT_BYTES - encBytes - fieldOverhead) return null;
+        fieldBytes += encBytes + fieldOverhead;
         fields.push(`${k.length}:${k}=${enc}`);
       }
+      if (fieldBytes > MAX_EXACT_BYTES - Math.min(MAX_EXACT_BYTES, entries.length * 4 + 16)) return null;
       return `R${fields.length}:{${fields.join(",")}}`;
     }
     case "secure":
@@ -332,24 +486,76 @@ function encodeValue(v: GalerinaValue, depth: number, nodes: { n: number }, seen
 }
 
 export function encodePureFlowArgs(args: ReadonlyMap<string, GalerinaValue>): string | null {
+  if (typeof args !== "object" || args === null || isNodeProxy(args)
+      || Object.getPrototypeOf(args) !== Map.prototype
+      || typeof MAP_FOR_EACH !== "function" || typeof MAP_SIZE_GETTER !== "function") return null;
+  let size: unknown;
+  try {
+    size = Reflect.apply(MAP_SIZE_GETTER, args, []);
+  } catch {
+    return null;
+  }
+  if (typeof size !== "number" || !Number.isSafeInteger(size)
+      || size < 0 || size > MAX_EXACT_NODES) return null;
+
   const nodes = { n: 0 };
   const seen = new WeakSet<object>();
-  const keys = [...args.keys()].sort();
+  const entries: Array<[string, GalerinaValue]> = [];
+  let keyBytes = 0;
+  let invalid = false;
+  try {
+    Reflect.apply(MAP_FOR_EACH, args, [(value: GalerinaValue, key: unknown) => {
+      if (invalid) return;
+      if (typeof key !== "string") {
+        invalid = true;
+        return;
+      }
+      const argumentKeyBytes = boundedUtf8Length(key);
+      if (argumentKeyBytes === null) {
+        invalid = true;
+        return;
+      }
+      keyBytes += argumentKeyBytes;
+      if (keyBytes > MAX_EXACT_BYTES) {
+        invalid = true;
+        return;
+      }
+      entries.push([key, value]);
+    }]);
+  } catch {
+    return null;
+  }
+  if (invalid || entries.length !== size) return null;
+  entries.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
   const parts: string[] = [];
-  for (const k of keys) {
-    const v = args.get(k);
+  let exactBytes = 0;
+  for (const [k, v] of entries) {
     if (v === undefined) return null;
     const enc = encodeValue(v, 0, nodes, seen);
     if (enc === null) return null;
-    parts.push(`${k.length}:${k}=${enc}`);
+    const keyHeader = `${k.length}:${k}=`;
+    const keyHeaderBytes = boundedUtf8Length(keyHeader);
+    const valueBytes = boundedUtf8Length(enc);
+    if (keyHeaderBytes === null || valueBytes === null
+        || exactBytes > MAX_EXACT_BYTES - keyHeaderBytes - valueBytes - (parts.length > 0 ? 1 : 0)) return null;
+    exactBytes += keyHeaderBytes + valueBytes + (parts.length > 0 ? 1 : 0);
+    parts.push(`${keyHeader}${enc}`);
   }
   const exact = parts.join(";");
-  if (new TextEncoder().encode(exact).byteLength > MAX_EXACT_BYTES) return null;
   return exact;
 }
 
 function ownGalerinaValue(v: GalerinaValue): GalerinaValue {
-  switch (v.__tag) {
+  const tag = ownDataValue(v, "__tag");
+  if (typeof tag !== "string") throw new TypeError("invalid cache value tag");
+  if (tag === "void") return { __tag: "void" };
+  if (tag === "none") return { __tag: "none" };
+
+  const payloadKey = tag === "list" ? "items" : tag === "record" ? "fields" : tag === "err" ? "error" : "value";
+  const payload = ownDataValue(v, payloadKey);
+  if (payload === UNREADABLE) throw new TypeError("invalid cache value payload");
+
+  switch (tag) {
     case "int":
     case "byte":
     case "bool":
@@ -357,31 +563,99 @@ function ownGalerinaValue(v: GalerinaValue): GalerinaValue {
     case "char":
     case "string":
     case "decimal":
-    case "float":
     case "int64":
     case "uint64":
-      return { ...v };
-    case "bytes":
-      return { __tag: "bytes", value: Uint8Array.from(v.value) };
-    case "void":
-      return { __tag: "void" };
-    case "none":
-      return { __tag: "none" };
+      return { __tag: tag, value: payload } as GalerinaValue;
+    case "float": {
+      if (typeof payload !== "number" || !Number.isFinite(payload)) throw new TypeError("invalid cache float value");
+      const floatWidth = narrowFloatWidthForCache(v);
+      if (floatWidth === null) throw new TypeError("invalid cache float width");
+      const copy: GalerinaValue = floatWidth.width === undefined
+        ? { __tag: "float", value: payload }
+        : { __tag: "float", value: payload, width: floatWidth.width };
+      if (floatWidth.width === undefined) {
+        Object.defineProperty(copy, "width", {
+          configurable: true,
+          enumerable: true,
+          value: undefined,
+          writable: true,
+        });
+      }
+      return copy;
+    }
+    case "bytes": {
+      if (payload === null || typeof payload !== "object" || isNodeProxy(payload)
+          || Object.getPrototypeOf(payload) !== Uint8Array.prototype
+          || typeof TYPED_ARRAY_LENGTH_GETTER !== "function") {
+        throw new TypeError("invalid cache byte payload");
+      }
+      let length: number;
+      try {
+        length = Reflect.apply(TYPED_ARRAY_LENGTH_GETTER, payload, []) as number;
+      } catch {
+        throw new TypeError("invalid cache byte payload");
+      }
+      if (!Number.isSafeInteger(length) || length < 0 || length > Math.floor((MAX_EXACT_BYTES - 16) / 2)) {
+        throw new TypeError("invalid cache byte length");
+      }
+      const source = payload as Uint8Array;
+      const copy = new UINT8_ARRAY_CONSTRUCTOR(length);
+      for (let index = 0; index < length; index += 1) {
+        const byte = source[index];
+        if (typeof byte !== "number" || !Number.isInteger(byte) || byte < 0 || byte > 255) {
+          throw new TypeError("invalid cache byte value");
+        }
+        copy[index] = byte;
+      }
+      return { __tag: "bytes", value: copy };
+    }
     case "some":
-      return { __tag: "some", value: ownGalerinaValue(v.value) };
+      return { __tag: "some", value: ownGalerinaValue(payload as GalerinaValue) };
     case "ok":
-      return { __tag: "ok", value: ownGalerinaValue(v.value) };
+      return { __tag: "ok", value: ownGalerinaValue(payload as GalerinaValue) };
     case "err":
-      return { __tag: "err", error: ownGalerinaValue(v.error) };
-    case "list":
-      return { __tag: "list", items: Object.freeze(v.items.map(ownGalerinaValue)) };
+      return { __tag: "err", error: ownGalerinaValue(payload as GalerinaValue) };
+    case "list": {
+      if (payload === null || typeof payload !== "object" || isNodeProxy(payload) || !Array.isArray(payload)) {
+        throw new TypeError("invalid cache list payload");
+      }
+      const length = ownDataValue(payload, "length");
+      if (typeof length !== "number" || !Number.isSafeInteger(length) || length < 0 || length > MAX_EXACT_NODES) {
+        throw new TypeError("invalid cache list length");
+      }
+      const items: GalerinaValue[] = [];
+      for (let index = 0; index < length; index += 1) {
+        const item = ownDataValue(payload, String(index));
+        if (item === UNREADABLE) throw new TypeError("invalid cache list element");
+        items.push(ownGalerinaValue(item as GalerinaValue));
+      }
+      return { __tag: "list", items: Object.freeze(items) };
+    }
     case "record": {
+      if (payload === null || typeof payload !== "object" || isNodeProxy(payload)
+          || Object.getPrototypeOf(payload) !== Map.prototype
+          || typeof MAP_FOR_EACH !== "function" || typeof MAP_SIZE_GETTER !== "function") {
+        throw new TypeError("invalid cache record payload");
+      }
+      let size: unknown;
+      try {
+        size = Reflect.apply(MAP_SIZE_GETTER, payload, []);
+      } catch {
+        throw new TypeError("invalid cache record payload");
+      }
+      if (typeof size !== "number" || !Number.isSafeInteger(size) || size < 0 || size > MAX_EXACT_NODES) {
+        throw new TypeError("invalid cache record size");
+      }
       const fields = new Map<string, GalerinaValue>();
-      for (const [k, fv] of v.fields) fields.set(k, ownGalerinaValue(fv));
+      Reflect.apply(MAP_FOR_EACH, payload, [(fieldValue: unknown, fieldKey: unknown) => {
+        if (typeof fieldKey !== "string") throw new TypeError("invalid cache record key");
+        fields.set(fieldKey, ownGalerinaValue(fieldValue as GalerinaValue));
+      }]);
+      if (fields.size !== size) throw new TypeError("invalid cache record entries");
       return { __tag: "record", fields };
     }
     default:
-      return { ...v };
+      throw new TypeError("unsupported cache value tag");
   }
 }
 
@@ -419,7 +693,11 @@ export function pureFlowCacheKey(
 }
 
 export function getCachedPureFlow(key: string, exact = ""): GalerinaValue | undefined {
-  return SESSION_CACHE.get(key, exact);
+  try {
+    return SESSION_CACHE.get(key, exact);
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -438,9 +716,13 @@ export function getCachedPureFlow(key: string, exact = ""): GalerinaValue | unde
  * @param value - The deterministic result to cache
  */
 export function setCachedPureFlow(key: string, value: GalerinaValue, exact = ""): void {
-  // Guard: never cache error results (they may contain internal state info)
-  if (value.__tag === "runtimeError" || value.__tag === "error") return;
-  SESSION_CACHE.set(key, value, exact);
+  if (typeof key !== "string" || typeof exact !== "string") return;
+  if (encodePureFlowArgs(new Map([["value", value]])) === null) return;
+  try {
+    SESSION_CACHE.set(key, value, exact);
+  } catch {
+    // Unreadable or malformed host values are cache-ineligible.
+  }
 }
 
 export function clearPureFlowCache(): void {
