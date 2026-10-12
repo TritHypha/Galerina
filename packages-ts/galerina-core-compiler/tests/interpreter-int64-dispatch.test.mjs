@@ -341,6 +341,40 @@ describe("interpreter 64-bit literals passed across flow calls", () => {
     });
   });
 
+  it("preserves an exact flow-produced Int64 through an array higher-order callback", async () => {
+    const result = await runSourceFlow(`
+      pure flow wide() -> Int64 contract { effects {} } {
+        return 9007199254740993
+      }
+      flow IgnoreWide(value: Int64) -> Int64 { return value }
+      pure flow caller() -> Array<Int64> contract { effects {} } {
+        let values: Array<Int64> = [wide()]
+        return values.map(IgnoreWide)
+      }
+    `, "caller");
+    assert.deepEqual(result.value, {
+      __tag: "list",
+      items: [{ __tag: "int64", value: 9007199254740993n }],
+    });
+  });
+
+  it("keeps Int64 arithmetic exact inside an array higher-order callback", async () => {
+    const result = await runSourceFlow(`
+      pure flow wide() -> Int64 contract { effects {} } {
+        return 9007199254740993
+      }
+      flow AddTwo(value: Int64) -> Int64 { return value + 2 }
+      pure flow caller() -> Array<Int64> contract { effects {} } {
+        let values: Array<Int64> = [wide()]
+        return values.map(AddTwo)
+      }
+    `, "caller");
+    assert.deepEqual(result.value, {
+      __tag: "list",
+      items: [{ __tag: "int64", value: 9007199254740995n }],
+    });
+  });
+
   it("restores the caller's Int64 return context after a nested flow call", async () => {
     const result = await runSourceFlow(`
       pure flow narrow() -> Int contract { effects {} } { return 1 }
