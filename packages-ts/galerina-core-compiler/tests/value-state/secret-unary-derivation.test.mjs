@@ -136,6 +136,26 @@ secure flow probe(key: SecureString) -> Int {
     ), JSON.stringify(diagnostics));
   });
 
+  it("does not declassify a same-spelled user flow as the compiler constant-time primitive", () => {
+    const source = `@version 1
+flow constantTimeEquals(left: SecureString, right: SecureString) -> Bool {
+  return true
+}
+secure flow probe(key: SecureString) -> Int {
+  let derived = constantTimeEquals(key, key)
+  print(derived)
+  return 0
+}`;
+    const parsed = parseProgram(source, "user-flow-constant-time-shadow.fungi");
+    assert.deepEqual(parsed.diagnostics, [], "the source must reach type/value-state checking");
+    const types = checkTypes(parsed.ast);
+    assert.deepEqual(types.diagnostics, [], "independent type errors must not mask declassification");
+    const diagnostics = checkValueStates(parsed.ast, "production").diagnostics;
+    assert.ok(diagnostics.some(
+      (d) => d.code === "FUNGI-VALUESTATE-011" && d.severity === "error",
+    ), JSON.stringify(diagnostics));
+  });
+
   it("does not declassify through a locally shadowed redact name", () => {
     const diagnostics = checkBody("let redact = key\n  let derived = redact(key)\n  print(derived)");
     assert.ok(diagnostics.some(
