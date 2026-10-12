@@ -407,6 +407,7 @@ test("native Git does not inherit command config or repository routing from its 
         encoding: "utf8",
         timeout: 120_000,
         windowsHide: true,
+        env: cleanGitEnvironment(process.env),
       });
 
       assert.equal(result.error, undefined, result.error?.message);
