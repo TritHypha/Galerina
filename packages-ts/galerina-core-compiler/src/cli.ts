@@ -12,13 +12,24 @@
 // =============================================================================
 
 import {
+  constants as fsConstants,
   readFileSync,
   readdirSync,
   mkdirSync,
   writeFileSync,
   existsSync,
+  rmSync,
+  rmdirSync,
   statSync,
+  lstatSync,
+  realpathSync,
+  openSync,
+  fstatSync,
+  readSync,
+  closeSync,
+  linkSync,
 } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { execSync, spawnSync } from "node:child_process";
 import { parseProgram, type AstNode, type FlowMeta } from "./parser.js";
 import { isFlowDeclNamed } from "./flow-name.js";
@@ -60,7 +71,7 @@ import { generateCycloneDxSbom } from "./sbom.js";
 import { dispatchGateSource, findGateRegistry } from "./gate-dispatch.js";
 import { generateCircuitFromPattern } from "./gate-from-pattern.js";
 import type { Dirent } from "node:fs";
-import { join, basename, dirname, resolve as resolvePath } from "node:path";
+import { join, basename, dirname, resolve as resolvePath, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { requireFixedGalerinaProductContext, resolveProductCliSelection } from "./product-cli.js";
 import type { ProductArtifactContext } from "./product-artifact-identity.js";
@@ -332,16 +343,23 @@ function findFungiFiles(dir: string): string[] {
     try {
       entries = readdirSync(current, { withFileTypes: true });
     } catch {
-      return;
+      throw new Error(`REFUSED: source discovery could not enumerate directory: ${current}`);
     }
     for (const entry of entries) {
       const full = join(current, entry.name);
+      if (entry.isSymbolicLink()) {
+        throw new Error(`REFUSED: source discovery does not follow or skip symbolic links: ${full}`);
+      }
+      const isSourceCandidate = entry.name.endsWith(".fungi") || entry.name.endsWith(".gate");
+      if (isSourceCandidate && !entry.isFile()) {
+        throw new Error(`REFUSED: unsupported filesystem object occupies a source path: ${full}`);
+      }
       if (entry.isDirectory()) {
         // skip node_modules and hidden dirs
         if (entry.name !== "node_modules" && !entry.name.startsWith(".")) {
           walk(full);
         }
-      } else if (entry.isFile() && (entry.name.endsWith(".fungi") || entry.name.endsWith(".gate"))) {
+      } else if (isSourceCandidate) {
         // `.gate` files are collected alongside `.fungi` and routed by
         // compileFile to the v3 frontend (round-one G1). A `.gate` file yields
         // diagnostics only - no flows, no GIR, no signing - and carries
@@ -353,6 +371,72 @@ function findFungiFiles(dir: string): string[] {
 
   walk(dir);
   return results;
+}
+
+function findStandaloneEntryFiles(files: string[]): string[] {
+  const pendingImports = new Set<string>();
+  const importedPaths = new Set<string>();
+  for (const filePath of files) {
+    const source = readBoundedSource(filePath);
+    const parsed = parseProgram(source, filePath, { requireVersionHeader: true });
+    const imports = gatherFileImports(parsed.ast, resolvePath(filePath));
+    for (const importedPath of imports.resolvedPaths) {
+      pendingImports.add(resolvePath(importedPath));
+    }
+  }
+
+  while (pendingImports.size > 0) {
+    const importedPath = pendingImports.values().next().value as string;
+    pendingImports.delete(importedPath);
+    if (importedPaths.has(importedPath)) continue;
+    importedPaths.add(importedPath);
+
+    const source = readBoundedSource(importedPath);
+    const parsed = parseProgram(source, importedPath, { requireVersionHeader: true });
+    const imports = gatherFileImports(parsed.ast, resolvePath(importedPath));
+    for (const nestedPath of imports.resolvedPaths) {
+      const resolvedNestedPath = resolvePath(nestedPath);
+      if (!importedPaths.has(resolvedNestedPath)) pendingImports.add(resolvedNestedPath);
+    }
+  }
+  return files.filter((filePath) => !importedPaths.has(resolvePath(filePath)));
+}
+
+function findStandaloneImportsWithNonSchemaDeclarations(files: string[]): string[] {
+  const pendingImports = new Set<string>();
+  const schemaKinds = new Set(["importDecl", "typeDecl", "enumDecl", "recordDecl"]);
+  for (const filePath of files) {
+    const source = readBoundedSource(filePath);
+    const parsed = parseProgram(source, filePath, { requireVersionHeader: true });
+    const imports = gatherFileImports(parsed.ast, resolvePath(filePath));
+    for (const importedPath of imports.resolvedPaths) pendingImports.add(resolvePath(importedPath));
+  }
+
+  const unsupported: string[] = [];
+  const visitedImports = new Set<string>();
+  while (pendingImports.size > 0) {
+    const importedPath = pendingImports.values().next().value as string;
+    pendingImports.delete(importedPath);
+    if (visitedImports.has(importedPath)) continue;
+    visitedImports.add(importedPath);
+
+    const source = readBoundedSource(importedPath);
+    const parsed = parseProgram(source, importedPath, { requireVersionHeader: true });
+    if ((parsed.ast.children ?? []).some((node) => !schemaKinds.has(node.kind))) {
+      unsupported.push(importedPath);
+    }
+
+    // gatherFileImports returns the importer's direct module entries, while its
+    // resolver only surfaces successful nested modules as flattened symbols.
+    // Walk each validated source in turn so a schema-only wrapper cannot hide
+    // executable declarations further down the import graph.
+    const nestedImports = gatherFileImports(parsed.ast, resolvePath(importedPath));
+    for (const nestedPath of nestedImports.resolvedPaths) {
+      const resolvedNestedPath = resolvePath(nestedPath);
+      if (!visitedImports.has(resolvedNestedPath)) pendingImports.add(resolvedNestedPath);
+    }
+  }
+  return unsupported.sort();
 }
 
 // ---------------------------------------------------------------------------
@@ -411,15 +495,59 @@ interface FileCompileResult {
 export const MAX_COMPILER_SOURCE_BYTES = 10 * 1024 * 1024;
 
 function readBoundedSource(filePath: string): string {
-  const st = statSync(filePath);
-  if (!st.isFile() || st.size > MAX_COMPILER_SOURCE_BYTES) {
+  const pathStats = lstatSync(filePath);
+  if (pathStats.isSymbolicLink() || !pathStats.isFile()) {
+    throw new Error("source path must name a regular, non-symbolic-link file");
+  }
+  if (pathStats.size > MAX_COMPILER_SOURCE_BYTES) {
     throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
   }
-  const source = readFileSync(filePath, "utf8");
-  if (source.length > MAX_COMPILER_SOURCE_BYTES) {
-    throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+
+  const flags = fsConstants.O_RDONLY
+    | (fsConstants.O_NONBLOCK ?? 0)
+    | (fsConstants.O_NOFOLLOW ?? 0);
+  const descriptor = openSync(filePath, flags);
+  try {
+    const openedStats = fstatSync(descriptor);
+    if (!openedStats.isFile() || !sameStandaloneDirectoryIdentity(openedStats, pathStats)) {
+      throw new Error("source path identity changed between discovery and descriptor intake");
+    }
+    if (openedStats.size > MAX_COMPILER_SOURCE_BYTES) {
+      throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+    }
+
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    while (true) {
+      const remaining = MAX_COMPILER_SOURCE_BYTES + 1 - totalBytes;
+      if (remaining <= 0) {
+        throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+      }
+      const chunk = Buffer.alloc(Math.min(64 * 1024, remaining));
+      const bytesRead = readSync(descriptor, chunk, 0, chunk.length, null);
+      if (bytesRead === 0) break;
+      totalBytes += bytesRead;
+      if (totalBytes > MAX_COMPILER_SOURCE_BYTES) {
+        throw new Error(`source exceeds the ${MAX_COMPILER_SOURCE_BYTES}-byte compiler intake ceiling`);
+      }
+      chunks.push(chunk.subarray(0, bytesRead));
+    }
+
+    const finalDescriptorStats = fstatSync(descriptor);
+    const finalPathStats = lstatSync(filePath);
+    if (!sameStandaloneDirectoryIdentity(finalDescriptorStats, openedStats)
+      || !sameStandaloneDirectoryIdentity(finalPathStats, openedStats)
+      || finalPathStats.isSymbolicLink() || !finalPathStats.isFile()
+      || finalDescriptorStats.size !== openedStats.size
+      || finalDescriptorStats.mtimeMs !== openedStats.mtimeMs
+      || finalDescriptorStats.ctimeMs !== openedStats.ctimeMs
+      || totalBytes !== finalDescriptorStats.size) {
+      throw new Error("source changed while it was being read; refusing a non-stable intake");
+    }
+    return Buffer.concat(chunks, totalBytes).toString("utf8");
+  } finally {
+    closeSync(descriptor);
   }
-  return source;
 }
 
 export function compileFile(
@@ -1102,16 +1230,557 @@ function checkWasmtime(): string | null {
  *   4. If wasmtime is available, print "To execute: wasmtime build/wasm/output.wasm".
  *   5. If wasmtime is not available, print clear install instructions.
  */
-function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
-  const outDir = join(targetDir, "build", "wasm");
-  try {
-    mkdirSync(outDir, { recursive: true });
-  } catch {
-    // already exists
+function assertContainedPath(root: string, candidate: string): void {
+  const rel = relative(root, candidate);
+  if (isAbsolute(rel) || rel === ".." || /^\.\.(?:[\\/]|$)/.test(rel)) {
+    throw new Error(`REFUSED: standalone WASM output path resolves outside the selected target: ${candidate}`);
   }
+}
 
+interface StandaloneDirectoryIdentity {
+  readonly dev: number;
+  readonly ino: number;
+}
+
+interface ActivePinnedStandaloneDirectory {
+  readonly identity: StandaloneDirectoryIdentity;
+  readonly path: string;
+  readonly descriptor?: number;
+}
+
+let activePinnedStandaloneDirectory: ActivePinnedStandaloneDirectory | undefined;
+
+function standaloneDirectoryIdentity(stats: { readonly dev: number; readonly ino: number }): StandaloneDirectoryIdentity {
+  return { dev: stats.dev, ino: stats.ino };
+}
+
+function sameStandaloneDirectoryIdentity(
+  left: { readonly dev: number; readonly ino: number },
+  right: { readonly dev: number; readonly ino: number },
+): boolean {
+  return left.dev === right.dev && left.ino === right.ino;
+}
+
+function pinnedWorkingDirectoryPath(): string {
+  return activePinnedStandaloneDirectory?.path ?? ".";
+}
+
+function ensurePlainOutputDirectory(
+  root: string,
+  childPath: string,
+  parentIdentity: StandaloneDirectoryIdentity,
+): StandaloneDirectoryIdentity {
+  const parentDirectory = dirname(childPath);
+  const childName = basename(childPath);
+  let createdIdentity: StandaloneDirectoryIdentity | undefined;
+  let createdHere = false;
+  const rollbackCreatedOutputDirectory = (): void => {
+    if (createdIdentity === undefined) {
+      if (createdHere) {
+        throw new Error(
+          `REFUSED: output directory identity could not be verified after creation; preserving ${childPath}`,
+        );
+      }
+      return;
+    }
+    const movedParent = standaloneDirectoryIdentity(statSync("."));
+    if (!sameStandaloneDirectoryIdentity(movedParent, parentIdentity)) {
+      throw new Error(`REFUSED: output-directory rollback lost its pinned parent; preserving ${childPath}`);
+    }
+    const ownedChildPath = join(pinnedWorkingDirectoryPath(), childName);
+    const current = lstatSync(ownedChildPath);
+    if (current.isSymbolicLink() || !current.isDirectory()
+      || !sameStandaloneDirectoryIdentity(current, createdIdentity)) {
+      throw new Error(`REFUSED: created output directory identity is uncertain; preserving ${childPath}`);
+    }
+    // Remove only the empty directory this invocation created. If another
+    // actor populated it, rmdir refuses and leaves that state intact.
+    rmdirSync(ownedChildPath);
+  };
+  return withPinnedStandaloneOutputDirectory(parentDirectory, parentIdentity, () => {
+    try {
+      if (!existsSync(childName)) {
+        mkdirSync(childName);
+        createdHere = true;
+      }
+      const ownedChildPath = join(pinnedWorkingDirectoryPath(), childName);
+      const stats = lstatSync(ownedChildPath);
+      if (stats.isSymbolicLink() || !stats.isDirectory()) {
+        throw new Error(`REFUSED: standalone WASM output directory must be a real directory, not a link or file: ${childPath}`);
+      }
+      if (createdHere) createdIdentity = standaloneDirectoryIdentity(stats);
+      assertContainedPath(root, realpathSync(ownedChildPath));
+      return standaloneDirectoryIdentity(stats);
+    } catch (error: unknown) {
+      try {
+        rollbackCreatedOutputDirectory();
+      } catch (rollbackError: unknown) {
+        throw new Error(
+          `REFUSED: output-directory setup failed (${String(error)}); rollback was incomplete (${String(rollbackError)})`,
+        );
+      }
+      throw error;
+    }
+  }, rollbackCreatedOutputDirectory);
+}
+
+function sameStandaloneOutputPath(left: string, right: string): boolean {
+  const normalizedLeft = resolvePath(left);
+  const normalizedRight = resolvePath(right);
+  return process.platform === "win32"
+    ? normalizedLeft.toLowerCase() === normalizedRight.toLowerCase()
+    : normalizedLeft === normalizedRight;
+}
+
+class StandaloneOutputDirectoryChangedError extends Error {
+  constructor(expectedDirectory: string) {
+    super(`REFUSED: standalone WASM output directory identity changed during publication: ${expectedDirectory}`);
+    this.name = "StandaloneOutputDirectoryChangedError";
+  }
+}
+
+function assertPinnedStandaloneOutputDirectory(
+  expectedDirectory: string,
+  expectedIdentity: StandaloneDirectoryIdentity,
+): void {
+  const currentDirectory = realpathSync(".");
+  const currentIdentity = standaloneDirectoryIdentity(statSync("."));
+  const namedIdentity = standaloneDirectoryIdentity(statSync(expectedDirectory));
+  if (!sameStandaloneOutputPath(currentDirectory, expectedDirectory)
+    || !sameStandaloneDirectoryIdentity(currentIdentity, expectedIdentity)
+    || !sameStandaloneDirectoryIdentity(namedIdentity, expectedIdentity)) {
+    throw new StandaloneOutputDirectoryChangedError(expectedDirectory);
+  }
+}
+
+/**
+ * Perform output leaf mutations relative to the selected directory object,
+ * not by re-resolving an absolute path after validation. If another process
+ * replaces the named parent while a synchronous operation is in flight,
+ * relative operations stay attached to the directory entered here. Windows
+ * also prevents renaming an open current directory. Detect a moved directory
+ * before any later mutation and refuse; this does not claim to prevent another
+ * process from moving the selected directory object itself.
+ */
+function withPinnedStandaloneOutputDirectory<T>(
+  expectedDirectory: string,
+  expectedIdentity: StandaloneDirectoryIdentity,
+  operation: () => T,
+  rollbackOnIdentityChange?: () => void,
+): T {
+  const previousDirectory = process.cwd();
+  const previousPinnedDirectory = activePinnedStandaloneDirectory;
+  const reusedPinnedDirectory = previousPinnedDirectory !== undefined
+    && sameStandaloneDirectoryIdentity(previousPinnedDirectory.identity, expectedIdentity);
+  let changedDirectory = false;
+  let openedDescriptor: number | undefined;
+  if (!reusedPinnedDirectory) {
+    const alreadyEnteredIdentity = standaloneDirectoryIdentity(statSync("."));
+    changedDirectory = !sameStandaloneDirectoryIdentity(alreadyEnteredIdentity, expectedIdentity);
+    if (changedDirectory) process.chdir(expectedDirectory);
+    try {
+      assertPinnedStandaloneOutputDirectory(expectedDirectory, expectedIdentity);
+      if (process.platform === "linux") {
+        openedDescriptor = openSync(".", fsConstants.O_RDONLY);
+        const openedIdentity = standaloneDirectoryIdentity(fstatSync(openedDescriptor));
+        if (!sameStandaloneDirectoryIdentity(openedIdentity, expectedIdentity)) {
+          throw new Error("REFUSED: opened standalone WASM directory differs from the selected identity");
+        }
+        activePinnedStandaloneDirectory = {
+          identity: expectedIdentity,
+          path: `/proc/self/fd/${openedDescriptor}`,
+          descriptor: openedDescriptor,
+        };
+      } else {
+        activePinnedStandaloneDirectory = { identity: expectedIdentity, path: "." };
+      }
+    } catch (error: unknown) {
+      if (openedDescriptor !== undefined) closeSync(openedDescriptor);
+      if (changedDirectory) process.chdir(previousDirectory);
+      throw error;
+    }
+  }
+  try {
+    assertPinnedStandaloneOutputDirectory(expectedDirectory, expectedIdentity);
+    const result = operation();
+    try {
+      assertPinnedStandaloneOutputDirectory(expectedDirectory, expectedIdentity);
+    } catch (error: unknown) {
+      if (rollbackOnIdentityChange !== undefined) {
+        try {
+          rollbackOnIdentityChange();
+        } catch (rollbackError: unknown) {
+          throw new Error(
+            `REFUSED: output directory identity changed (${String(error)}); owned-state rollback was incomplete (${String(rollbackError)})`,
+          );
+        }
+      }
+      throw error;
+    }
+    return result;
+  } finally {
+    if (!reusedPinnedDirectory) {
+      activePinnedStandaloneDirectory = previousPinnedDirectory;
+      if (openedDescriptor !== undefined) closeSync(openedDescriptor);
+      if (changedDirectory) process.chdir(previousDirectory);
+    }
+  }
+}
+
+function assertSafeStandaloneOutputLeaf(filePath: string): void {
+  try {
+    const stats = lstatSync(filePath);
+    if (stats.isSymbolicLink() || !stats.isFile() || stats.nlink !== 1) {
+      throw new Error(
+        `REFUSED: standalone WASM output leaf must be an unlinked regular file: ${filePath}`,
+      );
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") return;
+    throw error;
+  }
+}
+
+function removeOwnedStandaloneOutputLeaf(
+  outputLeaf: string,
+  expectedIdentity: StandaloneDirectoryIdentity,
+): void {
+  let current;
+  try {
+    current = lstatSync(join(pinnedWorkingDirectoryPath(), outputLeaf));
+  } catch (error: unknown) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") return;
+    throw error;
+  }
+  if (current.isSymbolicLink() || !current.isFile() || current.nlink !== 1
+    || !sameStandaloneDirectoryIdentity(current, expectedIdentity)) {
+    throw new Error(`REFUSED: output leaf identity is uncertain; preserving ${outputLeaf}`);
+  }
+  rmSync(join(pinnedWorkingDirectoryPath(), outputLeaf));
+}
+
+function replaceStandaloneOutput(
+  filePath: string,
+  contents: string | Uint8Array,
+  outputDirectoryIdentity: StandaloneDirectoryIdentity,
+  encoding?: "utf8",
+): StandaloneDirectoryIdentity {
+  const outputDirectory = dirname(filePath);
+  const outputLeaf = basename(filePath);
+  let publishedIdentity: StandaloneDirectoryIdentity | undefined;
+  const resultIdentity = withPinnedStandaloneOutputDirectory(outputDirectory, outputDirectoryIdentity, () => {
+    assertSafeStandaloneOutputLeaf(outputLeaf);
+    const temporaryLeaf = `.${outputLeaf}.tmp-${randomUUID()}`;
+    let descriptor: number | undefined;
+    let temporaryCreated = false;
+    let temporaryIdentity: StandaloneDirectoryIdentity | undefined;
+    let canonicalLinkReturned = false;
+    try {
+      descriptor = openSync(temporaryLeaf, "wx+", 0o600);
+      temporaryCreated = true;
+      const openedStats = fstatSync(descriptor);
+      if (!openedStats.isFile()) {
+        throw new Error("REFUSED: standalone WASM temporary output is not a regular file");
+      }
+      temporaryIdentity = standaloneDirectoryIdentity(openedStats);
+      const expectedContents = typeof contents === "string"
+        ? Buffer.from(contents, encoding ?? "utf8")
+        : Buffer.from(contents);
+      writeFileSync(descriptor, expectedContents);
+      const observedContents = Buffer.alloc(expectedContents.length);
+      let observedLength = 0;
+      while (observedLength < observedContents.length) {
+        const bytesRead = readSync(
+          descriptor,
+          observedContents,
+          observedLength,
+          observedContents.length - observedLength,
+          observedLength,
+        );
+        if (bytesRead === 0) break;
+        observedLength += bytesRead;
+      }
+      if (observedLength !== expectedContents.length
+        || observedContents.some((byte, index) => byte !== expectedContents[index])) {
+        throw new Error("REFUSED: standalone WASM temporary output bytes changed or are incomplete");
+      }
+      assertPinnedStandaloneOutputDirectory(outputDirectory, outputDirectoryIdentity);
+      const temporaryStats = lstatSync(temporaryLeaf);
+      const expectedSize = typeof contents === "string"
+        ? Buffer.from(contents, encoding ?? "utf8").length
+        : contents.length;
+      if (temporaryStats.isSymbolicLink() || !temporaryStats.isFile() || temporaryStats.nlink !== 1
+        || !sameStandaloneDirectoryIdentity(temporaryStats, temporaryIdentity)
+        || temporaryStats.size !== expectedSize) {
+        throw new Error("REFUSED: standalone WASM temporary output changed or is incomplete");
+      }
+      // A same-directory hard link publishes the complete inode atomically and
+      // refuses if another actor has already populated the canonical name.
+      linkSync(temporaryLeaf, outputLeaf);
+      canonicalLinkReturned = true;
+      const publishedStats = lstatSync(outputLeaf);
+      if (publishedStats.isSymbolicLink() || !publishedStats.isFile()
+        || !sameStandaloneDirectoryIdentity(publishedStats, temporaryIdentity)) {
+        // The temporary pathname may have been substituted after its earlier
+        // identity check. If the canonical leaf is still the same regular file
+        // currently named by our temporary leaf and the link count reflects
+        // this publication, remove only the canonical link we just created.
+        // If identity is uncertain, preserve the entry and report the residue.
+        let removedUnexpectedPublication = false;
+        try {
+          const currentTemporary = lstatSync(temporaryLeaf);
+          const currentPublished = lstatSync(outputLeaf);
+          if (!currentTemporary.isSymbolicLink() && currentTemporary.isFile()
+            && !currentPublished.isSymbolicLink() && currentPublished.isFile()
+            && currentTemporary.nlink >= 2 && currentPublished.nlink >= 2
+            && sameStandaloneDirectoryIdentity(currentTemporary, publishedStats)
+            && sameStandaloneDirectoryIdentity(currentPublished, publishedStats)) {
+            rmSync(outputLeaf);
+            removedUnexpectedPublication = true;
+          }
+        } catch {
+          // Keep the original refusal; the diagnostic below records uncertainty.
+        }
+        if (!removedUnexpectedPublication) {
+          throw new Error(
+            "REFUSED: standalone WASM output identity changed during publication; canonical output may remain",
+          );
+        }
+        canonicalLinkReturned = false;
+        throw new Error("REFUSED: standalone WASM output identity changed during publication");
+      }
+      publishedIdentity = standaloneDirectoryIdentity(publishedStats);
+      const publishedContents = Buffer.alloc(expectedContents.length);
+      let publishedLength = 0;
+      while (publishedLength < publishedContents.length) {
+        const bytesRead = readSync(
+          descriptor,
+          publishedContents,
+          publishedLength,
+          publishedContents.length - publishedLength,
+          publishedLength,
+        );
+        if (bytesRead === 0) break;
+        publishedLength += bytesRead;
+      }
+      const openedAfterPublication = fstatSync(descriptor);
+      if (publishedLength !== expectedContents.length
+        || publishedContents.some((byte, index) => byte !== expectedContents[index])
+        || !openedAfterPublication.isFile()
+        || !sameStandaloneDirectoryIdentity(openedAfterPublication, temporaryIdentity)
+        || openedAfterPublication.size !== expectedSize) {
+        throw new Error("REFUSED: standalone WASM output bytes changed after verification or publication");
+      }
+      closeSync(descriptor);
+      descriptor = undefined;
+      const temporaryBeforeRemoval = lstatSync(temporaryLeaf);
+      if (temporaryBeforeRemoval.isSymbolicLink() || !temporaryBeforeRemoval.isFile()
+        || !sameStandaloneDirectoryIdentity(temporaryBeforeRemoval, temporaryIdentity)) {
+        throw new Error(
+          `REFUSED: ${outputLeaf} was published, but the temporary pathname changed; its replacement was preserved`,
+        );
+      }
+      try {
+        rmSync(temporaryLeaf);
+      } catch (cleanupError: unknown) {
+        throw new Error(
+          `REFUSED: ${outputLeaf} was published, but temporary cleanup failed: ${String(cleanupError)}`,
+        );
+      }
+      temporaryIdentity = undefined;
+      temporaryCreated = false;
+      assertPinnedStandaloneOutputDirectory(outputDirectory, outputDirectoryIdentity);
+      return publishedIdentity;
+    } catch (error: unknown) {
+      if (descriptor !== undefined) {
+        try { closeSync(descriptor); } catch { /* preserve the original publication failure */ }
+      }
+      if (canonicalLinkReturned && publishedIdentity === undefined && temporaryIdentity !== undefined) {
+        try {
+          const currentTemporary = lstatSync(temporaryLeaf);
+          const currentPublished = lstatSync(outputLeaf);
+          if (!currentTemporary.isSymbolicLink() && currentTemporary.isFile()
+            && !currentPublished.isSymbolicLink() && currentPublished.isFile()
+            && currentTemporary.nlink >= 2 && currentPublished.nlink >= 2
+            && sameStandaloneDirectoryIdentity(currentTemporary, temporaryIdentity)
+            && sameStandaloneDirectoryIdentity(currentPublished, temporaryIdentity)) {
+            rmSync(outputLeaf);
+            canonicalLinkReturned = false;
+          }
+        } catch {
+          // Preserve any canonical entry whose identity cannot be re-established.
+        }
+      }
+      let temporaryMayRemain = false;
+      if (temporaryIdentity !== undefined) {
+        try {
+          const currentTemporary = lstatSync(temporaryLeaf);
+          if (sameStandaloneDirectoryIdentity(currentTemporary, temporaryIdentity)) {
+            rmSync(temporaryLeaf);
+            temporaryCreated = false;
+          } else {
+            temporaryMayRemain = true;
+          }
+        } catch (cleanupError: unknown) {
+          if (!(cleanupError instanceof Error && "code" in cleanupError && cleanupError.code === "ENOENT")) temporaryMayRemain = true;
+        }
+      } else if (temporaryCreated) {
+        temporaryMayRemain = true;
+      }
+      const uncertainResidues: string[] = [];
+      if (canonicalLinkReturned) {
+        if (publishedIdentity !== undefined) {
+          try {
+            removeOwnedStandaloneOutputLeaf(outputLeaf, publishedIdentity);
+            canonicalLinkReturned = false;
+          } catch (cleanupError: unknown) {
+            uncertainResidues.push(`canonical output may remain at ${join(outputDirectory, outputLeaf)} because cleanup could not prove its identity (${String(cleanupError)})`);
+          }
+        } else {
+          uncertainResidues.push(`canonical output may remain at ${join(outputDirectory, outputLeaf)} because hard-link publication returned before its identity was established`);
+        }
+      }
+      if (temporaryMayRemain) {
+        uncertainResidues.push(`temporary output may remain at ${join(outputDirectory, temporaryLeaf)} because its identity could not be verified and safely removed`);
+      }
+      if (uncertainResidues.length > 0) {
+        throw new Error(`REFUSED: publication failed (${String(error)}); ${uncertainResidues.join("; ")}`);
+      }
+      throw error;
+    }
+  }, () => {
+    if (publishedIdentity !== undefined) removeOwnedStandaloneOutputLeaf(outputLeaf, publishedIdentity);
+  });
+  if (resultIdentity === undefined) {
+    throw new Error(`REFUSED: standalone WASM output identity was not retained: ${filePath}`);
+  }
+  return resultIdentity;
+}
+
+function publishStandaloneOutputPair(
+  outputPaths: ReturnType<typeof standaloneOutputPaths>,
+  watContents: string,
+  wasmContents: Uint8Array,
+): void {
+  const outputDirectory = dirname(outputPaths.watOutPath);
+  const published: Array<{ readonly leaf: string; readonly identity: StandaloneDirectoryIdentity }> = [];
+  const rollback = (): void => {
+    const uncertain: string[] = [];
+    for (const item of [...published].reverse()) {
+      try {
+        removeOwnedStandaloneOutputLeaf(item.leaf, item.identity);
+      } catch (error: unknown) {
+        uncertain.push(`${item.leaf}: ${String(error)}`);
+      }
+    }
+    if (uncertain.length > 0) {
+      throw new Error(`REFUSED: standalone output rollback incomplete; preserving uncertain leaves (${uncertain.join("; ")})`);
+    }
+    published.length = 0;
+  };
+
+  withPinnedStandaloneOutputDirectory(
+    outputDirectory,
+    outputPaths.outputDirectoryIdentity,
+    () => {
+      try {
+        const watIdentity = replaceStandaloneOutput(
+          outputPaths.watOutPath,
+          watContents,
+          outputPaths.outputDirectoryIdentity,
+          "utf8",
+        );
+        published.push({ leaf: basename(outputPaths.watOutPath), identity: watIdentity });
+        const wasmIdentity = replaceStandaloneOutput(
+          outputPaths.wasmOutPath,
+          wasmContents,
+          outputPaths.outputDirectoryIdentity,
+        );
+        published.push({ leaf: basename(outputPaths.wasmOutPath), identity: wasmIdentity });
+        assertPinnedStandaloneOutputDirectory(outputDirectory, outputPaths.outputDirectoryIdentity);
+      } catch (error: unknown) {
+        let directoryChanged = error instanceof StandaloneOutputDirectoryChangedError;
+        if (!directoryChanged) {
+          try {
+            assertPinnedStandaloneOutputDirectory(outputDirectory, outputPaths.outputDirectoryIdentity);
+          } catch {
+            // Any failure to re-establish the selected namespace means its
+            // identity is unverified (including ENOENT after rename-away).
+            // Roll back only the inode-identified leaves through the pinned
+            // directory object; if that cannot be proven, fail with residue.
+            directoryChanged = true;
+          }
+        }
+        if (directoryChanged) {
+          try {
+            rollback();
+          } catch (rollbackError: unknown) {
+            throw new Error(`REFUSED: standalone output pair failed (${String(error)}); ${String(rollbackError)}`);
+          }
+        }
+        throw error;
+      }
+    },
+    rollback,
+  );
+}
+
+function invalidateStandaloneOutputs(outputPaths: {
+  readonly watOutPath: string;
+  readonly wasmOutPath: string;
+  readonly outputDirectoryIdentity: StandaloneDirectoryIdentity;
+}): void {
+  const refused: string[] = [];
+  const outputDirectory = dirname(outputPaths.watOutPath);
+  withPinnedStandaloneOutputDirectory(outputDirectory, outputPaths.outputDirectoryIdentity, () => {
+    for (const filePath of [outputPaths.watOutPath, outputPaths.wasmOutPath]) {
+      try {
+        const outputLeaf = basename(filePath);
+        assertSafeStandaloneOutputLeaf(outputLeaf);
+        rmSync(outputLeaf, { force: true });
+      } catch {
+        // Continue invalidating any safe companion artifact, but preserve the
+        // unsafe leaf itself and refuse the build after both names are checked.
+        refused.push(filePath);
+      }
+    }
+  });
+  if (refused.length > 0) {
+    throw new Error(`REFUSED: standalone WASM output leaf could not be safely invalidated: ${refused.join(", ")}`);
+  }
+}
+
+function standaloneOutputPaths(targetDir: string): {
+  outDir: string;
+  wasmOutPath: string;
+  watOutPath: string;
+  outputDirectoryIdentity: StandaloneDirectoryIdentity;
+} {
+  const physicalTarget = realpathSync(targetDir);
+  const targetStats = statSync(physicalTarget);
+  if (!targetStats.isDirectory()) {
+    throw new Error(`REFUSED: standalone WASM target is not a directory: ${targetDir}`);
+  }
+  const targetIdentity = standaloneDirectoryIdentity(targetStats);
+  const buildDir = join(physicalTarget, "build");
+  const buildIdentity = ensurePlainOutputDirectory(physicalTarget, buildDir, targetIdentity);
+  const outDir = join(buildDir, "wasm");
+  const outputDirectoryIdentity = ensurePlainOutputDirectory(physicalTarget, outDir, buildIdentity);
   const watOutPath = join(outDir, "output.wat");
   const wasmOutPath = join(outDir, "output.wasm");
+  return {
+    outDir,
+    watOutPath,
+    wasmOutPath,
+    outputDirectoryIdentity,
+  };
+}
+
+async function runWasmStandaloneBuild(
+  files: string[],
+  outputPaths: ReturnType<typeof standaloneOutputPaths>,
+): Promise<void> {
+  const { outDir, watOutPath, wasmOutPath } = outputPaths;
 
   // Collect WAT from all files by compiling them
   const watParts: string[] = [];
@@ -1205,54 +1874,65 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
   // Strip the leading comment so wat2wasm gets a valid module
   const cleanWat = finalWat.replace(/^;; === .+? ===\n/, "");
 
-  // Write WAT text file
-  writeFileSync(watOutPath, cleanWat, "utf8");
-  process.stdout.write(`[info] WAT written: ${watOutPath}\n`);
-
-  // Run JS assembler to produce WASM binary
-  assembleWAT(cleanWat).then((assembleResult) => {
-    // #163: a wabt-REJECTED module falls back to the minimal-encoder STUB with
-    // `valid:true` PLUS a "NOT a faithful compile" diagnostic. Gating on `valid`
-    // alone wrote that stub to disk and announced it as the compiled binary — the
-    // stub is not "the program minus a call", it never contained the program.
-    // Same `valid && diagnostics.length===0` decline as executeWASMFlow.
-    if (assembleResult.valid && assembleResult.diagnostics.length === 0) {
-      writeFileSync(wasmOutPath, Buffer.from(assembleResult.wasm));
-      process.stdout.write(`[info] WASM binary written: ${wasmOutPath}\n`);
-
-      // Check wasmtime availability
-      const wasmtimeVersion = checkWasmtime();
-      if (wasmtimeVersion !== null) {
-        process.stdout.write(`[info] wasmtime found: ${wasmtimeVersion}\n`);
-        process.stdout.write(`[info] To execute: wasmtime ${wasmOutPath}\n`);
-      } else {
-        process.stdout.write(`[info] wasmtime not found on PATH.\n`);
-        process.stdout.write(`[info] To install wasmtime, visit: https://wasmtime.dev\n`);
-        process.stdout.write(`[info]   macOS:      brew install wasmtime\n`);
-        process.stdout.write(`[info]   Linux:      install a distribution package or a version-pinned, digest-verified release\n`);
-        process.stdout.write(`[info]   Windows:    winget install BytecodeAlliance.wasmtime\n`);
-        process.stdout.write(`[info] To execute (once installed): wasmtime ${wasmOutPath}\n`);
-        process.stdout.write(`[info] WAT file is at: ${watOutPath} (run wat2wasm manually if needed)\n`);
-      }
-    } else {
-      process.stdout.write(`[warn] JS assembler could not produce a valid WASM binary for this WAT pattern.\n`);
-      for (const d of assembleResult.diagnostics) {
-        process.stdout.write(`[warn] assembler: ${d.message}\n`);
-      }
-      process.stdout.write(`[info] WAT file is at: ${watOutPath}\n`);
-      const wasmtimeVersion = checkWasmtime();
-      if (wasmtimeVersion !== null) {
-        process.stdout.write(`[info] To assemble + execute: wat2wasm ${watOutPath} -o ${wasmOutPath} && wasmtime ${wasmOutPath}\n`);
-      } else {
-        process.stdout.write(`[info] Install wat2wasm (https://github.com/WebAssembly/wabt) and wasmtime (https://wasmtime.dev) to assemble and run.\n`);
-        process.stdout.write(`[info]   wasmtime install: winget install BytecodeAlliance.wasmtime  (Windows)\n`);
-        process.stdout.write(`[info]   wasmtime install: brew install wasmtime  (macOS)\n`);
-        process.stdout.write(`[info]   wasmtime install: use a distribution package or verified pinned release  (Linux)\n`);
-      }
+  // Finish asynchronous assembly before entering the synchronous output
+  // transaction, so the pinned directory object is never held across await.
+  let assembleResult;
+  try {
+    assembleResult = await assembleWAT(cleanWat);
+  } catch (err: unknown) {
+    try {
+      replaceStandaloneOutput(watOutPath, cleanWat, outputPaths.outputDirectoryIdentity, "utf8");
+    } catch (publishError: unknown) {
+      process.stderr.write(`[error] ${String(publishError)}\n`);
+      process.exit(1);
     }
-  }).catch((err: unknown) => {
+    process.stdout.write(`[info] WAT written: ${watOutPath}\n`);
     process.stderr.write(`[error] WAT assembler failed: ${String(err)}\n`);
-  });
+    process.exit(1);
+  }
+
+  // #163: a wabt-REJECTED module falls back to the minimal-encoder STUB with
+  // `valid:true` PLUS a "NOT a faithful compile" diagnostic. Gate on both
+  // conditions before publishing either member of the valid output pair.
+  if (assembleResult.valid && assembleResult.diagnostics.length === 0) {
+    try {
+      publishStandaloneOutputPair(outputPaths, cleanWat, Buffer.from(assembleResult.wasm));
+    } catch (error: unknown) {
+      process.stderr.write(`[error] ${String(error)}\n`);
+      process.exit(1);
+    }
+    process.stdout.write(`[info] WAT written: ${watOutPath}\n`);
+    process.stdout.write(`[info] WASM binary written: ${wasmOutPath}\n`);
+
+    // Check wasmtime availability
+    const wasmtimeVersion = checkWasmtime();
+    if (wasmtimeVersion !== null) {
+      process.stdout.write(`[info] wasmtime found: ${wasmtimeVersion}\n`);
+      process.stdout.write(`[info] To execute: wasmtime ${wasmOutPath}\n`);
+    } else {
+      process.stdout.write(`[info] wasmtime not found on PATH.\n`);
+      process.stdout.write(`[info] To install wasmtime, visit: https://wasmtime.dev\n`);
+      process.stdout.write(`[info]   macOS:      brew install wasmtime\n`);
+      process.stdout.write(`[info]   Linux:      install a distribution package or a version-pinned, digest-verified release\n`);
+      process.stdout.write(`[info]   Windows:    winget install BytecodeAlliance.wasmtime\n`);
+      process.stdout.write(`[info] To execute (once installed): wasmtime ${wasmOutPath}\n`);
+      process.stdout.write(`[info] WAT file is at: ${watOutPath} (run wat2wasm manually if needed)\n`);
+    }
+  } else {
+    try {
+      replaceStandaloneOutput(watOutPath, cleanWat, outputPaths.outputDirectoryIdentity, "utf8");
+    } catch (error: unknown) {
+      process.stderr.write(`[error] ${String(error)}\n`);
+      process.exit(1);
+    }
+    process.stdout.write(`[info] WAT written: ${watOutPath}\n`);
+    process.stderr.write(`[error] JS assembler could not produce a valid WASM binary for this WAT pattern.\n`);
+    for (const d of assembleResult.diagnostics) {
+      process.stderr.write(`[error] assembler: ${d.message}\n`);
+    }
+    process.stderr.write(`[error] WAT retained at: ${watOutPath}; no WASM binary emitted.\n`);
+    process.exit(1);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1515,7 +2195,7 @@ function runGateFromPattern(args: readonly string[]): boolean {
   return true;
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const productAdmission = resolveProductCliSelection("galerina", process.argv.slice(2));
   if (!productAdmission.ok) {
     process.stderr.write(`[error] ${productAdmission.code}: product selection refused before discovery\n`);
@@ -1526,6 +2206,19 @@ function main(): void {
   if (runGateFromPattern(admittedArgs)) return;
 
   const { mode, targetDir } = parseArgs(admittedArgs);
+  let standaloneBuildOutputPaths: ReturnType<typeof standaloneOutputPaths> | undefined;
+  // A standalone rebuild owns this one canonical artifact path. Invalidate it
+  // before discovery or compilation so any refusal cannot leave an older
+  // binary looking like the result of this invocation.
+  if (mode === "build-wasm-standalone") {
+    try {
+      standaloneBuildOutputPaths = standaloneOutputPaths(targetDir);
+      invalidateStandaloneOutputs(standaloneBuildOutputPaths);
+    } catch (error: unknown) {
+      process.stderr.write(`[error] ${String(error)}\n`);
+      process.exit(1);
+    }
+  }
   // Load galerina.check.json / .galerinarc.json if present
   const checkConfig: CheckConfig = (mode === "check" || mode === "check-strict")
     ? loadCheckConfig(targetDir)
@@ -1555,12 +2248,21 @@ function main(): void {
     return;
   }
 
-  const files = findFungiFiles(targetDir);
+  let files: string[];
+  try {
+    files = findFungiFiles(targetDir);
+  } catch (error: unknown) {
+    process.stderr.write(`[error] ${error instanceof Error ? error.message : "REFUSED: source discovery failed"}\n`);
+    process.exit(1);
+  }
   if (files.length === 0) {
+    if (mode === "build-wasm-standalone") {
+      process.stderr.write("REFUSED: standalone WASM build requires at least one .fungi source file.\n");
+      process.exit(1);
+    }
     process.stdout.write("No .fungi files found.\n");
     process.exit(0);
   }
-
   let totalErrors = 0;
   let totalWarnings = 0;
   const allAiGraphParts: string[] = [];
@@ -1568,7 +2270,7 @@ function main(): void {
   // Apply ignore patterns from config
   const filteredFiles = checkConfig.ignore?.length
     ? files.filter(f => {
-        const rel = f.replace(targetDir, "").replace(/\\/g, "/").replace(/^\//, "");
+        const rel = relative(targetDir, f).replace(/\\/g, "/");
         return !checkConfig.ignore!.some(pattern => {
           // Simple glob: "tests/**" matches any path starting with "tests/"
           const prefix = pattern.replace(/\/\*\*.*$/, "");
@@ -1669,6 +2371,30 @@ function main(): void {
     }
   }
 
+  // Preserve each file's ordinary parser/type/import diagnostics before
+  // refusing to publish an incomplete multi-file standalone module.
+  let standaloneEntryFiles: string[] | undefined;
+  if (mode === "build-wasm-standalone" && totalErrors === 0) {
+    const unsupportedImports = findStandaloneImportsWithNonSchemaDeclarations(filteredFiles);
+    if (unsupportedImports.length > 0) {
+      process.stderr.write(
+        `REFUSED: standalone WASM currently supports schema-only imports; imported executable declarations ` +
+        `cannot be linked yet. Unsupported import file(s): ${unsupportedImports.join(", ")}\n`,
+      );
+      process.exit(1);
+    }
+    standaloneEntryFiles = findStandaloneEntryFiles(filteredFiles);
+    if (standaloneEntryFiles.length !== 1) {
+      process.stderr.write(
+        standaloneEntryFiles.length === 0
+          ? "REFUSED: standalone WASM build found no unimported entry source.\n"
+          : `REFUSED: standalone WASM build currently accepts one entry source; ` +
+            `${standaloneEntryFiles.length} independent entry sources were discovered. Multi-file linking is not implemented.\n`,
+      );
+      process.exit(1);
+    }
+  }
+
   // ── Production SBOM emission (RD-0120-F3) ──────────────────────────────────
   // For production/deterministic builds: collect package.galerina.yaml manifests
   // from every compiled file's directory, deduplicate, and emit CycloneDX 1.5
@@ -1709,7 +2435,11 @@ function main(): void {
   if (mode === "build-wasm-standalone" || mode === "build-wasm-hybrid") {
     if (totalErrors === 0) {
       if (mode === "build-wasm-standalone") {
-        runWasmStandaloneBuild(targetDir, files);
+        if (standaloneBuildOutputPaths === undefined) {
+          process.stderr.write("[error] REFUSED: standalone WASM output directory was not pinned before compilation\n");
+          process.exit(1);
+        }
+        await runWasmStandaloneBuild(standaloneEntryFiles ?? filteredFiles, standaloneBuildOutputPaths);
       } else {
         process.stdout.write(
           `[info] --target=wasm-hybrid: governance checks passed. ` +
@@ -1785,7 +2515,10 @@ function runWatch(targetDir: string): void {
     if (debounce) clearTimeout(debounce);
     debounce = setTimeout(() => {
       process.stdout.write(`\n[galerina watch] Change: ${filename ?? "unknown"} -- re-checking...\n`);
-      main();
+      void main().catch((error: unknown) => {
+        process.stderr.write(`[error] CLI failed: ${String(error)}\n`);
+        process.exit(1);
+      });
     }, 200);
   };
 
@@ -1793,7 +2526,13 @@ function runWatch(targetDir: string): void {
     fsW(targetDir, { recursive: true }, (_evt: string, filename: string | null) => recheck(filename));
   } catch {
     // Fallback: watch individual .fungi files using watchFile
-    const files = findFungiFiles(targetDir);
+    let files: string[];
+    try {
+      files = findFungiFiles(targetDir);
+    } catch (error: unknown) {
+      process.stderr.write(`[error] CLI failed: ${String(error)}\n`);
+      process.exit(1);
+    }
     for (const f of files) {
       fsWF(f, { interval: 500 }, () => recheck(f));
     }
@@ -1801,7 +2540,10 @@ function runWatch(targetDir: string): void {
   }
 
   // Initial run
-  main();
+  void main().catch((error: unknown) => {
+    process.stderr.write(`[error] CLI failed: ${String(error)}\n`);
+    process.exit(1);
+  });
 
   // Keep process alive
   (process as unknown as {stdin?:{resume():void}}).stdin?.resume();
@@ -1817,6 +2559,9 @@ if (invokedCliPath !== undefined
     const { targetDir } = parseArgs(process.argv.slice(2));
     void runWatch(targetDir);
   } else {
-    main();
+    void main().catch((error: unknown) => {
+      process.stderr.write(`[error] CLI failed: ${String(error)}\n`);
+      process.exit(1);
+    });
   }
 }
