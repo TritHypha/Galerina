@@ -87,9 +87,19 @@ export class GalerinaSecretsVault {
     return this.#manager.useActive(credentialId, callback);
   }
 
-  /** Manually rotate one credential without exposing provider internals. */
+  /**
+   * Manually rotate one credential without exposing provider internals.
+   * A busy rotation or handled rotation failure rejects with the same opaque
+   * error. Rejection means this attempt did not succeed; it does not imply the
+   * credential will remain unavailable after another in-flight rotation
+   * settles. Unexpected manager rejections may propagate separately.
+   */
   async rotateCredential(credential: SecretCredential): Promise<void> {
-    await this.#manager.rotate(credential.id, this.#vaultClient, credential);
+    const rotated = await this.#manager.rotateOrFault(credential, this.#vaultClient);
+    if (!rotated) {
+      // Keep the facade's rejection contract without exposing provider details.
+      throw new Error("manual credential rotation failed; credential unavailable");
+    }
   }
 
   /** Return only redacted credential status. */
@@ -127,7 +137,10 @@ export class GalerinaSecretsVault {
 
   /**
    * Stop the rotation timer (if any) and zero-wipe all loaded credential
-   * buffers.  Safe to call multiple times.
+   * buffers. Safe to call multiple times. If a provider read is still in
+   * flight or rotation is still finalizing, the vault is closed but this call
+   * throws cleanup incomplete; call stop() again after the operation settles
+   * to confirm cleanup completion.
    */
   stop(timer?: NodeJS.Timeout): void {
     if (timer !== undefined) {
