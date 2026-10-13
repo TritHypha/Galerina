@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -10,6 +11,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 
 import { decodeCBOR, encodeCBOR } from "../dist/manifest-generator.js";
@@ -23,7 +25,26 @@ pure flow answer() -> Int {
 }
 `;
 
-function run(args, env, cwd) {
+const INVOCATION_PROBE = `
+import { writeFileSync } from "node:fs";
+
+const instantiate = WebAssembly.instantiate.bind(WebAssembly);
+WebAssembly.instantiate = async (...args) => {
+  const result = await instantiate(...args);
+  const exports = Object.fromEntries(Object.entries(result.instance.exports).map(([name, value]) => [
+    name,
+    name === "answer" && typeof value === "function"
+      ? (...callArgs) => {
+          writeFileSync(process.env.GALERINA_TEST_INVOKE_MARKER, "entered");
+          return Reflect.apply(value, undefined, callArgs);
+        }
+      : value,
+  ]));
+  return { ...result, instance: { exports } };
+};
+`;
+
+function run(args, env, cwd, nodeArgs = []) {
   const childEnv = { ...process.env };
   for (const name of Object.keys(childEnv)) {
     if (name.startsWith("GALERINA_SIGNING_") || name === "GALERINA_MANIFEST_PROFILE"
@@ -35,7 +56,7 @@ function run(args, env, cwd) {
   }
   return spawnSync(
     process.execPath,
-    [CLI, ...args],
+    [...nodeArgs, CLI, ...args],
     {
       cwd,
       encoding: "utf8",
@@ -86,13 +107,19 @@ test("classical CLI admits a trusted fixture and refuses invalid signature or re
     };
     restoreRegistry();
 
+    const invocationMarker = join(cwd, "answer-invoked.txt");
+    const invocationProbe = join(cwd, "invocation-probe.mjs");
+    writeFileSync(invocationProbe, INVOCATION_PROBE);
+
     const runControl = run(
       ["run", "answer.fungi", "--invoke", "answer"],
-      { GALERINA_PROFILE: "production" },
+      { GALERINA_PROFILE: "production", GALERINA_TEST_INVOKE_MARKER: invocationMarker },
       cwd,
+      ["--import", pathToFileURL(invocationProbe).href],
     );
     assert.equal(runControl.status, 0, output(runControl));
     assert.equal(runControl.stdout.trim().split(/\r?\n/).at(-1), "42");
+    assert.equal(readFileSync(invocationMarker, "utf8"), "entered");
 
     await t.test("separate pinned registry signer permits an empty revocation snapshot", () => {
       const registrySigner = generateKeyPairSync("ed25519");
@@ -139,7 +166,7 @@ test("classical CLI admits a trusted fixture and refuses invalid signature or re
     }
     restoreRegistry();
 
-    await t.test("valid signed registry revoking the manifest signer refuses before execution", () => {
+    await t.test("revocation refuses before dispatching the wrapped answer export", () => {
       const registrySigner = generateKeyPairSync("ed25519");
       let registryKeyId = randomBytes(8).toString("hex");
       while (registryKeyId === keyId) registryKeyId = randomBytes(8).toString("hex");
@@ -153,15 +180,18 @@ test("classical CLI admits a trusted fixture and refuses invalid signature or re
       writeFileSync(join(governance, `signing-key-${registryKeyId}.pub.pem`), registryPublicPem);
       writeFileSync(pinPath, JSON.stringify({ schemaVersion: 1, registrySigningRootKeyId: registryKeyId }));
       writeFileSync(registryPath, JSON.stringify(revokedRegistry));
+      rmSync(invocationMarker, { force: true });
 
       const refused = run(
         ["run", "answer.fungi", "--invoke", "answer"],
-        { GALERINA_PROFILE: "production" },
+        { GALERINA_PROFILE: "production", GALERINA_TEST_INVOKE_MARKER: invocationMarker },
         cwd,
+        ["--import", pathToFileURL(invocationProbe).href],
       );
       assert.equal(refused.status, 1, output(refused));
       assert.match(output(refused), /FUNGI-MANIFEST-REVOKED-KEY/);
       assert.doesNotMatch(refused.stdout, /^42\r?$/m);
+      assert.equal(existsSync(invocationMarker), false, "revoked flow export dispatch must not be attempted");
     });
 
     const cborPath = join(cwd, "build", "answer.lmanifest");
