@@ -1,7 +1,13 @@
+#define _POSIX_C_SOURCE 200809L
+
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Bound this test probe's fixture loader; this is not a runtime policy limit. */
+#define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
 
 #include "wasm_export.h"
 #include "wamr_import_admission.h"
@@ -46,8 +52,17 @@ static uint8_t *read_bytes(const char *path, uint32_t *size)
     uint8_t *bytes;
 
     if (file == NULL || fseek(file, 0, SEEK_END) != 0 ||
-        (length = ftell(file)) <= 0 || fseek(file, 0, SEEK_SET) != 0) {
+        (length = ftell(file)) <= 0) {
         if (file != NULL) fclose(file);
+        return NULL;
+    }
+    if ((unsigned long)length > RD1413_PROBE_MAX_WASM_BYTES) {
+        fclose(file);
+        errno = EFBIG;
+        return NULL;
+    }
+    if (fseek(file, 0, SEEK_SET) != 0) {
+        fclose(file);
         return NULL;
     }
     bytes = (uint8_t *)malloc((size_t)length);
@@ -270,6 +285,350 @@ static int check_unsupported_import_kind(const char *path)
     return 1;
 }
 
+static int check_invalid_contract_valkind(wasm_module_t module)
+{
+    const uint8_t invalid_parameter_kinds[] = { UINT8_MAX };
+    const uint8_t invalid_result_kinds[] = { UINT8_MAX };
+    const uint8_t unsupported_v128_result_kinds[] = { WASM_V128 };
+    const uint8_t unsupported_externref_result_kinds[] = { WASM_EXTERNREF };
+    const wamr_function_import_contract_t invalid_parameter_contract = {
+        "host", "operation_context", invalid_parameter_kinds, 1,
+        NULL, 0,
+    };
+    const wamr_function_import_contract_t invalid_result_contract = {
+        "host", "operation_context", NULL, 0,
+        invalid_result_kinds, 1,
+    };
+    const wamr_function_import_contract_t unsupported_v128_result_contract = {
+        "host", "operation_context", NULL, 0,
+        unsupported_v128_result_kinds, 1,
+    };
+    const wamr_function_import_contract_t unsupported_externref_result_contract = {
+        "host", "operation_context", NULL, 0,
+        unsupported_externref_result_kinds, 1,
+    };
+    char diagnostic[256] = { 0 };
+
+    if (wamr_validate_module_import_abi(module, &invalid_parameter_contract, 1,
+                                        diagnostic, sizeof(diagnostic)) !=
+        WAMR_IMPORT_ABI_UNSUPPORTED_KIND) {
+        fprintf(stderr, "invalid contract parameter valkind must be refused as invalid input: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    if (wamr_validate_module_import_abi(module, &invalid_result_contract, 1,
+                                        diagnostic, sizeof(diagnostic)) !=
+        WAMR_IMPORT_ABI_UNSUPPORTED_KIND) {
+        fprintf(stderr, "invalid contract valkind must be refused as invalid input: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    if (wamr_validate_module_import_abi(module,
+                                        &unsupported_v128_result_contract, 1,
+                                        diagnostic, sizeof(diagnostic)) !=
+        WAMR_IMPORT_ABI_UNSUPPORTED_KIND) {
+        fprintf(stderr, "unsupported v128 result contract must be refused before type access: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    if (wamr_validate_module_import_abi(module,
+                                        &unsupported_externref_result_contract, 1,
+                                        diagnostic, sizeof(diagnostic)) !=
+        WAMR_IMPORT_ABI_UNSUPPORTED_KIND) {
+        fprintf(stderr, "unsupported externref result contract must be refused before type access: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    puts("PASS: host ABI gate rejects invalid valkind bytes and unsupported result kinds");
+    return 1;
+}
+
+static int check_oversized_fixture_rejected(const char *path)
+{
+    uint32_t size = 0;
+    uint8_t *bytes;
+
+    errno = 0;
+    bytes = read_bytes(path, &size);
+    if (bytes != NULL || errno != EFBIG || size != 0) {
+        free(bytes);
+        fprintf(stderr,
+                "oversized Wasm fixture must be refused specifically by the size bound (reported_size=%u errno=%d)\n",
+                size, errno);
+        return 0;
+    }
+    puts("PASS: WAMR probe refuses an oversized Wasm input before allocation");
+    return 1;
+}
+
+static int check_limit_fixture_accepted(const char *path)
+{
+    uint32_t size = 0;
+    uint32_t i;
+    uint8_t *bytes = read_bytes(path, &size);
+
+    if (bytes == NULL || size != RD1413_PROBE_MAX_WASM_BYTES) {
+        free(bytes);
+        fprintf(stderr,
+                "Wasm fixture exactly at the probe size bound must be fully accepted (reported_size=%u)\n",
+                size);
+        return 0;
+    }
+    for (i = 0; i < size; ++i) {
+        if (bytes[i] != 0xA5) {
+            free(bytes);
+            fprintf(stderr,
+                    "Wasm fixture at the probe size bound was not fully read (first mismatch at byte %u)\n",
+                    i);
+            return 0;
+        }
+    }
+    free(bytes);
+    puts("PASS: WAMR probe accepts and fully reads a fixture exactly at its size bound");
+    return 1;
+}
+
+static int check_unlinked_import(const char *path)
+{
+    const uint8_t result_kinds[] = { WASM_I32 };
+    const wamr_function_import_contract_t contract = {
+        "host", "unregistered_operation", NULL, 0, result_kinds, 1,
+    };
+    uint32_t wasm_size = 0;
+    uint8_t *wasm_bytes = read_bytes(path, &wasm_size);
+    char error[256] = { 0 };
+    char diagnostic[256] = { 0 };
+    wasm_module_t module;
+    wasm_import_t imported = { 0 };
+    wamr_import_abi_result_t result;
+
+    if (wasm_bytes == NULL) {
+        fprintf(stderr, "could not read unlinked-import Wasm fixture\n");
+        return 0;
+    }
+    module = wasm_runtime_load(wasm_bytes, wasm_size, error, sizeof(error));
+    if (module == NULL) {
+        fprintf(stderr, "unlinked-import module failed to load: %s\n", error);
+        free(wasm_bytes);
+        return 0;
+    }
+    wasm_runtime_get_import_type(module, 0, &imported);
+    if (imported.linked) {
+        fprintf(stderr, "unregistered import unexpectedly reports linked\n");
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, &contract, 1,
+                                              diagnostic, sizeof(diagnostic));
+    wasm_runtime_unload(module);
+    free(wasm_bytes);
+    if (result != WAMR_IMPORT_ABI_UNLINKED_IMPORT) {
+        fprintf(stderr, "ABI-shaped but unlinked import must be refused before instantiation\n");
+        return 0;
+    }
+    puts("PASS: host ABI gate refuses a matching but unlinked native import");
+    return 1;
+}
+
+static int check_duplicate_imports(const char *path)
+{
+    const uint8_t result_kinds[] = { WASM_I32 };
+    const wamr_function_import_contract_t contracts[] = {
+        { "host", "operation_context", NULL, 0, result_kinds, 1 },
+        { "host", "other_operation", NULL, 0, result_kinds, 1 },
+    };
+    uint32_t wasm_size = 0;
+    uint8_t *wasm_bytes = read_bytes(path, &wasm_size);
+    char error[256] = { 0 };
+    char diagnostic[256] = { 0 };
+    wasm_module_t module;
+    wamr_import_abi_result_t result;
+
+    if (wasm_bytes == NULL) {
+        fprintf(stderr, "could not read duplicate-import Wasm fixture\n");
+        return 0;
+    }
+    module = wasm_runtime_load(wasm_bytes, wasm_size, error, sizeof(error));
+    if (module == NULL) {
+        fprintf(stderr, "duplicate-import module failed to load: %s\n", error);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, contracts, 2,
+                                              diagnostic, sizeof(diagnostic));
+    wasm_runtime_unload(module);
+    free(wasm_bytes);
+    if (result != WAMR_IMPORT_ABI_DUPLICATE_IMPORT) {
+        fprintf(stderr, "duplicate imports must be rejected by the closed import contract\n");
+        return 0;
+    }
+    puts("PASS: host ABI gate rejects duplicate module imports");
+    return 1;
+}
+
+static int check_prior_import_metadata_unavailable(const char *path)
+{
+    const uint8_t result_kinds[] = { WASM_I32 };
+    const wamr_function_import_contract_t contracts[] = {
+        { "host", "operation_context", NULL, 0, result_kinds, 1 },
+        { "host", "other_operation", NULL, 0, result_kinds, 1 },
+    };
+    uint32_t wasm_size = 0;
+    uint8_t *wasm_bytes = read_bytes(path, &wasm_size);
+    char error[256] = { 0 };
+    char diagnostic[256] = { 0 };
+    wasm_module_t module;
+    uint32_t callback_entries_before = callback_entries;
+    wamr_import_abi_result_t result;
+
+    if (wasm_bytes == NULL) {
+        fprintf(stderr, "could not read prior-import metadata Wasm fixture\n");
+        return 0;
+    }
+    module = wasm_runtime_load(wasm_bytes, wasm_size, error, sizeof(error));
+    if (module == NULL) {
+        fprintf(stderr, "prior-import metadata module failed to load: %s\n", error);
+        free(wasm_bytes);
+        return 0;
+    }
+    if (setenv("RD1413_TEST_PRIOR_IMPORT_NAME_UNAVAILABLE", "1", 1) != 0) {
+        fprintf(stderr, "could not enable prior-import metadata fault control\n");
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, contracts, 2,
+                                              diagnostic, sizeof(diagnostic));
+    unsetenv("RD1413_TEST_PRIOR_IMPORT_NAME_UNAVAILABLE");
+    wasm_runtime_unload(module);
+    free(wasm_bytes);
+    if (result != WAMR_IMPORT_ABI_METADATA_UNAVAILABLE ||
+        callback_entries != callback_entries_before) {
+        fprintf(stderr,
+                "unavailable prior-import metadata must be refused before callback: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    puts("PASS: host ABI gate refuses unavailable prior-import metadata");
+    return 1;
+}
+
+static int check_unsupported_module_result(const char *path)
+{
+    uint32_t wasm_size = 0;
+    uint8_t *wasm_bytes = read_bytes(path, &wasm_size);
+    char error[256] = { 0 };
+    char diagnostic[256] = { 0 };
+    wasm_module_t module;
+    wamr_import_abi_result_t result;
+
+    if (wasm_bytes == NULL) {
+        fprintf(stderr, "could not read unsupported-result Wasm fixture\n");
+        return 0;
+    }
+    module = wasm_runtime_load(wasm_bytes, wasm_size, error, sizeof(error));
+    if (module == NULL) {
+        fprintf(stderr, "unsupported-result module failed to load: %s\n", error);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, &operation_context_contract, 1,
+                                              diagnostic, sizeof(diagnostic));
+    wasm_runtime_unload(module);
+    free(wasm_bytes);
+    if (result != WAMR_IMPORT_ABI_SIGNATURE_MISMATCH) {
+        fprintf(stderr,
+                "externref result must fail closed against the i32 contract: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    puts("PASS: host ABI gate classifies an externref result as a signature mismatch");
+    return 1;
+}
+
+static int check_metadata_faults(const char *path)
+{
+    uint32_t wasm_size = 0;
+    uint8_t *wasm_bytes = read_bytes(path, &wasm_size);
+    char error[256] = { 0 };
+    char diagnostic[256] = { 0 };
+    wasm_module_t module;
+    uint32_t callback_entries_before = callback_entries;
+    wamr_import_abi_result_t result;
+
+    if (wasm_bytes == NULL) {
+        fprintf(stderr, "could not read metadata-fault Wasm fixture\n");
+        return 0;
+    }
+    module = wasm_runtime_load(wasm_bytes, wasm_size, error, sizeof(error));
+    if (module == NULL) {
+        fprintf(stderr, "metadata-fault module failed to load: %s\n", error);
+        free(wasm_bytes);
+        return 0;
+    }
+
+    if (setenv("RD1413_TEST_IMPORT_COUNT_UNAVAILABLE", "1", 1) != 0) {
+        fprintf(stderr, "could not enable import-count fault control\n");
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, &operation_context_contract, 1,
+                                              diagnostic, sizeof(diagnostic));
+    unsetenv("RD1413_TEST_IMPORT_COUNT_UNAVAILABLE");
+    if (result != WAMR_IMPORT_ABI_METADATA_UNAVAILABLE ||
+        callback_entries != callback_entries_before) {
+        fprintf(stderr, "unavailable import count was not refused as metadata unavailable: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    puts("PASS: host ABI gate refuses unavailable import-count metadata");
+
+    memset(diagnostic, 0, sizeof(diagnostic));
+    if (setenv("RD1413_TEST_IMPORT_NAME_UNAVAILABLE", "1", 1) != 0) {
+        fprintf(stderr, "could not enable import-name fault control\n");
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, &operation_context_contract, 1,
+                                              diagnostic, sizeof(diagnostic));
+    unsetenv("RD1413_TEST_IMPORT_NAME_UNAVAILABLE");
+    if (result != WAMR_IMPORT_ABI_INVALID_ARGUMENT ||
+        callback_entries != callback_entries_before) {
+        fprintf(stderr, "missing import name was not refused: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    puts("PASS: host ABI gate refuses missing import-name metadata");
+
+    memset(diagnostic, 0, sizeof(diagnostic));
+    if (setenv("RD1413_TEST_IMPORT_FUNC_TYPE_UNAVAILABLE", "1", 1) != 0) {
+        fprintf(stderr, "could not enable import-function-type fault control\n");
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        return 0;
+    }
+    result = wamr_validate_module_import_abi(module, &operation_context_contract, 1,
+                                              diagnostic, sizeof(diagnostic));
+    unsetenv("RD1413_TEST_IMPORT_FUNC_TYPE_UNAVAILABLE");
+    wasm_runtime_unload(module);
+    free(wasm_bytes);
+    if (result != WAMR_IMPORT_ABI_SIGNATURE_MISMATCH ||
+        callback_entries != callback_entries_before) {
+        fprintf(stderr, "missing function-type metadata was not refused before callback: %s\n",
+                diagnostic[0] == '\0' ? "(no diagnostic)" : diagnostic);
+        return 0;
+    }
+    puts("PASS: host ABI gate refuses missing function-type metadata before callback");
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     uint32_t wasm_size = 0;
@@ -283,9 +642,69 @@ int main(int argc, char **argv)
     struct operation_context context_b = { 202, 1, 0 };
     int ok;
 
-    if (argc != 5 || !wasm_runtime_init() ||
-        !wasm_runtime_register_natives("host", native_symbols, 1)) {
+    if (argc == 3 &&
+        (strcmp(argv[1], "--duplicate-imports") == 0 ||
+         strcmp(argv[1], "--prior-import-metadata-fault") == 0 ||
+         strcmp(argv[1], "--unlinked-import") == 0 ||
+         strcmp(argv[1], "--externref-result") == 0)) {
+        if (!wasm_runtime_init()) {
+            fprintf(stderr, "runtime setup failed\n");
+            return 2;
+        }
+        if (strcmp(argv[1], "--duplicate-imports") == 0) {
+            if (!wasm_runtime_register_natives("host", native_symbols, 1)) {
+                fprintf(stderr, "runtime/native registration setup failed\n");
+                wasm_runtime_destroy();
+                return 2;
+            }
+            ok = check_duplicate_imports(argv[2]);
+        } else if (strcmp(argv[1], "--prior-import-metadata-fault") == 0) {
+            if (!wasm_runtime_register_natives("host", native_symbols, 1)) {
+                fprintf(stderr, "runtime/native registration setup failed\n");
+                wasm_runtime_destroy();
+                return 2;
+            }
+            ok = check_prior_import_metadata_unavailable(argv[2]);
+        } else if (strcmp(argv[1], "--externref-result") == 0) {
+            ok = check_unsupported_module_result(argv[2]);
+        } else {
+            if (!wasm_runtime_register_natives("host", native_symbols, 1)) {
+                fprintf(stderr, "runtime/native registration setup failed\n");
+                wasm_runtime_destroy();
+                return 2;
+            }
+            ok = check_unlinked_import(argv[2]);
+        }
+        wasm_runtime_destroy();
+        return ok ? 0 : 1;
+    }
+    if (argc == 3 && strcmp(argv[1], "--oversized-fixture") == 0) {
+        return check_oversized_fixture_rejected(argv[2]) ? 0 : 1;
+    }
+    if (argc == 3 && strcmp(argv[1], "--limit-fixture") == 0) {
+        return check_limit_fixture_accepted(argv[2]) ? 0 : 1;
+    }
+    if (argc == 3 && strcmp(argv[1], "--metadata-faults") == 0) {
+        if (!wasm_runtime_init()) {
+            fprintf(stderr, "runtime initialization failed for metadata-fault probe\n");
+            return 2;
+        }
+        ok = check_metadata_faults(argv[2]);
+        wasm_runtime_destroy();
+        return ok ? 0 : 1;
+    }
+
+    if (argc != 7) {
         fprintf(stderr, "runtime/native registration setup failed\n");
+        return 2;
+    }
+    if (!wasm_runtime_init()) {
+        fprintf(stderr, "runtime initialization failed\n");
+        return 2;
+    }
+    if (!wasm_runtime_register_natives("host", native_symbols, 1)) {
+        fprintf(stderr, "runtime/native registration setup failed\n");
+        wasm_runtime_destroy();
         return 2;
     }
     wasm_bytes = read_bytes(argv[1], &wasm_size);
@@ -320,6 +739,12 @@ int main(int argc, char **argv)
             return 2;
         }
     }
+    if (!check_invalid_contract_valkind(module)) {
+        wasm_runtime_unload(module);
+        free(wasm_bytes);
+        wasm_runtime_destroy();
+        return 1;
+    }
 
     instance_a = instantiate(module, "A");
     instance_b = instantiate(module, "B");
@@ -351,7 +776,9 @@ int main(int argc, char **argv)
     }
     if (!check_mismatched_signature(argv[2]) ||
         !check_unapproved_import(argv[3]) ||
-        !check_unsupported_import_kind(argv[4])) {
+        !check_unsupported_import_kind(argv[4]) ||
+        !check_duplicate_imports(argv[5]) ||
+        !check_unlinked_import(argv[6])) {
         wasm_runtime_destroy();
         return 1;
     }

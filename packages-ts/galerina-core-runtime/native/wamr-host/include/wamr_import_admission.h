@@ -11,7 +11,10 @@ typedef enum {
     WAMR_IMPORT_ABI_INVALID_ARGUMENT = 1,
     WAMR_IMPORT_ABI_UNAPPROVED_IMPORT = 2,
     WAMR_IMPORT_ABI_UNSUPPORTED_KIND = 3,
-    WAMR_IMPORT_ABI_SIGNATURE_MISMATCH = 4
+    WAMR_IMPORT_ABI_SIGNATURE_MISMATCH = 4,
+    WAMR_IMPORT_ABI_DUPLICATE_IMPORT = 5,
+    WAMR_IMPORT_ABI_UNLINKED_IMPORT = 6,
+    WAMR_IMPORT_ABI_METADATA_UNAVAILABLE = 7
 } wamr_import_abi_result_t;
 
 typedef struct {
@@ -28,6 +31,17 @@ typedef struct {
  * function-import allowlist. This validates ABI shape only: it does not
  * authorize a caller, grant an effect, validate a Signet, or establish secret
  * custody. Unknown imports and non-function imports fail closed.
+ *
+ * Supported contract kinds are I32/I64/F32/F64/V128/EXTERNREF/FUNCREF for
+ * parameters and I32/I64/F32/F64/FUNCREF for results. This helper is currently
+ * experimental and supports only the hash-pinned WAMR product-mini Linux
+ * Release artifact and feature profile documented by
+ * scripts/tests/run-rd1413-wamr-context-probe.sh. In that WAMR revision, the
+ * public result-kind accessor asserts for an actual EXTERNREF result when
+ * assertions are enabled; the pinned Release build disables assertions and
+ * returns its unsupported-kind sentinel, which this helper rejects as a
+ * signature mismatch. Do not use a different or assertion-enabled WAMR build
+ * with this helper until it has a safe result-type inspection path.
  *
  * diagnostic must be a non-null, non-empty caller-owned buffer. The function
  * performs no allocation and does not instantiate the module.
