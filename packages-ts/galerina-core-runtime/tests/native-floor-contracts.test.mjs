@@ -37,6 +37,40 @@ describe("opaque VM/component-resource transfer", () => {
       ],
     );
   });
+  it("returns a refusal when hostile request accessors or proxies throw", () => {
+    const getter = Object.defineProperty({}, "kind", { get() { throw new Error("hostile getter"); } });
+    const proxy = new Proxy({}, { get() { throw new Error("hostile proxy"); } });
+    for (const request of [getter, proxy]) {
+      const result = R.admitVmResourceTransfer(request);
+      assert.equal(result.allowed, false);
+      assert.deepEqual(codes(result), ["Galerina_RUNTIME_ADMISSION_INPUT"]);
+    }
+
+    const originalPush = Array.prototype.push;
+    const tamperingGetter = Object.defineProperty({}, "kind", {
+      get() {
+        Array.prototype.push = () => 0;
+        throw new Error("hostile getter changed a mutable intrinsic");
+      },
+    });
+    try {
+      const result = R.admitVmResourceTransfer(tamperingGetter);
+      assert.equal(result.allowed, false);
+      assert.deepEqual(codes(result), ["Galerina_RUNTIME_ADMISSION_INPUT"]);
+
+      const nonThrowingTamperingGetter = Object.defineProperty({}, "kind", {
+        get() {
+          Array.prototype.push = () => 0;
+          return "not-a-closed-kind";
+        },
+      });
+      const invalidResult = R.admitVmResourceTransfer(nonThrowingTamperingGetter);
+      assert.equal(invalidResult.allowed, false);
+      assert.deepEqual(codes(invalidResult), ["Galerina_RUNTIME_RESOURCE_KIND"]);
+    } finally {
+      Array.prototype.push = originalPush;
+    }
+  });
 });
 
 describe("RD-0656 VEO return-u64 envelope", () => {
@@ -77,6 +111,56 @@ describe("RD-0656 VEO return-u64 envelope", () => {
     );
     assert.equal(R.admitGeneralVeoLinker().allowed, false);
     assert.deepEqual(codes(R.admitGeneralVeoLinker()), ["Galerina_RUNTIME_VEO_GENERAL_LINKER"]);
+  });
+  it("returns a refusal when hostile VEO accessors or proxies throw", () => {
+    const getter = Object.defineProperty({}, "profile", { get() { throw new Error("hostile getter"); } });
+    const proxy = new Proxy({}, { get() { throw new Error("hostile proxy"); } });
+    for (const input of [getter, proxy]) {
+      const result = R.admitVeoReturnU64Profile(input);
+      assert.equal(result.allowed, false);
+      assert.deepEqual(codes(result), ["Galerina_RUNTIME_ADMISSION_INPUT"]);
+    }
+
+    const proxiedBytes = new Proxy(new Uint8Array(object), {});
+    const result = R.admitVeoReturnU64Profile({ ...ok, objectBytes: proxiedBytes });
+    assert.equal(result.allowed, false);
+    assert.deepEqual(codes(result), ["Galerina_RUNTIME_ADMISSION_INPUT"]);
+
+    const fragments = [
+      new Uint8Array(16),
+      new Uint8Array(16),
+      Uint8Array.from([0x47]),
+      Uint8Array.from([0, 0x56]),
+      Uint8Array.from([0, 0, 0x45]),
+      Uint8Array.from([0, 0, 0, 0x4f]),
+      Uint8Array.from([0, 0, 0, 0, 1]),
+      Uint8Array.from([0, 0, 0, 0, 0, 1]),
+    ];
+    let objectBytesReads = 0;
+    const changingBytes = { ...ok };
+    Object.defineProperty(changingBytes, "objectBytes", {
+      get() { return fragments[objectBytesReads++] ?? new Uint8Array(16); },
+    });
+    const changingResult = R.admitVeoReturnU64Profile(changingBytes);
+    assert.equal(changingResult.allowed, false);
+    assert.deepEqual(codes(changingResult), ["Galerina_RUNTIME_VEO_OBJECT"]);
+    assert.equal(objectBytesReads, 1);
+
+    const originalPush = Array.prototype.push;
+    const nonThrowingTamperingInput = { ...ok };
+    Object.defineProperty(nonThrowingTamperingInput, "profile", {
+      get() {
+        Array.prototype.push = () => 0;
+        return 99;
+      },
+    });
+    try {
+      const tamperedResult = R.admitVeoReturnU64Profile(nonThrowingTamperingInput);
+      assert.equal(tamperedResult.allowed, false);
+      assert.deepEqual(codes(tamperedResult), ["Galerina_RUNTIME_VEO_PROFILE"]);
+    } finally {
+      Array.prototype.push = originalPush;
+    }
   });
 });
 

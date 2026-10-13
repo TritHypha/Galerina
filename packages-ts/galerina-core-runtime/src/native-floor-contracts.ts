@@ -1,8 +1,9 @@
 // Bounded native-floor contracts (TODO pass, SuperGrok 2026-10-08).
 //
-// Pure, fail-closed admission for opaque VM/component-resource transfer, the
+// Data-only admission adapters for opaque VM/component-resource transfer, the
 // first RD-0656 VEO identity envelope (return-u64 only) and memory isolation
-// claims. None of these functions maps memory or executes guest code.
+// claims. They neither map memory nor execute guest code; see the caller-input
+// boundary below before treating them as fail-closed admission.
 
 import type { RuntimePolicyDiagnostic, RuntimePolicyVerdict } from "./runtime-contracts.js";
 
@@ -16,6 +17,9 @@ const verdictOf = (diagnostics: readonly RuntimePolicyDiagnostic[]): RuntimePoli
   allowed: diagnostics.length === 0,
   diagnostics,
 });
+const addDiagnostic = (diagnostics: RuntimePolicyDiagnostic[], diagnostic: RuntimePolicyDiagnostic): void => {
+  diagnostics[diagnostics.length] = diagnostic;
+};
 
 export const VM_RESOURCE_KINDS = Object.freeze([
   "function",
@@ -39,25 +43,35 @@ export interface VmResourceTransferRequest {
   readonly count?: unknown;
 }
 
+// These adapters are not a JavaScript trust boundary. Catching an accessor or
+// proxy exception produces a refusal, but a proxy trap may already have run;
+// production callers must pass internally constructed data-only records.
 export function admitVmResourceTransfer(request: VmResourceTransferRequest): RuntimePolicyVerdict {
   const d: RuntimePolicyDiagnostic[] = [];
-  if (typeof request.kind !== "string" || !VM_RESOURCE_KINDS.includes(request.kind as VmResourceKindName)) {
-    d.push(refuse("Galerina_RUNTIME_RESOURCE_KIND", "VM resource kind must be one closed kind.", "kind"));
-  }
-  if (request.pointer !== undefined) {
-    d.push(refuse("Galerina_RUNTIME_RESOURCE_POINTER", "Opaque transfer refuses native pointers.", "pointer"));
-  }
-  if (request.path !== undefined) {
-    d.push(refuse("Galerina_RUNTIME_RESOURCE_PATH", "Opaque transfer refuses pathnames.", "path"));
-  }
-  if (request.machineBytes !== undefined) {
-    d.push(refuse("Galerina_RUNTIME_RESOURCE_NOT_CODE", "Resource identity is never machine code.", "machineBytes"));
-  }
-  if (request.count !== undefined) {
-    const count = request.count;
-    if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1 || count > MAX_RESOURCES_PER_LEASE) {
-      d.push(refuse("Galerina_RUNTIME_RESOURCE_BUDGET", "At most 16 opaque resources may ride one lease.", "count"));
+  try {
+    if (typeof request.kind !== "string" || !VM_RESOURCE_KINDS.includes(request.kind as VmResourceKindName)) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_RESOURCE_KIND", "VM resource kind must be one closed kind.", "kind"));
     }
+    if (request.pointer !== undefined) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_RESOURCE_POINTER", "Opaque transfer refuses native pointers.", "pointer"));
+    }
+    if (request.path !== undefined) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_RESOURCE_PATH", "Opaque transfer refuses pathnames.", "path"));
+    }
+    if (request.machineBytes !== undefined) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_RESOURCE_NOT_CODE", "Resource identity is never machine code.", "machineBytes"));
+    }
+    if (request.count !== undefined) {
+      const count = request.count;
+      if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1 || count > MAX_RESOURCES_PER_LEASE) {
+        addDiagnostic(d, refuse("Galerina_RUNTIME_RESOURCE_BUDGET", "At most 16 opaque resources may ride one lease.", "count"));
+      }
+    }
+  } catch {
+    return {
+      allowed: false,
+      diagnostics: [refuse("Galerina_RUNTIME_ADMISSION_INPUT", "Admission input access failed; refusing the request.", "$input")],
+    };
   }
   return verdictOf(d);
 }
@@ -74,36 +88,44 @@ export interface VeoAdmissionInput {
 
 export function admitVeoReturnU64Profile(input: VeoAdmissionInput): RuntimePolicyVerdict {
   const d: RuntimePolicyDiagnostic[] = [];
-  if (input.profile !== VEO_RETURN_U64_PROFILE) {
-    d.push(refuse("Galerina_RUNTIME_VEO_PROFILE", "Only the return-u64 VEO profile is admitted on this floor.", "profile"));
-  }
-  if (input.importCount !== 0) {
-    d.push(refuse("Galerina_RUNTIME_VEO_IMPORTS", "Imports belong to the general linker HOLD.", "importCount"));
-  }
-  if (input.relocCount !== 0) {
-    d.push(refuse("Galerina_RUNTIME_VEO_RELOCS", "Relocations belong to the general linker HOLD.", "relocCount"));
-  }
-  if (input.constructorCount !== 0) {
-    d.push(refuse("Galerina_RUNTIME_VEO_CONSTRUCTORS", "Constructors belong to the general linker HOLD.", "constructorCount"));
-  }
-  if (input.pathPresent !== false) {
-    d.push(refuse("Galerina_RUNTIME_VEO_PATH", "VEO admission refuses pathnames.", "pathPresent"));
-  }
-  if (!(input.objectBytes instanceof Uint8Array) || input.objectBytes.length !== VEO_OBJECT_BYTES) {
-    d.push(refuse("Galerina_RUNTIME_VEO_OBJECT", "Bounded object is exactly 16 GVEO bytes.", "objectBytes"));
-  } else {
-    const magic = String.fromCharCode(
-      input.objectBytes[0] ?? 0,
-      input.objectBytes[1] ?? 0,
-      input.objectBytes[2] ?? 0,
-      input.objectBytes[3] ?? 0,
-    );
-    if (magic !== "GVEO" || input.objectBytes[4] !== 1 || input.objectBytes[5] !== 1) {
-      d.push(refuse("Galerina_RUNTIME_VEO_OBJECT", "Object must be GVEO v1 return-u64.", "objectBytes"));
+  try {
+    if (input.profile !== VEO_RETURN_U64_PROFILE) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_PROFILE", "Only the return-u64 VEO profile is admitted on this floor.", "profile"));
     }
-  }
-  if (input.identityComplete !== true) {
-    d.push(refuse("Galerina_RUNTIME_VEO_IDENTITY", "Complete RD-0656 action identity is required.", "identityComplete"));
+    if (input.importCount !== 0) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_IMPORTS", "Imports belong to the general linker HOLD.", "importCount"));
+    }
+    if (input.relocCount !== 0) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_RELOCS", "Relocations belong to the general linker HOLD.", "relocCount"));
+    }
+    if (input.constructorCount !== 0) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_CONSTRUCTORS", "Constructors belong to the general linker HOLD.", "constructorCount"));
+    }
+    if (input.pathPresent !== false) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_PATH", "VEO admission refuses pathnames.", "pathPresent"));
+    }
+    const objectBytes = input.objectBytes;
+    if (!(objectBytes instanceof Uint8Array) || objectBytes.length !== VEO_OBJECT_BYTES) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_OBJECT", "Bounded object is exactly 16 GVEO bytes.", "objectBytes"));
+    } else {
+      const magic = String.fromCharCode(
+        objectBytes[0] ?? 0,
+        objectBytes[1] ?? 0,
+        objectBytes[2] ?? 0,
+        objectBytes[3] ?? 0,
+      );
+      if (magic !== "GVEO" || objectBytes[4] !== 1 || objectBytes[5] !== 1) {
+        addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_OBJECT", "Object must be GVEO v1 return-u64.", "objectBytes"));
+      }
+    }
+    if (input.identityComplete !== true) {
+      addDiagnostic(d, refuse("Galerina_RUNTIME_VEO_IDENTITY", "Complete RD-0656 action identity is required.", "identityComplete"));
+    }
+  } catch {
+    return {
+      allowed: false,
+      diagnostics: [refuse("Galerina_RUNTIME_ADMISSION_INPUT", "Admission input access failed; refusing the request.", "$input")],
+    };
   }
   return verdictOf(d);
 }
