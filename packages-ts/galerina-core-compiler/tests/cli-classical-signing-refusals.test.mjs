@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import {
   mkdirSync,
@@ -27,7 +28,8 @@ function run(args, env, cwd) {
   for (const name of Object.keys(childEnv)) {
     if (name.startsWith("GALERINA_SIGNING_") || name === "GALERINA_MANIFEST_PROFILE"
       || name === "GIT_DIR" || name === "GIT_WORK_TREE" || name === "GIT_INDEX_FILE"
-      || name === "GIT_OBJECT_DIRECTORY" || name === "GIT_ALTERNATE_OBJECT_DIRECTORIES") {
+      || name === "GIT_OBJECT_DIRECTORY" || name === "GIT_ALTERNATE_OBJECT_DIRECTORIES"
+      || name === "NODE_OPTIONS" || name === "NODE_PATH") {
       delete childEnv[name];
     }
   }
@@ -92,6 +94,26 @@ test("classical CLI admits a trusted fixture and refuses invalid signature or re
     assert.equal(runControl.status, 0, output(runControl));
     assert.equal(runControl.stdout.trim().split(/\r?\n/).at(-1), "42");
 
+    await t.test("separate pinned registry signer permits an empty revocation snapshot", () => {
+      const registrySigner = generateKeyPairSync("ed25519");
+      let registryKeyId = randomBytes(8).toString("hex");
+      while (registryKeyId === keyId) registryKeyId = randomBytes(8).toString("hex");
+      const registryPrivatePem = registrySigner.privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+      const registryPublicPem = registrySigner.publicKey.export({ type: "spki", format: "pem" }).toString();
+      const emptyRegistry = signRegistryObject(registryBody, registryPrivatePem, registryKeyId);
+      writeFileSync(join(governance, `signing-key-${registryKeyId}.pub.pem`), registryPublicPem);
+      writeFileSync(pinPath, JSON.stringify({ schemaVersion: 1, registrySigningRootKeyId: registryKeyId }));
+      writeFileSync(registryPath, JSON.stringify(emptyRegistry));
+
+      const separateRootControl = run(
+        ["run", "answer.fungi", "--invoke", "answer"],
+        { GALERINA_PROFILE: "production" },
+        cwd,
+      );
+      assert.equal(separateRootControl.status, 0, output(separateRootControl));
+      assert.equal(separateRootControl.stdout.trim().split(/\r?\n/).at(-1), "42");
+    });
+
     // A production bypass of any independent trust requirement must turn a
     // refusal below into success, failing the corresponding assertion.
     const refusals = [
@@ -116,6 +138,31 @@ test("classical CLI admits a trusted fixture and refuses invalid signature or re
       });
     }
     restoreRegistry();
+
+    await t.test("valid signed registry revoking the manifest signer refuses before execution", () => {
+      const registrySigner = generateKeyPairSync("ed25519");
+      let registryKeyId = randomBytes(8).toString("hex");
+      while (registryKeyId === keyId) registryKeyId = randomBytes(8).toString("hex");
+      const registryPrivatePem = registrySigner.privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+      const registryPublicPem = registrySigner.publicKey.export({ type: "spki", format: "pem" }).toString();
+      const revokedRegistry = signRegistryObject(
+        { ...registryBody, revoked: [{ keyId }] },
+        registryPrivatePem,
+        registryKeyId,
+      );
+      writeFileSync(join(governance, `signing-key-${registryKeyId}.pub.pem`), registryPublicPem);
+      writeFileSync(pinPath, JSON.stringify({ schemaVersion: 1, registrySigningRootKeyId: registryKeyId }));
+      writeFileSync(registryPath, JSON.stringify(revokedRegistry));
+
+      const refused = run(
+        ["run", "answer.fungi", "--invoke", "answer"],
+        { GALERINA_PROFILE: "production" },
+        cwd,
+      );
+      assert.equal(refused.status, 1, output(refused));
+      assert.match(output(refused), /FUNGI-MANIFEST-REVOKED-KEY/);
+      assert.doesNotMatch(refused.stdout, /^42\r?$/m);
+    });
 
     const cborPath = join(cwd, "build", "answer.lmanifest");
     const canonical = readFileSync(cborPath);
