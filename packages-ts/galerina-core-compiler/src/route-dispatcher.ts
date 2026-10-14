@@ -7,6 +7,7 @@
 import { type GalerinaValue } from "./interpreter.js";
 import { type AstNode } from "./parser.js";
 import { buildRouteRegistry, type RouteMatch, type RouteRegistry } from "./route-registry.js";
+import { standaloneAuthVerifyRefusal } from "./serve-secret-gate.js";
 import { jsObjectToGalerina } from "./stdlib.js";
 
 export interface ServerConfig {
@@ -122,13 +123,9 @@ export async function startServer(
     }
   }
   const registry = buildRouteRegistry(ast);
-  const authVerifyRoutes = registry.routes.filter(
-    (route) => route.method === "POST" && route.pathPattern.test("/auth/verify"),
-  );
-  if (authVerifyRoutes.length > 0 && (
-    authVerifyRoutes.length !== 1 || authVerifyRoutes[0]?.path !== "/auth/verify"
-  )) {
-    throw new Error("Galerina: POST /auth/verify is reserved and must have one exact route binding");
+  const authVerifyRefusal = standaloneAuthVerifyRefusal(registry.routes);
+  if (authVerifyRefusal.__tag === "refuse") {
+    throw new Error(authVerifyRefusal.reason);
   }
   // W2: the network stack loads only when a server actually starts (see header comment).
   const { createServer } = await import("node:http");
