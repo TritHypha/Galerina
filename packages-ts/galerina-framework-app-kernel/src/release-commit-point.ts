@@ -33,9 +33,18 @@ interface LeaseRecord {
   state: ReleaseLeaseState;
 }
 
+/** Bound on live lease records. Oldest terminal entries evict first. */
+export const RELEASE_LEASE_CAP = 1024;
+
 export class ReleaseCommitAuthority {
   readonly #leases = new Map<string, LeaseRecord>();
+  readonly #retired = new Set<string>();
   #seq = 0;
+
+  /** Live map size (unused + terminal). Does not include retired tombstones. */
+  get size(): number {
+    return this.#leases.size;
+  }
 
   mint(operationId: string, epoch: number): { readonly leaseId: string; readonly token: string; readonly epoch: number } {
     if (typeof operationId !== "string" || operationId.length === 0) {
@@ -44,14 +53,33 @@ export class ReleaseCommitAuthority {
     if (!Number.isSafeInteger(epoch) || epoch < 0) {
       throw new SecretReleaseRefused("stale", "Release epoch is unavailable.");
     }
+    if (this.#retired.has(operationId)) {
+      throw new SecretReleaseRefused("replay", "Release lease was retired.");
+    }
     const existing = this.#leases.get(operationId);
     if (existing !== undefined) {
       return { leaseId: operationId, token: existing.token, epoch: existing.epoch };
     }
+    this.#evictOldestTerminal();
     this.#seq += 1;
     const token = `${operationId}\u0000${epoch}\u0000${this.#seq}`;
     this.#leases.set(operationId, { token, epoch, state: "unused" });
     return { leaseId: operationId, token, epoch };
+  }
+
+  #evictOldestTerminal(): void {
+    while (this.#leases.size >= RELEASE_LEASE_CAP) {
+      let victim: string | undefined;
+      for (const [leaseId, rec] of this.#leases) {
+        if (rec.state !== "unused") {
+          victim = leaseId;
+          break;
+        }
+      }
+      if (victim === undefined) return;
+      this.#leases.delete(victim);
+      this.#retired.add(victim);
+    }
   }
 
   stateOf(leaseId: string): ReleaseLeaseState | "missing" {

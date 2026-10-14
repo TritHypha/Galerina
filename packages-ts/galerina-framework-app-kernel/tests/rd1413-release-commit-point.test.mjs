@@ -7,6 +7,7 @@ import { createAppKernel } from "../dist/index.js";
 import {
   createSecretGate,
   ReleaseCommitAuthority,
+  RELEASE_LEASE_CAP,
   SecretReleaseRefused,
 } from "../dist/secret-gate.js";
 
@@ -103,11 +104,11 @@ test("getSecret: revoke-before-release (epoch advanced after open) refuses with 
   let consumerEntered = false;
   const provider = {
     has() {
-      if (opened) epoch += 1;
       return true;
     },
     use(_name, callback) {
       opened = true;
+      epoch += 1;
       callback(stored);
     },
     revocationEpoch() {
@@ -277,4 +278,204 @@ test("kernel: result-sink fence maps to 503 secret_unavailable without leaking",
   assert.equal(body.message, "A required secret is unavailable.");
   assert.equal(Object.prototype.hasOwnProperty.call(body, "outcome"), false);
   assert.equal(consumerEntered, false);
+});
+
+class LoggingAuthority extends ReleaseCommitAuthority {
+  constructor(events) {
+    super();
+    this.events = events;
+  }
+  consume(leaseId, token, observedEpoch) {
+    this.events.push("D");
+    return super.consume(leaseId, token, observedEpoch);
+  }
+}
+
+test("R1: no deliverable copy before D; D then copy then provider wipe", () => {
+  const events = [];
+  const original = [0x11, 0x22, 0x33, 0x44];
+  const stored = new Uint8Array(original);
+  const authority = new LoggingAuthority(events);
+  let received;
+  let storedAtConsumer;
+  const provider = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      const transient = new Uint8Array(stored);
+      try {
+        fn(transient);
+      } finally {
+        events.push(`lease-at-wipe:${authority.stateOf("op-r1")}`);
+        transient.fill(0);
+        stored.fill(0);
+        events.push("provider-wipe");
+      }
+    },
+    revocationEpoch() {
+      events.push("epoch-read");
+      return 4;
+    },
+  };
+  const gate = createSecretGate(provider, { authority });
+  gate.getSecret(["credential"], "credential", (view) => {
+    events.push("consumer");
+    received = [...view];
+    storedAtConsumer = [...stored];
+  }, undefined, "op-r1");
+  const dAt = events.indexOf("D");
+  const wipeAt = events.indexOf("provider-wipe");
+  const consumerAt = events.indexOf("consumer");
+  assert.ok(dAt >= 0 && wipeAt > dAt && consumerAt > wipeAt);
+  assert.equal(events[wipeAt - 1], "lease-at-wipe:released");
+  assert.deepEqual(received, original);
+  assert.deepEqual(storedAtConsumer, [0, 0, 0, 0]);
+  assert.equal(authority.stateOf("op-r1"), "released");
+});
+
+test("R2: revoke inside use before D refuses, no consumer, lease fenced", () => {
+  const stored = new Uint8Array(SYNTHETIC);
+  let epoch = 4;
+  let consumerEntered = false;
+  let copySeen = false;
+  const authority = new ReleaseCommitAuthority();
+  const provider = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      epoch = 5;
+      fn(stored);
+    },
+    revocationEpoch() {
+      return epoch;
+    },
+  };
+  const gate = createSecretGate(provider, { authority });
+  assert.throws(
+    () => gate.getSecret(["credential"], "credential", (view) => {
+      consumerEntered = true;
+      copySeen = view.some((b) => b !== 0);
+    }, undefined, "op-r2"),
+    (err) => isRefused(err, "stale"),
+  );
+  assert.equal(consumerEntered, false);
+  assert.equal(copySeen, false);
+  assert.equal(authority.stateOf("op-r2"), "fenced");
+});
+
+test("R3: no provider callback between epoch read and D mark", () => {
+  const events = [];
+  const stored = new Uint8Array(SYNTHETIC);
+  const authority = new LoggingAuthority(events);
+  const provider = {
+    has() {
+      events.push("has");
+      return true;
+    },
+    use(_name, fn) {
+      events.push("use");
+      fn(stored);
+    },
+    revocationEpoch() {
+      events.push("epoch-read");
+      return 0;
+    },
+  };
+  const gate = createSecretGate(provider, { authority });
+  gate.getSecret(["credential"], "credential", () => {
+    events.push("consumer");
+  }, undefined, "op-r3");
+  const dAt = events.lastIndexOf("D");
+  assert.ok(dAt > 0);
+  assert.equal(events[dAt - 1], "epoch-read");
+});
+
+test("R4: empty operationId refuses missing with no provider open", () => {
+  const stored = new Uint8Array(SYNTHETIC);
+  let opens = 0;
+  let consumerEntered = false;
+  const provider = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      opens += 1;
+      fn(stored);
+    },
+  };
+  const gate = createSecretGate(provider);
+  assert.throws(
+    () => gate.getSecret(["credential"], "credential", () => {
+      consumerEntered = true;
+    }, undefined, ""),
+    (err) => isRefused(err, "missing"),
+  );
+  assert.equal(opens, 0);
+  assert.equal(consumerEntered, false);
+});
+
+test("R5: provider without revocationEpoch still delivers (fixture residual: epoch 0)", () => {
+  const stored = new Uint8Array(SYNTHETIC);
+  let received;
+  const gate = createSecretGate({
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      fn(stored);
+    },
+  });
+  gate.getSecret(["credential"], "credential", (view) => {
+    received = [...view];
+  }, undefined, "op-r5");
+  assert.deepEqual(received, SYNTHETIC);
+});
+
+test("R6: lease map stays at cap; evicted id cannot be minted again", () => {
+  const authority = new ReleaseCommitAuthority();
+  const extra = 8;
+  for (let i = 0; i < RELEASE_LEASE_CAP + extra; i += 1) {
+    const lease = authority.mint(`op-cap-${i}`, 0);
+    assert.equal(authority.consume(lease.leaseId, lease.token, 0), "released");
+  }
+  assert.ok(authority.size <= RELEASE_LEASE_CAP);
+  assert.throws(
+    () => authority.mint("op-cap-0", 0),
+    (err) => isRefused(err, "replay"),
+  );
+  const live = authority.mint(`op-cap-${RELEASE_LEASE_CAP + extra - 1}`, 0);
+  assert.equal(live.leaseId, `op-cap-${RELEASE_LEASE_CAP + extra - 1}`);
+  assert.equal(authority.consume(live.leaseId, live.token, 0), "replay");
+});
+
+test("R7: forged Error named SecretReleaseRefused is 500 not 503", async () => {
+  const kernel = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/ping",
+      handler: "ping",
+      auth: { mode: "public" },
+    }],
+    dispatch: {
+      ping: () => {
+        const forged = new Error("forged secret refusal");
+        forged.name = "SecretReleaseRefused";
+        throw forged;
+      },
+    },
+  });
+  const res = await kernel.handle({
+    method: "GET",
+    path: "/ping",
+    headers: {},
+    body: new Uint8Array(0),
+    query: {},
+    requestId: "u1-forged-name",
+    receivedAt: 0,
+  });
+  assert.equal(res.status, 500);
+  const body = JSON.parse(new TextDecoder().decode(res.body));
+  assert.equal(body.error, "internal_error");
 });

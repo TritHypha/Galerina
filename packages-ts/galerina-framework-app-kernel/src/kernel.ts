@@ -34,8 +34,7 @@ import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
-  return error instanceof SecretReleaseRefused
-    || (error instanceof Error && error.name === "SecretReleaseRefused");
+  return error instanceof SecretReleaseRefused;
 }
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;

@@ -28,6 +28,7 @@ import type { ReleaseOutcome } from "./release-commit-point.js";
 
 export {
   ReleaseCommitAuthority,
+  RELEASE_LEASE_CAP,
   SecretReleaseRefused,
   bytesEqual,
 } from "./release-commit-point.js";
@@ -158,7 +159,10 @@ export function createSecretGate(
     if (provider === undefined) {
       throw new Error("SecretGate: required secret provider is unavailable");
     }
-    const opId = typeof operationId === "string" && operationId.length > 0
+    if (typeof operationId === "string" && operationId.length === 0) {
+      throw new SecretReleaseRefused("missing", "SecretGate: release operation id is required");
+    }
+    const opId = typeof operationId === "string"
       ? operationId
       : `oneshot:${(oneshot += 1)}`;
     const epochAtMint = readEpoch(provider);
@@ -230,9 +234,22 @@ export function createSecretGate(
             // Do not let consumer code run until the provider has returned and its synchronous,
             // void-only contract has been checked. Otherwise a provider can deliver bytes, trigger
             // consumer side effects, then reveal its invalid async return channel too late.
-            // liveView is the provider's argument (may alias backing store). stagedView is the
-            // bootstrap copy held only until consume-at-D and the outer finally wipe.
+            // liveView is the provider's argument (may alias backing store). No deliverable copy
+            // is taken until D marks the lease consumed.
             liveView = value;
+            let observedEpoch: number;
+            try {
+              observedEpoch = readEpoch(provider);
+            } catch (error) {
+              authority.fence(lease.leaseId);
+              return failCallback(error);
+            }
+            const releaseOutcome = authority.consume(lease.leaseId, lease.token, observedEpoch);
+            if (releaseOutcome !== "released") {
+              return failCallback(
+                new SecretReleaseRefused(releaseOutcome, `SecretGate: release refused (${releaseOutcome})`),
+              );
+            }
             stagedView = new intrinsicUint8Array(value);
           } catch (error) {
             return failCallback(error);
@@ -283,18 +300,6 @@ export function createSecretGate(
       if (stillPresent !== true) {
         authority.fence(lease.leaseId);
         throw new SecretReleaseRefused("fenced", "SecretGate: secret was revoked before staged delivery");
-      }
-
-      let observedEpoch: number;
-      try {
-        observedEpoch = readEpoch(provider);
-      } catch (error) {
-        authority.fence(lease.leaseId);
-        throw error;
-      }
-      const releaseOutcome = authority.consume(lease.leaseId, lease.token, observedEpoch);
-      if (releaseOutcome !== "released") {
-        throw new SecretReleaseRefused(releaseOutcome, `SecretGate: release refused (${releaseOutcome})`);
       }
 
       let callbackResult: unknown;
