@@ -539,6 +539,48 @@ fn context_advance_is_monotonic_and_eagerly_revokes_old_entries() {
 }
 
 #[test]
+fn context_advance_revokes_an_open_lease_before_consumption() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16], [4; 16], [5; 16]]);
+    let admitted = mint_one(&mut table);
+    let lease = table
+        .open_lease(admitted, &context(7, 3, 5))
+        .expect("current context may open one lease");
+    assert_eq!(table.live_len(), 1);
+
+    let summary = table
+        .advance_context(context(7, 3, 6))
+        .expect("a monotonic revocation epoch advance must revoke an open lease");
+    assert_eq!(summary.revoked(), 1);
+    assert_eq!(summary.retired(), 0);
+    assert_eq!(table.live_len(), 0);
+
+    let error = table
+        .consume_lease(lease, &context(7, 3, 6), Trit::Admit)
+        .expect_err("an open lease from the prior revocation epoch must not be consumed");
+    assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
+    assert_eq!(error.outcome(), Trit::Refuse);
+
+    let current_context = context(7, 3, 6);
+    let current_admission = MintRequest::new(
+        AuthorityTag::parse("slide.vok.execute.v1").expect("canonical test tag"),
+        current_context.clone(),
+        all_admit(),
+        vec![4, 5, 6],
+    );
+    let current_handle = table
+        .mint_admitted(current_admission)
+        .expect("new authority context remains usable after revocation");
+    let current_lease = table
+        .open_lease(current_handle, &current_context)
+        .expect("slot capacity is reusable under the new epoch");
+    let receipt = table
+        .consume_lease(current_lease, &current_context, Trit::Admit)
+        .expect("a newly admitted current-epoch lease remains consumable");
+    assert_eq!(receipt.revocation_epoch(), 6);
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
 fn generation_overflow_retires_the_slot_instead_of_wrapping() {
     let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let mut admitted = mint_one(&mut table);
