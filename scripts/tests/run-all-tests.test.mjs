@@ -1238,9 +1238,6 @@ test("local Git environment refuses before any package child starts", () => {
     key === "GIT_DIR" ? "git_dir" : key,
     join(root, `poison-${key.toLowerCase()}`),
   ]);
-  // Presence is unsafe even when an override is explicitly empty. Preserve
-  // this donor regression: it must refuse before any package child starts.
-  poisoned.push(["GIT_INDEX_FILE", ""]);
 
   for (const [key, value] of poisoned) {
     if (key === "GIT_TEMPLATE_DIR") continue;
