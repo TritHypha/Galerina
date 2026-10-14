@@ -6,10 +6,12 @@
  * hand it to `kernel.handle()`, and write the kernel's typed response back onto
  * the socket. It is NOT a place for policy, middleware, auth, or routing — all
  * of that lives in the kernel's fixed, non-bypassable pipeline and MUST NOT be
- * pre-empted, re-ordered, or skipped here.
+ * replaced or skipped here. Explicit transport-wide channel/principal evidence is
+ * resolved before body buffering; a refusal is returned early because the kernel
+ * applies the same global channel refusal to every route. The kernel still rechecks
+ * the evidence as part of its own pipeline.
  *
- * There are two ADDITIVE exceptions — neither pre-empts, re-orders, or relaxes the
- * kernel's gate ordering; both are evaluated by the kernel, not the transport:
+ * There are two additive transport behaviors:
  *   1. A hard cap on how many body bytes the adapter will buffer before it even
  *      calls the kernel (DoS guard). The kernel ALSO enforces its own per-route,
  *      posture-aware body-size policy; this cap never removes or relaxes it. When
@@ -19,7 +21,9 @@
  *      only +1/ALLOW (e.g. a fully-validated, pinned, fresh-revocation client cert)
  *      authenticates the channel; 0/−1 deny every route. A `public` route removes
  *      only its application-credential requirement; it never overrides a configured
- *      channel refusal. A verified channel proves the transport factor; a required route also
+ *      channel refusal. The adapter resolves the factor before body buffering and
+ *      short-circuits explicit refusals; the kernel applies it again. A verified
+ *      channel proves the transport factor; a required route also
  *      requires a separate authenticated principal identity. There are two ways to supply the verdict:
  *        a. an explicit `resolveChannelVerdict` hook (advanced / custom transports);
  *        b. the built-in `tls` mode — pass key/cert (+ optional `ca`, `pinnedDigests`,
@@ -193,14 +197,19 @@ export interface CreateApiServerOptions {
    * supplies the channel verdict. With `tls`, it is an additional fail-closed policy
    * factor composed with the built-in certificate gate.
    *
-   * This is the live end-to-end channel-verdict path: transport → cert-gate →
+   * This is the live channel-verdict path: transport → cert-gate →
    * `channelVerdict` → kernel `decideAtBoundary` fold. The kernel folds it in its auth
-   * step as a fail-closed mandatory factor whenever it is supplied (a +1 channel
-   * proves only that factor; required routes still need principal evidence; 0/−1 deny even a public route). The
-   * transport never pre-empts the pipeline.
+   * step as a fail-closed mandatory factor whenever supplied (a +1 channel proves
+   * only that factor; required routes still need principal evidence; 0/−1 deny even a
+   * public route). The adapter also resolves it before buffering and short-circuits
+   * explicit refusals; the kernel independently applies the same mandatory factor.
    *
    * Default: unset → no channel verdict is supplied → the adapter behaves exactly as
    * before, leaving admission entirely to the kernel's own auth gate (no behaviour change).
+   *
+   * The resolver is trusted transport code and receives the raw request object. It MUST
+   * inspect transport metadata only and MUST NOT read, resume, pipe, or otherwise consume
+   * the request body. This interface does not sandbox the resolver.
    *
    * Fail-closed contract: if the resolver THROWS, the channel is DENIED (−1) — it is never
    * silently downgraded to the header path. Returning `undefined` is the explicit "no
@@ -214,6 +223,8 @@ export interface CreateApiServerOptions {
    * denies the channel. Without TLS, a required-auth route therefore needs both an ALLOW channel
    * verdict and this exact principal evidence. With TLS, omitting this resolver uses the admitted
    * leaf-certificate SHA-256 digest as the principal ID and grants no application scopes.
+   * This trusted resolver runs before body buffering and MUST NOT consume the request body;
+   * the raw request interface does not sandbox that callback.
    */
   readonly resolvePrincipal?: (req: http.IncomingMessage) => PrincipalResolution | undefined;
   /**
@@ -253,6 +264,10 @@ const PAYLOAD_TOO_LARGE_BODY = Buffer.from(
 );
 const WEBHOOK_UNAUTHORIZED_BODY = Buffer.from(
   JSON.stringify({ error: "unauthorized" }),
+  "utf8",
+);
+const CHANNEL_UNAUTHORIZED_BODY = Buffer.from(
+  JSON.stringify({ error: "unauthorized", message: "Channel/identity verdict denied admission." }),
   "utf8",
 );
 const WEBHOOK_REPLAY_BODY = Buffer.from(
@@ -719,7 +734,57 @@ async function handleRequest(
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ): Promise<void> {
-  // (1) Buffer the body under the hard adapter cap (additive DoS guard).
+  // Resolve explicit transport-wide identity evidence before reading the body.
+  // A non-ALLOW channel result constrains every route (including public routes), so
+  // refusing here is equivalent to the kernel's mandatory channel gate and avoids
+  // copying a denied request body into an application buffer. The kernel still
+  // independently verifies the same evidence later in its fixed pipeline.
+  let channelVerdict: Verdict | undefined;
+  if (resolveChannelVerdict !== undefined) {
+    try {
+      channelVerdict = resolveChannelVerdict(req);
+    } catch {
+      channelVerdict = Verdict.DENY;
+    }
+  }
+
+  let principal: PrincipalResolution | undefined;
+  if (channelVerdict === Verdict.ALLOW) {
+    try {
+      if (resolvePrincipal !== undefined) {
+        const untrusted = resolvePrincipal(req);
+        if (untrusted === undefined) throw new Error("principal resolver returned no identity");
+        principal = snapshotPrincipalResolution(untrusted);
+      } else if (deriveTlsPrincipal) {
+        principal = principalFromAdmittedTls(req);
+      }
+    } catch {
+      channelVerdict = Verdict.DENY;
+      principal = undefined;
+    }
+  }
+
+  const transportRefused = channelVerdict !== undefined && channelVerdict !== Verdict.ALLOW;
+  const webhookChannelRefused = webhook !== undefined
+    && resolveChannelVerdict !== undefined
+    && channelVerdict !== Verdict.ALLOW;
+  if (transportRefused || webhookChannelRefused) {
+    // Do not consume application body bytes, and prevent reuse of a connection that
+    // may still have a request body in flight. Node's parser may have queued bytes
+    // internally; this adapter neither copies nor delivers them on this refusal path.
+    req.pause();
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(401, {
+        "content-type": "application/json",
+        connection: "close",
+      });
+      res.end(webhookChannelRefused ? WEBHOOK_UNAUTHORIZED_BODY : CHANNEL_UNAUTHORIZED_BODY);
+    }
+    return;
+  }
+
+  // Buffer only after any configured global channel and principal factors succeed.
+  // The cap remains an additive DoS guard for requests that pass transport admission.
   let body: Uint8Array;
   try {
     body = await bufferBody(req, maxBodyBytes);
@@ -743,37 +808,6 @@ async function handleRequest(
       res.end(INTERNAL_ERROR_BODY);
     }
     return;
-  }
-
-  // (2) Resolve the optional channel/identity verdict (TLSTP S1) — fail-closed.
-  // A configured resolver that THROWS denies the channel (−1); it is never silently
-  // downgraded to the kernel's header path. An unset resolver, or one returning
-  // undefined, leaves channelVerdict absent → the kernel uses its own auth path.
-  let channelVerdict: Verdict | undefined;
-  if (resolveChannelVerdict !== undefined) {
-    try {
-      channelVerdict = resolveChannelVerdict(req);
-    } catch {
-      channelVerdict = Verdict.DENY;
-    }
-  }
-
-  // Identity is a separate fact from the channel verdict. Resolve it only after an exact ALLOW;
-  // malformed/throwing explicit evidence denies and can never fall back to a certificate identity.
-  let principal: PrincipalResolution | undefined;
-  if (channelVerdict === Verdict.ALLOW) {
-    try {
-      if (resolvePrincipal !== undefined) {
-        const untrusted = resolvePrincipal(req);
-        if (untrusted === undefined) throw new Error("principal resolver returned no identity");
-        principal = snapshotPrincipalResolution(untrusted);
-      } else if (deriveTlsPrincipal) {
-        principal = principalFromAdmittedTls(req);
-      }
-    } catch {
-      channelVerdict = Verdict.DENY;
-      principal = undefined;
-    }
   }
 
   // (3) Normalise into a GalerinaKernelRequest.

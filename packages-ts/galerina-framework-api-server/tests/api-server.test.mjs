@@ -42,7 +42,10 @@ function buildKernel() {
  *  handler ran so we can assert it is blocked before dispatch on a denied channel. */
 function buildSecureKernel(ran) {
   return createAppKernel({
-    routes: [{ method: "GET", path: "/secure", handler: "secure" }], // default auth: required
+    routes: [
+      { method: "GET", path: "/secure", handler: "secure" },
+      { method: "POST", path: "/secure", handler: "secure" },
+    ], // default auth: required
     dispatch: { secure: () => { ran.value = true; return { status: 200, body: { ok: true } }; } },
   });
 }
@@ -80,6 +83,40 @@ function request(port, { method, path, headers = {}, body }) {
     if (body !== undefined) req.write(body);
     req.end();
   });
+}
+
+/** Send only a prefix of a declared body so tests can inspect pre-EOF behavior. */
+function startRequestWithIncompleteBody(port, { method, path, headers = {}, bodyPrefix }) {
+  let resolveResponse;
+  let rejectResponse;
+  const response = new Promise((resolve, reject) => {
+    resolveResponse = resolve;
+    rejectResponse = reject;
+  });
+  const req = http.request({
+    host: "127.0.0.1",
+    port,
+    method,
+    path,
+    headers: { ...headers, "content-length": "1024" },
+  }, (res) => {
+    const chunks = [];
+    res.on("data", (c) => chunks.push(c));
+    res.on("end", () => resolveResponse({
+      status: res.statusCode,
+      headers: res.headers,
+      body: Buffer.concat(chunks).toString("utf8"),
+    }));
+  });
+  req.on("error", rejectResponse);
+  req.setTimeout(2000, () => req.destroy(new Error("early refusal timed out")));
+  req.flushHeaders();
+  req.write(bodyPrefix);
+  return {
+    req,
+    response,
+    finish: () => req.end(Buffer.alloc(1024 - Buffer.byteLength(bodyPrefix), 0x20)),
+  };
 }
 
 /** Spin up the adapter, run `fn(port)`, always close the server. */
@@ -191,6 +228,92 @@ test("channel verdict DENY (−1) → 401 on an auth-required route, handler NOT
     const res = await request(port, { method: "GET", path: "/secure" });
     assert.equal(res.status, 401);
     assert.equal(ran.value, false);
+  });
+});
+
+test("explicit channel DENY refuses before the adapter consumes a request body", async () => {
+  let bodyAlreadyConsumedAtDecision = null;
+  let incomingRequest;
+  await withSecureServer({
+    resolveChannelVerdict: (req) => {
+      incomingRequest = req;
+      bodyAlreadyConsumedAtDecision = req.readableEnded;
+      return Verdict.DENY;
+    },
+  }, async (port, ran) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/secure",
+      headers: JSON_HEADERS,
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const res = await pending.response;
+    assert.equal(res.status, 401);
+    assert.deepEqual(JSON.parse(res.body), {
+      error: "unauthorized",
+      message: "Channel/identity verdict denied admission.",
+    });
+    assert.equal(res.headers.connection, "close");
+    assert.equal(bodyAlreadyConsumedAtDecision, false);
+    assert.equal(incomingRequest.listenerCount("data"), 0);
+    assert.equal(ran.value, false);
+  });
+});
+
+test("an explicit principal-resolution refusal also precedes request-body consumption", async () => {
+  let bodyAlreadyConsumedAtDecision = null;
+  let incomingRequest;
+  await withSecureServer({
+    resolveChannelVerdict: () => Verdict.ALLOW,
+    resolvePrincipal: (req) => {
+      incomingRequest = req;
+      bodyAlreadyConsumedAtDecision = req.readableEnded;
+      return undefined;
+    },
+  }, async (port, ran) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/secure",
+      headers: JSON_HEADERS,
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const res = await pending.response;
+    assert.equal(res.status, 401);
+    assert.deepEqual(JSON.parse(res.body), {
+      error: "unauthorized",
+      message: "Channel/identity verdict denied admission.",
+    });
+    assert.equal(res.headers.connection, "close");
+    assert.equal(bodyAlreadyConsumedAtDecision, false);
+    assert.equal(incomingRequest.listenerCount("data"), 0);
+    assert.equal(ran.value, false);
+  });
+});
+
+test("an admitted request enters body buffering and completes after the body arrives", async () => {
+  let incomingRequest;
+  await withServer({
+    resolveChannelVerdict: () => Verdict.ALLOW,
+    resolvePrincipal: (req) => {
+      incomingRequest = req;
+      return { principalId: "principal-a", principalScopes: [] };
+    },
+  }, async (port) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/charge",
+      headers: { ...JSON_HEADERS, "idempotency-key": "charge-positive-control" },
+      bodyPrefix: JSON.stringify({ amount: 100 }),
+    });
+    const waitStartedAt = Date.now();
+    while (incomingRequest === undefined && Date.now() - waitStartedAt < 1000) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    assert.ok(incomingRequest, "server should resolve identity while the body is incomplete");
+    assert.ok(incomingRequest.listenerCount("data") > 0);
+    pending.finish();
+    const res = await pending.response;
+    assert.equal(res.status, 200, res.body);
   });
 });
 

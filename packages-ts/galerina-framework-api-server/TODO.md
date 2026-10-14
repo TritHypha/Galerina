@@ -93,10 +93,23 @@ OpenAPI generator.
 [x] TLS certificate admission folds through the core-network cert gate;
     custom channel verdicts are an additional factor: src/index.ts:376-549.
 [x] Principal evidence is snapshotted and rejects accessors, proxies, symbols,
-    malformed scopes, duplicates, and invalid values: src/index.ts:623-705.
+    malformed scopes, duplicates, and invalid values: `snapshotPrincipalResolution`.
+[x] Explicit non-ALLOW transport-wide channel results and failed principal
+    resolution after channel ALLOW return a complete 401 before `bufferBody`.
+    Incomplete-body socket tests assert no remaining request `data` listener on
+    refusal and a listener on the admitted positive control. Windows and WSL
+    focused suite: 18/18; package suite: 76/76 Windows (typecheck + build + tests).
+    This corroborates source ordering; it does not exclude transient listener
+    registration or lower-layer parser/TLS buffering.
+[HOLD] Without an explicit transport-wide channel result, route-specific kernel
+    auth still occurs after body buffering. The selected production
+    `POST /auth/verify` is not loaded/wired here; this transport change is not
+    protected-ingress clearance or Fungi runtime/FFI/host proof. Resolver callbacks
+    receive a raw request and are trusted code; the no-body-read contract is not
+    sandbox-enforced.
 [x] Adapter body cap and explicit request/header/idle timeouts are wired:
-    src/index.ts:79-85,261-308,614-619. Package tests: 15/15 in
-    tests/api-server.test.mjs and 12/12 in tests/api-server-tls.test.mjs.
+    `bufferBody`, `BodyCapExceeded`, and the explicit server timeout settings in
+    `src/index.ts`. Current package receipt above supersedes older test counts.
 ```
 
 ### Current webhook and replay boundary
@@ -183,7 +196,7 @@ surface above.
        are tracked under "OpenAPI, examples" below.
        Follow-up (Grok 2026-10-06): a pure, closed-grammar `:param` compiler,
        matcher and no-precedence conflict check is proposed in App Kernel PR #142
-       (`src/route-pattern.ts`). It is not wired into createAppKernel; wiring it
+       (`../galerina-framework-app-kernel/src/route-pattern.ts`). It is not wired into createAppKernel; wiring it
        into the request path stays App Kernel owner work.
 ```
 
