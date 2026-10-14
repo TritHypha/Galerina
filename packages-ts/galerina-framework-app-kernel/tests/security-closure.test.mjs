@@ -305,7 +305,7 @@ test("handler-installed array iterator cannot mutate the private secret allowlis
   assert.equal(consumerCalled, false, "iterator poisoning must not authorize a later request");
 });
 
-test("transferred handler copies survive the attempted gate wipe while the kernel refuses success", async () => {
+test("transferred handler copies survive gate wipe and cleanup does not throw after delivery", async () => {
   const source = new Uint8Array([0x41, 0x42, 0x43]);
   const provider = {
     has(name) { return name === "allowed"; },
@@ -327,7 +327,7 @@ test("transferred handler copies survive the attempted gate wipe while the kerne
             transferCompleted = true;
           });
         } catch (error) {
-          // A consumer can catch the detached-buffer wipe failure; the kernel must still fail closed.
+          // Cleanup must not throw over a completed delivery; a catch here is a defect.
           cleanupError = error;
         }
         return { body: { ok: true } };
@@ -336,15 +336,11 @@ test("transferred handler copies survive the attempted gate wipe while the kerne
   });
 
   const response = await kernel.handle(request());
-  assert.equal(response.status, 500);
-  const responseBody = JSON.parse(dec.decode(response.body));
-  assert.equal(responseBody.error, "internal_error");
-  assert.notEqual(responseBody.ok, true);
+  assert.equal(response.status, 200);
   assert.equal(transferCompleted, true);
-  assert.equal(stagedView.byteLength, 0);
-  assert.equal(stagedView.buffer.byteLength, 0);
-  assert.ok(cleanupError instanceof TypeError);
-  assert.deepEqual(Array.from(transferred), [0x41, 0x42, 0x43]);
+  assert.equal(cleanupError, undefined, "wipe must not throw over a completed delivery");
+  assert.equal(stagedView.buffer.detached, true, "the handed delivery copy was transferred by the consumer");
+  assert.deepEqual(Array.from(transferred), [0x41, 0x42, 0x43], "consumer-made transferred copy is out of wipe scope");
 });
 
 test("duplicate JSON keys are denied before the handler", async () => {

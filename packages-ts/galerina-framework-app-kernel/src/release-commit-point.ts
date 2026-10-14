@@ -58,6 +58,9 @@ export class ReleaseCommitAuthority {
     }
     const existing = this.#leases.get(operationId);
     if (existing !== undefined) {
+      if (existing.state === "unused") {
+        throw new SecretReleaseRefused("replay", "Release lease is already in flight.");
+      }
       return { leaseId: operationId, token: existing.token, epoch: existing.epoch };
     }
     this.#evictOldestTerminal();
@@ -119,10 +122,13 @@ export class ReleaseCommitAuthority {
     if (rec !== undefined && rec.state === "released") rec.state = "delivery-unknown";
   }
 
-  /** Drop an unused lease so a failed open cannot hold a cap slot. */
-  dropIfUnused(leaseId: string): void {
+  /**
+   * Drop the unused lease this exact acquisition minted.
+   * Match by lease identity and the mint token; never drop an outer in-flight lease.
+   */
+  dropIfUnused(leaseId: string, token: string): void {
     const rec = this.#leases.get(leaseId);
-    if (rec !== undefined && rec.state === "unused") {
+    if (rec !== undefined && rec.state === "unused" && rec.token === token) {
       this.#leases.delete(leaseId);
     }
   }

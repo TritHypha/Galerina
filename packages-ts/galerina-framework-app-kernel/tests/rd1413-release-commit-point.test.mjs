@@ -513,3 +513,100 @@ test("lease cap: getSecret whose use never callbacks leaves size unchanged", () 
   assert.equal(authority.size, before);
   assert.equal(authority.stateOf("op-no-callback"), "missing");
 });
+
+test("F1: mint of an in-flight unused operationId refuses and leaves the outer lease", () => {
+  const authority = new ReleaseCommitAuthority();
+  const first = authority.mint("shared-op", 0);
+  assert.equal(authority.stateOf("shared-op"), "unused");
+  assert.throws(
+    () => authority.mint("shared-op", 0),
+    (err) => isRefused(err, "replay"),
+  );
+  assert.equal(authority.stateOf("shared-op"), "unused");
+  assert.equal(authority.consume(first.leaseId, first.token, 0), "released");
+});
+
+test("F1: dropIfUnused drops only the minted token", () => {
+  const authority = new ReleaseCommitAuthority();
+  const lease = authority.mint("op-owned", 0);
+  authority.dropIfUnused("op-owned", "not-the-token");
+  assert.equal(authority.stateOf("op-owned"), "unused");
+  authority.dropIfUnused("op-owned", lease.token);
+  assert.equal(authority.stateOf("op-owned"), "missing");
+});
+
+test("F1: nested getSecret with shared operationId cannot drop the outer unused lease", () => {
+  const authority = new ReleaseCommitAuthority();
+  const stored = new Uint8Array(SYNTHETIC);
+  let nestedState = "";
+  let nestedThrew = false;
+  let nestedOutcome = "";
+  let delivered = 0;
+  const provider = {
+    has() {
+      return true;
+    },
+    use(_name, callback) {
+      const nestedGate = createSecretGate({
+        has() {
+          return true;
+        },
+        use() {
+          return undefined;
+        },
+      }, { authority });
+      try {
+        nestedGate.getSecret(["credential"], "credential", () => {
+          delivered += 1;
+        }, undefined, "shared-op");
+      } catch (err) {
+        nestedThrew = true;
+        nestedOutcome = err instanceof SecretReleaseRefused ? err.outcome : String(err && err.message);
+      }
+      nestedState = authority.stateOf("shared-op");
+      callback(stored);
+    },
+  };
+  const gate = createSecretGate(provider, { authority });
+  gate.getSecret(["credential"], "credential", (view) => {
+    delivered += 1;
+    assert.deepEqual([...view], SYNTHETIC);
+  }, undefined, "shared-op");
+  assert.equal(nestedState, "unused", "nested cleanup must not drop the outer unused lease");
+  assert.equal(nestedThrew, true);
+  assert.equal(nestedOutcome, "replay");
+  assert.equal(delivered, 1);
+  assert.equal(authority.stateOf("shared-op"), "released");
+});
+
+test("F1 controls: failed-open, consumed, fenced, and retired-ID stay unchanged", () => {
+  const authority = new ReleaseCommitAuthority();
+  const failedOpen = createSecretGate({
+    has() {
+      return true;
+    },
+    use() {
+      return undefined;
+    },
+  }, { authority });
+  assert.throws(() => failedOpen.getSecret(["credential"], "credential", () => undefined, undefined, "op-fail-open"));
+  assert.equal(authority.stateOf("op-fail-open"), "missing");
+
+  const live = authority.mint("op-consumed", 0);
+  assert.equal(authority.consume(live.leaseId, live.token, 0), "released");
+  authority.dropIfUnused(live.leaseId, live.token);
+  assert.equal(authority.stateOf("op-consumed"), "released");
+  assert.equal(authority.consume(live.leaseId, live.token, 0), "replay");
+
+  const fenced = authority.mint("op-fenced", 0);
+  authority.fence(fenced.leaseId);
+  authority.dropIfUnused(fenced.leaseId, fenced.token);
+  assert.equal(authority.stateOf("op-fenced"), "fenced");
+  assert.equal(authority.consume(fenced.leaseId, fenced.token, 0), "fenced");
+
+  const retired = authority.mint("op-retired", 0);
+  assert.equal(authority.consume(retired.leaseId, retired.token, 0), "released");
+  const again = authority.mint("op-retired", 0);
+  assert.equal(again.token, retired.token);
+  assert.equal(authority.stateOf("op-retired"), "released");
+});

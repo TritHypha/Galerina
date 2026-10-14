@@ -63,7 +63,9 @@ export interface SecretGate {
    * declared name, throws if the provider is unavailable, fails to invoke the callback, invokes
    * it more than once, or the callback returns a value/thenable. The kernel latches such failures
    * so handler code cannot catch one and return success. The value is only exposed to `fn` as a
-   * short-lived view; this does not prevent handler-created copies.
+   * short-lived delivery copy of gate-owned staged bytes. Gate-owned staged bytes are wiped on
+   * every exit, including when the consumer transfers the handed view. Consumer-made copies,
+   * including a transferred ArrayBuffer, are out of wipe scope.
    */
   getSecret(
     required: readonly string[],
@@ -179,6 +181,7 @@ export function createSecretGate(
     let callbackFailed = false;
     let callbackFailure: unknown;
     let stagedView: Uint8Array | undefined;
+    let deliveredView: Uint8Array | undefined;
     let liveView: Uint8Array | undefined;
     const failCallback = (error: unknown): never => {
       if (!callbackFailed) {
@@ -304,7 +307,16 @@ export function createSecretGate(
 
       let callbackResult: unknown;
       try {
-        callbackResult = fn(stagedView);
+        // Hand a distinct copy so a consumer transfer cannot detach gate-owned staged bytes.
+        deliveredView = new intrinsicUint8Array(stagedView.length);
+        for (let i = 0; i < stagedView.length; i += 1) {
+          const byte = stagedView[i];
+          if (byte === undefined) {
+            throw new Error("SecretGate: staged view is incomplete");
+          }
+          deliveredView[i] = byte;
+        }
+        callbackResult = fn(deliveredView);
       } catch (error) {
         authority.markUnknown(lease.leaseId);
         throw error;
@@ -323,9 +335,18 @@ export function createSecretGate(
       if (callbackFailed) throw callbackFailure;
       return undefined;
     } finally {
-      // This outer cleanup also covers a provider that throws after staging but before returning.
-      if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
-      authority.dropIfUnused(lease.leaseId);
+      // Wipe must never replace the original consumer/provider error, and dropIfUnused must run.
+      try {
+        if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
+      } catch {
+        // Gate-owned fill is best-effort relative to the original error.
+      }
+      try {
+        if (deliveredView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, deliveredView, [0]);
+      } catch {
+        // The consumer may have transferred this view's buffer. That copy is out of wipe scope.
+      }
+      authority.dropIfUnused(lease.leaseId, lease.token);
     }
   }
 
