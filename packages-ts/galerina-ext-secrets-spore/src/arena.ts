@@ -41,6 +41,8 @@ function stageSecretCopy(source: Uint8Array): Buffer {
 export class SealArena {
   private readonly entries = new Map<string, ArenaEntry>();
   private disposed = false;
+  /** Advanced on fault / remove / dispose. Bound into the app-kernel release lease. */
+  private epoch = 0;
 
   /** Copy `value` into a fresh arena Buffer, mlock it, wipe nothing of the caller's, store it. */
   put(name: string, value: Uint8Array): void {
@@ -80,6 +82,11 @@ export class SealArena {
     return e !== undefined && !e.faulted;
   }
 
+  /** Monotonic revocation epoch. Provider open does not advance it. */
+  revocationEpoch(): number {
+    return this.epoch;
+  }
+
   /** Names currently held (for `list` — values are never exposed). */
   names(): string[] {
     return Array.from(this.entries.keys());
@@ -110,6 +117,7 @@ export class SealArena {
     wipeBytes(e.value);
     if (e.staging !== null) { wipeBytes(e.staging); e.staging = null; }
     e.faulted = true;
+    this.epoch += 1;
   }
 
   /** Zero-wipe + remove a single entry. */
@@ -119,6 +127,7 @@ export class SealArena {
     wipeBytes(e.value);
     if (e.staging !== null) wipeBytes(e.staging);
     this.entries.delete(name);
+    this.epoch += 1;
   }
 
   /** Zero-wipe ALL entries and clear (rotation-manager.ts:212-220 dispose). Idempotent. */
@@ -128,6 +137,7 @@ export class SealArena {
       if (e.staging !== null) wipeBytes(e.staging);
     }
     this.entries.clear();
+    if (!this.disposed) this.epoch += 1;
     this.disposed = true;
   }
 

@@ -30,8 +30,13 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
-import { createSecretGate } from "./secret-gate.js";
+import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
+
+function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
+  return error instanceof SecretReleaseRefused
+    || (error instanceof Error && error.name === "SecretReleaseRefused");
+}
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
 // the bare specifier resolves via the package's main entry (dist/index.js) which re-exports
@@ -658,6 +663,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const inFlight = new Map<string, number>();
   const rateWindows = new Map<string, { count: number; resetAt: number }>();
   const maxRateWindows = 10_000;
+  // requestId is caller-supplied and not proven unique. Bind each handle() to its own
+  // operation-wide release lease so a reused requestId cannot replay a prior disclosure.
+  let releaseSeq = 0;
 
   /** Internal pipeline result: the response plus the matched policy (for audit provenance). */
   interface PipelineOutcome {
@@ -858,10 +866,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let releaseWhenHandlerSettles = false;
     let slotReleased = false;
     let secretAccessFailed = false;
+    let secretReleaseRefused = false;
     let requestOutcomeSealed = false;
     let secretAccessInProgress = false;
     let secretAccessSpent = false;
     let requestActive = false;
+    const secretUnavailableResponse = (): GalerinaKernelResponse =>
+      errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
+    releaseSeq += 1;
+    const releaseOperationId = `${req.requestId}\u0000${releaseSeq}`;
     const releaseSlot = (): void => {
       if (slotReleased) return;
       slotReleased = true;
@@ -1015,12 +1028,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
                 // response is sealed. Later closed-capability refusals cannot revise an
                 // outcome whose matching audit event may already be accepted.
                 if (!requestOutcomeSealed) secretAccessFailed = true;
-              });
+              }, releaseOperationId);
             } catch (error) {
               // Latch the fault so a handler cannot catch a missing/invalid secret-use error and
               // still return a success response. After sealing, the callback still refuses but
               // cannot revise the already-selected response or its audit event.
               if (!requestOutcomeSealed) secretAccessFailed = true;
+              if (isSecretReleaseRefused(error)) secretReleaseRefused = true;
               throw error;
             } finally {
               secretAccessInProgress = false;
@@ -1033,13 +1047,20 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
         result = await promiseRace([handlerPromise, timeoutPromise]);
         if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
-      } catch {
+      } catch (error) {
         if (deadlineExpired()) {
           if (handlerPromise !== undefined) {
             releaseWhenHandlerSettles = true;
             void handlerPromise.finally(releaseSlot).catch(() => undefined);
           }
           return terminalOutcome(deadlineRefusal().response);
+        }
+        if (isSecretReleaseRefused(error) || secretReleaseRefused) {
+          // Do not attach the post-await secretAccessFailed recheck: that recheck is for a
+          // handler that swallowed a fence and still returned success (500). An uncaught
+          // result-sink fence is unavailability (503) and must not be rewritten at publication.
+          requestOutcomeSealed = true;
+          return pipelineOutcome(secretUnavailableResponse(), policy);
         }
         // Handler faults fail closed: a safe 500, no internal detail leaks.
         return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
