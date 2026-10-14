@@ -325,6 +325,7 @@ export function createSecretGate(
     } finally {
       // This outer cleanup also covers a provider that throws after staging but before returning.
       if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
+      authority.dropIfUnused(lease.leaseId);
     }
   }
 

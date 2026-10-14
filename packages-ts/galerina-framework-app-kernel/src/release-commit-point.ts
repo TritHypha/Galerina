@@ -61,6 +61,9 @@ export class ReleaseCommitAuthority {
       return { leaseId: operationId, token: existing.token, epoch: existing.epoch };
     }
     this.#evictOldestTerminal();
+    if (this.#leases.size >= RELEASE_LEASE_CAP) {
+      throw new SecretReleaseRefused("fenced", "Release lease map is at capacity.");
+    }
     this.#seq += 1;
     const token = `${operationId}\u0000${epoch}\u0000${this.#seq}`;
     this.#leases.set(operationId, { token, epoch, state: "unused" });
@@ -114,6 +117,14 @@ export class ReleaseCommitAuthority {
   markUnknown(leaseId: string): void {
     const rec = this.#leases.get(leaseId);
     if (rec !== undefined && rec.state === "released") rec.state = "delivery-unknown";
+  }
+
+  /** Drop an unused lease so a failed open cannot hold a cap slot. */
+  dropIfUnused(leaseId: string): void {
+    const rec = this.#leases.get(leaseId);
+    if (rec !== undefined && rec.state === "unused") {
+      this.#leases.delete(leaseId);
+    }
   }
 }
 

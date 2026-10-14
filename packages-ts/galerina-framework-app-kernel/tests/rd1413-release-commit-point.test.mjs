@@ -479,3 +479,37 @@ test("R7: forged Error named SecretReleaseRefused is 500 not 503", async () => {
   const body = JSON.parse(new TextDecoder().decode(res.body));
   assert.equal(body.error, "internal_error");
 });
+
+test("lease cap: 1025 unused mints refuse the last and size stays at cap", () => {
+  const authority = new ReleaseCommitAuthority();
+  for (let i = 0; i < RELEASE_LEASE_CAP; i += 1) {
+    const lease = authority.mint(`unused-cap-${i}`, 0);
+    assert.equal(authority.stateOf(lease.leaseId), "unused");
+  }
+  assert.equal(authority.size, RELEASE_LEASE_CAP);
+  assert.throws(
+    () => authority.mint("unused-cap-overflow", 0),
+    (err) => isRefused(err, "fenced"),
+  );
+  assert.equal(authority.size, RELEASE_LEASE_CAP);
+  assert.equal(authority.stateOf("unused-cap-overflow"), "missing");
+});
+
+test("lease cap: getSecret whose use never callbacks leaves size unchanged", () => {
+  const authority = new ReleaseCommitAuthority();
+  const before = authority.size;
+  const provider = {
+    has() {
+      return true;
+    },
+    use() {
+      return undefined;
+    },
+  };
+  const gate = createSecretGate(provider, { authority });
+  assert.throws(
+    () => gate.getSecret(["credential"], "credential", () => undefined, undefined, "op-no-callback"),
+  );
+  assert.equal(authority.size, before);
+  assert.equal(authority.stateOf("op-no-callback"), "missing");
+});
