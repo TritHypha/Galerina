@@ -7,7 +7,7 @@
 import { type GalerinaValue } from "./interpreter.js";
 import { type AstNode } from "./parser.js";
 import { buildRouteRegistry, type RouteMatch, type RouteRegistry } from "./route-registry.js";
-import { standaloneAuthVerifyRefusal } from "./serve-secret-gate.js";
+import { standaloneServeSecretRefusal } from "./serve-secret-gate.js";
 import { jsObjectToGalerina } from "./stdlib.js";
 
 export interface ServerConfig {
@@ -123,9 +123,9 @@ export async function startServer(
     }
   }
   const registry = buildRouteRegistry(ast);
-  const authVerifyRefusal = standaloneAuthVerifyRefusal(registry.routes);
-  if (authVerifyRefusal.__tag === "refuse") {
-    throw new Error(authVerifyRefusal.reason);
+  const secretRefusal = standaloneServeSecretRefusal(registry.routes, ast);
+  if (secretRefusal.__tag === "refuse") {
+    throw new Error(secretRefusal.reason);
   }
   // W2: the network stack loads only when a server actually starts (see header comment).
   const { createServer } = await import("node:http");

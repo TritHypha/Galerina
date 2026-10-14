@@ -66,7 +66,107 @@ route POST "/__fixture/auth/verify" {
   flow verifyPassword
 }`;
 
-const GATE = /app-kernel gate 9\.5|secret-requiring and protected routes|secret effects/u;
+const GATE = /app-kernel gate 9\.5|secret-requiring and protected routes|secret-bearing effect|secrets block|unrecognised effect|deny-only effect|secret effects/u;
+const LISTENER_REFUSED = /cannot serve|refuses secret|secret-bearing effect|secrets block|unrecognised effect|deny-only effect|POST \/auth\/verify|secret requirement unknown/u;
+
+// effects { vault.read } — canonical, cited from effect-checker.ts CANONICAL_EFFECTS.
+const VAULT_READ = `secure flow readVault(request: Request) -> Response
+contract {
+  intent { "Declare vault.read, the governed cross-flow channel." }
+  effects { vault.read }
+}
+{
+  return { reached: true }
+}
+route GET "/vault-read" {
+  request Request
+  response Response
+  flow readVault
+}`;
+
+// effects { vault.write } — canonical, cited from effect-checker.ts CANONICAL_EFFECTS.
+const VAULT_WRITE = `secure flow writeVault(request: Request) -> Response
+contract {
+  intent { "Declare vault.write, the governed cross-flow channel." }
+  effects { vault.write }
+}
+{
+  return { reached: true }
+}
+route POST "/vault-write" {
+  request Request
+  response Response
+  flow writeVault
+}`;
+
+// Secrets.get infers secret.read — stdlib-registry.ts STDLIB_CAPABILITY_MAP and
+// effect-checker.ts EFFECT_REGISTRY. Call shape from tests/value-state-secret-source-precision.test.mjs.
+const SECRETS_GET = `secure flow fetchSecret(request: Request) -> Response
+contract {
+  intent { "Call Secrets.get so secret.read is inferred." }
+  effects {}
+}
+{
+  let value = Secrets.get("k")
+  return { reached: true }
+}
+route GET "/secrets-get" {
+  request Request
+  response Response
+  flow fetchSecret
+}`;
+
+// env.secret infers secret.read — stdlib-registry.ts and tests/domain-security.test.mjs.
+const ENV_SECRET = `secure flow readEnvSecret(request: Request) -> Response
+contract {
+  intent { "Call env.secret so secret.read is inferred." }
+  effects {}
+}
+{
+  let apiKey = env.secret("API_KEY")
+  return { reached: true }
+}
+route GET "/env-secret" {
+  request Request
+  response Response
+  flow readEnvSecret
+}`;
+
+// contract secrets { credential ... } with no secret effect names —
+// tests/secrets-body-retention-110.test.mjs and tests/contract-secrets-epilogue.test.mjs.
+const SECRETS_BLOCK = `secure flow charge(request: Request) -> Response
+contract {
+  intent { "Sealed credential block with secret-free effect names." }
+  effects { database.write }
+  secrets {
+    credential db { provider vault path "secret/data/db" }
+    rotation { interval 24h on_rotation_fault halt }
+  }
+}
+{
+  return { reached: true }
+}
+route POST "/charge" {
+  request Request
+  response Response
+  flow charge
+}`;
+
+// Unrecognised effect — effect-checker.ts validateDeclaredEffectNames FUNGI-EFFECT-004
+// ("totally.fake.effect" is the file's own unknown-name example).
+const UNRECOGNISED = `secure flow unknownEffect(request: Request) -> Response
+contract {
+  intent { "Declare an unrecognised effect name." }
+  effects { totally.fake.effect }
+}
+{
+  return { reached: true }
+}
+route GET "/unknown-effect" {
+  request Request
+  response Response
+  flow unknownEffect
+}`;
 
 async function assertServeRefuses(source, file, pattern) {
   let server;
@@ -147,5 +247,50 @@ describe("standalone serve() secret/protected gate", () => {
     } finally {
       await running.close();
     }
+  });
+});
+
+async function assertStartServerRefuses(source, file, pattern) {
+  const ast = parseProgram(source, file).ast;
+  let calls = 0;
+  await assert.rejects(
+    () => startServer(ast, { port: 0 }, async () => {
+      calls += 1;
+      return { __tag: "string", value: "reached" };
+    }),
+    pattern,
+  );
+  assert.equal(calls, 0, `${file}: secret-requiring handler must not run without the kernel gate`);
+}
+
+describe("standalone serve() addendum-01 fail-closed classifier", () => {
+  it("refuses effects { vault.read } before opening a listener", async () => {
+    await assertServeRefuses(VAULT_READ, "vault-read.fungi", GATE);
+    await assertStartServerRefuses(VAULT_READ, "vault-read.fungi", GATE);
+  });
+
+  it("refuses effects { vault.write } before opening a listener", async () => {
+    await assertServeRefuses(VAULT_WRITE, "vault-write.fungi", GATE);
+    await assertStartServerRefuses(VAULT_WRITE, "vault-write.fungi", GATE);
+  });
+
+  it("refuses a flow that calls Secrets.get (inferred secret.read)", async () => {
+    await assertServeRefuses(SECRETS_GET, "secrets-get.fungi", LISTENER_REFUSED);
+    await assertStartServerRefuses(SECRETS_GET, "secrets-get.fungi", GATE);
+  });
+
+  it("refuses a flow that calls env.secret (inferred secret.read)", async () => {
+    await assertServeRefuses(ENV_SECRET, "env-secret.fungi", LISTENER_REFUSED);
+    await assertStartServerRefuses(ENV_SECRET, "env-secret.fungi", GATE);
+  });
+
+  it("refuses a contract secrets { credential ... } block with no secret effect names", async () => {
+    await assertServeRefuses(SECRETS_BLOCK, "secrets-block.fungi", GATE);
+    await assertStartServerRefuses(SECRETS_BLOCK, "secrets-block.fungi", GATE);
+  });
+
+  it("refuses an unrecognised effect name before opening a listener", async () => {
+    await assertServeRefuses(UNRECOGNISED, "unrecognised.fungi", LISTENER_REFUSED);
+    await assertStartServerRefuses(UNRECOGNISED, "unrecognised.fungi", GATE);
   });
 });

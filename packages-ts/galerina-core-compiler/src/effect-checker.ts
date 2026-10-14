@@ -535,6 +535,14 @@ const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
   ["ai.inference.load",   "inference.load"],
 ]);
 
+export function canonicalEffectName(name: string): string {
+  return EFFECT_NAME_ALIASES.get(name) ?? name;
+}
+
+export function isRecognisedEffectName(name: string): boolean {
+  return CANONICAL_EFFECTS.has(name) || DENY_ONLY_EFFECTS.has(name) || EFFECT_NAME_ALIASES.has(name);
+}
+
 // ---------------------------------------------------------------------------
 // Known effect-producing call patterns
 // ---------------------------------------------------------------------------
@@ -1955,6 +1963,10 @@ function inferEffectsFromNode(node: AstNode): Set<string> {
 
   walk(node);
   return effects;
+}
+
+export function observedEffectsForFlowNode(flowNode: AstNode): readonly string[] {
+  return [...inferEffectsFromNode(flowNode)].sort();
 }
 
 /**

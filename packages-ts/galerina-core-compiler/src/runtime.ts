@@ -501,6 +501,7 @@ export async function serve(
 
   const secretRefusal = standaloneServeSecretRefusal(
     registry.routes,
+    admission.parseResult.ast,
     admission.parseResult.flows,
     admission.effectResults,
   );
@@ -509,6 +510,7 @@ export async function serve(
   }
   const protectedFlowNames = protectedStandaloneFlowNames(
     registry.routes,
+    admission.parseResult.ast,
     admission.parseResult.flows,
     admission.effectResults,
   );
