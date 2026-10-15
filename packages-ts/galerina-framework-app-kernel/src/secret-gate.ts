@@ -29,6 +29,8 @@ import type { ReleaseAuditEvent, ReleaseOutcome, ReleaseStatus } from "./release
 export {
   ReleaseCommitAuthority,
   RELEASE_LEASE_CAP,
+  RELEASE_AUDIT_CAP,
+  RELEASE_RETIRED_CAP,
   SecretReleaseRefused,
   bytesEqual,
 } from "./release-commit-point.js";

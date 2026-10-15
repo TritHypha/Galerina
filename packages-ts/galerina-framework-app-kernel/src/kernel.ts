@@ -616,7 +616,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
-  const secretGate = createSecretGate(opts.secretsProvider, { requireBoundOperationId: true });
+  const secretGate = createSecretGate(opts.secretsProvider, {
+    requireBoundOperationId: true,
+    requireRevocationEpoch: true,
+  });
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
@@ -1074,7 +1077,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
       }
 
+      const unknownIfSpent = (): void => {
+        if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
+      };
+
       if (secretAccessFailed) {
+        unknownIfSpent();
         return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
       }
 
@@ -1089,8 +1097,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           body = undefined;
         } else if (bodyValue instanceof Uint8Array) {
           bodyByteLength = actualTypedArrayByteLength(bodyValue);
-          if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+          if (deadlineExpired()) {
+            unknownIfSpent();
+            return terminalOutcome(deadlineRefusal().response);
+          }
           if (bodyByteLength > responseMemoryBudgetBytes) {
+            unknownIfSpent();
             return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
           }
           // Publish a kernel-owned fixed-length snapshot; never expose the handler's mutable or
@@ -1107,11 +1119,16 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         // handler-controlled serialization. Re-arbitrate its monotonic failure latch at the
         // final encoded-response boundary, not only before serialization begins.
         if (secretAccessFailed) {
+          unknownIfSpent();
           return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
         }
-        if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+        if (deadlineExpired()) {
+          unknownIfSpent();
+          return terminalOutcome(deadlineRefusal().response);
+        }
 
         if (bodyByteLength !== undefined && bodyByteLength > responseMemoryBudgetBytes) {
+          unknownIfSpent();
           return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
         }
 
@@ -1120,6 +1137,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (secretAccessSpent) secretGate.acknowledge(releaseOperationId);
         return terminalOutcome(response);
       } catch {
+        unknownIfSpent();
         if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
         return terminalOutcome(errorResponse(500, "internal_error", "Response could not be encoded."));
       }

@@ -53,6 +53,14 @@ interface LeaseRecord {
 
 /** Bound on live lease records. Oldest terminal entries evict first. */
 export const RELEASE_LEASE_CAP = 1024;
+/** Bound on the process-local audit log. Oldest events drop first. */
+export const RELEASE_AUDIT_CAP = 1024;
+/** Bound on retired tombstones. Oldest ids drop first. */
+export const RELEASE_RETIRED_CAP = 1024;
+
+function operationIdOf(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
 
 export class ReleaseCommitAuthority {
   readonly #leases = new Map<string, LeaseRecord>();
@@ -60,8 +68,20 @@ export class ReleaseCommitAuthority {
   readonly #audit: ReleaseAuditEvent[] = [];
   #seq = 0;
 
-  #record(operationId: string, outcome: ReleaseAuditEvent["outcome"]): void {
-    this.#audit.push(Object.freeze({ operationId, outcome }));
+  #record(operationId: unknown, outcome: ReleaseAuditEvent["outcome"]): void {
+    const id = operationIdOf(operationId);
+    this.#audit.push(Object.freeze({ operationId: id, outcome }));
+    if (this.#audit.length > RELEASE_AUDIT_CAP) {
+      this.#audit.splice(0, this.#audit.length - RELEASE_AUDIT_CAP);
+    }
+  }
+
+  #retire(operationId: string): void {
+    if (this.#retired.size >= RELEASE_RETIRED_CAP) {
+      const oldest = this.#retired.values().next().value;
+      if (typeof oldest === "string") this.#retired.delete(oldest);
+    }
+    this.#retired.add(operationId);
   }
 
   /** Live map size (unused + terminal). Does not include retired tombstones. */
@@ -107,7 +127,7 @@ export class ReleaseCommitAuthority {
       }
       if (victim === undefined) return;
       this.#leases.delete(victim);
-      this.#retired.add(victim);
+      this.#retire(victim);
       this.#record(victim, "retired");
     }
   }
@@ -121,9 +141,11 @@ export class ReleaseCommitAuthority {
    * lengths or digests, and never opens a provider.
    */
   status(operationId: string): ReleaseStatus {
-    if (typeof operationId !== "string" || operationId.length === 0) {
-      return Object.freeze({ operationId: operationId ?? "", state: "missing" });
+    const id = operationIdOf(operationId);
+    if (id.length === 0) {
+      return Object.freeze({ operationId: "", state: "missing" });
     }
+    operationId = id;
     if (this.#retired.has(operationId)) {
       return Object.freeze({ operationId, state: "retired" });
     }
@@ -173,8 +195,9 @@ export class ReleaseCommitAuthority {
    * acknowledged. Process-local; the authentic consumer is this authority.
    */
   ack(operationId: string, token: string, observedEpoch?: number): ReleaseOutcome {
-    if (typeof operationId !== "string" || operationId.length === 0) {
-      this.#record(operationId ?? "", "missing");
+    operationId = operationIdOf(operationId);
+    if (operationId.length === 0) {
+      this.#record("", "missing");
       return "missing";
     }
     if (this.#retired.has(operationId)) {
@@ -213,8 +236,9 @@ export class ReleaseCommitAuthority {
 
   /** ACK using the token this authority minted. The authentic consumer path. */
   acknowledgeMinted(operationId: string): ReleaseOutcome {
-    if (typeof operationId !== "string" || operationId.length === 0) {
-      this.#record(operationId ?? "", "missing");
+    operationId = operationIdOf(operationId);
+    if (operationId.length === 0) {
+      this.#record("", "missing");
       return "missing";
     }
     if (this.#retired.has(operationId)) {

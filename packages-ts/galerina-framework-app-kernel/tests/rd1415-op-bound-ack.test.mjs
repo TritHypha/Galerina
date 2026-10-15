@@ -3,10 +3,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { readFileSync } from "node:fs";
 import {
   createSecretGate,
   ReleaseCommitAuthority,
   RELEASE_LEASE_CAP,
+  RELEASE_AUDIT_CAP,
+  RELEASE_RETIRED_CAP,
   SecretReleaseRefused,
 } from "../dist/secret-gate.js";
 
@@ -131,10 +134,11 @@ test("matrix: simulated crash between consume and ACK is status-only; recovery n
   const provider = countingProvider();
   const gate = createSecretGate(provider, { authority, requireBoundOperationId: true });
   gate.getSecret(["credential"], "credential", () => {}, undefined, "op-crash");
-  assert.equal(authority.stateOf("op-crash"), "released");
+  gate.noteUnknown("op-crash");
+  assert.equal(authority.stateOf("op-crash"), "delivery-unknown");
   const uses = provider.useCount();
   const recovered = gate.status("op-crash");
-  assertCleanStatus(recovered, "op-crash", "released");
+  assertCleanStatus(recovered, "op-crash", "delivery-unknown");
   assert.equal(provider.useCount(), uses);
   assert.equal(provider.hasCount() > 0, true);
   assert.throws(
@@ -142,7 +146,7 @@ test("matrix: simulated crash between consume and ACK is status-only; recovery n
     (err) => isRefused(err, "replay"),
   );
   assert.equal(provider.useCount(), uses);
-  assert.equal(gate.acknowledge("op-crash"), "acknowledged");
+  assert.equal(gate.acknowledge("op-crash"), "replay");
 });
 
 test("matrix: timeout and abort of a released lease become delivery-unknown", () => {
@@ -256,4 +260,42 @@ test("matrix: recovery and audit never include secret bytes, lengths, digests or
   for (const byte of SYNTHETIC) {
     assert.equal(dumped.includes(String.fromCharCode(byte)), false);
   }
+});
+
+test("matrix: audit log and retired set stay at cap", () => {
+  const authority = new ReleaseCommitAuthority();
+  for (let i = 0; i < RELEASE_LEASE_CAP + RELEASE_RETIRED_CAP + 8; i += 1) {
+    const lease = authority.mint(`op-bound-${i}`, 1);
+    assert.equal(authority.consume(lease.leaseId, lease.token, 1), "released");
+    assert.equal(authority.ack(lease.leaseId, lease.token, 1), "acknowledged");
+  }
+  assert.ok(authority.size <= RELEASE_LEASE_CAP);
+  assert.ok(authority.auditEvents().length <= RELEASE_AUDIT_CAP);
+  assertCleanStatus(authority.status("op-bound-0"), "op-bound-0", "missing");
+  for (const event of authority.auditEvents()) {
+    assert.equal(Object.keys(event).sort().join(","), "operationId,outcome");
+    assert.equal(typeof event.operationId, "string");
+    assert.equal(typeof event.outcome, "string");
+    const dumped = JSON.stringify(event);
+    assert.doesNotMatch(dumped, /digest|sha-?256|token|byteLength|"length"/i);
+  }
+});
+
+test("matrix: non-string operationId is coerced before freeze", () => {
+  const authority = new ReleaseCommitAuthority();
+  const status = authority.status(/** @type {any} */ (1));
+  assertCleanStatus(status, "", "missing");
+  assert.equal(authority.ack(/** @type {any} */ ({ id: "x" }), "token", 1), "missing");
+  assert.equal(authority.acknowledgeMinted(/** @type {any} */ (9)), "missing");
+  for (const event of authority.auditEvents()) {
+    assert.equal(typeof event.operationId, "string");
+    assertCleanRecord(event, event.operationId);
+  }
+});
+
+test("kernel: requireRevocationEpoch and post-handler noteUnknown are wired", () => {
+  const src = readFileSync(new URL("../src/kernel.ts", import.meta.url), "utf8");
+  assert.match(src, /requireRevocationEpoch:\s*true/);
+  assert.match(src, /unknownIfSpent/);
+  assert.equal((src.match(/secretGate\.noteUnknown\(releaseOperationId\)/g) || []).length >= 3, true);
 });
