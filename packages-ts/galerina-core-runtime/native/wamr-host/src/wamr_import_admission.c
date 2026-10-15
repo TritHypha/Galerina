@@ -158,31 +158,36 @@ wamr_import_abi_result_t wamr_validate_module_import_abi(
             }
             if (strcmp(prior.module_name, imported.module_name) == 0 &&
                 strcmp(prior.name, imported.name) == 0) {
-                set_diagnostic(diagnostic, diagnostic_capacity,
-                               "module contains a duplicate import name");
+                (void)snprintf(diagnostic, diagnostic_capacity,
+                               "DUPLICATE_IMPORT import=%s.%s",
+                               imported.module_name, imported.name);
                 return WAMR_IMPORT_ABI_DUPLICATE_IMPORT;
             }
         }
         contract = find_contract(contracts, contract_count,
                                  imported.module_name, imported.name);
         if (contract == NULL) {
-            set_diagnostic(diagnostic, diagnostic_capacity,
-                           "module contains an import outside the closed allowlist");
+            (void)snprintf(diagnostic, diagnostic_capacity,
+                           "UNAPPROVED_IMPORT import=%s.%s",
+                           imported.module_name, imported.name);
             return WAMR_IMPORT_ABI_UNAPPROVED_IMPORT;
         }
         if (imported.kind != WASM_IMPORT_EXPORT_KIND_FUNC) {
-            set_diagnostic(diagnostic, diagnostic_capacity,
-                           "allowlisted import is not a function");
+            (void)snprintf(diagnostic, diagnostic_capacity,
+                           "UNSUPPORTED_KIND import=%s.%s",
+                           imported.module_name, imported.name);
             return WAMR_IMPORT_ABI_UNSUPPORTED_KIND;
         }
         if (!signature_matches(imported.u.func_type, contract)) {
-            set_diagnostic(diagnostic, diagnostic_capacity,
-                           "allowlisted function import has a signature mismatch");
+            (void)snprintf(diagnostic, diagnostic_capacity,
+                           "SIGNATURE_MISMATCH import=%s.%s",
+                           imported.module_name, imported.name);
             return WAMR_IMPORT_ABI_SIGNATURE_MISMATCH;
         }
         if (!imported.linked) {
-            set_diagnostic(diagnostic, diagnostic_capacity,
-                           "allowlisted function import is not linked to a registered host function");
+            (void)snprintf(diagnostic, diagnostic_capacity,
+                           "UNLINKED_IMPORT import=%s.%s",
+                           imported.module_name, imported.name);
             return WAMR_IMPORT_ABI_UNLINKED_IMPORT;
         }
     }
