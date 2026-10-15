@@ -1382,3 +1382,41 @@ test("secrets: provider replacement of global Uint8Array cannot alias provider-o
   assert.deepEqual([...providerBytes], [0x61, 0x62], "cleanup must not wipe provider-owned storage");
   assert.deepEqual([...stagedView], [0, 0], "the gate-owned copy is still wiped");
 });
+
+test("F2: consumer transfer-then-throw keeps original error, wipes gate-owned bytes, runs lease cleanup", async () => {
+  const NativeUint8Array = globalThis.Uint8Array;
+  const gateOwned = [];
+  function TrackingUint8Array(value) {
+    const result = new NativeUint8Array(value);
+    if (value instanceof NativeUint8Array) gateOwned.push(result);
+    return result;
+  }
+  TrackingUint8Array.prototype = NativeUint8Array.prototype;
+  globalThis.Uint8Array = TrackingUint8Array;
+  let transferred;
+  let authority;
+  try {
+    const mod = await import("../dist/secret-gate.js?f2-transfer-wipe");
+    authority = new mod.ReleaseCommitAuthority();
+    const gate = mod.createSecretGate({
+      has: () => true,
+      use: (_name, callback) => callback(new NativeUint8Array([0x53, 0x45, 0x43, 0x52, 0x45, 0x54])),
+    }, { authority });
+    assert.throws(
+      () => gate.getSecret(["credential"], "credential", (view) => {
+        transferred = new NativeUint8Array(structuredClone(view.buffer, { transfer: [view.buffer] }));
+        throw new Error("consumer-transfer-then-throw");
+      }, undefined, "op-transfer"),
+      (err) => err instanceof Error && err.message === "consumer-transfer-then-throw" && !/detached ArrayBuffer/i.test(String(err)),
+    );
+  } finally {
+    globalThis.Uint8Array = NativeUint8Array;
+  }
+  assert.ok(gateOwned.length >= 1, "gate must allocate a staged copy");
+  for (const owned of gateOwned) {
+    assert.equal(owned.buffer.detached, false, "gate-owned buffer must remain attached");
+    assert.deepEqual([...owned], Array(owned.length).fill(0), "gate-owned staged bytes must be zero");
+  }
+  assert.deepEqual([...transferred], [0x53, 0x45, 0x43, 0x52, 0x45, 0x54], "consumer-made transferred copy is out of wipe scope");
+  assert.equal(authority.stateOf("op-transfer"), "delivery-unknown");
+});

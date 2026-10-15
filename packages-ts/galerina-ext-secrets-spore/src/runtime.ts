@@ -17,6 +17,11 @@ import { unpackSeal, contextFor } from "./schema.js";
 import { open, SporeCryptoError } from "./spore.js";
 import { wipeBytes } from "./wipe.js";
 
+/** Provider-side epoch bound into the app-kernel release lease. Open does not advance it. */
+export function revocationEpoch(arena: SealArena): number {
+  return arena.revocationEpoch();
+}
+
 const SECTION_EPOCH = 0;
 
 /**

@@ -19,6 +19,21 @@
  * arena can be passed straight in as the provider.
  */
 
+import {
+  ReleaseCommitAuthority,
+  SecretReleaseRefused,
+  bytesEqual,
+} from "./release-commit-point.js";
+import type { ReleaseOutcome } from "./release-commit-point.js";
+
+export {
+  ReleaseCommitAuthority,
+  RELEASE_LEASE_CAP,
+  SecretReleaseRefused,
+  bytesEqual,
+} from "./release-commit-point.js";
+export type { ReleaseOutcome, ReleaseLeaseState } from "./release-commit-point.js";
+
 /**
  * The boot-resolved secrets provider the kernel owns for the process lifetime. Structurally
  * satisfied by the ext-secrets-spore `SealArena` (arena.ts has/use). Fail-closed by contract:
@@ -31,6 +46,8 @@ export interface SecretsProvider {
   has(name: string): boolean;
   /** Run `fn` with a short-lived view; fn is not called for an absent/faulted secret. */
   use(name: string, fn: (value: Uint8Array) => void): void;
+  /** Monotonic epoch advanced by fault/remove/dispose. Optional on legacy has/use providers. */
+  revocationEpoch?(): number;
 }
 
 /** The per-request seam built once at construction and referenced at gate 9.5. */
@@ -46,13 +63,16 @@ export interface SecretGate {
    * declared name, throws if the provider is unavailable, fails to invoke the callback, invokes
    * it more than once, or the callback returns a value/thenable. The kernel latches such failures
    * so handler code cannot catch one and return success. The value is only exposed to `fn` as a
-   * short-lived view; this does not prevent handler-created copies.
+   * short-lived delivery copy of gate-owned staged bytes. Gate-owned staged bytes are wiped on
+   * every exit, including when the consumer transfers the handed view. Consumer-made copies,
+   * including a transferred ArrayBuffer, are out of wipe scope.
    */
   getSecret(
     required: readonly string[],
     name: string,
     fn: (value: Uint8Array) => unknown,
     onViolation?: (error: unknown) => void,
+    operationId?: string,
   ): undefined;
 }
 
@@ -85,7 +105,26 @@ function requiresName(required: readonly string[], name: string): boolean {
  * never resolved the anchor/arena), `admit` refuses ANY required secret — but is a strict no-op
  * for a route whose `require` list is empty, which is why every secret-free route is unaffected.
  */
-export function createSecretGate(provider: SecretsProvider | undefined): SecretGate {
+function readEpoch(provider: SecretsProvider): number {
+  if (typeof provider.revocationEpoch !== "function") return 0;
+  let epoch: unknown;
+  try {
+    epoch = provider.revocationEpoch();
+  } catch {
+    throw new SecretReleaseRefused("stale", "SecretGate: revocation epoch is unavailable");
+  }
+  if (typeof epoch !== "number" || !Number.isSafeInteger(epoch) || epoch < 0) {
+    throw new SecretReleaseRefused("stale", "SecretGate: revocation epoch is unavailable");
+  }
+  return epoch;
+}
+
+export function createSecretGate(
+  provider: SecretsProvider | undefined,
+  options: { readonly authority?: ReleaseCommitAuthority } = {},
+): SecretGate {
+  const authority = options.authority ?? new ReleaseCommitAuthority();
+  let oneshot = 0;
   // ── admit: verbatim fail-closed logic (RED-bench-secrets-context.mjs:40-48). ──
   function admit(required: readonly string[]): "secret_unavailable" | null {
     // Provider absent = boot never resolved the anchor/arena → fail closed for any required secret.
@@ -116,16 +155,34 @@ export function createSecretGate(provider: SecretsProvider | undefined): SecretG
     name: string,
     fn: (value: Uint8Array) => unknown,
     onViolation?: (error: unknown) => void,
+    operationId?: string,
   ): undefined {
     if (!requiresName(required, name)) return undefined;
     if (provider === undefined) {
       throw new Error("SecretGate: required secret provider is unavailable");
+    }
+    if (typeof operationId === "string" && operationId.length === 0) {
+      throw new SecretReleaseRefused("missing", "SecretGate: release operation id is required");
+    }
+    const opId = typeof operationId === "string"
+      ? operationId
+      : `oneshot:${(oneshot += 1)}`;
+    const epochAtMint = readEpoch(provider);
+    const lease = authority.mint(opId, epochAtMint);
+    const prior = authority.stateOf(lease.leaseId);
+    if (prior !== "unused") {
+      const outcome: ReleaseOutcome = prior === "released" || prior === "delivery-unknown"
+        ? "replay"
+        : prior === "fenced" ? "fenced" : "missing";
+      throw new SecretReleaseRefused(outcome, `SecretGate: release lease is ${prior}`);
     }
     let callbackInvoked = false;
     let callbackActive = true;
     let callbackFailed = false;
     let callbackFailure: unknown;
     let stagedView: Uint8Array | undefined;
+    let deliveredView: Uint8Array | undefined;
+    let liveView: Uint8Array | undefined;
     const failCallback = (error: unknown): never => {
       if (!callbackFailed) {
         callbackFailed = true;
@@ -180,6 +237,22 @@ export function createSecretGate(provider: SecretsProvider | undefined): SecretG
             // Do not let consumer code run until the provider has returned and its synchronous,
             // void-only contract has been checked. Otherwise a provider can deliver bytes, trigger
             // consumer side effects, then reveal its invalid async return channel too late.
+            // liveView is the provider's argument (may alias backing store). No deliverable copy
+            // is taken until D marks the lease consumed.
+            liveView = value;
+            let observedEpoch: number;
+            try {
+              observedEpoch = readEpoch(provider);
+            } catch (error) {
+              authority.fence(lease.leaseId);
+              return failCallback(error);
+            }
+            const releaseOutcome = authority.consume(lease.leaseId, lease.token, observedEpoch);
+            if (releaseOutcome !== "released") {
+              return failCallback(
+                new SecretReleaseRefused(releaseOutcome, `SecretGate: release refused (${releaseOutcome})`),
+              );
+            }
             stagedView = new intrinsicUint8Array(value);
           } catch (error) {
             return failCallback(error);
@@ -208,23 +281,44 @@ export function createSecretGate(provider: SecretsProvider | undefined): SecretG
       if (!callbackInvoked || stagedView === undefined) {
         throw new Error("SecretGate: required secret was not supplied by provider");
       }
+      // Alias survived `use` only if the provider's view still equals the staged copy after
+      // `use` returned. SealArena wipes its transient in `use`'s finally, so this is false
+      // there and the post-`use` `has()` boolean remains the presence check. A live backing
+      // alias (the RD-1413 fixture) stays equal until `has()` mutates it.
+      const aliasSurvivedOpen = liveView !== undefined && bytesEqual(liveView, stagedView);
       let stillPresent: unknown;
       try {
         stillPresent = provider.has(name);
       } catch {
-        throw new Error("SecretGate: provider validity check failed before secret delivery");
+        authority.fence(lease.leaseId);
+        throw new SecretReleaseRefused("stale", "SecretGate: provider validity check failed before secret delivery");
       }
       // `has` is provider-controlled too. It may re-enter a saved callback, swallow the duplicate-
       // use exception, and still report `true`; do not deliver staged bytes after that violation.
       if (callbackFailed) throw callbackFailure;
+      if (aliasSurvivedOpen && liveView !== undefined && !bytesEqual(liveView, stagedView)) {
+        authority.fence(lease.leaseId);
+        throw new SecretReleaseRefused("fenced", "SecretGate: live secret mutated after provider open");
+      }
       if (stillPresent !== true) {
-        throw new Error("SecretGate: secret was revoked before staged delivery");
+        authority.fence(lease.leaseId);
+        throw new SecretReleaseRefused("fenced", "SecretGate: secret was revoked before staged delivery");
       }
 
       let callbackResult: unknown;
       try {
-        callbackResult = fn(stagedView);
+        // Hand a distinct copy so a consumer transfer cannot detach gate-owned staged bytes.
+        deliveredView = new intrinsicUint8Array(stagedView.length);
+        for (let i = 0; i < stagedView.length; i += 1) {
+          const byte = stagedView[i];
+          if (byte === undefined) {
+            throw new Error("SecretGate: staged view is incomplete");
+          }
+          deliveredView[i] = byte;
+        }
+        callbackResult = fn(deliveredView);
       } catch (error) {
+        authority.markUnknown(lease.leaseId);
         throw error;
       }
       if (callbackResult !== undefined) {
@@ -241,8 +335,18 @@ export function createSecretGate(provider: SecretsProvider | undefined): SecretG
       if (callbackFailed) throw callbackFailure;
       return undefined;
     } finally {
-      // This outer cleanup also covers a provider that throws after staging but before returning.
-      if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
+      // Wipe must never replace the original consumer/provider error, and dropIfUnused must run.
+      try {
+        if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
+      } catch {
+        // Gate-owned fill is best-effort relative to the original error.
+      }
+      try {
+        if (deliveredView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, deliveredView, [0]);
+      } catch {
+        // The consumer may have transferred this view's buffer. That copy is out of wipe scope.
+      }
+      authority.dropIfUnused(lease.leaseId, lease.token);
     }
   }
 
