@@ -36,6 +36,11 @@ import type { SecretsProvider } from "./secret-gate.js";
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
   return error instanceof SecretReleaseRefused;
 }
+
+function isEpochUnavailable(error: unknown): boolean {
+  return isSecretReleaseRefused(error)
+    && error.message === "SecretGate: revocation epoch is unavailable";
+}
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
 // the bare specifier resolves via the package's main entry (dist/index.js) which re-exports
@@ -1036,10 +1041,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
               // still return a success response. After sealing, the callback still refuses but
               // cannot revise the already-selected response or its audit event.
               if (!requestOutcomeSealed) secretAccessFailed = true;
-              if (isSecretReleaseRefused(error)) {
+              if (isEpochUnavailable(error)) {
                 secretReleaseRefused = true;
-                // Do not rethrow: an in-flight microtask or a handler that ignores the
-                // return value must not turn a stale epoch into an uncaughtException.
+                // Swallow only mint-time epoch unavailability. An in-flight microtask
+                // after the handler returned must not become uncaughtException. Other
+                // SecretReleaseRefused outcomes (staging revoke / fence) still throw so
+                // a handler that catches them cannot rehabilitate the request: the
+                // secretAccessFailed latch seals 500, matching the pre-O4 kernel path.
                 return undefined;
               }
               throw error;
