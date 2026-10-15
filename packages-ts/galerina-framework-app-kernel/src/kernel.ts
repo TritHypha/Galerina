@@ -616,7 +616,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
-  const secretGate = createSecretGate(opts.secretsProvider);
+  const secretGate = createSecretGate(opts.secretsProvider, { requireBoundOperationId: true });
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
@@ -1048,6 +1048,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
       } catch (error) {
         if (deadlineExpired()) {
+          if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
           if (handlerPromise !== undefined) {
             releaseWhenHandlerSettles = true;
             void handlerPromise.finally(releaseSlot).catch(() => undefined);
@@ -1062,6 +1063,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           return pipelineOutcome(secretUnavailableResponse(), policy);
         }
         // Handler faults fail closed: a safe 500, no internal detail leaks.
+        if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
         return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
       } finally {
         // Retire the capability when the kernel leaves dispatch waiting, before response
@@ -1115,6 +1117,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
 
         const response: GalerinaKernelResponse =
           body === undefined ? { status, headers } : { status, headers, body };
+        if (secretAccessSpent) secretGate.acknowledge(releaseOperationId);
         return terminalOutcome(response);
       } catch {
         if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);

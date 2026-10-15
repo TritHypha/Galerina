@@ -8,13 +8,31 @@
 
 export type ReleaseOutcome =
   | "released"
+  | "acknowledged"
   | "fenced"
   | "replay"
   | "stale"
   | "missing"
   | "delivery-unknown";
 
-export type ReleaseLeaseState = "unused" | "released" | "fenced" | "delivery-unknown";
+export type ReleaseLeaseState =
+  | "unused"
+  | "released"
+  | "acknowledged"
+  | "fenced"
+  | "delivery-unknown";
+
+export type ReleaseStatusState = ReleaseLeaseState | "retired" | "missing";
+
+export type ReleaseAuditEvent = {
+  readonly operationId: string;
+  readonly outcome: ReleaseOutcome | "retired";
+};
+
+export type ReleaseStatus = {
+  readonly operationId: string;
+  readonly state: ReleaseStatusState;
+};
 
 export class SecretReleaseRefused extends Error {
   readonly code = "secret_unavailable" as const;
@@ -39,7 +57,12 @@ export const RELEASE_LEASE_CAP = 1024;
 export class ReleaseCommitAuthority {
   readonly #leases = new Map<string, LeaseRecord>();
   readonly #retired = new Set<string>();
+  readonly #audit: ReleaseAuditEvent[] = [];
   #seq = 0;
+
+  #record(operationId: string, outcome: ReleaseAuditEvent["outcome"]): void {
+    this.#audit.push(Object.freeze({ operationId, outcome }));
+  }
 
   /** Live map size (unused + terminal). Does not include retired tombstones. */
   get size(): number {
@@ -85,11 +108,34 @@ export class ReleaseCommitAuthority {
       if (victim === undefined) return;
       this.#leases.delete(victim);
       this.#retired.add(victim);
+      this.#record(victim, "retired");
     }
   }
 
   stateOf(leaseId: string): ReleaseLeaseState | "missing" {
     return this.#leases.get(leaseId)?.state ?? "missing";
+  }
+
+  /**
+   * Status-only recovery. Process-local. Never returns tokens, epochs, bytes,
+   * lengths or digests, and never opens a provider.
+   */
+  status(operationId: string): ReleaseStatus {
+    if (typeof operationId !== "string" || operationId.length === 0) {
+      return Object.freeze({ operationId: operationId ?? "", state: "missing" });
+    }
+    if (this.#retired.has(operationId)) {
+      return Object.freeze({ operationId, state: "retired" });
+    }
+    const rec = this.#leases.get(operationId);
+    return Object.freeze({
+      operationId,
+      state: rec === undefined ? "missing" : rec.state,
+    });
+  }
+
+  auditEvents(): readonly ReleaseAuditEvent[] {
+    return this.#audit.slice();
   }
 
   /**
@@ -102,24 +148,101 @@ export class ReleaseCommitAuthority {
       if (rec.state === "unused") rec.state = "fenced";
       return "stale";
     }
-    if (rec.state === "released" || rec.state === "delivery-unknown") return "replay";
-    if (rec.state === "fenced") return "fenced";
+    if (rec.state === "released" || rec.state === "delivery-unknown" || rec.state === "acknowledged") {
+      this.#record(leaseId, "replay");
+      return "replay";
+    }
+    if (rec.state === "fenced") {
+      this.#record(leaseId, "fenced");
+      return "fenced";
+    }
     if (!Number.isSafeInteger(observedEpoch) || observedEpoch !== rec.epoch) {
       rec.state = "fenced";
+      this.#record(leaseId, "stale");
       return "stale";
     }
     rec.state = "released";
+    this.#record(leaseId, "released");
     return "released";
+  }
+
+  /**
+   * ACK of a released lease. Bound to operation id + token; epoch is optional
+   * and compared when supplied. Wrong id/token/epoch or a non-released lease
+   * refuses and changes nothing. A second ACK is a no-op that reports
+   * acknowledged. Process-local; the authentic consumer is this authority.
+   */
+  ack(operationId: string, token: string, observedEpoch?: number): ReleaseOutcome {
+    if (typeof operationId !== "string" || operationId.length === 0) {
+      this.#record(operationId ?? "", "missing");
+      return "missing";
+    }
+    if (this.#retired.has(operationId)) {
+      this.#record(operationId, "replay");
+      return "replay";
+    }
+    const rec = this.#leases.get(operationId);
+    if (rec === undefined) {
+      this.#record(operationId, "missing");
+      return "missing";
+    }
+    if (typeof token !== "string" || token.length === 0 || rec.token !== token) {
+      this.#record(operationId, "stale");
+      return "stale";
+    }
+    if (observedEpoch !== undefined) {
+      if (!Number.isSafeInteger(observedEpoch) || observedEpoch !== rec.epoch) {
+        this.#record(operationId, "stale");
+        return "stale";
+      }
+    }
+    if (rec.state === "acknowledged") {
+      this.#record(operationId, "acknowledged");
+      return "acknowledged";
+    }
+    if (rec.state !== "released") {
+      const outcome: ReleaseOutcome =
+        rec.state === "fenced" ? "fenced" : rec.state === "delivery-unknown" ? "replay" : "stale";
+      this.#record(operationId, outcome);
+      return outcome;
+    }
+    rec.state = "acknowledged";
+    this.#record(operationId, "acknowledged");
+    return "acknowledged";
+  }
+
+  /** ACK using the token this authority minted. The authentic consumer path. */
+  acknowledgeMinted(operationId: string): ReleaseOutcome {
+    if (typeof operationId !== "string" || operationId.length === 0) {
+      this.#record(operationId ?? "", "missing");
+      return "missing";
+    }
+    if (this.#retired.has(operationId)) {
+      this.#record(operationId, "replay");
+      return "replay";
+    }
+    const rec = this.#leases.get(operationId);
+    if (rec === undefined) {
+      this.#record(operationId, "missing");
+      return "missing";
+    }
+    return this.ack(operationId, rec.token, rec.epoch);
   }
 
   fence(leaseId: string): void {
     const rec = this.#leases.get(leaseId);
-    if (rec !== undefined && rec.state === "unused") rec.state = "fenced";
+    if (rec !== undefined && rec.state === "unused") {
+      rec.state = "fenced";
+      this.#record(leaseId, "fenced");
+    }
   }
 
   markUnknown(leaseId: string): void {
     const rec = this.#leases.get(leaseId);
-    if (rec !== undefined && rec.state === "released") rec.state = "delivery-unknown";
+    if (rec !== undefined && rec.state === "released") {
+      rec.state = "delivery-unknown";
+      this.#record(leaseId, "delivery-unknown");
+    }
   }
 
   /**
