@@ -5,14 +5,16 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { readFileSync } from "node:fs";
 import {
   createSecretArenaProvider,
-  createSecretGate,
   ERR_SECRET_ARENA_QUARANTINED,
   ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM,
   SecretArenaQuarantined,
   SecretArenaUnavailable,
-} from "../dist/index.js";
+  killSecretArenaChildForTests,
+} from "../dist/secret-arena-provider.js";
+import { createSecretGate } from "../dist/secret-gate.js";
 
 const crateDir = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -44,6 +46,10 @@ function assertZero(bytes) {
 }
 
 test("construction refuses on non-Linux or when the native custodian is unavailable", () => {
+  const barrelSrc = readFileSync(new URL("../dist/index.js", import.meta.url), "utf8");
+  assert.equal(barrelSrc.includes("killSecretArenaChildForTests"), false);
+  assert.equal(barrelSrc.includes("debugForceCleanupFailure"), false);
+  assert.match(barrelSrc, /createSecretArenaProvider/);
   if (process.platform !== "linux") {
     assert.throws(
       () => createSecretArenaProvider(),
@@ -67,6 +73,24 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
     return;
   }
   assert.equal(ensureBin(), true);
+
+  const previousCustodian = process.env.GALERINA_SECRET_ARENA_CUSTODIAN;
+  process.env.GALERINA_SECRET_ARENA_CUSTODIAN = join(crateDir, "target", "debug", "no-such-custodian");
+  t.after(() => {
+    if (previousCustodian === undefined) delete process.env.GALERINA_SECRET_ARENA_CUSTODIAN;
+    else process.env.GALERINA_SECRET_ARENA_CUSTODIAN = previousCustodian;
+  });
+  const pinned = createSecretArenaProvider();
+  t.after(() => {
+    try {
+      pinned.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  assert.equal(pinned.status().state, "active");
+  pinned.dispose();
+
   const provider = createSecretArenaProvider({ binPath });
   t.after(() => {
     try {
@@ -75,6 +99,7 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
       // already dead
     }
   });
+  assert.equal(typeof provider.debugForceCleanupFailure, "undefined");
 
   const secret = new Uint8Array([7, 8, 9, 10]);
   provider.put("cred", secret);
@@ -101,16 +126,20 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
   assertZero(thrownView);
 
   let transferredView;
-  const transferError = new Error("transfer-then-throw");
   assert.throws(() => {
     provider.use("cred", (view) => {
       transferredView = view;
-      if (view.buffer instanceof ArrayBuffer) {
-        view.buffer.transfer();
+      if (view.buffer instanceof ArrayBuffer && typeof view.buffer.transfer === "function") {
+        const transferred = view.buffer.transfer();
+        throw new Error(`transfer-was-allowed:${[...new Uint8Array(transferred)].join(",")}`);
       }
-      throw transferError;
+      throw new Error("transfer-unavailable");
     });
-  }, (error) => error === transferError);
+  }, (error) => error instanceof Error && /transfer of a live secret view is forbidden/i.test(error.message));
+  assert.ok(transferredView);
+  assertZero(transferredView);
+  assert.equal(provider.status().state, "active");
+  assert.equal(provider.has("cred"), true);
 
   const ac = new AbortController();
   ac.abort();
@@ -136,7 +165,7 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
   assert.ok(gatedView);
   assertZero(gatedView);
 
-  provider.debugForceCleanupFailure();
+  killSecretArenaChildForTests(provider);
   assert.equal(provider.status().state, "quarantined");
   assert.deepEqual(Object.keys(provider.status()), ["state"]);
   assert.throws(

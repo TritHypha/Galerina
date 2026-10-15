@@ -11,7 +11,6 @@ const OP_HAS: u8 = 2;
 const OP_GET: u8 = 3;
 const OP_CLEANUP: u8 = 4;
 const OP_STATUS: u8 = 5;
-const OP_FORCE_FAIL: u8 = 6;
 const OP_EPOCH: u8 = 7;
 
 const ST_OK: u8 = 0;
@@ -38,7 +37,30 @@ fn status_of(error: SecretArenaError) -> u8 {
 
 fn read_exact_n(reader: &mut impl Read, n: usize) -> io::Result<Vec<u8>> {
     let mut buf = vec![0_u8; n];
-    reader.read_exact(&mut buf)?;
+    let mut tmp = [0_u8; 4096];
+    let mut filled = 0usize;
+    while filled < n {
+        let want = (n - filled).min(tmp.len());
+        match reader.read(&mut tmp[..want]) {
+            Ok(0) => {
+                buf.fill(0);
+                tmp.fill(0);
+                return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "frame"));
+            }
+            Ok(got) => {
+                buf[filled..filled + got].copy_from_slice(&tmp[..got]);
+                tmp[..got].fill(0);
+                filled += got;
+            }
+            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+            Err(error) => {
+                buf.fill(0);
+                tmp.fill(0);
+                return Err(error);
+            }
+        }
+    }
+    tmp.fill(0);
     Ok(buf)
 }
 
@@ -46,6 +68,7 @@ fn read_frame(reader: &mut impl Read) -> io::Result<Vec<u8>> {
     let mut header = [0_u8; 4];
     reader.read_exact(&mut header)?;
     let len = u32::from_be_bytes(header);
+    header.fill(0);
     if len == 0 || len > MAX_FRAME {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "frame"));
     }
@@ -63,7 +86,9 @@ fn reply(writer: &mut impl Write, status: u8, data: &[u8]) -> io::Result<()> {
     let mut payload = Vec::with_capacity(1 + data.len());
     payload.push(status);
     payload.extend_from_slice(data);
-    write_frame(writer, &payload)
+    let result = write_frame(writer, &payload);
+    payload.fill(0);
+    result
 }
 
 fn read_name(payload: &[u8]) -> Result<(&str, &[u8]), SecretArenaError> {
@@ -96,12 +121,13 @@ pub fn run_secret_arena_custodian() -> ! {
     let mut stdout = stdout.lock();
 
     loop {
-        let frame = match read_frame(&mut stdin) {
+        let mut frame = match read_frame(&mut stdin) {
             Ok(frame) => frame,
             Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => process::exit(0),
             Err(_) => process::exit(1),
         };
         if frame.is_empty() {
+            frame.fill(0);
             let _ = reply(&mut stdout, ST_INVALID, &[]);
             continue;
         }
@@ -112,11 +138,13 @@ pub fn run_secret_arena_custodian() -> ! {
             Ok((status, mut data)) => {
                 let write = reply(&mut stdout, status, &data);
                 data.fill(0);
+                frame.fill(0);
                 if write.is_err() {
                     process::exit(1);
                 }
             }
             Err(_) => {
+                frame.fill(0);
                 let _ = reply(&mut stdout, ST_INTERNAL, &[]);
             }
         }
@@ -169,10 +197,6 @@ fn dispatch(
         OP_STATUS => {
             let state = u8::from(store.quarantined());
             Ok((ST_OK, vec![state]))
-        }
-        OP_FORCE_FAIL => {
-            store.force_cleanup_failure();
-            Ok((ST_OK, Vec::new()))
         }
         OP_EPOCH => Ok((ST_OK, store.epoch().to_be_bytes().to_vec())),
         _ => Ok((ST_INVALID, Vec::new())),

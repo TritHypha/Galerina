@@ -97,6 +97,7 @@ impl SecretArenaStore {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn force_cleanup_failure(&mut self) {
         self.enter_quarantine();
         for arena in self.entries.values_mut() {
