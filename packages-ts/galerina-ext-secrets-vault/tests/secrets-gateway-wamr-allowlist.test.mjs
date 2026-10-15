@@ -32,6 +32,13 @@ const ENUMS = new Set([
   "accounting-state",
   "release-state",
 ]);
+const WASM_KIND = {
+  WASM_I32: "i32",
+  WASM_I64: "i64",
+  WASM_F32: "f32",
+  WASM_F64: "f64",
+};
+const SIG_KIND = { i: "i32", I: "i64", f: "f32", F: "f64" };
 
 function maskWitComments(source) {
   return source
@@ -226,6 +233,10 @@ function rowKey(row) {
   return [row.kind, row.resource, row.wit, row.core, row.params, row.results].join("|");
 }
 
+function enforcedKey(row) {
+  return [row.core, row.params, row.results].join("|");
+}
+
 function decodeFungiReturn(source) {
   const match = source.match(/return\s+"((?:\\u\{[0-9a-fA-F]{1,6}\}|\\.|[^"\\])*)"/);
   assert.ok(match, "Fungi oracle must return a string literal");
@@ -238,6 +249,124 @@ function decodeFungiReturn(source) {
     return `\\u${high.toString(16).padStart(4, "0")}\\u${low.toString(16).padStart(4, "0")}`;
   })}"`;
   return JSON.parse(jsonString);
+}
+
+function replaceOnce(source, search, replacement) {
+  const index = source.indexOf(search);
+  assert.ok(index >= 0, `missing tamper needle: ${search}`);
+  assert.equal(source.indexOf(search, index + 1), -1, `tamper needle not unique: ${search}`);
+  return source.slice(0, index) + replacement + source.slice(index + search.length);
+}
+
+function parseImportModule(source) {
+  const match = source.match(
+    /static\s+const\s+char\s+k_import_module\s*\[\s*\]\s*=\s*"([^"]+)"/,
+  );
+  assert.ok(match, "k_import_module string is missing");
+  return match[1];
+}
+
+function parseKindArrays(source) {
+  const arrays = new Map();
+  const pattern =
+    /static\s+const\s+uint8_t\s+([A-Za-z_][A-Za-z0-9_]*)\s*\[\s*\]\s*=\s*\{([^}]*)\}/g;
+  for (const match of source.matchAll(pattern)) {
+    const types = match[2]
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((token) => {
+        assert.ok(WASM_KIND[token], `unknown wasm kind ${token}`);
+        return WASM_KIND[token];
+      });
+    arrays.set(match[1], types);
+  }
+  return arrays;
+}
+
+function resolveKinds(arrays, name, count) {
+  if (name === "NULL") {
+    assert.equal(count, 0, "NULL kind pointer must have count 0");
+    return [];
+  }
+  const types = arrays.get(name);
+  assert.ok(types, `unresolved kind array ${name}`);
+  assert.equal(types.length, count, `kind array ${name} length drifted from count`);
+  return types;
+}
+
+function parseBraceArray(source, marker) {
+  const begin = source.indexOf(marker);
+  assert.ok(begin >= 0, `missing ${marker}`);
+  const open = source.indexOf("{", begin);
+  assert.ok(open > begin, `missing initializer for ${marker}`);
+  return source.slice(open + 1, matchingBrace(source, open));
+}
+
+function parseKContracts(source) {
+  const arrays = parseKindArrays(source);
+  const body = parseBraceArray(
+    source,
+    "static const wamr_function_import_contract_t k_contracts[]",
+  );
+  const rows = [];
+  const pattern =
+    /\{\s*k_import_module\s*,\s*"([^"]+)"\s*,\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*(\d+)\s*,\s*(NULL|[A-Za-z_][A-Za-z0-9_]*)\s*,\s*(\d+)\s*\}/g;
+  for (const match of body.matchAll(pattern)) {
+    const params = resolveKinds(arrays, match[2], Number(match[3]));
+    const results = resolveKinds(arrays, match[4], Number(match[5]));
+    rows.push({
+      core: match[1],
+      params: params.join(","),
+      results: results.join(","),
+    });
+  }
+  assert.ok(rows.length > 0, "k_contracts[] parsed empty");
+  return rows;
+}
+
+function parseWamrSignature(signature) {
+  const match = signature.match(/^\(([^)]*)\)(.*)$/);
+  assert.ok(match, `malformed WAMR signature ${signature}`);
+  const kinds = (text) =>
+    [...text].map((ch) => {
+      assert.ok(SIG_KIND[ch], `unknown signature char ${ch}`);
+      return SIG_KIND[ch];
+    });
+  return {
+    params: kinds(match[1]).join(","),
+    results: kinds(match[2]).join(","),
+  };
+}
+
+function parseSgNatives(source) {
+  const body = parseBraceArray(source, "static NativeSymbol sg_natives[]");
+  const rows = [];
+  const pattern =
+    /\{\s*"([^"]+)"\s*,\s*\(void\s*\*\)\s*[A-Za-z_][A-Za-z0-9_]*\s*,\s*"([^"]+)"\s*,\s*NULL\s*\}/g;
+  for (const match of body.matchAll(pattern)) {
+    const signature = parseWamrSignature(match[2]);
+    rows.push({
+      core: match[1],
+      params: signature.params,
+      results: signature.results,
+    });
+  }
+  assert.ok(rows.length > 0, "sg_natives[] parsed empty");
+  return rows;
+}
+
+function assertEnforcedMatchesWit(source, expected) {
+  assert.equal(parseImportModule(source), IMPORT_MODULE);
+  const expectedKeys = expected.map(enforcedKey).sort();
+  const contracts = parseKContracts(source).map(enforcedKey).sort();
+  const natives = parseSgNatives(source).map(enforcedKey).sort();
+  assert.deepEqual(contracts, expectedKeys, "k_contracts[] drifted from WIT lowering");
+  assert.deepEqual(natives, expectedKeys, "sg_natives[] drifted from WIT lowering");
+}
+
+function expectEnforcedDrift(source, expected) {
+  assert.throws(() => assertEnforcedMatchesWit(source, expected));
 }
 
 describe("secrets-gateway WIT to WAMR allowlist drift", () => {
@@ -265,6 +394,7 @@ describe("secrets-gateway WIT to WAMR allowlist drift", () => {
       assert.ok(hostC.includes(literal), `C contracts must contain ${literal}`);
     }
     assert.doesNotMatch(hostC, /"handle"/);
+    assertEnforcedMatchesWit(hostC, fromTs);
   });
 
   it("fails closed when the C table drops a resource-drop implied by WIT", () => {
@@ -277,5 +407,50 @@ describe("secrets-gateway WIT to WAMR allowlist drift", () => {
     const fromTs = expectedRows(SECRETS_GATEWAY_WIT).map(rowKey).sort();
     const fromC = parseContractTable(stripped).map(rowKey).sort();
     assert.notDeepEqual(fromC, fromTs);
+  });
+
+  it("fails closed on a struct-only param-type change", () => {
+    const hostC = readFileSync(hostCPath, "utf8");
+    const withArray = replaceOnce(
+      hostC,
+      "static const uint8_t k_i32x5[] = { WASM_I32, WASM_I32, WASM_I32, WASM_I32, WASM_I32 };",
+      "static const uint8_t k_i32x5[] = { WASM_I32, WASM_I32, WASM_I32, WASM_I32, WASM_I32 };\nstatic const uint8_t k_i64[] = { WASM_I64 };",
+    );
+    const tampered = replaceOnce(
+      withArray,
+      '{ k_import_module, "[method]secret-lease.state", k_i32, 1, k_i32, 1 }',
+      '{ k_import_module, "[method]secret-lease.state", k_i64, 1, k_i32, 1 }',
+    );
+    expectEnforcedDrift(tampered, expectedRows(SECRETS_GATEWAY_WIT));
+  });
+
+  it("fails closed on a struct-only name change", () => {
+    const hostC = readFileSync(hostCPath, "utf8");
+    const tampered = replaceOnce(
+      hostC,
+      '{ k_import_module, "[method]secret-lease.state", k_i32, 1, k_i32, 1 }',
+      '{ k_import_module, "[method]secret-lease.stateX", k_i32, 1, k_i32, 1 }',
+    );
+    expectEnforcedDrift(tampered, expectedRows(SECRETS_GATEWAY_WIT));
+  });
+
+  it("fails closed on a natives-only signature change", () => {
+    const hostC = readFileSync(hostCPath, "utf8");
+    const tampered = replaceOnce(
+      hostC,
+      '{ "[method]secret-lease.state", (void *)sg_stub_i_i, "(i)i", NULL }',
+      '{ "[method]secret-lease.state", (void *)sg_stub_i_i, "(i)", NULL }',
+    );
+    expectEnforcedDrift(tampered, expectedRows(SECRETS_GATEWAY_WIT));
+  });
+
+  it("fails closed on an extra 15th enforced row", () => {
+    const hostC = readFileSync(hostCPath, "utf8");
+    const tampered = replaceOnce(
+      hostC,
+      '{ k_import_module, "[resource-drop]release-receipt", k_i32, 1, NULL, 0 },',
+      '{ k_import_module, "[resource-drop]release-receipt", k_i32, 1, NULL, 0 },\n    { k_import_module, "evil-extra", k_i32, 1, NULL, 0 },',
+    );
+    expectEnforcedDrift(tampered, expectedRows(SECRETS_GATEWAY_WIT));
   });
 });
