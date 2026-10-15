@@ -318,22 +318,26 @@ export function createSecretGate(
       // alias (the RD-1413 fixture) stays equal until `has()` mutates it.
       const aliasSurvivedOpen = liveView !== undefined && bytesEqual(liveView, stagedView);
       let stillPresent: unknown;
+      const refuseStaging = (outcome: "stale" | "fenced", message: string): never => {
+        // Consume (D) already ran inside `use` so the provider can wipe. fence() only
+        // moves unused, so a post-consume staging refusal would otherwise stay released.
+        authority.fence(lease.leaseId);
+        authority.markUnknown(lease.leaseId);
+        throw new SecretReleaseRefused(outcome, message);
+      };
       try {
         stillPresent = provider.has(name);
       } catch {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("stale", "SecretGate: provider validity check failed before secret delivery");
+        return refuseStaging("stale", "SecretGate: provider validity check failed before secret delivery");
       }
       // `has` is provider-controlled too. It may re-enter a saved callback, swallow the duplicate-
       // use exception, and still report `true`; do not deliver staged bytes after that violation.
       if (callbackFailed) throw callbackFailure;
       if (aliasSurvivedOpen && liveView !== undefined && !bytesEqual(liveView, stagedView)) {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("fenced", "SecretGate: live secret mutated after provider open");
+        return refuseStaging("fenced", "SecretGate: live secret mutated after provider open");
       }
       if (stillPresent !== true) {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("fenced", "SecretGate: secret was revoked before staged delivery");
+        return refuseStaging("fenced", "SecretGate: secret was revoked before staged delivery");
       }
 
       let callbackResult: unknown;

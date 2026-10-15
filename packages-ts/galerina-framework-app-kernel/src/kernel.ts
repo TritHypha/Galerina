@@ -31,7 +31,7 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
-import type { SecretsProvider } from "./secret-gate.js";
+import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
   return error instanceof SecretReleaseRefused;
@@ -484,6 +484,8 @@ export interface CreateAppKernelOptions {
    *  route that DECLARES a required secret fails closed at gate 9.5 (503); secret-free routes are
    *  unaffected. The host owns the provider's lifecycle and MUST `dispose()` it on shutdown. */
   readonly secretsProvider?: SecretsProvider;
+  /** Optional release-commit authority shared with the secrets gate (default: a fresh in-process authority). */
+  readonly releaseAuthority?: ReleaseCommitAuthority;
   /** Closed-schema validators keyed by `RouteDeclaration.requestType`. */
   readonly requestValidators?: Readonly<Record<string, (value: unknown) => boolean>>;
 }
@@ -622,6 +624,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
   const secretGate = createSecretGate(opts.secretsProvider, {
+    ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
     requireBoundOperationId: true,
     requireRevocationEpoch: true,
   });
@@ -1075,7 +1078,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           // Do not attach the post-await secretAccessFailed recheck: that recheck is for a
           // handler that swallowed a fence and still returned success (500). An uncaught
           // result-sink fence is unavailability (503) and must not be rewritten at publication.
+          // Staging refusals after consume leave the lease released unless marked unknown;
+          // fence() only moves unused. HTTP stays 503; status becomes delivery-unknown.
           requestOutcomeSealed = true;
+          if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
           return pipelineOutcome(secretUnavailableResponse(), policy);
         }
         // Handler faults fail closed: a safe 500, no internal detail leaks.
