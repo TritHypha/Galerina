@@ -519,3 +519,177 @@ describe("WU2 fix-03 startServer argument-bearing, step, and alias fence", () =>
   });
 });
 
+const R3_OK_HIDDEN = `fn hidden(k: String) -> String { return Secrets.get(k) }
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("r3ok")}
+{
+  return Ok(hidden("SUPERSECRETPLANTEDVALUE"))
+}
+${POST_X}`;
+
+const R3_REDACT_MYSTERY = `secure flow readSecret(request: Request) -> Response
+${CONTRACT("r3rm")}
+{
+  return redact(mystery(request))
+}
+${POST_X}`;
+
+const R3_OK_STEP_HELPER = `secure flow helper(request: Request) -> Response
+${CONTRACT("r3h")}
+{
+  return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("r3okstep")}
+{
+  return Ok(step helper(request))
+}
+${POST_X}`;
+
+const R4_SHADOW_REDACT = `secure flow readSecret(request: Request) -> Response
+${CONTRACT("r4")}
+{
+  fn redact(request: Request) -> Response {
+    return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+  }
+  return redact(request)
+}
+${POST_X}`;
+
+const SECRET_FREE_OK = `secure flow hello(request: Request) -> Response
+${CONTRACT("okfree")}
+{
+  return Ok({ outcome: "ok" })
+}
+route GET "/hello" {
+  request Request
+  response Response
+  flow hello
+}`;
+
+const SECRET_FREE_REDACT = `secure flow hello(request: Request) -> Response
+${CONTRACT("redactfree")}
+{
+  return redact("ok")
+}
+route GET "/hello" {
+  request Request
+  response Response
+  flow hello
+}`;
+
+const X1_ALIAS_IN_RECORD = `secure flow helper(request: Request) -> Response
+${CONTRACT("x1h")}
+{
+  return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("x1")}
+{
+  let r = { h: helper }
+  return { outcome: "ok" }
+}
+${POST_X}`;
+
+const X2_STEP_UNKNOWN = `secure flow readSecret(request: Request) -> Response
+${CONTRACT("x2")}
+{
+  return step mystery(request)
+}
+${POST_X}`;
+
+const X4_STEP_SECRETFREE = `secure flow helper(request: Request) -> Response
+${CONTRACT("x4h")}
+{
+  return { outcome: "ok" }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("x4")}
+{
+  return step helper(request)
+}
+${POST_X}`;
+
+describe("WU2 fix-04 builtin allowlist, arg walk, and shadowing", () => {
+  it("R3 Ok(hidden) with secret helper refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(R3_OK_HIDDEN, "r3-ok-hidden.fungi", GATE);
+      await assertServeRefuses(R3_OK_HIDDEN, "r3-ok-hidden.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "Ok(hidden) must not call listen");
+  });
+
+  it("R3 redact(mystery) refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(R3_REDACT_MYSTERY, "r3-redact-mystery.fungi", GATE);
+      await assertServeRefuses(R3_REDACT_MYSTERY, "r3-redact-mystery.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "redact(mystery) must not call listen");
+  });
+
+  it("R3 Ok(step helper) with secret helper refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(R3_OK_STEP_HELPER, "r3-ok-step-helper.fungi", GATE);
+      await assertServeRefuses(R3_OK_STEP_HELPER, "r3-ok-step-helper.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "Ok(step helper) must not call listen");
+  });
+
+  it("R4 shadowed fn redact that reads Secrets.get refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(R4_SHADOW_REDACT, "r4-shadow-redact.fungi", GATE);
+      await assertServeRefuses(R4_SHADOW_REDACT, "r4-shadow-redact.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "shadowed redact must not call listen");
+  });
+
+  it("secret-free Ok(...) still listens", async () => {
+    const ast = parseProgram(SECRET_FREE_OK, "secret-free-ok.fungi").ast;
+    const calls = await withListenCount(async () => {
+      const running = await startServer(ast, { port: 0 }, async () => {
+        return { __tag: "ok", value: { __tag: "string", value: "ok" } };
+      });
+      await running.close();
+    });
+    assert.equal(calls, 1, "secret-free Ok must listen");
+  });
+
+  it("secret-free redact(...) still listens", async () => {
+    const ast = parseProgram(SECRET_FREE_REDACT, "secret-free-redact.fungi").ast;
+    const calls = await withListenCount(async () => {
+      const running = await startServer(ast, { port: 0 }, async () => {
+        return { __tag: "ok", value: { __tag: "string", value: "ok" } };
+      });
+      await running.close();
+    });
+    assert.equal(calls, 1, "secret-free redact must listen");
+  });
+
+  it("X1 alias in a record field refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(X1_ALIAS_IN_RECORD, "x1-alias-record.fungi", GATE);
+      await assertServeRefuses(X1_ALIAS_IN_RECORD, "x1-alias-record.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "X1 must not call listen");
+  });
+
+  it("X2 step mystery refuses before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(X2_STEP_UNKNOWN, "x2-step-mystery.fungi", GATE);
+      await assertServeRefuses(X2_STEP_UNKNOWN, "x2-step-mystery.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "X2 must not call listen");
+  });
+
+  it("X4 secret-free step helper still listens", async () => {
+    const ast = parseProgram(X4_STEP_SECRETFREE, "x4-step-secretfree.fungi").ast;
+    const calls = await withListenCount(async () => {
+      const running = await startServer(ast, { port: 0 }, async () => {
+        return { __tag: "ok", value: { __tag: "string", value: "ok" } };
+      });
+      await running.close();
+    });
+    assert.equal(calls, 1, "X4 secret-free step helper must listen");
+  });
+});
+

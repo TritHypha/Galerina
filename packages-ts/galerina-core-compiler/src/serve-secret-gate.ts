@@ -45,6 +45,22 @@ const SECRET_EFFECT_NAMESPACES: ReadonlySet<string> = new Set([
   "secretstore",
 ]);
 
+/**
+ * Bare interpreter builtins that do not read a secret or reach a vault/secret
+ * effect. A program-declared flow or fn with the same name shadows these
+ * (interpreter.ts:3238-3240 runs the local fn before redact at :3359).
+ *
+ * Ok / Err / Some: interpreter.ts:1142-1147 (sync), :3227-3236 (async),
+ * forceStandalone :3210-3218.
+ * redact: interpreter.ts:3359-3362, forceStandalone :3210-3218.
+ */
+const BARE_INTERPRETER_BUILTINS: ReadonlySet<string> = new Set([
+  "Ok",
+  "Err",
+  "Some",
+  "redact",
+]);
+
 function normalizeDeclaredRoutePath(path: string): string | null {
   const noQuery = path.split("?")[0] ?? path;
   const segments = noQuery.split(/(\{[^{}]*\})/g);
@@ -196,9 +212,31 @@ function nestedFnDeclNames(node: AstNode): ReadonlySet<string> {
   return names;
 }
 
+function collectProgramDeclaredCallableNames(ast: AstNode): ReadonlySet<string> {
+  const names = new Set<string>();
+  function walk(n: AstNode): void {
+    const decoded = decodeFlowDecl(n);
+    if (decoded !== undefined) {
+      if ("error" in decoded) {
+        const recovered = (n.value ?? "").split(":").slice(2).join(":");
+        if (recovered.length > 0) names.add(recovered);
+      } else if (decoded.name.length > 0) {
+        names.add(decoded.name);
+      }
+    }
+    if (n.kind === "fnDecl" && typeof n.value === "string" && n.value.length > 0) {
+      names.add(n.value);
+    }
+    for (const child of n.children ?? []) walk(child);
+  }
+  walk(ast);
+  return names;
+}
+
 function unresolvedBareCallName(
   node: AstNode,
   callableNames: ReadonlySet<string>,
+  programDeclared: ReadonlySet<string>,
 ): string | undefined {
   const nested = nestedFnDeclNames(node);
   let found: string | undefined;
@@ -212,9 +250,14 @@ function unresolvedBareCallName(
       && !isMethodCall(n)
     ) {
       const target = callTargetName(n) ?? n.value;
-      if (!callableNames.has(target) && !nested.has(target)) {
-        found = n.value;
-        return;
+      const indexed = callableNames.has(target) || nested.has(target);
+      if (!indexed) {
+        const allowlisted = BARE_INTERPRETER_BUILTINS.has(target);
+        const shadowed = programDeclared.has(target);
+        if (!allowlisted || shadowed) {
+          found = n.value;
+          return;
+        }
       }
     }
     for (const child of n.children ?? []) walk(child);
@@ -233,6 +276,7 @@ function reachableEffectsFromFlow(
 } {
   const callables = indexReachableCallables(ast);
   const callableNames = new Set(callables.keys());
+  const programDeclared = collectProgramDeclaredCallableNames(ast);
   const names: string[] = [];
   const seen = new Set<string>();
   const visited = new Set<string>();
@@ -257,7 +301,7 @@ function reachableEffectsFromFlow(
       names.push(effect);
     }
     if (unresolved === undefined) {
-      unresolved = unresolvedBareCallName(node, callableNames);
+      unresolved = unresolvedBareCallName(node, callableNames, programDeclared);
     }
     for (const callee of collectCalleeNames(node, callableNames)) {
       if (!visited.has(callee)) queue.push(callee);
