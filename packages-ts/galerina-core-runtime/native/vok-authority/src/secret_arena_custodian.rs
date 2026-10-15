@@ -1,6 +1,8 @@
 //! Stdin/stdout custodian for `SecretArenaStore`. Public so the bin can start it.
 
+use std::fs::File;
 use std::io::{self, Read, Write};
+use std::os::fd::AsFd;
 use std::process;
 
 use super::secret_arena::SecretArenaError;
@@ -66,13 +68,28 @@ fn read_exact_n(reader: &mut impl Read, n: usize) -> io::Result<Vec<u8>> {
 
 fn read_frame(reader: &mut impl Read) -> io::Result<Vec<u8>> {
     let mut header = [0_u8; 4];
-    reader.read_exact(&mut header)?;
+    if let Err(error) = reader.read_exact(&mut header) {
+        header.fill(0);
+        return Err(error);
+    }
     let len = u32::from_be_bytes(header);
     header.fill(0);
     if len == 0 || len > MAX_FRAME {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "frame"));
     }
     read_exact_n(reader, len as usize)
+}
+
+fn unbuffered_stdio() -> (File, File) {
+    let stdin = match io::stdin().as_fd().try_clone_to_owned() {
+        Ok(fd) => File::from(fd),
+        Err(_) => process::exit(2),
+    };
+    let stdout = match io::stdout().as_fd().try_clone_to_owned() {
+        Ok(fd) => File::from(fd),
+        Err(_) => process::exit(2),
+    };
+    (stdin, stdout)
 }
 
 fn write_frame(writer: &mut impl Write, payload: &[u8]) -> io::Result<()> {
@@ -106,19 +123,14 @@ fn read_name(payload: &[u8]) -> Result<(&str, &[u8]), SecretArenaError> {
 
 /// Blocking request loop. Exits the process on a fatal protocol or store-open failure.
 pub fn run_secret_arena_custodian() -> ! {
+    let (mut stdin, mut stdout) = unbuffered_stdio();
     let mut store = match SecretArenaStore::open() {
         Ok(store) => store,
         Err(error) => {
-            let mut stdout = io::stdout().lock();
             let _ = reply(&mut stdout, status_of(error), &[]);
             process::exit(2);
         }
     };
-
-    let stdin = io::stdin();
-    let mut stdin = stdin.lock();
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
 
     loop {
         let mut frame = match read_frame(&mut stdin) {

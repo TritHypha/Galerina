@@ -1,18 +1,16 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-
-import { readFileSync } from "node:fs";
+import { receiveMessageOnPort } from "node:worker_threads";
 import {
   createSecretArenaProvider,
   ERR_SECRET_ARENA_QUARANTINED,
   ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM,
   SecretArenaQuarantined,
   SecretArenaUnavailable,
-  killSecretArenaChildForTests,
 } from "../dist/secret-arena-provider.js";
 import { createSecretGate } from "../dist/secret-gate.js";
 
@@ -47,6 +45,8 @@ function assertZero(bytes) {
 
 test("construction refuses on non-Linux or when the native custodian is unavailable", () => {
   const barrelSrc = readFileSync(new URL("../dist/index.js", import.meta.url), "utf8");
+  const providerSrc = readFileSync(new URL("../src/secret-arena-provider.ts", import.meta.url), "utf8");
+  assert.equal(providerSrc.includes("ForTests"), false);
   assert.equal(barrelSrc.includes("killSecretArenaChildForTests"), false);
   assert.equal(barrelSrc.includes("debugForceCleanupFailure"), false);
   assert.match(barrelSrc, /createSecretArenaProvider/);
@@ -135,7 +135,7 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
       }
       throw new Error("transfer-unavailable");
     });
-  }, (error) => error instanceof Error && /transfer of a live secret view is forbidden/i.test(error.message));
+  }, (error) => error instanceof Error && !/transfer-was-allowed/u.test(error.message));
   assert.ok(transferredView);
   assertZero(transferredView);
   assert.equal(provider.status().state, "active");
@@ -165,21 +165,8 @@ test("linux SecretArena provider wipes every exit path, quarantines, and serves 
   assert.ok(gatedView);
   assertZero(gatedView);
 
-  killSecretArenaChildForTests(provider);
-  assert.equal(provider.status().state, "quarantined");
-  assert.deepEqual(Object.keys(provider.status()), ["state"]);
-  assert.throws(
-    () => provider.has("cred"),
-    (error) => error instanceof SecretArenaQuarantined && error.code === ERR_SECRET_ARENA_QUARANTINED,
-  );
-  assert.throws(
-    () => provider.use("cred", () => {}),
-    (error) => error instanceof SecretArenaQuarantined,
-  );
-  assert.throws(
-    () => provider.put("cred", secret),
-    (error) => error instanceof SecretArenaQuarantined,
-  );
+  assert.equal(provider.status().state, "active");
+  assert.equal(provider.has("cred"), true);
 });
 
 test("linux provider failure and timeout wipe adapter-owned bytes", async (t) => {
@@ -208,4 +195,118 @@ test("linux provider failure and timeout wipe adapter-owned bytes", async (t) =>
     assert.match(String(error), /provider-failure|unavailable|quarantined/i);
   }
   if (view !== undefined) assertZero(view);
+});
+
+function chmodFake(path) {
+  chmodSync(path, 0o755);
+  return path;
+}
+
+test("linux child-death quarantines without a production test hook", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  const fake = chmodFake(join(dirname(fileURLToPath(import.meta.url)), "secret-arena-fake-exit-after-hello.mjs"));
+  const provider = createSecretArenaProvider({ binPath: fake });
+  t.after(() => {
+    try {
+      provider.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  assert.equal(provider.status().state, "quarantined");
+  assert.deepEqual(Object.keys(provider.status()), ["state"]);
+  assert.throws(
+    () => provider.has("cred"),
+    (error) => error instanceof SecretArenaQuarantined && error.code === ERR_SECRET_ARENA_QUARANTINED,
+  );
+  assert.throws(
+    () => provider.use("cred", () => {}),
+    (error) => error instanceof SecretArenaQuarantined,
+  );
+  assert.throws(
+    () => provider.put("cred", new Uint8Array([1])),
+    (error) => error instanceof SecretArenaQuarantined,
+  );
+});
+
+test("linux short custodian read wipes and refuses construction", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  const fake = chmodFake(join(dirname(fileURLToPath(import.meta.url)), "secret-arena-fake-short-read.mjs"));
+  assert.throws(
+    () => createSecretArenaProvider({ binPath: fake }),
+    (error) => error instanceof SecretArenaUnavailable,
+  );
+});
+
+test("linux captured transfer paths cannot copy live secret bytes", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  assert.equal(ensureBin(), true);
+  const provider = createSecretArenaProvider({ binPath });
+  t.after(() => {
+    try {
+      provider.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  const secret = new Uint8Array([7, 8, 9, 10]);
+  provider.put("cred", secret);
+  const capturedTransfer = ArrayBuffer.prototype.transfer;
+  const capturedToFixed = ArrayBuffer.prototype.transferToFixedLength;
+
+  const assertNoLiveCopy = (run) => {
+    let view;
+    let leaked;
+    assert.throws(() => {
+      provider.use("cred", (value) => {
+        view = value;
+        leaked = run(value);
+        if (leaked !== undefined) {
+          throw new Error(`transfer-was-allowed:${[...new Uint8Array(leaked)].join(",")}`);
+        }
+        throw new Error("transfer-unavailable");
+      });
+    }, (error) => error instanceof Error && !/transfer-was-allowed/u.test(error.message));
+    assert.ok(view);
+    assertZero(view);
+    if (leaked !== undefined) {
+      try {
+        assertZero(new Uint8Array(leaked));
+      } catch {
+        assert.equal(leaked, undefined);
+      }
+    }
+  };
+
+  if (typeof capturedTransfer === "function") {
+    assertNoLiveCopy((value) => capturedTransfer.call(value.buffer));
+  }
+  if (typeof capturedToFixed === "function") {
+    assertNoLiveCopy((value) => capturedToFixed.call(value.buffer));
+  }
+  assertNoLiveCopy((value) => structuredClone(value.buffer, { transfer: [value.buffer] }));
+  assertNoLiveCopy((value) => {
+    const { port1, port2 } = new MessageChannel();
+    port1.postMessage(value.buffer, [value.buffer]);
+    const received = receiveMessageOnPort(port2);
+    port1.close();
+    port2.close();
+    return received?.message;
+  });
+
+  let sliced;
+  provider.use("cred", (value) => {
+    sliced = value.slice();
+  });
+  assert.deepEqual([...sliced], [7, 8, 9, 10]);
+  assert.equal(provider.status().state, "active");
 });

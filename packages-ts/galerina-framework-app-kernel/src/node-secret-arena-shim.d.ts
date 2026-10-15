@@ -7,6 +7,12 @@ declare const process: {
   readonly env: { readonly [key: string]: string | undefined };
 };
 
+declare const WebAssembly: {
+  Memory: {
+    new (descriptor: { readonly initial: number }): { readonly buffer: ArrayBuffer };
+  };
+};
+
 declare module "node:child_process" {
   export interface ChildProcess {
     readonly pid?: number;

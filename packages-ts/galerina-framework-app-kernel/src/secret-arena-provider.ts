@@ -17,7 +17,8 @@ const intrinsicWriteSync = writeSync;
 const intrinsicReadSync = readSync;
 const intrinsicNow = performance.now.bind(performance);
 const RPC_DEADLINE_MS = 5000;
-const childrenForTests = new WeakMap<object, ChildProcess>();
+const MAX_FRAME = 64 * 1024 * 1024 + 1024;
+const WASM_PAGE = 65536;
 
 function isAgain(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
@@ -108,22 +109,27 @@ function readExact(fd: number, n: number): Uint8Array {
   const deadline = intrinsicNow() + RPC_DEADLINE_MS;
   const out = new Uint8Array(n);
   let offset = 0;
-  while (offset < n) {
-    if (intrinsicNow() > deadline) {
-      throw new SecretArenaUnavailable("SecretArena custodian read timed out");
-    }
-    try {
-      const got = intrinsicReadSync(fd, out, offset, n - offset, null);
-      if (typeof got !== "number" || got <= 0) {
-        throw new SecretArenaUnavailable("SecretArena custodian stdout closed");
+  try {
+    while (offset < n) {
+      if (intrinsicNow() > deadline) {
+        throw new SecretArenaUnavailable("SecretArena custodian read timed out");
       }
-      offset += got;
-    } catch (error) {
-      if (isAgain(error)) continue;
-      throw error;
+      try {
+        const got = intrinsicReadSync(fd, out, offset, n - offset, null);
+        if (typeof got !== "number" || got <= 0) {
+          throw new SecretArenaUnavailable("SecretArena custodian stdout closed");
+        }
+        offset += got;
+      } catch (error) {
+        if (isAgain(error)) continue;
+        throw error;
+      }
     }
+    return out;
+  } catch (error) {
+    intrinsicApply(intrinsicFill, out, [0]);
+    throw error;
   }
-  return out;
 }
 
 function encodeName(name: string): Uint8Array {
@@ -145,6 +151,30 @@ function isDetachedBuffer(buffer: ArrayBufferLike): boolean {
   } catch {
     return true;
   }
+}
+
+function allocateNonDetachableSecret(data: Uint8Array): {
+  readonly view: Uint8Array;
+  readonly buffer: ArrayBuffer;
+  wipe(): boolean;
+} {
+  const pages = Math.max(1, Math.ceil(data.length / WASM_PAGE));
+  const memory = new WebAssembly.Memory({ initial: pages });
+  const backing = new Uint8Array(memory.buffer);
+  backing.set(data);
+  const view = backing.subarray(0, data.length);
+  return {
+    view,
+    buffer: memory.buffer,
+    wipe(): boolean {
+      try {
+        intrinsicApply(intrinsicFill, backing.subarray(0, data.length), [0]);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
 }
 
 const TRANSFER_FORBIDDEN = "SecretArenaProvider: ArrayBuffer.transfer of a live secret view is forbidden";
@@ -219,17 +249,6 @@ function withTransferForbidden<T>(secretBuffer: ArrayBuffer, fn: () => T): T {
   }
 }
 
-/** Test-only. Kills the custodian child so the next rpc quarantines. Not on the barrel. */
-export function killSecretArenaChildForTests(provider: object): void {
-  const child = childrenForTests.get(provider);
-  if (child === undefined) return;
-  try {
-    child.kill();
-  } catch {
-    // already exited
-  }
-}
-
 export function createSecretArenaProvider(
   options: { readonly binPath?: string } = {},
 ): SecretArenaProvider {
@@ -280,6 +299,9 @@ export function createSecretArenaProvider(
     if (quarantined && opcode !== OP_STATUS && opcode !== OP_EPOCH) {
       throw new SecretArenaQuarantined();
     }
+    if (1 + payload.length > MAX_FRAME) {
+      throw new SecretArenaUnavailable("SecretArena put refused");
+    }
     const body = new Uint8Array(1 + payload.length);
     body[0] = opcode;
     body.set(payload, 1);
@@ -289,21 +311,23 @@ export function createSecretArenaProvider(
     header[1] = (len >>> 16) & 0xff;
     header[2] = (len >>> 8) & 0xff;
     header[3] = len & 0xff;
+    let respHeader: Uint8Array | undefined;
+    let resp: Uint8Array | undefined;
     try {
       writeAll(stdinFd, header);
       writeAll(stdinFd, body);
-      const respHeader = readExact(stdoutFd, 4);
+      respHeader = readExact(stdoutFd, 4);
       const respLen =
         ((respHeader[0] ?? 0) << 24) |
         ((respHeader[1] ?? 0) << 16) |
         ((respHeader[2] ?? 0) << 8) |
         (respHeader[3] ?? 0);
-      if (!(respLen > 0) || respLen > 64 * 1024 * 1024 + 1024) {
+      if (!(respLen > 0) || respLen > MAX_FRAME) {
         throw new SecretArenaUnavailable("SecretArena custodian returned an invalid frame");
       }
-      const resp = readExact(stdoutFd, respLen);
+      resp = readExact(stdoutFd, respLen);
       const status = resp[0] ?? ST_QUARANTINED;
-      const data = resp.subarray(1);
+      const data = Uint8Array.from(resp.subarray(1));
       if (status === ST_QUARANTINED) {
         quarantined = true;
       }
@@ -314,6 +338,8 @@ export function createSecretArenaProvider(
     } finally {
       wipe(body);
       wipe(header);
+      wipe(respHeader);
+      wipe(resp);
     }
   };
 
@@ -340,48 +366,58 @@ export function createSecretArenaProvider(
   const provider: SecretArenaProvider = {
     has(name: string): boolean {
       if (quarantined) throw new SecretArenaQuarantined();
-      const { status, data } = rpc(OP_HAS, encodeName(name));
-      if (status === ST_QUARANTINED) return enterQuarantine();
-      if (status !== ST_OK) return false;
-      return data[0] === 1;
+      const nameBytes = encodeName(name);
+      try {
+        const { status, data } = rpc(OP_HAS, nameBytes);
+        if (status === ST_QUARANTINED) return enterQuarantine();
+        if (status !== ST_OK) return false;
+        const present = data[0] === 1;
+        wipe(data);
+        return present;
+      } finally {
+        wipe(nameBytes);
+      }
     },
     use(name: string, fn: (value: Uint8Array) => void, options?: { signal?: AbortSignal }): void {
       if (options?.signal?.aborted) {
         throw new SecretArenaUnavailable("SecretArena use was aborted");
       }
       if (quarantined) throw new SecretArenaQuarantined();
-      let view: Uint8Array | undefined;
+      let slot: ReturnType<typeof allocateNonDetachableSecret> | undefined;
       let restoreTransfer: (() => void) | undefined;
       let detached = false;
+      const nameBytes = encodeName(name);
       try {
-        const { status, data } = rpc(OP_GET, encodeName(name));
+        const { status, data } = rpc(OP_GET, nameBytes);
         if (status === ST_QUARANTINED) return enterQuarantine();
         if (status === ST_NOT_FOUND) return;
         if (status !== ST_OK) {
           throw new SecretArenaUnavailable("SecretArena get refused");
         }
-        if (data.length === 0) return;
-        const ownedBuffer = new ArrayBuffer(data.length);
-        const owned = new Uint8Array(ownedBuffer);
-        owned.set(data);
+        if (data.length === 0) {
+          wipe(data);
+          return;
+        }
+        const allocated = allocateNonDetachableSecret(data);
+        slot = allocated;
         wipe(data);
-        view = owned;
         if (options?.signal?.aborted) {
           throw new SecretArenaUnavailable("SecretArena use was aborted");
         }
-        restoreTransfer = forbidTransferOn(ownedBuffer);
-        const result: unknown = withTransferForbidden(ownedBuffer, () =>
-          (fn as (value: Uint8Array) => unknown)(owned),
+        restoreTransfer = forbidTransferOn(allocated.buffer);
+        const result: unknown = withTransferForbidden(allocated.buffer, () =>
+          (fn as (value: Uint8Array) => unknown)(allocated.view),
         );
         if (result !== undefined) {
           void Promise.resolve(result).catch(() => undefined);
           throw new Error("SecretArenaProvider: callback return/async escape channel is forbidden");
         }
       } finally {
+        wipe(nameBytes);
         if (restoreTransfer !== undefined) restoreTransfer();
-        if (view !== undefined) {
-          detached = isDetachedBuffer(view.buffer);
-          if (detached || !wipe(view)) {
+        if (slot !== undefined) {
+          detached = isDetachedBuffer(slot.buffer);
+          if (detached || !slot.wipe()) {
             quarantined = true;
             detached = true;
           }
@@ -442,7 +478,9 @@ export function createSecretArenaProvider(
       if (quarantined) return { state: "quarantined" };
       try {
         const { status, data } = rpc(OP_STATUS);
-        if (status !== ST_OK || data[0] === 1) {
+        const quarantinedBit = data[0] === 1;
+        wipe(data);
+        if (status !== ST_OK || quarantinedBit) {
           quarantined = true;
           return { state: "quarantined" };
         }
@@ -453,6 +491,5 @@ export function createSecretArenaProvider(
       }
     },
   };
-  childrenForTests.set(provider, child);
   return provider;
 }
