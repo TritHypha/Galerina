@@ -2,7 +2,7 @@ import {
   canonicalEffectName,
   DENY_ONLY_EFFECTS,
   isRecognisedEffectName,
-  observedEffectsForFlowNode,
+  observedEffectsForFlowNodeIncludingNestedFns,
 } from "./effect-checker.js";
 import { isFlowDeclNamed } from "./flow-name.js";
 import type { AstNode, FlowMeta } from "./parser.js";
@@ -45,8 +45,57 @@ const SECRET_EFFECT_NAMESPACES: ReadonlySet<string> = new Set([
   "secretstore",
 ]);
 
+function normalizeDeclaredRoutePath(path: string): string | null {
+  const noQuery = path.split("?")[0] ?? path;
+  const segments = noQuery.split(/(\{[^{}]*\})/g);
+  const out: string[] = [];
+  for (const segment of segments) {
+    if (/^\{[^{}]+\}$/u.test(segment)) {
+      out.push(segment);
+      continue;
+    }
+    try {
+      out.push(decodeURIComponent(segment).toLowerCase());
+    } catch {
+      return null;
+    }
+  }
+  let joined = out.join("");
+  while (joined.length > 1 && joined.endsWith("/")) joined = joined.slice(0, -1);
+  return joined;
+}
+
+function compileDeclaredPathPattern(path: string): RegExp | null {
+  const paramNames: string[] = [];
+  try {
+    const segments = path.split(/(\{[^{}]*\})/g);
+    const patternStr = segments.map((segment) => {
+      const param = /^\{([^{}]+)\}$/u.exec(segment);
+      if (param !== null) {
+        const name = param[1] as string;
+        if (!/^[A-Za-z_][A-Za-z0-9_]*$/u.test(name) || paramNames.includes(name)) {
+          throw new Error("invalid parameter");
+        }
+        paramNames.push(name);
+        return "([^/]+)";
+      }
+      if (segment.includes("{") || segment.includes("}")) throw new Error("malformed template");
+      return segment.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    }).join("");
+    return new RegExp(`^${patternStr}$`);
+  } catch {
+    return null;
+  }
+}
+
 export function isProtectedAuthVerifyRoute(route: RouteEntry): boolean {
-  return route.method === "POST" && route.pathPattern.test("/auth/verify");
+  const normalized = normalizeDeclaredRoutePath(route.path);
+  if (normalized === "/auth/verify") return true;
+  if (route.method !== "POST") return false;
+  if (route.pathPattern.test("/auth/verify")) return true;
+  if (normalized === null) return false;
+  const rebuilt = compileDeclaredPathPattern(normalized);
+  return rebuilt !== null && rebuilt.test("/auth/verify");
 }
 
 export function isSecretBearingEffectName(name: string): boolean {
@@ -143,7 +192,7 @@ function collectEffectNames(
   }
   if (flowNode !== undefined) {
     addAll(declaredEffectsFromFlowNode(flowNode));
-    addAll(observedEffectsForFlowNode(flowNode));
+    addAll(observedEffectsForFlowNodeIncludingNestedFns(flowNode));
   }
   if (summary === undefined && flowNode === undefined) {
     return { names, hasSecretsBlock: false, unknown: `route '${route.method} ${route.path}' has no effect summary; secret requirement unknown` };

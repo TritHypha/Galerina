@@ -3,6 +3,7 @@
  * handler without app-kernel gate 9.5. Synthetic fixtures only.
  */
 import assert from "node:assert/strict";
+import http from "node:http";
 import { describe, it } from "node:test";
 import { parseProgram, serve } from "../dist/index.js";
 import { startServer } from "../dist/route-dispatcher.js";
@@ -294,3 +295,79 @@ describe("standalone serve() addendum-01 fail-closed classifier", () => {
     await assertStartServerRefuses(UNRECOGNISED, "unrecognised.fungi", GATE);
   });
 });
+
+function secretFreeDeclaredRoute(method, path) {
+  return `secure flow genericAuth(request: Request) -> Response
+contract {
+  intent { "Secret-free loopback." }
+  effects {}
+}
+{
+  return { outcome: "handler-ran" }
+}
+route ${method} "${path}" {
+  request Request
+  response Response
+  flow genericAuth
+}`;
+}
+
+async function withListenCount(run) {
+  const original = http.Server.prototype.listen;
+  let calls = 0;
+  http.Server.prototype.listen = function (...args) {
+    calls += 1;
+    return original.apply(this, args);
+  };
+  try {
+    await run();
+    return calls;
+  } finally {
+    http.Server.prototype.listen = original;
+  }
+}
+
+const NESTED_SECRETS_GET = `secure flow readSecret(request: Request) -> Response
+contract { intent { "Nested." } effects {} }
+{
+  fn hidden() -> String { return Secrets.get("SUPERSECRETPLANTEDVALUE") }
+  return { outcome: hidden() }
+}
+route POST "/x" {
+  request Request
+  response Response
+  flow readSecret
+}`;
+
+describe("WU2 fix-01 normalised /auth/verify identity (F1) and nested-fn startServer fence (F2)", () => {
+  const bypasses = [
+    ["POST", "/auth/verify/"],
+    ["POST", "/Auth/Verify"],
+    ["POST", "/AUTH/VERIFY"],
+    ["POST", "/auth/%76erify"],
+    ["GET", "/auth/verify"],
+    ["PUT", "/auth/verify"],
+  ];
+
+  for (const [method, path] of bypasses) {
+    it(`refuses ${method} ${path} before listen`, async () => {
+      const calls = await withListenCount(async () => {
+        await assertServeRefuses(
+          secretFreeDeclaredRoute(method, path),
+          `auth-verify-bypass-${method}-${path.replaceAll("/", "_")}.fungi`,
+          /reserved|gate 9\.5/u,
+        );
+      });
+      assert.equal(calls, 0, `${method} ${path} must not call listen`);
+    });
+  }
+
+  it("startServer refuses nested fn Secrets.get before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(NESTED_SECRETS_GET, "nested-fn-secrets-get.fungi", GATE);
+      await assertServeRefuses(NESTED_SECRETS_GET, "nested-fn-secrets-get.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "nested fn Secrets.get must not call listen");
+  });
+});
+
