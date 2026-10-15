@@ -339,6 +339,34 @@ route POST "/x" {
   flow readSecret
 }`;
 
+const CALLEE_FLOW_SECRETS_GET = `secure flow helper(request: Request) -> Response
+contract { intent { "Sibling callee." } effects {} }
+{
+  return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+}
+secure flow readSecret(request: Request) -> Response
+contract { intent { "Route calls sibling." } effects {} }
+{
+  return helper()
+}
+route POST "/x" {
+  request Request
+  response Response
+  flow readSecret
+}`;
+
+const MODULE_FN_SECRETS_GET = `fn hidden() -> String { return Secrets.get("SUPERSECRETPLANTEDVALUE") }
+secure flow readSecret(request: Request) -> Response
+contract { intent { "Route calls module fn." } effects {} }
+{
+  return { outcome: hidden() }
+}
+route POST "/x" {
+  request Request
+  response Response
+  flow readSecret
+}`;
+
 describe("WU2 fix-01 normalised /auth/verify identity (F1) and nested-fn startServer fence (F2)", () => {
   const bypasses = [
     ["POST", "/auth/verify/"],
@@ -368,6 +396,22 @@ describe("WU2 fix-01 normalised /auth/verify identity (F1) and nested-fn startSe
       await assertServeRefuses(NESTED_SECRETS_GET, "nested-fn-secrets-get.fungi", LISTENER_REFUSED);
     });
     assert.equal(calls, 0, "nested fn Secrets.get must not call listen");
+  });
+});
+
+describe("WU2 fix-02 startServer callee-flow and module-level helper fence", () => {
+  it("startServer refuses sibling-flow Secrets.get before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(CALLEE_FLOW_SECRETS_GET, "callee-flow-secrets-get.fungi", GATE);
+    });
+    assert.equal(calls, 0, "callee-flow Secrets.get must not call listen");
+  });
+
+  it("startServer refuses module-level fn Secrets.get before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(MODULE_FN_SECRETS_GET, "module-fn-secrets-get.fungi", GATE);
+    });
+    assert.equal(calls, 0, "module-level fn Secrets.get must not call listen");
   });
 });
 

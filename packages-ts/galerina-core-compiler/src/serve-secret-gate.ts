@@ -4,7 +4,7 @@ import {
   isRecognisedEffectName,
   observedEffectsForFlowNodeIncludingNestedFns,
 } from "./effect-checker.js";
-import { isFlowDeclNamed } from "./flow-name.js";
+import { decodeFlowDecl, isFlowDeclNamed } from "./flow-name.js";
 import type { AstNode, FlowMeta } from "./parser.js";
 import type { RouteEntry } from "./route-registry.js";
 
@@ -118,6 +118,134 @@ function findFlowNode(ast: AstNode, name: string): AstNode | undefined {
   return undefined;
 }
 
+function callableDeclName(node: AstNode): string | undefined {
+  const decoded = decodeFlowDecl(node);
+  if (decoded !== undefined && !("error" in decoded) && decoded.name.length > 0) {
+    return decoded.name;
+  }
+  if (node.kind === "fnDecl" && typeof node.value === "string" && node.value.length > 0) {
+    return node.value;
+  }
+  return undefined;
+}
+
+/**
+ * Index flow decls and module-level fn decls. Nested fns inside a flow stay
+ * off this map: `observedEffectsForFlowNodeIncludingNestedFns` already covers them.
+ */
+function indexReachableCallables(ast: AstNode): ReadonlyMap<string, AstNode> {
+  const map = new Map<string, AstNode>();
+  function walk(node: AstNode, insideFlow: boolean): void {
+    const decoded = decodeFlowDecl(node);
+    if (decoded !== undefined && !("error" in decoded) && decoded.name.length > 0) {
+      if (!map.has(decoded.name)) map.set(decoded.name, node);
+      for (const child of node.children ?? []) walk(child, true);
+      return;
+    }
+    if (!insideFlow && node.kind === "fnDecl") {
+      const name = callableDeclName(node);
+      if (name !== undefined && !map.has(name)) map.set(name, node);
+      return;
+    }
+    for (const child of node.children ?? []) walk(child, insideFlow);
+  }
+  walk(ast, false);
+  return map;
+}
+
+function collectCalleeNames(node: AstNode, callableNames: ReadonlySet<string>): readonly string[] {
+  const found: string[] = [];
+  function walk(n: AstNode): void {
+    if (n.kind === "callExpr" && typeof n.value === "string" && callableNames.has(n.value)) {
+      found.push(n.value);
+    }
+    for (const child of n.children ?? []) walk(child);
+  }
+  walk(node);
+  return found;
+}
+
+function nestedFnDeclNames(node: AstNode): ReadonlySet<string> {
+  const names = new Set<string>();
+  function walk(n: AstNode): void {
+    if (n.kind === "fnDecl" && typeof n.value === "string" && n.value.length > 0) {
+      names.add(n.value);
+    }
+    for (const child of n.children ?? []) walk(child);
+  }
+  walk(node);
+  return names;
+}
+
+function unresolvedBareCallName(
+  node: AstNode,
+  callableNames: ReadonlySet<string>,
+): string | undefined {
+  const nested = nestedFnDeclNames(node);
+  let found: string | undefined;
+  function walk(n: AstNode): void {
+    if (found !== undefined) return;
+    if (
+      n.kind === "callExpr"
+      && typeof n.value === "string"
+      && n.value.length > 0
+      && !n.value.startsWith("#")
+      && (n.children?.length ?? 0) === 0
+      && !callableNames.has(n.value)
+      && !nested.has(n.value)
+    ) {
+      found = n.value;
+      return;
+    }
+    for (const child of n.children ?? []) walk(child);
+  }
+  walk(node);
+  return found;
+}
+
+function reachableEffectsFromFlow(
+  ast: AstNode,
+  rootName: string,
+): {
+  readonly names: readonly string[];
+  readonly hasSecretsBlock: boolean;
+  readonly unresolved: string | undefined;
+} {
+  const callables = indexReachableCallables(ast);
+  const callableNames = new Set(callables.keys());
+  const names: string[] = [];
+  const seen = new Set<string>();
+  const visited = new Set<string>();
+  let hasSecretsBlock = false;
+  let unresolved: string | undefined;
+  const queue: string[] = [rootName];
+  while (queue.length > 0) {
+    const name = queue.shift();
+    if (name === undefined || visited.has(name)) continue;
+    visited.add(name);
+    const node = callables.get(name);
+    if (node === undefined) continue;
+    if (flowHasSecretsBlock(node)) hasSecretsBlock = true;
+    for (const effect of declaredEffectsFromFlowNode(node)) {
+      if (effect.length === 0 || seen.has(effect)) continue;
+      seen.add(effect);
+      names.push(effect);
+    }
+    for (const effect of observedEffectsForFlowNodeIncludingNestedFns(node)) {
+      if (effect.length === 0 || seen.has(effect)) continue;
+      seen.add(effect);
+      names.push(effect);
+    }
+    if (unresolved === undefined) {
+      unresolved = unresolvedBareCallName(node, callableNames);
+    }
+    for (const callee of collectCalleeNames(node, callableNames)) {
+      if (!visited.has(callee)) queue.push(callee);
+    }
+  }
+  return { names, hasSecretsBlock, unresolved };
+}
+
 function flowHasSecretsBlock(flowNode: AstNode): boolean {
   if (flowNode.kind === "secretsBlock") return true;
   for (const child of flowNode.children ?? []) {
@@ -190,16 +318,21 @@ function collectEffectNames(
     addAll(summary.declaredEffects);
     addAll(summary.observedEffects);
   }
-  if (flowNode !== undefined) {
-    addAll(declaredEffectsFromFlowNode(flowNode));
-    addAll(observedEffectsForFlowNodeIncludingNestedFns(flowNode));
+  const reachable = reachableEffectsFromFlow(ast, route.flowName);
+  addAll(reachable.names);
+  if (reachable.unresolved !== undefined) {
+    return {
+      names,
+      hasSecretsBlock: reachable.hasSecretsBlock,
+      unknown: `route '${route.method} ${route.path}' calls unresolved name '${reachable.unresolved}'; secret requirement unknown`,
+    };
   }
-  if (summary === undefined && flowNode === undefined) {
+  if (summary === undefined && flowNode === undefined && reachable.names.length === 0) {
     return { names, hasSecretsBlock: false, unknown: `route '${route.method} ${route.path}' has no effect summary; secret requirement unknown` };
   }
   return {
     names,
-    hasSecretsBlock: flowNode !== undefined && flowHasSecretsBlock(flowNode),
+    hasSecretsBlock: (flowNode !== undefined && flowHasSecretsBlock(flowNode)) || reachable.hasSecretsBlock,
     unknown: undefined,
   };
 }
