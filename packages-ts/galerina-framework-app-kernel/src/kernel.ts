@@ -1036,7 +1036,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
               // still return a success response. After sealing, the callback still refuses but
               // cannot revise the already-selected response or its audit event.
               if (!requestOutcomeSealed) secretAccessFailed = true;
-              if (isSecretReleaseRefused(error)) secretReleaseRefused = true;
+              if (isSecretReleaseRefused(error)) {
+                secretReleaseRefused = true;
+                // Do not rethrow: an in-flight microtask or a handler that ignores the
+                // return value must not turn a stale epoch into an uncaughtException.
+                return undefined;
+              }
               throw error;
             } finally {
               secretAccessInProgress = false;
@@ -1080,10 +1085,22 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       const unknownIfSpent = (): void => {
         if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
       };
+      const sealedSecretRefusal = (): PipelineOutcome | undefined => {
+        if (secretReleaseRefused) {
+          requestOutcomeSealed = true;
+          unknownIfSpent();
+          return pipelineOutcome(secretUnavailableResponse(), policy);
+        }
+        if (secretAccessFailed) {
+          unknownIfSpent();
+          return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+        }
+        return undefined;
+      };
 
-      if (secretAccessFailed) {
-        unknownIfSpent();
-        return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+      {
+        const sealed = sealedSecretRefusal();
+        if (sealed !== undefined) return sealed;
       }
 
       // ── 11 encode ──
@@ -1118,9 +1135,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         // A provider callback can also run here, be refused, and have that refusal caught by
         // handler-controlled serialization. Re-arbitrate its monotonic failure latch at the
         // final encoded-response boundary, not only before serialization begins.
-        if (secretAccessFailed) {
-          unknownIfSpent();
-          return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+        {
+          const sealed = sealedSecretRefusal();
+          if (sealed !== undefined) return sealed;
         }
         if (deadlineExpired()) {
           unknownIfSpent();

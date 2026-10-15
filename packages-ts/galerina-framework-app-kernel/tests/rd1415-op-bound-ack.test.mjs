@@ -149,6 +149,19 @@ test("matrix: simulated crash between consume and ACK is status-only; recovery n
   assert.equal(gate.acknowledge("op-crash"), "replay");
 });
 
+test("matrix: noteUnknown after ACK is a no-op (acknowledged stays acknowledged)", () => {
+  const authority = new ReleaseCommitAuthority();
+  const provider = countingProvider();
+  const gate = createSecretGate(provider, { authority, requireBoundOperationId: true });
+  gate.getSecret(["credential"], "credential", () => {}, undefined, "op-ack-unknown");
+  assert.equal(authority.stateOf("op-ack-unknown"), "released");
+  assert.equal(gate.acknowledge("op-ack-unknown"), "acknowledged");
+  gate.noteUnknown("op-ack-unknown");
+  assert.equal(authority.stateOf("op-ack-unknown"), "acknowledged");
+  assertCleanStatus(gate.status("op-ack-unknown"), "op-ack-unknown", "acknowledged");
+  assert.equal(gate.acknowledge("op-ack-unknown"), "acknowledged");
+});
+
 test("matrix: timeout and abort of a released lease become delivery-unknown", () => {
   const authority = new ReleaseCommitAuthority();
   const provider = countingProvider();
