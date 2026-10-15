@@ -415,3 +415,107 @@ describe("WU2 fix-02 startServer callee-flow and module-level helper fence", () 
   });
 });
 
+const CONTRACT = (intent) => `contract { intent { "${intent}" } effects {} }`;
+const POST_X = `route POST "/x" {
+  request Request
+  response Response
+  flow readSecret
+}`;
+
+const P1_MODULE_FN_WITH_ARG = `fn hidden(k: String) -> String { return Secrets.get(k) }
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("p1")}
+{
+  return { outcome: hidden("SUPERSECRETPLANTEDVALUE") }
+}
+${POST_X}`;
+
+const P5_UNKNOWN_CALL_WITH_ARG = `secure flow readSecret(request: Request) -> Response
+${CONTRACT("p5")}
+{
+  return { outcome: mystery("SUPERSECRETPLANTEDVALUE") }
+}
+${POST_X}`;
+
+const P6_SECRETFREE_SIBLING_WITH_ARG = `secure flow helper(request: Request) -> Response
+${CONTRACT("p6h")}
+{
+  return { outcome: "ok" }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("p6")}
+{
+  return helper(request)
+}
+${POST_X}`;
+
+const P7_ALIAS_OF_SIBLING = `secure flow helper(request: Request) -> Response
+${CONTRACT("p7h")}
+{
+  return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("p7")}
+{
+  let f = helper
+  return f(request)
+}
+${POST_X}`;
+
+const P8_STEP_HELPER = `secure flow helper(request: Request) -> Response
+${CONTRACT("p8h")}
+{
+  return { outcome: Secrets.get("SUPERSECRETPLANTEDVALUE") }
+}
+secure flow readSecret(request: Request) -> Response
+${CONTRACT("p8")}
+{
+  return step helper(request)
+}
+${POST_X}`;
+
+describe("WU2 fix-03 startServer argument-bearing, step, and alias fence", () => {
+  it("P1 startServer refuses module-level fn with args before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(P1_MODULE_FN_WITH_ARG, "p1-module-fn-arg.fungi", GATE);
+      await assertServeRefuses(P1_MODULE_FN_WITH_ARG, "p1-module-fn-arg.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "P1 must not call listen");
+  });
+
+  it("P5 startServer refuses unknown call with args before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(P5_UNKNOWN_CALL_WITH_ARG, "p5-unknown-arg.fungi", GATE);
+      await assertServeRefuses(P5_UNKNOWN_CALL_WITH_ARG, "p5-unknown-arg.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "P5 must not call listen");
+  });
+
+  it("P6 startServer still listens for a secret-free sibling called with args", async () => {
+    const ast = parseProgram(P6_SECRETFREE_SIBLING_WITH_ARG, "p6-secretfree-sibling.fungi").ast;
+    const calls = await withListenCount(async () => {
+      const running = await startServer(ast, { port: 0 }, async () => {
+        return { __tag: "ok", value: { __tag: "string", value: "ok" } };
+      });
+      await running.close();
+    });
+    assert.equal(calls, 1, "P6 secret-free sibling with args must listen");
+  });
+
+  it("P7 startServer refuses alias of sibling Secrets.get before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(P7_ALIAS_OF_SIBLING, "p7-alias-sibling.fungi", GATE);
+      await assertServeRefuses(P7_ALIAS_OF_SIBLING, "p7-alias-sibling.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "P7 must not call listen");
+  });
+
+  it("P8 startServer refuses step helper Secrets.get before listen", async () => {
+    const calls = await withListenCount(async () => {
+      await assertStartServerRefuses(P8_STEP_HELPER, "p8-step-helper.fungi", GATE);
+      await assertServeRefuses(P8_STEP_HELPER, "p8-step-helper.fungi", LISTENER_REFUSED);
+    });
+    assert.equal(calls, 0, "P8 must not call listen");
+  });
+});
+

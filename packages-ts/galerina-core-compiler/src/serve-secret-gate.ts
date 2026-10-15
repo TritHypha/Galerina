@@ -153,11 +153,30 @@ function indexReachableCallables(ast: AstNode): ReadonlyMap<string, AstNode> {
   return map;
 }
 
+function isMethodCall(node: AstNode): boolean {
+  return (node as AstNode & { readonly callStyle?: string }).callStyle === "method";
+}
+
+function callTargetName(node: AstNode): string | undefined {
+  if (node.kind !== "callExpr" || typeof node.value !== "string" || node.value.length === 0) {
+    return undefined;
+  }
+  if (node.value.startsWith("step:")) return node.value.slice("step:".length);
+  return node.value;
+}
+
 function collectCalleeNames(node: AstNode, callableNames: ReadonlySet<string>): readonly string[] {
   const found: string[] = [];
+  function consider(name: string): void {
+    if (callableNames.has(name)) found.push(name);
+  }
   function walk(n: AstNode): void {
-    if (n.kind === "callExpr" && typeof n.value === "string" && callableNames.has(n.value)) {
-      found.push(n.value);
+    if (n.kind === "callExpr") {
+      const target = callTargetName(n);
+      if (target !== undefined) consider(target);
+    } else if (n.kind === "identifier" && typeof n.value === "string") {
+      // Value-position alias (`let f = helper`): walk the indexed callable.
+      consider(n.value);
     }
     for (const child of n.children ?? []) walk(child);
   }
@@ -190,12 +209,13 @@ function unresolvedBareCallName(
       && typeof n.value === "string"
       && n.value.length > 0
       && !n.value.startsWith("#")
-      && (n.children?.length ?? 0) === 0
-      && !callableNames.has(n.value)
-      && !nested.has(n.value)
+      && !isMethodCall(n)
     ) {
-      found = n.value;
-      return;
+      const target = callTargetName(n) ?? n.value;
+      if (!callableNames.has(target) && !nested.has(target)) {
+        found = n.value;
+        return;
+      }
     }
     for (const child of n.children ?? []) walk(child);
   }
