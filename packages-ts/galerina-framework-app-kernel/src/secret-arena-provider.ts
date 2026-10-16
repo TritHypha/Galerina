@@ -294,6 +294,30 @@ export function createSecretArenaProvider(
     }
   };
 
+  const killCustodian = (): void => {
+    quarantined = true;
+    try {
+      child.stdin?.destroy();
+    } catch {
+      // already closed
+    }
+    try {
+      child.stdout?.destroy();
+    } catch {
+      // already closed
+    }
+    try {
+      child.stderr?.destroy();
+    } catch {
+      // already closed
+    }
+    try {
+      child.kill();
+    } catch {
+      // already exited
+    }
+  };
+
   const rpc = (opcode: number, payload: Uint8Array = new Uint8Array(0)): { status: number; data: Uint8Array } => {
     if (disposed) throw new SecretArenaUnavailable("SecretArena custodian is disposed");
     if (quarantined && opcode !== OP_STATUS && opcode !== OP_EPOCH) {
@@ -333,7 +357,7 @@ export function createSecretArenaProvider(
       }
       return { status, data };
     } catch (error) {
-      quarantined = true;
+      killCustodian();
       throw error;
     } finally {
       wipe(body);
@@ -398,9 +422,20 @@ export function createSecretArenaProvider(
           wipe(data);
           return;
         }
-        const allocated = allocateNonDetachableSecret(data);
-        slot = allocated;
-        wipe(data);
+        try {
+          const allocated = allocateNonDetachableSecret(data);
+          slot = allocated;
+        } catch (error) {
+          quarantined = true;
+          throw error;
+        } finally {
+          wipe(data);
+        }
+        if (slot === undefined) {
+          quarantined = true;
+          throw new SecretArenaUnavailable("SecretArena get refused");
+        }
+        const allocated = slot;
         if (options?.signal?.aborted) {
           throw new SecretArenaUnavailable("SecretArena use was aborted");
         }
