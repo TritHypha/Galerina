@@ -285,6 +285,19 @@ static void clear_out_fields(wamr_secrets_gateway_loaded_t *out)
     zero_digest(out);
 }
 
+/* WAMR AOT little-endian magic 0x746f6100 is the four bytes NUL,'a','o','t'.
+ * The authority path refuses AOT rather than enabling WAMR's optional
+ * AOT validator (off by default in the documented 2.4.5 build). */
+static int snapshot_is_wamr_aot(const uint8_t *snapshot, uint32_t size)
+{
+    static const uint8_t k_aot[4] = { 0x00, 0x61, 0x6f, 0x74 };
+    if (snapshot == NULL || size < 4u) {
+        return 0;
+    }
+    return snapshot[0] == k_aot[0] && snapshot[1] == k_aot[1] &&
+           snapshot[2] == k_aot[2] && snapshot[3] == k_aot[3];
+}
+
 static wamr_secrets_gateway_result_t load_owned_snapshot(
     uint8_t *snapshot,
     uint32_t size,
@@ -463,6 +476,13 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     }
     memcpy(snapshot, buf, (size_t)size);
     out->owned_snapshot = snapshot;
+
+    if (snapshot_is_wamr_aot(snapshot, size)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_VERDICT_REFUSED, "AOT_REFUSED");
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
 
     bind = wamr_vok_spawn_and_bind(verifier_path, snapshot, (size_t)size,
                                    &envelope, &seal);

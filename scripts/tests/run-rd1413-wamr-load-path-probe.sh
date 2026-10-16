@@ -76,6 +76,10 @@ if grep -q 'fexecve(.*environ' "$host_src/wamr_vok_verdict.c"; then
   printf 'fexecve still inherits host environ\n' >&2
   exit 2
 fi
+if ! grep -q 'AOT_REFUSED' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'AOT refuse missing from production TU\n' >&2
+  exit 2
+fi
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-load-path.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 

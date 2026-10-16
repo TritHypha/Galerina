@@ -570,6 +570,34 @@ static int check_load_failed(void)
     return 1;
 }
 
+static int check_aot_refused(void)
+{
+    uint8_t aot[8] = { 0x00, 0x61, 0x6f, 0x74, 0x01, 0x00, 0x00, 0x00 };
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = load_with_authority(aot, sizeof(aot), &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "AOT_REFUSED") == NULL) {
+        fprintf(stderr,
+                "AOT prefix must VERDICT_REFUSED AOT_REFUSED before spawn: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    puts("PASS: AOT prefix is VERDICT_REFUSED AOT_REFUSED before spawn or WAMR load");
+    return 1;
+}
+
 static int check_negative_count(const char *path)
 {
     uint32_t size = 0;
@@ -674,7 +702,8 @@ int main(int argc, char **argv)
     }
 
     ok = check_sha256_kat() && check_invalid_argument() &&
-         check_invalid_diagnostic_zeros_out() && check_load_failed();
+         check_invalid_diagnostic_zeros_out() && check_load_failed() &&
+         check_aot_refused();
     if (ok) {
         ok = expect_refusal(argv[1], WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT, 1, 1,
                             "unlinked subset before native registration");
