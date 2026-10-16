@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, readFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -382,4 +382,42 @@ test("linux GET timeout kills the custodian and drops late secret bytes", { time
   assert.notEqual(stillAlive.status, 0);
   assert.match(mark, /killed:|late-write:fail/);
   assert.equal(mark.includes("late-write:ok"), false);
+});
+
+test("linux SIGTERM-ignoring custodian is SIGKILL'd within the grace bound", { timeout: 20000 }, async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  const markPath = join(tmpdir(), "galerina-secret-arena-ignore-sigterm.mark");
+  try {
+    unlinkSync(markPath);
+  } catch {
+    // absent
+  }
+  const fake = chmodFake(join(dirname(fileURLToPath(import.meta.url)), "secret-arena-fake-ignore-sigterm.py"));
+  const provider = createSecretArenaProvider({ binPath: fake });
+  t.after(() => {
+    try {
+      provider.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  const started = Date.now();
+  assert.throws(
+    () => provider.use("cred", () => {}),
+    (error) => error instanceof SecretArenaUnavailable,
+  );
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const elapsed = Date.now() - started;
+  const mark = existsSync(markPath) ? readFileSync(markPath, "utf8") : "";
+  assert.match(mark, /pid:\d+/);
+  const pidLine = mark.split("\n").find((line) => line.startsWith("pid:"));
+  const pid = Number(pidLine?.slice(4));
+  assert.equal(Number.isInteger(pid) && pid > 0, true);
+  const stillAlive = spawnSync("kill", ["-0", String(pid)], { encoding: "utf8" });
+  assert.notEqual(stillAlive.status, 0, "custodian must be dead after SIGKILL escalate");
+  assert.match(mark, /sigterm:/);
+  assert.equal(elapsed < 15000, true, "kill must complete inside the RPC deadline plus grace");
 });
