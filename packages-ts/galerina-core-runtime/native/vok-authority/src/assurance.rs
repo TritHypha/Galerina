@@ -30,6 +30,7 @@ pub const POLICY_ID: &str = "galerina.wamr-vok.artifact.v1";
 pub const DEFAULT_BUILD_POINT: &str = "git:ad0ed3acc298f4ffe76d01f7c7286b2ea5c964f9";
 
 const WASM_MODULE_MAGIC: [u8; 4] = [0x00, 0x61, 0x73, 0x6d];
+const WAMR_AOT_MAGIC: [u8; 4] = [0x00, 0x61, 0x6f, 0x74];
 
 /// Private component-profile mint. Never serialized.
 struct Signet {
@@ -145,6 +146,12 @@ fn wasm_magic_at(bytes: &[u8], offset: usize) -> bool {
         .is_some_and(|window| window == WASM_MODULE_MAGIC)
 }
 
+fn wamr_aot_at(bytes: &[u8], offset: usize) -> bool {
+    bytes
+        .get(offset..offset.saturating_add(4))
+        .is_some_and(|window| window == WAMR_AOT_MAGIC)
+}
+
 /// Scans every 4-byte window. Returns how many windows equal `\0asm`.
 #[must_use]
 pub fn wasm_magic_windows(bytes: &[u8]) -> usize {
@@ -226,6 +233,9 @@ pub fn verify_wasm_artifact(bytes: &[u8], build_point: &str) -> Result<(Envelope
     let digest = sha256::sha256(bytes);
     if digest_is_zero(&digest) {
         return Err(VerifyError::refused("VOK_ARTIFACT_DIGEST_MISSING"));
+    }
+    if wamr_aot_at(bytes, 0) {
+        return Err(VerifyError::refused("VOK_AOT_REFUSED"));
     }
     let windows = wasm_magic_windows(bytes);
     if windows == 0 || !wasm_magic_at(bytes, 0) {
@@ -424,6 +434,13 @@ mod tests {
         let native = verify_wasm_artifact(&[0x47, 0x56, 0x45, 0x4f], DEFAULT_BUILD_POINT)
             .unwrap_err();
         assert_eq!(native.failure_id(), "VOK_WASM_MAGIC_MISSING");
+    }
+
+    #[test]
+    fn aot_magic_refuses() {
+        let aot = [0x00, 0x61, 0x6f, 0x74, 0x01, 0x00, 0x00, 0x00];
+        let error = verify_wasm_artifact(&aot, DEFAULT_BUILD_POINT).unwrap_err();
+        assert_eq!(error.failure_id(), "VOK_AOT_REFUSED");
     }
 
     #[test]

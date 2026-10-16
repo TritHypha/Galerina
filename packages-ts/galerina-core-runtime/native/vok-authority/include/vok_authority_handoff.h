@@ -20,7 +20,8 @@
  *   <line-canonical Wax Seal including sealDigest>
  *
  * File mode (`--artifact` / `--envelope-out` / `--seal-out`) remains
- * for inspection. The C load path uses `--stdin` only.
+ * for inspection. The C load path uses `--stdin` only. WAMR AOT
+ * (NUL a o t prefix) is refused; the documented AOT validator stays off.
  *
  * Envelope keys (sorted, LF, `key=value`):
  *   abi, buildPoint, capabilityDigest, componentDigest,

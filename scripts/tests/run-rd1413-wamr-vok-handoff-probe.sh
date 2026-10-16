@@ -78,6 +78,15 @@ if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
     "$host_root" >&2
   exit 2
 fi
+if ! grep -q 'AOT_REFUSED' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'WAMR_HOST_ROOT %s missing AOT refuse on authority load path\n' \
+    "$host_root" >&2
+  exit 2
+fi
+if ! grep -q 'VOK_AOT_REFUSED' "$vok_dir/src/assurance.rs"; then
+  printf 'verifier missing VOK_AOT_REFUSED\n' >&2
+  exit 2
+fi
 
 cd "$vok_dir"
 rm -f -- "$vok_dir/target/release/libgalerina_vok_authority.a"
