@@ -6,11 +6,12 @@
  *
  * There is no C ABI in this crate. Do not link a Rust staticlib or
  * cdylib into the C WAMR runtime. Do not declare extern Rust symbols.
- * The C host hash-pins the `vok-artifact-verifier` binary, fexecves
- * the same fd, writes artifact bytes to stdin, and reads the verdict
- * only from stdout. The verifier hashes stdin itself (it never accepts
- * a caller digest), scans every 4-byte window for Wasm magic, mints a
- * process-local Signet, consumes it, and writes:
+ * The C host hash-pins the `vok-artifact-verifier` binary, copies those
+ * bytes into a sealed memfd, fexecves that memfd with an empty envp,
+ * writes a private snapshot of the artifact to stdin, and reads the
+ * verdict only from stdout. The verifier hashes stdin itself (it never
+ * accepts a caller digest), scans every 4-byte window for Wasm magic,
+ * mints a process-local Signet, consumes it, and writes:
  *
  *   GALERINA_VOK_VERDICT_V1\n
  *   ENVELOPE <nbytes>\n
@@ -36,8 +37,8 @@
  * authentication=PINNED_CHILD_PIPE kind=WAX_SEAL.
  *
  * UNAUTHENTICATED_REFERENCE is not an accepting load state. Copying a
- * serialized seal cannot recreate the Signet and cannot set C
- * pipe_origin.
+ * serialized seal cannot recreate the Signet. C bind is internal to
+ * spawn_and_bind; file-parsed structs cannot produce BIND_OK.
  */
 
 #endif

@@ -8,7 +8,6 @@
 
 #include "wasm_export.h"
 #include "wamr_secrets_gateway_host.h"
-#include "wamr_vok_verdict.h"
 
 #define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
 
@@ -92,15 +91,12 @@ int main(int argc, char **argv)
     uint32_t full_size = 0;
     uint8_t *subset;
     uint8_t *full;
-    wamr_vok_envelope_t envelope;
-    wamr_vok_wax_seal_t seal;
-    int bind;
     int ok;
 
-    if (argc != 8) {
+    if (argc != 6) {
         fprintf(stderr,
                 "usage: wamr-vok-handoff-probe subset.wasm full.wasm "
-                "verifier missing_path evil_verifier env_file seal_file\n");
+                "verifier missing_path evil_verifier\n");
         return 2;
     }
     if (!wasm_runtime_init()) {
@@ -122,43 +118,6 @@ int main(int argc, char **argv)
         wasm_runtime_destroy();
         return 2;
     }
-
-    bind = wamr_vok_parse_envelope_file(argv[6], &envelope);
-    if (bind != WAMR_VOK_BIND_OK) {
-        fprintf(stderr, "could not parse file envelope: %d\n", bind);
-        free(subset);
-        free(full);
-        wasm_runtime_destroy();
-        return 1;
-    }
-    bind = wamr_vok_parse_seal_file(argv[7], &seal);
-    if (bind != WAMR_VOK_BIND_OK) {
-        fprintf(stderr, "could not parse file seal: %d\n", bind);
-        free(subset);
-        free(full);
-        wasm_runtime_destroy();
-        return 1;
-    }
-    bind = wamr_vok_bind_bytes(subset, (size_t)subset_size, &envelope, &seal);
-    if (bind != WAMR_VOK_BIND_REFUSED) {
-        fprintf(stderr, "file-origin genuine verdict must REFUSE bind, got %d\n",
-                bind);
-        free(subset);
-        free(full);
-        wasm_runtime_destroy();
-        return 1;
-    }
-    printf("PASS: file-origin genuine verdict bind refused\n");
-    bind = wamr_vok_bind_bytes(full, (size_t)full_size, &envelope, &seal);
-    if (bind != WAMR_VOK_BIND_REFUSED) {
-        fprintf(stderr, "replay of file verdict on different bytes must REFUSE, got %d\n",
-                bind);
-        free(subset);
-        free(full);
-        wasm_runtime_destroy();
-        return 1;
-    }
-    printf("PASS: replay of file verdict on different bytes refused\n");
 
     ok = load_with_verifier(subset, subset_size, NULL,
                             WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT,

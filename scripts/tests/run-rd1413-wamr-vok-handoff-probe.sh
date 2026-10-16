@@ -59,6 +59,25 @@ if grep -q 'envelope_path' \
     "$host_root" >&2
   exit 2
 fi
+if grep -q 'wamr_secrets_gateway_load_expected' \
+    "$host_include/wamr_secrets_gateway_host.h" \
+    "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'WAMR_HOST_ROOT %s still exposes load_expected\n' \
+    "$host_root" >&2
+  exit 2
+fi
+if grep -E 'wamr_vok_bind_bytes|pipe_origin' \
+    "$host_include/wamr_vok_verdict.h"; then
+  printf 'WAMR_HOST_ROOT %s still exposes public bind_bytes/pipe_origin\n' \
+    "$host_root" >&2
+  exit 2
+fi
+if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'empty_envp' "$host_src/wamr_vok_verdict.c"; then
+  printf 'WAMR_HOST_ROOT %s missing sealed memfd or empty envp\n' \
+    "$host_root" >&2
+  exit 2
+fi
 
 cd "$vok_dir"
 rm -f -- "$vok_dir/target/release/libgalerina_vok_authority.a"
@@ -138,6 +157,4 @@ fi
   "$temp_dir/full.wasm" \
   "$verifier" \
   "$temp_dir/missing.bin" \
-  "$temp_dir/evil-verifier" \
-  "$temp_dir/env.subset" \
-  "$temp_dir/seal.subset"
+  "$temp_dir/evil-verifier"
