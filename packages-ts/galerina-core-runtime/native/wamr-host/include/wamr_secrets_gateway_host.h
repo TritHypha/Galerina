@@ -104,19 +104,21 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
     size_t diagnostic_capacity);
 
 /*
- * Production secret/artifact load. envelope_path and seal_path are
- * mandatory files from the out-of-process Rust verifier. NULL paths are
- * INVALID_ARGUMENT. A missing file or all-zero componentDigest is
- * ARTIFACT_DIGEST_MISSING. The host independently SHA-256s a snapshot of
- * buf[0..size) and binds that digest to the Envelope before
- * wasm_runtime_load. Module bytes are never copied out. This translation
- * unit does not link or call Rust.
+ * Production secret/artifact load. verifier_path is the out-of-process
+ * Rust verifier binary. NULL is INVALID_ARGUMENT. The host hash-pins
+ * that binary (compile-time WAMR_VOK_VERIFIER_SHA256_HEX), fexecves the
+ * same fd, writes a snapshot of buf[0..size) to the child's stdin, and
+ * reads Envelope + Wax Seal only from the child's stdout pipe. Caller
+ * verdict file paths are not accepted. A missing binary is
+ * ARTIFACT_DIGEST_MISSING. A pin mismatch, spawn failure, forged or
+ * file-origin verdict, or authorizing=true is VERDICT_REFUSED. The host
+ * independently SHA-256s the snapshot and binds componentDigest before
+ * wasm_runtime_load. This translation unit does not link or call Rust.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
     uint32_t size,
-    const char *envelope_path,
-    const char *seal_path,
+    const char *verifier_path,
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity);

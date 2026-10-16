@@ -5,9 +5,11 @@
 #include <stdint.h>
 
 /*
- * Line-canonical Envelope / Wax Seal files produced by the out-of-process
- * Rust verifier. This C module only parses and binds; it does not mint a
- * Signet and it does not link Rust.
+ * Envelope / Wax Seal produced by a hash-pinned out-of-process Rust
+ * verifier child. This C module parses, binds, and spawns; it does not
+ * mint a Signet and it does not link Rust. File-parsed verdicts are
+ * never load authority: pipe_origin is set only when the bytes arrived
+ * on a runtime-owned stdout pipe from fexecve of a pinned binary.
  */
 
 #define WAMR_VOK_ENVELOPE_DOMAIN "galerina.assurance.envelope.v1"
@@ -18,6 +20,14 @@
 #define WAMR_VOK_EPOCH 1ull
 #define WAMR_VOK_POLICY_DOMAIN "galerina.assurance.policy.v1"
 #define WAMR_VOK_POLICY_ID "galerina.wamr-vok.artifact.v1"
+#define WAMR_VOK_CAPABILITY_DOMAIN "galerina.assurance.capability.v1"
+#define WAMR_VOK_DEPS_DOMAIN "galerina.assurance.deps.v1"
+#define WAMR_VOK_EVIDENCE_DOMAIN "galerina.assurance.evidence.v1"
+#define WAMR_VOK_PROFILE_DOMAIN "galerina.assurance.profile.v1"
+#define WAMR_VOK_CAPABILITY_PAYLOAD "none"
+#define WAMR_VOK_DEPS_PAYLOAD "closed"
+#define WAMR_VOK_EVIDENCE_PAYLOAD "synthetic"
+#define WAMR_VOK_AUTHENTICATION "PINNED_CHILD_PIPE"
 
 enum {
     WAMR_VOK_BIND_OK = 0,
@@ -39,6 +49,7 @@ typedef struct {
     char build_point[48];
     char schema_version[8];
     uint64_t epoch;
+    int pipe_origin;
 } wamr_vok_envelope_t;
 
 typedef struct {
@@ -51,6 +62,7 @@ typedef struct {
     char schema_version[8];
     int authorizing;
     int replayable;
+    int pipe_origin;
 } wamr_vok_wax_seal_t;
 
 void wamr_vok_framed_digest(const char *domain, const uint8_t *payload,
@@ -68,10 +80,20 @@ int wamr_vok_parse_seal_file(const char *path, wamr_vok_wax_seal_t *out);
 
 /*
  * Independently hashes bytes[0..size) and binds them to envelope + seal.
- * Returns WAMR_VOK_BIND_*.
+ * File-origin (pipe_origin==0) is always REFUSED. UNAUTHENTICATED_REFERENCE
+ * is always REFUSED. Returns WAMR_VOK_BIND_*.
  */
 int wamr_vok_bind_bytes(const uint8_t *bytes, size_t size,
                         const wamr_vok_envelope_t *envelope,
                         const wamr_vok_wax_seal_t *seal);
+
+/*
+ * Hash-pin verifier_path, fexecve the same fd, write bytes to the child's
+ * stdin, read Envelope+Wax Seal only from the child's stdout pipe, then
+ * bind. Compile with -DWAMR_VOK_VERIFIER_SHA256_HEX=<64 lowercase hex>.
+ */
+int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
+                            size_t size, wamr_vok_envelope_t *envelope,
+                            wamr_vok_wax_seal_t *seal);
 
 #endif

@@ -7,6 +7,7 @@ unset RD1413_TEST_IMPORT_COUNT_UNAVAILABLE RD1413_TEST_FAIL_INSTANTIATE
 command -v gcc >/dev/null
 command -v wat2wasm >/dev/null
 command -v sha256sum >/dev/null
+command -v python3 >/dev/null
 
 if [[ -z "${WAMR_ROOT:-}" && ( -z "${WAMR_INCLUDE_DIR:-}" || -z "${WAMR_LIBRARY:-}" ) ]]; then
   printf 'Set WAMR_ROOT or both WAMR_INCLUDE_DIR and WAMR_LIBRARY\n' >&2
@@ -43,6 +44,17 @@ fi
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
 host_include="$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host/include"
 host_src="$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host/src"
+if [[ -z "${WAMR_VOK_VERIFIER:-}" ]]; then
+  printf 'Set WAMR_VOK_VERIFIER to the hash-pinned vok-artifact-verifier binary\n' >&2
+  exit 2
+fi
+verifier="$WAMR_VOK_VERIFIER"
+test -x "$verifier"
+pin="$(sha256sum "$verifier" | cut -d ' ' -f1)"
+if [[ "${#pin}" -ne 64 ]]; then
+  printf 'verifier pin is not 64 hex characters\n' >&2
+  exit 2
+fi
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-load-path.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 
@@ -59,6 +71,7 @@ RD1413_SUBSET_SHA256="$(sha256sum "$temp_dir/subset.wasm" | cut -d ' ' -f1)"
 RD1413_FULL_SHA256="$(sha256sum "$temp_dir/full.wasm" | cut -d ' ' -f1)"
 
 gcc -std=c11 -Wall -Wextra -Werror \
+  -DWAMR_VOK_VERIFIER_SHA256_HEX=\"$pin\" \
   -I"$wamr_include_dir" \
   -I"$host_include" \
   "$script_dir/rd1413-wamr-load-path-probe.c" \
@@ -75,6 +88,16 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$wamr_library" -lm -ldl -lpthread \
   -o "$temp_dir/load-path-probe"
 
+cp -- "$verifier" "$temp_dir/evil-verifier"
+python3 - "$temp_dir/evil-verifier" <<'PY'
+import pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = bytearray(path.read_bytes())
+data[-1] ^= 0x01
+path.write_bytes(data)
+PY
+chmod +x "$temp_dir/evil-verifier"
+
 "$temp_dir/load-path-probe" \
   "$temp_dir/subset.wasm" \
   "$temp_dir/full.wasm" \
@@ -82,4 +105,6 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$temp_dir/duplicate.wasm" \
   "$temp_dir/mismatch.wasm" \
   "$temp_dir/nonfunction.wasm" \
-  "$temp_dir"
+  "$temp_dir" \
+  "$verifier" \
+  "$temp_dir/evil-verifier"

@@ -464,8 +464,7 @@ static wamr_secrets_gateway_result_t map_verdict_bind(int bind)
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
     uint32_t size,
-    const char *envelope_path,
-    const char *seal_path,
+    const char *verifier_path,
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity)
@@ -490,7 +489,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     }
     diagnostic[0] = '\0';
     clear_out_fields(out);
-    if (envelope_path == NULL || seal_path == NULL) {
+    if (verifier_path == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
@@ -501,24 +500,12 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
 
-    bind = wamr_vok_parse_envelope_file(envelope_path, &envelope);
-    if (bind != WAMR_VOK_BIND_OK) {
-        mapped = map_verdict_bind(bind);
-        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped,
-                            "envelope");
-        return mapped;
-    }
-    bind = wamr_vok_parse_seal_file(seal_path, &seal);
-    if (bind != WAMR_VOK_BIND_OK) {
-        mapped = map_verdict_bind(bind);
-        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped, "seal");
-        return mapped;
-    }
-
-    bind = wamr_vok_bind_bytes(buf, (size_t)size, &envelope, &seal);
+    bind = wamr_vok_spawn_and_bind(verifier_path, buf, (size_t)size, &envelope,
+                                   &seal);
     mapped = map_verdict_bind(bind);
     if (mapped != WAMR_SECRETS_GATEWAY_VALID) {
-        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped, NULL);
+        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped,
+                            "pinned-child");
         return mapped;
     }
     memcpy(computed, envelope.component_digest, sizeof(computed));
