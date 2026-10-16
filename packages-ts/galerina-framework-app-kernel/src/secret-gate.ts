@@ -24,15 +24,23 @@ import {
   SecretReleaseRefused,
   bytesEqual,
 } from "./release-commit-point.js";
-import type { ReleaseOutcome } from "./release-commit-point.js";
+import type { ReleaseAuditEvent, ReleaseOutcome, ReleaseStatus } from "./release-commit-point.js";
 
 export {
   ReleaseCommitAuthority,
   RELEASE_LEASE_CAP,
+  RELEASE_AUDIT_CAP,
+  RELEASE_RETIRED_CAP,
   SecretReleaseRefused,
   bytesEqual,
 } from "./release-commit-point.js";
-export type { ReleaseOutcome, ReleaseLeaseState } from "./release-commit-point.js";
+export type {
+  ReleaseOutcome,
+  ReleaseLeaseState,
+  ReleaseStatusState,
+  ReleaseAuditEvent,
+  ReleaseStatus,
+} from "./release-commit-point.js";
 
 /**
  * The boot-resolved secrets provider the kernel owns for the process lifetime. Structurally
@@ -74,6 +82,14 @@ export interface SecretGate {
     onViolation?: (error: unknown) => void,
     operationId?: string,
   ): undefined;
+  /** ACK the released lease this gate minted for `operationId`. Process-local. */
+  acknowledge(operationId: string): ReleaseOutcome;
+  /** Status-only recovery. Never opens the provider. */
+  status(operationId: string): ReleaseStatus;
+  /** Mark a released-but-unacked delivery as unknown (timeout, abort, handler throw after delivery). */
+  noteUnknown(operationId: string): void;
+  /** Transition audit: operation id + outcome only. */
+  auditEvents(): readonly ReleaseAuditEvent[];
 }
 
 // Capture the built-ins before any provider/handler callback can shadow a staged view's `fill`
@@ -105,8 +121,13 @@ function requiresName(required: readonly string[], name: string): boolean {
  * never resolved the anchor/arena), `admit` refuses ANY required secret — but is a strict no-op
  * for a route whose `require` list is empty, which is why every secret-free route is unaffected.
  */
-function readEpoch(provider: SecretsProvider): number {
-  if (typeof provider.revocationEpoch !== "function") return 0;
+function readEpoch(provider: SecretsProvider, requireEpoch: boolean): number {
+  if (typeof provider.revocationEpoch !== "function") {
+    if (requireEpoch) {
+      throw new SecretReleaseRefused("stale", "SecretGate: revocation epoch is unavailable");
+    }
+    return 0;
+  }
   let epoch: unknown;
   try {
     epoch = provider.revocationEpoch();
@@ -121,9 +142,15 @@ function readEpoch(provider: SecretsProvider): number {
 
 export function createSecretGate(
   provider: SecretsProvider | undefined,
-  options: { readonly authority?: ReleaseCommitAuthority } = {},
+  options: {
+    readonly authority?: ReleaseCommitAuthority;
+    readonly requireBoundOperationId?: boolean;
+    readonly requireRevocationEpoch?: boolean;
+  } = {},
 ): SecretGate {
   const authority = options.authority ?? new ReleaseCommitAuthority();
+  const requireBoundOperationId = options.requireBoundOperationId === true;
+  const requireRevocationEpoch = options.requireRevocationEpoch === true;
   let oneshot = 0;
   // ── admit: verbatim fail-closed logic (RED-bench-secrets-context.mjs:40-48). ──
   function admit(required: readonly string[]): "secret_unavailable" | null {
@@ -164,16 +191,20 @@ export function createSecretGate(
     if (typeof operationId === "string" && operationId.length === 0) {
       throw new SecretReleaseRefused("missing", "SecretGate: release operation id is required");
     }
+    if (typeof operationId !== "string" && requireBoundOperationId) {
+      throw new SecretReleaseRefused("missing", "SecretGate: release operation id is required");
+    }
     const opId = typeof operationId === "string"
       ? operationId
       : `oneshot:${(oneshot += 1)}`;
-    const epochAtMint = readEpoch(provider);
+    const epochAtMint = readEpoch(provider, requireRevocationEpoch);
     const lease = authority.mint(opId, epochAtMint);
     const prior = authority.stateOf(lease.leaseId);
     if (prior !== "unused") {
-      const outcome: ReleaseOutcome = prior === "released" || prior === "delivery-unknown"
-        ? "replay"
-        : prior === "fenced" ? "fenced" : "missing";
+      const outcome: ReleaseOutcome =
+        prior === "released" || prior === "delivery-unknown" || prior === "acknowledged"
+          ? "replay"
+          : prior === "fenced" ? "fenced" : "missing";
       throw new SecretReleaseRefused(outcome, `SecretGate: release lease is ${prior}`);
     }
     let callbackInvoked = false;
@@ -242,7 +273,7 @@ export function createSecretGate(
             liveView = value;
             let observedEpoch: number;
             try {
-              observedEpoch = readEpoch(provider);
+              observedEpoch = readEpoch(provider, requireRevocationEpoch);
             } catch (error) {
               authority.fence(lease.leaseId);
               return failCallback(error);
@@ -287,22 +318,26 @@ export function createSecretGate(
       // alias (the RD-1413 fixture) stays equal until `has()` mutates it.
       const aliasSurvivedOpen = liveView !== undefined && bytesEqual(liveView, stagedView);
       let stillPresent: unknown;
+      const refuseStaging = (outcome: "stale" | "fenced", message: string): never => {
+        // Consume (D) already ran inside `use` so the provider can wipe. fence() only
+        // moves unused, so a post-consume staging refusal would otherwise stay released.
+        authority.fence(lease.leaseId);
+        authority.markUnknown(lease.leaseId);
+        throw new SecretReleaseRefused(outcome, message);
+      };
       try {
         stillPresent = provider.has(name);
       } catch {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("stale", "SecretGate: provider validity check failed before secret delivery");
+        return refuseStaging("stale", "SecretGate: provider validity check failed before secret delivery");
       }
       // `has` is provider-controlled too. It may re-enter a saved callback, swallow the duplicate-
       // use exception, and still report `true`; do not deliver staged bytes after that violation.
       if (callbackFailed) throw callbackFailure;
       if (aliasSurvivedOpen && liveView !== undefined && !bytesEqual(liveView, stagedView)) {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("fenced", "SecretGate: live secret mutated after provider open");
+        return refuseStaging("fenced", "SecretGate: live secret mutated after provider open");
       }
       if (stillPresent !== true) {
-        authority.fence(lease.leaseId);
-        throw new SecretReleaseRefused("fenced", "SecretGate: secret was revoked before staged delivery");
+        return refuseStaging("fenced", "SecretGate: secret was revoked before staged delivery");
       }
 
       let callbackResult: unknown;
@@ -350,5 +385,21 @@ export function createSecretGate(
     }
   }
 
-  return { admit, getSecret };
+  function acknowledge(operationId: string): ReleaseOutcome {
+    return authority.acknowledgeMinted(operationId);
+  }
+
+  function status(operationId: string): ReleaseStatus {
+    return authority.status(operationId);
+  }
+
+  function noteUnknown(operationId: string): void {
+    authority.markUnknown(operationId);
+  }
+
+  function auditEvents(): readonly ReleaseAuditEvent[] {
+    return authority.auditEvents();
+  }
+
+  return { admit, getSecret, acknowledge, status, noteUnknown, auditEvents };
 }

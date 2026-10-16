@@ -31,10 +31,19 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
-import type { SecretsProvider } from "./secret-gate.js";
+import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
-  return error instanceof SecretReleaseRefused;
+  try {
+    return error instanceof SecretReleaseRefused;
+  } catch {
+    return false;
+  }
+}
+
+function isEpochUnavailable(error: unknown): boolean {
+  return isSecretReleaseRefused(error)
+    && error.message === "SecretGate: revocation epoch is unavailable";
 }
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
@@ -479,6 +488,8 @@ export interface CreateAppKernelOptions {
    *  route that DECLARES a required secret fails closed at gate 9.5 (503); secret-free routes are
    *  unaffected. The host owns the provider's lifecycle and MUST `dispose()` it on shutdown. */
   readonly secretsProvider?: SecretsProvider;
+  /** Optional release-commit authority shared with the secrets gate (default: a fresh in-process authority). */
+  readonly releaseAuthority?: ReleaseCommitAuthority;
   /** Closed-schema validators keyed by `RouteDeclaration.requestType`. */
   readonly requestValidators?: Readonly<Record<string, (value: unknown) => boolean>>;
 }
@@ -616,7 +627,11 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
-  const secretGate = createSecretGate(opts.secretsProvider);
+  const secretGate = createSecretGate(opts.secretsProvider, {
+    ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
+    requireBoundOperationId: true,
+    requireRevocationEpoch: true,
+  });
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
@@ -673,12 +688,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     readonly policy: EffectiveRoutePolicy | undefined;
     /** Final monotonic deadline arbitration after the public entry point resumes its await. */
     readonly recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined;
+    /** ACK or noteUnknown after handle() chooses the final HTTP response and audit commit. */
+    readonly finalizeSecretRelease?: (ok: boolean) => void;
   }
 
   function pipelineOutcome(
     response: GalerinaKernelResponse,
     policy: EffectiveRoutePolicy | undefined,
     recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined,
+    finalizeSecretRelease?: (ok: boolean) => void,
   ): PipelineOutcome {
     // Async-function promise resolution reads `then` from its returned value. A
     // null-prototype envelope prevents hostile Object.prototype accessors from
@@ -692,10 +710,19 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         enumerable: true,
       });
     }
+    if (finalizeSecretRelease !== undefined) {
+      intrinsicDefineProperty(outcome, "finalizeSecretRelease", {
+        value: finalizeSecretRelease,
+        enumerable: true,
+      });
+    }
     return outcome;
   }
 
-  async function runPipeline(req: GalerinaKernelRequest): Promise<PipelineOutcome> {
+  async function runPipeline(
+    req: GalerinaKernelRequest,
+    secretReleaseSlot?: { finalize?: (ok: boolean) => void },
+  ): Promise<PipelineOutcome> {
     // ── 1 normalise ──
     // The request type already gives us a normalised shape; we treat `method`
     // as authoritative and look up headers case-insensitively below.
@@ -973,8 +1000,18 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         requestOutcomeSealed = true;
         return undefined;
       };
+      let secretReleaseFinalized = false;
+      const finalizeSecretRelease = (ok: boolean): void => {
+        if (secretReleaseSlot !== undefined) delete secretReleaseSlot.finalize;
+        if (secretReleaseFinalized) return;
+        secretReleaseFinalized = true;
+        if (!secretAccessSpent) return;
+        if (ok) secretGate.acknowledge(releaseOperationId);
+        else secretGate.noteUnknown(releaseOperationId);
+      };
+      if (secretReleaseSlot !== undefined) secretReleaseSlot.finalize = finalizeSecretRelease;
       const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
-        pipelineOutcome(response, policy, recheckAndSealRequestOutcome);
+        pipelineOutcome(response, policy, recheckAndSealRequestOutcome, finalizeSecretRelease);
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
       let handlerPromise: Promise<HandlerResult> | undefined;
       const timeoutPromise = new Promise<never>((_resolve, reject) => {
@@ -1033,7 +1070,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
               // still return a success response. After sealing, the callback still refuses but
               // cannot revise the already-selected response or its audit event.
               if (!requestOutcomeSealed) secretAccessFailed = true;
-              if (isSecretReleaseRefused(error)) secretReleaseRefused = true;
+              if (isEpochUnavailable(error)) {
+                secretReleaseRefused = true;
+                // Swallow only mint-time epoch unavailability. An in-flight microtask
+                // after the handler returned must not become uncaughtException. Other
+                // SecretReleaseRefused outcomes (staging revoke / fence) still throw so
+                // a handler that catches them cannot rehabilitate the request: the
+                // secretAccessFailed latch seals 500, matching the pre-O4 kernel path.
+                return undefined;
+              }
               throw error;
             } finally {
               secretAccessInProgress = false;
@@ -1048,6 +1093,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
       } catch (error) {
         if (deadlineExpired()) {
+          if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
           if (handlerPromise !== undefined) {
             releaseWhenHandlerSettles = true;
             void handlerPromise.finally(releaseSlot).catch(() => undefined);
@@ -1058,10 +1104,14 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           // Do not attach the post-await secretAccessFailed recheck: that recheck is for a
           // handler that swallowed a fence and still returned success (500). An uncaught
           // result-sink fence is unavailability (503) and must not be rewritten at publication.
+          // Staging refusals after consume leave the lease released unless marked unknown;
+          // fence() only moves unused. HTTP stays 503; status becomes delivery-unknown.
           requestOutcomeSealed = true;
+          if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
           return pipelineOutcome(secretUnavailableResponse(), policy);
         }
         // Handler faults fail closed: a safe 500, no internal detail leaks.
+        if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
         return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
       } finally {
         // Retire the capability when the kernel leaves dispatch waiting, before response
@@ -1072,8 +1122,25 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
       }
 
-      if (secretAccessFailed) {
-        return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+      const unknownIfSpent = (): void => {
+        if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
+      };
+      const sealedSecretRefusal = (): PipelineOutcome | undefined => {
+        if (secretReleaseRefused) {
+          requestOutcomeSealed = true;
+          unknownIfSpent();
+          return pipelineOutcome(secretUnavailableResponse(), policy);
+        }
+        if (secretAccessFailed) {
+          unknownIfSpent();
+          return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+        }
+        return undefined;
+      };
+
+      {
+        const sealed = sealedSecretRefusal();
+        if (sealed !== undefined) return sealed;
       }
 
       // ── 11 encode ──
@@ -1087,8 +1154,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           body = undefined;
         } else if (bodyValue instanceof Uint8Array) {
           bodyByteLength = actualTypedArrayByteLength(bodyValue);
-          if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+          if (deadlineExpired()) {
+            unknownIfSpent();
+            return terminalOutcome(deadlineRefusal().response);
+          }
           if (bodyByteLength > responseMemoryBudgetBytes) {
+            unknownIfSpent();
             return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
           }
           // Publish a kernel-owned fixed-length snapshot; never expose the handler's mutable or
@@ -1104,12 +1175,17 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         // A provider callback can also run here, be refused, and have that refusal caught by
         // handler-controlled serialization. Re-arbitrate its monotonic failure latch at the
         // final encoded-response boundary, not only before serialization begins.
-        if (secretAccessFailed) {
-          return terminalOutcome(errorResponse(500, "internal_error", "Handler failed."));
+        {
+          const sealed = sealedSecretRefusal();
+          if (sealed !== undefined) return sealed;
         }
-        if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
+        if (deadlineExpired()) {
+          unknownIfSpent();
+          return terminalOutcome(deadlineRefusal().response);
+        }
 
         if (bodyByteLength !== undefined && bodyByteLength > responseMemoryBudgetBytes) {
+          unknownIfSpent();
           return terminalOutcome(errorResponse(503, "resource_limit_exceeded", "Response exceeds the route memory budget."));
         }
 
@@ -1117,6 +1193,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           body === undefined ? { status, headers } : { status, headers, body };
         return terminalOutcome(response);
       } catch {
+        unknownIfSpent();
         if (deadlineExpired()) return terminalOutcome(deadlineRefusal().response);
         return terminalOutcome(errorResponse(500, "internal_error", "Response could not be encoded."));
       }
@@ -1169,10 +1246,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       }
     }
 
+    const secretReleaseSlot: { finalize?: (ok: boolean) => void } = {};
     try {
-      const outcome = await runPipeline(req);
+      const outcome = await runPipeline(req, secretReleaseSlot);
       const { policy } = outcome;
-      const response = outcome.recheckPublicationDeadline?.() ?? outcome.response;
+      const rechecked = outcome.recheckPublicationDeadline?.();
+      const publicationOk = rechecked === undefined;
+      const response = rechecked ?? outcome.response;
 
       // ── 12 audit ── Build the event after the response is computed. A mandatory
       // event consumes its exact reservation synchronously; flushing stays off-path.
@@ -1195,6 +1275,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           auditSink.commit(reservation, event);
           reservationLive = false;
         } catch {
+          outcome.finalizeSecretRelease?.(false);
           return errorResponse(503, "audit_unavailable", "Required runtime audit evidence could not be accepted.");
         }
       } else if (policy !== undefined) {
@@ -1206,6 +1287,31 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         }
       }
 
+      outcome.finalizeSecretRelease?.(publicationOk);
+      return response;
+    } catch {
+      secretReleaseSlot.finalize?.(false);
+      const response = errorResponse(500, "internal_error", "Handler failed.");
+      if (reservationLive && reservation !== undefined) {
+        try {
+          const event: AuditEvent = {
+            requestId: auditRequestId,
+            method: auditMethod,
+            path: auditPath,
+            status: response.status,
+            errorCode: errorCodeOf(response),
+            origin: "kernel",
+            appliedDefaults: [],
+            relaxations: [],
+            at: wallClockNow(),
+            ...(resolvedPosture ? { resolvedPosture } : {}),
+          };
+          auditSink.commit(reservation, event);
+          reservationLive = false;
+        } catch {
+          // The request still fails closed as a kernel 500.
+        }
+      }
       return response;
     } finally {
       if (reservationLive && reservation !== undefined) {
