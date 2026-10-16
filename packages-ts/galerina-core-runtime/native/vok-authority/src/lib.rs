@@ -15,8 +15,7 @@ mod secret_arena_custodian;
 mod secret_arena_store;
 mod sha256;
 mod veo;
-#[allow(unsafe_code)]
-mod ffi;
+mod assurance;
 
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
@@ -33,6 +32,12 @@ pub use secret_arena_custodian::run_secret_arena_custodian;
 pub use veo::{
     admit_general_veo_linker, admit_veo_object, AdmittedVeoObject, VeoActionIdentity,
     VeoAdmissionRequest, VeoProfile,
+};
+pub use assurance::{
+    envelope_file_body, framed_digest, seal_file_body, sha256_prefaced, verify_wasm_artifact,
+    verify_wasm_file, wasm_magic_windows, write_verdict_files, Envelope, VerifyError, WaxSeal, ABI,
+    CAPABILITY_DOMAIN, DEFAULT_BUILD_POINT, DEPS_DOMAIN, ENVELOPE_DOMAIN, EPOCH, EVIDENCE_DOMAIN,
+    POLICY_DOMAIN, POLICY_ID, PROFILE_DOMAIN, SEAL_DOMAIN, TARGET,
 };
 
 pub const MAX_AUTHORITY_TAG_BYTES: usize = 96;
