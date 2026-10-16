@@ -680,7 +680,6 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // requestId is caller-supplied and not proven unique. Bind each handle() to its own
   // operation-wide release lease so a reused requestId cannot replay a prior disclosure.
   let releaseSeq = 0;
-  let pendingSecretReleaseFinalize: ((ok: boolean) => void) | undefined;
 
   /** Internal pipeline result: the response plus the matched policy (for audit provenance). */
   interface PipelineOutcome {
@@ -720,7 +719,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     return outcome;
   }
 
-  async function runPipeline(req: GalerinaKernelRequest): Promise<PipelineOutcome> {
+  async function runPipeline(
+    req: GalerinaKernelRequest,
+    secretReleaseSlot?: { finalize?: (ok: boolean) => void },
+  ): Promise<PipelineOutcome> {
     // ── 1 normalise ──
     // The request type already gives us a normalised shape; we treat `method`
     // as authoritative and look up headers case-insensitively below.
@@ -998,13 +1000,16 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         requestOutcomeSealed = true;
         return undefined;
       };
+      let secretReleaseFinalized = false;
       const finalizeSecretRelease = (ok: boolean): void => {
-        pendingSecretReleaseFinalize = undefined;
+        if (secretReleaseSlot !== undefined) delete secretReleaseSlot.finalize;
+        if (secretReleaseFinalized) return;
+        secretReleaseFinalized = true;
         if (!secretAccessSpent) return;
         if (ok) secretGate.acknowledge(releaseOperationId);
         else secretGate.noteUnknown(releaseOperationId);
       };
-      pendingSecretReleaseFinalize = finalizeSecretRelease;
+      if (secretReleaseSlot !== undefined) secretReleaseSlot.finalize = finalizeSecretRelease;
       const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
         pipelineOutcome(response, policy, recheckAndSealRequestOutcome, finalizeSecretRelease);
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1241,8 +1246,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       }
     }
 
+    const secretReleaseSlot: { finalize?: (ok: boolean) => void } = {};
     try {
-      const outcome = await runPipeline(req);
+      const outcome = await runPipeline(req, secretReleaseSlot);
       const { policy } = outcome;
       const rechecked = outcome.recheckPublicationDeadline?.();
       const publicationOk = rechecked === undefined;
@@ -1284,9 +1290,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       outcome.finalizeSecretRelease?.(publicationOk);
       return response;
     } catch {
-      pendingSecretReleaseFinalize?.(false);
+      secretReleaseSlot.finalize?.(false);
       const response = errorResponse(500, "internal_error", "Handler failed.");
-      if (reservation !== undefined) {
+      if (reservationLive && reservation !== undefined) {
         try {
           const event: AuditEvent = {
             requestId: auditRequestId,

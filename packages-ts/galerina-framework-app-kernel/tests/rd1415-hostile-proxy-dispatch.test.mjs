@@ -117,3 +117,159 @@ for (const scenario of cases) {
     }
   });
 }
+
+function hostileBodyReq(requestId) {
+  const request = {
+    method: "GET",
+    path: "/pay",
+    headers: {},
+    query: {},
+    requestId,
+    receivedAt: 0,
+  };
+  Object.defineProperty(request, "body", {
+    get() {
+      throw new Error("hostile-body");
+    },
+    enumerable: true,
+  });
+  return request;
+}
+
+function hasFalseAfterOpenProvider(stored = new Uint8Array(SYNTHETIC)) {
+  let opened = false;
+  return {
+    has() {
+      return opened ? false : true;
+    },
+    use(_name, fn) {
+      opened = true;
+      fn(new Uint8Array(stored));
+    },
+    revocationEpoch() {
+      return 0;
+    },
+  };
+}
+
+test("concurrent hostile A during in-flight B does not touch B's lease", async () => {
+  const authority = new ReleaseCommitAuthority();
+  let releaseB;
+  const gate = new Promise((resolve) => {
+    releaseB = resolve;
+  });
+  const kernel = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/pay",
+      handler: "pay",
+      auth: { mode: "public" },
+      secrets: { require: ["db.main"] },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      pay: async ({ getSecret }) => {
+        getSecret("db.main", () => {});
+        await gate;
+        return { body: { ok: true } };
+      },
+    },
+    secretsProvider: countingProvider(),
+    releaseAuthority: authority,
+    auditSink: new InMemoryAuditSink(),
+  });
+  const pendingB = kernel.handle(req("rq-B"));
+  await waitMacrotask();
+  const operationB = `rq-B\u0000${1}`;
+  assert.equal(authority.status(operationB).state, "released");
+  const responseA = await kernel.handle(hostileBodyReq("rq-A"));
+  assert.equal(responseA.status, 500);
+  assert.equal(authority.status(operationB).state, "released");
+  releaseB();
+  const responseB = await pendingB;
+  await waitMacrotask();
+  assert.equal(responseB.status, 200);
+  assert.equal(authority.status(operationB).state, "acknowledged");
+  assert.notEqual(authority.status(`rq-A\u0000${2}`).state, "acknowledged");
+});
+
+test("spent A throw while B waits is A delivery-unknown and B acknowledged", async () => {
+  const authority = new ReleaseCommitAuthority();
+  let releaseB;
+  const gate = new Promise((resolve) => {
+    releaseB = resolve;
+  });
+  let calls = 0;
+  const kernel = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/pay",
+      handler: "pay",
+      auth: { mode: "public" },
+      secrets: { require: ["db.main"] },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      pay: async ({ getSecret }) => {
+        getSecret("db.main", () => {});
+        calls += 1;
+        if (calls === 1) {
+          await gate;
+          return { body: { ok: true } };
+        }
+        throw revokedProxy();
+      },
+    },
+    secretsProvider: countingProvider(),
+    releaseAuthority: authority,
+    auditSink: new InMemoryAuditSink(),
+  });
+  const pendingB = kernel.handle(req("rq-B"));
+  await waitMacrotask();
+  const operationB = `rq-B\u0000${1}`;
+  const responseA = await kernel.handle(req("rq-A"));
+  await waitMacrotask();
+  const operationA = `rq-A\u0000${2}`;
+  assert.equal(responseA.status, 500);
+  assert.equal(authority.status(operationA).state, "delivery-unknown");
+  assert.equal(authority.status(operationB).state, "released");
+  releaseB();
+  const responseB = await pendingB;
+  await waitMacrotask();
+  assert.equal(responseB.status, 200);
+  assert.equal(authority.status(operationB).state, "acknowledged");
+  assert.equal(authority.status(operationA).state, "delivery-unknown");
+});
+
+test("503 refusal then throwing request does not touch the earlier operation", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const kernel = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/pay",
+      handler: "pay",
+      auth: { mode: "public" },
+      secrets: { require: ["db.main"] },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      pay: ({ getSecret }) => {
+        getSecret("db.main", () => {});
+        return { body: { ok: true } };
+      },
+    },
+    secretsProvider: hasFalseAfterOpenProvider(),
+    releaseAuthority: authority,
+    auditSink: new InMemoryAuditSink(),
+  });
+  const first = await kernel.handle(req("rq-S"));
+  await waitMacrotask();
+  const operationS = `rq-S\u0000${1}`;
+  assert.equal(first.status, 503);
+  assert.equal(authority.status(operationS).state, "delivery-unknown");
+  const second = await kernel.handle(hostileBodyReq("rq-T"));
+  await waitMacrotask();
+  assert.equal(second.status, 500);
+  assert.equal(authority.status(operationS).state, "delivery-unknown");
+  assert.notEqual(authority.acknowledgeMinted(operationS), "acknowledged");
+});
