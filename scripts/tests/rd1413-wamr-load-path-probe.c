@@ -98,6 +98,23 @@ static int expect_bytes(const uint8_t *got, const uint8_t *want, const char *lab
     return 1;
 }
 
+static wamr_secrets_gateway_result_t load_with_computed_digest(
+    uint8_t *bytes,
+    uint32_t size,
+    wamr_secrets_gateway_loaded_t *loaded,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    uint8_t expected[32];
+    uint8_t vok_digest[32];
+
+    wamr_sha256(bytes, (size_t)size, expected);
+    memset(vok_digest, 0, sizeof(vok_digest));
+    return wamr_secrets_gateway_load_for_authority(
+        bytes, size, expected, loaded, vok_digest, diagnostic,
+        diagnostic_capacity);
+}
+
 static int expect_refusal(const char *path,
                           wamr_secrets_gateway_result_t expected,
                           unsigned expect_unload,
@@ -116,7 +133,7 @@ static int expect_refusal(const char *path,
     }
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+    result = load_with_computed_digest(bytes, size, &loaded, diagnostic,
                                        sizeof(diagnostic));
     if (result != expected || loaded.module != NULL || loaded.instance != NULL ||
         !digest_field_zero(&loaded)) {
@@ -173,7 +190,7 @@ static int expect_admitted(const char *path, const char *label,
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
     wamr_sha256(bytes, (size_t)size, expected);
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+    result = load_with_computed_digest(bytes, size, &loaded, diagnostic,
                                        sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
         loaded.instance == NULL) {
@@ -441,10 +458,10 @@ static int check_invalid_argument(void)
     rd1413_load_path_reset();
     result = wamr_secrets_gateway_load(NULL, 1, &loaded, diagnostic,
                                        sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
         rd1413_load_path_instantiate_calls != 0 ||
         rd1413_load_path_unload_calls != 0 || !digest_field_zero(&loaded)) {
-        fprintf(stderr, "null buf must be INVALID_ARGUMENT without load\n");
+        fprintf(stderr, "digestless load must be ARTIFACT_DIGEST_MISSING without load\n");
         return 0;
     }
     result = wamr_secrets_gateway_load(buf, 1, NULL, diagnostic, sizeof(diagnostic));
@@ -470,6 +487,7 @@ static void poison_loaded(wamr_secrets_gateway_loaded_t *loaded)
     memset(loaded, 0x5a, sizeof(*loaded));
     loaded->module = (wasm_module_t)(uintptr_t)0x1111u;
     loaded->instance = (wasm_module_inst_t)(uintptr_t)0x2222u;
+    loaded->owned_snapshot = NULL;
 }
 
 static int check_invalid_diagnostic_zeros_out(void)
@@ -503,6 +521,32 @@ static int check_invalid_diagnostic_zeros_out(void)
         return 0;
     }
     puts("PASS: invalid diagnostic zeros out before INVALID_ARGUMENT");
+    return 1;
+}
+
+static int check_digestless_public_load(uint8_t *bytes, uint32_t size)
+{
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+                                       sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "digestless public load must ARTIFACT_DIGEST_MISSING without instantiate: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    puts("PASS: public load hard-refuses without digest, instantiate=0");
     return 1;
 }
 
@@ -673,7 +717,7 @@ static int check_load_failed(void)
     wamr_secrets_gateway_result_t result;
 
     rd1413_load_path_reset();
-    result = wamr_secrets_gateway_load(junk, sizeof(junk), &loaded, diagnostic,
+    result = load_with_computed_digest(junk, sizeof(junk), &loaded, diagnostic,
                                        sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_LOAD_FAILED || loaded.module != NULL ||
         loaded.instance != NULL || !digest_field_zero(&loaded) ||
@@ -706,7 +750,7 @@ static int check_negative_count(const char *path)
         free(bytes);
         return 0;
     }
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+    result = load_with_computed_digest(bytes, size, &loaded, diagnostic,
                                        sizeof(diagnostic));
     unsetenv("RD1413_TEST_IMPORT_COUNT_UNAVAILABLE");
     if (result != WAMR_SECRETS_GATEWAY_METADATA_UNAVAILABLE ||
@@ -754,7 +798,7 @@ static int check_instantiate_fail(const char *path)
         free(bytes);
         return 0;
     }
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+    result = load_with_computed_digest(bytes, size, &loaded, diagnostic,
                                        sizeof(diagnostic));
     unsetenv("RD1413_TEST_FAIL_INSTANTIATE");
     if (result != WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED ||
@@ -824,6 +868,17 @@ int main(int argc, char **argv)
                                      "swapped full digest vs subset bytes") &&
              expect_missing_digest(argv[1], "all-zero expected subset") &&
              check_load_for_authority(argv[1], argv[2]);
+        if (ok) {
+            uint32_t subset_size = 0;
+            uint8_t *subset = read_bytes(argv[1], &subset_size);
+            if (subset == NULL) {
+                fprintf(stderr, "digestless subset: could not read fixture\n");
+                ok = 0;
+            } else {
+                ok = check_digestless_public_load(subset, subset_size);
+                free(subset);
+            }
+        }
     }
 
     wasm_runtime_destroy();

@@ -53,6 +53,7 @@ typedef struct {
     wasm_module_t module;
     wasm_module_inst_t instance;
     uint8_t artifact_digest[32];
+    uint8_t *owned_snapshot;
 } wamr_secrets_gateway_loaded_t;
 
 #define WAMR_SECRETS_GATEWAY_STACK_SIZE 16384u
@@ -71,20 +72,13 @@ const char *wamr_secrets_gateway_result_name(wamr_secrets_gateway_result_t resul
 bool wamr_secrets_gateway_register_natives(void);
 
 /*
- * Load buf, admit against the secrets-gateway allowlist, instantiate only on
- * VALID. Any other outcome unloads exactly once (if a module was loaded) and
- * leaves instance NULL. diagnostic carries the result code name and, when
- * known, the import identity; never secret bytes.
+ * Digestless public loader. Hard-refuses with ARTIFACT_DIGEST_MISSING on
+ * every path: clears out, never hashes, never calls wasm_runtime_load or
+ * wasm_runtime_instantiate. Secret/artifact load uses
+ * wamr_secrets_gateway_load_for_authority.
  *
- * Subset of the allowlist is admitted. Superset is refused as
- * UNAPPROVED_IMPORT. Two imports matching one allowlist name are
- * DUPLICATE_IMPORT. Negative wasm_runtime_get_import_count is
- * METADATA_UNAVAILABLE with no further metadata access.
- *
- * This function does not take an expected artifact digest. It is the original
- * admission-probe path. Secret/artifact load uses
- * wamr_secrets_gateway_load_for_authority, which requires a digest and copies
- * digest-only into a VOK handoff buffer.
+ * NULL out or a missing/zero-capacity diagnostic is still INVALID_ARGUMENT
+ * (out is cleared when non-NULL).
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     uint8_t *buf,

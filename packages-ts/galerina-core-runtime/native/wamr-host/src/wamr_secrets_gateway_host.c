@@ -2,6 +2,7 @@
 #include "wamr_sha256.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*
@@ -242,6 +243,10 @@ static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
         wasm_runtime_unload(loaded->module);
         loaded->module = NULL;
     }
+    if (loaded->owned_snapshot != NULL) {
+        free(loaded->owned_snapshot);
+        loaded->owned_snapshot = NULL;
+    }
     zero_digest(loaded);
 }
 
@@ -269,6 +274,14 @@ static wamr_secrets_gateway_result_t map_admission(wamr_import_abi_result_t admi
     }
 }
 
+static void clear_out_fields(wamr_secrets_gateway_loaded_t *out)
+{
+    out->module = NULL;
+    out->instance = NULL;
+    out->owned_snapshot = NULL;
+    zero_digest(out);
+}
+
 static wamr_secrets_gateway_result_t load_internal(
     uint8_t *buf,
     uint32_t size,
@@ -280,16 +293,16 @@ static wamr_secrets_gateway_result_t load_internal(
     char error[256];
     char admission_diag[256];
     uint8_t computed[32];
+    uint8_t *snapshot;
     wasm_module_t module;
     wasm_module_inst_t instance;
     wamr_import_abi_result_t admission;
     wamr_secrets_gateway_result_t result;
 
+    memset(computed, 0, sizeof(computed));
     if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
         if (out != NULL) {
-            out->module = NULL;
-            out->instance = NULL;
-            zero_digest(out);
+            clear_out_fields(out);
         }
         if (diagnostic != NULL && diagnostic_capacity > 0) {
             diagnostic[0] = '\0';
@@ -299,28 +312,42 @@ static wamr_secrets_gateway_result_t load_internal(
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
     diagnostic[0] = '\0';
-    out->module = NULL;
-    out->instance = NULL;
-    zero_digest(out);
+    clear_out_fields(out);
     if (buf == NULL || size == 0) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
-
-    /* Hash host-owned buf before wasm_runtime_load, which may mutate buf. */
-    wamr_sha256(buf, (size_t)size, computed);
-    if (expected_digest != NULL && digest_is_zero(expected_digest)) {
+    if (expected_digest == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
         return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
     }
 
+    snapshot = (uint8_t *)malloc((size_t)size);
+    if (snapshot == NULL) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_LOAD_FAILED, NULL);
+        return WAMR_SECRETS_GATEWAY_LOAD_FAILED;
+    }
+    memcpy(snapshot, buf, (size_t)size);
+    out->owned_snapshot = snapshot;
+    wamr_sha256(snapshot, (size_t)size, computed);
+    if (digest_is_zero(expected_digest)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
+        memset(computed, 0, sizeof(computed));
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
+    }
+
     error[0] = '\0';
-    module = wasm_runtime_load(buf, size, error, sizeof(error));
+    module = wasm_runtime_load(snapshot, size, error, sizeof(error));
     if (module == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_LOAD_FAILED, error);
+        memset(computed, 0, sizeof(computed));
+        release_loaded(out);
         return WAMR_SECRETS_GATEWAY_LOAD_FAILED;
     }
     out->module = module;
@@ -333,13 +360,15 @@ static wamr_secrets_gateway_result_t load_internal(
         result = map_admission(admission);
         set_code_diagnostic(diagnostic, diagnostic_capacity, result,
                             admission_diag);
+        memset(computed, 0, sizeof(computed));
         release_loaded(out);
         return result;
     }
 
-    if (expected_digest != NULL && !digest_eq_ct(computed, expected_digest)) {
+    if (!digest_eq_ct(computed, expected_digest)) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH, NULL);
+        memset(computed, 0, sizeof(computed));
         release_loaded(out);
         return WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH;
     }
@@ -351,11 +380,13 @@ static wamr_secrets_gateway_result_t load_internal(
     if (instance == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED, error);
+        memset(computed, 0, sizeof(computed));
         release_loaded(out);
         return WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED;
     }
     out->instance = instance;
     memcpy(out->artifact_digest, computed, sizeof(out->artifact_digest));
+    memset(computed, 0, sizeof(computed));
     set_code_diagnostic(diagnostic, diagnostic_capacity, WAMR_SECRETS_GATEWAY_VALID,
                         admission_diag);
     return WAMR_SECRETS_GATEWAY_VALID;
@@ -368,7 +399,24 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     char *diagnostic,
     size_t diagnostic_capacity)
 {
-    return load_internal(buf, size, NULL, out, diagnostic, diagnostic_capacity);
+    (void)buf;
+    (void)size;
+    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+        if (out != NULL) {
+            clear_out_fields(out);
+        }
+        if (diagnostic != NULL && diagnostic_capacity > 0) {
+            diagnostic[0] = '\0';
+            set_code_diagnostic(diagnostic, diagnostic_capacity,
+                                WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        }
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    diagnostic[0] = '\0';
+    clear_out_fields(out);
+    set_code_diagnostic(diagnostic, diagnostic_capacity,
+                        WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
+    return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
 }
 
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
@@ -386,9 +434,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
                                 WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         }
         if (out != NULL) {
-            out->module = NULL;
-            out->instance = NULL;
-            zero_digest(out);
+            clear_out_fields(out);
         }
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
@@ -417,9 +463,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
                                 WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         }
         if (out != NULL) {
-            out->module = NULL;
-            out->instance = NULL;
-            zero_digest(out);
+            clear_out_fields(out);
         }
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
