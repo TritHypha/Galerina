@@ -89,31 +89,20 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     size_t diagnostic_capacity);
 
 /*
- * Same as wamr_secrets_gateway_load, plus a caller-supplied 32-byte SHA-256
- * of the exact module bytes. Hash is computed over buf[0..size) before
- * wasm_runtime_load. An all-zero expected digest is ARTIFACT_DIGEST_MISSING
- * with no load. A mismatch after load+admit is ARTIFACT_MISMATCH, unloads
- * exactly once, and never instantiates.
- */
-wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
-    uint8_t *buf,
-    uint32_t size,
-    const uint8_t expected_digest[32],
-    wamr_secrets_gateway_loaded_t *out,
-    char *diagnostic,
-    size_t diagnostic_capacity);
-
-/*
- * Production secret/artifact load. verifier_path is the out-of-process
- * Rust verifier binary. NULL is INVALID_ARGUMENT. The host hash-pins
- * that binary (compile-time WAMR_VOK_VERIFIER_SHA256_HEX), fexecves the
- * same fd, writes a snapshot of buf[0..size) to the child's stdin, and
- * reads Envelope + Wax Seal only from the child's stdout pipe. Caller
- * verdict file paths are not accepted. A missing binary is
- * ARTIFACT_DIGEST_MISSING. A pin mismatch, spawn failure, forged or
- * file-origin verdict, or authorizing=true is VERDICT_REFUSED. The host
- * independently SHA-256s the snapshot and binds componentDigest before
- * wasm_runtime_load. This translation unit does not link or call Rust.
+ * Production secret/artifact load. This is the only public entry that
+ * can return VALID / a non-NULL instance. verifier_path is the
+ * out-of-process Rust verifier binary. NULL is INVALID_ARGUMENT. The
+ * host copies buf[0..size) once into a private snapshot, hash-pins the
+ * verifier, copies those bytes into a sealed memfd
+ * (F_SEAL_WRITE|GROW|SHRINK|SEAL), fexecves that memfd with an empty
+ * envp, writes the snapshot to the child's stdin, and reads Envelope +
+ * Wax Seal only from the child's stdout pipe. Caller verdict file paths
+ * are not accepted. A missing binary is ARTIFACT_DIGEST_MISSING. A pin
+ * mismatch, spawn failure, forged or file-origin verdict, or
+ * authorizing=true is VERDICT_REFUSED. The host independently SHA-256s
+ * the snapshot and binds componentDigest before wasm_runtime_load of
+ * that same snapshot. This translation unit does not link or call Rust.
+ * There is no public self-hash loader.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,

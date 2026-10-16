@@ -8,8 +8,9 @@
  * Envelope / Wax Seal produced by a hash-pinned out-of-process Rust
  * verifier child. This C module parses, binds, and spawns; it does not
  * mint a Signet and it does not link Rust. File-parsed verdicts are
- * never load authority: pipe_origin is set only when the bytes arrived
- * on a runtime-owned stdout pipe from fexecve of a pinned binary.
+ * never load authority. BIND_OK is reachable only from
+ * wamr_vok_spawn_and_bind after a framed pipe parse of a sealed-memfd
+ * child with empty envp.
  */
 
 #define WAMR_VOK_ENVELOPE_DOMAIN "galerina.assurance.envelope.v1"
@@ -49,7 +50,6 @@ typedef struct {
     char build_point[48];
     char schema_version[8];
     uint64_t epoch;
-    int pipe_origin;
 } wamr_vok_envelope_t;
 
 typedef struct {
@@ -62,7 +62,6 @@ typedef struct {
     char schema_version[8];
     int authorizing;
     int replayable;
-    int pipe_origin;
 } wamr_vok_wax_seal_t;
 
 void wamr_vok_framed_digest(const char *domain, const uint8_t *payload,
@@ -79,18 +78,11 @@ int wamr_vok_parse_envelope_file(const char *path, wamr_vok_envelope_t *out);
 int wamr_vok_parse_seal_file(const char *path, wamr_vok_wax_seal_t *out);
 
 /*
- * Independently hashes bytes[0..size) and binds them to envelope + seal.
- * File-origin (pipe_origin==0) is always REFUSED. UNAUTHENTICATED_REFERENCE
- * is always REFUSED. Returns WAMR_VOK_BIND_*.
- */
-int wamr_vok_bind_bytes(const uint8_t *bytes, size_t size,
-                        const wamr_vok_envelope_t *envelope,
-                        const wamr_vok_wax_seal_t *seal);
-
-/*
- * Hash-pin verifier_path, fexecve the same fd, write bytes to the child's
+ * Hash-pin verifier_path, copy the pinned bytes into a sealed memfd,
+ * fexecve that memfd with an empty envp, write bytes to the child's
  * stdin, read Envelope+Wax Seal only from the child's stdout pipe, then
- * bind. Compile with -DWAMR_VOK_VERIFIER_SHA256_HEX=<64 lowercase hex>.
+ * bind internally. BIND_OK cannot be obtained from file-parsed structs.
+ * Compile with -DWAMR_VOK_VERIFIER_SHA256_HEX=<64 lowercase hex>.
  */
 int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
                             size_t size, wamr_vok_envelope_t *envelope,

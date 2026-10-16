@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -23,8 +24,6 @@
 #define WAMR_VOK_MAX_VERIFIER_BYTES (32u * 1024u * 1024u)
 #define WAMR_VOK_SPAWN_TIMEOUT_MS 5000
 #define WAMR_VOK_FRAMED_MAGIC "GALERINA_VOK_VERDICT_V1\n"
-
-extern char **environ;
 
 static int digest_is_zero(const uint8_t digest[32])
 {
@@ -285,7 +284,7 @@ static int split_kv(char *line, const char **key, const char **value)
 }
 
 static int parse_envelope_text(const char *body, size_t len,
-                               wamr_vok_envelope_t *out, int pipe_origin)
+                               wamr_vok_envelope_t *out)
 {
     char line[WAMR_VOK_MAX_LINE];
     const char *cursor;
@@ -389,12 +388,11 @@ static int parse_envelope_text(const char *body, size_t len,
     if (seen != 2047u) {
         return WAMR_VOK_BIND_REFUSED;
     }
-    out->pipe_origin = pipe_origin;
     return WAMR_VOK_BIND_OK;
 }
 
 static int parse_seal_text(const char *body, size_t len,
-                           wamr_vok_wax_seal_t *out, int pipe_origin)
+                           wamr_vok_wax_seal_t *out)
 {
     char line[WAMR_VOK_MAX_LINE];
     const char *cursor;
@@ -493,7 +491,6 @@ static int parse_seal_text(const char *body, size_t len,
     if (seen != 511u) {
         return WAMR_VOK_BIND_REFUSED;
     }
-    out->pipe_origin = pipe_origin;
     return WAMR_VOK_BIND_OK;
 }
 
@@ -509,7 +506,7 @@ int wamr_vok_parse_envelope_file(const char *path, wamr_vok_envelope_t *out)
     if (!read_file(path, body, sizeof(body), &len)) {
         return WAMR_VOK_BIND_MISSING;
     }
-    return parse_envelope_text(body, len, out, 0);
+    return parse_envelope_text(body, len, out);
 }
 
 int wamr_vok_parse_seal_file(const char *path, wamr_vok_wax_seal_t *out)
@@ -524,7 +521,7 @@ int wamr_vok_parse_seal_file(const char *path, wamr_vok_wax_seal_t *out)
     if (!read_file(path, body, sizeof(body), &len)) {
         return WAMR_VOK_BIND_MISSING;
     }
-    return parse_seal_text(body, len, out, 0);
+    return parse_seal_text(body, len, out);
 }
 
 static int expected_closed_digest(const char *domain, const char *payload,
@@ -536,9 +533,9 @@ static int expected_closed_digest(const char *domain, const char *payload,
     return digest_eq_ct(want, got);
 }
 
-int wamr_vok_bind_bytes(const uint8_t *bytes, size_t size,
-                        const wamr_vok_envelope_t *envelope,
-                        const wamr_vok_wax_seal_t *seal)
+static int wamr_vok_bind_bytes(const uint8_t *bytes, size_t size,
+                               const wamr_vok_envelope_t *envelope,
+                               const wamr_vok_wax_seal_t *seal)
 {
     uint8_t computed[32];
     uint8_t recomputed[32];
@@ -547,9 +544,6 @@ int wamr_vok_bind_bytes(const uint8_t *bytes, size_t size,
 
     if (bytes == NULL || size == 0 || envelope == NULL || seal == NULL) {
         return WAMR_VOK_BIND_INVALID;
-    }
-    if (envelope->pipe_origin != 1 || seal->pipe_origin != 1) {
-        return WAMR_VOK_BIND_REFUSED;
     }
     if (digest_is_zero(envelope->component_digest) ||
         digest_is_zero(envelope->envelope_digest) ||
@@ -675,7 +669,7 @@ static int parse_framed_verdict(const char *data, size_t len,
         (size_t)(end - cursor) < env_len) {
         return WAMR_VOK_BIND_REFUSED;
     }
-    rc = parse_envelope_text(cursor, env_len, envelope, 1);
+    rc = parse_envelope_text(cursor, env_len, envelope);
     if (rc != WAMR_VOK_BIND_OK) {
         return rc;
     }
@@ -684,7 +678,7 @@ static int parse_framed_verdict(const char *data, size_t len,
         (size_t)(end - cursor) < seal_len) {
         return WAMR_VOK_BIND_REFUSED;
     }
-    rc = parse_seal_text(cursor, seal_len, seal, 1);
+    rc = parse_seal_text(cursor, seal_len, seal);
     if (rc != WAMR_VOK_BIND_OK) {
         return rc;
     }
@@ -713,7 +707,7 @@ static void close_fd(int *fd)
     }
 }
 
-static int hash_verifier_fd(int fd, uint8_t out[32])
+static uint8_t *read_whole_fd(int fd, size_t *out_size)
 {
     struct stat st;
     uint8_t *buf;
@@ -723,24 +717,55 @@ static int hash_verifier_fd(int fd, uint8_t out[32])
 
     if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size <= 0 ||
         (unsigned long long)st.st_size > WAMR_VOK_MAX_VERIFIER_BYTES) {
-        return 0;
+        return NULL;
     }
     size = (size_t)st.st_size;
+    if (lseek(fd, 0, SEEK_SET) < 0) {
+        return NULL;
+    }
     buf = (uint8_t *)malloc(size);
     if (buf == NULL) {
-        return 0;
+        return NULL;
     }
     while (off < size) {
         got = read(fd, buf + off, size - off);
         if (got <= 0) {
             free(buf);
-            return 0;
+            return NULL;
         }
         off += (size_t)got;
     }
-    wamr_sha256(buf, size, out);
-    free(buf);
-    return 1;
+    *out_size = size;
+    return buf;
+}
+
+static int sealed_memfd_from_bytes(const uint8_t *buf, size_t size)
+{
+    int mfd;
+    size_t off = 0;
+
+    mfd = memfd_create("vok-verifier", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    if (mfd < 0) {
+        return -1;
+    }
+    while (off < size) {
+        ssize_t n = write(mfd, buf + off, size - off);
+        if (n <= 0) {
+            close(mfd);
+            return -1;
+        }
+        off += (size_t)n;
+    }
+    if (lseek(mfd, 0, SEEK_SET) < 0) {
+        close(mfd);
+        return -1;
+    }
+    if (fcntl(mfd, F_ADD_SEALS,
+              F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK | F_SEAL_SEAL) != 0) {
+        close(mfd);
+        return -1;
+    }
+    return mfd;
 }
 
 static int remaining_ms(struct timespec start)
@@ -764,7 +789,10 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
 {
     uint8_t pin[32];
     uint8_t hashed[32];
+    uint8_t *verifier_bytes = NULL;
+    size_t verifier_size = 0;
     int bin_fd = -1;
+    int mem_fd = -1;
     int in_pipe[2] = { -1, -1 };
     int out_pipe[2] = { -1, -1 };
     int err_pipe[2] = { -1, -1 };
@@ -795,17 +823,31 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     if (!pinned_verifier_digest(pin) || digest_is_zero(pin)) {
         return WAMR_VOK_BIND_REFUSED;
     }
-    bin_fd = open(verifier_path, O_RDONLY);
+    bin_fd = open(verifier_path, O_RDONLY | O_CLOEXEC);
     if (bin_fd < 0) {
         return WAMR_VOK_BIND_MISSING;
     }
-    if (!hash_verifier_fd(bin_fd, hashed) || !digest_eq_ct(hashed, pin)) {
-        close_fd(&bin_fd);
+    verifier_bytes = read_whole_fd(bin_fd, &verifier_size);
+    close_fd(&bin_fd);
+    if (verifier_bytes == NULL) {
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    wamr_sha256(verifier_bytes, verifier_size, hashed);
+    if (!digest_eq_ct(hashed, pin)) {
+        memset(verifier_bytes, 0, verifier_size);
+        free(verifier_bytes);
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    mem_fd = sealed_memfd_from_bytes(verifier_bytes, verifier_size);
+    memset(verifier_bytes, 0, verifier_size);
+    free(verifier_bytes);
+    verifier_bytes = NULL;
+    if (mem_fd < 0) {
         return WAMR_VOK_BIND_REFUSED;
     }
     if (pipe2(in_pipe, O_CLOEXEC) != 0 || pipe2(out_pipe, O_CLOEXEC) != 0 ||
         pipe2(err_pipe, O_CLOEXEC) != 0) {
-        close_fd(&bin_fd);
+        close_fd(&mem_fd);
         close_fd(&in_pipe[0]);
         close_fd(&in_pipe[1]);
         close_fd(&out_pipe[0]);
@@ -816,7 +858,7 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     }
     child = fork();
     if (child < 0) {
-        close_fd(&bin_fd);
+        close_fd(&mem_fd);
         close_fd(&in_pipe[0]);
         close_fd(&in_pipe[1]);
         close_fd(&out_pipe[0]);
@@ -827,6 +869,7 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     }
     if (child == 0) {
         int flags;
+        char *empty_envp[1];
         if (dup2(in_pipe[0], STDIN_FILENO) < 0 ||
             dup2(out_pipe[1], STDOUT_FILENO) < 0 ||
             dup2(err_pipe[1], STDERR_FILENO) < 0) {
@@ -838,20 +881,21 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
         close_fd(&out_pipe[1]);
         close_fd(&err_pipe[0]);
         close_fd(&err_pipe[1]);
-        flags = fcntl(bin_fd, F_GETFD);
+        flags = fcntl(mem_fd, F_GETFD);
         if (flags >= 0) {
-            (void)fcntl(bin_fd, F_SETFD, flags & ~FD_CLOEXEC);
+            (void)fcntl(mem_fd, F_SETFD, flags & ~FD_CLOEXEC);
         }
         argv_child[0] = (char *)verifier_path;
         argv_child[1] = "--stdin";
         argv_child[2] = NULL;
-        fexecve(bin_fd, argv_child, environ);
+        empty_envp[0] = NULL;
+        fexecve(mem_fd, argv_child, empty_envp);
         _exit(127);
     }
     close_fd(&in_pipe[0]);
     close_fd(&out_pipe[1]);
     close_fd(&err_pipe[1]);
-    close_fd(&bin_fd);
+    close_fd(&mem_fd);
     if (clock_gettime(CLOCK_MONOTONIC, &start) != 0) {
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);

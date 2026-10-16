@@ -55,6 +55,27 @@ if [[ "${#pin}" -ne 64 ]]; then
   printf 'verifier pin is not 64 hex characters\n' >&2
   exit 2
 fi
+if grep -q 'wamr_secrets_gateway_load_expected' \
+    "$host_include/wamr_secrets_gateway_host.h" \
+    "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'load_expected still present in production header/TU\n' >&2
+  exit 2
+fi
+if grep -E 'wamr_vok_bind_bytes|pipe_origin' \
+    "$host_include/wamr_vok_verdict.h"; then
+  printf 'bind_bytes or pipe_origin still public\n' >&2
+  exit 2
+fi
+if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'F_SEAL_SEAL' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'empty_envp' "$host_src/wamr_vok_verdict.c"; then
+  printf 'sealed memfd or empty envp missing from spawn\n' >&2
+  exit 2
+fi
+if grep -q 'fexecve(.*environ' "$host_src/wamr_vok_verdict.c"; then
+  printf 'fexecve still inherits host environ\n' >&2
+  exit 2
+fi
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-load-path.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 
@@ -97,6 +118,9 @@ data[-1] ^= 0x01
 path.write_bytes(data)
 PY
 chmod +x "$temp_dir/evil-verifier"
+
+gcc -shared -fPIC -o "$temp_dir/evil-preload.so" \
+  "$script_dir/rd1413-wamr-evil-preload.c"
 
 "$temp_dir/load-path-probe" \
   "$temp_dir/subset.wasm" \
