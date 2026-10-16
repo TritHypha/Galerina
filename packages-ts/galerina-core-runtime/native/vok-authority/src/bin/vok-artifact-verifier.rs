@@ -5,7 +5,9 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use galerina_vok_authority::{verify_wasm_file, DEFAULT_BUILD_POINT};
+use galerina_vok_authority::{
+    verify_wasm_file, verify_wasm_stdin, write_verdict_stdout, DEFAULT_BUILD_POINT,
+};
 
 fn refuse(id: &str) -> ExitCode {
     let mut stderr = io::stderr().lock();
@@ -30,10 +32,14 @@ fn main() -> ExitCode {
     let mut artifact = None;
     let mut envelope_out = None;
     let mut seal_out = None;
+    let mut stdin_mode = false;
     let mut build_point = DEFAULT_BUILD_POINT.to_string();
     let mut index = 1_usize;
     while index < args.len() {
         match args[index].as_str() {
+            "--stdin" => {
+                stdin_mode = true;
+            }
             "--artifact" => {
                 index += 1;
                 if index >= args.len() {
@@ -67,22 +73,34 @@ fn main() -> ExitCode {
         index += 1;
     }
 
-    let Some(artifact) = artifact else {
-        return refuse("VOK_VERIFIER_USAGE");
-    };
-    let Some(envelope_out) = envelope_out else {
-        return refuse("VOK_VERIFIER_USAGE");
-    };
-    let Some(seal_out) = seal_out else {
-        return refuse("VOK_VERIFIER_USAGE");
-    };
-
-    match verify_wasm_file(&artifact, &envelope_out, &seal_out, &build_point) {
-        Ok(()) => {
-            let mut stdout = io::stdout().lock();
-            let _ = writeln!(stdout, "PASS: envelope and wax-seal written");
-            ExitCode::SUCCESS
+    if stdin_mode {
+        if artifact.is_some() || envelope_out.is_some() || seal_out.is_some() {
+            return refuse("VOK_VERIFIER_USAGE");
         }
-        Err(error) => refuse(error.failure_id()),
+        match verify_wasm_stdin(&build_point) {
+            Ok((envelope, seal)) => match write_verdict_stdout(&envelope, &seal) {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(error) => refuse(error.failure_id()),
+            },
+            Err(error) => refuse(error.failure_id()),
+        }
+    } else {
+        let Some(artifact) = artifact else {
+            return refuse("VOK_VERIFIER_USAGE");
+        };
+        let Some(envelope_out) = envelope_out else {
+            return refuse("VOK_VERIFIER_USAGE");
+        };
+        let Some(seal_out) = seal_out else {
+            return refuse("VOK_VERIFIER_USAGE");
+        };
+        match verify_wasm_file(&artifact, &envelope_out, &seal_out, &build_point) {
+            Ok(()) => {
+                let mut stderr = io::stderr().lock();
+                let _ = writeln!(stderr, "PASS: envelope and wax-seal written");
+                ExitCode::SUCCESS
+            }
+            Err(error) => refuse(error.failure_id()),
+        }
     }
 }

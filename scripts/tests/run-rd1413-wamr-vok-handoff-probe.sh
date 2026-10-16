@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Keep LF line endings so WSL can execute this from a Windows checkout.
-# Composed probe: out-of-process Rust verifier hashes wasm independently,
-# writes Envelope + Wax Seal; C WAMR loader binds that verdict and loads.
+# Composed probe: C WAMR host hash-pins the out-of-process Rust verifier,
+# fexecves the same fd, writes the snapshot to stdin, and binds the
+# Envelope + Wax Seal from the child's stdout pipe.
 # C must not link libgalerina_vok_authority.
 #
 # WAMR_HOST_ROOT must point at a tree whose wamr-host has
-# load_for_authority with envelope/seal paths (PR #182 fix4).
+# load_for_authority with verifier_path (PR #182 fix5).
 set -euo pipefail
 
 export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
@@ -23,6 +24,8 @@ command -v gcc >/dev/null
 command -v wat2wasm >/dev/null
 command -v cargo >/dev/null
 command -v nm >/dev/null
+command -v python3 >/dev/null
+command -v sha256sum >/dev/null
 
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
 repo_root="$(cd -- "$script_dir/../.." && pwd)"
@@ -44,9 +47,15 @@ test -f "$probe"
 test -f "$wat"
 test -f "$full_wat"
 
-if ! grep -q 'envelope_path' \
+if ! grep -q 'verifier_path' \
     "$host_include/wamr_secrets_gateway_host.h"; then
-  printf 'WAMR_HOST_ROOT %s has no verdict-path load_for_authority (need PR #182 fix4 host)\n' \
+  printf 'WAMR_HOST_ROOT %s has no verifier_path load_for_authority (need PR #182 fix5 host)\n' \
+    "$host_root" >&2
+  exit 2
+fi
+if grep -q 'envelope_path' \
+    "$host_include/wamr_secrets_gateway_host.h"; then
+  printf 'WAMR_HOST_ROOT %s still exposes caller envelope_path\n' \
     "$host_root" >&2
   exit 2
 fi
@@ -60,19 +69,16 @@ if [[ -f "$vok_dir/target/release/libgalerina_vok_authority.a" ]]; then
   printf 'staticlib libgalerina_vok_authority.a must not exist for the runtime build\n' >&2
   exit 1
 fi
+pin="$(sha256sum "$verifier" | cut -d ' ' -f1)"
+if [[ "${#pin}" -ne 64 ]]; then
+  printf 'verifier pin is not 64 hex characters\n' >&2
+  exit 2
+fi
 
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-vok-handoff.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 wat2wasm "$wat" -o "$temp_dir/subset.wasm"
 wat2wasm "$full_wat" -o "$temp_dir/full.wasm"
-cp -- "$temp_dir/subset.wasm" "$temp_dir/tamper.wasm"
-python3 - "$temp_dir/tamper.wasm" <<'PY'
-import pathlib, sys
-path = pathlib.Path(sys.argv[1])
-data = bytearray(path.read_bytes())
-data[-1] ^= 0x01
-path.write_bytes(data)
-PY
 
 if "$verifier" --digest "$temp_dir/subset.wasm" \
     --envelope-out "$temp_dir/bad.env" --seal-out "$temp_dir/bad.seal"; then
@@ -80,12 +86,38 @@ if "$verifier" --digest "$temp_dir/subset.wasm" \
   exit 1
 fi
 
+if ! "$verifier" --stdin < "$temp_dir/subset.wasm" > "$temp_dir/verdict.pipe"; then
+  printf 'verifier --stdin refused genuine subset\n' >&2
+  exit 1
+fi
+if ! grep -q 'GALERINA_VOK_VERDICT_V1' "$temp_dir/verdict.pipe"; then
+  printf 'stdin verdict missing frame magic\n' >&2
+  exit 1
+fi
+
 "$verifier" --artifact "$temp_dir/subset.wasm" \
   --envelope-out "$temp_dir/env.subset" --seal-out "$temp_dir/seal.subset"
-"$verifier" --artifact "$temp_dir/full.wasm" \
-  --envelope-out "$temp_dir/env.full" --seal-out "$temp_dir/seal.full"
+if grep -q 'UNAUTHENTICATED_REFERENCE' "$temp_dir/seal.subset"; then
+  printf 'seal still uses UNAUTHENTICATED_REFERENCE\n' >&2
+  exit 1
+fi
+if ! grep -q 'authentication=PINNED_CHILD_PIPE' "$temp_dir/seal.subset"; then
+  printf 'seal missing PINNED_CHILD_PIPE\n' >&2
+  exit 1
+fi
+
+cp -- "$verifier" "$temp_dir/evil-verifier"
+python3 - "$temp_dir/evil-verifier" <<'PY'
+import pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = bytearray(path.read_bytes())
+data[-1] ^= 0x01
+path.write_bytes(data)
+PY
+chmod +x "$temp_dir/evil-verifier"
 
 gcc -std=c11 -Wall -Wextra -Werror \
+  -DWAMR_VOK_VERIFIER_SHA256_HEX=\"$pin\" \
   -I"$wamr_include_dir" \
   -I"$host_include" \
   "$probe" \
@@ -104,9 +136,8 @@ fi
 "$temp_dir/handoff-probe" \
   "$temp_dir/subset.wasm" \
   "$temp_dir/full.wasm" \
-  "$temp_dir/tamper.wasm" \
+  "$verifier" \
+  "$temp_dir/missing.bin" \
+  "$temp_dir/evil-verifier" \
   "$temp_dir/env.subset" \
-  "$temp_dir/seal.subset" \
-  "$temp_dir/env.full" \
-  "$temp_dir/seal.full" \
-  "$temp_dir/missing.env"
+  "$temp_dir/seal.subset"

@@ -8,6 +8,7 @@
 
 #include "wasm_export.h"
 #include "wamr_secrets_gateway_host.h"
+#include "wamr_vok_verdict.h"
 
 #define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
 
@@ -48,10 +49,10 @@ static uint8_t *read_bytes(const char *path, uint32_t *size)
     return bytes;
 }
 
-static int load_with_verdict(uint8_t *wasm, uint32_t size,
-                             const char *envelope, const char *seal,
-                             wamr_secrets_gateway_result_t expected,
-                             const char *label)
+static int load_with_verifier(uint8_t *wasm, uint32_t size,
+                              const char *verifier,
+                              wamr_secrets_gateway_result_t expected,
+                              const char *label)
 {
     char diagnostic[256];
     wamr_secrets_gateway_loaded_t loaded;
@@ -60,7 +61,7 @@ static int load_with_verdict(uint8_t *wasm, uint32_t size,
     memset(&loaded, 0, sizeof(loaded));
     diagnostic[0] = '\0';
     result = wamr_secrets_gateway_load_for_authority(
-        wasm, size, envelope, seal, &loaded, diagnostic, sizeof(diagnostic));
+        wasm, size, verifier, &loaded, diagnostic, sizeof(diagnostic));
     if (result != expected) {
         fprintf(stderr, "%s: expected %s got %s diag=%s\n", label,
                 wamr_secrets_gateway_result_name(expected),
@@ -89,16 +90,17 @@ int main(int argc, char **argv)
 {
     uint32_t subset_size = 0;
     uint32_t full_size = 0;
-    uint32_t tamper_size = 0;
     uint8_t *subset;
     uint8_t *full;
-    uint8_t *tamper;
+    wamr_vok_envelope_t envelope;
+    wamr_vok_wax_seal_t seal;
+    int bind;
     int ok;
 
-    if (argc != 9) {
+    if (argc != 8) {
         fprintf(stderr,
-                "usage: wamr-vok-handoff-probe subset.wasm full.wasm tamper.wasm "
-                "env_sub seal_sub env_full seal_full missing_env\n");
+                "usage: wamr-vok-handoff-probe subset.wasm full.wasm "
+                "verifier missing_path evil_verifier env_file seal_file\n");
         return 2;
     }
     if (!wasm_runtime_init()) {
@@ -113,39 +115,73 @@ int main(int argc, char **argv)
 
     subset = read_bytes(argv[1], &subset_size);
     full = read_bytes(argv[2], &full_size);
-    tamper = read_bytes(argv[3], &tamper_size);
-    if (subset == NULL || full == NULL || tamper == NULL) {
+    if (subset == NULL || full == NULL) {
         fprintf(stderr, "could not read fixtures\n");
         free(subset);
         free(full);
-        free(tamper);
         wasm_runtime_destroy();
         return 2;
     }
 
-    ok = load_with_verdict(subset, subset_size, argv[4], argv[5],
-                           WAMR_SECRETS_GATEWAY_VALID,
-                           "C WAMR load with out-of-process verifier envelope") &&
-         load_with_verdict(full, full_size, argv[4], argv[5],
-                           WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH,
-                           "full.wasm against subset envelope") &&
-         load_with_verdict(subset, subset_size, argv[8], argv[8],
-                           WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING,
-                           "missing verdict file") &&
-         load_with_verdict(tamper, tamper_size, argv[4], argv[5],
-                           WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH,
-                           "tampered subset against original envelope") &&
-         load_with_verdict(full, full_size, argv[6], argv[7],
-                           WAMR_SECRETS_GATEWAY_VALID,
-                           "full.wasm with its own verifier envelope");
+    bind = wamr_vok_parse_envelope_file(argv[6], &envelope);
+    if (bind != WAMR_VOK_BIND_OK) {
+        fprintf(stderr, "could not parse file envelope: %d\n", bind);
+        free(subset);
+        free(full);
+        wasm_runtime_destroy();
+        return 1;
+    }
+    bind = wamr_vok_parse_seal_file(argv[7], &seal);
+    if (bind != WAMR_VOK_BIND_OK) {
+        fprintf(stderr, "could not parse file seal: %d\n", bind);
+        free(subset);
+        free(full);
+        wasm_runtime_destroy();
+        return 1;
+    }
+    bind = wamr_vok_bind_bytes(subset, (size_t)subset_size, &envelope, &seal);
+    if (bind != WAMR_VOK_BIND_REFUSED) {
+        fprintf(stderr, "file-origin genuine verdict must REFUSE bind, got %d\n",
+                bind);
+        free(subset);
+        free(full);
+        wasm_runtime_destroy();
+        return 1;
+    }
+    printf("PASS: file-origin genuine verdict bind refused\n");
+    bind = wamr_vok_bind_bytes(full, (size_t)full_size, &envelope, &seal);
+    if (bind != WAMR_VOK_BIND_REFUSED) {
+        fprintf(stderr, "replay of file verdict on different bytes must REFUSE, got %d\n",
+                bind);
+        free(subset);
+        free(full);
+        wasm_runtime_destroy();
+        return 1;
+    }
+    printf("PASS: replay of file verdict on different bytes refused\n");
+
+    ok = load_with_verifier(subset, subset_size, NULL,
+                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT,
+                            "NULL verifier path") &&
+         load_with_verifier(subset, subset_size, argv[4],
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING,
+                            "missing verifier binary") &&
+         load_with_verifier(subset, subset_size, argv[5],
+                            WAMR_SECRETS_GATEWAY_VERDICT_REFUSED,
+                            "substituted verifier binary") &&
+         load_with_verifier(subset, subset_size, argv[3],
+                            WAMR_SECRETS_GATEWAY_VALID,
+                            "C WAMR load with hash-pinned verifier child") &&
+         load_with_verifier(full, full_size, argv[3],
+                            WAMR_SECRETS_GATEWAY_VALID,
+                            "full.wasm with hash-pinned verifier child");
 
     free(subset);
     free(full);
-    free(tamper);
     wasm_runtime_destroy();
     if (!ok) {
         return 1;
     }
-    puts("PASS: composed C WAMR loader -> out-of-process Rust verifier -> VOK wax-seal");
+    puts("PASS: composed C WAMR loader -> hash-pinned out-of-process Rust verifier -> VOK wax-seal");
     return 0;
 }

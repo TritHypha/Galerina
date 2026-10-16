@@ -4,7 +4,7 @@
 //! a caller digest.
 
 use std::fs;
-use std::io;
+use std::io::{self, Read, Write};
 use std::path::Path;
 
 use crate::native;
@@ -258,7 +258,7 @@ pub fn verify_wasm_artifact(bytes: &[u8], build_point: &str) -> Result<(Envelope
         envelope_digest: envelope.envelope_digest.clone(),
         profile_digest: framed_digest(PROFILE_DOMAIN, POLICY_ID),
         terminal_outcome: "CONSUMED".to_string(),
-        authentication: "UNAUTHENTICATED_REFERENCE".to_string(),
+        authentication: "PINNED_CHILD_PIPE".to_string(),
         authorizing: false,
         replayable: false,
         seal_digest: String::new(),
@@ -305,6 +305,54 @@ pub fn verify_wasm_file(
     let bytes = fs::read(artifact_path)?;
     let (envelope, seal) = verify_wasm_artifact(&bytes, build_point)?;
     write_verdict_files(&envelope, &seal, envelope_path, seal_path)
+}
+
+const MAX_STDIN_BYTES: usize = 16 * 1024 * 1024;
+const VERDICT_FRAME_MAGIC: &str = "GALERINA_VOK_VERDICT_V1\n";
+
+pub fn read_bounded_stdin() -> Result<Vec<u8>, VerifyError> {
+    let mut bytes = Vec::new();
+    let mut stdin = io::stdin().lock();
+    let mut buf = [0_u8; 8192];
+    loop {
+        let n = stdin.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        if bytes.len().saturating_add(n) > MAX_STDIN_BYTES {
+            return Err(VerifyError::refused("VOK_ARTIFACT_TOO_LARGE"));
+        }
+        bytes.extend_from_slice(&buf[..n]);
+    }
+    Ok(bytes)
+}
+
+#[must_use]
+pub fn framed_verdict_bytes(envelope: &Envelope, seal: &WaxSeal) -> Vec<u8> {
+    let env_body = envelope_file_body(envelope);
+    let seal_body = seal_file_body(seal);
+    let mut out = Vec::with_capacity(
+        VERDICT_FRAME_MAGIC.len() + env_body.len() + seal_body.len() + 64,
+    );
+    out.extend_from_slice(VERDICT_FRAME_MAGIC.as_bytes());
+    out.extend_from_slice(format!("ENVELOPE {}\n", env_body.len()).as_bytes());
+    out.extend_from_slice(env_body.as_bytes());
+    out.extend_from_slice(format!("SEAL {}\n", seal_body.len()).as_bytes());
+    out.extend_from_slice(seal_body.as_bytes());
+    out
+}
+
+pub fn write_verdict_stdout(envelope: &Envelope, seal: &WaxSeal) -> Result<(), VerifyError> {
+    let framed = framed_verdict_bytes(envelope, seal);
+    let mut stdout = io::stdout().lock();
+    stdout.write_all(&framed)?;
+    stdout.flush()?;
+    Ok(())
+}
+
+pub fn verify_wasm_stdin(build_point: &str) -> Result<(Envelope, WaxSeal), VerifyError> {
+    let bytes = read_bounded_stdin()?;
+    verify_wasm_artifact(&bytes, build_point)
 }
 
 #[cfg(test)]
@@ -356,7 +404,7 @@ mod tests {
         assert!(!seal.authorizing);
         assert!(!seal.replayable);
         assert_eq!(seal.kind, "WAX_SEAL");
-        assert_eq!(seal.authentication, "UNAUTHENTICATED_REFERENCE");
+        assert_eq!(seal.authentication, "PINNED_CHILD_PIPE");
         assert_eq!(seal.terminal_outcome, "CONSUMED");
         assert_eq!(seal.envelope_digest, envelope.envelope_digest);
         assert_eq!(
@@ -411,5 +459,17 @@ mod tests {
     fn invalid_build_point_refuses() {
         let error = verify_wasm_artifact(&MIN_WASM, "not-git").unwrap_err();
         assert_eq!(error.failure_id(), "VOK_BUILD_POINT_INVALID");
+    }
+
+    #[test]
+    fn framed_verdict_starts_with_magic_and_pipe_auth() {
+        let (envelope, seal) =
+            verify_wasm_artifact(&MIN_WASM, DEFAULT_BUILD_POINT).expect("min wasm");
+        let framed = framed_verdict_bytes(&envelope, &seal);
+        let text = std::str::from_utf8(&framed).expect("utf8");
+        assert!(text.starts_with("GALERINA_VOK_VERDICT_V1\nENVELOPE "));
+        assert!(text.contains("SEAL "));
+        assert!(text.contains("authentication=PINNED_CHILD_PIPE\n"));
+        assert!(!text.contains("UNAUTHENTICATED_REFERENCE"));
     }
 }

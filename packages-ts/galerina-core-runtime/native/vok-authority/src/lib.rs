@@ -34,8 +34,9 @@ pub use veo::{
     VeoAdmissionRequest, VeoProfile,
 };
 pub use assurance::{
-    envelope_file_body, framed_digest, seal_file_body, sha256_prefaced, verify_wasm_artifact,
-    verify_wasm_file, wasm_magic_windows, write_verdict_files, Envelope, VerifyError, WaxSeal, ABI,
+    envelope_file_body, framed_digest, framed_verdict_bytes, seal_file_body, sha256_prefaced,
+    verify_wasm_artifact, verify_wasm_file, verify_wasm_stdin, wasm_magic_windows,
+    write_verdict_files, write_verdict_stdout, Envelope, VerifyError, WaxSeal, ABI,
     CAPABILITY_DOMAIN, DEFAULT_BUILD_POINT, DEPS_DOMAIN, ENVELOPE_DOMAIN, EPOCH, EVIDENCE_DOMAIN,
     POLICY_DOMAIN, POLICY_ID, PROFILE_DOMAIN, SEAL_DOMAIN, TARGET,
 };
