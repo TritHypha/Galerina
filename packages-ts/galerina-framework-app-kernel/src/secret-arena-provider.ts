@@ -19,6 +19,31 @@ const intrinsicNow = performance.now.bind(performance);
 const RPC_DEADLINE_MS = 5000;
 const MAX_FRAME = 64 * 1024 * 1024 + 1024;
 const WASM_PAGE = 65536;
+const SIGTERM_GRACE_MS = 100;
+
+function terminateChild(child: ChildProcess): void {
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return;
+  }
+  try {
+    child.kill("SIGTERM");
+  } catch {
+    return;
+  }
+  const timer = setTimeout(() => {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      return;
+    }
+    try {
+      child.kill("SIGKILL");
+    } catch {
+      // already exited
+    }
+  }, SIGTERM_GRACE_MS);
+  child.once("exit", () => {
+    clearTimeout(timer);
+  });
+}
 
 function isAgain(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
@@ -161,7 +186,16 @@ function allocateNonDetachableSecret(data: Uint8Array): {
   const pages = Math.max(1, Math.ceil(data.length / WASM_PAGE));
   const memory = new WebAssembly.Memory({ initial: pages });
   const backing = new Uint8Array(memory.buffer);
-  backing.set(data);
+  try {
+    backing.set(data);
+  } catch (error) {
+    try {
+      intrinsicApply(intrinsicFill, backing, [0]);
+    } catch {
+      // wipe best-effort; the wasm memory is dropped on this path
+    }
+    throw error;
+  }
   const view = backing.subarray(0, data.length);
   return {
     view,
@@ -274,7 +308,7 @@ export function createSecretArenaProvider(
   const stdoutFd = streamFd(child.stdout);
   if (typeof stdinFd !== "number" || typeof stdoutFd !== "number" || child.pid === undefined) {
     try {
-      child.kill();
+      terminateChild(child);
     } catch {
       // spawn failed closed
     }
@@ -312,7 +346,7 @@ export function createSecretArenaProvider(
       // already closed
     }
     try {
-      child.kill();
+      terminateChild(child);
     } catch {
       // already exited
     }
@@ -374,7 +408,7 @@ export function createSecretArenaProvider(
     }
   } catch (error) {
     try {
-      child.kill();
+      terminateChild(child);
     } catch {
       // already dead
     }
@@ -503,7 +537,7 @@ export function createSecretArenaProvider(
       } finally {
         disposed = true;
         try {
-          child.kill();
+          terminateChild(child);
         } catch {
           // already exited
         }

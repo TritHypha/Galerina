@@ -16,10 +16,13 @@ declare const WebAssembly: {
 declare module "node:child_process" {
   export interface ChildProcess {
     readonly pid?: number;
+    readonly exitCode: number | null;
+    readonly signalCode: string | null;
     readonly stdin: { readonly fd?: number; destroy(): void } | null;
     readonly stdout: { readonly fd?: number; pause(): void; destroy(): void } | null;
     readonly stderr: { destroy(): void } | null;
-    kill(): boolean;
+    kill(signal?: string): boolean;
+    once(event: "exit", listener: () => void): void;
   }
   export function spawn(
     command: string,
