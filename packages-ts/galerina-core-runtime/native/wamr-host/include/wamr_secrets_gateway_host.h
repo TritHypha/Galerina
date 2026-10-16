@@ -80,6 +80,11 @@ bool wamr_secrets_gateway_register_natives(void);
  * UNAPPROVED_IMPORT. Two imports matching one allowlist name are
  * DUPLICATE_IMPORT. Negative wasm_runtime_get_import_count is
  * METADATA_UNAVAILABLE with no further metadata access.
+ *
+ * This function does not take an expected artifact digest. It is the original
+ * admission-probe path. Secret/artifact load uses
+ * wamr_secrets_gateway_load_for_authority, which requires a digest and copies
+ * digest-only into a VOK handoff buffer.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     uint8_t *buf,
@@ -100,6 +105,21 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
     uint32_t size,
     const uint8_t expected_digest[32],
     wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity);
+
+/*
+ * Production secret/artifact load. expected_digest is mandatory (NULL is
+ * INVALID_ARGUMENT; all-zero is ARTIFACT_DIGEST_MISSING). On VALID, copies
+ * the 32-byte SHA-256 into vok_digest (digest-only; module bytes are never
+ * copied). vok_digest is zeroed first and remains zero on any refusal.
+ */
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
+    uint8_t *buf,
+    uint32_t size,
+    const uint8_t expected_digest[32],
+    wamr_secrets_gateway_loaded_t *out,
+    uint8_t vok_digest[32],
     char *diagnostic,
     size_t diagnostic_capacity);
 

@@ -286,6 +286,11 @@ static wamr_secrets_gateway_result_t load_internal(
     wamr_secrets_gateway_result_t result;
 
     if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+        if (out != NULL) {
+            out->module = NULL;
+            out->instance = NULL;
+            zero_digest(out);
+        }
         if (diagnostic != NULL && diagnostic_capacity > 0) {
             diagnostic[0] = '\0';
             set_code_diagnostic(diagnostic, diagnostic_capacity,
@@ -389,6 +394,42 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
     }
     return load_internal(buf, size, expected_digest, out, diagnostic,
                          diagnostic_capacity);
+}
+
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
+    uint8_t *buf,
+    uint32_t size,
+    const uint8_t expected_digest[32],
+    wamr_secrets_gateway_loaded_t *out,
+    uint8_t vok_digest[32],
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    wamr_secrets_gateway_result_t result;
+
+    if (vok_digest != NULL) {
+        memset(vok_digest, 0, 32);
+    }
+    if (expected_digest == NULL || vok_digest == NULL) {
+        if (diagnostic != NULL && diagnostic_capacity > 0) {
+            diagnostic[0] = '\0';
+            set_code_diagnostic(diagnostic, diagnostic_capacity,
+                                WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        }
+        if (out != NULL) {
+            out->module = NULL;
+            out->instance = NULL;
+            zero_digest(out);
+        }
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    result = load_internal(buf, size, expected_digest, out, diagnostic,
+                           diagnostic_capacity);
+    if (result == WAMR_SECRETS_GATEWAY_VALID && out != NULL &&
+        !digest_is_zero(out->artifact_digest)) {
+        memcpy(vok_digest, out->artifact_digest, 32);
+    }
+    return result;
 }
 
 bool wamr_secrets_gateway_copy_artifact_digest(

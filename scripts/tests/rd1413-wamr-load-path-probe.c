@@ -465,6 +465,206 @@ static int check_invalid_argument(void)
     return 1;
 }
 
+static void poison_loaded(wamr_secrets_gateway_loaded_t *loaded)
+{
+    memset(loaded, 0x5a, sizeof(*loaded));
+    loaded->module = (wasm_module_t)(uintptr_t)0x1111u;
+    loaded->instance = (wasm_module_inst_t)(uintptr_t)0x2222u;
+}
+
+static int check_invalid_diagnostic_zeros_out(void)
+{
+    wamr_secrets_gateway_loaded_t loaded;
+    uint8_t buf[1] = { 0 };
+    wamr_secrets_gateway_result_t result;
+    char unused[1];
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load(buf, 1, &loaded, NULL, 64);
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "NULL diagnostic must INVALID_ARGUMENT and zero out\n");
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    unused[0] = 'x';
+    result = wamr_secrets_gateway_load(buf, 1, &loaded, unused, 0);
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "zero-capacity diagnostic must INVALID_ARGUMENT and zero out\n");
+        return 0;
+    }
+    puts("PASS: invalid diagnostic zeros out before INVALID_ARGUMENT");
+    return 1;
+}
+
+static int vok_digest_is_zero(const uint8_t digest[32])
+{
+    uint8_t acc = 0;
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        acc |= digest[i];
+    }
+    return acc == 0;
+}
+
+static int check_load_for_authority(const char *path, const char *other_path)
+{
+    uint32_t size = 0;
+    uint32_t other_size = 0;
+    uint8_t *bytes = read_bytes(path, &size);
+    uint8_t *other = read_bytes(other_path, &other_size);
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t expected[32];
+    uint8_t other_digest[32];
+    uint8_t vok_digest[32];
+    uint8_t junk[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+    if (bytes == NULL || other == NULL) {
+        fprintf(stderr, "load_for_authority: could not read fixtures\n");
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    wamr_sha256(bytes, (size_t)size, expected);
+    wamr_sha256(other, (size_t)other_size, other_digest);
+
+    poison_loaded(&loaded);
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, NULL, &loaded, vok_digest, diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "load_for_authority NULL expected must refuse with zero vok_digest\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, expected, &loaded, NULL, diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "load_for_authority NULL vok_digest must refuse and zero out\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    memset(expected, 0, sizeof(expected));
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, expected, &loaded, vok_digest, diagnostic,
+        sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "load_for_authority all-zero expected must MISSING with zero vok_digest\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    wamr_sha256(bytes, (size_t)size, expected);
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, other_digest, &loaded, vok_digest, diagnostic,
+        sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 1) {
+        fprintf(stderr,
+                "load_for_authority mismatch must refuse with zero vok_digest: %s instantiate=%u unload=%u\n",
+                wamr_secrets_gateway_result_name(result),
+                rd1413_load_path_instantiate_calls,
+                rd1413_load_path_unload_calls);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load_for_authority(
+        junk, sizeof(junk), expected, &loaded, vok_digest, diagnostic,
+        sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_LOAD_FAILED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "load_for_authority LOAD_FAILED must leave vok_digest zero\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    free(bytes);
+    bytes = read_bytes(path, &size);
+    if (bytes == NULL) {
+        fprintf(stderr, "load_for_authority: could not re-read fixture\n");
+        free(other);
+        return 0;
+    }
+    wamr_sha256(bytes, (size_t)size, expected);
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, expected, &loaded, vok_digest, diagnostic,
+        sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
+        loaded.instance == NULL ||
+        !expect_bytes(vok_digest, expected, "load_for_authority vok_digest") ||
+        rd1413_load_path_instantiate_calls != 1 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "load_for_authority VALID expected matching vok_digest: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    wamr_secrets_gateway_release(&loaded);
+    puts("PASS: load_for_authority requires digest, copies digest-only, zeros vok_digest on refuse");
+    free(bytes);
+    free(other);
+    return 1;
+}
+
 static int check_load_failed(void)
 {
     uint8_t junk[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
@@ -590,7 +790,8 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    ok = check_sha256_kat() && check_invalid_argument() && check_load_failed();
+    ok = check_sha256_kat() && check_invalid_argument() &&
+         check_invalid_diagnostic_zeros_out() && check_load_failed();
     if (ok) {
         ok = expect_refusal(argv[1], WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT, 1, 1,
                             "unlinked subset before native registration");
@@ -621,7 +822,8 @@ int main(int argc, char **argv)
                                      "swapped subset digest vs full bytes") &&
              expect_mismatch_swapped(argv[2], argv[1],
                                      "swapped full digest vs subset bytes") &&
-             expect_missing_digest(argv[1], "all-zero expected subset");
+             expect_missing_digest(argv[1], "all-zero expected subset") &&
+             check_load_for_authority(argv[1], argv[2]);
     }
 
     wasm_runtime_destroy();
