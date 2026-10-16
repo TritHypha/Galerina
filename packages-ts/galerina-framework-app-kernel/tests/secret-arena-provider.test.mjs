@@ -421,3 +421,50 @@ test("linux SIGTERM-ignoring custodian is SIGKILL'd within the grace bound", { t
   assert.match(mark, /sigterm:/);
   assert.equal(elapsed < 15000, true, "kill must complete inside the RPC deadline plus grace");
 });
+
+test("linux backing.set throw wipes allocated wasm memory and does not retain it", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  assert.equal(ensureBin(), true);
+  const provider = createSecretArenaProvider({ binPath });
+  t.after(() => {
+    try {
+      provider.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  const secret = new Uint8Array([7, 8, 9, 10, 11, 12, 13]);
+  provider.put("cred", secret);
+  const OrigMemory = WebAssembly.Memory;
+  const origSet = Uint8Array.prototype.set;
+  /** @type {WebAssembly.Memory[]} */
+  const memories = [];
+  t.after(() => {
+    WebAssembly.Memory = OrigMemory;
+    Uint8Array.prototype.set = origSet;
+  });
+  WebAssembly.Memory = function ForcedMemory(descriptor) {
+    const memory = new OrigMemory(descriptor);
+    new Uint8Array(memory.buffer).fill(0x5a);
+    memories.push(memory);
+    return memory;
+  };
+  WebAssembly.Memory.prototype = OrigMemory.prototype;
+  Uint8Array.prototype.set = function forcedSet(...args) {
+    if (memories.some((memory) => memory.buffer === this.buffer)) {
+      throw new TypeError("forced-set");
+    }
+    return origSet.apply(this, args);
+  };
+  assert.throws(
+    () => provider.use("cred", () => {}),
+    (error) => error instanceof TypeError && error.message === "forced-set",
+  );
+  assert.equal(memories.length, 1);
+  const leaked = new Uint8Array(memories[0].buffer);
+  assertZero(leaked);
+  assert.equal(provider.status().state, "quarantined");
+});

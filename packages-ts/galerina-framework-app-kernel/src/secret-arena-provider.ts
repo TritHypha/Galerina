@@ -186,7 +186,16 @@ function allocateNonDetachableSecret(data: Uint8Array): {
   const pages = Math.max(1, Math.ceil(data.length / WASM_PAGE));
   const memory = new WebAssembly.Memory({ initial: pages });
   const backing = new Uint8Array(memory.buffer);
-  backing.set(data);
+  try {
+    backing.set(data);
+  } catch (error) {
+    try {
+      intrinsicApply(intrinsicFill, backing, [0]);
+    } catch {
+      // wipe best-effort; the wasm memory is dropped on this path
+    }
+    throw error;
+  }
   const view = backing.subarray(0, data.length);
   return {
     view,
