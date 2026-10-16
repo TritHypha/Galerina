@@ -29,13 +29,18 @@ host_root="${WAMR_HOST_ROOT:-$repo_root}"
 host_include="$host_root/packages-ts/galerina-core-runtime/native/wamr-host/include"
 host_src="$host_root/packages-ts/galerina-core-runtime/native/wamr-host/src"
 wat="$script_dir/rd1413-wamr-load-path-admitted-subset.wat"
+full_wat="$host_root/scripts/tests/rd1413-wamr-load-path-admitted-full.wat"
 probe="$script_dir/rd1413-wamr-vok-handoff-probe.c"
+glue="$host_src/wamr_vok_handle.c"
 
 test -f "$host_include/wamr_secrets_gateway_host.h"
 test -f "$host_src/wamr_secrets_gateway_host.c"
 test -f "$vok_dir/include/vok_authority_handoff.h"
 test -f "$probe"
 test -f "$wat"
+test -f "$full_wat"
+test -f "$glue"
+test -f "$host_include/wamr_vok_handle.h"
 
 if ! grep -q 'wamr_secrets_gateway_load_for_authority' \
     "$host_include/wamr_secrets_gateway_host.h"; then
@@ -51,12 +56,14 @@ test -f "$vok_dir/target/release/libgalerina_vok_authority.a"
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-vok-handoff.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 wat2wasm "$wat" -o "$temp_dir/subset.wasm"
+wat2wasm "$full_wat" -o "$temp_dir/full.wasm"
 
 gcc -std=c11 -Wall -Wextra -Werror \
   -I"$wamr_include_dir" \
   -I"$host_include" \
   -I"$vok_dir/include" \
   "$probe" \
+  "$glue" \
   "$host_src/wamr_secrets_gateway_host.c" \
   "$host_src/wamr_import_admission.c" \
   "$host_src/wamr_sha256.c" \
@@ -64,4 +71,4 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$wamr_library" -lm -ldl -lpthread \
   -o "$temp_dir/handoff-probe"
 
-"$temp_dir/handoff-probe" "$temp_dir/subset.wasm"
+"$temp_dir/handoff-probe" "$temp_dir/subset.wasm" "$temp_dir/full.wasm"

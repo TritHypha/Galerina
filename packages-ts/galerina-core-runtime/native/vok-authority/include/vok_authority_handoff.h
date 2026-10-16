@@ -5,14 +5,12 @@
 #include <stdint.h>
 
 /*
- * Production C ABI for the WAMR-load_for_authority → VOK admit/lease/receipt
- * handoff. vok_authority_wamr_loaded_digest_from_authority is the typed
- * wrapper: it refuses an all-zero digest and is the only C entry that turns
- * load_for_authority's 32-byte output into a VOK mint digest.
+ * Production C ABI for the WAMR -> VOK admit/lease/receipt handoff.
  *
- * The raw 32-byte C buffer is still forgeable without a shared-secret MAC.
- * HMAC binding is an owner decision; this header does not add a public
- * caller-asserted setter on admission.
+ * Callers exchange a process-local opaque handle, never a raw 32-byte
+ * artifact digest. The handle is mintable only from a successful same-process
+ * wamr_secrets_gateway_load_for_authority (WAMR-side glue). It is consumed
+ * on handoff or drop. Caller-chosen bytes cannot construct a live handle.
  */
 
 enum {
@@ -23,9 +21,12 @@ enum {
     VOK_ABI_REFUSED = 4
 };
 
-int vok_authority_wamr_loaded_digest_from_authority(
-    const uint8_t digest[32],
-    uint8_t out[32]);
+typedef struct vok_wamr_loaded_handle {
+    uint32_t slot;
+    uint32_t reserved;
+    uint64_t generation;
+    uint8_t nonce[16];
+} vok_wamr_loaded_handle_t;
 
 int vok_authority_encode_return_u64(
     uint64_t value,
@@ -35,8 +36,9 @@ int vok_authority_encode_return_u64(
 int vok_authority_handoff_admit_lease_receipt(
     const uint8_t *object_bytes,
     size_t object_len,
-    const uint8_t mint_digest[32],
-    const uint8_t expected_digest[32],
-    uint8_t receipt_digest[32]);
+    const vok_wamr_loaded_handle_t *mint_handle,
+    const vok_wamr_loaded_handle_t *expected_handle);
+
+int vok_authority_drop_handle(vok_wamr_loaded_handle_t *handle);
 
 #endif
