@@ -1,4 +1,5 @@
 #include "wamr_secrets_gateway_host.h"
+#include "wamr_sha256.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -162,6 +163,10 @@ const char *wamr_secrets_gateway_result_name(wamr_secrets_gateway_result_t resul
             return "LOAD_FAILED";
         case WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED:
             return "INSTANTIATE_FAILED";
+        case WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH:
+            return "ARTIFACT_MISMATCH";
+        case WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING:
+            return "ARTIFACT_DIGEST_MISSING";
         default:
             return "UNKNOWN";
     }
@@ -197,6 +202,33 @@ static void set_code_diagnostic(char *diagnostic, size_t capacity,
     }
 }
 
+static int digest_is_zero(const uint8_t digest[32])
+{
+    uint8_t acc = 0;
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        acc |= digest[i];
+    }
+    return acc == 0;
+}
+
+static int digest_eq_ct(const uint8_t left[32], const uint8_t right[32])
+{
+    uint8_t acc = 0;
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        acc |= (uint8_t)(left[i] ^ right[i]);
+    }
+    return acc == 0;
+}
+
+static void zero_digest(wamr_secrets_gateway_loaded_t *loaded)
+{
+    if (loaded != NULL) {
+        memset(loaded->artifact_digest, 0, sizeof(loaded->artifact_digest));
+    }
+}
+
 static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
 {
     if (loaded == NULL) {
@@ -210,6 +242,7 @@ static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
         wasm_runtime_unload(loaded->module);
         loaded->module = NULL;
     }
+    zero_digest(loaded);
 }
 
 static wamr_secrets_gateway_result_t map_admission(wamr_import_abi_result_t admission)
@@ -236,15 +269,17 @@ static wamr_secrets_gateway_result_t map_admission(wamr_import_abi_result_t admi
     }
 }
 
-wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
+static wamr_secrets_gateway_result_t load_internal(
     uint8_t *buf,
     uint32_t size,
+    const uint8_t *expected_digest,
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity)
 {
     char error[256];
     char admission_diag[256];
+    uint8_t computed[32];
     wasm_module_t module;
     wasm_module_inst_t instance;
     wamr_import_abi_result_t admission;
@@ -261,10 +296,19 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     diagnostic[0] = '\0';
     out->module = NULL;
     out->instance = NULL;
+    zero_digest(out);
     if (buf == NULL || size == 0) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+
+    /* Hash host-owned buf before wasm_runtime_load, which may mutate buf. */
+    wamr_sha256(buf, (size_t)size, computed);
+    if (expected_digest != NULL && digest_is_zero(expected_digest)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
+        return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
     }
 
     error[0] = '\0';
@@ -288,6 +332,13 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
         return result;
     }
 
+    if (expected_digest != NULL && !digest_eq_ct(computed, expected_digest)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH, NULL);
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH;
+    }
+
     error[0] = '\0';
     instance = wasm_runtime_instantiate(module, WAMR_SECRETS_GATEWAY_STACK_SIZE,
                                         WAMR_SECRETS_GATEWAY_HEAP_SIZE, error,
@@ -299,9 +350,59 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
         return WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED;
     }
     out->instance = instance;
+    memcpy(out->artifact_digest, computed, sizeof(out->artifact_digest));
     set_code_diagnostic(diagnostic, diagnostic_capacity, WAMR_SECRETS_GATEWAY_VALID,
                         admission_diag);
     return WAMR_SECRETS_GATEWAY_VALID;
+}
+
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
+    uint8_t *buf,
+    uint32_t size,
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    return load_internal(buf, size, NULL, out, diagnostic, diagnostic_capacity);
+}
+
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
+    uint8_t *buf,
+    uint32_t size,
+    const uint8_t expected_digest[32],
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    if (expected_digest == NULL) {
+        if (diagnostic != NULL && diagnostic_capacity > 0) {
+            diagnostic[0] = '\0';
+            set_code_diagnostic(diagnostic, diagnostic_capacity,
+                                WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        }
+        if (out != NULL) {
+            out->module = NULL;
+            out->instance = NULL;
+            zero_digest(out);
+        }
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    return load_internal(buf, size, expected_digest, out, diagnostic,
+                         diagnostic_capacity);
+}
+
+bool wamr_secrets_gateway_copy_artifact_digest(
+    const wamr_secrets_gateway_loaded_t *loaded,
+    uint8_t out[32])
+{
+    if (loaded == NULL || out == NULL || digest_is_zero(loaded->artifact_digest)) {
+        if (out != NULL) {
+            memset(out, 0, 32);
+        }
+        return false;
+    }
+    memcpy(out, loaded->artifact_digest, 32);
+    return true;
 }
 
 void wamr_secrets_gateway_release(wamr_secrets_gateway_loaded_t *loaded)

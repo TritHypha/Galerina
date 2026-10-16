@@ -44,12 +44,15 @@ typedef enum {
     WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT = 6,
     WAMR_SECRETS_GATEWAY_METADATA_UNAVAILABLE = 7,
     WAMR_SECRETS_GATEWAY_LOAD_FAILED = 8,
-    WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED = 9
+    WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED = 9,
+    WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH = 10,
+    WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING = 11
 } wamr_secrets_gateway_result_t;
 
 typedef struct {
     wasm_module_t module;
     wasm_module_inst_t instance;
+    uint8_t artifact_digest[32];
 } wamr_secrets_gateway_loaded_t;
 
 #define WAMR_SECRETS_GATEWAY_STACK_SIZE 16384u
@@ -84,6 +87,29 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity);
+
+/*
+ * Same as wamr_secrets_gateway_load, plus a caller-supplied 32-byte SHA-256
+ * of the exact module bytes. Hash is computed over buf[0..size) before
+ * wasm_runtime_load. An all-zero expected digest is ARTIFACT_DIGEST_MISSING
+ * with no load. A mismatch after load+admit is ARTIFACT_MISMATCH, unloads
+ * exactly once, and never instantiates.
+ */
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
+    uint8_t *buf,
+    uint32_t size,
+    const uint8_t expected_digest[32],
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity);
+
+/*
+ * Copy the 32-byte artifact digest from a VALID loaded module. Returns false
+ * when loaded is NULL or the digest is missing (all-zero).
+ */
+bool wamr_secrets_gateway_copy_artifact_digest(
+    const wamr_secrets_gateway_loaded_t *loaded,
+    uint8_t out[32]);
 
 void wamr_secrets_gateway_release(wamr_secrets_gateway_loaded_t *loaded);
 

@@ -53,6 +53,11 @@ wat2wasm "$script_dir/rd1413-wamr-load-path-duplicate.wat" -o "$temp_dir/duplica
 wat2wasm "$script_dir/rd1413-wamr-load-path-mismatch.wat" -o "$temp_dir/mismatch.wasm"
 wat2wasm "$script_dir/rd1413-wamr-load-path-nonfunction.wat" -o "$temp_dir/nonfunction.wasm"
 
+export RD1413_SUBSET_SHA256
+export RD1413_FULL_SHA256
+RD1413_SUBSET_SHA256="$(sha256sum "$temp_dir/subset.wasm" | cut -d ' ' -f1)"
+RD1413_FULL_SHA256="$(sha256sum "$temp_dir/full.wasm" | cut -d ' ' -f1)"
+
 gcc -std=c11 -Wall -Wextra -Werror \
   -I"$wamr_include_dir" \
   -I"$host_include" \
@@ -60,6 +65,7 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$script_dir/rd1413-wamr-load-path-wrap.c" \
   "$host_src/wamr_secrets_gateway_host.c" \
   "$host_src/wamr_import_admission.c" \
+  "$host_src/wamr_sha256.c" \
   -Wl,--wrap=wasm_runtime_get_import_count \
   -Wl,--wrap=wasm_runtime_get_import_type \
   -Wl,--wrap=wasm_runtime_instantiate \
