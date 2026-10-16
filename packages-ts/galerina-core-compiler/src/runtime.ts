@@ -30,6 +30,10 @@ import { buildFlowAuditEvent, createAuditWriter } from "./audit-writer.js";
 import { buildProofChain, type ExecutionProofChain } from "./proof-chain.js";
 import { startServer, type RunningServer, type ServerConfig } from "./route-dispatcher.js";
 import { buildRouteRegistry } from "./route-registry.js";
+import {
+  protectedStandaloneFlowNames,
+  standaloneServeSecretRefusal,
+} from "./serve-secret-gate.js";
 import { buildAttestation, signAttestation, type GalerinaAttestation, type AttestationKeyPair } from "./attestation.js";
 import { createContractEnforcer, compileContract, type ContractEnforcer } from "./runtime/contractEnforcer.js";
 import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
@@ -495,6 +499,22 @@ export async function serve(
     throw new Error("Galerina: route admission references an unknown flow");
   }
 
+  const secretRefusal = standaloneServeSecretRefusal(
+    registry.routes,
+    admission.parseResult.ast,
+    admission.parseResult.flows,
+    admission.effectResults,
+  );
+  if (secretRefusal.__tag === "refuse") {
+    throw new Error(secretRefusal.reason);
+  }
+  const protectedFlowNames = protectedStandaloneFlowNames(
+    registry.routes,
+    admission.parseResult.ast,
+    admission.parseResult.flows,
+    admission.effectResults,
+  );
+
   const routeBodyLimits = new Map<string, number>();
   for (const route of registry.routes) {
     const flowNode = resolveRuntimeFlowNode(admission.parseResult.ast, route.flowName);
@@ -512,6 +532,11 @@ export async function serve(
     admission.parseResult.ast,
     { ...serverConfig, mode, routeBodyLimits },
     async (flowName, args) => {
+      if (protectedFlowNames.has(flowName)) {
+        throw new Error(
+          `Galerina: standalone serve() refused secret-requiring handler '${flowName}' before execution`,
+        );
+      }
       const result = await run(source, file, flowName, args, { ...options, mode });
       if (result.execution === undefined || result.value === undefined) {
         throw new Error(`Galerina: admitted route '${flowName}' refused during execution`);

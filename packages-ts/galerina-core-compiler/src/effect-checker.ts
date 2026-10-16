@@ -535,6 +535,14 @@ const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
   ["ai.inference.load",   "inference.load"],
 ]);
 
+export function canonicalEffectName(name: string): string {
+  return EFFECT_NAME_ALIASES.get(name) ?? name;
+}
+
+export function isRecognisedEffectName(name: string): boolean {
+  return CANONICAL_EFFECTS.has(name) || DENY_ONLY_EFFECTS.has(name) || EFFECT_NAME_ALIASES.has(name);
+}
+
 // ---------------------------------------------------------------------------
 // Known effect-producing call patterns
 // ---------------------------------------------------------------------------
@@ -1931,15 +1939,17 @@ function findCallsToEffectfulFlows(
   return calls;
 }
 
-function inferEffectsFromNode(node: AstNode): Set<string> {
+function inferEffectsFromNode(node: AstNode, includeNestedFns = false): Set<string> {
   const effects = new Set<string>();
   const aliasMap = buildModuleAliasMap(node); // C1: resolve `let x = Module` aliases before matching
   const localBindings = collectLocalBindings(node); // shadow-aware: local rebind of a module name is data
 
   function walk(n: AstNode): void {
     // Task 3: skip fnDecl bodies — their effects are handled separately via
-    // collectFnHelperEffects / validateInterFlowPropagation to emit EFFECT-002
-    if (n.kind === "fnDecl") return;
+    // collectFnHelperEffects / validateInterFlowPropagation to emit EFFECT-002.
+    // The standalone serve/startServer classifier walks nested fns so a hidden
+    // Secrets.get cannot bind a listener.
+    if (n.kind === "fnDecl" && !includeNestedFns) return;
     if (n.kind === "callExpr" || n.kind === "memberExpr") {
       if (!isShadowedStdlibReceiver(rootReceiverRaw(n), localBindings, aliasMap)) {
         const callText = buildCallText(n, aliasMap);
@@ -1955,6 +1965,14 @@ function inferEffectsFromNode(node: AstNode): Set<string> {
 
   walk(node);
   return effects;
+}
+
+export function observedEffectsForFlowNode(flowNode: AstNode): readonly string[] {
+  return [...inferEffectsFromNode(flowNode)].sort();
+}
+
+export function observedEffectsForFlowNodeIncludingNestedFns(flowNode: AstNode): readonly string[] {
+  return [...inferEffectsFromNode(flowNode, true)].sort();
 }
 
 /**

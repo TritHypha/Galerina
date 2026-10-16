@@ -35,7 +35,15 @@ test("route literal segments cannot inject regular-expression syntax", () => {
 });
 
 test("standalone route server refuses malformed and over-depth JSON before execution and redacts faults", async () => {
-  const program = ast('route POST "/x" { flow x }');
+  const program = ast(`secure flow x(request: Request) -> Response
+contract {
+  intent { "Secret-free JSON body probe." }
+  effects {}
+}
+{
+  return { outcome: "ok" }
+}
+route POST "/x" { flow x }`);
   let calls = 0;
   let mode = "ok";
   const running = await startServer(program, { port: 0 }, async () => {
