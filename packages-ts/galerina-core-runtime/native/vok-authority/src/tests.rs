@@ -1109,13 +1109,45 @@ fn unbound_open_and_consume_keep_legacy_and_bound_entries() {
                 .expect("nonzero digest"),
         )
         .expect("bound mint");
-    let lease = bound_table
+    let error = bound_table
         .open_lease(admitted, &context(7, 3, 5))
-        .expect("unbound open of bound entry");
-    let receipt = bound_table
+        .expect_err("unbound open of bound entry must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_table.live_len(), 0);
+
+    let mut bound_consume = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = bound_consume
+        .mint_admitted(
+            mint_request(all_admit(), vec![1, 2, 3])
+                .with_artifact_digest(digest_d1())
+                .expect("nonzero digest"),
+        )
+        .expect("bound mint");
+    let lease = bound_consume
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = bound_consume
         .consume_lease(lease, &context(7, 3, 5), Trit::Admit)
-        .expect("unbound consume of bound entry");
-    assert_eq!(receipt.artifact_digest(), &digest_d1());
+        .expect_err("unbound consume of bound lease must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_consume.live_len(), 0);
+
+    let mut bound_execute = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = bound_execute
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest_d1())
+                .expect("nonzero digest"),
+        )
+        .expect("bound native mint");
+    let lease = bound_execute
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = bound_execute
+        .execute_lease(lease, &context(7, 3, 5))
+        .expect_err("unbound execute of bound lease must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_execute.live_len(), 0);
 }
 
 #[test]
@@ -1141,7 +1173,11 @@ fn admitted_entry_and_lease_drop_zero_the_artifact_digest() {
         thread_marker: Default::default(),
     };
     assert_eq!(lease.artifact_digest, digest_d1());
+    super::LAST_DROPPED_LEASE_ARTIFACT_DIGEST.with(|cell| cell.set(digest_d1()));
     drop(lease);
+    super::LAST_DROPPED_LEASE_ARTIFACT_DIGEST.with(|cell| {
+        assert_eq!(cell.get(), [0; 32], "Drop must record zeros after fill");
+    });
 }
 
 #[test]
@@ -1156,6 +1192,8 @@ fn vok_receipt_debug_and_eq_expose_the_public_module_digest() {
     };
     let debug = format!("{receipt:?}");
     assert!(debug.contains("artifact_digest"));
+    assert!(debug.contains("REDACTED"));
+    assert!(!debug.contains("161"), "Debug must not print digest bytes");
     assert_eq!(receipt.artifact_digest(), &digest_d1());
     let other = VokReceipt {
         tag: receipt.tag.clone(),
@@ -1166,4 +1204,73 @@ fn vok_receipt_debug_and_eq_expose_the_public_module_digest() {
         artifact_digest: digest_d2(),
     };
     assert_ne!(receipt, other);
+}
+
+#[test]
+fn mint_request_debug_redacts_the_artifact_digest() {
+    let request = mint_request(all_admit(), vec![1, 2, 3])
+        .with_artifact_digest(digest_d1())
+        .expect("nonzero digest");
+    let debug = format!("{request:?}");
+    assert!(debug.contains("REDACTED"));
+    assert!(!debug.contains("161"), "Debug must not print digest bytes");
+}
+
+#[test]
+fn composed_wamr_digest_handoff_admits_native_object_and_refuses_wasm_bytes() {
+    let wasm_like: [u8; 8] = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
+    let digest = crate::sha256::sha256(&wasm_like);
+
+    let mut refuse_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let error = refuse_table
+        .mint_admitted(mint_request(all_admit(), wasm_like.to_vec()))
+        .expect_err("wasm magic must never enter VOK");
+    assert_eq!(error.failure_id(), "VOK_WASM_BYTES_REFUSED");
+    assert_eq!(refuse_table.live_len(), 0);
+
+    let mut missing_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = missing_table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let error = missing_table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &[0; 32])
+        .expect_err("missing expected digest");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(missing_table.live_len(), 0);
+
+    let mut mismatch_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = mismatch_table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let error = mismatch_table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d2())
+        .expect_err("swapped digest");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(mismatch_table.live_len(), 0);
+
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest)
+        .expect("matching digest open");
+    let receipt = table
+        .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest)
+        .expect("matching digest consume");
+    assert_eq!(receipt.artifact_digest(), &digest);
+    assert_eq!(receipt.byte_length(), RETURN_U64_OBJECT_BYTES);
+    assert_eq!(table.live_len(), 0);
 }
