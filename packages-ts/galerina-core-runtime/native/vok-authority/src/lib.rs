@@ -11,6 +11,8 @@ mod native;
 mod resource;
 #[allow(unsafe_code)]
 mod secret_arena;
+mod secret_arena_custodian;
+mod secret_arena_store;
 mod sha256;
 mod veo;
 
@@ -25,6 +27,7 @@ pub use secret_arena::{
     ERR_SECRET_ARENA_PAGE_SIZE_REFUSED, ERR_SECRET_ARENA_RESIZE_REFUSED,
     ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM,
 };
+pub use secret_arena_custodian::run_secret_arena_custodian;
 pub use veo::{
     admit_general_veo_linker, admit_veo_object, AdmittedVeoObject, VeoActionIdentity,
     VeoAdmissionRequest, VeoProfile,

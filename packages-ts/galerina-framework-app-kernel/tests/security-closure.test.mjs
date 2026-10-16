@@ -1,10 +1,33 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  createAppKernel,
+  createAppKernel as createAppKernelImpl,
   InMemoryAuditSink,
   InMemoryIdempotencyStore,
 } from "../dist/index.js";
+
+function withRevocationEpoch(provider) {
+  if (provider == null) return provider;
+  if (typeof provider.revocationEpoch === "function") return provider;
+  try {
+    provider.revocationEpoch = () => 0;
+    if (typeof provider.revocationEpoch === "function") return provider;
+  } catch {
+    // frozen provider
+  }
+  return {
+    has(name) { return provider.has(name); },
+    use(name, fn) { return provider.use(name, fn); },
+    revocationEpoch() { return 0; },
+  };
+}
+
+function createAppKernel(opts) {
+  if (opts !== undefined && Object.prototype.hasOwnProperty.call(opts, "secretsProvider")) {
+    return createAppKernelImpl({ ...opts, secretsProvider: withRevocationEpoch(opts.secretsProvider) });
+  }
+  return createAppKernelImpl(opts);
+}
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
