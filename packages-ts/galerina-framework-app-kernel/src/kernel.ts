@@ -684,12 +684,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     readonly policy: EffectiveRoutePolicy | undefined;
     /** Final monotonic deadline arbitration after the public entry point resumes its await. */
     readonly recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined;
+    /** ACK or noteUnknown after handle() chooses the final HTTP response and audit commit. */
+    readonly finalizeSecretRelease?: (ok: boolean) => void;
   }
 
   function pipelineOutcome(
     response: GalerinaKernelResponse,
     policy: EffectiveRoutePolicy | undefined,
     recheckPublicationDeadline?: () => GalerinaKernelResponse | undefined,
+    finalizeSecretRelease?: (ok: boolean) => void,
   ): PipelineOutcome {
     // Async-function promise resolution reads `then` from its returned value. A
     // null-prototype envelope prevents hostile Object.prototype accessors from
@@ -700,6 +703,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     if (recheckPublicationDeadline !== undefined) {
       intrinsicDefineProperty(outcome, "recheckPublicationDeadline", {
         value: recheckPublicationDeadline,
+        enumerable: true,
+      });
+    }
+    if (finalizeSecretRelease !== undefined) {
+      intrinsicDefineProperty(outcome, "finalizeSecretRelease", {
+        value: finalizeSecretRelease,
         enumerable: true,
       });
     }
@@ -984,8 +993,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         requestOutcomeSealed = true;
         return undefined;
       };
+      const finalizeSecretRelease = (ok: boolean): void => {
+        if (!secretAccessSpent) return;
+        if (ok) secretGate.acknowledge(releaseOperationId);
+        else secretGate.noteUnknown(releaseOperationId);
+      };
       const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
-        pipelineOutcome(response, policy, recheckAndSealRequestOutcome);
+        pipelineOutcome(response, policy, recheckAndSealRequestOutcome, finalizeSecretRelease);
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
       let handlerPromise: Promise<HandlerResult> | undefined;
       const timeoutPromise = new Promise<never>((_resolve, reject) => {
@@ -1165,7 +1179,6 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
 
         const response: GalerinaKernelResponse =
           body === undefined ? { status, headers } : { status, headers, body };
-        if (secretAccessSpent) secretGate.acknowledge(releaseOperationId);
         return terminalOutcome(response);
       } catch {
         unknownIfSpent();
@@ -1224,7 +1237,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     try {
       const outcome = await runPipeline(req);
       const { policy } = outcome;
-      const response = outcome.recheckPublicationDeadline?.() ?? outcome.response;
+      const rechecked = outcome.recheckPublicationDeadline?.();
+      const publicationOk = rechecked === undefined;
+      const response = rechecked ?? outcome.response;
 
       // ── 12 audit ── Build the event after the response is computed. A mandatory
       // event consumes its exact reservation synchronously; flushing stays off-path.
@@ -1247,6 +1262,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           auditSink.commit(reservation, event);
           reservationLive = false;
         } catch {
+          outcome.finalizeSecretRelease?.(false);
           return errorResponse(503, "audit_unavailable", "Required runtime audit evidence could not be accepted.");
         }
       } else if (policy !== undefined) {
@@ -1258,6 +1274,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         }
       }
 
+      outcome.finalizeSecretRelease?.(publicationOk);
       return response;
     } finally {
       if (reservationLive && reservation !== undefined) {
