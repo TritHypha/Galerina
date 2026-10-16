@@ -4,6 +4,10 @@ mod platform;
 
 pub(crate) const OBJECT_BYTES: usize = 16;
 const OBJECT_MAGIC: [u8; 4] = *b"GVEO";
+
+pub(crate) fn is_native_floor_object(bytes: &[u8]) -> bool {
+    bytes.len() == OBJECT_BYTES && bytes.starts_with(&OBJECT_MAGIC)
+}
 const OBJECT_VERSION: u8 = 1;
 const RETURN_U64_PROFILE: u8 = 1;
 

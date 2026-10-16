@@ -194,6 +194,7 @@ impl<N: NonceSource> AuthorityTable<N> {
         lease: LeaseHandle,
         current_context: &AuthorityContext,
         resources: Vec<VmResourceHandle>,
+        expected_artifact_digest: &[u8; 32],
     ) -> Result<VokExecutionReceipt, VokFailure> {
         if resources.len() > MAX_RESOURCES_PER_LEASE {
             return Err(VokFailure::new(Trit::Refuse, "VOK_RESOURCE_BUDGET"));
@@ -211,7 +212,8 @@ impl<N: NonceSource> AuthorityTable<N> {
         for slot_index in slot_indices {
             self.clear_resource_slot(slot_index);
         }
-        let mut receipt = self.execute_lease(lease, current_context)?;
+        let mut receipt =
+            self.execute_lease_for_artifact(lease, current_context, expected_artifact_digest)?;
         receipt.transferred_resource_count = resources.len();
         Ok(receipt)
     }
@@ -297,7 +299,7 @@ impl BTreeSetLite {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::{context, return_u64_request, table_with_nonces};
+    use crate::tests::{bound_native_request, context, digest_d1, table_with_nonces};
 
     fn nonces(count: u8) -> Vec<[u8; 16]> {
         (1..=count).map(|value| [value; 16]).collect()
@@ -374,16 +376,21 @@ mod tests {
     fn transferred_resources_do_not_change_executed_value() {
         let mut table = table_with_nonces(2, nonces(8));
         let admitted = table
-            .mint_admitted(return_u64_request(0x1111_2222_3333_4444))
+            .mint_admitted(bound_native_request(0x1111_2222_3333_4444))
             .expect("object");
         let lease = table
-            .open_lease(admitted, &context(7, 3, 5))
+            .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
             .expect("lease");
         let resource = table
             .admit_vm_resource(VmResourceKind::ComponentInstance, &context(7, 3, 5))
             .expect("resource");
         let receipt = table
-            .execute_lease_with_resources(lease, &context(7, 3, 5), vec![resource])
+            .execute_lease_with_resources(
+                lease,
+                &context(7, 3, 5),
+                vec![resource],
+                &digest_d1(),
+            )
             .expect("bounded execute with opaque transfer");
         assert_eq!(receipt.value(), 0x1111_2222_3333_4444);
         assert_eq!(receipt.transferred_resource_count(), 1);
@@ -395,9 +402,9 @@ mod tests {
     #[test]
     fn resource_budget_refuses_before_execution_and_keeps_the_lease() {
         let mut table = table_with_nonces(1, nonces(8));
-        let admitted = table.mint_admitted(return_u64_request(7)).expect("object");
+        let admitted = table.mint_admitted(bound_native_request(7)).expect("object");
         let lease = table
-            .open_lease(admitted, &context(7, 3, 5))
+            .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
             .expect("lease");
         let extras = (0..=MAX_RESOURCES_PER_LEASE)
             .map(|_| VmResourceHandle {
@@ -410,7 +417,7 @@ mod tests {
             })
             .collect();
         let error = table
-            .execute_lease_with_resources(lease, &context(7, 3, 5), extras)
+            .execute_lease_with_resources(lease, &context(7, 3, 5), extras, &digest_d1())
             .expect_err("over-budget must refuse before native execute");
         assert_eq!(error.failure_id(), "VOK_RESOURCE_BUDGET");
     }
