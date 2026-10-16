@@ -603,19 +603,19 @@ static int check_load_for_authority(const char *path, const char *other_path)
     }
 
     poison_loaded(&loaded);
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    rd1413_load_path_reset();
     result = wamr_secrets_gateway_load_for_authority(
         bytes, size, expected, &loaded, NULL, diagnostic, sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
-        loaded.module != NULL || loaded.instance != NULL ||
-        !digest_field_zero(&loaded) ||
-        rd1413_load_path_instantiate_calls != 0) {
-        fprintf(stderr, "load_for_authority NULL vok_digest must refuse and zero out\n");
+    if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
+        loaded.instance == NULL ||
+        rd1413_load_path_instantiate_calls != 1) {
+        fprintf(stderr, "load_for_authority NULL vok_digest must still VALID\n");
         wamr_secrets_gateway_release(&loaded);
         free(bytes);
         free(other);
         return 0;
     }
+    wamr_secrets_gateway_release(&loaded);
 
     memset(expected, 0, sizeof(expected));
     memset(vok_digest, 0x5a, sizeof(vok_digest));

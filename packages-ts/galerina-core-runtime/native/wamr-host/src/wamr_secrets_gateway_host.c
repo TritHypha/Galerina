@@ -456,7 +456,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     if (vok_digest != NULL) {
         memset(vok_digest, 0, 32);
     }
-    if (expected_digest == NULL || vok_digest == NULL) {
+    if (expected_digest == NULL) {
         if (diagnostic != NULL && diagnostic_capacity > 0) {
             diagnostic[0] = '\0';
             set_code_diagnostic(diagnostic, diagnostic_capacity,
@@ -469,8 +469,8 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     }
     result = load_internal(buf, size, expected_digest, out, diagnostic,
                            diagnostic_capacity);
-    if (result == WAMR_SECRETS_GATEWAY_VALID && out != NULL &&
-        !digest_is_zero(out->artifact_digest)) {
+    if (vok_digest != NULL && result == WAMR_SECRETS_GATEWAY_VALID &&
+        out != NULL && !digest_is_zero(out->artifact_digest)) {
         memcpy(vok_digest, out->artifact_digest, 32);
     }
     return result;

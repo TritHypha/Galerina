@@ -104,9 +104,10 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
 
 /*
  * Production secret/artifact load. expected_digest is mandatory (NULL is
- * INVALID_ARGUMENT; all-zero is ARTIFACT_DIGEST_MISSING). On VALID, copies
- * the 32-byte SHA-256 into vok_digest (digest-only; module bytes are never
- * copied). vok_digest is zeroed first and remains zero on any refusal.
+ * INVALID_ARGUMENT; all-zero is ARTIFACT_DIGEST_MISSING). vok_digest may be
+ * NULL (no digest copy; VOK handoff uses the opaque-handle glue). When
+ * non-NULL, it is zeroed first, receives the 32-byte SHA-256 only on VALID,
+ * and remains zero on any refusal. Module bytes are never copied out.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
