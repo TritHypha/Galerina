@@ -16,8 +16,9 @@ declare const WebAssembly: {
 declare module "node:child_process" {
   export interface ChildProcess {
     readonly pid?: number;
-    readonly stdin: { readonly fd?: number } | null;
-    readonly stdout: { readonly fd?: number; pause(): void } | null;
+    readonly stdin: { readonly fd?: number; destroy(): void } | null;
+    readonly stdout: { readonly fd?: number; pause(): void; destroy(): void } | null;
+    readonly stderr: { destroy(): void } | null;
     kill(): boolean;
   }
   export function spawn(
