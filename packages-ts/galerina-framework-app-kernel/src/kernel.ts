@@ -34,7 +34,11 @@ import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
-  return error instanceof SecretReleaseRefused;
+  try {
+    return error instanceof SecretReleaseRefused;
+  } catch {
+    return false;
+  }
 }
 
 function isEpochUnavailable(error: unknown): boolean {
@@ -676,6 +680,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // requestId is caller-supplied and not proven unique. Bind each handle() to its own
   // operation-wide release lease so a reused requestId cannot replay a prior disclosure.
   let releaseSeq = 0;
+  let pendingSecretReleaseFinalize: ((ok: boolean) => void) | undefined;
 
   /** Internal pipeline result: the response plus the matched policy (for audit provenance). */
   interface PipelineOutcome {
@@ -994,10 +999,12 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         return undefined;
       };
       const finalizeSecretRelease = (ok: boolean): void => {
+        pendingSecretReleaseFinalize = undefined;
         if (!secretAccessSpent) return;
         if (ok) secretGate.acknowledge(releaseOperationId);
         else secretGate.noteUnknown(releaseOperationId);
       };
+      pendingSecretReleaseFinalize = finalizeSecretRelease;
       const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
         pipelineOutcome(response, policy, recheckAndSealRequestOutcome, finalizeSecretRelease);
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1275,6 +1282,30 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       }
 
       outcome.finalizeSecretRelease?.(publicationOk);
+      return response;
+    } catch {
+      pendingSecretReleaseFinalize?.(false);
+      const response = errorResponse(500, "internal_error", "Handler failed.");
+      if (reservation !== undefined) {
+        try {
+          const event: AuditEvent = {
+            requestId: auditRequestId,
+            method: auditMethod,
+            path: auditPath,
+            status: response.status,
+            errorCode: errorCodeOf(response),
+            origin: "kernel",
+            appliedDefaults: [],
+            relaxations: [],
+            at: wallClockNow(),
+            ...(resolvedPosture ? { resolvedPosture } : {}),
+          };
+          auditSink.commit(reservation, event);
+          reservationLive = false;
+        } catch {
+          // The request still fails closed as a kernel 500.
+        }
+      }
       return response;
     } finally {
       if (reservationLive && reservation !== undefined) {
