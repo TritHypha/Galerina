@@ -9,6 +9,7 @@
 #include "wasm_export.h"
 #include "wamr_secrets_gateway_host.h"
 #include "wamr_sha256.h"
+#include "wamr_vok_verdict.h"
 
 #define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
 
@@ -106,13 +107,10 @@ static wamr_secrets_gateway_result_t load_with_computed_digest(
     size_t diagnostic_capacity)
 {
     uint8_t expected[32];
-    uint8_t vok_digest[32];
 
     wamr_sha256(bytes, (size_t)size, expected);
-    memset(vok_digest, 0, sizeof(vok_digest));
-    return wamr_secrets_gateway_load_for_authority(
-        bytes, size, expected, loaded, vok_digest, diagnostic,
-        diagnostic_capacity);
+    return wamr_secrets_gateway_load_expected(
+        bytes, size, expected, loaded, diagnostic, diagnostic_capacity);
 }
 
 static int expect_refusal(const char *path,
@@ -550,17 +548,131 @@ static int check_digestless_public_load(uint8_t *bytes, uint32_t size)
     return 1;
 }
 
-static int vok_digest_is_zero(const uint8_t digest[32])
+static void hex32(const uint8_t digest[32], char out[65])
 {
-    uint8_t acc = 0;
+    static const char k_hex[] = "0123456789abcdef";
     size_t i;
     for (i = 0; i < 32; i++) {
-        acc |= digest[i];
+        out[i * 2u] = k_hex[digest[i] >> 4];
+        out[i * 2u + 1u] = k_hex[digest[i] & 0x0fu];
     }
-    return acc == 0;
+    out[64] = '\0';
 }
 
-static int check_load_for_authority(const char *path, const char *other_path)
+static int write_text_file(const char *path, const char *text)
+{
+    FILE *file = fopen(path, "wb");
+    size_t n;
+    if (file == NULL) {
+        return 0;
+    }
+    n = strlen(text);
+    if (fwrite(text, 1, n, file) != n) {
+        fclose(file);
+        return 0;
+    }
+    fclose(file);
+    return 1;
+}
+
+static void fill_closed_envelope(wamr_vok_envelope_t *envelope,
+                                 const uint8_t component[32])
+{
+    static const char k_build[] =
+        "git:ad0ed3acc298f4ffe76d01f7c7286b2ea5c964f9";
+    memset(envelope, 0, sizeof(*envelope));
+    memcpy(envelope->abi, WAMR_VOK_ABI, sizeof(WAMR_VOK_ABI));
+    memcpy(envelope->target, WAMR_VOK_TARGET, sizeof(WAMR_VOK_TARGET));
+    memcpy(envelope->schema_version, WAMR_VOK_SCHEMA_VERSION,
+           sizeof(WAMR_VOK_SCHEMA_VERSION));
+    memcpy(envelope->build_point, k_build, sizeof(k_build));
+    envelope->epoch = WAMR_VOK_EPOCH;
+    memcpy(envelope->component_digest, component, 32);
+    wamr_vok_framed_digest(WAMR_VOK_POLICY_DOMAIN,
+                           (const uint8_t *)WAMR_VOK_POLICY_ID,
+                           strlen(WAMR_VOK_POLICY_ID),
+                           envelope->policy_digest);
+    wamr_vok_framed_digest("galerina.assurance.capability.v1",
+                           (const uint8_t *)"none", 4,
+                           envelope->capability_digest);
+    wamr_vok_framed_digest("galerina.assurance.deps.v1",
+                           (const uint8_t *)"closed", 6,
+                           envelope->dependency_digest);
+    wamr_vok_framed_digest("galerina.assurance.evidence.v1",
+                           (const uint8_t *)"synthetic", 9,
+                           envelope->evidence_digest);
+}
+
+static int write_envelope_file(const char *path, wamr_vok_envelope_t *envelope)
+{
+    char payload[2048];
+    char body[2300];
+    char hex[65];
+    uint8_t digest[32];
+    int n;
+
+    n = wamr_vok_envelope_canonical(envelope, payload, sizeof(payload));
+    if (n < 0) {
+        return 0;
+    }
+    wamr_vok_framed_digest(WAMR_VOK_ENVELOPE_DOMAIN, (const uint8_t *)payload,
+                           (size_t)n, digest);
+    memcpy(envelope->envelope_digest, digest, 32);
+    hex32(digest, hex);
+    if ((size_t)snprintf(body, sizeof(body), "%senvelopeDigest=sha256:%s\n",
+                         payload, hex) >= sizeof(body)) {
+        return 0;
+    }
+    return write_text_file(path, body);
+}
+
+static int write_seal_file(const char *path, wamr_vok_wax_seal_t *seal)
+{
+    char payload[2048];
+    char body[2300];
+    char hex[65];
+    uint8_t digest[32];
+    int n;
+
+    n = wamr_vok_seal_canonical(seal, payload, sizeof(payload));
+    if (n < 0) {
+        return 0;
+    }
+    wamr_vok_framed_digest(WAMR_VOK_SEAL_DOMAIN, (const uint8_t *)payload,
+                           (size_t)n, digest);
+    memcpy(seal->seal_digest, digest, 32);
+    hex32(digest, hex);
+    if ((size_t)snprintf(body, sizeof(body), "%ssealDigest=sha256:%s\n", payload,
+                         hex) >= sizeof(body)) {
+        return 0;
+    }
+    return write_text_file(path, body);
+}
+
+static void fill_closed_seal(wamr_vok_wax_seal_t *seal,
+                             const uint8_t envelope_digest[32], int authorizing)
+{
+    memset(seal, 0, sizeof(*seal));
+    memcpy(seal->envelope_digest, envelope_digest, 32);
+    memcpy(seal->kind, "WAX_SEAL", 9);
+    memcpy(seal->terminal_outcome, "CONSUMED", 9);
+    memcpy(seal->authentication, "UNAUTHENTICATED_REFERENCE", 26);
+    memcpy(seal->schema_version, WAMR_VOK_SCHEMA_VERSION,
+           sizeof(WAMR_VOK_SCHEMA_VERSION));
+    seal->authorizing = authorizing;
+    seal->replayable = 0;
+    wamr_vok_framed_digest("galerina.assurance.profile.v1",
+                           (const uint8_t *)WAMR_VOK_POLICY_ID,
+                           strlen(WAMR_VOK_POLICY_ID), seal->profile_digest);
+}
+
+static int join_path(char *out, size_t cap, const char *dir, const char *name)
+{
+    return snprintf(out, cap, "%s/%s", dir, name) < (int)cap;
+}
+
+static int check_load_for_authority(const char *path, const char *other_path,
+                                    const char *verdict_dir)
 {
     uint32_t size = 0;
     uint32_t other_size = 0;
@@ -569,33 +681,108 @@ static int check_load_for_authority(const char *path, const char *other_path)
     char diagnostic[256];
     wamr_secrets_gateway_loaded_t loaded;
     wamr_secrets_gateway_result_t result;
-    uint8_t expected[32];
+    wamr_vok_envelope_t envelope;
+    wamr_vok_wax_seal_t seal;
+    uint8_t component[32];
     uint8_t other_digest[32];
-    uint8_t vok_digest[32];
-    uint8_t junk[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    char env_ok[512];
+    char seal_ok[512];
+    char env_other[512];
+    char seal_other[512];
+    char env_zero[512];
+    char seal_zero[512];
+    char env_auth[512];
+    char seal_auth[512];
+    char missing_path[512];
 
-    if (bytes == NULL || other == NULL) {
+    if (bytes == NULL || other == NULL || verdict_dir == NULL) {
         fprintf(stderr, "load_for_authority: could not read fixtures\n");
         free(bytes);
         free(other);
         return 0;
     }
+    if (!join_path(env_ok, sizeof(env_ok), verdict_dir, "env_ok.txt") ||
+        !join_path(seal_ok, sizeof(seal_ok), verdict_dir, "seal_ok.txt") ||
+        !join_path(env_other, sizeof(env_other), verdict_dir, "env_other.txt") ||
+        !join_path(seal_other, sizeof(seal_other), verdict_dir,
+                   "seal_other.txt") ||
+        !join_path(env_zero, sizeof(env_zero), verdict_dir, "env_zero.txt") ||
+        !join_path(seal_zero, sizeof(seal_zero), verdict_dir, "seal_zero.txt") ||
+        !join_path(env_auth, sizeof(env_auth), verdict_dir, "env_auth.txt") ||
+        !join_path(seal_auth, sizeof(seal_auth), verdict_dir, "seal_auth.txt") ||
+        !join_path(missing_path, sizeof(missing_path), verdict_dir,
+                   "missing.txt")) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
 
-    wamr_sha256(bytes, (size_t)size, expected);
+    wamr_sha256(bytes, (size_t)size, component);
     wamr_sha256(other, (size_t)other_size, other_digest);
+    fill_closed_envelope(&envelope, component);
+    if (!write_envelope_file(env_ok, &envelope)) {
+        fprintf(stderr, "load_for_authority: could not write env_ok\n");
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    fill_closed_seal(&seal, envelope.envelope_digest, 0);
+    if (!write_seal_file(seal_ok, &seal)) {
+        fprintf(stderr, "load_for_authority: could not write seal_ok\n");
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    fill_closed_envelope(&envelope, other_digest);
+    if (!write_envelope_file(env_other, &envelope) ) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    fill_closed_seal(&seal, envelope.envelope_digest, 0);
+    if (!write_seal_file(seal_other, &seal)) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    memset(component, 0, sizeof(component));
+    fill_closed_envelope(&envelope, component);
+    if (!write_envelope_file(env_zero, &envelope)) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    fill_closed_seal(&seal, envelope.envelope_digest, 0);
+    if (!write_seal_file(seal_zero, &seal)) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    wamr_sha256(bytes, (size_t)size, component);
+    fill_closed_envelope(&envelope, component);
+    if (!write_envelope_file(env_auth, &envelope)) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
+    fill_closed_seal(&seal, envelope.envelope_digest, 1);
+    if (!write_seal_file(seal_auth, &seal)) {
+        free(bytes);
+        free(other);
+        return 0;
+    }
 
     poison_loaded(&loaded);
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
     result = wamr_secrets_gateway_load_for_authority(
-        bytes, size, NULL, &loaded, vok_digest, diagnostic, sizeof(diagnostic));
+        bytes, size, NULL, NULL, &loaded, diagnostic, sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
         loaded.module != NULL || loaded.instance != NULL ||
-        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        !digest_field_zero(&loaded) ||
         rd1413_load_path_instantiate_calls != 0 ||
         rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "load_for_authority NULL expected must refuse with zero vok_digest\n");
+        fprintf(stderr, "load_for_authority NULL verdict paths must refuse\n");
         wamr_secrets_gateway_release(&loaded);
         free(bytes);
         free(other);
@@ -605,51 +792,47 @@ static int check_load_for_authority(const char *path, const char *other_path)
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     result = wamr_secrets_gateway_load_for_authority(
-        bytes, size, expected, &loaded, NULL, diagnostic, sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
-        loaded.instance == NULL ||
-        rd1413_load_path_instantiate_calls != 1) {
-        fprintf(stderr, "load_for_authority NULL vok_digest must still VALID\n");
-        wamr_secrets_gateway_release(&loaded);
-        free(bytes);
-        free(other);
-        return 0;
-    }
-    wamr_secrets_gateway_release(&loaded);
-
-    memset(expected, 0, sizeof(expected));
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
-    poison_loaded(&loaded);
-    rd1413_load_path_reset();
-    result = wamr_secrets_gateway_load_for_authority(
-        bytes, size, expected, &loaded, vok_digest, diagnostic,
+        bytes, size, missing_path, missing_path, &loaded, diagnostic,
         sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
         loaded.module != NULL || loaded.instance != NULL ||
-        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
-        rd1413_load_path_instantiate_calls != 0 ||
-        rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "load_for_authority all-zero expected must MISSING with zero vok_digest\n");
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "load_for_authority missing verdict file must MISSING\n");
         wamr_secrets_gateway_release(&loaded);
         free(bytes);
         free(other);
         return 0;
     }
 
-    wamr_sha256(bytes, (size_t)size, expected);
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     result = wamr_secrets_gateway_load_for_authority(
-        bytes, size, other_digest, &loaded, vok_digest, diagnostic,
+        bytes, size, env_zero, seal_zero, &loaded, diagnostic,
+        sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "load_for_authority zero componentDigest must MISSING\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(other);
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, env_other, seal_other, &loaded, diagnostic,
         sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH ||
         loaded.module != NULL || loaded.instance != NULL ||
-        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
+        !digest_field_zero(&loaded) ||
         rd1413_load_path_instantiate_calls != 0 ||
-        rd1413_load_path_unload_calls != 1) {
+        rd1413_load_path_unload_calls != 0) {
         fprintf(stderr,
-                "load_for_authority mismatch must refuse with zero vok_digest: %s instantiate=%u unload=%u\n",
+                "load_for_authority swapped verdict must MISMATCH before load: %s instantiate=%u unload=%u\n",
                 wamr_secrets_gateway_result_name(result),
                 rd1413_load_path_instantiate_calls,
                 rd1413_load_path_unload_calls);
@@ -659,43 +842,31 @@ static int check_load_for_authority(const char *path, const char *other_path)
         return 0;
     }
 
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     result = wamr_secrets_gateway_load_for_authority(
-        junk, sizeof(junk), expected, &loaded, vok_digest, diagnostic,
+        bytes, size, env_auth, seal_auth, &loaded, diagnostic,
         sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_LOAD_FAILED ||
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
         loaded.module != NULL || loaded.instance != NULL ||
-        !digest_field_zero(&loaded) || !vok_digest_is_zero(vok_digest) ||
         rd1413_load_path_instantiate_calls != 0) {
-        fprintf(stderr, "load_for_authority LOAD_FAILED must leave vok_digest zero\n");
+        fprintf(stderr, "authorizing=true seal must VERDICT_REFUSED, got %s\n",
+                wamr_secrets_gateway_result_name(result));
         wamr_secrets_gateway_release(&loaded);
         free(bytes);
         free(other);
         return 0;
     }
 
-    memset(vok_digest, 0x5a, sizeof(vok_digest));
+    poison_loaded(&loaded);
     rd1413_load_path_reset();
-    diagnostic[0] = '\0';
-    free(bytes);
-    bytes = read_bytes(path, &size);
-    if (bytes == NULL) {
-        fprintf(stderr, "load_for_authority: could not re-read fixture\n");
-        free(other);
-        return 0;
-    }
-    wamr_sha256(bytes, (size_t)size, expected);
     result = wamr_secrets_gateway_load_for_authority(
-        bytes, size, expected, &loaded, vok_digest, diagnostic,
-        sizeof(diagnostic));
+        bytes, size, env_ok, seal_ok, &loaded, diagnostic, sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
         loaded.instance == NULL ||
-        !expect_bytes(vok_digest, expected, "load_for_authority vok_digest") ||
         rd1413_load_path_instantiate_calls != 1 ||
         rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "load_for_authority VALID expected matching vok_digest: %s\n",
+        fprintf(stderr, "load_for_authority VALID verdict failed: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
         free(bytes);
@@ -703,7 +874,7 @@ static int check_load_for_authority(const char *path, const char *other_path)
         return 0;
     }
     wamr_secrets_gateway_release(&loaded);
-    puts("PASS: load_for_authority requires digest, copies digest-only, zeros vok_digest on refuse");
+    puts("PASS: load_for_authority binds out-of-process verdict, refuses missing/zero/mismatch/authorizing");
     free(bytes);
     free(other);
     return 1;
@@ -824,9 +995,9 @@ int main(int argc, char **argv)
 {
     int ok;
 
-    if (argc != 7) {
+    if (argc != 8) {
         fprintf(stderr,
-                "usage: load-path-probe subset full superset duplicate mismatch nonfunction\n");
+                "usage: load-path-probe subset full superset duplicate mismatch nonfunction verdict_dir\n");
         return 2;
     }
     if (!wasm_runtime_init()) {
@@ -867,7 +1038,7 @@ int main(int argc, char **argv)
              expect_mismatch_swapped(argv[2], argv[1],
                                      "swapped full digest vs subset bytes") &&
              expect_missing_digest(argv[1], "all-zero expected subset") &&
-             check_load_for_authority(argv[1], argv[2]);
+             check_load_for_authority(argv[1], argv[2], argv[7]);
         if (ok) {
             uint32_t subset_size = 0;
             uint8_t *subset = read_bytes(argv[1], &subset_size);

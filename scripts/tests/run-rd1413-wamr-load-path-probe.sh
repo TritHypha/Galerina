@@ -66,6 +66,7 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$host_src/wamr_secrets_gateway_host.c" \
   "$host_src/wamr_import_admission.c" \
   "$host_src/wamr_sha256.c" \
+  "$host_src/wamr_vok_verdict.c" \
   -Wl,--wrap=wasm_runtime_get_import_count \
   -Wl,--wrap=wasm_runtime_get_import_type \
   -Wl,--wrap=wasm_runtime_instantiate \
@@ -80,4 +81,5 @@ gcc -std=c11 -Wall -Wextra -Werror \
   "$temp_dir/superset.wasm" \
   "$temp_dir/duplicate.wasm" \
   "$temp_dir/mismatch.wasm" \
-  "$temp_dir/nonfunction.wasm"
+  "$temp_dir/nonfunction.wasm" \
+  "$temp_dir"

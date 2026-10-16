@@ -1,5 +1,6 @@
 #include "wamr_secrets_gateway_host.h"
 #include "wamr_sha256.h"
+#include "wamr_vok_verdict.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,6 +169,8 @@ const char *wamr_secrets_gateway_result_name(wamr_secrets_gateway_result_t resul
             return "ARTIFACT_MISMATCH";
         case WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING:
             return "ARTIFACT_DIGEST_MISSING";
+        case WAMR_SECRETS_GATEWAY_VERDICT_REFUSED:
+            return "VERDICT_REFUSED";
         default:
             return "UNKNOWN";
     }
@@ -442,38 +445,85 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
                          diagnostic_capacity);
 }
 
+static wamr_secrets_gateway_result_t map_verdict_bind(int bind)
+{
+    switch (bind) {
+        case WAMR_VOK_BIND_OK:
+            return WAMR_SECRETS_GATEWAY_VALID;
+        case WAMR_VOK_BIND_INVALID:
+            return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+        case WAMR_VOK_BIND_MISSING:
+            return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
+        case WAMR_VOK_BIND_MISMATCH:
+            return WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH;
+        default:
+            return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
+}
+
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
     uint32_t size,
-    const uint8_t expected_digest[32],
+    const char *envelope_path,
+    const char *seal_path,
     wamr_secrets_gateway_loaded_t *out,
-    uint8_t vok_digest[32],
     char *diagnostic,
     size_t diagnostic_capacity)
 {
-    wamr_secrets_gateway_result_t result;
+    wamr_vok_envelope_t envelope;
+    wamr_vok_wax_seal_t seal;
+    int bind;
+    wamr_secrets_gateway_result_t mapped;
+    uint8_t computed[32];
 
-    if (vok_digest != NULL) {
-        memset(vok_digest, 0, 32);
-    }
-    if (expected_digest == NULL) {
+    memset(computed, 0, sizeof(computed));
+    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+        if (out != NULL) {
+            clear_out_fields(out);
+        }
         if (diagnostic != NULL && diagnostic_capacity > 0) {
             diagnostic[0] = '\0';
             set_code_diagnostic(diagnostic, diagnostic_capacity,
                                 WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
         }
-        if (out != NULL) {
-            clear_out_fields(out);
-        }
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
-    result = load_internal(buf, size, expected_digest, out, diagnostic,
-                           diagnostic_capacity);
-    if (vok_digest != NULL && result == WAMR_SECRETS_GATEWAY_VALID &&
-        out != NULL && !digest_is_zero(out->artifact_digest)) {
-        memcpy(vok_digest, out->artifact_digest, 32);
+    diagnostic[0] = '\0';
+    clear_out_fields(out);
+    if (envelope_path == NULL || seal_path == NULL) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
-    return result;
+    if (buf == NULL || size == 0) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+
+    bind = wamr_vok_parse_envelope_file(envelope_path, &envelope);
+    if (bind != WAMR_VOK_BIND_OK) {
+        mapped = map_verdict_bind(bind);
+        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped,
+                            "envelope");
+        return mapped;
+    }
+    bind = wamr_vok_parse_seal_file(seal_path, &seal);
+    if (bind != WAMR_VOK_BIND_OK) {
+        mapped = map_verdict_bind(bind);
+        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped, "seal");
+        return mapped;
+    }
+
+    bind = wamr_vok_bind_bytes(buf, (size_t)size, &envelope, &seal);
+    mapped = map_verdict_bind(bind);
+    if (mapped != WAMR_SECRETS_GATEWAY_VALID) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped, NULL);
+        return mapped;
+    }
+    memcpy(computed, envelope.component_digest, sizeof(computed));
+    return load_internal(buf, size, computed, out, diagnostic,
+                         diagnostic_capacity);
 }
 
 bool wamr_secrets_gateway_copy_artifact_digest(

@@ -46,7 +46,8 @@ typedef enum {
     WAMR_SECRETS_GATEWAY_LOAD_FAILED = 8,
     WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED = 9,
     WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH = 10,
-    WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING = 11
+    WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING = 11,
+    WAMR_SECRETS_GATEWAY_VERDICT_REFUSED = 12
 } wamr_secrets_gateway_result_t;
 
 typedef struct {
@@ -103,18 +104,20 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_expected(
     size_t diagnostic_capacity);
 
 /*
- * Production secret/artifact load. expected_digest is mandatory (NULL is
- * INVALID_ARGUMENT; all-zero is ARTIFACT_DIGEST_MISSING). vok_digest may be
- * NULL (no digest copy; VOK handoff uses the opaque-handle glue). When
- * non-NULL, it is zeroed first, receives the 32-byte SHA-256 only on VALID,
- * and remains zero on any refusal. Module bytes are never copied out.
+ * Production secret/artifact load. envelope_path and seal_path are
+ * mandatory files from the out-of-process Rust verifier. NULL paths are
+ * INVALID_ARGUMENT. A missing file or all-zero componentDigest is
+ * ARTIFACT_DIGEST_MISSING. The host independently SHA-256s a snapshot of
+ * buf[0..size) and binds that digest to the Envelope before
+ * wasm_runtime_load. Module bytes are never copied out. This translation
+ * unit does not link or call Rust.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
     uint32_t size,
-    const uint8_t expected_digest[32],
+    const char *envelope_path,
+    const char *seal_path,
     wamr_secrets_gateway_loaded_t *out,
-    uint8_t vok_digest[32],
     char *diagnostic,
     size_t diagnostic_capacity);
 
