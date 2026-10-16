@@ -1006,8 +1006,17 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (secretReleaseFinalized) return;
         secretReleaseFinalized = true;
         if (!secretAccessSpent) return;
-        if (ok) secretGate.acknowledge(releaseOperationId);
-        else secretGate.noteUnknown(releaseOperationId);
+        try {
+          if (ok) secretGate.acknowledge(releaseOperationId);
+          else secretGate.noteUnknown(releaseOperationId);
+        } catch {
+          try {
+            secretGate.noteUnknown(releaseOperationId);
+          } catch {
+            // fail closed: never acknowledged
+          }
+          throw new Error("GALERINA_SECRET_ACKNOWLEDGE_FAILED");
+        }
       };
       if (secretReleaseSlot !== undefined) secretReleaseSlot.finalize = finalizeSecretRelease;
       const terminalOutcome = (response: GalerinaKernelResponse): PipelineOutcome =>
