@@ -1,3 +1,11 @@
+/*
+ * Authenticated Signet / Grant / Wax Seal host (Gate 1).
+ *
+ * Consumed grants live in process memory only (`consumed` Set). A host
+ * built after a restart has no consume record: prior grants are UNKNOWN
+ * and must never be treated as unused. restartHost() clears the consume
+ * set and advances epoch so leftover grants refuse as UNKNOWN.
+ */
 import { createHash, generateKeyPairSync, randomBytes, sign as ed25519Sign, verify as ed25519Verify } from "node:crypto";
 import { types as utilTypes } from "node:util";
 import { TRIT } from "./result-model.mjs";
@@ -289,6 +297,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     guardGrantKind(value?.kind);
     const { payload } = authenticateGrant(value);
     if (payload.action !== requested) throw new TypeError("grant action mismatch");
+    if (payload.epoch !== epoch) throw new TypeError("grant state UNKNOWN"); /* GATE1_GUARD_RESTART */
     if (payload.profileDigest !== currentProfileDigest()) {
       throw new TypeError("grant profile does not match current host");
     }
@@ -350,12 +359,20 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     return epoch;
   }
 
+  function restartHost() {
+    consumed.clear();
+    if (epoch === Number.MAX_SAFE_INTEGER) throw new RangeError("host context epoch is exhausted");
+    epoch += 1; /* GATE1_GUARD_RESTART */
+    return epoch;
+  }
+
   return Object.freeze({
     publicVerifyingKeyHex: publicKeyHex,
     issueGrant,
     applyGrant,
     classifySeal,
     rotateContext,
+    restartHost,
     currentEpoch() {
       return epoch;
     },

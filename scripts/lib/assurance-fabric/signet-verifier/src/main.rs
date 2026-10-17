@@ -176,3 +176,65 @@ fn main() -> ExitCode {
         Err(_) => emit(-1, "TAMPER", 1),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ed25519_dalek::{Signer, SigningKey};
+
+    #[test]
+    fn hex_decode_wrong_length() {
+        assert!(hex_decode("ab", 32).is_none());
+        assert!(hex_decode(&"ab".repeat(31), 32).is_none());
+        assert!(hex_decode(&"ab".repeat(33), 32).is_none());
+    }
+
+    #[test]
+    fn hex_decode_odd_and_non_hex() {
+        assert!(hex_decode("abc", 2).is_none());
+        assert!(hex_decode("zz", 1).is_none());
+        assert!(hex_decode("AG", 1).is_none());
+        assert_eq!(hex_decode("ab", 1), Some(vec![0xab]));
+    }
+
+    #[test]
+    fn exact_keys_missing_and_extra() {
+        let mut obj = Map::new();
+        obj.insert("a".to_string(), Value::from("1"));
+        assert!(!exact_keys(&obj, &["a", "b"]));
+        obj.insert("b".to_string(), Value::from("2"));
+        assert!(exact_keys(&obj, &["a", "b"]));
+        obj.insert("c".to_string(), Value::from("3"));
+        assert!(!exact_keys(&obj, &["a", "b"]));
+    }
+
+    #[test]
+    fn canonical_object_orders_keys() {
+        let mut obj = Map::new();
+        obj.insert("b".to_string(), Value::from(1));
+        obj.insert("a".to_string(), Value::from(2));
+        assert_eq!(canonical_object(&obj).unwrap(), "{\"a\":2,\"b\":1}");
+    }
+
+    #[test]
+    fn framed_domain_separation() {
+        let left = framed("ab", "cd");
+        let right = framed("a", "bcd");
+        assert_ne!(left, right);
+        assert_eq!(left, b"2:ab2:cd");
+        assert_eq!(right, b"1:a3:bcd");
+    }
+
+    #[test]
+    fn signature_valid_and_invalid_synthetic_key() {
+        let signing = SigningKey::from_bytes(&[7u8; 32]);
+        let verifying = signing.verifying_key();
+        let message = framed(GRANT_DOMAIN, "{\"kind\":\"GRANT\"}");
+        let good = signing.sign(&message);
+        assert!(verifying.verify(&message, &good).is_ok());
+        let mut tampered = good.to_bytes();
+        tampered[0] ^= 1;
+        let bad = Signature::from_slice(&tampered).expect("64-byte signature");
+        assert!(verifying.verify(&message, &bad).is_err());
+    }
+}

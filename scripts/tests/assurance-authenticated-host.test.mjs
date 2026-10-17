@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { pathToFileURL } from "node:url";
 import { TRIT } from "../lib/assurance-fabric/result-model.mjs";
-import { spawnSignetVerifier } from "../lib/assurance-fabric/signet-verifier-spawn.mjs";
+import {
+  execPinnedVerifierBytes,
+  loadPinnedVerifierBytes,
+  resetSealedSpawnCount,
+  spawnSignetVerifier,
+  takeSealedSpawnCount,
+} from "../lib/assurance-fabric/signet-verifier-spawn.mjs";
 
 const hostModuleUrl = process.env.GATE1_HOST_MODULE
   ? pathToFileURL(process.env.GATE1_HOST_MODULE).href
@@ -147,8 +153,31 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const staleSink = createEffectSink();
     const staleGrant = staleHost.issueGrant(envelope, SYNTHETIC_ACTION);
     staleHost.rotateContext();
-    assert.throws(() => staleHost.applyGrant(staleGrant, SYNTHETIC_ACTION, staleSink), /expired|previous epoch|profile/);
+    assert.throws(() => staleHost.applyGrant(staleGrant, SYNTHETIC_ACTION, staleSink), /expired|previous epoch|profile|UNKNOWN/);
     assert.equal(staleSink.count, 0);
+  });
+
+  it("restart refuses prior grants as UNKNOWN and never as unused", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    host.applyGrant(grant, SYNTHETIC_ACTION, sink);
+    assert.equal(sink.count, 1);
+    host.restartHost();
+    const afterConsume = createEffectSink();
+    assert.throws(() => host.applyGrant(grant, SYNTHETIC_ACTION, afterConsume), /UNKNOWN/);
+    assert.equal(afterConsume.count, 0);
+
+    const fresh = createAuthenticatedAssuranceHost(config);
+    const unused = fresh.issueGrant(envelope, SYNTHETIC_ACTION);
+    fresh.restartHost();
+    const unusedSink = createEffectSink();
+    assert.throws(() => fresh.applyGrant(unused, SYNTHETIC_ACTION, unusedSink), /UNKNOWN/);
+    assert.equal(unusedSink.count, 0);
+    const replacement = fresh.issueGrant(envelope, SYNTHETIC_ACTION);
+    const okSink = createEffectSink();
+    fresh.applyGrant(replacement, SYNTHETIC_ACTION, okSink);
+    assert.equal(okSink.count, 1);
   });
 
   it("positive control: one effect and verifier-accepted seal; missing seal is 0", () => {
@@ -244,5 +273,73 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.equal(unavailable.authorizing, false);
     assert.equal(unavailable.trit, 0, unavailable.reason);
     assert.notEqual(unavailable.trit, 1);
+  });
+
+  it("malformed headers refuse before spawn", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const cases = [
+      { ...grant, extra: true },
+      (() => { const missing = { ...grant }; delete missing.grantId; return missing; })(),
+      { ...grant, signature: grant.signature.slice(0, 8) },
+      { ...grant, envelopeDigest: "not-a-digest" },
+      { ...grant, kind: "OTHER" },
+      "not-an-object",
+    ];
+    for (const statement of cases) {
+      resetSealedSpawnCount();
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement,
+      });
+      assert.equal(verdict.authorizing, false);
+      assert.equal(verdict.trit, -1, verdict.reason);
+      assert.notEqual(verdict.trit, 1);
+      assert.equal(takeSealedSpawnCount(), 0, verdict.reason);
+    }
+    resetSealedSpawnCount();
+    const oversized = { ...grant, action: "x".repeat(20_000) };
+    const tooLarge = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: oversized,
+    });
+    assert.equal(tooLarge.trit, -1);
+    assert.equal(tooLarge.reason, "HEADER_TOO_LARGE");
+    assert.equal(takeSealedSpawnCount(), 0);
+  });
+
+  it("on-disk swap after hash still runs the pinned bytes", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const body = `${JSON.stringify({
+      schema: "galerina.signet.verify.v1",
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    })}\n`;
+    const dir = mkdtempSync(join(tmpdir(), "gate1-swap-"));
+    const tmp = join(dir, "verifier");
+    copyFileSync(verifierPath, tmp);
+    chmodSync(tmp, 0o755);
+    const loaded = loadPinnedVerifierBytes(tmp, pin);
+    assert.equal(loaded.ok, true);
+    writeFileSync(tmp, "gate1-swapped-decoy\n");
+    chmodSync(tmp, 0o755);
+    const verdict = execPinnedVerifierBytes(loaded.bytes, {
+      expectedSha256Hex: pin,
+      verifierPath: tmp,
+      input: body,
+    });
+    assert.equal(verdict.authorizing, false);
+    assert.equal(verdict.trit, 1, verdict.reason);
   });
 });
