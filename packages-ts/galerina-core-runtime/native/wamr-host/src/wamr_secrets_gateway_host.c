@@ -1,6 +1,9 @@
 #include "wamr_secrets_gateway_host.h"
+#include "wamr_sha256.h"
+#include "wamr_vok_verdict.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*
@@ -162,6 +165,12 @@ const char *wamr_secrets_gateway_result_name(wamr_secrets_gateway_result_t resul
             return "LOAD_FAILED";
         case WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED:
             return "INSTANTIATE_FAILED";
+        case WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH:
+            return "ARTIFACT_MISMATCH";
+        case WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING:
+            return "ARTIFACT_DIGEST_MISSING";
+        case WAMR_SECRETS_GATEWAY_VERDICT_REFUSED:
+            return "VERDICT_REFUSED";
         default:
             return "UNKNOWN";
     }
@@ -197,6 +206,46 @@ static void set_code_diagnostic(char *diagnostic, size_t capacity,
     }
 }
 
+static int digest_is_zero(const uint8_t digest[32])
+{
+    uint8_t acc = 0;
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        acc |= digest[i];
+    }
+    return acc == 0;
+}
+
+static int digest_eq_ct(const uint8_t left[32], const uint8_t right[32])
+{
+    uint8_t acc = 0;
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        acc |= (uint8_t)(left[i] ^ right[i]);
+    }
+    return acc == 0;
+}
+
+static void zero_digest(wamr_secrets_gateway_loaded_t *loaded)
+{
+    if (loaded != NULL) {
+        memset(loaded->artifact_digest, 0, sizeof(loaded->artifact_digest));
+    }
+}
+
+static void wipe_bytes(void *p, size_t n) __attribute__((unused));
+static void wipe_bytes(void *p, size_t n)
+{
+    volatile uint8_t *cur = (volatile uint8_t *)p;
+    size_t i;
+    if (p == NULL || n == 0) {
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        cur[i] = 0;
+    }
+}
+
 static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
 {
     if (loaded == NULL) {
@@ -210,6 +259,14 @@ static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
         wasm_runtime_unload(loaded->module);
         loaded->module = NULL;
     }
+    if (loaded->owned_snapshot != NULL) {
+        /* SNAPSHOT_WIPE */
+        wipe_bytes(loaded->owned_snapshot, loaded->owned_snapshot_size);
+        free(loaded->owned_snapshot);
+        loaded->owned_snapshot = NULL;
+        loaded->owned_snapshot_size = 0;
+    }
+    zero_digest(loaded);
 }
 
 static wamr_secrets_gateway_result_t map_admission(wamr_import_abi_result_t admission)
@@ -236,21 +293,60 @@ static wamr_secrets_gateway_result_t map_admission(wamr_import_abi_result_t admi
     }
 }
 
-wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
-    uint8_t *buf,
+static void clear_out_fields(wamr_secrets_gateway_loaded_t *out)
+{
+    out->module = NULL;
+    out->instance = NULL;
+    out->owned_snapshot = NULL;
+    out->owned_snapshot_size = 0;
+    zero_digest(out);
+}
+
+/* WAMR AOT little-endian magic 0x746f6100 is the four bytes NUL,'a','o','t'.
+ * The authority path refuses AOT rather than enabling WAMR's optional
+ * AOT validator (off by default in the documented 2.4.5 build). */
+static int snapshot_is_wamr_aot(const uint8_t *snapshot, uint32_t size)
+{
+    static const uint8_t k_aot[4] = { 0x00, 0x61, 0x6f, 0x74 };
+    if (snapshot == NULL || size < 4u) {
+        return 0;
+    }
+    return snapshot[0] == k_aot[0] && snapshot[1] == k_aot[1] &&
+           snapshot[2] == k_aot[2] && snapshot[3] == k_aot[3];
+}
+
+static int snapshot_is_wasm_bytecode(const uint8_t *snapshot, uint32_t size)
+{
+    static const uint8_t k_wasm[4] = { 0x00, 0x61, 0x73, 0x6d };
+    if (snapshot == NULL || size < 4u) {
+        return 0;
+    }
+    return snapshot[0] == k_wasm[0] && snapshot[1] == k_wasm[1] &&
+           snapshot[2] == k_wasm[2] && snapshot[3] == k_wasm[3];
+}
+
+static wamr_secrets_gateway_result_t load_owned_snapshot(
+    uint8_t *snapshot,
     uint32_t size,
+    const uint8_t *expected_digest,
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity)
 {
     char error[256];
     char admission_diag[256];
+    uint8_t computed[32];
     wasm_module_t module;
     wasm_module_inst_t instance;
     wamr_import_abi_result_t admission;
     wamr_secrets_gateway_result_t result;
 
-    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+    memset(computed, 0, sizeof(computed));
+    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL ||
+        snapshot == NULL || size == 0 || out->owned_snapshot != snapshot) {
+        if (out != NULL) {
+            release_loaded(out);
+        }
         if (diagnostic != NULL && diagnostic_capacity > 0) {
             diagnostic[0] = '\0';
             set_code_diagnostic(diagnostic, diagnostic_capacity,
@@ -258,20 +354,31 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
         }
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
-    diagnostic[0] = '\0';
-    out->module = NULL;
-    out->instance = NULL;
-    if (buf == NULL || size == 0) {
+    out->owned_snapshot_size = (size_t)size;
+    if (expected_digest == NULL || digest_is_zero(expected_digest)) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
-                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
-        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
+    }
+
+    wamr_sha256(snapshot, (size_t)size, computed);
+    if (digest_is_zero(computed) ||
+        !digest_eq_ct(computed, expected_digest)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH, NULL);
+        memset(computed, 0, sizeof(computed));
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH;
     }
 
     error[0] = '\0';
-    module = wasm_runtime_load(buf, size, error, sizeof(error));
+    module = wasm_runtime_load(snapshot, size, error, sizeof(error));
     if (module == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_LOAD_FAILED, error);
+        memset(computed, 0, sizeof(computed));
+        release_loaded(out);
         return WAMR_SECRETS_GATEWAY_LOAD_FAILED;
     }
     out->module = module;
@@ -284,6 +391,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
         result = map_admission(admission);
         set_code_diagnostic(diagnostic, diagnostic_capacity, result,
                             admission_diag);
+        memset(computed, 0, sizeof(computed));
         release_loaded(out);
         return result;
     }
@@ -295,13 +403,148 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     if (instance == NULL) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED, error);
+        memset(computed, 0, sizeof(computed));
         release_loaded(out);
         return WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED;
     }
     out->instance = instance;
+    memcpy(out->artifact_digest, computed, sizeof(out->artifact_digest));
+    memset(computed, 0, sizeof(computed));
     set_code_diagnostic(diagnostic, diagnostic_capacity, WAMR_SECRETS_GATEWAY_VALID,
                         admission_diag);
     return WAMR_SECRETS_GATEWAY_VALID;
+}
+
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
+    uint8_t *buf,
+    uint32_t size,
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    (void)buf;
+    (void)size;
+    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+        if (out != NULL) {
+            clear_out_fields(out);
+        }
+        if (diagnostic != NULL && diagnostic_capacity > 0) {
+            diagnostic[0] = '\0';
+            set_code_diagnostic(diagnostic, diagnostic_capacity,
+                                WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        }
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    diagnostic[0] = '\0';
+    clear_out_fields(out);
+    set_code_diagnostic(diagnostic, diagnostic_capacity,
+                        WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);
+    return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
+}
+
+static wamr_secrets_gateway_result_t map_verdict_bind(int bind)
+{
+    switch (bind) {
+        case WAMR_VOK_BIND_OK:
+            return WAMR_SECRETS_GATEWAY_VALID;
+        case WAMR_VOK_BIND_INVALID:
+            return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+        case WAMR_VOK_BIND_MISSING:
+            return WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING;
+        case WAMR_VOK_BIND_MISMATCH:
+            return WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH;
+        default:
+            return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
+}
+
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
+    uint8_t *buf,
+    uint32_t size,
+    const char *verifier_path,
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    wamr_vok_envelope_t envelope;
+    wamr_vok_wax_seal_t seal;
+    int bind;
+    wamr_secrets_gateway_result_t mapped;
+    uint8_t *snapshot;
+
+    if (diagnostic == NULL || diagnostic_capacity == 0 || out == NULL) {
+        if (out != NULL) {
+            clear_out_fields(out);
+        }
+        if (diagnostic != NULL && diagnostic_capacity > 0) {
+            diagnostic[0] = '\0';
+            set_code_diagnostic(diagnostic, diagnostic_capacity,
+                                WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        }
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    diagnostic[0] = '\0';
+    clear_out_fields(out);
+    if (verifier_path == NULL) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+    if (buf == NULL || size == 0) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT, NULL);
+        return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
+    }
+
+    snapshot = (uint8_t *)malloc((size_t)size);
+    if (snapshot == NULL) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_LOAD_FAILED, NULL);
+        return WAMR_SECRETS_GATEWAY_LOAD_FAILED;
+    }
+    memcpy(snapshot, buf, (size_t)size);
+    out->owned_snapshot = snapshot;
+    out->owned_snapshot_size = (size_t)size;
+
+    if (snapshot_is_wamr_aot(snapshot, size)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_VERDICT_REFUSED, "AOT_REFUSED");
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
+    if (!snapshot_is_wasm_bytecode(snapshot, size)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_VERDICT_REFUSED,
+                            "BYTECODE_REQUIRED");
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
+
+    bind = wamr_vok_spawn_and_bind(verifier_path, snapshot, (size_t)size,
+                                   &envelope, &seal);
+    mapped = map_verdict_bind(bind);
+    if (mapped != WAMR_SECRETS_GATEWAY_VALID) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity, mapped,
+                            "pinned-child");
+        release_loaded(out);
+        return mapped;
+    }
+    return load_owned_snapshot(snapshot, size, envelope.component_digest, out,
+                               diagnostic, diagnostic_capacity);
+}
+
+bool wamr_secrets_gateway_copy_artifact_digest(
+    const wamr_secrets_gateway_loaded_t *loaded,
+    uint8_t out[32])
+{
+    if (loaded == NULL || out == NULL || digest_is_zero(loaded->artifact_digest)) {
+        if (out != NULL) {
+            memset(out, 0, 32);
+        }
+        return false;
+    }
+    memcpy(out, loaded->artifact_digest, 32);
+    return true;
 }
 
 void wamr_secrets_gateway_release(wamr_secrets_gateway_loaded_t *loaded)

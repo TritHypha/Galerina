@@ -5,18 +5,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "wasm_export.h"
 #include "wamr_secrets_gateway_host.h"
+#include "wamr_sha256.h"
+#include "rd1413-wamr-load-path-test-host.h"
 
 #define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
+
+static const char *g_verifier;
 
 extern unsigned rd1413_load_path_instantiate_calls;
 extern unsigned rd1413_load_path_unload_calls;
 extern unsigned rd1413_load_path_deinstantiate_calls;
 extern unsigned rd1413_load_path_import_count_calls;
 extern unsigned rd1413_load_path_import_type_calls;
+extern size_t rd1413_track_wipe_size;
+extern unsigned rd1413_wipe_ok_frees;
+extern unsigned rd1413_wipe_dirty_frees;
+extern unsigned rd1413_add_seals_full_calls;
+extern unsigned rd1413_get_seals_calls;
 extern void rd1413_load_path_reset(void);
+
+static int expect_snapshot_wiped(const char *label);
+static int expect_seals_applied(const char *label);
 
 static uint8_t *read_bytes(const char *path, uint32_t *size)
 {
@@ -51,6 +64,63 @@ static uint8_t *read_bytes(const char *path, uint32_t *size)
     return bytes;
 }
 
+static int digest_field_zero(const wamr_secrets_gateway_loaded_t *loaded)
+{
+    uint8_t copy[32];
+    return !wamr_secrets_gateway_copy_artifact_digest(loaded, copy);
+}
+
+static int hex_nibble(char ch)
+{
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    }
+    if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    }
+    if (ch >= 'A' && ch <= 'F') {
+        return ch - 'A' + 10;
+    }
+    return -1;
+}
+
+static int parse_sha256_hex(const char *hex, uint8_t out[32])
+{
+    size_t i;
+    if (hex == NULL || strlen(hex) != 64) {
+        return 0;
+    }
+    for (i = 0; i < 32; i++) {
+        int hi = hex_nibble(hex[i * 2u]);
+        int lo = hex_nibble(hex[i * 2u + 1u]);
+        if (hi < 0 || lo < 0) {
+            return 0;
+        }
+        out[i] = (uint8_t)((hi << 4) | lo);
+    }
+    return 1;
+}
+
+static int expect_bytes(const uint8_t *got, const uint8_t *want, const char *label)
+{
+    if (memcmp(got, want, 32) != 0) {
+        fprintf(stderr, "%s: digest mismatch\n", label);
+        return 0;
+    }
+    return 1;
+}
+
+static wamr_secrets_gateway_result_t load_with_authority(
+    uint8_t *bytes,
+    uint32_t size,
+    wamr_secrets_gateway_loaded_t *loaded,
+    char *diagnostic,
+    size_t diagnostic_capacity)
+{
+    return wamr_secrets_gateway_load_for_authority(
+        bytes, size, g_verifier, loaded, diagnostic, diagnostic_capacity);
+}
+
 static int expect_refusal(const char *path,
                           wamr_secrets_gateway_result_t expected,
                           unsigned expect_unload,
@@ -69,9 +139,10 @@ static int expect_refusal(const char *path,
     }
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
-                                       sizeof(diagnostic));
-    if (result != expected || loaded.module != NULL || loaded.instance != NULL) {
+    result = load_with_authority(bytes, size, &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != expected || loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded)) {
         fprintf(stderr,
                 "%s: expected %s with empty loaded state, got %s module=%p instance=%p diag=%s\n",
                 label, wamr_secrets_gateway_result_name(expected),
@@ -105,13 +176,18 @@ static int expect_refusal(const char *path,
     return 1;
 }
 
-static int expect_admitted(const char *path, const char *label)
+static int expect_admitted(const char *path, const char *label,
+                           const char *sha256_env)
 {
     uint32_t size = 0;
     uint8_t *bytes = read_bytes(path, &size);
     char diagnostic[256];
     wamr_secrets_gateway_loaded_t loaded;
     wamr_secrets_gateway_result_t result;
+    uint8_t expected[32];
+    uint8_t got[32];
+    uint8_t from_env[32];
+    const char *hex;
 
     if (bytes == NULL) {
         fprintf(stderr, "%s: could not read fixture\n", label);
@@ -119,8 +195,10 @@ static int expect_admitted(const char *path, const char *label)
     }
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
-                                       sizeof(diagnostic));
+    wamr_sha256(bytes, (size_t)size, expected);
+    rd1413_track_wipe_size = (size_t)size;
+    result = load_with_authority(bytes, size, &loaded, diagnostic,
+                                 sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
         loaded.instance == NULL) {
         fprintf(stderr, "%s: expected VALID instance, got %s diag=%s\n", label,
@@ -138,17 +216,102 @@ static int expect_admitted(const char *path, const char *label)
         free(bytes);
         return 0;
     }
-    wamr_secrets_gateway_release(&loaded);
-    if (loaded.module != NULL || loaded.instance != NULL ||
-        rd1413_load_path_deinstantiate_calls != 1 ||
-        rd1413_load_path_unload_calls != 1) {
-        fprintf(stderr, "%s: release did not deinstantiate+unload once\n", label);
+    if (!wamr_secrets_gateway_copy_artifact_digest(&loaded, got) ||
+        !expect_bytes(got, expected, label)) {
+        fprintf(stderr, "%s: accessor digest mismatch vs pre-load hash\n", label);
+        wamr_secrets_gateway_release(&loaded);
         free(bytes);
         return 0;
     }
-    printf("PASS: %s load VALID instantiate=1 then deinstantiate+unload once\n",
+    hex = getenv(sha256_env);
+    if (hex == NULL || !parse_sha256_hex(hex, from_env) ||
+        !expect_bytes(got, from_env, label)) {
+        fprintf(stderr, "%s: sha256sum env %s mismatch\n", label, sha256_env);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        return 0;
+    }
+    wamr_secrets_gateway_release(&loaded);
+    if (loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_deinstantiate_calls != 1 ||
+        rd1413_load_path_unload_calls != 1) {
+        fprintf(stderr,
+                "%s: release did not deinstantiate+unload once with zero digest\n",
+                label);
+        free(bytes);
+        return 0;
+    }
+    if (!expect_snapshot_wiped(label) || !expect_seals_applied(label)) {
+        free(bytes);
+        return 0;
+    }
+    printf("PASS: %s load VALID instantiate=1 digest matches sha256sum then deinstantiate+unload once\n",
            label);
     free(bytes);
+    return 1;
+}
+
+static int check_sha256_kat(void)
+{
+    uint8_t out[32];
+    uint8_t want[32];
+    uint8_t *million;
+    static const char k_empty[] =
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    static const char k_abc[] =
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+    static const char k_two_block[] =
+        "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1";
+    static const char k_million_a[] =
+        "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0";
+    static const uint8_t k_two_block_msg[] =
+        "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+
+    if (!parse_sha256_hex(k_empty, want)) {
+        fprintf(stderr, "kat: empty vector parse failed\n");
+        return 0;
+    }
+    wamr_sha256((const uint8_t *)"", 0, out);
+    if (!expect_bytes(out, want, "kat empty")) {
+        return 0;
+    }
+
+    if (!parse_sha256_hex(k_abc, want)) {
+        fprintf(stderr, "kat: abc vector parse failed\n");
+        return 0;
+    }
+    wamr_sha256((const uint8_t *)"abc", 3, out);
+    if (!expect_bytes(out, want, "kat abc")) {
+        return 0;
+    }
+
+    if (!parse_sha256_hex(k_two_block, want)) {
+        fprintf(stderr, "kat: 448-bit vector parse failed\n");
+        return 0;
+    }
+    wamr_sha256(k_two_block_msg, sizeof(k_two_block_msg) - 1u, out);
+    if (!expect_bytes(out, want, "kat 448-bit two-block")) {
+        return 0;
+    }
+
+    million = (uint8_t *)malloc(1000000u);
+    if (million == NULL) {
+        fprintf(stderr, "kat: million-a alloc failed\n");
+        return 0;
+    }
+    memset(million, 'a', 1000000u);
+    if (!parse_sha256_hex(k_million_a, want)) {
+        fprintf(stderr, "kat: million-a vector parse failed\n");
+        free(million);
+        return 0;
+    }
+    wamr_sha256(million, 1000000u, out);
+    free(million);
+    if (!expect_bytes(out, want, "kat million-a")) {
+        return 0;
+    }
+    puts("PASS: SHA-256 KAT empty/abc/448-bit/million-a");
     return 1;
 }
 
@@ -162,10 +325,10 @@ static int check_invalid_argument(void)
     rd1413_load_path_reset();
     result = wamr_secrets_gateway_load(NULL, 1, &loaded, diagnostic,
                                        sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
         rd1413_load_path_instantiate_calls != 0 ||
-        rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "null buf must be INVALID_ARGUMENT without load\n");
+        rd1413_load_path_unload_calls != 0 || !digest_field_zero(&loaded)) {
+        fprintf(stderr, "digestless load must be ARTIFACT_DIGEST_MISSING without load\n");
         return 0;
     }
     result = wamr_secrets_gateway_load(buf, 1, NULL, diagnostic, sizeof(diagnostic));
@@ -178,6 +341,260 @@ static int check_invalid_argument(void)
     return 1;
 }
 
+static void poison_loaded(wamr_secrets_gateway_loaded_t *loaded)
+{
+    memset(loaded, 0x5a, sizeof(*loaded));
+    loaded->module = (wasm_module_t)(uintptr_t)0x1111u;
+    loaded->instance = (wasm_module_inst_t)(uintptr_t)0x2222u;
+    loaded->owned_snapshot = NULL;
+    loaded->owned_snapshot_size = 0;
+}
+
+static int expect_snapshot_wiped(const char *label)
+{
+    if (rd1413_wipe_ok_frees < 1u) {
+        fprintf(stderr, "%s: snapshot free was not wiped (ok=%u dirty=%u)\n",
+                label, rd1413_wipe_ok_frees, rd1413_wipe_dirty_frees);
+        return 0;
+    }
+    return 1;
+}
+
+static int expect_seals_applied(const char *label)
+{
+    if (rd1413_add_seals_full_calls < 1u || rd1413_get_seals_calls < 1u) {
+        fprintf(stderr, "%s: F_ADD_SEALS=%u F_GET_SEALS=%u\n", label,
+                rd1413_add_seals_full_calls, rd1413_get_seals_calls);
+        return 0;
+    }
+    return 1;
+}
+
+static int check_invalid_diagnostic_zeros_out(void)
+{
+    wamr_secrets_gateway_loaded_t loaded;
+    uint8_t buf[1] = { 0 };
+    wamr_secrets_gateway_result_t result;
+    char unused[1];
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load(buf, 1, &loaded, NULL, 64);
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "NULL diagnostic must INVALID_ARGUMENT and zero out\n");
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    unused[0] = 'x';
+    result = wamr_secrets_gateway_load(buf, 1, &loaded, unused, 0);
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "zero-capacity diagnostic must INVALID_ARGUMENT and zero out\n");
+        return 0;
+    }
+    puts("PASS: invalid diagnostic zeros out before INVALID_ARGUMENT");
+    return 1;
+}
+
+static int check_digestless_public_load(uint8_t *bytes, uint32_t size)
+{
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
+                                       sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "digestless public load must ARTIFACT_DIGEST_MISSING without instantiate: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    puts("PASS: public load hard-refuses without digest, instantiate=0");
+    return 1;
+}
+
+static int join_path(char *out, size_t cap, const char *dir, const char *name)
+{
+    return snprintf(out, cap, "%s/%s", dir, name) < (int)cap;
+}
+
+static int check_load_for_authority(const char *path,
+                                    const char *verdict_dir,
+                                    const char *verifier,
+                                    const char *evil_verifier)
+{
+    uint32_t size = 0;
+    uint8_t *bytes = read_bytes(path, &size);
+    uint8_t *original = NULL;
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t digest[32];
+    uint8_t got[32];
+    char missing_path[512];
+    char marker[512];
+    char preload[512];
+    const char *old_preload;
+
+    if (bytes == NULL || verdict_dir == NULL || verifier == NULL ||
+        evil_verifier == NULL) {
+        fprintf(stderr, "load_for_authority: could not read fixtures\n");
+        free(bytes);
+        return 0;
+    }
+    if (!join_path(missing_path, sizeof(missing_path), verdict_dir,
+                   "missing.txt") ||
+        !join_path(marker, sizeof(marker), verdict_dir, "preload-fired") ||
+        !join_path(preload, sizeof(preload), verdict_dir, "evil-preload.so")) {
+        free(bytes);
+        return 0;
+    }
+    original = (uint8_t *)malloc((size_t)size);
+    if (original == NULL) {
+        free(bytes);
+        return 0;
+    }
+    memcpy(original, bytes, (size_t)size);
+    wamr_sha256(original, (size_t)size, digest);
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, NULL, &loaded, diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "load_for_authority NULL verifier path must refuse\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, missing_path, &loaded, diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "load_for_authority missing verifier must MISSING\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    rd1413_track_wipe_size = (size_t)size;
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, evil_verifier, &loaded, diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        rd1413_load_path_instantiate_calls != 0) {
+        fprintf(stderr, "substituted verifier must VERDICT_REFUSED, got %s\n",
+                wamr_secrets_gateway_result_name(result));
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("substituted verifier")) {
+        free(bytes);
+        free(original);
+        return 0;
+    }
+
+    (void)unlink(marker);
+    old_preload = getenv("LD_PRELOAD");
+    if (setenv("WAMR_VOK_PRELOAD_MARKER", marker, 1) != 0 ||
+        setenv("LD_PRELOAD", preload, 1) != 0) {
+        fprintf(stderr, "could not set LD_PRELOAD\n");
+        free(bytes);
+        free(original);
+        return 0;
+    }
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    rd1413_track_wipe_size = (size_t)size;
+    result = wamr_secrets_gateway_load_for_authority(
+        bytes, size, verifier, &loaded, diagnostic, sizeof(diagnostic));
+    if (old_preload == NULL) {
+        unsetenv("LD_PRELOAD");
+    } else {
+        setenv("LD_PRELOAD", old_preload, 1);
+    }
+    unsetenv("WAMR_VOK_PRELOAD_MARKER");
+    if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
+        loaded.instance == NULL ||
+        rd1413_load_path_instantiate_calls != 1 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr, "load_for_authority VALID pinned child failed: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    if (access(marker, F_OK) == 0) {
+        fprintf(stderr, "child inherited LD_PRELOAD (marker fired)\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    if (loaded.owned_snapshot == NULL || loaded.owned_snapshot == bytes) {
+        fprintf(stderr, "owned snapshot is not a private copy of caller buf\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    memset(bytes, 0xaa, (size_t)size);
+    if (!wamr_secrets_gateway_copy_artifact_digest(&loaded, got) ||
+        memcmp(got, digest, 32) != 0) {
+        fprintf(stderr, "artifact digest drifted after caller-buf mutation\n");
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    wamr_secrets_gateway_release(&loaded);
+    if (!expect_snapshot_wiped("load_for_authority") ||
+        !expect_seals_applied("load_for_authority")) {
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    puts("PASS: load_for_authority spawns sealed-memfd child, empty envp, one snapshot");
+    free(bytes);
+    free(original);
+    return 1;
+}
+
 static int check_load_failed(void)
 {
     uint8_t junk[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
@@ -186,17 +603,193 @@ static int check_load_failed(void)
     wamr_secrets_gateway_result_t result;
 
     rd1413_load_path_reset();
-    result = wamr_secrets_gateway_load(junk, sizeof(junk), &loaded, diagnostic,
-                                       sizeof(diagnostic));
-    if (result != WAMR_SECRETS_GATEWAY_LOAD_FAILED || loaded.module != NULL ||
-        loaded.instance != NULL || rd1413_load_path_instantiate_calls != 0 ||
-        rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "garbage bytes must LOAD_FAILED without unload: %s\n",
+    rd1413_track_wipe_size = sizeof(junk);
+    result = load_with_authority(junk, sizeof(junk), &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED || loaded.module != NULL ||
+        loaded.instance != NULL || !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "BYTECODE_REQUIRED") == NULL) {
+        fprintf(stderr,
+                "garbage bytes must VERDICT_REFUSED BYTECODE_REQUIRED before spawn: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
         return 0;
     }
+    if (!expect_snapshot_wiped("unparseable bytes")) {
+        return 0;
+    }
     puts("PASS: load path refuses unparseable bytes, instantiate=0 unload=0");
+    return 1;
+}
+
+static int check_aot_refused(void)
+{
+    uint8_t aot[8] = { 0x00, 0x61, 0x6f, 0x74, 0x01, 0x00, 0x00, 0x00 };
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    rd1413_track_wipe_size = sizeof(aot);
+    result = load_with_authority(aot, sizeof(aot), &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "AOT_REFUSED") == NULL) {
+        fprintf(stderr,
+                "AOT prefix must VERDICT_REFUSED AOT_REFUSED before spawn: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("AOT prefix")) {
+        return 0;
+    }
+    puts("PASS: AOT prefix is VERDICT_REFUSED AOT_REFUSED before spawn or WAMR load");
+    return 1;
+}
+
+static int check_non_bytecode_refused(void)
+{
+    uint8_t native[8] = { 0x47, 0x56, 0x45, 0x4f, 0x00, 0x00, 0x00, 0x00 };
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    rd1413_track_wipe_size = sizeof(native);
+    result = load_with_authority(native, sizeof(native), &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "BYTECODE_REQUIRED") == NULL ||
+        strstr(diagnostic, "AOT_REFUSED") != NULL) {
+        fprintf(stderr,
+                "non-wasm non-AOT prefix must VERDICT_REFUSED BYTECODE_REQUIRED: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("non-wasm prefix")) {
+        return 0;
+    }
+    puts("PASS: non-wasm non-AOT prefix is VERDICT_REFUSED BYTECODE_REQUIRED before spawn");
+    return 1;
+}
+
+static int check_owned_mismatch(const char *path_a, const char *path_b,
+                                const char *label)
+{
+    uint32_t size_a = 0;
+    uint32_t size_b = 0;
+    uint8_t *bytes_a = read_bytes(path_a, &size_a);
+    uint8_t *bytes_b = read_bytes(path_b, &size_b);
+    uint8_t *snapshot = NULL;
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t digest_a[32];
+
+    if (bytes_a == NULL || bytes_b == NULL) {
+        fprintf(stderr, "%s: could not read fixtures\n", label);
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    snapshot = (uint8_t *)malloc((size_t)size_b);
+    if (snapshot == NULL) {
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    memcpy(snapshot, bytes_b, (size_t)size_b);
+    wamr_sha256(bytes_a, (size_t)size_a, digest_a);
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    rd1413_track_wipe_size = (size_t)size_b;
+    result = rd1413_test_load_owned_snapshot(snapshot, size_b, digest_a, &loaded,
+                                             diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "%s: expected ARTIFACT_MISMATCH instantiate=0 unload=0, got %s diag=%s instantiate=%u unload=%u\n",
+                label, wamr_secrets_gateway_result_name(result), diagnostic,
+                rd1413_load_path_instantiate_calls,
+                rd1413_load_path_unload_calls);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    if (!expect_snapshot_wiped(label)) {
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    printf("PASS: %s ARTIFACT_MISMATCH instantiate=0 unload=0\n", label);
+    free(bytes_a);
+    free(bytes_b);
+    return 1;
+}
+
+static int check_owned_missing(const char *path, const char *label)
+{
+    uint32_t size = 0;
+    uint8_t *bytes = read_bytes(path, &size);
+    uint8_t *snapshot = NULL;
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t zero[32];
+
+    if (bytes == NULL) {
+        fprintf(stderr, "%s: could not read fixture\n", label);
+        return 0;
+    }
+    snapshot = (uint8_t *)malloc((size_t)size);
+    if (snapshot == NULL) {
+        free(bytes);
+        return 0;
+    }
+    memcpy(snapshot, bytes, (size_t)size);
+    memset(zero, 0, sizeof(zero));
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = rd1413_test_load_owned_snapshot(snapshot, size, zero, &loaded,
+                                             diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "%s: expected ARTIFACT_DIGEST_MISSING instantiate=0 unload=0, got %s diag=%s instantiate=%u unload=%u\n",
+                label, wamr_secrets_gateway_result_name(result), diagnostic,
+                rd1413_load_path_instantiate_calls,
+                rd1413_load_path_unload_calls);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        return 0;
+    }
+    printf("PASS: %s ARTIFACT_DIGEST_MISSING instantiate=0 unload=0\n", label);
+    free(bytes);
     return 1;
 }
 
@@ -218,11 +811,12 @@ static int check_negative_count(const char *path)
         free(bytes);
         return 0;
     }
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
-                                       sizeof(diagnostic));
+    result = load_with_authority(bytes, size, &loaded, diagnostic,
+                                 sizeof(diagnostic));
     unsetenv("RD1413_TEST_IMPORT_COUNT_UNAVAILABLE");
     if (result != WAMR_SECRETS_GATEWAY_METADATA_UNAVAILABLE ||
-        loaded.module != NULL || loaded.instance != NULL) {
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded)) {
         fprintf(stderr, "negative-count: expected METADATA_UNAVAILABLE: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
@@ -265,11 +859,12 @@ static int check_instantiate_fail(const char *path)
         free(bytes);
         return 0;
     }
-    result = wamr_secrets_gateway_load(bytes, size, &loaded, diagnostic,
-                                       sizeof(diagnostic));
+    result = load_with_authority(bytes, size, &loaded, diagnostic,
+                                 sizeof(diagnostic));
     unsetenv("RD1413_TEST_FAIL_INSTANTIATE");
     if (result != WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED ||
         loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
         rd1413_load_path_instantiate_calls != 1 ||
         rd1413_load_path_unload_calls != 1) {
         fprintf(stderr,
@@ -290,17 +885,20 @@ int main(int argc, char **argv)
 {
     int ok;
 
-    if (argc != 7) {
+    if (argc != 10) {
         fprintf(stderr,
-                "usage: load-path-probe subset full superset duplicate mismatch nonfunction\n");
+                "usage: load-path-probe subset full superset duplicate mismatch nonfunction verdict_dir verifier evil_verifier\n");
         return 2;
     }
+    g_verifier = argv[8];
     if (!wasm_runtime_init()) {
         fprintf(stderr, "runtime initialization failed\n");
         return 2;
     }
 
-    ok = check_invalid_argument() && check_load_failed();
+    ok = check_sha256_kat() && check_invalid_argument() &&
+         check_invalid_diagnostic_zeros_out() && check_load_failed() &&
+         check_aot_refused() && check_non_bytecode_refused();
     if (ok) {
         ok = expect_refusal(argv[1], WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT, 1, 1,
                             "unlinked subset before native registration");
@@ -320,9 +918,28 @@ int main(int argc, char **argv)
                             "signature mismatch") &&
              expect_refusal(argv[6], WAMR_SECRETS_GATEWAY_UNSUPPORTED_KIND, 1, 1,
                             "non-function import") &&
-             expect_admitted(argv[1], "admitted subset") &&
-             expect_admitted(argv[2], "admitted full allowlist") &&
-             check_instantiate_fail(argv[1]);
+             expect_admitted(argv[1], "admitted subset",
+                             "RD1413_SUBSET_SHA256") &&
+             expect_admitted(argv[2], "admitted full allowlist",
+                             "RD1413_FULL_SHA256") &&
+             check_instantiate_fail(argv[1]) &&
+             check_owned_mismatch(argv[1], argv[2],
+                                  "swapped subset digest vs full bytes") &&
+             check_owned_mismatch(argv[2], argv[1],
+                                  "swapped full digest vs subset bytes") &&
+             check_owned_missing(argv[1], "all-zero expected subset") &&
+             check_load_for_authority(argv[1], argv[7], argv[8], argv[9]);
+        if (ok) {
+            uint32_t subset_size = 0;
+            uint8_t *subset = read_bytes(argv[1], &subset_size);
+            if (subset == NULL) {
+                fprintf(stderr, "digestless subset: could not read fixture\n");
+                ok = 0;
+            } else {
+                ok = check_digestless_public_load(subset, subset_size);
+                free(subset);
+            }
+        }
     }
 
     wasm_runtime_destroy();
