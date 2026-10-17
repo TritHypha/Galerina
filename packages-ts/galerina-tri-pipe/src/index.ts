@@ -18,6 +18,16 @@ export {
   SLIDE_ADMISSION_REQUEST_SCHEMA,
   prepareSlideAdmissionRequest, admitProposedRoute,
 } from "./slide-admission-request.js";
+export {
+  type ArtifactDigestHop,
+  type ArtifactDigestRefuseCode,
+  type ArtifactDigestBindResult,
+  type ArtifactDigestHops,
+  ARTIFACT_DIGEST_RE,
+  hashWasmArtifact,
+  artifactDigestFromRaw32,
+  bindExactArtifactDigest,
+} from "./artifact-digest-binding.js";
 
 // The Galerina Execution Router — one decision across all routing axes (tier × precision × offload).
 export {
