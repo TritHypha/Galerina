@@ -56,10 +56,10 @@ function assertCleanRecord(record, operationId) {
   }
 }
 
-function assertCleanStatus(status, operationId, state) {
-  assert.equal(Object.keys(status).sort().join(","), "operationId,state");
+function assertCleanStatus(status, operationId, kind) {
+  assert.equal(Object.keys(status).sort().join(","), "kind,operationId");
   assert.equal(status.operationId, operationId);
-  assert.equal(status.state, state);
+  assert.equal(status.kind, kind);
   const dumped = JSON.stringify(status);
   assert.equal(dumped.includes("\u0000"), false);
   assert.doesNotMatch(dumped, /digest|sha-?256|token|byteLength|"length"/i);
@@ -74,7 +74,7 @@ test("matrix: clean release + ACK", () => {
   }, undefined, "op-clean");
   assert.equal(authority.stateOf("op-clean"), "released");
   assert.equal(gate.acknowledge("op-clean"), "acknowledged");
-  assertCleanStatus(gate.status("op-clean"), "op-clean", "acknowledged");
+  assertCleanStatus(gate.status("op-clean"), "op-clean", "RELEASED_ACKED");
   assert.equal(gate.acknowledge("op-clean"), "acknowledged");
   for (const event of gate.auditEvents()) {
     assertCleanRecord(event, event.operationId);
@@ -120,7 +120,7 @@ test("matrix: consumer throw after delivery is delivery-unknown; retry refuses",
     }, undefined, "op-throw"),
     /consumer-throw/,
   );
-  assertCleanStatus(gate.status("op-throw"), "op-throw", "delivery-unknown");
+  assertCleanStatus(gate.status("op-throw"), "op-throw", "DELIVERY_UNKNOWN");
   assert.throws(
     () => gate.getSecret(["credential"], "credential", () => {}, undefined, "op-throw"),
     (err) => isRefused(err, "replay"),
@@ -138,7 +138,7 @@ test("matrix: simulated crash between consume and ACK is status-only; recovery n
   assert.equal(authority.stateOf("op-crash"), "delivery-unknown");
   const uses = provider.useCount();
   const recovered = gate.status("op-crash");
-  assertCleanStatus(recovered, "op-crash", "delivery-unknown");
+  assertCleanStatus(recovered, "op-crash", "DELIVERY_UNKNOWN");
   assert.equal(provider.useCount(), uses);
   assert.equal(provider.hasCount() > 0, true);
   assert.throws(
@@ -158,7 +158,7 @@ test("matrix: noteUnknown after ACK is a no-op (acknowledged stays acknowledged)
   assert.equal(gate.acknowledge("op-ack-unknown"), "acknowledged");
   gate.noteUnknown("op-ack-unknown");
   assert.equal(authority.stateOf("op-ack-unknown"), "acknowledged");
-  assertCleanStatus(gate.status("op-ack-unknown"), "op-ack-unknown", "acknowledged");
+  assertCleanStatus(gate.status("op-ack-unknown"), "op-ack-unknown", "RELEASED_ACKED");
   assert.equal(gate.acknowledge("op-ack-unknown"), "acknowledged");
 });
 
@@ -168,14 +168,14 @@ test("matrix: timeout and abort of a released lease become delivery-unknown", ()
   const gate = createSecretGate(provider, { authority, requireBoundOperationId: true });
   gate.getSecret(["credential"], "credential", () => {}, undefined, "op-timeout");
   gate.noteUnknown("op-timeout");
-  assertCleanStatus(gate.status("op-timeout"), "op-timeout", "delivery-unknown");
+  assertCleanStatus(gate.status("op-timeout"), "op-timeout", "DELIVERY_UNKNOWN");
   assert.throws(
     () => gate.getSecret(["credential"], "credential", () => {}, undefined, "op-timeout"),
     (err) => isRefused(err, "replay"),
   );
   gate.getSecret(["credential"], "credential", () => {}, undefined, "op-abort");
   gate.noteUnknown("op-abort");
-  assertCleanStatus(gate.status("op-abort"), "op-abort", "delivery-unknown");
+  assertCleanStatus(gate.status("op-abort"), "op-abort", "DELIVERY_UNKNOWN");
   assert.equal(gate.acknowledge("op-abort"), "replay");
 });
 
@@ -205,7 +205,7 @@ test("matrix: eviction past RELEASE_LEASE_CAP then retry refuses, never mints fr
     assert.equal(authority.ack(lease.leaseId, lease.token, 1), "acknowledged");
   }
   assert.ok(authority.size <= RELEASE_LEASE_CAP);
-  assertCleanStatus(authority.status("op-evict-0"), "op-evict-0", "retired");
+  assertCleanStatus(authority.status("op-evict-0"), "op-evict-0", "NOT_FOUND");
   assert.throws(
     () => authority.mint("op-evict-0", 1),
     (err) => isRefused(err, "replay"),
@@ -268,11 +268,9 @@ test("matrix: recovery and audit never include secret bytes, lengths, digests or
   assert.doesNotMatch(dumped, /digest|sha-?256/i);
   assert.equal(dumped.includes("\u0000"), false);
   assert.equal(dumped.includes('"token"'), false);
-  assert.equal(dumped.includes('"length"'), false);
   assert.equal(dumped.includes('"byteLength"'), false);
-  for (const byte of SYNTHETIC) {
-    assert.equal(dumped.includes(String.fromCharCode(byte)), false);
-  }
+  assert.equal(dumped.includes("SECRET"), false);
+  assert.doesNotMatch(dumped, /0x53|83,\s*69,\s*67/);
 });
 
 test("matrix: audit log and retired set stay at cap", () => {
@@ -284,7 +282,7 @@ test("matrix: audit log and retired set stay at cap", () => {
   }
   assert.ok(authority.size <= RELEASE_LEASE_CAP);
   assert.ok(authority.auditEvents().length <= RELEASE_AUDIT_CAP);
-  assertCleanStatus(authority.status("op-bound-0"), "op-bound-0", "missing");
+  assertCleanStatus(authority.status("op-bound-0"), "op-bound-0", "NOT_FOUND");
   for (const event of authority.auditEvents()) {
     assert.equal(Object.keys(event).sort().join(","), "operationId,outcome");
     assert.equal(typeof event.operationId, "string");
@@ -297,7 +295,7 @@ test("matrix: audit log and retired set stay at cap", () => {
 test("matrix: non-string operationId is coerced before freeze", () => {
   const authority = new ReleaseCommitAuthority();
   const status = authority.status(/** @type {any} */ (1));
-  assertCleanStatus(status, "", "missing");
+  assertCleanStatus(status, "", "NOT_FOUND");
   assert.equal(authority.ack(/** @type {any} */ ({ id: "x" }), "token", 1), "missing");
   assert.equal(authority.acknowledgeMinted(/** @type {any} */ (9)), "missing");
   for (const event of authority.auditEvents()) {

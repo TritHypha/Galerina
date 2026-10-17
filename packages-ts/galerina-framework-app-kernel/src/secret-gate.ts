@@ -24,7 +24,12 @@ import {
   SecretReleaseRefused,
   bytesEqual,
 } from "./release-commit-point.js";
-import type { ReleaseAuditEvent, ReleaseOutcome, ReleaseStatus } from "./release-commit-point.js";
+import type {
+  OperationRecoveryStatus,
+  ReleaseAuditEvent,
+  ReleaseOutcome,
+  ReleaseStatus,
+} from "./release-commit-point.js";
 
 export {
   ReleaseCommitAuthority,
@@ -38,6 +43,8 @@ export type {
   ReleaseOutcome,
   ReleaseLeaseState,
   ReleaseStatusState,
+  OperationRecoveryKind,
+  OperationRecoveryStatus,
   ReleaseAuditEvent,
   ReleaseStatus,
 } from "./release-commit-point.js";
@@ -94,8 +101,8 @@ export interface SecretGate {
   ): undefined;
   /** ACK the released lease this gate minted for `operationId`. Process-local. */
   acknowledge(operationId: string): ReleaseOutcome;
-  /** Status-only recovery. Never opens the provider. */
-  status(operationId: string): ReleaseStatus;
+  /** Status-only recovery. Never opens the provider, never re-consumes, never re-discloses. */
+  status(operationId: string): OperationRecoveryStatus;
   /** Mark a released-but-unacked delivery as unknown (timeout, abort, handler throw after delivery). */
   noteUnknown(operationId: string): void;
   /** Transition audit: operation id + outcome only. */
@@ -412,7 +419,7 @@ export function createSecretGate(
     return authority.acknowledgeMinted(operationId);
   }
 
-  function status(operationId: string): ReleaseStatus {
+  function status(operationId: string): OperationRecoveryStatus {
     return authority.status(operationId);
   }
 

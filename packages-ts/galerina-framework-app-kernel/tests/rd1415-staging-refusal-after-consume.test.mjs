@@ -156,8 +156,8 @@ for (const scenario of cases) {
       const auditDump = JSON.stringify(auditSink.drained());
 
       assert.equal(harness.consumerCalled(), 0, `${scenario.name} ${mode} consumer`);
-      assert.notEqual(status.state, "released", `${scenario.name} ${mode} status`);
-      assert.equal(status.state, "delivery-unknown", `${scenario.name} ${mode} status`);
+      assert.notEqual(status.kind, "RELEASED_UNACKED", `${scenario.name} ${mode} status`);
+      assert.equal(status.kind, "DELIVERY_UNKNOWN", `${scenario.name} ${mode} status`);
       assert.equal(Object.keys(status).sort().join(","), "operationId,state");
       assert.notEqual(ack, "released");
       assert.notEqual(ack, "acknowledged");
