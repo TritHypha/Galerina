@@ -73,9 +73,31 @@ pub(crate) fn table_with_nonces(
     .expect("valid hostile-test table")
 }
 
+pub(crate) fn bound_native_request(value: u64) -> MintRequest {
+    bound_native_request_with(all_admit(), context(7, 3, 5), value)
+}
+
+pub(crate) fn bound_native_request_with(
+    gates: [Trit; 8],
+    ctx: AuthorityContext,
+    value: u64,
+) -> MintRequest {
+    MintRequest::new_return_u64(
+        AuthorityTag::parse("slide.vok.execute.v1").expect("canonical test tag"),
+        ctx,
+        gates,
+        value,
+    )
+    .expect("supported test architecture")
+    .with_wamr_loaded_digest(
+        WamrLoadedDigest::from_test_fixture(digest_d1()).expect("nonzero fixture"),
+    )
+    .expect("wamr loaded digest")
+}
+
 fn mint_one(table: &mut AuthorityTable<SequenceNonce>) -> AdmittedObjectHandle {
     table
-        .mint_admitted(mint_request(all_admit(), vec![1, 2, 3]))
+        .mint_admitted(bound_native_request(7))
         .expect("valid admitted object")
 }
 
@@ -97,6 +119,7 @@ fn duplicate_lease(handle: &LeaseHandle) -> LeaseHandle {
         generation: handle.generation,
         object_nonce: handle.object_nonce,
         tag: handle.tag.clone(),
+        artifact_digest: handle.artifact_digest,
         thread_marker: Default::default(),
     }
 }
@@ -181,6 +204,7 @@ fn opaque_handle_debug_output_reveals_no_authority_material() {
         generation: 11,
         object_nonce: [0x44; 16],
         tag,
+        artifact_digest: [0xAB; 32],
         thread_marker: Default::default(),
     };
 
@@ -217,7 +241,7 @@ fn table_configuration_is_bounded_before_nonce_intake() {
 fn table_requires_an_injected_nonzero_instance_nonce() {
     let missing = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::refusing("VOK_NONCE_UNAVAILABLE"),
     )
@@ -226,7 +250,7 @@ fn table_requires_an_injected_nonzero_instance_nonce() {
 
     let zero = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[0; 16]]),
     )
@@ -254,16 +278,16 @@ fn mint_requires_exact_context_and_bounded_nonempty_bytes() {
         .expect_err("oversized object must refuse");
     assert_eq!(oversized.failure_id(), "VOK_OBJECT_TOO_LARGE");
 
-    let wrong_context = MintRequest::new(
-        AuthorityTag::parse("slide.vok.execute.v1").expect("canonical test tag"),
-        context(8, 3, 5),
-        all_admit(),
-        vec![1],
-    );
-    let mismatch = table
-        .mint_admitted(wrong_context)
+    let mut context_table = table_with_nonces(1, [[1; 16], [2; 16]]);
+    let mismatch = context_table
+        .mint_admitted(bound_native_request_with(
+            all_admit(),
+            context(8, 3, 5),
+            7,
+        ))
         .expect_err("wrong context must refuse");
     assert_eq!(mismatch.failure_id(), "VOK_CONTEXT_MISMATCH");
+    assert_eq!(context_table.live_len(), 0);
     assert_eq!(table.live_len(), 0);
 }
 
@@ -271,7 +295,7 @@ fn mint_requires_exact_context_and_bounded_nonempty_bytes() {
 fn all_eight_k3_admission_gates_are_exhaustive_and_only_one_vector_mints() {
     let mut table = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[1; 16], [2; 16]]),
     )
@@ -288,7 +312,7 @@ fn all_eight_k3_admission_gates_are_exhaustive_and_only_one_vector_mints() {
             remainder /= 3;
         }
         let expected = gates.iter().copied().min().expect("eight gates");
-        match table.mint_admitted(mint_request(gates, vec![1])) {
+        match table.mint_admitted(bound_native_request_with(gates, context(7, 3, 5), 1)) {
             Ok(_) => {
                 assert_eq!(expected, Trit::Admit);
                 admitted += 1;
@@ -310,43 +334,43 @@ fn all_eight_k3_admission_gates_are_exhaustive_and_only_one_vector_mints() {
 fn mint_refuses_missing_zero_and_repeated_object_nonces_without_mutation() {
     let mut missing = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[1; 16]]),
     )
     .expect("valid table before object nonce intake");
     let error = missing
-        .mint_admitted(mint_request(all_admit(), vec![1]))
+        .mint_admitted(bound_native_request(1))
         .expect_err("missing object nonce must refuse");
     assert_eq!(error.failure_id(), "VOK_TEST_NONCE_EXHAUSTED");
     assert_eq!(missing.live_len(), 0);
 
     let mut zero = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[1; 16], [0; 16]]),
     )
     .expect("valid table before zero object nonce");
     let error = zero
-        .mint_admitted(mint_request(all_admit(), vec![1]))
+        .mint_admitted(bound_native_request(1))
         .expect_err("zero object nonce must refuse");
     assert_eq!(error.failure_id(), "VOK_NONCE_ZERO");
     assert_eq!(zero.live_len(), 0);
 
     let mut repeated = AuthorityTable::new(
         2,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[1; 16], [2; 16], [2; 16]]),
     )
     .expect("valid table before repeated object nonce");
     let first = repeated
-        .mint_admitted(mint_request(all_admit(), vec![1]))
+        .mint_admitted(bound_native_request(1))
         .expect("first unique object nonce");
     assert_eq!(format!("{first:?}"), "AdmittedObjectHandle(REDACTED)");
     let error = repeated
-        .mint_admitted(mint_request(all_admit(), vec![2]))
+        .mint_admitted(bound_native_request(2))
         .expect_err("repeated object nonce must refuse");
     assert_eq!(error.failure_id(), "VOK_NONCE_REPEATED");
     assert_eq!(repeated.live_len(), 1);
@@ -356,16 +380,16 @@ fn mint_refuses_missing_zero_and_repeated_object_nonces_without_mutation() {
 fn fixed_capacity_exhaustion_is_unknown_and_does_not_request_more_entropy() {
     let mut table = AuthorityTable::new(
         1,
-        8,
+        64,
         context(7, 3, 5),
         SequenceNonce::from_nonces([[1; 16], [2; 16]]),
     )
     .expect("valid single-slot table");
     let _handle = table
-        .mint_admitted(mint_request(all_admit(), vec![1]))
+        .mint_admitted(bound_native_request(1))
         .expect("first mint fills capacity");
     let error = table
-        .mint_admitted(mint_request(all_admit(), vec![2]))
+        .mint_admitted(bound_native_request(2))
         .expect_err("full table must block");
     assert_eq!(error.outcome(), Trit::Unknown);
     assert_eq!(error.failure_id(), "VOK_CAPACITY_EXHAUSTED");
@@ -387,7 +411,7 @@ fn every_private_admitted_handle_field_is_revalidated() {
         }
 
         let error = table
-            .open_lease(handle, &context(7, 3, 5))
+            .open_lease_for_artifact(handle, &context(7, 3, 5), &digest_d1())
             .expect_err("forged admitted handle must refuse");
         assert_eq!(error.outcome(), Trit::Refuse);
         assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
@@ -401,12 +425,12 @@ fn admitted_handle_is_affine_and_a_stale_duplicate_cannot_open_twice() {
     let admitted = mint_one(&mut table);
     let stale = duplicate_admitted(&admitted);
     let lease = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("first exact transition");
     assert_eq!(format!("{lease:?}"), "LeaseHandle(REDACTED)");
 
     let error = table
-        .open_lease(stale, &context(7, 3, 5))
+        .open_lease_for_artifact(stale, &context(7, 3, 5), &digest_d1())
         .expect_err("stale duplicate must refuse");
     assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
     assert_eq!(table.live_len(), 1);
@@ -418,7 +442,7 @@ fn every_private_lease_handle_field_is_revalidated() {
         let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
         let admitted = mint_one(&mut table);
         let mut lease = table
-            .open_lease(admitted, &context(7, 3, 5))
+            .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
             .expect("valid lease before hostile mutation");
         match dimension {
             0 => lease.table_nonce[0] ^= 1,
@@ -430,7 +454,7 @@ fn every_private_lease_handle_field_is_revalidated() {
         }
 
         let error = table
-            .consume_lease(lease, &context(7, 3, 5), Trit::Admit)
+            .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest_d1())
             .expect_err("forged lease handle must refuse");
         assert_eq!(error.outcome(), Trit::Refuse);
         assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
@@ -443,20 +467,20 @@ fn lease_is_affine_and_receipt_is_terminal_value_only() {
     let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let admitted = mint_one(&mut table);
     let lease = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("first exact transition");
     let stale = duplicate_lease(&lease);
     let receipt = table
-        .consume_lease(lease, &context(7, 3, 5), Trit::Admit)
+        .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest_d1())
         .expect("terminal close");
     assert_eq!(receipt.tag(), "slide.vok.execute.v1");
-    assert_eq!(receipt.byte_length(), 3);
+    assert_eq!(receipt.byte_length(), RETURN_U64_OBJECT_BYTES);
     assert_eq!(receipt.terminal_outcome(), Trit::Admit);
     assert!(!receipt.authority_released());
     assert_eq!(table.live_len(), 0);
 
     let error = table
-        .consume_lease(stale, &context(7, 3, 5), Trit::Admit)
+        .consume_lease_for_artifact(stale, &context(7, 3, 5), Trit::Admit, &digest_d1())
         .expect_err("stale lease must refuse");
     assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
 }
@@ -474,7 +498,7 @@ fn exact_current_context_is_required_for_both_affine_transitions() {
     let mut close_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let admitted = mint_one(&mut close_table);
     let lease = close_table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("first exact transition");
     let error = close_table
         .consume_lease(lease, &context(7, 4, 5), Trit::Admit)
@@ -488,7 +512,7 @@ fn lease_nonce_failure_revokes_the_now_unreachable_admission() {
     let mut table = table_with_nonces(1, [[1; 16], [2; 16]]);
     let admitted = mint_one(&mut table);
     let error = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect_err("missing transition nonce must fail closed");
     assert_eq!(error.failure_id(), "VOK_TEST_NONCE_EXHAUSTED");
     assert_eq!(table.live_len(), 0);
@@ -500,7 +524,7 @@ fn bounded_nonce_history_exhaustion_refuses_and_revokes_transition_state() {
     let admitted = mint_one(&mut table);
     table.nonce_history_limit = 2;
     let error = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect_err("nonce-history budget exhaustion must fail closed");
     assert_eq!(error.outcome(), Trit::Unknown);
     assert_eq!(error.failure_id(), "VOK_NONCE_BUDGET_EXHAUSTED");
@@ -543,7 +567,7 @@ fn context_advance_revokes_an_open_lease_before_consumption() {
     let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16], [4; 16], [5; 16]]);
     let admitted = mint_one(&mut table);
     let lease = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("current context may open one lease");
     assert_eq!(table.live_len(), 1);
 
@@ -561,20 +585,23 @@ fn context_advance_revokes_an_open_lease_before_consumption() {
     assert_eq!(error.outcome(), Trit::Refuse);
 
     let current_context = context(7, 3, 6);
-    let current_admission = MintRequest::new(
-        AuthorityTag::parse("slide.vok.execute.v1").expect("canonical test tag"),
-        current_context.clone(),
-        all_admit(),
-        vec![4, 5, 6],
-    );
     let current_handle = table
-        .mint_admitted(current_admission)
+        .mint_admitted(bound_native_request_with(
+            all_admit(),
+            current_context.clone(),
+            7,
+        ))
         .expect("new authority context remains usable after revocation");
     let current_lease = table
-        .open_lease(current_handle, &current_context)
+        .open_lease_for_artifact(current_handle, &current_context, &digest_d1())
         .expect("slot capacity is reusable under the new epoch");
     let receipt = table
-        .consume_lease(current_lease, &current_context, Trit::Admit)
+        .consume_lease_for_artifact(
+            current_lease,
+            &current_context,
+            Trit::Admit,
+            &digest_d1(),
+        )
         .expect("a newly admitted current-epoch lease remains consumable");
     assert_eq!(receipt.revocation_epoch(), 6);
     assert_eq!(table.live_len(), 0);
@@ -588,14 +615,14 @@ fn generation_overflow_retires_the_slot_instead_of_wrapping() {
     table.slots[admitted.slot].generation = u64::MAX;
 
     let error = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect_err("generation exhaustion must refuse");
     assert_eq!(error.failure_id(), "VOK_GENERATION_EXHAUSTED");
     assert_eq!(table.live_len(), 0);
     assert!(table.slots[0].retired);
 
     let error = table
-        .mint_admitted(mint_request(all_admit(), vec![4]))
+        .mint_admitted(bound_native_request(4))
         .expect_err("retired capacity cannot be reused");
     assert_eq!(error.failure_id(), "VOK_CAPACITY_EXHAUSTED");
 }
@@ -642,15 +669,15 @@ fn operating_system_nonce_source_is_linked_and_nonzero() {
 fn admitted_object_executes_once_and_returns_only_terminal_evidence() {
     let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let admitted = table
-        .mint_admitted(return_u64_request(42))
+        .mint_admitted(bound_native_request(42))
         .expect("closed object admission");
     let lease = table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("affine lease");
     let stale = duplicate_lease(&lease);
 
     let receipt = table
-        .execute_lease(lease, &context(7, 3, 5))
+        .execute_lease_for_artifact(lease, &context(7, 3, 5), &digest_d1())
         .expect("bounded W^X execution");
     assert_eq!(receipt.tag(), "slide.vok.execute.v1");
     assert_eq!(receipt.byte_length(), RETURN_U64_OBJECT_BYTES);
@@ -662,30 +689,103 @@ fn admitted_object_executes_once_and_returns_only_terminal_evidence() {
     assert_eq!(table.live_len(), 0);
 
     let error = table
-        .execute_lease(stale, &context(7, 3, 5))
+        .execute_lease_for_artifact(stale, &context(7, 3, 5), &digest_d1())
         .expect_err("stale execution lease must refuse");
     assert_eq!(error.failure_id(), "VOK_HANDLE_MISMATCH");
 }
 
 #[test]
+fn execute_lease_for_artifact_mismatch_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let stale = duplicate_lease(&lease);
+    let error = table
+        .execute_lease_for_artifact(lease, &context(7, 3, 5), &digest_d2())
+        .expect_err("swapped digest at execute must refuse");
+    assert_eq!(error.outcome(), Trit::Refuse);
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .execute_lease_for_artifact(stale, &context(7, 3, 5), &digest_d1())
+        .expect_err("old lease after execute mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn execute_lease_for_artifact_zero_expected_is_missing() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = table
+        .execute_lease_for_artifact(lease, &context(7, 3, 5), &[0; 32])
+        .expect_err("all-zero expected at execute is missing");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
+fn execute_lease_with_resources_mismatch_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let stale = duplicate_lease(&lease);
+    let error = table
+        .execute_lease_with_resources(lease, &context(7, 3, 5), Vec::new(), &digest_d2())
+        .expect_err("swapped digest at execute-with-resources must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .execute_lease_with_resources(stale, &context(7, 3, 5), Vec::new(), &digest_d1())
+        .expect_err("old lease after resource-execute mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn execute_lease_with_resources_zero_expected_is_missing() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = table
+        .execute_lease_with_resources(lease, &context(7, 3, 5), Vec::new(), &[0; 32])
+        .expect_err("all-zero expected at execute-with-resources is missing");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
 fn malformed_execution_and_context_drift_are_terminal() {
     let mut malformed_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
-    let admitted = mint_one(&mut malformed_table);
-    let lease = malformed_table
-        .open_lease(admitted, &context(7, 3, 5))
-        .expect("lease malformed private bytes");
     let error = malformed_table
-        .execute_lease(lease, &context(7, 3, 5))
-        .expect_err("malformed object must refuse");
-    assert_eq!(error.failure_id(), "VOK_NATIVE_OBJECT_LENGTH");
+        .mint_admitted(mint_request(all_admit(), vec![1, 2, 3]))
+        .expect_err("malformed object must refuse at mint");
+    assert_eq!(error.failure_id(), "VOK_NATIVE_OBJECT_REQUIRED");
     assert_eq!(malformed_table.live_len(), 0);
 
     let mut drift_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let admitted = drift_table
-        .mint_admitted(return_u64_request(7))
+        .mint_admitted(bound_native_request(7))
         .expect("closed object admission");
     let lease = drift_table
-        .open_lease(admitted, &context(7, 3, 5))
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
         .expect("lease before context drift");
     let error = drift_table
         .execute_lease(lease, &context(7, 4, 5))
@@ -962,4 +1062,272 @@ fn secret_arena_errors_have_unique_canonical_runtime_code_metadata() {
         assert!(format!("{error}").starts_with(metadata.name));
     }
     assert!(format!("{}", SecretArenaError::CreateRefused { os_errno: 13 }).ends_with(":13"));
+}
+
+pub(crate) fn digest_d1() -> [u8; 32] {
+    [0xA1; 32]
+}
+
+fn digest_d2() -> [u8; 32] {
+    [0xB2; 32]
+}
+
+#[test]
+fn artifact_digest_binds_open_and_consume() {
+    let digest = digest_d1();
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest)
+        .expect("bound open");
+    assert_eq!(lease.artifact_digest, digest);
+    let receipt = table
+        .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest)
+        .expect("bound consume");
+    assert_eq!(receipt.artifact_digest(), &digest);
+    assert_eq!(receipt.tag(), "slide.vok.execute.v1");
+    assert!(!receipt.authority_released());
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
+fn artifact_mismatch_at_open_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(
+            bound_native_request(7),
+        )
+        .expect("bound mint");
+    let stale = duplicate_admitted(&admitted);
+    let error = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d2())
+        .expect_err("swapped digest must refuse");
+    assert_eq!(error.outcome(), Trit::Refuse);
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .open_lease_for_artifact(stale, &context(7, 3, 5), &digest_d1())
+        .expect_err("old handle after mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn artifact_mismatch_at_consume_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(
+            bound_native_request(7),
+        )
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let stale = duplicate_lease(&lease);
+    let error = table
+        .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest_d2())
+        .expect_err("swapped digest at consume must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .consume_lease_for_artifact(stale, &context(7, 3, 5), Trit::Admit, &digest_d1())
+        .expect_err("old lease after mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn artifact_missing_refuses_on_bound_entry_points() {
+    let missing = mint_request(all_admit(), vec![1, 2, 3])
+        .with_artifact_digest([0; 32])
+        .expect_err("all-zero builder digest is missing");
+    assert_eq!(missing.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+
+    let mut mint_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let error = mint_table
+        .mint_admitted(return_u64_request(7))
+        .expect_err("native object without digest must refuse at mint");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(mint_table.live_len(), 0);
+
+    let mut expected_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = expected_table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let error = expected_table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &[0; 32])
+        .expect_err("all-zero expected is missing");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(expected_table.live_len(), 0);
+}
+
+#[test]
+fn unbound_open_and_consume_keep_legacy_and_bound_entries() {
+    let mut bound_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = mint_one(&mut bound_table);
+    let error = bound_table
+        .open_lease(admitted, &context(7, 3, 5))
+        .expect_err("unbound open must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_table.live_len(), 0);
+
+    let mut bound_consume = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = mint_one(&mut bound_consume);
+    let lease = bound_consume
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = bound_consume
+        .consume_lease(lease, &context(7, 3, 5), Trit::Admit)
+        .expect_err("unbound consume of bound lease must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_consume.live_len(), 0);
+
+    let mut bound_execute = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = mint_one(&mut bound_execute);
+    let lease = bound_execute
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = bound_execute
+        .execute_lease(lease, &context(7, 3, 5))
+        .expect_err("unbound execute of bound lease must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(bound_execute.live_len(), 0);
+}
+
+#[test]
+fn admitted_entry_and_lease_drop_zero_the_artifact_digest() {
+    let mut entry = AdmittedEntry {
+        object_nonce: [1; 16],
+        tag: AuthorityTag::parse("slide.vok.execute.v1").expect("canonical tag"),
+        context: context(7, 3, 5),
+        bytes: vec![1, 2, 3],
+        artifact_digest: digest_d1(),
+    };
+    entry.clear();
+    assert_eq!(entry.artifact_digest, [0; 32]);
+    assert!(entry.bytes.is_empty());
+
+    let lease = LeaseHandle {
+        table_nonce: [0x33; 16],
+        slot: 7,
+        generation: 11,
+        object_nonce: [0x44; 16],
+        tag: AuthorityTag::parse("slide.vok.execute.v1").expect("canonical tag"),
+        artifact_digest: digest_d1(),
+        thread_marker: Default::default(),
+    };
+    assert_eq!(lease.artifact_digest, digest_d1());
+    super::LAST_DROPPED_LEASE_ARTIFACT_DIGEST.with(|cell| cell.set(digest_d1()));
+    drop(lease);
+    super::LAST_DROPPED_LEASE_ARTIFACT_DIGEST.with(|cell| {
+        assert_eq!(cell.get(), [0; 32], "Drop must record zeros after fill");
+    });
+}
+
+#[test]
+fn vok_receipt_debug_and_eq_expose_the_public_module_digest() {
+    let receipt = VokReceipt {
+        tag: "slide.vok.execute.v1".to_owned(),
+        byte_length: 3,
+        terminal_outcome: Trit::Admit,
+        policy_epoch: 3,
+        revocation_epoch: 5,
+        artifact_digest: digest_d1(),
+    };
+    let debug = format!("{receipt:?}");
+    assert!(debug.contains("artifact_digest"));
+    assert!(debug.contains("REDACTED"));
+    assert!(!debug.contains("161"), "Debug must not print digest bytes");
+    assert_eq!(receipt.artifact_digest(), &digest_d1());
+    let other = VokReceipt {
+        tag: receipt.tag.clone(),
+        byte_length: receipt.byte_length,
+        terminal_outcome: receipt.terminal_outcome,
+        policy_epoch: receipt.policy_epoch,
+        revocation_epoch: receipt.revocation_epoch,
+        artifact_digest: digest_d2(),
+    };
+    assert_ne!(receipt, other);
+}
+
+#[test]
+fn mint_request_debug_redacts_the_artifact_digest() {
+    let request = mint_request(all_admit(), vec![1, 2, 3])
+        .with_artifact_digest(digest_d1())
+        .expect("nonzero digest");
+    let debug = format!("{request:?}");
+    assert!(debug.contains("REDACTED"));
+    assert!(!debug.contains("161"), "Debug must not print digest bytes");
+}
+
+#[test]
+fn prefixed_wasm_module_magic_is_refused() {
+    let prefixed = vec![0xff, 0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16]]);
+    let error = table
+        .mint_admitted(mint_request(all_admit(), prefixed))
+        .expect_err("prefixed wasm magic must refuse");
+    assert_eq!(error.failure_id(), "VOK_WASM_BYTES_REFUSED");
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
+fn composed_wamr_digest_handoff_admits_native_object_and_refuses_wasm_bytes() {
+    let wasm_like: [u8; 8] = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
+    let digest = crate::sha256::sha256(&wasm_like);
+
+    let mut refuse_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let error = refuse_table
+        .mint_admitted(mint_request(all_admit(), wasm_like.to_vec()))
+        .expect_err("wasm magic must never enter VOK");
+    assert_eq!(error.failure_id(), "VOK_WASM_BYTES_REFUSED");
+    assert_eq!(refuse_table.live_len(), 0);
+
+    let mut missing_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = missing_table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let error = missing_table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &[0; 32])
+        .expect_err("missing expected digest");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(missing_table.live_len(), 0);
+
+    let mut mismatch_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = mismatch_table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let error = mismatch_table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d2())
+        .expect_err("swapped digest");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(mismatch_table.live_len(), 0);
+
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(
+            return_u64_request(7)
+                .with_artifact_digest(digest)
+                .expect("nonzero digest"),
+        )
+        .expect("digest-only native mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest)
+        .expect("matching digest open");
+    let receipt = table
+        .consume_lease_for_artifact(lease, &context(7, 3, 5), Trit::Admit, &digest)
+        .expect("matching digest consume");
+    assert_eq!(receipt.artifact_digest(), &digest);
+    assert_eq!(receipt.byte_length(), RETURN_U64_OBJECT_BYTES);
+    assert_eq!(table.live_len(), 0);
 }

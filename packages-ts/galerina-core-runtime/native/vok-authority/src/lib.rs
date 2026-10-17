@@ -15,6 +15,7 @@ mod secret_arena_custodian;
 mod secret_arena_store;
 mod sha256;
 mod veo;
+mod assurance;
 
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
@@ -31,6 +32,13 @@ pub use secret_arena_custodian::run_secret_arena_custodian;
 pub use veo::{
     admit_general_veo_linker, admit_veo_object, AdmittedVeoObject, VeoActionIdentity,
     VeoAdmissionRequest, VeoProfile,
+};
+pub use assurance::{
+    envelope_file_body, framed_digest, framed_verdict_bytes, seal_file_body, sha256_prefaced,
+    verify_wasm_artifact, verify_wasm_file, verify_wasm_stdin, wasm_magic_windows,
+    write_verdict_files, write_verdict_stdout, Envelope, VerifyError, WaxSeal, ABI,
+    CAPABILITY_DOMAIN, DEFAULT_BUILD_POINT, DEPS_DOMAIN, ENVELOPE_DOMAIN, EPOCH, EVIDENCE_DOMAIN,
+    POLICY_DOMAIN, POLICY_ID, PROFILE_DOMAIN, SEAL_DOMAIN, TARGET,
 };
 
 pub const MAX_AUTHORITY_TAG_BYTES: usize = 96;
@@ -93,6 +101,63 @@ impl fmt::Display for VokFailure {
 }
 
 impl std::error::Error for VokFailure {}
+
+fn artifact_digest_is_zero(digest: &[u8; 32]) -> bool {
+    let mut acc = 0_u8;
+    for byte in digest {
+        acc |= *byte;
+    }
+    acc == 0
+}
+
+fn artifact_digest_eq_ct(left: &[u8; 32], right: &[u8; 32]) -> bool {
+    let mut acc = 0_u8;
+    for index in 0..32 {
+        acc |= left[index] ^ right[index];
+    }
+    acc == 0
+}
+
+const WASM_MODULE_MAGIC: [u8; 4] = [0x00, 0x61, 0x73, 0x6d];
+
+fn bytes_contain_wasm_module_magic(bytes: &[u8]) -> bool {
+    bytes.windows(4).any(|window| window == WASM_MODULE_MAGIC)
+}
+
+/// Opaque digest produced by a successful `wamr_secrets_gateway_load_for_authority`.
+/// Not constructible from an arbitrary `[u8; 32]` on the public admission path.
+pub struct WamrLoadedDigest {
+    digest: [u8; 32],
+}
+
+impl WamrLoadedDigest {
+    #[cfg(test)]
+    pub(crate) fn from_authority_output(digest: [u8; 32]) -> Result<Self, VokFailure> {
+        if artifact_digest_is_zero(&digest) {
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        Ok(Self { digest })
+    }
+
+    #[cfg(test)]
+    pub(crate) fn from_test_fixture(digest: [u8; 32]) -> Result<Self, VokFailure> {
+        Self::from_authority_output(digest)
+    }
+
+    #[must_use]
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.digest
+    }
+}
+
+impl Drop for WamrLoadedDigest {
+    fn drop(&mut self) {
+        self.digest.fill(0);
+    }
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NonceFailure {
@@ -187,6 +252,7 @@ pub struct MintRequest {
     context: AuthorityContext,
     gates: [Trit; 8],
     bytes: Vec<u8>,
+    artifact_digest: [u8; 32],
 }
 
 impl fmt::Debug for MintRequest {
@@ -197,6 +263,7 @@ impl fmt::Debug for MintRequest {
             .field("context", &self.context)
             .field("gates", &self.gates)
             .field("bytes", &"REDACTED")
+            .field("artifact_digest", &"REDACTED")
             .finish()
     }
 }
@@ -205,6 +272,7 @@ impl Drop for MintRequest {
     fn drop(&mut self) {
         self.bytes.fill(0);
         self.bytes.clear();
+        self.artifact_digest.fill(0);
     }
 }
 
@@ -221,7 +289,32 @@ impl MintRequest {
             context,
             gates,
             bytes,
+            artifact_digest: [0; 32],
         }
+    }
+
+    /// Crate-private raw setter. Public admission uses
+    /// [`MintRequest::with_wamr_loaded_digest`].
+    pub(crate) fn with_artifact_digest(
+        mut self,
+        artifact_digest: [u8; 32],
+    ) -> Result<Self, VokFailure> {
+        if artifact_digest_is_zero(&artifact_digest) {
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        self.artifact_digest = artifact_digest;
+        Ok(self)
+    }
+
+    /// Binds a digest produced by `wamr_secrets_gateway_load_for_authority`.
+    pub fn with_wamr_loaded_digest(
+        self,
+        digest: WamrLoadedDigest,
+    ) -> Result<Self, VokFailure> {
+        self.with_artifact_digest(digest.digest)
     }
 
     /// Constructs the only executable semantic object admitted by the bounded
@@ -430,6 +523,7 @@ pub struct LeaseHandle {
     generation: u64,
     object_nonce: [u8; 16],
     tag: AuthorityTag,
+    artifact_digest: [u8; 32],
     thread_marker: PhantomData<Rc<()>>,
 }
 
@@ -446,7 +540,16 @@ impl Drop for LeaseHandle {
         self.generation = u64::MAX;
         self.object_nonce.fill(0);
         self.tag.0.clear();
+        self.artifact_digest.fill(0);
+        #[cfg(test)]
+        LAST_DROPPED_LEASE_ARTIFACT_DIGEST.with(|cell| cell.set(self.artifact_digest));
     }
+}
+
+#[cfg(test)]
+thread_local! {
+    static LAST_DROPPED_LEASE_ARTIFACT_DIGEST: std::cell::Cell<[u8; 32]> =
+        const { std::cell::Cell::new([0xff; 32]) };
 }
 
 struct AdmittedEntry {
@@ -454,6 +557,7 @@ struct AdmittedEntry {
     tag: AuthorityTag,
     context: AuthorityContext,
     bytes: Vec<u8>,
+    artifact_digest: [u8; 32],
 }
 
 impl AdmittedEntry {
@@ -463,6 +567,7 @@ impl AdmittedEntry {
         self.context.clear();
         self.bytes.fill(0);
         self.bytes.clear();
+        self.artifact_digest.fill(0);
     }
 }
 
@@ -480,13 +585,28 @@ struct Slot {
 /// fn require_lease(_: LeaseHandle) {}
 /// fn replay(receipt: VokReceipt) { require_lease(receipt); }
 /// ```
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct VokReceipt {
     tag: String,
     byte_length: usize,
     terminal_outcome: Trit,
     policy_epoch: u64,
     revocation_epoch: u64,
+    artifact_digest: [u8; 32],
+}
+
+impl fmt::Debug for VokReceipt {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("VokReceipt")
+            .field("tag", &self.tag)
+            .field("byte_length", &self.byte_length)
+            .field("terminal_outcome", &self.terminal_outcome)
+            .field("policy_epoch", &self.policy_epoch)
+            .field("revocation_epoch", &self.revocation_epoch)
+            .field("artifact_digest", &"REDACTED")
+            .finish()
+    }
 }
 
 /// Terminal evidence for one bounded native execution.
@@ -593,6 +713,11 @@ impl VokReceipt {
     #[must_use]
     pub const fn authority_released(&self) -> bool {
         false
+    }
+
+    #[must_use]
+    pub const fn artifact_digest(&self) -> &[u8; 32] {
+        &self.artifact_digest
     }
 }
 
@@ -719,6 +844,21 @@ impl<N: NonceSource> AuthorityTable<N> {
         if request.bytes.len() > self.byte_ceiling {
             return Err(VokFailure::new(Trit::Refuse, "VOK_OBJECT_TOO_LARGE"));
         }
+        if bytes_contain_wasm_module_magic(&request.bytes) {
+            return Err(VokFailure::new(Trit::Refuse, "VOK_WASM_BYTES_REFUSED"));
+        }
+        if !native::is_native_floor_object(&request.bytes) {
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_NATIVE_OBJECT_REQUIRED",
+            ));
+        }
+        if artifact_digest_is_zero(&request.artifact_digest) {
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
         if request.context != self.current_context {
             return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
         }
@@ -768,6 +908,7 @@ impl<N: NonceSource> AuthorityTable<N> {
             tag: entry_tag,
             context: entry_context,
             bytes: entry_bytes,
+            artifact_digest: request.artifact_digest,
         });
         self.live_count += 1;
         Ok(handle)
@@ -783,7 +924,24 @@ impl<N: NonceSource> AuthorityTable<N> {
             self.clear_and_advance_slot(slot_index);
             return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
         }
+        let _stored_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.admitted.as_ref())
+            .expect("validated private slot remains admitted until transition")
+            .artifact_digest;
+        self.clear_and_advance_slot(slot_index);
+        Err(VokFailure::new(
+            Trit::Refuse,
+            "VOK_ARTIFACT_DIGEST_MISSING",
+        ))
+    }
 
+    fn transition_admitted_to_lease(
+        &mut self,
+        handle: AdmittedObjectHandle,
+    ) -> Result<LeaseHandle, VokFailure> {
+        let slot_index = handle.slot;
         let next_generation = match handle.generation.checked_add(1) {
             Some(generation) => generation,
             None => {
@@ -815,6 +973,7 @@ impl<N: NonceSource> AuthorityTable<N> {
             generation: next_generation,
             object_nonce: next_nonce,
             tag: entry.tag.clone(),
+            artifact_digest: entry.artifact_digest,
             thread_marker: PhantomData,
         };
         slot.lease = Some(entry);
@@ -825,14 +984,32 @@ impl<N: NonceSource> AuthorityTable<N> {
         &mut self,
         lease: LeaseHandle,
         current_context: &AuthorityContext,
-        terminal_outcome: Trit,
+        _terminal_outcome: Trit,
     ) -> Result<VokReceipt, VokFailure> {
         let slot_index = self.validate_lease_handle(&lease)?;
         if current_context != &self.current_context {
             self.clear_and_advance_slot(slot_index);
             return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
         }
+        let _stored_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.lease.as_ref())
+            .expect("validated private slot remains leased until transition")
+            .artifact_digest;
+        self.clear_and_advance_slot(slot_index);
+        Err(VokFailure::new(
+            Trit::Refuse,
+            "VOK_ARTIFACT_DIGEST_MISSING",
+        ))
+    }
 
+    fn transition_lease_to_receipt(
+        &mut self,
+        lease: LeaseHandle,
+        terminal_outcome: Trit,
+    ) -> Result<VokReceipt, VokFailure> {
+        let slot_index = lease.slot;
         let slot = self
             .slots
             .get(slot_index)
@@ -847,9 +1024,73 @@ impl<N: NonceSource> AuthorityTable<N> {
             terminal_outcome,
             policy_epoch: entry.context.policy_epoch,
             revocation_epoch: entry.context.revocation_epoch,
+            artifact_digest: entry.artifact_digest,
         };
         self.clear_and_advance_slot(slot_index);
         Ok(receipt)
+    }
+
+    pub fn open_lease_for_artifact(
+        &mut self,
+        handle: AdmittedObjectHandle,
+        current_context: &AuthorityContext,
+        expected: &[u8; 32],
+    ) -> Result<LeaseHandle, VokFailure> {
+        let slot_index = self.validate_admitted_handle(&handle)?;
+        if current_context != &self.current_context {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
+        }
+        let entry_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.admitted.as_ref())
+            .expect("validated private slot remains admitted until transition")
+            .artifact_digest;
+        if artifact_digest_is_zero(expected) || artifact_digest_is_zero(&entry_digest) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        if !artifact_digest_eq_ct(&entry_digest, expected) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_ARTIFACT_MISMATCH"));
+        }
+        self.transition_admitted_to_lease(handle)
+    }
+
+    pub fn consume_lease_for_artifact(
+        &mut self,
+        lease: LeaseHandle,
+        current_context: &AuthorityContext,
+        terminal_outcome: Trit,
+        expected: &[u8; 32],
+    ) -> Result<VokReceipt, VokFailure> {
+        let slot_index = self.validate_lease_handle(&lease)?;
+        if current_context != &self.current_context {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
+        }
+        let entry_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.lease.as_ref())
+            .expect("validated private slot remains leased until transition")
+            .artifact_digest;
+        if artifact_digest_is_zero(expected) || artifact_digest_is_zero(&entry_digest) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        if !artifact_digest_eq_ct(&entry_digest, expected) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_ARTIFACT_MISMATCH"));
+        }
+        self.transition_lease_to_receipt(lease, terminal_outcome)
     }
 
     /// Consumes one exact lease through the bounded native W^X profile.
@@ -866,6 +1107,56 @@ impl<N: NonceSource> AuthorityTable<N> {
         if current_context != &self.current_context {
             self.clear_and_advance_slot(slot_index);
             return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
+        }
+        let stored_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.lease.as_ref())
+            .expect("validated private slot remains leased until execution")
+            .artifact_digest;
+        if artifact_digest_is_zero(&stored_digest) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        self.clear_and_advance_slot(slot_index);
+        Err(VokFailure::new(
+            Trit::Refuse,
+            "VOK_ARTIFACT_DIGEST_MISSING",
+        ))
+    }
+
+    pub fn execute_lease_for_artifact(
+        &mut self,
+        lease: LeaseHandle,
+        current_context: &AuthorityContext,
+        expected_artifact_digest: &[u8; 32],
+    ) -> Result<VokExecutionReceipt, VokFailure> {
+        let slot_index = self.validate_lease_handle(&lease)?;
+        if current_context != &self.current_context {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_CONTEXT_MISMATCH"));
+        }
+        let stored_digest = self
+            .slots
+            .get(slot_index)
+            .and_then(|slot| slot.lease.as_ref())
+            .expect("validated private slot remains leased until execution")
+            .artifact_digest;
+        if artifact_digest_is_zero(expected_artifact_digest)
+            || artifact_digest_is_zero(&stored_digest)
+        {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(
+                Trit::Refuse,
+                "VOK_ARTIFACT_DIGEST_MISSING",
+            ));
+        }
+        if !artifact_digest_eq_ct(&stored_digest, expected_artifact_digest) {
+            self.clear_and_advance_slot(slot_index);
+            return Err(VokFailure::new(Trit::Refuse, "VOK_ARTIFACT_MISMATCH"));
         }
 
         let result = {
