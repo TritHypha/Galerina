@@ -2,7 +2,7 @@
 // Synthetic data only. Does not modify rd1413-revocation-before-delivery.test.mjs.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -267,8 +267,9 @@ test("kernel: acknowledgeMinted throw after setting acknowledged is HTTP 500 aud
   assert.equal(sink.events.length, 1);
   assert.equal(sink.events[0].status, 500);
   assert.equal(sink.events[0].origin, "kernel");
-  // N3 blocked: markUnknown is a no-op once acknowledgeMinted has set "acknowledged".
-  // Leftover status stays RELEASED_ACKED. Un-ack needs release-commit-point.ts.
+  const operationId = authority.auditEvents().at(-1)?.operationId ?? "";
+  assert.equal(authority.status(operationId).kind, "DELIVERY_UNKNOWN");
+  assert.notEqual(authority.status(operationId).kind, "RELEASED_ACKED");
 });
 
 const distDir = join(dirname(fileURLToPath(import.meta.url)), "..", "dist");
@@ -348,6 +349,9 @@ function runKernelMutant(id, mutate, mode) {
   const dir = mkdtempSync(join(tmpdir(), `galerina-q24-${id}-`));
   try {
     cpSync(distDir, join(dir, "dist"), { recursive: true });
+    const nodeModules = join(dirname(fileURLToPath(import.meta.url)), "..", "node_modules");
+    const linkType = process.platform === "win32" ? "junction" : "dir";
+    symlinkSync(nodeModules, join(dir, "node_modules"), linkType);
     const kernelPath = join(dir, "dist", "kernel.js");
     const original = readFileSync(kernelPath, "utf8");
     const mutated = mutate(original);
@@ -396,15 +400,16 @@ test("mutant: ignore ack outcome goes red", () => {
 test("mutant: leave acknowledged on post-commit throw is blocked", () => {
   const run = runKernelMutant("leave-acked-post-commit-throw", (src) => {
     const needle = `                catch {
+                    noteUndeliveredBestEffort();
                     noteUnknownBestEffort();
                     throw new Error("GALERINA_SECRET_ACKNOWLEDGE_FAILED");
                 }`;
     const swapped = `                catch {
+                    noteUnknownBestEffort();
                     throw new Error("GALERINA_SECRET_ACKNOWLEDGE_FAILED");
                 }`;
     assert.equal(src.includes(needle), true);
     return src.replace(needle, swapped);
   }, "n3");
-  // Both mutated and original leave RELEASED_ACKED: markUnknown cannot un-ack.
   assert.notEqual(run.status, 0, run.stderr + run.stdout);
 });

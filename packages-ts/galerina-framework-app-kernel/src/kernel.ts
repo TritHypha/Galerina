@@ -45,6 +45,13 @@ function isEpochUnavailable(error: unknown): boolean {
   return isSecretReleaseRefused(error)
     && error.message === "SecretGate: revocation epoch is unavailable";
 }
+
+function secretNameIsRequired(required: readonly string[], name: string): boolean {
+  for (let index = 0; index < required.length; index += 1) {
+    if (required[index] === name) return true;
+  }
+  return false;
+}
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
 // the bare specifier resolves via the package's main entry (dist/index.js) which re-exports
@@ -896,6 +903,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let requestOutcomeSealed = false;
     let secretAccessInProgress = false;
     let secretAccessSpent = false;
+    let secretLeaseMinted = false;
     let requestActive = false;
     const secretUnavailableResponse = (): GalerinaKernelResponse =>
       errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
@@ -1015,11 +1023,26 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           // fail closed: never acknowledged
         }
       };
+      const noteUndeliveredBestEffort = (): void => {
+        try {
+          secretGate.noteUndelivered(releaseOperationId); /* KERNEL_GUARD_DOWNGRADE */
+        } catch {
+          // fail closed: never leave acknowledged
+        }
+      };
       const finalizeSecretRelease = (ok: boolean): void => {
         if (secretReleaseSlot !== undefined) delete secretReleaseSlot.finalize;
-        if (secretReleaseFinalized) return;
+        if (secretReleaseFinalized) {
+          if (ok !== true) {
+            noteUndeliveredBestEffort();
+          }
+          return;
+        }
         secretReleaseFinalized = true;
         if (!secretAccessSpent) return;
+        if (secretLeaseMinted !== true) { /* KERNEL_GUARD_LOCAL_MINTED */
+          return;
+        }
         if (ok !== true) {
           noteUnknownBestEffort();
           return;
@@ -1027,7 +1050,8 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         const recovery = secretGate.status(releaseOperationId);
         switch (recovery.kind) {
           case "NOT_FOUND":
-            return;
+            noteUnknownBestEffort();
+            throw new Error("GALERINA_SECRET_ACKNOWLEDGE_FAILED");
           case "RELEASED_UNACKED":
           case "RELEASED_ACKED":
           case "REFUSED":
@@ -1044,6 +1068,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         try {
           outcome = secretGate.acknowledge(releaseOperationId);
         } catch {
+          noteUndeliveredBestEffort();
           noteUnknownBestEffort();
           throw new Error("GALERINA_SECRET_ACKNOWLEDGE_FAILED");
         }
@@ -1100,6 +1125,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
             // Spend the request-scoped accessor before entering the provider. This state is
             // monotonic: a successful first use does not restore authority for a later call.
             secretAccessSpent = true;
+            if (secretNameIsRequired(policy.secrets.require, name)) {
+              secretLeaseMinted = true;
+            }
             secretAccessInProgress = true;
             try {
               // Provider.use is synchronous but untrusted and may consume the remaining budget.
@@ -1150,7 +1178,6 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (deadlineExpired()) throw new Error("GALERINA_ROUTE_DEADLINE");
       } catch (error) {
         if (deadlineExpired()) {
-          if (secretAccessSpent) secretGate.noteUnknown(releaseOperationId);
           if (handlerPromise !== undefined) {
             releaseWhenHandlerSettles = true;
             void handlerPromise.finally(releaseSlot).catch(() => undefined);
