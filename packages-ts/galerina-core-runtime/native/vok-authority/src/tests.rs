@@ -695,6 +695,83 @@ fn admitted_object_executes_once_and_returns_only_terminal_evidence() {
 }
 
 #[test]
+fn execute_lease_for_artifact_mismatch_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let stale = duplicate_lease(&lease);
+    let error = table
+        .execute_lease_for_artifact(lease, &context(7, 3, 5), &digest_d2())
+        .expect_err("swapped digest at execute must refuse");
+    assert_eq!(error.outcome(), Trit::Refuse);
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .execute_lease_for_artifact(stale, &context(7, 3, 5), &digest_d1())
+        .expect_err("old lease after execute mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn execute_lease_for_artifact_zero_expected_is_missing() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = table
+        .execute_lease_for_artifact(lease, &context(7, 3, 5), &[0; 32])
+        .expect_err("all-zero expected at execute is missing");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
+fn execute_lease_with_resources_mismatch_clears_and_advances_the_slot() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let stale = duplicate_lease(&lease);
+    let error = table
+        .execute_lease_with_resources(lease, &context(7, 3, 5), Vec::new(), &digest_d2())
+        .expect_err("swapped digest at execute-with-resources must refuse");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_MISMATCH");
+    assert_eq!(table.live_len(), 0);
+
+    let later = table
+        .execute_lease_with_resources(stale, &context(7, 3, 5), Vec::new(), &digest_d1())
+        .expect_err("old lease after resource-execute mismatch must refuse");
+    assert_eq!(later.failure_id(), "VOK_HANDLE_MISMATCH");
+}
+
+#[test]
+fn execute_lease_with_resources_zero_expected_is_missing() {
+    let mut table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
+    let admitted = table
+        .mint_admitted(bound_native_request(7))
+        .expect("bound mint");
+    let lease = table
+        .open_lease_for_artifact(admitted, &context(7, 3, 5), &digest_d1())
+        .expect("bound open");
+    let error = table
+        .execute_lease_with_resources(lease, &context(7, 3, 5), Vec::new(), &[0; 32])
+        .expect_err("all-zero expected at execute-with-resources is missing");
+    assert_eq!(error.failure_id(), "VOK_ARTIFACT_DIGEST_MISSING");
+    assert_eq!(table.live_len(), 0);
+}
+
+#[test]
 fn malformed_execution_and_context_drift_are_terminal() {
     let mut malformed_table = table_with_nonces(1, [[1; 16], [2; 16], [3; 16]]);
     let error = malformed_table

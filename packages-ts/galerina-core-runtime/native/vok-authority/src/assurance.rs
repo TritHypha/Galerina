@@ -1,18 +1,13 @@
 //! Domain-separated Envelope and terminal Wax Seal for out-of-process
-//! WAMR artifact verification. Signet stays process-local and is never
-//! written. The verifier hashes artifact bytes itself and never accepts
-//! a caller digest.
+//! WAMR artifact verification. The verifier hashes artifact bytes itself
+//! and never accepts a caller digest.
 
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::Path;
 
-use crate::native;
 use crate::sha256;
-use crate::{
-    AuthorityContext, AuthorityTable, AuthorityTag, MintRequest, OsNonceSource, Trit,
-    VokFailure, WamrLoadedDigest, RETURN_U64_OBJECT_BYTES,
-};
+use crate::VokFailure;
 
 pub const ENVELOPE_DOMAIN: &str = "galerina.assurance.envelope.v1";
 pub const SEAL_DOMAIN: &str = "galerina.assurance.wax-seal.v1";
@@ -31,11 +26,6 @@ pub const DEFAULT_BUILD_POINT: &str = "git:ad0ed3acc298f4ffe76d01f7c7286b2ea5c96
 
 const WASM_MODULE_MAGIC: [u8; 4] = [0x00, 0x61, 0x73, 0x6d];
 const WAMR_AOT_MAGIC: [u8; 4] = [0x00, 0x61, 0x6f, 0x74];
-
-/// Private component-profile mint. Never serialized.
-struct Signet {
-    _private: (),
-}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Envelope {
@@ -195,36 +185,14 @@ fn validate_build_point(build_point: &str) -> Result<(), VerifyError> {
     let rest = build_point
         .strip_prefix("git:")
         .ok_or_else(|| VerifyError::refused("VOK_BUILD_POINT_INVALID"))?;
-    if rest.len() != 40 || !rest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+    if rest.len() != 40 || !rest.bytes().all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f')) {
         return Err(VerifyError::refused("VOK_BUILD_POINT_INVALID"));
     }
     Ok(())
 }
 
-fn issue_vok_receipt(digest: [u8; 32]) -> Result<(), VerifyError> {
-    let target = native::current_target()
-        .ok_or_else(|| VerifyError::refused("VOK_NATIVE_TARGET_UNSUPPORTED"))?;
-    let object = native::encode_return_u64_object(7, target);
-    if object.len() != RETURN_U64_OBJECT_BYTES {
-        return Err(VerifyError::refused("VOK_NATIVE_OBJECT_LENGTH"));
-    }
-    let loaded = WamrLoadedDigest::from_authority_output(digest)?;
-    let context = AuthorityContext::new([0x11; 32], [0x22; 32], [0x33; 32], 1, 1);
-    let tag = AuthorityTag::parse("slide.vok.execute.v1")?;
-    let request = MintRequest::new(tag, context.clone(), [Trit::Admit; 8], object.to_vec())
-        .with_wamr_loaded_digest(loaded)?;
-    let ceiling = RETURN_U64_OBJECT_BYTES.max(1);
-    let mut table = AuthorityTable::new(1, ceiling, context.clone(), OsNonceSource)?;
-    let admitted = table.mint_admitted(request)?;
-    let lease = table.open_lease_for_artifact(admitted, &context, &digest)?;
-    table.consume_lease_for_artifact(lease, &context, Trit::Admit, &digest)?;
-    Ok(())
-}
-
-/// Independently hash `bytes`, bind an Envelope, mint a process-local
-/// Signet, consume it, and emit a terminal non-authorizing Wax Seal plus
-/// an in-process VOK admit/lease/receipt over a native object. Never
-/// takes a caller digest.
+/// Independently hash `bytes`, bind an Envelope, and emit a terminal
+/// non-authorizing Wax Seal. Never takes a caller digest.
 pub fn verify_wasm_artifact(bytes: &[u8], build_point: &str) -> Result<(Envelope, WaxSeal), VerifyError> {
     if bytes.is_empty() {
         return Err(VerifyError::refused("VOK_ARTIFACT_EMPTY"));
@@ -242,7 +210,6 @@ pub fn verify_wasm_artifact(bytes: &[u8], build_point: &str) -> Result<(Envelope
         return Err(VerifyError::refused("VOK_WASM_MAGIC_MISSING"));
     }
 
-    let signet = Signet { _private: () };
     let component_digest = sha256_prefaced(bytes);
     let mut envelope = Envelope {
         abi: ABI.to_string(),
@@ -258,9 +225,6 @@ pub fn verify_wasm_artifact(bytes: &[u8], build_point: &str) -> Result<(Envelope
         envelope_digest: String::new(),
     };
     envelope.envelope_digest = framed_digest(ENVELOPE_DOMAIN, &envelope_canonical(&envelope));
-
-    issue_vok_receipt(digest)?;
-    let _ = signet;
 
     let mut seal = WaxSeal {
         schema_version: SCHEMA_VERSION.to_string(),
@@ -320,12 +284,11 @@ pub fn verify_wasm_file(
 const MAX_STDIN_BYTES: usize = 16 * 1024 * 1024;
 const VERDICT_FRAME_MAGIC: &str = "GALERINA_VOK_VERDICT_V1\n";
 
-pub fn read_bounded_stdin() -> Result<Vec<u8>, VerifyError> {
+pub fn read_bounded<R: Read>(mut reader: R) -> Result<Vec<u8>, VerifyError> {
     let mut bytes = Vec::new();
-    let mut stdin = io::stdin().lock();
     let mut buf = [0_u8; 8192];
     loop {
-        let n = stdin.read(&mut buf)?;
+        let n = reader.read(&mut buf)?;
         if n == 0 {
             break;
         }
@@ -335,6 +298,10 @@ pub fn read_bounded_stdin() -> Result<Vec<u8>, VerifyError> {
         bytes.extend_from_slice(&buf[..n]);
     }
     Ok(bytes)
+}
+
+pub fn read_bounded_stdin() -> Result<Vec<u8>, VerifyError> {
+    read_bounded(io::stdin().lock())
 }
 
 #[must_use]
@@ -476,6 +443,30 @@ mod tests {
     fn invalid_build_point_refuses() {
         let error = verify_wasm_artifact(&MIN_WASM, "not-git").unwrap_err();
         assert_eq!(error.failure_id(), "VOK_BUILD_POINT_INVALID");
+    }
+
+    #[test]
+    fn uppercase_build_point_refuses() {
+        let error = verify_wasm_artifact(
+            &MIN_WASM,
+            "git:AD0ED3ACC298F4FFE76D01F7C7286B2EA5C964F9",
+        )
+        .unwrap_err();
+        assert_eq!(error.failure_id(), "VOK_BUILD_POINT_INVALID");
+    }
+
+    #[test]
+    fn read_bounded_accepts_max_and_refuses_above() {
+        let maxed = vec![0_u8; MAX_STDIN_BYTES];
+        match read_bounded(maxed.as_slice()) {
+            Ok(buf) => assert_eq!(buf.len(), MAX_STDIN_BYTES),
+            Err(_) => panic!("MAX_STDIN_BYTES must be accepted"),
+        }
+        let over = vec![0_u8; MAX_STDIN_BYTES + 1];
+        match read_bounded(over.as_slice()) {
+            Err(error) => assert_eq!(error.failure_id(), "VOK_ARTIFACT_TOO_LARGE"),
+            Ok(_) => panic!("MAX_STDIN_BYTES+1 must be VOK_ARTIFACT_TOO_LARGE"),
+        }
     }
 
     #[test]

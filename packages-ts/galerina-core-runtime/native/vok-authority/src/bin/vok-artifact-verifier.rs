@@ -33,14 +33,27 @@ fn main() -> ExitCode {
     let mut envelope_out = None;
     let mut seal_out = None;
     let mut stdin_mode = false;
+    let mut seen_stdin = false;
+    let mut seen_artifact = false;
+    let mut seen_envelope_out = false;
+    let mut seen_seal_out = false;
+    let mut seen_build_point = false;
     let mut build_point = DEFAULT_BUILD_POINT.to_string();
     let mut index = 1_usize;
     while index < args.len() {
         match args[index].as_str() {
             "--stdin" => {
+                if seen_stdin {
+                    return refuse("VOK_VERIFIER_USAGE");
+                }
+                seen_stdin = true;
                 stdin_mode = true;
             }
             "--artifact" => {
+                if seen_artifact {
+                    return refuse("VOK_VERIFIER_USAGE");
+                }
+                seen_artifact = true;
                 index += 1;
                 if index >= args.len() {
                     return refuse("VOK_VERIFIER_USAGE");
@@ -48,6 +61,10 @@ fn main() -> ExitCode {
                 artifact = Some(PathBuf::from(&args[index]));
             }
             "--envelope-out" => {
+                if seen_envelope_out {
+                    return refuse("VOK_VERIFIER_USAGE");
+                }
+                seen_envelope_out = true;
                 index += 1;
                 if index >= args.len() {
                     return refuse("VOK_VERIFIER_USAGE");
@@ -55,6 +72,10 @@ fn main() -> ExitCode {
                 envelope_out = Some(PathBuf::from(&args[index]));
             }
             "--seal-out" => {
+                if seen_seal_out {
+                    return refuse("VOK_VERIFIER_USAGE");
+                }
+                seen_seal_out = true;
                 index += 1;
                 if index >= args.len() {
                     return refuse("VOK_VERIFIER_USAGE");
@@ -62,6 +83,10 @@ fn main() -> ExitCode {
                 seal_out = Some(PathBuf::from(&args[index]));
             }
             "--build-point" => {
+                if seen_build_point {
+                    return refuse("VOK_VERIFIER_USAGE");
+                }
+                seen_build_point = true;
                 index += 1;
                 if index >= args.len() {
                     return refuse("VOK_VERIFIER_USAGE");

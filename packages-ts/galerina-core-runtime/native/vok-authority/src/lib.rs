@@ -131,6 +131,7 @@ pub struct WamrLoadedDigest {
 }
 
 impl WamrLoadedDigest {
+    #[cfg(test)]
     pub(crate) fn from_authority_output(digest: [u8; 32]) -> Result<Self, VokFailure> {
         if artifact_digest_is_zero(&digest) {
             return Err(VokFailure::new(

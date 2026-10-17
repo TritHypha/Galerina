@@ -12,9 +12,8 @@
  * verdict only from stdout. The host wipes that snapshot with a
  * non-elidable byte loop immediately before every free, and confirms
  * F_GET_SEALS after F_ADD_SEALS on the verifier memfd. The verifier
- * hashes stdin itself (it never
- * accepts a caller digest), scans every 4-byte window for Wasm magic,
- * mints a process-local Signet, consumes it, and writes:
+ * hashes stdin itself (it never accepts a caller digest), scans every
+ * 4-byte window for Wasm magic, and writes:
  *
  *   GALERINA_VOK_VERDICT_V1\n
  *   ENVELOPE <nbytes>\n
@@ -36,15 +35,19 @@
  * ten lines. framedDigest = SHA-256 of
  *   "{domain.len}:{domain}{payload.len}:{payload}"
  *
+ * buildPoint, capabilityDigest, dependencyClosureDigest and
+ * evidenceSetDigest are synthetic placeholders: the host never passes
+ * --build-point; capability is "none", deps "closed", evidence
+ * "synthetic". They are not attested facts.
+ *
  * Wax Seal keys (sorted):
  *   authentication, authorizing, envelopeDigest, kind, profileDigest,
  *   replayable, schemaVersion, terminalOutcome
  * followed by sealDigest. authorizing=false replayable=false
  * authentication=PINNED_CHILD_PIPE kind=WAX_SEAL.
  *
- * UNAUTHENTICATED_REFERENCE is not an accepting load state. Copying a
- * serialized seal cannot recreate the Signet. C bind is internal to
- * spawn_and_bind; file-parsed structs cannot produce BIND_OK.
+ * UNAUTHENTICATED_REFERENCE is not an accepting load state. C bind is
+ * internal to spawn_and_bind; file-parsed structs cannot produce BIND_OK.
  */
 
 #endif

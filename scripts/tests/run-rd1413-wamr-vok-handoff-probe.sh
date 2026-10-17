@@ -100,11 +100,23 @@ if ! grep -q 'VOK_AOT_REFUSED' "$vok_dir/src/assurance.rs"; then
 fi
 
 cd "$vok_dir"
-rm -f -- "$vok_dir/target/release/libgalerina_vok_authority.a"
+cargo_release_dir() {
+  local root="${CARGO_TARGET_DIR:-$vok_dir/target}"
+  if [[ -n "${CARGO_BUILD_TARGET:-}" ]]; then
+    printf '%s/%s/release' "$root" "$CARGO_BUILD_TARGET"
+  else
+    printf '%s/release' "$root"
+  fi
+}
+release_dir="$(cargo_release_dir)"
+rm -f -- "$release_dir/libgalerina_vok_authority.a"
 cargo build --offline --locked --release --bin vok-artifact-verifier
-verifier="$vok_dir/target/release/vok-artifact-verifier"
-test -x "$verifier"
-if [[ -f "$vok_dir/target/release/libgalerina_vok_authority.a" ]]; then
+verifier="$release_dir/vok-artifact-verifier"
+if [[ ! -x "$verifier" ]]; then
+  printf 'VOK_VERIFIER_MISSING %s\n' "$verifier" >&2
+  exit 2
+fi
+if [[ -f "$release_dir/libgalerina_vok_authority.a" ]]; then
   printf 'staticlib libgalerina_vok_authority.a must not exist for the runtime build\n' >&2
   exit 1
 fi
