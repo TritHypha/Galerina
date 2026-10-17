@@ -1,0 +1,335 @@
+{
+  "schema": "galerina.fungi-memory.manifest.v1",
+  "status": "SCAFFOLD_ONLY_NON_AUTHORIZING",
+  "base": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
+  "queue29_registry_branch": "grok/fungi-lowering-obligations-20261017",
+  "queue29_registry_commit": "bf1b3afcaaf1d84c5c34b4f566464c7629c4258b",
+  "queue29_registry_path": "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json",
+  "unlisted_status_refuses": true,
+  "units": [
+    {
+      "unit": "SECRET_GATE",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/secret-gate.ts#createSecretGate",
+      "existing_fungi": "packages-ts/galerina-framework-app-kernel/src/self-hosted/secret-gate.fungi",
+      "existing_fungi_overlays": [
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/secret-gate-admit-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/secret-gate-create-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/secret-gate-get-status.fungi"
+      ],
+      "new_fungi": "packages/fungi/memory/src/secret-gate.fungi",
+      "rd": "RD-1413,RD-1414,RD-0361",
+      "frozen_deferred": "S-M",
+      "obligations": [
+        "NO_NULL_NAN",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "LINEAR_SECRET",
+        "TOTAL_EFFECT_OUTCOME",
+        "BOUNDED_INPUT"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "APP_KERNEL",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/kernel.ts#createAppKernel",
+      "existing_fungi": "packages-ts/galerina-framework-app-kernel/src/self-hosted/kernel.fungi",
+      "existing_fungi_overlays": [
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-base-content-type-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-create-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-duplicate-json-key-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-error-code-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-error-response-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-handle-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-header-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-rate-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-release-slot-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-route-key-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-run-pipeline-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/kernel-secret-callback-status.fungi"
+      ],
+      "existing_fungi_products": "packages/fungi/products/galerina-framework-app-kernel/max-rate-windows.fungi",
+      "overlay_count_note": "Grok seed said 9 kernel-*-status overlays; git ls-tree at base lists 12 paths matching kernel-*-status.fungi under conversion-overlays. Using the 12 verified paths.",
+      "new_fungi": "packages/fungi/memory/src/kernel.fungi",
+      "rd": "RD-1413,RD-1414,RD-1415,RD-0361",
+      "frozen_deferred": "S-M",
+      "obligations": [
+        "TOTAL_EFFECT_OUTCOME",
+        "UNFORGEABLE_CAPABILITY",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_AMBIENT_AUTHORITY",
+        "DEADLINE_COVERS_ALL"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "U4_RELEASE_COMMIT_POINT",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/release-commit-point.ts#ReleaseCommitAuthority",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/release-commit-point.fungi",
+      "rd": "RD-1415",
+      "obligations": [
+        "TOTAL_EFFECT_OUTCOME",
+        "UNFORGEABLE_CAPABILITY",
+        "NO_NULL_NAN",
+        "EXHAUSTIVE_FAIL_CLOSED"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "U3_SECRET_ARENA",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/secret-arena-provider.ts#createSecretArenaProvider",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/secret-arena.fungi",
+      "rd": "RD-1414",
+      "obligations": [
+        "LINEAR_SECRET",
+        "SEALED_INTRINSICS",
+        "NO_NULL_NAN",
+        "DEADLINE_COVERS_ALL",
+        "MONOTONIC_TYPED_TIME"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "APPK_HOLD_PIN",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/hold-pin.ts#prepareProtectedMemoryRouteRequest",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "NONE_STAYS_TS_REFUSAL_PIN",
+      "rd": "RD-1413,RD-1414,RD-1415",
+      "stays_typescript": true,
+      "stays_typescript_reason": "hold-pin.ts is the package-side refusal pin; it stays TS until the gate opens",
+      "obligations": [
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_AMBIENT_AUTHORITY"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "APPK_API_SERVER_HANDOFF",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/api-server-handoff-contract.ts#checkKernelHandoffRequest",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/api-server-handoff.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "BOUNDED_INPUT",
+        "NO_NULL_NAN"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "APPK_CORE_RUNTIME_HANDOFF",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/core-runtime-handoff-contract.ts#createCoreRuntimeHandoff",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/core-runtime-handoff.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_AMBIENT_AUTHORITY",
+        "NO_NULL_NAN"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "U2_SERVE_GATE",
+      "ts_oracle": "packages-ts/galerina-core-compiler/src/serve-secret-gate.ts#standaloneServeSecretRefusal",
+      "existing_fungi": "NO_TWIN",
+      "existing_fungi_overlays": [
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/route-dispatcher-start-server-status.fungi",
+        "packages-ts/galerina-test/src/self-hosted/conversion-overlays/runtime-serve-status.fungi"
+      ],
+      "new_fungi": "packages/fungi/memory/src/serve-secret-gate.fungi",
+      "rd": "RD-1413",
+      "obligations": [
+        "NO_AMBIENT_AUTHORITY",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "UNFORGEABLE_CAPABILITY",
+        "BOUNDED_INPUT"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "AUTH_VERDICT",
+      "ts_oracle": "packages-ts/galerina-auth/src/compose.ts#composeAuthVerdict",
+      "existing_fungi": "packages/fungi/products/galerina-auth/compose-auth-verdict.fungi",
+      "new_fungi": "packages/fungi/memory/src/compose-auth-verdict.fungi",
+      "rd": "RD-0873",
+      "generated_note": "RD-0873 generated product; not an authoritative memory twin",
+      "obligations": [
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_NULL_NAN",
+        "TOTAL_EFFECT_OUTCOME"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "AUTH_FACTORS",
+      "ts_oracle": "packages-ts/galerina-auth/src/authorization.ts#scopeVerdict",
+      "ts_oracle_also": [
+        "packages-ts/galerina-auth/src/bearer.ts#bearerTokenVerdict",
+        "packages-ts/galerina-auth/src/channel.ts#channelIdentityVerdict",
+        "packages-ts/galerina-auth/src/credential.ts#headerPresenceVerdict",
+        "packages-ts/galerina-auth/src/verdict.ts#decideAtBoundary"
+      ],
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/auth-factors.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_NULL_NAN"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "AUTH_VERIFY_ROUTE",
+      "ts_oracle": "packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts#createAuthVerifyRoute",
+      "reason": "absent at main bdb5d1ba; confirmed on consolidation grok/memory-ts-consolidated-20261018 @ dc0f9c8c4f1365f0228cda213b2ecd001400463e as createAuthVerifyRoute",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "rd": "RD-1413,RD-1414,RD-1415",
+      "parked_findings": [
+        "P20-F1",
+        "P20-F2",
+        "P20-N2",
+        "P20-N3",
+        "P20-R1",
+        "P20-R2"
+      ],
+      "obligations": [
+        "LINEAR_SECRET",
+        "TOTAL_EFFECT_OUTCOME",
+        "BOUNDED_INPUT",
+        "SEALED_INTRINSICS",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_NULL_NAN"
+      ],
+      "status": "NOT_STARTED",
+      "ts_oracle_at_main": "ABSENT",
+      "ts_oracle_at_consolidation": "dc0f9c8c4f1365f0228cda213b2ecd001400463e"
+    },
+    {
+      "unit": "SIGNET_GATEWAY_WIT",
+      "ts_oracle": "packages-ts/galerina-ext-secrets-vault/src/types.ts#SECRETS_GATEWAY_WIT",
+      "existing_fungi": "packages-ts/galerina-ext-secrets-vault/src/self-hosted/secrets-gateway-wit.fungi",
+      "new_fungi": "packages/fungi/memory/src/secrets-gateway-wit.fungi",
+      "rd": "NONE",
+      "generated_note": "non-authorizing, no WIT consumer wired",
+      "obligations": [
+        "UNFORGEABLE_CAPABILITY",
+        "NO_AMBIENT_AUTHORITY",
+        "SEALED_INTRINSICS"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "SPORE_SECRETS",
+      "ts_oracle": "packages-ts/galerina-ext-secrets-spore/src/arena.ts#SealArena",
+      "ts_oracle_also": [
+        "packages-ts/galerina-ext-secrets-spore/src/wipe.ts#wipeBytes",
+        "packages-ts/galerina-ext-secrets-spore/src/mlock.ts#tryMlock",
+        "packages-ts/galerina-ext-secrets-spore/src/store.ts#composeRead",
+        "packages-ts/galerina-ext-secrets-spore/src/spore.ts#writeSpore"
+      ],
+      "existing_fungi": "packages-ts/galerina-ext-secrets-spore/src/self-hosted/seal-magic.fungi",
+      "existing_fungi_also": [
+        "packages-ts/galerina-ext-secrets-spore/src/self-hosted/codec-json.fungi",
+        "packages-ts/galerina-ext-secrets-spore/src/self-hosted/ctx-kemprofile-offset.fungi",
+        "packages-ts/galerina-ext-secrets-spore/src/self-hosted/modality-structured.fungi"
+      ],
+      "new_fungi": "packages/fungi/memory/src/spore-secrets.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "LINEAR_SECRET",
+        "NO_NULL_NAN",
+        "SEALED_INTRINSICS"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "BODY_READER",
+      "ts_oracle": "packages-ts/galerina-framework-api-server/src/index.ts#createApiServer",
+      "reason": "no dedicated body-buffer export; DEFAULT_MAX_BODY_BYTES and createApiServer confirmed at base; body buffering lives inside createApiServer",
+      "existing_fungi": "packages-ts/galerina-framework-api-server/src/self-hosted/default-max-body-bytes.fungi",
+      "existing_fungi_also": [
+        "packages-ts/galerina-framework-api-server/src/self-hosted/default-idle-timeout-ms.fungi",
+        "packages-ts/galerina-framework-api-server/src/self-hosted/max-principal-scopes.fungi"
+      ],
+      "new_fungi": "packages/fungi/memory/src/body-reader.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "BOUNDED_INPUT",
+        "NO_NULL_NAN",
+        "DEADLINE_COVERS_ALL"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "CAPABILITY_LEASE",
+      "ts_oracle": "packages-ts/galerina-core-security/src/capability-lease-contracts.ts#readCapabilityLease",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/capability-lease.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "UNFORGEABLE_CAPABILITY",
+        "TOTAL_EFFECT_OUTCOME",
+        "EXHAUSTIVE_FAIL_CLOSED"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "MEMORY_VALIDATOR",
+      "ts_oracle": "packages-ts/galerina-core-sentinel-memory/src/memory-validator.ts#MemoryValidator",
+      "existing_fungi": "packages-ts/galerina-core-sentinel-memory/src/self-hosted/memory-validator.fungi",
+      "new_fungi": "packages/fungi/memory/src/memory-validator.fungi",
+      "rd": "RD-0361",
+      "frozen_deferred": "S-M",
+      "obligations": [
+        "BOUNDED_INPUT",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_NULL_NAN"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "unit": "C_BOUNDARY_HELPER",
+      "ts_oracle": "NONE",
+      "reason": "new shared helper; no TypeScript oracle at base (queue 20 foreign-boundary.ts is PARKED_TS_REFERENCE, absent from main)",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/c-boundary.fungi",
+      "rd": "NONE",
+      "obligations": [
+        "NO_NULL_NAN",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "BOUNDED_INPUT"
+      ],
+      "status": "NOT_STARTED"
+    }
+  ],
+  "out_of_scope_native": [
+    {
+      "path": "packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs",
+      "reason": "Rust is only an out-of-process verifier; not a .fungi memory unit"
+    },
+    {
+      "path": "packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena_custodian.rs",
+      "reason": "Rust custodian binary; spawn-only; not a .fungi memory unit"
+    },
+    {
+      "path": "packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena_store.rs",
+      "reason": "Rust store; not a .fungi memory unit"
+    },
+    {
+      "path": "packages-ts/galerina-core-runtime/native/wamr-host/src/wamr_secrets_gateway_host.c",
+      "reason": "C WAMR host; compiled .fungi runtime contains no Rust and this C host is out of the .fungi memory folder"
+    }
+  ],
+  "parked_unmappable": [
+    {
+      "id": "P20-N5",
+      "code": "OBLIGATION_UNMAPPABLE",
+      "reason": "Deno adapter check UNKNOWN; no seed obligation id and no Deno unit"
+    }
+  ],
+  "consolidation_branch": "grok/memory-ts-consolidated-20261018",
+  "consolidation_head": "dc0f9c8c4f1365f0228cda213b2ecd001400463e",
+  "addendum_c_sha256": "4df9e40965b74e5c5b6f74f78416c9a6415cd8547333bb64b2c932e1be424613"
+}
