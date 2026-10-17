@@ -70,8 +70,9 @@ impl SecretArenaStore {
         !self.quarantined && self.entries.contains_key(name)
     }
 
-    /// Copy plaintext out of secretmem for the caller's borrow window.
-    /// The caller must zero the returned buffer after use.
+    /// Copy plaintext out of secretmem for the caller's IPC/borrow window.
+    /// The caller must zero the returned buffer on every exit (see ZeroOnDrop
+    /// in the custodian). This copy is not a long-lived store.
     pub(crate) fn get(&mut self, name: &str) -> Result<Vec<u8>, SecretArenaError> {
         self.refuse_if_quarantined()?;
         let arena = self

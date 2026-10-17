@@ -214,6 +214,7 @@ export function createSecretGate(
     let stagedView: Uint8Array | undefined;
     let deliveredView: Uint8Array | undefined;
     let liveView: Uint8Array | undefined;
+    let deliverySucceeded = false;
     const failCallback = (error: unknown): never => {
       if (!callbackFailed) {
         callbackFailed = true;
@@ -368,20 +369,32 @@ export function createSecretGate(
       // The consumer can indirectly trigger a provider-retained callback and swallow its error;
       // preserve that violation before treating this consumer call as successful.
       if (callbackFailed) throw callbackFailure;
+      deliverySucceeded = true;
       return undefined;
     } finally {
       // Wipe must never replace the original consumer/provider error, and dropIfUnused must run.
+      let stagedWipeFailed = false;
       try {
         if (stagedView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, stagedView, [0]);
       } catch {
-        // Gate-owned fill is best-effort relative to the original error.
+        stagedWipeFailed = true;
       }
       try {
         if (deliveredView !== undefined) intrinsicApply(intrinsicUint8ArrayFill, deliveredView, [0]);
       } catch {
         // The consumer may have transferred this view's buffer. That copy is out of wipe scope.
       }
+      if (stagedWipeFailed) {
+        try {
+          authority.markUnknown(lease.leaseId);
+        } catch {
+          // lease may already be unknown, fenced, or missing
+        }
+      }
       authority.dropIfUnused(lease.leaseId, lease.token);
+      if (stagedWipeFailed && deliverySucceeded) {
+        throw new Error("SecretGate: staged secret wipe failed");
+      }
     }
   }
 

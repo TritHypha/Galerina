@@ -231,6 +231,10 @@ test("linux child-death quarantines without a production test hook", async (t) =
     () => provider.put("cred", new Uint8Array([1])),
     (error) => error instanceof SecretArenaQuarantined,
   );
+  const epoch = provider.revocationEpoch();
+  assert.equal(typeof epoch, "number");
+  assert.equal(Number.isSafeInteger(epoch) && epoch >= 0, true);
+  assert.equal(provider.status().state, "quarantined");
 });
 
 test("linux short custodian read wipes and refuses construction", async (t) => {

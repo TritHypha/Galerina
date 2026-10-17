@@ -99,13 +99,25 @@ fn write_frame(writer: &mut impl Write, payload: &[u8]) -> io::Result<()> {
     writer.flush()
 }
 
+struct ZeroOnDrop(Vec<u8>);
+
+impl Drop for ZeroOnDrop {
+    fn drop(&mut self) {
+        self.0.fill(0);
+    }
+}
+
+impl ZeroOnDrop {
+    fn as_slice(&self) -> &[u8] {
+        &self.0
+    }
+}
+
 fn reply(writer: &mut impl Write, status: u8, data: &[u8]) -> io::Result<()> {
-    let mut payload = Vec::with_capacity(1 + data.len());
-    payload.push(status);
-    payload.extend_from_slice(data);
-    let result = write_frame(writer, &payload);
-    payload.fill(0);
-    result
+    let mut payload = ZeroOnDrop(Vec::with_capacity(1 + data.len()));
+    payload.0.push(status);
+    payload.0.extend_from_slice(data);
+    write_frame(writer, payload.as_slice())
 }
 
 fn read_name(payload: &[u8]) -> Result<(&str, &[u8]), SecretArenaError> {
@@ -147,9 +159,9 @@ pub fn run_secret_arena_custodian() -> ! {
         let rest = &frame[1..];
         let result = dispatch(&mut store, opcode, rest);
         match result {
-            Ok((status, mut data)) => {
-                let write = reply(&mut stdout, status, &data);
-                data.fill(0);
+            Ok((status, data)) => {
+                let data = ZeroOnDrop(data);
+                let write = reply(&mut stdout, status, data.as_slice());
                 frame.fill(0);
                 if write.is_err() {
                     process::exit(1);

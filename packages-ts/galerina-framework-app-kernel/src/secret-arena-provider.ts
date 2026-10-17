@@ -317,6 +317,14 @@ export function createSecretArenaProvider(
 
   let quarantined = false;
   let disposed = false;
+  let lastEpoch = 0;
+
+  const markQuarantined = (): void => {
+    if (!quarantined) {
+      lastEpoch += 1;
+    }
+    quarantined = true;
+  };
 
   const wipe = (bytes: Uint8Array | undefined): boolean => {
     if (bytes === undefined) return true;
@@ -328,8 +336,12 @@ export function createSecretArenaProvider(
     }
   };
 
+  const wipeOrQuarantine = (bytes: Uint8Array | undefined): void => {
+    if (!wipe(bytes)) markQuarantined();
+  };
+
   const killCustodian = (): void => {
-    quarantined = true;
+    markQuarantined();
     try {
       child.stdin?.destroy();
     } catch {
@@ -371,6 +383,7 @@ export function createSecretArenaProvider(
     header[3] = len & 0xff;
     let respHeader: Uint8Array | undefined;
     let resp: Uint8Array | undefined;
+    let result: { status: number; data: Uint8Array } | undefined;
     try {
       writeAll(stdinFd, header);
       writeAll(stdinFd, body);
@@ -387,18 +400,27 @@ export function createSecretArenaProvider(
       const status = resp[0] ?? ST_QUARANTINED;
       const data = Uint8Array.from(resp.subarray(1));
       if (status === ST_QUARANTINED) {
-        quarantined = true;
+        markQuarantined();
       }
-      return { status, data };
+      result = { status, data };
     } catch (error) {
       killCustodian();
       throw error;
     } finally {
-      wipe(body);
-      wipe(header);
-      wipe(respHeader);
-      wipe(resp);
+      wipeOrQuarantine(body);
+      wipeOrQuarantine(header);
+      wipeOrQuarantine(respHeader);
+      wipeOrQuarantine(resp);
     }
+    if (result === undefined) {
+      markQuarantined();
+      throw new SecretArenaUnavailable("SecretArena custodian returned no frame");
+    }
+    if (quarantined && opcode !== OP_STATUS && opcode !== OP_EPOCH) {
+      wipeOrQuarantine(result.data);
+      throw new SecretArenaQuarantined();
+    }
+    return result;
   };
 
   try {
@@ -417,7 +439,7 @@ export function createSecretArenaProvider(
   }
 
   const enterQuarantine = (): never => {
-    quarantined = true;
+    markQuarantined();
     throw new SecretArenaQuarantined();
   };
 
@@ -425,16 +447,21 @@ export function createSecretArenaProvider(
     has(name: string): boolean {
       if (quarantined) throw new SecretArenaQuarantined();
       const nameBytes = encodeName(name);
+      let present = false;
       try {
         const { status, data } = rpc(OP_HAS, nameBytes);
         if (status === ST_QUARANTINED) return enterQuarantine();
-        if (status !== ST_OK) return false;
-        const present = data[0] === 1;
-        wipe(data);
-        return present;
+        if (status !== ST_OK) {
+          wipeOrQuarantine(data);
+        } else {
+          present = data[0] === 1;
+          wipeOrQuarantine(data);
+        }
       } finally {
-        wipe(nameBytes);
+        wipeOrQuarantine(nameBytes);
       }
+      if (quarantined) throw new SecretArenaQuarantined();
+      return present;
     },
     use(name: string, fn: (value: Uint8Array) => void, options?: { signal?: AbortSignal }): void {
       if (options?.signal?.aborted) {
@@ -448,25 +475,29 @@ export function createSecretArenaProvider(
       try {
         const { status, data } = rpc(OP_GET, nameBytes);
         if (status === ST_QUARANTINED) return enterQuarantine();
-        if (status === ST_NOT_FOUND) return;
+        if (status === ST_NOT_FOUND) {
+          wipeOrQuarantine(data);
+          return;
+        }
         if (status !== ST_OK) {
+          wipeOrQuarantine(data);
           throw new SecretArenaUnavailable("SecretArena get refused");
         }
         if (data.length === 0) {
-          wipe(data);
+          wipeOrQuarantine(data);
           return;
         }
         try {
           const allocated = allocateNonDetachableSecret(data);
           slot = allocated;
         } catch (error) {
-          quarantined = true;
+          markQuarantined();
           throw error;
         } finally {
-          wipe(data);
+          wipeOrQuarantine(data);
         }
         if (slot === undefined) {
-          quarantined = true;
+          markQuarantined();
           throw new SecretArenaUnavailable("SecretArena get refused");
         }
         const allocated = slot;
@@ -482,33 +513,42 @@ export function createSecretArenaProvider(
           throw new Error("SecretArenaProvider: callback return/async escape channel is forbidden");
         }
       } finally {
-        wipe(nameBytes);
+        wipeOrQuarantine(nameBytes);
         if (restoreTransfer !== undefined) restoreTransfer();
         if (slot !== undefined) {
           detached = isDetachedBuffer(slot.buffer);
           if (detached || !slot.wipe()) {
-            quarantined = true;
+            markQuarantined();
             detached = true;
           }
         }
       }
       if (detached) throw new SecretArenaQuarantined();
+      if (quarantined) throw new SecretArenaQuarantined();
     },
     revocationEpoch(): number {
-      if (quarantined) throw new SecretArenaQuarantined();
+      if (disposed) throw new SecretArenaUnavailable("SecretArena custodian is disposed");
+      if (quarantined) return lastEpoch;
       const { status, data } = rpc(OP_EPOCH);
-      if (status === ST_QUARANTINED) return enterQuarantine();
+      if (status === ST_QUARANTINED) {
+        wipeOrQuarantine(data);
+        return lastEpoch;
+      }
       if (status !== ST_OK || data.length !== 8) {
+        wipeOrQuarantine(data);
         throw new SecretArenaUnavailable("SecretArena epoch is unavailable");
       }
       let epoch = 0;
       for (let i = 0; i < 8; i += 1) {
         epoch = epoch * 256 + (data[i] ?? 0);
       }
-      wipe(data);
+      wipeOrQuarantine(data);
       if (!Number.isSafeInteger(epoch) || epoch < 0) {
+        markQuarantined();
         throw new SecretArenaUnavailable("SecretArena epoch is unavailable");
       }
+      lastEpoch = epoch;
+      if (quarantined) return lastEpoch;
       return epoch;
     },
     put(name: string, value: Uint8Array): void {
@@ -524,16 +564,17 @@ export function createSecretArenaProvider(
           throw new SecretArenaUnavailable("SecretArena put refused");
         }
       } finally {
-        wipe(payload);
-        wipe(nameBytes);
+        wipeOrQuarantine(payload);
+        wipeOrQuarantine(nameBytes);
       }
+      if (quarantined) throw new SecretArenaQuarantined();
     },
     dispose(): void {
       if (disposed) return;
       try {
         rpc(OP_CLEANUP);
       } catch {
-        quarantined = true;
+        markQuarantined();
       } finally {
         disposed = true;
         try {
@@ -548,14 +589,14 @@ export function createSecretArenaProvider(
       try {
         const { status, data } = rpc(OP_STATUS);
         const quarantinedBit = data[0] === 1;
-        wipe(data);
-        if (status !== ST_OK || quarantinedBit) {
-          quarantined = true;
+        wipeOrQuarantine(data);
+        if (status !== ST_OK || quarantinedBit || quarantined) {
+          markQuarantined();
           return { state: "quarantined" };
         }
         return { state: "active" };
       } catch {
-        quarantined = true;
+        markQuarantined();
         return { state: "quarantined" };
       }
     },
