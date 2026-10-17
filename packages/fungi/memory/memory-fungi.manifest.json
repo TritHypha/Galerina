@@ -3,7 +3,7 @@
   "status": "SCAFFOLD_ONLY_NON_AUTHORIZING",
   "base": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
   "queue29_registry_branch": "grok/fungi-lowering-obligations-20261017",
-  "queue29_registry_commit": "bf1b3afcaaf1d84c5c34b4f566464c7629c4258b",
+  "queue29_registry_commit": "c098d4668474a497746527e7d73a2ae4384176fb",
   "queue29_registry_path": "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json",
   "unlisted_status_refuses": true,
   "units": [
@@ -26,7 +26,8 @@
         "TOTAL_EFFECT_OUTCOME",
         "BOUNDED_INPUT"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "APP_KERNEL",
@@ -58,7 +59,8 @@
         "NO_AMBIENT_AUTHORITY",
         "DEADLINE_COVERS_ALL"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "U4_RELEASE_COMMIT_POINT",
@@ -72,7 +74,8 @@
         "NO_NULL_NAN",
         "EXHAUSTIVE_FAIL_CLOSED"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "U3_SECRET_ARENA",
@@ -87,7 +90,8 @@
         "DEADLINE_COVERS_ALL",
         "MONOTONIC_TYPED_TIME"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "APPK_HOLD_PIN",
@@ -101,7 +105,8 @@
         "EXHAUSTIVE_FAIL_CLOSED",
         "NO_AMBIENT_AUTHORITY"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "APPK_API_SERVER_HANDOFF",
@@ -114,7 +119,8 @@
         "BOUNDED_INPUT",
         "NO_NULL_NAN"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "APPK_CORE_RUNTIME_HANDOFF",
@@ -127,7 +133,8 @@
         "NO_AMBIENT_AUTHORITY",
         "NO_NULL_NAN"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "U2_SERVE_GATE",
@@ -145,7 +152,8 @@
         "UNFORGEABLE_CAPABILITY",
         "BOUNDED_INPUT"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "AUTH_VERDICT",
@@ -159,7 +167,8 @@
         "NO_NULL_NAN",
         "TOTAL_EFFECT_OUTCOME"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "AUTH_FACTORS",
@@ -177,7 +186,8 @@
         "EXHAUSTIVE_FAIL_CLOSED",
         "NO_NULL_NAN"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "AUTH_VERIFY_ROUTE",
@@ -200,11 +210,14 @@
         "BOUNDED_INPUT",
         "SEALED_INTRINSICS",
         "EXHAUSTIVE_FAIL_CLOSED",
-        "NO_NULL_NAN"
+        "NO_NULL_NAN",
+        "NO_OVERLAPPING_CHUNKS",
+        "HOST_ADAPTER_PRESENCE"
       ],
       "status": "NOT_STARTED",
       "ts_oracle_at_main": "ABSENT",
-      "ts_oracle_at_consolidation": "dc0f9c8c4f1365f0228cda213b2ecd001400463e"
+      "ts_oracle_at_consolidation": "dc0f9c8c4f1365f0228cda213b2ecd001400463e",
+      "ts_oracle_commit": "dc0f9c8c4f1365f0228cda213b2ecd001400463e"
     },
     {
       "unit": "SIGNET_GATEWAY_WIT",
@@ -218,7 +231,8 @@
         "NO_AMBIENT_AUTHORITY",
         "SEALED_INTRINSICS"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "SPORE_SECRETS",
@@ -242,7 +256,8 @@
         "NO_NULL_NAN",
         "SEALED_INTRINSICS"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "BODY_READER",
@@ -260,7 +275,8 @@
         "NO_NULL_NAN",
         "DEADLINE_COVERS_ALL"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "CAPABILITY_LEASE",
@@ -273,7 +289,8 @@
         "TOTAL_EFFECT_OUTCOME",
         "EXHAUSTIVE_FAIL_CLOSED"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "MEMORY_VALIDATOR",
@@ -287,7 +304,8 @@
         "EXHAUSTIVE_FAIL_CLOSED",
         "NO_NULL_NAN"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     },
     {
       "unit": "C_BOUNDARY_HELPER",
@@ -301,7 +319,8 @@
         "EXHAUSTIVE_FAIL_CLOSED",
         "BOUNDED_INPUT"
       ],
-      "status": "NOT_STARTED"
+      "status": "NOT_STARTED",
+      "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
     }
   ],
   "out_of_scope_native": [
@@ -322,14 +341,14 @@
       "reason": "C WAMR host; compiled .fungi runtime contains no Rust and this C host is out of the .fungi memory folder"
     }
   ],
-  "parked_unmappable": [
-    {
-      "id": "P20-N5",
-      "code": "OBLIGATION_UNMAPPABLE",
-      "reason": "Deno adapter check UNKNOWN; no seed obligation id and no Deno unit"
-    }
-  ],
+  "parked_unmappable": [],
   "consolidation_branch": "grok/memory-ts-consolidated-20261018",
   "consolidation_head": "dc0f9c8c4f1365f0228cda213b2ecd001400463e",
-  "addendum_c_sha256": "4df9e40965b74e5c5b6f74f78416c9a6415cd8547333bb64b2c932e1be424613"
+  "addendum_c_sha256": "4df9e40965b74e5c5b6f74f78416c9a6415cd8547333bb64b2c932e1be424613",
+  "ts_oracle_commit_unlisted_refuses": true,
+  "ts_oracle_commit_closed": [
+    "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
+    "dc0f9c8c4f1365f0228cda213b2ecd001400463e"
+  ],
+  "parked_unmappable_default": "unlisted parked id refuses silent drop; P20-N5 maps to HOST_ADAPTER_PRESENCE at queue29_registry_commit c098d4668474a497746527e7d73a2ae4384176fb"
 }

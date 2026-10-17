@@ -6,7 +6,7 @@ Never `READY` while the RD-1413/1414/1415 TODO gate is closed. Owner A1: convert
 
 Scaffold branch: `grok/fungi-memory-scaffold-20261017` off main `bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567`.
 TS input files: consolidation branch `grok/memory-ts-consolidated-20261018` HEAD `dc0f9c8c4f1365f0228cda213b2ecd001400463e` (ls-remote TritHypha; CONSOLIDATION-NOTES.md at its root).
-Queue 29 registry: branch `grok/fungi-lowering-obligations-20261017` HEAD `bf1b3afcaaf1d84c5c34b4f566464c7629c4258b` path `docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json` (29 landed as a branch, not on main).
+Queue 29 registry: branch `grok/fungi-lowering-obligations-20261017` HEAD `c098d4668474a497746527e7d73a2ae4384176fb` path `docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json` (29 landed as a branch, not on main).
 
 ## Standing owner rulings
 
@@ -31,7 +31,7 @@ Skills applied: `code-logic-workbench` (planning evidence only, not run against 
 
 Per unit × obligation: `KEEP` | `PATCH` | `REBUILD` | `ABANDON_TS_DESIGN` | `UNKNOWN`. Unlisted refuses.
 
-Per RD part: `READY_FOR_SLICE_AFTER_GATE` | `NEEDS_DESIGN` | `NEEDS_TOOLCHAIN` | `UNKNOWN`. Unlisted refuses. `READY` is not in this table.
+Per RD part: `READY_FOR_SLICE_AFTER_GATE` | `NEEDS_DESIGN` | `NEEDS_TOOLCHAIN` | `UNKNOWN` | `REFUSED`. Unlisted is `REFUSED` (never `READY`).
 
 ## Shared C-boundary helper
 
@@ -76,7 +76,7 @@ Notes:
 | P20-F2 | AUTH_VERIFY_ROUTE | SEALED_INTRINSICS, EXHAUSTIVE_FAIL_CLOSED | REBUILD |
 | P20-N2 | AUTH_VERIFY_ROUTE | SEALED_INTRINSICS, BOUNDED_INPUT | REBUILD |
 | P20-N3 | AUTH_VERIFY_ROUTE | NO_NULL_NAN | REBUILD |
-| P20-N5 | OBLIGATION_UNMAPPABLE | none | UNKNOWN (Deno adapter) |
+| P20-N5 | AUTH_VERIFY_ROUTE | HOST_ADAPTER_PRESENCE | UNKNOWN (Deno adapter; Q29 `c098d466` maps this id) |
 | P20-R1 | AUTH_VERIFY_ROUTE | SEALED_INTRINSICS | REBUILD |
 | P20-R2 | AUTH_VERIFY_ROUTE | LINEAR_SECRET | REBUILD |
 | P24-F1 | U3_SECRET_ARENA | LINEAR_SECRET | REBUILD |
@@ -115,22 +115,25 @@ No RD body quoted. Ideas 5 and 9 from `30-inputs-rd1899-1910.md` sha256 `10031f3
 | RD-1413 | READY_FOR_SLICE_AFTER_GATE | U2 serve-gate + AUTH_VERIFY_ROUTE have TS oracles on consolidation; gate still HOLD; A1 allows conversion unmerged |
 | RD-1414 | NEEDS_DESIGN | LINEAR_SECRET / SEALED_INTRINSICS language gaps UNKNOWN; arena wipe structural |
 | RD-1415 | NEEDS_DESIGN | TOTAL_EFFECT_OUTCOME language spec UNKNOWN |
-| toolchain | NEEDS_TOOLCHAIN | compiler dist absent in this clone; golden-probe and galerina check UNKNOWN |
-| (unlisted) | UNKNOWN | this row refuses READY |
+| toolchain | NEEDS_TOOLCHAIN | golden-probe RED (stale manifest); compiler `tsc` exit 2 on shims; dist still emitted (`noEmitOnError` unset) |
+| (unlisted) | REFUSED | never READY |
 
 ## Toolchain facts
 
 | check | status | evidence |
 |---|---|---|
-| `npm run audit:package-topology` | VERIFIED exit 0 | `101 canonical identities; 1 deferred nested native; pre-SLIDE ratchet GREEN`. Folder `packages/fungi/memory/` did not refuse. |
+| `npm run audit:package-topology` | VERIFIED exit 0, folder UNGOVERNED / typed UNKNOWN | Scan root is `packages-ts/` (`scripts/audit-flat-package-topology.mjs` `scanWorkspace` line 175 at base). `packages/fungi/` is never walked. GREEN 101 identities, 1 deferred, 0 pre-SLIDE node_modules is vacuous for this folder. |
 | `npm run audit:package-topology:selftest` | VERIFIED 7/7 pass | |
 | `npm run audit:product-boundaries --check` | VERIFIED exit 2 REFUSED | JSON `PRODUCT_GRAPH_MISSING`. Pre-existing in a fresh clone (selftest expects this). Not a refusal of the folder. Fallback `packages-development/` NOT used. Generating the graph would touch `build/` (forbidden). |
 | `npm run audit:product-boundaries:selftest` | VERIFIED 10/10 pass | |
-| `node scripts/audit-kernel-fungi-twins.mjs` | PARTIAL | frozen-reference column: 13 frozen · 13 not-required · 3 deferred · 0 RED of 29 authoritative. check-clean 0/103 because `packages-ts/galerina-core-compiler/dist/index.js` is absent in this `--no-hardlinks` clone. Exit 1. |
-| `galerina.mjs check` / `build` on memory twins | UNKNOWN | same missing dist |
-| `node scripts/fungi-golden-probe.mjs --check` | UNKNOWN (RED) | exit 1 `REFUSED: ENOENT ... core-compiler/dist`. Did not run `--write`. Last commits at base: `docs/examples/golden/cases.json` `6eebbfb1` 2026-08-04; `scripts/fungi-golden-probe.mjs` `f28d0eaa` 2026-10-04; `build/fungi-capabilities/golden-manifest.json` `f05c2993` 2026-09-12. Grok staging RED (caseDefinitionSha256 / probeRunnerSha256 / runtimeClosureFileCount 359 vs 320) not reproduced here because dist is missing. Cause of Grok's RED remains UNKNOWN. |
-| whole `npm test` | UNKNOWN | separate scratch clone not run; compiler dist missing; full suite rewrites tracked fixtures (CN-3); time budget would be consumed by install/build |
-| `wat-p9-*-parity` | UNKNOWN | not run; would need compiler dist; 10-minute budget not opened |
+| `node scripts/build-core-chain.mjs galerina-core-compiler` (separate scratch clone `galerina-q30-compiler-scratch-20261018`) | PARTIAL | 11 package chain. 10 packages `tsc` exit 0. `@galerina/core-compiler` `tsc -p tsconfig.json` exit 2: `node-crypto-shim.d.ts` has no `randomUUID`; process stub has no `platform`/`chdir`; Buffer stub has no `alloc`. `noEmitOnError` unset so `dist/index.js` was still emitted. Same errors on Windows node v24.18.0 and WSL node v24.21.0. Nothing from the scratch clone is committed. |
+| `node scripts/audit-kernel-fungi-twins.mjs` (scratch, after that dist) | VERIFIED exit 0 | `103/103 check-clean` across 10 dirs. frozen-reference: 13 frozen · 13 not-required · 3 deferred · 0 RED of 29 authoritative. |
+| `node galerina.mjs check <twin>` | VERIFIED exit 0 | 30/30 manifest twins (every non-`NO_TWIN` `existing_fungi`, overlay, product). 0 errors, 0 governance warnings. |
+| `node galerina.mjs build` secret-gate / kernel / memory-validator | VERIFIED exit 0 | scratch-only `build/*.wasm`. Dev signing key auto-provisioned in the scratch tree; not copied, not committed. |
+| `node scripts/fungi-golden-probe.mjs --check` | VERIFIED exit 1 RED | Did not `--write`. Cause: stale golden-manifest vs live probe. Manifest recorded `probeRunnerSha256 sha256:587efed3…` (commit `f05c2993` 2026-09-12); live probe commit `f28d0eaa` 2026-10-04 hashes `306dc073…` (CRLF on-disk) / `cce8a8b2…` (LF). Manifest `runtimeClosureFileCount` 320 vs live 359 after core-compiler chain (`runtimeClosureSha256` 29f485dd vs 7e6ef826). `caseDefinitionSha256` recorded `22f4215b…` equals Windows CRLF bytes of `cases.json` (commit `6eebbfb1`); LF bytes are `62bc3954…` so a WSL LF checkout also mismatches. Grok staging RED is this stale-manifest triple, not a memory-folder defect. |
+| full `packages-ts/*/dist` rebuild then probe | UNKNOWN | core-compiler-only closure already 359; a full-tree rebuild was not opened (time). |
+| whole `npm test` | UNKNOWN | 30-minute budget not opened; full suite rewrites tracked fixtures (CN-3); compiler `tsc` is already exit 2. |
+| `wat-p9-*-parity` | VERIFIED exit 1 | 16 files present. `node --test` tokenize + parser-expr: 1 pass / 37 fail / 1.2s. WASM tokenize returns empty Identifier tokens; parser-expr `RangeError: Maximum call stack size exceeded` in `readExprW`. Remaining 14 files not run. Pre-existing on this `tsc`-exit-2 dist, not a memory-folder defect. |
 | (unlisted check) | UNKNOWN | refuses a silent green |
 
 ## Frozen-reference capture plan (this document, not a third spec)
@@ -168,4 +171,19 @@ Case design (MUST-refuse): empty required list with provider absent (admit only 
 
 ## Folder audit fallback
 
-`audit:package-topology` GREEN. `audit:product-boundaries` REFUSED `PRODUCT_GRAPH_MISSING` (pre-existing, not the folder). Fallback `packages-development/<name>/` was not used. A2 remains the fallback if a later audit refuses the folder. Never `packages-ts`.
+`audit:package-topology` VERIFIED exit 0 on `packages-ts/`. Folder `packages/fungi/memory/` is UNGOVERNED by that audit (typed UNKNOWN). `audit:product-boundaries` REFUSED `PRODUCT_GRAPH_MISSING` (pre-existing, not the folder). Fallback `packages-development/<name>/` was not used. A2 remains the fallback if a later audit refuses the folder. Never `packages-ts`.
+
+## Spec-only folder-content guard (proposal, no script)
+
+Later brief, NOT implemented here. Proposed `scripts/audit-fungi-memory-folder.mjs` walks `packages/fungi/memory/` and admits only:
+
+- `README.md`, `src/README.md`, `tests/README.md`
+- `memory-fungi.manifest.json`
+- `src/*.fungi` and `tests/*.fungi` after a slice is approved
+- no `node_modules/`, no `package.json`, no `package.fungi.json`, no other manifests, no unlisted names
+
+| outcome | meaning | refusing default |
+|---|---|---|
+| FOLDER_ADMITTED | only allowed names | |
+| FOLDER_UNGOVERNED | topology audit did not scan this tree | current state |
+| FOLDER_REFUSED | stray package manifest, node_modules, or unlisted file | this row |
