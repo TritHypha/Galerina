@@ -83,6 +83,11 @@ if ! grep -q 'AOT_REFUSED' "$host_src/wamr_secrets_gateway_host.c"; then
     "$host_root" >&2
   exit 2
 fi
+if ! grep -q 'BYTECODE_REQUIRED' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'WAMR_HOST_ROOT %s missing bytecode allowlist on authority load path\n' \
+    "$host_root" >&2
+  exit 2
+fi
 if ! grep -q 'VOK_AOT_REFUSED' "$vok_dir/src/assurance.rs"; then
   printf 'verifier missing VOK_AOT_REFUSED\n' >&2
   exit 2

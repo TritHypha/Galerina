@@ -21,7 +21,9 @@
  *
  * File mode (`--artifact` / `--envelope-out` / `--seal-out`) remains
  * for inspection. The C load path uses `--stdin` only. WAMR AOT
- * (NUL a o t prefix) is refused; the documented AOT validator stays off.
+ * (NUL a o t prefix) is refused with AOT_REFUSED; any other non-bytecode
+ * prefix is refused with BYTECODE_REQUIRED. The documented AOT validator
+ * stays unused. The host allowlists Wasm bytecode magic before spawn.
  *
  * Envelope keys (sorted, LF, `key=value`):
  *   abi, buildPoint, capabilityDigest, componentDigest,
