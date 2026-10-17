@@ -205,7 +205,7 @@ test("matrix: eviction past RELEASE_LEASE_CAP then retry refuses, never mints fr
     assert.equal(authority.ack(lease.leaseId, lease.token, 1), "acknowledged");
   }
   assert.ok(authority.size <= RELEASE_LEASE_CAP);
-  assertCleanStatus(authority.status("op-evict-0"), "op-evict-0", "NOT_FOUND");
+  assertCleanStatus(authority.status("op-evict-0"), "op-evict-0", "DELIVERY_UNKNOWN");
   assert.throws(
     () => authority.mint("op-evict-0", 1),
     (err) => isRefused(err, "replay"),
@@ -269,8 +269,13 @@ test("matrix: recovery and audit never include secret bytes, lengths, digests or
   assert.equal(dumped.includes("\u0000"), false);
   assert.equal(dumped.includes('"token"'), false);
   assert.equal(dumped.includes('"byteLength"'), false);
+  assert.equal(dumped.includes('"length"'), false);
   assert.equal(dumped.includes("SECRET"), false);
-  assert.doesNotMatch(dumped, /0x53|83,\s*69,\s*67/);
+  assert.equal(dumped.includes(SYNTHETIC.join(",")), false);
+  const hex = Buffer.from(Uint8Array.from(SYNTHETIC)).toString("hex");
+  assert.equal(dumped.toLowerCase().includes(hex), false);
+  const b64 = Buffer.from(Uint8Array.from(SYNTHETIC)).toString("base64");
+  assert.equal(dumped.includes(b64), false);
 });
 
 test("matrix: audit log and retired set stay at cap", () => {

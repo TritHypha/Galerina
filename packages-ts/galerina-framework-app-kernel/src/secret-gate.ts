@@ -42,7 +42,7 @@ export {
 export type {
   ReleaseOutcome,
   ReleaseLeaseState,
-  ReleaseStatusState,
+  ReleaseStatusState, // dead alias; status() returns OperationRecoveryStatus
   OperationRecoveryKind,
   OperationRecoveryStatus,
   ReleaseAuditEvent,

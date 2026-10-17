@@ -22,6 +22,7 @@ export type ReleaseLeaseState =
   | "fenced"
   | "delivery-unknown";
 
+/** Dead alias. `status()` returns `OperationRecoveryStatus`. Kept so existing type imports compile. */
 export type ReleaseStatusState = ReleaseLeaseState | "retired" | "missing";
 
 export type OperationRecoveryKind =
@@ -155,11 +156,11 @@ export class ReleaseCommitAuthority {
     if (id.length === 0) {
       return Object.freeze({ kind: "NOT_FOUND", operationId: "" });
     }
-    if (this.#retired.has(id)) {
-      return Object.freeze({ kind: "NOT_FOUND", operationId: id });
-    }
     const rec = this.#leases.get(id);
     if (rec === undefined) {
+      if (this.#retired.has(id)) {
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
+      }
       return Object.freeze({ kind: "NOT_FOUND", operationId: id });
     }
     switch (rec.state) {
@@ -172,11 +173,10 @@ export class ReleaseCommitAuthority {
       case "fenced":
         return Object.freeze({ kind: "REFUSED", operationId: id });
       case "unused":
-        return Object.freeze({ kind: "NOT_FOUND", operationId: id });
       default: {
-        const _exhaustive: never = rec.state;
-        void _exhaustive;
-        return Object.freeze({ kind: "NOT_FOUND", operationId: id });
+        const unusedOrUnknown: string = rec.state;
+        void unusedOrUnknown;
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
       }
     }
   }

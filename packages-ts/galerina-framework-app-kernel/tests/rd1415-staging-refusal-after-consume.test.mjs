@@ -29,9 +29,11 @@ function dumpHasSecret(value) {
   const dumped = JSON.stringify(value);
   if (dumped.includes("SECRET")) return true;
   if (dumped.includes("\u0000")) return true;
-  for (const byte of SYNTHETIC) {
-    if (dumped.includes(String.fromCharCode(byte))) return true;
-  }
+  if (dumped.includes(SYNTHETIC.join(","))) return true;
+  const hex = Buffer.from(Uint8Array.from(SYNTHETIC)).toString("hex");
+  if (dumped.toLowerCase().includes(hex)) return true;
+  const b64 = Buffer.from(Uint8Array.from(SYNTHETIC)).toString("base64");
+  if (dumped.includes(b64)) return true;
   return false;
 }
 
@@ -158,7 +160,7 @@ for (const scenario of cases) {
       assert.equal(harness.consumerCalled(), 0, `${scenario.name} ${mode} consumer`);
       assert.notEqual(status.kind, "RELEASED_UNACKED", `${scenario.name} ${mode} status`);
       assert.equal(status.kind, "DELIVERY_UNKNOWN", `${scenario.name} ${mode} status`);
-      assert.equal(Object.keys(status).sort().join(","), "operationId,state");
+      assert.equal(Object.keys(status).sort().join(","), "kind,operationId");
       assert.notEqual(ack, "released");
       assert.notEqual(ack, "acknowledged");
       assert.equal(ack, "replay");
