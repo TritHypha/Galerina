@@ -22,6 +22,8 @@ export interface SlideAdmissionRequestV1 {
   readonly status: SlideAdmissionRequestStatus;
   readonly proposalKind: "PROPOSAL" | "ATTEMPT_PROPOSAL";
   readonly proposalDigest: string;
+  /** Exact core-wasm module SHA-256 (`sha256:` + 64 lowercase hex). Distinct from proposalDigest. */
+  readonly artifactDigest: string;
   readonly transfer: ComputeTransferV1;
   readonly requestDigest: string;
   readonly requires: {
@@ -39,7 +41,8 @@ export interface SlideAdmissionRequestRefusal {
   readonly code:
     | "TP_SLIDE_REQUEST_MALFORMED"
     | "TP_SLIDE_REQUEST_AUTHORITY_FIELD_PRESENT"
-    | "TP_SLIDE_REQUEST_ALREADY_CLAIMED";
+    | "TP_SLIDE_REQUEST_ALREADY_CLAIMED"
+    | "TP_SLIDE_REQUEST_ARTIFACT_DIGEST_MALFORMED";
   readonly authorityReleased: false;
   readonly admissionAuthority: false;
 }
@@ -120,8 +123,15 @@ function requiresFresh(value: unknown): boolean {
 /**
  * Package a well-formed proposal as a SLIDE/VOK admission *request*.
  * Never admits. Status is always REQUESTED_NOT_ADMITTED.
+ * artifactDigest is required (`sha256:` + 64 lowercase hex) and names the module, not the route.
  */
-export function prepareSlideAdmissionRequest(proposal: unknown): SlideAdmissionRequestResult {
+export function prepareSlideAdmissionRequest(
+  proposal: unknown,
+  artifactDigest: unknown,
+): SlideAdmissionRequestResult {
+  if (typeof artifactDigest !== "string" || !DIGEST_RE.test(artifactDigest)) {
+    return refusal("TP_SLIDE_REQUEST_ARTIFACT_DIGEST_MALFORMED");
+  }
   if (hasAuthorityField(proposal, 0)) return refusal("TP_SLIDE_REQUEST_AUTHORITY_FIELD_PRESENT");
   if (!isPlainDataObject(proposal)) return refusal("TP_SLIDE_REQUEST_MALFORMED");
   if (proposal.authorityReleased !== false || proposal.admissionAuthority !== false) {
@@ -156,6 +166,7 @@ export function prepareSlideAdmissionRequest(proposal: unknown): SlideAdmissionR
     schema: SLIDE_ADMISSION_REQUEST_SCHEMA,
     proposalKind: proposal.kind,
     proposalDigest,
+    artifactDigest,
     transfer,
     status: "REQUESTED_NOT_ADMITTED",
     requires: REQUIRES,
@@ -167,6 +178,7 @@ export function prepareSlideAdmissionRequest(proposal: unknown): SlideAdmissionR
     status: "REQUESTED_NOT_ADMITTED",
     proposalKind: proposal.kind,
     proposalDigest,
+    artifactDigest,
     transfer,
     requestDigest,
     requires: REQUIRES,
