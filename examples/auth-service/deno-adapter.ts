@@ -25,14 +25,28 @@ Deno.serve(async (req: Request) => {
   }
 
   if (url.pathname === "/auth/verify" && req.method === "POST") {
-    // Phase 43: forward to Galerina runtime (Node.js subprocess in full deployment)
-    // Phase 54: .fungi → WASM → direct Deno execution (no subprocess)
-    return new Response(JSON.stringify({
-      error: "Service bridge pending Phase 54",
-      note: "The .fungi source is deployed — execution bridge is Phase 54"
-    }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
+    // Production POST /auth/verify: 16 KiB cap; no owner-named SLIDE record (Q2)
+    // so disclosure refuses F-09. Kernel composition is createAuthVerifyRoute
+    // in @galerina/framework-app-kernel (test mode uses the synthetic record).
+    const declared = req.headers.get("content-length");
+    const cap = 16384;
+    if (declared !== null && Number(declared) > cap) {
+      return new Response(JSON.stringify({ error: "payload_too_large" }), {
+        status: 413,
+        headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+      });
+    }
+    const body = new Uint8Array(await req.arrayBuffer());
+    body.fill(0);
+    if (body.byteLength > cap) {
+      return new Response(JSON.stringify({ error: "payload_too_large" }), {
+        status: 413,
+        headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+      });
+    }
+    return new Response(JSON.stringify({ error: "slide_admission_refused" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
     });
   }
 
