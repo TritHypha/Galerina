@@ -13,6 +13,8 @@ export const ERR_SECRET_ARENA_QUARANTINED = "ERR_SECRET_ARENA_QUARANTINED";
 
 const intrinsicApply = Reflect.apply;
 const intrinsicFill = Uint8Array.prototype.fill;
+const intrinsicTypedArraySet = Uint8Array.prototype.set;
+const intrinsicWasmMemory = WebAssembly.Memory;
 const intrinsicWriteSync = writeSync;
 const intrinsicReadSync = readSync;
 const intrinsicNow = performance.now.bind(performance);
@@ -21,28 +23,62 @@ const MAX_FRAME = 64 * 1024 * 1024 + 1024;
 const WASM_PAGE = 65536;
 const SIGTERM_GRACE_MS = 100;
 
+type HostProcessExit = {
+  once(event: "exit", listener: () => void): void;
+};
+const hostProcess = process as unknown as HostProcessExit;
+
+const liveCustodians = new Set<ChildProcess>();
+let exitHookInstalled = false;
+
+function installExitHook(): void {
+  if (exitHookInstalled) return;
+  exitHookInstalled = true;
+  hostProcess.once("exit", () => {
+    for (const child of liveCustodians) {
+      try {
+        child.kill("SIGKILL");
+      } catch {
+        // already exited
+      }
+    }
+  });
+}
+
+function custodianAlive(child: ChildProcess): boolean {
+  return child.exitCode === null && child.signalCode === null;
+}
+
 function terminateChild(child: ChildProcess): void {
-  if (child.exitCode !== null || child.signalCode !== null) {
+  if (!custodianAlive(child)) {
+    liveCustodians.delete(child);
     return;
   }
   try {
     child.kill("SIGTERM");
   } catch {
-    return;
-  }
-  const timer = setTimeout(() => {
-    if (child.exitCode !== null || child.signalCode !== null) {
-      return;
-    }
     try {
       child.kill("SIGKILL");
     } catch {
       // already exited
     }
-  }, SIGTERM_GRACE_MS);
-  child.once("exit", () => {
-    clearTimeout(timer);
-  });
+    liveCustodians.delete(child);
+    return;
+  }
+  const deadline = intrinsicNow() + SIGTERM_GRACE_MS;
+  while (custodianAlive(child) && intrinsicNow() < deadline) {
+    // Busy-wait so SIGKILL does not depend on a later event-loop turn.
+  }
+  if (!custodianAlive(child)) {
+    liveCustodians.delete(child);
+    return;
+  }
+  try {
+    child.kill("SIGKILL");
+  } catch {
+    // already exited
+  }
+  liveCustodians.delete(child);
 }
 
 function isAgain(error: unknown): boolean {
@@ -162,7 +198,7 @@ function encodeName(name: string): Uint8Array {
   const out = new Uint8Array(2 + encoded.length);
   out[0] = (encoded.length >> 8) & 0xff;
   out[1] = encoded.length & 0xff;
-  out.set(encoded, 2);
+  intrinsicApply(intrinsicTypedArraySet, out, [encoded, 2]);
   return out;
 }
 
@@ -184,10 +220,10 @@ function allocateNonDetachableSecret(data: Uint8Array): {
   wipe(): boolean;
 } {
   const pages = Math.max(1, Math.ceil(data.length / WASM_PAGE));
-  const memory = new WebAssembly.Memory({ initial: pages });
+  const memory = new intrinsicWasmMemory({ initial: pages });
   const backing = new Uint8Array(memory.buffer);
   try {
-    backing.set(data);
+    intrinsicApply(intrinsicTypedArraySet, backing, [data]);
   } catch (error) {
     try {
       intrinsicApply(intrinsicFill, backing, [0]);
@@ -303,6 +339,11 @@ export function createSecretArenaProvider(
   } catch {
     throw new SecretArenaUnavailable("SecretArena custodian spawn failed");
   }
+  liveCustodians.add(child);
+  installExitHook();
+  child.once("exit", () => {
+    liveCustodians.delete(child);
+  });
   child.stdout?.pause();
   const stdinFd = streamFd(child.stdin);
   const stdoutFd = streamFd(child.stdout);
@@ -374,7 +415,7 @@ export function createSecretArenaProvider(
     }
     const body = new Uint8Array(1 + payload.length);
     body[0] = opcode;
-    body.set(payload, 1);
+    intrinsicApply(intrinsicTypedArraySet, body, [payload, 1]);
     const header = new Uint8Array(4);
     const len = body.length;
     header[0] = (len >>> 24) & 0xff;
@@ -567,8 +608,8 @@ export function createSecretArenaProvider(
       if (quarantined) throw new SecretArenaQuarantined();
       const nameBytes = encodeName(name);
       const payload = new Uint8Array(nameBytes.length + value.length);
-      payload.set(nameBytes, 0);
-      payload.set(value, nameBytes.length);
+      intrinsicApply(intrinsicTypedArraySet, payload, [nameBytes, 0]);
+      intrinsicApply(intrinsicTypedArraySet, payload, [value, nameBytes.length]);
       try {
         const { status } = rpc(OP_PUT, payload);
         if (status === ST_QUARANTINED) enterQuarantine();
