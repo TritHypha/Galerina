@@ -98,6 +98,54 @@ try {
   expectRed("verifier-pin-skipped", "neg-verifier-pin-mismatch");
 
   restore();
+  mutate((s) => s.replace(
+    "    const d = authority.consume(leaseId, leaseToken, leaseEpoch); /* AUTH_VERIFY_GUARD_CONSUME_ORDER */",
+    "    const consumedOutcome = authority.consume(leaseId, leaseToken, leaseEpoch); /* AUTH_VERIFY_GUARD_CONSUME_ORDER */\n    const d = consumedOutcome === \"fenced\" ? \"released\" : consumedOutcome;",
+  ));
+  expectRed("g1-fenced-treated-released", "neg-revoke-during-guest F-12");
+
+  restore();
+  mutate((s) => s.replaceAll("authority.markUnknown(leaseId);", "/* markUnknown removed */"));
+  expectRed("g2-mark-unknown-removed", "does not re-release");
+
+  restore();
+  mutate((s) => s.replace("copies.push(bodyCopy);", "/* body copy not wiped */"));
+  expectRed("g3-body-copy-not-wiped", "guest-body-wiped-after-response");
+
+  restore();
+  mutate((s) => s.replace(
+    "      if (!declared) {",
+    "      if (false && !declared) { /* AUTH_VERIFY_GUARD_UNDECLARED skipped */",
+  ));
+  expectRed("g4-undeclared-served", "undeclared-secret-name");
+
+  restore();
+  mutate((s) => s.replaceAll("/* AUTH_VERIFY_GUARD_ACK */", "/* AUTH_VERIFY_GUARD_ACK dropped */")
+    .replace(
+      "    const gateAck = secretGate.acknowledge(operationId); /* AUTH_VERIFY_GUARD_ACK dropped */",
+      "    const gateAck = \"acknowledged\"; /* AUTH_VERIFY_GUARD_ACK dropped */",
+    )
+    .replace(
+      "    const routeAck = authority.acknowledgeMinted(operationId); /* AUTH_VERIFY_GUARD_ACK dropped */",
+      "    const routeAck = \"acknowledged\"; /* AUTH_VERIFY_GUARD_ACK dropped */",
+    ));
+  expectRed("g5-ack-dropped", "pos-ack-bound");
+
+  restore();
+  mutate((s) => s.replace(
+    "|| /^0+$/.test(artifactDigest)) { /* AUTH_VERIFY_GUARD_ZERO_DIGEST */",
+    "|| false) { /* AUTH_VERIFY_GUARD_ZERO_DIGEST skipped */",
+  ));
+  expectRed("g8-zero-digest", "zero-artifact-digest");
+
+  restore();
+  mutate((s) => s.replace(
+    "      authority.fence(leaseId); /* AUTH_VERIFY_GUARD_GUEST_FENCE */",
+    "      /* AUTH_VERIFY_GUARD_GUEST_FENCE removed */",
+  ));
+  expectRed("g10-guest-timeout-fence-removed", "neg-timeout-guest F-24");
+
+  restore();
   const green = spawnSync("node", ["--test", join(here, "auth-verify-route.test.mjs")], {
     cwd: pkg,
     encoding: "utf8",

@@ -15,10 +15,31 @@
 import { createHash } from "node:crypto";
 import {
   ReleaseCommitAuthority,
+  SecretReleaseRefused,
   wipeBytes,
 } from "./release-commit-point.js";
 import { createSecretGate } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
+
+export type ForeignNumberRead =
+  | { readonly kind: "ok"; readonly value: number }
+  | { readonly kind: "refused" };
+
+/** One reusable boundary helper: null/NaN/Infinity/non-number become a typed refusal. */
+export function readForeignSafeInteger(raw: unknown): ForeignNumberRead {
+  if (typeof raw === "number" && Number.isSafeInteger(raw) === true) {
+    return { kind: "ok", value: raw };
+  }
+  return { kind: "refused" };
+}
+
+class ClockRefused extends Error {
+  readonly code = "unknown_outcome" as const;
+  constructor() {
+    super("POST /auth/verify clock refused");
+    this.name = "ClockRefused";
+  }
+}
 
 export const AUTH_VERIFY_METHOD = "POST" as const;
 export const AUTH_VERIFY_PATH = "/auth/verify" as const;
@@ -77,6 +98,7 @@ export type AuthVerifyLeaseState =
   | "not-minted"
   | "missing"
   | "released"
+  | "acknowledged"
   | "retired"
   | "fenced"
   | "delivery-unknown"
@@ -338,6 +360,8 @@ export interface AuthVerifyRoute {
   handle(request: AuthVerifyRequest): Promise<AuthVerifyResponse>;
 }
 
+let instanceCounter = 0;
+
 export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVerifyRoute {
   if (!Number.isSafeInteger(options.timeoutMs) || options.timeoutMs <= 0) {
     throw new AuthVerifyConstructionRefused("timeoutMs must be a positive integer");
@@ -362,15 +386,24 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
 
   const authority = options.authority ?? new ReleaseCommitAuthority();
   const requiredSecrets = options.requiredSecrets ?? Object.freeze(["auth-verify-credential"]);
+  // Private gate authority: secret-gate D is consume-at-delivery. Route D is
+  // consume at the result sink. Sharing one authority with the same operation
+  // id would throw "already in flight" on every getSecret after the route mint.
+  const gateAuthority = new ReleaseCommitAuthority();
   const secretGate = createSecretGate(options.secrets, {
-    authority,
+    authority: gateAuthority,
     requireBoundOperationId: true,
     requireRevocationEpoch: true,
   });
   let seq = 0;
+  instanceCounter += 1;
+  const instanceKey = createHash("sha256")
+    .update(new TextEncoder().encode(`auth-verify-instance:${instanceCounter}`))
+    .digest("hex")
+    .slice(0, 16);
   const defaultMint = (): string => {
     seq += 1;
-    return `auth-verify\u0000${seq}`;
+    return `auth-verify-${instanceKey}-${seq}`;
   };
   const mintOperationId = options.mintOperationId ?? defaultMint;
   const nowMs = options.nowMs ?? (() => Date.now());
@@ -388,12 +421,34 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     let leaseId = "";
     let leaseToken = "";
     let leaseEpoch = -1;
-    const deadlineAt = nowMs() + options.timeoutMs;
+    const secretFlags: { getterClosed: boolean; secretViolation: boolean; undeclaredAttempt: boolean } = {
+      getterClosed: false,
+      secretViolation: false,
+      undeclaredAttempt: false,
+    };
+    let deadlineAt = 0;
 
-    const remainingMs = (): number => deadlineAt - nowMs();
+    const remainingMs = (): number => {
+      const now = readForeignSafeInteger(nowMs());
+      switch (now.kind) {
+        case "ok":
+          return deadlineAt - now.value;
+        case "refused":
+          throw new ClockRefused();
+        default: {
+          const _closed: never = now;
+          void _closed;
+          throw new ClockRefused();
+        }
+      }
+    };
 
     const markSecretUse = (): void => {
       secretTouched = true;
+    };
+
+    const closeGetter = (): void => {
+      secretFlags.getterClosed = true; /* AUTH_VERIFY_GUARD_GETTER_CLOSED */
     };
 
     const copiesZero = (): boolean => {
@@ -428,6 +483,8 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         leave?: boolean;
       } = {},
     ): AuthVerifyResponse => {
+      closeGetter();
+      const disclosureCommitted = extra.successOutcome !== undefined;
       if (code === "cleanup_failed") {
         quarantined = true;
         leaseState = "quarantined";
@@ -441,10 +498,13 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         leaseState = "quarantined";
       }
       const spawnFailure = extra.spawnFailure === true;
-      const isSuccess = extra.successOutcome !== undefined && code !== "cleanup_failed";
+      const isSuccess = disclosureCommitted && code !== "cleanup_failed";
       const status = isSuccess ? 200 : httpStatusFor(code, spawnFailure);
-      const leave = extra.leave === true || extra.successOutcome !== undefined;
-      const outcomeField = isSuccess ? extra.successOutcome ?? code : code;
+      const leave = extra.leave === true || disclosureCommitted;
+      const successOutcome = extra.successOutcome;
+      const outcomeField = disclosureCommitted && successOutcome !== undefined
+        ? successOutcome
+        : code;
       const receipt: AuthVerifyReceipt = {
         schemaVersion: AUTH_VERIFY_RECEIPT_SCHEMA,
         operationId,
@@ -472,13 +532,19 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         headers["X-Galerina-Artifact-Digest"] = artifactDigest; /* AUTH_VERIFY_GUARD_BINDING */
         headers["X-Galerina-Receipt"] = receipt.sealDigest;
       }
-      const successOutcome = extra.successOutcome;
       const body = isSuccess && successOutcome !== undefined
         ? jsonBody({ outcome: successOutcome })
-        : jsonBody({ error: code });
-      let receiptKind: AuthVerifyReceiptKind = extra.receiptKind
-        ?? (isSuccess ? "WAX_SEAL" : "refuse");
-      if (quarantined) receiptKind = "refuse+quarantine";
+        : disclosureCommitted && code === "cleanup_failed" && successOutcome !== undefined
+          ? jsonBody({ error: code, outcome: successOutcome })
+          : jsonBody({ error: code });
+      let receiptKind: AuthVerifyReceiptKind;
+      if (disclosureCommitted && code === "cleanup_failed") {
+        receiptKind = "status-only";
+      } else if (quarantined) {
+        receiptKind = "refuse+quarantine";
+      } else {
+        receiptKind = extra.receiptKind ?? (isSuccess ? "WAX_SEAL" : "refuse");
+      }
       return Object.freeze({
         status,
         code: isSuccess ? "released" : code,
@@ -497,6 +563,21 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       });
     };
 
+    const startClock = readForeignSafeInteger(nowMs());
+    switch (startClock.kind) {
+      case "ok":
+        deadlineAt = startClock.value + options.timeoutMs;
+        break;
+      case "refused":
+        return respond("F-30", "ingress", "unknown_outcome");
+      default: {
+        const _closed: never = startClock;
+        void _closed;
+        return respond("F-30", "ingress", "unknown_outcome");
+      }
+    }
+
+    try {
     if (request.disconnected === true) {
       return respond("F-27", "ingress", "client_disconnected");
     }
@@ -548,7 +629,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     }
     copies.push(loadRace.snapshot);
     artifactDigest = loadRace.artifactDigest;
-    if (typeof artifactDigest !== "string" || !isHex64(artifactDigest) || /^0+$/.test(artifactDigest)) {
+    if (typeof artifactDigest !== "string" || !isHex64(artifactDigest) || /^0+$/.test(artifactDigest)) { /* AUTH_VERIFY_GUARD_ZERO_DIGEST */
       return respond("F-05", "wamr", "ARTIFACT_DIGEST_MISSING");
     }
 
@@ -629,14 +710,29 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     }
 
     const prior = authority.status(operationId);
-    if (
-      prior.state === "released"
-      || prior.state === "acknowledged"
-      || prior.state === "retired"
-      || prior.state === "delivery-unknown"
-    ) {
-      leaseState = prior.state === "retired" ? "retired" : "released";
-      return respond("F-04", "mint", "operation_replay");
+    switch (prior.state) {
+      case "released":
+        leaseState = "released";
+        return respond("F-04", "mint", "operation_replay");
+      case "acknowledged":
+        leaseState = "acknowledged";
+        return respond("F-04", "mint", "operation_replay");
+      case "retired":
+        leaseState = "retired";
+        return respond("F-04", "mint", "operation_replay");
+      case "delivery-unknown":
+        leaseState = "delivery-unknown";
+        return respond("F-04", "mint", "operation_replay");
+      case "unused":
+      case "fenced":
+      case "missing":
+        break;
+      default: {
+        const _closed: never = prior.state;
+        void _closed;
+        leaseState = "delivery-unknown";
+        return respond("F-30", "mint", "unknown_outcome");
+      }
     }
     try {
       const minted = authority.mint(operationId, vokRace.epoch);
@@ -645,14 +741,28 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseEpoch = minted.epoch;
       leaseState = "unused";
     } catch (error) {
-      const msg = error instanceof Error ? error.message : "";
-      if (msg.includes("already in flight") || msg.includes("retired")) {
-        return respond("F-04", "mint", "operation_replay");
+      if (error instanceof SecretReleaseRefused) {
+        switch (error.outcome) {
+          case "replay":
+            return respond("F-04", "mint", "operation_replay");
+          case "missing":
+            return respond("F-03", "mint", "operation_id_missing");
+          case "stale":
+            return respond("F-11", "vok", "authority_stale");
+          case "fenced":
+            return respond("F-12", "sink", "authority_revoked");
+          case "released":
+          case "acknowledged":
+          case "delivery-unknown":
+            return respond("F-04", "mint", "operation_replay");
+          default: {
+            const _closed: never = error.outcome;
+            void _closed;
+            return respond("F-30", "mint", "unknown_outcome");
+          }
+        }
       }
-      if (msg.includes("required")) {
-        return respond("F-03", "mint", "operation_id_missing");
-      }
-      return respond("F-11", "vok", "authority_stale");
+      return respond("F-30", "mint", "unknown_outcome");
     }
 
     const providerRemain = remainingMs();
@@ -685,25 +795,62 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       return respond("F-12", "sink", "authority_revoked");
     }
 
+    const onGateViolation = (_error: unknown): void => {
+      secretFlags.secretViolation = true;
+    };
+    const guestGetSecret = (name: string, fn: (value: Uint8Array) => void): void => {
+      if (secretFlags.getterClosed) {
+        secretFlags.secretViolation = true; /* AUTH_VERIFY_GUARD_GETTER_CLOSED */
+        return;
+      }
+      if (secretFlags.secretViolation === true || secretFlags.undeclaredAttempt === true) {
+        return;
+      }
+      markSecretUse();
+      const leaseNow = authority.stateOf(leaseId);
+      switch (leaseNow) {
+        case "unused":
+          break;
+        case "released":
+        case "acknowledged":
+        case "fenced":
+        case "delivery-unknown":
+        case "missing":
+          secretFlags.secretViolation = true;
+          return;
+        default: {
+          const _closed: never = leaseNow;
+          void _closed;
+          secretFlags.secretViolation = true;
+          return;
+        }
+      }
+      let declared = false;
+      for (let i = 0; i < requiredSecrets.length; i += 1) {
+        if (requiredSecrets[i] === name) declared = true;
+      }
+      if (!declared) {
+        secretFlags.undeclaredAttempt = true; /* AUTH_VERIFY_GUARD_UNDECLARED */
+        secretFlags.secretViolation = true;
+        return;
+      }
+      try {
+        secretGate.getSecret(requiredSecrets, name, fn, onGateViolation, operationId);
+      } catch {
+        secretFlags.secretViolation = true;
+      }
+    };
     const guestRemain = remainingMs();
     const guestRace = await raceRemainder(
       options.ports.runGuest({
         body: bodyCopy,
         remainingMs: guestRemain,
-        getSecret: (name, fn) => {
-          markSecretUse();
-          let declared = false;
-          for (let i = 0; i < requiredSecrets.length; i += 1) {
-            if (requiredSecrets[i] === name) declared = true;
-          }
-          if (!declared) return;
-          options.secrets.use(name, fn);
-        },
+        getSecret: guestGetSecret,
       }),
       guestRemain,
     );
     if (guestRace === TIMEOUT_TOKEN) {
-      authority.fence(leaseId);
+      authority.fence(leaseId); /* AUTH_VERIFY_GUARD_GUEST_FENCE */
       leaseState = "fenced";
       return respond("F-24", "guest", "deadline_exceeded");
     }
@@ -717,12 +864,20 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseState = "fenced";
       return respond("F-30", "guest", "unknown_outcome");
     }
-    if (guestRace.matched !== true && guestRace.matched !== false) {
+    const matchedRaw: unknown = guestRace.matched;
+    if (matchedRaw !== true && matchedRaw !== false) {
       authority.fence(leaseId);
       leaseState = "fenced";
       return respond("F-30", "guest", "unknown_outcome");
     }
-    const disclosed: "matched" | "not-matched" = guestRace.matched === true ? "matched" : "not-matched";
+    if (secretFlags.secretViolation === true || secretFlags.undeclaredAttempt === true) {
+      if (authority.stateOf(leaseId) === "unused") {
+        authority.fence(leaseId);
+        leaseState = "fenced";
+      }
+      return respond("F-30", "guest", "unknown_outcome");
+    }
+    const disclosed: "matched" | "not-matched" = matchedRaw === true ? "matched" : "not-matched";
 
     const sinkRemain = remainingMs();
     if (sinkRemain <= 0) {
@@ -789,12 +944,32 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseState = "delivery-unknown";
       return respond("F-28", "ack", "delivery_unknown", { receiptKind: "status-only", leave: true });
     }
-    const ackOutcome = secretGate.acknowledge(operationId);
-    if (ackOutcome === "acknowledged" || ackOutcome === "released") {
-      leaseState = "released";
+    const gateAck = secretGate.acknowledge(operationId); /* AUTH_VERIFY_GUARD_ACK */
+    if (gateAck !== "acknowledged") {
+      authority.markUnknown(leaseId);
+      leaseState = "delivery-unknown";
+      return respond("F-28", "ack", "delivery_unknown", { receiptKind: "status-only", leave: true });
     }
-
+    const routeAck = authority.acknowledgeMinted(operationId); /* AUTH_VERIFY_GUARD_ACK */
+    if (routeAck !== "acknowledged") {
+      authority.markUnknown(leaseId);
+      leaseState = "delivery-unknown";
+      return respond("F-28", "ack", "delivery_unknown", { receiptKind: "status-only", leave: true });
+    }
+    leaseState = "acknowledged";
     return respond("S-01", "sink", "released", { successOutcome: disclosed, leave: true, receiptKind: "WAX_SEAL" });
+    } catch (error) {
+      if (error instanceof ClockRefused) {
+        if (leaseId.length > 0 && authority.stateOf(leaseId) === "unused") {
+          authority.fence(leaseId);
+          leaseState = "fenced";
+        }
+        return respond("F-30", "ingress", "unknown_outcome");
+      }
+      throw error;
+    } finally {
+      closeGetter();
+    }
   }
 
   return Object.freeze({

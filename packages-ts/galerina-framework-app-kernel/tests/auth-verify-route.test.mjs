@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { ReleaseCommitAuthority } from "../dist/secret-gate.js";
+import { ReleaseCommitAuthority, SecretReleaseRefused } from "../dist/secret-gate.js";
 import {
   AUTH_VERIFY_MAX_BODY_BYTES,
   AUTH_VERIFY_PINNED_VERIFIER_COMMIT,
@@ -67,6 +67,17 @@ function goodPorts(over = {}) {
     },
     ...over,
   };
+}
+
+function wrapMint(authority) {
+  const orig = authority.mint.bind(authority);
+  const minted = [];
+  authority.mint = (id, epoch) => {
+    const lease = orig(id, epoch);
+    minted.push(lease);
+    return lease;
+  };
+  return minted;
 }
 
 function route(over = {}) {
@@ -223,6 +234,7 @@ test("neg-replay-operation-id F-04", async () => {
   assert.equal(first.rowId, "S-01");
   const second = await r.handle(req());
   assertRefusal(second, "F-04", "operation_replay", 409, "mint");
+  assert.equal(second.lease, "acknowledged");
 });
 
 test("neg-artifact-digest-missing F-05", async () => {
@@ -425,6 +437,22 @@ test("neg-timeout-provider F-23", async () => {
 });
 
 test("neg-timeout-guest F-24", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  let lateGet;
+  let uses = 0;
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      uses += 1;
+      fn(new Uint8Array([0x11, 0x22, 0x33, 0x44]));
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
   const res = await createAuthVerifyRoute({
     mode: "test",
     timeoutMs: 25,
@@ -433,10 +461,23 @@ test("neg-timeout-guest F-24", async () => {
     namedSlideRecord: AUTH_VERIFY_SYNTHETIC_SLIDE_RECORD,
     namedTcbProfile: AUTH_VERIFY_SYNTHETIC_TCB_PROFILE,
     verifierPinSha256: PIN,
-    ports: goodPorts({ runGuest: () => hang() }),
-    secrets: liveSecrets(),
+    authority,
+    secrets,
+    ports: goodPorts({
+      runGuest: async ({ getSecret }) => {
+        lateGet = getSecret;
+        return hang();
+      },
+    }),
   }).handle(req());
   assertRefusal(res, "F-24", "deadline_exceeded", 504, "guest");
+  assert.equal(res.lease, "fenced");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.stateOf(lease.leaseId), "fenced");
+  const usesAfterResponse = uses;
+  lateGet("auth-verify-credential", () => {});
+  assert.equal(uses, usesAfterResponse);
 });
 
 test("neg-timeout-sink F-25", async () => {
@@ -465,6 +506,7 @@ test("neg-timeout-sink F-25", async () => {
 
 test("neg-timeout-ack F-26 does not re-release", async () => {
   const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
   const res = await createAuthVerifyRoute({
     mode: "test",
     timeoutMs: 25,
@@ -482,7 +524,10 @@ test("neg-timeout-ack F-26 does not re-release", async () => {
   assert.equal(res.code, "deadline_exceeded");
   assert.equal(res.consumed, true);
   assert.equal(res.receiptKind, "status-only");
-  assert.notEqual(authority.consume(res.receipt.leaseId, "token", 1), "released");
+  assert.equal(authority.status(res.receipt.operationId).state, "delivery-unknown");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.consume(lease.leaseId, lease.token, lease.epoch), "replay");
 });
 
 test("neg-client-disconnect F-27", async () => {
@@ -492,6 +537,7 @@ test("neg-client-disconnect F-27", async () => {
 
 test("neg-crash-after-release F-28 does not re-release", async () => {
   const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
   const res = await route({
     authority,
     ports: { deliverSink: async () => ({ ok: false, code: "delivery_unknown" }) },
@@ -501,11 +547,15 @@ test("neg-crash-after-release F-28 does not re-release", async () => {
   assert.equal(res.code, "delivery_unknown");
   assert.equal(res.consumed, true);
   assert.equal(res.receiptKind, "status-only");
-  assert.notEqual(authority.consume(res.receipt.leaseId, "token", 1), "released");
+  assert.equal(authority.status(res.receipt.operationId).state, "delivery-unknown");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.consume(lease.leaseId, lease.token, lease.epoch), "replay");
 });
 
 test("neg-partial-delivery F-29 does not retry D", async () => {
   const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
   const res = await route({
     authority,
     ports: { deliverSink: async () => ({ ok: false, code: "partial_delivery" }) },
@@ -514,7 +564,10 @@ test("neg-partial-delivery F-29 does not retry D", async () => {
   assert.equal(res.status, 503);
   assert.equal(res.code, "partial_delivery");
   assert.equal(res.consumed, true);
-  assert.notEqual(authority.consume(res.receipt.leaseId, "token", 1), "released");
+  assert.equal(authority.status(res.receipt.operationId).state, "delivery-unknown");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.consume(lease.leaseId, lease.token, lease.epoch), "replay");
 });
 
 test("neg-unknown-outcome F-30", async () => {
@@ -536,8 +589,10 @@ test("neg-cleanup-failure F-31 quarantines", async () => {
   assert.equal(res.status, 503);
   assert.equal(res.code, "cleanup_failed");
   assert.equal(res.quarantined, true);
-  assert.equal(res.receiptKind, "refuse+quarantine");
+  assert.equal(res.receiptKind, "status-only");
   assert.equal(res.consumed, true);
+  assert.equal(res.leave, true);
+  assert.equal(res.receipt.outcome, "matched");
 });
 
 test("timeout-late-result is wiped and never disclosed", async () => {
@@ -632,4 +687,259 @@ test("S-01 not-matched is boolean-only success", async () => {
   assert.equal(res.rowId, "S-01");
   assert.equal(outcomeOf(res), "not-matched");
   assert.equal(res.status, 200);
+});
+
+test("neg-revoke-during-guest F-12 consume-fenced", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  const res = await route({
+    authority,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        getSecret("auth-verify-credential", () => {});
+        const id = minted[minted.length - 1];
+        if (id !== undefined) authority.fence(id.leaseId);
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assertRefusal(res, "F-12", "authority_revoked", 403, "sink");
+  assert.equal(res.lease, "fenced");
+  assert.equal(res.consumed, false);
+});
+
+test("secret-after-fenced-lease does not open provider", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  let uses = 0;
+  let got = "none";
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      uses += 1;
+      fn(new Uint8Array([0x11, 0x22, 0x33, 0x44]));
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await route({
+    authority,
+    secrets,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        const id = minted[minted.length - 1];
+        if (id !== undefined) authority.fence(id.leaseId);
+        getSecret("auth-verify-credential", (v) => {
+          got = Array.from(v).join(",");
+        });
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.receiptKind, "WAX_SEAL");
+  assert.equal(uses, 0);
+  assert.equal(got, "none");
+});
+
+test("double-and-late-secret-callback never S-01", async () => {
+  let keep;
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      fn(new Uint8Array([1, 2, 3, 4]));
+      fn(new Uint8Array([5, 6, 7, 8]));
+      keep = fn;
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await route({
+    secrets,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        getSecret("auth-verify-credential", () => {});
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.receiptKind, "WAX_SEAL");
+  try {
+    keep(new Uint8Array([9]));
+  } catch {
+    // gate may throw on the retained callback
+  }
+});
+
+test("guest-secret-view is staged and zero after response", async () => {
+  const stored = new Uint8Array([0x11, 0x22, 0x33, 0x44]);
+  let view;
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      fn(stored);
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await route({
+    secrets,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        getSecret("auth-verify-credential", (v) => {
+          view = v;
+        });
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.equal(res.rowId, "S-01");
+  assert.notEqual(view, stored);
+  assert.equal(Array.from(view).every((b) => b === 0), true);
+});
+
+test("guest-body-wiped-after-response", async () => {
+  let guestBody;
+  const res = await route({
+    ports: {
+      runGuest: async ({ body, getSecret }) => {
+        guestBody = body;
+        getSecret("auth-verify-credential", () => {});
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.equal(res.rowId, "S-01");
+  assert.equal(guestBody.every((b) => b === 0), true);
+});
+
+test("undeclared-secret-name never S-01 and does not open provider", async () => {
+  let uses = 0;
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      uses += 1;
+      fn(new Uint8Array([1]));
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await route({
+    secrets,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        getSecret("other-secret", () => {});
+        getSecret("auth-verify-credential", () => {});
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.receiptKind, "WAX_SEAL");
+  assert.equal(uses, 0);
+});
+
+test("pos-ack-bound S-01 status acknowledged", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const res = await route({ authority }).handle(req());
+  assert.equal(res.rowId, "S-01");
+  assert.equal(res.receiptKind, "WAX_SEAL");
+  assert.equal(authority.status(res.receipt.operationId).state, "acknowledged");
+});
+
+test("neg-ack-not-acknowledged is status-only", async () => {
+  const res = await route({
+    ports: {
+      runGuest: async () => ({ ok: true, matched: true }),
+    },
+  }).handle(req());
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.receiptKind, "WAX_SEAL");
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+  assert.equal(res.consumed, true);
+});
+
+test("neg-zero-artifact-digest F-05", async () => {
+  const res = await route({
+    ports: {
+      loadArtifact: async () => ({
+        ok: true,
+        artifactDigest: "0".repeat(64),
+        snapshot: new Uint8Array([1]),
+      }),
+    },
+  }).handle(req());
+  assertRefusal(res, "F-05", "ARTIFACT_DIGEST_MISSING", 503, "wamr");
+});
+
+test("default-operation-id is a legal HTTP header value", async () => {
+  const res = await route().handle(req());
+  assert.equal(res.rowId, "S-01");
+  const headers = new Headers();
+  headers.set("X-Galerina-Operation-Id", res.headers["X-Galerina-Operation-Id"]);
+  assert.equal(headers.get("X-Galerina-Operation-Id"), res.receipt.operationId);
+  assert.equal(res.receipt.operationId.includes("\u0000"), false);
+});
+
+test("default-operation-id unique per route instance sharing authority", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const a = route({ authority });
+  const b = route({ authority });
+  const r1 = await a.handle(req());
+  const r2 = await b.handle(req());
+  assert.equal(r1.rowId, "S-01");
+  assert.equal(r2.rowId, "S-01");
+  assert.notEqual(r1.receipt.operationId, r2.receipt.operationId);
+});
+
+test("neg-clock-nan F-30", async () => {
+  const res = await route({ nowMs: () => Number.NaN }).handle(req());
+  assertRefusal(res, "F-30", "unknown_outcome", 503, "ingress");
+});
+
+test("neg-clock-infinity F-30", async () => {
+  const res = await route({ nowMs: () => Number.POSITIVE_INFINITY }).handle(req());
+  assertRefusal(res, "F-30", "unknown_outcome", 503, "ingress");
+});
+
+test("neg-clock-non-number F-30", async () => {
+  const res = await route({ nowMs: () => "now" }).handle(req());
+  assertRefusal(res, "F-30", "unknown_outcome", 503, "ingress");
+});
+
+test("neg-mint-typed-stale classifies by outcome not message", async () => {
+  const authority = new ReleaseCommitAuthority();
+  authority.mint = () => {
+    throw new SecretReleaseRefused("stale", "already in flight required retired");
+  };
+  const res = await route({ authority }).handle(req());
+  assertRefusal(res, "F-11", "authority_stale", 403, "vok");
+});
+
+test("neg-replay-delivery-unknown reports delivery-unknown", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const r = route({
+    authority,
+    mintOperationId: () => "op-unk-replay",
+    ports: { deliverSink: async () => ({ ok: false, code: "delivery_unknown" }) },
+  });
+  const first = await r.handle(req());
+  assert.equal(first.rowId, "F-28");
+  const second = await r.handle(req());
+  assertRefusal(second, "F-04", "operation_replay", 409, "mint");
+  assert.equal(second.lease, "delivery-unknown");
 });
