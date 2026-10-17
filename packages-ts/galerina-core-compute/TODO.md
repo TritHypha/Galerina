@@ -99,6 +99,9 @@ active v1 runtime target.
     post-v1 targets (photonic, AI-accelerator, GPU) until decided; asked in session-exchange
     grok-bot-packages-hold-batch1-20261006-question-01 (Q3). Reopen as [ ] when the owner adds a quantum target or rules it in scope for v1.
     Kept HOLD 2026-10-08 SuperGrok: package-side pin src/hold-pin.ts schema galerina.core-compute.hold-pin.v1. Completing as [x] would invent a quantum RuntimeTarget. prepareCoreComputeHoldRequest is always REQUESTED_NOT_ADMITTED. admitQuantumRuntimeTarget / implementQuantumPlanningRules / executeQuantumCompute always REFUSED with COMPUTE_QUANTUM_*_FORBIDDEN; authorityReleased false. RUNTIME_TARGETS stays 11 values. Reopen as [ ] when the owner adds a quantum target or rules it in scope for v1.
+[!] POST-V1 Define future quantum target planning rules after core compute reports stabilise.
+    Not part of the active v1 build (RuntimeTarget 'quantum').
+    Owner decision 2026-10-06 23:01 BST (O1, Phillip): stays parked until v1 ships, like photonic and GPU; no implementation.
 [x] Add examples
 [x] Add tests
 [x] Package-side HOLD pin - 2026-10-08
