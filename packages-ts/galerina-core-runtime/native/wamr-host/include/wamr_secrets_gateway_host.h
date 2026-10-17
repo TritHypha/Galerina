@@ -98,10 +98,13 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
  * envp, writes the snapshot to the child's stdin, and reads Envelope +
  * Wax Seal only from the child's stdout pipe. Caller verdict file paths
  * are not accepted. A missing binary is ARTIFACT_DIGEST_MISSING. A pin
- * mismatch, spawn failure, forged or file-origin verdict,
- * authorizing=true, or a WAMR AOT prefix (NUL a o t) is VERDICT_REFUSED.
- * AOT is refused on this path (the documented WAMR AOT validator is
- * optional and off by default). The host independently SHA-256s the
+ * mismatch, spawn failure, forged or file-origin verdict, or
+ * authorizing=true is VERDICT_REFUSED. After the one snapshot copy the
+ * host allowlists Wasm bytecode magic (00 61 73 6d) before spawn and
+ * before wasm_runtime_load. A WAMR AOT prefix is VERDICT_REFUSED with
+ * AOT_REFUSED; any other non-bytecode prefix is VERDICT_REFUSED with
+ * BYTECODE_REQUIRED. The documented WAMR AOT validator stays unused.
+ * The host independently SHA-256s the
  * snapshot and binds componentDigest before wasm_runtime_load of that
  * same snapshot. This translation unit does not link or call Rust.
  * There is no public self-hash loader.

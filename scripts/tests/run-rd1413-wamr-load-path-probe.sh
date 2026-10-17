@@ -80,6 +80,17 @@ if ! grep -q 'AOT_REFUSED' "$host_src/wamr_secrets_gateway_host.c"; then
   printf 'AOT refuse missing from production TU\n' >&2
   exit 2
 fi
+if ! grep -q 'BYTECODE_REQUIRED' "$host_src/wamr_secrets_gateway_host.c" ||
+   ! grep -q 'snapshot_is_wasm_bytecode' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'bytecode allowlist missing from production TU\n' >&2
+  exit 2
+fi
+if grep -q 'rd1413_test_load_owned_snapshot' \
+    "$host_include/wamr_secrets_gateway_host.h" \
+    "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'test helper leaked into production header/TU\n' >&2
+  exit 2
+fi
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-wamr-load-path.XXXXXX")"
 trap 'rm -rf -- "$temp_dir"' EXIT
 
@@ -99,9 +110,11 @@ gcc -std=c11 -Wall -Wextra -Werror \
   -DWAMR_VOK_VERIFIER_SHA256_HEX=\"$pin\" \
   -I"$wamr_include_dir" \
   -I"$host_include" \
+  -I"$host_src" \
+  -I"$script_dir" \
   "$script_dir/rd1413-wamr-load-path-probe.c" \
   "$script_dir/rd1413-wamr-load-path-wrap.c" \
-  "$host_src/wamr_secrets_gateway_host.c" \
+  "$script_dir/rd1413-wamr-load-path-test-host.c" \
   "$host_src/wamr_import_admission.c" \
   "$host_src/wamr_sha256.c" \
   "$host_src/wamr_vok_verdict.c" \

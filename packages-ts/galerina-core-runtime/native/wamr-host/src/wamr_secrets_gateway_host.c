@@ -298,6 +298,16 @@ static int snapshot_is_wamr_aot(const uint8_t *snapshot, uint32_t size)
            snapshot[2] == k_aot[2] && snapshot[3] == k_aot[3];
 }
 
+static int snapshot_is_wasm_bytecode(const uint8_t *snapshot, uint32_t size)
+{
+    static const uint8_t k_wasm[4] = { 0x00, 0x61, 0x73, 0x6d };
+    if (snapshot == NULL || size < 4u) {
+        return 0;
+    }
+    return snapshot[0] == k_wasm[0] && snapshot[1] == k_wasm[1] &&
+           snapshot[2] == k_wasm[2] && snapshot[3] == k_wasm[3];
+}
+
 static wamr_secrets_gateway_result_t load_owned_snapshot(
     uint8_t *snapshot,
     uint32_t size,
@@ -480,6 +490,13 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     if (snapshot_is_wamr_aot(snapshot, size)) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_VERDICT_REFUSED, "AOT_REFUSED");
+        release_loaded(out);
+        return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
+    }
+    if (!snapshot_is_wasm_bytecode(snapshot, size)) {
+        set_code_diagnostic(diagnostic, diagnostic_capacity,
+                            WAMR_SECRETS_GATEWAY_VERDICT_REFUSED,
+                            "BYTECODE_REQUIRED");
         release_loaded(out);
         return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
     }

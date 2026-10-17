@@ -10,6 +10,7 @@
 #include "wasm_export.h"
 #include "wamr_secrets_gateway_host.h"
 #include "wamr_sha256.h"
+#include "rd1413-wamr-load-path-test-host.h"
 
 #define RD1413_PROBE_MAX_WASM_BYTES (1024u * 1024u)
 
@@ -560,8 +561,10 @@ static int check_load_failed(void)
     if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED || loaded.module != NULL ||
         loaded.instance != NULL || !digest_field_zero(&loaded) ||
         rd1413_load_path_instantiate_calls != 0 ||
-        rd1413_load_path_unload_calls != 0) {
-        fprintf(stderr, "garbage bytes must VERDICT_REFUSED before WAMR parse: %s\n",
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "BYTECODE_REQUIRED") == NULL) {
+        fprintf(stderr,
+                "garbage bytes must VERDICT_REFUSED BYTECODE_REQUIRED before spawn: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
         return 0;
@@ -595,6 +598,133 @@ static int check_aot_refused(void)
         return 0;
     }
     puts("PASS: AOT prefix is VERDICT_REFUSED AOT_REFUSED before spawn or WAMR load");
+    return 1;
+}
+
+static int check_non_bytecode_refused(void)
+{
+    uint8_t native[8] = { 0x47, 0x56, 0x45, 0x4f, 0x00, 0x00, 0x00, 0x00 };
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = load_with_authority(native, sizeof(native), &loaded, diagnostic,
+                                 sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0 ||
+        strstr(diagnostic, "BYTECODE_REQUIRED") == NULL ||
+        strstr(diagnostic, "AOT_REFUSED") != NULL) {
+        fprintf(stderr,
+                "non-wasm non-AOT prefix must VERDICT_REFUSED BYTECODE_REQUIRED: %s\n",
+                diagnostic);
+        wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    puts("PASS: non-wasm non-AOT prefix is VERDICT_REFUSED BYTECODE_REQUIRED before spawn");
+    return 1;
+}
+
+static int check_owned_mismatch(const char *path_a, const char *path_b,
+                                const char *label)
+{
+    uint32_t size_a = 0;
+    uint32_t size_b = 0;
+    uint8_t *bytes_a = read_bytes(path_a, &size_a);
+    uint8_t *bytes_b = read_bytes(path_b, &size_b);
+    uint8_t *snapshot = NULL;
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t digest_a[32];
+
+    if (bytes_a == NULL || bytes_b == NULL) {
+        fprintf(stderr, "%s: could not read fixtures\n", label);
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    snapshot = (uint8_t *)malloc((size_t)size_b);
+    if (snapshot == NULL) {
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    memcpy(snapshot, bytes_b, (size_t)size_b);
+    wamr_sha256(bytes_a, (size_t)size_a, digest_a);
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = rd1413_test_load_owned_snapshot(snapshot, size_b, digest_a, &loaded,
+                                             diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "%s: expected ARTIFACT_MISMATCH instantiate=0 unload=0, got %s diag=%s instantiate=%u unload=%u\n",
+                label, wamr_secrets_gateway_result_name(result), diagnostic,
+                rd1413_load_path_instantiate_calls,
+                rd1413_load_path_unload_calls);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    printf("PASS: %s ARTIFACT_MISMATCH instantiate=0 unload=0\n", label);
+    free(bytes_a);
+    free(bytes_b);
+    return 1;
+}
+
+static int check_owned_missing(const char *path, const char *label)
+{
+    uint32_t size = 0;
+    uint8_t *bytes = read_bytes(path, &size);
+    uint8_t *snapshot = NULL;
+    char diagnostic[256];
+    wamr_secrets_gateway_loaded_t loaded;
+    wamr_secrets_gateway_result_t result;
+    uint8_t zero[32];
+
+    if (bytes == NULL) {
+        fprintf(stderr, "%s: could not read fixture\n", label);
+        return 0;
+    }
+    snapshot = (uint8_t *)malloc((size_t)size);
+    if (snapshot == NULL) {
+        free(bytes);
+        return 0;
+    }
+    memcpy(snapshot, bytes, (size_t)size);
+    memset(zero, 0, sizeof(zero));
+    poison_loaded(&loaded);
+    rd1413_load_path_reset();
+    diagnostic[0] = '\0';
+    result = rd1413_test_load_owned_snapshot(snapshot, size, zero, &loaded,
+                                             diagnostic, sizeof(diagnostic));
+    if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING ||
+        loaded.module != NULL || loaded.instance != NULL ||
+        !digest_field_zero(&loaded) ||
+        rd1413_load_path_instantiate_calls != 0 ||
+        rd1413_load_path_unload_calls != 0) {
+        fprintf(stderr,
+                "%s: expected ARTIFACT_DIGEST_MISSING instantiate=0 unload=0, got %s diag=%s instantiate=%u unload=%u\n",
+                label, wamr_secrets_gateway_result_name(result), diagnostic,
+                rd1413_load_path_instantiate_calls,
+                rd1413_load_path_unload_calls);
+        wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        return 0;
+    }
+    printf("PASS: %s ARTIFACT_DIGEST_MISSING instantiate=0 unload=0\n", label);
+    free(bytes);
     return 1;
 }
 
@@ -703,7 +833,7 @@ int main(int argc, char **argv)
 
     ok = check_sha256_kat() && check_invalid_argument() &&
          check_invalid_diagnostic_zeros_out() && check_load_failed() &&
-         check_aot_refused();
+         check_aot_refused() && check_non_bytecode_refused();
     if (ok) {
         ok = expect_refusal(argv[1], WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT, 1, 1,
                             "unlinked subset before native registration");
@@ -728,6 +858,11 @@ int main(int argc, char **argv)
              expect_admitted(argv[2], "admitted full allowlist",
                              "RD1413_FULL_SHA256") &&
              check_instantiate_fail(argv[1]) &&
+             check_owned_mismatch(argv[1], argv[2],
+                                  "swapped subset digest vs full bytes") &&
+             check_owned_mismatch(argv[2], argv[1],
+                                  "swapped full digest vs subset bytes") &&
+             check_owned_missing(argv[1], "all-zero expected subset") &&
              check_load_for_authority(argv[1], argv[7], argv[8], argv[9]);
         if (ok) {
             uint32_t subset_size = 0;
