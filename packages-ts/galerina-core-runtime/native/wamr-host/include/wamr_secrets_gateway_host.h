@@ -44,12 +44,18 @@ typedef enum {
     WAMR_SECRETS_GATEWAY_UNLINKED_IMPORT = 6,
     WAMR_SECRETS_GATEWAY_METADATA_UNAVAILABLE = 7,
     WAMR_SECRETS_GATEWAY_LOAD_FAILED = 8,
-    WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED = 9
+    WAMR_SECRETS_GATEWAY_INSTANTIATE_FAILED = 9,
+    WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH = 10,
+    WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING = 11,
+    WAMR_SECRETS_GATEWAY_VERDICT_REFUSED = 12
 } wamr_secrets_gateway_result_t;
 
 typedef struct {
     wasm_module_t module;
     wasm_module_inst_t instance;
+    uint8_t artifact_digest[32];
+    uint8_t *owned_snapshot;
+    size_t owned_snapshot_size;
 } wamr_secrets_gateway_loaded_t;
 
 #define WAMR_SECRETS_GATEWAY_STACK_SIZE 16384u
@@ -68,15 +74,13 @@ const char *wamr_secrets_gateway_result_name(wamr_secrets_gateway_result_t resul
 bool wamr_secrets_gateway_register_natives(void);
 
 /*
- * Load buf, admit against the secrets-gateway allowlist, instantiate only on
- * VALID. Any other outcome unloads exactly once (if a module was loaded) and
- * leaves instance NULL. diagnostic carries the result code name and, when
- * known, the import identity; never secret bytes.
+ * Digestless public loader. Hard-refuses with ARTIFACT_DIGEST_MISSING on
+ * every path: clears out, never hashes, never calls wasm_runtime_load or
+ * wasm_runtime_instantiate. Secret/artifact load uses
+ * wamr_secrets_gateway_load_for_authority.
  *
- * Subset of the allowlist is admitted. Superset is refused as
- * UNAPPROVED_IMPORT. Two imports matching one allowlist name are
- * DUPLICATE_IMPORT. Negative wasm_runtime_get_import_count is
- * METADATA_UNAVAILABLE with no further metadata access.
+ * NULL out or a missing/zero-capacity diagnostic is still INVALID_ARGUMENT
+ * (out is cleared when non-NULL).
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     uint8_t *buf,
@@ -84,6 +88,44 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
     wamr_secrets_gateway_loaded_t *out,
     char *diagnostic,
     size_t diagnostic_capacity);
+
+/*
+ * Production secret/artifact load. This is the only public entry that
+ * can return VALID / a non-NULL instance. verifier_path is the
+ * out-of-process Rust verifier binary. NULL is INVALID_ARGUMENT. The
+ * host copies buf[0..size) once into a private snapshot, hash-pins the
+ * verifier, copies those bytes into a sealed memfd
+ * (F_SEAL_WRITE|GROW|SHRINK|SEAL), fexecves that memfd with an empty
+ * envp, writes the snapshot to the child's stdin, and reads Envelope +
+ * Wax Seal only from the child's stdout pipe. Caller verdict file paths
+ * are not accepted. A missing binary is ARTIFACT_DIGEST_MISSING. A pin
+ * mismatch, spawn failure, forged or file-origin verdict, or
+ * authorizing=true is VERDICT_REFUSED. After the one snapshot copy the
+ * host allowlists Wasm bytecode magic (00 61 73 6d) before spawn and
+ * before wasm_runtime_load. A WAMR AOT prefix is VERDICT_REFUSED with
+ * AOT_REFUSED; any other non-bytecode prefix is VERDICT_REFUSED with
+ * BYTECODE_REQUIRED. The documented WAMR AOT validator stays unused.
+ * The host independently SHA-256s the
+ * snapshot and binds componentDigest before wasm_runtime_load of that
+ * same snapshot. Release wipes the snapshot with a non-elidable byte
+ * loop immediately before every free. This translation unit does not
+ * link or call Rust. There is no public self-hash loader.
+ */
+wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
+    uint8_t *buf,
+    uint32_t size,
+    const char *verifier_path,
+    wamr_secrets_gateway_loaded_t *out,
+    char *diagnostic,
+    size_t diagnostic_capacity);
+
+/*
+ * Copy the 32-byte artifact digest from a VALID loaded module. Returns false
+ * when loaded is NULL or the digest is missing (all-zero).
+ */
+bool wamr_secrets_gateway_copy_artifact_digest(
+    const wamr_secrets_gateway_loaded_t *loaded,
+    uint8_t out[32]);
 
 void wamr_secrets_gateway_release(wamr_secrets_gateway_loaded_t *loaded);
 
