@@ -23,6 +23,7 @@ import {
   ReleaseCommitAuthority,
   SecretReleaseRefused,
   bytesEqual,
+  readForeignSafeInteger,
 } from "./release-commit-point.js";
 import type {
   OperationRecoveryStatus,
@@ -38,6 +39,7 @@ export {
   RELEASE_RETIRED_CAP,
   SecretReleaseRefused,
   bytesEqual,
+  readForeignSafeInteger,
 } from "./release-commit-point.js";
 export type {
   ReleaseOutcome,
@@ -47,6 +49,7 @@ export type {
   OperationRecoveryStatus,
   ReleaseAuditEvent,
   ReleaseStatus,
+  ForeignNumberRead,
 } from "./release-commit-point.js";
 
 export const ERR_SECRET_GATE_WIPE_FAILED = "ERR_SECRET_GATE_WIPE_FAILED";
@@ -107,6 +110,8 @@ export interface SecretGate {
   noteUnknown(operationId: string): void;
   /** Transition audit: operation id + outcome only. */
   auditEvents(): readonly ReleaseAuditEvent[];
+  /** Authority-issued unforgeable lease id (instance nonce + monotonic counter). */
+  issueLeaseId(): string;
 }
 
 // Capture the built-ins before any provider/handler callback can shadow a staged view's `fill`
@@ -151,10 +156,11 @@ function readEpoch(provider: SecretsProvider, requireEpoch: boolean): number {
   } catch {
     throw new SecretReleaseRefused("stale", "SecretGate: revocation epoch is unavailable");
   }
-  if (typeof epoch !== "number" || !Number.isSafeInteger(epoch) || epoch < 0) {
+  const epochRead = readForeignSafeInteger(epoch);
+  if (!epochRead.ok || epochRead.value < 0) {
     throw new SecretReleaseRefused("stale", "SecretGate: revocation epoch is unavailable");
   }
-  return epoch;
+  return epochRead.value;
 }
 
 export function createSecretGate(
@@ -431,5 +437,9 @@ export function createSecretGate(
     return authority.auditEvents();
   }
 
-  return { admit, getSecret, acknowledge, status, noteUnknown, auditEvents };
+  function issueLeaseId(): string {
+    return authority.issueLeaseId();
+  }
+
+  return { admit, getSecret, acknowledge, status, noteUnknown, auditEvents, issueLeaseId };
 }

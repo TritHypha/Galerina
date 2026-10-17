@@ -281,11 +281,12 @@ test("ack of foreign/replayed id or wrong epoch refuses without flipping state",
   assert.equal(authority.stateOf("op-a"), "acknowledged");
 });
 
-test("SOURCE-PIN ONLY: kernel mints releaseOperationId from requestId and seq, not a client field", () => {
+test("SOURCE-PIN ONLY: kernel mints releaseOperationId from authority issueLeaseId, not a client field", () => {
   const src = readFileSync(new URL("../src/kernel.ts", import.meta.url), "utf8");
-  assert.match(src, /const releaseOperationId = `\$\{req\.requestId\}\\u0000\$\{releaseSeq\}`/);
+  assert.match(src, /releaseOperationId = secretGate\.issueLeaseId\(\)/);
   assert.match(src, /requireBoundOperationId:\s*true/);
   assert.doesNotMatch(src, /releaseOperationId = req\.(body|headers|query)/);
+  assert.doesNotMatch(src, /const releaseOperationId = `\$\{req\.requestId\}\\u0000\$\{releaseSeq\}`/);
 });
 
 test("mutant: UNKNOWN collapsed to REFUSED goes red then restores green", async () => {
@@ -314,7 +315,7 @@ test("mutant: missing rec admits goes red then restores green", async () => {
   const before = appKernelSrcPorcelain();
   const originalText = srcText();
   const mutated = originalText.replace(
-    "if (rec === undefined) {\n      if (this.#retired.has(id)) {\n        return Object.freeze({ kind: \"DELIVERY_UNKNOWN\", operationId: id });\n      }\n      return Object.freeze({ kind: \"NOT_FOUND\", operationId: id });\n    }",
+    "if (rec === undefined) {\n      if (this.#retired.has(id)) {\n        return Object.freeze({ kind: \"DELIVERY_UNKNOWN\", operationId: id });\n      }\n      if (this.#tombstoneDropped) {\n        return Object.freeze({ kind: \"DELIVERY_UNKNOWN\", operationId: id });\n      }\n      return Object.freeze({ kind: \"NOT_FOUND\", operationId: id });\n    }",
     "if (rec === undefined) {\n      return Object.freeze({ kind: \"RELEASED_ACKED\", operationId: id });\n    }",
   );
   assert.notEqual(mutated, originalText, "missing-rec mutant is a real edit");
@@ -330,8 +331,8 @@ test("mutant: unused and default arm read NOT_FOUND goes red then restores green
   const before = appKernelSrcPorcelain();
   const originalText = srcText();
   const mutated = originalText.replace(
-    "const unusedOrUnknown: string = rec.state;\n        void unusedOrUnknown;\n        return Object.freeze({ kind: \"DELIVERY_UNKNOWN\", operationId: id });",
-    "const unusedOrUnknown: string = rec.state;\n        void unusedOrUnknown;\n        return Object.freeze({ kind: \"NOT_FOUND\", operationId: id });",
+    "case \"unused\":\n        return Object.freeze({ kind: \"DELIVERY_UNKNOWN\", operationId: id });",
+    "case \"unused\":\n        return Object.freeze({ kind: \"NOT_FOUND\", operationId: id });",
   );
   assert.notEqual(mutated, originalText, "unused/default-NOT_FOUND mutant is a real edit");
   const { ReleaseCommitAuthority: Mutated } = await authorityFromMutatedSource(mutated);

@@ -68,15 +68,71 @@ export const RELEASE_AUDIT_CAP = 1024;
 /** Bound on retired tombstones. Oldest ids drop first. */
 export const RELEASE_RETIRED_CAP = 1024;
 
+/**
+ * Foreign number at a trust boundary. Null, NaN, Infinity, non-integers,
+ * non-numbers, and unsafe integers refuse. The only success is a safe integer.
+ */
+export type ForeignNumberRead =
+  | { readonly ok: true; readonly value: number }
+  | { readonly ok: false };
+
+export function readForeignSafeInteger(raw: unknown): ForeignNumberRead {
+  if (typeof raw !== "number") return { ok: false };
+  if (!Number.isSafeInteger(raw)) return { ok: false };
+  return { ok: true, value: raw };
+}
+
 function operationIdOf(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+let authorityNonceFallback = 0;
+
+function instanceNonce(): string {
+  const cryptoRef = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (cryptoRef !== undefined && typeof cryptoRef.randomUUID === "function") {
+    try {
+      const nonce = cryptoRef.randomUUID();
+      if (typeof nonce === "string" && nonce.length > 0 && nonce.indexOf("\u0000") === -1) {
+        return nonce;
+      }
+    } catch {
+      // fall through to the process-local counter
+    }
+  }
+  authorityNonceFallback += 1;
+  const seq = readForeignSafeInteger(authorityNonceFallback);
+  if (!seq.ok || seq.value < 1) {
+    throw new SecretReleaseRefused("fenced", "Release authority nonce is unavailable.");
+  }
+  return `u4-auth-${seq.value}`;
+}
+
+function parseIssuedSeq(operationId: string, nonce: string): ForeignNumberRead {
+  const prefix = `${nonce}\u0000`;
+  if (operationId.length <= prefix.length) return { ok: false };
+  for (let i = 0; i < prefix.length; i += 1) {
+    if (operationId.charCodeAt(i) !== prefix.charCodeAt(i)) return { ok: false };
+  }
+  const rest = operationId.slice(prefix.length);
+  if (rest.length === 0) return { ok: false };
+  if (rest.charCodeAt(0) === 48) return { ok: false };
+  for (let i = 0; i < rest.length; i += 1) {
+    const code = rest.charCodeAt(i);
+    if (code < 48 || code > 57) return { ok: false };
+  }
+  return readForeignSafeInteger(Number(rest));
 }
 
 export class ReleaseCommitAuthority {
   readonly #leases = new Map<string, LeaseRecord>();
   readonly #retired = new Set<string>();
   readonly #audit: ReleaseAuditEvent[] = [];
+  readonly #nonce: string = instanceNonce();
   #seq = 0;
+  #issuedSeq = 0;
+  #tombstoneDropped = false;
+  #maxDroppedIssuedSeq = 0;
 
   #record(operationId: unknown, outcome: ReleaseAuditEvent["outcome"]): void {
     const id = operationIdOf(operationId);
@@ -89,9 +145,39 @@ export class ReleaseCommitAuthority {
   #retire(operationId: string): void {
     if (this.#retired.size >= RELEASE_RETIRED_CAP) {
       const oldest = this.#retired.values().next().value;
-      if (typeof oldest === "string") this.#retired.delete(oldest);
+      if (typeof oldest === "string") {
+        this.#retired.delete(oldest);
+        this.#tombstoneDropped = true;
+        const droppedSeq = parseIssuedSeq(oldest, this.#nonce);
+        if (droppedSeq.ok) {
+          const prev = readForeignSafeInteger(this.#maxDroppedIssuedSeq);
+          if (!prev.ok || droppedSeq.value > prev.value) {
+            this.#maxDroppedIssuedSeq = droppedSeq.value;
+          }
+        }
+      } else {
+        this.#tombstoneDropped = true;
+      }
     }
     this.#retired.add(operationId);
+  }
+
+  /** Authority-issued lease id: instance nonce + monotonic counter. Unique per authority. */
+  issueLeaseId(): string {
+    this.#issuedSeq += 1;
+    const seq = readForeignSafeInteger(this.#issuedSeq);
+    if (!seq.ok || seq.value < 1) {
+      throw new SecretReleaseRefused("fenced", "Release id counter is unavailable.");
+    }
+    return `${this.#nonce}\u0000${seq.value}`;
+  }
+
+  #issuedByThis(operationId: string): boolean {
+    const seq = parseIssuedSeq(operationId, this.#nonce);
+    if (!seq.ok) return false;
+    const issued = readForeignSafeInteger(this.#issuedSeq);
+    if (!issued.ok) return false;
+    return seq.value >= 1 && seq.value <= issued.value;
   }
 
   /** Live map size (unused + terminal). Does not include retired tombstones. */
@@ -103,8 +189,13 @@ export class ReleaseCommitAuthority {
     if (typeof operationId !== "string" || operationId.length === 0) {
       throw new SecretReleaseRefused("missing", "Release operation id is required.");
     }
-    if (!Number.isSafeInteger(epoch) || epoch < 0) {
+    const epochRead = readForeignSafeInteger(epoch);
+    if (!epochRead.ok || epochRead.value < 0) {
       throw new SecretReleaseRefused("stale", "Release epoch is unavailable.");
+    }
+    const looksIssued = parseIssuedSeq(operationId, this.#nonce);
+    if (looksIssued.ok && !this.#issuedByThis(operationId)) {
+      throw new SecretReleaseRefused("missing", "Release lease id was not issued by this authority.");
     }
     if (this.#retired.has(operationId)) {
       throw new SecretReleaseRefused("replay", "Release lease was retired.");
@@ -116,14 +207,27 @@ export class ReleaseCommitAuthority {
       }
       return { leaseId: operationId, token: existing.token, epoch: existing.epoch };
     }
+    if (this.#issuedByThis(operationId)) {
+      const issuedSeq = parseIssuedSeq(operationId, this.#nonce);
+      const droppedMax = readForeignSafeInteger(this.#maxDroppedIssuedSeq);
+      if (issuedSeq.ok && droppedMax.ok && issuedSeq.value <= droppedMax.value) {
+        throw new SecretReleaseRefused("replay", "Release lease is not provably fresh.");
+      }
+    } else if (this.#tombstoneDropped) {
+      throw new SecretReleaseRefused("replay", "Release lease is not provably fresh.");
+    }
     this.#evictOldestTerminal();
     if (this.#leases.size >= RELEASE_LEASE_CAP) {
       throw new SecretReleaseRefused("fenced", "Release lease map is at capacity.");
     }
     this.#seq += 1;
-    const token = `${operationId}\u0000${epoch}\u0000${this.#seq}`;
-    this.#leases.set(operationId, { token, epoch, state: "unused" });
-    return { leaseId: operationId, token, epoch };
+    const seqRead = readForeignSafeInteger(this.#seq);
+    if (!seqRead.ok || seqRead.value < 1) {
+      throw new SecretReleaseRefused("fenced", "Release token counter is unavailable.");
+    }
+    const token = `${operationId}\u0000${epochRead.value}\u0000${seqRead.value}`;
+    this.#leases.set(operationId, { token, epoch: epochRead.value, state: "unused" });
+    return { leaseId: operationId, token, epoch: epochRead.value };
   }
 
   #evictOldestTerminal(): void {
@@ -161,6 +265,9 @@ export class ReleaseCommitAuthority {
       if (this.#retired.has(id)) {
         return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
       }
+      if (this.#tombstoneDropped) {
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
+      }
       return Object.freeze({ kind: "NOT_FOUND", operationId: id });
     }
     switch (rec.state) {
@@ -173,9 +280,10 @@ export class ReleaseCommitAuthority {
       case "fenced":
         return Object.freeze({ kind: "REFUSED", operationId: id });
       case "unused":
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
       default: {
-        const unusedOrUnknown: string = rec.state;
-        void unusedOrUnknown;
+        const _exhaustive: never = rec.state;
+        void _exhaustive;
         return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
       }
     }
@@ -195,15 +303,26 @@ export class ReleaseCommitAuthority {
       if (rec.state === "unused") rec.state = "fenced";
       return "stale";
     }
-    if (rec.state === "released" || rec.state === "delivery-unknown" || rec.state === "acknowledged") {
-      this.#record(leaseId, "replay");
-      return "replay";
+    switch (rec.state) {
+      case "released":
+      case "delivery-unknown":
+      case "acknowledged":
+        this.#record(leaseId, "replay");
+        return "replay";
+      case "fenced":
+        this.#record(leaseId, "fenced");
+        return "fenced";
+      case "unused":
+        break;
+      default: {
+        const _exhaustive: never = rec.state;
+        void _exhaustive;
+        this.#record(leaseId, "replay");
+        return "replay";
+      }
     }
-    if (rec.state === "fenced") {
-      this.#record(leaseId, "fenced");
-      return "fenced";
-    }
-    if (!Number.isSafeInteger(observedEpoch) || observedEpoch !== rec.epoch) {
+    const epochRead = readForeignSafeInteger(observedEpoch);
+    if (!epochRead.ok || epochRead.value !== rec.epoch) {
       rec.state = "fenced";
       this.#record(leaseId, "stale");
       return "stale";
@@ -239,7 +358,8 @@ export class ReleaseCommitAuthority {
       return "stale";
     }
     if (observedEpoch !== undefined) {
-      if (!Number.isSafeInteger(observedEpoch) || observedEpoch !== rec.epoch) {
+      const epochRead = readForeignSafeInteger(observedEpoch);
+      if (!epochRead.ok || epochRead.value !== rec.epoch) {
         this.#record(operationId, "stale");
         return "stale";
       }

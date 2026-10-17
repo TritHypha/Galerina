@@ -29,6 +29,15 @@ function waitMacrotask() {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function latestOperationId(authority) {
+  const events = authority.auditEvents();
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const id = events[i].operationId;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return "";
+}
+
 function countingProvider(stored = new Uint8Array(SYNTHETIC)) {
   return {
     has() {
@@ -119,7 +128,7 @@ test("audit-sink commit throw is HTTP 503 and status is not acknowledged", async
   });
   const response = await kernel.handle(req("rq-audit-boom"));
   await waitMacrotask();
-  const operationId = `rq-audit-boom\u0000${1}`;
+  const operationId = latestOperationId(authority);
   const status = authority.status(operationId);
   assert.equal(response.status, 503);
   assert.equal(errorOf(response), "audit_unavailable");
@@ -149,7 +158,7 @@ test("late provider callback before publication seal is error HTTP and not ackno
   });
   const response = await kernel.handle(req("rq-late-cb"));
   await waitMacrotask();
-  const operationId = `rq-late-cb\u0000${1}`;
+  const operationId = latestOperationId(authority);
   const status = authority.status(operationId);
   assert.equal(response.status >= 500, true);
   assert.equal(status.kind, "DELIVERY_UNKNOWN");
@@ -178,7 +187,7 @@ test("clean publication and audit commit acknowledges the lease", async () => {
   });
   const response = await kernel.handle(req("rq-clean-ack"));
   await waitMacrotask();
-  const operationId = `rq-clean-ack\u0000${1}`;
+  const operationId = latestOperationId(authority);
   assert.equal(response.status, 200);
   assert.equal(authority.status(operationId).kind, "RELEASED_ACKED");
 });

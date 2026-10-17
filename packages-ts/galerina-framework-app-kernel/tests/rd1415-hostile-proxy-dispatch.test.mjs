@@ -29,6 +29,27 @@ function waitMacrotask() {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function latestOperationId(authority) {
+  const events = authority.auditEvents();
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const id = events[i].operationId;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return "";
+}
+
+function operationIds(authority) {
+  const ids = [];
+  const seen = new Set();
+  for (const event of authority.auditEvents()) {
+    if (typeof event.operationId === "string" && event.operationId.length > 0 && !seen.has(event.operationId)) {
+      seen.add(event.operationId);
+      ids.push(event.operationId);
+    }
+  }
+  return ids;
+}
+
 function countingProvider(stored = new Uint8Array(SYNTHETIC)) {
   return {
     has() {
@@ -102,7 +123,7 @@ for (const scenario of cases) {
     const requestId = `rq-${scenario.name}`;
     const response = await kernel.handle(req(requestId));
     await waitMacrotask();
-    const operationId = `${requestId}\u0000${1}`;
+    const operationId = latestOperationId(authority);
     const status = authority.status(operationId);
     const ack = authority.acknowledgeMinted(operationId);
     assert.equal(response.status, 500, `${scenario.name} http`);
@@ -180,7 +201,7 @@ test("concurrent hostile A during in-flight B does not touch B's lease", async (
   });
   const pendingB = kernel.handle(req("rq-B"));
   await waitMacrotask();
-  const operationB = `rq-B\u0000${1}`;
+  const operationB = latestOperationId(authority);
   assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
   const responseA = await kernel.handle(hostileBodyReq("rq-A"));
   assert.equal(responseA.status, 500);
@@ -190,7 +211,10 @@ test("concurrent hostile A during in-flight B does not touch B's lease", async (
   await waitMacrotask();
   assert.equal(responseB.status, 200);
   assert.equal(authority.status(operationB).kind, "RELEASED_ACKED");
-  assert.notEqual(authority.status(`rq-A\u0000${2}`).kind, "RELEASED_ACKED");
+  const other = operationIds(authority).find((id) => id !== operationB);
+  if (other !== undefined) {
+    assert.notEqual(authority.status(other).kind, "RELEASED_ACKED");
+  }
 });
 
 test("spent A throw while B waits is A delivery-unknown and B acknowledged", async () => {
@@ -226,10 +250,10 @@ test("spent A throw while B waits is A delivery-unknown and B acknowledged", asy
   });
   const pendingB = kernel.handle(req("rq-B"));
   await waitMacrotask();
-  const operationB = `rq-B\u0000${1}`;
+  const operationB = latestOperationId(authority);
   const responseA = await kernel.handle(req("rq-A"));
   await waitMacrotask();
-  const operationA = `rq-A\u0000${2}`;
+  const operationA = operationIds(authority).find((id) => id !== operationB) ?? "";
   assert.equal(responseA.status, 500);
   assert.equal(authority.status(operationA).kind, "DELIVERY_UNKNOWN");
   assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
@@ -264,7 +288,7 @@ test("503 refusal then throwing request does not touch the earlier operation", a
   });
   const first = await kernel.handle(req("rq-S"));
   await waitMacrotask();
-  const operationS = `rq-S\u0000${1}`;
+  const operationS = latestOperationId(authority);
   assert.equal(first.status, 503);
   assert.equal(authority.status(operationS).kind, "DELIVERY_UNKNOWN");
   const second = await kernel.handle(hostileBodyReq("rq-T"));
