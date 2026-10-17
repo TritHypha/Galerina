@@ -58,3 +58,4 @@ export * from "./route-pattern.js";
 export * from "./idempotency-replay-policy.js";
 // HOLD pin: typed refuse of RD-1413–1415 secret-authority and unwired kernel acts.
 export * from "./hold-pin.js";
+export * from "./auth-verify-route.js";

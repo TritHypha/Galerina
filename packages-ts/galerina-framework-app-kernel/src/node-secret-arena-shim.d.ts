@@ -59,3 +59,9 @@ declare module "node:path" {
   export function dirname(path: string): string;
   export function join(...parts: string[]): string;
 }
+
+declare module "node:crypto" {
+  export function createHash(algorithm: "sha256"): {
+    update(data: Uint8Array): { digest(encoding: "hex"): string };
+  };
+}

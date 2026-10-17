@@ -1,0 +1,8 @@
+{
+  "schema": "galerina.test.only.auth-verify.verifier-pin.v1",
+  "pinnedCommit": "ead2d7cc3f63f8a971da184458758d173f58bebc",
+  "path": "packages-ts/galerina-core-runtime/native/vok-authority/Cargo.toml",
+  "gitBlobId": "7d346c12a6dae822cc96d06bd9520f63224eed63",
+  "sha256": "c26db89133aeaf627955588d46e242a4d1b9ca667babd209b44c94c751aa229b",
+  "crateTypeLine": "crate-type = [\"rlib\"]"
+}
