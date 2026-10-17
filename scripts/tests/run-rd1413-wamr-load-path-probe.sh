@@ -68,8 +68,14 @@ if grep -E 'wamr_vok_bind_bytes|pipe_origin' \
 fi
 if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
    ! grep -q 'F_SEAL_SEAL' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'F_GET_SEALS' "$host_src/wamr_vok_verdict.c" ||
    ! grep -q 'empty_envp' "$host_src/wamr_vok_verdict.c"; then
-  printf 'sealed memfd or empty envp missing from spawn\n' >&2
+  printf 'sealed memfd, F_GET_SEALS, or empty envp missing from spawn\n' >&2
+  exit 2
+fi
+if ! grep -q 'SNAPSHOT_WIPE' "$host_src/wamr_secrets_gateway_host.c" ||
+   ! grep -q 'wipe_bytes' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'snapshot wipe missing from production TU\n' >&2
   exit 2
 fi
 if grep -q 'fexecve(.*environ' "$host_src/wamr_vok_verdict.c"; then
@@ -123,6 +129,9 @@ gcc -std=c11 -Wall -Wextra -Werror \
   -Wl,--wrap=wasm_runtime_instantiate \
   -Wl,--wrap=wasm_runtime_unload \
   -Wl,--wrap=wasm_runtime_deinstantiate \
+  -Wl,--wrap=malloc \
+  -Wl,--wrap=free \
+  -Wl,--wrap=fcntl \
   "$wamr_library" -lm -ldl -lpthread \
   -o "$temp_dir/load-path-probe"
 

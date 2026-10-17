@@ -233,6 +233,19 @@ static void zero_digest(wamr_secrets_gateway_loaded_t *loaded)
     }
 }
 
+static void wipe_bytes(void *p, size_t n) __attribute__((unused));
+static void wipe_bytes(void *p, size_t n)
+{
+    volatile uint8_t *cur = (volatile uint8_t *)p;
+    size_t i;
+    if (p == NULL || n == 0) {
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        cur[i] = 0;
+    }
+}
+
 static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
 {
     if (loaded == NULL) {
@@ -247,8 +260,11 @@ static void release_loaded(wamr_secrets_gateway_loaded_t *loaded)
         loaded->module = NULL;
     }
     if (loaded->owned_snapshot != NULL) {
+        /* SNAPSHOT_WIPE */
+        wipe_bytes(loaded->owned_snapshot, loaded->owned_snapshot_size);
         free(loaded->owned_snapshot);
         loaded->owned_snapshot = NULL;
+        loaded->owned_snapshot_size = 0;
     }
     zero_digest(loaded);
 }
@@ -282,6 +298,7 @@ static void clear_out_fields(wamr_secrets_gateway_loaded_t *out)
     out->module = NULL;
     out->instance = NULL;
     out->owned_snapshot = NULL;
+    out->owned_snapshot_size = 0;
     zero_digest(out);
 }
 
@@ -486,6 +503,7 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     }
     memcpy(snapshot, buf, (size_t)size);
     out->owned_snapshot = snapshot;
+    out->owned_snapshot_size = (size_t)size;
 
     if (snapshot_is_wamr_aot(snapshot, size)) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,

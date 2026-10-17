@@ -21,7 +21,15 @@ extern unsigned rd1413_load_path_unload_calls;
 extern unsigned rd1413_load_path_deinstantiate_calls;
 extern unsigned rd1413_load_path_import_count_calls;
 extern unsigned rd1413_load_path_import_type_calls;
+extern size_t rd1413_track_wipe_size;
+extern unsigned rd1413_wipe_ok_frees;
+extern unsigned rd1413_wipe_dirty_frees;
+extern unsigned rd1413_add_seals_full_calls;
+extern unsigned rd1413_get_seals_calls;
 extern void rd1413_load_path_reset(void);
+
+static int expect_snapshot_wiped(const char *label);
+static int expect_seals_applied(const char *label);
 
 static uint8_t *read_bytes(const char *path, uint32_t *size)
 {
@@ -188,6 +196,7 @@ static int expect_admitted(const char *path, const char *label,
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
     wamr_sha256(bytes, (size_t)size, expected);
+    rd1413_track_wipe_size = (size_t)size;
     result = load_with_authority(bytes, size, &loaded, diagnostic,
                                  sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VALID || loaded.module == NULL ||
@@ -230,6 +239,10 @@ static int expect_admitted(const char *path, const char *label,
         fprintf(stderr,
                 "%s: release did not deinstantiate+unload once with zero digest\n",
                 label);
+        free(bytes);
+        return 0;
+    }
+    if (!expect_snapshot_wiped(label) || !expect_seals_applied(label)) {
         free(bytes);
         return 0;
     }
@@ -334,6 +347,27 @@ static void poison_loaded(wamr_secrets_gateway_loaded_t *loaded)
     loaded->module = (wasm_module_t)(uintptr_t)0x1111u;
     loaded->instance = (wasm_module_inst_t)(uintptr_t)0x2222u;
     loaded->owned_snapshot = NULL;
+    loaded->owned_snapshot_size = 0;
+}
+
+static int expect_snapshot_wiped(const char *label)
+{
+    if (rd1413_wipe_ok_frees < 1u) {
+        fprintf(stderr, "%s: snapshot free was not wiped (ok=%u dirty=%u)\n",
+                label, rd1413_wipe_ok_frees, rd1413_wipe_dirty_frees);
+        return 0;
+    }
+    return 1;
+}
+
+static int expect_seals_applied(const char *label)
+{
+    if (rd1413_add_seals_full_calls < 1u || rd1413_get_seals_calls < 1u) {
+        fprintf(stderr, "%s: F_ADD_SEALS=%u F_GET_SEALS=%u\n", label,
+                rd1413_add_seals_full_calls, rd1413_get_seals_calls);
+        return 0;
+    }
+    return 1;
 }
 
 static int check_invalid_diagnostic_zeros_out(void)
@@ -499,6 +533,7 @@ static int check_load_for_authority(const char *path,
 
     poison_loaded(&loaded);
     rd1413_load_path_reset();
+    rd1413_track_wipe_size = (size_t)size;
     result = wamr_secrets_gateway_load_for_authority(
         bytes, size, verifier, &loaded, diagnostic, sizeof(diagnostic));
     if (old_preload == NULL) {
@@ -542,6 +577,12 @@ static int check_load_for_authority(const char *path,
         return 0;
     }
     wamr_secrets_gateway_release(&loaded);
+    if (!expect_snapshot_wiped("load_for_authority") ||
+        !expect_seals_applied("load_for_authority")) {
+        free(bytes);
+        free(original);
+        return 0;
+    }
     puts("PASS: load_for_authority spawns sealed-memfd child, empty envp, one snapshot");
     free(bytes);
     free(original);
@@ -556,6 +597,7 @@ static int check_load_failed(void)
     wamr_secrets_gateway_result_t result;
 
     rd1413_load_path_reset();
+    rd1413_track_wipe_size = sizeof(junk);
     result = load_with_authority(junk, sizeof(junk), &loaded, diagnostic,
                                  sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED || loaded.module != NULL ||
@@ -567,6 +609,9 @@ static int check_load_failed(void)
                 "garbage bytes must VERDICT_REFUSED BYTECODE_REQUIRED before spawn: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("unparseable bytes")) {
         return 0;
     }
     puts("PASS: load path refuses unparseable bytes, instantiate=0 unload=0");
@@ -583,6 +628,7 @@ static int check_aot_refused(void)
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
+    rd1413_track_wipe_size = sizeof(aot);
     result = load_with_authority(aot, sizeof(aot), &loaded, diagnostic,
                                  sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
@@ -595,6 +641,9 @@ static int check_aot_refused(void)
                 "AOT prefix must VERDICT_REFUSED AOT_REFUSED before spawn: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("AOT prefix")) {
         return 0;
     }
     puts("PASS: AOT prefix is VERDICT_REFUSED AOT_REFUSED before spawn or WAMR load");
@@ -611,6 +660,7 @@ static int check_non_bytecode_refused(void)
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
+    rd1413_track_wipe_size = sizeof(native);
     result = load_with_authority(native, sizeof(native), &loaded, diagnostic,
                                  sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
@@ -624,6 +674,9 @@ static int check_non_bytecode_refused(void)
                 "non-wasm non-AOT prefix must VERDICT_REFUSED BYTECODE_REQUIRED: %s\n",
                 diagnostic);
         wamr_secrets_gateway_release(&loaded);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("non-wasm prefix")) {
         return 0;
     }
     puts("PASS: non-wasm non-AOT prefix is VERDICT_REFUSED BYTECODE_REQUIRED before spawn");

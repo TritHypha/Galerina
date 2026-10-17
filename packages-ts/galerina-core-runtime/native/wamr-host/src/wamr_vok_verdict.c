@@ -765,6 +765,15 @@ static int sealed_memfd_from_bytes(const uint8_t *buf, size_t size)
         close(mfd);
         return -1;
     }
+    {
+        int seals = fcntl(mfd, F_GET_SEALS);
+        unsigned want = (unsigned)(F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK |
+                                   F_SEAL_SEAL);
+        if (seals < 0 || ((unsigned)seals & want) != want) {
+            close(mfd);
+            return -1;
+        }
+    }
     return mfd;
 }
 

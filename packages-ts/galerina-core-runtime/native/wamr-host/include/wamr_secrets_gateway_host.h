@@ -55,6 +55,7 @@ typedef struct {
     wasm_module_inst_t instance;
     uint8_t artifact_digest[32];
     uint8_t *owned_snapshot;
+    size_t owned_snapshot_size;
 } wamr_secrets_gateway_loaded_t;
 
 #define WAMR_SECRETS_GATEWAY_STACK_SIZE 16384u
@@ -106,8 +107,9 @@ wamr_secrets_gateway_result_t wamr_secrets_gateway_load(
  * BYTECODE_REQUIRED. The documented WAMR AOT validator stays unused.
  * The host independently SHA-256s the
  * snapshot and binds componentDigest before wasm_runtime_load of that
- * same snapshot. This translation unit does not link or call Rust.
- * There is no public self-hash loader.
+ * same snapshot. Release wipes the snapshot with a non-elidable byte
+ * loop immediately before every free. This translation unit does not
+ * link or call Rust. There is no public self-hash loader.
  */
 wamr_secrets_gateway_result_t wamr_secrets_gateway_load_for_authority(
     uint8_t *buf,
