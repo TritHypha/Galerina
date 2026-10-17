@@ -170,6 +170,7 @@ fn main() -> ExitCode {
         Ok(v) => v,
         Err(_) => return emit(-1, "SIGNATURE_LEN", 1),
     };
+    // GATE1_GUARD_VERIFY
     match verifying_key.verify(&message, &signature) {
         Ok(()) => emit(1, "OK", 0),
         Err(_) => emit(-1, "TAMPER", 1),

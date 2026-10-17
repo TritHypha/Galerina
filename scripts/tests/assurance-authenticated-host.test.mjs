@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { pathToFileURL } from "node:url";
 import { TRIT } from "../lib/assurance-fabric/result-model.mjs";
@@ -62,7 +66,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.equal(sink.count, 1);
     const tamperedSeal = { ...seal, signature: flipHex(seal.signature) };
     assert.equal(host.classifySeal(tamperedSeal, "subject:component"), TRIT.DISTRUSTED);
-    assert.throws(() => host.applyGrant(tamperedSeal, SYNTHETIC_ACTION, createEffectSink()), /GRANT|tampered|unpinned/);
+    assert.throws(() => host.applyGrant(tamperedSeal, SYNTHETIC_ACTION, createEffectSink()), /GRANT|tampered|unpinned|issuerKeyId/);
   });
 
   it("replay and concurrent second consume refuse with at most one effect", async () => {
@@ -101,16 +105,19 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const host = createAuthenticatedAssuranceHost(config);
     const issueSink = createEffectSink();
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const mislabelled = { ...grant, kind: SEAL_KIND };
+    assert.throws(() => host.applyGrant(mislabelled, SYNTHETIC_ACTION, issueSink), /GRANT|kind|tampered|unpinned/);
+    assert.equal(issueSink.count, 0);
     const seal = host.applyGrant(grant, SYNTHETIC_ACTION, issueSink);
     assert.equal(seal.kind, SEAL_KIND);
     assert.equal(seal.authentication, AUTHENTICATED_KIND);
     assert.equal(seal.authorizing, false);
     const sink = createEffectSink();
-    assert.throws(() => host.applyGrant(seal, SYNTHETIC_ACTION, sink), /GRANT/);
+    assert.throws(() => host.applyGrant(seal, SYNTHETIC_ACTION, sink), /GRANT|issuerKeyId|kind|tampered/);
     assert.equal(sink.count, 0);
     const peer = createAuthenticatedAssuranceHost(config);
     const peerSink = createEffectSink();
-    assert.throws(() => peer.applyGrant(seal, SYNTHETIC_ACTION, peerSink), /GRANT/);
+    assert.throws(() => peer.applyGrant(seal, SYNTHETIC_ACTION, peerSink), /GRANT|issuerKeyId|kind|tampered/);
     assert.equal(peerSink.count, 0);
     const relabelled = {
       schemaVersion: 1,
@@ -184,5 +191,58 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     });
     assert.equal(tamperVerdict.trit, -1);
     assert.equal(tamperVerdict.authorizing, false);
+  });
+
+  it("rust verifier negatives are trit -1 or unavailable 0, never +1", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const hostA = createAuthenticatedAssuranceHost(config);
+    const hostB = createAuthenticatedAssuranceHost(config);
+    const grantA = hostA.issueGrant(envelope, SYNTHETIC_ACTION);
+    const sealA = hostA.applyGrant(grantA, SYNTHETIC_ACTION, createEffectSink());
+    const grantB = hostB.issueGrant(envelope, SYNTHETIC_ACTION);
+    const sealB = hostB.applyGrant(grantB, SYNTHETIC_ACTION, createEffectSink());
+
+    function check(statement, publicKeyHex = hostA.publicVerifyingKeyHex, expectedSha256Hex = pin, path = verifierPath) {
+      return spawnSignetVerifier({
+        verifierPath: path,
+        expectedSha256Hex,
+        publicKeyHex,
+        statement,
+      });
+    }
+
+    function refuse(verdict) {
+      assert.equal(verdict.authorizing, false);
+      assert.equal(verdict.trit, -1, verdict.reason);
+      assert.notEqual(verdict.trit, 1);
+    }
+
+    refuse(check(grantB));
+    refuse(check(sealB));
+    refuse(check({ ...sealA, subjectId: flipHex(sealA.subjectId) }));
+    refuse(check({ ...sealA, terminalOutcome: flipHex(sealA.terminalOutcome) }));
+    refuse(check({ ...sealA, signature: flipHex(sealA.signature) }));
+    refuse(check({ ...sealA, authorizing: true }));
+    refuse(check({ ...grantA, extra: true }));
+    const missing = { ...grantA };
+    delete missing.grantId;
+    refuse(check(missing));
+
+    const pinMismatch = check(grantA, hostA.publicVerifyingKeyHex, "00".repeat(32));
+    assert.equal(pinMismatch.authorizing, false);
+    assert.equal(pinMismatch.trit, -1, pinMismatch.reason);
+    assert.notEqual(pinMismatch.trit, 1);
+
+    const decoyDir = mkdtempSync(join(tmpdir(), "gate1-unavail-"));
+    const decoy = join(decoyDir, "decoy");
+    writeFileSync(decoy, "gate1-unavailable-decoy\n");
+    chmodSync(decoy, 0o400);
+    const decoyPin = createHash("sha256").update(readFileSync(decoy)).digest("hex");
+    const unavailable = check(grantA, hostA.publicVerifyingKeyHex, decoyPin, decoy);
+    assert.equal(unavailable.authorizing, false);
+    assert.equal(unavailable.trit, 0, unavailable.reason);
+    assert.notEqual(unavailable.trit, 1);
   });
 });

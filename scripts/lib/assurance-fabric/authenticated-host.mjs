@@ -260,7 +260,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
 
   function authenticateGrant(value) {
     const { payload, signature } = splitSigned(value, GRANT_KEYS, "GRANT");
-    if (payload.kind !== GRANT_KIND) throw new TypeError("GRANT kind mismatch");
+    /* GATE1_GUARD_KIND */ if (payload.kind !== GRANT_KIND) throw new TypeError("GRANT kind mismatch");
     if (payload.schemaVersion !== 1) throw new TypeError("GRANT schemaVersion must equal 1");
     nonEmptyString(payload.grantId, "grantId");
     if (!HEX64.test(payload.grantId)) throw new TypeError("grantId must be 32-byte hex");
@@ -287,9 +287,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     }
     const requested = nonEmptyString(action, "action");
     guardGrantKind(value?.kind);
-    const { payload } = value?.kind === GRANT_KIND
-      ? authenticateGrant(value)
-      : { payload: value };
+    const { payload } = authenticateGrant(value);
     if (payload.action !== requested) throw new TypeError("grant action mismatch");
     if (payload.profileDigest !== currentProfileDigest()) {
       throw new TypeError("grant profile does not match current host");
