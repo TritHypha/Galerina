@@ -1,0 +1,188 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { pathToFileURL } from "node:url";
+import { TRIT } from "../lib/assurance-fabric/result-model.mjs";
+import { spawnSignetVerifier } from "../lib/assurance-fabric/signet-verifier-spawn.mjs";
+
+const hostModuleUrl = process.env.GATE1_HOST_MODULE
+  ? pathToFileURL(process.env.GATE1_HOST_MODULE).href
+  : new URL("../lib/assurance-fabric/authenticated-host.mjs", import.meta.url).href;
+
+const {
+  AUTHENTICATED_KIND,
+  GRANT_KIND,
+  SEAL_KIND,
+  SYNTHETIC_ACTION,
+  createAuthenticatedAssuranceHost,
+  createEffectSink,
+} = await import(hostModuleUrl);
+
+const envelope = Object.freeze({
+  schemaVersion: 1,
+  componentDigest: "sha256:" + "11".repeat(32),
+  policyDigest: "sha256:" + "22".repeat(32),
+  target: "node-esm",
+  abi: "galerina.assurance-host.v1",
+  dependencyClosureDigest: "sha256:" + "33".repeat(32),
+  capabilityDigest: "sha256:" + "44".repeat(32),
+  buildPoint: "git:" + "55".repeat(20),
+  epoch: 1,
+  evidenceSetDigest: "sha256:" + "66".repeat(32),
+});
+
+const config = Object.freeze({
+  profileId: "profile:signet-gate1",
+  policyDigest: envelope.policyDigest,
+  target: envelope.target,
+  abi: envelope.abi,
+  buildPoint: envelope.buildPoint,
+  subjects: Object.freeze([
+    Object.freeze({ subjectId: "subject:component", digest: envelope.componentDigest }),
+  ]),
+});
+
+function flipHex(hex) {
+  const last = hex[hex.length - 1];
+  const next = last === "0" ? "1" : "0";
+  return `${hex.slice(0, -1)}${next}`;
+}
+
+describe("authenticated Signet / Grant / Wax Seal host", () => {
+  it("tamper of signed grant and seal is refused with zero effects", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const tamperedSig = { ...grant, signature: flipHex(grant.signature) };
+    assert.throws(() => host.applyGrant(tamperedSig, SYNTHETIC_ACTION, sink), /tampered|unpinned|GRANT/);
+    assert.equal(sink.count, 0);
+    const tamperedField = { ...grant, action: "synthetic.write.v1" };
+    assert.throws(() => host.applyGrant(tamperedField, "synthetic.write.v1", sink), /tampered|unpinned|GRANT|action/);
+    assert.equal(sink.count, 0);
+    const seal = host.applyGrant(grant, SYNTHETIC_ACTION, sink);
+    assert.equal(sink.count, 1);
+    const tamperedSeal = { ...seal, signature: flipHex(seal.signature) };
+    assert.equal(host.classifySeal(tamperedSeal, "subject:component"), TRIT.DISTRUSTED);
+    assert.throws(() => host.applyGrant(tamperedSeal, SYNTHETIC_ACTION, createEffectSink()), /GRANT|tampered|unpinned/);
+  });
+
+  it("replay and concurrent second consume refuse with at most one effect", async () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    host.applyGrant(grant, SYNTHETIC_ACTION, sink);
+    assert.equal(sink.count, 1);
+    assert.throws(() => host.applyGrant(grant, SYNTHETIC_ACTION, sink), /already consumed/);
+    assert.equal(sink.count, 1);
+
+    const raced = createAuthenticatedAssuranceHost(config);
+    const raceSink = createEffectSink();
+    const raceGrant = raced.issueGrant(envelope, SYNTHETIC_ACTION);
+    const attempts = await Promise.allSettled([
+      Promise.resolve().then(() => raced.applyGrant(raceGrant, SYNTHETIC_ACTION, raceSink)),
+      Promise.resolve().then(() => raced.applyGrant(raceGrant, SYNTHETIC_ACTION, raceSink)),
+    ]);
+    const fulfilled = attempts.filter((row) => row.status === "fulfilled").length;
+    const rejected = attempts.filter((row) => row.status === "rejected").length;
+    assert.equal(fulfilled, 1);
+    assert.equal(rejected, 1);
+    assert.equal(raceSink.count, 1);
+  });
+
+  it("wrong issuer is refused with zero effects", () => {
+    const hostA = createAuthenticatedAssuranceHost(config);
+    const hostB = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const foreign = hostB.issueGrant(envelope, SYNTHETIC_ACTION);
+    assert.throws(() => hostA.applyGrant(foreign, SYNTHETIC_ACTION, sink), /unpinned|tampered/);
+    assert.equal(sink.count, 0);
+  });
+
+  it("receipt used as authority is refused with zero effects", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const issueSink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const seal = host.applyGrant(grant, SYNTHETIC_ACTION, issueSink);
+    assert.equal(seal.kind, SEAL_KIND);
+    assert.equal(seal.authentication, AUTHENTICATED_KIND);
+    assert.equal(seal.authorizing, false);
+    const sink = createEffectSink();
+    assert.throws(() => host.applyGrant(seal, SYNTHETIC_ACTION, sink), /GRANT/);
+    assert.equal(sink.count, 0);
+    const peer = createAuthenticatedAssuranceHost(config);
+    const peerSink = createEffectSink();
+    assert.throws(() => peer.applyGrant(seal, SYNTHETIC_ACTION, peerSink), /GRANT/);
+    assert.equal(peerSink.count, 0);
+    const relabelled = {
+      schemaVersion: 1,
+      kind: GRANT_KIND,
+      grantId: seal.grantId,
+      subjectId: seal.subjectId,
+      envelopeDigest: seal.envelopeDigest,
+      action: seal.action,
+      epoch: seal.epoch,
+      expiryUnixMs: Date.now() + 60_000,
+      issuedAtUnixMs: Date.now(),
+      issuerKeyId: grant.issuerKeyId,
+      profileDigest: seal.profileDigest,
+      signature: seal.signature,
+    };
+    assert.throws(() => host.applyGrant(relabelled, SYNTHETIC_ACTION, sink), /tampered|unpinned|GRANT|issuerKeyId/);
+    assert.equal(sink.count, 0);
+  });
+
+  it("expired grant and previous epoch are refused with zero effects", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const expired = host.issueGrant(envelope, SYNTHETIC_ACTION, -1);
+    assert.throws(() => host.applyGrant(expired, SYNTHETIC_ACTION, sink), /expired|previous epoch/);
+    assert.equal(sink.count, 0);
+    const staleHost = createAuthenticatedAssuranceHost(config);
+    const staleSink = createEffectSink();
+    const staleGrant = staleHost.issueGrant(envelope, SYNTHETIC_ACTION);
+    staleHost.rotateContext();
+    assert.throws(() => staleHost.applyGrant(staleGrant, SYNTHETIC_ACTION, staleSink), /expired|previous epoch|profile/);
+    assert.equal(staleSink.count, 0);
+  });
+
+  it("positive control: one effect and verifier-accepted seal; missing seal is 0", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    assert.equal(grant.kind, GRANT_KIND);
+    const seal = host.applyGrant(grant, SYNTHETIC_ACTION, sink);
+    assert.equal(sink.count, 1);
+    assert.equal(seal.authorizing, false);
+    assert.equal(seal.replayable, false);
+    assert.equal(host.classifySeal(seal, "subject:component"), TRIT.ASSURED);
+    assert.equal(host.classifySeal(null, "subject:component"), TRIT.UNKNOWN);
+    assert.equal(host.classifySeal({ kind: "absent", reason: "not produced" }, "subject:component"), TRIT.UNKNOWN);
+
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const grantVerdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.equal(grantVerdict.authorizing, false);
+    assert.equal(grantVerdict.trit, 1, grantVerdict.reason);
+    const sealVerdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: seal,
+    });
+    assert.equal(sealVerdict.authorizing, false);
+    assert.equal(sealVerdict.trit, 1, sealVerdict.reason);
+    const tamperVerdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: { ...grant, signature: flipHex(grant.signature) },
+    });
+    assert.equal(tamperVerdict.trit, -1);
+    assert.equal(tamperVerdict.authorizing, false);
+  });
+});
