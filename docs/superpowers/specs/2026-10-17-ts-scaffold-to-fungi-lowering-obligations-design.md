@@ -19,15 +19,30 @@ Machine-readable companion: `docs/superpowers/specs/2026-10-17-fungi-lowering-ob
 - No GitHub CI and nothing that triggers it; every commit carries [skip ci]; no force-push, rebase, or --no-verify; delete nothing.
 - FULL AUTO: don't stop to ask; make the zero-trust choice and record it. Verify, never assume.
 
-## Skills applied (Addendum B)
+## Converter sequence (Addendum C)
 
-No `.fungi` source is authored in this brief. Classification and converter-rule text follow:
+1. AGENTS `skills/code-logic-workbench` + `tools/code-logic-workbench.mjs` (analyse, planning evidence only; `authorizing: false`).
+2. `skills/translating-typescript-to-fungi`.
+3. `skills/writing-fungi`.
 
-- `translating-typescript-to-fungi` core rule; Binding translation shape (never emit null/NaN; never `else if`; never `throw`/`try`/`catch`; bounded Boolean `while` only); Workflow steps 1, 4–7, 13 (child-process exhaustive union), 25 (TypedArray as live identity-bearing views).
-- `writing-fungi` core rule; Binding authoring shape; Workflow 4, 5 (exhaustive `match` with terminal `_ =>`), 8, 14 (cleanup before typed failure), 20 (child-process union), 33 (TypedArray/DataView).
-- `writing-fungi/references/selective-js-conversion.md` for READY / CHECK / REPAIR / ACCEPTED / RETAINED classification of any later conversion item. This brief produces no conversion item.
+This corrects Addendum B: the JS analysis tool exists (workbench). No new converter. Galerina `scripts/lib/ts-to-fungi-sandbox/*.mjs` is a re-checked fallback only (C4). Skills vs sandbox numeric map remains UNKNOWN (not compared line by line). Conversion input branch: `grok/memory-ts-consolidated-20261018`.
 
-The JavaScript converter named by Phillip is UNKNOWN in AGENTS (bucket `fungi-converter-tools-agents.md`, sha256 `b3053a833ab2d5aab339e1103a1515647de1e7753f9ef71c24f1e0a170eddc06`). No new converter is written. Galerina `scripts/lib/ts-to-fungi-sandbox/*.mjs` is the existing JS pipeline (paths VERIFIED at base). Skills are policy; the sandbox is mechanism. Whether the sandbox lowerer type map (TS `number` to `Int`) preserves the skill semantic-map rule for JavaScript numeric semantics is UNKNOWN (not compared line by line). Later briefs that emit sandbox output must re-check it against both skills and this registry.
+Conflicts (obligations win):
+
+| id | rule | refusing default |
+|---|---|---|
+| C1 | Where TS behaviour is null/NaN, throw-as-outcome, live getters, species, aliasing or truncation, do not preserve it; record an intended divergence with the obligation id and a refusal probe | preserving the forbidden TS behaviour refuses |
+| C2 | Workbench HOLD on UNKNOWN obligations is evidence; conversion continues (A1). REFUSE (stale graph, wrong head, malformed request) stops that unit | treating HOLD as permission refuses |
+| C3 | PROPOSED and REUSE/WRAP/ADAPT/BUILD are recommendations only, never permission | treating them as admission refuses |
+| C4 | sandbox is re-checked fallback only | a new converter refuses |
+| (unlisted) | refuses | this row |
+
+Skills applied (no `.fungi` authored here):
+
+- `code-logic-workbench` analyse, planning evidence only.
+- `translating-typescript-to-fungi` core rule; Binding translation shape (never emit null/NaN; never `else if`; never `throw`/`try`/`catch`; bounded Boolean `while` only); Workflow steps 1, 4–7, 13, 25.
+- `writing-fungi` core rule; Binding authoring shape; Workflow 4, 5, 8, 14, 20, 33.
+- `writing-fungi/references/selective-js-conversion.md`.
 
 ## Principle
 
@@ -63,9 +78,11 @@ Rendered table (full machine rows in the companion JSON):
 | NO_AMBIENT_AUTHORITY | no env-var launcher redirection, no fd inheritance; spawn needs an explicit capability; no globals | YES | FAIL_CLOSED_BEST_EFFORT |
 | BOUNDED_INPUT | length comes from the trusted reader; hard caps refuse rather than truncate; no terminator scan | YES | FAIL_CLOSED_BEST_EFFORT |
 | DEADLINE_COVERS_ALL | deadlines cover the whole operation including the final wait; no busy-wait past the typed deadline | YES | FAIL_CLOSED_BEST_EFFORT |
+| NO_OVERLAPPING_CHUNKS | overlapping or duplicate chunks refused outright (A4; body reader; with BOUNDED_INPUT + LINEAR_SECRET) | YES | UNKNOWN_IN_TS |
+| HOST_ADAPTER_PRESENCE | absent or unverified host adapter is a typed refusal | YES | UNKNOWN_IN_TS |
 | (unlisted id) | refuses | refuses | refuses |
 
-`ts_fix_needed_now: NO` is not allowed for these v1 safety ids (open-question default). LINEAR_SECRET stays `UNKNOWN_IN_TS` because volatile wipe and no-escape copies are not provable under a JS GC.
+`ts_fix_needed_now: YES` means the obligation must be discharged by the `.fungi` unit; the TS scaffold is frozen reference and is not patched (N4). `NO` is still refused for these v1 safety ids. LINEAR_SECRET stays `UNKNOWN_IN_TS` because volatile wipe and no-escape copies are not provable under a JS GC. NO_OVERLAPPING_CHUNKS and HOST_ADAPTER_PRESENCE stay `UNKNOWN_IN_TS` for the same frozen-TS reason.
 
 ## Parked TS findings (queues 20 and 24)
 
@@ -73,11 +90,11 @@ Source: bucket `parked-ts-findings-for-fungi.md` sha256 `b1014a473e6ac75f24377b0
 
 | parked id | obligation ids | verification |
 |---|---|---|
-| P20-F1 | LINEAR_SECRET, TOTAL_EFFECT_OUTCOME, BOUNDED_INPUT | VERIFIED against `grok-independent-check-ic187fix6-b5959878-20261017.md` F1 (P40/P41) |
+| P20-F1 | LINEAR_SECRET, TOTAL_EFFECT_OUTCOME, BOUNDED_INPUT, NO_OVERLAPPING_CHUNKS | VERIFIED against `grok-independent-check-ic187fix6-b5959878-20261017.md` F1 (P40/P41); A4 overlap/duplicate refuse |
 | P20-F2 | SEALED_INTRINSICS, EXHAUSTIVE_FAIL_CLOSED | VERIFIED same report F2 (GM40/GM41/GM42, P46a-c) |
 | P20-N2 | SEALED_INTRINSICS, BOUNDED_INPUT | VERIFIED same report N2 (P47 `step.done` twice) |
 | P20-N3 | NO_NULL_NAN | VERIFIED same report N3 (`stream === null` ok empty) |
-| P20-N5 | OBLIGATION_UNMAPPABLE | VERIFIED same report N5 (Deno adapter UNKNOWN); no seed id covers Deno host-shim presence |
+| P20-N5 | HOST_ADAPTER_PRESENCE | VERIFIED same report N5 (Deno adapter UNKNOWN); new v1 id per the spec rule that a finding with no matching id gets a registry entry first; obligation status UNKNOWN |
 | P20-R1 | SEALED_INTRINSICS | VERIFIED same report re-check of fix5 F1 (P35–P37/P44/P45) |
 | P20-R2 | LINEAR_SECRET | VERIFIED same report re-check of fix5 F2 (P38w, GM38) |
 | P24-F1 | LINEAR_SECRET | VERIFIED against `grok-independent-check-q24-93934967-20261017.md` F1 (GM1) |
@@ -94,7 +111,7 @@ Source: bucket `parked-ts-findings-for-fungi.md` sha256 `b1014a473e6ac75f24377b0
 
 ## Annotation form
 
-Recommended default (open-question default, this spec adopts it):
+Recommended default (open-question default, this spec adopts it). Version is per id (N3). A shared version on a list (`ID,ID v1`) is `OBLIGATION_ANNOTATION_MALFORMED`.
 
 ```
 // @fungi-obligation NO_NULL_NAN v1 -- foreign null resolved at this helper
@@ -103,8 +120,9 @@ Recommended default (open-question default, this spec adopts it):
 EBNF:
 
 ```
-annotation      = "//" SP "@fungi-obligation" SP id-list SP "v" version SP "--" SP reason NL
-id-list         = obligation-id { "," SP obligation-id }
+annotation      = "//" SP "@fungi-obligation" SP id-version-list SP "--" SP reason NL
+id-version-list = id-version { "," SP id-version }
+id-version      = obligation-id SP "v" version
 obligation-id   = UPPER { UPPER | DIGIT | "_" }
 version         = NONZERO { DIGIT }
 reason          = { CHAR - NL }
@@ -114,12 +132,12 @@ SP              = " "
 NL              = "\n"
 ```
 
-Placement: the annotation occupies the immediately preceding source line of the guarded statement. A blank line between annotation and guard is `OBLIGATION_ANNOTATION_MALFORMED`. Multiple ids are comma-separated on one line. Tests locate annotations with a parser that implements this grammar, not a loose regex that accepts unknown ids.
+Placement: the annotation occupies the immediately preceding source line of the guarded statement. A blank line between annotation and guard is `OBLIGATION_ANNOTATION_MALFORMED`. Multiple ids are comma-separated, each with its own `vN`. Tests locate annotations with a parser that implements this grammar, not a loose regex that accepts unknown ids.
 
 Example (inside this spec only; no live `.ts` file is annotated — zero-trust default skip of the optional live-file annotation):
 
 ```ts
-// @fungi-obligation NO_NULL_NAN,BOUNDED_INPUT v1 -- length from trusted reader after presence helper
+// @fungi-obligation NO_NULL_NAN v1, BOUNDED_INPUT v1 -- length from trusted reader after presence helper
 export function readForeignPresence(raw: unknown): ForeignPresenceRead {
   // body stays fail-closed in TS; .fungi has no null
 }
@@ -148,8 +166,12 @@ Discharge receipt, one per obligation, recorded in converter output (not inferre
 | id | registry id | unknown id refuses |
 | version | integer `vN` | unknown version refuses |
 | source_span | file + start/end offsets | missing span refuses |
-| how | `BY_TYPE` / `BY_LINEARITY` / `BY_TOTALITY` / `BY_CAPABILITY` / `BY_VERIFIER` | unlisted how refuses |
+| state | `DISCHARGED` / `CARRIED_UNKNOWN` | unlisted state refuses |
+| how | `BY_TYPE` / `BY_LINEARITY` / `BY_TOTALITY` / `BY_CAPABILITY` / `BY_VERIFIER` (required when state is `DISCHARGED`) | unlisted how refuses |
+| carried_refusal | typed refusal the unit returns; required when state is `CARRIED_UNKNOWN` | missing name when CARRIED_UNKNOWN refuses |
 | fungi_construct | named .fungi construct used | missing construct refuses |
+
+`CARRIED_UNKNOWN` never counts as discharged, blocks READY, and must name the typed refusal the unit returns (N5 / C2). It is how a HOLD on an UNKNOWN obligation continues conversion without pretending the obligation is met.
 
 Composition with `ts-to-fungi-sandbox` (VERIFIED at base: `scripts/lib/ts-to-fungi-sandbox/contracts.mjs` schema `galerina.ts-to-fungi-sandbox.v1`, outcomes `CONVERTED` / `BLOCKED` / `MANUAL_REVIEW`, blockers include `NULLISH` = `BLOCKED_BY_NULL_UNDEFINED_OR_OPTION_BOUNDARY_ABI` and `BINARY64` = `BLOCKED_BY_JAVASCRIPT_BINARY64_OR_NON_INTEGER_NUMBER_ABI`):
 
@@ -197,12 +219,13 @@ None of RD-1899..1910 fills these. They stay UNKNOWN, with the RDs above as part
 | question | zero-trust default adopted here | refusing default |
 |---|---|---|
 | Converter location | extend `scripts/lib/ts-to-fungi-sandbox/` as a non-authorizing stage | a new converter refuses |
-| Annotation syntax | `// @fungi-obligation ID vN -- reason` | undocumented syntax refuses |
+| Annotation syntax | `// @fungi-obligation ID vN -- reason`; lists are `ID vN, ID vN`; a shared version refuses as `OBLIGATION_ANNOTATION_MALFORMED` | undocumented syntax refuses |
 | Registry home and format | JSON next to this spec; later move to `build/` only behind a drift gate | a silent second copy refuses |
 | Id versioning | integer `vN`; never reuse ids | reused ids refuse |
 | Unannotated guards found later | converter refuses a boundary module that has guards but no annotations | converting them as if annotated refuses |
 | Verifier ownership | existing Rust verifiers gain read-only checks per obligation | in-process Rust refuses |
 | Whether `ts_fix_needed_now: NO` is ever allowed for safety ids | no for v1 | `NO` on a v1 safety id refuses |
+| Meaning of `ts_fix_needed_now: YES` | discharged by the `.fungi` unit; TS scaffold frozen, not patched | reading YES as a live TS patch refuses |
 
 ## Cited paths (git cat-file at base `bdb5d1ba`)
 
@@ -281,7 +304,7 @@ Each seed-table `found_in` was re-checked against named files under `C:\\Users\\
 ## UNKNOWNs with reasons
 
 - Live language-level specs for TOTAL_EFFECT_OUTCOME, SEALED_INTRINSICS, MONOTONIC_TYPED_TIME: not found; RD-1899..1910 are partial inputs only.
-- JavaScript converter in AGENTS: not found.
+- JavaScript source-to-.fungi converter in AGENTS: none. Analysis tool is code-logic-workbench (Addendum C).
 - Skills vs sandbox numeric map: not compared line by line.
 - Sandbox `SandboxRefusal` throw vs typed obligation result: unbridged.
 - Optional live `.ts` annotation: skipped (file would have to be unused by queues 20/24 and open PRs).

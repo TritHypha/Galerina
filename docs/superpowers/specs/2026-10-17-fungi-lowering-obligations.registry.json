@@ -6,10 +6,11 @@
   "branch": "grok/fungi-lowering-obligations-20261017",
   "parent_standard": "docs/security/rd0528-ts-to-fungi-self-hosting-standard.md",
   "registry_home_reason": "JSON next to the spec. docs/contract-registry/contract-registry.json and build/code-registry/registry.json are generated inventories of a different schema.",
-  "converter_js_in_agents": "UNKNOWN",
-  "converter_js_in_agents_reason": "No JavaScript file in AGENTS converts source to .fungi.",
+  "converter_js_in_agents": "PRESENT_AS_CODE_LOGIC_WORKBENCH",
+  "converter_js_in_agents_reason": "Addendum C: AGENTS tools/code-logic-workbench.mjs is the analysis step (planning evidence only). It is not a source-to-.fungi converter. No new converter.",
   "sandbox_pipeline": "scripts/lib/ts-to-fungi-sandbox/",
   "skills_applied": [
+    "code-logic-workbench:analyse-planning-evidence-only",
     "translating-typescript-to-fungi:core-rule",
     "translating-typescript-to-fungi:binding-translation-shape",
     "translating-typescript-to-fungi:workflow-1-4-7-13-25",
@@ -72,15 +73,7 @@
       "partial_input": "RD-1899 RD-1910 PRIVATE, not yet in KB indexes (indexes stale)"
     }
   ],
-  "unmappable_findings": [
-    {
-      "id": "P20-N5",
-      "code": "OBLIGATION_UNMAPPABLE",
-      "reason": "Deno adapter check UNKNOWN; no seed obligation id covers Deno host-shim presence",
-      "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
-      "verification": "VERIFIED"
-    }
-  ],
+  "unmappable_findings": [],
   "obligations": [
     {
       "id": "NO_NULL_NAN",
@@ -657,6 +650,63 @@
       "addendum_a": [
         "item-1"
       ]
+    },
+    {
+      "id": "NO_OVERLAPPING_CHUNKS",
+      "version": 1,
+      "statement": "Overlapping or duplicate chunks are refused outright. The .fungi body reader does not alias, overlap, or accept a second view of the same secret-bearing range. Owner A4. Discharged together with BOUNDED_INPUT and LINEAR_SECRET.",
+      "ts_scaffold": {
+        "behaviour": "Parked TS (P20-F1) still aliases chunks. TS is frozen reference and is not patched. Discharge is the .fungi body reader.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Body reader admits a finite non-overlapping partition of host-owned bytes. Duplicate offset/length or overlapping ranges refuse. Trusted length from the reader, never a chunk self-reported byteLength.",
+      "rust_verifier_check": "Out-of-process: annotated body-reader admissions have pairwise-disjoint ranges; overlap or duplicate identity refuses.",
+      "found_in": [
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased / overlapping / duplicate chunks; A4 refuse outright"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_c": [
+        "A4"
+      ],
+      "related_obligation_ids": [
+        "BOUNDED_INPUT",
+        "LINEAR_SECRET"
+      ]
+    },
+    {
+      "id": "HOST_ADAPTER_PRESENCE",
+      "version": 1,
+      "statement": "An absent or unverified host adapter is a typed refusal. Adapter identity is an explicit capability, never ambient. Status of the Deno adapter check remains UNKNOWN until a later brief verifies it.",
+      "ts_scaffold": {
+        "behaviour": "P20-N5 Deno adapter UNKNOWN in parked TS. TS is frozen reference and is not patched. Discharge is the .fungi unit that names the adapter capability.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Host adapter is an explicit capability argument. Missing, unverified, or unlisted adapter identity refuses with a typed code. No ambient Deno/Node/shim fallback.",
+      "rust_verifier_check": "UNKNOWN until a later brief names the exact-bytes adapter identity check. Default: absent adapter refuses.",
+      "rust_verifier_check_status": "UNKNOWN",
+      "found_in": [
+        {
+          "ref": "P20-N5",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Deno adapter UNKNOWN; new id per spec rule that a finding with no matching id gets a registry entry first"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "UNKNOWN",
+      "status_reason": "Deno adapter presence is unverified; obligation row exists so the finding is not OBLIGATION_UNMAPPABLE"
     }
   ],
   "parked_findings_complete": [
@@ -679,10 +729,80 @@
     "P24-R1"
   ],
   "annotation": {
-    "form": "// @fungi-obligation ID[,ID] vN -- reason",
+    "form": "// @fungi-obligation ID vN[, ID vN] -- reason",
     "placement": "immediately preceding source line of the guarded statement",
     "blank_line_between_annotation_and_guard": "OBLIGATION_ANNOTATION_MALFORMED",
+    "shared_version_on_id_list": "OBLIGATION_ANNOTATION_MALFORMED",
     "live_ts_example": "SKIPPED",
     "live_ts_example_reason": "zero-trust default: do not annotate a live file used by queues 20/24 or open PRs"
-  }
+  },
+  "converter_sequence": [
+    {
+      "step": 1,
+      "tool": "code-logic-workbench",
+      "files": [
+        "AGENTS/skills/code-logic-workbench/SKILL.md",
+        "AGENTS/tools/code-logic-workbench.mjs"
+      ],
+      "role": "analyse, planning evidence only, authorizing false"
+    },
+    {
+      "step": 2,
+      "tool": "translating-typescript-to-fungi",
+      "files": [
+        "AGENTS/skills/translating-typescript-to-fungi/SKILL.md"
+      ],
+      "role": "translate"
+    },
+    {
+      "step": 3,
+      "tool": "writing-fungi",
+      "files": [
+        "AGENTS/skills/writing-fungi/SKILL.md"
+      ],
+      "role": "author and verify .fungi"
+    }
+  ],
+  "sandbox_role": "re-checked fallback only",
+  "consolidation_branch": "grok/memory-ts-consolidated-20261018",
+  "addendum_c_sha256": "4df9e40965b74e5c5b6f74f78416c9a6415cd8547333bb64b2c932e1be424613",
+  "ts_fix_needed_now_yes_means": "must be discharged by the .fungi unit; the TS scaffold is frozen reference and is not patched",
+  "ts_fix_needed_now_no_on_v1_safety": "REFUSED",
+  "closed_discharge_state": [
+    "DISCHARGED",
+    "CARRIED_UNKNOWN"
+  ],
+  "discharge_state_default": "REFUSES_UNLISTED",
+  "carried_unknown": {
+    "counts_as_discharged": false,
+    "blocks_ready": true,
+    "must_name_typed_refusal": true
+  },
+  "conflicts": [
+    {
+      "id": "C1",
+      "rule": "Where TS behaviour is null/NaN, throw-as-outcome, live getters, species, aliasing or truncation, do not preserve it; record an intended divergence with the obligation id and a refusal probe",
+      "refusing_default": "preserving the forbidden TS behaviour refuses"
+    },
+    {
+      "id": "C2",
+      "rule": "Workbench HOLD on UNKNOWN obligations is evidence; conversion continues (A1). REFUSE (stale graph, wrong head, malformed request) stops that unit",
+      "refusing_default": "treating HOLD as permission refuses"
+    },
+    {
+      "id": "C3",
+      "rule": "PROPOSED and REUSE/WRAP/ADAPT/BUILD are recommendations only, never permission",
+      "refusing_default": "treating them as admission refuses"
+    },
+    {
+      "id": "C4",
+      "rule": "sandbox is re-checked fallback only",
+      "refusing_default": "a new converter refuses"
+    }
+  ],
+  "owner_answers": {
+    "A1": "converting memory files to .fungi is not blocked by the RD HOLD / TODO gate; RDs stay HOLD; converted units stay unmerged to main",
+    "A4": "overlapping or duplicate chunks refused outright; recorded as NO_OVERLAPPING_CHUNKS under BOUNDED_INPUT + LINEAR_SECRET; found_in P20-F1"
+  },
+  "unmappable_findings_default": "a parked finding that maps to no registry id is OBLIGATION_UNMAPPABLE; P20-N5 now maps to HOST_ADAPTER_PRESENCE"
 }
