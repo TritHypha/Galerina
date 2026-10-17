@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmodSync, copyFileSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -90,6 +90,17 @@ function writeFakeHelper(dir, body) {
   chmodSync(fake, 0o755);
   return fake;
 }
+
+function withTempDir(prefix, fn) {
+  const dir = mkdtempSync(join(tmpdir(), prefix));
+  try {
+    return fn(dir);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+process.env.GATE1_TEST_HOOK = "1";
 
 describe("authenticated Signet / Grant / Wax Seal host", () => {
   it("tamper of signed grant and seal is refused with zero effects", () => {
@@ -418,15 +429,16 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.equal(pinMismatch.trit, -1, pinMismatch.reason);
     assert.notEqual(pinMismatch.trit, 1);
 
-    const decoyDir = mkdtempSync(join(tmpdir(), "gate1-unavail-"));
-    const decoy = join(decoyDir, "decoy");
-    writeFileSync(decoy, "gate1-unavailable-decoy\n");
-    chmodSync(decoy, 0o400);
-    const decoyPin = createHash("sha256").update(readFileSync(decoy)).digest("hex");
-    const unavailable = check(grantA, hostA.publicVerifyingKeyHex, decoyPin, decoy);
-    assert.equal(unavailable.authorizing, false);
-    assert.equal(unavailable.trit, 0, unavailable.reason);
-    assert.notEqual(unavailable.trit, 1);
+    withTempDir("gate1-unavail-", (decoyDir) => {
+      const decoy = join(decoyDir, "decoy");
+      writeFileSync(decoy, "gate1-unavailable-decoy\n");
+      chmodSync(decoy, 0o400);
+      const decoyPin = createHash("sha256").update(readFileSync(decoy)).digest("hex");
+      const unavailable = check(grantA, hostA.publicVerifyingKeyHex, decoyPin, decoy);
+      assert.equal(unavailable.authorizing, false);
+      assert.equal(unavailable.trit, 0, unavailable.reason);
+      assert.notEqual(unavailable.trit, 1);
+    });
   });
 
   it("malformed headers refuse before spawn", () => {
@@ -498,22 +510,23 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
       publicKeyHex: host.publicVerifyingKeyHex,
       statement: grant,
     })}\n`;
-    const dir = mkdtempSync(join(tmpdir(), "gate1-swap-"));
-    const tmp = join(dir, "verifier");
-    copyFileSync(verifierPath, tmp);
-    chmodSync(tmp, 0o755);
-    const loaded = loadPinnedVerifierBytes(tmp, pin);
-    assert.equal(loaded.ok, true);
-    writeFileSync(tmp, "gate1-swapped-decoy\n");
-    chmodSync(tmp, 0o755);
-    const verdict = execPinnedVerifierBytes(loaded.bytes, {
-      expectedSha256Hex: pin,
-      verifierPath: tmp,
-      ...sealedHelper(),
-      input: body,
+    withTempDir("gate1-swap-", (dir) => {
+      const tmp = join(dir, "verifier");
+      copyFileSync(verifierPath, tmp);
+      chmodSync(tmp, 0o755);
+      const loaded = loadPinnedVerifierBytes(tmp, pin);
+      assert.equal(loaded.ok, true);
+      writeFileSync(tmp, "gate1-swapped-decoy\n");
+      chmodSync(tmp, 0o755);
+      const verdict = execPinnedVerifierBytes(loaded.bytes, {
+        expectedSha256Hex: pin,
+        verifierPath: tmp,
+        ...sealedHelper(),
+        input: body,
+      });
+      assert.equal(verdict.authorizing, false);
+      assert.equal(verdict.trit, 1, verdict.reason);
     });
-    assert.equal(verdict.authorizing, false);
-    assert.equal(verdict.trit, 1, verdict.reason);
   });
 
   it("substituted helper with correct output and wrong hash refuses with zero verifier spawns", () => {
@@ -524,23 +537,24 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const real = sealedHelper();
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
     const tampered = { ...grant, signature: flipHex(grant.signature) };
-    const dir = mkdtempSync(join(tmpdir(), "gate1-fake-helper-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
-    );
-    resetSealedSpawnCount();
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: real.helperSha256Hex,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: tampered,
+    withTempDir("gate1-fake-helper-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
+      );
+      resetSealedSpawnCount();
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: real.helperSha256Hex,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: tampered,
+      });
+      assert.equal(verdict.trit, -1, verdict.reason);
+      assert.equal(verdict.reason, "HELPER_PIN_MISMATCH");
+      assert.equal(takeSealedSpawnCount(), 0);
     });
-    assert.equal(verdict.trit, -1, verdict.reason);
-    assert.equal(verdict.reason, "HELPER_PIN_MISMATCH");
-    assert.equal(takeSealedSpawnCount(), 0);
   });
 
   it("GATE1_SEALED_EXEC env cannot redirect the helper; omitted pin refuses", () => {
@@ -551,32 +565,36 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
     const tampered = { ...grant, signature: flipHex(grant.signature) };
     const real = sealedHelper();
-    const dir = mkdtempSync(join(tmpdir(), "gate1-env-helper-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
-    );
-    const previous = process.env.GATE1_SEALED_EXEC;
-    process.env.GATE1_SEALED_EXEC = fake;
-    const envIgnored = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: real.helperPath,
-      helperSha256Hex: real.helperSha256Hex,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: tampered,
+    withTempDir("gate1-env-helper-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
+      );
+      const previous = process.env.GATE1_SEALED_EXEC;
+      process.env.GATE1_SEALED_EXEC = fake;
+      try {
+        const envIgnored = spawnSignetVerifier({
+          verifierPath,
+          expectedSha256Hex: pin,
+          helperPath: real.helperPath,
+          helperSha256Hex: real.helperSha256Hex,
+          publicKeyHex: host.publicVerifyingKeyHex,
+          statement: tampered,
+        });
+        assert.equal(envIgnored.trit, -1, envIgnored.reason);
+        assert.notEqual(envIgnored.trit, 1);
+      } finally {
+        process.env.GATE1_SEALED_EXEC = previous;
+      }
+      const omitted = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(omitted.trit, -1);
+      assert.equal(omitted.reason, "HELPER_PATH");
     });
-    process.env.GATE1_SEALED_EXEC = previous;
-    assert.equal(envIgnored.trit, -1, envIgnored.reason);
-    assert.notEqual(envIgnored.trit, 1);
-    const omitted = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
-    });
-    assert.equal(omitted.trit, -1);
-    assert.equal(omitted.reason, "HELPER_PATH");
   });
 
   it("exit 7 with a +1 body refuses", () => {
@@ -585,23 +603,24 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
     const host = createAuthenticatedAssuranceHost(config);
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-exit7-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 7\n",
-    );
-    const fakePin = sha256File(fake);
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: fakePin,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
+    withTempDir("gate1-exit7-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 7\n",
+      );
+      const fakePin = sha256File(fake);
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: fakePin,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(verdict.trit, -1, verdict.reason);
+      assert.equal(verdict.reason, "VERIFIER_STATUS");
+      assert.notEqual(verdict.trit, 1);
     });
-    assert.equal(verdict.trit, -1, verdict.reason);
-    assert.equal(verdict.reason, "VERIFIER_STATUS");
-    assert.notEqual(verdict.trit, 1);
   });
 
   it("G4 C helper pin check is reached; PIN_MISMATCH and zero verifier output", () => {
@@ -638,20 +657,21 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
     const host = createAuthenticatedAssuranceHost(config);
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-exit3-"));
-    const fake = writeFakeHelper(dir, "#!/bin/sh\n/bin/cat >/dev/null\nexit 3\n");
-    const fakePin = sha256File(fake);
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: fakePin,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
+    withTempDir("gate1-exit3-", (dir) => {
+      const fake = writeFakeHelper(dir, "#!/bin/sh\n/bin/cat >/dev/null\nexit 3\n");
+      const fakePin = sha256File(fake);
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: fakePin,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(verdict.reason, "VERIFIER_PIN_MISMATCH");
+      assert.equal(verdict.status, 3);
+      assert.equal(verdict.trit, -1);
     });
-    assert.equal(verdict.reason, "VERIFIER_PIN_MISMATCH");
-    assert.equal(verdict.status, 3);
-    assert.equal(verdict.trit, -1);
   });
 
   it("G5 helper that skips sealing is refused", () => {
@@ -666,28 +686,29 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
       "if (0 && fcntl(mfd, F_ADD_SEALS,",
     );
     assert.notEqual(mutated, src);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-unsealed-"));
-    const cPath = join(dir, "unsealed.c");
-    const helperPath = join(dir, "unsealed-helper");
-    writeFileSync(cPath, mutated);
-    const compiled = spawnSync("cc", ["-O2", "-Wall", "-Werror", "-o", helperPath, cPath], {
-      encoding: "utf8",
+    withTempDir("gate1-unsealed-", (dir) => {
+      const cPath = join(dir, "unsealed.c");
+      const helperPath = join(dir, "unsealed-helper");
+      writeFileSync(cPath, mutated);
+      const compiled = spawnSync("cc", ["-O2", "-Wall", "-Werror", "-o", helperPath, cPath], {
+        encoding: "utf8",
+      });
+      assert.equal(compiled.status, 0, compiled.stderr);
+      chmodSync(helperPath, 0o755);
+      const helperSha256Hex = sha256File(helperPath);
+      const loadedHelper = loadPinnedHelperBytes(helperPath, helperSha256Hex);
+      assert.equal(loadedHelper.ok, true);
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath,
+        helperSha256Hex,
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.notEqual(verdict.trit, 1, verdict.reason);
+      assert.equal(verdict.authorizing, false);
     });
-    assert.equal(compiled.status, 0, compiled.stderr);
-    chmodSync(helperPath, 0o755);
-    const helperSha256Hex = sha256File(helperPath);
-    const loadedHelper = loadPinnedHelperBytes(helperPath, helperSha256Hex);
-    assert.equal(loadedHelper.ok, true);
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath,
-      helperSha256Hex,
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
-    });
-    assert.notEqual(verdict.trit, 1, verdict.reason);
-    assert.equal(verdict.authorizing, false);
   });
 
   it("issueGrant refuses a NaN or non-integer clock", () => {
@@ -714,21 +735,22 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
     const host = createAuthenticatedAssuranceHost(config);
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-g10-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false,\"extra\":true}'\nexit 0\n",
-    );
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: sha256File(fake),
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
+    withTempDir("gate1-g10-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false,\"extra\":true}'\nexit 0\n",
+      );
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: sha256File(fake),
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(verdict.reason, "VERIFIER_KEYS");
+      assert.equal(verdict.trit, -1);
     });
-    assert.equal(verdict.reason, "VERIFIER_KEYS");
-    assert.equal(verdict.trit, -1);
   });
 
   it("G11 authorizing true in a +1 verdict is VERIFIER_AUTHORIZING", () => {
@@ -737,21 +759,22 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
     const host = createAuthenticatedAssuranceHost(config);
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-g11-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":true}'\nexit 0\n",
-    );
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: sha256File(fake),
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
+    withTempDir("gate1-g11-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":true}'\nexit 0\n",
+      );
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: sha256File(fake),
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(verdict.reason, "VERIFIER_AUTHORIZING");
+      assert.equal(verdict.trit, -1);
     });
-    assert.equal(verdict.reason, "VERIFIER_AUTHORIZING");
-    assert.equal(verdict.trit, -1);
   });
 
   it("G13 empty verdict reason is VERIFIER_REASON", () => {
@@ -760,21 +783,22 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
     const host = createAuthenticatedAssuranceHost(config);
     const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
-    const dir = mkdtempSync(join(tmpdir(), "gate1-g13-"));
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"\",\"authorizing\":false}'\nexit 0\n",
-    );
-    const verdict = spawnSignetVerifier({
-      verifierPath,
-      expectedSha256Hex: pin,
-      helperPath: fake,
-      helperSha256Hex: sha256File(fake),
-      publicKeyHex: host.publicVerifyingKeyHex,
-      statement: grant,
+    withTempDir("gate1-g13-", (dir) => {
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"\",\"authorizing\":false}'\nexit 0\n",
+      );
+      const verdict = spawnSignetVerifier({
+        verifierPath,
+        expectedSha256Hex: pin,
+        helperPath: fake,
+        helperSha256Hex: sha256File(fake),
+        publicKeyHex: host.publicVerifyingKeyHex,
+        statement: grant,
+      });
+      assert.equal(verdict.reason, "VERIFIER_REASON");
+      assert.equal(verdict.trit, -1);
     });
-    assert.equal(verdict.reason, "VERIFIER_REASON");
-    assert.equal(verdict.trit, -1);
   });
 
   it("G14 uppercase helper pin is HELPER_PIN", () => {
@@ -806,32 +830,63 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     };
     const tamperedGrant = { ...tampered, signature: flipHex(tampered.signature) };
     const real = sealedHelper();
-    const dir = mkdtempSync(join(tmpdir(), "gate1-g12-"));
-    const helperCopy = join(dir, "helper");
-    copyFileSync(real.helperPath, helperCopy);
-    chmodSync(helperCopy, 0o755);
-    const helperPin = sha256File(helperCopy);
-    const fake = writeFakeHelper(
-      dir,
-      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
-    );
-    setAfterHelperPinnedHook(() => {
-      copyFileSync(fake, helperCopy);
+    withTempDir("gate1-g12-", (dir) => {
+      const helperCopy = join(dir, "helper");
+      copyFileSync(real.helperPath, helperCopy);
       chmodSync(helperCopy, 0o755);
+      const helperPin = sha256File(helperCopy);
+      const fake = writeFakeHelper(
+        dir,
+        "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
+      );
+      let hookCalls = 0;
+      setAfterHelperPinnedHook(() => {
+        hookCalls += 1;
+        copyFileSync(fake, helperCopy);
+        chmodSync(helperCopy, 0o755);
+      });
+      try {
+        const verdict = spawnSignetVerifier({
+          verifierPath,
+          expectedSha256Hex: pin,
+          helperPath: helperCopy,
+          helperSha256Hex: helperPin,
+          publicKeyHex: host.publicVerifyingKeyHex,
+          statement: tamperedGrant,
+        });
+        assert.equal(hookCalls, 1);
+        assert.notEqual(verdict.trit, 1, verdict.reason);
+        assert.equal(verdict.authorizing, false);
+      } finally {
+        setAfterHelperPinnedHook();
+      }
+    });
+  });
+
+  it("throwing after-pin hook is HELPER_HOOK", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const real = sealedHelper();
+    setAfterHelperPinnedHook(() => {
+      throw new Error("test hook boom");
     });
     try {
       const verdict = spawnSignetVerifier({
         verifierPath,
         expectedSha256Hex: pin,
-        helperPath: helperCopy,
-        helperSha256Hex: helperPin,
+        helperPath: real.helperPath,
+        helperSha256Hex: real.helperSha256Hex,
         publicKeyHex: host.publicVerifyingKeyHex,
-        statement: tamperedGrant,
+        statement: grant,
       });
-      assert.notEqual(verdict.trit, 1, verdict.reason);
+      assert.equal(verdict.reason, "HELPER_HOOK");
+      assert.equal(verdict.trit, -1);
       assert.equal(verdict.authorizing, false);
     } finally {
-      setAfterHelperPinnedHook(null);
+      setAfterHelperPinnedHook();
     }
   });
 

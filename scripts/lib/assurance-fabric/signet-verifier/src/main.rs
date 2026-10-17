@@ -46,6 +46,20 @@ fn emit(trit: i8, reason: &str, code: u8) -> ExitCode {
     ExitCode::from(code)
 }
 
+struct VerifyOutcome {
+    trit: i8,
+    reason: &'static str,
+    code: u8,
+}
+
+fn outcome(trit: i8, reason: &'static str, code: u8) -> VerifyOutcome {
+    VerifyOutcome { trit, reason, code }
+}
+
+fn emit_outcome(o: VerifyOutcome) -> ExitCode {
+    emit(o.trit, o.reason, o.code)
+}
+
 fn hex_decode(hex: &str, expected_len: usize) -> Option<Vec<u8>> {
     if hex.len() != expected_len * 2 || !hex.bytes().all(|b| b.is_ascii_hexdigit()) {
         return None;
@@ -110,92 +124,96 @@ fn read_bounded<R: Read>(reader: R) -> Result<Vec<u8>, BoundReadError> {
     Ok(buf)
 }
 
+fn verify_request(buf: &[u8]) -> VerifyOutcome {
+    let parsed: Value = match serde_json::from_slice(buf) {
+        Ok(v) => v,
+        Err(_) => return outcome(0, "JSON_MALFORMED", 1),
+    };
+    let obj = match parsed.as_object() {
+        Some(o) => o,
+        None => return outcome(-1, "JSON_OBJECT_REQUIRED", 1),
+    };
+    if obj.get("schema").and_then(Value::as_str) != Some("galerina.signet.verify.v1") {
+        return outcome(-1, "VERIFY_SCHEMA", 1);
+    }
+    let public_key_hex = match obj.get("publicKeyHex").and_then(Value::as_str) {
+        Some(v) => v,
+        None => return outcome(-1, "PUBLIC_KEY_MISSING", 1),
+    };
+    let pk_bytes = match hex_decode(public_key_hex, 32) {
+        Some(v) => v,
+        None => return outcome(-1, "PUBLIC_KEY_HEX", 1),
+    };
+    let statement = match obj.get("statement").and_then(Value::as_object) {
+        Some(v) => v,
+        None => return outcome(-1, "STATEMENT_MISSING", 1),
+    };
+    let signature_hex = match statement.get("signature").and_then(Value::as_str) {
+        Some(v) => v,
+        None => return outcome(-1, "SIGNATURE_MISSING", 1),
+    };
+    let sig_bytes = match hex_decode(signature_hex, 64) {
+        Some(v) => v,
+        None => return outcome(-1, "SIGNATURE_HEX", 1),
+    };
+    let mut payload = statement.clone();
+    payload.remove("signature");
+    let kind = match payload.get("kind").and_then(Value::as_str) {
+        Some(v) => v,
+        None => return outcome(-1, "KIND_MISSING", 1),
+    };
+    let (domain, keys) = match kind {
+        "GRANT" => (GRANT_DOMAIN, GRANT_KEYS.as_slice()),
+        "WAX_SEAL" => (SEAL_DOMAIN, SEAL_KEYS.as_slice()),
+        _ => return outcome(-1, "KIND_UNKNOWN", 1),
+    };
+    if !exact_keys(&payload, keys) {
+        return outcome(-1, "CLOSED_KEYS", 1);
+    }
+    if kind == "WAX_SEAL" {
+        match payload.get("authorizing") {
+            Some(Value::Bool(false)) => {}
+            _ => return outcome(-1, "SEAL_AUTHORIZING", 1),
+        }
+        match payload.get("authentication").and_then(Value::as_str) {
+            Some("AUTHENTICATED_SIGNET") => {}
+            _ => return outcome(-1, "SEAL_AUTHENTICATION", 1),
+        }
+        if !seal_terminal_closed(payload.get("terminalOutcome").and_then(Value::as_str)) {
+            return outcome(-1, "SEAL_TERMINAL", 1);
+        }
+    }
+    let canonical = match canonical_object(&payload) {
+        Some(v) => v,
+        None => return outcome(0, "CANONICAL_FAILED", 1),
+    };
+    let message = framed(domain, &canonical);
+    let vk_array: [u8; 32] = match pk_bytes.as_slice().try_into() {
+        Ok(v) => v,
+        Err(_) => return outcome(-1, "PUBLIC_KEY_LEN", 1),
+    };
+    let verifying_key = match VerifyingKey::from_bytes(&vk_array) {
+        Ok(v) => v,
+        Err(_) => return outcome(-1, "PUBLIC_KEY_INVALID", 1),
+    };
+    let signature = match Signature::from_slice(&sig_bytes) {
+        Ok(v) => v,
+        Err(_) => return outcome(-1, "SIGNATURE_LEN", 1),
+    };
+    // GATE1_GUARD_VERIFY
+    match verifying_key.verify(&message, &signature) {
+        Ok(()) => outcome(1, "OK", 0),
+        Err(_) => outcome(-1, "TAMPER", 1),
+    }
+}
+
 fn main() -> ExitCode {
     let buf = match read_bounded(io::stdin().lock()) {
         Ok(v) => v,
         Err(BoundReadError::Unavailable) => return emit(0, "STDIN_UNAVAILABLE", 1),
         Err(BoundReadError::TooLarge) => return emit(-1, "STDIN_TOO_LARGE", 1),
     };
-    let parsed: Value = match serde_json::from_slice(&buf) {
-        Ok(v) => v,
-        Err(_) => return emit(0, "JSON_MALFORMED", 1),
-    };
-    let obj = match parsed.as_object() {
-        Some(o) => o,
-        None => return emit(-1, "JSON_OBJECT_REQUIRED", 1),
-    };
-    if obj.get("schema").and_then(Value::as_str) != Some("galerina.signet.verify.v1") {
-        return emit(-1, "VERIFY_SCHEMA", 1);
-    }
-    let public_key_hex = match obj.get("publicKeyHex").and_then(Value::as_str) {
-        Some(v) => v,
-        None => return emit(-1, "PUBLIC_KEY_MISSING", 1),
-    };
-    let pk_bytes = match hex_decode(public_key_hex, 32) {
-        Some(v) => v,
-        None => return emit(-1, "PUBLIC_KEY_HEX", 1),
-    };
-    let statement = match obj.get("statement").and_then(Value::as_object) {
-        Some(v) => v,
-        None => return emit(-1, "STATEMENT_MISSING", 1),
-    };
-    let signature_hex = match statement.get("signature").and_then(Value::as_str) {
-        Some(v) => v,
-        None => return emit(-1, "SIGNATURE_MISSING", 1),
-    };
-    let sig_bytes = match hex_decode(signature_hex, 64) {
-        Some(v) => v,
-        None => return emit(-1, "SIGNATURE_HEX", 1),
-    };
-    let mut payload = statement.clone();
-    payload.remove("signature");
-    let kind = match payload.get("kind").and_then(Value::as_str) {
-        Some(v) => v,
-        None => return emit(-1, "KIND_MISSING", 1),
-    };
-    let (domain, keys) = match kind {
-        "GRANT" => (GRANT_DOMAIN, GRANT_KEYS.as_slice()),
-        "WAX_SEAL" => (SEAL_DOMAIN, SEAL_KEYS.as_slice()),
-        _ => return emit(-1, "KIND_UNKNOWN", 1),
-    };
-    if !exact_keys(&payload, keys) {
-        return emit(-1, "CLOSED_KEYS", 1);
-    }
-    if kind == "WAX_SEAL" {
-        match payload.get("authorizing") {
-            Some(Value::Bool(false)) => {}
-            _ => return emit(-1, "SEAL_AUTHORIZING", 1),
-        }
-        match payload.get("authentication").and_then(Value::as_str) {
-            Some("AUTHENTICATED_SIGNET") => {}
-            _ => return emit(-1, "SEAL_AUTHENTICATION", 1),
-        }
-        if !seal_terminal_closed(payload.get("terminalOutcome").and_then(Value::as_str)) {
-            return emit(-1, "SEAL_TERMINAL", 1);
-        }
-    }
-    let canonical = match canonical_object(&payload) {
-        Some(v) => v,
-        None => return emit(0, "CANONICAL_FAILED", 1),
-    };
-    let message = framed(domain, &canonical);
-    let vk_array: [u8; 32] = match pk_bytes.as_slice().try_into() {
-        Ok(v) => v,
-        Err(_) => return emit(-1, "PUBLIC_KEY_LEN", 1),
-    };
-    let verifying_key = match VerifyingKey::from_bytes(&vk_array) {
-        Ok(v) => v,
-        Err(_) => return emit(-1, "PUBLIC_KEY_INVALID", 1),
-    };
-    let signature = match Signature::from_slice(&sig_bytes) {
-        Ok(v) => v,
-        Err(_) => return emit(-1, "SIGNATURE_LEN", 1),
-    };
-    // GATE1_GUARD_VERIFY
-    match verifying_key.verify(&message, &signature) {
-        Ok(()) => emit(1, "OK", 0),
-        Err(_) => emit(-1, "TAMPER", 1),
-    }
+    emit_outcome(verify_request(&buf))
 }
 
 #[cfg(test)]
@@ -313,5 +331,71 @@ mod tests {
             Err(BoundReadError::Unavailable) => panic!("cursor read must not be Unavailable"),
         }
         assert_eq!(counter.pulled, MAX_STDIN + 1);
+    }
+
+    fn hex_lower(bytes: &[u8]) -> String {
+        const HEX: &[u8; 16] = b"0123456789abcdef";
+        let mut out = String::with_capacity(bytes.len() * 2);
+        for b in bytes {
+            out.push(HEX[(b >> 4) as usize] as char);
+            out.push(HEX[(b & 0x0f) as usize] as char);
+        }
+        out
+    }
+
+    fn signed_wax_seal_request(terminal: &str) -> Vec<u8> {
+        let signing = SigningKey::from_bytes(&[7u8; 32]);
+        let public_key_hex = hex_lower(signing.verifying_key().as_bytes());
+        let mut payload = Map::new();
+        payload.insert("action".to_string(), Value::from("synthetic.write.v1"));
+        payload.insert(
+            "authentication".to_string(),
+            Value::from("AUTHENTICATED_SIGNET"),
+        );
+        payload.insert("authorizing".to_string(), Value::Bool(false));
+        payload.insert(
+            "envelopeDigest".to_string(),
+            Value::from(format!("sha256:{}", "11".repeat(32))),
+        );
+        payload.insert("epoch".to_string(), Value::from(1));
+        payload.insert("grantId".to_string(), Value::from("aa".repeat(32)));
+        payload.insert("kind".to_string(), Value::from("WAX_SEAL"));
+        payload.insert(
+            "profileDigest".to_string(),
+            Value::from(format!("sha256:{}", "22".repeat(32))),
+        );
+        payload.insert("replayable".to_string(), Value::Bool(false));
+        payload.insert("schemaVersion".to_string(), Value::from(1));
+        payload.insert("subjectId".to_string(), Value::from("subject:component"));
+        payload.insert("terminalOutcome".to_string(), Value::from(terminal));
+        let canonical = canonical_object(&payload).expect("canonical wax seal");
+        let message = framed(SEAL_DOMAIN, &canonical);
+        let sig_hex = hex_lower(&signing.sign(&message).to_bytes());
+        let mut statement = payload;
+        statement.insert("signature".to_string(), Value::from(sig_hex));
+        let mut req = Map::new();
+        req.insert(
+            "schema".to_string(),
+            Value::from("galerina.signet.verify.v1"),
+        );
+        req.insert("publicKeyHex".to_string(), Value::from(public_key_hex));
+        req.insert("statement".to_string(), Value::Object(statement));
+        serde_json::to_vec(&req).expect("verify request json")
+    }
+
+    #[test]
+    fn verify_request_seal_terminal_call_site() {
+        for terminal in ["FAILED", "REFUSED", "UNKNOWN", ""] {
+            let verdict = verify_request(&signed_wax_seal_request(terminal));
+            assert_eq!(verdict.trit, -1, "terminal={terminal}");
+            assert_eq!(verdict.reason, "SEAL_TERMINAL", "terminal={terminal}");
+            assert_eq!(verdict.code, 1, "terminal={terminal}");
+        }
+        for terminal in ["CONSUMED", "DELIVERY_UNKNOWN"] {
+            let verdict = verify_request(&signed_wax_seal_request(terminal));
+            assert_eq!(verdict.trit, 1, "terminal={terminal}");
+            assert_eq!(verdict.reason, "OK", "terminal={terminal}");
+            assert_eq!(verdict.code, 0, "terminal={terminal}");
+        }
     }
 }

@@ -133,12 +133,12 @@ path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
 old = """    // GATE1_GUARD_VERIFY
     match verifying_key.verify(&message, &signature) {
-        Ok(()) => emit(1, "OK", 0),
-        Err(_) => emit(-1, "TAMPER", 1),
+        Ok(()) => outcome(1, "OK", 0),
+        Err(_) => outcome(-1, "TAMPER", 1),
     }"""
 new = """    // GATE1_MUTANT_SKIP_VERIFY
     let _ = (&verifying_key, &message, &signature);
-    emit(1, "OK", 0)"""
+    outcome(1, "OK", 0)"""
 if old not in text:
     raise SystemExit("GATE1_GUARD_VERIFY match arm not found")
 path.write_text(text.replace(old, new), encoding="utf-8", newline="\n")
@@ -464,6 +464,63 @@ cp "$work/main.rs.bak" "$rust_src"
 pin="$(sha256sum "$bin" | cut -d ' ' -f1)"
 export GATE1_VERIFIER="$bin"
 export GATE1_VERIFIER_SHA256="$pin"
+
+python3 - "$rust_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = """        if !seal_terminal_closed(payload.get("terminalOutcome").and_then(Value::as_str)) {
+            return outcome(-1, "SEAL_TERMINAL", 1);
+        }"""
+new = """        if false && !seal_terminal_closed(payload.get("terminalOutcome").and_then(Value::as_str)) {
+            return outcome(-1, "SEAL_TERMINAL", 1);
+        }"""
+if old not in text:
+    raise SystemExit("SEAL_TERMINAL call site not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+set +e
+(cd "$verifier_dir" && cargo test --offline --locked -- --test-threads=1) >"$work/rust-callsite.out" 2>&1
+callsite_rc=$?
+set -e
+if [[ "$callsite_rc" -eq 0 ]]; then
+  echo "FAIL: rust-terminal-callsite-removed expected red, cargo test passed" >&2
+  cat "$work/rust-callsite.out" >&2
+  exit 1
+fi
+echo "PASS: mutant rust-terminal-callsite-removed is red (rc=$callsite_rc)"
+cp "$work/main.rs.bak" "$rust_src"
+(cd "$verifier_dir" && cargo build --offline --locked --release)
+pin="$(sha256sum "$bin" | cut -d ' ' -f1)"
+export GATE1_VERIFIER="$bin"
+export GATE1_VERIFIER_SHA256="$pin"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old_hook = """    try {
+      afterHelperPinnedHook();
+    } catch {
+      return refuse("HELPER_HOOK");
+    }
+"""
+new_hook = """    /* GATE1_MUTANT_HOOK_DROPPED */
+"""
+if old_hook not in text:
+    raise SystemExit("afterHelperPinnedHook call site not found")
+text = text.replace(old_hook, new_hook, 1)
+old_spawn = "    const result = spawnSync(verifiedHelperPath, [expectedSha256Hex], {"
+new_spawn = "    const result = spawnSync(helperPath, [expectedSha256Hex], {"
+if old_spawn not in text:
+    raise SystemExit("G12 verifiedHelperPath spawn not found for hook-not-called")
+text = text.replace(old_spawn, new_spawn, 1)
+path.write_text(text, encoding="utf-8", newline="\n")
+PY
+run_suite "g12-hook-not-called" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
 
 run_suite "restored" "$src" "green"
 echo "=== git status ==="

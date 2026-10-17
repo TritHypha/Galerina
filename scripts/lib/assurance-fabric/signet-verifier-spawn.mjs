@@ -54,10 +54,15 @@ const VERDICT_KEYS = Object.freeze(["authorizing", "reason", "schema", "trit"]);
 let sealedSpawnCount = 0;
 let lastHelperStdout = "";
 let lastHelperStderr = "";
-let afterHelperPinnedHook = null;
+const NO_HOOK = Object.freeze(function noHook() {});
+let afterHelperPinnedHook = NO_HOOK;
 
 export function setAfterHelperPinnedHook(fn) {
-  afterHelperPinnedHook = typeof fn === "function" ? fn : null;
+  if (process.env.GATE1_TEST_HOOK !== "1") {
+    afterHelperPinnedHook = NO_HOOK;
+    return;
+  }
+  afterHelperPinnedHook = typeof fn === "function" ? fn : NO_HOOK;
 }
 
 export function resetSealedSpawnCount() {
@@ -280,8 +285,10 @@ export function execPinnedVerifierBytes(bytes, {
     writeFileSync(blob, bytes);
     fd = openSync(blob, "r");
     unlinkSync(blob);
-    if (typeof afterHelperPinnedHook === "function") {
+    try {
       afterHelperPinnedHook();
+    } catch {
+      return refuse("HELPER_HOOK");
     }
     sealedSpawnCount += 1;
     /* GATE1_SEALED_EXEC */
