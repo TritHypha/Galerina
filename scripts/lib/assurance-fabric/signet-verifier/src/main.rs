@@ -88,16 +88,30 @@ fn framed(domain: &str, canonical: &str) -> Vec<u8> {
     .into_bytes()
 }
 
-fn main() -> ExitCode {
+enum BoundReadError {
+    Unavailable,
+    TooLarge,
+}
+
+fn read_bounded<R: Read>(reader: R) -> Result<Vec<u8>, BoundReadError> {
+    let mut limited = reader.take((MAX_STDIN as u64) + 1);
     let mut buf = Vec::new();
-    let stdin = io::stdin();
-    let mut handle = stdin.lock();
-    if handle.read_to_end(&mut buf).is_err() {
-        return emit(0, "STDIN_UNAVAILABLE", 1);
+    match limited.read_to_end(&mut buf) {
+        Ok(_) => {}
+        Err(_) => return Err(BoundReadError::Unavailable),
     }
     if buf.len() > MAX_STDIN {
-        return emit(-1, "STDIN_TOO_LARGE", 1);
+        return Err(BoundReadError::TooLarge);
     }
+    Ok(buf)
+}
+
+fn main() -> ExitCode {
+    let buf = match read_bounded(io::stdin().lock()) {
+        Ok(v) => v,
+        Err(BoundReadError::Unavailable) => return emit(0, "STDIN_UNAVAILABLE", 1),
+        Err(BoundReadError::TooLarge) => return emit(-1, "STDIN_TOO_LARGE", 1),
+    };
     let parsed: Value = match serde_json::from_slice(&buf) {
         Ok(v) => v,
         Err(_) => return emit(0, "JSON_MALFORMED", 1),
@@ -236,5 +250,50 @@ mod tests {
         tampered[0] ^= 1;
         let bad = Signature::from_slice(&tampered).expect("64-byte signature");
         assert!(verifying.verify(&message, &bad).is_err());
+    }
+
+    #[test]
+    fn read_bounded_accepts_max_and_refuses_above() {
+        let maxed = vec![b'x'; MAX_STDIN];
+        match read_bounded(maxed.as_slice()) {
+            Ok(buf) => assert_eq!(buf.len(), MAX_STDIN),
+            Err(_) => panic!("MAX_STDIN must be accepted"),
+        }
+        let over = vec![b'y'; MAX_STDIN + 1];
+        match read_bounded(over.as_slice()) {
+            Err(BoundReadError::TooLarge) => {}
+            Ok(_) => panic!("MAX_STDIN+1 must be TooLarge"),
+            Err(BoundReadError::Unavailable) => panic!("cursor read must not be Unavailable"),
+        }
+        match read_bounded(&b"{}"[..]) {
+            Ok(buf) => assert_eq!(buf, b"{}"),
+            Err(_) => panic!("small stdin must be accepted"),
+        }
+    }
+
+    #[test]
+    fn read_bounded_does_not_pull_more_than_max_plus_one() {
+        struct CountRead<'a> {
+            inner: &'a [u8],
+            pulled: usize,
+        }
+        impl Read for CountRead<'_> {
+            fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+                let n = self.inner.read(buf)?;
+                self.pulled += n;
+                Ok(n)
+            }
+        }
+        let data = vec![0u8; MAX_STDIN * 2];
+        let mut counter = CountRead {
+            inner: data.as_slice(),
+            pulled: 0,
+        };
+        match read_bounded(&mut counter) {
+            Err(BoundReadError::TooLarge) => {}
+            Ok(_) => panic!("expected TooLarge for 2*MAX_STDIN"),
+            Err(BoundReadError::Unavailable) => panic!("cursor read must not be Unavailable"),
+        }
+        assert_eq!(counter.pulled, MAX_STDIN + 1);
     }
 }

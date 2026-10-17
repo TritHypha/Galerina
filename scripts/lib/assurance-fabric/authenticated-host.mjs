@@ -5,6 +5,12 @@
  * built after a restart has no consume record: prior grants are UNKNOWN
  * and must never be treated as unused. restartHost() clears the consume
  * set and advances epoch so leftover grants refuse as UNKNOWN.
+ *
+ * classifySeal previous-epoch/profile choice: DISTRUSTED on both the
+ * identity path and the copy path. UNKNOWN is reserved for absence
+ * (missing seal, `{ kind: "absent" }`). A present seal bound to a
+ * previous epoch or profile is wrong-binding evidence, same class as a
+ * wrong subject.
  */
 import { createHash, generateKeyPairSync, randomBytes, sign as ed25519Sign, verify as ed25519Verify } from "node:crypto";
 import { types as utilTypes } from "node:util";
@@ -31,6 +37,7 @@ const GRANT_KEYS = Object.freeze([
   "schemaVersion",
   "subjectId",
 ]);
+const GRANT_INPUT_KEYS = Object.freeze([...GRANT_KEYS, "signature"]);
 const SEAL_KEYS = Object.freeze([
   "action",
   "authentication",
@@ -198,9 +205,20 @@ export function guardGrantKind(kind) {
 }
 
 export function guardFresh(grant, nowMs, epoch) {
+  /* GATE1_GUARD_CLOCK */ if (!Number.isSafeInteger(nowMs)) {
+    throw new TypeError("grant clock is not a safe integer");
+  }
   /* GATE1_GUARD_EXPIRED */ if (grant.epoch !== epoch || grant.expiryUnixMs <= nowMs) {
     throw new TypeError("grant expired or from a previous epoch");
   }
+}
+
+function readClock(clock) {
+  const nowMs = clock();
+  /* GATE1_GUARD_CLOCK */ if (!Number.isSafeInteger(nowMs)) {
+    throw new TypeError("grant clock is not a safe integer");
+  }
+  return nowMs;
 }
 
 export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
@@ -224,7 +242,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
   const target = nonEmptyString(inputConfig.target, "target");
   const abi = nonEmptyString(inputConfig.abi, "abi");
   const buildPoint = nonEmptyString(inputConfig.buildPoint, "buildPoint");
-  let epoch = 1;
+  let epoch = Number.isSafeInteger(options.epoch) && options.epoch >= 1 ? options.epoch : 1;
   const pair = generateKeyPairSync("ed25519");
   const publicKeyRaw = rawPublicKey(pair.publicKey);
   const publicKeyHex = publicKeyRaw.toString("hex");
@@ -248,7 +266,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     }
     const act = nonEmptyString(action, "action");
     const ttl = Number.isSafeInteger(ttlMs) ? ttlMs : defaultTtlMs;
-    const nowMs = clock();
+    const nowMs = readClock(clock);
     const payload = {
       schemaVersion: 1,
       kind: GRANT_KIND,
@@ -294,17 +312,26 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
       throw new TypeError("effect sink is required");
     }
     const requested = nonEmptyString(action, "action");
-    guardGrantKind(value?.kind);
-    const { payload } = authenticateGrant(value);
+    const recorded = exactRecord(value, GRANT_INPUT_KEYS, "GRANT");
+    guardGrantKind(recorded.kind);
+    const { payload } = authenticateGrant(recorded);
     if (payload.action !== requested) throw new TypeError("grant action mismatch");
     if (payload.epoch !== epoch) throw new TypeError("grant state UNKNOWN"); /* GATE1_GUARD_RESTART */
     if (payload.profileDigest !== currentProfileDigest()) {
       throw new TypeError("grant profile does not match current host");
     }
     if (!subjectById.has(payload.subjectId)) throw new TypeError("grant subject is undeclared");
-    guardFresh(payload, clock(), epoch);
+    guardFresh(payload, readClock(clock), epoch);
     guardUnusedGrant(consumed, payload.grantId);
-    sink.apply();
+    let terminalOutcome = "CONSUMED";
+    try {
+      sink.apply();
+    } catch {
+      terminalOutcome = "FAILED"; /* GATE1_GUARD_SINK */
+    }
+    if (!TERMINAL_OUTCOMES.has(terminalOutcome)) {
+      throw new TypeError("terminal outcome is not in the closed set");
+    }
     const sealPayload = {
       schemaVersion: 1,
       kind: SEAL_KIND,
@@ -313,7 +340,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
       envelopeDigest: payload.envelopeDigest,
       action: payload.action,
       epoch: payload.epoch,
-      terminalOutcome: "CONSUMED",
+      terminalOutcome,
       authentication: AUTHENTICATED_KIND,
       authorizing: false,
       replayable: false,
@@ -324,6 +351,8 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     seals.set(seal, Object.freeze({
       grantId: payload.grantId,
       subjectId: payload.subjectId,
+      epoch: payload.epoch,
+      profileDigest: payload.profileDigest,
       sealDigest: framedDigest(SEAL_DOMAIN, sealPayload),
     }));
     return seal;
@@ -332,7 +361,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
   function classifySeal(value, expectedSubjectId) {
     const subjectId = nonEmptyString(expectedSubjectId, "expectedSubjectId");
     if (value && typeof value === "object" && value.kind === "absent") return TRIT.UNKNOWN;
-    if (value == null) return TRIT.UNKNOWN;
+    if (value === null || value === undefined) return TRIT.UNKNOWN;
     const state = seals.get(value);
     if (!state) {
       try {
@@ -350,6 +379,9 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
       }
     }
     if (state.subjectId !== subjectId) return TRIT.DISTRUSTED;
+    if (state.epoch !== epoch || state.profileDigest !== currentProfileDigest()) {
+      return TRIT.DISTRUSTED;
+    }
     return TRIT.ASSURED;
   }
 
@@ -360,8 +392,8 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
   }
 
   function restartHost() {
-    consumed.clear();
     if (epoch === Number.MAX_SAFE_INTEGER) throw new RangeError("host context epoch is exhausted");
+    consumed.clear();
     epoch += 1; /* GATE1_GUARD_RESTART */
     return epoch;
   }

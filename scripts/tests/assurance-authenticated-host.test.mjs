@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { chmodSync, copyFileSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { TRIT } from "../lib/assurance-fabric/result-model.mjs";
 import {
   execPinnedVerifierBytes,
+  loadPinnedHelperBytes,
   loadPinnedVerifierBytes,
   resetSealedSpawnCount,
   spawnSignetVerifier,
+  takeLastHelperStderr,
+  takeLastHelperStdout,
   takeSealedSpawnCount,
+  validateVerifyRequest,
 } from "../lib/assurance-fabric/signet-verifier-spawn.mjs";
 
 const hostModuleUrl = process.env.GATE1_HOST_MODULE
@@ -51,10 +56,38 @@ const config = Object.freeze({
   ]),
 });
 
+const sealedExecSrc = fileURLToPath(new URL("../lib/assurance-fabric/signet-sealed-exec.c", import.meta.url));
+
 function flipHex(hex) {
   const last = hex[hex.length - 1];
   const next = last === "0" ? "1" : "0";
   return `${hex.slice(0, -1)}${next}`;
+}
+
+function sealedHelper() {
+  const helperPath = process.env.GATE1_SEALED_EXEC;
+  const helperSha256Hex = process.env.GATE1_SEALED_EXEC_SHA256;
+  assert.ok(typeof helperPath === "string" && helperPath.length > 0, "GATE1_SEALED_EXEC is required");
+  assert.ok(
+    typeof helperSha256Hex === "string" && /^[a-f0-9]{64}$/u.test(helperSha256Hex),
+    "GATE1_SEALED_EXEC_SHA256 is required",
+  );
+  return { helperPath, helperSha256Hex };
+}
+
+function spawnVerifier(opts) {
+  return spawnSignetVerifier({ ...sealedHelper(), ...opts });
+}
+
+function sha256File(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function writeFakeHelper(dir, body) {
+  const fake = join(dir, "fake-helper");
+  writeFileSync(fake, body);
+  chmodSync(fake, 0o755);
+  return fake;
 }
 
 describe("authenticated Signet / Grant / Wax Seal host", () => {
@@ -180,6 +213,118 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.equal(okSink.count, 1);
   });
 
+  it("G1 valid grant with a different requested action is refused with zero effects", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    assert.throws(() => host.applyGrant(grant, "synthetic.write.v1", sink), /action mismatch/);
+    assert.equal(sink.count, 0);
+    const okSink = createEffectSink();
+    host.applyGrant(grant, SYNTHETIC_ACTION, okSink);
+    assert.equal(okSink.count, 1);
+  });
+
+  it("classifySeal identity and copy agree; previous epoch or profile is DISTRUSTED", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const seal = host.applyGrant(host.issueGrant(envelope, SYNTHETIC_ACTION), SYNTHETIC_ACTION, createEffectSink());
+    const copy = { ...seal };
+    assert.equal(host.classifySeal(seal, "subject:component"), TRIT.ASSURED);
+    assert.equal(host.classifySeal(copy, "subject:component"), TRIT.ASSURED);
+    assert.equal(host.classifySeal(seal, "subject:other"), TRIT.DISTRUSTED);
+    assert.equal(host.classifySeal(copy, "subject:other"), TRIT.DISTRUSTED);
+    host.restartHost();
+    assert.equal(host.classifySeal(seal, "subject:component"), TRIT.DISTRUSTED);
+    assert.equal(host.classifySeal(copy, "subject:component"), TRIT.DISTRUSTED);
+
+    const rotated = createAuthenticatedAssuranceHost(config);
+    const rotatedSeal = rotated.applyGrant(
+      rotated.issueGrant(envelope, SYNTHETIC_ACTION),
+      SYNTHETIC_ACTION,
+      createEffectSink(),
+    );
+    const rotatedCopy = { ...rotatedSeal };
+    rotated.rotateContext();
+    assert.equal(rotated.classifySeal(rotatedSeal, "subject:component"), TRIT.DISTRUSTED);
+    assert.equal(rotated.classifySeal(rotatedCopy, "subject:component"), TRIT.DISTRUSTED);
+  });
+
+  it("NaN Infinity and non-number clocks refuse expired grants with zero effects", () => {
+    let mode = "real";
+    const host = createAuthenticatedAssuranceHost(config, {
+      clock: () => {
+        if (mode === "real") return 1_700_000_000_000;
+        if (mode === "nan") return Number.NaN;
+        if (mode === "inf") return Number.POSITIVE_INFINITY;
+        return "not-a-number";
+      },
+    });
+    const expired = host.issueGrant(envelope, SYNTHETIC_ACTION, -1);
+    const nanSink = createEffectSink();
+    mode = "nan";
+    assert.throws(() => host.applyGrant(expired, SYNTHETIC_ACTION, nanSink), /clock is not a safe integer/);
+    assert.equal(nanSink.count, 0);
+    const infSink = createEffectSink();
+    mode = "inf";
+    assert.throws(() => host.applyGrant(expired, SYNTHETIC_ACTION, infSink), /clock is not a safe integer/);
+    assert.equal(infSink.count, 0);
+    const badSink = createEffectSink();
+    mode = "str";
+    assert.throws(() => host.applyGrant(expired, SYNTHETIC_ACTION, badSink), /clock is not a safe integer/);
+    assert.equal(badSink.count, 0);
+  });
+
+  it("sink.apply throw records FAILED, never CONSUMED, and keeps the grant consumed", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const exploding = {
+      apply() {
+        throw new Error("sink boom");
+      },
+    };
+    const seal = host.applyGrant(grant, SYNTHETIC_ACTION, exploding);
+    assert.equal(seal.terminalOutcome, "FAILED");
+    assert.notEqual(seal.terminalOutcome, "CONSUMED");
+    assert.equal(seal.authorizing, false);
+    const retry = createEffectSink();
+    assert.throws(() => host.applyGrant(grant, SYNTHETIC_ACTION, retry), /already consumed/);
+    assert.equal(retry.count, 0);
+  });
+
+  it("Proxy-wrapped grants and extra keys are refused at applyGrant", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const proxySink = createEffectSink();
+    assert.throws(
+      () => host.applyGrant(new Proxy({ ...grant }, {}), SYNTHETIC_ACTION, proxySink),
+      /exact ordinary object/,
+    );
+    assert.equal(proxySink.count, 0);
+    const extraSink = createEffectSink();
+    assert.throws(
+      () => host.applyGrant({ ...grant, extra: "x" }, SYNTHETIC_ACTION, extraSink),
+      /unexpected or missing fields/,
+    );
+    assert.equal(extraSink.count, 0);
+    const okSink = createEffectSink();
+    host.applyGrant(grant, SYNTHETIC_ACTION, okSink);
+    assert.equal(okSink.count, 1);
+  });
+
+  it("restartHost checks epoch exhaustion before clearing consumed", () => {
+    const host = createAuthenticatedAssuranceHost(config, {
+      epoch: Number.MAX_SAFE_INTEGER,
+      clock: () => 1_000_000,
+    });
+    const sink = createEffectSink();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION, 60_000);
+    host.applyGrant(grant, SYNTHETIC_ACTION, sink);
+    assert.equal(sink.count, 1);
+    assert.throws(() => host.restartHost(), /exhausted/);
+    const retry = createEffectSink();
+    assert.throws(() => host.applyGrant(grant, SYNTHETIC_ACTION, retry), /already consumed/);
+    assert.equal(retry.count, 0);
+  });
+
   it("positive control: one effect and verifier-accepted seal; missing seal is 0", () => {
     const host = createAuthenticatedAssuranceHost(config);
     const sink = createEffectSink();
@@ -196,7 +341,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const verifierPath = process.env.GATE1_VERIFIER;
     const pin = process.env.GATE1_VERIFIER_SHA256;
     assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
-    const grantVerdict = spawnSignetVerifier({
+    const grantVerdict = spawnVerifier({
       verifierPath,
       expectedSha256Hex: pin,
       publicKeyHex: host.publicVerifyingKeyHex,
@@ -204,7 +349,12 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     });
     assert.equal(grantVerdict.authorizing, false);
     assert.equal(grantVerdict.trit, 1, grantVerdict.reason);
-    const sealVerdict = spawnSignetVerifier({
+    const sealsLine = takeLastHelperStderr();
+    assert.match(sealsLine, /SEALS:\d+/);
+    const seals = Number.parseInt(sealsLine.match(/SEALS:(\d+)/u)[1], 10);
+    const want = 0x0001 | 0x0002 | 0x0004 | 0x0008;
+    assert.equal(seals & want, want, sealsLine);
+    const sealVerdict = spawnVerifier({
       verifierPath,
       expectedSha256Hex: pin,
       publicKeyHex: host.publicVerifyingKeyHex,
@@ -212,7 +362,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     });
     assert.equal(sealVerdict.authorizing, false);
     assert.equal(sealVerdict.trit, 1, sealVerdict.reason);
-    const tamperVerdict = spawnSignetVerifier({
+    const tamperVerdict = spawnVerifier({
       verifierPath,
       expectedSha256Hex: pin,
       publicKeyHex: host.publicVerifyingKeyHex,
@@ -234,7 +384,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const sealB = hostB.applyGrant(grantB, SYNTHETIC_ACTION, createEffectSink());
 
     function check(statement, publicKeyHex = hostA.publicVerifyingKeyHex, expectedSha256Hex = pin, path = verifierPath) {
-      return spawnSignetVerifier({
+      return spawnVerifier({
         verifierPath: path,
         expectedSha256Hex,
         publicKeyHex,
@@ -291,7 +441,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     ];
     for (const statement of cases) {
       resetSealedSpawnCount();
-      const verdict = spawnSignetVerifier({
+      const verdict = spawnVerifier({
         verifierPath,
         expectedSha256Hex: pin,
         publicKeyHex: host.publicVerifyingKeyHex,
@@ -304,7 +454,7 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     }
     resetSealedSpawnCount();
     const oversized = { ...grant, action: "x".repeat(20_000) };
-    const tooLarge = spawnSignetVerifier({
+    const tooLarge = spawnVerifier({
       verifierPath,
       expectedSha256Hex: pin,
       publicKeyHex: host.publicVerifyingKeyHex,
@@ -313,6 +463,24 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     assert.equal(tooLarge.trit, -1);
     assert.equal(tooLarge.reason, "HEADER_TOO_LARGE");
     assert.equal(takeSealedSpawnCount(), 0);
+  });
+
+  it("validateVerifyRequest returns a typed ok result, never null", () => {
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const valid = validateVerifyRequest({
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.equal(valid.ok, true);
+    assert.equal(Object.hasOwn(valid, "refusal"), false);
+    const invalid = validateVerifyRequest({
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: { ...grant, extra: true },
+    });
+    assert.equal(invalid.ok, false);
+    assert.equal(invalid.refusal.trit, -1);
+    assert.equal(invalid.refusal.reason, "HEADER_KEYS");
   });
 
   it("on-disk swap after hash still runs the pinned bytes", () => {
@@ -337,9 +505,184 @@ describe("authenticated Signet / Grant / Wax Seal host", () => {
     const verdict = execPinnedVerifierBytes(loaded.bytes, {
       expectedSha256Hex: pin,
       verifierPath: tmp,
+      ...sealedHelper(),
       input: body,
     });
     assert.equal(verdict.authorizing, false);
     assert.equal(verdict.trit, 1, verdict.reason);
+  });
+
+  it("substituted helper with correct output and wrong hash refuses with zero verifier spawns", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const real = sealedHelper();
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const tampered = { ...grant, signature: flipHex(grant.signature) };
+    const dir = mkdtempSync(join(tmpdir(), "gate1-fake-helper-"));
+    const fake = writeFakeHelper(
+      dir,
+      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
+    );
+    resetSealedSpawnCount();
+    const verdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      helperPath: fake,
+      helperSha256Hex: real.helperSha256Hex,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: tampered,
+    });
+    assert.equal(verdict.trit, -1, verdict.reason);
+    assert.equal(verdict.reason, "HELPER_PIN_MISMATCH");
+    assert.equal(takeSealedSpawnCount(), 0);
+  });
+
+  it("GATE1_SEALED_EXEC env cannot redirect the helper; omitted pin refuses", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const tampered = { ...grant, signature: flipHex(grant.signature) };
+    const real = sealedHelper();
+    const dir = mkdtempSync(join(tmpdir(), "gate1-env-helper-"));
+    const fake = writeFakeHelper(
+      dir,
+      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 0\n",
+    );
+    const previous = process.env.GATE1_SEALED_EXEC;
+    process.env.GATE1_SEALED_EXEC = fake;
+    const envIgnored = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      helperPath: real.helperPath,
+      helperSha256Hex: real.helperSha256Hex,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: tampered,
+    });
+    process.env.GATE1_SEALED_EXEC = previous;
+    assert.equal(envIgnored.trit, -1, envIgnored.reason);
+    assert.notEqual(envIgnored.trit, 1);
+    const omitted = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.equal(omitted.trit, -1);
+    assert.equal(omitted.reason, "HELPER_PATH");
+  });
+
+  it("exit 7 with a +1 body refuses", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const dir = mkdtempSync(join(tmpdir(), "gate1-exit7-"));
+    const fake = writeFakeHelper(
+      dir,
+      "#!/bin/sh\n/bin/cat >/dev/null\nprintf '%s\\n' '{\"schema\":\"galerina.signet.verdict.v1\",\"trit\":1,\"reason\":\"OK\",\"authorizing\":false}'\nexit 7\n",
+    );
+    const fakePin = sha256File(fake);
+    const verdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      helperPath: fake,
+      helperSha256Hex: fakePin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.equal(verdict.trit, -1, verdict.reason);
+    assert.equal(verdict.reason, "VERIFIER_STATUS");
+    assert.notEqual(verdict.trit, 1);
+  });
+
+  it("G4 C helper pin check is reached; PIN_MISMATCH and zero verifier output", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const body = `${JSON.stringify({
+      schema: "galerina.signet.verify.v1",
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    })}\n`;
+    const loaded = loadPinnedVerifierBytes(verifierPath, pin);
+    assert.equal(loaded.ok, true);
+    resetSealedSpawnCount();
+    takeLastHelperStdout();
+    const verdict = execPinnedVerifierBytes(loaded.bytes, {
+      expectedSha256Hex: "00".repeat(32),
+      verifierPath,
+      ...sealedHelper(),
+      input: body,
+    });
+    assert.equal(verdict.reason, "VERIFIER_PIN_MISMATCH");
+    assert.equal(verdict.status, 3);
+    assert.equal(verdict.trit, -1);
+    assert.equal(takeLastHelperStdout().trim(), "");
+    assert.equal(takeSealedSpawnCount(), 1);
+  });
+
+  it("G8 helper exit 3 maps to PIN_MISMATCH", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const dir = mkdtempSync(join(tmpdir(), "gate1-exit3-"));
+    const fake = writeFakeHelper(dir, "#!/bin/sh\n/bin/cat >/dev/null\nexit 3\n");
+    const fakePin = sha256File(fake);
+    const verdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      helperPath: fake,
+      helperSha256Hex: fakePin,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.equal(verdict.reason, "VERIFIER_PIN_MISMATCH");
+    assert.equal(verdict.status, 3);
+    assert.equal(verdict.trit, -1);
+  });
+
+  it("G5 helper that skips sealing is refused", () => {
+    const verifierPath = process.env.GATE1_VERIFIER;
+    const pin = process.env.GATE1_VERIFIER_SHA256;
+    assert.ok(verifierPath && pin, "GATE1_VERIFIER and GATE1_VERIFIER_SHA256 are required");
+    const host = createAuthenticatedAssuranceHost(config);
+    const grant = host.issueGrant(envelope, SYNTHETIC_ACTION);
+    const src = readFileSync(sealedExecSrc, "utf8");
+    const mutated = src.replace(
+      "if (fcntl(mfd, F_ADD_SEALS,",
+      "if (0 && fcntl(mfd, F_ADD_SEALS,",
+    );
+    assert.notEqual(mutated, src);
+    const dir = mkdtempSync(join(tmpdir(), "gate1-unsealed-"));
+    const cPath = join(dir, "unsealed.c");
+    const helperPath = join(dir, "unsealed-helper");
+    writeFileSync(cPath, mutated);
+    const compiled = spawnSync("cc", ["-O2", "-Wall", "-Werror", "-o", helperPath, cPath], {
+      encoding: "utf8",
+    });
+    assert.equal(compiled.status, 0, compiled.stderr);
+    chmodSync(helperPath, 0o755);
+    const helperSha256Hex = sha256File(helperPath);
+    const loadedHelper = loadPinnedHelperBytes(helperPath, helperSha256Hex);
+    assert.equal(loadedHelper.ok, true);
+    const verdict = spawnSignetVerifier({
+      verifierPath,
+      expectedSha256Hex: pin,
+      helperPath,
+      helperSha256Hex,
+      publicKeyHex: host.publicVerifyingKeyHex,
+      statement: grant,
+    });
+    assert.notEqual(verdict.trit, 1, verdict.reason);
+    assert.equal(verdict.authorizing, false);
   });
 });

@@ -278,6 +278,10 @@ static int sealed_memfd_from_bytes(const uint8_t *buf, size_t size)
         close(mfd);
         return -1;
     }
+    if (fprintf(stderr, "SEALS:%u\n", (unsigned)seals) < 0) {
+        close(mfd);
+        return -1;
+    }
     return mfd;
 }
 
