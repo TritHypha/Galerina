@@ -22,17 +22,27 @@ export type ReleaseLeaseState =
   | "fenced"
   | "delivery-unknown";
 
+/** Dead alias. `status()` returns `OperationRecoveryStatus`. Kept so existing type imports compile. */
 export type ReleaseStatusState = ReleaseLeaseState | "retired" | "missing";
+
+export type OperationRecoveryKind =
+  | "RELEASED_ACKED"
+  | "RELEASED_UNACKED"
+  | "REFUSED"
+  | "DELIVERY_UNKNOWN"
+  | "NOT_FOUND";
+
+export type OperationRecoveryStatus = {
+  readonly kind: OperationRecoveryKind;
+  readonly operationId: string;
+};
 
 export type ReleaseAuditEvent = {
   readonly operationId: string;
   readonly outcome: ReleaseOutcome | "retired";
 };
 
-export type ReleaseStatus = {
-  readonly operationId: string;
-  readonly state: ReleaseStatusState;
-};
+export type ReleaseStatus = OperationRecoveryStatus;
 
 export class SecretReleaseRefused extends Error {
   readonly code = "secret_unavailable" as const;
@@ -138,22 +148,37 @@ export class ReleaseCommitAuthority {
 
   /**
    * Status-only recovery. Process-local. Never returns tokens, epochs, bytes,
-   * lengths or digests, and never opens a provider.
+   * lengths or digests, never opens a provider, and never consumes or
+   * re-discloses. Retry needs a new operation id and fresh authority.
    */
-  status(operationId: string): ReleaseStatus {
+  status(operationId: string): OperationRecoveryStatus {
     const id = operationIdOf(operationId);
     if (id.length === 0) {
-      return Object.freeze({ operationId: "", state: "missing" });
+      return Object.freeze({ kind: "NOT_FOUND", operationId: "" });
     }
-    operationId = id;
-    if (this.#retired.has(operationId)) {
-      return Object.freeze({ operationId, state: "retired" });
+    const rec = this.#leases.get(id);
+    if (rec === undefined) {
+      if (this.#retired.has(id)) {
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
+      }
+      return Object.freeze({ kind: "NOT_FOUND", operationId: id });
     }
-    const rec = this.#leases.get(operationId);
-    return Object.freeze({
-      operationId,
-      state: rec === undefined ? "missing" : rec.state,
-    });
+    switch (rec.state) {
+      case "acknowledged":
+        return Object.freeze({ kind: "RELEASED_ACKED", operationId: id });
+      case "released":
+        return Object.freeze({ kind: "RELEASED_UNACKED", operationId: id });
+      case "delivery-unknown":
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
+      case "fenced":
+        return Object.freeze({ kind: "REFUSED", operationId: id });
+      case "unused":
+      default: {
+        const unusedOrUnknown: string = rec.state;
+        void unusedOrUnknown;
+        return Object.freeze({ kind: "DELIVERY_UNKNOWN", operationId: id });
+      }
+    }
   }
 
   auditEvents(): readonly ReleaseAuditEvent[] {
