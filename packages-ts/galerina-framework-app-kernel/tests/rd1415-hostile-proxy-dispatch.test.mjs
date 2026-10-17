@@ -107,7 +107,7 @@ for (const scenario of cases) {
     const ack = authority.acknowledgeMinted(operationId);
     assert.equal(response.status, 500, `${scenario.name} http`);
     assert.equal(errorOf(response), "internal_error");
-    assert.equal(status.state, "delivery-unknown", `${scenario.name} status`);
+    assert.equal(status.kind, "DELIVERY_UNKNOWN", `${scenario.name} status`);
     assert.notEqual(ack, "acknowledged");
     assert.notEqual(ack, "released");
     if (scenario.runtimeReport) {
@@ -181,16 +181,16 @@ test("concurrent hostile A during in-flight B does not touch B's lease", async (
   const pendingB = kernel.handle(req("rq-B"));
   await waitMacrotask();
   const operationB = `rq-B\u0000${1}`;
-  assert.equal(authority.status(operationB).state, "released");
+  assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
   const responseA = await kernel.handle(hostileBodyReq("rq-A"));
   assert.equal(responseA.status, 500);
-  assert.equal(authority.status(operationB).state, "released");
+  assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
   releaseB();
   const responseB = await pendingB;
   await waitMacrotask();
   assert.equal(responseB.status, 200);
-  assert.equal(authority.status(operationB).state, "acknowledged");
-  assert.notEqual(authority.status(`rq-A\u0000${2}`).state, "acknowledged");
+  assert.equal(authority.status(operationB).kind, "RELEASED_ACKED");
+  assert.notEqual(authority.status(`rq-A\u0000${2}`).kind, "RELEASED_ACKED");
 });
 
 test("spent A throw while B waits is A delivery-unknown and B acknowledged", async () => {
@@ -231,14 +231,14 @@ test("spent A throw while B waits is A delivery-unknown and B acknowledged", asy
   await waitMacrotask();
   const operationA = `rq-A\u0000${2}`;
   assert.equal(responseA.status, 500);
-  assert.equal(authority.status(operationA).state, "delivery-unknown");
-  assert.equal(authority.status(operationB).state, "released");
+  assert.equal(authority.status(operationA).kind, "DELIVERY_UNKNOWN");
+  assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
   releaseB();
   const responseB = await pendingB;
   await waitMacrotask();
   assert.equal(responseB.status, 200);
-  assert.equal(authority.status(operationB).state, "acknowledged");
-  assert.equal(authority.status(operationA).state, "delivery-unknown");
+  assert.equal(authority.status(operationB).kind, "RELEASED_ACKED");
+  assert.equal(authority.status(operationA).kind, "DELIVERY_UNKNOWN");
 });
 
 test("503 refusal then throwing request does not touch the earlier operation", async () => {
@@ -266,10 +266,10 @@ test("503 refusal then throwing request does not touch the earlier operation", a
   await waitMacrotask();
   const operationS = `rq-S\u0000${1}`;
   assert.equal(first.status, 503);
-  assert.equal(authority.status(operationS).state, "delivery-unknown");
+  assert.equal(authority.status(operationS).kind, "DELIVERY_UNKNOWN");
   const second = await kernel.handle(hostileBodyReq("rq-T"));
   await waitMacrotask();
   assert.equal(second.status, 500);
-  assert.equal(authority.status(operationS).state, "delivery-unknown");
+  assert.equal(authority.status(operationS).kind, "DELIVERY_UNKNOWN");
   assert.notEqual(authority.acknowledgeMinted(operationS), "acknowledged");
 });

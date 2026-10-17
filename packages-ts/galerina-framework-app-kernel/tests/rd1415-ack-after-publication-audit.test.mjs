@@ -123,7 +123,7 @@ test("audit-sink commit throw is HTTP 503 and status is not acknowledged", async
   const status = authority.status(operationId);
   assert.equal(response.status, 503);
   assert.equal(errorOf(response), "audit_unavailable");
-  assert.equal(status.state, "delivery-unknown");
+  assert.equal(status.kind, "DELIVERY_UNKNOWN");
 });
 
 test("late provider callback before publication seal is error HTTP and not acknowledged", async () => {
@@ -152,7 +152,7 @@ test("late provider callback before publication seal is error HTTP and not ackno
   const operationId = `rq-late-cb\u0000${1}`;
   const status = authority.status(operationId);
   assert.equal(response.status >= 500, true);
-  assert.equal(status.state, "delivery-unknown");
+  assert.equal(status.kind, "DELIVERY_UNKNOWN");
 });
 
 test("clean publication and audit commit acknowledges the lease", async () => {
@@ -180,5 +180,5 @@ test("clean publication and audit commit acknowledges the lease", async () => {
   await waitMacrotask();
   const operationId = `rq-clean-ack\u0000${1}`;
   assert.equal(response.status, 200);
-  assert.equal(authority.status(operationId).state, "acknowledged");
+  assert.equal(authority.status(operationId).kind, "RELEASED_ACKED");
 });
