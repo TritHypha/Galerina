@@ -231,6 +231,52 @@ test("linux child-death quarantines without a production test hook", async (t) =
     () => provider.put("cred", new Uint8Array([1])),
     (error) => error instanceof SecretArenaQuarantined,
   );
+  const epoch = provider.revocationEpoch();
+  assert.equal(typeof epoch, "number");
+  assert.equal(Number.isSafeInteger(epoch) && epoch >= 0, true);
+  assert.equal(epoch > 0, true, "EPOCH after quarantine is strictly greater than the start epoch 0");
+  assert.equal(provider.status().state, "quarantined");
+});
+
+test("linux decreasing custodian epoch quarantines and refuses stale authority", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("linux secretmem only");
+    return;
+  }
+  const fake = chmodFake(join(dirname(fileURLToPath(import.meta.url)), "secret-arena-fake-decreasing-epoch.mjs"));
+  const provider = createSecretArenaProvider({ binPath: fake });
+  t.after(() => {
+    try {
+      provider.dispose();
+    } catch {
+      // already dead
+    }
+  });
+  const first = provider.revocationEpoch();
+  assert.equal(first, 5);
+  assert.throws(
+    () => provider.revocationEpoch(),
+    (error) =>
+      error instanceof SecretArenaUnavailable &&
+      error.code === ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM &&
+      /stale/u.test(error.message),
+  );
+  assert.equal(provider.status().state, "quarantined");
+  const after = provider.revocationEpoch();
+  assert.equal(typeof after, "number");
+  assert.equal(after > first, true, "EPOCH after quarantine is strictly greater than every epoch served before");
+  assert.throws(
+    () => provider.has("cred"),
+    (error) => error instanceof SecretArenaQuarantined && error.code === ERR_SECRET_ARENA_QUARANTINED,
+  );
+  assert.throws(
+    () => provider.use("cred", () => {}),
+    (error) => error instanceof SecretArenaQuarantined,
+  );
+  assert.throws(
+    () => provider.put("cred", new Uint8Array([1])),
+    (error) => error instanceof SecretArenaQuarantined,
+  );
 });
 
 test("linux short custodian read wipes and refuses construction", async (t) => {

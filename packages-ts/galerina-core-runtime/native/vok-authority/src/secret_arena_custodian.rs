@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::fd::AsFd;
 use std::process;
+use std::sync::atomic::{compiler_fence, Ordering};
 
 use super::secret_arena::SecretArenaError;
 use super::secret_arena_store::SecretArenaStore;
@@ -23,6 +24,21 @@ const ST_UNSUPPORTED: u8 = 5;
 const ST_INTERNAL: u8 = 6;
 
 const MAX_FRAME: u32 = 64 * 1024 * 1024 + 1024;
+
+/// Overwrite `bytes` with zeros in a way the optimiser must not remove as a dead store.
+fn wipe_volatile(bytes: &mut [u8]) {
+    for byte in bytes.iter_mut() {
+        // SAFETY: `byte` is a live exclusive reference to an initialized `u8`.
+        // `write_volatile` stores 0 through that pointer so the write remains
+        // observable after this function returns, including when the buffer
+        // is later dropped.
+        #[allow(unsafe_code)]
+        unsafe {
+            std::ptr::write_volatile(byte, 0_u8);
+        }
+    }
+    compiler_fence(Ordering::SeqCst);
+}
 
 fn status_of(error: SecretArenaError) -> u8 {
     match error {
@@ -45,35 +61,35 @@ fn read_exact_n(reader: &mut impl Read, n: usize) -> io::Result<Vec<u8>> {
         let want = (n - filled).min(tmp.len());
         match reader.read(&mut tmp[..want]) {
             Ok(0) => {
-                buf.fill(0);
-                tmp.fill(0);
+                wipe_volatile(&mut buf);
+                wipe_volatile(&mut tmp);
                 return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "frame"));
             }
             Ok(got) => {
                 buf[filled..filled + got].copy_from_slice(&tmp[..got]);
-                tmp[..got].fill(0);
+                wipe_volatile(&mut tmp[..got]);
                 filled += got;
             }
             Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
             Err(error) => {
-                buf.fill(0);
-                tmp.fill(0);
+                wipe_volatile(&mut buf);
+                wipe_volatile(&mut tmp);
                 return Err(error);
             }
         }
     }
-    tmp.fill(0);
+    wipe_volatile(&mut tmp);
     Ok(buf)
 }
 
 fn read_frame(reader: &mut impl Read) -> io::Result<Vec<u8>> {
     let mut header = [0_u8; 4];
     if let Err(error) = reader.read_exact(&mut header) {
-        header.fill(0);
+        wipe_volatile(&mut header);
         return Err(error);
     }
     let len = u32::from_be_bytes(header);
-    header.fill(0);
+    wipe_volatile(&mut header);
     if len == 0 || len > MAX_FRAME {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "frame"));
     }
@@ -99,13 +115,25 @@ fn write_frame(writer: &mut impl Write, payload: &[u8]) -> io::Result<()> {
     writer.flush()
 }
 
+struct ZeroOnDrop(Vec<u8>);
+
+impl Drop for ZeroOnDrop {
+    fn drop(&mut self) {
+        wipe_volatile(&mut self.0);
+    }
+}
+
+impl ZeroOnDrop {
+    fn as_slice(&self) -> &[u8] {
+        &self.0
+    }
+}
+
 fn reply(writer: &mut impl Write, status: u8, data: &[u8]) -> io::Result<()> {
-    let mut payload = Vec::with_capacity(1 + data.len());
-    payload.push(status);
-    payload.extend_from_slice(data);
-    let result = write_frame(writer, &payload);
-    payload.fill(0);
-    result
+    let mut payload = ZeroOnDrop(Vec::with_capacity(1 + data.len()));
+    payload.0.push(status);
+    payload.0.extend_from_slice(data);
+    write_frame(writer, payload.as_slice())
 }
 
 fn read_name(payload: &[u8]) -> Result<(&str, &[u8]), SecretArenaError> {
@@ -139,7 +167,7 @@ pub fn run_secret_arena_custodian() -> ! {
             Err(_) => process::exit(1),
         };
         if frame.is_empty() {
-            frame.fill(0);
+            wipe_volatile(&mut frame);
             let _ = reply(&mut stdout, ST_INVALID, &[]);
             continue;
         }
@@ -147,16 +175,16 @@ pub fn run_secret_arena_custodian() -> ! {
         let rest = &frame[1..];
         let result = dispatch(&mut store, opcode, rest);
         match result {
-            Ok((status, mut data)) => {
-                let write = reply(&mut stdout, status, &data);
-                data.fill(0);
-                frame.fill(0);
+            Ok((status, data)) => {
+                let data = ZeroOnDrop(data);
+                let write = reply(&mut stdout, status, data.as_slice());
+                wipe_volatile(&mut frame);
                 if write.is_err() {
                     process::exit(1);
                 }
             }
             Err(_) => {
-                frame.fill(0);
+                wipe_volatile(&mut frame);
                 let _ = reply(&mut stdout, ST_INTERNAL, &[]);
             }
         }
@@ -212,5 +240,23 @@ fn dispatch(
         }
         OP_EPOCH => Ok((ST_OK, store.epoch().to_be_bytes().to_vec())),
         _ => Ok((ST_INVALID, Vec::new())),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::wipe_volatile;
+
+    #[test]
+    fn wipe_volatile_leaves_zeros_in_a_buffer_it_does_not_free() {
+        let mut buf = vec![7_u8, 8, 9, 10];
+        let ptr = buf.as_mut_ptr();
+        let len = buf.len();
+        wipe_volatile(&mut buf);
+        assert_eq!(buf.as_slice(), &[0, 0, 0, 0]);
+        assert_eq!(buf.len(), len);
+        assert_eq!(buf.as_mut_ptr(), ptr);
+        buf[0] = 1;
+        assert_eq!(buf[0], 1);
     }
 }
