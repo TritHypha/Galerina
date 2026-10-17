@@ -4,8 +4,12 @@
  * Tower producer identity. Mismatch, missing, unknown, or wrong-length
  * refuses before secret access. This module does not admit, lease, or
  * disclose secrets.
+ *
+ * Hop fields are snapshotted once from own data properties. Accessors,
+ * detectable Proxies, class instances, and non-plain prototypes refuse.
  */
 import { createHash } from "node:crypto";
+import { types as nodeTypes } from "node:util";
 
 export const ARTIFACT_DIGEST_RE = /^sha256:[0-9a-f]{64}$/u;
 
@@ -48,22 +52,74 @@ type ExpectedDigest =
   | { readonly kind: "unset" }
   | { readonly kind: "set"; readonly digest: string };
 
-function parseHop(hop: ArtifactDigestHop): ParsedHop {
-  switch (hop.kind) {
-    case "present":
-      if (typeof hop.digest !== "string" || !ARTIFACT_DIGEST_RE.test(hop.digest)) {
+type OwnDataSnapshot =
+  | { readonly kind: "absent" }
+  | { readonly kind: "accessor" }
+  | { readonly kind: "value"; readonly value: unknown };
+
+function isPlainDataObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  if (nodeTypes.isProxy(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) {
+    return false;
+  }
+  return true;
+}
+
+function ownDataSnapshot(obj: object, key: string): OwnDataSnapshot {
+  const desc = Object.getOwnPropertyDescriptor(obj, key);
+  if (desc === undefined) {
+    return { kind: "absent" };
+  }
+  if (typeof desc.get === "function" || typeof desc.set === "function") {
+    return { kind: "accessor" };
+  }
+  if (!Object.prototype.hasOwnProperty.call(desc, "value")) {
+    return { kind: "accessor" };
+  }
+  return { kind: "value", value: desc.value };
+}
+
+function refuseUnknownHopKind(): ParsedHop {
+  return { kind: "REFUSED", code: "ARTIFACT_DIGEST_UNKNOWN" };
+}
+
+function refuseNonObjectHops(): ArtifactDigestBindResult {
+  return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };
+}
+
+function parseHop(hop: unknown): ParsedHop {
+  if (!isPlainDataObject(hop)) {
+    return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
+  }
+  const kindSnap = ownDataSnapshot(hop, "kind");
+  if (kindSnap.kind !== "value" || typeof kindSnap.value !== "string") {
+    return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
+  }
+  const hopKind = kindSnap.value;
+  switch (hopKind) {
+    case "present": {
+      const digestSnap = ownDataSnapshot(hop, "digest");
+      if (digestSnap.kind !== "value" || typeof digestSnap.value !== "string") {
         return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
       }
-      return { kind: "ok", digest: hop.digest };
+      const digest = digestSnap.value;
+      if (!ARTIFACT_DIGEST_RE.test(digest)) {
+        return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
+      }
+      return { kind: "ok", digest };
+    }
     case "missing":
       return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };
     case "unknown":
       return { kind: "REFUSED", code: "ARTIFACT_DIGEST_UNKNOWN" };
-    default: {
-      const _exhaustive: never = hop;
-      void _exhaustive;
-      return { kind: "REFUSED", code: "ARTIFACT_DIGEST_UNKNOWN" };
-    }
+    default:
+      return refuseUnknownHopKind();
   }
 }
 
@@ -93,21 +149,32 @@ export function artifactDigestFromRaw32(bytes: Uint8Array): ArtifactDigestBindRe
 }
 
 export function bindExactArtifactDigest(hops: ArtifactDigestHops): ArtifactDigestBindResult {
-  if (typeof hops !== "object" || hops === null || Array.isArray(hops)) {
-    return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };
+  if (!isPlainDataObject(hops)) {
+    return refuseNonObjectHops();
   }
   let expected: ExpectedDigest = { kind: "unset" };
   for (const name of HOP_NAMES) {
-    const hop = hops[name];
-    if (hop === undefined) {
-      return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };
-    }
-    const parsed = parseHop(hop);
-    if (parsed.kind === "REFUSED") return parsed;
-    if (expected.kind === "unset") {
-      expected = { kind: "set", digest: parsed.digest };
-    } else if (parsed.digest !== expected.digest) {
-      return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISMATCH" };
+    const hopSnap = ownDataSnapshot(hops, name);
+    switch (hopSnap.kind) {
+      case "absent":
+        return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };
+      case "accessor":
+        return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
+      case "value": {
+        const parsed = parseHop(hopSnap.value);
+        if (parsed.kind === "REFUSED") return parsed;
+        if (expected.kind === "unset") {
+          expected = { kind: "set", digest: parsed.digest };
+        } else if (parsed.digest !== expected.digest) {
+          return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISMATCH" };
+        }
+        break;
+      }
+      default: {
+        const _exhaustive: never = hopSnap;
+        void _exhaustive;
+        return { kind: "REFUSED", code: "ARTIFACT_DIGEST_UNKNOWN" };
+      }
     }
   }
   if (expected.kind !== "set") {
