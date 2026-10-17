@@ -20,18 +20,10 @@ import {
 } from "./release-commit-point.js";
 import { createSecretGate } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
+import { readForeignSafeInteger } from "./foreign-boundary.js";
 
-export type ForeignNumberRead =
-  | { readonly kind: "ok"; readonly value: number }
-  | { readonly kind: "refused" };
-
-/** One reusable boundary helper: null/NaN/Infinity/non-number become a typed refusal. */
-export function readForeignSafeInteger(raw: unknown): ForeignNumberRead {
-  if (typeof raw === "number" && Number.isSafeInteger(raw) === true) {
-    return { kind: "ok", value: raw };
-  }
-  return { kind: "refused" };
-}
+export type { ForeignNumberRead } from "./foreign-boundary.js";
+export { readForeignSafeInteger } from "./foreign-boundary.js";
 
 class ClockRefused extends Error {
   readonly code = "unknown_outcome" as const;
@@ -279,6 +271,11 @@ function isHex64(value: string): boolean {
 
 const TIMEOUT_TOKEN = Symbol("auth-verify-timeout");
 
+type PortRace<T> =
+  | { readonly kind: "ok"; readonly value: T }
+  | { readonly kind: "timeout" }
+  | { readonly kind: "threw" };
+
 async function raceRemainder<T>(work: Promise<T>, remainingMs: number): Promise<T | typeof TIMEOUT_TOKEN> {
   if (remainingMs <= 0) return TIMEOUT_TOKEN; /* AUTH_VERIFY_GUARD_TIMEOUT */
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -289,6 +286,24 @@ async function raceRemainder<T>(work: Promise<T>, remainingMs: number): Promise<
     return await Promise.race([work, timeoutPromise]); /* AUTH_VERIFY_GUARD_TIMEOUT */
   } finally {
     if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+async function runPort<T>(fn: () => Promise<T>, remainingMs: number): Promise<PortRace<T>> {
+  let pending: Promise<T>;
+  try {
+    pending = fn();
+  } catch {
+    return { kind: "threw" };
+  }
+  try {
+    const raced = await raceRemainder(pending, remainingMs);
+    if (raced === TIMEOUT_TOKEN) {
+      return { kind: "timeout" };
+    }
+    return { kind: "ok", value: raced };
+  } catch {
+    return { kind: "threw" };
   }
 }
 
@@ -563,6 +578,29 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       });
     };
 
+    const refusePort = (stage: AuthVerifyStage): AuthVerifyResponse => {
+      if (consumed === true) {
+        if (leaseId.length > 0) {
+          try {
+            authority.markUnknown(leaseId);
+          } catch {
+            // markUnknown is status-only
+          }
+        }
+        leaseState = "delivery-unknown";
+        return respond("F-28", stage, "delivery_unknown", { receiptKind: "status-only", leave: true });
+      }
+      if (leaseId.length > 0) {
+        try {
+          authority.fence(leaseId);
+        } catch {
+          // fence is best-effort
+        }
+        leaseState = "fenced";
+      }
+      return respond("F-30", stage, "unknown_outcome");
+    };
+
     const startClock = readForeignSafeInteger(nowMs());
     switch (startClock.kind) {
       case "ok":
@@ -607,13 +645,24 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     }
 
     const loadRemain = remainingMs();
-    const loadRace = await raceRemainder(options.ports.loadArtifact({ remainingMs: loadRemain }), loadRemain);
-    if (loadRace === TIMEOUT_TOKEN) {
-      const row = timeoutRow("wamr");
-      return respond(row.rowId === "F-30" ? "F-20" : row.rowId, "wamr", "deadline_exceeded");
+    const loadRace = await runPort(() => options.ports.loadArtifact({ remainingMs: loadRemain }), loadRemain);
+    switch (loadRace.kind) {
+      case "timeout": {
+        const row = timeoutRow("wamr");
+        return respond(row.rowId === "F-30" ? "F-20" : row.rowId, "wamr", "deadline_exceeded");
+      }
+      case "threw":
+        return refusePort("wamr");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = loadRace;
+        void _closed;
+        return refusePort("wamr");
+      }
     }
-    if (loadRace.ok !== true) {
-      const loadCode = loadRace.code;
+    if (loadRace.value.ok !== true) {
+      const loadCode = loadRace.value.code;
       const loadRow = loadCode === "ARTIFACT_DIGEST_MISSING" ? "F-05"
         : loadCode === "ARTIFACT_MISMATCH" ? "F-06"
         : loadCode === "AOT_REFUSED" ? "F-07"
@@ -627,39 +676,50 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         : "unknown_outcome";
       return respond(loadRow, "wamr", mapped);
     }
-    copies.push(loadRace.snapshot);
-    artifactDigest = loadRace.artifactDigest;
+    const loaded = loadRace.value;
+    copies.push(loaded.snapshot);
+    artifactDigest = loaded.artifactDigest;
     if (typeof artifactDigest !== "string" || !isHex64(artifactDigest) || /^0+$/.test(artifactDigest)) { /* AUTH_VERIFY_GUARD_ZERO_DIGEST */
       return respond("F-05", "wamr", "ARTIFACT_DIGEST_MISSING");
     }
 
     const pin = options.verifierPinSha256;
     const custodyRemain = remainingMs();
-    const custodyRace = await raceRemainder(
-      options.ports.verifierCustody({
+    const custodyRace = await runPort(
+      () => options.ports.verifierCustody({
         pinSha256: pin,
         remainingMs: custodyRemain,
-        snapshot: loadRace.snapshot,
+        snapshot: loaded.snapshot,
       }),
       custodyRemain,
     );
-    if (custodyRace === TIMEOUT_TOKEN) {
-      return respond("F-20", "verifier", "deadline_exceeded");
+    switch (custodyRace.kind) {
+      case "timeout":
+        return respond("F-20", "verifier", "deadline_exceeded");
+      case "threw":
+        return refusePort("verifier");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = custodyRace;
+        void _closed;
+        return refusePort("verifier");
+      }
     }
-    if (custodyRace.ok !== true) {
-      if (custodyRace.reason === "missing") {
+    if (custodyRace.value.ok !== true) {
+      if (custodyRace.value.reason === "missing") {
         return respond("F-13", "verifier", "ARTIFACT_DIGEST_MISSING");
       }
-      if (custodyRace.reason === "pin") {
+      if (custodyRace.value.reason === "pin") {
         return respond("F-14", "verifier", "VERDICT_REFUSED"); /* AUTH_VERIFY_GUARD_VERIFIER_PIN */
       }
-      if (custodyRace.reason === "spawn") {
+      if (custodyRace.value.reason === "spawn") {
         return respond("F-15", "verifier", "VERDICT_REFUSED", { spawnFailure: true });
       }
-      if (custodyRace.reason === "malformed") {
+      if (custodyRace.value.reason === "malformed") {
         return respond("F-16", "verifier", "VERDICT_REFUSED");
       }
-      if (custodyRace.reason === "nonzero") {
+      if (custodyRace.value.reason === "nonzero") {
         return respond("F-17", "verifier", "VERDICT_REFUSED");
       }
       return respond("F-30", "verifier", "unknown_outcome");
@@ -675,18 +735,28 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       return respond("F-09", "slide", "slide_admission_refused");
     }
     const slideRemain = remainingMs();
-    const slideRace = await raceRemainder(
-      options.ports.admitSlide({
+    const slideRace = await runPort(
+      () => options.ports.admitSlide({
         recordId: slideRecord,
         artifactDigest,
         remainingMs: slideRemain,
       }),
       slideRemain,
     );
-    if (slideRace === TIMEOUT_TOKEN) {
-      return respond("F-21", "slide", "deadline_exceeded");
+    switch (slideRace.kind) {
+      case "timeout":
+        return respond("F-21", "slide", "deadline_exceeded");
+      case "threw":
+        return refusePort("slide");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = slideRace;
+        void _closed;
+        return refusePort("slide");
+      }
     }
-    if (slideRace.ok !== true) {
+    if (slideRace.value.ok !== true) {
       return respond("F-09", "slide", "slide_admission_refused");
     }
 
@@ -695,15 +765,25 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     }
 
     const vokRemain = remainingMs();
-    const vokRace = await raceRemainder(
-      options.ports.authorizeVok({ artifactDigest, remainingMs: vokRemain }),
+    const vokRace = await runPort(
+      () => options.ports.authorizeVok({ artifactDigest, remainingMs: vokRemain }),
       vokRemain,
     );
-    if (vokRace === TIMEOUT_TOKEN) {
-      return respond("F-22", "vok", "deadline_exceeded");
+    switch (vokRace.kind) {
+      case "timeout":
+        return respond("F-22", "vok", "deadline_exceeded");
+      case "threw":
+        return refusePort("vok");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = vokRace;
+        void _closed;
+        return refusePort("vok");
+      }
     }
-    if (vokRace.ok !== true) {
-      if (vokRace.code === "ARTIFACT_MISMATCH") {
+    if (vokRace.value.ok !== true) {
+      if (vokRace.value.code === "ARTIFACT_MISMATCH") {
         return respond("F-06", "vok", "ARTIFACT_MISMATCH");
       }
       return respond("F-10", "vok", "authority_missing");
@@ -735,7 +815,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       }
     }
     try {
-      const minted = authority.mint(operationId, vokRace.epoch);
+      const minted = authority.mint(operationId, vokRace.value.epoch);
       leaseId = minted.leaseId;
       leaseToken = minted.token;
       leaseEpoch = minted.epoch;
@@ -835,27 +915,63 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return;
       }
       try {
-        secretGate.getSecret(requiredSecrets, name, fn, onGateViolation, operationId);
+        secretGate.getSecret(
+          requiredSecrets,
+          name,
+          (view) => {
+            const deliveryState = authority.stateOf(leaseId); /* AUTH_VERIFY_GUARD_DELIVERY_RECHECK */
+            switch (deliveryState) {
+              case "unused":
+                fn(view);
+                return;
+              case "released":
+              case "acknowledged":
+              case "fenced":
+              case "delivery-unknown":
+              case "missing":
+                secretFlags.secretViolation = true;
+                return;
+              default: {
+                const _closed: never = deliveryState;
+                void _closed;
+                secretFlags.secretViolation = true;
+                return;
+              }
+            }
+          },
+          onGateViolation,
+          operationId,
+        );
       } catch {
         secretFlags.secretViolation = true;
       }
     };
     const guestRemain = remainingMs();
-    const guestRace = await raceRemainder(
-      options.ports.runGuest({
+    const guestRace = await runPort(
+      () => options.ports.runGuest({
         body: bodyCopy,
         remainingMs: guestRemain,
         getSecret: guestGetSecret,
       }),
       guestRemain,
     );
-    if (guestRace === TIMEOUT_TOKEN) {
-      authority.fence(leaseId); /* AUTH_VERIFY_GUARD_GUEST_FENCE */
-      leaseState = "fenced";
-      return respond("F-24", "guest", "deadline_exceeded");
+    switch (guestRace.kind) {
+      case "timeout":
+        authority.fence(leaseId); /* AUTH_VERIFY_GUARD_GUEST_FENCE */
+        leaseState = "fenced";
+        return respond("F-24", "guest", "deadline_exceeded");
+      case "threw":
+        return refusePort("guest");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = guestRace;
+        void _closed;
+        return refusePort("guest");
+      }
     }
-    if (guestRace.ok !== true) {
-      if (guestRace.code === "guest_trap") {
+    if (guestRace.value.ok !== true) {
+      if (guestRace.value.code === "guest_trap") {
         authority.fence(leaseId);
         leaseState = "fenced";
         return respond("F-19", "guest", "guest_trap");
@@ -864,7 +980,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseState = "fenced";
       return respond("F-30", "guest", "unknown_outcome");
     }
-    const matchedRaw: unknown = guestRace.matched;
+    const matchedRaw: unknown = guestRace.value.matched;
     if (matchedRaw !== true && matchedRaw !== false) {
       authority.fence(leaseId);
       leaseState = "fenced";
@@ -911,35 +1027,55 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     leaseState = "released";
 
     const sinkWait = remainingMs();
-    const sinkRace = await raceRemainder(
-      options.ports.deliverSink({ outcome: disclosed, remainingMs: sinkWait }),
+    const sinkRace = await runPort(
+      () => options.ports.deliverSink({ outcome: disclosed, remainingMs: sinkWait }),
       sinkWait,
     );
-    if (sinkRace === TIMEOUT_TOKEN) {
-      authority.markUnknown(leaseId);
-      leaseState = "delivery-unknown";
-      return respond("F-28", "sink", "delivery_unknown", { receiptKind: "delivery-unknown", leave: true });
+    switch (sinkRace.kind) {
+      case "timeout":
+        authority.markUnknown(leaseId);
+        leaseState = "delivery-unknown";
+        return respond("F-28", "sink", "delivery_unknown", { receiptKind: "delivery-unknown", leave: true });
+      case "threw":
+        return refusePort("sink");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = sinkRace;
+        void _closed;
+        return refusePort("sink");
+      }
     }
-    if (sinkRace.ok !== true) {
+    if (sinkRace.value.ok !== true) {
       authority.markUnknown(leaseId);
       leaseState = "delivery-unknown";
-      if (sinkRace.code === "partial_delivery") {
+      if (sinkRace.value.code === "partial_delivery") {
         return respond("F-29", "sink", "partial_delivery", { receiptKind: "status-only", leave: true });
       }
       return respond("F-28", "sink", "delivery_unknown", { receiptKind: "status-only", leave: true });
     }
 
     const ackRemain = remainingMs();
-    const ackRace = await raceRemainder(
-      options.ports.acknowledge({ operationId, remainingMs: ackRemain }),
+    const ackRace = await runPort(
+      () => options.ports.acknowledge({ operationId, remainingMs: ackRemain }),
       ackRemain,
     );
-    if (ackRace === TIMEOUT_TOKEN) {
-      authority.markUnknown(leaseId);
-      leaseState = "delivery-unknown";
-      return respond("F-26", "ack", "deadline_exceeded", { receiptKind: "status-only", leave: true });
+    switch (ackRace.kind) {
+      case "timeout":
+        authority.markUnknown(leaseId);
+        leaseState = "delivery-unknown";
+        return respond("F-26", "ack", "deadline_exceeded", { receiptKind: "status-only", leave: true });
+      case "threw":
+        return refusePort("ack");
+      case "ok":
+        break;
+      default: {
+        const _closed: never = ackRace;
+        void _closed;
+        return refusePort("ack");
+      }
     }
-    if (ackRace.ok !== true) {
+    if (ackRace.value.ok !== true) {
       authority.markUnknown(leaseId);
       leaseState = "delivery-unknown";
       return respond("F-28", "ack", "delivery_unknown", { receiptKind: "status-only", leave: true });
@@ -959,14 +1095,30 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     leaseState = "acknowledged";
     return respond("S-01", "sink", "released", { successOutcome: disclosed, leave: true, receiptKind: "WAX_SEAL" });
     } catch (error) {
-      if (error instanceof ClockRefused) {
-        if (leaseId.length > 0 && authority.stateOf(leaseId) === "unused") {
-          authority.fence(leaseId);
-          leaseState = "fenced";
+      closeGetter();
+      if (consumed === true) {
+        if (leaseId.length > 0) {
+          try {
+            authority.markUnknown(leaseId); /* AUTH_VERIFY_GUARD_POST_COMMIT */
+          } catch {
+            // markUnknown is status-only
+          }
         }
+        leaseState = "delivery-unknown";
+        return respond("F-28", "sink", "delivery_unknown", { receiptKind: "status-only", leave: true });
+      }
+      if (leaseId.length > 0 && authority.stateOf(leaseId) === "unused") {
+        try {
+          authority.fence(leaseId); /* AUTH_VERIFY_GUARD_CLOCK_FENCE */
+        } catch {
+          // fence is best-effort
+        }
+        leaseState = "fenced";
+      }
+      if (error instanceof ClockRefused) {
         return respond("F-30", "ingress", "unknown_outcome");
       }
-      throw error;
+      return respond("F-30", "ingress", "unknown_outcome");
     } finally {
       closeGetter();
     }

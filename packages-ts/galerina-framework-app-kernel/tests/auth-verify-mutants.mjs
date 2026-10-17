@@ -146,6 +146,41 @@ try {
   expectRed("g10-guest-timeout-fence-removed", "neg-timeout-guest F-24");
 
   restore();
+  mutate((s) => s.replace(
+    "          authority.fence(leaseId); /* AUTH_VERIFY_GUARD_CLOCK_FENCE */",
+    "          /* AUTH_VERIFY_GUARD_CLOCK_FENCE removed */",
+  ));
+  expectRed("clock-refused-fence-removed", "neg-clock-nan-after-mint fences unused lease");
+
+  restore();
+  mutate((s) => s.replace(
+    "            authority.markUnknown(leaseId); /* AUTH_VERIFY_GUARD_POST_COMMIT */",
+    "            /* AUTH_VERIFY_GUARD_POST_COMMIT removed */",
+  ));
+  expectRed("clock-refused-post-commit-not-recovered", "neg-clock-nan-after-consume sink-wait is status-only");
+
+  restore();
+  mutate((s) => s.replace(
+    "      if (secretFlags.getterClosed) {",
+    "      if (false && secretFlags.getterClosed) { /* AUTH_VERIFY_GUARD_GETTER_CLOSED skipped */",
+  ));
+  expectRed("getter-closed-latch-removed", "late-getSecret getter-closed latch holds when lease spoofed unused");
+
+  restore();
+  mutate((s) => s.replace(
+    "    const routeAck = authority.acknowledgeMinted(operationId); /* AUTH_VERIFY_GUARD_ACK */",
+    "    const routeAck = \"acknowledged\"; /* AUTH_VERIFY_GUARD_ACK ignored */",
+  ));
+  expectRed("route-ack-ignored", "neg-route-ack-not-acknowledged is status-only never WAX_SEAL");
+
+  restore();
+  mutate((s) => s.replace(
+    "            const deliveryState = authority.stateOf(leaseId); /* AUTH_VERIFY_GUARD_DELIVERY_RECHECK */",
+    "            const deliveryState = \"unused\"; /* AUTH_VERIFY_GUARD_DELIVERY_RECHECK skipped */",
+  ));
+  expectRed("delivery-recheck-removed", "route-fence-inside-provider-use does not hand bytes to guest");
+
+  restore();
   const green = spawnSync("node", ["--test", join(here, "auth-verify-route.test.mjs")], {
     cwd: pkg,
     encoding: "utf8",

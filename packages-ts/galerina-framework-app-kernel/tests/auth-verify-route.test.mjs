@@ -17,6 +17,11 @@ import {
   AuthVerifyConstructionRefused,
   createAuthVerifyRoute,
 } from "../dist/auth-verify-route.js";
+import {
+  readBodyCapped,
+  readDeclaredContentLength,
+  readForeignSafeInteger,
+} from "../dist/foreign-boundary.js";
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -666,9 +671,10 @@ test("verifier-dependency: C WAMR host does not link Rust; #183 crate-type is rl
   assert.equal(pin.path, "packages-ts/galerina-core-runtime/native/vok-authority/Cargo.toml");
   assert.equal(pin.gitBlobId, "7d346c12a6dae822cc96d06bd9520f63224eed63");
   assert.equal(pin.crateTypeLine, 'crate-type = ["rlib"]');
-  const cargoSha = createHash("sha256").update(cargoBytes).digest("hex");
+  const cargoLf = Buffer.from(cargoBytes.toString("utf8").replaceAll("\r\n", "\n").replaceAll("\r", "\n"));
+  const cargoSha = createHash("sha256").update(cargoLf).digest("hex");
   assert.equal(cargoSha, pin.sha256);
-  const cargo = cargoBytes.toString("utf8");
+  const cargo = cargoLf.toString("utf8");
   assert.equal(cargo.includes(pin.crateTypeLine), true);
   assert.equal(cargo.includes("cdylib"), false);
   assert.equal(cargo.includes("staticlib"), false);
@@ -942,4 +948,421 @@ test("neg-replay-delivery-unknown reports delivery-unknown", async () => {
   const second = await r.handle(req());
   assertRefusal(second, "F-04", "operation_replay", 409, "mint");
   assert.equal(second.lease, "delivery-unknown");
+});
+
+function nanAt(k) {
+  let n = 0;
+  return () => {
+    n += 1;
+    return n === k ? Number.NaN : 1000;
+  };
+}
+
+test("neg-clock-nan-after-mint fences unused lease", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  const res = await route({ authority, nowMs: nanAt(6) }).handle(req());
+  assertRefusal(res, "F-30", "unknown_outcome", 503, "ingress");
+  assert.equal(res.consumed, false);
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.stateOf(lease.leaseId), "fenced");
+  assert.equal(res.lease, "fenced");
+});
+
+test("neg-clock-nan-after-consume sink-wait is status-only", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  let sinkCalls = 0;
+  const res = await route({
+    authority,
+    nowMs: nanAt(9),
+    ports: {
+      deliverSink: async () => {
+        sinkCalls += 1;
+        return { ok: true };
+      },
+    },
+  }).handle(req());
+  assert.equal(res.consumed, true);
+  assert.equal(res.leave, true);
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+  assert.equal(res.rowId, "F-28");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.status(lease.leaseId).state, "delivery-unknown");
+  assert.equal(sinkCalls, 0);
+});
+
+test("neg-clock-nan-after-consume ack-read is status-only", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  let sinkCalls = 0;
+  const res = await route({
+    authority,
+    nowMs: nanAt(10),
+    ports: {
+      deliverSink: async () => {
+        sinkCalls += 1;
+        return { ok: true };
+      },
+    },
+  }).handle(req());
+  assert.equal(res.consumed, true);
+  assert.equal(res.leave, true);
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+  assert.equal(res.rowId, "F-28");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.status(lease.leaseId).state, "delivery-unknown");
+  assert.equal(sinkCalls, 1);
+});
+
+async function assertPortHeld(label, portsOver, expectState, expectSnapWiped = true) {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  const snap = new Uint8Array([9, 9, 9, 9]);
+  let guestBody;
+  let threw = false;
+  let res;
+  try {
+    res = await route({
+      authority,
+      ports: {
+        loadArtifact: async () => ({
+          ok: true,
+          artifactDigest: ARTIFACT,
+          snapshot: snap,
+        }),
+        runGuest: async ({ body, getSecret }) => {
+          guestBody = body;
+          getSecret("auth-verify-credential", () => {});
+          return { ok: true, matched: true };
+        },
+        ...portsOver,
+      },
+    }).handle(req());
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false, label);
+  assert.equal(res === undefined, false, label);
+  assert.notEqual(res.rowId, "S-01", label);
+  if (expectSnapWiped === true) {
+    assert.equal(snap.every((b) => b === 0), true, label);
+  }
+  if (guestBody !== undefined) {
+    assert.equal(guestBody.every((b) => b === 0), true, label);
+  }
+  const lease = minted[minted.length - 1];
+  if (expectState === "not-minted") {
+    assert.equal(lease === undefined || authority.stateOf(lease.leaseId) !== "released", true, label);
+  } else if (lease !== undefined) {
+    assert.equal(authority.stateOf(lease.leaseId), expectState, label);
+    assert.equal(res.lease, expectState, label);
+  }
+  return res;
+}
+
+test("port-loadArtifact-rejects does not reject handle", async () => {
+  await assertPortHeld("load-reject", {
+    loadArtifact: async () => {
+      throw new Error("load boom");
+    },
+  }, "not-minted", false);
+});
+
+test("port-loadArtifact-sync-throw does not reject handle", async () => {
+  await assertPortHeld("load-sync", {
+    loadArtifact: () => {
+      throw new Error("load sync boom");
+    },
+  }, "not-minted", false);
+});
+
+test("port-verifierCustody-rejects does not reject handle", async () => {
+  await assertPortHeld("custody-reject", {
+    verifierCustody: async () => {
+      throw new Error("custody boom");
+    },
+  }, "not-minted");
+});
+
+test("port-verifierCustody-sync-throw does not reject handle", async () => {
+  await assertPortHeld("custody-sync", {
+    verifierCustody: () => {
+      throw new Error("custody sync boom");
+    },
+  }, "not-minted");
+});
+
+test("port-admitSlide-rejects does not reject handle", async () => {
+  await assertPortHeld("slide-reject", {
+    admitSlide: async () => {
+      throw new Error("slide boom");
+    },
+  }, "not-minted");
+});
+
+test("port-admitSlide-sync-throw does not reject handle", async () => {
+  await assertPortHeld("slide-sync", {
+    admitSlide: () => {
+      throw new Error("slide sync boom");
+    },
+  }, "not-minted");
+});
+
+test("port-authorizeVok-rejects does not reject handle", async () => {
+  await assertPortHeld("vok-reject", {
+    authorizeVok: async () => {
+      throw new Error("vok boom");
+    },
+  }, "not-minted");
+});
+
+test("port-authorizeVok-sync-throw does not reject handle", async () => {
+  await assertPortHeld("vok-sync", {
+    authorizeVok: () => {
+      throw new Error("vok sync boom");
+    },
+  }, "not-minted");
+});
+
+test("port-runGuest-rejects fences unused and wipes", async () => {
+  const res = await assertPortHeld("guest-reject", {
+    runGuest: async ({ getSecret }) => {
+      getSecret("auth-verify-credential", () => {});
+      throw new Error("guest boom");
+    },
+  }, "fenced");
+  assert.equal(res.consumed, false);
+  assert.equal(res.receiptKind, "refuse");
+});
+
+test("port-runGuest-sync-throw fences unused and wipes", async () => {
+  const res = await assertPortHeld("guest-sync", {
+    runGuest: () => {
+      throw new Error("guest sync boom");
+    },
+  }, "fenced");
+  assert.equal(res.consumed, false);
+});
+
+test("port-deliverSink-rejects is status-only delivery-unknown", async () => {
+  const res = await assertPortHeld("sink-reject", {
+    deliverSink: async () => {
+      throw new Error("sink boom");
+    },
+  }, "delivery-unknown");
+  assert.equal(res.consumed, true);
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+});
+
+test("port-deliverSink-sync-throw is status-only delivery-unknown", async () => {
+  const res = await assertPortHeld("sink-sync", {
+    deliverSink: () => {
+      throw new Error("sink sync boom");
+    },
+  }, "delivery-unknown");
+  assert.equal(res.consumed, true);
+  assert.equal(res.receiptKind, "status-only");
+});
+
+test("port-acknowledge-rejects is status-only delivery-unknown", async () => {
+  const res = await assertPortHeld("ack-reject", {
+    acknowledge: async () => {
+      throw new Error("ack boom");
+    },
+  }, "delivery-unknown");
+  assert.equal(res.consumed, true);
+  assert.equal(res.receiptKind, "status-only");
+});
+
+test("port-acknowledge-sync-throw is status-only delivery-unknown", async () => {
+  const res = await assertPortHeld("ack-sync", {
+    acknowledge: () => {
+      throw new Error("ack sync boom");
+    },
+  }, "delivery-unknown");
+  assert.equal(res.consumed, true);
+  assert.equal(res.receiptKind, "status-only");
+});
+
+test("port-wipe-sync-throw quarantines and resolves", async () => {
+  let threw = false;
+  let res;
+  try {
+    res = await route({
+      ports: {
+        wipe: () => {
+          throw new Error("wipe boom");
+        },
+      },
+    }).handle(req());
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(res.rowId, "F-31");
+  assert.equal(res.code, "cleanup_failed");
+  assert.equal(res.quarantined, true);
+});
+
+test("neg-route-ack-not-acknowledged is status-only never WAX_SEAL", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const orig = authority.acknowledgeMinted.bind(authority);
+  authority.acknowledgeMinted = (id) => {
+    orig(id);
+    return "missing";
+  };
+  const res = await route({ authority }).handle(req());
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.receiptKind, "WAX_SEAL");
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+  assert.equal(res.consumed, true);
+});
+
+test("late-getSecret getter-closed latch holds when lease spoofed unused", async () => {
+  const authority = new ReleaseCommitAuthority();
+  let lateGet;
+  let uses = 0;
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      uses += 1;
+      fn(new Uint8Array([0x11, 0x22, 0x33, 0x44]));
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await createAuthVerifyRoute({
+    mode: "test",
+    timeoutMs: 25,
+    fungiMaxRequestSize: AUTH_VERIFY_MAX_BODY_BYTES,
+    kernelMaxSizeBytes: 64 * 1024,
+    namedSlideRecord: AUTH_VERIFY_SYNTHETIC_SLIDE_RECORD,
+    namedTcbProfile: AUTH_VERIFY_SYNTHETIC_TCB_PROFILE,
+    verifierPinSha256: PIN,
+    authority,
+    secrets,
+    ports: goodPorts({
+      runGuest: async ({ getSecret }) => {
+        lateGet = getSecret;
+        return hang();
+      },
+    }),
+  }).handle(req());
+  assertRefusal(res, "F-24", "deadline_exceeded", 504, "guest");
+  authority.stateOf = () => "unused";
+  const usesAfter = uses;
+  lateGet("auth-verify-credential", () => {});
+  assert.equal(uses, usesAfter);
+});
+
+test("route-fence-inside-provider-use does not hand bytes to guest", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  const stored = new Uint8Array([0x11, 0x22, 0x33, 0x44]);
+  let got = "none";
+  const secrets = {
+    has() {
+      return true;
+    },
+    use(_name, fn) {
+      const id = minted[minted.length - 1];
+      if (id !== undefined) authority.fence(id.leaseId);
+      fn(stored);
+    },
+    revocationEpoch() {
+      return 1;
+    },
+  };
+  const res = await route({
+    authority,
+    secrets,
+    ports: {
+      runGuest: async ({ getSecret }) => {
+        getSecret("auth-verify-credential", (v) => {
+          got = Array.from(v).join(",");
+        });
+        return { ok: true, matched: true };
+      },
+    },
+  }).handle(req());
+  assert.equal(got, "none");
+  assert.notEqual(res.rowId, "S-01");
+  assert.equal(res.consumed, false);
+});
+
+test("foreign-boundary readForeignSafeInteger refuses NaN Infinity string object", () => {
+  assert.equal(readForeignSafeInteger(Number.NaN).kind, "refused");
+  assert.equal(readForeignSafeInteger(Number.POSITIVE_INFINITY).kind, "refused");
+  assert.equal(readForeignSafeInteger("1").kind, "refused");
+  assert.equal(readForeignSafeInteger({}).kind, "refused");
+  assert.equal(readForeignSafeInteger(1.5).kind, "refused");
+  assert.deepEqual(readForeignSafeInteger(3), { kind: "ok", value: 3 });
+});
+
+test("foreign-boundary content-length digits only", () => {
+  assert.equal(readDeclaredContentLength(null).kind, "absent");
+  assert.equal(readDeclaredContentLength("").kind, "refused");
+  assert.equal(readDeclaredContentLength("1e3").kind, "refused");
+  assert.equal(readDeclaredContentLength("0x10").kind, "refused");
+  assert.equal(readDeclaredContentLength(" 1").kind, "refused");
+  assert.deepEqual(readDeclaredContentLength("16"), { kind: "ok", value: 16 });
+});
+
+test("foreign-boundary readBodyCapped wipes over-cap chunks", async () => {
+  const first = new Uint8Array([1, 2, 3, 4]);
+  const over = new Uint8Array([5, 6, 7, 8]);
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(first);
+      controller.enqueue(over);
+      controller.close();
+    },
+  });
+  const result = await readBodyCapped(stream, 4);
+  assert.equal(result.kind, "too_large");
+  assert.equal(first.every((b) => b === 0), true);
+  assert.equal(over.every((b) => b === 0), true);
+});
+
+test("foreign-boundary readBodyCapped wipes on non-Uint8Array chunk", async () => {
+  const first = new Uint8Array([1, 2, 3]);
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(first);
+      controller.enqueue("nope");
+      controller.close();
+    },
+  });
+  const result = await readBodyCapped(stream, 64);
+  assert.equal(result.kind, "refused");
+  assert.equal(first.every((b) => b === 0), true);
+});
+
+test("foreign-boundary readBodyCapped wipes on stream error", async () => {
+  const first = new Uint8Array([9, 9, 9]);
+  let pulls = 0;
+  const stream = new ReadableStream({
+    pull(controller) {
+      pulls += 1;
+      if (pulls === 1) {
+        controller.enqueue(first);
+        return;
+      }
+      throw new Error("stream boom");
+    },
+  });
+  const result = await readBodyCapped(stream, 64);
+  assert.equal(result.kind, "refused");
+  assert.equal(first.every((b) => b === 0), true);
 });
