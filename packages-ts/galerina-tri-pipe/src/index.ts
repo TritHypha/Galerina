@@ -23,7 +23,7 @@ export {
   type ArtifactDigestRefuseCode,
   type ArtifactDigestBindResult,
   type ArtifactDigestHops,
-  ARTIFACT_DIGEST_RE,
+  isArtifactDigest,
   hashWasmArtifact,
   artifactDigestFromRaw32,
   bindExactArtifactDigest,

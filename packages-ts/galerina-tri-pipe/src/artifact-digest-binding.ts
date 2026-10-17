@@ -11,7 +11,12 @@
 import { createHash } from "node:crypto";
 import { types as nodeTypes } from "node:util";
 
-export const ARTIFACT_DIGEST_RE = /^sha256:[0-9a-f]{64}$/u;
+const ARTIFACT_DIGEST_RE = /^sha256:[0-9a-f]{64}$/u;
+
+/** Predicate over a digest string. The binder's regex is module-private. */
+export function isArtifactDigest(value: unknown): boolean {
+  return typeof value === "string" && ARTIFACT_DIGEST_RE.test(value);
+}
 
 export type ArtifactDigestHop =
   | { readonly kind: "present"; readonly digest: string }
@@ -46,7 +51,7 @@ const HOP_NAMES = [
 
 type ParsedHop =
   | { readonly kind: "ok"; readonly digest: string }
-  | ArtifactDigestBindResult;
+  | { readonly kind: "REFUSED"; readonly code: ArtifactDigestRefuseCode };
 
 type ExpectedDigest =
   | { readonly kind: "unset" }
@@ -162,11 +167,21 @@ export function bindExactArtifactDigest(hops: ArtifactDigestHops): ArtifactDiges
         return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MALFORMED" };
       case "value": {
         const parsed = parseHop(hopSnap.value);
-        if (parsed.kind === "REFUSED") return parsed;
-        if (expected.kind === "unset") {
-          expected = { kind: "set", digest: parsed.digest };
-        } else if (parsed.digest !== expected.digest) {
-          return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISMATCH" };
+        switch (parsed.kind) {
+          case "REFUSED":
+            return parsed;
+          case "ok":
+            if (expected.kind === "unset") {
+              expected = { kind: "set", digest: parsed.digest };
+            } else if (parsed.digest !== expected.digest) {
+              return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISMATCH" };
+            }
+            break;
+          default: {
+            const _parsed: never = parsed;
+            void _parsed;
+            return { kind: "REFUSED", code: "ARTIFACT_DIGEST_UNKNOWN" };
+          }
         }
         break;
       }

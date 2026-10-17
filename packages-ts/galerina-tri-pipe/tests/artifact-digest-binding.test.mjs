@@ -12,11 +12,11 @@ import {
   bindExactArtifactDigest,
   hashWasmArtifact,
   artifactDigestFromRaw32,
+  isArtifactDigest,
 } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = join(here, "..");
-const cloneRoot = join(pkgRoot, "..", "..");
 const srcPath = join(pkgRoot, "src", "artifact-digest-binding.ts");
 const tscPath = join(pkgRoot, "node_modules", "typescript", "bin", "tsc");
 const ARTIFACT = `sha256:${"b".repeat(64)}`;
@@ -59,14 +59,23 @@ function srcText() {
   return readFileSync(srcPath, "utf8").replaceAll("\r\n", "\n");
 }
 
-function triPipeSrcPorcelain() {
-  const result = spawnSync(
-    "git",
-    ["status", "--porcelain", "--", "packages-ts/galerina-tri-pipe/src", "packages-ts/galerina-tri-pipe/dist"],
-    { cwd: cloneRoot, encoding: "utf8" },
-  );
-  assert.equal(result.status, 0, result.stderr);
-  return result.stdout;
+function fileSha(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function srcDistDigests() {
+  return {
+    src: fileSha(srcPath),
+    dist: fileSha(join(pkgRoot, "dist", "artifact-digest-binding.js")),
+  };
+}
+
+function bindChecked(hops) {
+  const result = bindExactArtifactDigest(hops);
+  if (result.kind === "BOUND") {
+    assert.equal(typeof result.digest, "string", "BOUND digest must be a string");
+  }
+  return result;
 }
 
 async function bindFromMutatedSource(mutatedSource) {
@@ -107,6 +116,7 @@ test("end-to-end synthetic artifact binds the same digest across every hop", () 
   const hashed = hashWasmArtifact(wasm);
   assert.equal(hashed.kind, "BOUND");
   if (hashed.kind !== "BOUND") return;
+  assert.equal(typeof hashed.digest, "string");
   const raw = createHash("sha256").update(wasm).digest();
   const fromRaw = artifactDigestFromRaw32(raw);
   assert.equal(fromRaw.kind, "BOUND");
@@ -116,7 +126,7 @@ test("end-to-end synthetic artifact binds the same digest across every hop", () 
   const request = prepareSlideAdmissionRequest(proposal, hashed.digest);
   assert.equal(request.kind, "SLIDE_ADMISSION_REQUEST");
   if (request.kind !== "SLIDE_ADMISSION_REQUEST") return;
-  const bound = bindExactArtifactDigest({
+  const bound = bindChecked({
     slideAdmission: present(request.artifactDigest),
     wamrLoaded: present(fromRaw.digest),
     vokReceipt: present(hashed.digest),
@@ -133,7 +143,7 @@ test("per-hop mismatch refuses before secret access", () => {
   for (const name of ["slideAdmission", "wamrLoaded", "vokReceipt", "lythProducer", "towerProducer"]) {
     const hops = allPresent(ARTIFACT);
     hops[name] = present(OTHER);
-    const refused = bindExactArtifactDigest(hops);
+    const refused = bindChecked(hops);
     assert.equal(refused.kind, "REFUSED");
     assert.equal(refused.code, "ARTIFACT_DIGEST_MISMATCH");
   }
@@ -143,7 +153,7 @@ test("missing hop refuses", () => {
   for (const name of ["slideAdmission", "wamrLoaded", "vokReceipt", "lythProducer", "towerProducer"]) {
     const hops = allPresent(ARTIFACT);
     hops[name] = { kind: "missing" };
-    const refused = bindExactArtifactDigest(hops);
+    const refused = bindChecked(hops);
     assert.equal(refused.kind, "REFUSED");
     assert.equal(refused.code, "ARTIFACT_DIGEST_MISSING");
   }
@@ -152,7 +162,7 @@ test("missing hop refuses", () => {
 test("unknown hop refuses", () => {
   const hops = allPresent(ARTIFACT);
   hops.towerProducer = { kind: "unknown", reason: "Tower package field not located" };
-  const refused = bindExactArtifactDigest(hops);
+  const refused = bindChecked(hops);
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_UNKNOWN");
 });
@@ -169,7 +179,7 @@ test("wrong-length and malformed digest refuse", () => {
   for (const digest of malformed) {
     const hops = allPresent(ARTIFACT);
     hops.vokReceipt = present(digest);
-    const refused = bindExactArtifactDigest(hops);
+    const refused = bindChecked(hops);
     assert.equal(refused.kind, "REFUSED");
     assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
   }
@@ -181,7 +191,7 @@ test("wrong-length and malformed digest refuse", () => {
   assert.equal(empty.code, "ARTIFACT_DIGEST_MISSING");
 });
 
-test("F1 flipping digest accessor refuses and never returns the unvalidated value", () => {
+test("F1 hops-key accessor refuses before inner digest getter", () => {
   let reads = 0;
   const hops = allPresent(ARTIFACT);
   Object.defineProperty(hops, "wamrLoaded", {
@@ -197,27 +207,51 @@ test("F1 flipping digest accessor refuses and never returns the unvalidated valu
       };
     },
   });
-  const refused = bindExactArtifactDigest(hops);
+  const refused = bindChecked(hops);
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
   assert.notEqual(refused.kind, "BOUND");
 });
 
 test("F1 own-data hop with flipping digest accessor refuses", () => {
+  let n = 0;
   const hops = allPresent(ARTIFACT);
   hops.wamrLoaded = {
     kind: "present",
     get digest() {
-      return ARTIFACT;
+      n += 1;
+      return n === 1 ? ARTIFACT : "evil-not-a-digest";
     },
   };
-  const refused = bindExactArtifactDigest(hops);
+  const refused = bindChecked(hops);
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
 });
 
+test("F1 shared String object digest on all hops refuses MALFORMED", () => {
+  const boxed = new String(ARTIFACT);
+  const refused = bindChecked(allPresent(boxed));
+  assert.equal(refused.kind, "REFUSED");
+  assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
+  assert.equal(isArtifactDigest(boxed), false);
+});
+
+test("F1 shared stateful toString digest on all hops refuses MALFORMED", () => {
+  let n = 0;
+  const stateful = {
+    toString() {
+      n += 1;
+      return n <= 5 ? ARTIFACT : "evil-not-a-digest";
+    },
+  };
+  const refused = bindChecked(allPresent(stateful));
+  assert.equal(refused.kind, "REFUSED");
+  assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
+  assert.equal(isArtifactDigest(stateful), false);
+});
+
 test("F1 Proxy hops object refuses", () => {
-  const refused = bindExactArtifactDigest(new Proxy(allPresent(ARTIFACT), {}));
+  const refused = bindChecked(new Proxy(allPresent(ARTIFACT), {}));
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MISSING");
 });
@@ -225,7 +259,7 @@ test("F1 Proxy hops object refuses", () => {
 test("F1 Proxy hop nested in a plain hops object refuses", () => {
   const hops = allPresent(ARTIFACT);
   hops.wamrLoaded = new Proxy(present(ARTIFACT), {});
-  const refused = bindExactArtifactDigest(hops);
+  const refused = bindChecked(hops);
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
 });
@@ -239,7 +273,7 @@ test("F1 class-instance hop refuses", () => {
   }
   const hops = allPresent(ARTIFACT);
   hops.wamrLoaded = new PresentHop();
-  const refused = bindExactArtifactDigest(hops);
+  const refused = bindChecked(hops);
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
 });
@@ -255,20 +289,20 @@ test("F2 null primitive and array hops refuse without throwing", () => {
   hopsArr.wamrLoaded = [present(ARTIFACT)];
   const cases = [hopsNull, hopsUndef, hopsPrim, hopsArr];
   for (const hops of cases) {
-    const refused = bindExactArtifactDigest(hops);
+    const refused = bindChecked(hops);
     assert.equal(refused.kind, "REFUSED");
     assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
   }
 });
 
 test("F3 M5 unknown hop kind refuses (default arm must not admit)", () => {
-  const refused = bindExactArtifactDigest(allBogusKind(ARTIFACT));
+  const refused = bindChecked(allBogusKind(ARTIFACT));
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_UNKNOWN");
 });
 
 test("F3 M6 omitted hop key refuses MISSING without throwing", () => {
-  const refused = bindExactArtifactDigest(omitTower(ARTIFACT));
+  const refused = bindChecked(omitTower(ARTIFACT));
   assert.equal(refused.kind, "REFUSED");
   assert.equal(refused.code, "ARTIFACT_DIGEST_MISSING");
 });
@@ -276,14 +310,14 @@ test("F3 M6 omitted hop key refuses MISSING without throwing", () => {
 test("F3 M9 null array and primitive hops objects refuse without throwing", () => {
   const cases = [null, undefined, 0, "hops", [], allPresent(ARTIFACT).slideAdmission];
   for (const hops of cases) {
-    const refused = bindExactArtifactDigest(hops);
+    const refused = bindChecked(hops);
     assert.equal(refused.kind, "REFUSED");
     assert.equal(refused.code, "ARTIFACT_DIGEST_MISSING");
   }
 });
 
 test("mutant N2: dropping a hop mismatch check goes red in a temp tree then restores green", async () => {
-  const before = triPipeSrcPorcelain();
+  const before = srcDistDigests();
   const originalText = srcText();
   const mutated = originalText.replace(
     "parsed.digest !== expected.digest",
@@ -295,14 +329,14 @@ test("mutant N2: dropping a hop mismatch check goes red in a temp tree then rest
   const { bindExactArtifactDigest: mutatedBind } = await bindFromMutatedSource(mutated);
   const red = mutatedBind(hops);
   assert.equal(red.kind, "BOUND", "mutant must go red by accepting a mismatch");
-  assert.equal(triPipeSrcPorcelain(), before, "killed or finished mutant must leave src/dist clean");
-  const green = bindExactArtifactDigest(hops);
+  assert.deepEqual(srcDistDigests(), before, "killed or finished mutant must leave src/dist clean");
+  const green = bindChecked(hops);
   assert.equal(green.kind, "REFUSED");
   assert.equal(green.code, "ARTIFACT_DIGEST_MISMATCH");
 });
 
 test("mutant F3 M5: default arm returning ok goes red in a temp tree", async () => {
-  const before = triPipeSrcPorcelain();
+  const before = srcDistDigests();
   const originalText = srcText();
   const mutated = originalText.replace(
     "return refuseUnknownHopKind();",
@@ -312,14 +346,14 @@ test("mutant F3 M5: default arm returning ok goes red in a temp tree", async () 
   const { bindExactArtifactDigest: mutatedBind } = await bindFromMutatedSource(mutated);
   const red = mutatedBind(allBogusKind(ARTIFACT));
   assert.equal(red.kind, "BOUND", "M5 must go red by accepting an unknown hop kind");
-  assert.equal(triPipeSrcPorcelain(), before);
-  const green = bindExactArtifactDigest(allBogusKind(ARTIFACT));
+  assert.deepEqual(srcDistDigests(), before);
+  const green = bindChecked(allBogusKind(ARTIFACT));
   assert.equal(green.kind, "REFUSED");
   assert.equal(green.code, "ARTIFACT_DIGEST_UNKNOWN");
 });
 
 test("mutant F3 M6: dropping the omitted-key absent arm goes red in a temp tree", async () => {
-  const before = triPipeSrcPorcelain();
+  const before = srcDistDigests();
   const originalText = srcText();
   const mutated = originalText.replace(
     '      case "absent":\n        return { kind: "REFUSED", code: "ARTIFACT_DIGEST_MISSING" };\n',
@@ -329,14 +363,14 @@ test("mutant F3 M6: dropping the omitted-key absent arm goes red in a temp tree"
   const { bindExactArtifactDigest: mutatedBind } = await bindFromMutatedSource(mutated);
   const red = mutatedBind(omitTower(ARTIFACT));
   assert.notEqual(red.code, "ARTIFACT_DIGEST_MISSING", "M6 must go red by losing the omitted-key MISSING refusal");
-  assert.equal(triPipeSrcPorcelain(), before);
-  const green = bindExactArtifactDigest(omitTower(ARTIFACT));
+  assert.deepEqual(srcDistDigests(), before);
+  const green = bindChecked(omitTower(ARTIFACT));
   assert.equal(green.kind, "REFUSED");
   assert.equal(green.code, "ARTIFACT_DIGEST_MISSING");
 });
 
 test("mutant F3 M9: dropping the hops-object guard goes red in a temp tree", async () => {
-  const before = triPipeSrcPorcelain();
+  const before = srcDistDigests();
   const originalText = srcText();
   const mutated = originalText.replace(
     "if (!isPlainDataObject(hops)) {\n    return refuseNonObjectHops();\n  }",
@@ -351,8 +385,85 @@ test("mutant F3 M9: dropping the hops-object guard goes red in a temp tree", asy
     threw = true;
   }
   assert.equal(threw, true, "M9 must go red by throwing on a null hops object");
-  assert.equal(triPipeSrcPorcelain(), before);
-  const green = bindExactArtifactDigest(null);
+  assert.deepEqual(srcDistDigests(), before);
+  const green = bindChecked(null);
   assert.equal(green.kind, "REFUSED");
   assert.equal(green.code, "ARTIFACT_DIGEST_MISSING");
+});
+
+test("F2 exported values cannot disable the binder regex", async () => {
+  const bindingUrl = `${pathToFileURL(join(pkgRoot, "dist", "artifact-digest-binding.js")).href}?exp=${Date.now()}`;
+  const binding = await import(bindingUrl);
+  assert.equal(Object.hasOwn(binding, "ARTIFACT_DIGEST_RE"), false);
+  assert.equal(typeof binding.isArtifactDigest, "function");
+  assert.equal(binding.isArtifactDigest(ARTIFACT), true);
+  assert.equal(binding.isArtifactDigest("evil"), false);
+  assert.equal(binding.isArtifactDigest(new String(ARTIFACT)), false);
+  for (const value of Object.values(binding)) {
+    if (value instanceof RegExp) {
+      try {
+        value.compile("^");
+      } catch {
+        /* compile may throw */
+      }
+      try {
+        value.test = () => true;
+      } catch {
+        /* assignment may throw */
+      }
+    } else if (value !== null && typeof value === "object") {
+      try {
+        Object.assign(value, { test: () => true });
+      } catch {
+        /* assignment may throw */
+      }
+    } else if (typeof value === "function") {
+      try {
+        value.test = () => true;
+      } catch {
+        /* assignment may throw */
+      }
+    }
+  }
+  const idx = await import(`${pathToFileURL(join(pkgRoot, "dist", "index.js")).href}?exp=${Date.now()}`);
+  assert.equal(Object.hasOwn(idx, "ARTIFACT_DIGEST_RE"), false);
+  const refused = bindChecked(allPresent("evil"));
+  assert.equal(refused.kind, "REFUSED");
+  assert.equal(refused.code, "ARTIFACT_DIGEST_MALFORMED");
+});
+
+test("mutant M14: dropping the digest string-type guard goes red in a temp tree", async () => {
+  const before = srcDistDigests();
+  const originalText = srcText();
+  const mutated = originalText.replace(
+    'digestSnap.kind !== "value" || typeof digestSnap.value !== "string"',
+    'digestSnap.kind !== "value" || false',
+  );
+  assert.notEqual(mutated, originalText, "M14 mutant is a real edit");
+  const { bindExactArtifactDigest: mutatedBind } = await bindFromMutatedSource(mutated);
+  const boxed = new String(ARTIFACT);
+  const redBoxed = mutatedBind(allPresent(boxed));
+  assert.equal(redBoxed.kind, "BOUND", "M14 must go red by accepting a String object digest");
+  assert.notEqual(typeof redBoxed.digest, "string");
+  let n = 0;
+  const stateful = {
+    toString() {
+      n += 1;
+      return n <= 5 ? ARTIFACT : "evil-not-a-digest";
+    },
+  };
+  const redState = mutatedBind(allPresent(stateful));
+  assert.equal(redState.kind, "BOUND", "M14 must go red by accepting a toString object");
+  assert.equal(String(redState.digest), "evil-not-a-digest");
+  assert.deepEqual(srcDistDigests(), before);
+  const greenBoxed = bindChecked(allPresent(new String(ARTIFACT)));
+  assert.equal(greenBoxed.kind, "REFUSED");
+  assert.equal(greenBoxed.code, "ARTIFACT_DIGEST_MALFORMED");
+  const greenState = bindChecked(allPresent({
+    toString() {
+      return ARTIFACT;
+    },
+  }));
+  assert.equal(greenState.kind, "REFUSED");
+  assert.equal(greenState.code, "ARTIFACT_DIGEST_MALFORMED");
 });
