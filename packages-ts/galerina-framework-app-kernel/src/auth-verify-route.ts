@@ -604,12 +604,20 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
               const _closed: never = raw;
               void _closed;
               leaseState = "delivery-unknown";
+              if (consumed === true) { /* AUTH_VERIFY_GUARD_UNLISTED_POST_COMMIT */
+                try {
+                  authority.markUnknown(leaseId);
+                } catch {
+                  // markUnknown is status-only
+                }
+                return respond("F-28", stage, "delivery_unknown", { receiptKind: "status-only", leave: true });
+              }
               return respond("F-30", stage, "unknown_outcome");
             }
           }
         } catch {
           leaseState = "delivery-unknown";
-          if (consumed === true) {
+          if (consumed === true) { /* AUTH_VERIFY_GUARD_STATEOF_THROW_POST_COMMIT */
             try {
               authority.markUnknown(leaseId);
             } catch {

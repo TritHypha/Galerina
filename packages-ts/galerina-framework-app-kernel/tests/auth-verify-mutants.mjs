@@ -213,6 +213,48 @@ try {
   expectRed("post-commit-authority-state-ignored", "consume-commits-then-throws is status-only never leftover released");
 
   restore();
+  mutate((s) => s.replace(
+    "              if (consumed === true) { /* AUTH_VERIFY_GUARD_UNLISTED_POST_COMMIT */",
+    "              if (false) { /* AUTH_VERIFY_GUARD_UNLISTED_POST_COMMIT */",
+  ));
+  expectRed("unlisted-state-post-commit-ignored", "unlisted stateOf after consume");
+
+  restore();
+  mutate((s) => s.replace(
+    "          if (consumed === true) { /* AUTH_VERIFY_GUARD_STATEOF_THROW_POST_COMMIT */",
+    "          if (false) { /* AUTH_VERIFY_GUARD_STATEOF_THROW_POST_COMMIT */",
+  ));
+  expectRed("stateof-throw-post-commit-ignored", "stateOf-throw after consume");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "    wipeOwned(chunks); /* AUTH_VERIFY_GUARD_ASSEMBLY_CATCH_WIPE */",
+    "    /* AUTH_VERIFY_GUARD_ASSEMBLY_CATCH_WIPE removed */",
+  ));
+  expectRed("assembly-catch-wipe-removed", "assembly catch wipes chunks");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "      intrinsicWipe(chunk.bytes); /* AUTH_VERIFY_GUARD_OK_WIPE */",
+    "      /* AUTH_VERIFY_GUARD_OK_WIPE removed */",
+  ));
+  expectRed("ok-path-chunk-wipe-removed", "wipes source chunks after ok copy");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "        raw = Reflect.apply(INTRINSIC_BYTE_LENGTH_GET.fn, chunk, []);",
+    "        raw = chunk.byteLength;",
+  ));
+  expectRed("length-via-instance-byteLength", "own-instance byteLength");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "  return { kind: \"captured\", fn: fill as (this: unknown, value: number) => unknown }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */",
+    "  return { kind: \"absent\" }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */",
+  ));
+  expectRed("fill-absent-refuses-reads", "wipes source chunks after ok copy");
+
+  restore();
   const green = spawnSync("node", ["--test", join(here, "auth-verify-route.test.mjs")], {
     cwd: pkg,
     encoding: "utf8",

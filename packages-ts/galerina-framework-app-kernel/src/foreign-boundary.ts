@@ -67,46 +67,116 @@ type OwnedChunk = {
   readonly length: number;
 };
 
+type IntrinsicGetter =
+  | { readonly kind: "captured"; readonly fn: (this: unknown) => unknown }
+  | { readonly kind: "absent" };
+
+type IntrinsicFill =
+  | { readonly kind: "captured"; readonly fn: (this: unknown, value: number) => unknown }
+  | { readonly kind: "absent" };
+
+type IntrinsicsState =
+  | { readonly kind: "ready" }
+  | { readonly kind: "absent" };
+
+type BodySlot =
+  | { readonly kind: "unallocated" }
+  | { readonly kind: "allocated"; readonly bytes: Uint8Array };
+
+type BufferKind =
+  | { readonly kind: "fixed" }
+  | { readonly kind: "forbidden" };
+
 const TYPED_ARRAY_PROTO: object = Object.getPrototypeOf(Uint8Array.prototype) as object;
 
-function captureByteLengthGetter(): ((this: unknown) => unknown) | null {
-  const desc = Object.getOwnPropertyDescriptor(TYPED_ARRAY_PROTO, "byteLength");
-  if (desc === undefined || typeof desc.get !== "function") {
-    return null;
+function captureByteLengthGetter(): IntrinsicGetter {
+  let desc: PropertyDescriptor | undefined;
+  try {
+    desc = Object.getOwnPropertyDescriptor(TYPED_ARRAY_PROTO, "byteLength");
+  } catch {
+    return { kind: "absent" };
   }
-  return desc.get;
+  if (desc === undefined) {
+    return { kind: "absent" };
+  }
+  if (typeof desc.get !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: desc.get };
 }
 
-function captureFill(): ((this: unknown, value: number) => unknown) | null {
+function captureFill(): IntrinsicFill {
   const fill = (TYPED_ARRAY_PROTO as { readonly fill?: unknown }).fill;
   if (typeof fill !== "function") {
-    return null;
+    return { kind: "absent" };
   }
-  return fill as (this: unknown, value: number) => unknown;
+  return { kind: "captured", fn: fill as (this: unknown, value: number) => unknown }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */
+}
+
+function resolveIntrinsics(lengthGet: IntrinsicGetter, fill: IntrinsicFill): IntrinsicsState {
+  switch (lengthGet.kind) {
+    case "captured":
+      break;
+    case "absent":
+      return { kind: "absent" };
+    default: {
+      const _closed: never = lengthGet;
+      void _closed;
+      return { kind: "absent" };
+    }
+  }
+  switch (fill.kind) {
+    case "captured":
+      return { kind: "ready" };
+    case "absent":
+      return { kind: "absent" };
+    default: {
+      const _closed: never = fill;
+      void _closed;
+      return { kind: "absent" };
+    }
+  }
 }
 
 const INTRINSIC_BYTE_LENGTH_GET = captureByteLengthGetter();
 const INTRINSIC_FILL = captureFill();
+const INTRINSICS = resolveIntrinsics(INTRINSIC_BYTE_LENGTH_GET, INTRINSIC_FILL);
 
 function intrinsicLength(chunk: object): ForeignNumberRead {
-  if (INTRINSIC_BYTE_LENGTH_GET === null) {
-    return { kind: "refused" };
+  switch (INTRINSIC_BYTE_LENGTH_GET.kind) {
+    case "captured": {
+      let raw: unknown;
+      try {
+        raw = Reflect.apply(INTRINSIC_BYTE_LENGTH_GET.fn, chunk, []);
+      } catch {
+        return { kind: "refused" };
+      }
+      return readForeignSafeInteger(raw);
+    }
+    case "absent":
+      return { kind: "refused" };
+    default: {
+      const _closed: never = INTRINSIC_BYTE_LENGTH_GET;
+      void _closed;
+      return { kind: "refused" };
+    }
   }
-  let raw: unknown;
-  try {
-    raw = Reflect.apply(INTRINSIC_BYTE_LENGTH_GET, chunk, []);
-  } catch {
-    return { kind: "refused" };
-  }
-  return readForeignSafeInteger(raw);
 }
 
 function intrinsicWipe(chunk: object): void {
-  if (INTRINSIC_FILL === null) {
-    return;
+  switch (INTRINSIC_FILL.kind) {
+    case "captured":
+      break;
+    case "absent":
+      return;
+    default: {
+      const _closed: never = INTRINSIC_FILL;
+      void _closed;
+      return;
+    }
   }
   try {
-    Reflect.apply(INTRINSIC_FILL, chunk, [0]);
+    Reflect.apply(INTRINSIC_FILL.fn, chunk, [0]);
   } catch {
     // wipe is best-effort
   }
@@ -122,6 +192,27 @@ function isExactUint8Array(value: unknown): value is Uint8Array {
   return value instanceof Uint8Array && Object.getPrototypeOf(value) === Uint8Array.prototype;
 }
 
+function classifyBuffer(chunk: Uint8Array): BufferKind {
+  const buf = chunk.buffer;
+  if (typeof SharedArrayBuffer === "function") {
+    try {
+      if (buf instanceof SharedArrayBuffer) {
+        return { kind: "forbidden" };
+      }
+    } catch {
+      return { kind: "forbidden" };
+    }
+  }
+  const flag = (buf as { readonly resizable?: unknown }).resizable;
+  if (flag === true) {
+    return { kind: "forbidden" };
+  }
+  if (flag === false || flag === undefined) {
+    return { kind: "fixed" };
+  }
+  return { kind: "forbidden" };
+}
+
 async function cancelReader(reader: CappedStreamReader): Promise<void> {
   try {
     await reader.cancel();
@@ -134,7 +225,8 @@ async function cancelReader(reader: CappedStreamReader): Promise<void> {
  * Read a byte stream up to `cap`. Every already-read chunk and the over-cap or
  * refused chunk is zeroed on too_large, refused, and catch exits. Length is
  * read once through the captured TypedArray byteLength getter. Wipe uses the
- * captured fill intrinsic. Assembly never rejects.
+ * captured fill intrinsic. Assembly never rejects. Missing either intrinsic
+ * refuses every read. Resizable and SharedArrayBuffer chunks are refused.
  */
 export async function readBodyCapped(
   stream: CappedStream | null,
@@ -143,6 +235,17 @@ export async function readBodyCapped(
   const capRead = readForeignSafeInteger(cap);
   if (capRead.kind !== "ok" || capRead.value < 0) {
     return { kind: "refused" };
+  }
+  switch (INTRINSICS.kind) {
+    case "ready":
+      break;
+    case "absent":
+      return { kind: "refused" };
+    default: {
+      const _closed: never = INTRINSICS;
+      void _closed;
+      return { kind: "refused" };
+    }
   }
   if (stream === null) {
     return { kind: "ok", body: new Uint8Array(0) };
@@ -174,6 +277,24 @@ export async function readBodyCapped(
         wipeOwned(chunks);
         await cancelReader(reader);
         return { kind: "refused" };
+      }
+      const bufKind = classifyBuffer(value);
+      switch (bufKind.kind) {
+        case "fixed":
+          break;
+        case "forbidden":
+          intrinsicWipe(value);
+          wipeOwned(chunks);
+          await cancelReader(reader);
+          return { kind: "refused" };
+        default: {
+          const _closed: never = bufKind;
+          void _closed;
+          intrinsicWipe(value);
+          wipeOwned(chunks);
+          await cancelReader(reader);
+          return { kind: "refused" };
+        }
       }
       const n = intrinsicLength(value);
       switch (n.kind) {
@@ -221,20 +342,30 @@ export async function readBodyCapped(
     await cancelReader(reader);
     return { kind: "refused" };
   }
-  let body: Uint8Array | undefined;
+  let body: BodySlot = { kind: "unallocated" };
   try {
-    body = new Uint8Array(total);
+    const allocated = new Uint8Array(total);
+    body = { kind: "allocated", bytes: allocated };
     let offset = 0;
     for (const chunk of chunks) {
-      body.set(chunk.bytes, offset);
+      allocated.set(chunk.bytes, offset);
       offset += chunk.length;
-      intrinsicWipe(chunk.bytes);
+      intrinsicWipe(chunk.bytes); /* AUTH_VERIFY_GUARD_OK_WIPE */
     }
-    return { kind: "ok", body };
+    return { kind: "ok", body: allocated };
   } catch {
-    wipeOwned(chunks);
-    if (body !== undefined) {
-      intrinsicWipe(body);
+    wipeOwned(chunks); /* AUTH_VERIFY_GUARD_ASSEMBLY_CATCH_WIPE */
+    switch (body.kind) {
+      case "allocated":
+        intrinsicWipe(body.bytes);
+        break;
+      case "unallocated":
+        break;
+      default: {
+        const _closed: never = body;
+        void _closed;
+        break;
+      }
     }
     await cancelReader(reader);
     return { kind: "refused" };
