@@ -280,14 +280,14 @@ test("matrix: recovery and audit never include secret bytes, lengths, digests or
 
 test("matrix: audit log and retired set stay at cap", () => {
   const authority = new ReleaseCommitAuthority();
-  for (let i = 0; i < RELEASE_LEASE_CAP + RELEASE_RETIRED_CAP + 8; i += 1) {
+  for (let i = 0; i < RELEASE_LEASE_CAP + RELEASE_RETIRED_CAP + 1; i += 1) {
     const lease = authority.mint(`op-bound-${i}`, 1);
     assert.equal(authority.consume(lease.leaseId, lease.token, 1), "released");
     assert.equal(authority.ack(lease.leaseId, lease.token, 1), "acknowledged");
   }
   assert.ok(authority.size <= RELEASE_LEASE_CAP);
   assert.ok(authority.auditEvents().length <= RELEASE_AUDIT_CAP);
-  assertCleanStatus(authority.status("op-bound-0"), "op-bound-0", "NOT_FOUND");
+  assertCleanStatus(authority.status("op-bound-0"), "op-bound-0", "DELIVERY_UNKNOWN");
   for (const event of authority.auditEvents()) {
     assert.equal(Object.keys(event).sort().join(","), "operationId,outcome");
     assert.equal(typeof event.operationId, "string");

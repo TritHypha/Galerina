@@ -25,6 +25,15 @@ function errorOf(res) {
   return JSON.parse(dec.decode(res.body)).error;
 }
 
+function latestOperationId(authority) {
+  const events = authority.auditEvents();
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const id = events[i].operationId;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return "";
+}
+
 function dumpHasSecret(value) {
   const dumped = JSON.stringify(value);
   if (dumped.includes("SECRET")) return true;
@@ -151,7 +160,7 @@ for (const scenario of cases) {
       const requestId = `rq-${scenario.name}-${mode}`;
       const response = await harness.kernel.handle(req(requestId));
       await waitMacrotask();
-      const operationId = `${requestId}\u0000${1}`;
+      const operationId = latestOperationId(authority);
       const status = authority.status(operationId);
       const ack = authority.acknowledgeMinted(operationId);
       const bodyText = response.body === undefined ? "" : dec.decode(response.body);

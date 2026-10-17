@@ -677,9 +677,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const inFlight = new Map<string, number>();
   const rateWindows = new Map<string, { count: number; resetAt: number }>();
   const maxRateWindows = 10_000;
-  // requestId is caller-supplied and not proven unique. Bind each handle() to its own
-  // operation-wide release lease so a reused requestId cannot replay a prior disclosure.
-  let releaseSeq = 0;
+  // requestId is caller-supplied and not proven unique. Bind each handle() to an
+  // authority-issued lease id so two kernels sharing one releaseAuthority with the
+  // same requestId cannot mint the same lease.
 
   /** Internal pipeline result: the response plus the matched policy (for audit provenance). */
   interface PipelineOutcome {
@@ -899,8 +899,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let requestActive = false;
     const secretUnavailableResponse = (): GalerinaKernelResponse =>
       errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
-    releaseSeq += 1;
-    const releaseOperationId = `${req.requestId}\u0000${releaseSeq}`;
+    let releaseOperationId = "";
     const releaseSlot = (): void => {
       if (slotReleased) return;
       slotReleased = true;
@@ -910,6 +909,14 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     };
 
     try {
+      try {
+        releaseOperationId = secretGate.issueLeaseId();
+      } catch {
+        return pipelineOutcome(secretUnavailableResponse(), policy);
+      }
+      if (releaseOperationId.length === 0) {
+        return pipelineOutcome(secretUnavailableResponse(), policy);
+      }
       // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
       // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
       // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.

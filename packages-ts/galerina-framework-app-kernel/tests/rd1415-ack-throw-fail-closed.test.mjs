@@ -47,13 +47,24 @@ class SelectiveThrowAck extends ReleaseCommitAuthority {
   constructor() {
     super();
     this.throwFor = new Set();
+    this.throwAll = false;
+    this.throwIfNot = null;
   }
   acknowledgeMinted(operationId) {
-    if (this.throwFor.has(operationId)) {
+    if (this.throwAll || this.throwFor.has(operationId) || (this.throwIfNot !== null && operationId !== this.throwIfNot)) {
       throw new Error("forced-ack");
     }
     return super.acknowledgeMinted(operationId);
   }
+}
+
+function latestOperationId(authority) {
+  const events = authority.auditEvents();
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const id = events[i].operationId;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return "";
 }
 
 test("kernel: acknowledge throw is delivery-unknown and never acknowledged", async () => {
@@ -77,13 +88,14 @@ test("kernel: acknowledge throw is delivery-unknown and never acknowledged", asy
     releaseAuthority: authority,
     auditSink: new InMemoryAuditSink(),
   });
-  const operationId = `rq-ack\u0000${1}`;
-  authority.throwFor.add(operationId);
+  authority.throwAll = true;
   const response = await kernel.handle(req("rq-ack"));
+  const operationId = latestOperationId(authority);
   await waitMacrotask();
   assert.equal(response.status, 500);
   assert.equal(errorOf(response), "internal_error");
   assert.equal(authority.status(operationId).kind, "DELIVERY_UNKNOWN");
+  authority.throwAll = false;
   authority.throwFor.delete(operationId);
   assert.notEqual(authority.acknowledgeMinted(operationId), "acknowledged");
 });
@@ -120,11 +132,11 @@ test("kernel: acknowledge throw on A leaves concurrent B acknowledged", async ()
   });
   const pendingB = kernel.handle(req("rq-B"));
   await waitMacrotask();
-  const operationB = `rq-B\u0000${1}`;
+  const operationB = latestOperationId(authority);
   assert.equal(authority.status(operationB).kind, "RELEASED_UNACKED");
-  const operationA = `rq-A\u0000${2}`;
-  authority.throwFor.add(operationA);
+  authority.throwIfNot = operationB;
   const responseA = await kernel.handle(req("rq-A"));
+  const operationA = authority.auditEvents().map((e) => e.operationId).find((id) => id !== operationB) ?? "";
   await waitMacrotask();
   assert.equal(responseA.status, 500);
   assert.equal(authority.status(operationA).kind, "DELIVERY_UNKNOWN");
