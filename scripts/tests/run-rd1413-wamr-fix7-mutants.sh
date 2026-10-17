@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
-# Wipe-removed and seal-removed mutants against the shipped load-path probe.
+# Wipe-removed and seal-removed mutants against copies of the host (N5).
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
 repo_root="$(cd -- "$script_dir/../.." && pwd)"
-host_c="$repo_root/packages-ts/galerina-core-runtime/native/wamr-host/src/wamr_secrets_gateway_host.c"
-verdict_c="$repo_root/packages-ts/galerina-core-runtime/native/wamr-host/src/wamr_vok_verdict.c"
+real_src="$repo_root/packages-ts/galerina-core-runtime/native/wamr-host/src"
 work="$(mktemp -d "${TMPDIR:-/tmp}/rd1413-fix7-mutants.XXXXXX")"
+src_copy="$work/src"
 
 cleanup() {
-  if [[ -f "$work/host.c.bak" ]]; then
-    cp "$work/host.c.bak" "$host_c"
-  fi
-  if [[ -f "$work/verdict.c.bak" ]]; then
-    cp "$work/verdict.c.bak" "$verdict_c"
-  fi
   rm -rf -- "$work"
 }
 trap cleanup EXIT
 
-cp "$host_c" "$work/host.c.bak"
-cp "$verdict_c" "$work/verdict.c.bak"
+refresh_copy() {
+  rm -rf -- "$src_copy"
+  mkdir -p -- "$src_copy"
+  cp -a -- "$real_src/." "$src_copy/"
+}
 
 run_probe() {
   local label="$1"
   local expect="$2"
   set +e
-  bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
+  WAMR_HOST_SRC="$src_copy" bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
   local rc=$?
   set -e
   if [[ "$expect" == "red" && "$rc" -eq 0 ]]; then
@@ -40,9 +37,10 @@ run_probe() {
   printf '%s: %s rc=%s\n' "$label" "$expect" "$rc"
 }
 
+refresh_copy
 run_probe "baseline" "green"
 
-python3 - "$host_c" <<'PY'
+python3 - "$src_copy/wamr_secrets_gateway_host.c" <<'PY'
 from pathlib import Path
 import sys
 path = Path(sys.argv[1])
@@ -53,9 +51,9 @@ if old not in text:
 path.write_text(text.replace(old, ""), encoding="utf-8", newline="\n")
 PY
 run_probe "wipe-removed" "red"
-cp "$work/host.c.bak" "$host_c"
 
-python3 - "$verdict_c" <<'PY'
+refresh_copy
+python3 - "$src_copy/wamr_vok_verdict.c" <<'PY'
 from pathlib import Path
 import sys
 path = Path(sys.argv[1])
@@ -73,7 +71,7 @@ if old not in text:
 path.write_text(text.replace(old, new), encoding="utf-8", newline="\n")
 PY
 run_probe "seal-removed" "red"
-cp "$work/verdict.c.bak" "$verdict_c"
 
+refresh_copy
 run_probe "restored" "green"
 echo "=== fix7 mutants wipe-removed and seal-removed red then restored green ==="

@@ -15,6 +15,9 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <linux/close_range.h>
+#endif
 
 #define WAMR_VOK_MAX_FILE 4096
 #define WAMR_VOK_MAX_LINE 256
@@ -110,13 +113,75 @@ static int valid_build_point(const char *value)
     }
     for (i = 4; i < 44; i++) {
         char ch = value[i];
-        int hex = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') ||
-                  (ch >= 'A' && ch <= 'F');
+        int hex = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
         if (!hex) {
             return 0;
         }
     }
     return 1;
+}
+
+static int parse_canonical_ull(const char *value, unsigned long long *out)
+{
+    const char *p;
+    char *term = NULL;
+    unsigned long long acc;
+    char canonical[32];
+    int n;
+    int saved;
+
+    if (value == NULL || value[0] == '\0' || out == NULL) {
+        return 0;
+    }
+    if (value[0] == '+' || value[0] == '-' || value[0] == ' ' ||
+        value[0] == '\t') {
+        return 0;
+    }
+    if (value[0] == '0' && value[1] != '\0') {
+        return 0;
+    }
+    for (p = value; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return 0;
+        }
+    }
+    saved = errno;
+    errno = 0;
+    acc = strtoull(value, &term, 10);
+    if (errno == ERANGE || term == value || term == NULL || *term != '\0') {
+        errno = saved;
+        return 0;
+    }
+    errno = saved;
+    n = snprintf(canonical, sizeof(canonical), "%llu", acc);
+    if (n <= 0 || (size_t)n >= sizeof(canonical) ||
+        strcmp(canonical, value) != 0) {
+        return 0;
+    }
+    *out = acc;
+    return 1;
+}
+
+static void format_sha256_prefaced(const uint8_t digest[32], char out[72])
+{
+    memcpy(out, "sha256:", 7);
+    hex32(digest, out + 7);
+}
+
+static int canonical_line_ok(const char *original, const char *key,
+                             const char *canonical_value)
+{
+    char rebuilt[WAMR_VOK_MAX_LINE];
+    int n;
+
+    if (original == NULL || key == NULL || canonical_value == NULL) {
+        return 0;
+    }
+    n = snprintf(rebuilt, sizeof(rebuilt), "%s=%s", key, canonical_value);
+    if (n <= 0 || (size_t)n >= sizeof(rebuilt)) {
+        return 0;
+    }
+    return strcmp(original, rebuilt) == 0;
 }
 
 void wamr_vok_framed_digest(const char *domain, const uint8_t *payload,
@@ -303,8 +368,16 @@ static int parse_envelope_text(const char *body, size_t len,
     while (cursor < end) {
         const char *key;
         const char *value;
-        if (!take_line(&cursor, end, line, sizeof(line)) ||
-            !split_kv(line, &key, &value)) {
+        char original[WAMR_VOK_MAX_LINE];
+        char digest_text[72];
+        char epoch_text[32];
+        unsigned long long epoch;
+        int epoch_n;
+        if (!take_line(&cursor, end, line, sizeof(line))) {
+            return WAMR_VOK_BIND_REFUSED;
+        }
+        memcpy(original, line, strlen(line) + 1);
+        if (!split_kv(line, &key, &value)) {
             return WAMR_VOK_BIND_REFUSED;
         }
         if (strcmp(key, "abi") == 0) {
@@ -312,6 +385,9 @@ static int parse_envelope_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->abi, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "abi", out->abi)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 1u;
         } else if (strcmp(key, "buildPoint") == 0) {
             if ((seen & 2u) != 0 || strlen(value) >= sizeof(out->build_point) ||
@@ -319,10 +395,17 @@ static int parse_envelope_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->build_point, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "buildPoint", out->build_point)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 2u;
         } else if (strcmp(key, "capabilityDigest") == 0) {
             if ((seen & 4u) != 0 ||
                 !parse_sha256_prefaced(value, out->capability_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->capability_digest, digest_text);
+            if (!canonical_line_ok(original, "capabilityDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 4u;
@@ -331,21 +414,29 @@ static int parse_envelope_text(const char *body, size_t len,
                 !parse_sha256_prefaced(value, out->component_digest)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
+            format_sha256_prefaced(out->component_digest, digest_text);
+            if (!canonical_line_ok(original, "componentDigest", digest_text)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 8u;
         } else if (strcmp(key, "dependencyClosureDigest") == 0) {
             if ((seen & 16u) != 0 ||
                 !parse_sha256_prefaced(value, out->dependency_digest)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
-            seen |= 16u;
-        } else if (strcmp(key, "epoch") == 0) {
-            char *term = NULL;
-            unsigned long long epoch;
-            if ((seen & 32u) != 0) {
+            format_sha256_prefaced(out->dependency_digest, digest_text);
+            if (!canonical_line_ok(original, "dependencyClosureDigest",
+                                   digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
-            epoch = strtoull(value, &term, 10);
-            if (term == value || *term != '\0') {
+            seen |= 16u;
+        } else if (strcmp(key, "epoch") == 0) {
+            if ((seen & 32u) != 0 || !parse_canonical_ull(value, &epoch)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            epoch_n = snprintf(epoch_text, sizeof(epoch_text), "%llu", epoch);
+            if (epoch_n <= 0 || (size_t)epoch_n >= sizeof(epoch_text) ||
+                !canonical_line_ok(original, "epoch", epoch_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             out->epoch = epoch;
@@ -355,10 +446,18 @@ static int parse_envelope_text(const char *body, size_t len,
                 !parse_sha256_prefaced(value, out->evidence_digest)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
+            format_sha256_prefaced(out->evidence_digest, digest_text);
+            if (!canonical_line_ok(original, "evidenceSetDigest", digest_text)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 64u;
         } else if (strcmp(key, "policyDigest") == 0) {
             if ((seen & 128u) != 0 ||
                 !parse_sha256_prefaced(value, out->policy_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->policy_digest, digest_text);
+            if (!canonical_line_ok(original, "policyDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 128u;
@@ -368,16 +467,27 @@ static int parse_envelope_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->schema_version, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "schemaVersion",
+                                   out->schema_version)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 256u;
         } else if (strcmp(key, "target") == 0) {
             if ((seen & 512u) != 0 || strlen(value) >= sizeof(out->target)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->target, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "target", out->target)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 512u;
         } else if (strcmp(key, "envelopeDigest") == 0) {
             if ((seen & 1024u) != 0 ||
                 !parse_sha256_prefaced(value, out->envelope_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->envelope_digest, digest_text);
+            if (!canonical_line_ok(original, "envelopeDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 1024u;
@@ -411,8 +521,13 @@ static int parse_seal_text(const char *body, size_t len,
     while (cursor < end) {
         const char *key;
         const char *value;
-        if (!take_line(&cursor, end, line, sizeof(line)) ||
-            !split_kv(line, &key, &value)) {
+        char original[WAMR_VOK_MAX_LINE];
+        char digest_text[72];
+        if (!take_line(&cursor, end, line, sizeof(line))) {
+            return WAMR_VOK_BIND_REFUSED;
+        }
+        memcpy(original, line, strlen(line) + 1);
+        if (!split_kv(line, &key, &value)) {
             return WAMR_VOK_BIND_REFUSED;
         }
         if (strcmp(key, "authentication") == 0) {
@@ -421,6 +536,10 @@ static int parse_seal_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->authentication, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "authentication",
+                                   out->authentication)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 1u;
         } else if (strcmp(key, "authorizing") == 0) {
             if ((seen & 2u) != 0) {
@@ -433,10 +552,18 @@ static int parse_seal_text(const char *body, size_t len,
             } else {
                 return WAMR_VOK_BIND_REFUSED;
             }
+            if (!canonical_line_ok(original, "authorizing",
+                                   out->authorizing ? "true" : "false")) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 2u;
         } else if (strcmp(key, "envelopeDigest") == 0) {
             if ((seen & 4u) != 0 ||
                 !parse_sha256_prefaced(value, out->envelope_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->envelope_digest, digest_text);
+            if (!canonical_line_ok(original, "envelopeDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 4u;
@@ -445,10 +572,17 @@ static int parse_seal_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->kind, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "kind", out->kind)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 8u;
         } else if (strcmp(key, "profileDigest") == 0) {
             if ((seen & 16u) != 0 ||
                 !parse_sha256_prefaced(value, out->profile_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->profile_digest, digest_text);
+            if (!canonical_line_ok(original, "profileDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 16u;
@@ -463,6 +597,10 @@ static int parse_seal_text(const char *body, size_t len,
             } else {
                 return WAMR_VOK_BIND_REFUSED;
             }
+            if (!canonical_line_ok(original, "replayable",
+                                   out->replayable ? "true" : "false")) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 32u;
         } else if (strcmp(key, "schemaVersion") == 0) {
             if ((seen & 64u) != 0 ||
@@ -470,6 +608,10 @@ static int parse_seal_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->schema_version, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "schemaVersion",
+                                   out->schema_version)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 64u;
         } else if (strcmp(key, "terminalOutcome") == 0) {
             if ((seen & 128u) != 0 ||
@@ -477,10 +619,18 @@ static int parse_seal_text(const char *body, size_t len,
                 return WAMR_VOK_BIND_REFUSED;
             }
             memcpy(out->terminal_outcome, value, strlen(value) + 1);
+            if (!canonical_line_ok(original, "terminalOutcome",
+                                   out->terminal_outcome)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
             seen |= 128u;
         } else if (strcmp(key, "sealDigest") == 0) {
             if ((seen & 256u) != 0 ||
                 !parse_sha256_prefaced(value, out->seal_digest)) {
+                return WAMR_VOK_BIND_REFUSED;
+            }
+            format_sha256_prefaced(out->seal_digest, digest_text);
+            if (!canonical_line_ok(original, "sealDigest", digest_text)) {
                 return WAMR_VOK_BIND_REFUSED;
             }
             seen |= 256u;
@@ -618,8 +768,7 @@ static int parse_len_line(const char **cursor, const char *end,
 {
     const char *line_end;
     size_t label_len = strlen(label);
-    char *term = NULL;
-    unsigned long value;
+    unsigned long long value = 0;
     size_t n;
 
     if ((size_t)(end - *cursor) < label_len ||
@@ -639,8 +788,7 @@ static int parse_len_line(const char **cursor, const char *end,
         char tmp[16];
         memcpy(tmp, *cursor, n);
         tmp[n] = '\0';
-        value = strtoul(tmp, &term, 10);
-        if (term == tmp || *term != '\0' || value == 0 ||
+        if (!parse_canonical_ull(tmp, &value) || value == 0 ||
             value > WAMR_VOK_MAX_FILE) {
             return 0;
         }
@@ -792,6 +940,72 @@ static int remaining_ms(struct timespec start)
     return (int)(WAMR_VOK_SPAWN_TIMEOUT_MS - elapsed);
 }
 
+static int set_nonblock(int fd)
+{
+    int flags = fcntl(fd, F_GETFL);
+    if (flags < 0) {
+        return 0;
+    }
+    return fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0;
+}
+
+static int block_sigpipe(sigset_t *old_mask)
+{
+    sigset_t block;
+
+    if (old_mask == NULL) {
+        return 0;
+    }
+    if (sigemptyset(&block) != 0 || sigaddset(&block, SIGPIPE) != 0) {
+        return 0;
+    }
+    if (sigprocmask(SIG_BLOCK, &block, old_mask) != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static void drain_and_restore_sigpipe(const sigset_t *old_mask)
+{
+    sigset_t pipe_only;
+    sigset_t pending;
+    struct timespec zero;
+
+    zero.tv_sec = 0;
+    zero.tv_nsec = 0;
+    if (sigemptyset(&pipe_only) == 0 && sigaddset(&pipe_only, SIGPIPE) == 0 &&
+        sigpending(&pending) == 0 && sigismember(&pending, SIGPIPE) == 1) {
+        (void)sigtimedwait(&pipe_only, NULL, &zero);
+    }
+    if (old_mask != NULL) {
+        (void)sigprocmask(SIG_SETMASK, old_mask, NULL);
+    }
+}
+
+static void close_extra_child_fds(int keep_fd)
+{
+    int fd;
+    long open_max;
+
+    if (keep_fd < 3) {
+        _exit(127);
+    }
+    if (keep_fd > 3) {
+        (void)close_range(3u, (unsigned int)keep_fd - 1u, 0u);
+    }
+    (void)close_range((unsigned int)keep_fd + 1u, ~0U, 0u);
+
+    open_max = sysconf(_SC_OPEN_MAX);
+    if (open_max <= 3 || open_max > 1048576L) {
+        open_max = 1024L;
+    }
+    for (fd = 3; fd < (int)open_max; fd++) {
+        if (fd != keep_fd) {
+            (void)close(fd);
+        }
+    }
+}
+
 int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
                             size_t size, wamr_vok_envelope_t *envelope,
                             wamr_vok_wax_seal_t *seal)
@@ -816,7 +1030,9 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     int stderr_open = 1;
     int status = 0;
     int rc = WAMR_VOK_BIND_REFUSED;
+    int sigpipe_blocked = 0;
     struct timespec start;
+    sigset_t old_mask;
     char *argv_child[3];
 
     if (envelope != NULL) {
@@ -877,8 +1093,10 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
         return WAMR_VOK_BIND_REFUSED;
     }
     if (child == 0) {
-        int flags;
         char *empty_envp[1];
+        if (mem_fd < 3) {
+            _exit(127);
+        }
         if (dup2(in_pipe[0], STDIN_FILENO) < 0 ||
             dup2(out_pipe[1], STDOUT_FILENO) < 0 ||
             dup2(err_pipe[1], STDERR_FILENO) < 0) {
@@ -890,10 +1108,9 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
         close_fd(&out_pipe[1]);
         close_fd(&err_pipe[0]);
         close_fd(&err_pipe[1]);
-        flags = fcntl(mem_fd, F_GETFD);
-        if (flags >= 0) {
-            (void)fcntl(mem_fd, F_SETFD, flags & ~FD_CLOEXEC);
-        }
+        /* Keep CLOEXEC on mem_fd; fexecve of an ELF uses the fd then
+         * the flag drops it from the new image. close_range extra fds. */
+        close_extra_child_fds(mem_fd);
         argv_child[0] = (char *)verifier_path;
         argv_child[1] = "--stdin";
         argv_child[2] = NULL;
@@ -905,7 +1122,28 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     close_fd(&out_pipe[1]);
     close_fd(&err_pipe[1]);
     close_fd(&mem_fd);
+    if (!set_nonblock(in_pipe[1]) || !set_nonblock(out_pipe[0]) ||
+        !set_nonblock(err_pipe[0])) {
+        (void)kill(child, SIGKILL);
+        (void)waitpid(child, &status, 0);
+        close_fd(&in_pipe[1]);
+        close_fd(&out_pipe[0]);
+        close_fd(&err_pipe[0]);
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    if (!block_sigpipe(&old_mask)) {
+        (void)kill(child, SIGKILL);
+        (void)waitpid(child, &status, 0);
+        close_fd(&in_pipe[1]);
+        close_fd(&out_pipe[0]);
+        close_fd(&err_pipe[0]);
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    sigpipe_blocked = 1;
     if (clock_gettime(CLOCK_MONOTONIC, &start) != 0) {
+        if (sigpipe_blocked) {
+            drain_and_restore_sigpipe(&old_mask);
+        }
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);
         close_fd(&in_pipe[1]);
@@ -958,8 +1196,13 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
             (void)kill(child, SIGKILL);
             break;
         }
-        if (stdin_ix >= 0 && (fds[stdin_ix].revents & (POLLOUT | POLLERR | POLLHUP))) {
-            if (fds[stdin_ix].revents & POLLOUT) {
+        if (stdin_ix >= 0 &&
+            (fds[stdin_ix].revents &
+             (POLLOUT | POLLERR | POLLHUP | POLLNVAL))) {
+            if (fds[stdin_ix].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+                close_fd(&in_pipe[1]);
+                stdin_open = 0;
+            } else {
                 ssize_t n = write(in_pipe[1], bytes + written, size - written);
                 if (n > 0) {
                     written += (size_t)n;
@@ -967,13 +1210,13 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
                         close_fd(&in_pipe[1]);
                         stdin_open = 0;
                     }
-                } else if (n < 0 && errno != EINTR && errno != EAGAIN) {
+                } else if (n < 0 && (errno == EINTR || errno == EAGAIN ||
+                                     errno == EWOULDBLOCK)) {
+                    /* retry after poll; deadline is checked every iteration */
+                } else {
                     close_fd(&in_pipe[1]);
                     stdin_open = 0;
                 }
-            } else {
-                close_fd(&in_pipe[1]);
-                stdin_open = 0;
             }
         }
         if (stdout_ix >= 0 && (fds[stdout_ix].revents & (POLLIN | POLLHUP | POLLERR))) {
@@ -1035,6 +1278,10 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     close_fd(&in_pipe[1]);
     close_fd(&out_pipe[0]);
     close_fd(&err_pipe[0]);
+    if (sigpipe_blocked) {
+        drain_and_restore_sigpipe(&old_mask);
+        sigpipe_blocked = 0;
+    }
     if (waitpid(child, &status, 0) < 0) {
         return WAMR_VOK_BIND_REFUSED;
     }

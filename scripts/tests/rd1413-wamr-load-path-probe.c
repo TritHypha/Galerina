@@ -508,6 +508,7 @@ static int check_load_for_authority(const char *path,
 
     poison_loaded(&loaded);
     rd1413_load_path_reset();
+    rd1413_track_wipe_size = (size_t)size;
     result = wamr_secrets_gateway_load_for_authority(
         bytes, size, evil_verifier, &loaded, diagnostic, sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_VERDICT_REFUSED ||
@@ -516,6 +517,11 @@ static int check_load_for_authority(const char *path,
         fprintf(stderr, "substituted verifier must VERDICT_REFUSED, got %s\n",
                 wamr_secrets_gateway_result_name(result));
         wamr_secrets_gateway_release(&loaded);
+        free(bytes);
+        free(original);
+        return 0;
+    }
+    if (!expect_snapshot_wiped("substituted verifier")) {
         free(bytes);
         free(original);
         return 0;
@@ -713,6 +719,7 @@ static int check_owned_mismatch(const char *path_a, const char *path_b,
     poison_loaded(&loaded);
     rd1413_load_path_reset();
     diagnostic[0] = '\0';
+    rd1413_track_wipe_size = (size_t)size_b;
     result = rd1413_test_load_owned_snapshot(snapshot, size_b, digest_a, &loaded,
                                              diagnostic, sizeof(diagnostic));
     if (result != WAMR_SECRETS_GATEWAY_ARTIFACT_MISMATCH ||
@@ -726,6 +733,11 @@ static int check_owned_mismatch(const char *path_a, const char *path_b,
                 rd1413_load_path_instantiate_calls,
                 rd1413_load_path_unload_calls);
         wamr_secrets_gateway_release(&loaded);
+        free(bytes_a);
+        free(bytes_b);
+        return 0;
+    }
+    if (!expect_snapshot_wiped(label)) {
         free(bytes_a);
         free(bytes_b);
         return 0;

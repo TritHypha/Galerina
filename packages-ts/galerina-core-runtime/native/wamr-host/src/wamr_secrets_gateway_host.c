@@ -354,6 +354,7 @@ static wamr_secrets_gateway_result_t load_owned_snapshot(
         }
         return WAMR_SECRETS_GATEWAY_INVALID_ARGUMENT;
     }
+    out->owned_snapshot_size = (size_t)size;
     if (expected_digest == NULL || digest_is_zero(expected_digest)) {
         set_code_diagnostic(diagnostic, diagnostic_capacity,
                             WAMR_SECRETS_GATEWAY_ARTIFACT_DIGEST_MISSING, NULL);

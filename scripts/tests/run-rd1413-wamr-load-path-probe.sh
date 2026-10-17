@@ -42,8 +42,9 @@ if [[ "$(wat2wasm --version)" != "1.0.36" || "$(gcc -dumpfullversion)" != "15.2.
 fi
 
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
-host_include="$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host/include"
-host_src="$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host/src"
+wamr_host_root="${WAMR_HOST_ROOT:-$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host}"
+host_include="${WAMR_HOST_INCLUDE:-$wamr_host_root/include}"
+host_src="${WAMR_HOST_SRC:-$wamr_host_root/src}"
 if [[ -z "${WAMR_VOK_VERIFIER:-}" ]]; then
   printf 'Set WAMR_VOK_VERIFIER to the hash-pinned vok-artifact-verifier binary\n' >&2
   exit 2
@@ -158,3 +159,79 @@ gcc -shared -fPIC -o "$temp_dir/evil-preload.so" \
   "$temp_dir" \
   "$verifier" \
   "$temp_dir/evil-verifier"
+
+# Pinned forging-stub suite (F1-F5). Compile stub, pin sha256 at harness
+# compile time, one MODE per forgery.
+if [[ ! -f "$script_dir/rd1413-wamr-forging-stub.c" ||
+      ! -f "$script_dir/rd1413-wamr-forging-harness.c" ]]; then
+  printf 'forging stub/harness missing\n' >&2
+  exit 2
+fi
+
+compile_stub() {
+  local mode="$1"
+  local out="$2"
+  gcc -std=c11 -Wall -Wextra -Werror -DMODE="$mode" \
+    -DWAMR_VOK_VERIFIER_SHA256_HEX=\"0000000000000000000000000000000000000000000000000000000000000001\" \
+    -I"$host_include" \
+    -I"$host_src" \
+    "$script_dir/rd1413-wamr-forging-stub.c" \
+    "$host_src/wamr_sha256.c" \
+    "$host_src/wamr_vok_verdict.c" \
+    -o "$out"
+}
+
+compile_harness() {
+  local pin="$1"
+  local out="$2"
+  gcc -std=c11 -Wall -Wextra -Werror \
+    -DWAMR_VOK_VERIFIER_SHA256_HEX=\"$pin\" \
+    -I"$host_include" \
+    -I"$host_src" \
+    "$script_dir/rd1413-wamr-forging-harness.c" \
+    "$host_src/wamr_sha256.c" \
+    "$host_src/wamr_vok_verdict.c" \
+    -o "$out"
+}
+
+run_forge() {
+  local label="$1"
+  local mode="$2"
+  local nbytes="$3"
+  local expected_rc="$4"
+  local max_ms="$5"
+  local fdcheck="$6"
+  local stub="$temp_dir/stub-$mode"
+  local harness="$temp_dir/harness-$mode"
+  local pin
+  compile_stub "$mode" "$stub"
+  pin="$(sha256sum "$stub" | cut -d ' ' -f1)"
+  if [[ "${#pin}" -ne 64 ]]; then
+    printf '%s: stub pin is not 64 hex characters\n' "$label" >&2
+    exit 2
+  fi
+  compile_harness "$pin" "$harness"
+  if ! "$harness" "$stub" "$nbytes" "$expected_rc" "$max_ms" "$fdcheck"; then
+    printf '%s: forging harness failed (mode=%s nbytes=%s expected_rc=%s)\n' \
+      "$label" "$mode" "$nbytes" "$expected_rc" >&2
+    exit 1
+  fi
+  printf 'PASS: %s mode=%s rc=%s nbytes=%s max_ms=%s fdcheck=%s\n' \
+    "$label" "$mode" "$expected_rc" "$nbytes" "$max_ms" "$fdcheck"
+}
+
+# BIND_OK=0 MISMATCH=3 REFUSED=4. Early-exit and non-reader use 1 MiB so
+# the pipe fills and SIGPIPE / blocking-write paths are reachable.
+run_forge "honest-4k" 3 4096 0 6000 0
+run_forge "honest-1m" 3 1048576 0 6000 0
+run_forge "early-exit" 0 1048576 4 6000 0
+run_forge "non-reader" 1 1048576 4 6000 0
+run_forge "fd-list" 2 4096 4 6000 1
+run_forge "epoch-plus" 4 4096 4 6000 0
+run_forge "authorizing-true" 5 4096 4 6000 0
+run_forge "flipped-envelope" 6 4096 4 6000 0
+run_forge "component-mismatch" 7 4096 3 6000 0
+run_forge "trailing-byte" 8 4096 4 6000 0
+run_forge "exit-status-3" 9 4096 4 6000 0
+run_forge "epoch-negative-wrap" 11 4096 4 6000 0
+printf 'PASS: forging-stub suite\n'
