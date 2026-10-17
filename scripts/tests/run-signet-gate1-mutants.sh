@@ -270,7 +270,7 @@ strip_tag "GATE1_GUARD_CLOCK" "$mutdir/.gate1-mutant-clock.mjs"
 run_suite "clock-guard-removed" "$mutdir/.gate1-mutant-clock.mjs" "red"
 
 strip_tag "GATE1_GUARD_SINK" "$mutdir/.gate1-mutant-sink.mjs"
-run_suite "sink-failed-outcome-removed" "$mutdir/.gate1-mutant-sink.mjs" "red"
+run_suite "sink-delivery-unknown-removed" "$mutdir/.gate1-mutant-sink.mjs" "red"
 
 replace_once "$src" "$mutdir/.gate1-mutant-exact-grant.mjs" \
   '    const recorded = exactRecord(value, GRANT_INPUT_KEYS, "GRANT");' \
@@ -339,6 +339,126 @@ if [[ "$n4_rc" -eq 0 ]]; then
   exit 1
 fi
 echo "PASS: mutant n4-take-removed is red (rc=$n4_rc)"
+cp "$work/main.rs.bak" "$rust_src"
+(cd "$verifier_dir" && cargo build --offline --locked --release)
+pin="$(sha256sum "$bin" | cut -d ' ' -f1)"
+export GATE1_VERIFIER="$bin"
+export GATE1_VERIFIER_SHA256="$pin"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "  if (!exactOrdinary(parsed, VERDICT_KEYS)) {"
+new = "  if (false && !exactOrdinary(parsed, VERDICT_KEYS)) {"
+if old not in text:
+    raise SystemExit("G10 exactOrdinary verdict keys not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "g10-verdict-keys-removed" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "  if (parsed.authorizing !== false) {"
+new = "  if (false && parsed.authorizing !== false) {"
+if old not in text:
+    raise SystemExit("G11 authorizing check not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "g11-authorizing-removed" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "    const result = spawnSync(verifiedHelperPath, [expectedSha256Hex], {"
+new = "    const result = spawnSync(helperPath, [expectedSha256Hex], {"
+if old not in text:
+    raise SystemExit("G12 verifiedHelperPath spawn not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "g12-spawn-caller-path" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "  if (typeof parsed.reason !== \"string\" || parsed.reason.length === 0) {"
+new = "  if (false && (typeof parsed.reason !== \"string\" || parsed.reason.length === 0)) {"
+if old not in text:
+    raise SystemExit("G13 reason check not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "g13-reason-removed" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
+
+python3 - "$spawn_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "  if (typeof expectedSha256Hex !== \"string\" || !HEX64.test(expectedSha256Hex)) {\n    return { ok: false, result: refuse(\"HELPER_PIN\") };\n  }"
+new = "  if (typeof expectedSha256Hex !== \"string\") {\n    return { ok: false, result: refuse(\"HELPER_PIN\") };\n  }"
+if old not in text:
+    raise SystemExit("G14 helper pin hex format not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "g14-helper-pin-hex-removed" "$src" "red"
+cp "$work/spawn.mjs.bak" "$spawn_src"
+
+replace_once "$src" "$mutdir/.gate1-mutant-g15.mjs" \
+  '    const nowMs = readClock(clock);' \
+  '    const nowMs = clock();'
+run_suite "g15-issuegrant-clock-unguarded" "$mutdir/.gate1-mutant-g15.mjs" "red"
+
+replace_once "$src" "$mutdir/.gate1-mutant-delivery-assured.mjs" \
+  '        if (payload.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.UNKNOWN;
+        if (payload.terminalOutcome === "CONSUMED") return TRIT.ASSURED;' \
+  '        if (payload.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.ASSURED;
+        if (payload.terminalOutcome === "CONSUMED") return TRIT.ASSURED;'
+python3 - "$mutdir/.gate1-mutant-delivery-assured.mjs" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = '    if (state.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.UNKNOWN;\n    if (state.terminalOutcome === "CONSUMED") return TRIT.ASSURED;'
+new = '    if (state.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.ASSURED;\n    if (state.terminalOutcome === "CONSUMED") return TRIT.ASSURED;'
+if old not in text:
+    raise SystemExit("identity DELIVERY_UNKNOWN arm not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_suite "delivery-unknown-as-assured" "$mutdir/.gate1-mutant-delivery-assured.mjs" "red"
+
+python3 - "$rust_src" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = '    matches!(value, Some("CONSUMED") | Some("DELIVERY_UNKNOWN"))'
+new = '    matches!(value, Some(_))'
+if old not in text:
+    raise SystemExit("seal_terminal_closed match not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+set +e
+(cd "$verifier_dir" && cargo test --offline --locked -- --test-threads=1) >"$work/rust-terminal.out" 2>&1
+term_rc=$?
+set -e
+if [[ "$term_rc" -eq 0 ]]; then
+  echo "FAIL: rust-terminal-closed-off expected red, cargo test passed" >&2
+  cat "$work/rust-terminal.out" >&2
+  exit 1
+fi
+echo "PASS: mutant rust-terminal-closed-off is red (rc=$term_rc)"
 cp "$work/main.rs.bak" "$rust_src"
 (cd "$verifier_dir" && cargo build --offline --locked --release)
 pin="$(sha256sum "$bin" | cut -d ' ' -f1)"

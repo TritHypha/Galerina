@@ -1,7 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
-  chmodSync,
   closeSync,
   mkdtempSync,
   openSync,
@@ -55,6 +54,11 @@ const VERDICT_KEYS = Object.freeze(["authorizing", "reason", "schema", "trit"]);
 let sealedSpawnCount = 0;
 let lastHelperStdout = "";
 let lastHelperStderr = "";
+let afterHelperPinnedHook = null;
+
+export function setAfterHelperPinnedHook(fn) {
+  afterHelperPinnedHook = typeof fn === "function" ? fn : null;
+}
 
 export function resetSealedSpawnCount() {
   sealedSpawnCount = 0;
@@ -152,7 +156,8 @@ export function validateVerifyRequest({ publicKeyHex, statement }) {
     if (statement.authentication !== "AUTHENTICATED_SIGNET") {
       return { ok: false, refusal: refuse("HEADER_AUTHENTICATION") };
     }
-    if (typeof statement.terminalOutcome !== "string" || statement.terminalOutcome.length === 0) {
+    if (statement.terminalOutcome !== "CONSUMED"
+        && statement.terminalOutcome !== "DELIVERY_UNKNOWN") {
       return { ok: false, refusal: refuse("HEADER_TERMINAL") };
     }
   }
@@ -263,16 +268,21 @@ export function execPinnedVerifierBytes(bytes, {
   if (!loadedHelper.ok) {
     return loadedHelper.result;
   }
-  const helperDir = mkdtempSync(join(tmpdir(), "signet-helper-"));
-  const verifiedHelperPath = join(helperDir, "signet-sealed-exec");
-  writeFileSync(verifiedHelperPath, loadedHelper.bytes);
-  chmodSync(verifiedHelperPath, 0o500);
-  const dir = mkdtempSync(join(tmpdir(), "signet-pin-"));
-  const blob = join(dir, "bytes");
-  writeFileSync(blob, bytes);
-  const fd = openSync(blob, "r");
-  unlinkSync(blob);
+  let helperDir;
+  let dir;
+  let fd = -1;
   try {
+    helperDir = mkdtempSync(join(tmpdir(), "signet-helper-"));
+    const verifiedHelperPath = join(helperDir, "signet-sealed-exec");
+    writeFileSync(verifiedHelperPath, loadedHelper.bytes, { mode: 0o500 });
+    dir = mkdtempSync(join(tmpdir(), "signet-pin-"));
+    const blob = join(dir, "bytes");
+    writeFileSync(blob, bytes);
+    fd = openSync(blob, "r");
+    unlinkSync(blob);
+    if (typeof afterHelperPinnedHook === "function") {
+      afterHelperPinnedHook();
+    }
     sealedSpawnCount += 1;
     /* GATE1_SEALED_EXEC */
     const result = spawnSync(verifiedHelperPath, [expectedSha256Hex], {
@@ -290,9 +300,15 @@ export function execPinnedVerifierBytes(bytes, {
     void verifierPath;
     return parseChildResult(result);
   } finally {
-    closeSync(fd);
-    rmSync(dir, { recursive: true, force: true });
-    rmSync(helperDir, { recursive: true, force: true });
+    if (fd >= 0) {
+      closeSync(fd);
+    }
+    if (dir !== undefined) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+    if (helperDir !== undefined) {
+      rmSync(helperDir, { recursive: true, force: true });
+    }
   }
 }
 

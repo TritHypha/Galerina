@@ -8,9 +8,12 @@
  *
  * classifySeal previous-epoch/profile choice: DISTRUSTED on both the
  * identity path and the copy path. UNKNOWN is reserved for absence
- * (missing seal, `{ kind: "absent" }`). A present seal bound to a
+ * (missing seal, `{ kind: "absent" }`) and for a current
+ * DELIVERY_UNKNOWN seal (sink throw: grant consumed, delivery unknown).
+ * ASSURED is only a current CONSUMED seal. A present seal bound to a
  * previous epoch or profile is wrong-binding evidence, same class as a
- * wrong subject.
+ * wrong subject. The out-of-process verifier +1 means authentic, not
+ * delivered.
  */
 import { createHash, generateKeyPairSync, randomBytes, sign as ed25519Sign, verify as ed25519Verify } from "node:crypto";
 import { types as utilTypes } from "node:util";
@@ -64,7 +67,7 @@ const ENVELOPE_KEYS = Object.freeze([
   "schemaVersion",
   "target",
 ]);
-const TERMINAL_OUTCOMES = new Set(["CONSUMED", "REFUSED", "FAILED", "UNKNOWN"]);
+const TERMINAL_OUTCOMES = new Set(["CONSUMED", "DELIVERY_UNKNOWN"]);
 const SHA256 = /^sha256:[a-f0-9]{64}$/u;
 const HEX64 = /^[a-f0-9]{64}$/u;
 const HEX128 = /^[a-f0-9]{128}$/u;
@@ -242,7 +245,13 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
   const target = nonEmptyString(inputConfig.target, "target");
   const abi = nonEmptyString(inputConfig.abi, "abi");
   const buildPoint = nonEmptyString(inputConfig.buildPoint, "buildPoint");
-  let epoch = Number.isSafeInteger(options.epoch) && options.epoch >= 1 ? options.epoch : 1;
+  let epoch = 1;
+  if (Object.hasOwn(options, "epoch")) {
+    if (!Number.isSafeInteger(options.epoch) || options.epoch < 1) {
+      throw new TypeError("host epoch must be a positive safe integer");
+    }
+    epoch = options.epoch;
+  }
   const pair = generateKeyPairSync("ed25519");
   const publicKeyRaw = rawPublicKey(pair.publicKey);
   const publicKeyHex = publicKeyRaw.toString("hex");
@@ -327,7 +336,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     try {
       sink.apply();
     } catch {
-      terminalOutcome = "FAILED"; /* GATE1_GUARD_SINK */
+      terminalOutcome = "DELIVERY_UNKNOWN"; /* GATE1_GUARD_SINK */
     }
     if (!TERMINAL_OUTCOMES.has(terminalOutcome)) {
       throw new TypeError("terminal outcome is not in the closed set");
@@ -353,6 +362,7 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
       subjectId: payload.subjectId,
       epoch: payload.epoch,
       profileDigest: payload.profileDigest,
+      terminalOutcome,
       sealDigest: framedDigest(SEAL_DOMAIN, sealPayload),
     }));
     return seal;
@@ -373,7 +383,9 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
         if (payload.epoch !== epoch || payload.profileDigest !== currentProfileDigest()) {
           return TRIT.DISTRUSTED;
         }
-        return TRIT.ASSURED;
+        if (payload.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.UNKNOWN;
+        if (payload.terminalOutcome === "CONSUMED") return TRIT.ASSURED;
+        return TRIT.DISTRUSTED;
       } catch {
         return TRIT.DISTRUSTED;
       }
@@ -382,7 +394,9 @@ export function createAuthenticatedAssuranceHost(inputConfig, options = {}) {
     if (state.epoch !== epoch || state.profileDigest !== currentProfileDigest()) {
       return TRIT.DISTRUSTED;
     }
-    return TRIT.ASSURED;
+    if (state.terminalOutcome === "DELIVERY_UNKNOWN") return TRIT.UNKNOWN;
+    if (state.terminalOutcome === "CONSUMED") return TRIT.ASSURED;
+    return TRIT.DISTRUSTED;
   }
 
   function rotateContext() {

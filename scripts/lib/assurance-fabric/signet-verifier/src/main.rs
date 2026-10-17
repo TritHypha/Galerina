@@ -62,6 +62,10 @@ fn hex_decode(hex: &str, expected_len: usize) -> Option<Vec<u8>> {
     Some(out)
 }
 
+fn seal_terminal_closed(value: Option<&str>) -> bool {
+    matches!(value, Some("CONSUMED") | Some("DELIVERY_UNKNOWN"))
+}
+
 fn exact_keys(obj: &Map<String, Value>, expected: &[&str]) -> bool {
     if obj.len() != expected.len() {
         return false;
@@ -166,6 +170,9 @@ fn main() -> ExitCode {
             Some("AUTHENTICATED_SIGNET") => {}
             _ => return emit(-1, "SEAL_AUTHENTICATION", 1),
         }
+        if !seal_terminal_closed(payload.get("terminalOutcome").and_then(Value::as_str)) {
+            return emit(-1, "SEAL_TERMINAL", 1);
+        }
     }
     let canonical = match canonical_object(&payload) {
         Some(v) => v,
@@ -209,6 +216,17 @@ mod tests {
         assert!(hex_decode("zz", 1).is_none());
         assert!(hex_decode("AG", 1).is_none());
         assert_eq!(hex_decode("ab", 1), Some(vec![0xab]));
+    }
+
+    #[test]
+    fn seal_terminal_closed_set() {
+        assert!(seal_terminal_closed(Some("CONSUMED")));
+        assert!(seal_terminal_closed(Some("DELIVERY_UNKNOWN")));
+        assert!(!seal_terminal_closed(Some("FAILED")));
+        assert!(!seal_terminal_closed(Some("REFUSED")));
+        assert!(!seal_terminal_closed(Some("UNKNOWN")));
+        assert!(!seal_terminal_closed(Some("")));
+        assert!(!seal_terminal_closed(None));
     }
 
     #[test]
