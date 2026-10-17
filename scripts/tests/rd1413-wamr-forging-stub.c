@@ -14,7 +14,7 @@
 #define MODE 3
 #endif
 
-#if MODE != 0 && MODE != 1 && MODE != 2
+#if MODE != 0 && MODE != 1 && MODE != 2 && MODE != 20
 static void hex_prefaced(const uint8_t d[32], char o[72])
 {
     static const char k[] = "0123456789abcdef";
@@ -33,6 +33,12 @@ int main(void)
 #if MODE == 0
     return 0;
 #elif MODE == 1
+    sleep(12);
+    return 0;
+#elif MODE == 20
+    (void)close(0);
+    (void)close(1);
+    (void)close(2);
     sleep(12);
     return 0;
 #else
@@ -103,8 +109,13 @@ int main(void)
         memcpy(ev.abi, WAMR_VOK_ABI, strlen(WAMR_VOK_ABI) + 1);
         memcpy(ev.target, WAMR_VOK_TARGET, strlen(WAMR_VOK_TARGET) + 1);
         memcpy(ev.schema_version, "1", 2);
+#if MODE == 23
+        memcpy(ev.build_point,
+               "git:0123456789ABCDEF0123456789ABCDEF01234567", 45);
+#else
         memcpy(ev.build_point, "git:0123456789abcdef0123456789abcdef01234567",
                45);
+#endif
         ev.epoch = 1;
         el = wamr_vok_envelope_canonical(&ev, ec, sizeof ec);
         if (el < 0) {
@@ -167,12 +178,28 @@ int main(void)
 #endif
         hex_prefaced(s.seal_digest, h);
         (void)snprintf(seal_text, sizeof seal_text, "%ssealDigest=%s\n", sc, h);
+#if MODE == 22
+        printf("GALERINA_VOK_VERDICT_V1\nENVELOPE 0%zu\n%sSEAL %zu\n%s",
+               strlen(env_text), env_text, strlen(seal_text), seal_text);
+#elif MODE == 27
+        printf("GALERINA_VOK_VERDICT_V1\nENVELOPE +%zu\n%sSEAL %zu\n%s",
+               strlen(env_text), env_text, strlen(seal_text), seal_text);
+#elif MODE == 28
+        printf("GALERINA_VOK_VERDICT_V1\nENVELOPE %zu\n%sSEAL 0%zu\n%s",
+               strlen(env_text), env_text, strlen(seal_text), seal_text);
+#else
         printf("GALERINA_VOK_VERDICT_V1\nENVELOPE %zu\n%sSEAL %zu\n%s",
                strlen(env_text), env_text, strlen(seal_text), seal_text);
+#endif
 #if MODE == 8
         printf("X");
 #endif
         fflush(stdout);
+#if MODE == 21
+        (void)close(1);
+        (void)close(2);
+        sleep(8);
+#endif
 #if MODE == 9
         return 3;
 #endif

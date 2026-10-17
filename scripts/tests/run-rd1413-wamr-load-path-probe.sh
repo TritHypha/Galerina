@@ -42,9 +42,22 @@ if [[ "$(wat2wasm --version)" != "1.0.36" || "$(gcc -dumpfullversion)" != "15.2.
 fi
 
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+if [[ -n "${WAMR_HOST_ROOT:-}" || -n "${WAMR_HOST_INCLUDE:-}" ||
+      -n "${WAMR_HOST_SRC:-}" ]]; then
+  if [[ "${RD1413_ALLOW_HOST_REDIRECT:-}" != "1" ]]; then
+    printf 'WAMR_HOST_* redirect refused without RD1413_ALLOW_HOST_REDIRECT=1\n' >&2
+    exit 2
+  fi
+fi
 wamr_host_root="${WAMR_HOST_ROOT:-$script_dir/../../packages-ts/galerina-core-runtime/native/wamr-host}"
 host_include="${WAMR_HOST_INCLUDE:-$wamr_host_root/include}"
 host_src="${WAMR_HOST_SRC:-$wamr_host_root/src}"
+host_include="$(cd -- "$host_include" && pwd)"
+host_src="$(cd -- "$host_src" && pwd)"
+printf 'host_include=%s\n' "$host_include"
+printf 'host_src=%s\n' "$host_src"
+printf 'wamr_vok_verdict.c=%s\n' "$(sha256sum "$host_src/wamr_vok_verdict.c" | cut -d ' ' -f1)"
+printf 'wamr_secrets_gateway_host.c=%s\n' "$(sha256sum "$host_src/wamr_secrets_gateway_host.c" | cut -d ' ' -f1)"
 if [[ -z "${WAMR_VOK_VERIFIER:-}" ]]; then
   printf 'Set WAMR_VOK_VERIFIER to the hash-pinned vok-artifact-verifier binary\n' >&2
   exit 2
@@ -72,6 +85,12 @@ if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
    ! grep -q 'F_GET_SEALS' "$host_src/wamr_vok_verdict.c" ||
    ! grep -q 'empty_envp' "$host_src/wamr_vok_verdict.c"; then
   printf 'sealed memfd, F_GET_SEALS, or empty envp missing from spawn\n' >&2
+  exit 2
+fi
+if ! grep -q 'pthread_sigmask' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'WNOHANG' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'reap_child_deadline' "$host_src/wamr_vok_verdict.c"; then
+  printf 'pthread_sigmask or WNOHANG deadline reap missing from spawn\n' >&2
   exit 2
 fi
 if ! grep -q 'SNAPSHOT_WIPE' "$host_src/wamr_secrets_gateway_host.c" ||
@@ -178,6 +197,7 @@ compile_stub() {
     "$script_dir/rd1413-wamr-forging-stub.c" \
     "$host_src/wamr_sha256.c" \
     "$host_src/wamr_vok_verdict.c" \
+    -lpthread \
     -o "$out"
 }
 
@@ -191,6 +211,7 @@ compile_harness() {
     "$script_dir/rd1413-wamr-forging-harness.c" \
     "$host_src/wamr_sha256.c" \
     "$host_src/wamr_vok_verdict.c" \
+    -lpthread \
     -o "$out"
 }
 
@@ -234,4 +255,10 @@ run_forge "component-mismatch" 7 4096 3 6000 0
 run_forge "trailing-byte" 8 4096 4 6000 0
 run_forge "exit-status-3" 9 4096 4 6000 0
 run_forge "epoch-negative-wrap" 11 4096 4 6000 0
+run_forge "close-hang" 20 4096 4 6000 0
+run_forge "verdict-then-hang" 21 4096 4 6000 0
+run_forge "envelope-leading-zero" 22 4096 4 6000 0
+run_forge "buildpoint-uppercase" 23 4096 4 6000 0
+run_forge "envelope-plus" 27 4096 4 6000 0
+run_forge "seal-leading-zero" 28 4096 4 6000 0
 printf 'PASS: forging-stub suite\n'

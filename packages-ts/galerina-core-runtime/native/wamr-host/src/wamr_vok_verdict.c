@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -949,23 +950,33 @@ static int set_nonblock(int fd)
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0;
 }
 
-static int block_sigpipe(sigset_t *old_mask)
+static int block_sigpipe(sigset_t *old_mask, int *preserve_pending)
 {
     sigset_t block;
+    sigset_t pending_before;
 
-    if (old_mask == NULL) {
+    if (old_mask == NULL || preserve_pending == NULL) {
         return 0;
     }
+    *preserve_pending = 0;
     if (sigemptyset(&block) != 0 || sigaddset(&block, SIGPIPE) != 0) {
         return 0;
     }
-    if (sigprocmask(SIG_BLOCK, &block, old_mask) != 0) {
+    if (sigpending(&pending_before) != 0) {
         return 0;
+    }
+    if (pthread_sigmask(SIG_BLOCK, &block, old_mask) != 0) {
+        return 0;
+    }
+    if (sigismember(&pending_before, SIGPIPE) == 1 &&
+        sigismember(old_mask, SIGPIPE) == 1) {
+        *preserve_pending = 1;
     }
     return 1;
 }
 
-static void drain_and_restore_sigpipe(const sigset_t *old_mask)
+static void drain_and_restore_sigpipe(const sigset_t *old_mask,
+                                      int preserve_pending)
 {
     sigset_t pipe_only;
     sigset_t pending;
@@ -973,12 +984,85 @@ static void drain_and_restore_sigpipe(const sigset_t *old_mask)
 
     zero.tv_sec = 0;
     zero.tv_nsec = 0;
-    if (sigemptyset(&pipe_only) == 0 && sigaddset(&pipe_only, SIGPIPE) == 0 &&
-        sigpending(&pending) == 0 && sigismember(&pending, SIGPIPE) == 1) {
+    if (!preserve_pending && sigemptyset(&pipe_only) == 0 &&
+        sigaddset(&pipe_only, SIGPIPE) == 0 && sigpending(&pending) == 0 &&
+        sigismember(&pending, SIGPIPE) == 1) {
         (void)sigtimedwait(&pipe_only, NULL, &zero);
     }
     if (old_mask != NULL) {
-        (void)sigprocmask(SIG_SETMASK, old_mask, NULL);
+        (void)pthread_sigmask(SIG_SETMASK, old_mask, NULL);
+    }
+}
+
+/* WNOHANG reap against remaining_ms(start). On expiry SIGKILL, then a
+ * 1 s WNOHANG cap. Returns 1 only if the child exited before the spawn
+ * deadline without being killed. */
+static int reap_child_deadline(pid_t child, int *status, struct timespec start)
+{
+    struct timespec kill_start;
+    int killed = 0;
+
+    if (child <= 0 || status == NULL) {
+        return 0;
+    }
+    memset(&kill_start, 0, sizeof(kill_start));
+    for (;;) {
+        pid_t r = waitpid(child, status, WNOHANG);
+        if (r == child) {
+            if (killed || remaining_ms(start) <= 0) {
+                return 0;
+            }
+            return 1;
+        }
+        if (r < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            return 0;
+        }
+        if (r != 0) {
+            return 0;
+        }
+        if (!killed) {
+            if (remaining_ms(start) <= 0) {
+                (void)kill(child, SIGKILL);
+                killed = 1;
+                if (clock_gettime(CLOCK_MONOTONIC, &kill_start) != 0) {
+                    (void)waitpid(child, status, WNOHANG);
+                    return 0;
+                }
+            }
+        } else {
+            struct timespec now;
+            long elapsed;
+            if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
+                return 0;
+            }
+            elapsed = (now.tv_sec - kill_start.tv_sec) * 1000L +
+                      (now.tv_nsec - kill_start.tv_nsec) / 1000000L;
+            if (elapsed >= 1000L) {
+                return 0;
+            }
+        }
+        {
+            int slice;
+            if (killed) {
+                slice = 20;
+            } else {
+                slice = remaining_ms(start);
+                if (slice > 50) {
+                    slice = 50;
+                }
+                if (slice < 1) {
+                    slice = 1;
+                }
+            }
+            if (poll(NULL, 0, slice) < 0 && errno != EINTR) {
+                (void)kill(child, SIGKILL);
+                (void)waitpid(child, status, WNOHANG);
+                return 0;
+            }
+        }
     }
 }
 
@@ -1031,6 +1115,7 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     int status = 0;
     int rc = WAMR_VOK_BIND_REFUSED;
     int sigpipe_blocked = 0;
+    int preserve_pending = 0;
     struct timespec start;
     sigset_t old_mask;
     char *argv_child[3];
@@ -1131,7 +1216,7 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
         close_fd(&err_pipe[0]);
         return WAMR_VOK_BIND_REFUSED;
     }
-    if (!block_sigpipe(&old_mask)) {
+    if (!block_sigpipe(&old_mask, &preserve_pending)) {
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);
         close_fd(&in_pipe[1]);
@@ -1142,7 +1227,7 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     sigpipe_blocked = 1;
     if (clock_gettime(CLOCK_MONOTONIC, &start) != 0) {
         if (sigpipe_blocked) {
-            drain_and_restore_sigpipe(&old_mask);
+            drain_and_restore_sigpipe(&old_mask, preserve_pending);
         }
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);
@@ -1279,10 +1364,13 @@ int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
     close_fd(&out_pipe[0]);
     close_fd(&err_pipe[0]);
     if (sigpipe_blocked) {
-        drain_and_restore_sigpipe(&old_mask);
+        drain_and_restore_sigpipe(&old_mask, preserve_pending);
         sigpipe_blocked = 0;
     }
-    if (waitpid(child, &status, 0) < 0) {
+    if (!reap_child_deadline(child, &status, start)) {
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    if (remaining_ms(start) <= 0) {
         return WAMR_VOK_BIND_REFUSED;
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {

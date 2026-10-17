@@ -25,7 +25,7 @@ run_probe() {
   local label="$1"
   local expect="$2"
   set +e
-  WAMR_HOST_SRC="$src_copy" bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
+  RD1413_ALLOW_HOST_REDIRECT=1 WAMR_HOST_SRC="$src_copy" bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
   local rc=$?
   set -e
   if [[ "$expect" == "red" && "$rc" -eq 0 ]]; then
@@ -161,7 +161,7 @@ run_probe "no-release-on-verdict-refused" "red"
 
 refresh_copy
 mutate "wamr_vok_verdict.c" \
-  "    if (!block_sigpipe(&old_mask)) {
+  "    if (!block_sigpipe(&old_mask, &preserve_pending)) {
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);
         close_fd(&in_pipe[1]);
@@ -171,7 +171,7 @@ mutate "wamr_vok_verdict.c" \
     }
     sigpipe_blocked = 1;
 " \
-  "    if (0 && !block_sigpipe(&old_mask)) {
+  "    if (0 && !block_sigpipe(&old_mask, &preserve_pending)) {
         (void)kill(child, SIGKILL);
         (void)waitpid(child, &status, 0);
         close_fd(&in_pipe[1]);
@@ -271,6 +271,79 @@ mutate "wamr_secrets_gateway_host.c" \
         return WAMR_SECRETS_GATEWAY_VERDICT_REFUSED;
 "
 run_probe "aot-no-release" "red"
+
+refresh_copy
+mutate "wamr_vok_verdict.c" \
+  "    if (!reap_child_deadline(child, &status, start)) {
+        return WAMR_VOK_BIND_REFUSED;
+    }
+" \
+  "    if (0 && !reap_child_deadline(child, &status, start)) {
+        return WAMR_VOK_BIND_REFUSED;
+    }
+    if (waitpid(child, &status, 0) < 0) {
+        return WAMR_VOK_BIND_REFUSED;
+    }
+"
+run_probe "blocking-waitpid" "red"
+
+refresh_copy
+python3 - "$src_copy/wamr_vok_verdict.c" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = """    if (value[0] == '+' || value[0] == '-' || value[0] == ' ' ||
+        value[0] == '\\t') {
+        return 0;
+    }
+    if (value[0] == '0' && value[1] != '\\0') {
+        return 0;
+    }
+    for (p = value; *p != '\\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return 0;
+        }
+    }
+    saved = errno;
+    errno = 0;
+    acc = strtoull(value, &term, 10);
+    if (errno == ERANGE || term == value || term == NULL || *term != '\\0') {
+        errno = saved;
+        return 0;
+    }
+    errno = saved;
+    n = snprintf(canonical, sizeof(canonical), \"%llu\", acc);
+    if (n <= 0 || (size_t)n >= sizeof(canonical) ||
+        strcmp(canonical, value) != 0) {
+        return 0;
+    }
+"""
+new = """    saved = errno;
+    errno = 0;
+    acc = strtoull(value, &term, 10);
+    if (term == value || term == NULL || *term != '\\0') {
+        errno = saved;
+        return 0;
+    }
+    errno = saved;
+    (void)p;
+    (void)canonical;
+    (void)n;
+"""
+if old not in text:
+    raise SystemExit("parse_canonical_ull body not found")
+path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+PY
+run_probe "parse-canonical-ull-lenient" "red"
+
+refresh_copy
+mutate "wamr_vok_verdict.c" \
+  "        int hex = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
+" \
+  "        int hex = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+"
+run_probe "buildpoint-accept-AF" "red"
 
 refresh_copy
 run_probe "restored" "green"

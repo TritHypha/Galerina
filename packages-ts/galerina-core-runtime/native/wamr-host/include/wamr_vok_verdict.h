@@ -83,12 +83,16 @@ int wamr_vok_parse_seal_file(const char *path, wamr_vok_wax_seal_t *out);
  * extra child fds closed), write bytes to the child's stdin with
  * O_NONBLOCK and SIGPIPE blocked around the write, read Envelope+Wax
  * Seal only from the child's stdout pipe, then bind internally.
- * Epoch and frame-length tokens are digits-only with no sign,
- * whitespace, leading zero, or ERANGE; buildPoint is lowercase hex;
- * a line whose canonical re-serialisation differs from the received
- * bytes is refused. BIND_OK cannot be obtained from file-parsed
- * structs. Compile with -DWAMR_VOK_VERIFIER_SHA256_HEX=<64 lowercase
- * hex>.
+ * pthread_sigmask blocks SIGPIPE; a SIGPIPE already pending when the
+ * caller had it blocked is left pending. The 5 s deadline covers
+ * spawn, every write, the read, and WNOHANG waitpid; expiry SIGKILLs
+ * and refuses, including an honest verdict whose child outlived the
+ * deadline. Epoch and frame-length tokens are digits-only with no
+ * sign, whitespace, leading zero, or ERANGE; buildPoint is lowercase
+ * hex; a line whose canonical re-serialisation differs from the
+ * received bytes is refused. BIND_OK cannot be obtained from
+ * file-parsed structs. Compile with
+ * -DWAMR_VOK_VERIFIER_SHA256_HEX=<64 lowercase hex>.
  */
 int wamr_vok_spawn_and_bind(const char *verifier_path, const uint8_t *bytes,
                             size_t size, wamr_vok_envelope_t *envelope,

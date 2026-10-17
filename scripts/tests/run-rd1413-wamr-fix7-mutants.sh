@@ -23,7 +23,7 @@ run_probe() {
   local label="$1"
   local expect="$2"
   set +e
-  WAMR_HOST_SRC="$src_copy" bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
+  RD1413_ALLOW_HOST_REDIRECT=1 WAMR_HOST_SRC="$src_copy" bash "$script_dir/run-rd1413-wamr-load-path-probe.sh"
   local rc=$?
   set -e
   if [[ "$expect" == "red" && "$rc" -eq 0 ]]; then
