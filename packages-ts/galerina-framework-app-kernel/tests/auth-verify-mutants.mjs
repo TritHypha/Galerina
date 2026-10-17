@@ -9,6 +9,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const pkg = join(here, "..");
 const src = join(pkg, "src", "auth-verify-route.ts");
 const bak = join(pkg, "src", "auth-verify-route.ts.mutant-bak");
+const fbSrc = join(pkg, "src", "foreign-boundary.ts");
+const fbBak = join(pkg, "src", "foreign-boundary.ts.mutant-bak");
 
 function sha256File(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -29,12 +31,19 @@ function build() {
 
 function restore() {
   copyFileSync(bak, src);
+  copyFileSync(fbBak, fbSrc);
   build();
 }
 
 function mutate(fn) {
   const original = readFileSync(src, "utf8");
   writeFileSync(src, fn(original));
+  build();
+}
+
+function mutateFb(fn) {
+  const original = readFileSync(fbSrc, "utf8");
+  writeFileSync(fbSrc, fn(original));
   build();
 }
 
@@ -66,7 +75,9 @@ function expectRed(label, pattern) {
 }
 
 const preSha = sha256File(src);
+const fbPreSha = sha256File(fbSrc);
 copyFileSync(src, bak);
+copyFileSync(fbSrc, fbBak);
 let finished = false;
 try {
   mutate((s) => s.replace(
@@ -181,6 +192,27 @@ try {
   expectRed("delivery-recheck-removed", "route-fence-inside-provider-use does not hand bytes to guest");
 
   restore();
+  mutate((s) => s.replace(
+    "      return recoverLease(\"ingress\"); /* AUTH_VERIFY_GUARD_CATCH_TYPED */",
+    "      throw error; /* AUTH_VERIFY_GUARD_CATCH_TYPED */",
+  ));
+  expectRed("catch-rethrows-non-clock-refused", "authority-fence-throws on guest-timeout handle stays typed");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "  if (capRead.kind !== \"ok\" || capRead.value < 0) {",
+    "  if (false) {",
+  ));
+  expectRed("cap-typing-removed", "foreign-boundary readBodyCapped refuses non-integer caps");
+
+  restore();
+  mutate((s) => s.replace(
+    "      if (consumed === true || observed === \"released\") { /* AUTH_VERIFY_GUARD_AUTHORITY_STATE */",
+    "      if (consumed === true) { /* AUTH_VERIFY_GUARD_AUTHORITY_STATE */",
+  ));
+  expectRed("post-commit-authority-state-ignored", "consume-commits-then-throws is status-only never leftover released");
+
+  restore();
   const green = spawnSync("node", ["--test", join(here, "auth-verify-route.test.mjs")], {
     cwd: pkg,
     encoding: "utf8",
@@ -196,14 +228,17 @@ try {
   finished = true;
 } finally {
   copyFileSync(bak, src);
+  copyFileSync(fbBak, fbSrc);
   const postSha = sha256File(src);
-  if (postSha !== preSha) {
+  const fbPostSha = sha256File(fbSrc);
+  if (postSha !== preSha || fbPostSha !== fbPreSha) {
     console.error("source sha256 != pre-run sha256");
     process.exitCode = 1;
     finished = false;
   }
   unlinkSync(bak);
-  if (existsSync(bak)) {
+  unlinkSync(fbBak);
+  if (existsSync(bak) || existsSync(fbBak)) {
     console.error("mutant-bak still present");
     process.exitCode = 1;
     finished = false;

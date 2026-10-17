@@ -1366,3 +1366,201 @@ test("foreign-boundary readBodyCapped wipes on stream error", async () => {
   assert.equal(result.kind, "refused");
   assert.equal(first.every((b) => b === 0), true);
 });
+
+function streamOf(items) {
+  let i = 0;
+  return {
+    getReader() {
+      return {
+        async read() {
+          if (i >= items.length) return { done: true };
+          return { done: false, value: items[i++] };
+        },
+        async cancel() {},
+      };
+    },
+  };
+}
+
+test("foreign-boundary readBodyCapped refuses liar byteLength subclass and wipes", async () => {
+  class Liar extends Uint8Array {
+    get byteLength() {
+      return 0;
+    }
+  }
+  const chunk = Liar.from([1, 2, 3, 4]);
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 16);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "refused");
+  assert.equal(Array.prototype.every.call(chunk, (b) => b === 0), true);
+});
+
+test("foreign-boundary readBodyCapped refuses flipping byteLength subclass vs cap", async () => {
+  let reads = 0;
+  class Flip extends Uint8Array {
+    get byteLength() {
+      reads += 1;
+      return reads === 1 ? 2 : 4;
+    }
+  }
+  const chunk = Flip.from([1, 2, 3, 4]);
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 3);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.notEqual(result.kind, "ok");
+  assert.equal(Array.prototype.every.call(chunk, (b) => b === 0), true);
+});
+
+test("foreign-boundary readBodyCapped intrinsic-wipes fill-override subclass", async () => {
+  class NoFill extends Uint8Array {
+    fill() {
+      return this;
+    }
+  }
+  const chunk = NoFill.from([7, 7]);
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 1);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "refused");
+  assert.equal(Array.prototype.every.call(chunk, (b) => b === 0), true);
+});
+
+test("foreign-boundary readBodyCapped refuses non-integer caps", async () => {
+  const caps = [Number.NaN, -1, 1.5, Number.POSITIVE_INFINITY];
+  for (const cap of caps) {
+    const result = await readBodyCapped(streamOf([]), cap);
+    assert.equal(result.kind, "refused", String(cap));
+  }
+});
+
+test("authority-fence-throws on guest-timeout handle stays typed", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  authority.fence = () => {
+    throw new Error("fence boom");
+  };
+  let threw = false;
+  let res;
+  try {
+    res = await createAuthVerifyRoute({
+      mode: "test",
+      timeoutMs: 25,
+      fungiMaxRequestSize: AUTH_VERIFY_MAX_BODY_BYTES,
+      kernelMaxSizeBytes: 64 * 1024,
+      namedSlideRecord: AUTH_VERIFY_SYNTHETIC_SLIDE_RECORD,
+      namedTcbProfile: AUTH_VERIFY_SYNTHETIC_TCB_PROFILE,
+      verifierPinSha256: PIN,
+      authority,
+      secrets: liveSecrets(),
+      ports: goodPorts({
+        runGuest: async () => hang(),
+      }),
+    }).handle(req());
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(res === undefined, false);
+  assert.notEqual(res.rowId, "S-01");
+  assert.notEqual(res.lease, "fenced");
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.notEqual(authority.stateOf(lease.leaseId), "fenced");
+});
+
+test("authority-markUnknown-throws after sink-throw handle stays typed", async () => {
+  const authority = new ReleaseCommitAuthority();
+  wrapMint(authority);
+  authority.markUnknown = () => {
+    throw new Error("mark boom");
+  };
+  let threw = false;
+  let res;
+  try {
+    res = await route({
+      authority,
+      ports: {
+        deliverSink: () => {
+          throw new Error("sink sync boom");
+        },
+      },
+    }).handle(req());
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(res === undefined, false);
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+});
+
+test("consume-commits-then-throws is status-only never leftover released", async () => {
+  const authority = new ReleaseCommitAuthority();
+  const minted = wrapMint(authority);
+  const orig = authority.consume.bind(authority);
+  authority.consume = (...args) => {
+    orig(...args);
+    throw new Error("after commit");
+  };
+  let sinkCalls = 0;
+  let threw = false;
+  let res;
+  try {
+    res = await route({
+      authority,
+      ports: {
+        deliverSink: async () => {
+          sinkCalls += 1;
+          return { ok: true };
+        },
+      },
+    }).handle(req());
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(res === undefined, false);
+  assert.equal(res.receiptKind, "status-only");
+  assert.equal(res.code, "delivery_unknown");
+  assert.equal(res.rowId, "F-28");
+  assert.equal(sinkCalls, 0);
+  const lease = minted[minted.length - 1];
+  assert.equal(lease === undefined, false);
+  assert.equal(authority.stateOf(lease.leaseId), "delivery-unknown");
+});
+
+test("loadArtifact snapshot getter is read once and wiped", async () => {
+  const made = [];
+  const res = await route({
+    ports: {
+      loadArtifact: async () => ({
+        ok: true,
+        artifactDigest: ARTIFACT,
+        get snapshot() {
+          const b = new Uint8Array([8, 8]);
+          made.push(b);
+          return b;
+        },
+      }),
+    },
+  }).handle(req());
+  assert.equal(res.rowId, "S-01");
+  assert.equal(made.length, 1);
+  assert.equal(made[0].every((b) => b === 0), true);
+});

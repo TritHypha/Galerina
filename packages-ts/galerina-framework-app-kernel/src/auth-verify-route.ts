@@ -578,11 +578,52 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       });
     };
 
-    const refusePort = (stage: AuthVerifyStage): AuthVerifyResponse => {
-      if (consumed === true) {
+    const recoverLease = (stage: AuthVerifyStage): AuthVerifyResponse => {
+      type Observed =
+        | "unread"
+        | "unused"
+        | "released"
+        | "acknowledged"
+        | "fenced"
+        | "delivery-unknown"
+        | "missing";
+      let observed: Observed = "unread";
+      if (leaseId.length > 0) {
+        try {
+          const raw = authority.stateOf(leaseId);
+          switch (raw) {
+            case "unused":
+            case "released":
+            case "acknowledged":
+            case "fenced":
+            case "delivery-unknown":
+            case "missing":
+              observed = raw;
+              break;
+            default: {
+              const _closed: never = raw;
+              void _closed;
+              leaseState = "delivery-unknown";
+              return respond("F-30", stage, "unknown_outcome");
+            }
+          }
+        } catch {
+          leaseState = "delivery-unknown";
+          if (consumed === true) {
+            try {
+              authority.markUnknown(leaseId);
+            } catch {
+              // markUnknown is status-only
+            }
+            return respond("F-28", stage, "delivery_unknown", { receiptKind: "status-only", leave: true });
+          }
+          return respond("F-30", stage, "unknown_outcome");
+        }
+      }
+      if (consumed === true || observed === "released") { /* AUTH_VERIFY_GUARD_AUTHORITY_STATE */
         if (leaseId.length > 0) {
           try {
-            authority.markUnknown(leaseId);
+            authority.markUnknown(leaseId); /* AUTH_VERIFY_GUARD_POST_COMMIT */
           } catch {
             // markUnknown is status-only
           }
@@ -590,16 +631,40 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         leaseState = "delivery-unknown";
         return respond("F-28", stage, "delivery_unknown", { receiptKind: "status-only", leave: true });
       }
-      if (leaseId.length > 0) {
-        try {
-          authority.fence(leaseId);
-        } catch {
-          // fence is best-effort
+      switch (observed) {
+        case "unused": {
+          try {
+          authority.fence(leaseId); /* AUTH_VERIFY_GUARD_CLOCK_FENCE */
+            leaseState = "fenced";
+          } catch {
+            leaseState = "unused";
+          }
+          return respond("F-30", stage, "unknown_outcome");
         }
-        leaseState = "fenced";
+        case "unread":
+        case "acknowledged":
+        case "fenced":
+        case "delivery-unknown":
+        case "missing":
+          if (observed === "fenced") {
+            leaseState = "fenced";
+          } else if (observed === "delivery-unknown") {
+            leaseState = "delivery-unknown";
+          } else if (observed === "missing") {
+            leaseState = "missing";
+          } else if (observed === "acknowledged") {
+            leaseState = "acknowledged";
+          }
+          return respond("F-30", stage, "unknown_outcome");
+        default: {
+          const _closed: never = observed;
+          void _closed;
+          return respond("F-30", stage, "unknown_outcome");
+        }
       }
-      return respond("F-30", stage, "unknown_outcome");
     };
+
+    const refusePort = (stage: AuthVerifyStage): AuthVerifyResponse => recoverLease(stage);
 
     const startClock = readForeignSafeInteger(nowMs());
     switch (startClock.kind) {
@@ -661,8 +726,9 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("wamr");
       }
     }
-    if (loadRace.value.ok !== true) {
-      const loadCode = loadRace.value.code;
+    const loaded = loadRace.value;
+    if (loaded.ok !== true) {
+      const loadCode = loaded.code;
       const loadRow = loadCode === "ARTIFACT_DIGEST_MISSING" ? "F-05"
         : loadCode === "ARTIFACT_MISMATCH" ? "F-06"
         : loadCode === "AOT_REFUSED" ? "F-07"
@@ -676,9 +742,10 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         : "unknown_outcome";
       return respond(loadRow, "wamr", mapped);
     }
-    const loaded = loadRace.value;
-    copies.push(loaded.snapshot);
-    artifactDigest = loaded.artifactDigest;
+    const loadedSnapshot = loaded.snapshot;
+    const loadedDigest = loaded.artifactDigest;
+    copies.push(loadedSnapshot);
+    artifactDigest = loadedDigest;
     if (typeof artifactDigest !== "string" || !isHex64(artifactDigest) || /^0+$/.test(artifactDigest)) { /* AUTH_VERIFY_GUARD_ZERO_DIGEST */
       return respond("F-05", "wamr", "ARTIFACT_DIGEST_MISSING");
     }
@@ -689,7 +756,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       () => options.ports.verifierCustody({
         pinSha256: pin,
         remainingMs: custodyRemain,
-        snapshot: loaded.snapshot,
+        snapshot: loadedSnapshot,
       }),
       custodyRemain,
     );
@@ -706,20 +773,22 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("verifier");
       }
     }
-    if (custodyRace.value.ok !== true) {
-      if (custodyRace.value.reason === "missing") {
+    const custody = custodyRace.value;
+    if (custody.ok !== true) {
+      const custodyReason = custody.reason;
+      if (custodyReason === "missing") {
         return respond("F-13", "verifier", "ARTIFACT_DIGEST_MISSING");
       }
-      if (custodyRace.value.reason === "pin") {
+      if (custodyReason === "pin") {
         return respond("F-14", "verifier", "VERDICT_REFUSED"); /* AUTH_VERIFY_GUARD_VERIFIER_PIN */
       }
-      if (custodyRace.value.reason === "spawn") {
+      if (custodyReason === "spawn") {
         return respond("F-15", "verifier", "VERDICT_REFUSED", { spawnFailure: true });
       }
-      if (custodyRace.value.reason === "malformed") {
+      if (custodyReason === "malformed") {
         return respond("F-16", "verifier", "VERDICT_REFUSED");
       }
-      if (custodyRace.value.reason === "nonzero") {
+      if (custodyReason === "nonzero") {
         return respond("F-17", "verifier", "VERDICT_REFUSED");
       }
       return respond("F-30", "verifier", "unknown_outcome");
@@ -756,7 +825,8 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("slide");
       }
     }
-    if (slideRace.value.ok !== true) {
+    const slide = slideRace.value;
+    if (slide.ok !== true) {
       return respond("F-09", "slide", "slide_admission_refused");
     }
 
@@ -782,8 +852,10 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("vok");
       }
     }
-    if (vokRace.value.ok !== true) {
-      if (vokRace.value.code === "ARTIFACT_MISMATCH") {
+    const vok = vokRace.value;
+    if (vok.ok !== true) {
+      const vokCode = vok.code;
+      if (vokCode === "ARTIFACT_MISMATCH") {
         return respond("F-06", "vok", "ARTIFACT_MISMATCH");
       }
       return respond("F-10", "vok", "authority_missing");
@@ -815,7 +887,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       }
     }
     try {
-      const minted = authority.mint(operationId, vokRace.value.epoch);
+      const minted = authority.mint(operationId, vok.epoch);
       leaseId = minted.leaseId;
       leaseToken = minted.token;
       leaseEpoch = minted.epoch;
@@ -970,8 +1042,10 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("guest");
       }
     }
-    if (guestRace.value.ok !== true) {
-      if (guestRace.value.code === "guest_trap") {
+    const guest = guestRace.value;
+    if (guest.ok !== true) {
+      const guestCode = guest.code;
+      if (guestCode === "guest_trap") {
         authority.fence(leaseId);
         leaseState = "fenced";
         return respond("F-19", "guest", "guest_trap");
@@ -980,7 +1054,7 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseState = "fenced";
       return respond("F-30", "guest", "unknown_outcome");
     }
-    const matchedRaw: unknown = guestRace.value.matched;
+    const matchedRaw: unknown = guest.matched;
     if (matchedRaw !== true && matchedRaw !== false) {
       authority.fence(leaseId);
       leaseState = "fenced";
@@ -1046,10 +1120,12 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("sink");
       }
     }
-    if (sinkRace.value.ok !== true) {
+    const sink = sinkRace.value;
+    if (sink.ok !== true) {
+      const sinkCode = sink.code;
       authority.markUnknown(leaseId);
       leaseState = "delivery-unknown";
-      if (sinkRace.value.code === "partial_delivery") {
+      if (sinkCode === "partial_delivery") {
         return respond("F-29", "sink", "partial_delivery", { receiptKind: "status-only", leave: true });
       }
       return respond("F-28", "sink", "delivery_unknown", { receiptKind: "status-only", leave: true });
@@ -1075,7 +1151,8 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
         return refusePort("ack");
       }
     }
-    if (ackRace.value.ok !== true) {
+    const ack = ackRace.value;
+    if (ack.ok !== true) {
       authority.markUnknown(leaseId);
       leaseState = "delivery-unknown";
       return respond("F-28", "ack", "delivery_unknown", { receiptKind: "status-only", leave: true });
@@ -1096,29 +1173,8 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
     return respond("S-01", "sink", "released", { successOutcome: disclosed, leave: true, receiptKind: "WAX_SEAL" });
     } catch (error) {
       closeGetter();
-      if (consumed === true) {
-        if (leaseId.length > 0) {
-          try {
-            authority.markUnknown(leaseId); /* AUTH_VERIFY_GUARD_POST_COMMIT */
-          } catch {
-            // markUnknown is status-only
-          }
-        }
-        leaseState = "delivery-unknown";
-        return respond("F-28", "sink", "delivery_unknown", { receiptKind: "status-only", leave: true });
-      }
-      if (leaseId.length > 0 && authority.stateOf(leaseId) === "unused") {
-        try {
-          authority.fence(leaseId); /* AUTH_VERIFY_GUARD_CLOCK_FENCE */
-        } catch {
-          // fence is best-effort
-        }
-        leaseState = "fenced";
-      }
-      if (error instanceof ClockRefused) {
-        return respond("F-30", "ingress", "unknown_outcome");
-      }
-      return respond("F-30", "ingress", "unknown_outcome");
+      void error;
+      return recoverLease("ingress"); /* AUTH_VERIFY_GUARD_CATCH_TYPED */
     } finally {
       closeGetter();
     }
