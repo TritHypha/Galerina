@@ -108,6 +108,8 @@ export interface SecretGate {
   status(operationId: string): OperationRecoveryStatus;
   /** Mark a released-but-unacked delivery as unknown (timeout, abort, handler throw after delivery). */
   noteUnknown(operationId: string): void;
+  /** One-way acknowledged → delivery-unknown. Never upgrades, never re-discloses. */
+  noteUndelivered(operationId: string): void;
   /** Transition audit: operation id + outcome only. */
   auditEvents(): readonly ReleaseAuditEvent[];
   /** Authority-issued unforgeable lease id (instance nonce + monotonic counter). */
@@ -433,6 +435,10 @@ export function createSecretGate(
     authority.markUnknown(operationId);
   }
 
+  function noteUndelivered(operationId: string): void {
+    authority.revokeDelivery(operationId);
+  }
+
   function auditEvents(): readonly ReleaseAuditEvent[] {
     return authority.auditEvents();
   }
@@ -441,5 +447,5 @@ export function createSecretGate(
     return authority.issueLeaseId();
   }
 
-  return { admit, getSecret, acknowledge, status, noteUnknown, auditEvents, issueLeaseId };
+  return { admit, getSecret, acknowledge, status, noteUnknown, noteUndelivered, auditEvents, issueLeaseId };
 }

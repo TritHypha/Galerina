@@ -2,10 +2,11 @@
 """SIGTERM-ignoring SecretArena custodian fake. Synthetic protocol only."""
 import os
 import signal
-import tempfile
 import time
 
-MARK = os.path.join(tempfile.gettempdir(), "galerina-secret-arena-ignore-sigterm.mark")
+MARK = os.environ.get("GALERINA_SECRET_ARENA_MARK")
+if MARK is None or MARK == "":
+    raise SystemExit("GALERINA_SECRET_ARENA_MARK is required")
 
 
 def mark(line):

@@ -415,6 +415,37 @@ export class ReleaseCommitAuthority {
   }
 
   /**
+   * One-way acknowledged → delivery-unknown for this exact operation id.
+   * Never upgrades, never re-discloses, never mints. Other states unchanged.
+   */
+  revokeDelivery(operationId: string): void {
+    const id = operationIdOf(operationId);
+    if (id.length === 0) {
+      return;
+    }
+    const rec = this.#leases.get(id);
+    if (rec === undefined) {
+      return;
+    }
+    switch (rec.state) {
+      case "acknowledged":
+        rec.state = "delivery-unknown";
+        this.#record(id, "delivery-unknown");
+        return;
+      case "unused":
+      case "released":
+      case "fenced":
+      case "delivery-unknown":
+        return;
+      default: {
+        const _exhaustive: never = rec.state;
+        void _exhaustive;
+        throw new Error("ReleaseCommitAuthority: revokeDelivery refused");
+      }
+    }
+  }
+
+  /**
    * Drop the unused lease this exact acquisition minted.
    * Match by lease identity and the mint token; never drop an outer in-flight lease.
    */

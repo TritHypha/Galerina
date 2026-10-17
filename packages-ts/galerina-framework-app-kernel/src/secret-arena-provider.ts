@@ -7,42 +7,189 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, writeSync, readSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { readForeignSafeInteger } from "./release-commit-point.js";
 
 export const ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM = "ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM";
 export const ERR_SECRET_ARENA_QUARANTINED = "ERR_SECRET_ARENA_QUARANTINED";
 
+type CapturedFn<T> =
+  | { readonly kind: "captured"; readonly fn: T }
+  | { readonly kind: "absent" };
+
+type ExitCodeRead =
+  | { readonly kind: "running" }
+  | { readonly kind: "exited"; readonly code: number }
+  | { readonly kind: "refused" };
+
+type SignalCodeRead =
+  | { readonly kind: "running" }
+  | { readonly kind: "signaled"; readonly signal: string }
+  | { readonly kind: "refused" };
+
 const intrinsicApply = Reflect.apply;
+const intrinsicGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+const intrinsicDefineProperty = Object.defineProperty;
+const intrinsicGetPrototypeOf = Object.getPrototypeOf;
+const intrinsicUint8Array = Uint8Array;
+const intrinsicArrayBuffer = ArrayBuffer;
 const intrinsicFill = Uint8Array.prototype.fill;
+const intrinsicTypedArraySet = Uint8Array.prototype.set;
+const intrinsicWasmMemory = WebAssembly.Memory;
 const intrinsicWriteSync = writeSync;
 const intrinsicReadSync = readSync;
 const intrinsicNow = performance.now.bind(performance);
+const TYPED_ARRAY_PROTO: object = intrinsicGetPrototypeOf(Uint8Array.prototype) as object;
+
+function captureMethod(obj: object, name: string): CapturedFn<(this: unknown, ...args: unknown[]) => unknown> {
+  const raw = (obj as Record<string, unknown>)[name];
+  if (typeof raw !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: raw as (this: unknown, ...args: unknown[]) => unknown };
+}
+
+function captureGetter(obj: object, name: string): CapturedFn<(this: unknown) => unknown> {
+  let desc: PropertyDescriptor | undefined;
+  try {
+    desc = intrinsicGetOwnPropertyDescriptor(obj, name);
+  } catch {
+    return { kind: "absent" };
+  }
+  if (desc === undefined || typeof desc.get !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: desc.get };
+}
+
+function requireCaptured<T>(cap: CapturedFn<T>, label: string): T {
+  switch (cap.kind) {
+    case "captured":
+      return cap.fn;
+    case "absent":
+      throw new SecretArenaUnavailable(`SecretArena intrinsic ${label} is unavailable`);
+    default: {
+      const _closed: never = cap;
+      void _closed;
+      throw new SecretArenaUnavailable(`SecretArena intrinsic ${label} is unavailable`);
+    }
+  }
+}
+
+const intrinsicSubarray = captureMethod(TYPED_ARRAY_PROTO, "subarray");
+const intrinsicTypedBufferGet = captureGetter(TYPED_ARRAY_PROTO, "buffer");
+const intrinsicTypedLengthGet = captureGetter(TYPED_ARRAY_PROTO, "length");
+const intrinsicTypedByteLengthGet = captureGetter(TYPED_ARRAY_PROTO, "byteLength");
+const intrinsicMemoryBufferGet = captureGetter(WebAssembly.Memory.prototype, "buffer");
+const intrinsicDetachedGet = captureGetter(ArrayBuffer.prototype, "detached");
 const RPC_DEADLINE_MS = 5000;
 const MAX_FRAME = 64 * 1024 * 1024 + 1024;
 const WASM_PAGE = 65536;
 const SIGTERM_GRACE_MS = 100;
 
+type HostProcessExit = {
+  once(event: "exit", listener: () => void): void;
+};
+const hostProcess = process as unknown as HostProcessExit;
+
+const liveCustodians = new Set<ChildProcess>();
+let exitHookInstalled = false;
+
+function installExitHook(): void {
+  if (exitHookInstalled) return;
+  exitHookInstalled = true;
+  hostProcess.once("exit", () => {
+    for (const child of liveCustodians) {
+      try {
+        child.kill("SIGKILL");
+      } catch {
+        // already exited
+      }
+    }
+  });
+}
+
+function readChildExitCode(raw: unknown): ExitCodeRead {
+  if (raw === null || raw === undefined) {
+    return { kind: "running" };
+  }
+  const n = readForeignSafeInteger(raw);
+  if (n.ok === true) {
+    return { kind: "exited", code: n.value };
+  }
+  return { kind: "refused" };
+}
+
+function readChildSignalCode(raw: unknown): SignalCodeRead {
+  if (raw === null || raw === undefined) {
+    return { kind: "running" };
+  }
+  if (typeof raw === "string" && raw.length > 0) {
+    return { kind: "signaled", signal: raw };
+  }
+  return { kind: "refused" };
+}
+
+function custodianAlive(child: ChildProcess): boolean {
+  const exit = readChildExitCode(child.exitCode);
+  switch (exit.kind) {
+    case "running":
+      break;
+    case "exited":
+      return false;
+    case "refused":
+      return false;
+    default: {
+      const _closed: never = exit;
+      void _closed;
+      return false;
+    }
+  }
+  const sig = readChildSignalCode(child.signalCode);
+  switch (sig.kind) {
+    case "running":
+      return true;
+    case "signaled":
+      return false;
+    case "refused":
+      return false;
+    default: {
+      const _closed: never = sig;
+      void _closed;
+      return false;
+    }
+  }
+}
+
 function terminateChild(child: ChildProcess): void {
-  if (child.exitCode !== null || child.signalCode !== null) {
+  if (!custodianAlive(child)) {
+    liveCustodians.delete(child);
     return;
   }
   try {
     child.kill("SIGTERM");
   } catch {
-    return;
-  }
-  const timer = setTimeout(() => {
-    if (child.exitCode !== null || child.signalCode !== null) {
-      return;
-    }
     try {
       child.kill("SIGKILL");
     } catch {
       // already exited
     }
-  }, SIGTERM_GRACE_MS);
-  child.once("exit", () => {
-    clearTimeout(timer);
-  });
+    liveCustodians.delete(child);
+    return;
+  }
+  const deadline = intrinsicNow() + SIGTERM_GRACE_MS;
+  while (custodianAlive(child) && intrinsicNow() < deadline) {
+    // Busy-wait so SIGKILL does not depend on a later event-loop turn.
+  }
+  if (!custodianAlive(child)) {
+    liveCustodians.delete(child);
+    return;
+  }
+  try {
+    child.kill("SIGKILL");
+  } catch {
+    // already exited
+  }
+  liveCustodians.delete(child);
 }
 
 function isAgain(error: unknown): boolean {
@@ -132,7 +279,7 @@ function writeAll(fd: number, buffer: Uint8Array): void {
 
 function readExact(fd: number, n: number): Uint8Array {
   const deadline = intrinsicNow() + RPC_DEADLINE_MS;
-  const out = new Uint8Array(n);
+  const out = new intrinsicUint8Array(n);
   let offset = 0;
   try {
     while (offset < n) {
@@ -159,19 +306,36 @@ function readExact(fd: number, n: number): Uint8Array {
 
 function encodeName(name: string): Uint8Array {
   const encoded = new TextEncoder().encode(name);
-  const out = new Uint8Array(2 + encoded.length);
+  const out = new intrinsicUint8Array(2 + encoded.length);
   out[0] = (encoded.length >> 8) & 0xff;
   out[1] = encoded.length & 0xff;
-  out.set(encoded, 2);
+  intrinsicApply(intrinsicTypedArraySet, out, [encoded, 2]);
   return out;
 }
 
 function isDetachedBuffer(buffer: ArrayBufferLike): boolean {
-  if (!(buffer instanceof ArrayBuffer)) return false;
-  const rec = buffer as ArrayBuffer & { readonly detached?: unknown };
-  if (typeof rec.detached === "boolean") return rec.detached;
+  if (!(buffer instanceof intrinsicArrayBuffer)) return false;
+  switch (intrinsicDetachedGet.kind) {
+    case "captured": {
+      try {
+        const flag = intrinsicApply(intrinsicDetachedGet.fn, buffer, []);
+        if (flag === true) return true;
+        if (flag === false) return false;
+      } catch {
+        return true;
+      }
+      break;
+    }
+    case "absent":
+      break;
+    default: {
+      const _closed: never = intrinsicDetachedGet;
+      void _closed;
+      return true;
+    }
+  }
   try {
-    void new Uint8Array(buffer);
+    void new intrinsicUint8Array(buffer);
     return false;
   } catch {
     return true;
@@ -184,10 +348,20 @@ function allocateNonDetachableSecret(data: Uint8Array): {
   wipe(): boolean;
 } {
   const pages = Math.max(1, Math.ceil(data.length / WASM_PAGE));
-  const memory = new WebAssembly.Memory({ initial: pages });
-  const backing = new Uint8Array(memory.buffer);
+  const memory = new intrinsicWasmMemory({ initial: pages });
+  const bufferGet = requireCaptured(intrinsicMemoryBufferGet, "Memory.prototype.buffer");
+  const rawBuffer = intrinsicApply(bufferGet, memory, []);
+  if (!(rawBuffer instanceof intrinsicArrayBuffer)) {
+    throw new SecretArenaUnavailable("SecretArena memory buffer is unavailable");
+  }
+  const backing = new intrinsicUint8Array(rawBuffer);
+  const taBufferGet = requireCaptured(intrinsicTypedBufferGet, "TypedArray.prototype.buffer");
+  const taBuffer = intrinsicApply(taBufferGet, backing, []);
+  if (taBuffer !== rawBuffer) {
+    throw new SecretArenaUnavailable("SecretArena backing buffer identity failed");
+  }
   try {
-    backing.set(data);
+    intrinsicApply(intrinsicTypedArraySet, backing, [data]);
   } catch (error) {
     try {
       intrinsicApply(intrinsicFill, backing, [0]);
@@ -196,13 +370,33 @@ function allocateNonDetachableSecret(data: Uint8Array): {
     }
     throw error;
   }
-  const view = backing.subarray(0, data.length);
+  const subarray = requireCaptured(intrinsicSubarray, "TypedArray.prototype.subarray");
+  const viewRaw = intrinsicApply(subarray, backing, [0, data.length]);
+  if (!(viewRaw instanceof intrinsicUint8Array)) {
+    intrinsicApply(intrinsicFill, backing, [0]);
+    throw new SecretArenaUnavailable("SecretArena secret view is unavailable");
+  }
+  const view = viewRaw;
   return {
     view,
-    buffer: memory.buffer,
+    buffer: rawBuffer,
     wipe(): boolean {
       try {
-        intrinsicApply(intrinsicFill, backing.subarray(0, data.length), [0]);
+        intrinsicApply(intrinsicFill, backing, [0]);
+        const lengthGet = requireCaptured(intrinsicTypedLengthGet, "TypedArray.prototype.length");
+        const byteLengthGet = requireCaptured(intrinsicTypedByteLengthGet, "TypedArray.prototype.byteLength");
+        const rawLen = intrinsicApply(lengthGet, backing, []);
+        const rawBytes = intrinsicApply(byteLengthGet, backing, []);
+        const lenRead = readForeignSafeInteger(rawLen);
+        const bytesRead = readForeignSafeInteger(rawBytes);
+        if (lenRead.ok !== true || bytesRead.ok !== true || lenRead.value < 0 || bytesRead.value !== lenRead.value) {
+          return false;
+        }
+        for (let i = 0; i < lenRead.value; i += 1) {
+          if (backing[i] !== 0) {
+            return false;
+          }
+        }
         return true;
       } catch {
         return false;
@@ -219,15 +413,15 @@ function forbidTransferOn(buffer: ArrayBuffer): () => void {
     throw new Error(TRANSFER_FORBIDDEN);
   };
   for (const name of ["transfer", "transferToFixedLength"] as const) {
-    const desc = Object.getOwnPropertyDescriptor(buffer, name);
+    const desc = intrinsicGetOwnPropertyDescriptor(buffer, name);
     try {
-      Object.defineProperty(buffer, name, {
+      intrinsicDefineProperty(buffer, name, {
         configurable: true,
         writable: true,
         value: forbid,
       });
       restore.push(() => {
-        if (desc !== undefined) Object.defineProperty(buffer, name, desc);
+        if (desc !== undefined) intrinsicDefineProperty(buffer, name, desc);
         else Reflect.deleteProperty(buffer, name);
       });
     } catch {
@@ -250,7 +444,7 @@ function withTransferForbidden<T>(secretBuffer: ArrayBuffer, fn: () => T): T {
   const names = ["transfer", "transferToFixedLength"] as const;
   const saved: Array<{ name: string; desc: PropertyDescriptor | undefined }> = [];
   for (const name of names) {
-    const desc = Object.getOwnPropertyDescriptor(proto, name);
+    const desc = intrinsicGetOwnPropertyDescriptor(proto, name);
     saved.push({ name, desc });
     const original = proto[name];
     if (typeof original !== "function") continue;
@@ -261,7 +455,7 @@ function withTransferForbidden<T>(secretBuffer: ArrayBuffer, fn: () => T): T {
       return (original as (...inner: unknown[]) => unknown).apply(this, args);
     };
     try {
-      Object.defineProperty(proto, name, {
+      intrinsicDefineProperty(proto, name, {
         configurable: true,
         writable: true,
         value: wrapped,
@@ -275,7 +469,7 @@ function withTransferForbidden<T>(secretBuffer: ArrayBuffer, fn: () => T): T {
   } finally {
     for (const { name, desc } of saved) {
       try {
-        if (desc !== undefined) Object.defineProperty(proto, name, desc);
+        if (desc !== undefined) intrinsicDefineProperty(proto, name, desc);
       } catch {
         // restore best-effort
       }
@@ -303,6 +497,11 @@ export function createSecretArenaProvider(
   } catch {
     throw new SecretArenaUnavailable("SecretArena custodian spawn failed");
   }
+  liveCustodians.add(child);
+  installExitHook();
+  child.once("exit", () => {
+    liveCustodians.delete(child);
+  });
   child.stdout?.pause();
   const stdinFd = streamFd(child.stdin);
   const stdoutFd = streamFd(child.stdout);
@@ -364,7 +563,7 @@ export function createSecretArenaProvider(
     }
   };
 
-  const rpc = (opcode: number, payload: Uint8Array = new Uint8Array(0)): { status: number; data: Uint8Array } => {
+  const rpc = (opcode: number, payload: Uint8Array = new intrinsicUint8Array(0)): { status: number; data: Uint8Array } => {
     if (disposed) throw new SecretArenaUnavailable("SecretArena custodian is disposed");
     if (quarantined && opcode !== OP_STATUS && opcode !== OP_EPOCH) {
       throw new SecretArenaQuarantined();
@@ -372,10 +571,10 @@ export function createSecretArenaProvider(
     if (1 + payload.length > MAX_FRAME) {
       throw new SecretArenaUnavailable("SecretArena put refused");
     }
-    const body = new Uint8Array(1 + payload.length);
+    const body = new intrinsicUint8Array(1 + payload.length);
     body[0] = opcode;
-    body.set(payload, 1);
-    const header = new Uint8Array(4);
+    intrinsicApply(intrinsicTypedArraySet, body, [payload, 1]);
+    const header = new intrinsicUint8Array(4);
     const len = body.length;
     header[0] = (len >>> 24) & 0xff;
     header[1] = (len >>> 16) & 0xff;
@@ -398,7 +597,11 @@ export function createSecretArenaProvider(
       }
       resp = readExact(stdoutFd, respLen);
       const status = resp[0] ?? ST_QUARANTINED;
-      const data = Uint8Array.from(resp.subarray(1));
+      const sliceRaw = intrinsicApply(requireCaptured(intrinsicSubarray, "TypedArray.prototype.subarray"), resp, [1]);
+      if (!(sliceRaw instanceof intrinsicUint8Array)) {
+        throw new SecretArenaUnavailable("SecretArena custodian frame is unavailable");
+      }
+      const data = new intrinsicUint8Array(sliceRaw);
       if (status === ST_QUARANTINED) {
         markQuarantined();
       }
@@ -566,9 +769,9 @@ export function createSecretArenaProvider(
     put(name: string, value: Uint8Array): void {
       if (quarantined) throw new SecretArenaQuarantined();
       const nameBytes = encodeName(name);
-      const payload = new Uint8Array(nameBytes.length + value.length);
-      payload.set(nameBytes, 0);
-      payload.set(value, nameBytes.length);
+      const payload = new intrinsicUint8Array(nameBytes.length + value.length);
+      intrinsicApply(intrinsicTypedArraySet, payload, [nameBytes, 0]);
+      intrinsicApply(intrinsicTypedArraySet, payload, [value, nameBytes.length]); /* AUTH_ARENA_GUARD_PUT_SET */
       try {
         const { status } = rpc(OP_PUT, payload);
         if (status === ST_QUARANTINED) enterQuarantine();
