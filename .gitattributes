@@ -3,6 +3,7 @@
 
 # WSL-run regression probe must remain directly executable from Windows checkouts.
 scripts/tests/run-rd1413-wamr-context-probe.sh text eol=lf
+packages-ts/galerina-framework-app-kernel/tests/secret-arena-fake-* text eol=lf
 
 # Workflow source locks and embedded shell scripts require identical LF bytes.
 .github/workflows/*.yml text eol=lf
