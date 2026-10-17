@@ -42,6 +42,16 @@ export type {
   ReleaseStatus,
 } from "./release-commit-point.js";
 
+export const ERR_SECRET_GATE_WIPE_FAILED = "ERR_SECRET_GATE_WIPE_FAILED";
+
+export class SecretGateWipeFailed extends Error {
+  readonly code = ERR_SECRET_GATE_WIPE_FAILED;
+  constructor(message = "SecretGate: staged secret wipe failed") {
+    super(message);
+    this.name = "SecretGateWipeFailed";
+  }
+}
+
 /**
  * The boot-resolved secrets provider the kernel owns for the process lifetime. Structurally
  * satisfied by the ext-secrets-spore `SealArena` (arena.ts has/use). Fail-closed by contract:
@@ -393,7 +403,7 @@ export function createSecretGate(
       }
       authority.dropIfUnused(lease.leaseId, lease.token);
       if (stagedWipeFailed && deliverySucceeded) {
-        throw new Error("SecretGate: staged secret wipe failed");
+        throw new SecretGateWipeFailed();
       }
     }
   }

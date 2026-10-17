@@ -540,14 +540,26 @@ export function createSecretArenaProvider(
       }
       let epoch = 0;
       for (let i = 0; i < 8; i += 1) {
-        epoch = epoch * 256 + (data[i] ?? 0);
+        const byte = data[i];
+        if (typeof byte !== "number") {
+          wipeOrQuarantine(data);
+          markQuarantined();
+          throw new SecretArenaUnavailable("SecretArena epoch is unavailable");
+        }
+        epoch = epoch * 256 + byte;
       }
-      wipeOrQuarantine(data);
       if (!Number.isSafeInteger(epoch) || epoch < 0) {
+        wipeOrQuarantine(data);
         markQuarantined();
         throw new SecretArenaUnavailable("SecretArena epoch is unavailable");
       }
+      if (epoch < lastEpoch) {
+        wipeOrQuarantine(data);
+        markQuarantined();
+        throw new SecretArenaUnavailable("SecretArena epoch is stale");
+      }
       lastEpoch = epoch;
+      wipeOrQuarantine(data);
       if (quarantined) return lastEpoch;
       return epoch;
     },
