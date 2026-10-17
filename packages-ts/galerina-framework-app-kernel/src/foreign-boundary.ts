@@ -113,21 +113,76 @@ function captureFill(): IntrinsicFill {
   return { kind: "captured", fn: fill as (this: unknown, value: number) => unknown }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */
 }
 
-function resolveIntrinsics(lengthGet: IntrinsicGetter, fill: IntrinsicFill): IntrinsicsState {
-  switch (lengthGet.kind) {
+function captureTypedBufferGetter(): IntrinsicGetter {
+  let desc: PropertyDescriptor | undefined;
+  try {
+    desc = Object.getOwnPropertyDescriptor(TYPED_ARRAY_PROTO, "buffer");
+  } catch {
+    return { kind: "absent" };
+  }
+  if (desc === undefined || typeof desc.get !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: desc.get };
+}
+
+function captureResizableGetter(): IntrinsicGetter {
+  let desc: PropertyDescriptor | undefined;
+  try {
+    desc = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "resizable");
+  } catch {
+    return { kind: "absent" };
+  }
+  if (desc === undefined || typeof desc.get !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: desc.get };
+}
+
+function captureSabByteLengthGetter(): IntrinsicGetter {
+  if (typeof SharedArrayBuffer !== "function") {
+    return { kind: "absent" };
+  }
+  let desc: PropertyDescriptor | undefined;
+  try {
+    desc = Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype, "byteLength");
+  } catch {
+    return { kind: "absent" };
+  }
+  if (desc === undefined || typeof desc.get !== "function") {
+    return { kind: "absent" };
+  }
+  return { kind: "captured", fn: desc.get };
+}
+
+function getterIsCaptured(cap: IntrinsicGetter): boolean {
+  switch (cap.kind) {
     case "captured":
-      break;
+      return true;
     case "absent":
-      return { kind: "absent" };
+      return false;
     default: {
-      const _closed: never = lengthGet;
+      const _closed: never = cap;
       void _closed;
-      return { kind: "absent" };
+      return false;
     }
+  }
+}
+
+function resolveIntrinsics(
+  lengthGet: IntrinsicGetter,
+  fill: IntrinsicFill,
+  bufferGet: IntrinsicGetter,
+  resizableGet: IntrinsicGetter,
+  sabGet: IntrinsicGetter,
+  sabExists: boolean,
+): IntrinsicsState {
+  if (getterIsCaptured(lengthGet) !== true) {
+    return { kind: "absent" };
   }
   switch (fill.kind) {
     case "captured":
-      return { kind: "ready" };
+      break;
     case "absent":
       return { kind: "absent" };
     default: {
@@ -136,11 +191,32 @@ function resolveIntrinsics(lengthGet: IntrinsicGetter, fill: IntrinsicFill): Int
       return { kind: "absent" };
     }
   }
+  if (getterIsCaptured(bufferGet) !== true) {
+    return { kind: "absent" };
+  }
+  if (getterIsCaptured(resizableGet) !== true) {
+    return { kind: "absent" };
+  }
+  if (sabExists === true && getterIsCaptured(sabGet) !== true) {
+    return { kind: "absent" };
+  }
+  return { kind: "ready" };
 }
 
 const INTRINSIC_BYTE_LENGTH_GET = captureByteLengthGetter();
 const INTRINSIC_FILL = captureFill();
-const INTRINSICS = resolveIntrinsics(INTRINSIC_BYTE_LENGTH_GET, INTRINSIC_FILL);
+const INTRINSIC_BUFFER_GET = captureTypedBufferGetter();
+const INTRINSIC_RESIZABLE_GET = captureResizableGetter();
+const INTRINSIC_SAB_BYTE_LENGTH_GET = captureSabByteLengthGetter();
+const SHARED_ARRAY_BUFFER_PRESENT = typeof SharedArrayBuffer === "function";
+const INTRINSICS = resolveIntrinsics(
+  INTRINSIC_BYTE_LENGTH_GET,
+  INTRINSIC_FILL,
+  INTRINSIC_BUFFER_GET,
+  INTRINSIC_RESIZABLE_GET,
+  INTRINSIC_SAB_BYTE_LENGTH_GET,
+  SHARED_ARRAY_BUFFER_PRESENT,
+);
 
 function intrinsicLength(chunk: object): ForeignNumberRead {
   switch (INTRINSIC_BYTE_LENGTH_GET.kind) {
@@ -193,24 +269,79 @@ function isExactUint8Array(value: unknown): value is Uint8Array {
 }
 
 function classifyBuffer(chunk: Uint8Array): BufferKind {
-  const buf = chunk.buffer;
-  if (typeof SharedArrayBuffer === "function") {
-    try {
-      if (buf instanceof SharedArrayBuffer) {
-        return { kind: "forbidden" };
-      }
-    } catch {
+  switch (INTRINSIC_BUFFER_GET.kind) {
+    case "captured":
+      break;
+    case "absent":
+      return { kind: "forbidden" };
+    default: {
+      const _closed: never = INTRINSIC_BUFFER_GET;
+      void _closed;
       return { kind: "forbidden" };
     }
   }
-  const flag = (buf as { readonly resizable?: unknown }).resizable;
-  if (flag === true) {
+  let buf: unknown;
+  try {
+    buf = Reflect.apply(INTRINSIC_BUFFER_GET.fn, chunk, []);
+  } catch {
     return { kind: "forbidden" };
   }
-  if (flag === false || flag === undefined) {
+  if (SHARED_ARRAY_BUFFER_PRESENT === true) {
+    switch (INTRINSIC_SAB_BYTE_LENGTH_GET.kind) {
+      case "captured": {
+        try {
+          Reflect.apply(INTRINSIC_SAB_BYTE_LENGTH_GET.fn, buf, []);
+          return { kind: "forbidden" };
+        } catch {
+          break;
+        }
+      }
+      case "absent":
+        return { kind: "forbidden" };
+      default: {
+        const _closed: never = INTRINSIC_SAB_BYTE_LENGTH_GET;
+        void _closed;
+        return { kind: "forbidden" };
+      }
+    }
+  }
+  switch (INTRINSIC_RESIZABLE_GET.kind) {
+    case "captured":
+      break;
+    case "absent":
+      return { kind: "forbidden" };
+    default: {
+      const _closed: never = INTRINSIC_RESIZABLE_GET;
+      void _closed;
+      return { kind: "forbidden" };
+    }
+  }
+  let flag: unknown;
+  try {
+    flag = Reflect.apply(INTRINSIC_RESIZABLE_GET.fn, buf, []);
+  } catch {
+    return { kind: "forbidden" };
+  }
+  const classified = classifyResizableFlag(flag);
+  switch (classified.kind) {
+    case "fixed":
+      return { kind: "fixed" };
+    case "forbidden":
+      return { kind: "forbidden" };
+    default: {
+      const _closed: never = classified;
+      void _closed;
+      return { kind: "forbidden" };
+    }
+  }
+}
+
+/** Closed: only a proven false resizable flag is a fixed buffer. True and unexpected refuse. */
+function classifyResizableFlag(flag: unknown): BufferKind {
+  if (flag === false) {
     return { kind: "fixed" };
   }
-  return { kind: "forbidden" };
+  return { kind: "forbidden" }; /* AUTH_VERIFY_GUARD_RESIZABLE_NOT_FALSE */
 }
 
 async function cancelReader(reader: CappedStreamReader): Promise<void> {
@@ -278,7 +409,15 @@ export async function readBodyCapped(
         await cancelReader(reader);
         return { kind: "refused" };
       }
-      const bufKind = classifyBuffer(value);
+      let bufKind: BufferKind;
+      try {
+        bufKind = classifyBuffer(value);
+      } catch {
+        intrinsicWipe(value);
+        wipeOwned(chunks);
+        await cancelReader(reader);
+        return { kind: "refused" };
+      }
       switch (bufKind.kind) {
         case "fixed":
           break;

@@ -252,7 +252,52 @@ try {
     "  return { kind: \"captured\", fn: fill as (this: unknown, value: number) => unknown }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */",
     "  return { kind: \"absent\" }; /* AUTH_VERIFY_GUARD_FILL_CAPTURE */",
   ));
-  expectRed("fill-absent-refuses-reads", "wipes source chunks after ok copy");
+  expectRed("fill-absent-refuses-reads", "foreign-boundary captured fill is required for a successful read");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "    buf = Reflect.apply(INTRINSIC_BUFFER_GET.fn, chunk, []);",
+    "    buf = chunk.buffer;",
+  ));
+  expectRed("buffer-via-own-property", "foreign-boundary P35 own buffer getter cannot hide a resizable shrink");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "    flag = Reflect.apply(INTRINSIC_RESIZABLE_GET.fn, buf, []);",
+    "    flag = buf.resizable;",
+  ));
+  expectRed("resizable-via-own-property", "foreign-boundary P36 own resizable false cannot hide a resizable shrink");
+
+  restore();
+  mutateFb((s) => s
+    .replace(
+      "    buf = Reflect.apply(INTRINSIC_BUFFER_GET.fn, chunk, []);",
+      "    buf = chunk.buffer;",
+    )
+    .replace(
+      "          Reflect.apply(INTRINSIC_SAB_BYTE_LENGTH_GET.fn, buf, []);",
+      "          if (buf instanceof SharedArrayBuffer) { return { kind: \"forbidden\" }; } throw new Error(\"not sab\");",
+    ));
+  expectRed("sab-via-instanceof", "foreign-boundary P37 own buffer getter cannot hide a SharedArrayBuffer");
+
+  restore();
+  mutateFb((s) => s
+    .replace(
+      "    buf = Reflect.apply(INTRINSIC_BUFFER_GET.fn, chunk, []);",
+      "    throw new Error(\"classify boom\");",
+    )
+    .replace(
+      "      try {\n        bufKind = classifyBuffer(value);\n      } catch {\n        intrinsicWipe(value);\n        wipeOwned(chunks);\n        await cancelReader(reader);\n        return { kind: \"refused\" };\n      }",
+      "      try {\n        bufKind = classifyBuffer(value);\n      } catch {\n        wipeOwned(chunks);\n        await cancelReader(reader);\n        return { kind: \"refused\" };\n      }",
+    ));
+  expectRed("classify-throw-unwiped", "foreign-boundary P38 throwing buffer getter does not escape and the chunk is wiped");
+
+  restore();
+  mutateFb((s) => s.replace(
+    "  return { kind: \"forbidden\" }; /* AUTH_VERIFY_GUARD_RESIZABLE_NOT_FALSE */",
+    "  return { kind: \"fixed\" }; /* AUTH_VERIFY_GUARD_RESIZABLE_NOT_FALSE */",
+  ));
+  expectRed("classify-unexpected-flag-admits", "foreign-boundary P36 own resizable false cannot hide a resizable shrink");
 
   restore();
   const green = spawnSync("node", ["--test", join(here, "auth-verify-route.test.mjs")], {

@@ -1699,14 +1699,31 @@ test("foreign-boundary readBodyCapped assembly catch wipes chunks", async () => 
   assert.equal(zeroed(chunk), true);
 });
 
-test("foreign-boundary readBodyCapped refuses resizable and SharedArrayBuffer chunks", async () => {
-  let rab;
+test("foreign-boundary captured fill is required for a successful read", async () => {
+  const chunk = new Uint8Array([1, 2, 3]);
+  let threw = false;
+  let result;
   try {
-    rab = new ArrayBuffer(4, { maxByteLength: 16 });
+    result = await readBodyCapped(streamOf([chunk]), 16);
   } catch {
-    rab = undefined;
+    threw = true;
   }
-  assert.equal(rab === undefined, false);
+  assert.equal(threw, false);
+  assert.equal(result.kind, "ok");
+  assert.deepEqual(Array.from(result.body), [1, 2, 3]);
+  assert.equal(zeroed(chunk), true);
+});
+
+test("foreign-boundary readBodyCapped refuses resizable and SharedArrayBuffer chunks", async () => {
+  /** @type {{ kind: "present", buffer: ArrayBuffer } | { kind: "absent" }} */
+  let rabHold;
+  try {
+    rabHold = { kind: "present", buffer: new ArrayBuffer(4, { maxByteLength: 16 }) };
+  } catch {
+    rabHold = { kind: "absent" };
+  }
+  assert.equal(rabHold.kind, "present");
+  const rab = rabHold.buffer;
   const resized = new Uint8Array(rab);
   resized.set([9, 9, 9, 9]);
   const tail = new Uint8Array([5]);
@@ -1756,4 +1773,97 @@ test("foreign-boundary readBodyCapped refuses resizable and SharedArrayBuffer ch
   assert.equal(sabThrew, false);
   assert.equal(sabResult.kind, "refused");
   assert.equal(zeroed(shared), true);
+});
+
+test("foreign-boundary P35 own buffer getter cannot hide a resizable shrink", async () => {
+  const rab = new ArrayBuffer(4, { maxByteLength: 16 });
+  const chunk = new Uint8Array(rab);
+  chunk.set([9, 9, 9, 9]);
+  Object.defineProperty(chunk, "buffer", { get() { return new ArrayBuffer(4); } });
+  const tail = new Uint8Array([5]);
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk, tail], (i) => {
+      if (i === 1) rab.resize(1);
+    }), 16);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "refused");
+  assert.equal(zeroed(chunk), true);
+});
+
+test("foreign-boundary P36 own resizable false cannot hide a resizable shrink", async () => {
+  const rab = new ArrayBuffer(4, { maxByteLength: 16 });
+  Object.defineProperty(rab, "resizable", { value: false });
+  const chunk = new Uint8Array(rab);
+  chunk.set([9, 9, 9, 9]);
+  const tail = new Uint8Array([5]);
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk, tail], (i) => {
+      if (i === 1) rab.resize(1);
+    }), 16);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "refused");
+  assert.equal(zeroed(chunk), true);
+});
+
+test("foreign-boundary P37 own buffer getter cannot hide a SharedArrayBuffer", async () => {
+  const sab = new SharedArrayBuffer(4);
+  const chunk = new Uint8Array(sab);
+  chunk.set([8, 8, 8, 8]);
+  Object.defineProperty(chunk, "buffer", { get() { return new ArrayBuffer(4); } });
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 16);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "refused");
+  assert.equal(zeroed(chunk), true);
+});
+
+test("foreign-boundary P38 throwing buffer getter does not escape and the chunk is wiped", async () => {
+  const chunk = new Uint8Array([1, 2]);
+  Object.defineProperty(chunk, "buffer", { get() { throw new Error("buffer boom"); } });
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 16);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "ok");
+  assert.equal(zeroed(chunk), true);
+});
+
+test("foreign-boundary post-load resizable getter tamper cannot reclassify a fixed buffer", async () => {
+  const chunk = new Uint8Array([3, 4]);
+  const orig = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "resizable");
+  Object.defineProperty(ArrayBuffer.prototype, "resizable", {
+    configurable: true,
+    get() { return 1; },
+  });
+  let threw = false;
+  let result;
+  try {
+    result = await readBodyCapped(streamOf([chunk]), 16);
+  } catch {
+    threw = true;
+  } finally {
+    Object.defineProperty(ArrayBuffer.prototype, "resizable", orig);
+  }
+  assert.equal(threw, false);
+  assert.equal(result.kind, "ok");
+  assert.equal(zeroed(chunk), true);
 });
