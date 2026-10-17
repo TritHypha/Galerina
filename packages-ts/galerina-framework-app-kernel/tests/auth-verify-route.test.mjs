@@ -601,12 +601,23 @@ test("verifier-dependency: C WAMR host does not link Rust; #183 crate-type is rl
   for (const src of [hostC, verdictC, hostH]) {
     assert.equal(/rustc|libvok_artifact|extern "C" rust|cargo build/i.test(src), false);
   }
-  const u6bCargo = "C:/Users/phill/AppData/Local/Temp/galerina-u6b-vok-digest-20261016/packages-ts/galerina-core-runtime/native/vok-authority/Cargo.toml";
-  const cargo = readFileSync(u6bCargo, "utf8");
-  assert.equal(cargo.includes('crate-type = ["rlib"]'), true);
+  const pinPath = join(here, "fixtures", "ead2d7cc-vok-authority-Cargo.json");
+  const cargoPath = join(here, "fixtures", "ead2d7cc-vok-authority-Cargo.toml");
+  const pinRaw = readFileSync(pinPath);
+  const cargoBytes = readFileSync(cargoPath);
+  const pin = JSON.parse(pinRaw.toString("utf8"));
+  assert.equal(pin.schema, "galerina.test.only.auth-verify.verifier-pin.v1");
+  assert.equal(pin.pinnedCommit, "ead2d7cc3f63f8a971da184458758d173f58bebc");
+  assert.equal(pin.path, "packages-ts/galerina-core-runtime/native/vok-authority/Cargo.toml");
+  assert.equal(pin.gitBlobId, "7d346c12a6dae822cc96d06bd9520f63224eed63");
+  assert.equal(pin.crateTypeLine, 'crate-type = ["rlib"]');
+  const cargoSha = createHash("sha256").update(cargoBytes).digest("hex");
+  assert.equal(cargoSha, pin.sha256);
+  const cargo = cargoBytes.toString("utf8");
+  assert.equal(cargo.includes(pin.crateTypeLine), true);
   assert.equal(cargo.includes("cdylib"), false);
   assert.equal(cargo.includes("staticlib"), false);
-  assert.equal(AUTH_VERIFY_PINNED_VERIFIER_COMMIT, "ead2d7cc3f63f8a971da184458758d173f58bebc");
+  assert.equal(AUTH_VERIFY_PINNED_VERIFIER_COMMIT, pin.pinnedCommit);
 });
 
 test("S-01 not-matched is boolean-only success", async () => {

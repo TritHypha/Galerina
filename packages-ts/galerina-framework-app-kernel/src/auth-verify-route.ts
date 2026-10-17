@@ -12,12 +12,6 @@
  * handles refuse. Tests use the synthetic test-only identifiers below.
  */
 
-declare module "node:crypto" {
-  export function createHash(algorithm: string): {
-    update(data: Uint8Array): { digest(encoding: "hex"): string };
-  };
-}
-
 import { createHash } from "node:crypto";
 import {
   ReleaseCommitAuthority,
@@ -237,6 +231,20 @@ function httpStatusFor(code: AuthVerifyCode, spawnFailure: boolean): number {
   const mapped = HTTP_BY_CODE[code];
   if (mapped === undefined) return 503;
   return mapped;
+}
+
+type SecretAdmitBoundary =
+  | { readonly kind: "admitted" }
+  | { readonly kind: "refused"; readonly code: "secret_unavailable" };
+
+function admitAtRouteBoundary(raw: "secret_unavailable" | null): SecretAdmitBoundary {
+  if (raw === "secret_unavailable") {
+    return { kind: "refused", code: "secret_unavailable" };
+  }
+  if (raw === null) {
+    return { kind: "admitted" };
+  }
+  return { kind: "refused", code: "secret_unavailable" };
 }
 
 function sha256Hex(bytes: Uint8Array): string {
@@ -653,11 +661,22 @@ export function createAuthVerifyRoute(options: AuthVerifyRouteOptions): AuthVeri
       leaseState = "fenced";
       return respond("F-23", "provider", "deadline_exceeded");
     }
-    const admit = secretGate.admit(requiredSecrets);
-    if (admit !== null) {
-      authority.fence(leaseId);
-      leaseState = "fenced";
-      return respond("F-18", "provider", "secret_unavailable");
+    const admit = admitAtRouteBoundary(secretGate.admit(requiredSecrets));
+    switch (admit.kind) {
+      case "admitted":
+        break;
+      case "refused": {
+        authority.fence(leaseId);
+        leaseState = "fenced";
+        return respond("F-18", "provider", "secret_unavailable");
+      }
+      default: {
+        const _closed: never = admit;
+        void _closed;
+        authority.fence(leaseId);
+        leaseState = "fenced";
+        return respond("F-18", "provider", "secret_unavailable");
+      }
     }
 
     if (options.revokeBeforeRelease === true) {

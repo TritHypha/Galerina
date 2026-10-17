@@ -1,6 +1,7 @@
 // Mutants for POST /auth/verify. Each must turn a named test red, then restore green.
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,17 +10,8 @@ const pkg = join(here, "..");
 const src = join(pkg, "src", "auth-verify-route.ts");
 const bak = join(pkg, "src", "auth-verify-route.ts.mutant-bak");
 
-function run(tests) {
-  const r = spawnSync(
-    "node",
-    ["--test", "--test-timeout=4000", ...tests.map((name) => join(here, "auth-verify-route.test.mjs"))],
-    {
-      cwd: pkg,
-      encoding: "utf8",
-      env: { ...process.env, NODE_TEST_NAME: tests.join("|") },
-    },
-  );
-  return r;
+function sha256File(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
 function build() {
@@ -67,12 +59,15 @@ function expectRed(label, pattern) {
     process.stdout.write(r.stdout || "");
     process.stderr.write(r.stderr || "");
     console.error(`MUTANT ${label} stayed GREEN`);
-    process.exit(1);
+    process.exitCode = 1;
+    throw new Error(`MUTANT ${label} stayed GREEN`);
   }
   console.log(`MUTANT ${label} RED rc=${r.status}`);
 }
 
+const preSha = sha256File(src);
 copyFileSync(src, bak);
+let finished = false;
 try {
   mutate((s) => s.replace(
     "    const d = authority.consume(leaseId, leaseToken, leaseEpoch); /* AUTH_VERIFY_GUARD_CONSUME_ORDER */",
@@ -111,13 +106,27 @@ try {
   process.stderr.write(green.stderr || "");
   if (green.status !== 0) {
     console.error("restored suite not green");
-    process.exit(1);
+    process.exitCode = 1;
+    throw new Error("restored suite not green");
   }
   console.log("MUTANTS all red then restored green");
+  finished = true;
 } finally {
-  try {
-    copyFileSync(bak, src);
-  } catch {
-    /* restore best-effort */
+  copyFileSync(bak, src);
+  const postSha = sha256File(src);
+  if (postSha !== preSha) {
+    console.error("source sha256 != pre-run sha256");
+    process.exitCode = 1;
+    finished = false;
   }
+  unlinkSync(bak);
+  if (existsSync(bak)) {
+    console.error("mutant-bak still present");
+    process.exitCode = 1;
+    finished = false;
+  }
+  build();
+}
+if (finished !== true) {
+  process.exit(1);
 }

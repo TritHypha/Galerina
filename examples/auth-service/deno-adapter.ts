@@ -28,13 +28,45 @@ Deno.serve(async (req: Request) => {
     // Production POST /auth/verify: 16 KiB cap; no owner-named SLIDE record (Q2)
     // so disclosure refuses F-09. Kernel composition is createAuthVerifyRoute
     // in @galerina/framework-app-kernel (test mode uses the synthetic record).
-    const declared = req.headers.get("content-length");
+    const declaredHeader = req.headers.get("content-length");
+    type ContentLengthField =
+      | { readonly kind: "absent" }
+      | { readonly kind: "present"; readonly value: string };
+    const declared: ContentLengthField = declaredHeader === null
+      ? { kind: "absent" }
+      : { kind: "present", value: declaredHeader };
     const cap = 16384;
-    if (declared !== null && Number(declared) > cap) {
-      return new Response(JSON.stringify({ error: "payload_too_large" }), {
-        status: 413,
-        headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
-      });
+    switch (declared.kind) {
+      case "absent":
+        break;
+      case "present": {
+        if (!/^[0-9]+$/.test(declared.value)) {
+          return new Response(JSON.stringify({ error: "malformed_input" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+          });
+        }
+        const n = Number(declared.value);
+        if (!Number.isSafeInteger(n) || n < 0) {
+          return new Response(JSON.stringify({ error: "malformed_input" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+          });
+        }
+        if (n > cap) {
+          return new Response(JSON.stringify({ error: "payload_too_large" }), {
+            status: 413,
+            headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+          });
+        }
+        break;
+      }
+      default: {
+        return new Response(JSON.stringify({ error: "unknown_outcome" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json", "X-Galerina-Authorizing": "false" },
+        });
+      }
     }
     const body = new Uint8Array(await req.arrayBuffer());
     body.fill(0);
