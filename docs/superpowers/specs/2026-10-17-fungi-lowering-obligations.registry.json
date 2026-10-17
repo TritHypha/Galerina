@@ -1,0 +1,688 @@
+{
+  "schema": "galerina.fungi-lowering-obligations.registry.v1",
+  "version": 1,
+  "status": "DRAFT_FOR_OWNER_REVIEW_NON_AUTHORIZING",
+  "base_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
+  "branch": "grok/fungi-lowering-obligations-20261017",
+  "parent_standard": "docs/security/rd0528-ts-to-fungi-self-hosting-standard.md",
+  "registry_home_reason": "JSON next to the spec. docs/contract-registry/contract-registry.json and build/code-registry/registry.json are generated inventories of a different schema.",
+  "converter_js_in_agents": "UNKNOWN",
+  "converter_js_in_agents_reason": "No JavaScript file in AGENTS converts source to .fungi.",
+  "sandbox_pipeline": "scripts/lib/ts-to-fungi-sandbox/",
+  "skills_applied": [
+    "translating-typescript-to-fungi:core-rule",
+    "translating-typescript-to-fungi:binding-translation-shape",
+    "translating-typescript-to-fungi:workflow-1-4-7-13-25",
+    "writing-fungi:core-rule",
+    "writing-fungi:binding-authoring-shape",
+    "writing-fungi:workflow-4-5-8-14-20-33",
+    "writing-fungi/references/selective-js-conversion.md"
+  ],
+  "closed_ts_scaffold_guarantees": [
+    "FAIL_CLOSED_BEST_EFFORT",
+    "UNKNOWN_IN_TS"
+  ],
+  "closed_ts_fix_needed_now": [
+    "YES",
+    "NO",
+    "UNKNOWN"
+  ],
+  "v1_safety_ts_fix_needed_now_no_allowed": false,
+  "closed_discharge_how": [
+    "BY_TYPE",
+    "BY_LINEARITY",
+    "BY_TOTALITY",
+    "BY_CAPABILITY",
+    "BY_VERIFIER"
+  ],
+  "closed_converter_codes": [
+    "OBLIGATION_UNMAPPABLE",
+    "OBLIGATION_UNKNOWN_ID",
+    "OBLIGATION_ANNOTATION_MALFORMED",
+    "OBLIGATION_UNANNOTATED_BOUNDARY",
+    "OBLIGATION_DISCHARGE_UNKNOWN",
+    "OBLIGATION_CAST_AT_BOUNDARY",
+    "OBLIGATION_REFUSED"
+  ],
+  "converter_default_code": "OBLIGATION_REFUSED",
+  "discharge_how_default": "REFUSES_UNLISTED",
+  "language_gaps": [
+    {
+      "id": "OBLIGATIONS_REGISTRY_LIVE_SYNTAX",
+      "status": "UNKNOWN",
+      "reason": "this draft is not live language syntax",
+      "partial_input": "RD-1908 PRIVATE, not yet in KB indexes (indexes stale)"
+    },
+    {
+      "id": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "no language-level COMMITTED/REFUSED/DELIVERY_UNKNOWN spec found",
+      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale)"
+    },
+    {
+      "id": "SEALED_INTRINSICS_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "no prototype/global-mutation language spec found",
+      "partial_input": "RD-1910 RD-1899 PRIVATE, not yet in KB indexes (indexes stale)"
+    },
+    {
+      "id": "MONOTONIC_TYPED_TIME_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "point/distance algebra only; no monotonicity/overflow/NaN/deadline spec found",
+      "partial_input": "RD-1899 RD-1910 PRIVATE, not yet in KB indexes (indexes stale)"
+    }
+  ],
+  "unmappable_findings": [
+    {
+      "id": "P20-N5",
+      "code": "OBLIGATION_UNMAPPABLE",
+      "reason": "Deno adapter check UNKNOWN; no seed obligation id covers Deno host-shim presence",
+      "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+      "verification": "VERIFIED"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "NO_NULL_NAN",
+      "version": 1,
+      "statement": "Foreign NULL, NaN and Infinity cross exactly one reusable boundary helper into typed UNKNOWN or Ambiguous. These values do not exist in .fungi. An in-band empty marker that collides with a legal stored value refuses.",
+      "ts_scaffold": {
+        "behaviour": "One reusable helper at each FFI/JS-foreign border. Inline null/undefined comparisons in new caller code refuse the brief. stream===null currently yields ok empty in parked TS (P20-N3) and is labelled fail-closed pending Phillip; .fungi zero-trust default is typed UNKNOWN refuse.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Absence is Option or a typed refusal. Shared c-boundary helper: null-test first; panic/exception becomes typed result; no pointer into a temporary; trusted length; no terminator scan; foreign integer range-checked; allocator frees its own allocation.",
+      "rust_verifier_check": "Out-of-process: module bytes contain no null/NaN literal at annotated borders; helper is the unique foreign-presence entry. Never linked into runtime.",
+      "found_in": [
+        {
+          "ref": "#187-IC-F5-NaN-clock",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-187-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F3-NaN-clock",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-ae0adf66-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F5-null-as-valid",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-7abbb60b-20261017.md",
+          "note": "report wording null-as-state; checklist wording null-as-valid"
+        },
+        {
+          "ref": "#182-02-admit-null-as-state",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-u6-420a05ca-20261017.md",
+          "reason": "topic verified in later U6/185 reports; #182-02 filename mapping UNKNOWN"
+        },
+        {
+          "ref": "#188-N2",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-188-20261017.md",
+          "reason": "file exists; specific N2 sentence not isolated without quoting"
+        },
+        {
+          "ref": "RD-1899-1910-null-defaults-nan-ratio",
+          "verification": "UNKNOWN",
+          "source_report": "NONE",
+          "reason": "PRIVATE probe notes; RD-1899..1910 not in KB indexes (indexes stale); bodies not quoted"
+        },
+        {
+          "ref": "P20-N3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "stream===null ok empty"
+        },
+        {
+          "ref": "P24-F4",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "inline null in readChildExitCode/SignalCode"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-6",
+        "item-2"
+      ]
+    },
+    {
+      "id": "EXHAUSTIVE_FAIL_CLOSED",
+      "version": 1,
+      "statement": "Every match or switch ends in a refusing default arm. Owner exception: Rust Ok/Err may omit `_ =>`. Unlisted outcomes refuse.",
+      "ts_scaffold": {
+        "behaviour": "Standing gate on every new switch. Unlisted outcome is 500 or typed refuse, never a silent fallthrough.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "writing-fungi: Bool uses if; Verdict uses check with if/deny/ambig; every other alternative uses match with terminal `_ =>`.",
+      "rust_verifier_check": "Out-of-process: GIR/match tables for annotated flows have a terminal default arm. Ok/Err-only Rust matches may omit `_ =>`.",
+      "found_in": [
+        {
+          "ref": "standing-owner-rule",
+          "verification": "VERIFIED",
+          "source_report": "task.md"
+        },
+        {
+          "ref": "U4-#190-#192-switch-checks",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md"
+        },
+        {
+          "ref": "#186-N2-unlisted-outcome",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-186-20261017.md"
+        },
+        {
+          "ref": "P20-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "absent-intrinsic gates unpinned"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-2"
+      ]
+    },
+    {
+      "id": "TOTAL_EFFECT_OUTCOME",
+      "version": 1,
+      "statement": "Effects never throw. They return COMMITTED, REFUSED or DELIVERY_UNKNOWN. Commit-then-throw and sink-throw become DELIVERY_UNKNOWN by construction. ASSURED only for a current CONSUMED seal. U4 evicted/live/default operation states report DELIVERY_UNKNOWN.",
+      "ts_scaffold": {
+        "behaviour": "Best-effort mapping of throw/ack/audit order onto DELIVERY_UNKNOWN. Language-level spec UNKNOWN.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Total effect algebra COMMITTED | REFUSED | DELIVERY_UNKNOWN with refusing default. Language-level spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: no throw edges from annotated effectful flows; unlisted terminal is DELIVERY_UNKNOWN or refuse.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F3-consume-then-throw",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-ic187fix3-b2045eb6-20261017.md",
+          "reason": "report family VERIFIED; exact phrase consume-then-throw UNKNOWN"
+        },
+        {
+          "ref": "#184-N1-N3-audit-vs-delivered",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-184-20261017.md",
+          "note": "file exists; ack/audit topic present in family"
+        },
+        {
+          "ref": "U4-#190-DELIVERY_UNKNOWN",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4-7f2e6165-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F2-FAILED-seal-ASSURED",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-33854dced-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks wrong ok body"
+        },
+        {
+          "ref": "P24-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "minted flag before provider mint"
+        },
+        {
+          "ref": "P24-R1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "ack before audit commit"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "none-fills-language-gap"
+      ]
+    },
+    {
+      "id": "MONOTONIC_TYPED_TIME",
+      "version": 1,
+      "statement": "Clocks and timeouts are typed monotonic safe integers. Point and distance types have a closed operator table. Unlisted pairs refuse. A point is mintable only by the sealed monotonic clock primitive. No NaN, negative, or Infinity.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed Number.isSafeInteger guards. Proof is .fungi. Language-level spec UNKNOWN.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Point minus point = distance; point plus distance = point; distance plus distance = distance; point plus point and unlisted pairs refuse. Language-level spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: annotated clock values are domain-separated; no NaN/Inf bit patterns at the border.",
+      "found_in": [
+        {
+          "ref": "#187-F5",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-187-20261017.md"
+        },
+        {
+          "ref": "#185-F3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-ae0adf66-20261017.md"
+        },
+        {
+          "ref": "#186-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-186-20261017.md"
+        },
+        {
+          "ref": "U4-overflow-N3-NaN-epoch",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md",
+          "reason": "file VERIFIED; exact phrase NaN epoch UNKNOWN"
+        },
+        {
+          "ref": "P24-N1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "dispose busy-wait"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1"
+      ]
+    },
+    {
+      "id": "LINEAR_SECRET",
+      "version": 1,
+      "statement": "Secret buffers are linear resources. Destroy is wipe, then release, then consume the handle. Setting a handle to null is not a wipe. No implicit copy. Cleanup on every scope exit. Volatile wipe is a .fungi guarantee and UNKNOWN in TS.",
+      "ts_scaffold": {
+        "behaviour": "Best-effort fill on every catch/finally. JS GC, species, and live getters make no-escape unprovable.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Linear secret type with structural wipe-on-exit. No implicit copy constructor. Alias and overlap unrepresentable or typed refuse.",
+      "rust_verifier_check": "Out-of-process: annotated secret values have exactly-once consume; residual bytes after refuse are zero or the module refuses.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F1-unwiped-throw",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix3-b2045eb6-20261017.md"
+        },
+        {
+          "ref": "#189-U3-arena",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u3-bd936a29-20261017.md"
+        },
+        {
+          "ref": "#182-F5-wipe-exits",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks"
+        },
+        {
+          "ref": "P20-R2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "throwing buffer getter unwiped"
+        },
+        {
+          "ref": "P24-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "GM1 set-throw wipe unproven"
+        },
+        {
+          "ref": "P24-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Symbol.species leak"
+        },
+        {
+          "ref": "P24-F3b",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live memory.buffer"
+        },
+        {
+          "ref": "P24-N3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "requireCaptured throw after copy"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-4"
+      ]
+    },
+    {
+      "id": "UNFORGEABLE_CAPABILITY",
+      "version": 1,
+      "statement": "Lease ids and grants are unforgeable single-use capabilities minted only inside a sealed module. No double release. No predictable nonce fallback. Refuse if no CSPRNG. A magic-number check is not unforgeability.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed mint/consume. CSPRNG required. Sealed constructors are .fungi.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Validating smart constructor inside the defining module. Nominal types start with zero operations. No cast or reinterpret.",
+      "rust_verifier_check": "Out-of-process: annotated capability bytes are domain-separated; reuse of a consumed id refuses.",
+      "found_in": [
+        {
+          "ref": "U4-#190-F2-re-release",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4-7f2e6165-20261017.md"
+        },
+        {
+          "ref": "#192-N4-predictable-fallback-nonce",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md"
+        },
+        {
+          "ref": "#185-F1-tampered-grant",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-185-20261017.md"
+        },
+        {
+          "ref": "P24-F3a",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "GM14 local-minted untested"
+        },
+        {
+          "ref": "P24-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "minted flag before mint"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-3"
+      ]
+    },
+    {
+      "id": "SEALED_INTRINSICS",
+      "version": 1,
+      "statement": "No prototype, species, or global mutation. No live brand checks. No exported mutable regex. Intrinsics are sealed at link time. Missing primitives refuse before the first read.",
+      "ts_scaffold": {
+        "behaviour": "Capture getters/methods at module init. Live @@species and @@hasInstance remain a JS residual.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Language primitives; no prototype lookup. Language-level sealed-intrinsics spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: annotated modules do not load live global getters for secret-bearing views.",
+      "found_in": [
+        {
+          "ref": "U6-#191-IC-4d8cfa59-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u6-4d8cfa59-20261017.md"
+        },
+        {
+          "ref": "b67acb23-N1-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u6-b67acb23-20261017.md"
+        },
+        {
+          "ref": "#184-N4-live-intrinsics",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-184-20261017.md"
+        },
+        {
+          "ref": "P20-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "absent-intrinsic gates"
+        },
+        {
+          "ref": "P20-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "step.done read twice"
+        },
+        {
+          "ref": "P20-R1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "own-property shadows"
+        },
+        {
+          "ref": "P24-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Symbol.species"
+        },
+        {
+          "ref": "P24-F3b",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live memory.buffer"
+        },
+        {
+          "ref": "P24-N4",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live @@hasInstance"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-3"
+      ]
+    },
+    {
+      "id": "NO_AMBIENT_AUTHORITY",
+      "version": 1,
+      "statement": "No env-var launcher redirection. No fd inheritance. Spawn needs an explicit capability. No globals or function-scope statics. All state and authority pass through an explicit self/capability argument.",
+      "ts_scaffold": {
+        "behaviour": "Pinned spawn, empty envp, CLOEXEC best-effort. Proof is capability types in .fungi.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Explicit capability argument on every spawn/host call. Unlisted ambient access refuses.",
+      "rust_verifier_check": "Out-of-process: annotated spawn sites carry an explicit capability id; inherited fds and env redirection refuse.",
+      "found_in": [
+        {
+          "ref": "#182-F3-fd-leak",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "#183-fix8-N2-env-redirect",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-183-fix8-ae479605-20261017.md"
+        },
+        {
+          "ref": "#185-F1-unpinned-helper",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-185-20261017.md"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-8"
+      ]
+    },
+    {
+      "id": "BOUNDED_INPUT",
+      "version": 1,
+      "statement": "Length comes from the trusted reader, not a chunk's self-reported byteLength. Hard caps refuse rather than truncate. No terminator scan. Each foreign value is read exactly once through the shared boundary helper.",
+      "ts_scaffold": {
+        "behaviour": "readBodyCapped and stdin 16 MiB caps. Aliasing remains a TS residual (P20-F1).",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Trusted length before copy. Overlap/alias unrepresentable or typed refuse. Cap miss refuses.",
+      "rust_verifier_check": "Out-of-process: annotated readers pass a host-owned length; self-reported lengths refuse.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F1-readBodyCapped",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix-e203511a-20261017.md"
+        },
+        {
+          "ref": "#183-F2-16MiB-stdin",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-183-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks"
+        },
+        {
+          "ref": "P20-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "step.done twice"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1",
+        "item-2"
+      ]
+    },
+    {
+      "id": "DEADLINE_COVERS_ALL",
+      "version": 1,
+      "statement": "Deadlines cover the whole operation, including the final wait. No busy-wait past the typed monotonic deadline. Missing host exit status is not timeout evidence.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed timeout guards. waitpid-past-deadline and dispose busy-wait remain residuals.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Typed monotonic deadline on the whole operation. Child-process completion is an exhaustive union (writing-fungi workflow 20).",
+      "rust_verifier_check": "Out-of-process: annotated wait sites are bound to the same deadline token as the start of the operation.",
+      "found_in": [
+        {
+          "ref": "#182-fix8-52aa1568-F1-waitpid",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-fix8-52aa1568-20261017.md"
+        },
+        {
+          "ref": "#182-F2-timeout-bypass",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "#188-N1-hang",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-188-20261017.md",
+          "reason": "file exists; hang topic also in 182 reports; exact N1 sentence not isolated"
+        },
+        {
+          "ref": "P24-N1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "dispose ~100ms busy-wait"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1"
+      ]
+    }
+  ],
+  "parked_findings_complete": [
+    "P20-F1",
+    "P20-F2",
+    "P20-N2",
+    "P20-N3",
+    "P20-N5",
+    "P20-R1",
+    "P20-R2",
+    "P24-F1",
+    "P24-F2",
+    "P24-F3a",
+    "P24-F3b",
+    "P24-F4",
+    "P24-N1",
+    "P24-N2",
+    "P24-N3",
+    "P24-N4",
+    "P24-R1"
+  ],
+  "annotation": {
+    "form": "// @fungi-obligation ID[,ID] vN -- reason",
+    "placement": "immediately preceding source line of the guarded statement",
+    "blank_line_between_annotation_and_guard": "OBLIGATION_ANNOTATION_MALFORMED",
+    "live_ts_example": "SKIPPED",
+    "live_ts_example_reason": "zero-trust default: do not annotate a live file used by queues 20/24 or open PRs"
+  }
+}
