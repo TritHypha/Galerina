@@ -9,7 +9,10 @@
  * The C host hash-pins the `vok-artifact-verifier` binary, copies those
  * bytes into a sealed memfd, fexecves that memfd with an empty envp,
  * writes a private snapshot of the artifact to stdin, and reads the
- * verdict only from stdout. The verifier hashes stdin itself (it never
+ * verdict only from stdout. The host wipes that snapshot with a
+ * non-elidable byte loop immediately before every free, and confirms
+ * F_GET_SEALS after F_ADD_SEALS on the verifier memfd. The verifier
+ * hashes stdin itself (it never
  * accepts a caller digest), scans every 4-byte window for Wasm magic,
  * mints a process-local Signet, consumes it, and writes:
  *

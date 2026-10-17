@@ -73,8 +73,14 @@ if grep -E 'wamr_vok_bind_bytes|pipe_origin' \
   exit 2
 fi
 if ! grep -q 'memfd_create' "$host_src/wamr_vok_verdict.c" ||
+   ! grep -q 'F_GET_SEALS' "$host_src/wamr_vok_verdict.c" ||
    ! grep -q 'empty_envp' "$host_src/wamr_vok_verdict.c"; then
-  printf 'WAMR_HOST_ROOT %s missing sealed memfd or empty envp\n' \
+  printf 'WAMR_HOST_ROOT %s missing sealed memfd, F_GET_SEALS, or empty envp\n' \
+    "$host_root" >&2
+  exit 2
+fi
+if ! grep -q 'SNAPSHOT_WIPE' "$host_src/wamr_secrets_gateway_host.c"; then
+  printf 'WAMR_HOST_ROOT %s missing snapshot wipe before free\n' \
     "$host_root" >&2
   exit 2
 fi
