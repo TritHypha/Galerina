@@ -1,0 +1,2 @@
+local_readForeignSafeInteger_definitions=0
+helper remains packages/fungi/memory/src/c-boundary.fungi only (untouched on this branch)

@@ -1,0 +1,428 @@
+@version 1
+/// @file: release-commit-point.fungi
+/// @purpose: U4 result-sink commit point. Host holds Maps; this file is the
+///   pure decision table over typed observations. CN-1: no local helper copy;
+///   foreign Ints arrive as (classTag, integer). classTag != 0 refuses Unlisted 11.
+///   Cross-file CALL is NEEDS_LANGUAGE (standalone galerina check). Tests invoke
+///   c-boundary.fungi readForeignSafeInteger on the same vectors.
+/// outcome: 0 released 1 acknowledged 2 fenced 3 replay 4 stale 5 missing
+///   6 delivery-unknown else 11 Unlisted
+/// lease: 0 unused 1 released 2 acknowledged 3 fenced 4 delivery-unknown else 11
+/// recovery (CN-2 ONE shape): 0 RELEASED_ACKED 1 RELEASED_UNACKED 2 REFUSED
+///   3 DELIVERY_UNKNOWN 4 NOT_FOUND else 11
+/// capState: 0 OPEN 1 CLAIMED 2 REVOKED 3 COMMITTED 4 FAILED 5 INDETERMINATE else 11
+/// adapter: 0 IN_PROCESS_BOUND 1 OUT_OF_PROCESS_UNBOUND else 11
+/// competitor: 0 release-begin 1 revocation else 11
+/// packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN).
+/// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
+
+pure flow finish(refusalCode: Int, wiped: Bool) -> Int
+contract {
+  intent { "Pack outcome/recovery code with wipe-flag construct. Unlisted wipe flag refuses as Unlisted." }
+}
+{
+  if wiped == true {
+    return refusalCode + 100
+  }
+  if wiped == false {
+    return refusalCode
+  }
+  return 11
+}
+
+pure flow classifyRecovery(
+  presentToken: Int,
+  retiredToken: Int,
+  tombstoneDroppedToken: Int,
+  leaseState: Int
+) -> Int
+contract {
+  intent { "ONE OperationRecoveryStatus kind. Evicted/live/default report DELIVERY_UNKNOWN. Unlisted refuses 11." }
+}
+{
+  if presentToken != 0 {
+    if presentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if retiredToken != 0 {
+    if retiredToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if tombstoneDroppedToken != 0 {
+    if tombstoneDroppedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if presentToken == 0 {
+    if retiredToken == 1 {
+      return finish(3, true)
+    }
+    if tombstoneDroppedToken == 1 {
+      return finish(3, true)
+    }
+    return finish(4, true)
+  }
+  if leaseState == 2 {
+    return finish(0, true)
+  }
+  if leaseState == 1 {
+    return finish(1, true)
+  }
+  if leaseState == 4 {
+    return finish(3, true)
+  }
+  if leaseState == 3 {
+    return finish(2, true)
+  }
+  if leaseState == 0 {
+    return finish(3, true)
+  }
+  return finish(11, true)
+}
+
+pure flow mintAdmit(
+  idPresentToken: Int,
+  epochClass: Int,
+  epoch: Int,
+  existingPresentToken: Int,
+  existingLease: Int,
+  retiredToken: Int,
+  randomnessPresentToken: Int,
+  atCapToken: Int,
+  issuedFreshToken: Int
+) -> Int
+contract {
+  intent { "Admit a mint or return a packed typed refusal. Absent randomness refuses. Epoch via classTag." }
+}
+{
+  if idPresentToken != 1 {
+    if idPresentToken == 0 {
+      return finish(5, true)
+    }
+    return finish(11, true)
+  }
+  if randomnessPresentToken != 1 {
+    if randomnessPresentToken == 0 {
+      return finish(2, true)
+    }
+    return finish(11, true)
+  }
+  if epochClass != 0 {
+    return finish(11, true)
+  }
+  if epoch < 0 {
+    return finish(4, true)
+  }
+  if retiredToken != 0 {
+    if retiredToken != 1 {
+      return finish(11, true)
+    }
+    return finish(3, true)
+  }
+  if existingPresentToken != 0 {
+    if existingPresentToken != 1 {
+      return finish(11, true)
+    }
+    if existingLease == 0 {
+      return finish(3, true)
+    }
+    return finish(0, true)
+  }
+  if issuedFreshToken != 1 {
+    if issuedFreshToken == 0 {
+      return finish(3, true)
+    }
+    return finish(11, true)
+  }
+  if atCapToken != 0 {
+    if atCapToken != 1 {
+      return finish(11, true)
+    }
+    return finish(2, true)
+  }
+  return finish(0, true)
+}
+
+pure flow consumeStep(
+  presentToken: Int,
+  tokenMatchToken: Int,
+  epochClass: Int,
+  epochMatchToken: Int,
+  leaseState: Int,
+  revokeCommittedToken: Int
+) -> Int
+contract {
+  intent { "Consume is the result-sink commit point D. Revocation committed first refuses. Epoch required." }
+}
+{
+  if presentToken != 1 {
+    if presentToken == 0 {
+      return finish(5, true)
+    }
+    return finish(11, true)
+  }
+  if revokeCommittedToken != 0 {
+    if revokeCommittedToken != 1 {
+      return finish(11, true)
+    }
+    return finish(2, true)
+  }
+  if tokenMatchToken != 1 {
+    if tokenMatchToken == 0 {
+      if leaseState == 0 {
+        return finish(2, true)
+      }
+      return finish(4, true)
+    }
+    return finish(11, true)
+  }
+  if epochClass != 0 {
+    return finish(11, true)
+  }
+  if leaseState == 1 {
+    return finish(3, true)
+  }
+  if leaseState == 4 {
+    return finish(3, true)
+  }
+  if leaseState == 2 {
+    return finish(3, true)
+  }
+  if leaseState == 3 {
+    return finish(2, true)
+  }
+  if leaseState != 0 {
+    return finish(11, true)
+  }
+  if epochMatchToken != 1 {
+    if epochMatchToken == 0 {
+      return finish(4, true)
+    }
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
+
+pure flow ackStep(
+  presentToken: Int,
+  tokenMatchToken: Int,
+  epochPresentToken: Int,
+  epochClass: Int,
+  epochMatchToken: Int,
+  leaseState: Int,
+  auditCommittedToken: Int
+) -> Int
+contract {
+  intent { "ACK only after committed audit. Omitted epoch refuses. Exhaustive lease table, never a ternary." }
+}
+{
+  if presentToken != 1 {
+    if presentToken == 0 {
+      return finish(5, true)
+    }
+    return finish(11, true)
+  }
+  if tokenMatchToken != 1 {
+    if tokenMatchToken == 0 {
+      return finish(4, true)
+    }
+    return finish(11, true)
+  }
+  if epochPresentToken != 1 {
+    if epochPresentToken == 0 {
+      return finish(4, true)
+    }
+    return finish(11, true)
+  }
+  if epochClass != 0 {
+    return finish(11, true)
+  }
+  if epochMatchToken != 1 {
+    if epochMatchToken == 0 {
+      return finish(4, true)
+    }
+    return finish(11, true)
+  }
+  if auditCommittedToken != 1 {
+    if auditCommittedToken == 0 {
+      return finish(6, true)
+    }
+    return finish(11, true)
+  }
+  if leaseState == 2 {
+    return finish(1, true)
+  }
+  if leaseState == 1 {
+    return finish(1, true)
+  }
+  if leaseState == 3 {
+    return finish(2, true)
+  }
+  if leaseState == 4 {
+    return finish(3, true)
+  }
+  if leaseState == 0 {
+    return finish(4, true)
+  }
+  return finish(11, true)
+}
+
+pure flow revokeDelivery(leaseState: Int) -> Int
+contract {
+  intent { "One-way acknowledged to delivery-unknown. Never upgrades. Unlisted lease refuses." }
+}
+{
+  if leaseState == 2 {
+    return finish(6, true)
+  }
+  if leaseState == 0 {
+    return finish(0, true)
+  }
+  if leaseState == 1 {
+    return finish(0, true)
+  }
+  if leaseState == 3 {
+    return finish(0, true)
+  }
+  if leaseState == 4 {
+    return finish(6, true)
+  }
+  return finish(11, true)
+}
+
+pure flow casBegin(capState: Int, competitor: Int) -> Int
+contract {
+  intent { "Q07 one CAS: revocation and release-begin compete on OPEN. Unlisted competitor refuses." }
+}
+{
+  if capState != 0 {
+    if capState == 1 {
+      return finish(3, true)
+    }
+    if capState == 2 {
+      return finish(2, true)
+    }
+    if capState == 3 {
+      return finish(3, true)
+    }
+    if capState == 4 {
+      return finish(2, true)
+    }
+    if capState == 5 {
+      return finish(6, true)
+    }
+    return finish(11, true)
+  }
+  if competitor == 1 {
+    return finish(2, true)
+  }
+  if competitor == 0 {
+    return finish(0, true)
+  }
+  return finish(11, true)
+}
+
+pure flow casCommit(
+  capState: Int,
+  adapterClass: Int,
+  epochMatchToken: Int,
+  revokeAfterBeginToken: Int,
+  crashToken: Int
+) -> Int
+contract {
+  intent { "Q09 per-class commit. Out-of-process COMMITTED unreachable. Revoke-after-begin is DELIVERY_UNKNOWN." }
+}
+{
+  if capState != 1 {
+    if capState == 0 {
+      return finish(5, true)
+    }
+    if capState == 2 {
+      return finish(2, true)
+    }
+    if capState == 5 {
+      return finish(6, true)
+    }
+    return finish(11, true)
+  }
+  if adapterClass != 0 {
+    if adapterClass == 1 {
+      return finish(6, true)
+    }
+    return finish(11, true)
+  }
+  if revokeAfterBeginToken != 0 {
+    if revokeAfterBeginToken != 1 {
+      return finish(11, true)
+    }
+    return finish(6, true)
+  }
+  if crashToken != 0 {
+    if crashToken != 1 {
+      return finish(11, true)
+    }
+    return finish(6, true)
+  }
+  if epochMatchToken != 1 {
+    if epochMatchToken == 0 {
+      return finish(6, true)
+    }
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
+
+pure flow observationPoint(kind: Int) -> Int
+contract {
+  intent { "Only CAS-begin is the release point. Publish/atomics/write-return/fsync/observation refuse." }
+}
+{
+  if kind == 0 {
+    return finish(0, true)
+  }
+  return finish(11, true)
+}
+
+pure flow bytesEqualScan(lenA: Int, lenB: Int, mismatchFoundToken: Int, scanned: Int) -> Int
+contract {
+  intent { "Constant-time full-length scan. Early exit refuses. Length mismatch is unequal." }
+}
+{
+  if lenA < 0 {
+    return finish(11, true)
+  }
+  if lenB < 0 {
+    return finish(11, true)
+  }
+  if scanned < 0 {
+    return finish(11, true)
+  }
+  if mismatchFoundToken != 0 {
+    if mismatchFoundToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if lenA != lenB {
+    return finish(1, true)
+  }
+  if scanned != lenA {
+    return finish(2, true)
+  }
+  if mismatchFoundToken == 1 {
+    return finish(1, true)
+  }
+  return finish(0, true)
+}
+
+pure flow retryAfterUnknown(priorOutcome: Int) -> Int
+contract {
+  intent { "No retry after DELIVERY_UNKNOWN. Other priors refuse unlisted." }
+}
+{
+  if priorOutcome == 6 {
+    return finish(6, true)
+  }
+  return finish(11, true)
+}

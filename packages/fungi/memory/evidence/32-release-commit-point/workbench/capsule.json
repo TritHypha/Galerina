@@ -1,0 +1,8 @@
+{
+  "schema": "galerina.workbench-capsule.v1",
+  "status": "REFUSE",
+  "reason": "REFUSED_RESERVED_DECODER_ID",
+  "decoder": "galerina-source-origin",
+  "notes": "EVB-Q31-2 carried: reserved decoder id refused; HOST/FUNGI views typed UNKNOWN; no relabel; no decoder built. C2 applied under Q31-05 ruling for this file-disjoint unit.",
+  "authorizing": false
+}

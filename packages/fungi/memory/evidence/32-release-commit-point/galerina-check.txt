@@ -1,0 +1,3 @@
+node galerina.mjs check packages/fungi/memory/src/release-commit-point.fungi --strict-types --strict-governance
+exit 0
+✅ packages/fungi/memory/src/release-commit-point.fungi: 0 errors, 0 governance warnings (11 flow(s), 11 top-level declaration(s))
