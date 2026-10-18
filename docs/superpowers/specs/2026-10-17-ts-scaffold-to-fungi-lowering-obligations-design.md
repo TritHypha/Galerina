@@ -62,7 +62,7 @@ The TypeScript tree is a scaffold and a frozen test oracle for parked memory wor
 
 ## Registry
 
-One entry per obligation. Fields: `id` (stable SCREAMING_SNAKE, never reused), `version`, `statement`, `ts_scaffold` {behaviour, guarantee}, `fungi_primitive`, `rust_verifier_check`, `found_in`, `ts_fix_needed_now`, `status`. No JSON null. A missing value is the string `UNKNOWN` plus `reason`. Seed ids below. New ids are added only when a report supports them.
+One entry per obligation. Fields: `id` (stable SCREAMING_SNAKE, never reused), `version`, `statement`, `ts_scaffold` {behaviour, guarantee}, `fungi_primitive`, `rust_verifier_check`, `found_in`, `ts_fix_needed_now`, `status`. Closed `status` values: `DRAFT` | `UNKNOWN` (`closed_obligation_status`); unlisted status refuses (`obligation_status_default` = `REFUSES_UNLISTED`). No JSON null. A missing value is the string `UNKNOWN` plus `reason`. Seed ids below. New ids are added only when a report supports them.
 
 Rendered table (full machine rows in the companion JSON):
 
@@ -78,7 +78,7 @@ Rendered table (full machine rows in the companion JSON):
 | NO_AMBIENT_AUTHORITY | no env-var launcher redirection, no fd inheritance; spawn needs an explicit capability; no globals | YES | FAIL_CLOSED_BEST_EFFORT |
 | BOUNDED_INPUT | length comes from the trusted reader; hard caps refuse rather than truncate; no terminator scan | YES | FAIL_CLOSED_BEST_EFFORT |
 | DEADLINE_COVERS_ALL | deadlines cover the whole operation including the final wait; no busy-wait past the typed deadline | YES | FAIL_CLOSED_BEST_EFFORT |
-| NO_OVERLAPPING_CHUNKS | overlapping or duplicate chunks refused outright (A4; body reader; with BOUNDED_INPUT + LINEAR_SECRET) | YES | UNKNOWN_IN_TS |
+| NO_OVERLAPPING_CHUNKS | overlapping, duplicate, or zero-length chunks refused; ranges half-open; identity is (offset,length) plus disjointness (A4; body reader; with BOUNDED_INPUT + LINEAR_SECRET) | YES | UNKNOWN_IN_TS |
 | HOST_ADAPTER_PRESENCE | absent or unverified host adapter is a typed refusal | YES | UNKNOWN_IN_TS |
 | (unlisted id) | refuses | refuses | refuses |
 
@@ -167,11 +167,11 @@ Discharge receipt, one per obligation, recorded in converter output (not inferre
 | version | integer `vN` | unknown version refuses |
 | source_span | file + start/end offsets | missing span refuses |
 | state | `DISCHARGED` / `CARRIED_UNKNOWN` | unlisted state refuses |
-| how | `BY_TYPE` / `BY_LINEARITY` / `BY_TOTALITY` / `BY_CAPABILITY` / `BY_VERIFIER` (required when state is `DISCHARGED`) | unlisted how refuses |
+| how | `BY_TYPE` / `BY_LINEARITY` / `BY_TOTALITY` / `BY_CAPABILITY` / `BY_VERIFIER` (required when state is `DISCHARGED`; forbidden when state is `CARRIED_UNKNOWN`) | unlisted how refuses; any `how` on `CARRIED_UNKNOWN` refuses as `OBLIGATION_DISCHARGE_UNKNOWN` |
 | carried_refusal | typed refusal the unit returns; required when state is `CARRIED_UNKNOWN` | missing name when CARRIED_UNKNOWN refuses |
-| fungi_construct | named .fungi construct used | missing construct refuses |
+| fungi_construct | when `DISCHARGED`: named .fungi construct used. when `CARRIED_UNKNOWN`: names the construct that returns the carried refusal | missing construct refuses |
 
-`CARRIED_UNKNOWN` never counts as discharged, blocks READY, and must name the typed refusal the unit returns (N5 / C2). It is how a HOLD on an UNKNOWN obligation continues conversion without pretending the obligation is met.
+`CARRIED_UNKNOWN` never counts as discharged, blocks READY, and must name the typed refusal the unit returns (N5 / C2). It is how a HOLD on an UNKNOWN obligation continues conversion without pretending the obligation is met. A `CARRIED_UNKNOWN` receipt that also carries `how` is `OBLIGATION_DISCHARGE_UNKNOWN` (a reader must not count it as discharged).
 
 Composition with `ts-to-fungi-sandbox` (VERIFIED at base: `scripts/lib/ts-to-fungi-sandbox/contracts.mjs` schema `galerina.ts-to-fungi-sandbox.v1`, outcomes `CONVERTED` / `BLOCKED` / `MANUAL_REVIEW`, blockers include `NULLISH` = `BLOCKED_BY_NULL_UNDEFINED_OR_OPTION_BOUNDARY_ABI` and `BINARY64` = `BLOCKED_BY_JAVASCRIPT_BINARY64_OR_NON_INTEGER_NUMBER_ABI`):
 
@@ -194,6 +194,35 @@ Citation carve-out: RD-1899 through RD-1910 are PRIVATE under `ZTF-Knowledge-Bas
 
 (Ideas 5 and 9 belong to brief 30.)
 
+## Addendum D (RD-0778 research input)
+
+Cite by path and sha256 only. Never copy, quote, or export the RD body. Addendum D file sha256 `d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1` HASH_MATCH.
+
+- Path: `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md`
+- sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` (HASH_MATCH, 60907 bytes, working tree 2026-10-18)
+- Label: PRIVATE, 2026-10-18 follow-up uncommitted. The RD number is indexed; the 2026-10-18 follow-up section cited here is uncommitted.
+
+This is a `partial_input` of obligation `TOTAL_EFFECT_OUTCOME` (status UNKNOWN) and of language gap `TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC` (status UNKNOWN). Constraints are research, not discharge.
+
+| n | research constraint (Addendum D paraphrase; not the RD body) |
+|---|---|
+| 1 | Outcome shape Success(value, receipt) / Failed(typed, receipt) / Refused(reason) / Indeterminate(recovery id); Indeterminate maps to DELIVERY_UNKNOWN (owner outcomes COMMITTED / REFUSED / DELIVERY_UNKNOWN). |
+| 2 | Crash, unavailable authority, or a missing / stale / mismatched record is UNKNOWN: never REFUSED and never success. |
+| 3 | No retry without an idempotency proof. |
+| 4 | Consumed authority and current validity are separate fields (one enum cannot carry both). |
+| 5 | Claim and revoke compete on ONE authoritative per-capability state: OPEN -> CLAIMED / REVOKED; CLAIMED -> COMMITTED / FAILED / INDETERMINATE; unlisted transitions refuse. Release at the result sink is the commit point. |
+| 6 | Release requires independent authorization, prepared-result custody, and operation- and generation-bound cleanup-success evidence. Cleanup NotRequired only when the obligation set is provably empty; Pending / Failed / Unknown refuse. |
+| 7 | No ordinary result extraction before that release guard. |
+| 8 | Free is not wipe. |
+| 9 | Refusal after reservation/consumption never restores authority. |
+| 10 | FFI / host aliases are not contained by ownership alone (OPEN). |
+
+Still OPEN, carried as UNKNOWN (do not invent syntax or claim closure):
+
+- Ordering of actual release vs effective revocation (including partial sends).
+- FFI / native containment of aliases.
+- Enforcement of cleanup-evidence binding (operation + generation).
+
 ## Four UNKNOWN language gaps
 
 None of RD-1899..1910 fills these. They stay UNKNOWN, with the RDs above as partial inputs only.
@@ -201,7 +230,7 @@ None of RD-1899..1910 fills these. They stay UNKNOWN, with the RDs above as part
 | gap | status | partial input | refusing default |
 |---|---|---|---|
 | obligations registry / annotation convention | this spec is DRAFT, not live language | RD-1908 carry-explicitly hint | treating the draft as enforced syntax refuses |
-| language-level COMMITTED / REFUSED / DELIVERY_UNKNOWN effect spec | UNKNOWN | RD-1905 / RD-1901 boundary typed-result hints only; nothing on DELIVERY_UNKNOWN | inventing syntax refuses |
+| language-level COMMITTED / REFUSED / DELIVERY_UNKNOWN effect spec | UNKNOWN | RD-1905 / RD-1901 plus RD-0778 path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` label PRIVATE, 2026-10-18 follow-up uncommitted (body not quoted). Constraints 1-10 are research, not discharge. Three OPEN items: release vs revocation ordering; FFI/native alias containment; cleanup-evidence binding enforcement. | inventing syntax refuses |
 | sealed-intrinsics spec | UNKNOWN | sealed constructors and no-cast only; nothing on prototype or global mutation | inventing syntax refuses |
 | typed monotonic time spec | UNKNOWN | point/distance algebra and unit types; nothing on monotonicity, overflow, NaN, or deadlines | inventing syntax refuses |
 
@@ -259,9 +288,11 @@ An existing obligations-registry or source-annotation convention binding TS guar
 
 ## Cited RDs
 
-Indexed (appear in `00-KB-INDEX.md` and/or `AI_INDEX.md` at KB HEAD): RD-0395, RD-0448, RD-0528, RD-0634, RD-0646, RD-0659, RD-0731, RD-0757, RD-0770, RD-0775, RD-0782, RD-0793, RD-0822, RD-0845, RD-1233, RD-1413, RD-1414, RD-1415, RD-1891.
+Indexed (appear in `00-KB-INDEX.md` and/or `AI_INDEX.md` at KB HEAD): RD-0395, RD-0448, RD-0528, RD-0634, RD-0646, RD-0659, RD-0731, RD-0757, RD-0770, RD-0775, RD-0782, RD-0793, RD-0822, RD-0845, RD-1233, RD-1413, RD-1414, RD-1415, RD-1891. RD-0778 is indexed as a number; the 2026-10-18 follow-up cited as partial_input is uncommitted (see Addendum D; path + sha256 only; body not quoted).
 
 PRIVATE, not yet in KB indexes (indexes stale): RD-1899, RD-1900, RD-1901, RD-1902, RD-1904, RD-1905, RD-1906, RD-1907, RD-1908, RD-1909, RD-1910.
+
+RD-0778 follow-up (PRIVATE, 2026-10-18 uncommitted working tree): path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` HASH_MATCH 60907 bytes. Body not quoted.
 
 KB files VERIFIED present: `reference/galerina/galerina-three-valued-governance.md`, `reference/language/capabilities.md`, `reference/specs/capability-registry.yaml`, `reference/galerina/galerina-static-capability-proofs.md`, `reference/galerina/galerina-gradual-capability-inference.md`, `reference/language/restricted-native-boundary.md`.
 
@@ -303,7 +334,7 @@ Each seed-table `found_in` was re-checked against named files under `C:\\Users\\
 
 ## UNKNOWNs with reasons
 
-- Live language-level specs for TOTAL_EFFECT_OUTCOME, SEALED_INTRINSICS, MONOTONIC_TYPED_TIME: not found; RD-1899..1910 are partial inputs only.
+- Live language-level specs for TOTAL_EFFECT_OUTCOME, SEALED_INTRINSICS, MONOTONIC_TYPED_TIME: not found; RD-1899..1910 are partial inputs only. TOTAL_EFFECT_OUTCOME also carries RD-0778 (path+sha256, PRIVATE 2026-10-18 follow-up uncommitted) as research constraints 1-10; three OPEN items remain UNKNOWN.
 - JavaScript source-to-.fungi converter in AGENTS: none. Analysis tool is code-logic-workbench (Addendum C).
 - Skills vs sandbox numeric map: not compared line by line.
 - Sandbox `SandboxRefusal` throw vs typed obligation result: unbridged.

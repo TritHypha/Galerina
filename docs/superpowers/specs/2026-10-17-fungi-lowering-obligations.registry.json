@@ -58,7 +58,64 @@
       "id": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
       "status": "UNKNOWN",
       "reason": "no language-level COMMITTED/REFUSED/DELIVERY_UNKNOWN spec found",
-      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale)"
+      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale); RD-0778 path ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md sha256 9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b label PRIVATE, 2026-10-18 follow-up uncommitted",
+      "rd0778_cite": {
+        "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+        "sha256": "9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b",
+        "label": "PRIVATE, 2026-10-18 follow-up uncommitted",
+        "working_tree_bytes": 60907,
+        "working_tree_sha256_match": true,
+        "body_quoted": false,
+        "role": "research_constraints_not_discharge",
+        "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
+      },
+      "research_constraints": [
+        {
+          "n": 1,
+          "summary": "Outcome shape Success(value, receipt) | Failed(typed, receipt) | Refused(reason) | Indeterminate(recovery id); Indeterminate maps to DELIVERY_UNKNOWN (owner outcomes COMMITTED / REFUSED / DELIVERY_UNKNOWN)."
+        },
+        {
+          "n": 2,
+          "summary": "Crash, unavailable authority, or a missing / stale / mismatched record is UNKNOWN: never REFUSED and never success."
+        },
+        {
+          "n": 3,
+          "summary": "No retry without an idempotency proof."
+        },
+        {
+          "n": 4,
+          "summary": "Consumed authority and current validity are separate fields (one enum cannot carry both)."
+        },
+        {
+          "n": 5,
+          "summary": "Claim and revoke compete on ONE authoritative per-capability state: OPEN -> CLAIMED | REVOKED; CLAIMED -> COMMITTED | FAILED | INDETERMINATE; every unlisted transition refuses. Release at the result sink is the commit point."
+        },
+        {
+          "n": 6,
+          "summary": "Release requires all three: independent authorization; prepared-result custody; operation- and generation-bound evidence that every required pre-release cleanup succeeded. Cleanup evidence NotRequired only when the obligation set is provably empty; Pending / Failed / Unknown refuse."
+        },
+        {
+          "n": 7,
+          "summary": "No ordinary result extraction before that release guard."
+        },
+        {
+          "n": 8,
+          "summary": "Free is not wipe."
+        },
+        {
+          "n": 9,
+          "summary": "Refusal after reservation/consumption never restores authority."
+        },
+        {
+          "n": 10,
+          "summary": "FFI / host aliases are not contained by ownership alone (OPEN)."
+        }
+      ],
+      "open_items": [
+        "Ordering of actual release vs effective revocation (including partial sends).",
+        "FFI / native containment of aliases.",
+        "Enforcement of cleanup-evidence binding (operation + generation)."
+      ]
     },
     {
       "id": "SEALED_INTRINSICS_LANGUAGE_SPEC",
@@ -250,10 +307,68 @@
         }
       ],
       "ts_fix_needed_now": "YES",
-      "status": "DRAFT",
+      "status": "UNKNOWN",
       "addendum_a": [
         "none-fills-language-gap"
-      ]
+      ],
+      "partial_input": {
+        "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+        "sha256": "9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b",
+        "label": "PRIVATE, 2026-10-18 follow-up uncommitted",
+        "working_tree_bytes": 60907,
+        "working_tree_sha256_match": true,
+        "body_quoted": false,
+        "role": "research_constraints_not_discharge",
+        "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
+      },
+      "research_constraints": [
+        {
+          "n": 1,
+          "summary": "Outcome shape Success(value, receipt) | Failed(typed, receipt) | Refused(reason) | Indeterminate(recovery id); Indeterminate maps to DELIVERY_UNKNOWN (owner outcomes COMMITTED / REFUSED / DELIVERY_UNKNOWN)."
+        },
+        {
+          "n": 2,
+          "summary": "Crash, unavailable authority, or a missing / stale / mismatched record is UNKNOWN: never REFUSED and never success."
+        },
+        {
+          "n": 3,
+          "summary": "No retry without an idempotency proof."
+        },
+        {
+          "n": 4,
+          "summary": "Consumed authority and current validity are separate fields (one enum cannot carry both)."
+        },
+        {
+          "n": 5,
+          "summary": "Claim and revoke compete on ONE authoritative per-capability state: OPEN -> CLAIMED | REVOKED; CLAIMED -> COMMITTED | FAILED | INDETERMINATE; every unlisted transition refuses. Release at the result sink is the commit point."
+        },
+        {
+          "n": 6,
+          "summary": "Release requires all three: independent authorization; prepared-result custody; operation- and generation-bound evidence that every required pre-release cleanup succeeded. Cleanup evidence NotRequired only when the obligation set is provably empty; Pending / Failed / Unknown refuse."
+        },
+        {
+          "n": 7,
+          "summary": "No ordinary result extraction before that release guard."
+        },
+        {
+          "n": 8,
+          "summary": "Free is not wipe."
+        },
+        {
+          "n": 9,
+          "summary": "Refusal after reservation/consumption never restores authority."
+        },
+        {
+          "n": 10,
+          "summary": "FFI / host aliases are not contained by ownership alone (OPEN)."
+        }
+      ],
+      "open_items": [
+        "Ordering of actual release vs effective revocation (including partial sends).",
+        "FFI / native containment of aliases.",
+        "Enforcement of cleanup-evidence binding (operation + generation)."
+      ],
+      "language_gap": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC"
     },
     {
       "id": "MONOTONIC_TYPED_TIME",
@@ -654,13 +769,13 @@
     {
       "id": "NO_OVERLAPPING_CHUNKS",
       "version": 1,
-      "statement": "Overlapping or duplicate chunks are refused outright. The .fungi body reader does not alias, overlap, or accept a second view of the same secret-bearing range. Owner A4. Discharged together with BOUNDED_INPUT and LINEAR_SECRET.",
+      "statement": "Overlapping, duplicate, or zero-length chunks are refused outright. Ranges are half-open. Identity is the pair (offset, length) plus pairwise disjointness. The .fungi body reader does not alias, overlap, or accept a second view of the same secret-bearing range. Owner A4. Discharged together with BOUNDED_INPUT and LINEAR_SECRET.",
       "ts_scaffold": {
         "behaviour": "Parked TS (P20-F1) still aliases chunks. TS is frozen reference and is not patched. Discharge is the .fungi body reader.",
         "guarantee": "UNKNOWN_IN_TS"
       },
-      "fungi_primitive": "Body reader admits a finite non-overlapping partition of host-owned bytes. Duplicate offset/length or overlapping ranges refuse. Trusted length from the reader, never a chunk self-reported byteLength.",
-      "rust_verifier_check": "Out-of-process: annotated body-reader admissions have pairwise-disjoint ranges; overlap or duplicate identity refuses.",
+      "fungi_primitive": "Body reader admits a finite non-overlapping partition of host-owned bytes. Ranges are half-open [offset, offset+length). Duplicate (offset,length) identity or overlapping ranges refuse. Zero-length chunks refuse (zero-trust default; they are not dropped silently). Trusted length from the reader, never a chunk self-reported byteLength.",
+      "rust_verifier_check": "Out-of-process: annotated body-reader admissions have pairwise-disjoint half-open ranges; overlap, duplicate (offset,length) identity, or zero-length refuses.",
       "found_in": [
         {
           "ref": "P20-F1",
@@ -776,7 +891,9 @@
   "carried_unknown": {
     "counts_as_discharged": false,
     "blocks_ready": true,
-    "must_name_typed_refusal": true
+    "must_name_typed_refusal": true,
+    "how_present_refuses": "OBLIGATION_DISCHARGE_UNKNOWN",
+    "fungi_construct": "names the construct that returns the carried refusal"
   },
   "conflicts": [
     {
@@ -804,5 +921,11 @@
     "A1": "converting memory files to .fungi is not blocked by the RD HOLD / TODO gate; RDs stay HOLD; converted units stay unmerged to main",
     "A4": "overlapping or duplicate chunks refused outright; recorded as NO_OVERLAPPING_CHUNKS under BOUNDED_INPUT + LINEAR_SECRET; found_in P20-F1"
   },
-  "unmappable_findings_default": "a parked finding that maps to no registry id is OBLIGATION_UNMAPPABLE; P20-N5 now maps to HOST_ADAPTER_PRESENCE"
+  "unmappable_findings_default": "a parked finding that maps to no registry id is OBLIGATION_UNMAPPABLE; P20-N5 now maps to HOST_ADAPTER_PRESENCE",
+  "closed_obligation_status": [
+    "DRAFT",
+    "UNKNOWN"
+  ],
+  "obligation_status_default": "REFUSES_UNLISTED",
+  "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
 }
