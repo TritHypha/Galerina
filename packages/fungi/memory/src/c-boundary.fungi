@@ -1,0 +1,79 @@
+@version 1
+/// @file: c-boundary.fungi
+/// @purpose: ONE reusable C/foreign boundary helper. Null/NaN/Infinity/-0/non-integer/
+///   out-of-range/wrong-type/absent become a typed UNKNOWN/Ambiguous reason. Downstream
+///   .fungi has no null or NaN. Host maps JS unknown onto classTag exactly once
+///   (P20-N2). HOST_ADAPTER_PRESENCE is CARRIED_UNKNOWN for that host map.
+/// classTag: 0 SafeInteger 1 Null 2 Absent 3 NaN 4 PosInfinity 5 NegInfinity
+///   6 NegZero 7 NonInteger 8 OutOfSafeRange 9 NegativeLength 10 WrongType
+///   unlisted -> 11 Unlisted
+/// Returns reason Int: 0 Ok, else the matching refusal code (11 Unlisted).
+/// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
+
+pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit a foreign observation as a safe integer or return a typed refusal reason." }
+}
+{
+  if classTag == 0 {
+    return 0
+  }
+  if classTag == 1 {
+    return 1
+  }
+  if classTag == 2 {
+    return 2
+  }
+  if classTag == 3 {
+    return 3
+  }
+  if classTag == 4 {
+    return 4
+  }
+  if classTag == 5 {
+    return 5
+  }
+  if classTag == 6 {
+    return 6
+  }
+  if classTag == 7 {
+    return 7
+  }
+  if classTag == 8 {
+    return 8
+  }
+  if classTag == 9 {
+    return 9
+  }
+  if classTag == 10 {
+    return 10
+  }
+  return 11
+}
+
+pure flow readForeignLength(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit a foreign length: non-negative safe integer, else typed refusal." }
+}
+{
+  let classReason: Int = readForeignSafeInteger(classTag, integer)
+  if classReason != 0 {
+    return classReason
+  }
+  if integer < 0 {
+    return 9
+  }
+  return 0
+}
+
+pure flow foreignValue(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Return the admitted integer, or 0 when the observation is refused." }
+}
+{
+  let classReason: Int = readForeignSafeInteger(classTag, integer)
+  if classReason != 0 {
+    return 0
+  }
+  return integer
+}

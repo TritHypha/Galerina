@@ -17,7 +17,7 @@ Do not add TS secret-authority logic. Before a Fungi-owned implementation slice,
 - Hand-written `.fungi` only. Nothing generated.
 - TS is oracle only.
 - No authoritative `.fungi` memory code until the RD-1413..1415 gate opens.
-- Queue 29 obligation ids in `memory-fungi.manifest.json` `obligations` arrays. Registry path on landed branch `grok/fungi-lowering-obligations-20261017` HEAD `c098d4668474a497746527e7d73a2ae4384176fb`: `docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json`.
+- Queue 29 obligation ids in `memory-fungi.manifest.json` `obligations` arrays. Registry path on landed branch `grok/fungi-lowering-obligations-20261017` HEAD `5caebad6c32d41a058400fea84d3c25370e5348b`: `docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json`.
 - Unlisted status/verdict refuses.
 - `audit:package-topology` scans `packages-ts/` only. This folder is UNGOVERNED by that audit; a GREEN result is typed UNKNOWN for folder contents.
 

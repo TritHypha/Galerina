@@ -1,0 +1,154 @@
+@version 1
+/// @file: body-reader.fungi
+/// @purpose: POST /auth/verify body reader. Chunks are linear owned values identified
+///   by (identity, offset, length). Half-open ranges. Zero-length refuses. Duplicate
+///   reference, duplicate (offset,length), or overlap refuses. Absent stream refuses
+///   typed UNKNOWN (INTENDED_DIVERGENCE vs TS empty-ok). Cap default 16384.
+/// Return encoding: refusalCode + (wiped ? 100 : 0). Every real exit sets wiped true (P20-R2).
+/// refusalCode: 0 Ok 1 DuplicateReference 2 DuplicateRange 3 Overlap 4 ZeroLength
+///   5 OverCap 6 DeclaredLonger 7 DeclaredShorter 8 AbsentStream 9 Timeout
+///   10 ForeignThrow 11 Unlisted 12 CapInvalid 13 LengthInvalid
+/// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
+
+pure flow finish(refusalCode: Int, wiped: Bool) -> Int
+contract {
+  intent { "Pack refusal code and wipe evidence. Unlisted wipe flag refuses as Unlisted." }
+}
+{
+  if wiped == true {
+    return refusalCode + 100
+  }
+  if wiped == false {
+    return refusalCode
+  }
+  return 11
+}
+
+pure flow rangesOverlap(off1: Int, len1: Int, off2: Int, len2: Int) -> Bool
+contract {
+  intent { "Half-open [off, off+len) overlap. Adjacent ranges do not overlap." }
+}
+{
+  let end1: Int = off1 + len1
+  let end2: Int = off2 + len2
+  if off1 < end2 {
+    if off2 < end1 {
+      return true
+    }
+    return false
+  }
+  return false
+}
+
+pure flow readChunks(
+  nChunks: Int,
+  id1: Int,
+  off1: Int,
+  len1: Int,
+  id2: Int,
+  off2: Int,
+  len2: Int,
+  cap: Int,
+  declaredPresent: Bool,
+  declaredLen: Int,
+  streamPresent: Bool,
+  deadlineExpired: Bool,
+  foreignThrow: Bool
+) -> Int
+contract {
+  intent { "Admit at most two owned chunks or return a packed typed refusal with wipe." }
+}
+{
+  if deadlineExpired == true {
+    return finish(9, true)
+  }
+  if foreignThrow == true {
+    return finish(10, true)
+  }
+  if streamPresent == false {
+    return finish(8, true)
+  }
+  if cap < 0 {
+    return finish(12, true)
+  }
+  if nChunks == 0 {
+    if declaredPresent == true {
+      if declaredLen == 0 {
+        return finish(0, true)
+      }
+      if declaredLen > 0 {
+        return finish(6, true)
+      }
+      return finish(13, true)
+    }
+    return finish(0, true)
+  }
+  if nChunks == 1 {
+    if len1 <= 0 {
+      return finish(4, true)
+    }
+    if off1 < 0 {
+      return finish(13, true)
+    }
+    if len1 > cap {
+      return finish(5, true)
+    }
+    if declaredPresent == true {
+      if declaredLen < 0 {
+        return finish(13, true)
+      }
+      if declaredLen > len1 {
+        return finish(6, true)
+      }
+      if declaredLen < len1 {
+        return finish(7, true)
+      }
+      return finish(0, true)
+    }
+    return finish(0, true)
+  }
+  if nChunks == 2 {
+    if len1 <= 0 {
+      return finish(4, true)
+    }
+    if len2 <= 0 {
+      return finish(4, true)
+    }
+    if off1 < 0 {
+      return finish(13, true)
+    }
+    if off2 < 0 {
+      return finish(13, true)
+    }
+    if id1 == id2 {
+      return finish(1, true)
+    }
+    if off1 == off2 {
+      if len1 == len2 {
+        return finish(2, true)
+      }
+    }
+    let overlapped: Bool = rangesOverlap(off1, len1, off2, len2)
+    if overlapped == true {
+      return finish(3, true)
+    }
+    let total: Int = len1 + len2
+    if total > cap {
+      return finish(5, true)
+    }
+    if declaredPresent == true {
+      if declaredLen < 0 {
+        return finish(13, true)
+      }
+      if declaredLen > total {
+        return finish(6, true)
+      }
+      if declaredLen < total {
+        return finish(7, true)
+      }
+      return finish(0, true)
+    }
+    return finish(0, true)
+  }
+  return finish(11, true)
+}

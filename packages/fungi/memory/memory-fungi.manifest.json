@@ -3,7 +3,7 @@
   "status": "SCAFFOLD_ONLY_NON_AUTHORIZING",
   "base": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
   "queue29_registry_branch": "grok/fungi-lowering-obligations-20261017",
-  "queue29_registry_commit": "c098d4668474a497746527e7d73a2ae4384176fb",
+  "queue29_registry_commit": "5caebad6c32d41a058400fea84d3c25370e5348b",
   "queue29_registry_path": "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json",
   "unlisted_status_refuses": true,
   "units": [
@@ -350,5 +350,5 @@
     "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
     "dc0f9c8c4f1365f0228cda213b2ecd001400463e"
   ],
-  "parked_unmappable_default": "unlisted parked id refuses silent drop; P20-N5 maps to HOST_ADAPTER_PRESENCE at queue29_registry_commit c098d4668474a497746527e7d73a2ae4384176fb"
+  "parked_unmappable_default": "unlisted parked id refuses silent drop; P20-N5 maps to HOST_ADAPTER_PRESENCE at queue29_registry_commit 5caebad6c32d41a058400fea84d3c25370e5348b"
 }

@@ -1,0 +1,5 @@
+twins AFTER (working tree): fungi-twins 103/103 check-clean across 10 dir(s); execution 73 shadow · 1 differential · 29 authoritative. Same as Q30 N3 at 56b086e47 (BEFORE). Counts unchanged. Memory .fungi are not twins.
+
+audit:package-topology: exit 0 GREEN 101 canonical identities; 1 deferred nested native package; folder packages/fungi/memory remains UNGOVERNED by that scan (packages-ts only) and is separately FOLDER_ADMITTED by scripts/audit-fungi-memory-folder.mjs.
+
+audit:product-boundaries --check: exit 1 REFUSED PRODUCT_GRAPH_MISSING (pre-existing; Q30 selftest expects this). Not a folder refusal.

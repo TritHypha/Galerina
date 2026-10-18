@@ -1,0 +1,14 @@
+galerina.mjs build (WSL, then artefacts deleted; nothing under build/ committed)
+
+c-boundary.fungi: exit 0
+  build/c-boundary.wasm  (295 bytes)
+  build/c-boundary.wat   (97 lines)
+  FUNGI-KEY-001 auto-provisioned development signing key (deleted; never committed)
+
+body-reader.fungi: exit 0
+  build/body-reader.wasm  (694 bytes)
+  build/body-reader.wat   (208 lines)
+
+Nested if/else first failed WAT emit (type mismatch expected [] got i32). Sequential if-return (secret-gate.fungi style) then check 0 / run --invoke 0 / build 0.
+
+Signed manifests make later source mutants FUNGI-MANIFEST-TAMPER. Tests invoke source without signed artefacts.
