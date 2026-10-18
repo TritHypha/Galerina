@@ -18,3 +18,6 @@ exit 0
   build/body-reader.wat   (305 lines)
 
 Signed manifests make later source mutants FUNGI-MANIFEST-TAMPER. Tests invoke source without signed artefacts. Newly written build/c-boundary.* and build/body-reader.* deleted after recording. Tracked build/ tree not wiped.
+
+A2 import+CALL build of body-reader.fungi exit 1 FUNGI-NAME-001 (see import-refuse.txt). Landed source without CALL still builds 1011 B / 305-line wat as above.
+

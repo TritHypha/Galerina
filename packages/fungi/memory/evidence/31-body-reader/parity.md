@@ -41,7 +41,10 @@ N10 replay of `readForeignSafeInteger` (foreign-boundary.ts:11-22 Number.isSafeI
 | monotonic clock | deadlineExpiredToken from host | NEEDS_LANGUAGE | MONOTONIC_TYPED_TIME | host supplies Int token; .fungi has no typed monotonic time |
 | total effect COMMITTED/REFUSED/DELIVERY_UNKNOWN | packed Int code | NEEDS_LANGUAGE | TOTAL_EFFECT_OUTCOME | CARRIED_UNKNOWN |
 | live TypedArray/SAB views | identity Int + offset + length | NEEDS_LANGUAGE | LINEAR_SECRET | host-owned chunks as scalars; physical ByteArray ABI not in this unit |
-| off+len / len+len i32 add | remaining then code 14 | INTENDED_DIVERGENCE | BOUNDED_INPUT | MUST-REFUSE i32 length-sum without trap; offset plus length overflow |
+| off+len / len+len i32 add | remaining then code 14 | INTENDED_DIVERGENCE | BOUNDED_INPUT | MUST-REFUSE i32 length-sum without trap; offset plus length overflow; two-chunk off1/off2 2147483647+2 -> 114 |
 | fungi-planning HOST/FUNGI views | none | UNKNOWN | HOST_ADAPTER_PRESENCE | REFUSED_RESERVED_DECODER_ID; EVB-Q31-1-STILL-REFUSED:SOURCE_ORIGIN_GIT_CONFIG |
+| absent header declaredLenClass 2 with declaredPresentToken 0 | body-reader.fungi declaredLenClass != 0 -> 111 | INTENDED_DIVERGENCE | NO_NULL_NAN | Grok zero-trust default, pending Phillip: keep the refusal, no code change; MUST-REFUSE declaredLenClass 2 declaredPresent 0 |
+| invoke-ABI i32 wrap len1=4294967300 / 2^63-1 | host Number then WASM i32 | UNKNOWN | HOST_ADAPTER_PRESENCE | CARRIED_UNKNOWN documented current behaviour not a pass: 4294967300 admitted as 4 -> 100; 2^63-1 -> 104. Host map must classify \|x\| > 2147483647 as classTag 8 before the call |
+| import "./c-boundary.fungi" plus helper CALL | body-reader classTag gate | NEEDS_LANGUAGE | NO_NULL_NAN | A2: check admits; build FUNGI-NAME-001; run --invoke WAT undefined callee. ClassTag gate kept. import-refuse.txt |
 
-Counts: PRESERVED 5, INTENDED_DIVERGENCE 10, UNKNOWN 2, NEEDS_LANGUAGE 4. Unlisted verdict refuses.
+Counts: PRESERVED 5, INTENDED_DIVERGENCE 11, UNKNOWN 3, NEEDS_LANGUAGE 5. Unlisted verdict refuses.

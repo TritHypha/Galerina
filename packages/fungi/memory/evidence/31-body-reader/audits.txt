@@ -4,4 +4,4 @@ audit:package-topology: exit 0 GREEN 101 canonical identities; 1 deferred nested
 
 audit:product-boundaries --check: exit 2 REFUSED PRODUCT_GRAPH_MISSING (pre-existing; Q30 selftest expects this). Not a folder refusal.
 
-encoding-gate on c-boundary.fungi body-reader.fungi body-reader.test.mjs: exit 0.
+encoding-gate on c-boundary.fungi body-reader.fungi body-reader.test.mjs receipts.json parity.md mutants.md import-refuse.txt: exit 0.

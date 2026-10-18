@@ -69,7 +69,7 @@
       "obligation": "HOST_ADAPTER_PRESENCE",
       "state": "CARRIED_UNKNOWN",
       "carried_refusal": "UNKNOWN_IN_TS",
-      "fungi_construct": "host maps JS unknown to classTag outside .fungi; adapter identity is not an argument of these flows (P20-N5 Deno)"
+      "fungi_construct": "host maps JS unknown to classTag outside .fungi; adapter identity is not an argument of these flows (P20-N5 Deno). invoke-ABI integer wrap is CARRIED_UNKNOWN: galerina run --invoke marshals CLI args to WASM i32, so len1=4294967300 is admitted as 4 -> 100 and 2^63-1 wraps to 0 -> 104 ZeroLength. Host map must classify |x| > 2147483647 as classTag 8 before the call. Documented current behaviour, not a pass."
     },
     {
       "obligation": "MONOTONIC_TYPED_TIME",

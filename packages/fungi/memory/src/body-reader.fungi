@@ -6,6 +6,9 @@
 ///   typed UNKNOWN (INTENDED_DIVERGENCE vs TS empty-ok). Cap default 16384.
 /// Foreign Ints arrive as (classTag, integer) from the host map (P20-N2). classTag != 0
 ///   refuses Unlisted 11; the 0..10 table lives only in c-boundary.fungi (CN-1).
+/// A2: import "./c-boundary.fungi" plus helper CALL: check admits; build FUNGI-NAME-001;
+///   run --invoke WAT callee neither defined nor imported. ClassTag gate kept.
+///   evidence/31-body-reader/import-refuse.txt.
 /// Foreign Bools arrive as Int tokens 0/1; any other token refuses Unlisted 11.
 /// Return encoding: refusalCode + (wiped ? 100 : 0). Packed +100 is a construct, not
 ///   physical wipe evidence (LINEAR_SECRET CARRIED_UNKNOWN / HOST_ADAPTER_PRESENCE).
