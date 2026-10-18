@@ -16,50 +16,48 @@
       "obligation": "NO_NULL_NAN",
       "state": "DISCHARGED",
       "how": "BY_TYPE",
-      "fungi_construct": "c-boundary.fungi readForeignSafeInteger classTag 0..10 plus unlisted 11; body-reader never names null or NaN",
-      "probe": "helper refuses Null NaN Infinity NegZero NonInteger OutOfSafeRange NegativeLength WrongType Absent Unlisted"
+      "fungi_construct": "c-boundary.fungi readForeignSafeInteger classTag 0..10 plus unlisted 11; readForeignBool token 0/1 else 11; body-reader never names null or NaN",
+      "probe": "helper refuses Null NaN Infinity NegZero NonInteger OutOfSafeRange NegativeLength WrongType Absent Unlisted; helper Bool refuses token 2; MUST-REFUSE streamPresent 2; test oracle INVOKE_VALUE_ABSENT"
     },
     {
       "obligation": "EXHAUSTIVE_FAIL_CLOSED",
       "state": "DISCHARGED",
       "how": "BY_TOTALITY",
-      "fungi_construct": "sequential if-return with terminal unlisted 11 / finish(11,true); Bool wipe flag unlisted returns 11",
-      "probe": "helper refuses classTag 99 -> 11"
+      "fungi_construct": "sequential if-return with terminal unlisted 11 / finish(11,true); Bool token unlisted returns 11",
+      "probe": "helper refuses classTag 99 -> 11; unlisted Bool token 2"
     },
     {
       "obligation": "NO_OVERLAPPING_CHUNKS",
-      "state": "DISCHARGED",
-      "how": "BY_LINEARITY",
-      "fungi_construct": "body-reader.fungi readChunks: duplicate id, duplicate (offset,length), half-open overlap, zero-length",
-      "probe": "MUST-REFUSE duplicate reference / overlapping views / duplicate range / lone zero-length / zero-length at covered offset; MUST-ADMIT adjacent"
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "body-reader.fungi readChunks: duplicate id, duplicate (offset,length), half-open overlap, zero-length. Physical linear buffers are not in this unit."
     },
     {
       "obligation": "BOUNDED_INPUT",
       "state": "DISCHARGED",
       "how": "BY_TYPE",
-      "fungi_construct": "readChunks cap compare; declaredLen longer/shorter distinct codes 6 and 7",
-      "probe": "MUST-REFUSE over cap by one byte; declared longer; declared shorter"
+      "fungi_construct": "readChunks remaining = cap - len1 after len1<=cap; declaredLen longer/shorter distinct codes 6 and 7; offset add overflow code 14",
+      "probe": "MUST-REFUSE over cap by one byte; two chunks summing to cap plus one; declared longer/shorter; i32 length-sum without trap; offset plus length overflow; mutant GM6/GM7"
     },
     {
       "obligation": "DEADLINE_COVERS_ALL",
       "state": "DISCHARGED",
       "how": "BY_TOTALITY",
-      "fungi_construct": "deadlineExpired checked before any chunk admit; covers cancel/throw path order",
+      "fungi_construct": "deadlineExpiredToken checked before any chunk admit; covers cancel/throw path order",
       "probe": "MUST-REFUSE deadline expiry"
     },
     {
       "obligation": "LINEAR_SECRET",
-      "state": "DISCHARGED",
-      "how": "BY_LINEARITY",
-      "fungi_construct": "finish(code, true) on every real exit; packed +100 wipe evidence",
-      "probe": "mutant skip wipe on absent stream; MUST-REFUSE foreign throw mid-read wipes"
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "finish(code, true) packed +100 is a construct. Physical wipe is HOST_ADAPTER_PRESENCE. Constant true is not wipe evidence."
     },
     {
       "obligation": "SEALED_INTRINSICS",
       "state": "DISCHARGED",
       "how": "BY_TYPE",
       "fungi_construct": "no intrinsic/prototype/species lookup; host classTag only; unlisted classTag 11",
-      "probe": "helper refuses Unlisted classTag 99"
+      "probe": "helper refuses Unlisted classTag 99; MUST-REFUSE foreign classTag on cap"
     },
     {
       "obligation": "TOTAL_EFFECT_OUTCOME",
@@ -77,7 +75,7 @@
       "obligation": "MONOTONIC_TYPED_TIME",
       "state": "CARRIED_UNKNOWN",
       "carried_refusal": "NEEDS_LANGUAGE",
-      "fungi_construct": "deadlineExpired Bool supplied by host; no typed monotonic clock in .fungi"
+      "fungi_construct": "deadlineExpiredToken Int supplied by host; no typed monotonic clock in .fungi"
     },
     {
       "obligation": "UNFORGEABLE_CAPABILITY",

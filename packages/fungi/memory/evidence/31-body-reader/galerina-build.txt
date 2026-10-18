@@ -1,14 +1,20 @@
-galerina.mjs build (WSL, then artefacts deleted; nothing under build/ committed)
+N11 compiler build-chain (cwd scratch HEAD then dirty N2-N11 working tree). Artefacts deleted after; nothing under build/ committed.
 
-c-boundary.fungi: exit 0
-  build/c-boundary.wasm  (295 bytes)
-  build/c-boundary.wat   (97 lines)
+node galerina.mjs check packages/fungi/memory/src/c-boundary.fungi --strict-types --strict-governance
+exit 0; 0 errors, 0 governance warnings (3 flow(s))
+
+node galerina.mjs check packages/fungi/memory/src/body-reader.fungi --strict-types --strict-governance
+exit 0; 0 errors, 0 governance warnings (3 flow(s))
+
+node galerina.mjs build packages/fungi/memory/src/c-boundary.fungi
+exit 0
+  build/c-boundary.wasm  (304 bytes)
+  build/c-boundary.wat   (100 lines)
   FUNGI-KEY-001 auto-provisioned development signing key (deleted; never committed)
 
-body-reader.fungi: exit 0
-  build/body-reader.wasm  (694 bytes)
-  build/body-reader.wat   (208 lines)
+node galerina.mjs build packages/fungi/memory/src/body-reader.fungi
+exit 0
+  build/body-reader.wasm  (1011 bytes)
+  build/body-reader.wat   (305 lines)
 
-Nested if/else first failed WAT emit (type mismatch expected [] got i32). Sequential if-return (secret-gate.fungi style) then check 0 / run --invoke 0 / build 0.
-
-Signed manifests make later source mutants FUNGI-MANIFEST-TAMPER. Tests invoke source without signed artefacts.
+Signed manifests make later source mutants FUNGI-MANIFEST-TAMPER. Tests invoke source without signed artefacts. Newly written build/c-boundary.* and build/body-reader.* deleted after recording. Tracked build/ tree not wiped.

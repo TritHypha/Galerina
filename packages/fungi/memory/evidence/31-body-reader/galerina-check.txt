@@ -1,3 +1,7 @@
+node galerina.mjs check packages/fungi/memory/src/c-boundary.fungi --strict-types --strict-governance
+exit 0
 ✅ packages/fungi/memory/src/c-boundary.fungi: 0 errors, 0 governance warnings (3 flow(s), 3 top-level declaration(s))
 
+node galerina.mjs check packages/fungi/memory/src/body-reader.fungi --strict-types --strict-governance
+exit 0
 ✅ packages/fungi/memory/src/body-reader.fungi: 0 errors, 0 governance warnings (3 flow(s), 3 top-level declaration(s))

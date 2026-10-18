@@ -4,15 +4,19 @@
 ///   by (identity, offset, length). Half-open ranges. Zero-length refuses. Duplicate
 ///   reference, duplicate (offset,length), or overlap refuses. Absent stream refuses
 ///   typed UNKNOWN (INTENDED_DIVERGENCE vs TS empty-ok). Cap default 16384.
-/// Return encoding: refusalCode + (wiped ? 100 : 0). Every real exit sets wiped true (P20-R2).
+/// Foreign Ints arrive as (classTag, integer) from the host map (P20-N2). classTag != 0
+///   refuses Unlisted 11; the 0..10 table lives only in c-boundary.fungi (CN-1).
+/// Foreign Bools arrive as Int tokens 0/1; any other token refuses Unlisted 11.
+/// Return encoding: refusalCode + (wiped ? 100 : 0). Packed +100 is a construct, not
+///   physical wipe evidence (LINEAR_SECRET CARRIED_UNKNOWN / HOST_ADAPTER_PRESENCE).
 /// refusalCode: 0 Ok 1 DuplicateReference 2 DuplicateRange 3 Overlap 4 ZeroLength
 ///   5 OverCap 6 DeclaredLonger 7 DeclaredShorter 8 AbsentStream 9 Timeout
-///   10 ForeignThrow 11 Unlisted 12 CapInvalid 13 LengthInvalid
+///   10 ForeignThrow 11 Unlisted 12 CapInvalid 13 LengthInvalid 14 OffsetAddOverflow
 /// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
 
 pure flow finish(refusalCode: Int, wiped: Bool) -> Int
 contract {
-  intent { "Pack refusal code and wipe evidence. Unlisted wipe flag refuses as Unlisted." }
+  intent { "Pack refusal code and wipe-flag construct. Unlisted wipe flag refuses as Unlisted." }
 }
 {
   if wiped == true {
@@ -26,7 +30,7 @@ contract {
 
 pure flow rangesOverlap(off1: Int, len1: Int, off2: Int, len2: Int) -> Bool
 contract {
-  intent { "Half-open [off, off+len) overlap. Adjacent ranges do not overlap." }
+  intent { "Half-open [off, off+len) overlap. Adjacent ranges do not overlap. Callers bound off+len first." }
 }
 {
   let end1: Int = off1 + len1
@@ -41,38 +45,82 @@ contract {
 }
 
 pure flow readChunks(
+  nChunksClass: Int,
   nChunks: Int,
   id1: Int,
+  off1Class: Int,
   off1: Int,
+  len1Class: Int,
   len1: Int,
   id2: Int,
+  off2Class: Int,
   off2: Int,
+  len2Class: Int,
   len2: Int,
+  capClass: Int,
   cap: Int,
-  declaredPresent: Bool,
+  declaredPresentToken: Int,
+  declaredLenClass: Int,
   declaredLen: Int,
-  streamPresent: Bool,
-  deadlineExpired: Bool,
-  foreignThrow: Bool
+  streamPresentToken: Int,
+  deadlineExpiredToken: Int,
+  foreignThrowToken: Int
 ) -> Int
 contract {
-  intent { "Admit at most two owned chunks or return a packed typed refusal with wipe." }
+  intent { "Admit at most two owned chunks or return a packed typed refusal with wipe construct." }
 }
 {
-  if deadlineExpired == true {
+  if deadlineExpiredToken != 0 {
+    if deadlineExpiredToken != 1 {
+      return finish(11, true)
+    }
     return finish(9, true)
   }
-  if foreignThrow == true {
+  if foreignThrowToken != 0 {
+    if foreignThrowToken != 1 {
+      return finish(11, true)
+    }
     return finish(10, true)
   }
-  if streamPresent == false {
+  if streamPresentToken != 0 {
+    if streamPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if streamPresentToken == 0 {
     return finish(8, true)
+  }
+  if nChunksClass != 0 {
+    return finish(11, true)
+  }
+  if capClass != 0 {
+    return finish(11, true)
   }
   if cap < 0 {
     return finish(12, true)
   }
+  if declaredPresentToken != 0 {
+    if declaredPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if declaredLenClass != 0 {
+    return finish(11, true)
+  }
+  if off1Class != 0 {
+    return finish(11, true)
+  }
+  if len1Class != 0 {
+    return finish(11, true)
+  }
+  if off2Class != 0 {
+    return finish(11, true)
+  }
+  if len2Class != 0 {
+    return finish(11, true)
+  }
   if nChunks == 0 {
-    if declaredPresent == true {
+    if declaredPresentToken == 1 {
       if declaredLen == 0 {
         return finish(0, true)
       }
@@ -93,7 +141,11 @@ contract {
     if len1 > cap {
       return finish(5, true)
     }
-    if declaredPresent == true {
+    let maxInt1: Int = 2147483647
+    if off1 > maxInt1 - len1 {
+      return finish(14, true)
+    }
+    if declaredPresentToken == 1 {
       if declaredLen < 0 {
         return finish(13, true)
       }
@@ -120,6 +172,20 @@ contract {
     if off2 < 0 {
       return finish(13, true)
     }
+    if len1 > cap {
+      return finish(5, true)
+    }
+    let remaining: Int = cap - len1
+    if len2 > remaining {
+      return finish(5, true)
+    }
+    let maxInt2: Int = 2147483647
+    if off1 > maxInt2 - len1 {
+      return finish(14, true)
+    }
+    if off2 > maxInt2 - len2 {
+      return finish(14, true)
+    }
     if id1 == id2 {
       return finish(1, true)
     }
@@ -133,10 +199,7 @@ contract {
       return finish(3, true)
     }
     let total: Int = len1 + len2
-    if total > cap {
-      return finish(5, true)
-    }
-    if declaredPresent == true {
+    if declaredPresentToken == 1 {
       if declaredLen < 0 {
         return finish(13, true)
       }
