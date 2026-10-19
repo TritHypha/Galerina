@@ -70,9 +70,23 @@ Host glue for `galerina run`: `galerina.mjs` marshal + `WebAssembly.instantiate(
 | `performance.now` | not read | (absent) | Source scan of wasm-runtime.ts and galerina run path. |
 | `JSON.*` | not read on galerina run --invoke | (absent from that path) | Blacklist JSON.stringify elsewhere in galerina.mjs is not this path. |
 | `Object.freeze` | at create, not at call | `wasm-runtime.ts:922` | Assigning `host.imports.host.__print` throws `TypeError`. Import table captured. Closures still read live globals. |
-| `Object.defineProperty` | not read | (absent) | Source scan. |
-| `Symbol.species` | not read | (absent) | Source scan. |
-| `Array.prototype.push` | live inside `__array_append` | `wasm-runtime.ts:618` `arr.push(item)` | Host uses the live array method. echo does not call it. |
+| `Object.defineProperty` | not observed on probed helpers | `wasm-runtime.ts:1225` is outside createHostRuntime 457-930 | After create+bindMemory, replacing `Object.defineProperty` during `__range` / `__int_to_str` / `__str_length` / `__array_create`: 0 hits. Remaining unprobed grant-diag path stays UNKNOWN. |
+| `JSON.*` | not observed on probed helpers | absent from 457-930 | Replacing `JSON.stringify` during `__range` / `__int_to_str` / `__str_length`: 0 hits. |
+| `Symbol.species` | live at `items.slice()` | `wasm-runtime.ts:481` internArray | After create+bindMemory, `Array[Symbol.species]` getter fires during `__range(0,4)` (measured 1). Temp copy replacing `items.slice()` with a for-loop copy: getter 0. RED vs live. |
+| `Symbol.iterator` (string spread) | live | `wasm-runtime.ts:627, :632, :665, :764` | Replacing `String.prototype[Symbol.iterator]` makes `__str_length("ab")` return 3. RED live-read. |
+| `Symbol.toPrimitive` | not observed on interned-string helpers | intern requires `typeof s === "string"` | Replacing `String.prototype[Symbol.toPrimitive]` during `__int_to_str` / `__str_concat` / `__str_compare`: 0 hits. |
+| `Number.isInteger` | live | `wasm-runtime.ts:588, :608, :927` | After create, `Number.isInteger = () => false` makes `__array_append` throw `unknown array handle`. Captured mutant ignores the patch. RED. |
+| `Number.isSafeInteger` | live | `wasm-runtime.ts:835, :846` | After create+bindMemory, `Number.isSafeInteger = () => false` makes `__range(0,4)` throw. Captured mutant ignores the patch. RED. Measured 3 hits on `__range(0,4)`. |
+| `Number.isFinite` | live | `wasm-runtime.ts:640, :787, :795` | After create, `Number.isFinite = () => false` makes `__float_to_str(1.5)` throw `NonFiniteFloat`. RED. |
+| `Number.isNaN` / `parseInt` | live | `wasm-runtime.ts:690-:695` | After create, `parseInt = () => 99` makes `__str_to_int("12")` return 99. `Number.isNaN = () => true` returns -1. RED. |
+| `String` | live at `__int_to_str` | `wasm-runtime.ts:636` `String(n \| 0)` | After instantiate, `String = () => "MUTATED"` makes `__int_to_str(42)` intern `"MUTATED"`. RED live-read. Also `:641`. |
+| `String.fromCodePoint` / `toUpperCase` / `toLowerCase` / `codePointAt` | live | `wasm-runtime.ts:627-:628, :687-:688, :765` | After create, patching those methods changes `__char_to_upper(97)`, `__str_to_lower`, `__str_char_at`. RED. |
+| `String.prototype.indexOf` / `slice` | live | `wasm-runtime.ts:681, :685` | After create, patched `indexOf` / `slice` change `__str_index_of` / `__str_slice`. RED. |
+| `Array.prototype.push` | live | `wasm-runtime.ts:481, :495, :511, :519, :527, :535, :618, :859` | After create, replacing `Array.prototype.push` makes `__array_append` store 99. RED. Also used by `__range` item fill `:859`. |
+| `Array.prototype.slice` | live | `wasm-runtime.ts:481` | `items.slice()` during internArray. Species probe covers this call. |
+| `Map.prototype.get` | live | `wasm-runtime.ts:549` | After create, `Map.prototype.get = () => undefined` makes `__money_usd` throw `UnknownCurrency`. RED. |
+| `Error` | live on refusal | `wasm-runtime.ts` `throw new Error(...)` | After create, subclassing `Error` hits during `__array_append(99,1)` unknown-handle refuse. RED. |
+| `compareUtf16CodeUnits` / `admittedString` | live helper, no extra global | `wasm-runtime.ts:432` / `:577` used at `:674` | `===` / `<` on interned strings. `Symbol.toPrimitive` 0 hits on `__str_compare`. |
 | `Uint8Array` / `Array.from` | live at grant name encode | `wasm-runtime.ts:295` | Same window as `TextEncoder`. |
 
 ### .fungi naming of a JS prototype
@@ -93,6 +107,11 @@ A .fungi file cannot bind the JS `Array.prototype` object. The type-position spe
 - HOST_ADAPTER_PRESENCE for the invoke wrap fix (CARRIED_UNKNOWN; packages-ts frozen; Phillip's yes required).
 - Folder-guard allow-list for 45 prefixes (not edited; will FOLDER_REFUSE until Grok extends).
 - LINEAR_SECRET / cleanup-evidence binding remain as previously carried; this brief does not discharge them.
+- `Object.defineProperty` / `JSON.*` / `Symbol.toPrimitive` unprobed call sites outside the helpers above (UNKNOWN, never "not read").
+- `valueOf` / `toString` coercion on non-string intern paths (UNKNOWN; intern requires a string).
+
+N1. `galerina.mjs` has no `--out` flag (source scan 0 hits). The suite writes gitignored `build/` artefacts into the checkout and transient mutant copies under `%TEMP%` / `__q45_mutant_galerina.mjs` (deleted in `finally`).
+N2. `createHostRuntime(observe?, grants?)` is positional. Passing grants requires a first argument. The JS literal `undefined` was omitted by passing `{}` as the observer.
 
 ## Mutants
 

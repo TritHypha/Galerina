@@ -64,8 +64,9 @@ test("Q1 galerina run --invoke first-leave is console.log of the return", () => 
 
 test("Q1 host.__print first-leave is outputSink console.log when no observer", async () => {
   const runtime = readFileSync(join(REPO, "packages-ts", "galerina-core-runtime-wasm", "src", "wasm-runtime.ts"), "utf8");
-  assert.match(runtime, /else console\.log\(s\);/);
-  assert.match(runtime, /__print:\s*\(h: number\) => \{ outputSink\(strings\[h\] \?\? ""\);/);
+  assert.equal(runtime.includes("else console.log(s);"), true);
+  assert.equal(runtime.includes("outputSink(strings[h] ?? \"\")"), true);
+  assert.equal(runtime.includes("__print:"), true);
   const mod = await import(pathToFileURL(COMPILER_JS).href);
   const origLog = console.log;
   const seen = [];

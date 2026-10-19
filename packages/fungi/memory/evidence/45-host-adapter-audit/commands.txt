@@ -1,8 +1,8 @@
 # Queue #45 HOST_ADAPTER_AUDIT commands
-# cwd: C:\Users\phill\AppData\Local\Temp\galerina-q45-scratch
+# cwd: <scratch>
 # HEAD before commit: fc7db4db4ba1cb7aed691cfa205ec719746524d4
 # Node v24.18.0
-# encoding-gate: C:\Users\phill\.agents\skills\windows-shell-discipline\scripts\encoding-gate.mjs
+# encoding-gate: <encoding-gate>
 
 ## check echo.fungi
 node galerina.mjs check packages/fungi/memory/tests/45-host-adapter-audit/echo.fungi --strict-types --strict-governance
@@ -83,7 +83,7 @@ run 3 exit 0
 ℹ duration_ms 7844.9642
 
 ## encoding-gate
-node C:\Users\phill\.agents\skills\windows-shell-discipline\scripts\encoding-gate.mjs packages/fungi/memory/tests/45-host-adapter-audit
+node <encoding-gate> packages/fungi/memory/tests/45-host-adapter-audit
 exit 0
 
 ## git show frozen HTTP (read-only)
@@ -91,3 +91,7 @@ git show dc0f9c8c4f1365f0228cda213b2ecd001400463e:packages-ts/galerina-framework
 git show dc0f9c8c4f1365f0228cda213b2ecd001400463e:packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts
 exit 0
 writeResponse at index.ts:383-392; res.end at :390; jsonBody at auth-verify-route.ts:310
+
+## N1 out dir
+galerina.mjs has no --out flag. Suite writes gitignored build/ artefacts and transient mutant copies under tmpdir, deleted in finally.
+

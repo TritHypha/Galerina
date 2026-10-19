@@ -146,7 +146,7 @@ test("Q3 Date.now is not read on galerina run host helpers; TextEncoder is live 
     const host2 = createHostRuntime();
     host2.imports.host.__int_to_str(1);
     assert.equal(encHits, 0, "echo-path helpers do not compile grant names");
-    const host3 = createHostRuntime(undefined, {
+    const host3 = createHostRuntime({}, {
       effectHandlers: {
         "audit.write": (a, b) => a + b,
       },
