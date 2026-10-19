@@ -15,7 +15,7 @@
 ///   11 cancellation-after-write 12 missing-ack-after-write 13 crash-after-write
 ///   14 crash-before-begin-as-refuse else 11
 /// phaseToken: 0 before-begin 1 after-begin else 11
-/// outcomeClass packed: 0 Success 2 Refused 6 Indeterminate 8 no-op else 11
+/// outcomeClass packed: 0/1/7 Success; 2/3 Refused; 4/5/11 Refused before-begin Indeterminate after-begin; 6 Indeterminate; 8 no-op
 /// recovery (CN-2 ONE shape): 0 RELEASED_ACKED 1 RELEASED_UNACKED 2 REFUSED
 ///   3 DELIVERY_UNKNOWN 4 NOT_FOUND else 11
 /// capState: 0 OPEN 1 CLAIMED 2 REVOKED 3 COMMITTED 4 FAILED 5 INDETERMINATE else 11
@@ -61,6 +61,11 @@ contract {
   }
   if tombstoneDroppedToken != 0 {
     if tombstoneDroppedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if presentToken == 0 {
+    if leaseState != 0 {
       return finish(11, true)
     }
   }
@@ -167,6 +172,11 @@ contract {
       }
     }
   }
+  if existingPresentToken == 0 {
+    if existingLease != 0 {
+      return finish(11, true)
+    }
+  }
   if idPresentToken == 0 {
     return finish(5, true)
   }
@@ -215,10 +225,11 @@ pure flow consumeStep(
   epochClass: Int,
   epochMatchToken: Int,
   leaseState: Int,
-  revokeCommittedToken: Int
+  revokeCommittedToken: Int,
+  guardOutcome: Int
 ) -> Int
 contract {
-  intent { "Consume is the result-sink commit point D. Range-check every token first. Revocation committed first refuses." }
+  intent { "Consume is the result-sink commit point D. Range-check every token first. Revocation committed first refuses. Released 100 only if releaseGuard admitted 100." }
 }
 {
   if presentToken != 0 {
@@ -239,6 +250,17 @@ contract {
   if revokeCommittedToken != 0 {
     if revokeCommittedToken != 1 {
       return finish(11, true)
+    }
+  }
+  if guardOutcome != 100 {
+    if guardOutcome != 102 {
+      if guardOutcome != 105 {
+        if guardOutcome != 106 {
+          if guardOutcome != 111 {
+            return finish(11, true)
+          }
+        }
+      }
     }
   }
   if epochClass != 0 {
@@ -284,6 +306,9 @@ contract {
   }
   if epochMatchToken == 0 {
     return finish(4, true)
+  }
+  if guardOutcome != 100 {
+    return guardOutcome
   }
   return finish(0, true)
 }
@@ -718,7 +743,7 @@ contract {
 
 pure flow outcomeClass(outcomeCode: Int, phaseToken: Int) -> Int
 contract {
-  intent { "Map outcome 0-8 onto Success/Refused/Indeterminate. Missing/stale before begin is Refused; after begin is Indeterminate." }
+  intent { "Map outcome 0-8+11 onto Success/Refused/Indeterminate. Missing/stale/unlisted before begin is Refused; after begin is Indeterminate." }
 }
 {
   if phaseToken != 0 {
@@ -781,7 +806,10 @@ contract {
     return finish(2, true)
   }
   if outcomeCode == 11 {
-    return finish(2, true)
+    if phaseToken == 0 {
+      return finish(2, true)
+    }
+    return finish(6, true)
   }
   return finish(11, true)
 }

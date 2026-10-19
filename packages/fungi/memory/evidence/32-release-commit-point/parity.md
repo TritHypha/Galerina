@@ -43,8 +43,18 @@ B4 command+output: `evidence/32-release-commit-point/ts-differential.txt`.
 | 6 | delivery-unknown | Indeterminate |
 | 7 | reissued-existing-terminal | Success (same credentials, not a fresh mint) |
 | 8 | no-op | no-op (never Success, never Refused) |
-| 11 | Unlisted | Refused |
+| 11 | Unlisted | Refused before begin; Indeterminate after begin |
 
-Probe both sides: `mintAdmit` absent id before begin -> 105 (Refused); `casCommit` epoch mismatch after begin -> 106 (Indeterminate); `outcomeClass 5 0` -> 102; `outcomeClass 4 1` -> 106.
+Probe both sides: `mintAdmit` absent id before begin -> 105 (Refused); `casCommit` epoch mismatch after begin -> 106 (Indeterminate); `outcomeClass 5 0` -> 102; `outcomeClass 4 1` -> 106; `outcomeClass 11 0` -> 102; `outcomeClass 11 1` -> 106.
 
 Counts: PRESERVED 6, INTENDED_DIVERGENCE 12, UNKNOWN 0, NEEDS_LANGUAGE 4. Unlisted verdict refuses.
+
+## Notes
+
+N1. `outcomeClass(7)` maps to Success because re-issue returns the existing terminal record. It is not a new disclosure.
+
+N2. `casCommit` revoke-after-begin -> 106 is INTENDED_DIVERGENCE (stricter than the Q07 ruling that a release which began first is the one permitted disclosure).
+
+N3. RD-0778 is cited in `receipts.json` by path + sha256 only (never its body): `private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `07f9803efbc1dbc1a1956b3b3ec5cb1404e20a6bf8476009c1685eef9158bfa7`.
+
+N4. Rebasing onto the q31 ACK head `fc7db4db` stays a later NEW `-r2` series.

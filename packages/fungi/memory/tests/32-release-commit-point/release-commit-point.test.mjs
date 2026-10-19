@@ -28,6 +28,14 @@ function invoke(file, flow, args) {
   return { status: r.status, text, present: true, reason: "INVOKE_VALUE_PRESENT", value };
 }
 
+function consume(args) {
+  const a = args.slice();
+  if (a.length === 6) {
+    a.push(100);
+  }
+  return invoke(RCP, "consumeStep", a);
+}
+
 function expectPacked(r, expected, label) {
   assert.equal(r.status, 0, label + " status " + r.reason + " " + r.text);
   assert.equal(r.present, true, label + " " + r.reason + " " + r.text);
@@ -70,20 +78,20 @@ test("MUST-ADMIT mint of a fresh unused lease", () => {
 });
 
 test("MUST-REFUSE consume after committed revocation", () => {
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 1]), 102, "revoke first");
+  expectPacked(consume( [1, 1, 0, 1, 0, 1]), 102, "revoke first");
 });
 
 test("MUST-REFUSE second consume of released op", () => {
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 1, 0]), 103, "second release");
+  expectPacked(consume( [1, 1, 0, 1, 1, 0]), 103, "second release");
 });
 
 test("MUST-ADMIT consume of unused matching token and epoch", () => {
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0]), 100, "consume D");
+  expectPacked(consume( [1, 1, 0, 1, 0, 0]), 100, "consume D");
 });
 
 test("MUST-REFUSE consume with omitted or mismatched epoch", () => {
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 0, 0, 0]), 104, "epoch mismatch");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 3, 1, 0, 0]), 111, "epoch NaN class");
+  expectPacked(consume( [1, 1, 0, 0, 0, 0]), 104, "epoch mismatch");
+  expectPacked(consume( [1, 1, 3, 1, 0, 0]), 111, "epoch NaN class");
 });
 
 test("MUST-REFUSE ack with omitted epoch", () => {
@@ -168,14 +176,14 @@ test("revokeDelivery is one-way acknowledged to delivery-unknown", () => {
 });
 
 test("B1 MUST-REFUSE consumeStep surviving mutants", () => {
-  expectPacked(invoke(RCP, "consumeStep", [1, 0, 0, 1, 0, 0]), 102, "forged unused");
-  expectPacked(invoke(RCP, "consumeStep", [1, 0, 0, 1, 1, 0]), 104, "forged released");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 3, 0]), 102, "fenced");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 4, 0]), 103, "delivery-unknown");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 2, 0]), 103, "acknowledged");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 9, 0]), 111, "unlisted lease");
-  expectPacked(invoke(RCP, "consumeStep", [0, 1, 0, 1, 0, 0]), 105, "absent op");
-  expectPacked(invoke(RCP, "consumeStep", [1, 0, 0, 1, 9, 0]), 111, "B6 forged + unlisted lease");
+  expectPacked(consume( [1, 0, 0, 1, 0, 0]), 102, "forged unused");
+  expectPacked(consume( [1, 0, 0, 1, 1, 0]), 104, "forged released");
+  expectPacked(consume( [1, 1, 0, 1, 3, 0]), 102, "fenced");
+  expectPacked(consume( [1, 1, 0, 1, 4, 0]), 103, "delivery-unknown");
+  expectPacked(consume( [1, 1, 0, 1, 2, 0]), 103, "acknowledged");
+  expectPacked(consume( [1, 1, 0, 1, 9, 0]), 111, "unlisted lease");
+  expectPacked(consume( [0, 1, 0, 1, 0, 0]), 105, "absent op");
+  expectPacked(consume( [1, 0, 0, 1, 9, 0]), 111, "B6 forged + unlisted lease");
 });
 
 test("B1 MUST-REFUSE ackStep surviving mutants", () => {
@@ -251,15 +259,15 @@ test("B3 releaseGuard independent authorization / custody / cleanup / split fiel
 test("mutant skip epoch compare on consume goes RED then restore", () => {
   withMutant(
     RCP,
-    "  if epochMatchToken == 0 {\n    return finish(4, true)\n  }\n  return finish(0, true)\n}",
-    "  if epochMatchToken == 0 {\n    return finish(0, true)\n  }\n  return finish(0, true)\n}",
+    "  if epochMatchToken == 0 {\n    return finish(4, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    "  if epochMatchToken == 0 {\n    return finish(0, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
     () => {
-      const red = invoke(RCP, "consumeStep", [1, 1, 0, 0, 0, 0]);
+      const red = consume( [1, 1, 0, 0, 0, 0]);
       assert.equal(red.present, true, red.reason + " " + red.text);
       assert.notEqual(red.value, 104, "mutant must admit mismatched epoch: " + String(red.value));
     },
   );
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 0, 0, 0]), 104, "restore epoch compare");
+  expectPacked(consume( [1, 1, 0, 0, 0, 0]), 104, "restore epoch compare");
 });
 
 test("mutant accept fallback nonce goes RED then restore", () => {
@@ -324,11 +332,11 @@ test("mutant B1 consume unlisted lease goes RED then restore", () => {
     "          if leaseState != 4 {\n            return finish(11, true)\n          }\n        }\n      }\n    }\n  }\n  if presentToken == 0 {\n    return finish(5, true)\n  }\n  if revokeCommittedToken == 1 {",
     "          if leaseState != 4 {\n            return finish(0, true)\n          }\n        }\n      }\n    }\n  }\n  if presentToken == 0 {\n    return finish(5, true)\n  }\n  if revokeCommittedToken == 1 {",
     () => {
-      const red = invoke(RCP, "consumeStep", [1, 1, 0, 1, 9, 0]);
+      const red = consume( [1, 1, 0, 1, 9, 0]);
       assert.equal(red.present !== true || red.value !== 111, true, "must not keep 111: " + String(red.value));
     },
   );
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 9, 0]), 111, "restore unlisted lease");
+  expectPacked(consume( [1, 1, 0, 1, 9, 0]), 111, "restore unlisted lease");
 });
 
 test("mutant B2 reissue as fresh mint goes RED then restore", () => {
@@ -613,6 +621,193 @@ test("mutant S3 no-op as released goes RED then restore", () => {
     },
   );
   expectPacked(invoke(RCP, "revokeDelivery", [1]), 108, "restore no-op 8");
+});
+
+test("F1 casBegin FAILED 4 refuses 102", () => {
+  expectPacked(invoke(RCP, "casBegin", [4, 0]), 102, "FAILED release-begin");
+});
+
+test("mutant F1 casBegin FAILED admitted 100 goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if capState == 4 {\n    return finish(2, true)\n  }",
+    "  if capState == 4 {\n    return finish(0, true)\n  }",
+    () => {
+      const red = invoke(RCP, "casBegin", [4, 0]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 100, "mutant must admit FAILED: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "casBegin", [4, 0]), 102, "restore FAILED 102");
+});
+
+test("F1 casCommit INDETERMINATE 5 stays 106", () => {
+  expectPacked(invoke(RCP, "casCommit", [5, 0, 1, 0, 0]), 106, "INDETERMINATE commit");
+});
+
+test("mutant F1 casCommit INDETERMINATE as 100 goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "    if capState == 5 {\n      return finish(6, true)\n    }\n    return finish(11, true)\n  }\n  if adapterClass == 1 {",
+    "    if capState == 5 {\n      return finish(0, true)\n    }\n    return finish(11, true)\n  }\n  if adapterClass == 1 {",
+    () => {
+      const red = invoke(RCP, "casCommit", [5, 0, 1, 0, 0]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 100, "mutant must commit INDETERMINATE: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "casCommit", [5, 0, 1, 0, 0]), 106, "restore INDETERMINATE 106");
+});
+
+test("F1 outcomeClass 6 both phases is 106; outcomeClass 2 both phases is 102", () => {
+  expectPacked(invoke(RCP, "outcomeClass", [6, 0]), 106, "DU before begin");
+  expectPacked(invoke(RCP, "outcomeClass", [6, 1]), 106, "DU after begin");
+  expectPacked(invoke(RCP, "outcomeClass", [2, 0]), 102, "fenced before begin");
+  expectPacked(invoke(RCP, "outcomeClass", [2, 1]), 102, "fenced after begin");
+});
+
+test("mutant F1 DELIVERY_UNKNOWN as Success goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if outcomeCode == 6 {\n    return finish(6, true)\n  }",
+    "  if outcomeCode == 6 {\n    return finish(0, true)\n  }",
+    () => {
+      const red0 = invoke(RCP, "outcomeClass", [6, 0]);
+      const red1 = invoke(RCP, "outcomeClass", [6, 1]);
+      assert.equal(red0.value, 100, "mutant before-begin Success: " + String(red0.value));
+      assert.equal(red1.value, 100, "mutant after-begin Success: " + String(red1.value));
+    },
+  );
+  expectPacked(invoke(RCP, "outcomeClass", [6, 0]), 106, "restore DU before");
+  expectPacked(invoke(RCP, "outcomeClass", [6, 1]), 106, "restore DU after");
+});
+
+test("mutant F1 fenced as Success goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if outcomeCode == 2 {\n    return finish(2, true)\n  }",
+    "  if outcomeCode == 2 {\n    return finish(0, true)\n  }",
+    () => {
+      const red0 = invoke(RCP, "outcomeClass", [2, 0]);
+      const red1 = invoke(RCP, "outcomeClass", [2, 1]);
+      assert.equal(red0.value, 100, "mutant fenced before Success: " + String(red0.value));
+      assert.equal(red1.value, 100, "mutant fenced after Success: " + String(red1.value));
+    },
+  );
+  expectPacked(invoke(RCP, "outcomeClass", [2, 0]), 102, "restore fenced before");
+  expectPacked(invoke(RCP, "outcomeClass", [2, 1]), 102, "restore fenced after");
+});
+
+test("F1 mintAdmit re-issue of fenced and DELIVERY_UNKNOWN is 107", () => {
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 1, 3, 0, 1, 0, 1, 1]), 107, "reissue fenced");
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 1, 4, 0, 1, 0, 1, 1]), 107, "reissue DU");
+});
+
+test("mutant F1 reissue fenced as fresh 100 goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "    if existingLease == 3 {\n      return finish(7, true)\n    }",
+    "    if existingLease == 3 {\n      return finish(0, true)\n    }",
+    () => {
+      const red = invoke(RCP, "mintAdmit", [1, 0, 1, 1, 3, 0, 1, 0, 1, 1]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 100, "mutant fenced reissue as fresh: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 1, 3, 0, 1, 0, 1, 1]), 107, "restore fenced reissue");
+});
+
+test("mutant F1 reissue DU as fresh 100 goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "    if existingLease == 4 {\n      return finish(7, true)\n    }",
+    "    if existingLease == 4 {\n      return finish(0, true)\n    }",
+    () => {
+      const red = invoke(RCP, "mintAdmit", [1, 0, 1, 1, 4, 0, 1, 0, 1, 1]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 100, "mutant DU reissue as fresh: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 1, 4, 0, 1, 0, 1, 1]), 107, "restore DU reissue");
+});
+
+test("F2 outcomeClass unlisted is 102 before begin and 106 after begin", () => {
+  expectPacked(invoke(RCP, "outcomeClass", [11, 0]), 102, "unlisted before begin");
+  expectPacked(invoke(RCP, "outcomeClass", [11, 1]), 106, "unlisted after begin");
+  expectPacked(invoke(RCP, "casCommit", [9, 0, 1, 0, 0]), 111, "casCommit unlisted after begin");
+});
+
+test("mutant F2 unlisted after-begin as Refused 102 goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if outcomeCode == 11 {\n    if phaseToken == 0 {\n      return finish(2, true)\n    }\n    return finish(6, true)\n  }",
+    "  if outcomeCode == 11 {\n    if phaseToken == 0 {\n      return finish(2, true)\n    }\n    return finish(2, true)\n  }",
+    () => {
+      const red = invoke(RCP, "outcomeClass", [11, 1]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 102, "mutant after-begin unlisted Refused: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "outcomeClass", [11, 1]), 106, "restore unlisted after-begin 106");
+  expectPacked(invoke(RCP, "outcomeClass", [11, 0]), 102, "restore unlisted before-begin 102");
+});
+
+test("F3 consume refuses unless releaseGuard admitted 100", () => {
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 100]), 100, "guard admitted");
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 105]), 105, "guard missing");
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 106]), 106, "guard indeterminate");
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 102]), 102, "guard refused");
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 111]), 111, "guard unlisted");
+  expectPacked(consume([1, 1, 0, 1, 0, 1, 100]), 102, "revoke still 102 with admitted guard");
+});
+
+test("mutant F3 skip releaseGuard on consume goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    "  if guardOutcome != 100 {\n    return finish(0, true)\n  }\n  return finish(0, true)\n}",
+    () => {
+      const red = consume([1, 1, 0, 1, 0, 0, 105]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.equal(red.value, 100, "mutant must skip guard: " + String(red.value));
+    },
+  );
+  expectPacked(consume([1, 1, 0, 1, 0, 0, 105]), 105, "restore guard bind");
+});
+
+test("F6 inconsistent observation pairs refuse 111", () => {
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]), 111, "mint present 0 lease 1");
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 0, 4, 0, 1, 0, 1, 0]), 111, "mint present 0 lease 4");
+  expectPacked(invoke(RCP, "classifyRecovery", [0, 0, 0, 1]), 111, "recovery present 0 lease 1");
+  expectPacked(invoke(RCP, "classifyRecovery", [0, 1, 0, 0]), 103, "recovery present 0 lease 0 retired still DU");
+});
+
+test("mutant F6 mint skip inconsistent pair goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if existingPresentToken == 0 {\n    if existingLease != 0 {\n      return finish(11, true)\n    }\n  }",
+    "  if existingPresentToken == 99 {\n    if existingLease != 0 {\n      return finish(11, true)\n    }\n  }",
+    () => {
+      const red = invoke(RCP, "mintAdmit", [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.notEqual(red.value, 111, "mutant must admit inconsistent mint: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "mintAdmit", [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]), 111, "restore mint pair");
+});
+
+test("mutant F6 recovery skip inconsistent pair goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if presentToken == 0 {\n    if leaseState != 0 {\n      return finish(11, true)\n    }\n  }",
+    "  if presentToken == 99 {\n    if leaseState != 0 {\n      return finish(11, true)\n    }\n  }",
+    () => {
+      const red = invoke(RCP, "classifyRecovery", [0, 0, 0, 1]);
+      assert.equal(red.present, true, red.reason + " " + red.text);
+      assert.notEqual(red.value, 111, "mutant must admit inconsistent recovery: " + String(red.value));
+    },
+  );
+  expectPacked(invoke(RCP, "classifyRecovery", [0, 0, 0, 1]), 111, "restore recovery pair");
 });
 
 test("CN-1 release-commit-point does not define the helper", () => {

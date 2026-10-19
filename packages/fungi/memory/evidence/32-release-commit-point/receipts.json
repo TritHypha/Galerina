@@ -20,7 +20,11 @@
     "6": "Indeterminate",
     "7": "Success_reissued_existing_terminal",
     "8": "noop",
-    "11": "Refused"
+    "11": "Refused_before_begin_Indeterminate_after_begin"
+  },
+  "rd_0778": {
+    "path": "private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "07f9803efbc1dbc1a1956b3b3ec5cb1404e20a6bf8476009c1685eef9158bfa7"
   },
   "receipts": [
     {

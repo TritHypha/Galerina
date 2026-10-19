@@ -1,49 +1,42 @@
-B4: TS reference from dc0f9c8c run in the same scratch clone on the same synthetic vectors.
+F5: TS differential harness is tests/32-release-commit-point/ts-differential.test.mjs.
+Fungi column is the invoked packed Int from galerina run --invoke, not prose.
 
 command:
-  node --experimental-strip-types C:/Users/phill/AppData/Local/Temp/q32-03-ts-harness.mjs
+  node --test packages/fungi/memory/tests/32-release-commit-point/ts-differential.test.mjs
 cwd:
-  C:/Users/phill/AppData/Local/Temp
+  <scratch>
 TS subject:
   git show dc0f9c8c:packages-ts/galerina-framework-app-kernel/src/release-commit-point.ts
   sha256 ab0080fb6efc20937f69f88e85da4d65d37d4e0da634e495753015a9fca9e5b3
 node:
   v24.18.0 --experimental-strip-types
-exit 0
 
-stdout:
-{
-  "tsPin": "dc0f9c8c:packages-ts/galerina-framework-app-kernel/src/release-commit-point.ts",
-  "node": "v24.18.0",
-  "minted": { "leaseIdPresent": true, "epoch": 1 },
-  "rows": [
-    { "row": "CN-1 helper NaN", "ts": { "ok": false }, "fungi": "classTag 3 mintAdmit -> 111", "verdict": "PRESERVED" },
-    { "row": "CN-1 helper ok 4", "ts": { "ok": true, "value": 4 }, "fungi": "classTag 0 passes range-check", "verdict": "PRESERVED" },
-    { "row": "mint fresh", "ts": { "kind": "credentials", "value": "same-shape-return" }, "fungi": "mintAdmit fresh -> 100", "verdict": "PRESERVED" },
-    { "row": "mint absent id", "ts": { "kind": "refused", "value": "missing" }, "fungi": "mintAdmit idPresent 0 -> 105", "verdict": "PRESERVED" },
-    { "row": "mint NaN epoch", "ts": { "kind": "refused", "value": "stale" }, "fungi": "mintAdmit epochClass 3 -> 111", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "mint epoch -1", "ts": { "kind": "refused", "value": "stale" }, "fungi": "mintAdmit epoch -1 -> 104", "verdict": "PRESERVED" },
-    { "row": "mint in-flight unused", "ts": { "kind": "refused", "value": "replay" }, "fungi": "mintAdmit existingLease 0 -> 103", "verdict": "PRESERVED" },
-    { "row": "mint reissue existing terminal", "ts": { "kind": "credentials", "value": "same-shape-return" }, "fungi": "mintAdmit existingLease 1 issuedHere 1 -> 107", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "consume first matching", "ts": { "kind": "outcome", "value": "released" }, "fungi": "consumeStep unused match -> 100", "verdict": "PRESERVED" },
-    { "row": "consume second", "ts": { "kind": "outcome", "value": "replay" }, "fungi": "consumeStep released -> 103", "verdict": "PRESERVED" },
-    { "row": "consume forged unused", "ts": { "kind": "outcome", "value": "stale" }, "fungi": "consumeStep tokenMatch 0 unused -> 102", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "consume forged released", "ts": { "kind": "outcome", "value": "stale" }, "fungi": "consumeStep tokenMatch 0 released -> 104", "verdict": "PRESERVED" },
-    { "row": "ack released with epoch", "ts": { "kind": "outcome", "value": "acknowledged" }, "fungi": "ackStep released audit 1 -> 101", "verdict": "PRESERVED" },
-    { "row": "ack omitted epoch", "ts": { "kind": "outcome", "value": "acknowledged" }, "fungi": "ackStep epochPresent 0 -> 104", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "ack wrong epoch", "ts": { "kind": "outcome", "value": "stale" }, "fungi": "ackStep epochMatch 0 -> 104", "verdict": "PRESERVED" },
-    { "row": "status unused live", "ts": { "kind": "status", "value": "DELIVERY_UNKNOWN" }, "fungi": "classifyRecovery live unused -> 103", "verdict": "PRESERVED" },
-    { "row": "status absent", "ts": { "kind": "status", "value": "NOT_FOUND" }, "fungi": "classifyRecovery absent -> 104", "verdict": "PRESERVED" },
-    { "row": "revokeDelivery acked", "ts": { "kind": "status", "value": "DELIVERY_UNKNOWN" }, "fungi": "revokeDelivery acked -> 106", "verdict": "PRESERVED" },
-    { "row": "revokeDelivery released no-op", "ts": { "kind": "status", "value": "RELEASED_UNACKED" }, "fungi": "revokeDelivery released -> 108", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "bytesEqual equal", "ts": { "kind": "bool", "value": true }, "fungi": "bytesEqualScan 4 4 0 4 -> 100", "verdict": "NEEDS_LANGUAGE" },
-    { "row": "bytesEqual length", "ts": { "kind": "bool", "value": false }, "fungi": "bytesEqualScan 4 3 0 4 -> 101", "verdict": "NEEDS_LANGUAGE" },
-    { "row": "bytesEqual mismatch", "ts": { "kind": "bool", "value": false }, "fungi": "bytesEqualScan 4 4 1 4 -> 101", "verdict": "NEEDS_LANGUAGE" },
-    { "row": "TS instanceNonce fallback", "ts": "TS mint succeeds with u4-auth-N when crypto.randomUUID absent", "fungi": "mintAdmit randomnessPresent 0 -> 102", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "TS ack has no auditCommitted gate", "ts": "ack after consume returns acknowledged", "fungi": "ackStep auditCommitted 0 -> 106", "verdict": "INTENDED_DIVERGENCE" },
-    { "row": "TS has no casBegin/casCommit/observationPoint/releaseGuard/outcomeClass", "ts": "absent", "fungi": "modeled Q07/Q09/Addendum D/F tables", "verdict": "INTENDED_DIVERGENCE" }
-  ]
-}
+row | packed | verdict
+CN-1 helper NaN | 3 | PRESERVED
+CN-1 helper ok 4 | 0 | PRESERVED
+mint fresh | 100 | PRESERVED
+mint absent id | 105 | PRESERVED
+mint NaN epoch | 111 | INTENDED_DIVERGENCE
+mint epoch -1 | 104 | PRESERVED
+mint in-flight unused | 103 | PRESERVED
+mint reissue existing terminal | 107 | INTENDED_DIVERGENCE
+consume first matching | 100 | PRESERVED
+consume second | 103 | PRESERVED
+consume forged unused | 102 | INTENDED_DIVERGENCE
+consume forged released | 104 | PRESERVED
+ack released with epoch | 101 | PRESERVED
+ack omitted epoch | 104 | INTENDED_DIVERGENCE
+ack wrong epoch | 104 | PRESERVED
+status unused live | 103 | PRESERVED
+status absent | 104 | PRESERVED
+revokeDelivery acked | 106 | PRESERVED
+revokeDelivery released no-op | 108 | INTENDED_DIVERGENCE
+bytesEqual equal | 100 | NEEDS_LANGUAGE
+bytesEqual length | 101 | NEEDS_LANGUAGE
+bytesEqual mismatch | 101 | NEEDS_LANGUAGE
+TS instanceNonce fallback | 102 | INTENDED_DIVERGENCE
+TS ack has no auditCommitted gate | 106 | INTENDED_DIVERGENCE
+TS has no casBegin/casCommit/observationPoint/releaseGuard/outcomeClass | modeled Q07/Q09/Addendum D/F tables | INTENDED_DIVERGENCE
 
 INTENDED_DIVERGENCE rows differ exactly as stated:
 - mint reissue: TS same-shape credentials return; fungi packed 107

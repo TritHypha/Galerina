@@ -23,3 +23,13 @@
 | kind 14 crash-before-begin as 2 | mutant S1 crash-before-begin as REFUSE | value === 102 | 111 |
 | after-begin stale maps to Refused | mutant S2 after-begin stale as Refused | value !== 106 | 106 |
 | revokeDelivery released finish(0) | mutant S3 no-op as released | value !== 108 | 108 |
+| casBegin FAILED 4 admits 100 | mutant F1 casBegin FAILED admitted 100 | value === 100 | 102 |
+| casCommit INDETERMINATE 5 admits 100 | mutant F1 casCommit INDETERMINATE as 100 | value === 100 | 106 |
+| outcomeClass 6 as Success | mutant F1 DELIVERY_UNKNOWN as Success | value === 100 both phases | 106 |
+| outcomeClass 2 as Success | mutant F1 fenced as Success | value === 100 both phases | 102 |
+| reissue fenced as fresh 100 | mutant F1 reissue fenced as fresh 100 | value === 100 | 107 |
+| reissue DU as fresh 100 | mutant F1 reissue DU as fresh 100 | value === 100 | 107 |
+| unlisted after-begin as Refused 102 | mutant F2 unlisted after-begin as Refused 102 | value === 102 | 106 |
+| consume skips releaseGuard | mutant F3 skip releaseGuard on consume | value === 100 with guard 105 | 105 |
+| mint present 0 lease != 0 admits | mutant F6 mint skip inconsistent pair | value !== 111 | 111 |
+| recovery present 0 lease != 0 admits | mutant F6 recovery skip inconsistent pair | value !== 111 | 111 |
