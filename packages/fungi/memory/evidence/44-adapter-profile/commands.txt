@@ -1,0 +1,13 @@
+cwd: scratch clone (grok/fungi-memory-adapter-profile-20261019 from fc7db4db)
+node galerina.mjs check packages/fungi/memory/src/adapter-profile.fungi --strict-types --strict-governance
+  status 0
+node galerina.mjs build packages/fungi/memory/src/adapter-profile.fungi
+  status 1 FUNGI-NAME-001 (import CALL, NEEDS_LANGUAGE)
+node --test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs packages/fungi/memory/tests/44-adapter-profile/path-leak.test.mjs
+  run1 status 0 pass true
+  run2 status 0 pass true
+  run3 status 0 pass true
+encoding-gate status 0
+c-boundary sha256 7715db227015fcba0f485de8becb6684de40b42ac824e6cbc69137eaa57856bf blob a92a32713a19eb48c57fea62d49e6ac7fdf9eabe
+adapter-profile sha256 1dd516dc318d31b9743c603dacfece1497210448acbf7045f0f2e63551321537 blob 734c6dcc096f19a6fc48e969549a30c4ec131e9b
+N1. galerina.mjs has no --out flag; flatten for invoke is a test harness only.

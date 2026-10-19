@@ -1,0 +1,26 @@
+Q44: import "./c-boundary.fungi" and CALL readForeignSafeInteger in adapter-profile.fungi.
+Landed source keeps the import+call. Tests flatten helper body plus this unit for invoke
+because standalone WASM does not link imported executable flows (same B5 as Q31/Q32).
+cwd = scratch clone
+
+1) node galerina.mjs check packages/fungi/memory/src/adapter-profile.fungi --strict-types --strict-governance
+status 0
+✅ <path> 0 errors, 0 governance warnings (2 flow(s), 3 top-level declaration(s))
+
+2) node galerina.mjs build packages/fungi/memory/src/adapter-profile.fungi
+status 1
+⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+
+❌ Build of '<path>' FAILED (fail-closed) — 3 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+
+3) node galerina.mjs run packages/fungi/memory/src/adapter-profile.fungi --invoke classifyAdapter 0 0 0 0
+status 1
+Compilation failed: WAT module calls function(s) that are neither defined nor imported: $readForeignSafeInteger — this is an A2 emitter defect (the callee was not lowered to a host import or a local function). Fix: define/import the callee, or emit (unreachable) at the call site.
+
+Parser: packages-ts/galerina-core-compiler/src/parser.ts:566 parseImportStatement.
+cli.ts findStandaloneImportsWithNonSchemaDeclarations: standalone WASM currently supports schema-only imports; imported executable declarations cannot be linked yet.
+galerina.mjs run --invoke compiles one file and emits WAT without merging imported flow bodies.
+c-boundary.fungi blob a92a32713a19eb48c57fea62d49e6ac7fdf9eabe unchanged.
+NEEDS_LANGUAGE until build and run --invoke link imported executable flows.

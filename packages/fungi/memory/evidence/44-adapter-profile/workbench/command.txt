@@ -1,0 +1,5 @@
+cwd: AGENTS
+AGENTS HEAD: c3f760fbe283d7f91ab1b92f2b6eae84ea5d5158
+workbench.mjs sha256: 87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b
+node tools/code-logic-workbench.mjs build packages/fungi/memory/evidence/44-adapter-profile/workbench/request.json --profile skills/code-logic-workbench/references/fungi-profile.json --format json
+status: REFUSE (evidence:DECODER_UNAVAILABLE); authorizing false

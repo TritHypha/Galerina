@@ -1,0 +1,7 @@
+cwd: scratch clone
+node galerina.mjs check packages/fungi/memory/src/adapter-profile.fungi --strict-types --strict-governance
+status: 0
+stdout:
+✅ <path> 0 errors, 0 governance warnings (2 flow(s), 3 top-level declaration(s))
+stderr:
+(empty)
