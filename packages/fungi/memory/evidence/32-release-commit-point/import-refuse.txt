@@ -1,0 +1,30 @@
+Q32-03 B5: import "./c-boundary.fungi" and CALL readForeignSafeInteger.
+Tried on a tmpdir copy (landed release-commit-point.fungi keeps the classTag gate).
+cwd = scratch clone C:/Users/phill/AppData/Local/Temp/galerina-q32-scratch
+
+1) node galerina.mjs check <tmpdir>/probe.fungi --strict-types --strict-governance
+exit 0
+stdout:
+✅ C:\Users\phill\AppData\Local\Temp\q32-03-b5-ev-0FJaDf\probe.fungi: 0 errors, 0 governance warnings (1 flow(s), 2 top-level declaration(s))
+stderr:
+(empty)
+
+2) node galerina.mjs build <tmpdir>/probe.fungi
+exit 1
+stderr:
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (C:\Users\phill\AppData\Local\Temp\q32-03-b5-ev-0FJaDf\probe.fungi:8:21)
+
+❌ Build of 'C:\Users\phill\AppData\Local\Temp\q32-03-b5-ev-0FJaDf\probe.fungi' FAILED (fail-closed) — 1 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+stdout:
+
+3) node galerina.mjs run <tmpdir>/probe.fungi --invoke ping 0 4
+exit 1
+stderr:
+Compilation failed: WAT module calls function(s) that are neither defined nor imported: $readForeignSafeInteger — this is an A2 emitter defect (the callee was not lowered to a host import or a local function). Fix: define/import the callee, or emit (unreachable) at the call site.
+stdout:
+
+Parser: packages-ts/galerina-core-compiler/src/parser.ts:566 parseImportStatement; :6698.
+tests/syntax/import-test-main.fungi uses import "./import-test-lib.fungi".
+cli.ts findStandaloneImportsWithNonSchemaDeclarations: standalone WASM currently supports schema-only imports; imported executable declarations cannot be linked yet.
+galerina.mjs run --invoke compiles one file and emits WAT without merging imported flow bodies.
+ClassTag gate kept. c-boundary surface unchanged. NEEDS_LANGUAGE until build and run --invoke link imported executable flows.

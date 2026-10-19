@@ -10,27 +10,39 @@
     "CARRIED_UNKNOWN"
   ],
   "unlisted_state_refuses": true,
+  "outcome_class_mapping": {
+    "0": "Success",
+    "1": "Success",
+    "2": "Refused",
+    "3": "Refused",
+    "4": "Refused_before_begin_Indeterminate_after_begin",
+    "5": "Refused_before_begin_Indeterminate_after_begin",
+    "6": "Indeterminate",
+    "7": "Success_reissued_existing_terminal",
+    "8": "noop",
+    "11": "Refused"
+  },
   "receipts": [
     {
       "obligation": "NO_NULL_NAN",
       "state": "DISCHARGED",
       "how": "BY_TYPE",
-      "fungi_construct": "epoch/classTag gate; omitted epoch refuses 4; no null or NaN named",
+      "fungi_construct": "epoch/classTag gate; omitted epoch refuses 4; no null or NaN named; B5 import CALL refused so classTag gate kept",
       "probe": "helper NaN; mint classTag 3 -> 111; ack omitted epoch 104"
     },
     {
       "obligation": "EXHAUSTIVE_FAIL_CLOSED",
       "state": "DISCHARGED",
       "how": "BY_TOTALITY",
-      "fungi_construct": "sequential if-return terminal 11 on every table",
-      "probe": "unlisted lease/competitor/adapter/observation"
+      "fungi_construct": "sequential if-return terminal 11 on every table; B6 range-check every token first",
+      "probe": "unlisted lease/competitor/adapter/observation/cleanup/outcome"
     },
     {
       "obligation": "TOTAL_EFFECT_OUTCOME",
       "state": "DISCHARGED",
       "how": "BY_TOTALITY",
-      "fungi_construct": "Q07 casBegin + Q09 casCommit model table; COMMITTED only in-process same-epoch; out-of-process DELIVERY_UNKNOWN",
-      "probe": "revoke-wins; revoke-after-begin 106; out-of-process 106; retry 106"
+      "fungi_construct": "Q07 casBegin + Q09 casCommit + releaseGuard + outcomeClass; COMMITTED only in-process same-epoch; out-of-process DELIVERY_UNKNOWN; S1 post-write 106",
+      "probe": "revoke-wins; revoke-after-begin 106; out-of-process 106; retry 106; releaseGuard pending 106"
     },
     {
       "obligation": "MONOTONIC_TYPED_TIME",
@@ -42,13 +54,13 @@
       "obligation": "LINEAR_SECRET",
       "state": "CARRIED_UNKNOWN",
       "carried_refusal": "NEEDS_LANGUAGE",
-      "fungi_construct": "finish(code,true) packed +100 construct; bytesEqualScan full length. Physical wipe/XOR not in this unit."
+      "fungi_construct": "finish(code,true) packed +100 construct; bytesEqualScan host-reported full length. Constant-time XOR not in this unit."
     },
     {
       "obligation": "UNFORGEABLE_CAPABILITY",
       "state": "CARRIED_UNKNOWN",
       "carried_refusal": "NEEDS_LANGUAGE",
-      "fungi_construct": "absent randomness refuses 2; lease identity is a host Int, not a capability lease"
+      "fungi_construct": "absent randomness refuses 2; issuedHereToken missing 5; reissue existing terminal code 7; lease identity is a host Int, not a capability lease"
     },
     {
       "obligation": "SEALED_INTRINSICS",
@@ -87,6 +99,12 @@
       "state": "CARRIED_UNKNOWN",
       "carried_refusal": "UNKNOWN_IN_TS",
       "fungi_construct": "AP-Q07-1/2/3 adapter durability and pre-B paths; Deno adapter UNKNOWN"
+    },
+    {
+      "obligation": "CLEANUP_EVIDENCE_BINDING",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "releaseGuard refuses Pending/Failed/Unknown and NotRequired on a nonempty set; operation+generation binding of cleanup evidence is not expressed in this unit"
     }
   ]
 }
