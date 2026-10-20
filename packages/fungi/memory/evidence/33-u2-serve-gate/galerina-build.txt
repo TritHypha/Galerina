@@ -1,0 +1,12 @@
+exit 1
+stdout:
+
+stderr:
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:179:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:186:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:193:25)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:200:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:207:26)
+
+❌ Build of 'packages/fungi/memory/src/serve-gate.fungi' FAILED (fail-closed) — 5 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+

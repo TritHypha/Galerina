@@ -1,0 +1,15 @@
+Q33 ts-differential rows (fungi packed codes vs serve-secret-gate.ts @ dc0f9c8c). Unlisted verdict refuses.
+
+POST /auth/verify | 101 | PRESERVED
+POST /auth/verify/ | 101 | PRESERVED
+POST /Auth/Verify | 101 | PRESERVED
+POST /auth/%76erify | 101 | PRESERVED
+GET /auth/verify | 101 | PRESERVED
+GET /hello | 100 | PRESERVED
+POST /__fixture/auth/verify | 100 | PRESERVED
+POST /auth/%zz unnormalisable | 102 | INTENDED_DIVERGENCE
+GET /auth/%zz unnormalisable | 102 | INTENDED_DIVERGENCE
+secret.read | 103 | PRESERVED
+vault.write | 103 | PRESERVED
+totally.fake.effect | 104 | INTENDED_DIVERGENCE
+crypto.verify fixture | 100 | PRESERVED

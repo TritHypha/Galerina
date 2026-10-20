@@ -1,0 +1,262 @@
+@version 1
+/// @file: serve-gate.fungi
+/// @purpose: U2 standalone serve gate. Closed verdict with a refusing default.
+///   Host maps method/path/effect/reach/layer onto Int tags once (P20-N2).
+///   Path tags 0-5 are protected /auth/verify variants (canonical, trailing
+///   slash, ASCII case, percent, dot segment, double slash). Tag 6 is
+///   unnormalisable (over bound, invalid UTF-8, NUL, unlisted byte class,
+///   undecodable percent) and is PROTECTED (C188-N2 INTENDED_DIVERGENCE vs
+///   TS null -> not protected). Tags 7-9 are listed public. Unlisted path
+///   tags are PROTECTED. Unlisted effect names are secret-bearing.
+///   Layer 0 is serve()/standaloneServeSecretRefusal. Layer 1 is the
+///   startServer fence (C188-F1, C188-F2 behavioural probes, not source-text
+///   pins). The gate never yields COMMITTED (Astra W1). UNKNOWN is never
+///   success, zero-effect proof, or retry (W3). No clock in this file (A1).
+/// CN-1: import the frozen c-boundary helper and CALL it. check admits; build
+///   FUNGI-NAME-001; run --invoke WAT callee neither defined nor imported.
+///   Tests flatten helper body plus this unit for invoke.
+/// packed: 0 Admit 1 ProtectedAuthVerify 2 UnnormalisableProtected
+///   3 SecretBearingEffect 4 UnlistedEffectSecret 5 SecretsBlock
+///   6 UnresolvedSecretUnknown 7 DenyOnlyEffect 8 LayerUnlisted
+///   10 ForeignRawRefused 11 Unlisted 12 UnlistedPathProtected
+///   packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN).
+/// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
+
+import "./c-boundary.fungi"
+
+pure flow finish(refusalCode: Int, wiped: Bool) -> Int
+contract {
+  intent { "Pack refusal code and wipe-flag construct. Unlisted wipe flag refuses as Unlisted." }
+}
+{
+  if wiped == true {
+    return refusalCode + 100
+  }
+  if wiped == false {
+    return refusalCode
+  }
+  return 11
+}
+
+pure flow pathProtection(pathClass: Int) -> Int
+contract {
+  intent { "Closed path-class table. Unnormalisable and unlisted tags are PROTECTED." }
+}
+{
+  if pathClass == 0 {
+    return 1
+  }
+  if pathClass == 1 {
+    return 1
+  }
+  if pathClass == 2 {
+    return 1
+  }
+  if pathClass == 3 {
+    return 1
+  }
+  if pathClass == 4 {
+    return 1
+  }
+  if pathClass == 5 {
+    return 1
+  }
+  if pathClass == 6 {
+    return 2
+  }
+  if pathClass == 7 {
+    return 0
+  }
+  if pathClass == 8 {
+    return 0
+  }
+  if pathClass == 9 {
+    return 0
+  }
+  return 12
+}
+
+pure flow effectSecretClass(effectClass: Int) -> Int
+contract {
+  intent { "Closed effect-name table. Unlisted names are secret-bearing." }
+}
+{
+  if effectClass == 0 {
+    return 0
+  }
+  if effectClass == 6 {
+    return 0
+  }
+  if effectClass == 7 {
+    return 0
+  }
+  if effectClass == 8 {
+    return 7
+  }
+  if effectClass == 9 {
+    return 5
+  }
+  if effectClass == 10 {
+    let unlistedEffectSecret: Int = 4
+    return unlistedEffectSecret
+  }
+  if effectClass == 1 {
+    return 3
+  }
+  if effectClass == 2 {
+    return 3
+  }
+  if effectClass == 3 {
+    return 3
+  }
+  if effectClass == 4 {
+    return 3
+  }
+  if effectClass == 5 {
+    return 3
+  }
+  let unlistedEffectSecretDefault: Int = 4
+  return unlistedEffectSecretDefault
+}
+
+pure flow reachSecretClass(reachClass: Int) -> Int
+contract {
+  intent { "Closed reachability table. Alias, nested, callee, unresolved, and unlisted refuse." }
+}
+{
+  if reachClass == 0 {
+    return 0
+  }
+  if reachClass == 6 {
+    return 6
+  }
+  if reachClass == 7 {
+    return 5
+  }
+  if reachClass == 1 {
+    return 3
+  }
+  if reachClass == 2 {
+    return 3
+  }
+  if reachClass == 3 {
+    return 3
+  }
+  if reachClass == 4 {
+    return 3
+  }
+  if reachClass == 5 {
+    return 3
+  }
+  if reachClass == 8 {
+    return 3
+  }
+  if reachClass == 9 {
+    return 3
+  }
+  if reachClass == 10 {
+    return 3
+  }
+  return 4
+}
+
+pure flow classifyServeRoute(
+  layerClass: Int,
+  layer: Int,
+  methodClass: Int,
+  method: Int,
+  pathClassClass: Int,
+  pathClass: Int,
+  effectClassClass: Int,
+  effectClass: Int,
+  reachClassClass: Int,
+  reachClass: Int
+) -> Int
+contract {
+  intent { "Admit foreign tags then refuse protected or secret-bearing standalone serve routes." }
+}
+{
+  let layerReason: Int = readForeignSafeInteger(layerClass, layer)
+  if layerReason != 0 {
+    if layerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let methodReason: Int = readForeignSafeInteger(methodClass, method)
+  if methodReason != 0 {
+    if methodReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let pathReason: Int = readForeignSafeInteger(pathClassClass, pathClass)
+  if pathReason != 0 {
+    if pathReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)
+  if effectReason != 0 {
+    if effectReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)
+  if reachReason != 0 {
+    if reachReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if layer != 0 {
+    if layer != 1 {
+      return finish(8, true)
+    }
+  }
+  if layer == 1 {
+    let startServerFenceOn: Int = 1
+    if startServerFenceOn == 0 {
+      return finish(0, true)
+    }
+  }
+  let pathKind: Int = pathProtection(pathClass)
+  if pathKind == 1 {
+    return finish(1, true)
+  }
+  if pathKind == 2 {
+    return finish(2, true)
+  }
+  if pathKind == 12 {
+    return finish(12, true)
+  }
+  if pathKind != 0 {
+    return finish(11, true)
+  }
+  if method != 0 {
+    if method != 1 {
+      if method != 2 {
+        if method != 3 {
+          if method != 4 {
+            if method != 5 {
+              if method != 6 {
+                return finish(11, true)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  let effectKind: Int = effectSecretClass(effectClass)
+  if effectKind != 0 {
+    return finish(effectKind, true)
+  }
+  let reachKind: Int = reachSecretClass(reachClass)
+  if reachKind != 0 {
+    return finish(reachKind, true)
+  }
+  return finish(0, true)
+}
