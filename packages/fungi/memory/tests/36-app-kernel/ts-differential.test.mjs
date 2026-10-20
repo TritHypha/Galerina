@@ -496,7 +496,7 @@ const ROWS = [
     "row": "missing validator",
     "ts": "missing-validator",
     "fungi": 114,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "constructKernel",
     "args": [
@@ -531,7 +531,7 @@ const ROWS = [
     "row": "duplicate route",
     "ts": "duplicate",
     "fungi": 115,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "constructKernel",
     "args": [
@@ -566,7 +566,7 @@ const ROWS = [
     "row": "bad rate",
     "ts": "bad-rate",
     "fungi": 116,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "constructKernel",
     "args": [
@@ -601,7 +601,7 @@ const ROWS = [
     "row": "non-positive capacity",
     "ts": "capacity-0",
     "fungi": 117,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "constructKernel",
     "args": [
@@ -688,7 +688,7 @@ const ROWS = [
     "row": "body over cap",
     "ts": "payload_too_large",
     "fungi": 123,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "admitBody",
     "args": [
@@ -705,7 +705,7 @@ const ROWS = [
     "row": "content-type mismatch",
     "ts": "unsupported_media_type",
     "fungi": 124,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "admitBody",
     "args": [
@@ -739,7 +739,7 @@ const ROWS = [
     "row": "channel deny",
     "ts": "unauthorized",
     "fungi": 125,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "admitAuth",
     "args": [
@@ -758,7 +758,7 @@ const ROWS = [
     "row": "missing scope",
     "ts": "forbidden",
     "fungi": 126,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "admitAuth",
     "args": [
@@ -777,7 +777,7 @@ const ROWS = [
     "row": "rate over",
     "ts": "too_many_requests",
     "fungi": 127,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyRate",
     "args": [
@@ -794,7 +794,7 @@ const ROWS = [
     "row": "malformed JSON",
     "ts": "malformed_input",
     "fungi": 129,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyDecode",
     "args": [
@@ -817,7 +817,7 @@ const ROWS = [
     "row": "JSON null",
     "ts": "malformed_input",
     "fungi": 130,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyDecode",
     "args": [
@@ -840,7 +840,7 @@ const ROWS = [
     "row": "duplicate JSON keys",
     "ts": "malformed_input",
     "fungi": 131,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyDecode",
     "args": [
@@ -863,7 +863,7 @@ const ROWS = [
     "row": "unknown field",
     "ts": "malformed_input",
     "fungi": 132,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyDecode",
     "args": [
@@ -886,7 +886,7 @@ const ROWS = [
     "row": "memory budget",
     "ts": "service_unavailable",
     "fungi": 133,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyBudget",
     "args": [
@@ -901,7 +901,7 @@ const ROWS = [
     "row": "concurrency over",
     "ts": "too_many_requests",
     "fungi": 134,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyConcurrency",
     "args": [
@@ -1112,7 +1112,7 @@ const ROWS = [
     "row": "secret unavailable",
     "ts": "secret_unavailable",
     "fungi": 135,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applySecrets",
     "args": [
@@ -1170,7 +1170,7 @@ const ROWS = [
     "row": "idempotency missing key",
     "ts": "conflict",
     "fungi": 138,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyIdempotency",
     "args": [
@@ -1193,7 +1193,7 @@ const ROWS = [
     "row": "duplicate key",
     "ts": "conflict",
     "fungi": 139,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyIdempotency",
     "args": [
@@ -1216,7 +1216,7 @@ const ROWS = [
     "row": "store full",
     "ts": "conflict",
     "fungi": 140,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyIdempotency",
     "args": [
@@ -1321,7 +1321,7 @@ const ROWS = [
     "row": "handler never settles",
     "ts": "deadline_exceeded",
     "fungi": 147,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyDispatch",
     "args": [
@@ -1347,7 +1347,7 @@ const ROWS = [
     "row": "revoke first",
     "ts": "revoke-before-release",
     "fungi": 102,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "applyConsume",
     "args": [
@@ -1457,7 +1457,7 @@ const ROWS = [
     "row": "HTTP default 503",
     "ts": "undefined-map",
     "fungi": 503,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "httpStatusFor",
     "args": [
@@ -1470,7 +1470,7 @@ const ROWS = [
     "row": "HTTP 144",
     "ts": "503",
     "fungi": 503,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "httpStatusFor",
     "args": [
@@ -1483,7 +1483,7 @@ const ROWS = [
     "row": "HTTP 159",
     "ts": "503",
     "fungi": 503,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "httpStatusFor",
     "args": [
@@ -1496,7 +1496,7 @@ const ROWS = [
     "row": "composed pre-dispatch path refusal",
     "ts": "route_not_found",
     "fungi": 120,
-    "verdict": "PRESERVED",
+    "verdict": "UNKNOWN",
     "exec": "fungi",
     "flow": "runPreDispatch",
     "args": [
@@ -1511,6 +1511,16 @@ const ROWS = [
       100,
       100,
       0,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
       1000,
       0,
       1,
@@ -1547,6 +1557,16 @@ const ROWS = [
       100,
       0,
       7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
+      7000,
       0,
       1,
       0,
@@ -1565,12 +1585,14 @@ const ROWS = [
   {
     "row": "composed post deadline",
     "ts": "deadline_exceeded",
-    "fungi": 147,
+    "fungi": 106,
     "verdict": "INTENDED_DIVERGENCE",
     "exec": "fungi",
     "flow": "runPostDispatch",
     "args": [
       0,
+      7000,
+      7000,
       7000,
       0,
       1,
@@ -1816,6 +1838,10 @@ test("F5 frozen TS and flattened fungi executed for every parity row or UNKNOWN 
       assert.equal(listedVerdict, true, row.row + " unlisted verdict");
       const needle = row.row + " | " + String(row.fungi) + " | " + row.verdict;
       assert.equal(evidence.includes(needle), true, "evidence missing " + needle);
+      if (row.verdict === "PRESERVED") {
+        assert.equal(row.exec === "handle", true, row.row + " PRESERVED must be TS-executed");
+        assert.equal(row.unknownReason === undefined, true, row.row + " PRESERVED must not carry unknownReason");
+      }
       if (row.exec === "handle") {
         assert.equal(row.unknownReason === undefined, true, row.row + " live TS row must not carry unknownReason");
       } else {

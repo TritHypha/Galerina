@@ -1317,7 +1317,7 @@ pure flow applyFinalize(
   leaseState: Int
 ) -> Int
 contract {
-  intent { "Ack only after audit commit. Unspent success needs listed dispatch, no consume packed 100, and audit 100. Spent path never packed 100. Audit failed with ack not recorded is 44. Acked after audit is 106." }
+  intent { "Ack only after audit commit. Unspent success needs listed dispatch, listed no-consumption consumePacked 0, and audit 100. Any other consumePacked is 106. Spent path never packed 100. Audit failed with ack not recorded is 44. Acked after audit is 106." }
 }
 {
   let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
@@ -1389,7 +1389,7 @@ contract {
     }
   }
   if spentToken == 0 {
-    if consumePacked == 100 {
+    if consumePacked != 0 {
       return finish(6, true)
     }
     if auditPacked != 100 {
@@ -1687,6 +1687,284 @@ contract {
   return 503
 }
 
+pure flow listedMatchPacked(packed: Int) -> Int
+contract {
+  intent { "Match packed is 100 or listed match refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 120 {
+    return packed
+  }
+  if packed == 121 {
+    return packed
+  }
+  if packed == 122 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedBodyPacked(packed: Int) -> Int
+contract {
+  intent { "Body packed is 100 or listed body refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 124 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedAuthPacked(packed: Int) -> Int
+contract {
+  intent { "Auth packed is 100 or listed auth refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 125 {
+    return packed
+  }
+  if packed == 126 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedRatePacked(packed: Int) -> Int
+contract {
+  intent { "Rate packed is 100 or listed rate refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 127 {
+    return packed
+  }
+  if packed == 128 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedDecodePacked(packed: Int) -> Int
+contract {
+  intent { "Decode packed is 100 or listed decode refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 129 {
+    return packed
+  }
+  if packed == 130 {
+    return packed
+  }
+  if packed == 131 {
+    return packed
+  }
+  if packed == 132 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedBudgetPacked(packed: Int) -> Int
+contract {
+  intent { "Budget packed is 100 or listed budget refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 133 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedConcurrencyPacked(packed: Int) -> Int
+contract {
+  intent { "Concurrency packed is 100 or listed concurrency refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 117 {
+    return packed
+  }
+  if packed == 134 {
+    return packed
+  }
+  if packed == 159 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedSecretsPacked(packed: Int) -> Int
+contract {
+  intent { "Secrets packed is 100 or listed secrets refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 135 {
+    return packed
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedMintPacked(packed: Int) -> Int
+contract {
+  intent { "Mint packed is 100 or listed mint refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 136 {
+    return packed
+  }
+  if packed == 137 {
+    return packed
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedIdempPacked(packed: Int) -> Int
+contract {
+  intent { "Idempotency packed is 100 or listed idemp refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 138 {
+    return packed
+  }
+  if packed == 139 {
+    return packed
+  }
+  if packed == 140 {
+    return packed
+  }
+  if packed == 143 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
 pure flow runPreDispatch(
   matchPacked: Int,
   bodyPacked: Int,
@@ -1699,7 +1977,17 @@ pure flow runPreDispatch(
   mintPacked: Int,
   idempPacked: Int,
   clockClass: Int,
-  clock: Int,
+  clock1: Int,
+  clock2: Int,
+  clock3: Int,
+  clock4: Int,
+  clock5: Int,
+  clock6: Int,
+  clock7: Int,
+  clock8: Int,
+  clock9: Int,
+  clock10: Int,
+  clock11: Int,
   presentClass: Int,
   clockPresent: Int,
   armedClass: Int,
@@ -1714,89 +2002,131 @@ pure flow runPreDispatch(
   handlerToken: Int
 ) -> Int
 contract {
-  intent { "Composed pre-dispatch in TS gate order. Clock re-check at every stage. First non-100 returns. Dispatch never runs after a refusal." }
+  intent { "Composed pre-dispatch in TS gate order. One class-tagged clock reading per stage, non-decreasing. Each gate packed is 100 or that gate listed refusal else unlisted 111. First non-100 returns. Dispatch never runs after a refusal." }
 }
 {
-  let clock1: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock1 != 100 {
-    return clock1
+  let clock1Out: Int = applyClock(clockClass, clock1, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock1Out != 100 {
+    return clock1Out
   }
-  if matchPacked != 100 {
-    return matchPacked
+  let matchListed: Int = listedMatchPacked(matchPacked)
+  if matchListed != 100 {
+    return matchListed
   }
-  let clock2: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock2 != 100 {
-    return clock2
+  let clock2Out: Int = applyClock(clockClass, clock2, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock2Out != 100 {
+    return clock2Out
   }
-  if bodyPacked != 100 {
-    return bodyPacked
+  if clock2 < clock1 {
+    return finish(22, true)
   }
-  let clock3: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock3 != 100 {
-    return clock3
+  let bodyListed: Int = listedBodyPacked(bodyPacked)
+  if bodyListed != 100 {
+    return bodyListed
   }
-  if authPacked != 100 {
-    return authPacked
+  let clock3Out: Int = applyClock(clockClass, clock3, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock3Out != 100 {
+    return clock3Out
   }
-  let clock4: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock4 != 100 {
-    return clock4
+  if clock3 < clock2 {
+    return finish(22, true)
   }
-  if ratePacked != 100 {
-    return ratePacked
+  let authListed: Int = listedAuthPacked(authPacked)
+  if authListed != 100 {
+    return authListed
   }
-  let clock5: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock5 != 100 {
-    return clock5
+  let clock4Out: Int = applyClock(clockClass, clock4, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock4Out != 100 {
+    return clock4Out
   }
-  if decodePacked != 100 {
-    return decodePacked
+  if clock4 < clock3 {
+    return finish(22, true)
   }
-  let clock6: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock6 != 100 {
-    return clock6
+  let rateListed: Int = listedRatePacked(ratePacked)
+  if rateListed != 100 {
+    return rateListed
   }
-  if budgetPacked != 100 {
-    return budgetPacked
+  let clock5Out: Int = applyClock(clockClass, clock5, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock5Out != 100 {
+    return clock5Out
   }
-  let clock7: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock7 != 100 {
-    return clock7
+  if clock5 < clock4 {
+    return finish(22, true)
   }
-  if concurrencyPacked != 100 {
-    return concurrencyPacked
+  let decodeListed: Int = listedDecodePacked(decodePacked)
+  if decodeListed != 100 {
+    return decodeListed
   }
-  let clock8: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock8 != 100 {
-    return clock8
+  let clock6Out: Int = applyClock(clockClass, clock6, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock6Out != 100 {
+    return clock6Out
   }
-  if secretsPacked != 100 {
-    return secretsPacked
+  if clock6 < clock5 {
+    return finish(22, true)
   }
-  let clock9: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock9 != 100 {
-    return clock9
+  let budgetListed: Int = listedBudgetPacked(budgetPacked)
+  if budgetListed != 100 {
+    return budgetListed
   }
-  if mintPacked != 100 {
-    return mintPacked
+  let clock7Out: Int = applyClock(clockClass, clock7, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock7Out != 100 {
+    return clock7Out
   }
-  let clock10: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock10 != 100 {
-    return clock10
+  if clock7 < clock6 {
+    return finish(22, true)
   }
-  if idempPacked != 100 {
-    return idempPacked
+  let concurrencyListed: Int = listedConcurrencyPacked(concurrencyPacked)
+  if concurrencyListed != 100 {
+    return concurrencyListed
   }
-  let clock11: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clock11 != 100 {
-    return clock11
+  let clock8Out: Int = applyClock(clockClass, clock8, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock8Out != 100 {
+    return clock8Out
+  }
+  if clock8 < clock7 {
+    return finish(22, true)
+  }
+  let secretsListed: Int = listedSecretsPacked(secretsPacked)
+  if secretsListed != 100 {
+    return secretsListed
+  }
+  let clock9Out: Int = applyClock(clockClass, clock9, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock9Out != 100 {
+    return clock9Out
+  }
+  if clock9 < clock8 {
+    return finish(22, true)
+  }
+  let mintListed: Int = listedMintPacked(mintPacked)
+  if mintListed != 100 {
+    return mintListed
+  }
+  let clock10Out: Int = applyClock(clockClass, clock10, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock10Out != 100 {
+    return clock10Out
+  }
+  if clock10 < clock9 {
+    return finish(22, true)
+  }
+  let idempListed: Int = listedIdempPacked(idempPacked)
+  if idempListed != 100 {
+    return idempListed
+  }
+  let clock11Out: Int = applyClock(clockClass, clock11, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock11Out != 100 {
+    return clock11Out
+  }
+  if clock11 < clock10 {
+    return finish(22, true)
   }
   return applyDispatch(handlerClass, handlerToken)
 }
 
 pure flow runPostDispatch(
   clockClass: Int,
-  clock: Int,
+  clockConsume: Int,
+  clockFinalize: Int,
+  clockAudit: Int,
   presentClass: Int,
   clockPresent: Int,
   armedClass: Int,
@@ -1835,37 +2165,82 @@ pure flow runPostDispatch(
   handlerStillRunningToken: Int
 ) -> Int
 contract {
-  intent { "Composed post-dispatch. Clock re-check before consume finalize and audit. Slot released on every exit. First non-100 after release returns." }
+  intent { "Composed post-dispatch. One class-tagged clock reading per consume finalize audit stage, non-decreasing. Slot released on every exit. Spent finalize UNKNOWN wins over slot-held. Spent deadline is 106. Unspent deadline keeps 147. 159 only on the unspent path." }
 }
 {
-  let clockConsume: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clockConsume != 100 {
-    let releasedConsume: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
+  if spentReason != 0 {
+    if spentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if spentToken != 0 {
+    if spentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  let clockConsumeOut: Int = applyClock(clockClass, clockConsume, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedConsume: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockConsumeOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
     if releasedConsume != 100 {
       return releasedConsume
     }
-    return clockConsume
+    return clockConsumeOut
   }
-  let clockFinalize: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clockFinalize != 100 {
-    let releasedFinalize: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  let clockFinalizeOut: Int = applyClock(clockClass, clockFinalize, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedFinalize: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockFinalizeOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
     if releasedFinalize != 100 {
       return releasedFinalize
     }
-    return clockFinalize
+    return clockFinalizeOut
   }
-  let clockAudit: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
-  if clockAudit != 100 {
-    let releasedAudit: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockFinalize < clockConsume {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedFinalize != 100 {
+      return releasedFinalize
+    }
+    return finish(22, true)
+  }
+  let clockAuditOut: Int = applyClock(clockClass, clockAudit, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedAudit: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockAuditOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
     if releasedAudit != 100 {
       return releasedAudit
     }
-    return clockAudit
+    return clockAuditOut
+  }
+  if clockAudit < clockFinalize {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedAudit != 100 {
+      return releasedAudit
+    }
+    return finish(22, true)
   }
   let finalized: Int = applyFinalize(spentClass, spentToken, dispatchClass, dispatchPacked, consumeClass, consumePacked, auditClass, auditPacked, ackPresentClass, presentToken, ackMatchClass, tokenMatchToken, epochPresentClass, epochPresentToken, epochMatchClass, epochMatchToken, leaseClass, leaseState)
-  let released: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
-  if released != 100 {
-    return released
+  let releasedDone: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if spentToken == 1 {
+    if finalized == 144 {
+      return finalized
+    }
+    return finish(6, true)
+  }
+  if releasedDone != 100 {
+    return releasedDone
   }
   if finalized != 100 {
     return finalized

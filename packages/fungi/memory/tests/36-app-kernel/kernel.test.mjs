@@ -352,6 +352,7 @@ function http(code) {
 
 function preDispatch(over) {
   const o = over || {};
+  const clock = o.clock ?? 1000;
   return runFlow("runPreDispatch", [
     o.matchPacked ?? 100,
     o.bodyPacked ?? 100,
@@ -363,7 +364,18 @@ function preDispatch(over) {
     o.secretsPacked ?? 100,
     o.mintPacked ?? 100,
     o.idempPacked ?? 100,
-    o.clockClass ?? 0, o.clock ?? 1000,
+    o.clockClass ?? 0,
+    o.clock1 ?? clock,
+    o.clock2 ?? clock,
+    o.clock3 ?? clock,
+    o.clock4 ?? clock,
+    o.clock5 ?? clock,
+    o.clock6 ?? clock,
+    o.clock7 ?? clock,
+    o.clock8 ?? clock,
+    o.clock9 ?? clock,
+    o.clock10 ?? clock,
+    o.clock11 ?? clock,
     o.presentClass ?? 0, o.clockPresent ?? 1,
     o.armedClass ?? 0, o.armedAt ?? 1000,
     o.budgetClass ?? 0, o.budget ?? 5000,
@@ -375,8 +387,12 @@ function preDispatch(over) {
 
 function postDispatch(over) {
   const o = over || {};
+  const clock = o.clock ?? 1000;
   return runFlow("runPostDispatch", [
-    o.clockClass ?? 0, o.clock ?? 1000,
+    o.clockClass ?? 0,
+    o.clockConsume ?? clock,
+    o.clockFinalize ?? clock,
+    o.clockAudit ?? clock,
     o.presentClass ?? 0, o.clockPresent ?? 1,
     o.armedClass ?? 0, o.armedAt ?? 1000,
     o.budgetClass ?? 0, o.budget ?? 5000,
@@ -467,6 +483,7 @@ test("MUST-REFUSE rate decode budget concurrency clock", () => {
   expect(clock({ clock: 7000, armedAt: 1000, budget: 5000 }), 147, "deadline");
 });
 
+
 test("MUST-REFUSE mint secrets idempotency dispatch getSecret recover", () => {
   expect(mint({ callerMintToken: 1 }), 137, "caller mint");
   expect(mint({ randomnessPresentToken: 0 }), 136, "mint absent randomness");
@@ -496,6 +513,7 @@ test("landed consume revoke-first and finalize audit-before-ack", () => {
   expect(consume({ currentValidityToken: 0, revokeCommittedToken: 1 }), 106, "validity before revoke");
   expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 0, auditPacked: 100 }), 100, "unspent handler ok");
   expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 100, auditPacked: 100 }), 106, "unspent consume packed 100");
+  expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 999, auditPacked: 100 }), 106, "unspent unlisted consumePacked");
   expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 0, auditPacked: 101 }), 106, "unspent audit fail");
   expect(finalize({ spentToken: 0, dispatchPacked: 999, consumePacked: 0, auditPacked: 100 }), 106, "unspent unlisted dispatch");
   expect(finalize({ spentToken: 0, dispatchPacked: 106, consumePacked: 0, auditPacked: 100 }), 106, "unspent listed 106");
@@ -651,11 +669,67 @@ test("F1 composed body-reader over cap becomes 123 and skips dispatch", () => {
 test("F1 composed deadline at each pre-dispatch stage and post finalize/audit", () => {
   expect(preDispatch({ clock: 7000, armedAt: 1000, budget: 5000, handlerToken: 0 }), 147, "deadline before match");
   expect(preDispatch({ clock: 6000, armedAt: 1000, budget: 5000 }), 147, "deadline at later pre stage same reading");
-  expect(postDispatch({ clock: 7000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 100 }), 147, "deadline before consume");
-  expect(postDispatch({ clock: 6000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 106 }), 147, "deadline before finalize and audit");
+  expect(postDispatch({ clock: 7000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 100 }), 106, "spent deadline before consume is 106");
+  expect(postDispatch({ clock: 6000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 106 }), 106, "spent deadline before finalize and audit is 106");
   expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 106 }), 144, "post audit fail 144 after clocks");
   expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "post spent success 106");
   expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100 }), 100, "post unspent ok");
+});
+
+test("F1 spent finalize UNKNOWN wins over slot-held 159", () => {
+  expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 101, releasedToken: 0 }), 144, "spent audit 101 released 0 is 144");
+  expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1, releasedToken: 0 }), 106, "spent all 100 released 0 is 106");
+  expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1, releasedToken: 1 }), 106, "spent all 100 released 1 is 106");
+});
+
+test("F2 spent deadline is 106 unspent deadline is 147", () => {
+  expect(postDispatch({ clock: 7000, spentToken: 1, consumePacked: 100, auditPacked: 100, releasedToken: 1 }), 106, "spent deadline consume 106");
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 7000, clockAudit: 1000, spentToken: 1, consumePacked: 100, auditPacked: 100, releasedToken: 1 }), 106, "spent deadline finalize 106");
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 1000, clockAudit: 7000, spentToken: 1, consumePacked: 100, auditPacked: 100, releasedToken: 1 }), 106, "spent deadline audit 106");
+  expect(postDispatch({ clock: 7000, spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100, releasedToken: 1 }), 147, "unspent deadline 147");
+  expect(http(106), 503, "spent deadline HTTP 503");
+  expect(http(147), 504, "unspent deadline HTTP 504");
+});
+
+test("F4 unlisted pre-dispatch gate packed is 111 never raw", () => {
+  expect(preDispatch({ idempPacked: 999, handlerToken: 1 }), 111, "idempPacked 999");
+  expect(preDispatch({ matchPacked: 0, handlerToken: 1 }), 111, "matchPacked 0");
+  expect(preDispatch({ bodyPacked: 999, handlerToken: 1 }), 111, "bodyPacked 999");
+  expect(preDispatch({ authPacked: 0, handlerToken: 1 }), 111, "authPacked 0");
+  expect(preDispatch({ ratePacked: 999, handlerToken: 1 }), 111, "ratePacked 999");
+  expect(preDispatch({ decodePacked: 0, handlerToken: 1 }), 111, "decodePacked 0");
+  expect(preDispatch({ budgetPacked: 999, handlerToken: 1 }), 111, "budgetPacked 999");
+  expect(preDispatch({ concurrencyPacked: 0, handlerToken: 1 }), 111, "concurrencyPacked 0");
+  expect(preDispatch({ secretsPacked: 999, handlerToken: 1 }), 111, "secretsPacked 999");
+  expect(preDispatch({ mintPacked: 0, handlerToken: 1 }), 111, "mintPacked 0");
+  expect(runFlow("listedMatchPacked", [999]), 111, "listedMatchPacked 999");
+  expect(runFlow("listedMatchPacked", [120]), 120, "listedMatchPacked 120");
+  expect(runFlow("listedIdempPacked", [139]), 139, "listedIdempPacked 139");
+});
+
+test("F5 one clock reading per stage non-decreasing and first-trip deadline", () => {
+  expect(preDispatch({ clock1: 2000, clock2: 1500 }), 122, "pre backwards clock2");
+  expect(postDispatch({ clockConsume: 2000, clockFinalize: 1500, clockAudit: 1500, spentToken: 0, consumePacked: 0 }), 122, "post backwards finalize");
+  let stage = 1;
+  while (stage <= 11) {
+    const over = { handlerToken: 0, armedAt: 1000, budget: 5000 };
+    let i = 1;
+    while (i <= 11) {
+      over["clock" + String(i)] = i === stage ? 7000 : 1000;
+      i = i + 1;
+    }
+    expect(preDispatch(over), 147, "first trip pre stage " + String(stage));
+    stage = stage + 1;
+  }
+  expect(postDispatch({ clockConsume: 7000, clockFinalize: 1000, clockAudit: 1000, spentToken: 0, consumePacked: 0, releasedToken: 1 }), 147, "first trip post consume");
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 7000, clockAudit: 1000, spentToken: 0, consumePacked: 0, releasedToken: 1 }), 147, "first trip post finalize");
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 1000, clockAudit: 7000, spentToken: 0, consumePacked: 0, releasedToken: 1 }), 147, "first trip post audit");
+});
+
+test("F6 unspent slot-held 159 on finalize 100 handler-running and deadline", () => {
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100, releasedToken: 0 }), 159, "unspent finalize 100 released 0");
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100, releasedToken: 1, handlerStillRunningToken: 1 }), 159, "unspent handler running 1");
+  expect(postDispatch({ clock: 7000, spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100, releasedToken: 0 }), 159, "unspent deadline released 0");
 });
 
 test("F4 standalone survivor pins no mutant needle", () => {
