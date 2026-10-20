@@ -1,0 +1,11 @@
+✔ clock admission calls c-boundary and does not reimplement its table (3.5141ms)
+✔ forbidden combinations have a typed refusal and a final fail-closed return (2.204ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.853502
+TEST_EXIT:0
