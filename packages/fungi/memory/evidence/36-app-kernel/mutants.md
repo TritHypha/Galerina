@@ -18,3 +18,15 @@ All mutants are in-memory (`unitSourceOverride` / `portsSourceOverride`) flatten
 | bind minted op | kernel.fungi applySecrets | `if mintedOp != secretOp { return finish(35, true)` → finish(0) | mismatch leaves 135 | 135 |
 
 Wipe mutant: packed +100 is a wipe construct only (LINEAR_SECRET CARRIED_UNKNOWN; no erase claim). Skip-one-wipe is typed UNKNOWN outside this unit (WIPE_OUTSIDE_UNIT); rcp owns finish(..., true).
+## Follow-up 05 Grok survivors and killing tests
+
+Grok IC @ a7ab0999 (sha256 794c43df): 23 RED, 8 survived. U00 control expected. U08 spent finalized passthrough is a redundancy probe (applyFinalize spent never returns 100); no action. Killing tests below are landed outside `withMutant`.
+
+| claim | file | needle | red test | landed restore |
+|---|---|---|---|---|
+| U25 composed unspent finalize failure | kernel.fungi runPostDispatch | remove `if finalized != 100 { return finalized }` | T1 unspent audit 101 / consume 999 / consume 100 / dispatch 106 / dispatch 999 each 106 | 106 |
+| U16 skip slot-release on finalize clock exit | kernel.fungi runPostDispatch | skip `if releasedFinalize != 100 { return releasedFinalize }` | T2 unspent deadline/backwards at finalize released 0 -> 159 | 159 |
+| U17 skip slot-release on audit clock exit | kernel.fungi runPostDispatch | skip `if releasedAudit != 100 { return releasedAudit }` | T2 unspent deadline/backwards at audit released 0 -> 159 | 159 |
+| U19 remove only clock2 < clock1 | kernel.fungi runPreDispatch | remove `if clock2 < clock1 { return finish(22, true) }` | T3 adjacent pre pair clock2 < clock1 with later clocks non-decreasing -> 122 | 122 |
+| U20 remove only clockAudit < clockFinalize | kernel.fungi runPostDispatch | remove `if clockAudit < clockFinalize { ... finish(22, true) }` | T3 unspent audit < finalize released 1 -> 122 | 122 |
+| U07 spent applyFinalize acked==100 success | kernel.fungi applyFinalize | `if acked == 100 { return finish(6, true)` -> finish(0) | T4 spent consume 100 audit 100 every ack outcome (present/match/epoch/lease) never 100 | never 100 |

@@ -732,6 +732,77 @@ test("F6 unspent slot-held 159 on finalize 100 handler-running and deadline", ()
   expect(postDispatch({ clock: 7000, spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100, releasedToken: 0 }), 159, "unspent deadline released 0");
 });
 
+test("T1 composed unspent finalize failure is 106", () => {
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 101, releasedToken: 1 }), 106, "unspent audit 101");
+  expect(postDispatch({ spentToken: 0, consumePacked: 999, dispatchPacked: 100, auditPacked: 100, releasedToken: 1 }), 106, "unspent consume 999");
+  expect(postDispatch({ spentToken: 0, consumePacked: 100, dispatchPacked: 100, auditPacked: 100, releasedToken: 1 }), 106, "unspent consume 100");
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 106, auditPacked: 100, releasedToken: 1 }), 106, "unspent dispatch 106");
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 999, auditPacked: 100, releasedToken: 1 }), 106, "unspent dispatch 999");
+});
+
+test("T2 unspent slot-held on finalize and audit clock exits", () => {
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 7000, clockAudit: 1000, spentToken: 0, consumePacked: 0, releasedToken: 0 }), 159, "deadline finalize released 0");
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 1000, clockAudit: 7000, spentToken: 0, consumePacked: 0, releasedToken: 0 }), 159, "deadline audit released 0");
+  expect(postDispatch({ clockConsume: 2000, clockFinalize: 1500, clockAudit: 1500, spentToken: 0, consumePacked: 0, releasedToken: 0 }), 159, "backwards finalize released 0");
+  expect(postDispatch({ clockConsume: 2000, clockFinalize: 2000, clockAudit: 1500, spentToken: 0, consumePacked: 0, releasedToken: 0 }), 159, "backwards audit released 0");
+});
+
+test("T3 adjacent pre pairs and audit backwards are 122", () => {
+  let k = 2;
+  while (k <= 11) {
+    const over = { handlerToken: 0 };
+    let i = 1;
+    while (i <= 11) {
+      over["clock" + String(i)] = i < k ? 2000 : 1500;
+      i = i + 1;
+    }
+    expect(preDispatch(over), 122, "pre backwards clock" + String(k));
+    k = k + 1;
+  }
+  expect(postDispatch({ clockConsume: 1000, clockFinalize: 2000, clockAudit: 1500, spentToken: 0, consumePacked: 0, releasedToken: 1 }), 122, "unspent audit < finalize");
+});
+
+test("T4 spent applyFinalize every ack outcome never 100", () => {
+  const presents = [0, 1];
+  const matches = [0, 1];
+  const epochPresents = [0, 1];
+  const epochMatches = [0, 1];
+  const leases = [0, 1, 2, 3, 4, 5];
+  let pi = 0;
+  while (pi < presents.length) {
+    let mi = 0;
+    while (mi < matches.length) {
+      let ei = 0;
+      while (ei < epochPresents.length) {
+        let qi = 0;
+        while (qi < epochMatches.length) {
+          let li = 0;
+          while (li < leases.length) {
+            const label = "T4 p" + String(presents[pi]) + " m" + String(matches[mi]) + " ep" + String(epochPresents[ei]) + " em" + String(epochMatches[qi]) + " l" + String(leases[li]);
+            const r = finalize({
+              spentToken: 1,
+              consumePacked: 100,
+              auditPacked: 100,
+              presentToken: presents[pi],
+              tokenMatchToken: matches[mi],
+              epochPresentToken: epochPresents[ei],
+              epochMatchToken: epochMatches[qi],
+              leaseState: leases[li],
+            });
+            assert.equal(r.present, true, label + " present " + r.reason);
+            assert.notEqual(r.value, 100, label + " got " + String(r.value));
+            li = li + 1;
+          }
+          qi = qi + 1;
+        }
+        ei = ei + 1;
+      }
+      mi = mi + 1;
+    }
+    pi = pi + 1;
+  }
+});
+
 test("F4 standalone survivor pins no mutant needle", () => {
   expect(clock({ clock: 6000, armedAt: 1000, budget: 5000 }), 147, "clock == armedAt+budget is 147");
   expect(clock({ clock: 5999, armedAt: 1000, budget: 5000 }), 100, "clock == armedAt+budget-1 is 100");
