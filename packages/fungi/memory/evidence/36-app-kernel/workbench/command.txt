@@ -1,0 +1,5 @@
+cwd: AGENTS
+AGENTS HEAD: 80e86871b6d8afcadc76435d4ce015eba5bedc5a
+workbench.mjs sha256: 87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b
+node tools/code-logic-workbench.mjs build <clone>/packages/fungi/memory/evidence/36-app-kernel/workbench/request.json --profile skills/code-logic-workbench/references/fungi-profile.json --format json
+status: REFUSE {"decoder":{"available":false,"id":"decoder:unavailable","version":"none"},"expectedHead":"999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed","graphDigest":"c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3","indexedHead":"999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed","repositoryId":"repository:galerina-trit-hypha","views":[{"digest":"c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3","indexedHead":"999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed","kind":"HOST","locator":"graph/host-unavailable"},{"digest":"c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3","indexedHead":"999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed","kind":"FUNGI","locator":"graph/fungi-unavailable"}]}

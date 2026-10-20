@@ -1,0 +1,18 @@
+oracle dc0f9c8c4f1365f0228cda213b2ecd001400463e
+kernel.ts sha256 5a6e13c32c0daab3f303b0840674237836baa742056412b5f84fcae08b2faeee
+parked-fallback 93934967ef72e4fc711754775760c18b10f1d240 unused-if-dc0-loads
+unknown path | 120 | PRESERVED
+wrong method | 121 | PRESERVED
+unknown posture throws | 112 | INTENDED_DIVERGENCE
+secret route no provider warns | 118 | INTENDED_DIVERGENCE
+rate forward jump resets window | 128 | INTENDED_DIVERGENCE
+ack before audit swallow | 106 | INTENDED_DIVERGENCE
+getSecret undefined after deadline | 152 | INTENDED_DIVERGENCE
+deadline armed at dispatch | 147 | INTENDED_DIVERGENCE
+post-consume success COMMITTED | 106 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME | 121 | NEEDS_LANGUAGE
+CONSTANT_TIME_COMPARE | 100 | NEEDS_LANGUAGE
+createAppKernel executed: yes (construction throw vector)
+handle() 404/405: attempted in ts-differential.test.mjs loadFrozen
+q46 monotonic-time.fungi types: CARRIED_UNKNOWN pending Grok-briefed reconciliation
+MB-16: .fungi reads no clock; caller supplies typed readings through c-boundary

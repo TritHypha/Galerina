@@ -1,0 +1,4 @@
+✅ packages/fungi/memory/src/kernel.fungi: 0 errors, 0 governance warnings (18 flow(s), 23 top-level declaration(s))
+
+--- kernel-ports ---
+✅ packages/fungi/memory/src/kernel-ports.fungi: 0 errors, 0 governance warnings (4 flow(s), 6 top-level declaration(s))

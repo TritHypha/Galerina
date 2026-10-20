@@ -1,0 +1,273 @@
+@version 1
+/// @file: kernel-ports.fungi
+/// @purpose: APP_KERNEL bounded audit-sink and idempotency-store port
+///   decision tables. Host maps store and sink observations onto Int tags
+///   once (P20-N2). CN-1: CALL the frozen boundary helper. finish comes
+///   from the release-commit-point import. MB-19: reserve then commit or
+///   cancel. Refusal before dispatch cancels so the key is not stranded.
+///   After dispatch the key is RESERVED_UNKNOWN and the outcome is
+///   DELIVERY_UNKNOWN: no retry and no unconditional delete.
+/// claimToken: 0 missing-key 1 claimed 2 duplicate 3 full 4 throw 5 unlisted else 11
+/// alreadyReservedToken: 0 fresh 1 already-reserved else 11
+/// dispatchToken: 0 before-dispatch 1 after-dispatch else 11
+/// settleToken: 0 commit 1 cancel 2 crash else 11
+/// auditReserveToken: 0 reserved 1 unavailable 2 throw 3 unlisted else 11
+/// auditSettleToken: 0 commit-ok 1 commit-fail 2 commit-throw 3 cancel-ok 4 cancel-fail 5 unlisted else 11
+/// packed: 38 missing-key 39 duplicate 40 full 43 post-dispatch-delete
+///   44 reserved-unknown 45 audit-unavailable. Throw and commit-fail are 6.
+///   Unlisted 11. Foreign 10. packed +100 is a wipe construct.
+/// Sequential if-return. Nested if/else failed WAT emit.
+
+import "./c-boundary.fungi"
+import "./release-commit-point.fungi"
+
+pure flow reserveIdempotency(
+  claimClass: Int,
+  claimToken: Int,
+  reservedClass: Int,
+  alreadyReservedToken: Int,
+  dispatchClass: Int,
+  dispatchToken: Int,
+  ttlClass: Int,
+  ttl: Int
+) -> Int
+contract {
+  intent { "Closed idempotency reserve. Missing duplicate and full refuse. Store throw is UNKNOWN never REFUSED. Already reserved after dispatch is DELIVERY_UNKNOWN never a second dispatch. Non-positive TTL refuses." }
+}
+{
+  let claimReason: Int = readForeignSafeInteger(claimClass, claimToken)
+  if claimReason != 0 {
+    if claimReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let reservedReason: Int = readForeignSafeInteger(reservedClass, alreadyReservedToken)
+  if reservedReason != 0 {
+    if reservedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let dispatchReason: Int = readForeignSafeInteger(dispatchClass, dispatchToken)
+  if dispatchReason != 0 {
+    if dispatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let ttlReason: Int = readForeignSafeInteger(ttlClass, ttl)
+  if ttlReason != 0 {
+    if ttlReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if claimToken != 0 {
+    if claimToken != 1 {
+      if claimToken != 2 {
+        if claimToken != 3 {
+          if claimToken != 4 {
+            if claimToken != 5 {
+              return finish(11, true)
+            }
+          }
+        }
+      }
+    }
+  }
+  if alreadyReservedToken != 0 {
+    if alreadyReservedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if dispatchToken != 0 {
+    if dispatchToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if ttl < 1 {
+    return finish(17, true)
+  }
+  if alreadyReservedToken == 1 {
+    if dispatchToken == 1 {
+      return finish(6, true)
+    }
+  }
+  if claimToken == 0 {
+    return finish(38, true)
+  }
+  if claimToken == 2 {
+    return finish(39, true)
+  }
+  if claimToken == 3 {
+    return finish(40, true)
+  }
+  if claimToken == 4 {
+    return finish(6, true)
+  }
+  if claimToken == 5 {
+    return finish(11, true)
+  }
+  if claimToken != 1 {
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
+
+pure flow settleIdempotency(
+  dispatchClass: Int,
+  dispatchToken: Int,
+  settleClass: Int,
+  settleToken: Int
+) -> Int
+contract {
+  intent { "Closed settle sum. Before dispatch cancel succeeds so the key is not stranded. After dispatch cancel is unconditional delete and refuses. After dispatch crash is RESERVED_UNKNOWN. Unlisted refuses." }
+}
+{
+  let dispatchReason: Int = readForeignSafeInteger(dispatchClass, dispatchToken)
+  if dispatchReason != 0 {
+    if dispatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let settleReason: Int = readForeignSafeInteger(settleClass, settleToken)
+  if settleReason != 0 {
+    if settleReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if dispatchToken != 0 {
+    if dispatchToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if settleToken != 0 {
+    if settleToken != 1 {
+      if settleToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if dispatchToken == 0 {
+    if settleToken == 1 {
+      return finish(0, true)
+    }
+    if settleToken == 0 {
+      return finish(0, true)
+    }
+    if settleToken == 2 {
+      return finish(0, true)
+    }
+    return finish(11, true)
+  }
+  if settleToken == 1 {
+    return finish(43, true)
+  }
+  if settleToken == 2 {
+    return finish(6, true)
+  }
+  if settleToken == 0 {
+    return finish(0, true)
+  }
+  return finish(11, true)
+}
+
+pure flow reserveAudit(
+  reserveClass: Int,
+  auditReserveToken: Int,
+  capacityClass: Int,
+  capacity: Int
+) -> Int
+contract {
+  intent { "Synchronous non-blocking audit reserve. Unavailable or throw is audit-unavailable. Non-positive capacity refuses. Unlisted refuses." }
+}
+{
+  let reserveReason: Int = readForeignSafeInteger(reserveClass, auditReserveToken)
+  if reserveReason != 0 {
+    if reserveReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let capacityReason: Int = readForeignSafeInteger(capacityClass, capacity)
+  if capacityReason != 0 {
+    if capacityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if auditReserveToken != 0 {
+    if auditReserveToken != 1 {
+      if auditReserveToken != 2 {
+        if auditReserveToken != 3 {
+          return finish(11, true)
+        }
+      }
+    }
+  }
+  if capacity < 1 {
+    return finish(17, true)
+  }
+  if auditReserveToken == 1 {
+    return finish(45, true)
+  }
+  if auditReserveToken == 2 {
+    return finish(45, true)
+  }
+  if auditReserveToken == 3 {
+    return finish(11, true)
+  }
+  if auditReserveToken != 0 {
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
+
+pure flow settleAudit(
+  settleClass: Int,
+  auditSettleToken: Int
+) -> Int
+contract {
+  intent { "Commit or cancel exactly once. Commit fail or throw is UNKNOWN never swallowed success. Cancel fail is UNKNOWN. Unlisted refuses." }
+}
+{
+  let settleReason: Int = readForeignSafeInteger(settleClass, auditSettleToken)
+  if settleReason != 0 {
+    if settleReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if auditSettleToken != 0 {
+    if auditSettleToken != 1 {
+      if auditSettleToken != 2 {
+        if auditSettleToken != 3 {
+          if auditSettleToken != 4 {
+            if auditSettleToken != 5 {
+              return finish(11, true)
+            }
+          }
+        }
+      }
+    }
+  }
+  if auditSettleToken == 0 {
+    return finish(0, true)
+  }
+  if auditSettleToken == 3 {
+    return finish(0, true)
+  }
+  if auditSettleToken == 1 {
+    return finish(6, true)
+  }
+  if auditSettleToken == 2 {
+    return finish(6, true)
+  }
+  if auditSettleToken == 4 {
+    return finish(6, true)
+  }
+  return finish(11, true)
+}
