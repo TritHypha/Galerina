@@ -10,6 +10,8 @@ import {
 } from "../dist/index.js";
 
 const SNAP = `sha256:${"a".repeat(64)}`;
+const ARTIFACT = `sha256:${"b".repeat(64)}`;
+const ARTIFACT_OTHER = `sha256:${"c".repeat(64)}`;
 
 function assertNonAuthorizing(value) {
   assert.equal(value.authorityReleased, false);
@@ -50,7 +52,7 @@ test("createTriPipeEngine refuses authority-bearing option keys", () => {
 
 test("prepareSlideAdmissionRequest packages a route proposal as REQUESTED_NOT_ADMITTED", () => {
   const proposal = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
-  const request = prepareSlideAdmissionRequest(proposal);
+  const request = prepareSlideAdmissionRequest(proposal, ARTIFACT);
   assert.equal(request.kind, "SLIDE_ADMISSION_REQUEST");
   if (request.kind !== "SLIDE_ADMISSION_REQUEST") return;
   assert.equal(request.schema, SLIDE_ADMISSION_REQUEST_SCHEMA);
@@ -58,6 +60,8 @@ test("prepareSlideAdmissionRequest packages a route proposal as REQUESTED_NOT_AD
   assert.equal(request.proposalKind, "PROPOSAL");
   assert.equal(request.proposalDigest, proposal.candidateRouteDigest);
   assert.equal(request.transfer.digest, proposal.candidateRouteDigest);
+  assert.equal(request.artifactDigest, ARTIFACT);
+  assert.notEqual(request.artifactDigest, request.proposalDigest);
   assert.deepEqual({ ...request.requires }, {
     freshSlideAdmission: true,
     freshVokDecision: true,
@@ -85,11 +89,13 @@ test("prepareSlideAdmissionRequest packages an attempt proposal", () => {
     },
   });
   assert.equal(attempt.kind, "ATTEMPT_PROPOSAL");
-  const request = prepareSlideAdmissionRequest(attempt);
+  const request = prepareSlideAdmissionRequest(attempt, ARTIFACT);
   assert.equal(request.kind, "SLIDE_ADMISSION_REQUEST");
   if (request.kind !== "SLIDE_ADMISSION_REQUEST") return;
   assert.equal(request.proposalKind, "ATTEMPT_PROPOSAL");
   assert.equal(request.proposalDigest, attempt.planIdentity);
+  assert.equal(request.artifactDigest, ARTIFACT);
+  assert.notEqual(request.artifactDigest, request.proposalDigest);
   assertNonAuthorizing(request);
 });
 
@@ -103,17 +109,70 @@ test("prepareSlideAdmissionRequest refuses authority fields, claimed admission, 
     attestationVerified: true,
     representationProfile: 128,
   });
-  assert.equal(prepareSlideAdmissionRequest(withAdmission).code, "TP_SLIDE_REQUEST_AUTHORITY_FIELD_PRESENT");
-  assert.equal(prepareSlideAdmissionRequest(claimed).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
-  assert.equal(prepareSlideAdmissionRequest(released).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
-  assert.equal(prepareSlideAdmissionRequest(profileRefuse).code, "TP_SLIDE_REQUEST_MALFORMED");
-  assert.equal(prepareSlideAdmissionRequest(null).code, "TP_SLIDE_REQUEST_MALFORMED");
-  assert.equal(prepareSlideAdmissionRequest({ kind: "PROPOSAL" }).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
+  assert.equal(prepareSlideAdmissionRequest(withAdmission, ARTIFACT).code, "TP_SLIDE_REQUEST_AUTHORITY_FIELD_PRESENT");
+  assert.equal(prepareSlideAdmissionRequest(claimed, ARTIFACT).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
+  assert.equal(prepareSlideAdmissionRequest(released, ARTIFACT).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
+  assert.equal(prepareSlideAdmissionRequest(profileRefuse, ARTIFACT).code, "TP_SLIDE_REQUEST_MALFORMED");
+  assert.equal(prepareSlideAdmissionRequest(null, ARTIFACT).code, "TP_SLIDE_REQUEST_MALFORMED");
+  assert.equal(prepareSlideAdmissionRequest({ kind: "PROPOSAL" }, ARTIFACT).code, "TP_SLIDE_REQUEST_ALREADY_CLAIMED");
+});
+
+test("prepareSlideAdmissionRequest requires a well-formed artifactDigest", () => {
+  const proposal = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
+  assert.equal(proposal.kind, "PROPOSAL");
+  const malformed = [
+    undefined,
+    null,
+    "",
+    `sha256:${"A".repeat(64)}`,
+    `SHA256:${"b".repeat(64)}`,
+    `sha256:${"b".repeat(63)}`,
+    `sha256:${"b".repeat(65)}`,
+    `sha256:${"g".repeat(64)}`,
+    `md5:${"b".repeat(64)}`,
+    `${ARTIFACT} `,
+    1,
+    { digest: ARTIFACT },
+  ];
+  for (const value of malformed) {
+    const refused = prepareSlideAdmissionRequest(proposal, value);
+    assert.equal(refused.kind, "REFUSED");
+    assert.equal(refused.code, "TP_SLIDE_REQUEST_ARTIFACT_DIGEST_MALFORMED");
+    assertNonAuthorizing(refused);
+  }
+  const omitted = prepareSlideAdmissionRequest(proposal);
+  assert.equal(omitted.kind, "REFUSED");
+  assert.equal(omitted.code, "TP_SLIDE_REQUEST_ARTIFACT_DIGEST_MALFORMED");
+  assertNonAuthorizing(omitted);
+});
+
+test("artifactDigest is distinct from proposalDigest and is bound into requestDigest", () => {
+  const proposal = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
+  const first = prepareSlideAdmissionRequest(proposal, ARTIFACT);
+  const second = prepareSlideAdmissionRequest(proposal, ARTIFACT_OTHER);
+  assert.equal(first.kind, "SLIDE_ADMISSION_REQUEST");
+  assert.equal(second.kind, "SLIDE_ADMISSION_REQUEST");
+  if (first.kind !== "SLIDE_ADMISSION_REQUEST" || second.kind !== "SLIDE_ADMISSION_REQUEST") return;
+  assert.equal(first.artifactDigest, ARTIFACT);
+  assert.equal(second.artifactDigest, ARTIFACT_OTHER);
+  assert.equal(first.proposalDigest, proposal.candidateRouteDigest);
+  assert.equal(second.proposalDigest, proposal.candidateRouteDigest);
+  assert.equal(first.proposalDigest, second.proposalDigest);
+  assert.notEqual(first.artifactDigest, first.proposalDigest);
+  assert.notEqual(second.artifactDigest, second.proposalDigest);
+  assert.notEqual(first.artifactDigest, second.artifactDigest);
+  assert.notEqual(first.requestDigest, second.requestDigest);
+  const repeat = prepareSlideAdmissionRequest(proposal, ARTIFACT);
+  assert.equal(repeat.kind, "SLIDE_ADMISSION_REQUEST");
+  if (repeat.kind !== "SLIDE_ADMISSION_REQUEST") return;
+  assert.equal(repeat.requestDigest, first.requestDigest);
+  assertNonAuthorizing(first);
+  assertNonAuthorizing(second);
 });
 
 test("admitProposedRoute always TP_SLIDE_ADMISSION_FORBIDDEN", () => {
   const proposal = createTriPipeEngine({ targetId: "cpu", attestationVerified: true });
-  const request = prepareSlideAdmissionRequest(proposal);
+  const request = prepareSlideAdmissionRequest(proposal, ARTIFACT);
   const forged = {
     kind: "ADMITTED",
     admission: true,
