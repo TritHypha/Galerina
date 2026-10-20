@@ -1,0 +1,160 @@
+{
+  "schema": "agent-logic-request.v1",
+  "subject": {
+    "id": "subject:q38-signet-grant-seal",
+    "kind": "FILE",
+    "locator": "packages/fungi/memory/src/signet-grant-seal.fungi",
+    "digest": "3cb6ce8c75d9a3579637e847bdd93697fe589a50bf0f799e00e7d097548acea9"
+  },
+  "evidence": {
+    "repositoryId": "repository:galerina-trit-hypha",
+    "expectedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d",
+    "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d",
+    "graphDigest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+    "decoder": {
+      "id": "decoder:unavailable",
+      "version": "none",
+      "available": false
+    },
+    "views": [
+      {
+        "kind": "HOST",
+        "locator": "graph/host-unavailable",
+        "digest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+        "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d"
+      },
+      {
+        "kind": "FUNGI",
+        "locator": "graph/fungi-unavailable",
+        "digest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+        "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d"
+      }
+    ]
+  },
+  "invariants": [
+    {
+      "id": "invariant:one-helper",
+      "statementLocator": "parked-ts-findings-for-fungi.md#CN-1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "invariant:commit-point",
+      "statementLocator": "task.md#Amendment-A1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/release-commit-point.fungi"
+      ]
+    },
+    {
+      "id": "invariant:hybrid-suite",
+      "statementLocator": "task.md#signature-suite",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/signet-grant-seal.fungi"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "candidate:build-signet-grant-seal",
+      "tier": "BUILD",
+      "locator": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "verdict": 0
+    }
+  ],
+  "obligations": [
+    {
+      "id": "obligation:syntax",
+      "kind": "SYNTAX",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/language/fungi/04-types-and-values.md"
+      ]
+    },
+    {
+      "id": "obligation:symbols",
+      "kind": "SYMBOLS",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:types",
+      "kind": "TYPES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/signet-grant-seal.fungi"
+      ]
+    },
+    {
+      "id": "obligation:effects",
+      "kind": "EFFECTS",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/38-signet-gate1/receipts.json"
+      ]
+    },
+    {
+      "id": "obligation:value-states",
+      "kind": "VALUE_STATES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:taint",
+      "kind": "TAINT",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:governance",
+      "kind": "GOVERNANCE",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json"
+      ]
+    },
+    {
+      "id": "obligation:gir",
+      "kind": "GIR",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/38-signet-gate1/workbench/command.txt"
+      ]
+    },
+    {
+      "id": "obligation:differential",
+      "kind": "DIFFERENTIAL",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/38-signet-gate1/parity.md"
+      ]
+    },
+    {
+      "id": "obligation:admission",
+      "kind": "ADMISSION",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/38-signet-gate1/receipts.json"
+      ]
+    }
+  ]
+}
