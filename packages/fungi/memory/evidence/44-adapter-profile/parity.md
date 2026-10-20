@@ -4,7 +4,7 @@ Rule unit. No TypeScript oracle. translating-typescript-to-fungi has no source f
 
 Workbench capsule status REFUSE (`evidence:DECODER_UNAVAILABLE`). HOST/FUNGI views typed UNKNOWN. C2 applied under the Q31-05 reserved-decoder ruling (same decoder gap as Q31/Q32; not a Q44 file defect). PROPOSED never permission. Skills: writing-fungi core/binding/workflow 1-5,8; sequential if-return (secret-gate.fungi style).
 
-RD-0778 cited by path + sha256 only (never its body): `private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `07f9803efbc1dbc1a1956b3b3ec5cb1404e20a6bf8476009c1685eef9158bfa7`.
+RD-0778 cited by path + sha256 only (never its body): `private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a`. The shas 07f9803e, 49311281 and 9438d9b5 are stale.
 
 Q45 host-adapter audit cited by path + head only: `packages/fungi/memory/evidence/45-host-adapter-audit/audit.md` at `96a69400964cb3ae4a7dfb06f2d124af46302d54`.
 
@@ -59,6 +59,8 @@ Every other real adapter: UNAUDITED.
 | unlisted class never defaults in-process | tableForClass unlistedClassDefault | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | mutant default-to-in-process red |
 | SAB / shared memory / MessagePort / mmap / fd | classifyAdapter kind 1-6 | PRESERVED | TOTAL_EFFECT_OUTCOME | each returns 2; mutant admit SAB red; mutant merge 2 with 11 red |
 | unknown kind distinct from NOT_ADMITTED | unknownKindCode 3 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | kind 8 and 99 -> 3 |
+| negative and out-of-list kind | fall-through to unknownKindCode 3 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | kind -1, -2147483648, 8 and 2147483647 with audit 0 -> 3; mutant `if kind == 0` widened to `if kind <= 0` returns 0 |
+| negative audit | audit 0, 1, 2 only; else 11 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | audit -1 and -2147483648 with kind 0 and kind 7 -> 11; mutant `if audit != 0` widened to `if audit > 0` returns 1 |
 | native hand-off OUT_OF_PROCESS | nativeSelectsDu | PRESERVED | TOTAL_EFFECT_OUTCOME | kind 7 audit 0 -> 1; mutant native as in-process red |
 | UNAUDITED / AUDITED_BUFFERS never IN_PROCESS | unauditedSelectsDu | PRESERVED | TOTAL_EFFECT_OUTCOME | kind 0 audit 1/2 -> 1; mutant UNAUDITED as in-process red |
 | DU-only table is not COMMITTED-capable | duOnlyTable 1 | PRESERVED | TOTAL_EFFECT_OUTCOME | tableForClass(0,1) -> 1; mutant duOnlyTable 0 red |
@@ -66,5 +68,10 @@ Every other real adapter: UNAUDITED.
 | import+call c-boundary | import "./c-boundary.fungi" | NEEDS_LANGUAGE | NO_NULL_NAN | check 0 / build FUNGI-NAME-001 / run WAT undefined callee |
 | ECMAScript / WebAssembly Q09 Q6-Q8 | admit-list only | CARRIED_UNKNOWN | HOST_ADAPTER_PRESENCE | can only widen v1 later |
 | HOST_ADAPTER_PRESENCE of live adapters | parity rows | CARRIED_UNKNOWN | HOST_ADAPTER_PRESENCE | Q45 buffering YES for print and HTTP; syscall UNKNOWN |
+| MB-13 invoke ToInt32 wrap | galerina.mjs argument boundary | CARRIED_UNKNOWN | NO_NULL_NAN | `galerina run --invoke` wraps before the unit. kind 4294967296 can arrive as 0 and then take the kind 0 arm. audit 4294967298 can arrive as 2. The unit cannot see the original value. Observation only, not a MUST admit. |
+| MB-11 no erase claim | note | CARRIED_UNKNOWN | TOTAL_EFFECT_OUTCOME | Engine copies are permitted. A non-shared grow detaches the old buffer without erasing it. |
+| MB-12 passed descriptors | kind 6 returns 2 | CARRIED_UNKNOWN | TOTAL_EFFECT_OUTCOME | Passed or inherited descriptors cannot be revoked. File-descriptor passing is refused in v1. The memfd seal set F_SEAL_WRITE + F_SEAL_SHRINK + F_SEAL_GROW + F_SEAL_SEAL is grok.com direction and is unverified. |
+| W2 write completion | wording | CARRIED_UNKNOWN | TOTAL_EFFECT_OUTCOME | Ordinary write or send completion does not establish durable recipient effect. fsync is a storage-synchronization contract stronger than plain write acceptance. Neither local persistence nor a successful close establishes recipient effect. None of this moves release from B or changes post-B DELIVERY_UNKNOWN. |
+| W4 profile from topology | wording | CARRIED_UNKNOWN | TOTAL_EFFECT_OUTCOME | The profile comes from demonstrated exposure and custody topology, not from API names or same-trust-domain membership. B precedes the earliest operation that can make the payload usable, including a capability handoff or a store into already shared memory. Missing or unclear topology refuses before B. A missing profile never selects the in-process success table. |
 
-Counts: PRESERVED 8, INTENDED_DIVERGENCE 0, UNKNOWN 0, NEEDS_LANGUAGE 1, CARRIED_UNKNOWN 2. Unlisted verdict refuses.
+Counts: PRESERVED 10, INTENDED_DIVERGENCE 0, UNKNOWN 0, NEEDS_LANGUAGE 1, CARRIED_UNKNOWN 7. Unlisted verdict refuses.

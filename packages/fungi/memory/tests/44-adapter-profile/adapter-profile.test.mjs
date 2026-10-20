@@ -146,6 +146,20 @@ test("unknown kind refuses UNKNOWN_ADAPTER_KIND distinct from NOT_ADMITTED", () 
   expectPacked(classify([0, 99, 0, 0]), 3, "kind 99");
 });
 
+test("negative and out-of-list kind refuses UNKNOWN_ADAPTER_KIND", () => {
+  expectPacked(classify([0, -1, 0, 0]), 3, "kind -1");
+  expectPacked(classify([0, -2147483648, 0, 0]), 3, "kind i32 min");
+  expectPacked(classify([0, 8, 0, 0]), 3, "kind 8 audit 0");
+  expectPacked(classify([0, 2147483647, 0, 0]), 3, "kind i32 max");
+});
+
+test("negative audit refuses unlisted 11", () => {
+  expectPacked(classify([0, 0, 0, -1]), 11, "kind 0 audit -1");
+  expectPacked(classify([0, 0, 0, -2147483648]), 11, "kind 0 audit i32 min");
+  expectPacked(classify([0, 7, 0, -1]), 11, "kind 7 audit -1");
+  expectPacked(classify([0, 7, 0, -2147483648]), 11, "kind 7 audit i32 min");
+});
+
 test("raw non-c-boundary classTag refuses RAW_VALUE_REFUSED", () => {
   expectPacked(classify([3, 0, 0, 0]), 4, "kind NaN class");
   expectPacked(classify([1, 0, 0, 0]), 4, "kind Null class");
@@ -233,5 +247,19 @@ test("mutant DU-only table returning COMMITTED-capable code goes red", () => {
     assert.equal(r.value, 0, r.text);
     const c = classify([0, 0, 0, 1]);
     assert.equal(c.value, 0, c.text);
+  });
+});
+
+test("mutant widened kind 0 arm admits a negative kind", () => {
+  withMutant("if kind == 0 {", "if kind <= 0 {", () => {
+    const r = classify([0, -1, 0, 0]);
+    assert.equal(r.value, 0, r.text);
+  });
+});
+
+test("mutant negative audit skipped into UNAUDITED", () => {
+  withMutant("if audit != 0 {", "if audit > 0 {", () => {
+    const r = classify([0, 0, 0, -1]);
+    assert.equal(r.value, 1, r.text);
   });
 });
