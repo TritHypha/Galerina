@@ -33,7 +33,8 @@ function needles() {
   const usersWin = "Us" + "ers" + String.fromCharCode(92);
   const appdata = "App" + "Data";
   const drive = /[A-Za-z]:[\\/]/;
-  return { mnt, home, users, usersWin, appdata, drive };
+  const codex = "." + "codex";
+  return { mnt, home, users, usersWin, appdata, drive, codex };
 }
 
 test("tests/43 evidence/43 and cleanup-evidence.fungi refuse local absolute path leaks", () => {
@@ -57,7 +58,9 @@ test("tests/43 evidence/43 and cleanup-evidence.fungi refuse local absolute path
       const homeHit = line.includes(n.home) === true;
       const usersHit = line.includes(n.users) === true || line.includes(n.usersWin) === true;
       const appHit = line.includes(n.appdata) === true;
-      if (driveHit === true || mntHit === true || homeHit === true || usersHit === true || appHit === true) {
+      const cxNeedle = n["cod" + "ex"];
+      const codexHit = line.includes(cxNeedle) === true;
+      if (driveHit === true || mntHit === true || homeHit === true || usersHit === true || appHit === true || codexHit === true) {
         hits.push(p + ":" + String(li + 1));
       }
       li = li + 1;

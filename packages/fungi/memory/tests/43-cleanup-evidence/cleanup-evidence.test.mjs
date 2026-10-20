@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
@@ -13,6 +14,8 @@ const BOUNDARY = join(MEM, "src", "c-boundary.fungi");
 const UNIT = join(MEM, "src", "cleanup-evidence.fungi");
 const GALERINA = join(REPO, "galerina.mjs");
 const IMPORT_LINE = "\nimport \"./c-boundary.fungi\"\n";
+
+let unitSourceOverride = null;
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
@@ -31,7 +34,7 @@ function invoke(file, flow, args) {
 
 function flattenUnit() {
   const boundary = readFileSync(BOUNDARY, "utf8");
-  const unit = readFileSync(UNIT, "utf8");
+  const unit = unitSourceOverride !== null ? unitSourceOverride : readFileSync(UNIT, "utf8");
   assert.equal(unit.includes(IMPORT_LINE), true, "landed source must import c-boundary");
   const parts = unit.split(IMPORT_LINE);
   assert.equal(parts.length, 2, "import line must occur once");
@@ -60,11 +63,17 @@ function admit(over) {
   return runFlow("admitCleanup", [
     o.mintedClass ?? 0,
     o.mintedToken ?? 1,
+    o.evOpIdClass ?? 0,
     o.evOpId ?? 10,
+    o.callOpIdClass ?? 0,
     o.callOpId ?? 10,
+    o.evGenClass ?? 0,
     o.evGen ?? 1,
+    o.callGenClass ?? 0,
     o.callGen ?? 1,
+    o.evDigestClass ?? 0,
     o.evDigest ?? 77,
+    o.callDigestClass ?? 0,
     o.callDigest ?? 77,
     o.statusClass ?? 0,
     o.evStatus ?? 0,
@@ -87,14 +96,23 @@ function replaceOnce(s, from, to) {
   return s.slice(0, i) + to + s.slice(i + from.length);
 }
 
+function shaOf(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
 function withMutant(from, to, runRed) {
-  const orig = readFileSync(UNIT, "utf8");
+  const origBytes = readFileSync(UNIT);
+  const orig = origBytes.toString("utf8");
+  const before = shaOf(origBytes);
   const mutant = replaceOnce(orig, from, to);
-  writeFileSync(UNIT, mutant);
+  const prev = unitSourceOverride;
+  unitSourceOverride = mutant;
   try {
     runRed();
   } finally {
-    writeFileSync(UNIT, orig);
+    unitSourceOverride = prev;
+    const after = shaOf(readFileSync(UNIT));
+    assert.equal(after, before, "tracked UNIT must be unchanged after mutant");
   }
 }
 
@@ -123,10 +141,18 @@ test("MUST-ADMIT NOT_REQUIRED for listed empty classes", () => {
   expectPacked(admit({ evStatus: 1, opClass: 1 }), 101, "empty observe");
 });
 
-test("MUST-REFUSE NOT_REQUIRED on nonempty and unlisted classes", () => {
+test("MUST-REFUSE NOT_REQUIRED on nonempty classes", () => {
   expectPacked(admit({ evStatus: 1, opClass: 2 }), 108, "nonempty secret");
   expectPacked(admit({ evStatus: 1, opClass: 3 }), 108, "nonempty wipe");
-  expectPacked(admit({ evStatus: 1, opClass: 9 }), 108, "unlisted class never empty");
+});
+
+test("MUST-REFUSE unlisted opClass for every status before status arms", () => {
+  expectPacked(admit({ evStatus: 0, opClass: 9 }), 111, "unlisted DONE");
+  expectPacked(admit({ evStatus: 0, opClass: 2147483647 }), 111, "unlisted DONE maxint");
+  expectPacked(admit({ evStatus: 1, opClass: 9 }), 111, "unlisted NOT_REQUIRED");
+  expectPacked(admit({ evStatus: 2, opClass: 9 }), 111, "unlisted PENDING");
+  expectPacked(admit({ evStatus: 3, opClass: 9 }), 111, "unlisted FAILED");
+  expectPacked(admit({ evStatus: 4, opClass: 9 }), 111, "unlisted UNKNOWN");
 });
 
 test("MUST-REFUSE each mismatch with its own typed code", () => {
@@ -155,13 +181,36 @@ test("MUST-REFUSE foreign NaN through the helper as ForeignRawRefused", () => {
   expectPacked(admit({ opClassClass: 3 }), 110, "opClass NaN");
 });
 
-test("after-begin FAILED and UNKNOWN are QUARANTINED plus DELIVERY_UNKNOWN", () => {
+test("MUST-REFUSE classTag 3 and 11 on each opId generation digest gate", () => {
+  expectPacked(admit({ evOpIdClass: 3 }), 110, "evOpId NaN");
+  expectPacked(admit({ evOpIdClass: 11 }), 111, "evOpId unlisted");
+  expectPacked(admit({ callOpIdClass: 3 }), 110, "callOpId NaN");
+  expectPacked(admit({ callOpIdClass: 11 }), 111, "callOpId unlisted");
+  expectPacked(admit({ evGenClass: 3 }), 110, "evGen NaN");
+  expectPacked(admit({ evGenClass: 11 }), 111, "evGen unlisted");
+  expectPacked(admit({ callGenClass: 3 }), 110, "callGen NaN");
+  expectPacked(admit({ callGenClass: 11 }), 111, "callGen unlisted");
+  expectPacked(admit({ evDigestClass: 3 }), 110, "evDigest NaN");
+  expectPacked(admit({ evDigestClass: 11 }), 111, "evDigest unlisted");
+  expectPacked(admit({ callDigestClass: 3 }), 110, "callDigest NaN");
+  expectPacked(admit({ callDigestClass: 11 }), 111, "callDigest unlisted");
+});
+
+test("after-begin listed statuses are DELIVERY_UNKNOWN plus QUARANTINED", () => {
+  expectPacked(runFlow("afterBeginCleanup", [0, 2, 0, 1]), 106, "PENDING after begin");
   expectPacked(runFlow("afterBeginCleanup", [0, 3, 0, 1]), 106, "FAILED after begin");
   expectPacked(runFlow("afterBeginCleanup", [0, 4, 0, 1]), 106, "UNKNOWN after begin");
+  expectPacked(runFlow("afterBeginCleanup", [0, 0, 0, 1]), 106, "DONE after begin never success");
+  expectPacked(runFlow("afterBeginCleanup", [0, 1, 0, 1]), 106, "NOT_REQUIRED after begin");
+  expectPacked(runFlow("resourceAfterBegin", [0, 2, 0, 1]), 121, "PENDING -> QUARANTINED");
   expectPacked(runFlow("resourceAfterBegin", [0, 3, 0, 1]), 121, "FAILED -> QUARANTINED");
   expectPacked(runFlow("resourceAfterBegin", [0, 4, 0, 1]), 121, "UNKNOWN -> QUARANTINED");
-  expectPacked(runFlow("afterBeginCleanup", [0, 3, 0, 0]), 111, "FAILED before begin is not this flow");
-  expectPacked(runFlow("afterBeginCleanup", [0, 0, 0, 1]), 111, "DONE after begin never success");
+  expectPacked(runFlow("resourceAfterBegin", [0, 0, 0, 1]), 121, "DONE -> QUARANTINED");
+  expectPacked(runFlow("resourceAfterBegin", [0, 1, 0, 1]), 121, "NOT_REQUIRED -> QUARANTINED");
+  expectPacked(runFlow("afterBeginCleanup", [0, 9, 0, 1]), 111, "unlisted status after begin");
+  expectPacked(runFlow("afterBeginCleanup", [0, 3, 0, 0]), 112, "phaseToken 0 own code");
+  expectPacked(runFlow("afterBeginCleanup", [0, 3, 0, 5]), 111, "unlisted phase");
+  expectPacked(runFlow("afterBeginCleanup", [3, 3, 0, 1]), 110, "status NaN after begin");
 });
 
 test("QUARANTINED refuses reuse and release and admits wipe then destroy", () => {
@@ -175,9 +224,14 @@ test("QUARANTINED refuses reuse and release and admits wipe then destroy", () =>
   expectPacked(runFlow("resourceTransition", [0, 1, 0, 9, 0, 2]), 111, "unlisted event");
 });
 
-test("free without wipe is not DONE; explicit wipe reports DONE", () => {
+test("MUST-REFUSE WIPED reuse and WIPED release", () => {
+  expectPacked(runFlow("resourceTransition", [0, 2, 0, 0, 0, 0]), 114, "WIPED reuse");
+  expectPacked(runFlow("resourceTransition", [0, 2, 0, 1, 0, 0]), 115, "WIPED release");
+});
+
+test("free without wipe is not DONE; explicit wipe reports wipe-step-reported", () => {
   expectPacked(runFlow("freeStep", [0, 0]), 117, "free is not DONE");
-  expectPacked(runFlow("freeStep", [0, 1]), 100, "explicit wipe reports DONE");
+  expectPacked(runFlow("freeStep", [0, 1]), 118, "explicit wipe reports wipe-step-reported");
   expectPacked(runFlow("freeStep", [0, 2]), 111, "unlisted action");
 });
 
@@ -252,11 +306,67 @@ test("RED mutant after-begin failure mapped to REFUSED", () => {
   });
 });
 
+test("RED mutant after-begin PENDING mapped to REFUSED", () => {
+  withMutant("let afterBeginPendingCode: Int = 6", "let afterBeginPendingCode: Int = 2", () => {
+    const r = runFlow("afterBeginCleanup", [0, 2, 0, 1]);
+    assert.notEqual(r.value, 106, "PENDING must not stay DELIVERY_UNKNOWN");
+    assert.equal(r.value, 102, "PENDING mapped to REFUSED");
+  });
+});
+
+test("RED mutant after-begin UNKNOWN mapped to REFUSED", () => {
+  withMutant("let afterBeginUnknownCode: Int = 6", "let afterBeginUnknownCode: Int = 2", () => {
+    const r = runFlow("afterBeginCleanup", [0, 4, 0, 1]);
+    assert.notEqual(r.value, 106, "UNKNOWN must not stay DELIVERY_UNKNOWN");
+    assert.equal(r.value, 102, "UNKNOWN mapped to REFUSED");
+  });
+});
+
+test("RED mutant after-begin DONE mapped to success", () => {
+  withMutant("let afterBeginDoneCode: Int = 6", "let afterBeginDoneCode: Int = 0", () => {
+    const r = runFlow("afterBeginCleanup", [0, 0, 0, 1]);
+    assert.notEqual(r.value, 106, "DONE after begin must not stay DELIVERY_UNKNOWN");
+    assert.equal(r.value, 100, "DONE after begin admitted");
+  });
+});
+
+test("RED mutant after-begin NOT_REQUIRED mapped to success", () => {
+  withMutant("let afterBeginNotRequiredCode: Int = 6", "let afterBeginNotRequiredCode: Int = 0", () => {
+    const r = runFlow("afterBeginCleanup", [0, 1, 0, 1]);
+    assert.notEqual(r.value, 106, "NOT_REQUIRED after begin must not stay DELIVERY_UNKNOWN");
+    assert.equal(r.value, 100, "NOT_REQUIRED after begin admitted");
+  });
+});
+
+test("RED mutant phaseToken 0 collapsed to Unlisted", () => {
+  withMutant("let phaseBeforeBeginCode: Int = 12", "let phaseBeforeBeginCode: Int = 11", () => {
+    const r = runFlow("afterBeginCleanup", [0, 3, 0, 0]);
+    assert.notEqual(r.value, 112, "phase 0 must not keep own code");
+    assert.equal(r.value, 111, "phase 0 collapsed to Unlisted");
+  });
+});
+
 test("RED mutant QUARANTINED to LIVE allowed", () => {
   withMutant("let quarantinedReuseRefuseOn: Int = 1", "let quarantinedReuseRefuseOn: Int = 0", () => {
     const r = runFlow("resourceTransition", [0, 1, 0, 0, 0, 0]);
     assert.notEqual(r.value, 114, "must not keep reuse refused");
     assert.equal(r.value, 120, "QUARANTINED -> LIVE admitted");
+  });
+});
+
+test("RED mutant WIPED reuse admitted", () => {
+  withMutant("let wipedReuseRefuseOn: Int = 1", "let wipedReuseRefuseOn: Int = 0", () => {
+    const r = runFlow("resourceTransition", [0, 2, 0, 0, 0, 0]);
+    assert.notEqual(r.value, 114, "must not keep WIPED reuse refused");
+    assert.equal(r.value, 120, "WIPED reuse admitted");
+  });
+});
+
+test("RED mutant WIPED release admitted", () => {
+  withMutant("let wipedReleaseRefuseOn: Int = 1", "let wipedReleaseRefuseOn: Int = 0", () => {
+    const r = runFlow("resourceTransition", [0, 2, 0, 1, 0, 0]);
+    assert.notEqual(r.value, 115, "must not keep WIPED release refused");
+    assert.equal(r.value, 120, "WIPED release admitted");
   });
 });
 
@@ -268,10 +378,74 @@ test("RED mutant free counted as DONE", () => {
   });
 });
 
+test("RED mutant wipe-step-reported collapsed to AdmitDone", () => {
+  withMutant("let wipeStepReportedCode: Int = 18", "let wipeStepReportedCode: Int = 0", () => {
+    const r = runFlow("freeStep", [0, 1]);
+    assert.notEqual(r.value, 118, "must not keep wipe-step-reported");
+    assert.equal(r.value, 100, "wipe step read as AdmitDone");
+  });
+});
+
 test("RED mutant accept an unminted value", () => {
   withMutant("let mintedCheckOn: Int = 1", "let mintedCheckOn: Int = 0", () => {
     const r = admit({ mintedToken: 0 });
     assert.notEqual(r.value, 109, "must not keep Unminted");
     assert.equal(r.value, 100, "unminted DONE admitted");
+  });
+});
+
+test("RED mutant skip evOpId foreign gate", () => {
+  withMutant("let evOpIdForeignOn: Int = 1", "let evOpIdForeignOn: Int = 0", () => {
+    const r = admit({ evOpIdClass: 3 });
+    assert.notEqual(r.value, 110, "skip evOpId foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "evOpId NaN admitted");
+  });
+});
+
+test("RED mutant skip callOpId foreign gate", () => {
+  withMutant("let callOpIdForeignOn: Int = 1", "let callOpIdForeignOn: Int = 0", () => {
+    const r = admit({ callOpIdClass: 3 });
+    assert.notEqual(r.value, 110, "skip callOpId foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "callOpId NaN admitted");
+  });
+});
+
+test("RED mutant skip evGen foreign gate", () => {
+  withMutant("let evGenForeignOn: Int = 1", "let evGenForeignOn: Int = 0", () => {
+    const r = admit({ evGenClass: 3 });
+    assert.notEqual(r.value, 110, "skip evGen foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "evGen NaN admitted");
+  });
+});
+
+test("RED mutant skip callGen foreign gate", () => {
+  withMutant("let callGenForeignOn: Int = 1", "let callGenForeignOn: Int = 0", () => {
+    const r = admit({ callGenClass: 3 });
+    assert.notEqual(r.value, 110, "skip callGen foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "callGen NaN admitted");
+  });
+});
+
+test("RED mutant skip evDigest foreign gate", () => {
+  withMutant("let evDigestForeignOn: Int = 1", "let evDigestForeignOn: Int = 0", () => {
+    const r = admit({ evDigestClass: 3 });
+    assert.notEqual(r.value, 110, "skip evDigest foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "evDigest NaN admitted");
+  });
+});
+
+test("RED mutant skip callDigest foreign gate", () => {
+  withMutant("let callDigestForeignOn: Int = 1", "let callDigestForeignOn: Int = 0", () => {
+    const r = admit({ callDigestClass: 3 });
+    assert.notEqual(r.value, 110, "skip callDigest foreign must not keep ForeignRaw");
+    assert.equal(r.value, 100, "callDigest NaN admitted");
+  });
+});
+
+test("RED mutant unlisted opClass admitted", () => {
+  withMutant("let unlistedOpClassRefuseOn: Int = 1", "let unlistedOpClassRefuseOn: Int = 0", () => {
+    const r = admit({ evStatus: 0, opClass: 9 });
+    assert.notEqual(r.value, 111, "unlisted opClass must not stay Unlisted");
+    assert.equal(r.value, 100, "unlisted opClass DONE admitted");
   });
 });

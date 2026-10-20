@@ -12,18 +12,21 @@
 /// status: 0 DONE 1 NOT_REQUIRED 2 PENDING 3 FAILED 4 UNKNOWN else 11
 /// mintedToken: 0 unminted 1 minted-by-this-module else 11
 /// opClass: 0 listed-empty-noop 1 listed-empty-observe
-///   2 nonempty-secret-release 3 nonempty-buffer-wipe else unlisted never empty
+///   2 nonempty-secret-release 3 nonempty-buffer-wipe else unlisted 11
 /// resource: 0 LIVE 1 QUARANTINED 2 WIPED 3 DESTROYED else 11
 /// event: 0 reuse 1 release 2 wipe 3 destroy 4 free else 11
 /// phaseToken: 0 before-begin 1 after-begin else 11
 /// packed admitCleanup: 0 AdmitDone 1 AdmitNotRequired 2 OpIdMismatch
 ///   3 GenerationMismatch 4 DigestMismatch 5 StatusPending
-///   6 StatusFailedBeforeBegin 7 StatusUnknownBeforeBegin
+///   6 StatusFailedBeforeBegin / DELIVERY_UNKNOWN after begin
+///   7 StatusUnknownBeforeBegin
 ///   8 NotRequiredNonEmpty 9 Unminted 10 ForeignRawRefused 11 Unlisted
+///   12 PhaseBeforeBegin
 /// packed afterBegin: 6 DELIVERY_UNKNOWN (never 0 success, never 2 REFUSED)
 /// packed resourceTransition: 20 LIVE 21 QUARANTINED 22 WIPED 23 DESTROYED
 ///   14 reuse-refused 15 release-refused 16 destroy-without-wipe
 ///   17 free-is-not-DONE else 11
+/// packed freeStep: 17 free-is-not-DONE 18 wipe-step-reported else 11
 /// packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN).
 /// COMMITTED is unreachable after begin (Astra W1, policy). UNKNOWN is never
 ///   success, zero-effect proof, or retry (W3). No clock in this file.
@@ -106,11 +109,17 @@ contract {
 pure flow admitCleanup(
   mintedClass: Int,
   mintedToken: Int,
+  evOpIdClass: Int,
   evOpId: Int,
+  callOpIdClass: Int,
   callOpId: Int,
+  evGenClass: Int,
   evGen: Int,
+  callGenClass: Int,
   callGen: Int,
+  evDigestClass: Int,
   evDigest: Int,
+  callDigestClass: Int,
   callDigest: Int,
   statusClass: Int,
   evStatus: Int,
@@ -127,6 +136,66 @@ contract {
       return finish(11, true)
     }
     return finish(10, true)
+  }
+  let evOpIdForeignOn: Int = 1
+  let evOpReason: Int = readForeignSafeInteger(evOpIdClass, evOpId)
+  if evOpIdForeignOn == 1 {
+    if evOpReason != 0 {
+      if evOpReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
+  }
+  let callOpIdForeignOn: Int = 1
+  let callOpReason: Int = readForeignSafeInteger(callOpIdClass, callOpId)
+  if callOpIdForeignOn == 1 {
+    if callOpReason != 0 {
+      if callOpReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
+  }
+  let evGenForeignOn: Int = 1
+  let evGenReason: Int = readForeignSafeInteger(evGenClass, evGen)
+  if evGenForeignOn == 1 {
+    if evGenReason != 0 {
+      if evGenReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
+  }
+  let callGenForeignOn: Int = 1
+  let callGenReason: Int = readForeignSafeInteger(callGenClass, callGen)
+  if callGenForeignOn == 1 {
+    if callGenReason != 0 {
+      if callGenReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
+  }
+  let evDigestForeignOn: Int = 1
+  let evDigestReason: Int = readForeignSafeInteger(evDigestClass, evDigest)
+  if evDigestForeignOn == 1 {
+    if evDigestReason != 0 {
+      if evDigestReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
+  }
+  let callDigestForeignOn: Int = 1
+  let callDigestReason: Int = readForeignSafeInteger(callDigestClass, callDigest)
+  if callDigestForeignOn == 1 {
+    if callDigestReason != 0 {
+      if callDigestReason == 11 {
+        return finish(11, true)
+      }
+      return finish(10, true)
+    }
   }
   let statusReason: Int = readForeignSafeInteger(statusClass, evStatus)
   if statusReason != 0 {
@@ -162,6 +231,19 @@ contract {
   if mintedCheckOn == 1 {
     if mintedToken == 0 {
       return finish(9, true)
+    }
+  }
+  let unlistedOpClassRefuseOn: Int = 1
+  if opClass != 0 {
+    if opClass != 1 {
+      if opClass != 2 {
+        if opClass != 3 {
+          if unlistedOpClassRefuseOn == 1 {
+            return finish(11, true)
+          }
+          return finish(0, true)
+        }
+      }
     }
   }
   let pendingRefuseOn: Int = 1
@@ -227,7 +309,7 @@ pure flow afterBeginCleanup(
   phaseToken: Int
 ) -> Int
 contract {
-  intent { "FAILED or UNKNOWN after begin is QUARANTINED plus DELIVERY_UNKNOWN. Never REFUSED, never success." }
+  intent { "After begin, listed statuses are DELIVERY_UNKNOWN. Never REFUSED, never success. Unlisted status only is Unlisted. phaseToken 0 has its own code." }
 }
 {
   let statusReason: Int = readForeignSafeInteger(statusClass, evStatus)
@@ -244,10 +326,11 @@ contract {
     }
     return finish(10, true)
   }
+  if phaseToken == 0 {
+    let phaseBeforeBeginCode: Int = 12
+    return finish(phaseBeforeBeginCode, true)
+  }
   if phaseToken != 1 {
-    if phaseToken == 0 {
-      return finish(11, true)
-    }
     return finish(11, true)
   }
   if evStatus != 0 {
@@ -261,6 +344,10 @@ contract {
       }
     }
   }
+  if evStatus == 2 {
+    let afterBeginPendingCode: Int = 6
+    return finish(afterBeginPendingCode, true)
+  }
   if evStatus == 3 {
     let afterBeginFailedCode: Int = 6
     return finish(afterBeginFailedCode, true)
@@ -268,6 +355,14 @@ contract {
   if evStatus == 4 {
     let afterBeginUnknownCode: Int = 6
     return finish(afterBeginUnknownCode, true)
+  }
+  if evStatus == 0 {
+    let afterBeginDoneCode: Int = 6
+    return finish(afterBeginDoneCode, true)
+  }
+  if evStatus == 1 {
+    let afterBeginNotRequiredCode: Int = 6
+    return finish(afterBeginNotRequiredCode, true)
   }
   return finish(11, true)
 }
@@ -279,7 +374,7 @@ pure flow resourceAfterBegin(
   phaseToken: Int
 ) -> Int
 contract {
-  intent { "After-begin FAILED or UNKNOWN moves the resource to QUARANTINED." }
+  intent { "After begin, listed statuses move the resource to QUARANTINED. No binding inputs in this flow." }
 }
 {
   let outcome: Int = afterBeginCleanup(statusClass, evStatus, phaseClass, phaseToken)
@@ -384,10 +479,18 @@ contract {
       return finish(11, true)
     }
     if eventKind == 0 {
-      return finish(14, true)
+      let wipedReuseRefuseOn: Int = 1
+      if wipedReuseRefuseOn == 1 {
+        return finish(14, true)
+      }
+      return finish(20, true)
     }
     if eventKind == 1 {
-      return finish(15, true)
+      let wipedReleaseRefuseOn: Int = 1
+      if wipedReleaseRefuseOn == 1 {
+        return finish(15, true)
+      }
+      return finish(20, true)
     }
     return finish(11, true)
   }
@@ -414,7 +517,7 @@ contract {
 
 pure flow freeStep(actionClass: Int, action: Int) -> Int
 contract {
-  intent { "Free is not wipe. Only an explicit wipe step reports DONE, and that evidence still binds." }
+  intent { "Free is not wipe. An explicit wipe step reports wipe-step-reported, not AdmitDone. Binding is only through admitCleanup." }
 }
 {
   let actionReason: Int = readForeignSafeInteger(actionClass, action)
@@ -437,7 +540,8 @@ contract {
     return finish(0, true)
   }
   if action == 1 {
-    return finish(0, true)
+    let wipeStepReportedCode: Int = 18
+    return finish(wipeStepReportedCode, true)
   }
   return finish(11, true)
 }
