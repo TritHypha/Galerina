@@ -15,3 +15,6 @@ Mutant string is built in memory and flattened into the mkdtemp dir. Tracked com
 | secret-gate.fungi consumeStep call | consumeStep body -> finish(6,true) | RED mutant F2 remove consumeStep | presentToken 0 packed 106, not 105 | 105 |
 | secret-gate.fungi consumed==100 arm | finish(6) -> finish(0) | RED mutant F3 return packed 100 on listed cleanup | listed cleanup packed 100, not 106 | 106 |
 | secret-gate.fungi prePacked gate | != 100 -> == 99 | RED mutant F4 skip prePacked gate | prePacked 112 packed 106, not 111 | 111 |
+| secret-gate.fungi releaseGuard 6th arg | currentValidityToken -> 1 | RED mutant F1 fabricate current validity as 1 | validity 0 + present 0 packed 105, not 106 | 106 |
+| secret-gate.fungi consumedAuthority-constant (Grok M15) | n/a | EQUIVALENT | MB-06 106 / consumeStep re-check | n/a |
+| secret-gate.fungi guard-result-ignored (Grok M29) | n/a | EQUIVALENT | MB-06 106 / consumeStep re-check | n/a |

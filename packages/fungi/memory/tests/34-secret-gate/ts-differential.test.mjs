@@ -139,6 +139,8 @@ function postFungi(over) {
     o.leaseState ?? 0,
     o.revokeClass ?? 0,
     o.revokeCommittedToken ?? 0,
+    o.currentValidityClass ?? 0,
+    o.currentValidityToken ?? 1,
   ]);
 }
 
@@ -360,6 +362,16 @@ test("F1 frozen TS executed and flattened fungi packed code matches each row", a
     assert.equal(deliverFungi({}).value, 106);
     assert.equal(deliverFungi({ cleanupEvidence: 0 }).value, 106);
     assert.equal(deliverFungi({ cleanupEvidence: 1 }).value, 106);
+    assert.equal(postFungi({ currentValidityToken: 0 }).value, 106);
+    assert.equal(postFungi({ currentValidityToken: 2 }).value, 111);
+    assert.equal(postFungi({ currentValidityClass: 3 }).value, 110);
+    assert.equal(postFungi({ currentValidityClass: 11 }).value, 111);
+    assert.equal(preFungi({ epochMintClass: 3 }).value, 110);
+    assert.equal(preFungi({ epochMintClass: 11 }).value, 111);
+    assert.equal(preFungi({ epochUseClass: 3 }).value, 110);
+    assert.equal(preFungi({ epochUseClass: 11 }).value, 111);
+    assert.equal(postFungi({ preClass: 3 }).value, 110);
+    assert.equal(postFungi({ preClass: 11 }).value, 111);
   } finally {
     rmSync(frozen.dir, { recursive: true, force: true });
   }

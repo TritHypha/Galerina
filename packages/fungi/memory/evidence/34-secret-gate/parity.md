@@ -12,6 +12,7 @@ release-commit-point.fungi git blob `b38e774f8e2150a74fed5cc19fb092dcf640cdb3`.
 writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return; no `else if`; no `null`/`NaN`; no `throw`/`try`/`catch`; no clock; foreign values through one helper; fail-closed unlisted arm; wipe construct `finish(code, true)` with no erase claim.
 
 Follow-up 02: deliverPreHandoff then deliverPostHandoff. Pre packed 100 is admit-to-handoff. Post never packed 100 (MB-06). Epoch mint versus use compared in-unit (plain equality). Release tokens are boundary inputs.
+Follow-up 03: currentValidityClass/currentValidityToken are post-handoff boundary inputs through the helper and pass unchanged as the sixth releaseGuard argument. Pre-handoff validity check kept. consumeStep epochClass is the constant 0 because epochMatchToken is helper-checked first.
 
 | ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
 |---|---|---|---|---|
@@ -49,14 +50,15 @@ Follow-up 02: deliverPreHandoff then deliverPostHandoff. Pre packed 100 is admit
 | createSecretGate options.requireRevocationEpoch default false | epoch always required when provider present | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | legacy refuses 103 |
 | getSecret one flow | deliverPreHandoff then deliverPostHandoff | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | F4; pre refusals with no callback; non-admit prePacked 111 |
 | revocation committed first | deliverPreHandoff revokeCommittedToken 1; consumeStep token | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 102 before handoff; post consumeStep 102 |
+| secret-gate.ts current validity at commit | deliverPostHandoff currentValidityToken through releaseGuard | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | post 0 -> 106; 2 -> 111; classTag 3 -> 110; pre check kept |
 
-Counts: PRESERVED 11, INTENDED_DIVERGENCE 17, UNKNOWN 1, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2 in the table (MONOTONIC/HOST also carried in receipts). Unlisted verdict refuses.
+Counts: PRESERVED 11, INTENDED_DIVERGENCE 18, UNKNOWN 1, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2 in the table (MONOTONIC/HOST also carried in receipts). Unlisted verdict refuses.
 
 ## Notes
 
 N1. Epoch is required when a provider is present, including empty-require + provider. Empty require with no provider still admits (TS no-op preserved). Empty require + provider + faulted presence admits (TS kept; Q34-02 N1).
 
-N2. Callback outcomes are a closed Int sum supplied through the boundary. "returns a value" and "returns a thenable" are typed violation tags, not host introspection. Negative epochs pass with classTag 0 (c-boundary range gap, carried, no edit; Q34-02 N2).
+N2. consumeStep epochClass is the constant 0 because epochMatchToken is helper-checked first (Q34-03 N2). Callback outcomes remain a closed Int sum supplied through the boundary. Negative epochs pass with classTag 0 (c-boundary range gap, carried, no edit; Q34-03 N3).
 
 N3. CONSTANT_TIME_COMPARE is NEEDS_LANGUAGE. Epoch mint versus use is compared in-unit with plain equality. Host token disagreeing with the compare refuses 118. crypto.timingSafeEqual is not a mechanism.
 
@@ -67,3 +69,5 @@ N5. Do not rebase onto fc7db4db. c-boundary blob on this base is cfec32c9. Do no
 N6. WebAssembly zeroing is best effort; no erase claim (MB-11/MB-14). noteUnknown has no rcp flow; carried UNKNOWN rather than a parallel type.
 
 N7. Landed source has no constant-guarded admit branch (queue 33 F3). Mutants are unique sequential if-return edits applied in-memory (queue 43 F4). Tests use typed UNIT_SOURCE_LANDING (queue 34 N4).
+
+N8. Pre-code reaching post is host-supplied; binding it to the same operation is carried to the auth-verify integration (Q34-03 N1). Grok mutants consumedAuthority-constant and guard-result-ignored are EQUIVALENT (MB-06 106 / consumeStep re-check; Q34-03 N4).

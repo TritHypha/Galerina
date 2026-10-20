@@ -43,7 +43,7 @@
       "state": "DISCHARGED",
       "how": "BY_TYPE",
       "fungi_construct": "every foreign tag through readForeignSafeInteger CALL; NaN class 110; unlisted 111; no null or NaN named",
-      "probe": "requiredCountClass 3 -> 110; helper NaN 3"
+      "probe": "requiredCountClass 3 -> 110; epochMintClass 3 -> 110; currentValidityClass 3 -> 110"
     },
     {
       "obligation": "EXHAUSTIVE_FAIL_CLOSED",

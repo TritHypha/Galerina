@@ -137,6 +137,8 @@ function post(over) {
     o.leaseState ?? 0,
     o.revokeClass ?? 0,
     o.revokeCommittedToken ?? 0,
+    o.currentValidityClass ?? 0,
+    o.currentValidityToken ?? 1,
   ]);
 }
 
@@ -317,6 +319,14 @@ test("MUST-REFUSE foreign classTag on deliver", () => {
   expectPacked(pre({ validityClass: 11 }), 111, "validity unlisted");
   expectPacked(pre({ revokeClass: 3 }), 110, "pre revoke NaN");
   expectPacked(pre({ revokeClass: 11 }), 111, "pre revoke unlisted");
+  expectPacked(pre({ epochMintClass: 3 }), 110, "epochMint NaN");
+  expectPacked(pre({ epochMintClass: 11 }), 111, "epochMint unlisted");
+  expectPacked(pre({ epochUseClass: 3 }), 110, "epochUse NaN");
+  expectPacked(pre({ epochUseClass: 11 }), 111, "epochUse unlisted");
+  expectPacked(post({ preClass: 3 }), 110, "preClass NaN");
+  expectPacked(post({ preClass: 11 }), 111, "preClass unlisted");
+  expectPacked(post({ currentValidityClass: 3 }), 110, "post validity NaN");
+  expectPacked(post({ currentValidityClass: 11 }), 111, "post validity unlisted");
 });
 
 test("gateAcknowledge delegates to ackStep", () => {
@@ -482,4 +492,25 @@ test("RED mutant F4 skip prePacked gate", () => {
     },
   );
   expectPacked(post({ prePacked: 112 }), 111, "restore prePacked gate");
+});
+
+test("F1 post-handoff current validity through releaseGuard", () => {
+  expectPacked(post({ currentValidityToken: 0 }), 106, "validity 0");
+  expectPacked(post({ currentValidityToken: 2 }), 111, "validity 2 unlisted");
+  expectPacked(post({ currentValidityClass: 3 }), 110, "validity class 3");
+  expectPacked(post({ currentValidityClass: 11 }), 111, "validity class 11");
+  expectPacked(pre({ currentValidityToken: 0 }), 106, "pre validity kept");
+});
+
+test("RED mutant F1 fabricate current validity as 1", () => {
+  withMutant(
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)",
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, 1)",
+    () => {
+      const r = post({ currentValidityToken: 0, presentToken: 0 });
+      assert.notEqual(r.value, 106, "lapsed validity must not stay DELIVERY_UNKNOWN");
+      assert.equal(r.value, 105, "hardcoded 1 reaches consumeStep missing");
+    },
+  );
+  expectPacked(post({ currentValidityToken: 0, presentToken: 0 }), 106, "restore currentValidityToken");
 });
