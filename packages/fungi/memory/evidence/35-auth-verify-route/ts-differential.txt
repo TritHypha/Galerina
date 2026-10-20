@@ -1,0 +1,14 @@
+oracle dc0f9c8c4f1365f0228cda213b2ecd001400463e
+parked-fallback b59598787fdbeaccafe2f2d2daf062170dd17a05
+ts packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts sha256 2cddca1eefd6bbd4c3e6d1ec7ba4fa53ec5e798f737d52712cc9ca683be0d4db
+executed real frozen TS via Node type-strip into os.tmpdir then flattened fungi invoke
+wrong method GET | 112 | INTENDED_DIVERGENCE
+path trailing slash | 113 | INTENDED_DIVERGENCE
+body over cap | 116 | PRESERVED
+client disconnected | 140 | INTENDED_DIVERGENCE
+unknown body field | 117 | INTENDED_DIVERGENCE
+caller mint | 120 | INTENDED_DIVERGENCE
+clock missing | 121 | INTENDED_DIVERGENCE
+post-consume success | 106 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME | 121 | NEEDS_LANGUAGE
+CONSTANT_TIME_COMPARE | 100 | NEEDS_LANGUAGE

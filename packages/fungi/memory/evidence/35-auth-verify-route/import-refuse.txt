@@ -1,0 +1,2 @@
+command: node galerina.mjs run packages/fungi/memory/src/auth-verify-route.fungi --invoke admitIngress 0 0 0 0 0 0 0 0 0 100 0 0 0 0
+Compilation failed: WAT module calls function(s) that are neither defined nor imported: $readForeignSafeInteger, $finish, $mintAdmit, $classifyRecovery, $releaseGuard, $consumeStep — this is an A2 emitter defect (the callee was not lowered to a host import or a local function). Fix: define/import the callee, or emit (unreachable) at the call site.

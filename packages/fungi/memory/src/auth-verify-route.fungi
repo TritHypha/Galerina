@@ -1,0 +1,1202 @@
+@version 1
+/// @file: auth-verify-route.fungi
+/// @purpose: AUTH_VERIFY_ROUTE POST /auth/verify orchestration. Host maps
+///   method path content-type channel body secret and port outcomes onto Int
+///   tags once (P20-N2). Body and secret packed codes are host-supplied.
+///   Bind minted operation id and lease epoch to the secret pre-code or refuse.
+/// CN-1: CALL the frozen c-boundary helper. check admits; build FUNGI-NAME-001;
+///   tests flatten helper plus body-reader without its packer plus
+///   release-commit-point plus secret-gate plus this unit.
+/// methodToken: 0 POST else refuse. pathToken: 0 exact 1 slash 2 case 3 percent 4 dot else 11
+/// contentTypeToken: 0 json else refuse. channelToken: 0 allowed 1 refused else 11
+/// bodyPacked: body-reader packed result. 100 ok 105 over-cap 109 timeout
+///   110 throw 111 unlisted else malformed
+/// unknownFieldToken / malformedToken / callerMintToken: 0 absent 1 present else 11
+/// clockPresent: 0 missing 1 present else 11. digestToken: 0 missing 1 ok 2 mismatch else 11
+/// aotToken / bytecodeToken / slideToken / verdictToken / tcbToken: 0 ok 1 refuse else 11
+/// vokToken: 0 ok 1 missing 2 stale 3 revoked else 11
+/// guestToken: 0 ok 1 trap 2 unknown else 11
+/// sinkToken: 0 success 1 partial 2 unknown 3 throw 4 never-settles else 11
+/// disconnectToken: 0 connected 1 disconnected else 11
+/// ackToken: 0 ok 1 refused else 11
+/// suiteId: 0 hybrid ML-DSA-65+Ed25519 1 classical-only 2 absent else 11
+/// pqAvailable: 0 missing 1 present else 11
+/// packed ingress: 12 method 13 path 14 content-type 15 channel 16 body-over
+///   17 unknown-field 18 malformed
+/// packed mint: 19 randomness-absent 20 caller-mint
+/// packed clock: 21 missing 22 backwards 23 epoch 24 overflow 29 deadline
+/// packed pre: 25 digest-missing 26 mismatch 27 AOT 28 bytecode 30 slide
+///   31 authority-missing 32 stale 33 revoked 34 VERDICT 35 secret-unavailable
+///   36 tcb 37 replay 38 recovery-unlisted
+/// packed post never 100 (MB-06): 39 guest-trap 40 client-disconnect
+///   41 cleanup-failed-quarantine 42 ack-refused 43 receipt-no-suite
+///   6 delivery-unknown (success after begin, partial, throw, never-settles,
+///   listed cleanup, false release tokens). 11 unlisted. 10 foreign.
+/// Secret or rcp non-success after consume including 106/110/111 is UNKNOWN
+///   never REFUSED never retry. No caller mint. No revoke-before-release option.
+/// packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN; no erase claim).
+/// COMMITTED unreachable after begin (Astra W1, policy). No clock source here.
+/// Sequential if-return. Nested if/else failed WAT emit.
+
+import "./c-boundary.fungi"
+import "./body-reader.fungi"
+import "./release-commit-point.fungi"
+import "./secret-gate.fungi"
+
+pure flow admitIngress(
+  methodClass: Int,
+  methodToken: Int,
+  pathClass: Int,
+  pathToken: Int,
+  contentClass: Int,
+  contentTypeToken: Int,
+  channelClass: Int,
+  channelToken: Int,
+  bodyClass: Int,
+  bodyPacked: Int,
+  unknownClass: Int,
+  unknownFieldToken: Int,
+  malformedClass: Int,
+  malformedToken: Int
+) -> Int
+contract {
+  intent { "Closed ingress sum. Wrong method path content-type channel unknown field malformed and over-cap refuse. Body throw is UNKNOWN. Body timeout is deadline." }
+}
+{
+  let methodReason: Int = readForeignSafeInteger(methodClass, methodToken)
+  if methodReason != 0 {
+    if methodReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let pathReason: Int = readForeignSafeInteger(pathClass, pathToken)
+  if pathReason != 0 {
+    if pathReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let contentReason: Int = readForeignSafeInteger(contentClass, contentTypeToken)
+  if contentReason != 0 {
+    if contentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let channelReason: Int = readForeignSafeInteger(channelClass, channelToken)
+  if channelReason != 0 {
+    if channelReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let bodyReason: Int = readForeignSafeInteger(bodyClass, bodyPacked)
+  if bodyReason != 0 {
+    if bodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let unknownReason: Int = readForeignSafeInteger(unknownClass, unknownFieldToken)
+  if unknownReason != 0 {
+    if unknownReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let malformedReason: Int = readForeignSafeInteger(malformedClass, malformedToken)
+  if malformedReason != 0 {
+    if malformedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if methodToken != 0 {
+    if methodToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if pathToken != 0 {
+    if pathToken != 1 {
+      if pathToken != 2 {
+        if pathToken != 3 {
+          if pathToken != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if contentTypeToken != 0 {
+    if contentTypeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if channelToken != 0 {
+    if channelToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if unknownFieldToken != 0 {
+    if unknownFieldToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if malformedToken != 0 {
+    if malformedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if bodyPacked < 100 {
+    return finish(11, true)
+  }
+  if bodyPacked > 113 {
+    return finish(11, true)
+  }
+  if methodToken != 0 {
+    return finish(12, true)
+  }
+  if pathToken != 0 {
+    return finish(13, true)
+  }
+  if contentTypeToken != 0 {
+    return finish(14, true)
+  }
+  if channelToken != 0 {
+    return finish(15, true)
+  }
+  if unknownFieldToken == 1 {
+    return finish(17, true)
+  }
+  if malformedToken == 1 {
+    return finish(18, true)
+  }
+  if bodyPacked == 105 {
+    return finish(16, true)
+  }
+  if bodyPacked == 109 {
+    return finish(29, true)
+  }
+  if bodyPacked == 110 {
+    return finish(6, true)
+  }
+  if bodyPacked == 111 {
+    return finish(11, true)
+  }
+  if bodyPacked != 100 {
+    return finish(18, true)
+  }
+  return finish(0, true)
+}
+
+pure flow mintOperation(
+  randomClass: Int,
+  randomnessPresentToken: Int,
+  callerClass: Int,
+  callerMintToken: Int,
+  idClass: Int,
+  idPresentToken: Int,
+  epochClass: Int,
+  epoch: Int,
+  existingClass: Int,
+  existingPresentToken: Int,
+  leaseClass: Int,
+  existingLease: Int,
+  retiredClass: Int,
+  retiredToken: Int,
+  capClass: Int,
+  atCapToken: Int,
+  freshClass: Int,
+  issuedFreshToken: Int,
+  hereClass: Int,
+  issuedHereToken: Int
+) -> Int
+contract {
+  intent { "Kernel mint only. Absent randomness refuses. Caller-supplied mint refuses. Delegates listed mintAdmit and maps replay or missing." }
+}
+{
+  let randomReason: Int = readForeignSafeInteger(randomClass, randomnessPresentToken)
+  if randomReason != 0 {
+    if randomReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let callerReason: Int = readForeignSafeInteger(callerClass, callerMintToken)
+  if callerReason != 0 {
+    if callerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let idReason: Int = readForeignSafeInteger(idClass, idPresentToken)
+  if idReason != 0 {
+    if idReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochReason: Int = readForeignSafeInteger(epochClass, epoch)
+  if epochReason != 0 {
+    if epochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let existingReason: Int = readForeignSafeInteger(existingClass, existingPresentToken)
+  if existingReason != 0 {
+    if existingReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, existingLease)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  if retiredReason != 0 {
+    if retiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let capReason: Int = readForeignSafeInteger(capClass, atCapToken)
+  if capReason != 0 {
+    if capReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let freshReason: Int = readForeignSafeInteger(freshClass, issuedFreshToken)
+  if freshReason != 0 {
+    if freshReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let hereReason: Int = readForeignSafeInteger(hereClass, issuedHereToken)
+  if hereReason != 0 {
+    if hereReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if randomnessPresentToken != 0 {
+    if randomnessPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if callerMintToken != 0 {
+    if callerMintToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if epoch < 0 {
+    return finish(23, true)
+  }
+  if callerMintToken == 1 {
+    return finish(20, true)
+  }
+  if randomnessPresentToken == 0 {
+    return finish(19, true)
+  }
+  let minted: Int = mintAdmit(idPresentToken, 0, epoch, existingPresentToken, existingLease, retiredToken, randomnessPresentToken, atCapToken, issuedFreshToken, issuedHereToken)
+  if minted == 100 {
+    return minted
+  }
+  if minted == 102 {
+    return finish(19, true)
+  }
+  if minted == 103 {
+    return finish(37, true)
+  }
+  if minted == 104 {
+    return finish(32, true)
+  }
+  if minted == 105 {
+    return finish(19, true)
+  }
+  if minted == 107 {
+    return finish(37, true)
+  }
+  if minted == 111 {
+    return finish(11, true)
+  }
+  return minted
+}
+
+pure flow applyClock(
+  clockClass: Int,
+  clock: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int
+) -> Int
+contract {
+  intent { "Typed foreign clock. Missing negative backwards epoch-mismatch and armedAt plus budget overflow refuse. One deadline covers every later stage." }
+}
+{
+  let clockReason: Int = readForeignSafeInteger(clockClass, clock)
+  if clockReason != 0 {
+    if clockReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presentReason: Int = readForeignSafeInteger(presentClass, clockPresent)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let armedReason: Int = readForeignSafeInteger(armedClass, armedAt)
+  if armedReason != 0 {
+    if armedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let budgetReason: Int = readForeignSafeInteger(budgetClass, budget)
+  if budgetReason != 0 {
+    if budgetReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let clockEpochReason: Int = readForeignSafeInteger(clockEpochClass, clockEpoch)
+  if clockEpochReason != 0 {
+    if clockEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let armedEpochReason: Int = readForeignSafeInteger(armedEpochClass, armedEpoch)
+  if armedEpochReason != 0 {
+    if armedEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if clockPresent != 0 {
+    if clockPresent != 1 {
+      return finish(11, true)
+    }
+  }
+  if clockPresent == 0 {
+    return finish(21, true)
+  }
+  if clock < 0 {
+    return finish(21, true)
+  }
+  if armedAt < 0 {
+    return finish(21, true)
+  }
+  if budget < 1 {
+    return finish(29, true)
+  }
+  if budget > 5000 {
+    return finish(29, true)
+  }
+  if clockEpoch != armedEpoch {
+    return finish(23, true)
+  }
+  if clock < armedAt {
+    return finish(22, true)
+  }
+  if armedAt > 2147483647 - budget {
+    return finish(24, true)
+  }
+  if clock > armedAt + budget - 1 {
+    return finish(29, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyPrePorts(
+  digestClass: Int,
+  digestToken: Int,
+  aotClass: Int,
+  aotToken: Int,
+  bytecodeClass: Int,
+  bytecodeToken: Int,
+  slideClass: Int,
+  slideToken: Int,
+  vokClass: Int,
+  vokToken: Int,
+  verdictClass: Int,
+  verdictToken: Int,
+  secretClass: Int,
+  secretPacked: Int,
+  tcbClass: Int,
+  tcbToken: Int,
+  mintedOpClass: Int,
+  mintedOp: Int,
+  secretOpClass: Int,
+  secretOp: Int,
+  mintedEpochClass: Int,
+  mintedEpoch: Int,
+  secretEpochClass: Int,
+  secretEpoch: Int,
+  recPresentClass: Int,
+  recPresentToken: Int,
+  recRetiredClass: Int,
+  recRetiredToken: Int,
+  recTombClass: Int,
+  recTombstoneToken: Int,
+  recLeaseClass: Int,
+  recLeaseState: Int
+) -> Int
+contract {
+  intent { "Pre-consume port sum. Bind minted operation and epoch to secret packed. Listed recovery other than not-found is replay. Secret non-success 106 stays UNKNOWN." }
+}
+{
+  let digestReason: Int = readForeignSafeInteger(digestClass, digestToken)
+  if digestReason != 0 {
+    if digestReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let aotReason: Int = readForeignSafeInteger(aotClass, aotToken)
+  if aotReason != 0 {
+    if aotReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let bytecodeReason: Int = readForeignSafeInteger(bytecodeClass, bytecodeToken)
+  if bytecodeReason != 0 {
+    if bytecodeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let slideReason: Int = readForeignSafeInteger(slideClass, slideToken)
+  if slideReason != 0 {
+    if slideReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let vokReason: Int = readForeignSafeInteger(vokClass, vokToken)
+  if vokReason != 0 {
+    if vokReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let verdictReason: Int = readForeignSafeInteger(verdictClass, verdictToken)
+  if verdictReason != 0 {
+    if verdictReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretReason: Int = readForeignSafeInteger(secretClass, secretPacked)
+  if secretReason != 0 {
+    if secretReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let tcbReason: Int = readForeignSafeInteger(tcbClass, tcbToken)
+  if tcbReason != 0 {
+    if tcbReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let mintedOpReason: Int = readForeignSafeInteger(mintedOpClass, mintedOp)
+  if mintedOpReason != 0 {
+    if mintedOpReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretOpReason: Int = readForeignSafeInteger(secretOpClass, secretOp)
+  if secretOpReason != 0 {
+    if secretOpReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let mintedEpochReason: Int = readForeignSafeInteger(mintedEpochClass, mintedEpoch)
+  if mintedEpochReason != 0 {
+    if mintedEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretEpochReason: Int = readForeignSafeInteger(secretEpochClass, secretEpoch)
+  if secretEpochReason != 0 {
+    if secretEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recPresentReason: Int = readForeignSafeInteger(recPresentClass, recPresentToken)
+  if recPresentReason != 0 {
+    if recPresentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recRetiredReason: Int = readForeignSafeInteger(recRetiredClass, recRetiredToken)
+  if recRetiredReason != 0 {
+    if recRetiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recTombReason: Int = readForeignSafeInteger(recTombClass, recTombstoneToken)
+  if recTombReason != 0 {
+    if recTombReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recLeaseReason: Int = readForeignSafeInteger(recLeaseClass, recLeaseState)
+  if recLeaseReason != 0 {
+    if recLeaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if digestToken != 0 {
+    if digestToken != 1 {
+      if digestToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if aotToken != 0 {
+    if aotToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if bytecodeToken != 0 {
+    if bytecodeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if slideToken != 0 {
+    if slideToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if vokToken != 0 {
+    if vokToken != 1 {
+      if vokToken != 2 {
+        if vokToken != 3 {
+          return finish(11, true)
+        }
+      }
+    }
+  }
+  if verdictToken != 0 {
+    if verdictToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if tcbToken != 0 {
+    if tcbToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if mintedOp < 0 {
+    return finish(11, true)
+  }
+  if secretOp < 0 {
+    return finish(11, true)
+  }
+  if mintedEpoch < 0 {
+    return finish(23, true)
+  }
+  if secretEpoch < 0 {
+    return finish(23, true)
+  }
+  if secretPacked < 100 {
+    return finish(11, true)
+  }
+  let recovered: Int = classifyRecovery(recPresentToken, recRetiredToken, recTombstoneToken, recLeaseState)
+  if recovered == 111 {
+    return finish(38, true)
+  }
+  if recovered != 104 {
+    if recovered != 100 {
+      if recovered != 101 {
+        if recovered != 102 {
+          if recovered != 103 {
+            return recovered
+          }
+        }
+      }
+    }
+  }
+  if recovered != 104 {
+    return finish(37, true)
+  }
+  if digestToken == 0 {
+    return finish(25, true)
+  }
+  if digestToken == 2 {
+    return finish(26, true)
+  }
+  if aotToken == 1 {
+    return finish(27, true)
+  }
+  if bytecodeToken == 1 {
+    return finish(28, true)
+  }
+  if slideToken == 1 {
+    return finish(30, true)
+  }
+  if vokToken == 1 {
+    return finish(31, true)
+  }
+  if vokToken == 2 {
+    return finish(32, true)
+  }
+  if vokToken == 3 {
+    return finish(33, true)
+  }
+  if verdictToken == 1 {
+    return finish(34, true)
+  }
+  if tcbToken == 1 {
+    return finish(36, true)
+  }
+  if mintedOp != secretOp {
+    return finish(35, true)
+  }
+  if mintedEpoch != secretEpoch {
+    return finish(23, true)
+  }
+  if secretPacked == 106 {
+    return finish(6, true)
+  }
+  if secretPacked == 110 {
+    return finish(10, true)
+  }
+  if secretPacked == 111 {
+    return finish(11, true)
+  }
+  if secretPacked != 100 {
+    return finish(35, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyConsume(
+  presentClass: Int,
+  presentToken: Int,
+  matchClass: Int,
+  tokenMatchToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int,
+  revokeClass: Int,
+  revokeCommittedToken: Int,
+  cleanupClass: Int,
+  cleanupEvidence: Int,
+  authClass: Int,
+  independentAuthToken: Int,
+  custodyClass: Int,
+  preparedCustodyToken: Int,
+  emptyClass: Int,
+  emptyObligationSetToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int
+) -> Int
+contract {
+  intent { "Commit point. No local release. releaseGuard then consumeStep. Revocation first refuses. Listed cleanup pending failed unknown stay UNKNOWN." }
+}
+{
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let matchReason: Int = readForeignSafeInteger(matchClass, tokenMatchToken)
+  if matchReason != 0 {
+    if matchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochMatchReason: Int = readForeignSafeInteger(epochMatchClass, epochMatchToken)
+  if epochMatchReason != 0 {
+    if epochMatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let revokeReason: Int = readForeignSafeInteger(revokeClass, revokeCommittedToken)
+  if revokeReason != 0 {
+    if revokeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  if cleanupReason != 0 {
+    if cleanupReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
+  if authReason != 0 {
+    if authReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  if custodyReason != 0 {
+    if custodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
+  if guardOutcome != 100 {
+    return guardOutcome
+  }
+  let consumed: Int = consumeStep(presentToken, tokenMatchToken, 0, epochMatchToken, leaseState, revokeCommittedToken, guardOutcome)
+  return consumed
+}
+
+pure flow applyPostConsume(
+  preClass: Int,
+  prePacked: Int,
+  guestClass: Int,
+  guestToken: Int,
+  disconnectClass: Int,
+  disconnectToken: Int,
+  sinkClass: Int,
+  sinkToken: Int,
+  cleanupClass: Int,
+  cleanupEvidence: Int,
+  ackClass: Int,
+  ackToken: Int,
+  suiteClass: Int,
+  suiteId: Int,
+  pqClass: Int,
+  pqAvailable: Int,
+  authClass: Int,
+  independentAuthToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int
+) -> Int
+contract {
+  intent { "After consume never packed 100. Guest trap and client disconnect stay distinct from deadline. Sink success partial throw never-settles listed cleanup and false tokens are UNKNOWN. Cleanup failed quarantines. Missing suite refuses. Classical-only never Assured." }
+}
+{
+  let preReason: Int = readForeignSafeInteger(preClass, prePacked)
+  if preReason != 0 {
+    if preReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let guestReason: Int = readForeignSafeInteger(guestClass, guestToken)
+  if guestReason != 0 {
+    if guestReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let disconnectReason: Int = readForeignSafeInteger(disconnectClass, disconnectToken)
+  if disconnectReason != 0 {
+    if disconnectReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let sinkReason: Int = readForeignSafeInteger(sinkClass, sinkToken)
+  if sinkReason != 0 {
+    if sinkReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  if cleanupReason != 0 {
+    if cleanupReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let ackReason: Int = readForeignSafeInteger(ackClass, ackToken)
+  if ackReason != 0 {
+    if ackReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let suiteReason: Int = readForeignSafeInteger(suiteClass, suiteId)
+  if suiteReason != 0 {
+    if suiteReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let pqReason: Int = readForeignSafeInteger(pqClass, pqAvailable)
+  if pqReason != 0 {
+    if pqReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
+  if authReason != 0 {
+    if authReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if guestToken != 0 {
+    if guestToken != 1 {
+      if guestToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if disconnectToken != 0 {
+    if disconnectToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if sinkToken != 0 {
+    if sinkToken != 1 {
+      if sinkToken != 2 {
+        if sinkToken != 3 {
+          if sinkToken != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if cleanupEvidence != 0 {
+    if cleanupEvidence != 1 {
+      if cleanupEvidence != 2 {
+        if cleanupEvidence != 3 {
+          if cleanupEvidence != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if ackToken != 0 {
+    if ackToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if pqAvailable != 0 {
+    if pqAvailable != 1 {
+      return finish(11, true)
+    }
+  }
+  if independentAuthToken != 0 {
+    if independentAuthToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if consumedAuthorityToken != 0 {
+    if consumedAuthorityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if currentValidityToken != 0 {
+    if currentValidityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if suiteId != 0 {
+    if suiteId != 1 {
+      if suiteId != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if prePacked != 100 {
+    return finish(11, true)
+  }
+  if guestToken == 1 {
+    return finish(39, true)
+  }
+  if guestToken == 2 {
+    return finish(6, true)
+  }
+  if disconnectToken == 1 {
+    return finish(40, true)
+  }
+  if cleanupEvidence == 3 {
+    return finish(41, true)
+  }
+  if ackToken == 1 {
+    return finish(42, true)
+  }
+  if suiteId == 2 {
+    return finish(43, true)
+  }
+  if independentAuthToken == 0 {
+    return finish(6, true)
+  }
+  if consumedAuthorityToken == 0 {
+    return finish(6, true)
+  }
+  if currentValidityToken == 0 {
+    return finish(6, true)
+  }
+  if suiteId == 1 {
+    return finish(6, true)
+  }
+  if pqAvailable == 0 {
+    return finish(6, true)
+  }
+  if sinkToken != 0 {
+    return finish(6, true)
+  }
+  if cleanupEvidence != 1 {
+    return finish(6, true)
+  }
+  return finish(6, true)
+}
+
+pure flow recoverLease(
+  presentClass: Int,
+  presentToken: Int,
+  retiredClass: Int,
+  retiredToken: Int,
+  tombstoneClass: Int,
+  tombstoneDroppedToken: Int,
+  leaseClass: Int,
+  leaseState: Int
+) -> Int
+contract {
+  intent { "Status-only recovery. Canonical OperationRecoveryStatus unchanged. Unlisted hits 38. Never re-opens or re-consumes." }
+}
+{
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  if retiredReason != 0 {
+    if retiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let tombReason: Int = readForeignSafeInteger(tombstoneClass, tombstoneDroppedToken)
+  if tombReason != 0 {
+    if tombReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recovered: Int = classifyRecovery(presentToken, retiredToken, tombstoneDroppedToken, leaseState)
+  if recovered == 111 {
+    return finish(38, true)
+  }
+  return recovered
+}
+
+pure flow httpStatusFor(packedClass: Int, packedCode: Int) -> Int
+contract {
+  intent { "Total HTTP map over packed codes. Unlisted and foreign default 503. Client disconnect stays 499 distinct from deadline 504." }
+}
+{
+  let packedReason: Int = readForeignSafeInteger(packedClass, packedCode)
+  if packedReason != 0 {
+    return 503
+  }
+  if packedCode == 100 {
+    return 200
+  }
+  if packedCode == 112 {
+    return 400
+  }
+  if packedCode == 113 {
+    return 400
+  }
+  if packedCode == 114 {
+    return 400
+  }
+  if packedCode == 117 {
+    return 400
+  }
+  if packedCode == 118 {
+    return 400
+  }
+  if packedCode == 119 {
+    return 400
+  }
+  if packedCode == 120 {
+    return 400
+  }
+  if packedCode == 116 {
+    return 413
+  }
+  if packedCode == 137 {
+    return 409
+  }
+  if packedCode == 115 {
+    return 403
+  }
+  if packedCode == 126 {
+    return 403
+  }
+  if packedCode == 127 {
+    return 403
+  }
+  if packedCode == 128 {
+    return 403
+  }
+  if packedCode == 130 {
+    return 403
+  }
+  if packedCode == 132 {
+    return 403
+  }
+  if packedCode == 133 {
+    return 403
+  }
+  if packedCode == 134 {
+    return 403
+  }
+  if packedCode == 129 {
+    return 504
+  }
+  if packedCode == 140 {
+    return 499
+  }
+  return 503
+}
+
+pure flow sealReceipt(
+  suiteClass: Int,
+  suiteId: Int,
+  pqClass: Int,
+  pqAvailable: Int
+) -> Int
+contract {
+  intent { "Receipt seal binds a suite id. Absent suite refuses. Classical-only or missing PQ is UNKNOWN never Assured. Hybrid required." }
+}
+{
+  let suiteReason: Int = readForeignSafeInteger(suiteClass, suiteId)
+  if suiteReason != 0 {
+    if suiteReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let pqReason: Int = readForeignSafeInteger(pqClass, pqAvailable)
+  if pqReason != 0 {
+    if pqReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if pqAvailable != 0 {
+    if pqAvailable != 1 {
+      return finish(11, true)
+    }
+  }
+  if suiteId != 0 {
+    if suiteId != 1 {
+      if suiteId != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if suiteId == 2 {
+    return finish(43, true)
+  }
+  if suiteId == 1 {
+    return finish(6, true)
+  }
+  if pqAvailable == 0 {
+    return finish(6, true)
+  }
+  if suiteId != 0 {
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
