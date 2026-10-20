@@ -526,14 +526,19 @@ test("MUST-REFUSE false release tokens after consume as UNKNOWN", () => {
 });
 
 test("MUST-REFUSE post when prePacked is not consume-100", () => {
-  expectPacked(post({ prePacked: 106 }), 111, "pre unknown");
-  expectPacked(post({ prePacked: 102 }), 111, "pre refused");
+  expectPacked(post({ prePacked: 106 }), 106, "pre unknown");
+  expectPacked(post({ prePacked: 102 }), 106, "pre refused");
 });
 
 test("MUST-REFUSE unlisted post tokens", () => {
-  expectPacked(post({ guestToken: 9 }), 111, "guest unlisted");
-  expectPacked(post({ sinkToken: 9 }), 111, "sink unlisted");
-  expectPacked(post({ suiteId: 9 }), 111, "suite unlisted");
+  expectPacked(post({ guestToken: 9 }), 106, "guest unlisted");
+  expectPacked(post({ sinkToken: 9 }), 106, "sink unlisted");
+  expectPacked(post({ suiteId: 9 }), 106, "suite unlisted");
+});
+
+test("MUST-REFUSE foreign classTag after consume as UNKNOWN never REFUSED", () => {
+  expectPacked(post({ guestClass: 3 }), 106, "guest NaN");
+  expectPacked(post({ sinkClass: 11 }), 106, "sink unlisted class");
 });
 
 test("status-only recovery never reopens", () => {
@@ -659,4 +664,58 @@ test("landed source callerMintToken 1 is 120 without mutant", () => {
 
 test("landed source recLeaseState 9 is 138 without mutant", () => {
   expectPacked(pre({ recLeaseState: 9 }), 138, "standalone unlisted recovery");
+});
+
+test("landed source mint retiredToken 1 is 137 without mutant", () => {
+  expectPacked(mint({ retiredToken: 1 }), 137, "standalone retired");
+});
+
+test("landed source mint issuedFreshToken 0 is 137 without mutant", () => {
+  expectPacked(mint({ issuedFreshToken: 0 }), 137, "standalone not fresh");
+});
+
+test("landed source clock budget 5001 is 129 without mutant", () => {
+  expectPacked(clock({ budget: 5001 }), 129, "standalone budget over");
+});
+
+test("landed source consume independentAuthToken 0 is 105 without mutant", () => {
+  expectPacked(consume({ independentAuthToken: 0 }), 105, "standalone auth 0");
+});
+
+test("landed source httpStatusFor classTag 3 and 11 with code 100 is 503", () => {
+  expectPacked(runFlow("httpStatusFor", [3, 100]), 503, "standalone class 3");
+  expectPacked(runFlow("httpStatusFor", [11, 100]), 503, "standalone class 11");
+});
+
+test("landed source consume currentValidity classTag 3 is 110 and 11 is 111", () => {
+  expectPacked(consume({ validityClass: 3 }), 110, "standalone validity NaN");
+  expectPacked(consume({ validityClass: 11 }), 111, "standalone validity unlisted class");
+});
+
+test("RED mutant skip one wipe on cleanup-failed post", () => {
+  withMutant(
+    "if cleanupEvidence == 3 {\n    return finish(41, true)",
+    "if cleanupEvidence == 3 {\n    return finish(41, false)",
+    () => {
+      const r = post({ cleanupEvidence: 3 });
+      assert.notEqual(r.value, 141, "cleanup failed must not stay packed 141");
+      assert.equal(r.value, 41, "skip wipe unpacks to 41");
+    },
+  );
+  expectPacked(post({ cleanupEvidence: 3 }), 141, "restore cleanup failed");
+});
+
+test("MUST-REFUSE body over cap by one byte via body-reader readChunks", () => {
+  const bodyPacked = runFlow("readChunks", [1, 1, 0, 16385, 0, 0, 0, 16384, false, 0, true, false, false]);
+  expectPacked(bodyPacked, 105, "readChunks over cap");
+  expectPacked(ingress({ bodyPacked: bodyPacked.value }), 116, "admitIngress over cap from reader");
+});
+
+test("MUST-COMPOSE secret-gate deliverPreHandoff into applyPrePorts", () => {
+  const admitted = runFlow("deliverPreHandoff", [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1]);
+  expectPacked(admitted, 100, "deliver admitted");
+  expectPacked(pre({ secretPacked: admitted.value }), 100, "pre admitted from gate");
+  const refused = runFlow("deliverPreHandoff", [0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1]);
+  expectPacked(refused, 119, "deliver no provider");
+  expectPacked(pre({ secretPacked: refused.value }), 135, "pre secret unavailable from gate");
 });

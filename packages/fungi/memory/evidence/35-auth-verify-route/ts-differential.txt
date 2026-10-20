@@ -2,13 +2,66 @@ oracle dc0f9c8c4f1365f0228cda213b2ecd001400463e
 parked-fallback b59598787fdbeaccafe2f2d2daf062170dd17a05
 ts packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts sha256 2cddca1eefd6bbd4c3e6d1ec7ba4fa53ec5e798f737d52712cc9ca683be0d4db
 executed real frozen TS via Node type-strip into os.tmpdir then flattened fungi invoke
+F3 every parity row runs frozen TS handle() plus flattened fungi, or is marked UNKNOWN/NEEDS_LANGUAGE with a typed reason
 wrong method GET | 112 | INTENDED_DIVERGENCE
 path trailing slash | 113 | INTENDED_DIVERGENCE
+content-type empty | 114 | INTENDED_DIVERGENCE
+channel refused | 115 | INTENDED_DIVERGENCE
 body over cap | 116 | PRESERVED
 client disconnected | 140 | INTENDED_DIVERGENCE
 unknown body field | 117 | INTENDED_DIVERGENCE
+TS_NO_UNKNOWN_FIELD_TAG
+malformed body | 118 | PRESERVED
+body throw UNKNOWN | 106 | INTENDED_DIVERGENCE
+TS_NEEDS_BODY_STREAM_FIXTURE
 caller mint | 120 | INTENDED_DIVERGENCE
+AVR-N1_TS_ACCEPTS_PREDICTABLE_MINT
 clock missing | 121 | INTENDED_DIVERGENCE
+TS_CLOCK_REFUSED_THROW
+deadline overrun | 129 | PRESERVED
+TS_DEADLINE_ARMS_AT_DISPATCH
+digest missing | 125 | PRESERVED
+TS_NEEDS_PORT_FIXTURE
+artifact mismatch | 126 | PRESERVED
+AOT refused | 127 | PRESERVED
+bytecode required | 128 | PRESERVED
+slide refused | 130 | PRESERVED
+authority missing | 131 | PRESERVED
+authority stale | 132 | PRESERVED
+authority revoked | 133 | PRESERVED
+VERDICT refused | 134 | PRESERVED
+secret unavailable | 135 | PRESERVED
+TS_SECRET_ADMIT_NOT_HAS
+tcb refused | 136 | PRESERVED
+replay recovery | 137 | PRESERVED
+unlisted recovery | 138 | INTENDED_DIVERGENCE
+TS_NO_UNLISTED_RECOVERY_TAG
+revoke first | 102 | INTENDED_DIVERGENCE
+AVR-N2_NO_REVOKE_BEFORE_RELEASE_OPTION
+consume released | 100 | PRESERVED
+TS_HANDLE_CONTINUES_PAST_COMMIT
+guest trap | 139 | PRESERVED
+cleanup failed | 141 | PRESERVED
+ack refused | 142 | PRESERVED
+receipt no suite | 143 | INTENDED_DIVERGENCE
+C186-F3_TS_NO_SUITE_ID_TAG
 post-consume success | 106 | INTENDED_DIVERGENCE
+http default 503 | 503 | PRESERVED
+TS_HTTP_MAP_ON_STRING_CODE
+disconnect HTTP 499 | 499 | PRESERVED
+POST exact method | 100 | PRESERVED
+TS_HANDLE_IS_FULL_PIPELINE
 MONOTONIC_TYPED_TIME | 121 | NEEDS_LANGUAGE
 CONSTANT_TIME_COMPARE | 100 | NEEDS_LANGUAGE
+PQ classical-only | 106 | NEEDS_LANGUAGE
+hybrid AND
+HOST_ADAPTER_PRESENCE | 110 | UNKNOWN
+MB-06 listed cleanup | 106 | INTENDED_DIVERGENCE
+MB-06_CARRIED_UNKNOWN
+Addendum D OPEN ordering | 106 | UNKNOWN
+TOTAL_EFFECT_OUTCOME
+post prePacked not 100 | 106 | INTENDED_DIVERGENCE
+A1_AFTER_CONSUME_UNKNOWN
+post unlisted token | 106 | INTENDED_DIVERGENCE
+post foreign classTag | 106 | INTENDED_DIVERGENCE
+live TS handle: GET slash content-type channel over-cap disconnect empty-body default-pipeline construction-missing-timeout

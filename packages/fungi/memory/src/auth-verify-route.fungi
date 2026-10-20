@@ -31,7 +31,8 @@
 /// packed post never 100 (MB-06): 39 guest-trap 40 client-disconnect
 ///   41 cleanup-failed-quarantine 42 ack-refused 43 receipt-no-suite
 ///   6 delivery-unknown (success after begin, partial, throw, never-settles,
-///   listed cleanup, false release tokens). 11 unlisted. 10 foreign.
+///   listed cleanup, false release tokens, foreign classTag, unlisted
+///   tokens, prePacked other than 100). After consume 110/111 become 106.
 /// Secret or rcp non-success after consume including 106/110/111 is UNKNOWN
 ///   never REFUSED never retry. No caller mint. No revoke-before-release option.
 /// packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN; no erase claim).
@@ -838,96 +839,63 @@ pure flow applyPostConsume(
   currentValidityToken: Int
 ) -> Int
 contract {
-  intent { "After consume never packed 100. Guest trap and client disconnect stay distinct from deadline. Sink success partial throw never-settles listed cleanup and false tokens are UNKNOWN. Cleanup failed quarantines. Missing suite refuses. Classical-only never Assured." }
+  intent { "After consume never packed 100. Guest trap and client disconnect stay distinct from deadline. Sink success partial throw never-settles listed cleanup and false tokens are UNKNOWN. Foreign classTag unlisted tokens and prePacked other than 100 are UNKNOWN. Cleanup failed quarantines. Missing suite refuses. Classical-only never Assured." }
 }
 {
   let preReason: Int = readForeignSafeInteger(preClass, prePacked)
   if preReason != 0 {
-    if preReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let guestReason: Int = readForeignSafeInteger(guestClass, guestToken)
   if guestReason != 0 {
-    if guestReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let disconnectReason: Int = readForeignSafeInteger(disconnectClass, disconnectToken)
   if disconnectReason != 0 {
-    if disconnectReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let sinkReason: Int = readForeignSafeInteger(sinkClass, sinkToken)
   if sinkReason != 0 {
-    if sinkReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
   if cleanupReason != 0 {
-    if cleanupReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let ackReason: Int = readForeignSafeInteger(ackClass, ackToken)
   if ackReason != 0 {
-    if ackReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let suiteReason: Int = readForeignSafeInteger(suiteClass, suiteId)
   if suiteReason != 0 {
-    if suiteReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let pqReason: Int = readForeignSafeInteger(pqClass, pqAvailable)
   if pqReason != 0 {
-    if pqReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
   if authReason != 0 {
-    if authReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
   if consumedAuthReason != 0 {
-    if consumedAuthReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
   if validityReason != 0 {
-    if validityReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
+    return finish(6, true)
   }
   if guestToken != 0 {
     if guestToken != 1 {
       if guestToken != 2 {
-        return finish(11, true)
+        return finish(6, true)
       }
     }
   }
   if disconnectToken != 0 {
     if disconnectToken != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if sinkToken != 0 {
@@ -935,7 +903,7 @@ contract {
       if sinkToken != 2 {
         if sinkToken != 3 {
           if sinkToken != 4 {
-            return finish(11, true)
+            return finish(6, true)
           }
         }
       }
@@ -946,7 +914,7 @@ contract {
       if cleanupEvidence != 2 {
         if cleanupEvidence != 3 {
           if cleanupEvidence != 4 {
-            return finish(11, true)
+            return finish(6, true)
           }
         }
       }
@@ -954,38 +922,38 @@ contract {
   }
   if ackToken != 0 {
     if ackToken != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if pqAvailable != 0 {
     if pqAvailable != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if independentAuthToken != 0 {
     if independentAuthToken != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if consumedAuthorityToken != 0 {
     if consumedAuthorityToken != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if currentValidityToken != 0 {
     if currentValidityToken != 1 {
-      return finish(11, true)
+      return finish(6, true)
     }
   }
   if suiteId != 0 {
     if suiteId != 1 {
       if suiteId != 2 {
-        return finish(11, true)
+        return finish(6, true)
       }
     }
   }
   if prePacked != 100 {
-    return finish(11, true)
+    return finish(6, true)
   }
   if guestToken == 1 {
     return finish(39, true)
