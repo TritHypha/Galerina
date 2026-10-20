@@ -18,38 +18,38 @@ caller mint | 120 | INTENDED_DIVERGENCE
 AVR-N1_TS_ACCEPTS_PREDICTABLE_MINT
 clock missing | 121 | INTENDED_DIVERGENCE
 TS_CLOCK_REFUSED_THROW
-deadline overrun | 129 | PRESERVED
+deadline overrun | 129 | UNKNOWN
 TS_DEADLINE_ARMS_AT_DISPATCH
-digest missing | 125 | PRESERVED
+digest missing | 125 | UNKNOWN
 TS_NEEDS_PORT_FIXTURE
-artifact mismatch | 126 | PRESERVED
-AOT refused | 127 | PRESERVED
-bytecode required | 128 | PRESERVED
-slide refused | 130 | PRESERVED
-authority missing | 131 | PRESERVED
-authority stale | 132 | PRESERVED
-authority revoked | 133 | PRESERVED
-VERDICT refused | 134 | PRESERVED
-secret unavailable | 135 | PRESERVED
+artifact mismatch | 126 | UNKNOWN
+AOT refused | 127 | UNKNOWN
+bytecode required | 128 | UNKNOWN
+slide refused | 130 | UNKNOWN
+authority missing | 131 | UNKNOWN
+authority stale | 132 | UNKNOWN
+authority revoked | 133 | UNKNOWN
+VERDICT refused | 134 | UNKNOWN
+secret unavailable | 135 | UNKNOWN
 TS_SECRET_ADMIT_NOT_HAS
-tcb refused | 136 | PRESERVED
-replay recovery | 137 | PRESERVED
+tcb refused | 136 | UNKNOWN
+replay recovery | 137 | UNKNOWN
 unlisted recovery | 138 | INTENDED_DIVERGENCE
 TS_NO_UNLISTED_RECOVERY_TAG
 revoke first | 102 | INTENDED_DIVERGENCE
 AVR-N2_NO_REVOKE_BEFORE_RELEASE_OPTION
-consume released | 100 | PRESERVED
+consume released | 100 | UNKNOWN
 TS_HANDLE_CONTINUES_PAST_COMMIT
-guest trap | 139 | PRESERVED
-cleanup failed | 141 | PRESERVED
-ack refused | 142 | PRESERVED
+guest trap | 139 | UNKNOWN
+cleanup failed | 141 | UNKNOWN
+ack refused | 142 | UNKNOWN
 receipt no suite | 143 | INTENDED_DIVERGENCE
 C186-F3_TS_NO_SUITE_ID_TAG
 post-consume success | 106 | INTENDED_DIVERGENCE
-http default 503 | 503 | PRESERVED
+http default 503 | 503 | UNKNOWN
 TS_HTTP_MAP_ON_STRING_CODE
-disconnect HTTP 499 | 499 | PRESERVED
-POST exact method | 100 | PRESERVED
+disconnect HTTP 499 | 499 | UNKNOWN
+POST exact method | 100 | UNKNOWN
 TS_HANDLE_IS_FULL_PIPELINE
 MONOTONIC_TYPED_TIME | 121 | NEEDS_LANGUAGE
 CONSTANT_TIME_COMPARE | 100 | NEEDS_LANGUAGE

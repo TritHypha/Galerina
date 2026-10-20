@@ -541,6 +541,101 @@ test("MUST-REFUSE foreign classTag after consume as UNKNOWN never REFUSED", () =
   expectPacked(post({ sinkClass: 11 }), 106, "sink unlisted class");
 });
 
+test("MUST-REFUSE classTag 3 and 11 on every post-consume pair and unlisted 9 on every token as UNKNOWN never packed 100", () => {
+  const classFields = [
+    "preClass",
+    "guestClass",
+    "disconnectClass",
+    "sinkClass",
+    "cleanupClass",
+    "ackClass",
+    "suiteClass",
+    "pqClass",
+    "authClass",
+    "consumedAuthClass",
+    "validityClass",
+  ];
+  const tokenFields = [
+    "guestToken",
+    "disconnectToken",
+    "sinkToken",
+    "cleanupEvidence",
+    "ackToken",
+    "pqAvailable",
+    "independentAuthToken",
+    "consumedAuthorityToken",
+    "currentValidityToken",
+    "suiteId",
+  ];
+  let saw100 = false;
+  let i = 0;
+  while (i < classFields.length) {
+    const field = classFields[i];
+    const over3 = {};
+    over3[field] = 3;
+    const r3 = post(over3);
+    expectPacked(r3, 106, field + " classTag 3");
+    if (r3.value === 100) {
+      saw100 = true;
+    }
+    const over11 = {};
+    over11[field] = 11;
+    const r11 = post(over11);
+    expectPacked(r11, 106, field + " classTag 11");
+    if (r11.value === 100) {
+      saw100 = true;
+    }
+    i = i + 1;
+  }
+  let t = 0;
+  while (t < tokenFields.length) {
+    const field = tokenFields[t];
+    const over = {};
+    over[field] = 9;
+    const r = post(over);
+    expectPacked(r, 106, field + " unlisted 9");
+    if (r.value === 100) {
+      saw100 = true;
+    }
+    t = t + 1;
+  }
+  assert.equal(saw100, false, "no (field, classTag 3/11) or (field, unlisted) combination returns packed 100");
+});
+
+test("MUST-REFUSE prePacked 102 and 106 combined with trap tokens as UNKNOWN never named 139-142", () => {
+  const traps = [
+    { guestToken: 1, label: "guest trap" },
+    { disconnectToken: 1, label: "disconnect" },
+    { cleanupEvidence: 3, label: "cleanup" },
+    { ackToken: 1, label: "ack" },
+  ];
+  const pres = [102, 106];
+  let pi = 0;
+  while (pi < pres.length) {
+    let ti = 0;
+    while (ti < traps.length) {
+      const over = { prePacked: pres[pi] };
+      if (traps[ti].guestToken !== undefined) {
+        over.guestToken = traps[ti].guestToken;
+      }
+      if (traps[ti].disconnectToken !== undefined) {
+        over.disconnectToken = traps[ti].disconnectToken;
+      }
+      if (traps[ti].cleanupEvidence !== undefined) {
+        over.cleanupEvidence = traps[ti].cleanupEvidence;
+      }
+      if (traps[ti].ackToken !== undefined) {
+        over.ackToken = traps[ti].ackToken;
+      }
+      const r = post(over);
+      expectPacked(r, 106, "prePacked " + String(pres[pi]) + " " + traps[ti].label);
+      assert.notEqual(r.value, 100, "prePacked " + String(pres[pi]) + " " + traps[ti].label + " never packed 100");
+      ti = ti + 1;
+    }
+    pi = pi + 1;
+  }
+});
+
 test("status-only recovery never reopens", () => {
   expectPacked(recover({}), 104, "NOT_FOUND");
   expectPacked(recover({ presentToken: 1, leaseState: 2 }), 100, "RELEASED_ACKED");

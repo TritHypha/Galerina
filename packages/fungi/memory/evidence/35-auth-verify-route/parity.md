@@ -10,7 +10,7 @@ C186-N1 corrected reference: transport 499 for `client_disconnected` is kept as 
 
 | ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
 |---|---|---|---|---|
-| AUTH_VERIFY_METHOD POST l.36 | admitIngress methodToken 0 | PRESERVED | BOUNDED_INPUT | MUST-ADMIT exact POST |
+| AUTH_VERIFY_METHOD POST l.36 | admitIngress methodToken 0 | UNKNOWN | BOUNDED_INPUT | MUST-ADMIT exact POST |
 | method !== POST l.695 | admitIngress 112 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE wrong method |
 | path !== /auth/verify l.695 | admitIngress 113 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE path variants |
 | contentType empty l.698 | admitIngress 114 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE wrong content type |
@@ -23,30 +23,30 @@ C186-N1 corrected reference: transport 499 for `client_disconnected` is kept as 
 | default predictable mint l.419 | mintOperation randomness 119 | INTENDED_DIVERGENCE | UNFORGEABLE_CAPABILITY AVR-N1 | MUST-REFUSE randomness absent |
 | Date.now nowMs l.424 | applyClock 121 | NEEDS_LANGUAGE | MONOTONIC_TYPED_TIME | clock missing |
 | clock refused throw l.29 | applyClock 121 | INTENDED_DIVERGENCE | NO_NULL_NAN | clock missing/negative |
-| remainingMs deadline l.446 | applyClock 129 | PRESERVED | DEADLINE_COVERS_ALL | deadline overrun |
-| ARTIFACT_DIGEST_MISSING l.739 | applyPrePorts 125 | PRESERVED | SEALED_INTRINSICS | digest missing |
-| ARTIFACT_MISMATCH l.741 | applyPrePorts 126 | PRESERVED | SEALED_INTRINSICS | mismatch |
-| AOT_REFUSED l.742 | applyPrePorts 127 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | AOT |
-| BYTECODE_REQUIRED l.743 | applyPrePorts 128 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | bytecode |
-| slide_admission_refused | applyPrePorts 130 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | slide |
-| authority_missing | applyPrePorts 131 | PRESERVED | NO_AMBIENT_AUTHORITY | vok missing |
-| authority_stale | applyPrePorts 132 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | vok stale |
-| authority_revoked | applyPrePorts 133 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | vok revoked |
-| VERDICT_REFUSED | applyPrePorts 134 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | VERDICT |
-| secret_unavailable l.254 | applyPrePorts 135 | PRESERVED | LINEAR_SECRET | secret 101 |
-| tcb_profile_refused | applyPrePorts 136 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | tcb |
-| prior-status replay l.872 | applyPrePorts 137 | PRESERVED | CN-2 | replay every recovery |
+| remainingMs deadline l.446 | applyClock 129 | UNKNOWN | DEADLINE_COVERS_ALL | deadline overrun |
+| ARTIFACT_DIGEST_MISSING l.739 | applyPrePorts 125 | UNKNOWN | SEALED_INTRINSICS | digest missing |
+| ARTIFACT_MISMATCH l.741 | applyPrePorts 126 | UNKNOWN | SEALED_INTRINSICS | mismatch |
+| AOT_REFUSED l.742 | applyPrePorts 127 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | AOT |
+| BYTECODE_REQUIRED l.743 | applyPrePorts 128 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | bytecode |
+| slide_admission_refused | applyPrePorts 130 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | slide |
+| authority_missing | applyPrePorts 131 | UNKNOWN | NO_AMBIENT_AUTHORITY | vok missing |
+| authority_stale | applyPrePorts 132 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | vok stale |
+| authority_revoked | applyPrePorts 133 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | vok revoked |
+| VERDICT_REFUSED | applyPrePorts 134 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | VERDICT |
+| secret_unavailable l.254 | applyPrePorts 135 | UNKNOWN | LINEAR_SECRET | secret 101 |
+| tcb_profile_refused | applyPrePorts 136 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | tcb |
+| prior-status replay l.872 | applyPrePorts 137 | UNKNOWN | CN-2 | replay every recovery |
 | unlisted recovery default | applyPrePorts 138 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | unlisted recovery |
 | revokeBeforeRelease l.369 | absent option; host revokeCommittedToken | INTENDED_DIVERGENCE | AVR-N2 | revoke first 102 |
-| consume released l. consume | applyConsume 100 | PRESERVED | commit point | MUST-ADMIT consume |
-| guest_trap | applyPostConsume 139 | PRESERVED | TOTAL_EFFECT_OUTCOME | guest trap |
+| consume released l. consume | applyConsume 100 | UNKNOWN | commit point | MUST-ADMIT consume |
+| guest_trap | applyPostConsume 139 | UNKNOWN | TOTAL_EFFECT_OUTCOME | guest trap |
 | client_disconnected l.693 | applyPostConsume 140 | PRESERVED | C186-N5 | disconnect vs deadline |
-| cleanup_failed l.503 | applyPostConsume 141 | PRESERVED | LINEAR_SECRET MB-11 | cleanup failed quarantine |
-| ACK refusal C186-F1 | applyPostConsume 142 | PRESERVED | C186-F1 | ack refused |
+| cleanup_failed l.503 | applyPostConsume 141 | UNKNOWN | LINEAR_SECRET MB-11 | cleanup failed quarantine |
+| ACK refusal C186-F1 | applyPostConsume 142 | UNKNOWN | C186-F1 | ack refused |
 | receiptSeal no suite C186-F3 | applyPostConsume 143 | INTENDED_DIVERGENCE | C186-F3 | no suite |
 | released after sink l.565 | applyPostConsume 106 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME Astra W1 | post never packed 100 |
-| httpStatusFor undefined l.247 | httpStatusFor default 503 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | default 503 |
-| client_disconnected HTTP 499 l.235 | httpStatusFor 140 -> 499 | PRESERVED | C186-N5 | disconnect 499 |
+| httpStatusFor undefined l.247 | httpStatusFor default 503 | UNKNOWN | EXHAUSTIVE_FAIL_CLOSED | default 503 |
+| client_disconnected HTTP 499 l.235 | httpStatusFor 140 -> 499 | UNKNOWN | C186-N5 | disconnect 499 |
 | admitAtRouteBoundary null l.258 | typed secretPacked 100 | INTENDED_DIVERGENCE | NO_NULL_NAN | secret bind |
 | operationId = "" l.433 | mintedOp domain gate | INTENDED_DIVERGENCE | NO_NULL_NAN | mint missing |
 | leaseEpoch = -1 l.438 | epoch < 0 -> 123 | INTENDED_DIVERGENCE | NO_NULL_NAN | epoch |
@@ -56,7 +56,7 @@ C186-N1 corrected reference: transport 499 for `client_disconnected` is kept as 
 | MB-06 listed cleanup | applyConsume 106 | INTENDED_DIVERGENCE | MB-06 CARRIED_UNKNOWN | listed cleanup |
 | Addendum D OPEN ordering | typed 106 | UNKNOWN | TOTAL_EFFECT_OUTCOME | OPEN items |
 
-Summary counts (rows above): PRESERVED 18 / INTENDED_DIVERGENCE 18 / UNKNOWN 2 / NEEDS_LANGUAGE 3.
+Summary counts (rows above): PRESERVED 3 / INTENDED_DIVERGENCE 17 / UNKNOWN 22 / NEEDS_LANGUAGE 3.
 
 ABANDONED_TS_DESIGN:
 - unit AUTH_VERIFY_ROUTE; obligation UNFORGEABLE_CAPABILITY AVR-N1; why caller mint and predictable mint; .fungi kernel mint plus randomness-absent refusal
@@ -72,6 +72,10 @@ tests/rd1415-*.test.mjs importing auth-verify-route at dc0f9c8c = 0 files (10 rd
 A1: after consume, applyPostConsume maps helper-nonzero, unlisted tokens, and prePacked other than 100 to packed 106. Named 139/140/141/142/143 stay. Pre-consume consume() currentValidity classTag 3/11 stay 110/111.
 
 Every parity row is executed as frozen TS handle() plus flattened .fungi, or marked UNKNOWN / NEEDS_LANGUAGE with a typed reason in ts-differential.txt.
+
+## F3 follow-up 03
+
+20 fungi-only differential rows still said PRESERVED although frozen TS was not executed for them (deadline overrun, digest missing, artifact mismatch, AOT refused, bytecode required, slide refused, authority missing/stale/revoked, VERDICT refused, secret unavailable, tcb refused, replay recovery, consume released, guest trap, cleanup failed, ack refused, http default 503, disconnect HTTP 499, POST exact method). Verdict is now UNKNOWN; typed unknownReason kept. Live handle rows stay executed.
 
 ## Frozen TS 102 cases
 
