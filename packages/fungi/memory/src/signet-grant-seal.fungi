@@ -12,8 +12,7 @@
 /// suiteId: 0 hybrid ML-DSA-65+Ed25519 1 classical-only else unknown
 /// pqAvailable: 0 PQ_SIGNATURE_UNAVAILABLE 1 present else 11
 /// shapeToken: 0 exact 1 getter 2 proxy 3 extra 4 missing 5 symbol else 11
-/// authRefusal: 0 ok 1 shape 2 tamper 3 unpinned 4 wrong-action 5 prev-epoch
-///   6 prev-profile 7 undeclared 8 expired else 11
+/// authPacked: packed authenticateGrant result; pre-sink refuses 11 unless 100
 /// sinkOutcome: 0 Success 1 Failed 2 Refused 3 Indeterminate 4 crash else 11
 /// consumedToken: 0 unused 1 consumed else 11
 /// restartToken: 0 same-generation 1 restarted else 11
@@ -32,14 +31,14 @@
 ///   12 overflow 13 unknown-suite 14 classical-or-pq-unavailable
 /// packed auth: 0 authenticated 15 tamper 16 unpinned 17 wrong-action
 ///   18 prev-epoch 19 prev-profile 21 undeclared 22 expired 23 shape
-/// packed apply: 0 consumed-success 26 replay 27 sink-Failed 28 sink-Refused
-///   30 clock-regression 31 restart-UNKNOWN 32 epoch-exhaustion
-///   Indeterminate/crash use commit-point 6 DELIVERY_UNKNOWN
+/// packed apply: pre-sink 0 consume-ok 26 replay 27 unused-here; post never packed 100
+///   (MB-06); 27 sink-Failed 28 sink-Refused; listed cleanup 6 DELIVERY_UNKNOWN;
+///   30 clock-regression 31 restart-UNKNOWN 32 epoch-exhaustion; prePacked other than 100 -> 11
 /// packed classify: 0 Assured 1 Unknown 2 Distrusted
-/// packed verify: 0 admitted 43 serialize-first 44 body-over 45 getter
+/// packed verify: never packed 100 (MB-06); 43 serialize-first 44 body-over 45 getter
 ///   46 pinned-over 47 verifier-unavailable 48 unlisted-exit 49 exit3-ambiguous
 ///   50 trit-unlisted 51 trit-plus-nonzero 52 extra-key 53 authorizing-true
-///   54 production-hook 56 signal 57 timeout 58 stdout-over
+///   54 production-hook 56 signal 57 timeout 58 stdout-over 59 trit-not-allow
 /// packed +100 is a wipe construct (LINEAR_SECRET CARRIED_UNKNOWN; no erase claim).
 /// COMMITTED unreachable after begin (Astra W1, policy). No clock source here.
 /// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
@@ -265,6 +264,14 @@ pure flow authenticateGrant(
   epochMatch: Int,
   profileMatchClass: Int,
   profileMatch: Int,
+  grantEpochClass: Int,
+  grantEpoch: Int,
+  currentEpochClass: Int,
+  currentEpoch: Int,
+  grantProfileClass: Int,
+  grantProfile: Int,
+  currentProfileClass: Int,
+  currentProfile: Int,
   declaredClass: Int,
   declaredToken: Int,
   expiredClass: Int,
@@ -275,7 +282,7 @@ pure flow authenticateGrant(
   pqAvailable: Int
 ) -> Int
 contract {
-  intent { "Closed authenticate sum. Getter proxy extra missing symbol refuse. Tamper unpinned wrong-action previous-epoch previous-profile undeclared expired refuse. Hybrid required." }
+  intent { "Closed authenticate sum. Compare grant epoch versus current epoch and grant profile versus current profile in-unit. Host token disagreeing with the compare refuses. Getter proxy extra missing symbol refuse. Tamper unpinned wrong-action undeclared expired refuse. Hybrid required." }
 }
 {
   let shapeReason: Int = readForeignSafeInteger(shapeClass, shapeToken)
@@ -316,6 +323,34 @@ contract {
   let profileReason: Int = readForeignSafeInteger(profileMatchClass, profileMatch)
   if profileReason != 0 {
     if profileReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let grantEpochReason: Int = readForeignSafeInteger(grantEpochClass, grantEpoch)
+  if grantEpochReason != 0 {
+    if grantEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let currentEpochReason: Int = readForeignSafeInteger(currentEpochClass, currentEpoch)
+  if currentEpochReason != 0 {
+    if currentEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let grantProfileReason: Int = readForeignSafeInteger(grantProfileClass, grantProfile)
+  if grantProfileReason != 0 {
+    if grantProfileReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let currentProfileReason: Int = readForeignSafeInteger(currentProfileClass, currentProfile)
+  if currentProfileReason != 0 {
+    if currentProfileReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
@@ -418,8 +453,14 @@ contract {
   if actionMatch == 0 {
     return finish(17, true)
   }
+  if grantEpoch != currentEpoch {
+    return finish(18, true)
+  }
   if epochMatch == 0 {
     return finish(18, true)
+  }
+  if grantProfile != currentProfile {
+    return finish(19, true)
   }
   if profileMatch == 0 {
     return finish(19, true)
@@ -442,13 +483,11 @@ contract {
   return finish(0, true)
 }
 
-pure flow applyGrant(
-  authClass: Int,
-  authRefusal: Int,
+pure flow applyPreSink(
+  authPackedClass: Int,
+  authPacked: Int,
   consumedClass: Int,
   consumedToken: Int,
-  sinkClass: Int,
-  sinkOutcome: Int,
   restartClass: Int,
   restartToken: Int,
   epochExhClass: Int,
@@ -465,16 +504,40 @@ pure flow applyGrant(
   applyClock: Int,
   ttlClass: Int,
   ttl: Int,
+  issueGenClass: Int,
+  issueClockGen: Int,
+  applyGenClass: Int,
+  applyClockGen: Int,
   clockEpochClass: Int,
-  clockEpochMatch: Int
+  clockEpochMatch: Int,
+  authTokClass: Int,
+  independentAuthToken: Int,
+  custodyClass: Int,
+  preparedCustodyToken: Int,
+  emptyClass: Int,
+  emptyObligationSetToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int,
+  presentClass: Int,
+  presentToken: Int,
+  matchClass: Int,
+  tokenMatchToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int,
+  revokeClass: Int,
+  revokeCommittedToken: Int
 ) -> Int
 contract {
-  intent { "Consume before sink. Replay refuses. Sink Failed Refused stay typed after consume. Indeterminate and crash are DELIVERY_UNKNOWN. Clock regression overflow restart and classical-only refuse. Never un-consume." }
+  intent { "Pre-sink consume. Packed authenticate must be 100. Clock TTL suite restart replay and clock-generation compare refuse before sink. Release tokens pass through the commit point. Replay refuses. Returns packed consume code." }
 }
 {
-  let authReason: Int = readForeignSafeInteger(authClass, authRefusal)
-  if authReason != 0 {
-    if authReason == 11 {
+  let authPackedReason: Int = readForeignSafeInteger(authPackedClass, authPacked)
+  if authPackedReason != 0 {
+    if authPackedReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
@@ -482,13 +545,6 @@ contract {
   let consumedReason: Int = readForeignSafeInteger(consumedClass, consumedToken)
   if consumedReason != 0 {
     if consumedReason == 11 {
-      return finish(11, true)
-    }
-    return finish(10, true)
-  }
-  let sinkReason: Int = readForeignSafeInteger(sinkClass, sinkOutcome)
-  if sinkReason != 0 {
-    if sinkReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
@@ -549,6 +605,20 @@ contract {
     }
     return finish(10, true)
   }
+  let issueGenReason: Int = readForeignSafeInteger(issueGenClass, issueClockGen)
+  if issueGenReason != 0 {
+    if issueGenReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let applyGenReason: Int = readForeignSafeInteger(applyGenClass, applyClockGen)
+  if applyGenReason != 0 {
+    if applyGenReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
   let clockEpochReason: Int = readForeignSafeInteger(clockEpochClass, clockEpochMatch)
   if clockEpochReason != 0 {
     if clockEpochReason == 11 {
@@ -556,39 +626,79 @@ contract {
     }
     return finish(10, true)
   }
-  if authRefusal != 0 {
-    if authRefusal != 1 {
-      if authRefusal != 2 {
-        if authRefusal != 3 {
-          if authRefusal != 4 {
-            if authRefusal != 5 {
-              if authRefusal != 6 {
-                if authRefusal != 7 {
-                  if authRefusal != 8 {
-                    return finish(11, true)
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+  let authTokReason: Int = readForeignSafeInteger(authTokClass, independentAuthToken)
+  if authTokReason != 0 {
+    if authTokReason == 11 {
+      return finish(11, true)
     }
+    return finish(10, true)
+  }
+  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  if custodyReason != 0 {
+    if custodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let matchReason: Int = readForeignSafeInteger(matchClass, tokenMatchToken)
+  if matchReason != 0 {
+    if matchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochMatchReason: Int = readForeignSafeInteger(epochMatchClass, epochMatchToken)
+  if epochMatchReason != 0 {
+    if epochMatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let revokeReason: Int = readForeignSafeInteger(revokeClass, revokeCommittedToken)
+  if revokeReason != 0 {
+    if revokeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
   }
   if consumedToken != 0 {
     if consumedToken != 1 {
       return finish(11, true)
-    }
-  }
-  if sinkOutcome != 0 {
-    if sinkOutcome != 1 {
-      if sinkOutcome != 2 {
-        if sinkOutcome != 3 {
-          if sinkOutcome != 4 {
-            return finish(11, true)
-          }
-        }
-      }
     }
   }
   if restartToken != 0 {
@@ -622,34 +732,69 @@ contract {
       return finish(11, true)
     }
   }
+  if independentAuthToken != 0 {
+    if independentAuthToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if preparedCustodyToken != 0 {
+    if preparedCustodyToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if emptyObligationSetToken != 0 {
+    if emptyObligationSetToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if consumedAuthorityToken != 0 {
+    if consumedAuthorityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if currentValidityToken != 0 {
+    if currentValidityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if presentToken != 0 {
+    if presentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if tokenMatchToken != 0 {
+    if tokenMatchToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if epochMatchToken != 0 {
+    if epochMatchToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if revokeCommittedToken != 0 {
+    if revokeCommittedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if leaseState != 0 {
+    if leaseState != 1 {
+      if leaseState != 2 {
+        if leaseState != 3 {
+          if leaseState != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
   if suiteId != 0 {
     if suiteId != 1 {
       return finish(13, true)
     }
   }
-  if authRefusal == 1 {
-    return finish(23, true)
-  }
-  if authRefusal == 2 {
-    return finish(15, true)
-  }
-  if authRefusal == 3 {
-    return finish(16, true)
-  }
-  if authRefusal == 4 {
-    return finish(17, true)
-  }
-  if authRefusal == 5 {
-    return finish(18, true)
-  }
-  if authRefusal == 6 {
-    return finish(19, true)
-  }
-  if authRefusal == 7 {
-    return finish(21, true)
-  }
-  if authRefusal == 8 {
-    return finish(22, true)
+  if authPacked != 100 {
+    return finish(11, true)
   }
   if restartToken == 1 {
     return finish(31, true)
@@ -678,6 +823,9 @@ contract {
   if applyClock < 0 {
     return finish(6, true)
   }
+  if issueClockGen != applyClockGen {
+    return finish(30, true)
+  }
   if clockEpochMatch == 0 {
     return finish(30, true)
   }
@@ -693,6 +841,142 @@ contract {
   if consumedToken == 1 {
     return finish(26, true)
   }
+  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
+  if guardOutcome != 100 {
+    return guardOutcome
+  }
+  let consumed: Int = consumeStep(presentToken, tokenMatchToken, 0, epochMatchToken, leaseState, revokeCommittedToken, guardOutcome)
+  return consumed
+}
+
+pure flow applyPostSink(
+  preClass: Int,
+  prePacked: Int,
+  sinkClass: Int,
+  sinkOutcome: Int,
+  cleanupClass: Int,
+  cleanupEvidence: Int,
+  authTokClass: Int,
+  independentAuthToken: Int,
+  custodyClass: Int,
+  preparedCustodyToken: Int,
+  emptyClass: Int,
+  emptyObligationSetToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int
+) -> Int
+contract {
+  intent { "Post-sink classify. Non-consume pre-code refuses 11. Failed and Refused stay typed after consume. Indeterminate and crash are DELIVERY_UNKNOWN. Listed cleanup never returns packed 100; MB-06 maps success to DELIVERY_UNKNOWN. Nothing after consume restores authority." }
+}
+{
+  let preReason: Int = readForeignSafeInteger(preClass, prePacked)
+  if preReason != 0 {
+    if preReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let sinkReason: Int = readForeignSafeInteger(sinkClass, sinkOutcome)
+  if sinkReason != 0 {
+    if sinkReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  if cleanupReason != 0 {
+    if cleanupReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let authTokReason: Int = readForeignSafeInteger(authTokClass, independentAuthToken)
+  if authTokReason != 0 {
+    if authTokReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  if custodyReason != 0 {
+    if custodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if sinkOutcome != 0 {
+    if sinkOutcome != 1 {
+      if sinkOutcome != 2 {
+        if sinkOutcome != 3 {
+          if sinkOutcome != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if cleanupEvidence != 0 {
+    if cleanupEvidence != 1 {
+      if cleanupEvidence != 2 {
+        if cleanupEvidence != 3 {
+          if cleanupEvidence != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if independentAuthToken != 0 {
+    if independentAuthToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if preparedCustodyToken != 0 {
+    if preparedCustodyToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if emptyObligationSetToken != 0 {
+    if emptyObligationSetToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if consumedAuthorityToken != 0 {
+    if consumedAuthorityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if currentValidityToken != 0 {
+    if currentValidityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if prePacked != 100 {
+    return finish(11, true)
+  }
   if sinkOutcome == 1 {
     return finish(27, true)
   }
@@ -700,22 +984,21 @@ contract {
     return finish(28, true)
   }
   if sinkOutcome == 3 {
-    let unknownIndeterminate: Int = releaseGuard(1, 1, 4, 1, 1, 1)
+    let unknownIndeterminate: Int = releaseGuard(independentAuthToken, preparedCustodyToken, 4, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
     return unknownIndeterminate
   }
   if sinkOutcome == 4 {
-    let unknownCrash: Int = releaseGuard(1, 1, 4, 1, 1, 1)
+    let unknownCrash: Int = releaseGuard(independentAuthToken, preparedCustodyToken, 4, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
     return unknownCrash
   }
   if sinkOutcome != 0 {
     return finish(11, true)
   }
-  let guardOutcome: Int = releaseGuard(1, 1, cleanupEvidence, 1, 1, 1)
+  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
   if guardOutcome != 100 {
     return guardOutcome
   }
-  let consumed: Int = consumeStep(1, 1, 0, 1, 0, 0, guardOutcome)
-  return consumed
+  return finish(6, true)
 }
 
 pure flow classifySeal(
@@ -856,10 +1139,20 @@ pure flow validateVerifyRequest(
   hookClass: Int,
   testHook: Int,
   cleanupClass: Int,
-  cleanupEvidence: Int
+  cleanupEvidence: Int,
+  authTokClass: Int,
+  independentAuthToken: Int,
+  custodyClass: Int,
+  preparedCustodyToken: Int,
+  emptyClass: Int,
+  emptyObligationSetToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int
 ) -> Int
 contract {
-  intent { "Validate the verify request before serialisation. Body over 16384 refuses. Pinned over 64 MiB refuses. Unlisted child exit refuses. Exit 3 helper versus verifier is UNKNOWN. Trit plus one with nonzero exit refuses. Production test hook refuses. Cleanup failure is reported." }
+  intent { "Validate the verify request before serialisation. Admit only trit 1 with exit 0. Trit deny or unknown with exit 0 refuses 59. Body over 16384 refuses. Pinned over 64 MiB refuses. Unlisted child exit refuses. Exit 3 helper versus verifier is UNKNOWN. Trit plus one with nonzero exit refuses. Production test hook refuses. childKind is range-checked and unused. Listed cleanup never packed 100; MB-06 maps to DELIVERY_UNKNOWN." }
 }
 {
   let validatedReason: Int = readForeignSafeInteger(validatedClass, validatedBeforeSerialize)
@@ -946,6 +1239,41 @@ contract {
     }
     return finish(10, true)
   }
+  let authTokReason: Int = readForeignSafeInteger(authTokClass, independentAuthToken)
+  if authTokReason != 0 {
+    if authTokReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  if custodyReason != 0 {
+    if custodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
   if validatedBeforeSerialize != 0 {
     if validatedBeforeSerialize != 1 {
       return finish(11, true)
@@ -978,6 +1306,31 @@ contract {
   }
   if testHook != 0 {
     if testHook != 1 {
+      return finish(11, true)
+    }
+  }
+  if independentAuthToken != 0 {
+    if independentAuthToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if preparedCustodyToken != 0 {
+    if preparedCustodyToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if emptyObligationSetToken != 0 {
+    if emptyObligationSetToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if consumedAuthorityToken != 0 {
+    if consumedAuthorityToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if currentValidityToken != 0 {
+    if currentValidityToken != 1 {
       return finish(11, true)
     }
   }
@@ -1055,6 +1408,11 @@ contract {
       return finish(51, true)
     }
   }
+  if childExit == 0 {
+    if tritToken != 1 {
+      return finish(59, true)
+    }
+  }
   if childExit == -1 {
     return finish(56, true)
   }
@@ -1082,17 +1440,9 @@ contract {
   if childExit == 3 {
     return finish(49, true)
   }
-  if cleanupEvidence == 2 {
-    let cleanupPending: Int = releaseGuard(1, 1, 2, 1, 1, 1)
-    return cleanupPending
+  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
+  if guardOutcome != 100 {
+    return guardOutcome
   }
-  if cleanupEvidence == 3 {
-    let cleanupFailed: Int = releaseGuard(1, 1, 3, 1, 1, 1)
-    return cleanupFailed
-  }
-  if cleanupEvidence == 4 {
-    let cleanupUnknown: Int = releaseGuard(1, 1, 4, 1, 1, 1)
-    return cleanupUnknown
-  }
-  return finish(0, true)
+  return finish(6, true)
 }

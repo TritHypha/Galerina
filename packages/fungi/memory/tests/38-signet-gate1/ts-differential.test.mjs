@@ -201,3 +201,60 @@ test("F1 frozen TS hybrid-incomplete never Assured; fungi 114 then classify 101"
   const fungiClass = runFlow("classifySeal", [0, 1, 0, 0, 0, 0, 0, 0]);
   assert.equal(fungiClass.value, 101, "classical-only seal Unknown never Assured");
 });
+
+test("F2 apply and verify listed cleanup INTENDED_DIVERGENCE MB-06 packed 106", () => {
+  const zeros = (n) => {
+    const a = [];
+    let i = 0;
+    while (i < n) {
+      a.push(0);
+      i = i + 1;
+    }
+    return a;
+  };
+  const preArgs = zeros(46);
+  preArgs[1] = 100;
+  preArgs[9] = 1;
+  preArgs[13] = 1;
+  preArgs[15] = 1000;
+  preArgs[17] = 2000;
+  preArgs[19] = 60000;
+  preArgs[21] = 1;
+  preArgs[23] = 1;
+  preArgs[25] = 1;
+  preArgs[27] = 1;
+  preArgs[29] = 1;
+  preArgs[31] = 1;
+  preArgs[33] = 1;
+  preArgs[35] = 1;
+  preArgs[37] = 1;
+  preArgs[39] = 1;
+  preArgs[41] = 1;
+  const pre = runFlow("applyPreSink", preArgs);
+  assert.equal(pre.value, 100, "pre consume-ok");
+  const postArgs = zeros(16);
+  postArgs[1] = 100;
+  postArgs[5] = 1;
+  postArgs[7] = 1;
+  postArgs[9] = 1;
+  postArgs[11] = 1;
+  postArgs[13] = 1;
+  postArgs[15] = 1;
+  const post = runFlow("applyPostSink", postArgs);
+  assert.equal(post.value, 106, "apply listed cleanup 106 MB-06");
+  const verifyArgs = zeros(34);
+  verifyArgs[1] = 1;
+  verifyArgs[3] = 100;
+  verifyArgs[7] = 1024;
+  verifyArgs[9] = 1;
+  verifyArgs[13] = 1;
+  verifyArgs[15] = 1;
+  verifyArgs[23] = 1;
+  verifyArgs[25] = 1;
+  verifyArgs[27] = 1;
+  verifyArgs[29] = 1;
+  verifyArgs[31] = 1;
+  verifyArgs[33] = 1;
+  const verify = runFlow("validateVerifyRequest", verifyArgs);
+  assert.equal(verify.value, 106, "verify listed cleanup 106 MB-06");
+});

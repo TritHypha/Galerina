@@ -29,12 +29,12 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | authenticated-host.mjs:170-179 getter live read | authenticateGrant shapeToken 1 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | getter 123 |
 | authenticated-host.mjs:193 tamper throw | authenticateGrant tamperToken 1 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | tamper 115 |
 | authenticated-host.mjs:202 unpinned issuer throw | authenticateGrant issuerPinned 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | unpinned 116 |
-| authenticated-host.mjs:327 wrong action throw | applyGrant authRefusal 4 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | wrong action 117 |
-| authenticated-host.mjs:328 previous epoch throw | applyGrant authRefusal 5 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | prev epoch 118 |
-| authenticated-host.mjs:329 previous profile throw | applyGrant authRefusal 6 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | prev profile 119 |
-| authenticated-host.mjs:332 undeclared subject throw | applyGrant authRefusal 7 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | undeclared 121 |
+| authenticated-host.mjs:327 wrong action throw | authenticateGrant actionMatch 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | wrong action 117 |
+| authenticated-host.mjs:328 previous epoch throw | authenticateGrant grantEpoch != currentEpoch | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | prev epoch 118; in-unit compare; token disagree 118 |
+| authenticated-host.mjs:329 previous profile throw | authenticateGrant grantProfile != currentProfile | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | prev profile 119; in-unit compare; token disagree 119 |
+| authenticated-host.mjs:332 undeclared subject throw | authenticateGrant declaredToken 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | undeclared 121 |
 | authenticated-host.mjs:214 expired throw | applyGrant applyClock past expiry | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | expired 122 |
-| authenticated-host.mjs:334 consume then sink | applyGrant consumedToken 0 sink 0 | PRESERVED | TOTAL_EFFECT_OUTCOME | success 100; consume before sink |
+| authenticated-host.mjs:334 consume then sink | applyPreSink then applyPostSink listed cleanup | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 DELIVERY_UNKNOWN; MB-06; never packed 100 |
 | authenticated-host.mjs:198 replay throw | applyGrant consumedToken 1 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | replay 126 |
 | authenticated-host.mjs:337 ignore sink return | applyGrant sinkOutcome 1 Failed | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | Failed 127 never CONSUMED |
 | authenticated-host.mjs:337 ignore sink return | applyGrant sinkOutcome 2 Refused | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | Refused 128 never CONSUMED |
@@ -57,7 +57,11 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | signet-verifier-spawn.mjs:247 trit +1 nonzero | validateVerifyRequest tritToken 1 childExit 1 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | 151 |
 | signet-verifier-spawn.mjs:241 authorizing true | validateVerifyRequest authorizingToken 1 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | 153 |
 | signet-verifier-spawn.mjs:61 GATE1_TEST_HOOK env | validateVerifyRequest testHook 1 | INTENDED_DIVERGENCE | NO_AMBIENT_AUTHORITY | 154 production refuses |
-| signet-verifier-spawn.mjs:313-318 rmSync force | validateVerifyRequest cleanupEvidence 4 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 reported; mutant swallow RED |
+| signet-verifier-spawn.mjs:313-318 rmSync force | validateVerifyRequest listed cleanup 0/1/2/3/4 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 MB-06 never packed 100; mutant swallow RED |
+| signet-verifier-spawn.mjs trit +1 exit 0 | validateVerifyRequest tritToken 1 childExit 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | F4; trit -1/0 with exit 0 packed 159; only trit 1 admits then 106 |
+| applyGrant one flow | applyPreSink then applyPostSink | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | F3; pre refusals with no sink; non-consume prePacked 111 |
+| releaseGuard(1,1,k,1,1,1) | boundary tokens through helper into releaseGuard/consumeStep | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | F1; revoke first 102; present 0 -> 105 |
+| childKind range-checked unused | validateVerifyRequest childKind listed-set | INTENDED_DIVERGENCE | BOUNDED_INPUT | N1; exit 3 stays UNKNOWN 149 |
 | authenticated-host.mjs:259 consumed Set in-memory | restartHost | UNKNOWN | UNFORGEABLE_CAPABILITY | CONSUME_RECORD_DURABILITY not persisted |
 | authenticated-host.mjs:137 ed25519 verify | suiteId 0 pqAvailable | NEEDS_LANGUAGE | SEALED_INTRINSICS | PQ_SIGNATURE_UNAVAILABLE; VERIFIER_HYBRID_SUPPORT |
 | signet-verifier-spawn.mjs:280-295 write then spawn path | SEALED_EXEC_TOCTOU | UNKNOWN | SEALED_INTRINSICS | fd-based exec not in this unit |
@@ -68,4 +72,8 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | Addendum D OPEN items | ordering / FFI / cleanup-binding | UNKNOWN | TOTAL_EFFECT_OUTCOME | carried typed UNKNOWN |
 | authenticated-host.test.mjs 17 fail @ dc0f9c8c | vectors needing cargo/memfd | UNKNOWN | SEALED_INTRINSICS | environment INCONCLUSIVE; never PRESERVED |
 
-Summary counts: PRESERVED 8, INTENDED_DIVERGENCE 36, UNKNOWN 5, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2.
+Summary counts: PRESERVED 7, INTENDED_DIVERGENCE 42, UNKNOWN 5, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2.
+
+N1. childKind is range-checked and unused; exit 3 stays UNKNOWN 149.
+N2. Negative epochs with classTag 0 ride the c-boundary range gap (carried, no edit).
+N3. Carried UNKNOWNs accepted as stated. CONSTANT_TIME_COMPARE stays NEEDS_LANGUAGE; epoch/profile/clock-generation equality is in-unit and not claimed constant time.

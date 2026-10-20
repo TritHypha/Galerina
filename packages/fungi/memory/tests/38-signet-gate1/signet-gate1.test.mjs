@@ -114,6 +114,14 @@ function authenticate(over) {
     o.epochMatch ?? 1,
     o.profileMatchClass ?? 0,
     o.profileMatch ?? 1,
+    o.grantEpochClass ?? 0,
+    o.grantEpoch ?? 1,
+    o.currentEpochClass ?? 0,
+    o.currentEpoch ?? 1,
+    o.grantProfileClass ?? 0,
+    o.grantProfile ?? 1,
+    o.currentProfileClass ?? 0,
+    o.currentProfile ?? 1,
     o.declaredClass ?? 0,
     o.declaredToken ?? 1,
     o.expiredClass ?? 0,
@@ -125,15 +133,13 @@ function authenticate(over) {
   ]);
 }
 
-function apply(over) {
+function pre(over) {
   const o = over || {};
-  return runFlow("applyGrant", [
-    o.authClass ?? 0,
-    o.authRefusal ?? 0,
+  return runFlow("applyPreSink", [
+    o.authPackedClass ?? 0,
+    o.authPacked ?? 100,
     o.consumedClass ?? 0,
     o.consumedToken ?? 0,
-    o.sinkClass ?? 0,
-    o.sinkOutcome ?? 0,
     o.restartClass ?? 0,
     o.restartToken ?? 0,
     o.epochExhClass ?? 0,
@@ -150,9 +156,63 @@ function apply(over) {
     o.applyClock ?? 2000,
     o.ttlClass ?? 0,
     o.ttl ?? 60000,
+    o.issueGenClass ?? 0,
+    o.issueClockGen ?? 1,
+    o.applyGenClass ?? 0,
+    o.applyClockGen ?? 1,
     o.clockEpochClass ?? 0,
     o.clockEpochMatch ?? 1,
+    o.authTokClass ?? 0,
+    o.independentAuthToken ?? 1,
+    o.custodyClass ?? 0,
+    o.preparedCustodyToken ?? 1,
+    o.emptyClass ?? 0,
+    o.emptyObligationSetToken ?? 1,
+    o.consumedAuthClass ?? 0,
+    o.consumedAuthorityToken ?? 1,
+    o.validityClass ?? 0,
+    o.currentValidityToken ?? 1,
+    o.presentClass ?? 0,
+    o.presentToken ?? 1,
+    o.matchClass ?? 0,
+    o.tokenMatchToken ?? 1,
+    o.epochMatchClass ?? 0,
+    o.epochMatchToken ?? 1,
+    o.leaseClass ?? 0,
+    o.leaseState ?? 0,
+    o.revokeClass ?? 0,
+    o.revokeCommittedToken ?? 0,
   ]);
+}
+
+function post(over) {
+  const o = over || {};
+  return runFlow("applyPostSink", [
+    o.preClass ?? 0,
+    o.prePacked ?? 100,
+    o.sinkClass ?? 0,
+    o.sinkOutcome ?? 0,
+    o.cleanupClass ?? 0,
+    o.cleanupEvidence ?? 1,
+    o.authTokClass ?? 0,
+    o.independentAuthToken ?? 1,
+    o.custodyClass ?? 0,
+    o.preparedCustodyToken ?? 1,
+    o.emptyClass ?? 0,
+    o.emptyObligationSetToken ?? 1,
+    o.consumedAuthClass ?? 0,
+    o.consumedAuthorityToken ?? 1,
+    o.validityClass ?? 0,
+    o.currentValidityToken ?? 1,
+  ]);
+}
+
+function apply(over) {
+  const p = pre(over);
+  if (p.present !== true || p.value !== 100) {
+    return p;
+  }
+  return post({ ...(over || {}), prePacked: 100 });
 }
 
 function classify(over) {
@@ -195,7 +255,7 @@ function verify(over) {
     o.kindClass ?? 0,
     o.childKind ?? 1,
     o.tritClass ?? 0,
-    o.tritToken ?? 0,
+    o.tritToken ?? 1,
     o.authorizingClass ?? 0,
     o.authorizingToken ?? 0,
     o.extraClass ?? 0,
@@ -204,6 +264,16 @@ function verify(over) {
     o.testHook ?? 0,
     o.cleanupClass ?? 0,
     o.cleanupEvidence ?? 1,
+    o.authTokClass ?? 0,
+    o.independentAuthToken ?? 1,
+    o.custodyClass ?? 0,
+    o.preparedCustodyToken ?? 1,
+    o.emptyClass ?? 0,
+    o.emptyObligationSetToken ?? 1,
+    o.consumedAuthClass ?? 0,
+    o.consumedAuthorityToken ?? 1,
+    o.validityClass ?? 0,
+    o.currentValidityToken ?? 1,
   ]);
 }
 
@@ -318,8 +388,9 @@ test("MUST-REFUSE tamper unpinned wrong action previous epoch profile undeclared
   expectPacked(authenticate({ expiredToken: 1 }), 122, "expired");
 });
 
-test("MUST-ADMIT apply consume then Success sink", () => {
-  expectPacked(apply({}), 100, "consumed success");
+test("MUST-REFUSE listed cleanup after consume Success as DELIVERY_UNKNOWN", () => {
+  expectPacked(apply({}), 106, "cleanup 1");
+  expectPacked(apply({ cleanupEvidence: 0 }), 106, "cleanup 0");
 });
 
 test("MUST-REFUSE replayed grant", () => {
@@ -393,8 +464,9 @@ test("MUST-REFUSE epoch exhaustion on restart", () => {
   expectPacked(restart({ epoch: 0 }), 105, "bad epoch");
 });
 
-test("MUST-ADMIT verify request validated before serialise", () => {
-  expectPacked(verify({}), 100, "verify");
+test("MUST-REFUSE listed cleanup after trit allow as DELIVERY_UNKNOWN", () => {
+  expectPacked(verify({}), 106, "verify cleanup 1");
+  expectPacked(verify({ cleanupEvidence: 0 }), 106, "verify cleanup 0");
 });
 
 test("MUST-REFUSE serialise before validate getter body over pinned over", () => {
@@ -406,18 +478,18 @@ test("MUST-REFUSE serialise before validate getter body over pinned over", () =>
 
 test("MUST-REFUSE verifier unavailable unlisted exit exit3 trit authorizing hook", () => {
   expectPacked(verify({ verifierRead: 0 }), 147, "unavailable");
-  expectPacked(verify({ childExit: 1 }), 148, "exit 1");
-  expectPacked(verify({ childExit: 5 }), 148, "exit 5");
-  expectPacked(verify({ childExit: 137 }), 148, "exit 137");
-  expectPacked(verify({ childExit: 3 }), 149, "exit 3");
+  expectPacked(verify({ tritToken: 0, childExit: 1 }), 148, "exit 1");
+  expectPacked(verify({ tritToken: 0, childExit: 5 }), 148, "exit 5");
+  expectPacked(verify({ tritToken: 0, childExit: 137 }), 148, "exit 137");
+  expectPacked(verify({ tritToken: 0, childExit: 3 }), 149, "exit 3");
   expectPacked(verify({ tritToken: 2 }), 150, "trit 2");
   expectPacked(verify({ tritToken: 1, childExit: 1 }), 151, "trit plus nonzero");
   expectPacked(verify({ extraKey: 1 }), 152, "extra");
   expectPacked(verify({ authorizingToken: 1 }), 153, "authorizing");
   expectPacked(verify({ testHook: 1 }), 154, "hook");
-  expectPacked(verify({ childExit: -1 }), 156, "signal");
-  expectPacked(verify({ childExit: -2 }), 157, "timeout");
-  expectPacked(verify({ childExit: -3 }), 158, "stdout over");
+  expectPacked(verify({ tritToken: 0, childExit: -1 }), 156, "signal");
+  expectPacked(verify({ tritToken: 0, childExit: -2 }), 157, "timeout");
+  expectPacked(verify({ tritToken: 0, childExit: -3 }), 158, "stdout over");
 });
 
 test("MUST-REFUSE verify cleanup failure reported", () => {
@@ -428,6 +500,64 @@ test("MUST-REFUSE verify cleanup failure reported", () => {
 test("MUST-REFUSE foreign classTag on issue", () => {
   expectPacked(issue({ subjectCountClass: 3 }), 110, "NaN");
   expectPacked(issue({ ttlClass: 11 }), 111, "unlisted class");
+});
+
+test("F5 epoch and profile compared in-unit", () => {
+  expectPacked(authenticate({ grantEpoch: 1, currentEpoch: 2, epochMatch: 1 }), 118, "epoch values");
+  expectPacked(authenticate({ grantEpoch: 1, currentEpoch: 1, epochMatch: 0 }), 118, "epoch token disagree");
+  expectPacked(authenticate({ grantProfile: 1, currentProfile: 9, profileMatch: 1 }), 119, "profile values");
+  expectPacked(authenticate({ grantProfile: 1, currentProfile: 1, profileMatch: 0 }), 119, "profile token disagree");
+});
+
+test("F5 pre-sink takes packed authenticate and compares clock generation", () => {
+  expectPacked(pre({ authPacked: 118 }), 111, "non-auth packed");
+  expectPacked(pre({ issueClockGen: 1, applyClockGen: 2, clockEpochMatch: 1 }), 130, "clock gen values");
+  expectPacked(pre({ issueClockGen: 1, applyClockGen: 1, clockEpochMatch: 0 }), 130, "clock gen token disagree");
+});
+
+test("F4 admit only trit 1 with exit 0", () => {
+  expectPacked(verify({ tritToken: -1, childExit: 0 }), 159, "trit deny");
+  expectPacked(verify({ tritToken: 0, childExit: 0 }), 159, "trit unknown");
+  expectPacked(verify({ tritToken: 1, childExit: 0 }), 106, "trit allow listed cleanup");
+});
+
+test("F3 pre-sink refusals reachable with no sink outcome", () => {
+  expectPacked(pre({ consumedToken: 1 }), 126, "replay pre");
+  expectPacked(pre({ restartToken: 1 }), 131, "restart pre");
+  expectPacked(pre({ applyClock: 500 }), 130, "regression pre");
+  expectPacked(pre({ pqAvailable: 0 }), 114, "pq pre");
+  expectPacked(pre({}), 100, "pre consume-ok");
+});
+
+test("F3 post-sink with a non-consume pre-code refuses", () => {
+  expectPacked(post({ prePacked: 126 }), 111, "replay prePacked");
+  expectPacked(post({ prePacked: 0 }), 111, "unpacked");
+  expectPacked(post({ prePacked: 106 }), 111, "unknown prePacked");
+});
+
+test("F1 release tokens pass through commit point", () => {
+  expectPacked(pre({ independentAuthToken: 0 }), 105, "auth absent");
+  expectPacked(pre({ preparedCustodyToken: 0 }), 105, "custody absent");
+  expectPacked(pre({ presentToken: 0 }), 105, "consume missing");
+  expectPacked(pre({ revokeCommittedToken: 1 }), 102, "revoke first");
+  expectPacked(pre({ consumedAuthorityToken: 0 }), 106, "consumed authority unknown");
+  expectPacked(pre({ emptyObligationSetToken: 0, cleanupEvidence: 0 }), 102, "empty obligation");
+  expectPacked(pre({ tokenMatchToken: 0 }), 102, "token mismatch");
+  expectPacked(pre({ epochMatchToken: 0 }), 104, "epoch mismatch");
+  expectPacked(pre({ authTokClass: 3 }), 110, "auth NaN");
+  expectPacked(pre({ authTokClass: 11 }), 111, "auth unlisted");
+  expectPacked(pre({ presentClass: 3 }), 110, "present NaN");
+  expectPacked(pre({ presentClass: 11 }), 111, "present unlisted");
+  expectPacked(pre({ revokeClass: 3 }), 110, "revoke NaN");
+  expectPacked(pre({ revokeClass: 11 }), 111, "revoke unlisted");
+  expectPacked(pre({ validityClass: 3 }), 110, "validity NaN");
+  expectPacked(pre({ validityClass: 11 }), 111, "validity unlisted");
+  expectPacked(pre({ cleanupClass: 3 }), 110, "cleanup NaN");
+  expectPacked(pre({ cleanupClass: 11 }), 111, "cleanup unlisted");
+  expectPacked(verify({ cleanupClass: 3 }), 110, "verify cleanup NaN");
+  expectPacked(verify({ cleanupClass: 11 }), 111, "verify cleanup unlisted");
+  expectPacked(verify({ authTokClass: 3 }), 110, "verify auth NaN");
+  expectPacked(verify({ authTokClass: 11 }), 111, "verify auth unlisted");
 });
 
 test("RED mutant accept classical-only as hybrid issue", () => {
@@ -528,7 +658,7 @@ test("RED mutant serialise before validating", () => {
     () => {
       const r = verify({ validatedBeforeSerialize: 0 });
       assert.notEqual(r.value, 143, "serialize-first must not stay");
-      assert.equal(r.value, 100, "serialize-first admitted");
+      assert.equal(r.value, 106, "serialize-first reached listed cleanup");
     },
   );
   expectPacked(verify({ validatedBeforeSerialize: 0 }), 143, "restore serialize");
@@ -562,15 +692,67 @@ test("RED mutant accept trit plus one with nonzero exit", () => {
 
 test("RED mutant swallow cleanup error", () => {
   withMutant(
-    "  if cleanupEvidence == 4 {\n    let cleanupUnknown: Int = releaseGuard(1, 1, 4, 1, 1, 1)\n    return cleanupUnknown\n  }",
-    "  if cleanupEvidence == 4 {\n    return finish(0, true)\n  }",
+    "  if childExit == 3 {\n    return finish(49, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(6, true)\n}",
+    "  if childExit == 3 {\n    return finish(49, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
     () => {
-      const r = verify({ cleanupEvidence: 4 });
-      assert.notEqual(r.value, 106, "cleanup unknown must not stay");
-      assert.equal(r.value, 100, "cleanup swallowed");
+      const r = verify({ cleanupEvidence: 1 });
+      assert.notEqual(r.value, 106, "listed cleanup must not stay unknown");
+      assert.equal(r.value, 100, "listed cleanup swallowed");
     },
   );
-  expectPacked(verify({ cleanupEvidence: 4 }), 106, "restore cleanup");
+  expectPacked(verify({ cleanupEvidence: 1 }), 106, "restore listed cleanup");
+});
+
+test("RED mutant F1 remove consumeStep", () => {
+  withMutant(
+    "  let consumed: Int = consumeStep(presentToken, tokenMatchToken, 0, epochMatchToken, leaseState, revokeCommittedToken, guardOutcome)\n  return consumed\n}",
+    "  return guardOutcome\n}",
+    () => {
+      const r = pre({ presentToken: 0 });
+      assert.notEqual(r.value, 105, "missing present must not stay missing");
+      assert.equal(r.value, 100, "consumeStep gone returns guard");
+    },
+  );
+  expectPacked(pre({ presentToken: 0 }), 105, "restore consumeStep");
+});
+
+test("RED mutant F2 return packed 100 on listed cleanup", () => {
+  withMutant(
+    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(6, true)\n}",
+    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    () => {
+      const r = apply({});
+      assert.notEqual(r.value, 106, "listed cleanup must not stay unknown");
+      assert.equal(r.value, 100, "listed cleanup delivered");
+    },
+  );
+  expectPacked(apply({}), 106, "restore MB-06");
+});
+
+test("RED mutant F4 skip trit allow gate", () => {
+  withMutant(
+    "  if childExit == 0 {\n    if tritToken != 1 {\n      return finish(59, true)\n    }\n  }",
+    "  if childExit == 99 {\n    if tritToken != 1 {\n      return finish(59, true)\n    }\n  }",
+    () => {
+      const r = verify({ tritToken: 0, childExit: 0 });
+      assert.notEqual(r.value, 159, "trit unknown must not stay");
+      assert.equal(r.value, 106, "trit unknown reached listed cleanup");
+    },
+  );
+  expectPacked(verify({ tritToken: 0, childExit: 0 }), 159, "restore trit gate");
+});
+
+test("RED mutant F5 skip grantEpoch versus currentEpoch", () => {
+  withMutant(
+    "  if grantEpoch != currentEpoch {\n    return finish(18, true)\n  }",
+    "  if grantEpoch == 99 {\n    return finish(18, true)\n  }",
+    () => {
+      const r = authenticate({ grantEpoch: 1, currentEpoch: 2, epochMatch: 1 });
+      assert.notEqual(r.value, 118, "epoch mismatch must not stay");
+      assert.equal(r.value, 100, "epoch mismatch authenticated");
+    },
+  );
+  expectPacked(authenticate({ grantEpoch: 1, currentEpoch: 2, epochMatch: 1 }), 118, "restore epoch compare");
 });
 
 test("RED mutant production test hook admitted", () => {
