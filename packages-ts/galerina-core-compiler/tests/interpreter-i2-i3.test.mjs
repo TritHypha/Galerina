@@ -298,6 +298,28 @@ describe("I3 T12 - a violated body-local invariant denies immediately after the 
   });
 });
 
+describe("I3 nested flow failure propagation", () => {
+  it("does not let an outer flow continue after an inner body's invariant fails", async () => {
+    const inner = BL("x > 100", "  let x = a + 1\n  return x");
+    const src = `${inner}flow outer() -> Int\ncontract { effects {} }\n{\n  let unused = f(4)\n  fault \"after-nested-invariant\"\n  return 99\n}\n`;
+    const { r, codes, msgs } = await exec(src, "outer");
+
+    assert.equal(r.value.__tag, "runtimeError");
+    assert.equal(codes.includes("FUNGI-INV-005"), true, msgs.join(" | "));
+    assert.equal(codes.includes("FUNGI-FAULT-001"), false, msgs.join(" | "));
+    assert.equal(JSON.stringify(r.diagnostics).includes("after-nested-invariant"), false);
+  });
+
+  it("continues normally when the inner body's invariant holds", async () => {
+    const inner = BL("x > 0", "  let x = a + 1\n  return x");
+    const src = `${inner}flow outer() -> Int\ncontract { effects {} }\n{\n  let result = f(4)\n  return result + 2\n}\n`;
+    const { r, codes, msgs } = await exec(src, "outer");
+
+    assert.deepEqual(r.value, int(7));
+    assert.equal(codes.includes("FUNGI-INV-005"), false, msgs.join(" | "));
+  });
+});
+
 describe("I3 T13 - a non-Bool predicate fails closed", () => {
   it("ensure x (an Int) -> INV-005", async () => {
     const { r, codes } = await exec(BL("x", "  let x = a + 1\n  return x"), "f", [["a", int(4)]]);

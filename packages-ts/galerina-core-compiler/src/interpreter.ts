@@ -1078,7 +1078,7 @@ class SyncInterpreter {
 
         if (name === "Ok" || name === "Err" || name === "Some") {
           const payload = children[0] !== undefined ? this.evalExprS(children[0]) : FUNGI_VOID;
-          if (isCheckedTrap(payload)) return payload;
+          if (isFailClosedRuntimeError(payload)) return payload;
           if (name === "Ok") return { __tag: "ok", value: payload };
           if (name === "Err") return { __tag: "err", error: payload };
           return { __tag: "some", value: payload };
@@ -2337,7 +2337,7 @@ class Interpreter {
       if (initNode !== undefined) return this.evalExprAsUInt64(initNode);
     }
     const v = initNode !== undefined ? await this.evalExpr(initNode) : FUNGI_VOID;
-    return isCheckedTrap(v) ? v : coerceToDeclaredNumeric(declBase, v, initNode);
+    return isFailClosedRuntimeError(v) ? v : coerceToDeclaredNumeric(declBase, v, initNode);
   }
 
   /**
@@ -2374,7 +2374,7 @@ class Interpreter {
       }
     }
     const v = await this.evalExpr(node);
-    return isCheckedTrap(v) ? v : coerceToDeclaredNumeric("Int64", v, node);
+    return isFailClosedRuntimeError(v) ? v : coerceToDeclaredNumeric("Int64", v, node);
   }
 
   /**
@@ -2411,7 +2411,7 @@ class Interpreter {
       }
     }
     const v = await this.evalExpr(node);
-    return isCheckedTrap(v) ? v : coerceToDeclaredNumeric("UInt64", v, node);
+    return isFailClosedRuntimeError(v) ? v : coerceToDeclaredNumeric("UInt64", v, node);
   }
 
   private async executeStatement(node: AstNode): Promise<GalerinaValue | undefined> {
@@ -2422,10 +2422,10 @@ class Interpreter {
         const { name, safetyPrefix, typeName, rawType } = parseBindingValue(node.value ?? "");
         const letDeclBase = numericBaseType(typeName);
         const initVal = await this.evalBindingInit(initNode, letDeclBase);
-        // 0038 fail-closed: a checked-op trap (overflow/div0) must FAIL THE FLOW where it occurs, not be
-        // bound + silently discarded. Soft runtimeErrors (e.g. missing field) keep value semantics. A bad
+        // Hard runtime failures must FAIL THE FLOW where they occur, not be bound + silently discarded.
+        // Soft runtimeErrors (e.g. missing field) keep value semantics. A bad
         // Int64 literal (Step 1b) also fails closed. (Non-Int64 behaviour is unchanged.)
-        if (isCheckedTrap(initVal) || ((letDeclBase === "Int64" || letDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
+        if (isFailClosedRuntimeError(initVal) || ((letDeclBase === "Int64" || letDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
         const wrappedVal = wrapGovernedValue(initVal, rawType);
         // R1C: Soft-tag governed values with a non-enumerable _governed property (Phase 11D)
         if (rawType.startsWith("protected ") || rawType.startsWith("redacted ")) {
@@ -2442,7 +2442,7 @@ class Interpreter {
         const { name, safetyPrefix, typeName, rawType } = parseBindingValue(node.value ?? "");
         const mutDeclBase = numericBaseType(typeName);
         const initVal = await this.evalBindingInit(initNode, mutDeclBase);
-        if (isCheckedTrap(initVal) || ((mutDeclBase === "Int64" || mutDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
+        if (isFailClosedRuntimeError(initVal) || ((mutDeclBase === "Int64" || mutDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
         const value = wrapGovernedValue(initVal, rawType);
         // R1C: Soft-tag governed values with a non-enumerable _governed property (Phase 11D)
         if (rawType.startsWith("protected ") || rawType.startsWith("redacted ")) {
@@ -2634,10 +2634,10 @@ class Interpreter {
         const rawValue = await this.evalExpr(rhsNode);
         // E5 (PROVISIONAL): assigning into a declared Float32/Float16 binding rounds to its width.
         const targetBase = numericBaseType(this.lookup(targetName)?.typeName ?? "");
-        const newValue = isCheckedTrap(rawValue) || narrowFloatWidthOf(targetBase) === 0
+        const newValue = isFailClosedRuntimeError(rawValue) || narrowFloatWidthOf(targetBase) === 0
           ? rawValue
           : coerceToDeclaredNumeric(targetBase, rawValue, rhsNode);
-        if (isCheckedTrap(newValue)) return newValue; // 0038 fail-closed: don't assign + discard a checked trap
+        if (isFailClosedRuntimeError(newValue)) return newValue; // Don't assign and discard a non-recoverable failure.
         if (!this.assign(targetName, newValue)) {
           this.diagnostics.push({
             code: "FUNGI-RUNTIME-004",
@@ -2749,7 +2749,7 @@ class Interpreter {
       default: {
         // 0038 fail-closed: a bare expression-statement that hits a checked-op trap must fail the flow.
         const v = await this.evalExpr(node);
-        return isCheckedTrap(v) ? v : undefined;
+        return isFailClosedRuntimeError(v) ? v : undefined;
       }
     }
   }
@@ -2912,7 +2912,7 @@ class Interpreter {
         for (const child of node.children ?? []) {
           const v = await this.evalExpr(child);
           if (v.__tag === "runtimeError") return v;
-          if (isCheckedTrap(v)) return v;
+          if (isFailClosedRuntimeError(v)) return v;
           if (v.__tag !== "verdict") {
             return { __tag: "runtimeError", message: `K3 '${fold}{ }' operand is '${v.__tag}', not a Verdict (FUNGI-K3-003 class)` };
           }
@@ -3010,7 +3010,7 @@ class Interpreter {
         if (left.value === -1) return left;
         const right = await this.evalExpr(rightNode);
         if (right.__tag === "runtimeError") return right;
-        if (isCheckedTrap(right)) return right;
+        if (isFailClosedRuntimeError(right)) return right;
         if (right.__tag !== "verdict") {
           return { __tag: "runtimeError", message: `K3 '&&' requires Verdict operands on both sides; right operand is '${right.__tag}' (FUNGI-K3-001 class)` };
         }
@@ -3028,7 +3028,7 @@ class Interpreter {
         if (left.value === 1) return left;
         const right = await this.evalExpr(rightNode);
         if (right.__tag === "runtimeError") return right;
-        if (isCheckedTrap(right)) return right;
+        if (isFailClosedRuntimeError(right)) return right;
         if (right.__tag !== "verdict") {
           return { __tag: "runtimeError", message: `K3 '||' requires Verdict operands on both sides; right operand is '${right.__tag}' (FUNGI-K3-001 class)` };
         }
@@ -3044,8 +3044,8 @@ class Interpreter {
     // expression — otherwise the dispatch-miss fallthrough below masks it as a soft "Operator '…' not
     // supported for runtimeError", losing the trap (and letting a nested overflow run the whole loop
     // before failing). Soft runtimeErrors keep the fallthrough so graceful handling is unaffected.
-    if (isCheckedTrap(left)) return left;
-    if (isCheckedTrap(right)) return right;
+    if (isFailClosedRuntimeError(left)) return left;
+    if (isFailClosedRuntimeError(right)) return right;
 
     // Enum variants are represented as unresolved names until the enum runtime
     // type is lifted. Compare their identity before numeric dispatch because an
@@ -3211,7 +3211,7 @@ class Interpreter {
       // and cannot be converted into apparent success (Ok/Some) or a handleable
       // domain error (Err). This also keeps the walker aligned with WAT, where
       // the trap fires before the constructor host call is reached.
-      if (isCheckedTrap(payload)) return payload;
+      if (isFailClosedRuntimeError(payload)) return payload;
       if (methodName === "Ok") return { __tag: "ok", value: payload };
       if (methodName === "Err") return { __tag: "err", error: payload };
       return { __tag: "some", value: payload };
@@ -4107,14 +4107,12 @@ function isRuntimeError(value: GalerinaValue): value is { readonly __tag: "runti
 }
 
 /**
- * A CHECKED-OP trap (i32 overflow / division-by-zero) — a HARD fail-closed condition under the owner's
- * Fork-A=TRAP decision. Distinct from a SOFT, handleable `runtimeError` (e.g. a missing field, which a
- * flow may legitimately turn into `{ success: false }`). 0038 fix: only checked traps must PROPAGATE out
- * of a binding/expression statement (a trap assigned to a never-returned var must still fail the flow);
- * soft runtimeErrors keep their existing value semantics so graceful handling still works.
- * NB: matches the two `I32TrapKind`s by message — a cleaner long-term design is a distinct trap tag (0038).
+ * Hard runtime failures must propagate across bindings and expressions. This includes checked
+ * arithmetic/liveness traps and body-local invariant failures; ordinary soft runtimeErrors remain
+ * values so a flow can handle them deliberately. Failure identity is currently encoded in the
+ * runtimeError message, matching the existing checked-trap representation.
  */
-function isCheckedTrap(value: GalerinaValue): boolean {
+function isFailClosedRuntimeError(value: GalerinaValue): boolean {
   if (value.__tag !== "runtimeError") return false;
   const m = value.message;
   // HARD fail-closed traps must PROPAGATE through arithmetic (not fall through to "operator not
@@ -4124,7 +4122,8 @@ function isCheckedTrap(value: GalerinaValue): boolean {
   // i32-arith value-traps carry the exact message (returned as values, never thrown → never prefixed).
   // The liveness traps are THROWN, then a nested flow's runFlow catch wraps them as a value with a
   // "[Flow 'name'] " prefix — so match by substring, not prefix.
-  return m === "IntegerOverflow" || m === "DivisionByZero" ||
+  return m.includes(`${FUNGI_INV_005.code} `) || m.includes(`${FUNGI_INV_006.code} `) ||
+    m === "IntegerOverflow" || m === "DivisionByZero" ||
     isExactTrapLabel(m) ||                             // R6: the shared Decimal/Money trap vocabulary
     m === FLOAT_NONFINITE_TRAP ||                      // non-finite float (NaN/±Inf) — FUNGI-FLOAT-NAN-001
     m.includes(`${FUNGI_INV_000.code} trap`) ||               // named `trap COND : ERROR_CODE` firing
