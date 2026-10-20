@@ -718,8 +718,8 @@ test("RED mutant F1 remove consumeStep", () => {
 
 test("RED mutant F2 return packed 100 on listed cleanup", () => {
   withMutant(
-    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(6, true)\n}",
-    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  return finish(6, true)\n}",
+    "  if sinkOutcome != 0 {\n    return finish(11, true)\n  }\n  return finish(0, true)\n}",
     () => {
       const r = apply({});
       assert.notEqual(r.value, 106, "listed cleanup must not stay unknown");
@@ -727,6 +727,40 @@ test("RED mutant F2 return packed 100 on listed cleanup", () => {
     },
   );
   expectPacked(apply({}), 106, "restore MB-06");
+});
+
+test("F1 F2 post-sink UNKNOWN never REFUSED after consume", () => {
+  expectPacked(post({ sinkOutcome: 3, independentAuthToken: 0 }), 106, "indeterminate auth 0");
+  expectPacked(post({ sinkOutcome: 3, preparedCustodyToken: 0 }), 106, "indeterminate custody 0");
+  expectPacked(post({ sinkOutcome: 3, emptyObligationSetToken: 0 }), 106, "indeterminate empty 0");
+  expectPacked(post({ sinkOutcome: 3, consumedAuthorityToken: 0 }), 106, "indeterminate consumed 0");
+  expectPacked(post({ sinkOutcome: 3, currentValidityToken: 0 }), 106, "indeterminate validity 0");
+  expectPacked(post({ sinkOutcome: 4, independentAuthToken: 0 }), 106, "crash auth 0");
+  expectPacked(post({ sinkOutcome: 4, preparedCustodyToken: 0 }), 106, "crash custody 0");
+  expectPacked(post({ sinkOutcome: 4, emptyObligationSetToken: 0 }), 106, "crash empty 0");
+  expectPacked(post({ sinkOutcome: 4, consumedAuthorityToken: 0 }), 106, "crash consumed 0");
+  expectPacked(post({ sinkOutcome: 4, currentValidityToken: 0 }), 106, "crash validity 0");
+  expectPacked(post({ sinkOutcome: 0, independentAuthToken: 0 }), 106, "success auth 0");
+  expectPacked(post({ sinkOutcome: 0, preparedCustodyToken: 0 }), 106, "success custody 0");
+  expectPacked(post({ sinkOutcome: 0, emptyObligationSetToken: 0 }), 106, "success empty 0");
+  expectPacked(post({ sinkOutcome: 0, consumedAuthorityToken: 0 }), 106, "success consumed 0");
+  expectPacked(post({ sinkOutcome: 0, currentValidityToken: 0 }), 106, "success validity 0");
+  expectPacked(post({ sinkOutcome: 0, cleanupEvidence: 0, emptyObligationSetToken: 0 }), 106, "success cleanup 0 empty 0");
+  expectPacked(post({ sinkOutcome: 1, independentAuthToken: 0 }), 127, "failed stays failed");
+  expectPacked(post({ sinkOutcome: 2, preparedCustodyToken: 0 }), 128, "refused stays refused");
+});
+
+test("RED mutant F1 restore releaseGuard on Indeterminate", () => {
+  withMutant(
+    "  if sinkOutcome == 3 {\n    return finish(6, true)\n  }",
+    "  if sinkOutcome == 3 {\n    let unknownIndeterminate: Int = releaseGuard(independentAuthToken, preparedCustodyToken, 4, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n    return unknownIndeterminate\n  }",
+    () => {
+      const r = post({ sinkOutcome: 3, independentAuthToken: 0 });
+      assert.notEqual(r.value, 106, "indeterminate false token must not stay UNKNOWN");
+      assert.equal(r.value, 105, "releaseGuard pass-through refuses");
+    },
+  );
+  expectPacked(post({ sinkOutcome: 3, independentAuthToken: 0 }), 106, "restore indeterminate");
 });
 
 test("RED mutant F4 skip trit allow gate", () => {

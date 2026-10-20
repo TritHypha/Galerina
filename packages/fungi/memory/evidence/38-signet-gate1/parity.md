@@ -11,6 +11,8 @@ release-commit-point.fungi git blob `b38e774f8e2150a74fed5cc19fb092dcf640cdb3`.
 
 writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return; no `else if`; no `null`/`NaN`; no `throw`/`try`/`catch`; no clock source; foreign values through one helper plus unit domain/range gates; fail-closed unlisted arm; wipe construct `finish(code, true)` with no erase claim.
 
+Follow-up 04: after consume, applyPostSink returns only 127 Failed, 128 Refused, 106 UNKNOWN, or 111 unlisted. False release tokens and listed cleanup never produce 102/105. applyPreSink packed 100 is the consume code, not a release.
+
 | ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
 |---|---|---|---|---|
 | authenticated-host.mjs:230 empty subjects throw | issueGrant subjectCount 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | empty 101; TS throws, fungi typed result |
@@ -38,7 +40,8 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | authenticated-host.mjs:198 replay throw | applyGrant consumedToken 1 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | replay 126 |
 | authenticated-host.mjs:337 ignore sink return | applyGrant sinkOutcome 1 Failed | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | Failed 127 never CONSUMED |
 | authenticated-host.mjs:337 ignore sink return | applyGrant sinkOutcome 2 Refused | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | Refused 128 never CONSUMED |
-| authenticated-host.mjs:338-339 sink throw DELIVERY_UNKNOWN | applyGrant sinkOutcome 3/4 | PRESERVED | TOTAL_EFFECT_OUTCOME | 106 via releaseGuard cleanup 4 |
+| authenticated-host.mjs:338-339 sink throw DELIVERY_UNKNOWN | applyPostSink sinkOutcome 3/4 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 RD-0778 UNKNOWN-not-REFUSED; false tokens stay 106 never 105 |
+| authenticated-host.mjs:337 Success after consume | applyPostSink sinkOutcome 0 false tokens / cleanup 0 emptyObligation 0 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 RD-0778 UNKNOWN-not-REFUSED; never 102/105 after consume |
 | authenticated-host.mjs:228 clock step | applyGrant applyClock < issueClock | INTENDED_DIVERGENCE | MONOTONIC_TYPED_TIME | regression 130 |
 | authenticated-host.mjs:408-413 restartHost | applyGrant restartToken 1 | PRESERVED | TOTAL_EFFECT_OUTCOME | restart UNKNOWN 131 |
 | authenticated-host.mjs:403 epoch exhaustion RangeError | applyGrant epochExhausted 1 / restartHost epoch max | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | 132 typed refusal |
@@ -72,8 +75,9 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | Addendum D OPEN items | ordering / FFI / cleanup-binding | UNKNOWN | TOTAL_EFFECT_OUTCOME | carried typed UNKNOWN |
 | authenticated-host.test.mjs 17 fail @ dc0f9c8c | vectors needing cargo/memfd | UNKNOWN | SEALED_INTRINSICS | environment INCONCLUSIVE; never PRESERVED |
 
-Summary counts: PRESERVED 7, INTENDED_DIVERGENCE 42, UNKNOWN 5, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2.
+Summary counts: PRESERVED 6, INTENDED_DIVERGENCE 44, UNKNOWN 5, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2.
 
-N1. childKind is range-checked and unused; exit 3 stays UNKNOWN 149.
-N2. Negative epochs with classTag 0 ride the c-boundary range gap (carried, no edit).
-N3. Carried UNKNOWNs accepted as stated. CONSTANT_TIME_COMPARE stays NEEDS_LANGUAGE; epoch/profile/clock-generation equality is in-unit and not claimed constant time.
+N1. applyPreSink packed 100 is the consume code, not a release; integration must not read it as success (Q38-04 N1). childKind is range-checked and unused; exit 3 stays UNKNOWN 149.
+N2. pre-sink cleanup 2/3/4 -> 106 accepted (Q38-04 N2). Negative epochs with classTag 0 ride the c-boundary range gap (carried, no edit).
+N3. consumeStep epochClass literal 0 accepted (Q38-04 N3). Carried UNKNOWNs accepted as stated. CONSTANT_TIME_COMPARE stays NEEDS_LANGUAGE; epoch/profile/clock-generation equality is in-unit and not claimed constant time.
+N4. authPacked binding to authenticateGrant is integration work, carried (Q38-04 N4).

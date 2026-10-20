@@ -31,8 +31,9 @@
 ///   12 overflow 13 unknown-suite 14 classical-or-pq-unavailable
 /// packed auth: 0 authenticated 15 tamper 16 unpinned 17 wrong-action
 ///   18 prev-epoch 19 prev-profile 21 undeclared 22 expired 23 shape
-/// packed apply: pre-sink 0 consume-ok 26 replay 27 unused-here; post never packed 100
-///   (MB-06); 27 sink-Failed 28 sink-Refused; listed cleanup 6 DELIVERY_UNKNOWN;
+/// packed apply: pre-sink 0 consume-ok (not a release) 26 replay; post never packed 100
+///   (MB-06); after consume only 27 Failed, 28 Refused, 6 UNKNOWN (Success,
+///   Indeterminate, crash, any listed cleanup, any false release token), or 11;
 ///   30 clock-regression 31 restart-UNKNOWN 32 epoch-exhaustion; prePacked other than 100 -> 11
 /// packed classify: 0 Assured 1 Unknown 2 Distrusted
 /// packed verify: never packed 100 (MB-06); 43 serialize-first 44 body-over 45 getter
@@ -868,7 +869,7 @@ pure flow applyPostSink(
   currentValidityToken: Int
 ) -> Int
 contract {
-  intent { "Post-sink classify. Non-consume pre-code refuses 11. Failed and Refused stay typed after consume. Indeterminate and crash are DELIVERY_UNKNOWN. Listed cleanup never returns packed 100; MB-06 maps success to DELIVERY_UNKNOWN. Nothing after consume restores authority." }
+  intent { "Post-sink classify. Non-consume pre-code refuses 11. After consume only Failed 127, Refused 128, UNKNOWN 106, or unlisted 111. Indeterminate, crash, Success, listed cleanup and false release tokens are UNKNOWN never REFUSED. Nothing after consume restores authority." }
 }
 {
   let preReason: Int = readForeignSafeInteger(preClass, prePacked)
@@ -984,19 +985,13 @@ contract {
     return finish(28, true)
   }
   if sinkOutcome == 3 {
-    let unknownIndeterminate: Int = releaseGuard(independentAuthToken, preparedCustodyToken, 4, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
-    return unknownIndeterminate
+    return finish(6, true)
   }
   if sinkOutcome == 4 {
-    let unknownCrash: Int = releaseGuard(independentAuthToken, preparedCustodyToken, 4, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
-    return unknownCrash
+    return finish(6, true)
   }
   if sinkOutcome != 0 {
     return finish(11, true)
-  }
-  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
-  if guardOutcome != 100 {
-    return guardOutcome
   }
   return finish(6, true)
 }
