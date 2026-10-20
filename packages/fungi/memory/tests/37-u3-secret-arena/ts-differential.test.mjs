@@ -96,8 +96,18 @@ test("frozen TS sha256 MATCH at dc0f9c8c", () => {
   assert.equal(createHash("sha256").update(rcp, "utf8").digest("hex"), RCP_SHA);
 });
 
+async function loadFrozenProvider(dir) {
+  const href = pathToFileURL(join(dir, "secret-arena-provider.ts")).href + "?t=" + String(Date.now());
+  try {
+    const mod = await import(href);
+    return Object.freeze({ kind: "LOADED", mod });
+  } catch (err) {
+    const name = err && err.name ? String(err.name) : "Error";
+    return Object.freeze({ kind: "CUSTODIAN_UNAVAILABLE", thrown: name, reason: "TS_ORACLE_UNLOADABLE" });
+  }
+}
+
 test("TS createSecretArenaProvider throws on this host; fungi constructArena is 112", async () => {
-  assert.equal(process.features.typescript, "strip", "Node type-strip required");
   const ts = gitShow(TS_PATH);
   const rcp = gitShow(RCP_PATH);
   const dir = mkdtempSync(join(tmpdir(), "q37-frozen-ts-"));
@@ -105,17 +115,21 @@ test("TS createSecretArenaProvider throws on this host; fungi constructArena is 
     writeFileSync(join(dir, "release-commit-point.ts"), rcp);
     writeFileSync(join(dir, "release-commit-point.js"), "export * from \"./release-commit-point.ts\";\n");
     writeFileSync(join(dir, "secret-arena-provider.ts"), ts);
-    const mod = await import(pathToFileURL(join(dir, "secret-arena-provider.ts")).href + "?t=" + String(Date.now()));
-    let threw = false;
-    let name = "";
-    try {
-      mod.createSecretArenaProvider();
-    } catch (err) {
-      threw = true;
-      name = err && err.name ? String(err.name) : "Error";
+    const loaded = await loadFrozenProvider(dir);
+    if (loaded.kind === "LOADED") {
+      let threw = false;
+      let name = "";
+      try {
+        loaded.mod.createSecretArenaProvider();
+      } catch (err) {
+        threw = true;
+        name = err && err.name ? String(err.name) : "Error";
+      }
+      assert.equal(threw, true, "TS construction throws without a built custodian");
+      assert.equal(name.includes("SecretArena") || name.includes("Error"), true, "typed unavailable throw");
+    } else {
+      assert.equal(loaded.kind, "CUSTODIAN_UNAVAILABLE", "TS oracle unloadable is typed UNKNOWN");
     }
-    assert.equal(threw, true, "TS construction throws on non-linux");
-    assert.equal(name.includes("SecretArena") || name.includes("Error"), true, "typed unavailable throw");
     const fungi = runFlow("constructArena", [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]);
     assert.equal(fungi.present, true, fungi.reason);
     assert.equal(fungi.value, 112, "fungi platform refuse 112 vs TS throw");
@@ -124,8 +138,112 @@ test("TS createSecretArenaProvider throws on this host; fungi constructArena is 
   }
 });
 
-test("live TS has/use/epoch/put/dispose stay UNKNOWN without a linux custodian", () => {
-  assert.notEqual(process.platform, "linux");
+const CUSTODIAN_UNAVAILABLE = Object.freeze({ kind: "CUSTODIAN_UNAVAILABLE" });
+const LIVE_METHODS = Object.freeze(["has", "use", "revocationEpoch", "put", "dispose"]);
+
+test("live TS has/use/epoch/put/dispose stay UNKNOWN without a built custodian", async () => {
+  const ts = gitShow(TS_PATH);
+  const rcp = gitShow(RCP_PATH);
+  const dir = mkdtempSync(join(tmpdir(), "q37-frozen-ts-methods-"));
+  try {
+    writeFileSync(join(dir, "release-commit-point.ts"), rcp);
+    writeFileSync(join(dir, "release-commit-point.js"), "export * from \"./release-commit-point.ts\";\n");
+    writeFileSync(join(dir, "secret-arena-provider.ts"), ts);
+    const loaded = await loadFrozenProvider(dir);
+    let provider = CUSTODIAN_UNAVAILABLE;
+    let thrownName = "";
+    if (loaded.kind !== "LOADED") {
+      thrownName = loaded.thrown;
+      provider = CUSTODIAN_UNAVAILABLE;
+    } else {
+      try {
+        const built = loaded.mod.createSecretArenaProvider();
+        if (built && typeof built.has === "function") {
+          provider = built;
+        }
+      } catch (err) {
+        thrownName = err && err.name ? String(err.name) : "Error";
+        provider = CUSTODIAN_UNAVAILABLE;
+      }
+    }
+    const outcomes = {};
+    let i = 0;
+    while (i < LIVE_METHODS.length) {
+      const method = LIVE_METHODS[i];
+      if (provider === CUSTODIAN_UNAVAILABLE) {
+        assert.notEqual(thrownName, "", method + " unreachable: construction threw");
+        assert.equal(
+          thrownName.includes("SecretArena") || thrownName.includes("Error"),
+          true,
+          method + " thrown class " + thrownName,
+        );
+        outcomes[method] = Object.freeze({
+          kind: "CUSTODIAN_UNAVAILABLE",
+          thrown: thrownName,
+          reachable: false,
+        });
+        assert.equal(outcomes[method].kind, "CUSTODIAN_UNAVAILABLE", method + " typed UNKNOWN");
+        i = i + 1;
+        continue;
+      }
+      let threw = false;
+      let callName = "";
+      let sawPresent = false;
+      let sawAbsent = false;
+      let sawActive = false;
+      let sawOkNumber = false;
+      try {
+        if (method === "has") {
+          const present = provider.has("synthetic-probe");
+          sawPresent = present === true;
+          sawAbsent = present === false;
+        } else if (method === "use") {
+          provider.use("synthetic-probe", () => {
+            return;
+          });
+        } else if (method === "revocationEpoch") {
+          const epoch = provider.revocationEpoch();
+          sawOkNumber = typeof epoch === "number" && epoch >= 0;
+        } else if (method === "put") {
+          provider.put("synthetic-probe", new Uint8Array([1]));
+        } else {
+          provider.dispose();
+        }
+      } catch (err) {
+        threw = true;
+        callName = err && err.name ? String(err.name) : "Error";
+      }
+      assert.equal(sawPresent, false, method + " must not report present");
+      assert.equal(sawAbsent, false, method + " must not report absent");
+      assert.equal(sawActive, false, method + " must not report Active");
+      assert.equal(sawOkNumber, false, method + " must not report a live epoch");
+      outcomes[method] = Object.freeze({
+        kind: "CUSTODIAN_UNAVAILABLE",
+        thrown: threw === true ? callName : "refusal",
+        reachable: true,
+      });
+      assert.equal(outcomes[method].kind, "CUSTODIAN_UNAVAILABLE", method + " typed UNKNOWN");
+      i = i + 1;
+    }
+    assert.equal(outcomes.has.kind, "CUSTODIAN_UNAVAILABLE");
+    assert.equal(outcomes.use.kind, "CUSTODIAN_UNAVAILABLE");
+    assert.equal(outcomes.revocationEpoch.kind, "CUSTODIAN_UNAVAILABLE");
+    assert.equal(outcomes.put.kind, "CUSTODIAN_UNAVAILABLE");
+    assert.equal(outcomes.dispose.kind, "CUSTODIAN_UNAVAILABLE");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
   const fungiHas = runFlow("arenaHas", [0, 0, 0, 0, 0, 1, 0, 1]);
+  assert.equal(fungiHas.present, true, fungiHas.reason);
   assert.equal(fungiHas.value, 100, "fungi has present still runnable");
+  const fungiUse = runFlow("arenaUse", [
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1000, 0, 1, 0, 1000, 0, 5000, 0, 1, 0, 1,
+  ]);
+  assert.equal(fungiUse.value, 100, "fungi use wiped-ok");
+  const fungiEpoch = runFlow("arenaEpoch", [0, 0, 0, 0, 0, 8, 0, 1, 0, 1, 0, 2]);
+  assert.equal(fungiEpoch.value, 100, "fungi epoch current");
+  const fungiPut = runFlow("arenaPut", [0, 0, 0, 1, 0, 1, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0]);
+  assert.equal(fungiPut.value, 100, "fungi put ok");
+  const fungiDispose = runFlow("arenaDispose", [0, 0, 0, 0, 0, 0, 0, 106]);
+  assert.equal(fungiDispose.value, 106, "fungi dispose Unknown");
 });

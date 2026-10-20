@@ -8,7 +8,7 @@ RD-0778 object cite only: path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-
 
 Workbench C2 REFUSE DECODER_UNAVAILABLE recorded; obligations carried as typed UNKNOWN. PROPOSED/REUSE/WRAP/ADAPT/BUILD never permission.
 
-Live TS execute: `createSecretArenaProvider()` throws on this host (platform not linux). Fungi `constructArena` platformToken 0 packed 112. Remaining TS methods UNKNOWN `CUSTODIAN_UNAVAILABLE` (no linux, no built vok-authority binary; CN-3 fakes not run against Rust).
+Live TS execute: `createSecretArenaProvider()` throws SecretArenaUnavailable on every host without a built custodian (unsupported platform or missing binary). Fungi `constructArena` platformToken 0 packed 112. Live TS has/use/revocationEpoch/put/dispose each recorded typed UNKNOWN `CUSTODIAN_UNAVAILABLE` (methods unreachable after construction throw; never present/absent/Active/ok). CN-3 fakes not run against Rust.
 
 Secret-gate presence map (A1): packed 100→0 present, 101→1 absent, 106/117/121/141→2 faulted, else 11. Quarantine never maps to absent or present. Probe `mapHasToPresence closed table`.
 
