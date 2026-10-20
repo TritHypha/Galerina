@@ -33,10 +33,11 @@
 ///   31 duplicate-keys 32 unknown-field 33 memory 34 concurrency
 /// packed secret/idemp: 35 secret-unavailable 36 mint-absent 37 caller-mint
 ///   38 recovery-unlisted 39 missing-key 40 duplicate-key 41 full
-///   43 post-dispatch-delete 45 audit-unavailable
-/// packed dispatch/clock: 21 clock-missing 22 backwards 23 epoch 24 overflow
+///   43 post-dispatch-delete 44 audit-failed-no-ack 45 audit-unavailable
+/// packed dispatch/clock: 21 clock-missing 22 backwards 23 epoch 51 overflow
 ///   47 deadline 52 getSecret-deadline 53 spent 54 reentrant 55 failed
 ///   56 undeclared 59 slot-held
+/// HTTP pins: 144 audit-failed-no-ack 503; 159 slot-held 503
 /// Shared: 0 Ok 6 UNKNOWN 10 foreign 11 unlisted. HTTP default 503.
 /// Secret or rcp non-success after consume including 106/110/111 is UNKNOWN
 ///   never REFUSED never retry. No caller mint.
@@ -772,7 +773,7 @@ pure flow applyConcurrency(
   handlerStillRunningToken: Int
 ) -> Int
 contract {
-  intent { "Concurrency slot is linear. Over limit refuses. Slot released on every exit except a deadline with the handler still running." }
+  intent { "Concurrency slot is linear. Over limit refuses. Slot released on every exit including a deadline with the handler still running. released 0 is never 100. Handler still running is held-slot 59." }
 }
 {
   let currentReason: Int = readForeignSafeInteger(currentClass, current)
@@ -823,7 +824,7 @@ contract {
     return finish(34, true)
   }
   if handlerStillRunningToken == 1 {
-    return finish(0, true)
+    return finish(59, true)
   }
   if releasedToken == 0 {
     return finish(59, true)
@@ -1316,7 +1317,7 @@ pure flow applyFinalize(
   leaseState: Int
 ) -> Int
 contract {
-  intent { "Ack only after audit commit. Unspent returns dispatch packed. Spent path never packed 100. Audit fail is DELIVERY_UNKNOWN never acknowledged." }
+  intent { "Ack only after audit commit. Unspent success needs listed dispatch, no consume packed 100, and audit 100. Spent path never packed 100. Audit failed with ack not recorded is 44. Acked after audit is 106." }
 }
 {
   let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
@@ -1388,7 +1389,31 @@ contract {
     }
   }
   if spentToken == 0 {
-    return dispatchPacked
+    if consumePacked == 100 {
+      return finish(6, true)
+    }
+    if auditPacked != 100 {
+      return finish(6, true)
+    }
+    if dispatchPacked == 100 {
+      return finish(0, true)
+    }
+    if dispatchPacked == 106 {
+      return finish(6, true)
+    }
+    if dispatchPacked == 110 {
+      return finish(10, true)
+    }
+    if dispatchPacked == 111 {
+      return finish(11, true)
+    }
+    if dispatchPacked == 119 {
+      return finish(19, true)
+    }
+    if dispatchPacked == 147 {
+      return finish(47, true)
+    }
+    return finish(6, true)
   }
   if consumePacked == 106 {
     return finish(6, true)
@@ -1403,7 +1428,7 @@ contract {
     return finish(6, true)
   }
   if auditPacked != 100 {
-    return finish(6, true)
+    return finish(44, true)
   }
   let acked: Int = ackStep(presentToken, tokenMatchToken, epochPresentToken, 0, epochMatchToken, leaseState, 1)
   if acked == 101 {
@@ -1412,7 +1437,7 @@ contract {
   if acked == 100 {
     return finish(6, true)
   }
-  return acked
+  return finish(6, true)
 }
 
 pure flow getSecretAccess(
@@ -1644,6 +1669,9 @@ contract {
   if packedCode == 141 {
     return 409
   }
+  if packedCode == 144 {
+    return 503
+  }
   if packedCode == 145 {
     return 503
   }
@@ -1653,5 +1681,194 @@ contract {
   if packedCode == 151 {
     return 503
   }
+  if packedCode == 159 {
+    return 503
+  }
   return 503
+}
+
+pure flow runPreDispatch(
+  matchPacked: Int,
+  bodyPacked: Int,
+  authPacked: Int,
+  ratePacked: Int,
+  decodePacked: Int,
+  budgetPacked: Int,
+  concurrencyPacked: Int,
+  secretsPacked: Int,
+  mintPacked: Int,
+  idempPacked: Int,
+  clockClass: Int,
+  clock: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int,
+  handlerClass: Int,
+  handlerToken: Int
+) -> Int
+contract {
+  intent { "Composed pre-dispatch in TS gate order. Clock re-check at every stage. First non-100 returns. Dispatch never runs after a refusal." }
+}
+{
+  let clock1: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock1 != 100 {
+    return clock1
+  }
+  if matchPacked != 100 {
+    return matchPacked
+  }
+  let clock2: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock2 != 100 {
+    return clock2
+  }
+  if bodyPacked != 100 {
+    return bodyPacked
+  }
+  let clock3: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock3 != 100 {
+    return clock3
+  }
+  if authPacked != 100 {
+    return authPacked
+  }
+  let clock4: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock4 != 100 {
+    return clock4
+  }
+  if ratePacked != 100 {
+    return ratePacked
+  }
+  let clock5: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock5 != 100 {
+    return clock5
+  }
+  if decodePacked != 100 {
+    return decodePacked
+  }
+  let clock6: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock6 != 100 {
+    return clock6
+  }
+  if budgetPacked != 100 {
+    return budgetPacked
+  }
+  let clock7: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock7 != 100 {
+    return clock7
+  }
+  if concurrencyPacked != 100 {
+    return concurrencyPacked
+  }
+  let clock8: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock8 != 100 {
+    return clock8
+  }
+  if secretsPacked != 100 {
+    return secretsPacked
+  }
+  let clock9: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock9 != 100 {
+    return clock9
+  }
+  if mintPacked != 100 {
+    return mintPacked
+  }
+  let clock10: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock10 != 100 {
+    return clock10
+  }
+  if idempPacked != 100 {
+    return idempPacked
+  }
+  let clock11: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock11 != 100 {
+    return clock11
+  }
+  return applyDispatch(handlerClass, handlerToken)
+}
+
+pure flow runPostDispatch(
+  clockClass: Int,
+  clock: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int,
+  spentClass: Int,
+  spentToken: Int,
+  dispatchClass: Int,
+  dispatchPacked: Int,
+  consumeClass: Int,
+  consumePacked: Int,
+  auditClass: Int,
+  auditPacked: Int,
+  ackPresentClass: Int,
+  presentToken: Int,
+  ackMatchClass: Int,
+  tokenMatchToken: Int,
+  epochPresentClass: Int,
+  epochPresentToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int,
+  currentClass: Int,
+  current: Int,
+  maxClass: Int,
+  maxConcurrent: Int,
+  releasedClass: Int,
+  releasedToken: Int,
+  zombieClass: Int,
+  handlerStillRunningToken: Int
+) -> Int
+contract {
+  intent { "Composed post-dispatch. Clock re-check before consume finalize and audit. Slot released on every exit. First non-100 after release returns." }
+}
+{
+  let clockConsume: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clockConsume != 100 {
+    let releasedConsume: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+    if releasedConsume != 100 {
+      return releasedConsume
+    }
+    return clockConsume
+  }
+  let clockFinalize: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clockFinalize != 100 {
+    let releasedFinalize: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+    if releasedFinalize != 100 {
+      return releasedFinalize
+    }
+    return clockFinalize
+  }
+  let clockAudit: Int = applyClock(clockClass, clock, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clockAudit != 100 {
+    let releasedAudit: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+    if releasedAudit != 100 {
+      return releasedAudit
+    }
+    return clockAudit
+  }
+  let finalized: Int = applyFinalize(spentClass, spentToken, dispatchClass, dispatchPacked, consumeClass, consumePacked, auditClass, auditPacked, ackPresentClass, presentToken, ackMatchClass, tokenMatchToken, epochPresentClass, epochPresentToken, epochMatchClass, epochMatchToken, leaseClass, leaseState)
+  let released: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if released != 100 {
+    return released
+  }
+  if finalized != 100 {
+    return finalized
+  }
+  return finish(0, true)
 }

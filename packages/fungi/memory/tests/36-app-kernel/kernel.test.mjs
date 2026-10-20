@@ -350,6 +350,54 @@ function http(code) {
   return runFlow("httpStatusFor", [0, code]);
 }
 
+function preDispatch(over) {
+  const o = over || {};
+  return runFlow("runPreDispatch", [
+    o.matchPacked ?? 100,
+    o.bodyPacked ?? 100,
+    o.authPacked ?? 100,
+    o.ratePacked ?? 100,
+    o.decodePacked ?? 100,
+    o.budgetPacked ?? 100,
+    o.concurrencyPacked ?? 100,
+    o.secretsPacked ?? 100,
+    o.mintPacked ?? 100,
+    o.idempPacked ?? 100,
+    o.clockClass ?? 0, o.clock ?? 1000,
+    o.presentClass ?? 0, o.clockPresent ?? 1,
+    o.armedClass ?? 0, o.armedAt ?? 1000,
+    o.budgetClass ?? 0, o.budget ?? 5000,
+    o.clockEpochClass ?? 0, o.clockEpoch ?? 1,
+    o.armedEpochClass ?? 0, o.armedEpoch ?? 1,
+    o.handlerClass ?? 0, o.handlerToken ?? 0,
+  ]);
+}
+
+function postDispatch(over) {
+  const o = over || {};
+  return runFlow("runPostDispatch", [
+    o.clockClass ?? 0, o.clock ?? 1000,
+    o.presentClass ?? 0, o.clockPresent ?? 1,
+    o.armedClass ?? 0, o.armedAt ?? 1000,
+    o.budgetClass ?? 0, o.budget ?? 5000,
+    o.clockEpochClass ?? 0, o.clockEpoch ?? 1,
+    o.armedEpochClass ?? 0, o.armedEpoch ?? 1,
+    o.spentClass ?? 0, o.spentToken ?? 0,
+    o.dispatchClass ?? 0, o.dispatchPacked ?? 100,
+    o.consumeClass ?? 0, o.consumePacked ?? 0,
+    o.auditClass ?? 0, o.auditPacked ?? 100,
+    o.ackPresentClass ?? 0, o.presentToken ?? 1,
+    o.ackMatchClass ?? 0, o.tokenMatchToken ?? 1,
+    o.epochPresentClass ?? 0, o.epochPresentToken ?? 1,
+    o.epochMatchClass ?? 0, o.epochMatchToken ?? 1,
+    o.leaseClass ?? 0, o.leaseState ?? 1,
+    o.currentClass ?? 0, o.current ?? 0,
+    o.maxClass ?? 0, o.maxConcurrent ?? 4,
+    o.releasedClass ?? 0, o.releasedToken ?? 1,
+    o.zombieClass ?? 0, o.handlerStillRunningToken ?? 0,
+  ]);
+}
+
 function expect(r, value, label) {
   assert.equal(r.present, true, label + " present " + r.reason + " " + (r.text || "").slice(-200));
   assert.equal(r.value, value, label + " got " + String(r.value));
@@ -411,7 +459,7 @@ test("MUST-REFUSE rate decode budget concurrency clock", () => {
   expect(budget({ bodyBytes: 16385, memoryBytes: 16384 }), 133, "memory budget");
   expect(concurrency({ current: 4, maxConcurrent: 4 }), 134, "concurrency over");
   expect(concurrency({ releasedToken: 0, handlerStillRunningToken: 0 }), 159, "slot not released");
-  expect(concurrency({ releasedToken: 0, handlerStillRunningToken: 1 }), 100, "deadline handler still running keeps slot");
+  expect(concurrency({ releasedToken: 0, handlerStillRunningToken: 1 }), 159, "deadline handler still running is held-slot");
   expect(clock({ clockPresent: 0 }), 121, "clock missing");
   expect(clock({ clock: 999, armedAt: 1000 }), 122, "backwards");
   expect(clock({ clockEpoch: 1, armedEpoch: 2 }), 123, "epoch mismatch");
@@ -446,10 +494,20 @@ test("MUST-REFUSE mint secrets idempotency dispatch getSecret recover", () => {
 test("landed consume revoke-first and finalize audit-before-ack", () => {
   expect(consume({ revokeCommittedToken: 1, currentValidityToken: 1 }), 102, "revoke first");
   expect(consume({ currentValidityToken: 0, revokeCommittedToken: 1 }), 106, "validity before revoke");
-  expect(finalize({ spentToken: 0, dispatchPacked: 100 }), 100, "unspent handler ok");
+  expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 0, auditPacked: 100 }), 100, "unspent handler ok");
+  expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 100, auditPacked: 100 }), 106, "unspent consume packed 100");
+  expect(finalize({ spentToken: 0, dispatchPacked: 100, consumePacked: 0, auditPacked: 101 }), 106, "unspent audit fail");
+  expect(finalize({ spentToken: 0, dispatchPacked: 999, consumePacked: 0, auditPacked: 100 }), 106, "unspent unlisted dispatch");
+  expect(finalize({ spentToken: 0, dispatchPacked: 106, consumePacked: 0, auditPacked: 100 }), 106, "unspent listed 106");
+  expect(finalize({ spentToken: 0, dispatchPacked: 147, consumePacked: 0, auditPacked: 100 }), 147, "unspent listed 147");
   expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "spent never 100");
-  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 106, "audit fail never ack");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 144, "audit fail ack not recorded");
   expect(finalize({ spentToken: 1, consumePacked: 106, auditPacked: 100 }), 106, "consume unknown stays unknown");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 0 }), 106, "spent lease 0 never raw");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 3 }), 106, "spent lease 3 never raw");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 4 }), 106, "spent lease 4 never raw");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 5 }), 106, "spent lease 5 never raw");
+  expect(finalize({ spentToken: 2 }), 111, "spentToken 2 unlisted");
 });
 
 test("HTTP map total default 503 deadline 504", () => {
@@ -464,10 +522,14 @@ test("HTTP map total default 503 deadline 504", () => {
   expect(http(129), 422, "malformed");
   expect(http(134), 429, "concurrency");
   expect(http(139), 409, "idemp missing");
+  expect(http(144), 503, "audit-failed-no-ack");
   expect(http(147), 504, "deadline");
+  expect(http(159), 503, "slot-held");
   expect(http(106), 503, "unknown");
   expect(http(111), 503, "unlisted");
   expect(http(999), 503, "default");
+  expect(runFlow("httpStatusFor", [3, 100]), 503, "classTag 3 with 100");
+  expect(runFlow("httpStatusFor", [11, 100]), 503, "classTag 11 with 100");
 });
 
 test("CN-1 helper defined once in memory src", () => {
@@ -498,14 +560,12 @@ test("mutant rate jump to wall-clock reset goes RED then restored green", () => 
 });
 
 test("mutant ack before audit commit goes RED then restored green", () => {
-  const needle = "if auditPacked != 100 {\n    return finish(6, true)";
-  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 106, "landed audit fail");
-  withMutant(needle, "if auditPacked != 100 {\n    return finish(0, true)", "ack-before-audit mutant", () => {
-    const r = finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 });
-    assert.equal(r.present, true, "mutant present");
-    assert.notEqual(r.value, 106, "mutant must leave DELIVERY_UNKNOWN");
+  const needle = "if auditPacked != 100 {\n    return finish(44, true)";
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 144, "landed audit fail");
+  withMutant(needle, "if auditPacked != 100 {\n    return finish(6, true)", "ack-before-audit mutant", () => {
+    expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 106, "mutant drops 144 to 106");
   });
-  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 106, "restored audit fail");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 106, leaseState: 1 }), 144, "restored audit fail");
 });
 
 test("mutant post-dispatch delete goes RED then restored green", () => {
@@ -564,4 +624,92 @@ test("mutant skip minted bind goes RED then restored green", () => {
     assert.notEqual(r.value, 135, "mutant skips bind");
   });
   expect(secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 0, mintedOp: 1, secretOp: 2 }), 135, "restored bind");
+});
+
+test("F1 composed pre-dispatch TS order never reaches dispatch after a refusal", () => {
+  expect(preDispatch(), 100, "happy composed dispatch");
+  expect(preDispatch({ matchPacked: 120, handlerToken: 1 }), 120, "path refusal skips dispatch throw");
+  expect(preDispatch({ bodyPacked: 123, handlerToken: 1 }), 123, "body refusal skips dispatch throw");
+  expect(preDispatch({ authPacked: 125, handlerToken: 1 }), 125, "auth refusal skips dispatch throw");
+  expect(preDispatch({ ratePacked: 127, handlerToken: 1 }), 127, "rate refusal skips dispatch throw");
+  expect(preDispatch({ decodePacked: 129, handlerToken: 1 }), 129, "decode refusal skips dispatch throw");
+  expect(preDispatch({ budgetPacked: 133, handlerToken: 1 }), 133, "budget refusal skips dispatch throw");
+  expect(preDispatch({ concurrencyPacked: 134, handlerToken: 1 }), 134, "concurrency refusal skips dispatch throw");
+  expect(preDispatch({ secretsPacked: 135, handlerToken: 1 }), 135, "secrets refusal skips dispatch throw");
+  expect(preDispatch({ mintPacked: 136, handlerToken: 1 }), 136, "mint refusal skips dispatch throw");
+  expect(preDispatch({ idempPacked: 139, handlerToken: 1 }), 139, "idemp refusal skips dispatch throw");
+  expect(preDispatch({ handlerToken: 1 }), 106, "all gates 100 reaches dispatch throw");
+});
+
+test("F1 composed body-reader over cap becomes 123 and skips dispatch", () => {
+  const chunks = runFlow("readChunks", [1, 1, 0, 16385, 0, 0, 0, 16384, false, 0, true, false, false]);
+  expect(chunks, 105, "readChunks cap+1");
+  expect(body({ bodyPacked: 105 }), 123, "admitBody over-cap");
+  expect(preDispatch({ bodyPacked: 123, handlerToken: 1 }), 123, "composed over-cap skips dispatch");
+});
+
+test("F1 composed deadline at each pre-dispatch stage and post finalize/audit", () => {
+  expect(preDispatch({ clock: 7000, armedAt: 1000, budget: 5000, handlerToken: 0 }), 147, "deadline before match");
+  expect(preDispatch({ clock: 6000, armedAt: 1000, budget: 5000 }), 147, "deadline at later pre stage same reading");
+  expect(postDispatch({ clock: 7000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 100 }), 147, "deadline before consume");
+  expect(postDispatch({ clock: 6000, armedAt: 1000, budget: 5000, spentToken: 1, consumePacked: 100, auditPacked: 106 }), 147, "deadline before finalize and audit");
+  expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 106 }), 144, "post audit fail 144 after clocks");
+  expect(postDispatch({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "post spent success 106");
+  expect(postDispatch({ spentToken: 0, consumePacked: 0, dispatchPacked: 100, auditPacked: 100 }), 100, "post unspent ok");
+});
+
+test("F4 standalone survivor pins no mutant needle", () => {
+  expect(clock({ clock: 6000, armedAt: 1000, budget: 5000 }), 147, "clock == armedAt+budget is 147");
+  expect(clock({ clock: 5999, armedAt: 1000, budget: 5000 }), 100, "clock == armedAt+budget-1 is 100");
+  expect(mint({ atCapToken: 1 }), 136, "mintAdmit 102 maps to 136");
+  expect(runFlow("mintAdmit", [1, 0, 1, 0, 0, 0, 0, 0, 1, 0]), 102, "mintAdmit randomness-absent 102");
+  expect(mint({ randomnessPresentToken: 0 }), 136, "kernel randomness-absent arm EQUIVALENT 136");
+  expect(secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 4, epochPresentToken: 1 }), 135, "admit 101 maps 135");
+  const unit = readFileSync(UNIT, "utf8");
+  assert.equal(unit.includes("if admitted == 106 {\n    return finish(6, true)"), true, "admit 106 stays 106 never 135");
+  expect(secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 0, mintedOp: 1, secretOp: 1, mintedEpoch: 1, secretEpoch: 2 }), 123, "minted epoch mismatch");
+  expect(idemp({ claimToken: 0, dispatchToken: 0, settleClass: 11 }), 111, "reserve refused cancel failure");
+  expect(consume({ independentAuthToken: 0 }), 105, "independentAuth 0 non-100");
+  expect(consume({ cleanupEvidence: 2 }), 106, "cleanup pending");
+  expect(consume({ cleanupEvidence: 3 }), 106, "cleanup failed");
+  expect(consume({ cleanupEvidence: 4 }), 106, "cleanup unknown");
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "spent full success 106");
+  expect(clock({ clockClass: 3, clock: 1000 }), 110, "clock classTag 3");
+  expect(clock({ clockClass: 11, clock: 1000 }), 111, "clock classTag 11");
+  expect(mint({ epoch: -1 }), 123, "mint epoch -1");
+});
+
+test("mutant swallow ack-downgrade goes RED then restored green", () => {
+  const needle = "if acked == 101 {\n    return finish(6, true)";
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "landed spent success");
+  withMutant(needle, "if acked == 101 {\n    return finish(0, true)", "swallow downgrade mutant", () => {
+    expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 100, "mutant swallows to 100");
+  });
+  expect(finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }), 106, "restored spent success");
+});
+
+test("mutant map port throw to REFUSED goes RED then restored green", () => {
+  const needle = "if claimToken == 4 {\n    return finish(6, true)";
+  expect(idemp({ claimToken: 4 }), 106, "landed store throw UNKNOWN");
+  withPortsMutant(needle, "if claimToken == 4 {\n    return finish(11, true)", "port throw refused mutant", () => {
+    expect(idemp({ claimToken: 4 }), 111, "mutant maps throw to REFUSED");
+  });
+  expect(idemp({ claimToken: 4 }), 106, "restored store throw");
+});
+
+test("mutant set minted epoch from local flag goes RED then restored green", () => {
+  const needle = "if mintedEpoch != secretEpoch {\n      return finish(23, true)";
+  expect(secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 0, mintedOp: 1, secretOp: 1, mintedEpoch: 1, secretEpoch: 2 }), 123, "landed epoch bind");
+  withMutant(needle, "if mintedEpoch != secretEpoch {\n      return finish(0, true)", "minted local flag mutant", () => {
+    const r = secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 0, mintedOp: 1, secretOp: 1, mintedEpoch: 1, secretEpoch: 2 });
+    assert.equal(r.present, true, "mutant present");
+    assert.notEqual(r.value, 123, "mutant skips minted epoch bind");
+  });
+  expect(secrets({ requiredCount: 1, providerPresent: 1, presenceStatus: 0, mintedOp: 1, secretOp: 1, mintedEpoch: 1, secretEpoch: 2 }), 123, "restored epoch bind");
+});
+
+test("skip-one-wipe is typed UNKNOWN outside this unit", () => {
+  const unit = readFileSync(UNIT, "utf8");
+  assert.equal(unit.includes("packed +100 is a wipe construct"), true, "wipe construct documented");
+  assert.equal(unit.includes("pure flow finish("), false, "kernel does not own wipe");
 });

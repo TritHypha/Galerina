@@ -5,14 +5,133 @@ unknown path | 120 | PRESERVED
 wrong method | 121 | PRESERVED
 unknown posture throws | 112 | INTENDED_DIVERGENCE
 secret route no provider warns | 118 | INTENDED_DIVERGENCE
+TS_BOOT_WARN
 rate forward jump resets window | 128 | INTENDED_DIVERGENCE
-ack before audit swallow | 106 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME
+ack before audit swallow | 144 | INTENDED_DIVERGENCE
+TS_ACK_THEN_AUDIT
 getSecret undefined after deadline | 152 | INTENDED_DIVERGENCE
+NO_NULL_NAN
 deadline armed at dispatch | 147 | INTENDED_DIVERGENCE
+TS_DEADLINE_ARMS_AT_DISPATCH
 post-consume success COMMITTED | 106 | INTENDED_DIVERGENCE
+TS_POST_CONSUME_200
 MONOTONIC_TYPED_TIME | 121 | NEEDS_LANGUAGE
+MONOTONIC_TYPED_TIME
 CONSTANT_TIME_COMPARE | 100 | NEEDS_LANGUAGE
+CONSTANT_TIME_COMPARE
+unknown env | 113 | INTENDED_DIVERGENCE
+TS_ENV_THROW
+missing validator | 114 | PRESERVED
+TS_CONSTRUCTION_FULL
+duplicate route | 115 | PRESERVED
+TS_CONSTRUCTION_FULL
+bad rate | 116 | PRESERVED
+TS_CONSTRUCTION_FULL
+non-positive capacity | 117 | PRESERVED
+TS_CONSTRUCTION_FULL
+missing intrinsic | 119 | INTENDED_DIVERGENCE
+TS_INTRINSIC_THROW
+policy absent | 122 | INTENDED_DIVERGENCE
+TS_NO_POLICY_ABSENT_TAG
+body over cap | 123 | PRESERVED
+TS_NEEDS_BODY_STREAM_FIXTURE
+content-type mismatch | 124 | PRESERVED
+TS_NEEDS_CONTENT_TYPE_FIXTURE
+body throw UNKNOWN | 106 | INTENDED_DIVERGENCE
+TS_NEEDS_BODY_STREAM_FIXTURE
+channel deny | 125 | PRESERVED
+TS_AUTH_GATE_LIVE_HANDLE
+missing scope | 126 | PRESERVED
+TS_AUTH_GATE_LIVE_HANDLE
+rate over | 127 | PRESERVED
+TS_RATE_WINDOW_DATE_NOW
+malformed JSON | 129 | PRESERVED
+TS_DECODE_FULL_HANDLE
+JSON null | 130 | PRESERVED
+NO_NULL_NAN
+duplicate JSON keys | 131 | PRESERVED
+TS_DECODE_FULL_HANDLE
+unknown field | 132 | PRESERVED
+TS_DECODE_FULL_HANDLE
+memory budget | 133 | PRESERVED
+TS_MEMORY_BUDGET_FULL_HANDLE
+concurrency over | 134 | PRESERVED
+TS_CONCURRENCY_FULL_HANDLE
+slot not released | 159 | INTENDED_DIVERGENCE
+LINEAR_SECRET
+deadline handler still running is held-slot | 159 | INTENDED_DIVERGENCE
+LINEAR_SECRET
+clock missing | 121 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME
+clock backwards | 122 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME
+clock epoch mismatch | 123 | INTENDED_DIVERGENCE
+MONOTONIC_TYPED_TIME
+armedAt+budget overflow | 151 | INTENDED_DIVERGENCE
+BOUNDED_INPUT
+caller mint | 137 | INTENDED_DIVERGENCE
+TS_EMPTY_STRING_MINT
+mint capability absent | 136 | INTENDED_DIVERGENCE
+UNFORGEABLE_CAPABILITY
+secret unavailable | 135 | PRESERVED
+TS_SECRET_ADMIT_NOT_HAS
+mintedOp bind mismatch | 135 | INTENDED_DIVERGENCE
+UNFORGEABLE_CAPABILITY
+idempotency missing key | 138 | PRESERVED
+TS_IDEMP_FULL_HANDLE
+duplicate key | 139 | PRESERVED
+TS_IDEMP_FULL_HANDLE
+store full | 140 | PRESERVED
+TS_IDEMP_FULL_HANDLE
+store throw | 106 | INTENDED_DIVERGENCE
+TOTAL_EFFECT_OUTCOME
+retry after dispatch | 106 | INTENDED_DIVERGENCE
+TOTAL_EFFECT_OUTCOME
+post-dispatch cancel | 143 | INTENDED_DIVERGENCE
+TOTAL_EFFECT_OUTCOME
+handler throw | 106 | INTENDED_DIVERGENCE
+TOTAL_EFFECT_OUTCOME
+handler never settles | 147 | PRESERVED
+DEADLINE_COVERS_ALL
+unlisted handler shape | 111 | INTENDED_DIVERGENCE
+EXHAUSTIVE_FAIL_CLOSED
+revoke first | 102 | PRESERVED
+P24-R1
+unspent listed dispatch after audit | 100 | INTENDED_DIVERGENCE
+TS_UNSPENT_UNCHECKED
+audit failed ack not recorded | 144 | INTENDED_DIVERGENCE
+TS_ACK_THEN_AUDIT
+recovery unlisted | 138 | INTENDED_DIVERGENCE
+EXHAUSTIVE_FAIL_CLOSED
+HTTP default 503 | 503 | PRESERVED
+TS_HTTP_MAP_ON_STRING_CODE
+HTTP 144 | 503 | PRESERVED
+TS_HTTP_MAP_ON_STRING_CODE
+HTTP 159 | 503 | PRESERVED
+TS_HTTP_MAP_ON_STRING_CODE
+composed pre-dispatch path refusal | 120 | PRESERVED
+TS_HANDLE_IS_FULL_PIPELINE
+composed deadline | 147 | INTENDED_DIVERGENCE
+TS_DEADLINE_ARMS_AT_DISPATCH
+composed post deadline | 147 | INTENDED_DIVERGENCE
+TS_DEADLINE_ARMS_AT_DISPATCH
+PQ hybrid AND | 106 | NEEDS_LANGUAGE
+hybrid AND
+HOST_ADAPTER_PRESENCE | 110 | UNKNOWN
+HOST_ADAPTER_PRESENCE
+MB-06 listed cleanup | 106 | UNKNOWN
+MB-06 CARRIED_UNKNOWN
+skip-one-wipe | 100 | UNKNOWN
+WIPE_OUTSIDE_UNIT
+Addendum D OPEN ordering | 106 | UNKNOWN
+TOTAL_EFFECT_OUTCOME
+captured JS intrinsics | 119 | UNKNOWN
+SEALED_INTRINSICS
 createAppKernel executed: yes (construction throw vector)
 handle() 404/405: attempted in ts-differential.test.mjs loadFrozen
 q46 monotonic-time.fungi types: CARRIED_UNKNOWN pending Grok-briefed reconciliation
 MB-16: .fungi reads no clock; caller supplies typed readings through c-boundary
+F5 every parity row executes flattened fungi; live handle only for 404/405/posture
+Frozen TS 20 createAppKernel files
+Frozen TS 242 cases
