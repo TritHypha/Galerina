@@ -199,8 +199,8 @@ Citation carve-out: RD-1899 through RD-1910 are PRIVATE under `ZTF-Knowledge-Bas
 Cite by path and sha256 only. Never copy, quote, or export the RD body. Addendum D file sha256 `d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1` HASH_MATCH.
 
 - Path: `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md`
-- sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` (HASH_MATCH, 60907 bytes, working tree 2026-10-18)
-- Label: PRIVATE, 2026-10-18 follow-up uncommitted. The RD number is indexed; the 2026-10-18 follow-up section cited here is uncommitted.
+- sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a` (kbCommit f86212ce95db15451739c9c8eb8bc361c1a5d6d4)
+- Label: cited by path + sha256 + kbCommit only; body not quoted. The RD number is indexed; RD-0778 is finished by another session: cite it, never edit it, never export its body.
 
 This is a `partial_input` of obligation `TOTAL_EFFECT_OUTCOME` (status UNKNOWN) and of language gap `TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC` (status UNKNOWN). Constraints are research, not discharge.
 
@@ -223,6 +223,41 @@ Still OPEN, carried as UNKNOWN (do not invent syntax or claim closure):
 - FFI / native containment of aliases.
 - Enforcement of cleanup-evidence binding (operation + generation).
 
+
+## Astra outcome wording (Addendum 2026-10-20 section 2; W1-W5)
+
+Source sha256 `e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92`. Astra reply sha256 `a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761`. Policy kept. AP-Q07-1..4 stay CARRIED_UNKNOWN per adapter. FFI/native containment and cleanup-evidence binding stay OPEN.
+
+- W1: In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem.
+- W2: Ordinary write/send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither establishes recipient effect.
+- W3: UNKNOWN is never success, never proof of zero effect and never retry authority. Recovery runs before new claims and never promotes or reissues.
+- W4: Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure. Unclear topology refuses before B.
+- W5: Automatic retry after DELIVERY_UNKNOWN is prohibited. Keep effect retry and disclosure retry separate.
+
+## Memory blockers MB-03..MB-19 (research constraints, not discharges)
+
+Provenance: Grok zero-trust default, pending Phillip. Status is UNKNOWN or CARRIED_UNKNOWN only. Verified grok.com rows are named in direction_verified against grokcom-verification-20261020.md sha256 `02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e`. CONTRADICTED rows 7, 10, 12, 14, 16, 19, 30 never appear as fact. Unmatched grok.com notes stay direction_unverified.
+
+| id | binds | rule | status |
+|---|---|---|---|
+| MB-03 | 32, 34, 36 | Re-issue gets a distinct typed code; unlisted lease state refuses 111; forged issued id refuses. | CARRIED_UNKNOWN |
+| MB-04 | 32 | Range-check every token first (unlisted -> 111), then decide. | CARRIED_UNKNOWN |
+| MB-05 | 32, 34-37 | Refuse release unless independent authorization, prepared-result custody, and generation-bound cleanup evidence are all valid. | CARRIED_UNKNOWN |
+| MB-06 | 32, 34, 37 | Cleanup evidence is sealed; only DONE with matching opId/generation/digest or NOT_REQUIRED for an empty set admits; failed/unknown after begin is QUARANTINED. | CARRIED_UNKNOWN |
+| MB-07 | 44@1ff9f921, 32, 35, 36 | Every adapter declares an observation class; unaudited pre-begin is OUT_OF_PROCESS_UNBOUND. | CARRIED_UNKNOWN |
+| MB-08 | 32, 34, 36, 38 | v1 is single-process in-memory; restart is a new incarnation; earlier op ids recover as DELIVERY_UNKNOWN and are never retried. | CARRIED_UNKNOWN |
+| MB-09 | 32, 36 | Startup recovery marks every non-terminal cell ABANDONED (DELIVERY_UNKNOWN) before any claim. | CARRIED_UNKNOWN |
+| MB-10 | 32, 34, 35 | COMMITTED is unreachable for out-of-process classes; ack is evidence only. | UNKNOWN |
+| MB-11 | 44@1ff9f921, 32, 34-36 | v1 admits only non-shared WebAssembly.Memory host-import release; SAB/shared/MessagePort/mmap/fd/resizable refuse; no erase claim. | CARRIED_UNKNOWN |
+| MB-12 | 44@1ff9f921, 37, 38, 31 | Native/foreign hand-off is the release point; engine indices are never stale-proof; .fungi mints generation-tagged handles; passed fds cannot be revoked. | CARRIED_UNKNOWN |
+| MB-13 | 31 | .fungi validates type and range through c-boundary.fungi; JS ToInt32/ToBigInt64 and captured-intrinsic rules are browser-embedding only (CARRIED_UNKNOWN there). | CARRIED_UNKNOWN |
+| MB-14 | 32, 34, 35, 37 | Wipe is best-effort with no erase claim; pre-reserve memory; custody claims are against in-protocol readers only. | CARRIED_UNKNOWN |
+| MB-15 | 32, 34, 38 | Constant-time compare is a sealed native-runtime intrinsic verified outside any WebAssembly JIT; WASM compares are CT UNKNOWN; crypto.timingSafeEqual is not the ruling (browser-embedding CARRIED_UNKNOWN only). | CARRIED_UNKNOWN |
+| MB-16 | 46@cba507d4, 35-38 | Closed Point/Duration algebra; Point minted only by a sealed clock port through c-boundary; backwards/overflow/unavailable refuse; no busy-wait. | CARRIED_UNKNOWN |
+| MB-17 | 31, 36, 37, 38 | .fungi has no prototype lookup and validates through c-boundary.fungi; JS captured-intrinsic / Reflect.apply / species / instanceof rules are browser-embedding only. | CARRIED_UNKNOWN |
+| MB-18 | 38, 35 | Suite id required; PQ_SIGNATURE_UNAVAILABLE is UNKNOWN, never ASSURED; never a silent classical-only seal. | UNKNOWN |
+| MB-19 | 36, 35 | Idempotency port is reserve then commit or cancel; post-begin refusal stays RESERVED_UNKNOWN / DELIVERY_UNKNOWN with no retry. | CARRIED_UNKNOWN |
+
 ## Four UNKNOWN language gaps
 
 None of RD-1899..1910 fills these. They stay UNKNOWN, with the RDs above as partial inputs only.
@@ -230,7 +265,7 @@ None of RD-1899..1910 fills these. They stay UNKNOWN, with the RDs above as part
 | gap | status | partial input | refusing default |
 |---|---|---|---|
 | obligations registry / annotation convention | this spec is DRAFT, not live language | RD-1908 carry-explicitly hint | treating the draft as enforced syntax refuses |
-| language-level COMMITTED / REFUSED / DELIVERY_UNKNOWN effect spec | UNKNOWN | RD-1905 / RD-1901 plus RD-0778 path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` label PRIVATE, 2026-10-18 follow-up uncommitted (body not quoted). Constraints 1-10 are research, not discharge. Three OPEN items: release vs revocation ordering; FFI/native alias containment; cleanup-evidence binding enforcement. | inventing syntax refuses |
+| language-level COMMITTED / REFUSED / DELIVERY_UNKNOWN effect spec | UNKNOWN | RD-1905 / RD-1901 plus RD-0778 path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a` label cited by path + sha256 + kbCommit only; body not quoted. Constraints 1-10 are research, not discharge. Three OPEN items: release vs revocation ordering; FFI/native alias containment; cleanup-evidence binding enforcement. | inventing syntax refuses |
 | sealed-intrinsics spec | UNKNOWN | sealed constructors and no-cast only; nothing on prototype or global mutation | inventing syntax refuses |
 | typed monotonic time spec | UNKNOWN | point/distance algebra and unit types; nothing on monotonicity, overflow, NaN, or deadlines | inventing syntax refuses |
 
@@ -288,11 +323,11 @@ An existing obligations-registry or source-annotation convention binding TS guar
 
 ## Cited RDs
 
-Indexed (appear in `00-KB-INDEX.md` and/or `AI_INDEX.md` at KB HEAD): RD-0395, RD-0448, RD-0528, RD-0634, RD-0646, RD-0659, RD-0731, RD-0757, RD-0770, RD-0775, RD-0782, RD-0793, RD-0822, RD-0845, RD-1233, RD-1413, RD-1414, RD-1415, RD-1891. RD-0778 is indexed as a number; the 2026-10-18 follow-up cited as partial_input is uncommitted (see Addendum D; path + sha256 only; body not quoted).
+Indexed (appear in `00-KB-INDEX.md` and/or `AI_INDEX.md` at KB HEAD): RD-0395, RD-0448, RD-0528, RD-0634, RD-0646, RD-0659, RD-0731, RD-0757, RD-0770, RD-0775, RD-0782, RD-0793, RD-0822, RD-0845, RD-1233, RD-1413, RD-1414, RD-1415, RD-1891. RD-0778 is indexed as a number; cite object path + sha256 9a752d97 + kbCommit f86212ce only; body not quoted.
 
 PRIVATE, not yet in KB indexes (indexes stale): RD-1899, RD-1900, RD-1901, RD-1902, RD-1904, RD-1905, RD-1906, RD-1907, RD-1908, RD-1909, RD-1910.
 
-RD-0778 follow-up (PRIVATE, 2026-10-18 uncommitted working tree): path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b` HASH_MATCH 60907 bytes. Body not quoted.
+RD-0778 cite object: path `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a` kbCommit `f86212ce95db15451739c9c8eb8bc361c1a5d6d4`. Body not quoted.
 
 KB files VERIFIED present: `reference/galerina/galerina-three-valued-governance.md`, `reference/language/capabilities.md`, `reference/specs/capability-registry.yaml`, `reference/galerina/galerina-static-capability-proofs.md`, `reference/galerina/galerina-gradual-capability-inference.md`, `reference/language/restricted-native-boundary.md`.
 
@@ -334,7 +369,7 @@ Each seed-table `found_in` was re-checked against named files under `C:\\Users\\
 
 ## UNKNOWNs with reasons
 
-- Live language-level specs for TOTAL_EFFECT_OUTCOME, SEALED_INTRINSICS, MONOTONIC_TYPED_TIME: not found; RD-1899..1910 are partial inputs only. TOTAL_EFFECT_OUTCOME also carries RD-0778 (path+sha256, PRIVATE 2026-10-18 follow-up uncommitted) as research constraints 1-10; three OPEN items remain UNKNOWN.
+- Live language-level specs for TOTAL_EFFECT_OUTCOME, SEALED_INTRINSICS, MONOTONIC_TYPED_TIME: not found; RD-1899..1910 are partial inputs only. TOTAL_EFFECT_OUTCOME carries the RD-0778 cite object (path + sha256 9a752d97 + kbCommit f86212ce) and Astra W1-W5; AP-Q07-1..4 stay CARRIED_UNKNOWN; FFI/native containment and cleanup-evidence binding stay OPEN.
 - JavaScript source-to-.fungi converter in AGENTS: none. Analysis tool is code-logic-workbench (Addendum C).
 - Skills vs sandbox numeric map: not compared line by line.
 - Sandbox `SandboxRefusal` throw vs typed obligation result: unbridged.

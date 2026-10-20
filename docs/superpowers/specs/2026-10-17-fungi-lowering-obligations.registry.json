@@ -58,16 +58,11 @@
       "id": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
       "status": "UNKNOWN",
       "reason": "no language-level COMMITTED/REFUSED/DELIVERY_UNKNOWN spec found",
-      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale); RD-0778 path ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md sha256 9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b label PRIVATE, 2026-10-18 follow-up uncommitted",
+      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale); RD-0778 cited only as rd0778_cite object",
       "rd0778_cite": {
         "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
-        "sha256": "9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b",
-        "label": "PRIVATE, 2026-10-18 follow-up uncommitted",
-        "working_tree_bytes": 60907,
-        "working_tree_sha256_match": true,
-        "body_quoted": false,
-        "role": "research_constraints_not_discharge",
-        "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
+        "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+        "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
       },
       "research_constraints": [
         {
@@ -115,7 +110,21 @@
         "Ordering of actual release vs effective revocation (including partial sends).",
         "FFI / native containment of aliases.",
         "Enforcement of cleanup-evidence binding (operation + generation)."
-      ]
+      ],
+      "astra_outcome_wording": {
+        "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+        "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+        "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+        "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+        "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+        "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+        "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+        "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+        "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+        "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+        "ffi_native_containment": "OPEN",
+        "cleanup_evidence_binding": "OPEN"
+      }
     },
     {
       "id": "SEALED_INTRINSICS_LANGUAGE_SPEC",
@@ -248,12 +257,12 @@
     {
       "id": "TOTAL_EFFECT_OUTCOME",
       "version": 1,
-      "statement": "Effects never throw. They return COMMITTED, REFUSED or DELIVERY_UNKNOWN. Commit-then-throw and sink-throw become DELIVERY_UNKNOWN by construction. ASSURED only for a current CONSUMED seal. U4 evicted/live/default operation states report DELIVERY_UNKNOWN.",
+      "statement": "Effects never throw. They return COMMITTED, REFUSED or DELIVERY_UNKNOWN. In the current profile COMMITTED is unreachable after begin for every out-of-process release (policy, not a theorem). UNKNOWN is never success, never proof of zero effect and never retry authority. Recovery runs before new claims and never promotes or reissues. ASSURED only for a current CONSUMED seal. U4 evicted/live/default operation states report DELIVERY_UNKNOWN.",
       "ts_scaffold": {
         "behaviour": "Best-effort mapping of throw/ack/audit order onto DELIVERY_UNKNOWN. Language-level spec UNKNOWN.",
         "guarantee": "FAIL_CLOSED_BEST_EFFORT"
       },
-      "fungi_primitive": "Total effect algebra COMMITTED | REFUSED | DELIVERY_UNKNOWN with refusing default. Language-level spec remains UNKNOWN (gap table).",
+      "fungi_primitive": "Total effect algebra COMMITTED | REFUSED | DELIVERY_UNKNOWN with refusing default. Out-of-process post-B COMMITTED is unreachable by W1. Language-level spec remains UNKNOWN (gap table).",
       "rust_verifier_check": "Out-of-process: no throw edges from annotated effectful flows; unlisted terminal is DELIVERY_UNKNOWN or refuse.",
       "found_in": [
         {
@@ -313,13 +322,8 @@
       ],
       "partial_input": {
         "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
-        "sha256": "9438d9b55851241fa7a6cc6180c94c28f5c6b60700f8c5be22ade78fbe4e135b",
-        "label": "PRIVATE, 2026-10-18 follow-up uncommitted",
-        "working_tree_bytes": 60907,
-        "working_tree_sha256_match": true,
-        "body_quoted": false,
-        "role": "research_constraints_not_discharge",
-        "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
+        "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+        "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
       },
       "research_constraints": [
         {
@@ -368,7 +372,21 @@
         "FFI / native containment of aliases.",
         "Enforcement of cleanup-evidence binding (operation + generation)."
       ],
-      "language_gap": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC"
+      "language_gap": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
+      "astra_outcome_wording": {
+        "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+        "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+        "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+        "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+        "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+        "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+        "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+        "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+        "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+        "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+        "ffi_native_containment": "OPEN",
+        "cleanup_evidence_binding": "OPEN"
+      }
     },
     {
       "id": "MONOTONIC_TYPED_TIME",
@@ -927,5 +945,235 @@
     "UNKNOWN"
   ],
   "obligation_status_default": "REFUSES_UNLISTED",
-  "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1"
+  "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1",
+  "rd0778_cite": {
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+  },
+  "addendum_20261020_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+  "closed_memory_blocker_status": [
+    "UNKNOWN",
+    "CARRIED_UNKNOWN"
+  ],
+  "memory_blocker_status_default": "REFUSES_UNLISTED",
+  "memory_blockers": [
+    {
+      "id": "MB-03",
+      "binds": [
+        "32",
+        "34",
+        "36"
+      ],
+      "rule": "A re-issue gets its own typed code, distinct from a fresh mint; an unlisted lease state refuses with 111; a forged issued id refuses.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-04",
+      "binds": [
+        "32"
+      ],
+      "rule": "Range-check every token first (unlisted -> 111), then decide.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-05",
+      "binds": [
+        "32",
+        "34",
+        "35",
+        "36",
+        "37"
+      ],
+      "rule": "Refuse release unless independent authorization, prepared-result custody, and cleanup evidence bound to operation and generation are all present and valid.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-06",
+      "binds": [
+        "32",
+        "34",
+        "37"
+      ],
+      "rule": "Cleanup evidence is a sealed value the cleanup module mints; the guard admits only DONE with matching opId, generation and digest, or NOT_REQUIRED for a statically empty obligation set; anything else refuses before begin; failed or unknown cleanup after begin is QUARANTINED with DELIVERY_UNKNOWN.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-07",
+      "binds": [
+        "44@1ff9f921",
+        "32",
+        "35",
+        "36"
+      ],
+      "rule": "Every adapter declares an observation class; an unaudited pre-begin path is OUT_OF_PROCESS_UNBOUND and release counts at its first buffered write.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 21; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-08",
+      "binds": [
+        "32",
+        "34",
+        "36",
+        "38"
+      ],
+      "rule": "The v1 memory profile is single process with in-memory cells; restart starts a new incarnation epoch; any earlier-incarnation op id recovers as DELIVERY_UNKNOWN and is never retried; a multi-process or durable deployment refuses CROSS_PROCESS_CAS_NOT_VERIFIABLE.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-09",
+      "binds": [
+        "32",
+        "36"
+      ],
+      "rule": "A startup recovery pass marks every non-terminal cell ABANDONED (DELIVERY_UNKNOWN) before any claim is admitted, plus the MB-08 incarnation rule.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-10",
+      "binds": [
+        "32",
+        "34",
+        "35"
+      ],
+      "rule": "COMMITTED is unreachable for out-of-process classes; an ack is recorded as evidence only and never upgrades DELIVERY_UNKNOWN.",
+      "status": "UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-11",
+      "binds": [
+        "44@1ff9f921",
+        "32",
+        "34",
+        "35",
+        "36"
+      ],
+      "rule": "v1 admits only host-import release into non-shared WebAssembly.Memory as IN_PROCESS_BOUND; SharedArrayBuffer, shared WebAssembly.Memory, MessagePort copy/transfer, mmap, fd passing and resizable buffers refuse ADAPTER_CLASS_NOT_ADMITTED; no erase claim.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 1, 2, 8, 9; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "engine-specific relocating grow stale pages (row 3 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-12",
+      "binds": [
+        "44@1ff9f921",
+        "37",
+        "38",
+        "31"
+      ],
+      "rule": "Any byte handed across a native or foreign boundary is released at that point and is DELIVERY_UNKNOWN-only afterwards; engine indices are never stale-proof; .fungi mints generation-tagged handles and rejects stale generations; passed or inherited fds cannot be revoked; v1 adapters may not mmap or pass descriptors.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md row 32; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "Zircon handle generation (row 31 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-13",
+      "binds": [
+        "31"
+      ],
+      "rule": "The .fungi runtime boundary validates type and range itself through c-boundary.fungi; JavaScript ToInt32/ToBigInt64, typeof checks and captured-intrinsic rules belong only to an optional browser embedding adapter (CARRIED_UNKNOWN there); invoke ABI wrap of integers outside i32 stays CARRIED_UNKNOWN.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 4, 5, 6, 20; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-14",
+      "binds": [
+        "32",
+        "34",
+        "35",
+        "37"
+      ],
+      "rule": "Linear ownership is NEEDS_LANGUAGE; wipe is structural best-effort of the live region with one owner and no erase claim; pre-reserve memory so secrets are not relocated; no-swap, no-dump and complete zeroization are never claimed; custody claims hold against in-protocol readers only.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 2, 9; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "engine relocating grow leaves stale pages (row 3 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-15",
+      "binds": [
+        "32",
+        "34",
+        "38"
+      ],
+      "rule": "Constant-time compare is a sealed, capability-gated intrinsic of the .fungi native runtime, implemented natively and verified outside any WebAssembly JIT; any compare compiled to WebAssembly is CT UNKNOWN; crypto.timingSafeEqual is not the ruling and is at most a CARRIED_UNKNOWN note for an optional browser embedding adapter.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 26, 27, 37; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-16",
+      "binds": [
+        "46@cba507d4",
+        "35",
+        "36",
+        "37",
+        "38"
+      ],
+      "rule": "A closed Point/Duration algebra: Point minus Point is Duration, Point plus Duration is Point, everything else refuses; a Point is minted only by a sealed clock port through c-boundary; unavailable, backwards or overflowing time is a typed UNKNOWN refusal; one deadline covers every stage; no busy-wait.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_unverified": "blockers-memory-20261019.md grok.com Q1 clock notes unmatched by a VERIFIED row in grokcom-verification-20261020.md."
+    },
+    {
+      "id": "MB-17",
+      "binds": [
+        "31",
+        "36",
+        "37",
+        "38"
+      ],
+      "rule": "Inside .fungi the runtime boundary validates type and range through c-boundary.fungi and has no prototype lookup; JavaScript captured-intrinsic, Reflect.apply, Symbol.species and instanceof rules belong only to an optional browser embedding adapter (CARRIED_UNKNOWN there).",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_unverified": "blockers-memory-20261019.md grok.com Q5 captured-intrinsic notes unmatched as a .fungi core mechanism; they stay browser-embedding only."
+    },
+    {
+      "id": "MB-18",
+      "binds": [
+        "38",
+        "35"
+      ],
+      "rule": "A suite id is required; PQ_SIGNATURE_UNAVAILABLE gives UNKNOWN, never ASSURED; never a silent classical-only seal.",
+      "status": "UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 22, 23, 24, 25; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-19",
+      "binds": [
+        "36",
+        "35"
+      ],
+      "rule": "The .fungi idempotency port is reserve then commit or cancel; a refusal before dispatch cancels the reservation; once dispatch has begun the key stays RESERVED_UNKNOWN until TTL with DELIVERY_UNKNOWN, no retry and no unconditional delete.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    }
+  ],
+  "astra_outcome_wording": {
+    "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+    "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+    "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+    "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+    "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+    "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+    "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+    "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+    "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+    "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+    "ffi_native_containment": "OPEN",
+    "cleanup_evidence_binding": "OPEN"
+  }
 }
