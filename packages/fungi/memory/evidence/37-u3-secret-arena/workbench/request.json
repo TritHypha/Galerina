@@ -1,0 +1,160 @@
+{
+  "schema": "agent-logic-request.v1",
+  "subject": {
+    "id": "subject:q37-u3-secret-arena",
+    "kind": "FILE",
+    "locator": "packages/fungi/memory/src/secret-arena.fungi",
+    "digest": "0433b021c0f099ee54368db91113c57f26f81d8a7a5a922e0f88e56dfca6cafb"
+  },
+  "evidence": {
+    "repositoryId": "repository:galerina-trit-hypha",
+    "expectedHead": "999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed",
+    "indexedHead": "999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed",
+    "graphDigest": "b59158f6edc6b1c6916956d3fe615ac9a4cf898ee014972fc5e97fa4be9edc30",
+    "decoder": {
+      "id": "decoder:unavailable",
+      "version": "none",
+      "available": false
+    },
+    "views": [
+      {
+        "kind": "HOST",
+        "locator": "graph/host-unavailable",
+        "digest": "b59158f6edc6b1c6916956d3fe615ac9a4cf898ee014972fc5e97fa4be9edc30",
+        "indexedHead": "999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed"
+      },
+      {
+        "kind": "FUNGI",
+        "locator": "graph/fungi-unavailable",
+        "digest": "b59158f6edc6b1c6916956d3fe615ac9a4cf898ee014972fc5e97fa4be9edc30",
+        "indexedHead": "999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed"
+      }
+    ]
+  },
+  "invariants": [
+    {
+      "id": "invariant:one-helper",
+      "statementLocator": "parked-ts-findings-for-fungi.md#CN-1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "invariant:commit-point",
+      "statementLocator": "task.md#Amendment-A1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/release-commit-point.fungi"
+      ]
+    },
+    {
+      "id": "invariant:custodian-port",
+      "statementLocator": "task.md#Amendment-A1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/secret-arena-custodian-port.fungi"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "candidate:build-secret-arena",
+      "tier": "BUILD",
+      "locator": "packages/fungi/memory/src/secret-arena.fungi",
+      "verdict": 0
+    }
+  ],
+  "obligations": [
+    {
+      "id": "obligation:syntax",
+      "kind": "SYNTAX",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/language/fungi/04-types-and-values.md"
+      ]
+    },
+    {
+      "id": "obligation:symbols",
+      "kind": "SYMBOLS",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:types",
+      "kind": "TYPES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/secret-arena.fungi"
+      ]
+    },
+    {
+      "id": "obligation:effects",
+      "kind": "EFFECTS",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/37-u3-secret-arena/receipts.json"
+      ]
+    },
+    {
+      "id": "obligation:value-states",
+      "kind": "VALUE_STATES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:taint",
+      "kind": "TAINT",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:governance",
+      "kind": "GOVERNANCE",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json"
+      ]
+    },
+    {
+      "id": "obligation:gir",
+      "kind": "GIR",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/37-u3-secret-arena/workbench/command.txt"
+      ]
+    },
+    {
+      "id": "obligation:differential",
+      "kind": "DIFFERENTIAL",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/37-u3-secret-arena/parity.md"
+      ]
+    },
+    {
+      "id": "obligation:admission",
+      "kind": "ADMISSION",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/37-u3-secret-arena/receipts.json"
+      ]
+    }
+  ]
+}

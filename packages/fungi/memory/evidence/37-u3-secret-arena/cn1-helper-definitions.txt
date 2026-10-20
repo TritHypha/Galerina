@@ -1,0 +1,1 @@
+CN-1: landed source imports and CALLs readForeignSafeInteger from the frozen helper. No local copy of the helper body. finish lives in release-commit-point. Flatten is harness-only (c-boundary body plus release-commit-point body plus custodian-port body plus this unit).

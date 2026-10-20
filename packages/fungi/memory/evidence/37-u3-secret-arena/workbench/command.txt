@@ -1,0 +1,5 @@
+cwd: AGENTS
+AGENTS HEAD: 2ac81fcf503d6a2c2a3d1506f15837ad1fde541b
+workbench.mjs sha256: 87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b
+node tools/code-logic-workbench.mjs build <clone>/packages/fungi/memory/evidence/37-u3-secret-arena/workbench/request.json --profile skills/code-logic-workbench/references/fungi-profile.json --format json
+status: REFUSE decoder:unavailable expectedHead:999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed

@@ -1,0 +1,10 @@
+twins AFTER (working tree): fungi-twins 103/103 check-clean across 10 dir(s); execution 73 shadow · 1 differential · 29 authoritative. Same as Q34 at 999fbd79 (BEFORE). Counts unchanged. Memory .fungi are not twins.
+twins status 0
+audit:package-topology status 1
+flat-package topology: 101 canonical identities; 1 deferred nested native package(s); 0 pre-SLIDE node_modules tree(s)
+  DEFERRED until executable SLIDE integration: galerina-framework-example-app/packages/greeting/package.fungi.json
+  FAIL: local uncommitted dist junctions used to run galerina (not in this commit)
+audit:product-boundaries --check status 2
+{"schema":"product-package-boundary-receipt.v1","status":"REFUSED","authorizing":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_GRAPH_MISSING"],"findings":[]}
+tests x3: run1 35/35; run2 35/35; run3 35/35 fail 0. Command: node --test --test-concurrency=1 --test-timeout=180000 packages/fungi/memory/tests/37-u3-secret-arena/secret-arena.test.mjs packages/fungi/memory/tests/37-u3-secret-arena/ts-differential.test.mjs packages/fungi/memory/tests/37-u3-secret-arena/path-leak.test.mjs
+encoding-gate status 0
