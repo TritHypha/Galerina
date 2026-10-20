@@ -803,6 +803,98 @@ test("T4 spent applyFinalize every ack outcome never 100", () => {
   }
 });
 
+test("T5 spent applyFinalize acked==100 unreachable; U07 EQUIVALENT", () => {
+  const unit = readFileSync(UNIT, "utf8");
+  const call = "ackStep(presentToken, tokenMatchToken, epochPresentToken, 0, epochMatchToken, leaseState, 1)";
+  assert.equal(unit.includes(call), true, "applyFinalize ackStep shape");
+  const needle = "if acked == 100 {\n    return finish(6, true)";
+  assert.equal(unit.includes(needle), true, "U07 needle present");
+  const presents = [0, 1];
+  const matches = [0, 1];
+  const epochPresents = [0, 1];
+  const epochMatches = [0, 1];
+  const leases = [0, 1, 2, 3, 4, 5];
+  let reached = 0;
+  let pi = 0;
+  while (pi < presents.length) {
+    let mi = 0;
+    while (mi < matches.length) {
+      let ei = 0;
+      while (ei < epochPresents.length) {
+        let qi = 0;
+        while (qi < epochMatches.length) {
+          let li = 0;
+          while (li < leases.length) {
+            const p = presents[pi];
+            const m = matches[mi];
+            const ep = epochPresents[ei];
+            const em = epochMatches[qi];
+            const lease = leases[li];
+            const label =
+              "T5 p" +
+              String(p) +
+              " m" +
+              String(m) +
+              " ep" +
+              String(ep) +
+              " em" +
+              String(em) +
+              " l" +
+              String(lease);
+            const stepped = runFlow("ackStep", [p, m, ep, 0, em, lease, 1]);
+            assert.equal(stepped.present, true, label + " ackStep present " + stepped.reason);
+            assert.notEqual(stepped.value, 100, label + " ackStep packed " + String(stepped.value));
+            if (stepped.value !== 101) {
+              reached = reached + 1;
+            }
+            li = li + 1;
+          }
+          qi = qi + 1;
+        }
+        ei = ei + 1;
+      }
+      mi = mi + 1;
+    }
+    pi = pi + 1;
+  }
+  assert.equal(reached > 0, true, "inputs reach the acked==100 line");
+  withMutant(needle, "if acked == 100 {\n    return finish(0, true)", "U07 acked==100 success", () => {
+    expect(
+      finalize({
+        spentToken: 1,
+        consumePacked: 100,
+        auditPacked: 100,
+        presentToken: 0,
+        tokenMatchToken: 1,
+        epochPresentToken: 1,
+        epochMatchToken: 1,
+        leaseState: 1,
+      }),
+      106,
+      "U07 reaching input still 106",
+    );
+    expect(
+      finalize({ spentToken: 1, consumePacked: 100, auditPacked: 100, leaseState: 1 }),
+      106,
+      "U07 acked==101 input still 106",
+    );
+  });
+  expect(
+    finalize({
+      spentToken: 1,
+      consumePacked: 100,
+      auditPacked: 100,
+      presentToken: 0,
+      tokenMatchToken: 1,
+      epochPresentToken: 1,
+      epochMatchToken: 1,
+      leaseState: 1,
+    }),
+    106,
+    "restored reaching input",
+  );
+});
+
 test("F4 standalone survivor pins no mutant needle", () => {
   expect(clock({ clock: 6000, armedAt: 1000, budget: 5000 }), 147, "clock == armedAt+budget is 147");
   expect(clock({ clock: 5999, armedAt: 1000, budget: 5000 }), 100, "clock == armedAt+budget-1 is 100");

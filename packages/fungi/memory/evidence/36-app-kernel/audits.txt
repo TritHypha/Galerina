@@ -8,3 +8,6 @@ audit:product-boundaries --check status 2
 {"schema":"product-package-boundary-receipt.v1","status":"REFUSED","authorizing":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_GRAPH_MISSING"],"findings":[]}
 tests x3: run1 19/19; run2 19/19; run3 19/19 fail 0. Command: node --test --test-concurrency=1 --test-timeout=180000 packages/fungi/memory/tests/36-app-kernel/kernel.test.mjs packages/fungi/memory/tests/36-app-kernel/ts-differential.test.mjs packages/fungi/memory/tests/36-app-kernel/path-leak.test.mjs
 encoding-gate status 0
+follow-up 06 T5 U07 EQUIVALENT. kernel.test.mjs host win32 node v24.18.0: run1 35/35 duration_ms 364942; run2 35/35 duration_ms 346233; run3 35/35 duration_ms 340974 fail 0.
+follow-up 06 kernel.test.mjs WSL linux node v24.21.0 /tmp/galerina-q36-scratch: run1 35/35 duration_ms 353094; run2 35/35 duration_ms 332697; run3 35/35 duration_ms 324641 fail 0.
+companions path-leak+ts-differential host 3/3. Combined 38/38 (prior 37 + T5).
