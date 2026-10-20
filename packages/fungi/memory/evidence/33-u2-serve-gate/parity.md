@@ -5,6 +5,7 @@ Workbench capsule status REFUSE (`evidence:DECODER_UNAVAILABLE`); HOST/FUNGI vie
 Skills: translating-typescript-to-fungi core/binding/workflow 1,3-8,11; writing-fungi core/binding/workflow 1-9,16. Sequential if-return (secret-gate.fungi style) after nested if/else failed WAT emit. Spell it WebAssembly.
 
 Host maps method/path/effect/reach/layer onto Int tags once (P20-N2). The unit does not parse path bytes or walk an AST.
+The string-to-tag normaliser (ASCII case, trailing slash, percent, dot segments, double slash, byte bound, invalid UTF-8, NUL) is host-side HOST_ADAPTER_PRESENCE CARRIED_UNKNOWN. Variant MUST-REFUSE probes prove the closed Int table, not the normaliser.
 
 | ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
 |---|---|---|---|---|
@@ -15,6 +16,7 @@ Host maps method/path/effect/reach/layer onto Int tags once (P20-N2). The unit d
 | serve-secret-gate.ts:75 decodeURIComponent.toLowerCase | pathClass 2 and 3 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE case percent |
 | serve-secret-gate.ts:84 compileDeclaredPathPattern null | pathProtection unlisted 12 | INTENDED_DIVERGENCE | NO_NULL_NAN | MUST-REFUSE unlisted path class as PROTECTED |
 | serve-secret-gate.ts:107 isProtectedAuthVerifyRoute | pathProtection 0-5 -> 1 | PRESERVED | NO_AMBIENT_AUTHORITY | MUST-REFUSE GET and PUT /auth/verify as protected identity |
+| serve-secret-gate.ts:111 route.pathPattern.test("/auth/verify") | host maps a declared pattern that can match /auth/verify to a protected tag; unlisted -> 112 | PRESERVED | NO_AMBIENT_AUTHORITY | POST /auth/{x} packed 101; unlisted path 112 |
 | serve-secret-gate.ts:112 normalized === null return false | pathClass 6 -> 2 | INTENDED_DIVERGENCE | NO_NULL_NAN | C188-N2; POST/GET unnormalisable 102 |
 | serve-secret-gate.ts:117 isSecretBearingEffectName | effectSecretClass 1-5 -> 3 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE secret.read vault.read vault.write env and Secrets.get |
 | serve-secret-gate.ts:124 isSecretEffectName | effectSecretClass | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | deprecated alias of the sealed list |
@@ -40,7 +42,7 @@ Host maps method/path/effect/reach/layer onto Int tags once (P20-N2). The unit d
 
 RD-1413 `rd1413-serve-gate.test.mjs` 36 cases each have a matching probe (same admit/refuse) or an INTENDED_DIVERGENCE row. Residual `rd1413-serve-gate-residual.test.mjs` source-text pin is replaced by layer-0 and layer-1 behavioural probes (C188-F1, C188-F2). Dot-segment and double-slash variants are extra MUST-REFUSE probes required by A1.
 
-Counts: PRESERVED 16, INTENDED_DIVERGENCE 6, UNKNOWN 4, NEEDS_LANGUAGE 3. Unlisted verdict refuses.
+Counts: PRESERVED 17, INTENDED_DIVERGENCE 6, UNKNOWN 4, NEEDS_LANGUAGE 3. Unlisted verdict refuses.
 
 ## Packed codes
 
@@ -61,7 +63,7 @@ Counts: PRESERVED 16, INTENDED_DIVERGENCE 6, UNKNOWN 4, NEEDS_LANGUAGE 3. Unlist
 
 ## Notes
 
-N1. Path/effect/method strings stay on the host adapter. The unit sees closed Int tags.
+N1. Path/effect/method strings stay on the host adapter. The unit sees closed Int tags. The string-to-tag normaliser (case, trailing slash, percent, dot segments, double slash, byte bound, invalid UTF-8, NUL) is HOST_ADAPTER_PRESENCE CARRIED_UNKNOWN. Variant probes prove the table, not the normaliser.
 
 N2. RD-0778 cited by path + sha256 + kbCommit only, never its body: `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a` kbCommit `f86212ce95db15451739c9c8eb8bc361c1a5d6d4`.
 

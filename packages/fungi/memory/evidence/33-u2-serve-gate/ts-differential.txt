@@ -13,3 +13,4 @@ secret.read | 103 | PRESERVED
 vault.write | 103 | PRESERVED
 totally.fake.effect | 104 | INTENDED_DIVERGENCE
 crypto.verify fixture | 100 | PRESERVED
+POST /auth/{x} pathPattern matches /auth/verify | 101 | PRESERVED

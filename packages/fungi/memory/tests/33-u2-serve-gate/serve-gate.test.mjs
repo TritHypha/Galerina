@@ -186,6 +186,14 @@ test("MUST-REFUSE foreign classTag 1..10 as ForeignRaw and unlisted tag 11", () 
   expectPacked(classify({ layerClass: 3, pathClass: 7 }), 110, "layer NaN");
   expectPacked(classify({ methodClass: 1, pathClass: 7 }), 110, "method Null");
   expectPacked(classify({ pathClassClass: 12, pathClass: 7 }), 111, "path classTag unlisted");
+  expectPacked(classify({ pathClass: 9, effectClassClass: 3 }), 110, "effect NaN");
+  expectPacked(classify({ pathClass: 9, effectClassClass: 11 }), 111, "effect classTag unlisted");
+  expectPacked(classify({ pathClass: 9, reachClassClass: 3 }), 110, "reach NaN");
+  expectPacked(classify({ pathClass: 9, reachClassClass: 11 }), 111, "reach classTag unlisted");
+});
+
+test("MUST-REFUSE unlisted reach class on a public path as secret-bearing", () => {
+  expectPacked(classify({ pathClass: 9, reachClass: 99 }), 104, "unlisted reach");
 });
 
 test("gate never yields COMMITTED", () => {
@@ -263,8 +271,8 @@ test("mutant unlisted effect non-secret goes RED then restore", () => {
 
 test("mutant remove startServer layer check goes RED then restore", () => {
   withMutant(
-    "let startServerFenceOn: Int = 1",
-    "let startServerFenceOn: Int = 0",
+    "  let pathKind: Int = pathProtection(pathClass)",
+    "  if layer == 1 {\n    return finish(0, true)\n  }\n  let pathKind: Int = pathProtection(pathClass)",
     () => {
       const r = classify({ layer: 1, pathClass: 0 });
       assert.equal(r.present, true, r.reason + " " + r.text);
@@ -274,4 +282,43 @@ test("mutant remove startServer layer check goes RED then restore", () => {
     },
   );
   expectPacked(classify({ layer: 1, pathClass: 0 }), 101, "restore startServer fence");
+});
+
+test("mutant unlisted reach class admitted goes RED then restore", () => {
+  withMutant(
+    "let unlistedReachSecretDefault: Int = 4",
+    "let unlistedReachSecretDefault: Int = 0",
+    () => {
+      const r = classify({ pathClass: 9, reachClass: 99 });
+      assert.equal(r.present, true, r.reason + " " + r.text);
+      assert.equal(r.value, 100, "unlisted reach admitted: " + r.text);
+    },
+  );
+  expectPacked(classify({ pathClass: 9, reachClass: 99 }), 104, "restore unlisted reach");
+});
+
+test("mutant effect foreign classTag check dead goes RED then restore", () => {
+  withMutant(
+    "  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)\n  if effectReason != 0 {",
+    "  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)\n  if effectReason == 99 {",
+    () => {
+      const r = classify({ pathClass: 9, effectClassClass: 3 });
+      assert.equal(r.present, true, r.reason + " " + r.text);
+      assert.notEqual(r.value, 110, "effect NaN must not stay ForeignRaw");
+    },
+  );
+  expectPacked(classify({ pathClass: 9, effectClassClass: 3 }), 110, "restore effect foreign");
+});
+
+test("mutant reach foreign classTag check dead goes RED then restore", () => {
+  withMutant(
+    "  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)\n  if reachReason != 0 {",
+    "  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)\n  if reachReason == 99 {",
+    () => {
+      const r = classify({ pathClass: 9, reachClassClass: 3 });
+      assert.equal(r.present, true, r.reason + " " + r.text);
+      assert.notEqual(r.value, 110, "reach NaN must not stay ForeignRaw");
+    },
+  );
+  expectPacked(classify({ pathClass: 9, reachClassClass: 3 }), 110, "restore reach foreign");
 });

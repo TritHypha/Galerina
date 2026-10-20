@@ -157,7 +157,8 @@ contract {
   if reachClass == 10 {
     return 3
   }
-  return 4
+  let unlistedReachSecretDefault: Int = 4
+  return unlistedReachSecretDefault
 }
 
 pure flow classifyServeRoute(
@@ -214,12 +215,6 @@ contract {
   if layer != 0 {
     if layer != 1 {
       return finish(8, true)
-    }
-  }
-  if layer == 1 {
-    let startServerFenceOn: Int = 1
-    if startServerFenceOn == 0 {
-      return finish(0, true)
     }
   }
   let pathKind: Int = pathProtection(pathClass)
