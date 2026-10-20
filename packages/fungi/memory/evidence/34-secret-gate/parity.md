@@ -70,4 +70,6 @@ N6. WebAssembly zeroing is best effort; no erase claim (MB-11/MB-14). noteUnknow
 
 N7. Landed source has no constant-guarded admit branch (queue 33 F3). Mutants are unique sequential if-return edits applied in-memory (queue 43 F4). Tests use typed UNIT_SOURCE_LANDING (queue 34 N4).
 
-N8. Pre-code reaching post is host-supplied; binding it to the same operation is carried to the auth-verify integration (Q34-03 N1). Grok mutants consumedAuthority-constant and guard-result-ignored are EQUIVALENT (MB-06 106 / consumeStep re-check; Q34-03 N4).
+N8. Pre-code reaching post is host-supplied; binding it to the same operation is carried to the auth-verify integration (Q34-03 N1). Grok mutants consumedAuthority-constant (M15) and guard-result-ignored (M29) are RED: consumed 0 + present 0 is landed 106 vs mutant 105; consumed 0 + revoke 1 is landed 106 vs 102 (Q34-04 F2). Standalone landed tests pin currentValidityToken 0 + present 0 / revoke 1 at 106 (Q34-04 F1).
+
+N9. import-refuse.txt is the raw `galerina.mjs run ... --invoke` output (Q34-04 N1). Invoke-ABI integer width is CARRIED_UNKNOWN to the c-boundary / invoke-ABI consolidation (Q34-04 N2). Post validity range-check removal is near-equivalent because releaseGuard re-checks (Q34-04 N3). validity 0 + revoke committed -> 106 is frozen rcp order (Q34-04 N4).

@@ -363,6 +363,10 @@ test("F1 frozen TS executed and flattened fungi packed code matches each row", a
     assert.equal(deliverFungi({ cleanupEvidence: 0 }).value, 106);
     assert.equal(deliverFungi({ cleanupEvidence: 1 }).value, 106);
     assert.equal(postFungi({ currentValidityToken: 0 }).value, 106);
+    assert.equal(postFungi({ currentValidityToken: 0, presentToken: 0 }).value, 106);
+    assert.equal(postFungi({ currentValidityToken: 0, revokeCommittedToken: 1 }).value, 106);
+    assert.equal(postFungi({ consumedAuthorityToken: 0, presentToken: 0 }).value, 106);
+    assert.equal(postFungi({ consumedAuthorityToken: 0, revokeCommittedToken: 1 }).value, 106);
     assert.equal(postFungi({ currentValidityToken: 2 }).value, 111);
     assert.equal(postFungi({ currentValidityClass: 3 }).value, 110);
     assert.equal(postFungi({ currentValidityClass: 11 }).value, 111);

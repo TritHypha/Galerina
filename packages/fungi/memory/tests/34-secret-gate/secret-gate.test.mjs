@@ -502,6 +502,16 @@ test("F1 post-handoff current validity through releaseGuard", () => {
   expectPacked(pre({ currentValidityToken: 0 }), 106, "pre validity kept");
 });
 
+test("F1 landed current validity at commit point", () => {
+  expectPacked(post({ currentValidityToken: 0, presentToken: 0 }), 106, "validity 0 present 0");
+  expectPacked(post({ currentValidityToken: 0, revokeCommittedToken: 1 }), 106, "validity 0 revoke 1");
+});
+
+test("F2 landed consumed authority at commit point", () => {
+  expectPacked(post({ consumedAuthorityToken: 0, presentToken: 0 }), 106, "consumed 0 present 0");
+  expectPacked(post({ consumedAuthorityToken: 0, revokeCommittedToken: 1 }), 106, "consumed 0 revoke 1");
+});
+
 test("RED mutant F1 fabricate current validity as 1", () => {
   withMutant(
     "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)",
@@ -513,4 +523,43 @@ test("RED mutant F1 fabricate current validity as 1", () => {
     },
   );
   expectPacked(post({ currentValidityToken: 0, presentToken: 0 }), 106, "restore currentValidityToken");
+});
+
+test("RED mutant F1 alias current validity to consumedAuthority", () => {
+  withMutant(
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)",
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, consumedAuthorityToken)",
+    () => {
+      const r = post({ currentValidityToken: 0, presentToken: 0 });
+      assert.notEqual(r.value, 106, "aliased validity must not stay DELIVERY_UNKNOWN");
+      assert.equal(r.value, 105, "aliased 1 reaches consumeStep missing");
+    },
+  );
+  expectPacked(post({ currentValidityToken: 0, presentToken: 0 }), 106, "restore aliased validity");
+});
+
+test("RED mutant F2 consumedAuthority constant 1", () => {
+  withMutant(
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)",
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, 1, currentValidityToken)",
+    () => {
+      const r = post({ consumedAuthorityToken: 0, presentToken: 0 });
+      assert.notEqual(r.value, 106, "consumed 0 must not stay DELIVERY_UNKNOWN");
+      assert.equal(r.value, 105, "hardcoded consumed 1 reaches consumeStep missing");
+    },
+  );
+  expectPacked(post({ consumedAuthorityToken: 0, presentToken: 0 }), 106, "restore consumedAuthorityToken");
+});
+
+test("RED mutant F2 ignore guard result", () => {
+  withMutant(
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)\n  if guardOutcome != 100 {\n    return guardOutcome\n  }",
+    "  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)",
+    () => {
+      const r = post({ consumedAuthorityToken: 0, presentToken: 0 });
+      assert.notEqual(r.value, 106, "ignored guard must not stay DELIVERY_UNKNOWN");
+      assert.equal(r.value, 105, "ignored guard reaches consumeStep missing");
+    },
+  );
+  expectPacked(post({ consumedAuthorityToken: 0, presentToken: 0 }), 106, "restore guard result");
 });
