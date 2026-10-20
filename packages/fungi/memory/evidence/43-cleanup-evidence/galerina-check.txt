@@ -1,0 +1,1 @@
+✅ packages/fungi/memory/src/cleanup-evidence.fungi: 0 errors, 0 governance warnings (9 flow(s), 10 top-level declaration(s))

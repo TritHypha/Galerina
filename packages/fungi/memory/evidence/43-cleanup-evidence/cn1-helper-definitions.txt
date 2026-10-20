@@ -1,0 +1,1 @@
+CN-1: landed source imports and CALLs readForeignSafeInteger from the frozen helper. No local copy of the helper body. Flatten is harness-only.

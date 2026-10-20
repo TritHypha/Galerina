@@ -1,0 +1,12 @@
+twins AFTER (working tree): fungi-twins 103/103 check-clean across 10 dir(s); execution 73 shadow · 1 differential · 29 authoritative. Same as Q32 at a4054af9 (BEFORE). Counts unchanged. Memory .fungi are not twins.
+twins status 0
+audit:package-topology status 0
+flat-package topology: 101 canonical identities; 1 deferred nested native package(s); 0 pre-SLIDE node_modules tree(s)
+  DEFERRED until executable SLIDE integration: galerina-framework-example-app/packages/greeting/package.fungi.json
+flat-package topology: pre-SLIDE ratchet GREEN (deferred debt is not a completion claim)
+audit:product-boundaries --check status 1
+{"schema":"product-package-boundary-receipt.v1","status":"REFUSED","authorizing":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_GRAPH_MISSING"],"findings":[]}
+audit-fungi-memory-folder status 1
+{"outcome":"FOLDER_REFUSED","reasons":["UNLISTED_DIR:evidence/32-release-commit-point","UNLISTED_DIR:evidence/43-cleanup-evidence","UNLISTED_FILE:src/cleanup-evidence.fungi","UNLISTED_FILE:src/release-commit-point.fungi","UNLISTED_DIR:tests/32-release-commit-point","UNLISTED_DIR:tests/43-cleanup-evidence"]}
+tests x3: run1 25/25; run2 25/25; run3 25/25 fail 0. Command: node --test --test-concurrency=1 --test-timeout=120000 packages/fungi/memory/tests/43-cleanup-evidence/cleanup-evidence.test.mjs packages/fungi/memory/tests/43-cleanup-evidence/path-leak.test.mjs
+encoding-gate status 0
