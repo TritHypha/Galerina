@@ -175,7 +175,7 @@ test("revokeDelivery is one-way acknowledged to delivery-unknown", () => {
   expectPacked(invoke(RCP, "revokeDelivery", [9]), 111, "unlisted");
 });
 
-test("B1 MUST-REFUSE consumeStep surviving mutants", () => {
+test("B1 MUST-REFUSE consumeStep ordinary vectors", () => {
   expectPacked(consume( [1, 0, 0, 1, 0, 0]), 102, "forged unused");
   expectPacked(consume( [1, 0, 0, 1, 1, 0]), 104, "forged released");
   expectPacked(consume( [1, 1, 0, 1, 3, 0]), 102, "fenced");
@@ -259,8 +259,8 @@ test("B3 releaseGuard independent authorization / custody / cleanup / split fiel
 test("mutant skip epoch compare on consume goes RED then restore", () => {
   withMutant(
     RCP,
-    "  if epochMatchToken == 0 {\n    return finish(4, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
-    "  if epochMatchToken == 0 {\n    return finish(0, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    "  if epochMatchToken == 0 {\n    return finish(4, true)\n  }\n  if guardOutcome == 102 {\n    return finish(2, true)\n  }\n  if guardOutcome == 105 {\n    return finish(5, true)\n  }\n  if guardOutcome == 106 {\n    return finish(6, true)\n  }\n  if guardOutcome == 111 {\n    return finish(11, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
+    "  if epochMatchToken == 0 {\n    return finish(0, true)\n  }\n  if guardOutcome == 102 {\n    return finish(2, true)\n  }\n  if guardOutcome == 105 {\n    return finish(5, true)\n  }\n  if guardOutcome == 106 {\n    return finish(6, true)\n  }\n  if guardOutcome == 111 {\n    return finish(11, true)\n  }\n  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
     () => {
       const red = consume( [1, 1, 0, 0, 0, 0]);
       assert.equal(red.present, true, red.reason + " " + red.text);
@@ -752,6 +752,36 @@ test("mutant F2 unlisted after-begin as Refused 102 goes RED then restore", () =
   expectPacked(invoke(RCP, "outcomeClass", [11, 0]), 102, "restore unlisted before-begin 102");
 });
 
+
+test("G1 MUST-REFUSE consumeStep unlisted guardOutcome", () => {
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 0]), 111, "guard 0");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 1]), 111, "guard 1");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 2]), 111, "guard 2");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 101]), 111, "guard 101");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 103]), 111, "guard 103");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, -100]), 111, "guard -100");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 200]), 111, "guard 200");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0]), 111, "6-arg no guard WebAssembly default 0");
+});
+
+test("mutant G1 guardOutcome range check dead goes RED then restore", () => {
+  withMutant(
+    RCP,
+    "  if guardOutcome != 100 {\n    if guardOutcome != 102 {",
+    "  if guardOutcome == 7 {\n    if guardOutcome != 102 {",
+    () => {
+      const red0 = invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 0]);
+      const red101 = invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 101]);
+      assert.equal(red0.present, true, red0.reason + " " + red0.text);
+      assert.equal(red101.present, true, red101.reason + " " + red101.text);
+      assert.equal(red0.value, 0, "mutant guard 0 raw: " + String(red0.value));
+      assert.equal(red101.value, 101, "mutant guard 101 raw: " + String(red101.value));
+    },
+  );
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 0]), 111, "restore guard 0");
+  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 101]), 111, "restore guard 101");
+});
+
 test("F3 consume refuses unless releaseGuard admitted 100", () => {
   expectPacked(consume([1, 1, 0, 1, 0, 0, 100]), 100, "guard admitted");
   expectPacked(consume([1, 1, 0, 1, 0, 0, 105]), 105, "guard missing");
@@ -764,8 +794,8 @@ test("F3 consume refuses unless releaseGuard admitted 100", () => {
 test("mutant F3 skip releaseGuard on consume goes RED then restore", () => {
   withMutant(
     RCP,
-    "  if guardOutcome != 100 {\n    return guardOutcome\n  }\n  return finish(0, true)\n}",
-    "  if guardOutcome != 100 {\n    return finish(0, true)\n  }\n  return finish(0, true)\n}",
+    "  if guardOutcome == 105 {\n    return finish(5, true)\n  }",
+    "  if guardOutcome == 105 {\n    return finish(0, true)\n  }",
     () => {
       const red = consume([1, 1, 0, 1, 0, 0, 105]);
       assert.equal(red.present, true, red.reason + " " + red.text);

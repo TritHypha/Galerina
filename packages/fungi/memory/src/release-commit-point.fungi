@@ -307,6 +307,18 @@ contract {
   if epochMatchToken == 0 {
     return finish(4, true)
   }
+  if guardOutcome == 102 {
+    return finish(2, true)
+  }
+  if guardOutcome == 105 {
+    return finish(5, true)
+  }
+  if guardOutcome == 106 {
+    return finish(6, true)
+  }
+  if guardOutcome == 111 {
+    return finish(11, true)
+  }
   if guardOutcome != 100 {
     return guardOutcome
   }

@@ -55,6 +55,8 @@ N1. `outcomeClass(7)` maps to Success because re-issue returns the existing term
 
 N2. `casCommit` revoke-after-begin -> 106 is INTENDED_DIVERGENCE (stricter than the Q07 ruling that a release which began first is the one permitted disclosure).
 
-N3. RD-0778 is cited in `receipts.json` by path + sha256 only (never its body): `private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `07f9803efbc1dbc1a1956b3b3ec5cb1404e20a6bf8476009c1685eef9158bfa7`.
+N3. RD-0778 is cited in `receipts.json` by path + sha256 + kbCommit only (never its body): `ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md` sha256 `9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a` kbCommit `f86212ce95db15451739c9c8eb8bc361c1a5d6d4`.
 
 N4. Rebasing onto the q31 ACK head `fc7db4db` stays a later NEW `-r2` series.
+
+N5. Astra W1/W3/W5 (addendum-20261020 section 2): in the current profile COMMITTED is unreachable after begin (B) for every out-of-process release (policy, not a theorem). UNKNOWN is never success, never proof of zero effect, and never retry authority. Recovery runs before new claims and never promotes or reissues. Automatic retry after DELIVERY_UNKNOWN is prohibited.

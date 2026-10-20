@@ -33,3 +33,4 @@
 | consume skips releaseGuard | mutant F3 skip releaseGuard on consume | value === 100 with guard 105 | 105 |
 | mint present 0 lease != 0 admits | mutant F6 mint skip inconsistent pair | value !== 111 | 111 |
 | recovery present 0 lease != 0 admits | mutant F6 recovery skip inconsistent pair | value !== 111 | 111 |
+| consumeStep guardOutcome range dead | mutant G1 guardOutcome range check dead | guard 0 raw 0; guard 101 raw 101 | 111 |

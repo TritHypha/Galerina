@@ -23,8 +23,9 @@
     "11": "Refused_before_begin_Indeterminate_after_begin"
   },
   "rd_0778": {
-    "path": "private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
-    "sha256": "07f9803efbc1dbc1a1956b3b3ec5cb1404e20a6bf8476009c1685eef9158bfa7"
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
   },
   "receipts": [
     {
