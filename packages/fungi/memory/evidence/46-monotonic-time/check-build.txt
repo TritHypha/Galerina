@@ -1,31 +1,31 @@
-cwd=/mnt/c/Users/phill/AppData/Local/Temp/galerina-q46-monotonic-20261020
-node=v24.21.0
+cwd=<scratch>
+node=v24.18.0
 base_head=fc7db4db4ba1cb7aed691cfa205ec719746524d4
 branch=grok/fungi-memory-monotonic-time-20261019
 RUN 1 check
-✅ packages/fungi/memory/src/monotonic-time.fungi: 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
+✅ <path> 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
 CHECK_EXIT:0
 RUN 1 build
-  ⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:24:25)
-  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:28:26)
+⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignLength' is not declared in the current scope. (<path>
 
-❌ Build of 'packages/fungi/memory/src/monotonic-time.fungi' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+❌ Build of '<path>' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
 BUILD_EXIT:1
 RUN 2 check
-✅ packages/fungi/memory/src/monotonic-time.fungi: 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
+✅ <path> 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
 CHECK_EXIT:0
 RUN 2 build
-  ⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:24:25)
-  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:28:26)
+⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignLength' is not declared in the current scope. (<path>
 
-❌ Build of 'packages/fungi/memory/src/monotonic-time.fungi' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+❌ Build of '<path>' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
 BUILD_EXIT:1
 RUN 3 check
-✅ packages/fungi/memory/src/monotonic-time.fungi: 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
+✅ <path> 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
 CHECK_EXIT:0
 RUN 3 build
-  ⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:24:25)
-  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/monotonic-time.fungi:28:26)
+⛔ FUNGI-NAME-001: 'readForeignBool' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignLength' is not declared in the current scope. (<path>
 
-❌ Build of 'packages/fungi/memory/src/monotonic-time.fungi' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+❌ Build of '<path>' FAILED (fail-closed) — 2 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
 BUILD_EXIT:1

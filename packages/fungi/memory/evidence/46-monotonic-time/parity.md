@@ -16,15 +16,16 @@ There is no match or switch in this file. Compare flows end with return 11. That
 
 | Operation | Check time | Runtime reason |
 | --- | --- | --- |
-| Point - Point | Admitted as Int slots | 0 duration, 23 epoch mismatch, 22 backwards, 21 overflow |
-| Point + Duration | Admitted as Int slots | 0 point ticks, 22 negative duration, 21 overflow |
-| Duration + Duration | Admitted as Int slots | 0 duration, 22 negative, 21 overflow |
-| Point compare | Admitted as Int slots | 0 equal, 1 less, 2 greater, 23 epoch mismatch, 11 unlisted |
-| Duration compare | Admitted as Int slots | 0, 1, 2, 22 negative, 11 unlisted |
-| Point + Point | Admitted as Int slots | 25 always |
-| Duration - Point | Admitted as Int slots | 25 always |
-| Literal Point constructor | No mintLiteral flow exists | A raw Int still reaches mintFromClock and is refused unless readForeignSafeInteger returns 0. That call is not linked, so this probe is NOT_RUN. |
-| Deadline remaining | Admitted as Int slots | 0 means REMAINING and remainingTicks is the duration. 26 EXPIRED, including equal ticks. 23 epoch mismatch. 21 overflow. Non-zero is not time left. |
+| Point - Point | Admitted as Int slots | Negative ticks 22 before arithmetic. 23 epoch mismatch. 22 backwards. Tick result 0 is success only after reason 0. Refusal ticks are -1. |
+| Point + Duration | Admitted as Int slots | Negative inputs 22. Overflow 21 before the add. Success ticks are the sum. Refusal ticks are -1. |
+| Duration + Duration | Admitted as Int slots | Negative inputs 22. Overflow 21. Refusal ticks are -1. |
+| Point compare | Admitted as Int slots | Negative ticks 22. Then 0 equal, 1 less, 2 greater, 23 epoch mismatch, 11 unlisted. |
+| Duration compare | Admitted as Int slots | 0, 1, 2, 22 negative, 11 unlisted. |
+| Point + Point | Admitted as Int slots | Negative ticks 22, otherwise 25. |
+| Duration - Point | Admitted as Int slots | Negative inputs 22, otherwise 25. |
+| Clock mint | readForeignLength | 0 admitted. Negative reading 9. Bad Bool 11. NaN class 3 and unlisted class 11 pass through. Same-epoch backwards 22. hasLast with a different epoch 23. A new-epoch start is CARRIED_UNKNOWN until a sealed epoch-start capability exists. |
+| Literal Point constructor | No mintLiteral flow | A caller Int is not a Point until readForeignLength returns 0. The import-linked build remains NEEDS_LANGUAGE. The flattened harness runs the refusal. |
+| Deadline remaining | Admitted as Int slots | 0 means REMAINING and remainingTicks is the duration. 26 EXPIRED, including equal ticks. 23 epoch mismatch. Negative ticks 22. Non-zero reason returns remaining ticks -1, which is not time left. |
 
 Deadline is the Point produced by point-plus-duration. There is no third nominal type.
 

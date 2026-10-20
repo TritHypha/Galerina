@@ -26,7 +26,7 @@ PACKAGE galerina-core-compiler mode=noCheck-fallback
 TSC_EXIT:0
 Hallmark non-authorities: 10 entries generated.
 HALLMARK_EXIT:0
-compiler build evidence: 948 inputs -> /mnt/c/Users/phill/AppData/Local/Temp/galerina-q46-monotonic-20261020/packages-ts/galerina-core-compiler/dist/build-evidence.json
+compiler build evidence: 948 inputs -> <scratch>/packages-ts/galerina-core-compiler/dist/build-evidence.json
 EVIDENCE_SCRIPT_EXIT:0
 POST_NOCHECK check
 ✅ packages/fungi/memory/src/monotonic-time.fungi: 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
