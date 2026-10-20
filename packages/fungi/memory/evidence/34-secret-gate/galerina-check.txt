@@ -1,0 +1,1 @@
+✅ packages/fungi/memory/src/secret-gate.fungi: 0 errors, 0 governance warnings (5 flow(s), 7 top-level declaration(s))

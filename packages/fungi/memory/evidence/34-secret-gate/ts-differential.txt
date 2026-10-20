@@ -1,0 +1,16 @@
+Q34 ts-differential rows. Frozen TS dc0f9c8c secret-gate.ts sha256 bfb6ccd88ef2cc47017dd8fc439d0d82386954949baaa81244a5471fc52855d8 executed for real (Node type-strip plus frozen release-commit-point.ts sha256 ab0080fb6efc20937f69f88e85da4d65d37d4e0da634e495753015a9fca9e5b3). Flattened .fungi invoked per row.
+
+empty require no provider | 100 | PRESERVED
+nonempty no provider | 101 | PRESERVED
+nonempty has true | 100 | PRESERVED
+nonempty has false | 101 | PRESERVED
+nonempty has threw | 101 | PRESERVED
+unlisted presence | 111 | INTENDED_DIVERGENCE
+empty require provider no epoch | 103 | INTENDED_DIVERGENCE
+undeclared name | 112 | INTENDED_DIVERGENCE
+callback not called | 113 | INTENDED_DIVERGENCE
+callback twice | 114 | INTENDED_DIVERGENCE
+callback returns value | 115 | INTENDED_DIVERGENCE
+callback thenable | 116 | INTENDED_DIVERGENCE
+epoch moved | 118 | INTENDED_DIVERGENCE
+cleanup UNKNOWN | 106 | INTENDED_DIVERGENCE
