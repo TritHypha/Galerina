@@ -17,7 +17,8 @@ const GALERINA = join(REPO, "galerina.mjs");
 const CB_IMPORT = "\nimport \"./c-boundary.fungi\"\n";
 const RCP_IMPORT = "\nimport \"./release-commit-point.fungi\"\n";
 
-let unitSourceOverride = null;
+const UNIT_SOURCE_LANDING = Object.freeze({ kind: "LANDING" });
+let unitSourceOverride = UNIT_SOURCE_LANDING;
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
@@ -44,7 +45,7 @@ function stripVersion(src) {
 function flattenUnit() {
   const boundary = readFileSync(BOUNDARY, "utf8");
   const rcp = readFileSync(RCP, "utf8");
-  const unit = unitSourceOverride !== null ? unitSourceOverride : readFileSync(UNIT, "utf8");
+  const unit = unitSourceOverride === UNIT_SOURCE_LANDING ? readFileSync(UNIT, "utf8") : unitSourceOverride;
   assert.equal(unit.includes(CB_IMPORT), true, "landed source must import c-boundary");
   assert.equal(unit.includes(RCP_IMPORT), true, "landed source must import release-commit-point");
   const cbParts = unit.split(CB_IMPORT);
@@ -85,28 +86,66 @@ function admit(over) {
   ]);
 }
 
-function deliver(over) {
+function pre(over) {
   const o = over || {};
-  return runFlow("deliverSecret", [
+  return runFlow("deliverPreHandoff", [
     o.declaredClass ?? 0,
     o.declaredToken ?? 1,
     o.providerClass ?? 0,
     o.providerPresent ?? 1,
-    o.callbackClass ?? 0,
-    o.callbackOutcome ?? 1,
-    o.wipeClass ?? 0,
-    o.wipeResult ?? 0,
+    o.epochPresentClass ?? 0,
+    o.epochPresentToken ?? 1,
     o.epochMintClass ?? 0,
     o.epochMint ?? 1,
     o.epochUseClass ?? 0,
     o.epochUse ?? 1,
     o.epochMovedClass ?? 0,
     o.epochMovedToken ?? 0,
-    o.epochPresentClass ?? 0,
-    o.epochPresentToken ?? 1,
+    o.revokeClass ?? 0,
+    o.revokeCommittedToken ?? 0,
+    o.validityClass ?? 0,
+    o.currentValidityToken ?? 1,
+  ]);
+}
+
+function post(over) {
+  const o = over || {};
+  return runFlow("deliverPostHandoff", [
+    o.preClass ?? 0,
+    o.prePacked ?? 100,
+    o.callbackClass ?? 0,
+    o.callbackOutcome ?? 1,
+    o.wipeClass ?? 0,
+    o.wipeResult ?? 0,
     o.cleanupClass ?? 0,
     o.cleanupEvidence ?? 1,
+    o.authClass ?? 0,
+    o.independentAuthToken ?? 1,
+    o.custodyClass ?? 0,
+    o.preparedCustodyToken ?? 1,
+    o.emptyClass ?? 0,
+    o.emptyObligationSetToken ?? 1,
+    o.consumedAuthClass ?? 0,
+    o.consumedAuthorityToken ?? 1,
+    o.presentClass ?? 0,
+    o.presentToken ?? 1,
+    o.matchClass ?? 0,
+    o.tokenMatchToken ?? 1,
+    o.epochMatchClass ?? 0,
+    o.epochMatchToken ?? 1,
+    o.leaseClass ?? 0,
+    o.leaseState ?? 0,
+    o.revokeClass ?? 0,
+    o.revokeCommittedToken ?? 0,
   ]);
+}
+
+function deliver(over) {
+  const p = pre(over);
+  if (p.present !== true || p.value !== 100) {
+    return p;
+  }
+  return post({ ...(over || {}), prePacked: 100 });
 }
 
 function expectPacked(r, expected, label) {
@@ -199,8 +238,9 @@ test("MUST-REFUSE foreign classTag on admit", () => {
   expectPacked(admit({ presenceClass: 11 }), 111, "presence unlisted class");
 });
 
-test("MUST-ADMIT short-lived delivery then consume", () => {
-  expectPacked(deliver({}), 100, "delivered");
+test("MUST-REFUSE listed cleanup as DELIVERY_UNKNOWN after good callback and wipe", () => {
+  expectPacked(deliver({}), 106, "cleanup 1");
+  expectPacked(deliver({ cleanupEvidence: 0 }), 106, "cleanup 0");
 });
 
 test("MUST-REFUSE undeclared name", () => {
@@ -225,6 +265,9 @@ test("MUST-REFUSE wipe failed and wipe unknown", () => {
 
 test("MUST-REFUSE epoch moved between admit and use", () => {
   expectPacked(deliver({ epochMovedToken: 1 }), 118, "epoch moved");
+  expectPacked(pre({ epochMint: 1, epochUse: 2, epochMovedToken: 0 }), 118, "mint use mismatch");
+  expectPacked(pre({ epochMint: 5, epochUse: 999, epochMovedToken: 0 }), 118, "mint 5 use 999");
+  expectPacked(pre({ epochMint: 1, epochUse: 1, epochMovedToken: 1 }), 118, "token disagrees with equal compare");
 });
 
 test("MUST-REFUSE legacy provider without epoch on deliver", () => {
@@ -235,6 +278,7 @@ test("MUST-REFUSE cleanup UNKNOWN via releaseGuard", () => {
   expectPacked(deliver({ cleanupEvidence: 4 }), 106, "cleanup unknown");
   expectPacked(deliver({ cleanupEvidence: 2 }), 106, "cleanup pending");
   expectPacked(deliver({ cleanupEvidence: 3 }), 106, "cleanup failed");
+  expectPacked(deliver({ cleanupEvidence: 1 }), 106, "cleanup succeeded still unknown");
 });
 
 test("MUST-REFUSE unlisted callback and wipe", () => {
@@ -247,6 +291,32 @@ test("MUST-REFUSE foreign classTag on deliver", () => {
   expectPacked(deliver({ callbackClass: 3 }), 110, "callback NaN");
   expectPacked(deliver({ wipeClass: 3 }), 110, "wipe NaN");
   expectPacked(deliver({ epochMovedClass: 11 }), 111, "moved unlisted class");
+  expectPacked(pre({ epochPresentClass: 3 }), 110, "epochPresent NaN");
+  expectPacked(pre({ epochPresentClass: 11 }), 111, "epochPresent unlisted");
+  expectPacked(deliver({ cleanupClass: 3 }), 110, "cleanup NaN");
+  expectPacked(deliver({ cleanupClass: 11 }), 111, "cleanup unlisted");
+  expectPacked(post({ authClass: 3 }), 110, "auth NaN");
+  expectPacked(post({ authClass: 11 }), 111, "auth unlisted");
+  expectPacked(post({ custodyClass: 3 }), 110, "custody NaN");
+  expectPacked(post({ custodyClass: 11 }), 111, "custody unlisted");
+  expectPacked(post({ emptyClass: 3 }), 110, "empty NaN");
+  expectPacked(post({ emptyClass: 11 }), 111, "empty unlisted");
+  expectPacked(post({ consumedAuthClass: 3 }), 110, "consumedAuth NaN");
+  expectPacked(post({ consumedAuthClass: 11 }), 111, "consumedAuth unlisted");
+  expectPacked(post({ presentClass: 3 }), 110, "present NaN");
+  expectPacked(post({ presentClass: 11 }), 111, "present unlisted");
+  expectPacked(post({ matchClass: 3 }), 110, "match NaN");
+  expectPacked(post({ matchClass: 11 }), 111, "match unlisted");
+  expectPacked(post({ epochMatchClass: 3 }), 110, "epochMatch NaN");
+  expectPacked(post({ epochMatchClass: 11 }), 111, "epochMatch unlisted");
+  expectPacked(post({ leaseClass: 3 }), 110, "lease NaN");
+  expectPacked(post({ leaseClass: 11 }), 111, "lease unlisted");
+  expectPacked(post({ revokeClass: 3 }), 110, "post revoke NaN");
+  expectPacked(post({ revokeClass: 11 }), 111, "revoke unlisted");
+  expectPacked(pre({ validityClass: 3 }), 110, "validity NaN");
+  expectPacked(pre({ validityClass: 11 }), 111, "validity unlisted");
+  expectPacked(pre({ revokeClass: 3 }), 110, "pre revoke NaN");
+  expectPacked(pre({ revokeClass: 11 }), 111, "pre revoke unlisted");
 });
 
 test("gateAcknowledge delegates to ackStep", () => {
@@ -312,7 +382,7 @@ test("RED mutant skip wipe check", () => {
     () => {
       const r = deliver({ wipeResult: 1 });
       assert.notEqual(r.value, 117, "wipe fail must not stay WipeFailed");
-      assert.equal(r.value, 100, "wipe fail consumed");
+      assert.equal(r.value, 106, "wipe fail reached release");
     },
   );
   expectPacked(deliver({ wipeResult: 1 }), 117, "restore wipe");
@@ -329,4 +399,87 @@ test("RED mutant drop the default arm", () => {
     },
   );
   expectPacked(admit({ presenceStatus: 9 }), 111, "restore default arm");
+});
+
+test("F4 pre-handoff refusals reachable with no callback outcome", () => {
+  expectPacked(pre({ declaredToken: 0 }), 112, "undeclared pre");
+  expectPacked(pre({ providerPresent: 0 }), 119, "provider pre");
+  expectPacked(pre({ epochPresentToken: 0 }), 103, "epoch pre");
+  expectPacked(pre({ epochMint: 1, epochUse: 2 }), 118, "epoch compare pre");
+  expectPacked(pre({ revokeCommittedToken: 1 }), 102, "revocation first pre");
+  expectPacked(pre({ currentValidityToken: 0 }), 106, "validity pre");
+  expectPacked(pre({}), 100, "pre admit");
+});
+
+test("F4 post-handoff with a non-admit pre-code refuses", () => {
+  expectPacked(post({ prePacked: 112 }), 111, "pre undeclared");
+  expectPacked(post({ prePacked: 0 }), 111, "unpacked");
+  expectPacked(post({ prePacked: 106 }), 111, "pre unknown");
+});
+
+test("F2 release tokens pass through commit point", () => {
+  expectPacked(post({ independentAuthToken: 0 }), 105, "auth absent");
+  expectPacked(post({ preparedCustodyToken: 0 }), 105, "custody absent");
+  expectPacked(post({ presentToken: 0 }), 105, "consume missing");
+  expectPacked(post({ revokeCommittedToken: 1 }), 102, "revoke in consumeStep");
+  expectPacked(post({ consumedAuthorityToken: 0 }), 106, "consumed authority unknown");
+  expectPacked(post({ emptyObligationSetToken: 0, cleanupEvidence: 0 }), 102, "empty obligation");
+  expectPacked(post({ tokenMatchToken: 0 }), 102, "token mismatch unused");
+  expectPacked(post({ epochMatchToken: 0 }), 104, "epoch mismatch");
+  expectPacked(post({ leaseState: 1 }), 103, "lease acked");
+  expectPacked(post({ independentAuthToken: 2 }), 111, "auth unlisted value");
+  expectPacked(post({ presentToken: 2 }), 111, "present unlisted value");
+  expectPacked(post({ leaseState: 9 }), 111, "lease unlisted value");
+});
+
+test("RED mutant F1 skip epochMint versus epochUse", () => {
+  withMutant(
+    "  if epochMint != epochUse {\n    return finish(18, true)\n  }",
+    "  if epochMint == 99 {\n    return finish(18, true)\n  }",
+    () => {
+      const r = pre({ epochMint: 1, epochUse: 2, epochMovedToken: 0 });
+      assert.notEqual(r.value, 118, "mismatch must not stay EpochMoved");
+      assert.equal(r.value, 100, "mismatch admitted");
+    },
+  );
+  expectPacked(pre({ epochMint: 1, epochUse: 2, epochMovedToken: 0 }), 118, "restore compare");
+});
+
+test("RED mutant F2 remove consumeStep", () => {
+  withMutant(
+    "  let consumed: Int = consumeStep(presentToken, tokenMatchToken, 0, epochMatchToken, leaseState, revokeCommittedToken, guardOutcome)\n  if consumed == 100 {\n    return finish(6, true)\n  }\n  return consumed",
+    "  return finish(6, true)",
+    () => {
+      const r = post({ presentToken: 0 });
+      assert.notEqual(r.value, 105, "missing present must not stay missing");
+      assert.equal(r.value, 106, "consumeStep gone maps to unknown");
+    },
+  );
+  expectPacked(post({ presentToken: 0 }), 105, "restore consumeStep");
+});
+
+test("RED mutant F3 return packed 100 on listed cleanup", () => {
+  withMutant(
+    "  if consumed == 100 {\n    return finish(6, true)\n  }",
+    "  if consumed == 100 {\n    return finish(0, true)\n  }",
+    () => {
+      const r = deliver({});
+      assert.notEqual(r.value, 106, "listed cleanup must not stay unknown");
+      assert.equal(r.value, 100, "listed cleanup delivered");
+    },
+  );
+  expectPacked(deliver({}), 106, "restore MB-06");
+});
+
+test("RED mutant F4 skip prePacked gate", () => {
+  withMutant(
+    "  if prePacked != 100 {\n    return finish(11, true)\n  }",
+    "  if prePacked == 99 {\n    return finish(11, true)\n  }",
+    () => {
+      const r = post({ prePacked: 112 });
+      assert.notEqual(r.value, 111, "non-admit pre must not stay Unlisted");
+      assert.equal(r.value, 106, "non-admit pre reached release");
+    },
+  );
+  expectPacked(post({ prePacked: 112 }), 111, "restore prePacked gate");
 });

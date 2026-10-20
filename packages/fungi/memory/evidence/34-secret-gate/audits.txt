@@ -8,5 +8,5 @@ audit:product-boundaries --check status 1
 {"schema":"product-package-boundary-receipt.v1","status":"REFUSED","authorizing":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_GRAPH_MISSING"],"findings":[]}
 audit-fungi-memory-folder status 1
 {"outcome":"FOLDER_REFUSED","reasons":["UNLISTED_DIR:evidence/32-release-commit-point","UNLISTED_DIR:evidence/34-secret-gate","UNLISTED_FILE:src/release-commit-point.fungi","UNLISTED_FILE:src/secret-gate.fungi","UNLISTED_DIR:tests/32-release-commit-point","UNLISTED_DIR:tests/34-secret-gate"]}
-tests x3: run1 32/32; run2 32/32; run3 32/32 fail 0. Command: node --test --test-concurrency=1 --test-timeout=180000 packages/fungi/memory/tests/34-secret-gate/secret-gate.test.mjs packages/fungi/memory/tests/34-secret-gate/ts-differential.test.mjs packages/fungi/memory/tests/34-secret-gate/path-leak.test.mjs
+tests x3: run1 39/39; run2 39/39; run3 39/39 fail 0. Command: node --test --test-concurrency=1 --test-timeout=180000 packages/fungi/memory/tests/34-secret-gate/secret-gate.test.mjs packages/fungi/memory/tests/34-secret-gate/ts-differential.test.mjs packages/fungi/memory/tests/34-secret-gate/path-leak.test.mjs
 encoding-gate status 0

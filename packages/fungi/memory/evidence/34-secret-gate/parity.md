@@ -11,6 +11,8 @@ release-commit-point.fungi git blob `b38e774f8e2150a74fed5cc19fb092dcf640cdb3`.
 
 writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return; no `else if`; no `null`/`NaN`; no `throw`/`try`/`catch`; no clock; foreign values through one helper; fail-closed unlisted arm; wipe construct `finish(code, true)` with no erase claim.
 
+Follow-up 02: deliverPreHandoff then deliverPostHandoff. Pre packed 100 is admit-to-handoff. Post never packed 100 (MB-06). Epoch mint versus use compared in-unit (plain equality). Release tokens are boundary inputs.
+
 | ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
 |---|---|---|---|---|
 | secret-gate.ts:181 admit empty require, no provider -> null | admit requiredCount 0 providerPresent 0 | PRESERVED | EXHAUSTIVE_FAIL_CLOSED | empty no provider 100 |
@@ -20,16 +22,17 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | secret-gate.ts:193-196 has() throw -> secret_unavailable | admit presenceStatus 4 | PRESERVED | TOTAL_EFFECT_OUTCOME | has-threw 101 |
 | secret-gate.ts:197-200 unlisted presence (no TS tag) | admit presenceStatus 9 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | unlisted 111 |
 | secret-gate.ts:148-154 epoch optional on legacy provider | admit epochPresentToken 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | empty+provider no epoch 103 |
-| secret-gate.ts:212 undeclared getSecret -> undefined | deliverSecret declaredToken 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | undeclared 112 |
-| secret-gate.ts:213 no provider getSecret throw | deliverSecret providerPresent 0 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | provider absent 119 |
-| secret-gate.ts:338 callback not called throw | deliverSecret callbackOutcome 0 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 113 |
-| secret-gate.ts:265-267 callback twice throw | deliverSecret callbackOutcome 2 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 114 |
-| secret-gate.ts:385-392 callback returns value throw | deliverSecret callbackOutcome 3 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 115 |
-| secret-gate.ts:331-336 / 385-392 thenable throw | deliverSecret callbackOutcome 4 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 116 |
-| secret-gate.ts:412-421 wipe failed after delivery throw SecretGateWipeFailed | deliverSecret wipeResult 1/2 | INTENDED_DIVERGENCE | LINEAR_SECRET | 117; packed +100 wipe construct; no erase claim |
-| secret-gate.ts:301-307 epoch moved consume stale | deliverSecret epochMovedToken 1 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | 118 |
+| secret-gate.ts:212 undeclared getSecret -> undefined | deliverPreHandoff declaredToken 0 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | undeclared 112 |
+| secret-gate.ts:213 no provider getSecret throw | deliverPreHandoff providerPresent 0 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | provider absent 119 |
+| secret-gate.ts:338 callback not called throw | deliverPostHandoff callbackOutcome 0 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 113 |
+| secret-gate.ts:265-267 callback twice throw | deliverPostHandoff callbackOutcome 2 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 114 |
+| secret-gate.ts:385-392 callback returns value throw | deliverPostHandoff callbackOutcome 3 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 115 |
+| secret-gate.ts:331-336 / 385-392 thenable throw | deliverPostHandoff callbackOutcome 4 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 116 |
+| secret-gate.ts:412-421 wipe failed after delivery throw SecretGateWipeFailed | deliverPostHandoff wipeResult 1/2 | INTENDED_DIVERGENCE | LINEAR_SECRET | 117; packed +100 wipe construct; no erase claim |
+| secret-gate.ts:301-307 epoch moved consume stale | deliverPreHandoff epochMint != epochUse or epochMovedToken 1 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | 118; mint 1 use 2 token 0; token disagree |
 | secret-gate.ts:399-423 LINEAR_SECRET wipe on every exit | finish(code, true) | NEEDS_LANGUAGE | LINEAR_SECRET | WebAssembly zeroing best effort; free is not wipe |
-| MB-06 cleanup evidence UNKNOWN | deliverSecret cleanupEvidence 4 -> releaseGuard | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 DELIVERY_UNKNOWN; Q43 not imported |
+| secret-gate.ts:212-423 once-void wipe ok listed cleanup | deliverPostHandoff listed cleanup after admit-to-handoff | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 106 DELIVERY_UNKNOWN; MB-06; never packed 100 |
+| MB-06 cleanup evidence UNKNOWN | deliverPostHandoff cleanupEvidence 0/1/2/3/4 -> releaseGuard then map 100 to 6 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | listed 106; unlisted 111; Q43 not imported |
 | secret-gate.ts:426 acknowledge | gateAcknowledge -> ackStep | PRESERVED | UNFORGEABLE_CAPABILITY | released+audit 101 |
 | secret-gate.ts:430 status | gateStatus -> classifyRecovery | PRESERVED | TOTAL_EFFECT_OUTCOME | ACKED 100; UNACKED 101; UNKNOWN 103; NOT_FOUND 104 |
 | secret-gate.ts:438 noteUndelivered | gateNoteUndelivered -> revokeDelivery | PRESERVED | TOTAL_EFFECT_OUTCOME | ack 106; unused 108 |
@@ -37,23 +40,25 @@ writing-fungi sections applied: `@version 1`; `pure flow`; sequential if-return;
 | secret-gate.ts:442 auditEvents / 446 issueLeaseId | host maps | CARRIED_UNKNOWN | HOST_ADAPTER_PRESENCE | Q44 not on this base |
 | secret-gate.ts:161 epoch through readForeignSafeInteger | readForeignSafeInteger CALL | PRESERVED | NO_NULL_NAN | classTag 3 -> 110; 11 -> 111 |
 | secret-gate.ts:148 epoch < 0 / NaN | epochClass 3 | PRESERVED | NO_NULL_NAN | C190-N3 NaN epoch impossible |
-| bytesEqual / epoch compare | epochMovedToken host-mapped | NEEDS_LANGUAGE | LINEAR_SECRET | CONSTANT_TIME_COMPARE native intrinsic missing; equality kept |
+| bytesEqual / CONSTANT_TIME_COMPARE | epochMint == epochUse in-unit; token disagree 118 | NEEDS_LANGUAGE | LINEAR_SECRET | CONSTANT_TIME_COMPARE native intrinsic missing; equality kept; not claimed constant time |
 | secret-gate.ts:119-132 captured intrinsics | host adapter | CARRIED_UNKNOWN | SEALED_INTRINSICS | MB-13/MB-17; callback closed sum through boundary |
-| COMMITTED after begin | consumeStep / releaseGuard | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | W1 policy; never 100 after begin via cleanup 4 -> 106 |
+| COMMITTED after begin | consumeStep / releaseGuard | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | W1 policy; never 100 after begin; listed cleanup maps 100 to 106 |
 | no clock | no time construct | PRESERVED | MONOTONIC_TYPED_TIME | MONOTONIC_TYPED_TIME CARRIED_UNKNOWN / NEEDS_LANGUAGE |
 | import CALL link | classTag gate kept | NEEDS_LANGUAGE | NO_NULL_NAN | B5 check 0 / build FUNGI-NAME-001 / run WAT undefined callee |
 | SecretGateWipeFailed class | wipeResult 1 packed 117 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | throw-as-outcome replaced |
 | createSecretGate options.requireRevocationEpoch default false | epoch always required when provider present | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | legacy refuses 103 |
+| getSecret one flow | deliverPreHandoff then deliverPostHandoff | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | F4; pre refusals with no callback; non-admit prePacked 111 |
+| revocation committed first | deliverPreHandoff revokeCommittedToken 1; consumeStep token | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | 102 before handoff; post consumeStep 102 |
 
-Counts: PRESERVED 10, INTENDED_DIVERGENCE 16, UNKNOWN 1, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2 in the table (MONOTONIC/HOST also carried in receipts). Unlisted verdict refuses.
+Counts: PRESERVED 11, INTENDED_DIVERGENCE 17, UNKNOWN 1, NEEDS_LANGUAGE 3, CARRIED_UNKNOWN 2 in the table (MONOTONIC/HOST also carried in receipts). Unlisted verdict refuses.
 
 ## Notes
 
-N1. Epoch is required when a provider is present, including empty-require + provider. Empty require with no provider still admits (TS no-op preserved).
+N1. Epoch is required when a provider is present, including empty-require + provider. Empty require with no provider still admits (TS no-op preserved). Empty require + provider + faulted presence admits (TS kept; Q34-02 N1).
 
-N2. Callback outcomes are a closed Int sum supplied through the boundary. "returns a value" and "returns a thenable" are typed violation tags, not host introspection.
+N2. Callback outcomes are a closed Int sum supplied through the boundary. "returns a value" and "returns a thenable" are typed violation tags, not host introspection. Negative epochs pass with classTag 0 (c-boundary range gap, carried, no edit; Q34-02 N2).
 
-N3. CONSTANT_TIME_COMPARE is NEEDS_LANGUAGE. Epoch-moved is a host-mapped token. crypto.timingSafeEqual is not a mechanism.
+N3. CONSTANT_TIME_COMPARE is NEEDS_LANGUAGE. Epoch mint versus use is compared in-unit with plain equality. Host token disagreeing with the compare refuses 118. crypto.timingSafeEqual is not a mechanism.
 
 N4. Astra W1/W3/W5: COMMITTED unreachable after begin (policy). UNKNOWN is never success, zero-effect proof, or retry. No automatic retry after DELIVERY_UNKNOWN. Status-only recovery never opens the provider.
 
@@ -61,4 +66,4 @@ N5. Do not rebase onto fc7db4db. c-boundary blob on this base is cfec32c9. Do no
 
 N6. WebAssembly zeroing is best effort; no erase claim (MB-11/MB-14). noteUnknown has no rcp flow; carried UNKNOWN rather than a parallel type.
 
-N7. Landed source has no constant-guarded admit branch (queue 33 F3). Mutants are unique sequential if-return edits applied in-memory (queue 43 F4).
+N7. Landed source has no constant-guarded admit branch (queue 33 F3). Mutants are unique sequential if-return edits applied in-memory (queue 43 F4). Tests use typed UNIT_SOURCE_LANDING (queue 34 N4).

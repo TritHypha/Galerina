@@ -23,7 +23,8 @@ const RCP_SHA = "ab0080fb6efc20937f69f88e85da4d65d37d4e0da634e495753015a9fca9e5b
 const CB_IMPORT = "\nimport \"./c-boundary.fungi\"\n";
 const RCP_IMPORT = "\nimport \"./release-commit-point.fungi\"\n";
 
-let unitSourceOverride = null;
+const UNIT_SOURCE_LANDING = Object.freeze({ kind: "LANDING" });
+let unitSourceOverride = UNIT_SOURCE_LANDING;
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
@@ -50,7 +51,7 @@ function stripVersion(src) {
 function flattenUnit() {
   const boundary = readFileSync(BOUNDARY, "utf8");
   const rcp = readFileSync(RCP, "utf8");
-  const unit = unitSourceOverride !== null ? unitSourceOverride : readFileSync(UNIT, "utf8");
+  const unit = unitSourceOverride === UNIT_SOURCE_LANDING ? readFileSync(UNIT, "utf8") : unitSourceOverride;
   const cbParts = unit.split(CB_IMPORT);
   assert.equal(cbParts.length, 2, "c-boundary import once");
   const rcpParts = (cbParts[0] + cbParts[1]).split(RCP_IMPORT);
@@ -87,28 +88,66 @@ function admitFungi(over) {
   ]);
 }
 
-function deliverFungi(over) {
+function preFungi(over) {
   const o = over || {};
-  return runFlow("deliverSecret", [
+  return runFlow("deliverPreHandoff", [
     o.declaredClass ?? 0,
     o.declaredToken ?? 1,
     o.providerClass ?? 0,
     o.providerPresent ?? 1,
-    o.callbackClass ?? 0,
-    o.callbackOutcome ?? 1,
-    o.wipeClass ?? 0,
-    o.wipeResult ?? 0,
+    o.epochPresentClass ?? 0,
+    o.epochPresentToken ?? 1,
     o.epochMintClass ?? 0,
     o.epochMint ?? 1,
     o.epochUseClass ?? 0,
     o.epochUse ?? 1,
     o.epochMovedClass ?? 0,
     o.epochMovedToken ?? 0,
-    o.epochPresentClass ?? 0,
-    o.epochPresentToken ?? 1,
+    o.revokeClass ?? 0,
+    o.revokeCommittedToken ?? 0,
+    o.validityClass ?? 0,
+    o.currentValidityToken ?? 1,
+  ]);
+}
+
+function postFungi(over) {
+  const o = over || {};
+  return runFlow("deliverPostHandoff", [
+    o.preClass ?? 0,
+    o.prePacked ?? 100,
+    o.callbackClass ?? 0,
+    o.callbackOutcome ?? 1,
+    o.wipeClass ?? 0,
+    o.wipeResult ?? 0,
     o.cleanupClass ?? 0,
     o.cleanupEvidence ?? 1,
+    o.authClass ?? 0,
+    o.independentAuthToken ?? 1,
+    o.custodyClass ?? 0,
+    o.preparedCustodyToken ?? 1,
+    o.emptyClass ?? 0,
+    o.emptyObligationSetToken ?? 1,
+    o.consumedAuthClass ?? 0,
+    o.consumedAuthorityToken ?? 1,
+    o.presentClass ?? 0,
+    o.presentToken ?? 1,
+    o.matchClass ?? 0,
+    o.tokenMatchToken ?? 1,
+    o.epochMatchClass ?? 0,
+    o.epochMatchToken ?? 1,
+    o.leaseClass ?? 0,
+    o.leaseState ?? 0,
+    o.revokeClass ?? 0,
+    o.revokeCommittedToken ?? 0,
   ]);
+}
+
+function deliverFungi(over) {
+  const p = preFungi(over);
+  if (p.present !== true || p.value !== 100) {
+    return p;
+  }
+  return postFungi({ ...(over || {}), prePacked: 100 });
 }
 
 function replaceOnce(s, from, to) {
@@ -217,7 +256,9 @@ const ROWS = [
   { row: "callback returns value", ts: "throw", fungi: 115, verdict: "INTENDED_DIVERGENCE" },
   { row: "callback thenable", ts: "throw", fungi: 116, verdict: "INTENDED_DIVERGENCE" },
   { row: "epoch moved", ts: "throw-stale", fungi: 118, verdict: "INTENDED_DIVERGENCE" },
+  { row: "epoch mint versus use mismatch", ts: "throw-stale", fungi: 118, verdict: "INTENDED_DIVERGENCE" },
   { row: "cleanup UNKNOWN", ts: "no-cleanup-tag", fungi: 106, verdict: "INTENDED_DIVERGENCE" },
+  { row: "delivered once-void wipe ok listed cleanup", ts: "undefined", fungi: 106, verdict: "INTENDED_DIVERGENCE" },
 ];
 
 test("F1 frozen TS executed and flattened fungi packed code matches each row", async () => {
@@ -310,8 +351,15 @@ test("F1 frozen TS executed and flattened fungi packed code matches each row", a
     }
     assert.equal(moved, "throw");
     assert.equal(deliverFungi({ epochMovedToken: 1 }).value, 118);
+    assert.equal(deliverFungi({ epochMint: 1, epochUse: 2, epochMovedToken: 0 }).value, 118);
 
     assert.equal(deliverFungi({ cleanupEvidence: 4 }).value, 106);
+
+    const delivered = tsGet(frozen.mod, ["k"], "k", () => undefined, provider(), { requireRevocationEpoch: true });
+    assert.equal(delivered, undefined);
+    assert.equal(deliverFungi({}).value, 106);
+    assert.equal(deliverFungi({ cleanupEvidence: 0 }).value, 106);
+    assert.equal(deliverFungi({ cleanupEvidence: 1 }).value, 106);
   } finally {
     rmSync(frozen.dir, { recursive: true, force: true });
   }

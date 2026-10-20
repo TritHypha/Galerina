@@ -13,4 +13,6 @@ callback twice | 114 | INTENDED_DIVERGENCE
 callback returns value | 115 | INTENDED_DIVERGENCE
 callback thenable | 116 | INTENDED_DIVERGENCE
 epoch moved | 118 | INTENDED_DIVERGENCE
+epoch mint versus use mismatch | 118 | INTENDED_DIVERGENCE
 cleanup UNKNOWN | 106 | INTENDED_DIVERGENCE
+delivered once-void wipe ok listed cleanup | 106 | INTENDED_DIVERGENCE
