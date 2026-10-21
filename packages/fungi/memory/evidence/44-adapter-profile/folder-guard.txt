@@ -1,0 +1,13 @@
+cwd: scratch clone
+node scripts/audit-fungi-memory-folder.mjs
+status: 2
+stdout:
+{"outcome":"FOLDER_REFUSED","reasons":["UNLISTED_DIR:evidence/44-adapter-profile","UNLISTED_FILE:src/adapter-profile.fungi","UNLISTED_DIR:tests/44-adapter-profile"]}
+stderr:
+(empty)
+
+Guard not edited. Record FOLDER_REFUSE. Proposed ALLOWED_FILES add:
+  src/adapter-profile.fungi
+Proposed ALLOWED_PREFIXES add:
+  tests/44-adapter-profile/
+  evidence/44-adapter-profile/
