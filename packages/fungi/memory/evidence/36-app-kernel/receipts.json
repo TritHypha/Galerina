@@ -1,0 +1,27 @@
+{
+  "schema": "galerina.app-kernel.receipt.v1",
+  "authorizing": false,
+  "replayable": false,
+  "status": "NON_AUTHORIZING",
+  "unit": "packages/fungi/memory/src/kernel.fungi",
+  "ports": "packages/fungi/memory/src/kernel-ports.fungi",
+  "base": "999fbd79e9ecf5ef3d0ee14080440ce8e0ff3fed",
+  "imports": {
+    "c-boundary": "cfec32c93d0cf611010042cb6843d5af5ba6a78a",
+    "body-reader": "c6873209201b0955d49b8bfc411804869a9407f2",
+    "release-commit-point": "b38e774f8e2150a74fed5cc19fb092dcf640cdb3",
+    "secret-gate": "c3e2223b62fd71999b42f82056263f19ed021d8c"
+  },
+  "rd0778": {
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+  },
+  "workbench": {
+    "status": "REFUSE",
+    "reason": "DECODER_UNAVAILABLE",
+    "capsuleSha256": "be1d243de1bc9c6bc439d95614b4443bf815a995870f2c7b0a00efd71b21828a",
+    "agentsHead": "80e86871b6d8afcadc76435d4ce015eba5bedc5a",
+    "toolSha256": "87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b"
+  }
+}
