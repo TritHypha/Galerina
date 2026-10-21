@@ -222,7 +222,7 @@ The owner selected the zero-trust option for the remaining policy choices:
   External graph/Myco projections remain locator-only, never authority.
 
 These choices settle policy defaults, not missing product facts. The real
-protected `/secure` operation and its caller, object/version grant issuer and revoker,
+protected `POST /auth/verify` operation and its caller, object/version grant issuer and revoker,
 provider/key custodian reference, permitted recipient, plaintext origin, exact
 Amazon Linux release, and measured runtime profile still must be identified and
 verified. No key bytes are needed to identify the contract. RD-1413–1415 remain
@@ -438,7 +438,7 @@ The live source confirms the route gap: `examples/auth-service/deno-adapter.ts`
 returns **503** for `/auth/verify` with “Service bridge pending Phase 54”;
 `packages-ts/galerina-framework-example-app/host/server.ts` wires only the
 public greeting route. Thus a clean `.fungi` check is not an executing
-protected request. The owner-selected `/secure` surface still needs a real
+protected request. The owner-selected `POST /auth/verify` surface still needs a real
 operation and its caller, grant issuer/revoker, provider/key custodian,
 object/version, and recipient bound before product wiring can be truthful.
 
@@ -1155,8 +1155,8 @@ uncertain-outcome reconciliation; unconditional claim deletion could permit
 duplicate side effects. Treat this as the coupled RD-1413/RD-1415 retry blocker,
 not a separate successful product slice.
 
-- [!] **RD-1413 incoming access:** the owner has selected governed `/secure` as
-  the intended V1 route surface. Wire it as one real authenticated application
+- [!] **RD-1413 incoming access:** the owner has selected `POST /auth/verify` as
+  the intended V1 route surface (2026-10-21 ruling; supersession at lines 29-31/53-54). Wire it as one real authenticated application
   operation with an object/version grant, protected provider/key
   owner, quota and permitted recipient. Prove duplicate object/version query-key
   and invalid-version refusals before protected acquisition on the actual
@@ -1607,7 +1607,7 @@ is unverified. `git diff --check` passes. Latest pins:
   `5FA966961335D285897BA42C6A97D84282B15AC3E05800C0284100C0E6191AB8`.
 
 This follow-up is still only a dirty TypeScript candidate: no Fungi/runtime
-wiring, actual `/secure` route, physical erasure, or product custody is proven.
+wiring, actual `POST /auth/verify` route, physical erasure, or product custody is proven.
 The coupled RDs remain **HOLD / NON_AUTHORIZING**.
 
 This closes only the reproduced TypeScript request-latch gap. It does not prove Fungi/runtime
@@ -2001,7 +2001,7 @@ replacement case or prove Fungi/runtime behavior. Next implementation
 boundary: generation-bound atomic Fungi lease acquisition with explicit
 revocation ordering, bounded opaque ownership and fail-closed retirement; no
 TypeScript authority fallback and no plaintext through the adapter. The
-approved governed `/secure` route can be the synthetic harness, not evidence of
+approved governed `POST /auth/verify` route can be the synthetic harness, not evidence of
 the real protected operation. See the coupled report's same-name replacement
 finding and next bounded action. RD-1413–1415 remain **HOLD / NON_AUTHORIZING**.
 
