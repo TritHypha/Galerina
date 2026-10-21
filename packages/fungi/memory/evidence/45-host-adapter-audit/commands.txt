@@ -1,0 +1,97 @@
+# Queue #45 HOST_ADAPTER_AUDIT commands
+# cwd: <scratch>
+# HEAD before commit: fc7db4db4ba1cb7aed691cfa205ec719746524d4
+# Node v24.18.0
+# encoding-gate: <encoding-gate>
+
+## check echo.fungi
+node galerina.mjs check packages/fungi/memory/tests/45-host-adapter-audit/echo.fungi --strict-types --strict-governance
+exit 0
+stdout: 0 errors, 0 governance warnings (1 flow(s), 1 top-level declaration(s))
+
+## wrap vectors (galerina run --invoke echo)
+# each: node galerina.mjs run packages/fungi/memory/tests/45-host-adapter-audit/echo.fungi --invoke echo <input>
+0 -> exit 0 stdout 0
+1 -> exit 0 stdout 1
+-1 -> exit 0 stdout -1
+2147483647 -> exit 0 stdout 2147483647
+2147483648 -> exit 0 stdout -2147483648
+-2147483648 -> exit 0 stdout -2147483648
+-2147483649 -> exit 0 stdout 2147483647
+4294967295 -> exit 0 stdout -1
+4294967296 -> exit 0 stdout 0
+4294967300 -> exit 0 stdout 4
+9007199254740991 -> exit 0 stdout -1
+9007199254740992 -> exit 0 stdout 0
+9223372036854775807 -> exit 0 stdout 0
+abc -> exit 2 stderr: invoke argument #1 = "abc" is not a valid Int or Bool.
+1.5 -> exit 0 stdout 1
+"" (empty) -> exit 0 stdout 0
+
+## Array.prototype type form
+node galerina.mjs check <tmp>/proto-type.fungi --strict-types --strict-governance
+exit 1
+stderr: FUNGI-PARSE-001: Expected parameter name, got ".".
+stderr: FUNGI-TYPE-009: Generic type 'Array' expects 1 type argument but received 0.
+
+## Array.prototype member form
+node galerina.mjs check <tmp>/proto-member.fungi --strict-types --strict-governance
+exit 0
+node galerina.mjs build <tmp>/proto-member.fungi
+exit 0
+build/proto-member.wat contains: (unreachable) (; unresolved member: prototype — fail-closed (emitter cannot lower; #128-sibling) ;)
+node galerina.mjs run <tmp>/proto-member.fungi --invoke bad
+exit 1
+stderr: unreachable
+
+## Math.floor fungi name
+node galerina.mjs build <tmp>/js-math.fungi
+exit 1
+stderr: FUNGI-WAT-METHOD-001: method 'floor' is not lowered to WASM. WAT emission refuses rather than emit an (unreachable) stub or an undefined callee (fail-closed).
+
+## node --test (three identical runs)
+node --test packages/fungi/memory/tests/45-host-adapter-audit/wrap-vectors.test.mjs packages/fungi/memory/tests/45-host-adapter-audit/live-intrinsics.test.mjs packages/fungi/memory/tests/45-host-adapter-audit/pre-begin-output.test.mjs
+
+run 1 exit 0
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8311.0203
+
+run 2 exit 0
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7877.2035
+
+run 3 exit 0
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7844.9642
+
+## encoding-gate
+node <encoding-gate> packages/fungi/memory/tests/45-host-adapter-audit
+exit 0
+
+## git show frozen HTTP (read-only)
+git show dc0f9c8c4f1365f0228cda213b2ecd001400463e:packages-ts/galerina-framework-api-server/src/index.ts
+git show dc0f9c8c4f1365f0228cda213b2ecd001400463e:packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts
+exit 0
+writeResponse at index.ts:383-392; res.end at :390; jsonBody at auth-verify-route.ts:310
+
+## N1 out dir
+galerina.mjs has no --out flag. Suite writes gitignored build/ artefacts and transient mutant copies under tmpdir, deleted in finally.
+
