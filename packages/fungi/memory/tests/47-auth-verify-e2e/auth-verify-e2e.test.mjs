@@ -471,6 +471,69 @@ test("F1 post-dispatch Indeterminate never Success", () => {
   expect(rm, 106, "postMax 0");
 });
 
+test("postSpent 0 on the default vector is Indeterminate 106", () => {
+  const r = e2e({ postSpent: 0 });
+  assert.notEqual(r.value, 100, "postSpent 0 never success");
+  expect(r, 106, "postSpent 0 default");
+});
+
+test("every postSpent other than 1 matches postSpent 1 and never 100", () => {
+  const baseline = e2e({ postSpent: 1 });
+  expect(baseline, 106, "postSpent 1 default");
+  const values = [0, 2, -1, 7, 2147483647];
+  let i = 0;
+  while (i < values.length) {
+    const v = values[i];
+    const r = e2e({ postSpent: v });
+    assert.notEqual(r.value, 100, "postSpent " + String(v) + " never 100");
+    assert.equal(r.value, baseline.value, "postSpent " + String(v) + " same as 1");
+    i = i + 1;
+  }
+});
+
+test("postSpent 0 + postConsumePacked 0 is 106 never 100", () => {
+  const r = e2e({ postSpent: 0, postConsumePacked: 0 });
+  assert.notEqual(r.value, 100, "bypass vector never success");
+  expect(r, 106, "bypass vector");
+});
+
+test("post-dispatch grid never returns 100 and stays listed", () => {
+  const spent = [0, 1, 2];
+  const consume = [0, 100, 106, 999];
+  const dispatch = [100, 106, 111, 147];
+  const audit = [100, 44];
+  let si = 0;
+  while (si < spent.length) {
+    let ci = 0;
+    while (ci < consume.length) {
+      let di = 0;
+      while (di < dispatch.length) {
+        let ai = 0;
+        while (ai < audit.length) {
+          const over = {
+            postSpent: spent[si],
+            postConsumePacked: consume[ci],
+            postDispatchPacked: dispatch[di],
+            postAuditPacked: audit[ai],
+          };
+          const r = e2e(over);
+          const label = "grid s=" + String(spent[si])
+            + " c=" + String(consume[ci])
+            + " d=" + String(dispatch[di])
+            + " a=" + String(audit[ai]);
+          assert.equal(r.present, true, label + " present");
+          assert.notEqual(r.value, 100, label + " never 100 got " + String(r.value));
+          assert.equal(LISTED.includes(r.value), true, label + " unlisted " + String(r.value));
+          ai = ai + 1;
+        }
+        di = di + 1;
+      }
+      ci = ci + 1;
+    }
+    si = si + 1;
+  }
+});
+
 test("F2 unlisted host flag values refuse 111", () => {
   expect(e2e({ priorAck: 2 }), 111, "priorAck 2");
   expect(e2e({ crashAfterSink: 2 }), 111, "crashAfterSink 2");
@@ -740,6 +803,19 @@ test("mutant F2 retryPrior unlisted gate removed goes red", () => {
     () => {
       const r = e2e({ retryPrior: 1 });
       assert.notEqual(r.value, 111, "unlisted retryPrior admitted");
+    },
+  );
+});
+
+test("mutant G8 re-open host postSpent pass-through goes red", () => {
+  withMutant(
+    ", gClass, 1, gClass, postDispatchPacked, gClass, postConsumePacked,",
+    ", gClass, postSpent, gClass, postDispatchPacked, gClass, postConsumePacked,",
+    "g8 restore host postSpent",
+    () => {
+      const r = e2e({ postSpent: 0, postConsumePacked: 0 });
+      assert.notEqual(r.value, 106, "G8 reopens unspent Success");
+      assert.equal(r.value, 100, "G8 restores Success");
     },
   );
 });

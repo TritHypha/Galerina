@@ -17,3 +17,4 @@ In-memory source override only. Tracked `packages/fungi/memory/src/auth-verify-e
 | F2 crashAfterSink | auth-verify-e2e.fungi:crashAfterSink unlisted gate | unlisted-value gate removed | mutant F2 crashAfterSink unlisted gate removed goes red |
 | F2 priorAck | auth-verify-e2e.fungi:priorAck unlisted gate | unlisted-value gate removed | mutant F2 priorAck unlisted gate removed goes red |
 | F2 retryPrior | auth-verify-e2e.fungi:retryPrior unlisted gate | unlisted-value gate removed | mutant F2 retryPrior unlisted gate removed goes red |
+| G8 | auth-verify-e2e.fungi:runPostDispatch spent token | re-open host postSpent pass-through | mutant G8 re-open host postSpent pass-through goes red |

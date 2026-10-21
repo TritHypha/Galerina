@@ -1,6 +1,6 @@
 AUTH_VERIFY_E2E listed packed outcomes. Anything else listedOutcome maps to 111.
 
-100 unspent Success (kernel spent path never returns this; POST_DISPATCH_SPENT_SUCCESS_ABI)
+100 unspent Success (kernel spent path never returns this; composition passes spent-token 1 after consumeStep so host postSpent cannot select it; POST_DISPATCH_SPENT_SUCCESS_ABI)
 101 ack-continue (internal; composition does not return it)
 102 CAS revoke
 103 cleanup / lease fenced

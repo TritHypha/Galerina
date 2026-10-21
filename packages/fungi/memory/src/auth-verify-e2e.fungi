@@ -17,10 +17,14 @@
 /// Serve-gate 101 is the protected /auth/verify class and continues; 100 is
 ///   unprotected and refuses as packed 160. Body over-cap returns 105 at the
 ///   reader. validateVerifyRequest never packed 100 (MB-06); 106 continues.
-///   applyPostSink Success maps to 106 (MB-06). Kernel spent post-dispatch
-///   never returns packed 100 (finish(6)=106); composition does not admit
-///   that 106 as Success. Honest spent happy path is 106. Typed UNKNOWN
-///   POST_DISPATCH_SPENT_SUCCESS_ABI. Out-of-process classifyAdapter 1 makes
+///   applyPostSink Success maps to 106 (MB-06). After consumeStep the
+///   operation is spent by construction: runPostDispatch is passed spent
+///   token literal 1. Host postSpent cannot select the unspent Success
+///   path (MEM-CHK-20261021-47b-01). Kernel spent post-dispatch never
+///   returns packed 100 (finish(6)=106); composition does not admit that
+///   106 as Success. Honest spent happy path is 106. Typed UNKNOWN
+///   POST_DISPATCH_SPENT_SUCCESS_ABI. The packed-100 Success exit after
+///   dispatch is unreachable. Out-of-process classifyAdapter 1 makes
 ///   casCommit COMMITTED unreachable (106). Crash after begin is 106 never
 ///   Refused. Second ack refuses 163. Retry after UNKNOWN stays 106.
 ///   Host == tokens: 0 continue, listed value its outcome, else 111.
@@ -564,7 +568,7 @@ contract {
   if idempSettled != 100 {
     return exitAfterBegin(cleanupStatus, idempSettled)
   }
-  let postPacked: Int = runPostDispatch(gClass, clockReading, clockReading, clockReading, gClass, 1, gClass, clockReading, gClass, 5000, gClass, clockEpoch, gClass, clockEpoch, gClass, postSpent, gClass, postDispatchPacked, gClass, postConsumePacked, gClass, postAuditPacked, gClass, ackPresent, gClass, ackMatch, gClass, ackEpochPresent, gClass, ackEpochMatch, gClass, ackLease, gClass, postCurrent, gClass, postMax, gClass, postReleased, gClass, postZombie)
+  let postPacked: Int = runPostDispatch(gClass, clockReading, clockReading, clockReading, gClass, 1, gClass, clockReading, gClass, 5000, gClass, clockEpoch, gClass, clockEpoch, gClass, 1, gClass, postDispatchPacked, gClass, postConsumePacked, gClass, postAuditPacked, gClass, ackPresent, gClass, ackMatch, gClass, ackEpochPresent, gClass, ackEpochMatch, gClass, ackLease, gClass, postCurrent, gClass, postMax, gClass, postReleased, gClass, postZombie)
   if postPacked != 100 {
     return exitAfterBegin(cleanupStatus, postPacked)
   }
