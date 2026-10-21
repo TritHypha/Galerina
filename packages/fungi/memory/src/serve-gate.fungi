@@ -8,6 +8,8 @@
 ///   undecodable percent) and is PROTECTED (C188-N2 INTENDED_DIVERGENCE vs
 ///   TS null -> not protected). Tags 7-9 are listed public. Unlisted path
 ///   tags are PROTECTED. Unlisted effect names are secret-bearing.
+///   KG-01 host contract (RFC 3986, evidence/kg01/host-contract.md) emits
+///   tag 0 only for exact /auth/verify; unproven strings emit tag 6, never 7-9.
 ///   Layer 0 is serve()/standaloneServeSecretRefusal. Layer 1 is the
 ///   startServer fence (C188-F1, C188-F2 behavioural probes, not source-text
 ///   pins). The gate never yields COMMITTED (Astra W1). UNKNOWN is never

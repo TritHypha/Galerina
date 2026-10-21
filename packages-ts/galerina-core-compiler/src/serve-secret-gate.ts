@@ -61,6 +61,12 @@ const BARE_INTERPRETER_BUILTINS: ReadonlySet<string> = new Set([
   "redact",
 ]);
 
+/**
+ * NON-AUTHORITATIVE reference; authority is packages/fungi/memory/src/serve-gate.fungi
+ * + evidence/kg01/host-contract.md (RD-1413 KG-01).
+ * Divergences recorded in evidence/kg01/decision.md: whole-path decodeURIComponent,
+ * toLowerCase, trailing-slash strip. Do not change this function in the KG-01 brief.
+ */
 function normalizeDeclaredRoutePath(path: string): string | null {
   const noQuery = path.split("?")[0] ?? path;
   const segments = noQuery.split(/(\{[^{}]*\})/g);
