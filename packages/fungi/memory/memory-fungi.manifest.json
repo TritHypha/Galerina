@@ -321,6 +321,25 @@
       ],
       "status": "NOT_STARTED",
       "ts_oracle_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567"
+    },
+    {
+      "unit": "AUTH_VERIFY_E2E",
+      "ts_oracle": "NONE",
+      "reason": "first end-to-end POST /auth/verify composition; no frozen TS oracle on base 0e2f6d1c",
+      "existing_fungi": "NO_TWIN",
+      "new_fungi": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "rd": "RD-1413,RD-1414,RD-1415",
+      "obligations": [
+        "TOTAL_EFFECT_OUTCOME",
+        "UNFORGEABLE_CAPABILITY",
+        "EXHAUSTIVE_FAIL_CLOSED",
+        "NO_NULL_NAN",
+        "LINEAR_SECRET",
+        "DEADLINE_COVERS_ALL",
+        "MONOTONIC_TYPED_TIME"
+      ],
+      "status": "IMPLEMENTED_NON_AUTHORIZING",
+      "ts_oracle_commit": "0e2f6d1cd3a51a8719186b73b8ddb14031b2575b"
     }
   ],
   "out_of_scope_native": [

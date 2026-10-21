@@ -1,0 +1,446 @@
+@version 1
+/// @file: auth-verify-e2e.fungi
+/// @purpose: Queue 47 POST /auth/verify end-to-end composition. Calls landed
+///   units in briefed order. Host maps observations onto Int tags once (P20-N2).
+///   No new authority. Synthetic data only. NON_AUTHORIZING.
+/// CN-1: import landed units and CALL them. check admits; build FUNGI-NAME-001;
+///   tests flatten helper bodies with unique first-occurrence of collided names.
+/// Stage order: classifyServeRoute -> classifyAdapter -> readChunks ->
+///   admitIngress -> validateVerifyRequest -> authenticateGrant -> andHalves ->
+///   mintFromClock -> remainingReason -> applyRate/applyDecode/applyBudget/
+///   applyConcurrency -> applySecrets -> getSecretAccess -> listedState ->
+///   arenaHas -> applyIdempotency -> reserveAudit -> runPreDispatch ->
+///   casBegin -> casCommit -> consumeStep -> releaseGuard (commit point) ->
+///   ackStep -> retryAfterUnknown -> applyPostSink -> settleAudit ->
+///   settleIdempotency -> runPostDispatch -> admitCleanup/afterBeginCleanup ->
+///   freeStep -> sealReceipt -> httpStatusFor.
+/// Serve-gate 101 is the protected /auth/verify class and continues; 100 is
+///   unprotected and refuses as packed 160. Body over-cap returns 105 at the
+///   reader. validateVerifyRequest never packed 100 (MB-06); 106 continues.
+///   applyPostSink Success maps to 106 (MB-06); composition Success is 100
+///   after releaseGuard at the sink. Out-of-process classifyAdapter 1 makes
+///   casCommit COMMITTED unreachable (106). Crash after begin is 106 never
+///   Refused. Second ack refuses 163. Retry after UNKNOWN stays 106.
+/// Outcome packed: 100 Success; 105 body over-cap; 106 Indeterminate;
+///   111 Unlisted; 114 classical-only / PQ missing; 115 AND half; 122 clock
+///   backwards; 126 deadline; 127 rate; 134 concurrency; 135 secret;
+///   139 duplicate idempotency; 160 unprotected; 161 CAS lost; 162 guard;
+///   163 second ack; 164 crash-after-sink mapped wrongly is not used;
+///   other stage packed codes pass through. Unlisted refuses 111.
+/// finish, mintOperation, applyClock, applyConsume, recoverLease, httpStatusFor
+///   collide across units; this file does not redeclare them. Tests flatten.
+/// Sequential if-return. Nested if/else failed WAT emit. No erase claim.
+
+import "./c-boundary.fungi"
+import "./serve-gate.fungi"
+import "./body-reader.fungi"
+import "./auth-verify-route.fungi"
+import "./signet-grant-seal.fungi"
+import "./monotonic-time.fungi"
+import "./kernel.fungi"
+import "./kernel-ports.fungi"
+import "./secret-gate.fungi"
+import "./secret-arena.fungi"
+import "./secret-arena-custodian-port.fungi"
+import "./release-commit-point.fungi"
+import "./cleanup-evidence.fungi"
+import "./adapter-profile.fungi"
+
+pure flow andHalves(pqHalfToken: Int, classicalHalfToken: Int) -> Int
+contract {
+  intent { "Host-mapped hybrid AND. Both halves 1 admit. One bad half refuses 15. Unlisted 11. Signet has no per-half ABI; this is composition-only." }
+}
+{
+  if pqHalfToken != 0 {
+    if pqHalfToken != 1 {
+      return 11
+    }
+  }
+  if classicalHalfToken != 0 {
+    if classicalHalfToken != 1 {
+      return 11
+    }
+  }
+  if pqHalfToken != 1 {
+    return 15
+  }
+  if classicalHalfToken != 1 {
+    return 15
+  }
+  return 0
+}
+
+pure flow exitBeforeBegin(
+  mintedToken: Int,
+  evOpId: Int,
+  callOpId: Int,
+  evGen: Int,
+  callGen: Int,
+  evDigest: Int,
+  callDigest: Int,
+  evStatus: Int,
+  opClass: Int,
+  packed: Int
+) -> Int
+contract {
+  intent { "Cleanup evidence before begin then return the stage packed code. Cleanup failure wins." }
+}
+{
+  let cleaned: Int = admitCleanup(0, mintedToken, 0, evOpId, 0, callOpId, 0, evGen, 0, callGen, 0, evDigest, 0, callDigest, 0, evStatus, 0, opClass)
+  if cleaned != 100 {
+    if cleaned != 101 {
+      return cleaned
+    }
+  }
+  let freed: Int = freeStep(0, 4)
+  if freed == 18 {
+    return finish(11, true)
+  }
+  return packed
+}
+
+pure flow exitAfterBegin(
+  evStatus: Int,
+  packed: Int
+) -> Int
+contract {
+  intent { "After-begin cleanup is DELIVERY_UNKNOWN. Then return the stage packed code." }
+}
+{
+  let cleaned: Int = afterBeginCleanup(0, evStatus, 0, 1)
+  if cleaned != 106 {
+    if cleaned != 111 {
+      return cleaned
+    }
+  }
+  return packed
+}
+
+pure flow runAuthVerify(
+  gClass: Int,
+  layer: Int,
+  method: Int,
+  pathClass: Int,
+  effectClass: Int,
+  reachClass: Int,
+  nChunksClass: Int,
+  nChunks: Int,
+  id1: Int,
+  off1Class: Int,
+  off1: Int,
+  len1Class: Int,
+  len1: Int,
+  id2: Int,
+  off2Class: Int,
+  off2: Int,
+  len2Class: Int,
+  len2: Int,
+  capClass: Int,
+  cap: Int,
+  declaredPresent: Int,
+  declaredLenClass: Int,
+  declaredLen: Int,
+  streamPresent: Int,
+  deadlineExpired: Int,
+  foreignThrow: Int,
+  routeMethod: Int,
+  routePath: Int,
+  contentType: Int,
+  channel: Int,
+  unknownField: Int,
+  malformed: Int,
+  tamper: Int,
+  issuerPinned: Int,
+  actionMatch: Int,
+  grantEpoch: Int,
+  currentEpoch: Int,
+  epochMatchTok: Int,
+  grantProfile: Int,
+  currentProfile: Int,
+  profileMatch: Int,
+  declared: Int,
+  expired: Int,
+  suiteId: Int,
+  pqAvailable: Int,
+  pqHalf: Int,
+  classicalHalf: Int,
+  validatedBefore: Int,
+  verifyBodyBytes: Int,
+  getterChanging: Int,
+  pinnedSize: Int,
+  verifierRead: Int,
+  childExit: Int,
+  tritToken: Int,
+  authorizing: Int,
+  extraKey: Int,
+  testHook: Int,
+  clockReading: Int,
+  clockEpoch: Int,
+  hasLast: Int,
+  lastEpoch: Int,
+  lastTicks: Int,
+  deadlineEpoch: Int,
+  deadlineTicks: Int,
+  rateCount: Int,
+  rateLimit: Int,
+  rateJump: Int,
+  bodyPresent: Int,
+  jsonMalformed: Int,
+  jsonNull: Int,
+  dupKeys: Int,
+  decodeUnknown: Int,
+  decodeValidator: Int,
+  budgetBody: Int,
+  budgetMemory: Int,
+  concCurrent: Int,
+  concMax: Int,
+  concReleased: Int,
+  concZombie: Int,
+  secretRequired: Int,
+  secretProvider: Int,
+  secretPresence: Int,
+  secretEpoch: Int,
+  secretEpochPresent: Int,
+  mintedOp: Int,
+  secretOp: Int,
+  mintedEpochBind: Int,
+  secretEpochBind: Int,
+  idempEnabled: Int,
+  idempClaim: Int,
+  idempAlready: Int,
+  idempDispatch: Int,
+  idempTtl: Int,
+  idempSettle: Int,
+  handlerToken: Int,
+  secretActive: Int,
+  secretDeadlineTok: Int,
+  secretSpent: Int,
+  secretReentrant: Int,
+  secretFailed: Int,
+  secretDeclared: Int,
+  adapterKind: Int,
+  adapterAudit: Int,
+  casOpenState: Int,
+  casCompetitor: Int,
+  casClaimedState: Int,
+  casEpochMatch: Int,
+  casRevokeAfter: Int,
+  casCrash: Int,
+  consumePresent: Int,
+  consumeMatch: Int,
+  consumeEpochMatch: Int,
+  consumeLease: Int,
+  consumeRevoke: Int,
+  independentAuth: Int,
+  preparedCustody: Int,
+  cleanupEvidence: Int,
+  emptyObligation: Int,
+  consumedAuth: Int,
+  currentValidity: Int,
+  ackPresent: Int,
+  ackMatch: Int,
+  ackEpochPresent: Int,
+  ackEpochMatch: Int,
+  ackLease: Int,
+  ackAudit: Int,
+  priorAck: Int,
+  retryPrior: Int,
+  sinkOutcome: Int,
+  crashAfterSink: Int,
+  postSpent: Int,
+  postDispatchPacked: Int,
+  postConsumePacked: Int,
+  postAuditPacked: Int,
+  postCurrent: Int,
+  postMax: Int,
+  postReleased: Int,
+  postZombie: Int,
+  arenaState: Int,
+  arenaStatus: Int,
+  arenaLen: Int,
+  arenaByte: Int,
+  cleanupMinted: Int,
+  cleanupEvOp: Int,
+  cleanupCallOp: Int,
+  cleanupEvGen: Int,
+  cleanupCallGen: Int,
+  cleanupEvDigest: Int,
+  cleanupCallDigest: Int,
+  cleanupStatus: Int,
+  cleanupOpClass: Int
+) -> Int
+contract {
+  intent { "Drive one synthetic POST /auth/verify through every landed gate to the result sink. releaseGuard is the commit point. Cleanup on every exit." }
+}
+{
+  let served: Int = classifyServeRoute(gClass, layer, gClass, method, gClass, pathClass, gClass, effectClass, gClass, reachClass)
+  if served == 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, 160)
+  }
+  if served != 101 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, served)
+  }
+  let adapterPacked: Int = classifyAdapter(gClass, adapterKind, gClass, adapterAudit)
+  if adapterPacked == 2 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
+  }
+  if adapterPacked == 3 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
+  }
+  if adapterPacked == 4 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
+  }
+  if adapterPacked == 11 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
+  }
+  if adapterPacked != 0 {
+    if adapterPacked != 1 {
+      return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
+    }
+  }
+  let bodyPacked: Int = readChunks(nChunksClass, nChunks, id1, off1Class, off1, len1Class, len1, id2, off2Class, off2, len2Class, len2, capClass, cap, declaredPresent, declaredLenClass, declaredLen, streamPresent, deadlineExpired, foreignThrow)
+  if bodyPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, bodyPacked)
+  }
+  let ingressPacked: Int = admitIngress(gClass, routeMethod, gClass, routePath, gClass, contentType, gClass, channel, gClass, bodyPacked, gClass, unknownField, gClass, malformed)
+  if ingressPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, ingressPacked)
+  }
+  let verifiedReq: Int = validateVerifyRequest(gClass, validatedBefore, gClass, verifyBodyBytes, gClass, getterChanging, gClass, pinnedSize, gClass, verifierRead, gClass, childExit, gClass, 0, gClass, tritToken, gClass, authorizing, gClass, extraKey, gClass, testHook, gClass, cleanupEvidence, gClass, independentAuth, gClass, preparedCustody, gClass, emptyObligation, gClass, consumedAuth, gClass, currentValidity)
+  if verifiedReq != 106 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, verifiedReq)
+  }
+  let authed: Int = authenticateGrant(gClass, 0, gClass, tamper, gClass, issuerPinned, gClass, actionMatch, gClass, epochMatchTok, gClass, profileMatch, gClass, grantEpoch, gClass, currentEpoch, gClass, grantProfile, gClass, currentProfile, gClass, declared, gClass, expired, gClass, suiteId, gClass, pqAvailable)
+  if authed != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, authed)
+  }
+  let halves: Int = andHalves(pqHalf, classicalHalf)
+  if halves != 0 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, finish(halves, true))
+  }
+  let clockAdmit: Int = mintFromClock(gClass, clockReading, clockEpoch, hasLast, lastEpoch, lastTicks)
+  if clockAdmit != 0 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, finish(clockAdmit, true))
+  }
+  let remain: Int = remainingReason(clockEpoch, clockReading, deadlineEpoch, deadlineTicks)
+  if remain != 0 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, finish(remain, true))
+  }
+  let ratePacked: Int = applyRate(gClass, rateCount, gClass, rateLimit, gClass, rateJump)
+  if ratePacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, ratePacked)
+  }
+  let decodePacked: Int = applyDecode(gClass, bodyPresent, gClass, jsonMalformed, gClass, jsonNull, gClass, dupKeys, gClass, decodeUnknown, gClass, decodeValidator)
+  if decodePacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, decodePacked)
+  }
+  let budgetPacked: Int = applyBudget(gClass, budgetBody, gClass, budgetMemory)
+  if budgetPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, budgetPacked)
+  }
+  let concPacked: Int = applyConcurrency(gClass, concCurrent, gClass, concMax, gClass, concReleased, gClass, concZombie)
+  if concPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, concPacked)
+  }
+  let secretsPacked: Int = applySecrets(gClass, secretRequired, gClass, secretProvider, gClass, secretPresence, gClass, secretEpoch, gClass, secretEpochPresent, gClass, mintedOp, gClass, secretOp, gClass, mintedEpochBind, gClass, secretEpochBind)
+  if secretsPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, secretsPacked)
+  }
+  let secretAccess: Int = getSecretAccess(gClass, secretActive, gClass, secretDeadlineTok, gClass, secretSpent, gClass, secretReentrant, gClass, secretFailed, gClass, secretDeclared)
+  if secretAccess != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, secretAccess)
+  }
+  let presenceDecoded: Int = decodePresence(gClass, 1)
+  if presenceDecoded != 1 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, finish(11, true))
+  }
+  let arenaListed: Int = listedState(gClass, arenaState)
+  if arenaListed != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, arenaListed)
+  }
+  let arenaPacked: Int = arenaHas(gClass, arenaState, gClass, arenaStatus, gClass, arenaLen, gClass, arenaByte)
+  if arenaPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, arenaPacked)
+  }
+  let idempPacked: Int = applyIdempotency(gClass, idempEnabled, gClass, idempClaim, gClass, idempAlready, gClass, idempDispatch, gClass, idempTtl, gClass, idempSettle)
+  if idempPacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, idempPacked)
+  }
+  let auditReserved: Int = reserveAudit(gClass, 0, gClass, 10000)
+  if auditReserved != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, auditReserved)
+  }
+  let prePacked: Int = runPreDispatch(100, 100, 100, ratePacked, decodePacked, budgetPacked, concPacked, secretsPacked, 100, idempPacked, gClass, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, clockReading, gClass, 1, gClass, clockReading, gClass, 5000, gClass, clockEpoch, gClass, clockEpoch, gClass, handlerToken)
+  if prePacked != 100 {
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, prePacked)
+  }
+  let begun: Int = casBegin(casOpenState, casCompetitor)
+  if begun != 100 {
+    return exitAfterBegin(cleanupStatus, begun)
+  }
+  if adapterPacked == 1 {
+    let committedOop: Int = casCommit(casClaimedState, 1, casEpochMatch, casRevokeAfter, casCrash)
+    if committedOop != 100 {
+      return exitAfterBegin(cleanupStatus, committedOop)
+    }
+    return exitAfterBegin(cleanupStatus, 106)
+  }
+  let committed: Int = casCommit(casClaimedState, 0, casEpochMatch, casRevokeAfter, casCrash)
+  if committed != 100 {
+    return exitAfterBegin(cleanupStatus, committed)
+  }
+  let consumed: Int = consumeStep(consumePresent, consumeMatch, gClass, consumeEpochMatch, consumeLease, consumeRevoke, 100)
+  if consumed != 100 {
+    return exitAfterBegin(cleanupStatus, consumed)
+  }
+  let guarded: Int = releaseGuard(independentAuth, preparedCustody, cleanupEvidence, emptyObligation, consumedAuth, currentValidity)
+  if guarded != 100 {
+    return exitAfterBegin(cleanupStatus, guarded)
+  }
+  if crashAfterSink == 1 {
+    return exitAfterBegin(cleanupStatus, 106)
+  }
+  if priorAck == 1 {
+    return exitAfterBegin(cleanupStatus, 163)
+  }
+  let acked: Int = ackStep(ackPresent, ackMatch, ackEpochPresent, gClass, ackEpochMatch, ackLease, ackAudit)
+  if acked != 101 {
+    return exitAfterBegin(cleanupStatus, acked)
+  }
+  if retryPrior == 6 {
+    let retried: Int = retryAfterUnknown(retryPrior)
+    return exitAfterBegin(cleanupStatus, retried)
+  }
+  let postSink: Int = applyPostSink(gClass, 100, gClass, sinkOutcome, gClass, cleanupEvidence, gClass, independentAuth, gClass, preparedCustody, gClass, emptyObligation, gClass, consumedAuth, gClass, currentValidity)
+  if sinkOutcome == 0 {
+    if postSink != 106 {
+      return exitAfterBegin(cleanupStatus, postSink)
+    }
+  }
+  if sinkOutcome != 0 {
+    return exitAfterBegin(cleanupStatus, postSink)
+  }
+  let auditSettled: Int = settleAudit(gClass, 0)
+  if auditSettled != 100 {
+    return exitAfterBegin(cleanupStatus, auditSettled)
+  }
+  let idempSettled: Int = settleIdempotency(gClass, idempDispatch, gClass, 0)
+  if idempSettled != 100 {
+    return exitAfterBegin(cleanupStatus, idempSettled)
+  }
+  let postPacked: Int = runPostDispatch(gClass, clockReading, clockReading, clockReading, gClass, 1, gClass, clockReading, gClass, 5000, gClass, clockEpoch, gClass, clockEpoch, gClass, postSpent, gClass, postDispatchPacked, gClass, postConsumePacked, gClass, postAuditPacked, gClass, ackPresent, gClass, ackMatch, gClass, ackEpochPresent, gClass, ackEpochMatch, gClass, ackLease, gClass, postCurrent, gClass, postMax, gClass, postReleased, gClass, postZombie)
+  if postPacked != 100 {
+    if postPacked != 106 {
+      return exitAfterBegin(cleanupStatus, postPacked)
+    }
+  }
+  let sealed: Int = sealReceipt(gClass, suiteId, gClass, pqAvailable)
+  if sealed != 100 {
+    return exitAfterBegin(cleanupStatus, sealed)
+  }
+  let http: Int = httpStatusFor(0, 100)
+  if http != 200 {
+    return exitAfterBegin(cleanupStatus, 111)
+  }
+  return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, 100)
+}
