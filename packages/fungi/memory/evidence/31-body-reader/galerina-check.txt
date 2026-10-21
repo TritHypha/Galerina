@@ -1,3 +1,9 @@
+node galerina.mjs check packages/fungi/memory/src/c-boundary.fungi --strict-types --strict-governance
+exit 0
 ✅ packages/fungi/memory/src/c-boundary.fungi: 0 errors, 0 governance warnings (3 flow(s), 3 top-level declaration(s))
 
+node galerina.mjs check packages/fungi/memory/src/body-reader.fungi --strict-types --strict-governance
+exit 0
 ✅ packages/fungi/memory/src/body-reader.fungi: 0 errors, 0 governance warnings (3 flow(s), 3 top-level declaration(s))
+
+A2 import+CALL (restored after): check exit 0 (3 flow(s), 4 top-level). build FUNGI-NAME-001 exit 1. run --invoke WAT undefined callee exit 1. See import-refuse.txt. Landed source keeps classTag gate, no import.

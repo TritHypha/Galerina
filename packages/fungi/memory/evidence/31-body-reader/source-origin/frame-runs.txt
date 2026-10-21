@@ -1,0 +1,18 @@
+EVB-Q31-1 copy: C:\Program Files\Git -> scratch .superpowers/sdd/2026-08-31-rd0873-portable-artifact-admission/toolchains/mingit-2.55.0.5/expanded/ (plain files, no junction). expanded/cmd/git.exe 43352 sha256 78211c7ed73988da93a6d8a33d47ec6187f464d7ea2a9a00c182bbd7a1ecf30f MATCH. gitignored. porcelain CLEAN of that tree.
+
+Pinned profile 8b89fa23a5e84d2c16f885ce8946bf1b7e4547a8f06bf63c66b9e3db60479f0e MATCH (1131 bytes).
+
+node scripts/galerina-source-origin-frame.mjs --self-test
+exit 0; stdout SELF_TEST_OK
+
+node scripts/galerina-source-origin-frame.mjs --commit dc0f9c8c4f1365f0228cda213b2ecd001400463e --profile <bucket>/evidence-03/pinned-profile.unsigned.v1.json --out packages/fungi/memory/evidence/31-body-reader/source-origin/frame-dc0f9c8c.bin
+exit 2; stderr REFUSED_GIT_EXPORT; no output file
+
+node scripts/galerina-source-origin-frame.mjs --commit c2e19a8d12317a0616e7793b63530390f979cf35 --profile <bucket>/evidence-03/pinned-profile.unsigned.v1.json --out packages/fungi/memory/evidence/31-body-reader/source-origin/frame-c2e19a8d.bin
+exit 2; stderr REFUSED_GIT_EXPORT; no output file
+
+Direct exportSourceOriginProject(c2e19a8d): SourceOriginCaptureRefusal code SOURCE_ORIGIN_GIT_CONFIG (parseGitConfigRows). Executable identity gate was passed (no longer SOURCE_ORIGIN_GIT_EXECUTABLE).
+
+EVB-Q31-1-STILL-REFUSED:SOURCE_ORIGIN_GIT_CONFIG
+EVB-Q31-2: REFUSED_RESERVED_DECODER_ID (no relabel, no decoder built)
+AGENTS HEAD at this write: 48cb7e31f80d1236f96f5c08979457b0d8f6cc5d

@@ -2,4 +2,6 @@ twins AFTER (working tree): fungi-twins 103/103 check-clean across 10 dir(s); ex
 
 audit:package-topology: exit 0 GREEN 101 canonical identities; 1 deferred nested native package; folder packages/fungi/memory remains UNGOVERNED by that scan (packages-ts only) and is separately FOLDER_ADMITTED by scripts/audit-fungi-memory-folder.mjs.
 
-audit:product-boundaries --check: exit 1 REFUSED PRODUCT_GRAPH_MISSING (pre-existing; Q30 selftest expects this). Not a folder refusal.
+audit:product-boundaries --check: exit 2 REFUSED PRODUCT_GRAPH_MISSING (pre-existing; Q30 selftest expects this). Not a folder refusal.
+
+encoding-gate on c-boundary.fungi body-reader.fungi body-reader.test.mjs receipts.json parity.md mutants.md import-refuse.txt: exit 0.
