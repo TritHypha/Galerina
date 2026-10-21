@@ -85,7 +85,7 @@ contract {
   intent { "Mint path for listed status tags. Sealing the constructor is NEEDS_LANGUAGE." }
 }
 {
-  let statusReason: Int = readForeignSafeInteger(statusClass, evStatus)
+  let statusReason: Int = readForeignBoundedInteger(statusClass, evStatus, -2147483647, 2147483647)
   if statusReason != 0 {
     if statusReason == 11 {
       return finish(11, true)
@@ -130,7 +130,7 @@ contract {
   intent { "Admit bound DONE or listed-empty NOT_REQUIRED before begin. Each mismatch has its own code." }
 }
 {
-  let mintedReason: Int = readForeignSafeInteger(mintedClass, mintedToken)
+  let mintedReason: Int = readForeignBoundedInteger(mintedClass, mintedToken, -2147483647, 2147483647)
   if mintedReason != 0 {
     if mintedReason == 11 {
       return finish(11, true)
@@ -138,7 +138,7 @@ contract {
     return finish(10, true)
   }
   let evOpIdForeignOn: Int = 1
-  let evOpReason: Int = readForeignSafeInteger(evOpIdClass, evOpId)
+  let evOpReason: Int = readForeignBoundedInteger(evOpIdClass, evOpId, -2147483647, 2147483647)
   if evOpIdForeignOn == 1 {
     if evOpReason != 0 {
       if evOpReason == 11 {
@@ -148,7 +148,7 @@ contract {
     }
   }
   let callOpIdForeignOn: Int = 1
-  let callOpReason: Int = readForeignSafeInteger(callOpIdClass, callOpId)
+  let callOpReason: Int = readForeignBoundedInteger(callOpIdClass, callOpId, -2147483647, 2147483647)
   if callOpIdForeignOn == 1 {
     if callOpReason != 0 {
       if callOpReason == 11 {
@@ -158,7 +158,7 @@ contract {
     }
   }
   let evGenForeignOn: Int = 1
-  let evGenReason: Int = readForeignSafeInteger(evGenClass, evGen)
+  let evGenReason: Int = readForeignBoundedInteger(evGenClass, evGen, -2147483647, 2147483647)
   if evGenForeignOn == 1 {
     if evGenReason != 0 {
       if evGenReason == 11 {
@@ -168,7 +168,7 @@ contract {
     }
   }
   let callGenForeignOn: Int = 1
-  let callGenReason: Int = readForeignSafeInteger(callGenClass, callGen)
+  let callGenReason: Int = readForeignBoundedInteger(callGenClass, callGen, -2147483647, 2147483647)
   if callGenForeignOn == 1 {
     if callGenReason != 0 {
       if callGenReason == 11 {
@@ -178,7 +178,7 @@ contract {
     }
   }
   let evDigestForeignOn: Int = 1
-  let evDigestReason: Int = readForeignSafeInteger(evDigestClass, evDigest)
+  let evDigestReason: Int = readForeignBoundedInteger(evDigestClass, evDigest, -2147483647, 2147483647)
   if evDigestForeignOn == 1 {
     if evDigestReason != 0 {
       if evDigestReason == 11 {
@@ -188,7 +188,7 @@ contract {
     }
   }
   let callDigestForeignOn: Int = 1
-  let callDigestReason: Int = readForeignSafeInteger(callDigestClass, callDigest)
+  let callDigestReason: Int = readForeignBoundedInteger(callDigestClass, callDigest, -2147483647, 2147483647)
   if callDigestForeignOn == 1 {
     if callDigestReason != 0 {
       if callDigestReason == 11 {
@@ -197,14 +197,14 @@ contract {
       return finish(10, true)
     }
   }
-  let statusReason: Int = readForeignSafeInteger(statusClass, evStatus)
+  let statusReason: Int = readForeignBoundedInteger(statusClass, evStatus, -2147483647, 2147483647)
   if statusReason != 0 {
     if statusReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let opReason: Int = readForeignSafeInteger(opClassClass, opClass)
+  let opReason: Int = readForeignBoundedInteger(opClassClass, opClass, -2147483647, 2147483647)
   if opReason != 0 {
     if opReason == 11 {
       return finish(11, true)
@@ -312,14 +312,14 @@ contract {
   intent { "After begin, listed statuses are DELIVERY_UNKNOWN. Never REFUSED, never success. Unlisted status only is Unlisted. phaseToken 0 has its own code." }
 }
 {
-  let statusReason: Int = readForeignSafeInteger(statusClass, evStatus)
+  let statusReason: Int = readForeignBoundedInteger(statusClass, evStatus, -2147483647, 2147483647)
   if statusReason != 0 {
     if statusReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let phaseReason: Int = readForeignSafeInteger(phaseClass, phaseToken)
+  let phaseReason: Int = readForeignBoundedInteger(phaseClass, phaseToken, -2147483647, 2147483647)
   if phaseReason != 0 {
     if phaseReason == 11 {
       return finish(11, true)
@@ -396,21 +396,21 @@ contract {
   intent { "Closed resource transitions. QUARANTINED admits wipe then destroy only. Unlisted pairs refuse." }
 }
 {
-  let fromReason: Int = readForeignSafeInteger(fromClass, fromState)
+  let fromReason: Int = readForeignBoundedInteger(fromClass, fromState, -2147483647, 2147483647)
   if fromReason != 0 {
     if fromReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let eventReason: Int = readForeignSafeInteger(eventClass, eventKind)
+  let eventReason: Int = readForeignBoundedInteger(eventClass, eventKind, -2147483647, 2147483647)
   if eventReason != 0 {
     if eventReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let toReason: Int = readForeignSafeInteger(toClass, toState)
+  let toReason: Int = readForeignBoundedInteger(toClass, toState, -2147483647, 2147483647)
   if toReason != 0 {
     if toReason == 11 {
       return finish(11, true)
@@ -520,7 +520,7 @@ contract {
   intent { "Free is not wipe. An explicit wipe step reports wipe-step-reported, not AdmitDone. Binding is only through admitCleanup." }
 }
 {
-  let actionReason: Int = readForeignSafeInteger(actionClass, action)
+  let actionReason: Int = readForeignBoundedInteger(actionClass, action, -2147483647, 2147483647)
   if actionReason != 0 {
     if actionReason == 11 {
       return finish(11, true)

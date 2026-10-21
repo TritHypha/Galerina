@@ -27,7 +27,7 @@ contract {
   if boolReason != 0 {
     return 11
   }
-  let clockReason: Int = readForeignLength(classTag, reading)
+  let clockReason: Int = readForeignLength(classTag, reading, 2147483647)
   if clockReason != 0 {
     return clockReason
   }

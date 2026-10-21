@@ -89,7 +89,7 @@ test("helper refuses Null NaN Infinity NegZero NonInteger OutOfSafeRange Negativ
 });
 
 test("helper length refuses negative integer", () => {
-  const r = invoke(BOUNDARY, "readForeignLength", [0, -1]);
+  const r = invoke(BOUNDARY, "readForeignLength", [0, -1, 2147483647]);
   expectPacked(r, 9, "negative length");
 });
 

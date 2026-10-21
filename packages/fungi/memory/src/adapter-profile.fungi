@@ -35,7 +35,7 @@ contract {
   intent { "Map an admitted observation class onto Q07 or DU-only. Unlisted class refuses." }
 }
 {
-  let reason: Int = readForeignSafeInteger(classClass, classVal)
+  let reason: Int = readForeignBoundedInteger(classClass, classVal, -2147483647, 2147483647)
   if reason != 0 {
     if reason == 11 {
       return 11
@@ -64,14 +64,14 @@ contract {
   intent { "Admit kind and preBeginAudit, then return the v1 table code or a typed refusal." }
 }
 {
-  let kindReason: Int = readForeignSafeInteger(kindClass, kind)
+  let kindReason: Int = readForeignBoundedInteger(kindClass, kind, -2147483647, 2147483647)
   if kindReason != 0 {
     if kindReason == 11 {
       return 11
     }
     return 4
   }
-  let auditReason: Int = readForeignSafeInteger(auditClass, audit)
+  let auditReason: Int = readForeignBoundedInteger(auditClass, audit, -2147483647, 2147483647)
   if auditReason != 0 {
     if auditReason == 11 {
       return 11

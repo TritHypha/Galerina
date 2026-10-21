@@ -177,35 +177,35 @@ contract {
   intent { "Admit foreign tags then refuse protected or secret-bearing standalone serve routes." }
 }
 {
-  let layerReason: Int = readForeignSafeInteger(layerClass, layer)
+  let layerReason: Int = readForeignBoundedInteger(layerClass, layer, -2147483647, 2147483647)
   if layerReason != 0 {
     if layerReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let methodReason: Int = readForeignSafeInteger(methodClass, method)
+  let methodReason: Int = readForeignBoundedInteger(methodClass, method, -2147483647, 2147483647)
   if methodReason != 0 {
     if methodReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let pathReason: Int = readForeignSafeInteger(pathClassClass, pathClass)
+  let pathReason: Int = readForeignBoundedInteger(pathClassClass, pathClass, -2147483647, 2147483647)
   if pathReason != 0 {
     if pathReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)
+  let effectReason: Int = readForeignBoundedInteger(effectClassClass, effectClass, -2147483647, 2147483647)
   if effectReason != 0 {
     if effectReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)
+  let reachReason: Int = readForeignBoundedInteger(reachClassClass, reachClass, -2147483647, 2147483647)
   if reachReason != 0 {
     if reachReason == 11 {
       return finish(11, true)

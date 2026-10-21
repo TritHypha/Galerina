@@ -12,14 +12,26 @@
 /// |integer| <= 2^53-1 is the host SafeInteger domain (classTag 8). Physical Int is
 ///   i32 so |integer| <= 2147483647 is always inside that domain; do not author
 ///   an unrepresentable 2^53-1 constant.
+/// KG-06: classTag 0 admits only when integer is inside a caller-declared [lo, hi].
+///   Listed tags 1..10 refuse as themselves even when the value is in range.
+///   Unlisted tags refuse 11. Inverted lo > hi refuses 11.
 /// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
 
-pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
+pure flow readForeignBoundedInteger(classTag: Int, integer: Int, lo: Int, hi: Int) -> Int
 contract {
-  intent { "Admit a foreign observation as a safe integer or return a typed refusal reason." }
+  intent { "Admit classTag 0 only inside [lo, hi]; listed tags refuse as themselves; unlisted is 11." }
 }
 {
   if classTag == 0 {
+    if lo > hi {
+      return 11
+    }
+    if integer < lo {
+      return 8
+    }
+    if integer > hi {
+      return 8
+    }
     return 0
   }
   if classTag == 1 {
@@ -55,19 +67,33 @@ contract {
   return 11
 }
 
-pure flow readForeignLength(classTag: Int, integer: Int) -> Int
+pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
 contract {
-  intent { "Admit a foreign length: non-negative safe integer, else typed refusal." }
+  intent { "Admit a foreign observation on the physical i32 domain or return a typed refusal reason." }
 }
 {
-  let classReason: Int = readForeignSafeInteger(classTag, integer)
-  if classReason != 0 {
-    return classReason
+  return readForeignBoundedInteger(classTag, integer, -2147483647, 2147483647)
+}
+
+pure flow readForeignLength(classTag: Int, integer: Int, hi: Int) -> Int
+contract {
+  intent { "Admit a foreign length: non-negative integer inside [0, hi], else typed refusal." }
+}
+{
+  if classTag == 0 {
+    if integer < 0 {
+      return 9
+    }
   }
-  if integer < 0 {
-    return 9
-  }
-  return 0
+  return readForeignBoundedInteger(classTag, integer, 0, hi)
+}
+
+pure flow readForeignByte(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit a foreign byte: classTag 0 and integer inside [0, 255], else typed refusal." }
+}
+{
+  return readForeignBoundedInteger(classTag, integer, 0, 255)
 }
 
 pure flow readForeignBool(token: Int) -> Int

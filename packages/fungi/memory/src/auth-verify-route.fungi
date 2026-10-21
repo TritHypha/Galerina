@@ -64,49 +64,49 @@ contract {
   intent { "Closed ingress sum. Wrong method path content-type channel unknown field malformed and over-cap refuse. Body throw is UNKNOWN. Body timeout is deadline." }
 }
 {
-  let methodReason: Int = readForeignSafeInteger(methodClass, methodToken)
+  let methodReason: Int = readForeignBoundedInteger(methodClass, methodToken, -2147483647, 2147483647)
   if methodReason != 0 {
     if methodReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let pathReason: Int = readForeignSafeInteger(pathClass, pathToken)
+  let pathReason: Int = readForeignBoundedInteger(pathClass, pathToken, -2147483647, 2147483647)
   if pathReason != 0 {
     if pathReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let contentReason: Int = readForeignSafeInteger(contentClass, contentTypeToken)
+  let contentReason: Int = readForeignBoundedInteger(contentClass, contentTypeToken, -2147483647, 2147483647)
   if contentReason != 0 {
     if contentReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let channelReason: Int = readForeignSafeInteger(channelClass, channelToken)
+  let channelReason: Int = readForeignBoundedInteger(channelClass, channelToken, -2147483647, 2147483647)
   if channelReason != 0 {
     if channelReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let bodyReason: Int = readForeignSafeInteger(bodyClass, bodyPacked)
+  let bodyReason: Int = readForeignBoundedInteger(bodyClass, bodyPacked, -2147483647, 2147483647)
   if bodyReason != 0 {
     if bodyReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let unknownReason: Int = readForeignSafeInteger(unknownClass, unknownFieldToken)
+  let unknownReason: Int = readForeignBoundedInteger(unknownClass, unknownFieldToken, -2147483647, 2147483647)
   if unknownReason != 0 {
     if unknownReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let malformedReason: Int = readForeignSafeInteger(malformedClass, malformedToken)
+  let malformedReason: Int = readForeignBoundedInteger(malformedClass, malformedToken, -2147483647, 2147483647)
   if malformedReason != 0 {
     if malformedReason == 11 {
       return finish(11, true)
@@ -217,70 +217,70 @@ contract {
   intent { "Kernel mint only. Absent randomness refuses. Caller-supplied mint refuses. Delegates listed mintAdmit and maps replay or missing." }
 }
 {
-  let randomReason: Int = readForeignSafeInteger(randomClass, randomnessPresentToken)
+  let randomReason: Int = readForeignBoundedInteger(randomClass, randomnessPresentToken, -2147483647, 2147483647)
   if randomReason != 0 {
     if randomReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let callerReason: Int = readForeignSafeInteger(callerClass, callerMintToken)
+  let callerReason: Int = readForeignBoundedInteger(callerClass, callerMintToken, -2147483647, 2147483647)
   if callerReason != 0 {
     if callerReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let idReason: Int = readForeignSafeInteger(idClass, idPresentToken)
+  let idReason: Int = readForeignBoundedInteger(idClass, idPresentToken, -2147483647, 2147483647)
   if idReason != 0 {
     if idReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let epochReason: Int = readForeignSafeInteger(epochClass, epoch)
+  let epochReason: Int = readForeignBoundedInteger(epochClass, epoch, -2147483647, 2147483647)
   if epochReason != 0 {
     if epochReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let existingReason: Int = readForeignSafeInteger(existingClass, existingPresentToken)
+  let existingReason: Int = readForeignBoundedInteger(existingClass, existingPresentToken, -2147483647, 2147483647)
   if existingReason != 0 {
     if existingReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let leaseReason: Int = readForeignSafeInteger(leaseClass, existingLease)
+  let leaseReason: Int = readForeignBoundedInteger(leaseClass, existingLease, -2147483647, 2147483647)
   if leaseReason != 0 {
     if leaseReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  let retiredReason: Int = readForeignBoundedInteger(retiredClass, retiredToken, -2147483647, 2147483647)
   if retiredReason != 0 {
     if retiredReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let capReason: Int = readForeignSafeInteger(capClass, atCapToken)
+  let capReason: Int = readForeignBoundedInteger(capClass, atCapToken, -2147483647, 2147483647)
   if capReason != 0 {
     if capReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let freshReason: Int = readForeignSafeInteger(freshClass, issuedFreshToken)
+  let freshReason: Int = readForeignBoundedInteger(freshClass, issuedFreshToken, -2147483647, 2147483647)
   if freshReason != 0 {
     if freshReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let hereReason: Int = readForeignSafeInteger(hereClass, issuedHereToken)
+  let hereReason: Int = readForeignBoundedInteger(hereClass, issuedHereToken, -2147483647, 2147483647)
   if hereReason != 0 {
     if hereReason == 11 {
       return finish(11, true)
@@ -349,42 +349,42 @@ contract {
   intent { "Typed foreign clock. Missing negative backwards epoch-mismatch and armedAt plus budget overflow refuse. One deadline covers every later stage." }
 }
 {
-  let clockReason: Int = readForeignSafeInteger(clockClass, clock)
+  let clockReason: Int = readForeignBoundedInteger(clockClass, clock, -2147483647, 2147483647)
   if clockReason != 0 {
     if clockReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let presentReason: Int = readForeignSafeInteger(presentClass, clockPresent)
+  let presentReason: Int = readForeignBoundedInteger(presentClass, clockPresent, -2147483647, 2147483647)
   if presentReason != 0 {
     if presentReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let armedReason: Int = readForeignSafeInteger(armedClass, armedAt)
+  let armedReason: Int = readForeignBoundedInteger(armedClass, armedAt, -2147483647, 2147483647)
   if armedReason != 0 {
     if armedReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let budgetReason: Int = readForeignSafeInteger(budgetClass, budget)
+  let budgetReason: Int = readForeignBoundedInteger(budgetClass, budget, -2147483647, 2147483647)
   if budgetReason != 0 {
     if budgetReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let clockEpochReason: Int = readForeignSafeInteger(clockEpochClass, clockEpoch)
+  let clockEpochReason: Int = readForeignBoundedInteger(clockEpochClass, clockEpoch, -2147483647, 2147483647)
   if clockEpochReason != 0 {
     if clockEpochReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let armedEpochReason: Int = readForeignSafeInteger(armedEpochClass, armedEpoch)
+  let armedEpochReason: Int = readForeignBoundedInteger(armedEpochClass, armedEpoch, -2147483647, 2147483647)
   if armedEpochReason != 0 {
     if armedEpochReason == 11 {
       return finish(11, true)
@@ -464,112 +464,112 @@ contract {
   intent { "Pre-consume port sum. Bind minted operation and epoch to secret packed. Listed recovery other than not-found is replay. Secret non-success 106 stays UNKNOWN." }
 }
 {
-  let digestReason: Int = readForeignSafeInteger(digestClass, digestToken)
+  let digestReason: Int = readForeignBoundedInteger(digestClass, digestToken, -2147483647, 2147483647)
   if digestReason != 0 {
     if digestReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let aotReason: Int = readForeignSafeInteger(aotClass, aotToken)
+  let aotReason: Int = readForeignBoundedInteger(aotClass, aotToken, -2147483647, 2147483647)
   if aotReason != 0 {
     if aotReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let bytecodeReason: Int = readForeignSafeInteger(bytecodeClass, bytecodeToken)
+  let bytecodeReason: Int = readForeignBoundedInteger(bytecodeClass, bytecodeToken, -2147483647, 2147483647)
   if bytecodeReason != 0 {
     if bytecodeReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let slideReason: Int = readForeignSafeInteger(slideClass, slideToken)
+  let slideReason: Int = readForeignBoundedInteger(slideClass, slideToken, -2147483647, 2147483647)
   if slideReason != 0 {
     if slideReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let vokReason: Int = readForeignSafeInteger(vokClass, vokToken)
+  let vokReason: Int = readForeignBoundedInteger(vokClass, vokToken, -2147483647, 2147483647)
   if vokReason != 0 {
     if vokReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let verdictReason: Int = readForeignSafeInteger(verdictClass, verdictToken)
+  let verdictReason: Int = readForeignBoundedInteger(verdictClass, verdictToken, -2147483647, 2147483647)
   if verdictReason != 0 {
     if verdictReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let secretReason: Int = readForeignSafeInteger(secretClass, secretPacked)
+  let secretReason: Int = readForeignBoundedInteger(secretClass, secretPacked, -2147483647, 2147483647)
   if secretReason != 0 {
     if secretReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let tcbReason: Int = readForeignSafeInteger(tcbClass, tcbToken)
+  let tcbReason: Int = readForeignBoundedInteger(tcbClass, tcbToken, -2147483647, 2147483647)
   if tcbReason != 0 {
     if tcbReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let mintedOpReason: Int = readForeignSafeInteger(mintedOpClass, mintedOp)
+  let mintedOpReason: Int = readForeignBoundedInteger(mintedOpClass, mintedOp, -2147483647, 2147483647)
   if mintedOpReason != 0 {
     if mintedOpReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let secretOpReason: Int = readForeignSafeInteger(secretOpClass, secretOp)
+  let secretOpReason: Int = readForeignBoundedInteger(secretOpClass, secretOp, -2147483647, 2147483647)
   if secretOpReason != 0 {
     if secretOpReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let mintedEpochReason: Int = readForeignSafeInteger(mintedEpochClass, mintedEpoch)
+  let mintedEpochReason: Int = readForeignBoundedInteger(mintedEpochClass, mintedEpoch, -2147483647, 2147483647)
   if mintedEpochReason != 0 {
     if mintedEpochReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let secretEpochReason: Int = readForeignSafeInteger(secretEpochClass, secretEpoch)
+  let secretEpochReason: Int = readForeignBoundedInteger(secretEpochClass, secretEpoch, -2147483647, 2147483647)
   if secretEpochReason != 0 {
     if secretEpochReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let recPresentReason: Int = readForeignSafeInteger(recPresentClass, recPresentToken)
+  let recPresentReason: Int = readForeignBoundedInteger(recPresentClass, recPresentToken, -2147483647, 2147483647)
   if recPresentReason != 0 {
     if recPresentReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let recRetiredReason: Int = readForeignSafeInteger(recRetiredClass, recRetiredToken)
+  let recRetiredReason: Int = readForeignBoundedInteger(recRetiredClass, recRetiredToken, -2147483647, 2147483647)
   if recRetiredReason != 0 {
     if recRetiredReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let recTombReason: Int = readForeignSafeInteger(recTombClass, recTombstoneToken)
+  let recTombReason: Int = readForeignBoundedInteger(recTombClass, recTombstoneToken, -2147483647, 2147483647)
   if recTombReason != 0 {
     if recTombReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let recLeaseReason: Int = readForeignSafeInteger(recLeaseClass, recLeaseState)
+  let recLeaseReason: Int = readForeignBoundedInteger(recLeaseClass, recLeaseState, -2147483647, 2147483647)
   if recLeaseReason != 0 {
     if recLeaseReason == 11 {
       return finish(11, true)
@@ -729,77 +729,77 @@ contract {
   intent { "Commit point. No local release. releaseGuard then consumeStep. Revocation first refuses. Listed cleanup pending failed unknown stay UNKNOWN." }
 }
 {
-  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  let presentReason: Int = readForeignBoundedInteger(presentClass, presentToken, -2147483647, 2147483647)
   if presentReason != 0 {
     if presentReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let matchReason: Int = readForeignSafeInteger(matchClass, tokenMatchToken)
+  let matchReason: Int = readForeignBoundedInteger(matchClass, tokenMatchToken, -2147483647, 2147483647)
   if matchReason != 0 {
     if matchReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let epochMatchReason: Int = readForeignSafeInteger(epochMatchClass, epochMatchToken)
+  let epochMatchReason: Int = readForeignBoundedInteger(epochMatchClass, epochMatchToken, -2147483647, 2147483647)
   if epochMatchReason != 0 {
     if epochMatchReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  let leaseReason: Int = readForeignBoundedInteger(leaseClass, leaseState, -2147483647, 2147483647)
   if leaseReason != 0 {
     if leaseReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let revokeReason: Int = readForeignSafeInteger(revokeClass, revokeCommittedToken)
+  let revokeReason: Int = readForeignBoundedInteger(revokeClass, revokeCommittedToken, -2147483647, 2147483647)
   if revokeReason != 0 {
     if revokeReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  let cleanupReason: Int = readForeignBoundedInteger(cleanupClass, cleanupEvidence, -2147483647, 2147483647)
   if cleanupReason != 0 {
     if cleanupReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
+  let authReason: Int = readForeignBoundedInteger(authClass, independentAuthToken, -2147483647, 2147483647)
   if authReason != 0 {
     if authReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  let custodyReason: Int = readForeignBoundedInteger(custodyClass, preparedCustodyToken, -2147483647, 2147483647)
   if custodyReason != 0 {
     if custodyReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  let emptyReason: Int = readForeignBoundedInteger(emptyClass, emptyObligationSetToken, -2147483647, 2147483647)
   if emptyReason != 0 {
     if emptyReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  let consumedAuthReason: Int = readForeignBoundedInteger(consumedAuthClass, consumedAuthorityToken, -2147483647, 2147483647)
   if consumedAuthReason != 0 {
     if consumedAuthReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  let validityReason: Int = readForeignBoundedInteger(validityClass, currentValidityToken, -2147483647, 2147483647)
   if validityReason != 0 {
     if validityReason == 11 {
       return finish(11, true)
@@ -842,47 +842,47 @@ contract {
   intent { "After consume never packed 100. Guest trap and client disconnect stay distinct from deadline. Sink success partial throw never-settles listed cleanup and false tokens are UNKNOWN. Foreign classTag unlisted tokens and prePacked other than 100 are UNKNOWN. Cleanup failed quarantines. Missing suite refuses. Classical-only never Assured." }
 }
 {
-  let preReason: Int = readForeignSafeInteger(preClass, prePacked)
+  let preReason: Int = readForeignBoundedInteger(preClass, prePacked, -2147483647, 2147483647)
   if preReason != 0 {
     return finish(6, true)
   }
-  let guestReason: Int = readForeignSafeInteger(guestClass, guestToken)
+  let guestReason: Int = readForeignBoundedInteger(guestClass, guestToken, -2147483647, 2147483647)
   if guestReason != 0 {
     return finish(6, true)
   }
-  let disconnectReason: Int = readForeignSafeInteger(disconnectClass, disconnectToken)
+  let disconnectReason: Int = readForeignBoundedInteger(disconnectClass, disconnectToken, -2147483647, 2147483647)
   if disconnectReason != 0 {
     return finish(6, true)
   }
-  let sinkReason: Int = readForeignSafeInteger(sinkClass, sinkToken)
+  let sinkReason: Int = readForeignBoundedInteger(sinkClass, sinkToken, -2147483647, 2147483647)
   if sinkReason != 0 {
     return finish(6, true)
   }
-  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  let cleanupReason: Int = readForeignBoundedInteger(cleanupClass, cleanupEvidence, -2147483647, 2147483647)
   if cleanupReason != 0 {
     return finish(6, true)
   }
-  let ackReason: Int = readForeignSafeInteger(ackClass, ackToken)
+  let ackReason: Int = readForeignBoundedInteger(ackClass, ackToken, -2147483647, 2147483647)
   if ackReason != 0 {
     return finish(6, true)
   }
-  let suiteReason: Int = readForeignSafeInteger(suiteClass, suiteId)
+  let suiteReason: Int = readForeignBoundedInteger(suiteClass, suiteId, -2147483647, 2147483647)
   if suiteReason != 0 {
     return finish(6, true)
   }
-  let pqReason: Int = readForeignSafeInteger(pqClass, pqAvailable)
+  let pqReason: Int = readForeignBoundedInteger(pqClass, pqAvailable, -2147483647, 2147483647)
   if pqReason != 0 {
     return finish(6, true)
   }
-  let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
+  let authReason: Int = readForeignBoundedInteger(authClass, independentAuthToken, -2147483647, 2147483647)
   if authReason != 0 {
     return finish(6, true)
   }
-  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  let consumedAuthReason: Int = readForeignBoundedInteger(consumedAuthClass, consumedAuthorityToken, -2147483647, 2147483647)
   if consumedAuthReason != 0 {
     return finish(6, true)
   }
-  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  let validityReason: Int = readForeignBoundedInteger(validityClass, currentValidityToken, -2147483647, 2147483647)
   if validityReason != 0 {
     return finish(6, true)
   }
@@ -1011,28 +1011,28 @@ contract {
   intent { "Status-only recovery. Canonical OperationRecoveryStatus unchanged. Unlisted hits 38. Never re-opens or re-consumes." }
 }
 {
-  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  let presentReason: Int = readForeignBoundedInteger(presentClass, presentToken, -2147483647, 2147483647)
   if presentReason != 0 {
     if presentReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  let retiredReason: Int = readForeignBoundedInteger(retiredClass, retiredToken, -2147483647, 2147483647)
   if retiredReason != 0 {
     if retiredReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let tombReason: Int = readForeignSafeInteger(tombstoneClass, tombstoneDroppedToken)
+  let tombReason: Int = readForeignBoundedInteger(tombstoneClass, tombstoneDroppedToken, -2147483647, 2147483647)
   if tombReason != 0 {
     if tombReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  let leaseReason: Int = readForeignBoundedInteger(leaseClass, leaseState, -2147483647, 2147483647)
   if leaseReason != 0 {
     if leaseReason == 11 {
       return finish(11, true)
@@ -1051,7 +1051,7 @@ contract {
   intent { "Total HTTP map over packed codes. Unlisted and foreign default 503. Client disconnect stays 499 distinct from deadline 504." }
 }
 {
-  let packedReason: Int = readForeignSafeInteger(packedClass, packedCode)
+  let packedReason: Int = readForeignBoundedInteger(packedClass, packedCode, -2147483647, 2147483647)
   if packedReason != 0 {
     return 503
   }
@@ -1128,14 +1128,14 @@ contract {
   intent { "Receipt seal binds a suite id. Absent suite refuses. Classical-only or missing PQ is UNKNOWN never Assured. Hybrid required." }
 }
 {
-  let suiteReason: Int = readForeignSafeInteger(suiteClass, suiteId)
+  let suiteReason: Int = readForeignBoundedInteger(suiteClass, suiteId, -2147483647, 2147483647)
   if suiteReason != 0 {
     if suiteReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let pqReason: Int = readForeignSafeInteger(pqClass, pqAvailable)
+  let pqReason: Int = readForeignBoundedInteger(pqClass, pqAvailable, -2147483647, 2147483647)
   if pqReason != 0 {
     if pqReason == 11 {
       return finish(11, true)

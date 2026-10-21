@@ -11,7 +11,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 test("clock admission calls c-boundary length and does not reimplement its table", () => {
   const text = readFileSync(PROFILE_PATH, "utf8");
   assert.equal(text.includes("import \"./c-boundary.fungi\""), true);
-  assert.equal(text.includes("readForeignLength(classTag, reading)"), true);
+  assert.equal(text.includes("readForeignLength(classTag, reading, 2147483647)"), true);
   assert.equal(text.includes("readForeignBool(hasLast)"), true);
   assert.equal(text.includes("readForeignSafeInteger("), false);
   assert.equal(text.includes("classTag == 0"), false);
