@@ -1,0 +1,139 @@
+{
+  "schema": "galerina.fungi-obligation-receipt.v1",
+  "status": "DRAFT_NON_AUTHORIZING",
+  "unit": [
+    "CLEANUP_EVIDENCE_BINDING"
+  ],
+  "registry_commit": "5caebad6c32d41a058400fea84d3c25370e5348b",
+  "closed_discharge_state": [
+    "DISCHARGED",
+    "CARRIED_UNKNOWN",
+    "NEEDS_LANGUAGE"
+  ],
+  "unlisted_state_refuses": true,
+  "ts_oracle": "NONE",
+  "c_boundary_blob": "cfec32c93d0cf611010042cb6843d5af5ba6a78a",
+  "outcome_class_mapping": {
+    "0": "AdmitDone",
+    "1": "AdmitNotRequired",
+    "2": "OpIdMismatch_Refused_before_begin",
+    "3": "GenerationMismatch_Refused_before_begin",
+    "4": "DigestMismatch_Refused_before_begin",
+    "5": "StatusPending_Refused_before_begin",
+    "6": "StatusFailed_before_begin_Refused__after_begin_DELIVERY_UNKNOWN",
+    "7": "StatusUnknown_before_begin_Refused",
+    "8": "NotRequiredNonEmpty_Refused",
+    "9": "Unminted_Refused",
+    "10": "ForeignRawRefused",
+    "11": "Unlisted",
+    "14": "QuarantinedReuseRefused",
+    "15": "QuarantinedReleaseRefused",
+    "16": "DestroyWithoutWipeRefused",
+    "17": "FreeIsNotDone",
+    "20": "LIVE",
+    "21": "QUARANTINED",
+    "22": "WIPED",
+    "23": "DESTROYED"
+  },
+  "rd_0778": {
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+  },
+  "rd_1414": {
+    "role": "governing requirement (byte custody, aliases and copies, cleanup on every exit, quarantine)",
+    "cite": "brief task.md Amendment A1 / research inputs; body not exported"
+  },
+  "receipts": [
+    {
+      "obligation": "NO_NULL_NAN",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "every foreign tag through readForeignSafeInteger CALL; NaN class 110; unlisted 111; no null or NaN named",
+      "probe": "mintedClass 3 -> 110; helper NaN 3"
+    },
+    {
+      "obligation": "EXHAUSTIVE_FAIL_CLOSED",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "sequential if-return terminal 11 on every table; range-check minted/status/opClass/resource/event first",
+      "probe": "unlisted status/minted/opClass/from-state/event/action"
+    },
+    {
+      "obligation": "CLEANUP_EVIDENCE_BINDING",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "admitCleanup unique mismatch codes; DONE requires opId+generation+digest; NOT_REQUIRED only listed empty class; unlisted class never empty",
+      "probe": "A vs B 102; N vs N+1 103; PENDING 105; nonempty NOT_REQUIRED 108; unminted 109"
+    },
+    {
+      "obligation": "TOTAL_EFFECT_OUTCOME",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "after-begin FAILED/UNKNOWN -> 106 DELIVERY_UNKNOWN never REFUSED never success; resource QUARANTINED 121; COMMITTED unreachable after begin (W1 policy)",
+      "probe": "afterBegin 106; resource 121; DONE after begin 111"
+    },
+    {
+      "obligation": "LINEAR_SECRET",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "finish(code,true) packed +100; free is not wipe 117; wipe best effort; no erase claim; CONSTANT_TIME_COMPARE missing native intrinsic"
+    },
+    {
+      "obligation": "UNFORGEABLE_CAPABILITY",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "constructor sealing missing; mintCleanup is the mint path; unminted refuses 109; host can still forge mintedToken 1"
+    },
+    {
+      "obligation": "CONSTANT_TIME_COMPARE",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "digestEqual is Int equality; native CT intrinsic not on this base; a compare compiled to WebAssembly is CT UNKNOWN"
+    },
+    {
+      "obligation": "SEALED_INTRINSICS",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "no prototype/species lookup; unlisted tokens 11",
+      "probe": "unlisted mintedToken/status/event"
+    },
+    {
+      "obligation": "NO_AMBIENT_AUTHORITY",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NOT_IN_UNIT",
+      "fungi_construct": "pure flows; host must pass every observation"
+    },
+    {
+      "obligation": "BOUNDED_INPUT",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "closed status/resource/event/opClass tables; unlisted 11",
+      "probe": "unlisted arms"
+    },
+    {
+      "obligation": "DEADLINE_COVERS_ALL",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NOT_IN_UNIT",
+      "fungi_construct": "no clock in this file; harness node --test --test-timeout only"
+    },
+    {
+      "obligation": "MONOTONIC_TYPED_TIME",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "Q46 not on this base; no typed monotonic clock"
+    },
+    {
+      "obligation": "HOST_ADAPTER_PRESENCE",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "UNKNOWN_IN_TS",
+      "fungi_construct": "Q44 adapter-profile not on this base; host maps tags once"
+    },
+    {
+      "obligation": "NO_OVERLAPPING_CHUNKS",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NOT_IN_UNIT",
+      "fungi_construct": "not a body-reader unit"
+    }
+  ]
+}

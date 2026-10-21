@@ -1,0 +1,19 @@
+Q43 import the frozen c-boundary helper plus helper CALL.
+1) check exit 0
+✅ packages/fungi/memory/src/cleanup-evidence.fungi: 0 errors, 0 governance warnings (9 flow(s), 10 top-level declaration(s))
+2) build exit 1
+⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:85:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:124:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:131:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:138:23)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:233:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:240:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:304:25)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:311:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:318:23)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:420:27)
+
+❌ Build of 'packages/fungi/memory/src/cleanup-evidence.fungi' FAILED (fail-closed) — 10 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+3) run --invoke admitCleanup ... exit 1
+Compilation failed: WAT module calls function(s) that are neither defined nor imported: $readForeignSafeInteger — this is an A2 emitter defect (the callee was not lowered to a host import or a local function). Fix: define/import the callee, or emit (unreachable) at the call site.
+Tests flatten helper body plus this unit for invoke. Landed source keeps the import+call.
