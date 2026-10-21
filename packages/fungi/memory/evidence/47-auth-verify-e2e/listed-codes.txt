@@ -1,0 +1,33 @@
+AUTH_VERIFY_E2E listed packed outcomes. Anything else listedOutcome maps to 111.
+
+100 unspent Success (kernel spent path never returns this; POST_DISPATCH_SPENT_SUCCESS_ABI)
+101 ack-continue (internal; composition does not return it)
+102 CAS revoke
+103 cleanup / lease fenced
+104 ack mismatch
+105 body over-cap
+106 Indeterminate (honest spent happy path)
+109 unminted cleanup
+110 classTag foreign
+111 Unlisted / fail-closed default
+114 classical-only suite
+115 AND half / Signet tamper
+117 budget floor
+118 prev-epoch grant
+122 stale grant / clock backwards
+126 deadline
+127 rate exhausted
+133 budget overflow
+134 concurrency exhausted
+135 secret not acquirable
+139 duplicate idempotency
+144 post-dispatch audit
+147 unspent deadline
+159 unspent slot
+160 unprotected path class
+163 second ack
+172 adapter SAB / forbidden kind (raw 2)
+173 adapter unknown kind (raw 3)
+174 adapter foreign (raw 4)
+
+Raw classifyAdapter 2/3/4/11 map to 172/173/174/111. Host == tokens: 0 continue, listed value its outcome, else 111.

@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { basename, dirname, join } from "node:path";
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -255,8 +255,36 @@ function flattenUnit() {
     e2eRest,
   ];
   writeFileSync(file, parts.join("\n"));
-  return { dir, file };
+  return { dir, file, stem: basename(dir) };
 }
+
+function removeBuildStem(stem) {
+  const buildDir = join(REPO, "build");
+  let names = [];
+  try {
+    names = readdirSync(buildDir);
+  } catch {
+    return;
+  }
+  let i = 0;
+  while (i < names.length) {
+    const n = names[i];
+    if (n === stem || n.startsWith(stem + ".")) {
+      rmSync(join(buildDir, n), { recursive: true, force: true });
+    }
+    i = i + 1;
+  }
+}
+
+function cleanupFlat(flat) {
+  rmSync(flat.dir, { recursive: true, force: true });
+  removeBuildStem(flat.stem);
+}
+
+const LISTED = Object.freeze([
+  100, 101, 102, 103, 104, 105, 106, 109, 110, 111, 114, 115, 117, 118,
+  122, 126, 127, 133, 134, 135, 139, 144, 147, 159, 160, 163, 172, 173, 174,
+]);
 
 function declaredArity(src, flow) {
   const re = new RegExp("flow\\s+" + flow + "\\s*\\(([\\s\\S]*?)\\)\\s*->");
@@ -283,7 +311,7 @@ function runFlow(flow, args) {
     const src = readFileSync(flat.file, "utf8");
     return guardedInvoke(flat.file, flow, args, src);
   } finally {
-    rmSync(flat.dir, { recursive: true, force: true });
+    cleanupFlat(flat);
   }
 }
 
@@ -328,14 +356,27 @@ function withMutant(needle, next, label, fn) {
   }
 }
 
+test("H1 unique flatten basename and build stem cleaned", () => {
+  const a = flattenUnit();
+  const b = flattenUnit();
+  try {
+    assert.notEqual(a.stem, b.stem, "unique stems");
+    assert.equal(a.stem.startsWith("q47-flat-"), true, "prefix a");
+    assert.equal(b.stem.startsWith("q47-flat-"), true, "prefix b");
+  } finally {
+    cleanupFlat(a);
+    cleanupFlat(b);
+  }
+});
+
 test("harness arity matches landed runAuthVerify", () => {
   const src = readFileSync(UNIT, "utf8");
   assert.equal(declaredArity(src, "runAuthVerify"), PARAMS.length, "arity");
   assert.equal(args({}).length, PARAMS.length, "defaults");
 });
 
-test("happy path Success with receipt ack cleanup and HTTP 200", () => {
-  expect(e2e(), 100, "success");
+test("happy path spent post-dispatch is Indeterminate 106", () => {
+  expect(e2e(), 106, "spent happy");
 });
 
 test("MUST-REFUSE unprotected path class", () => {
@@ -415,6 +456,77 @@ test("cleanup runs on unprotected refusal when minted is absent", () => {
   expect(e2e({ pathClass: 7, cleanupMinted: 0 }), 109, "unminted cleanup");
 });
 
+test("F1 post-dispatch Indeterminate never Success", () => {
+  const r111 = e2e({ postDispatchPacked: 111 });
+  assert.notEqual(r111.value, 100, "postDispatchPacked 111 never success");
+  expect(r111, 106, "postDispatchPacked 111");
+  const r999 = e2e({ postConsumePacked: 999 });
+  assert.notEqual(r999.value, 100, "postConsumePacked 999 never success");
+  expect(r999, 106, "postConsumePacked 999");
+  const rz = e2e({ postZombie: 1 });
+  assert.notEqual(rz.value, 100, "postZombie 1 never success");
+  expect(rz, 106, "postZombie 1");
+  const rm = e2e({ postMax: 0 });
+  assert.notEqual(rm.value, 100, "postMax 0 never success");
+  expect(rm, 106, "postMax 0");
+});
+
+test("F2 unlisted host flag values refuse 111", () => {
+  expect(e2e({ priorAck: 2 }), 111, "priorAck 2");
+  expect(e2e({ crashAfterSink: 2 }), 111, "crashAfterSink 2");
+  expect(e2e({ retryPrior: 1 }), 111, "retryPrior 1");
+  expect(e2e({ retryPrior: 7 }), 111, "retryPrior 7");
+});
+
+test("F3 raw adapter codes map into packed table", () => {
+  expect(e2e({ adapterKind: 99 }), 173, "unknown kind packed");
+  expect(e2e({ adapterKind: 1 }), 172, "SAB packed");
+});
+
+test("F3 observed outcomes are a subset of the listed table", () => {
+  const probes = [
+    {},
+    { pathClass: 7 },
+    { nChunks: 1, id1: 1, off1: 0, len1: 16385, cap: 16384, streamPresent: 1 },
+    { nChunksClass: 1 },
+    { suiteId: 1 },
+    { pqHalf: 0, classicalHalf: 1 },
+    { expired: 1 },
+    { tamper: 1 },
+    { grantEpoch: 1, currentEpoch: 2 },
+    { hasLast: 1, lastTicks: 2000, clockReading: 1000 },
+    { hasLast: 2 },
+    { clockReading: 6000, lastTicks: 6000, deadlineTicks: 6000 },
+    { rateCount: 10, rateLimit: 10 },
+    { concCurrent: 4, concMax: 4 },
+    { idempClaim: 2 },
+    { secretRequired: 1, secretProvider: 0, secretPresence: 1 },
+    { casCompetitor: 1 },
+    { currentValidity: 0 },
+    { adapterKind: 7, casCrash: 1 },
+    { crashAfterSink: 1 },
+    { priorAck: 1 },
+    { retryPrior: 6 },
+    { pathClass: 7, cleanupMinted: 0 },
+    { priorAck: 2 },
+    { crashAfterSink: 2 },
+    { retryPrior: 1 },
+    { adapterKind: 99 },
+    { ackMatch: 0 },
+    { gClass: 1 },
+    { budgetBody: 99999 },
+    { postAuditPacked: 44 },
+    { postDispatchPacked: 111 },
+  ];
+  let i = 0;
+  while (i < probes.length) {
+    const r = e2e(probes[i]);
+    assert.equal(r.present, true, "probe " + String(i) + " present");
+    assert.equal(LISTED.includes(r.value), true, "probe " + String(i) + " unlisted " + String(r.value));
+    i = i + 1;
+  }
+});
+
 test("harness arity guard RED on a short call", () => {
   const flat = flattenUnit();
   try {
@@ -422,7 +534,7 @@ test("harness arity guard RED on a short call", () => {
     const r = guardedInvoke(flat.file, "runAuthVerify", [0, 0, 0], src);
     expect(r, 111, "short arity");
   } finally {
-    rmSync(flat.dir, { recursive: true, force: true });
+    cleanupFlat(flat);
   }
 });
 
@@ -461,7 +573,7 @@ test("collided recoverLease is byte-identical; other collisions stripped to the 
     assert.equal(https, 1, "route httpStatusFor kept");
     assert.equal(text.includes("Client disconnect stays 499"), true, "surviving httpStatusFor is route");
   } finally {
-    rmSync(flat.dir, { recursive: true, force: true });
+    cleanupFlat(flat);
   }
 });
 
@@ -495,7 +607,7 @@ test("mutant (b) AND weakened to OR goes red", () => {
   );
 });
 
-test("mutant (c) releaseGuard moved before consume goes red", () => {
+test("mutant (c) consumeStep omitted goes red", () => {
   withMutant(
     "  let consumed: Int = consumeStep(consumePresent, consumeMatch, gClass, consumeEpochMatch, consumeLease, consumeRevoke, 100)\n  if consumed != 100 {\n    return exitAfterBegin(cleanupStatus, consumed)\n  }\n  let guarded: Int = releaseGuard(independentAuth, preparedCustody, cleanupEvidence, emptyObligation, consumedAuth, currentValidity)",
     "  let guarded: Int = releaseGuard(independentAuth, preparedCustody, cleanupEvidence, emptyObligation, consumedAuth, currentValidity)",
@@ -534,7 +646,7 @@ test("mutant (e) OOP after-begin crash mapped to Refused goes red", () => {
 test("mutant (f) retry allowed after UNKNOWN goes red", () => {
   withMutant(
     "  if retryPrior == 6 {\n    let retried: Int = retryAfterUnknown(retryPrior)\n    return exitAfterBegin(cleanupStatus, retried)\n  }",
-    "  if retryPrior == 6 {\n    let retried: Int = 100\n    if retried != 100 {\n      return 11\n    }\n  }",
+    "  if retryPrior == 6 {\n    return exitAfterBegin(cleanupStatus, 100)\n  }",
     "retry allowed",
     () => {
       const r = e2e({ retryPrior: 6 });
@@ -576,9 +688,58 @@ test("mutant (i) harness arity guard removed goes red", () => {
       const r = guardedInvoke(flat.file, "runAuthVerify", [0, 0, 0], src);
       assert.notEqual(r.value, 111, "guard gone");
     } finally {
-      rmSync(flat.dir, { recursive: true, force: true });
+      cleanupFlat(flat);
     }
   } finally {
     arityGuardEnabled = true;
   }
+});
+
+test("mutant G7 re-admit post-dispatch 106 as continue goes red", () => {
+  withMutant(
+    "  if postPacked != 100 {\n    return exitAfterBegin(cleanupStatus, postPacked)\n  }",
+    "  if postPacked != 100 {\n    if postPacked != 106 {\n      return exitAfterBegin(cleanupStatus, postPacked)\n    }\n  }",
+    "g7 admit 106",
+    () => {
+      const r = e2e({ postDispatchPacked: 111 });
+      assert.notEqual(r.value, 106, "106 admitted as Success");
+      assert.equal(r.value, 100, "G7 restores Success");
+    },
+  );
+});
+
+test("mutant F2 crashAfterSink unlisted gate removed goes red", () => {
+  withMutant(
+    "  if crashAfterSink != 0 {\n    if crashAfterSink != 1 {\n      return exitAfterBegin(cleanupStatus, 111)\n    }\n  }\n  if crashAfterSink == 1 {",
+    "  if crashAfterSink == 1 {",
+    "f2 crash gate",
+    () => {
+      const r = e2e({ crashAfterSink: 2 });
+      assert.notEqual(r.value, 111, "unlisted crashAfterSink admitted");
+    },
+  );
+});
+
+test("mutant F2 priorAck unlisted gate removed goes red", () => {
+  withMutant(
+    "  if priorAck != 0 {\n    if priorAck != 1 {\n      return exitAfterBegin(cleanupStatus, 111)\n    }\n  }\n  if priorAck == 1 {",
+    "  if priorAck == 1 {",
+    "f2 priorAck gate",
+    () => {
+      const r = e2e({ priorAck: 2 });
+      assert.notEqual(r.value, 111, "unlisted priorAck admitted");
+    },
+  );
+});
+
+test("mutant F2 retryPrior unlisted gate removed goes red", () => {
+  withMutant(
+    "  if retryPrior != 0 {\n    if retryPrior != 6 {\n      return exitAfterBegin(cleanupStatus, 111)\n    }\n  }\n  if retryPrior == 6 {",
+    "  if retryPrior == 6 {",
+    "f2 retryPrior gate",
+    () => {
+      const r = e2e({ retryPrior: 1 });
+      assert.notEqual(r.value, 111, "unlisted retryPrior admitted");
+    },
+  );
 });

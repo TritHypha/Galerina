@@ -17,16 +17,22 @@
 /// Serve-gate 101 is the protected /auth/verify class and continues; 100 is
 ///   unprotected and refuses as packed 160. Body over-cap returns 105 at the
 ///   reader. validateVerifyRequest never packed 100 (MB-06); 106 continues.
-///   applyPostSink Success maps to 106 (MB-06); composition Success is 100
-///   after releaseGuard at the sink. Out-of-process classifyAdapter 1 makes
+///   applyPostSink Success maps to 106 (MB-06). Kernel spent post-dispatch
+///   never returns packed 100 (finish(6)=106); composition does not admit
+///   that 106 as Success. Honest spent happy path is 106. Typed UNKNOWN
+///   POST_DISPATCH_SPENT_SUCCESS_ABI. Out-of-process classifyAdapter 1 makes
 ///   casCommit COMMITTED unreachable (106). Crash after begin is 106 never
 ///   Refused. Second ack refuses 163. Retry after UNKNOWN stays 106.
-/// Outcome packed: 100 Success; 105 body over-cap; 106 Indeterminate;
-///   111 Unlisted; 114 classical-only / PQ missing; 115 AND half; 122 clock
-///   backwards; 126 deadline; 127 rate; 134 concurrency; 135 secret;
-///   139 duplicate idempotency; 160 unprotected; 161 CAS lost; 162 guard;
-///   163 second ack; 164 crash-after-sink mapped wrongly is not used;
-///   other stage packed codes pass through. Unlisted refuses 111.
+///   Host == tokens: 0 continue, listed value its outcome, else 111.
+/// Outcome packed (listedOutcome; anything else 111): 100 unspent Success;
+///   101 ack-continue never returned; 102 CAS revoke; 103 cleanup/lease;
+///   104 ack mismatch; 105 body over-cap; 106 Indeterminate; 109 unminted
+///   cleanup; 110 classTag; 111 Unlisted; 114 classical; 115 AND half;
+///   117 budget floor; 118 prev-epoch; 122 stale/backwards; 126 deadline;
+///   127 rate; 133 budget; 134 concurrency; 135 secret; 139 duplicate
+///   idempotency; 144 post-audit; 147 unspent deadline; 159 unspent slot;
+///   160 unprotected; 163 second ack; 172 adapter SAB; 173 adapter unknown
+///   kind; 174 adapter foreign. Raw adapter 2/3/4/11 map to 172/173/174/111.
 /// finish, mintOperation, applyClock, applyConsume, recoverLease, httpStatusFor
 ///   collide across units; this file does not redeclare them. Tests flatten.
 /// Sequential if-return. Nested if/else failed WAT emit. No erase claim.
@@ -70,6 +76,127 @@ contract {
   return 0
 }
 
+pure flow packAdapter(adapterPacked: Int) -> Int
+contract {
+  intent { "Map classifyAdapter raw v1 table codes onto packed outcomes. 0/1 continue. 2 SAB 172. 3 unknown kind 173. 4 foreign 174. 11 and unlisted 111." }
+}
+{
+  if adapterPacked == 0 {
+    return 0
+  }
+  if adapterPacked == 1 {
+    return 1
+  }
+  if adapterPacked == 2 {
+    return 172
+  }
+  if adapterPacked == 3 {
+    return 173
+  }
+  if adapterPacked == 4 {
+    return 174
+  }
+  if adapterPacked == 11 {
+    return 111
+  }
+  return 111
+}
+
+pure flow listedOutcome(code: Int) -> Int
+contract {
+  intent { "Closed packed table. Listed code is returned. Anything else refuses 111." }
+}
+{
+  if code == 100 {
+    return 100
+  }
+  if code == 101 {
+    return 101
+  }
+  if code == 102 {
+    return 102
+  }
+  if code == 103 {
+    return 103
+  }
+  if code == 104 {
+    return 104
+  }
+  if code == 105 {
+    return 105
+  }
+  if code == 106 {
+    return 106
+  }
+  if code == 109 {
+    return 109
+  }
+  if code == 110 {
+    return 110
+  }
+  if code == 111 {
+    return 111
+  }
+  if code == 114 {
+    return 114
+  }
+  if code == 115 {
+    return 115
+  }
+  if code == 117 {
+    return 117
+  }
+  if code == 118 {
+    return 118
+  }
+  if code == 122 {
+    return 122
+  }
+  if code == 126 {
+    return 126
+  }
+  if code == 127 {
+    return 127
+  }
+  if code == 133 {
+    return 133
+  }
+  if code == 134 {
+    return 134
+  }
+  if code == 135 {
+    return 135
+  }
+  if code == 139 {
+    return 139
+  }
+  if code == 144 {
+    return 144
+  }
+  if code == 147 {
+    return 147
+  }
+  if code == 159 {
+    return 159
+  }
+  if code == 160 {
+    return 160
+  }
+  if code == 163 {
+    return 163
+  }
+  if code == 172 {
+    return 172
+  }
+  if code == 173 {
+    return 173
+  }
+  if code == 174 {
+    return 174
+  }
+  return 111
+}
+
 pure flow exitBeforeBegin(
   mintedToken: Int,
   evOpId: Int,
@@ -89,14 +216,14 @@ contract {
   let cleaned: Int = admitCleanup(0, mintedToken, 0, evOpId, 0, callOpId, 0, evGen, 0, callGen, 0, evDigest, 0, callDigest, 0, evStatus, 0, opClass)
   if cleaned != 100 {
     if cleaned != 101 {
-      return cleaned
+      return listedOutcome(cleaned)
     }
   }
   let freed: Int = freeStep(0, 4)
   if freed == 18 {
-    return finish(11, true)
+    return listedOutcome(finish(11, true))
   }
-  return packed
+  return listedOutcome(packed)
 }
 
 pure flow exitAfterBegin(
@@ -110,10 +237,10 @@ contract {
   let cleaned: Int = afterBeginCleanup(0, evStatus, 0, 1)
   if cleaned != 106 {
     if cleaned != 111 {
-      return cleaned
+      return listedOutcome(cleaned)
     }
   }
-  return packed
+  return listedOutcome(packed)
 }
 
 pure flow runAuthVerify(
@@ -280,19 +407,8 @@ contract {
   if served != 101 {
     return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, served)
   }
-  let adapterPacked: Int = classifyAdapter(gClass, adapterKind, gClass, adapterAudit)
-  if adapterPacked == 2 {
-    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
-  }
-  if adapterPacked == 3 {
-    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
-  }
-  if adapterPacked == 4 {
-    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
-  }
-  if adapterPacked == 11 {
-    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
-  }
+  let adapterRaw: Int = classifyAdapter(gClass, adapterKind, gClass, adapterAudit)
+  let adapterPacked: Int = packAdapter(adapterRaw)
   if adapterPacked != 0 {
     if adapterPacked != 1 {
       return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, adapterPacked)
@@ -397,8 +513,18 @@ contract {
   if guarded != 100 {
     return exitAfterBegin(cleanupStatus, guarded)
   }
+  if crashAfterSink != 0 {
+    if crashAfterSink != 1 {
+      return exitAfterBegin(cleanupStatus, 111)
+    }
+  }
   if crashAfterSink == 1 {
     return exitAfterBegin(cleanupStatus, 106)
+  }
+  if priorAck != 0 {
+    if priorAck != 1 {
+      return exitAfterBegin(cleanupStatus, 111)
+    }
   }
   if priorAck == 1 {
     return exitAfterBegin(cleanupStatus, 163)
@@ -407,9 +533,19 @@ contract {
   if acked != 101 {
     return exitAfterBegin(cleanupStatus, acked)
   }
+  if retryPrior != 0 {
+    if retryPrior != 6 {
+      return exitAfterBegin(cleanupStatus, 111)
+    }
+  }
   if retryPrior == 6 {
     let retried: Int = retryAfterUnknown(retryPrior)
     return exitAfterBegin(cleanupStatus, retried)
+  }
+  if sinkOutcome != 0 {
+    if sinkOutcome != 1 {
+      return exitAfterBegin(cleanupStatus, 111)
+    }
   }
   let postSink: Int = applyPostSink(gClass, 100, gClass, sinkOutcome, gClass, cleanupEvidence, gClass, independentAuth, gClass, preparedCustody, gClass, emptyObligation, gClass, consumedAuth, gClass, currentValidity)
   if sinkOutcome == 0 {
@@ -417,7 +553,7 @@ contract {
       return exitAfterBegin(cleanupStatus, postSink)
     }
   }
-  if sinkOutcome != 0 {
+  if sinkOutcome == 1 {
     return exitAfterBegin(cleanupStatus, postSink)
   }
   let auditSettled: Int = settleAudit(gClass, 0)
@@ -430,9 +566,7 @@ contract {
   }
   let postPacked: Int = runPostDispatch(gClass, clockReading, clockReading, clockReading, gClass, 1, gClass, clockReading, gClass, 5000, gClass, clockEpoch, gClass, clockEpoch, gClass, postSpent, gClass, postDispatchPacked, gClass, postConsumePacked, gClass, postAuditPacked, gClass, ackPresent, gClass, ackMatch, gClass, ackEpochPresent, gClass, ackEpochMatch, gClass, ackLease, gClass, postCurrent, gClass, postMax, gClass, postReleased, gClass, postZombie)
   if postPacked != 100 {
-    if postPacked != 106 {
-      return exitAfterBegin(cleanupStatus, postPacked)
-    }
+    return exitAfterBegin(cleanupStatus, postPacked)
   }
   let sealed: Int = sealReceipt(gClass, suiteId, gClass, pqAvailable)
   if sealed != 100 {
