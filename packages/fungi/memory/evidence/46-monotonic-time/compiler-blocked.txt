@@ -1,0 +1,7 @@
+Superseded by check-build.txt, toolchain.txt and compiler-full-tsc.txt.
+galerina check ran. Exit 0. Three identical runs, plus one run after the compiler --noCheck fallback.
+galerina build ran. Exit 1. Three identical runs.
+FUNGI-NAME-001 readForeignBool at monotonic-time.fungi:24:25
+FUNGI-NAME-001 readForeignSafeInteger at monotonic-time.fungi:28:26
+Same linker gap as evidence/31-body-reader/import-refuse.txt. Imported executable flows are not linked. The classTag table was not copied into this unit.
+WASM invoke probes and red mutants are NOT_RUN. Build does not emit a module.

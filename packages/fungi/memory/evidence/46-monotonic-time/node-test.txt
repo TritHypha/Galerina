@@ -1,0 +1,19 @@
+✔ clock admission calls c-boundary length and does not reimplement its table (1.1824ms)
+✔ tick refusal sentinel is -1 and forbidden combinations stay typed (0.3912ms)
+✔ flattened invoke pins the closed algebra (13284.7404ms)
+✔ mutant M1 goes red (5867.4443ms)
+✔ mutant M2 goes red (1375.9676ms)
+✔ mutant M3 goes red (8976.6783ms)
+✔ mutant M4 goes red (11785.7332ms)
+✔ mutant M5 goes red (3463.1836ms)
+✔ mutant M6 goes red (1469.5443ms)
+✔ tests/46 evidence/46 and monotonic-time.fungi refuse local absolute path leaks (5.0618ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46356.8875
+TEST_EXIT:0

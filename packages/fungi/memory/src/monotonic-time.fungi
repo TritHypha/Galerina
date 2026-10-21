@@ -1,0 +1,265 @@
+@version 1
+/// @file: monotonic-time.fungi
+/// @purpose: Closed monotonic-time algebra for queue 46 / MB-16.
+/// Point and Duration are not a checked nominal type here. The checker does
+/// not prove that a hallmark gate owns construction. Each value is an explicit
+/// slot. Forbidden combinations return a typed reason and never a wrapped Int.
+/// Physical Int is i32. Overflow is refused before the arithmetic.
+/// The clock reading enters only through c-boundary.fungi. This file does not
+/// re-implement that table. The reading is admitted with readForeignLength.
+/// There is no flow that mints a Point from a bare literal. No loop reads the clock.
+/// Reason: 0 admitted. 1..11 are c-boundary reasons passed through.
+/// 21 CLOCK_OVERFLOW. 22 CLOCK_BACKWARDS. 23 CLOCK_EPOCH_MISMATCH.
+/// 25 FORBIDDEN_COMBINATION. 26 EXPIRED. 11 unlisted token.
+/// A tick flow returns -1 when its reason is not 0. -1 is refusal, never a
+/// duration and never a point. 0 is a valid duration only after reason 0.
+/// A new epoch when a last Point exists is refused. Epoch start is CARRIED_UNKNOWN.
+/// Per-OS clock guarantees are CARRIED_UNKNOWN.
+
+import "./c-boundary.fungi"
+
+pure flow mintFromClock(classTag: Int, reading: Int, epoch: Int, hasLast: Int, lastEpoch: Int, lastTicks: Int) -> Int
+contract {
+  intent { "Admit one sealed clock reading or return a typed refusal. Reads the port once." }
+}
+{
+  let boolReason: Int = readForeignBool(hasLast)
+  if boolReason != 0 {
+    return 11
+  }
+  let clockReason: Int = readForeignLength(classTag, reading)
+  if clockReason != 0 {
+    return clockReason
+  }
+  if hasLast == 1 {
+    if lastTicks < 0 {
+      return 22
+    }
+    if epoch != lastEpoch {
+      let newEpochRefused: Int = 23
+      return newEpochRefused
+    }
+    if reading < lastTicks {
+      let backwardsReading: Int = 22
+      return backwardsReading
+    }
+  }
+  return 0
+}
+
+pure flow pointMinusPointReason(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int
+contract {
+  intent { "Point minus Point reason. Negative ticks, different epochs and backwards subtraction refuse." }
+}
+{
+  if ticksA < 0 {
+    return 22
+  }
+  if ticksB < 0 {
+    return 22
+  }
+  if epochA != epochB {
+    return 23
+  }
+  if ticksA < ticksB {
+    return 22
+  }
+  return 0
+}
+
+pure flow pointMinusPointTicks(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int
+contract {
+  intent { "Duration ticks only after pointMinusPointReason returns 0. Refusal is -1, never a duration." }
+}
+{
+  let reason: Int = pointMinusPointReason(epochA, ticksA, epochB, ticksB)
+  if reason != 0 {
+    return -1
+  }
+  return ticksA - ticksB
+}
+
+pure flow pointPlusDurationReason(ticks: Int, duration: Int) -> Int
+contract {
+  intent { "Point plus Duration reason. Negative inputs are backwards. Overflow refuses before the add." }
+}
+{
+  if ticks < 0 {
+    return 22
+  }
+  if duration < 0 {
+    return 22
+  }
+  if duration > 0 {
+    if ticks > 2147483647 - duration {
+      let pointPlusOverflow: Int = 21
+      return pointPlusOverflow
+    }
+  }
+  return 0
+}
+
+pure flow pointPlusDurationTicks(epoch: Int, ticks: Int, duration: Int) -> Int
+contract {
+  intent { "Point ticks only after pointPlusDurationReason returns 0. Refusal is -1." }
+}
+{
+  let reason: Int = pointPlusDurationReason(ticks, duration)
+  if reason != 0 {
+    return -1
+  }
+  if epoch == epoch {
+    return ticks + duration
+  }
+  return -1
+}
+
+pure flow durationPlusDurationReason(left: Int, right: Int) -> Int
+contract {
+  intent { "Duration plus Duration reason. Negative inputs and overflow refuse." }
+}
+{
+  if left < 0 {
+    return 22
+  }
+  if right < 0 {
+    return 22
+  }
+  if right > 0 {
+    if left > 2147483647 - right {
+      return 21
+    }
+  }
+  return 0
+}
+
+pure flow durationPlusDurationTicks(left: Int, right: Int) -> Int
+contract {
+  intent { "Duration ticks only after durationPlusDurationReason returns 0. Refusal is -1." }
+}
+{
+  let reason: Int = durationPlusDurationReason(left, right)
+  if reason != 0 {
+    return -1
+  }
+  return left + right
+}
+
+pure flow pointPlusPoint(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int
+contract {
+  intent { "Point plus Point is refused. Negative ticks refuse before that." }
+}
+{
+  if ticksA < 0 {
+    return 22
+  }
+  if ticksB < 0 {
+    return 22
+  }
+  if epochA == epochA {
+    if epochB == epochB {
+      return 25
+    }
+  }
+  return 25
+}
+
+pure flow durationMinusPoint(duration: Int, epoch: Int, ticks: Int) -> Int
+contract {
+  intent { "Duration minus Point is refused. Negative inputs refuse before that." }
+}
+{
+  if duration < 0 {
+    return 22
+  }
+  if ticks < 0 {
+    return 22
+  }
+  if epoch == epoch {
+    return 25
+  }
+  return 25
+}
+
+pure flow comparePoints(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int
+contract {
+  intent { "Compare two Points in one epoch. 0 equal, 1 less, 2 greater. Negative ticks and cross-epoch refuse." }
+}
+{
+  if ticksA < 0 {
+    return 22
+  }
+  if ticksB < 0 {
+    return 22
+  }
+  if epochA != epochB {
+    let crossEpoch: Int = 23
+    return crossEpoch
+  }
+  if ticksA < ticksB {
+    return 1
+  }
+  if ticksA > ticksB {
+    return 2
+  }
+  if ticksA == ticksB {
+    return 0
+  }
+  return 11
+}
+
+pure flow compareDurations(left: Int, right: Int) -> Int
+contract {
+  intent { "Compare two Durations. Negative durations refuse. 0 equal, 1 less, 2 greater." }
+}
+{
+  if left < 0 {
+    return 22
+  }
+  if right < 0 {
+    return 22
+  }
+  if left < right {
+    return 1
+  }
+  if left > right {
+    return 2
+  }
+  if left == right {
+    return 0
+  }
+  return 11
+}
+
+pure flow remainingReason(nowEpoch: Int, nowTicks: Int, deadlineEpoch: Int, deadlineTicks: Int) -> Int
+contract {
+  intent { "Deadline remaining reason. Equal ticks are expired. Unknown is not time left." }
+}
+{
+  if nowTicks < 0 {
+    return 22
+  }
+  if deadlineTicks < 0 {
+    return 22
+  }
+  if nowEpoch != deadlineEpoch {
+    let remainingUnknown: Int = 23
+    return remainingUnknown
+  }
+  if nowTicks >= deadlineTicks {
+    return 26
+  }
+  return 0
+}
+
+pure flow remainingTicks(nowEpoch: Int, nowTicks: Int, deadlineEpoch: Int, deadlineTicks: Int) -> Int
+contract {
+  intent { "Remaining ticks only after remainingReason returns 0. Refusal is -1 and is not time left." }
+}
+{
+  let reason: Int = remainingReason(nowEpoch, nowTicks, deadlineEpoch, deadlineTicks)
+  if reason != 0 {
+    return -1
+  }
+  return deadlineTicks - nowTicks
+}
