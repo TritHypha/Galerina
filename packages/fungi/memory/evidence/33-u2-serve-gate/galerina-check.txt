@@ -1,0 +1,6 @@
+exit 0
+stdout:
+✅ packages/fungi/memory/src/serve-gate.fungi: 0 errors, 0 governance warnings (5 flow(s), 6 top-level declaration(s))
+
+stderr:
+

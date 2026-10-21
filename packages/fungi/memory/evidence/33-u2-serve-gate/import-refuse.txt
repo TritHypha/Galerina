@@ -1,0 +1,14 @@
+Q33 import ./c-boundary.fungi plus helper CALL.
+1) check exit 0
+✅ packages/fungi/memory/src/serve-gate.fungi: 0 errors, 0 governance warnings (5 flow(s), 6 top-level declaration(s))
+2) build exit 1
+⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:179:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:186:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:193:25)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:200:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/serve-gate.fungi:207:26)
+
+❌ Build of 'packages/fungi/memory/src/serve-gate.fungi' FAILED (fail-closed) — 5 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.
+3) run --invoke classifyServeRoute ... exit 1
+Compilation failed: WAT module calls function(s) that are neither defined nor imported: $readForeignSafeInteger — this is an A2 emitter defect (the callee was not lowered to a host import or a local function). Fix: define/import the callee, or emit (unreachable) at the call site.
+Tests flatten helper body plus this unit for invoke. Landed source keeps the import+call.
