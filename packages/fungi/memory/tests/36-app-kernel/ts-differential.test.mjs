@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 
@@ -93,7 +93,7 @@ function flattenUnit() {
   rest = splitOnce(rest, PORTS_IMPORT, "kernel-ports");
   rest = stripVersion(rest);
   const dir = mkdtempSync(join(tmpdir(), "q36-diff-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = join(dir, basename(dir) + ".fungi");
   writeFileSync(
     file,
     boundary + "\n" + stripVersion(stripBodyFinish(bodyReader)) + "\n" + stripVersion(rcp) + "\n" + stripSecretImports(secret) + "\n" + stripPortsImports(ports) + "\n" + rest,

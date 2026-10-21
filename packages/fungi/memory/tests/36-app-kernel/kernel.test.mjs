@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
@@ -25,6 +25,7 @@ const PORTS_IMPORT = "\nimport \"./kernel-ports.fungi\"\n";
 const UNIT_SOURCE_LANDING = Object.freeze({ kind: "LANDING" });
 let unitSourceOverride = UNIT_SOURCE_LANDING;
 let portsSourceOverride = UNIT_SOURCE_LANDING;
+let bodySourceOverride = UNIT_SOURCE_LANDING;
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
@@ -78,7 +79,7 @@ function stripPortsImports(src) {
 
 function flattenUnit() {
   const boundary = readFileSync(BOUNDARY, "utf8");
-  const bodyReader = readFileSync(BODY, "utf8");
+  const bodyReader = bodySourceOverride === UNIT_SOURCE_LANDING ? readFileSync(BODY, "utf8") : bodySourceOverride;
   const rcp = readFileSync(RCP, "utf8");
   const secret = readFileSync(SECRET, "utf8");
   const ports = portsSourceOverride === UNIT_SOURCE_LANDING ? readFileSync(PORTS, "utf8") : portsSourceOverride;
@@ -96,7 +97,7 @@ function flattenUnit() {
   rest = splitOnce(rest, PORTS_IMPORT, "kernel-ports");
   rest = stripVersion(rest);
   const dir = mkdtempSync(join(tmpdir(), "q36-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = join(dir, basename(dir) + ".fungi");
   writeFileSync(
     file,
     boundary + "\n" + stripVersion(stripBodyFinish(bodyReader)) + "\n" + stripVersion(rcp) + "\n" + stripSecretImports(secret) + "\n" + stripPortsImports(ports) + "\n" + rest,
@@ -112,6 +113,35 @@ function runFlow(flow, args) {
     rmSync(flat.dir, { recursive: true, force: true });
   }
 }
+
+function readChunksArgs(over) {
+  const o = over || {};
+  return [
+    o.nChunksClass ?? 0,
+    o.nChunks ?? 0,
+    o.id1 ?? 0,
+    o.off1Class ?? 0,
+    o.off1 ?? 0,
+    o.len1Class ?? 0,
+    o.len1 ?? 0,
+    o.id2 ?? 0,
+    o.off2Class ?? 0,
+    o.off2 ?? 0,
+    o.len2Class ?? 0,
+    o.len2 ?? 0,
+    o.capClass ?? 0,
+    o.cap ?? 16384,
+    o.declaredPresent ?? 0,
+    o.declaredLenClass ?? 0,
+    o.declaredLen ?? 0,
+    o.streamPresent ?? 1,
+    o.deadlineExpired ?? 0,
+    o.foreignThrow ?? 0,
+  ];
+}
+
+const OVER_CAP_20 = readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 16385, cap: 16384, streamPresent: 1 });
+const OLD_13_ABI = [1, 1, 0, 16385, 0, 0, 0, 16384, false, 0, true, false, false];
 
 function replaceOnce(src, needle, next, label) {
   const parts = src.split(needle);
@@ -142,6 +172,19 @@ function withPortsMutant(needle, next, label, fn) {
     portsSourceOverride = UNIT_SOURCE_LANDING;
     const shaAfter = createHash("sha256").update(readFileSync(PORTS, "utf8"), "utf8").digest("hex");
     assert.equal(shaAfter, shaBefore, "tracked ports sha256 unchanged");
+  }
+}
+
+function withBodyMutant(needle, next, label, fn) {
+  const original = readFileSync(BODY, "utf8");
+  const shaBefore = createHash("sha256").update(original, "utf8").digest("hex");
+  bodySourceOverride = replaceOnce(original, needle, next, label);
+  try {
+    return fn();
+  } finally {
+    bodySourceOverride = UNIT_SOURCE_LANDING;
+    const shaAfter = createHash("sha256").update(readFileSync(BODY, "utf8"), "utf8").digest("hex");
+    assert.equal(shaAfter, shaBefore, "tracked body-reader sha256 unchanged");
   }
 }
 
@@ -660,10 +703,72 @@ test("F1 composed pre-dispatch TS order never reaches dispatch after a refusal",
 });
 
 test("F1 composed body-reader over cap becomes 123 and skips dispatch", () => {
-  const chunks = runFlow("readChunks", [1, 1, 0, 16385, 0, 0, 0, 16384, false, 0, true, false, false]);
+  const chunks = runFlow("readChunks", OVER_CAP_20);
   expect(chunks, 105, "readChunks cap+1");
   expect(body({ bodyPacked: 105 }), 123, "admitBody over-cap");
   expect(preDispatch({ bodyPacked: 123, handlerToken: 1 }), 123, "composed over-cap skips dispatch");
+});
+
+test("MUST-REFUSE composed readChunks classTag token and offset overflow", () => {
+  expect(
+    runFlow("readChunks", readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 4, capClass: 1, cap: 16384, streamPresent: 1 })),
+    111,
+    "cap classTag 1",
+  );
+  expect(
+    runFlow("readChunks", readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 4, streamPresent: 2 })),
+    111,
+    "streamPresentToken 2",
+  );
+  expect(
+    runFlow("readChunks", readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 4, deadlineExpired: 2, streamPresent: 1 })),
+    111,
+    "deadlineExpiredToken 2",
+  );
+  expect(
+    runFlow("readChunks", readChunksArgs({ nChunks: 1, id1: 1, off1: 2147483647, len1: 2, cap: 16384, streamPresent: 1 })),
+    114,
+    "offset+len overflow matches 31 MUST-REFUSE offset plus length overflow",
+  );
+});
+
+test("mutant 47a old 13-arg readChunks call goes RED then restore", () => {
+  const red = runFlow("readChunks", OLD_13_ABI);
+  assert.notEqual(red.value, 105, "old 13-arg must not pack OverCap 105");
+  expect(runFlow("readChunks", OVER_CAP_20), 105, "restore 20-arg");
+});
+
+test("mutant 47a body-reader cap compare off by one goes RED then restore", () => {
+  withBodyMutant(
+    "    if len1 > cap {\n      return finish(5, true)\n    }\n    let maxInt1: Int = 2147483647",
+    "    if len1 > cap + 1 {\n      return finish(5, true)\n    }\n    let maxInt1: Int = 2147483647",
+    "cap+1 admitted",
+    () => {
+      const red = runFlow("readChunks", OVER_CAP_20);
+      assert.notEqual(red.value, 105, "cap+1 admitted");
+    },
+  );
+  expect(runFlow("readChunks", OVER_CAP_20), 105, "restore cap compare");
+});
+
+test("mutant 47a drop cap classTag gate goes RED then restore", () => {
+  withBodyMutant(
+    "  if capClass != 0 {\n    return finish(11, true)\n  }",
+    "  if capClass == 999 {\n    return finish(11, true)\n  }",
+    "cap classTag gate dropped",
+    () => {
+      const red = runFlow(
+        "readChunks",
+        readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 4, capClass: 1, cap: 16384, streamPresent: 1 }),
+      );
+      assert.notEqual(red.value, 111, "cap classTag 1 admitted");
+    },
+  );
+  expect(
+    runFlow("readChunks", readChunksArgs({ nChunks: 1, id1: 1, off1: 0, len1: 4, capClass: 1, cap: 16384, streamPresent: 1 })),
+    111,
+    "restore cap classTag",
+  );
 });
 
 test("F1 composed deadline at each pre-dispatch stage and post finalize/audit", () => {

@@ -30,3 +30,15 @@ Grok IC @ a7ab0999 (sha256 794c43df): 23 RED, 8 survived. U00 control expected. 
 | U19 remove only clock2 < clock1 | kernel.fungi runPreDispatch | remove `if clock2 < clock1 { return finish(22, true) }` | T3 adjacent pre pair clock2 < clock1 with later clocks non-decreasing -> 122 | 122 |
 | U20 remove only clockAudit < clockFinalize | kernel.fungi runPostDispatch | remove `if clockAudit < clockFinalize { ... finish(22, true) }` | T3 unspent audit < finalize released 1 -> 122 | 122 |
 | U07 spent applyFinalize acked==100 success | kernel.fungi applyFinalize | `if acked == 100 { return finish(6, true)` -> finish(0) | T5 EQUIVALENT: standalone ackStep on applyFinalize args (epochClass 0, auditCommitted 1) never packed 100; U07 mutant still 106 | never 100 |
+
+## 47a composed body-reader 20-arg ABI
+
+Old 13-arg Bool ABI call at tests/36-app-kernel/kernel.test.mjs:663 re-pointed to ACKed 20-arg `readChunksArgs`. OverCap packed 105; admitBody 123; preDispatch skips dispatch. Flatten `stripBodyFinish` is packer-only; it does not encode the old ABI.
+
+| claim | file | needle | red test | landed restore |
+|---|---|---|---|---|
+| (a) old 13-arg call | kernel.test.mjs F1 composed body-reader | `[1, 1, 0, 16385, 0, 0, 0, 16384, false, 0, true, false, false]` put back | mutant 47a old 13-arg readChunks call goes RED then restore | 105 then 123 skip dispatch |
+| (b) cap compare off by one | body-reader.fungi in-memory | nChunks==1 `if len1 > cap` → `if len1 > cap + 1` (maxInt1 unique) | mutant 47a body-reader cap compare off by one goes RED then restore | 105 |
+| (c) classTag gate dropped on cap | body-reader.fungi in-memory | `if capClass != 0 { return finish(11, true) }` → `if capClass == 999` | mutant 47a drop cap classTag gate goes RED then restore | 111 |
+
+Tracked body-reader.fungi sha256 asserted unchanged in `withBodyMutant` finally. Offset+len overflow probe packed 114 matches tests/31-body-reader/body-reader.test.mjs `MUST-REFUSE offset plus length overflow`.

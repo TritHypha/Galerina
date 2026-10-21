@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 
@@ -82,7 +82,7 @@ function flattenUnit() {
   secretRest = splitOnce(secretRest, CB_IMPORT, "secret-cb");
   secretRest = splitOnce(secretRest, RCP_IMPORT, "secret-rcp");
   const dir = mkdtempSync(join(tmpdir(), "q35-diff-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = join(dir, basename(dir) + ".fungi");
   writeFileSync(
     file,
     boundary + "\n" + stripVersion(stripBodyFinish(bodyReader)) + "\n" + stripVersion(rcp) + "\n" + stripVersion(secretRest) + "\n" + rest,
