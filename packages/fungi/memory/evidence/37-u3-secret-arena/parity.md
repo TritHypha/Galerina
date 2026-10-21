@@ -49,5 +49,8 @@ Secret-gate presence map (A1): packed 100→0 present, 101→1 absent, 106/117/1
 | Addendum D OPEN cleanup bind | dispose never Verified (MB-06) | UNKNOWN | TOTAL_EFFECT_OUTCOME | second dispose recorded; never 100 |
 | HOST_ADAPTER_PRESENCE q44 | fd/pid tokens | UNKNOWN | HOST_ADAPTER_PRESENCE | CARRIED_UNKNOWN exclusive custody |
 | WebAssembly zeroing | wipe token 0/1/2; no erase claim | UNKNOWN | LINEAR_SECRET | wipe fail/unknown quarantine |
+| epoch lastEpoch + 1 overflow (i32 max) | arenaEpoch nextEpochQ/F overflow gate finish(40) packed 140 | INTENDED_DIVERGENCE | BOUNDED_INPUT | MUST-REFUSE last 2147483647 never trap |
+| dispose Disposed recorded passthrough | arenaDispose closed sum 144/106/100→106 else 111 | INTENDED_DIVERGENCE | EXHAUSTIVE_FAIL_CLOSED | MUST-REFUSE recorded 0 and 101 |
+| wipe failed hidden by later class refusal | wipeWins 117/106 before later 110/111 | INTENDED_DIVERGENCE | TOTAL_EFFECT_OUTCOME | MUST-REFUSE wipe over len/spent/abort/name class |
 
-Summary: PRESERVED 0 / INTENDED_DIVERGENCE 28 / UNKNOWN 8 / NEEDS_LANGUAGE 1 (CONSTANT_TIME_COMPARE; MONOTONIC_TYPED_TIME and LINEAR_SECRET also NEEDS_LANGUAGE on the clock/view primitives and are listed on those rows).
+Summary: PRESERVED 0 / INTENDED_DIVERGENCE 31 / UNKNOWN 8 / NEEDS_LANGUAGE 1 (CONSTANT_TIME_COMPARE; MONOTONIC_TYPED_TIME and LINEAR_SECRET also NEEDS_LANGUAGE on the clock/view primitives and are listed on those rows).

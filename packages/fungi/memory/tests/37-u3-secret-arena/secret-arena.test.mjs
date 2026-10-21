@@ -322,6 +322,14 @@ test("MUST-REFUSE quarantined epoch fence strictly past last else UNKNOWN", () =
   expectPacked(epoch({ statusToken: 2, lastEpoch: 3, fenceEpoch: 4 }), 121, "frame quarantined fence past");
 });
 
+test("MUST-REFUSE quarantined epoch lastEpoch at i32 max is 140 never a trap", () => {
+  expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "state quarantined last max");
+  expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 2147483647 }), 140, "state quarantined both max");
+  expectPacked(epoch({ statusToken: 2, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "frame quarantined last max");
+  expectPacked(epoch({ lastEpoch: 2147483648, fenceEpoch: 0 }), 140, "wide lastEpoch");
+  expectPacked(epoch({ fenceEpoch: 2147483648 }), 140, "wide fenceEpoch");
+});
+
 test("MUST-ADMIT use wiped-ok once-void", () => {
   expectPacked(use({}), 100, "wiped ok");
   expectPacked(use({ spentViewToken: 1 }), 100, "spent view still wiped-ok");
@@ -353,6 +361,17 @@ test("MUST-REFUSE use wipe-failed wins over deadline", () => {
   expectPacked(use({ wipeToken: 2, clock: 6000 }), 106, "unknown wipe over deadline");
 });
 
+test("MUST-REFUSE wipe-failed and unknown win over later boundary refusals", () => {
+  expectPacked(use({ wipeToken: 1, lenClass: 3 }), 117, "use wipe over len NaN");
+  expectPacked(use({ wipeToken: 1, spentClass: 3 }), 117, "use wipe over spent NaN");
+  expectPacked(use({ wipeToken: 1, abortClass: 3 }), 117, "use wipe over abort NaN");
+  expectPacked(use({ wipeToken: 2, lenClass: 3 }), 106, "use unknown wipe over len NaN");
+  expectPacked(put({ wipeToken: 1, nameClass: 3 }), 117, "put wipe over name NaN");
+  expectPacked(put({ wipeToken: 1, valueClass: 3 }), 117, "put wipe over value NaN");
+  expectPacked(put({ wipeToken: 1, maxClass: 3 }), 117, "put wipe over max NaN");
+  expectPacked(put({ wipeToken: 2, nameClass: 11 }), 106, "put unknown wipe over name unlisted");
+});
+
 test("MUST-ADMIT put within cap", () => {
   expectPacked(put({}), 100, "put ok");
 });
@@ -377,6 +396,8 @@ test("MUST-REFUSE dispose never Verified; Failed; Unknown; second recorded", () 
   expectPacked(dispose({ stateToken: 2, recordedPacked: 144 }), 144, "second Failed");
   expectPacked(dispose({ stateToken: 2, recordedPacked: 106 }), 106, "second Unknown");
   expectPacked(dispose({ stateToken: 2, recordedPacked: 100 }), 106, "second never 100");
+  expectPacked(dispose({ stateToken: 2, recordedPacked: 0 }), 111, "second raw 0 refuses");
+  expectPacked(dispose({ stateToken: 2, recordedPacked: 101 }), 111, "second has-absent refuses");
   assert.notEqual(dispose({}).value, 100, "first dispose never 100");
 });
 
@@ -523,6 +544,45 @@ test("mutant ignore cleanup reply never 100 goes RED", () => {
     },
   );
   expectPacked(dispose({}), 106, "restored");
+});
+
+test("mutant skip lastEpoch overflow gate goes RED", () => {
+  expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "landed overflow");
+  withMutant(
+    "if statePacked == 101 {\n    if lastEpoch > 2147483647 - 1 {\n      return finish(40, true)\n    }",
+    "if statePacked == 101 {\n    if lastEpoch > 2147483647 - 1 {\n      return finish(0, true)\n    }",
+    "epoch-overflow-gate",
+    () => {
+      expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 0 }), 100, "mutant admits");
+    },
+  );
+  expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "restored");
+});
+
+test("mutant second dispose passthrough unlisted recorded goes RED", () => {
+  expectPacked(dispose({ stateToken: 2, recordedPacked: 0 }), 111, "landed refuse 0");
+  withMutant(
+    "    if recordedPacked == 106 {\n      return finish(6, true)\n    }\n    return finish(11, true)",
+    "    if recordedPacked == 106 {\n      return finish(6, true)\n    }\n    return recordedPacked",
+    "dispose-recorded-passthrough",
+    () => {
+      expectPacked(dispose({ stateToken: 2, recordedPacked: 0 }), 0, "mutant passthrough 0");
+    },
+  );
+  expectPacked(dispose({ stateToken: 2, recordedPacked: 0 }), 111, "restored");
+});
+
+test("mutant skip wipeWins over boundary refusal goes RED", () => {
+  expectPacked(use({ wipeToken: 1, lenClass: 3 }), 117, "landed wipe over len");
+  withMutant(
+    "  if wiped == 117 {\n    return wiped\n  }\n  if wiped == 106 {\n    return wiped\n  }\n  return finish(0, true)",
+    "  if wiped == 117 {\n    return finish(0, true)\n  }\n  if wiped == 106 {\n    return wiped\n  }\n  return finish(0, true)",
+    "skip-wipeWins",
+    () => {
+      expectPacked(use({ wipeToken: 1, lenClass: 3 }), 110, "mutant len NaN hides wipe");
+    },
+  );
+  expectPacked(use({ wipeToken: 1, lenClass: 3 }), 117, "restored");
 });
 
 test("mutant drop frame-status default arm goes RED", () => {

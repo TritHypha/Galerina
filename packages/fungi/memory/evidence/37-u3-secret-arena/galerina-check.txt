@@ -1,2 +1,2 @@
 ✅ packages/fungi/memory/src/secret-arena-custodian-port.fungi: 0 errors, 0 governance warnings (4 flow(s), 5 top-level declaration(s))
-✅ packages/fungi/memory/src/secret-arena.fungi: 0 errors, 0 governance warnings (12 flow(s), 15 top-level declaration(s))
+✅ packages/fungi/memory/src/secret-arena.fungi: 0 errors, 0 governance warnings (13 flow(s), 16 top-level declaration(s))

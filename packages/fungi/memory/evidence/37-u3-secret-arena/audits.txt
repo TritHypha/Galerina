@@ -10,3 +10,5 @@ tests x3: run1 35/35; run2 35/35; run3 35/35 fail 0. Command: node --test --test
 encoding-gate status 0
 follow-up 03 tests x3 host win32 node v24.18.0 features strip: run1 35/35 duration_ms 83045; run2 35/35 duration_ms 87053; run3 35/35 duration_ms 82412 fail 0. live TS test 35 PASS.
 follow-up 03 tests x3 WSL linux node v24.21.0 features strip /tmp/galerina-q37-scratch: run1 35/35 duration_ms 431270; run2 35/35 duration_ms 418995; run3 35/35 duration_ms 430602 fail 0. live TS test 35 PASS. F1 process.platform != linux assertion removed.
+follow-up 05 F2/F3/F4. galerina check unit 13 flows 0 errors. Host win32 node v24.18.0: run1 40/40 duration_ms 107802; run2 40/40 duration_ms 117166; run3 40/40 duration_ms 119040 fail 0.
+follow-up 05 WSL linux node v24.21.0 /tmp/galerina-q37-scratch: run1 40/40 duration_ms 570861; run2 40/40 duration_ms 517251; run3 40/40 duration_ms 498090 fail 0.
