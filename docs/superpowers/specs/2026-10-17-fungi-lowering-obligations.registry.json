@@ -1,0 +1,1179 @@
+{
+  "schema": "galerina.fungi-lowering-obligations.registry.v1",
+  "version": 1,
+  "status": "DRAFT_FOR_OWNER_REVIEW_NON_AUTHORIZING",
+  "base_commit": "bdb5d1baa9fd97a3b0ac8a16cb074809a2d00567",
+  "branch": "grok/fungi-lowering-obligations-20261017",
+  "parent_standard": "docs/security/rd0528-ts-to-fungi-self-hosting-standard.md",
+  "registry_home_reason": "JSON next to the spec. docs/contract-registry/contract-registry.json and build/code-registry/registry.json are generated inventories of a different schema.",
+  "converter_js_in_agents": "PRESENT_AS_CODE_LOGIC_WORKBENCH",
+  "converter_js_in_agents_reason": "Addendum C: AGENTS tools/code-logic-workbench.mjs is the analysis step (planning evidence only). It is not a source-to-.fungi converter. No new converter.",
+  "sandbox_pipeline": "scripts/lib/ts-to-fungi-sandbox/",
+  "skills_applied": [
+    "code-logic-workbench:analyse-planning-evidence-only",
+    "translating-typescript-to-fungi:core-rule",
+    "translating-typescript-to-fungi:binding-translation-shape",
+    "translating-typescript-to-fungi:workflow-1-4-7-13-25",
+    "writing-fungi:core-rule",
+    "writing-fungi:binding-authoring-shape",
+    "writing-fungi:workflow-4-5-8-14-20-33",
+    "writing-fungi/references/selective-js-conversion.md"
+  ],
+  "closed_ts_scaffold_guarantees": [
+    "FAIL_CLOSED_BEST_EFFORT",
+    "UNKNOWN_IN_TS"
+  ],
+  "closed_ts_fix_needed_now": [
+    "YES",
+    "NO",
+    "UNKNOWN"
+  ],
+  "v1_safety_ts_fix_needed_now_no_allowed": false,
+  "closed_discharge_how": [
+    "BY_TYPE",
+    "BY_LINEARITY",
+    "BY_TOTALITY",
+    "BY_CAPABILITY",
+    "BY_VERIFIER"
+  ],
+  "closed_converter_codes": [
+    "OBLIGATION_UNMAPPABLE",
+    "OBLIGATION_UNKNOWN_ID",
+    "OBLIGATION_ANNOTATION_MALFORMED",
+    "OBLIGATION_UNANNOTATED_BOUNDARY",
+    "OBLIGATION_DISCHARGE_UNKNOWN",
+    "OBLIGATION_CAST_AT_BOUNDARY",
+    "OBLIGATION_REFUSED"
+  ],
+  "converter_default_code": "OBLIGATION_REFUSED",
+  "discharge_how_default": "REFUSES_UNLISTED",
+  "language_gaps": [
+    {
+      "id": "OBLIGATIONS_REGISTRY_LIVE_SYNTAX",
+      "status": "UNKNOWN",
+      "reason": "this draft is not live language syntax",
+      "partial_input": "RD-1908 PRIVATE, not yet in KB indexes (indexes stale)"
+    },
+    {
+      "id": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "no language-level COMMITTED/REFUSED/DELIVERY_UNKNOWN spec found",
+      "partial_input": "RD-1905 RD-1901 PRIVATE, not yet in KB indexes (indexes stale); RD-0778 cited only as rd0778_cite object",
+      "rd0778_cite": {
+        "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+        "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+        "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+      },
+      "research_constraints": [
+        {
+          "n": 1,
+          "summary": "Outcome shape Success(value, receipt) | Failed(typed, receipt) | Refused(reason) | Indeterminate(recovery id); Indeterminate maps to DELIVERY_UNKNOWN (owner outcomes COMMITTED / REFUSED / DELIVERY_UNKNOWN)."
+        },
+        {
+          "n": 2,
+          "summary": "Crash, unavailable authority, or a missing / stale / mismatched record is UNKNOWN: never REFUSED and never success."
+        },
+        {
+          "n": 3,
+          "summary": "No retry without an idempotency proof."
+        },
+        {
+          "n": 4,
+          "summary": "Consumed authority and current validity are separate fields (one enum cannot carry both)."
+        },
+        {
+          "n": 5,
+          "summary": "Claim and revoke compete on ONE authoritative per-capability state: OPEN -> CLAIMED | REVOKED; CLAIMED -> COMMITTED | FAILED | INDETERMINATE; every unlisted transition refuses. Release at the result sink is the commit point."
+        },
+        {
+          "n": 6,
+          "summary": "Release requires all three: independent authorization; prepared-result custody; operation- and generation-bound evidence that every required pre-release cleanup succeeded. Cleanup evidence NotRequired only when the obligation set is provably empty; Pending / Failed / Unknown refuse."
+        },
+        {
+          "n": 7,
+          "summary": "No ordinary result extraction before that release guard."
+        },
+        {
+          "n": 8,
+          "summary": "Free is not wipe."
+        },
+        {
+          "n": 9,
+          "summary": "Refusal after reservation/consumption never restores authority."
+        },
+        {
+          "n": 10,
+          "summary": "FFI / host aliases are not contained by ownership alone (OPEN)."
+        }
+      ],
+      "open_items": [
+        "Ordering of actual release vs effective revocation (including partial sends).",
+        "FFI / native containment of aliases.",
+        "Enforcement of cleanup-evidence binding (operation + generation)."
+      ],
+      "astra_outcome_wording": {
+        "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+        "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+        "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+        "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+        "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+        "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+        "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+        "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+        "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+        "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+        "ffi_native_containment": "OPEN",
+        "cleanup_evidence_binding": "OPEN"
+      }
+    },
+    {
+      "id": "SEALED_INTRINSICS_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "no prototype/global-mutation language spec found",
+      "partial_input": "RD-1910 RD-1899 PRIVATE, not yet in KB indexes (indexes stale)"
+    },
+    {
+      "id": "MONOTONIC_TYPED_TIME_LANGUAGE_SPEC",
+      "status": "UNKNOWN",
+      "reason": "point/distance algebra only; no monotonicity/overflow/NaN/deadline spec found",
+      "partial_input": "RD-1899 RD-1910 PRIVATE, not yet in KB indexes (indexes stale)"
+    }
+  ],
+  "unmappable_findings": [],
+  "obligations": [
+    {
+      "id": "NO_NULL_NAN",
+      "version": 1,
+      "statement": "Foreign NULL, NaN and Infinity cross exactly one reusable boundary helper into typed UNKNOWN or Ambiguous. These values do not exist in .fungi. An in-band empty marker that collides with a legal stored value refuses.",
+      "ts_scaffold": {
+        "behaviour": "One reusable helper at each FFI/JS-foreign border. Inline null/undefined comparisons in new caller code refuse the brief. stream===null currently yields ok empty in parked TS (P20-N3) and is labelled fail-closed pending Phillip; .fungi zero-trust default is typed UNKNOWN refuse.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Absence is Option or a typed refusal. Shared c-boundary helper: null-test first; panic/exception becomes typed result; no pointer into a temporary; trusted length; no terminator scan; foreign integer range-checked; allocator frees its own allocation.",
+      "rust_verifier_check": "Out-of-process: module bytes contain no null/NaN literal at annotated borders; helper is the unique foreign-presence entry. Never linked into runtime.",
+      "found_in": [
+        {
+          "ref": "#187-IC-F5-NaN-clock",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-187-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F3-NaN-clock",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-ae0adf66-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F5-null-as-valid",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-7abbb60b-20261017.md",
+          "note": "report wording null-as-state; checklist wording null-as-valid"
+        },
+        {
+          "ref": "#182-02-admit-null-as-state",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-u6-420a05ca-20261017.md",
+          "reason": "topic verified in later U6/185 reports; #182-02 filename mapping UNKNOWN"
+        },
+        {
+          "ref": "#188-N2",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-188-20261017.md",
+          "reason": "file exists; specific N2 sentence not isolated without quoting"
+        },
+        {
+          "ref": "RD-1899-1910-null-defaults-nan-ratio",
+          "verification": "UNKNOWN",
+          "source_report": "NONE",
+          "reason": "PRIVATE probe notes; RD-1899..1910 not in KB indexes (indexes stale); bodies not quoted"
+        },
+        {
+          "ref": "P20-N3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "stream===null ok empty"
+        },
+        {
+          "ref": "P24-F4",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "inline null in readChildExitCode/SignalCode"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-6",
+        "item-2"
+      ]
+    },
+    {
+      "id": "EXHAUSTIVE_FAIL_CLOSED",
+      "version": 1,
+      "statement": "Every match or switch ends in a refusing default arm. Owner exception: Rust Ok/Err may omit `_ =>`. Unlisted outcomes refuse.",
+      "ts_scaffold": {
+        "behaviour": "Standing gate on every new switch. Unlisted outcome is 500 or typed refuse, never a silent fallthrough.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "writing-fungi: Bool uses if; Verdict uses check with if/deny/ambig; every other alternative uses match with terminal `_ =>`.",
+      "rust_verifier_check": "Out-of-process: GIR/match tables for annotated flows have a terminal default arm. Ok/Err-only Rust matches may omit `_ =>`.",
+      "found_in": [
+        {
+          "ref": "standing-owner-rule",
+          "verification": "VERIFIED",
+          "source_report": "task.md"
+        },
+        {
+          "ref": "U4-#190-#192-switch-checks",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md"
+        },
+        {
+          "ref": "#186-N2-unlisted-outcome",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-186-20261017.md"
+        },
+        {
+          "ref": "P20-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "absent-intrinsic gates unpinned"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-2"
+      ]
+    },
+    {
+      "id": "TOTAL_EFFECT_OUTCOME",
+      "version": 1,
+      "statement": "Effects never throw. They return COMMITTED, REFUSED or DELIVERY_UNKNOWN. In the current profile COMMITTED is unreachable after begin for every out-of-process release (policy, not a theorem). UNKNOWN is never success, never proof of zero effect and never retry authority. Recovery runs before new claims and never promotes or reissues. ASSURED only for a current CONSUMED seal. U4 evicted/live/default operation states report DELIVERY_UNKNOWN.",
+      "ts_scaffold": {
+        "behaviour": "Best-effort mapping of throw/ack/audit order onto DELIVERY_UNKNOWN. Language-level spec UNKNOWN.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Total effect algebra COMMITTED | REFUSED | DELIVERY_UNKNOWN with refusing default. Out-of-process post-B COMMITTED is unreachable by W1. Language-level spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: no throw edges from annotated effectful flows; unlisted terminal is DELIVERY_UNKNOWN or refuse.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F3-consume-then-throw",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-ic187fix3-b2045eb6-20261017.md",
+          "reason": "report family VERIFIED; exact phrase consume-then-throw UNKNOWN"
+        },
+        {
+          "ref": "#184-N1-N3-audit-vs-delivered",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-184-20261017.md",
+          "note": "file exists; ack/audit topic present in family"
+        },
+        {
+          "ref": "U4-#190-DELIVERY_UNKNOWN",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4-7f2e6165-20261017.md"
+        },
+        {
+          "ref": "#185-IC-F2-FAILED-seal-ASSURED",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-33854dced-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks wrong ok body"
+        },
+        {
+          "ref": "P24-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "minted flag before provider mint"
+        },
+        {
+          "ref": "P24-R1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "ack before audit commit"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "UNKNOWN",
+      "addendum_a": [
+        "none-fills-language-gap"
+      ],
+      "partial_input": {
+        "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+        "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+        "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+      },
+      "research_constraints": [
+        {
+          "n": 1,
+          "summary": "Outcome shape Success(value, receipt) | Failed(typed, receipt) | Refused(reason) | Indeterminate(recovery id); Indeterminate maps to DELIVERY_UNKNOWN (owner outcomes COMMITTED / REFUSED / DELIVERY_UNKNOWN)."
+        },
+        {
+          "n": 2,
+          "summary": "Crash, unavailable authority, or a missing / stale / mismatched record is UNKNOWN: never REFUSED and never success."
+        },
+        {
+          "n": 3,
+          "summary": "No retry without an idempotency proof."
+        },
+        {
+          "n": 4,
+          "summary": "Consumed authority and current validity are separate fields (one enum cannot carry both)."
+        },
+        {
+          "n": 5,
+          "summary": "Claim and revoke compete on ONE authoritative per-capability state: OPEN -> CLAIMED | REVOKED; CLAIMED -> COMMITTED | FAILED | INDETERMINATE; every unlisted transition refuses. Release at the result sink is the commit point."
+        },
+        {
+          "n": 6,
+          "summary": "Release requires all three: independent authorization; prepared-result custody; operation- and generation-bound evidence that every required pre-release cleanup succeeded. Cleanup evidence NotRequired only when the obligation set is provably empty; Pending / Failed / Unknown refuse."
+        },
+        {
+          "n": 7,
+          "summary": "No ordinary result extraction before that release guard."
+        },
+        {
+          "n": 8,
+          "summary": "Free is not wipe."
+        },
+        {
+          "n": 9,
+          "summary": "Refusal after reservation/consumption never restores authority."
+        },
+        {
+          "n": 10,
+          "summary": "FFI / host aliases are not contained by ownership alone (OPEN)."
+        }
+      ],
+      "open_items": [
+        "Ordering of actual release vs effective revocation (including partial sends).",
+        "FFI / native containment of aliases.",
+        "Enforcement of cleanup-evidence binding (operation + generation)."
+      ],
+      "language_gap": "TOTAL_EFFECT_OUTCOME_LANGUAGE_SPEC",
+      "astra_outcome_wording": {
+        "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+        "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+        "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+        "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+        "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+        "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+        "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+        "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+        "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+        "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+        "ffi_native_containment": "OPEN",
+        "cleanup_evidence_binding": "OPEN"
+      }
+    },
+    {
+      "id": "MONOTONIC_TYPED_TIME",
+      "version": 1,
+      "statement": "Clocks and timeouts are typed monotonic safe integers. Point and distance types have a closed operator table. Unlisted pairs refuse. A point is mintable only by the sealed monotonic clock primitive. No NaN, negative, or Infinity.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed Number.isSafeInteger guards. Proof is .fungi. Language-level spec UNKNOWN.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Point minus point = distance; point plus distance = point; distance plus distance = distance; point plus point and unlisted pairs refuse. Language-level spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: annotated clock values are domain-separated; no NaN/Inf bit patterns at the border.",
+      "found_in": [
+        {
+          "ref": "#187-F5",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-187-20261017.md"
+        },
+        {
+          "ref": "#185-F3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-signet-fix-ic185-ae0adf66-20261017.md"
+        },
+        {
+          "ref": "#186-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-186-20261017.md"
+        },
+        {
+          "ref": "U4-overflow-N3-NaN-epoch",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md",
+          "reason": "file VERIFIED; exact phrase NaN epoch UNKNOWN"
+        },
+        {
+          "ref": "P24-N1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "dispose busy-wait"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1"
+      ]
+    },
+    {
+      "id": "LINEAR_SECRET",
+      "version": 1,
+      "statement": "Secret buffers are linear resources. Destroy is wipe, then release, then consume the handle. Setting a handle to null is not a wipe. No implicit copy. Cleanup on every scope exit. Volatile wipe is a .fungi guarantee and UNKNOWN in TS.",
+      "ts_scaffold": {
+        "behaviour": "Best-effort fill on every catch/finally. JS GC, species, and live getters make no-escape unprovable.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Linear secret type with structural wipe-on-exit. No implicit copy constructor. Alias and overlap unrepresentable or typed refuse.",
+      "rust_verifier_check": "Out-of-process: annotated secret values have exactly-once consume; residual bytes after refuse are zero or the module refuses.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F1-unwiped-throw",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix3-b2045eb6-20261017.md"
+        },
+        {
+          "ref": "#189-U3-arena",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u3-bd936a29-20261017.md"
+        },
+        {
+          "ref": "#182-F5-wipe-exits",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks"
+        },
+        {
+          "ref": "P20-R2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "throwing buffer getter unwiped"
+        },
+        {
+          "ref": "P24-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "GM1 set-throw wipe unproven"
+        },
+        {
+          "ref": "P24-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Symbol.species leak"
+        },
+        {
+          "ref": "P24-F3b",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live memory.buffer"
+        },
+        {
+          "ref": "P24-N3",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "requireCaptured throw after copy"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-4"
+      ]
+    },
+    {
+      "id": "UNFORGEABLE_CAPABILITY",
+      "version": 1,
+      "statement": "Lease ids and grants are unforgeable single-use capabilities minted only inside a sealed module. No double release. No predictable nonce fallback. Refuse if no CSPRNG. A magic-number check is not unforgeability.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed mint/consume. CSPRNG required. Sealed constructors are .fungi.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Validating smart constructor inside the defining module. Nominal types start with zero operations. No cast or reinterpret.",
+      "rust_verifier_check": "Out-of-process: annotated capability bytes are domain-separated; reuse of a consumed id refuses.",
+      "found_in": [
+        {
+          "ref": "U4-#190-F2-re-release",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4-7f2e6165-20261017.md"
+        },
+        {
+          "ref": "#192-N4-predictable-fallback-nonce",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u4overflow-665f0bce-20261017.md"
+        },
+        {
+          "ref": "#185-F1-tampered-grant",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-185-20261017.md"
+        },
+        {
+          "ref": "P24-F3a",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "GM14 local-minted untested"
+        },
+        {
+          "ref": "P24-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "minted flag before mint"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-3"
+      ]
+    },
+    {
+      "id": "SEALED_INTRINSICS",
+      "version": 1,
+      "statement": "No prototype, species, or global mutation. No live brand checks. No exported mutable regex. Intrinsics are sealed at link time. Missing primitives refuse before the first read.",
+      "ts_scaffold": {
+        "behaviour": "Capture getters/methods at module init. Live @@species and @@hasInstance remain a JS residual.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Language primitives; no prototype lookup. Language-level sealed-intrinsics spec remains UNKNOWN (gap table).",
+      "rust_verifier_check": "Out-of-process: annotated modules do not load live global getters for secret-bearing views.",
+      "found_in": [
+        {
+          "ref": "U6-#191-IC-4d8cfa59-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u6-4d8cfa59-20261017.md"
+        },
+        {
+          "ref": "b67acb23-N1-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-u6-b67acb23-20261017.md"
+        },
+        {
+          "ref": "#184-N4-live-intrinsics",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-184-20261017.md"
+        },
+        {
+          "ref": "P20-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "absent-intrinsic gates"
+        },
+        {
+          "ref": "P20-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "step.done read twice"
+        },
+        {
+          "ref": "P20-R1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "own-property shadows"
+        },
+        {
+          "ref": "P24-F2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Symbol.species"
+        },
+        {
+          "ref": "P24-F3b",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live memory.buffer"
+        },
+        {
+          "ref": "P24-N4",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "live @@hasInstance"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-3"
+      ]
+    },
+    {
+      "id": "NO_AMBIENT_AUTHORITY",
+      "version": 1,
+      "statement": "No env-var launcher redirection. No fd inheritance. Spawn needs an explicit capability. No globals or function-scope statics. All state and authority pass through an explicit self/capability argument.",
+      "ts_scaffold": {
+        "behaviour": "Pinned spawn, empty envp, CLOEXEC best-effort. Proof is capability types in .fungi.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Explicit capability argument on every spawn/host call. Unlisted ambient access refuses.",
+      "rust_verifier_check": "Out-of-process: annotated spawn sites carry an explicit capability id; inherited fds and env redirection refuse.",
+      "found_in": [
+        {
+          "ref": "#182-F3-fd-leak",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "#183-fix8-N2-env-redirect",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-183-fix8-ae479605-20261017.md"
+        },
+        {
+          "ref": "#185-F1-unpinned-helper",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-185-20261017.md"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-8"
+      ]
+    },
+    {
+      "id": "BOUNDED_INPUT",
+      "version": 1,
+      "statement": "Length comes from the trusted reader, not a chunk's self-reported byteLength. Hard caps refuse rather than truncate. No terminator scan. Each foreign value is read exactly once through the shared boundary helper.",
+      "ts_scaffold": {
+        "behaviour": "readBodyCapped and stdin 16 MiB caps. Aliasing remains a TS residual (P20-F1).",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Trusted length before copy. Overlap/alias unrepresentable or typed refuse. Cap miss refuses.",
+      "rust_verifier_check": "Out-of-process: annotated readers pass a host-owned length; self-reported lengths refuse.",
+      "found_in": [
+        {
+          "ref": "#187-fix3-F1-readBodyCapped",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix-e203511a-20261017.md"
+        },
+        {
+          "ref": "#183-F2-16MiB-stdin",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-183-20261017.md"
+        },
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased chunks"
+        },
+        {
+          "ref": "P20-N2",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "step.done twice"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1",
+        "item-2"
+      ]
+    },
+    {
+      "id": "DEADLINE_COVERS_ALL",
+      "version": 1,
+      "statement": "Deadlines cover the whole operation, including the final wait. No busy-wait past the typed monotonic deadline. Missing host exit status is not timeout evidence.",
+      "ts_scaffold": {
+        "behaviour": "Fail-closed timeout guards. waitpid-past-deadline and dispose busy-wait remain residuals.",
+        "guarantee": "FAIL_CLOSED_BEST_EFFORT"
+      },
+      "fungi_primitive": "Typed monotonic deadline on the whole operation. Child-process completion is an exhaustive union (writing-fungi workflow 20).",
+      "rust_verifier_check": "Out-of-process: annotated wait sites are bound to the same deadline token as the start of the operation.",
+      "found_in": [
+        {
+          "ref": "#182-fix8-52aa1568-F1-waitpid",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-fix8-52aa1568-20261017.md"
+        },
+        {
+          "ref": "#182-F2-timeout-bypass",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-182-20261017.md"
+        },
+        {
+          "ref": "#188-N1-hang",
+          "verification": "UNKNOWN",
+          "source_report": "grok-independent-check-188-20261017.md",
+          "reason": "file exists; hang topic also in 182 reports; exact N1 sentence not isolated"
+        },
+        {
+          "ref": "P24-N1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-q24-93934967-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "dispose ~100ms busy-wait"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_a": [
+        "item-1"
+      ]
+    },
+    {
+      "id": "NO_OVERLAPPING_CHUNKS",
+      "version": 1,
+      "statement": "Overlapping, duplicate, or zero-length chunks are refused outright. Ranges are half-open. Identity is the pair (offset, length) plus pairwise disjointness. The .fungi body reader does not alias, overlap, or accept a second view of the same secret-bearing range. Owner A4. Discharged together with BOUNDED_INPUT and LINEAR_SECRET.",
+      "ts_scaffold": {
+        "behaviour": "Parked TS (P20-F1) still aliases chunks. TS is frozen reference and is not patched. Discharge is the .fungi body reader.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Body reader admits a finite non-overlapping partition of host-owned bytes. Ranges are half-open [offset, offset+length). Duplicate (offset,length) identity or overlapping ranges refuse. Zero-length chunks refuse (zero-trust default; they are not dropped silently). Trusted length from the reader, never a chunk self-reported byteLength.",
+      "rust_verifier_check": "Out-of-process: annotated body-reader admissions have pairwise-disjoint half-open ranges; overlap, duplicate (offset,length) identity, or zero-length refuses.",
+      "found_in": [
+        {
+          "ref": "P20-F1",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "aliased / overlapping / duplicate chunks; A4 refuse outright"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "DRAFT",
+      "addendum_c": [
+        "A4"
+      ],
+      "related_obligation_ids": [
+        "BOUNDED_INPUT",
+        "LINEAR_SECRET"
+      ]
+    },
+    {
+      "id": "HOST_ADAPTER_PRESENCE",
+      "version": 1,
+      "statement": "An absent or unverified host adapter is a typed refusal. Adapter identity is an explicit capability, never ambient. Status of the Deno adapter check remains UNKNOWN until a later brief verifies it.",
+      "ts_scaffold": {
+        "behaviour": "P20-N5 Deno adapter UNKNOWN in parked TS. TS is frozen reference and is not patched. Discharge is the .fungi unit that names the adapter capability.",
+        "guarantee": "UNKNOWN_IN_TS"
+      },
+      "fungi_primitive": "Host adapter is an explicit capability argument. Missing, unverified, or unlisted adapter identity refuses with a typed code. No ambient Deno/Node/shim fallback.",
+      "rust_verifier_check": "UNKNOWN until a later brief names the exact-bytes adapter identity check. Default: absent adapter refuses.",
+      "rust_verifier_check_status": "UNKNOWN",
+      "found_in": [
+        {
+          "ref": "P20-N5",
+          "verification": "VERIFIED",
+          "source_report": "grok-independent-check-ic187fix6-b5959878-20261017.md",
+          "kind": "PARKED_TS_FINDING",
+          "parked_source": "parked-ts-findings-for-fungi.md",
+          "parked_sha256": "b1014a473e6ac75f24377b0cbf035ba923f9649e6864c616ca8d6684aad4c28e",
+          "note": "Deno adapter UNKNOWN; new id per spec rule that a finding with no matching id gets a registry entry first"
+        }
+      ],
+      "ts_fix_needed_now": "YES",
+      "status": "UNKNOWN",
+      "status_reason": "Deno adapter presence is unverified; obligation row exists so the finding is not OBLIGATION_UNMAPPABLE"
+    }
+  ],
+  "parked_findings_complete": [
+    "P20-F1",
+    "P20-F2",
+    "P20-N2",
+    "P20-N3",
+    "P20-N5",
+    "P20-R1",
+    "P20-R2",
+    "P24-F1",
+    "P24-F2",
+    "P24-F3a",
+    "P24-F3b",
+    "P24-F4",
+    "P24-N1",
+    "P24-N2",
+    "P24-N3",
+    "P24-N4",
+    "P24-R1"
+  ],
+  "annotation": {
+    "form": "// @fungi-obligation ID vN[, ID vN] -- reason",
+    "placement": "immediately preceding source line of the guarded statement",
+    "blank_line_between_annotation_and_guard": "OBLIGATION_ANNOTATION_MALFORMED",
+    "shared_version_on_id_list": "OBLIGATION_ANNOTATION_MALFORMED",
+    "live_ts_example": "SKIPPED",
+    "live_ts_example_reason": "zero-trust default: do not annotate a live file used by queues 20/24 or open PRs"
+  },
+  "converter_sequence": [
+    {
+      "step": 1,
+      "tool": "code-logic-workbench",
+      "files": [
+        "AGENTS/skills/code-logic-workbench/SKILL.md",
+        "AGENTS/tools/code-logic-workbench.mjs"
+      ],
+      "role": "analyse, planning evidence only, authorizing false"
+    },
+    {
+      "step": 2,
+      "tool": "translating-typescript-to-fungi",
+      "files": [
+        "AGENTS/skills/translating-typescript-to-fungi/SKILL.md"
+      ],
+      "role": "translate"
+    },
+    {
+      "step": 3,
+      "tool": "writing-fungi",
+      "files": [
+        "AGENTS/skills/writing-fungi/SKILL.md"
+      ],
+      "role": "author and verify .fungi"
+    }
+  ],
+  "sandbox_role": "re-checked fallback only",
+  "consolidation_branch": "grok/memory-ts-consolidated-20261018",
+  "addendum_c_sha256": "4df9e40965b74e5c5b6f74f78416c9a6415cd8547333bb64b2c932e1be424613",
+  "ts_fix_needed_now_yes_means": "must be discharged by the .fungi unit; the TS scaffold is frozen reference and is not patched",
+  "ts_fix_needed_now_no_on_v1_safety": "REFUSED",
+  "closed_discharge_state": [
+    "DISCHARGED",
+    "CARRIED_UNKNOWN"
+  ],
+  "discharge_state_default": "REFUSES_UNLISTED",
+  "carried_unknown": {
+    "counts_as_discharged": false,
+    "blocks_ready": true,
+    "must_name_typed_refusal": true,
+    "how_present_refuses": "OBLIGATION_DISCHARGE_UNKNOWN",
+    "fungi_construct": "names the construct that returns the carried refusal"
+  },
+  "conflicts": [
+    {
+      "id": "C1",
+      "rule": "Where TS behaviour is null/NaN, throw-as-outcome, live getters, species, aliasing or truncation, do not preserve it; record an intended divergence with the obligation id and a refusal probe",
+      "refusing_default": "preserving the forbidden TS behaviour refuses"
+    },
+    {
+      "id": "C2",
+      "rule": "Workbench HOLD on UNKNOWN obligations is evidence; conversion continues (A1). REFUSE (stale graph, wrong head, malformed request) stops that unit",
+      "refusing_default": "treating HOLD as permission refuses"
+    },
+    {
+      "id": "C3",
+      "rule": "PROPOSED and REUSE/WRAP/ADAPT/BUILD are recommendations only, never permission",
+      "refusing_default": "treating them as admission refuses"
+    },
+    {
+      "id": "C4",
+      "rule": "sandbox is re-checked fallback only",
+      "refusing_default": "a new converter refuses"
+    }
+  ],
+  "owner_answers": {
+    "A1": "converting memory files to .fungi is not blocked by the RD HOLD / TODO gate; RDs stay HOLD; converted units stay unmerged to main",
+    "A4": "overlapping or duplicate chunks refused outright; recorded as NO_OVERLAPPING_CHUNKS under BOUNDED_INPUT + LINEAR_SECRET; found_in P20-F1"
+  },
+  "unmappable_findings_default": "a parked finding that maps to no registry id is OBLIGATION_UNMAPPABLE; P20-N5 now maps to HOST_ADAPTER_PRESENCE",
+  "closed_obligation_status": [
+    "DRAFT",
+    "UNKNOWN"
+  ],
+  "obligation_status_default": "REFUSES_UNLISTED",
+  "addendum_d_sha256": "d14ce984f4f69fa40679c8a951e028b8cb5d71698625e292ade5146662861ca1",
+  "rd0778_cite": {
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+  },
+  "addendum_20261020_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+  "closed_memory_blocker_status": [
+    "UNKNOWN",
+    "CARRIED_UNKNOWN"
+  ],
+  "memory_blocker_status_default": "REFUSES_UNLISTED",
+  "memory_blockers": [
+    {
+      "id": "MB-03",
+      "binds": [
+        "32",
+        "34",
+        "36"
+      ],
+      "rule": "A re-issue gets its own typed code, distinct from a fresh mint; an unlisted lease state refuses with 111; a forged issued id refuses.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-04",
+      "binds": [
+        "32"
+      ],
+      "rule": "Range-check every token first (unlisted -> 111), then decide.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-05",
+      "binds": [
+        "32",
+        "34",
+        "35",
+        "36",
+        "37"
+      ],
+      "rule": "Refuse release unless independent authorization, prepared-result custody, and cleanup evidence bound to operation and generation are all present and valid.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-06",
+      "binds": [
+        "32",
+        "34",
+        "37"
+      ],
+      "rule": "Cleanup evidence is a sealed value the cleanup module mints; the guard admits only DONE with matching opId, generation and digest, or NOT_REQUIRED for a statically empty obligation set; anything else refuses before begin; failed or unknown cleanup after begin is QUARANTINED with DELIVERY_UNKNOWN.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-07",
+      "binds": [
+        "44@1ff9f921",
+        "32",
+        "35",
+        "36"
+      ],
+      "rule": "Every adapter declares an observation class; an unaudited pre-begin path is OUT_OF_PROCESS_UNBOUND and release counts at its first buffered write.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 21; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-08",
+      "binds": [
+        "32",
+        "34",
+        "36",
+        "38"
+      ],
+      "rule": "The v1 memory profile is single process with in-memory cells; restart starts a new incarnation epoch; any earlier-incarnation op id recovers as DELIVERY_UNKNOWN and is never retried; a multi-process or durable deployment refuses CROSS_PROCESS_CAS_NOT_VERIFIABLE.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-09",
+      "binds": [
+        "32",
+        "36"
+      ],
+      "rule": "A startup recovery pass marks every non-terminal cell ABANDONED (DELIVERY_UNKNOWN) before any claim is admitted, plus the MB-08 incarnation rule.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-10",
+      "binds": [
+        "32",
+        "34",
+        "35"
+      ],
+      "rule": "COMMITTED is unreachable for out-of-process classes; an ack is recorded as evidence only and never upgrades DELIVERY_UNKNOWN.",
+      "status": "UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    },
+    {
+      "id": "MB-11",
+      "binds": [
+        "44@1ff9f921",
+        "32",
+        "34",
+        "35",
+        "36"
+      ],
+      "rule": "v1 admits only host-import release into non-shared WebAssembly.Memory as IN_PROCESS_BOUND; SharedArrayBuffer, shared WebAssembly.Memory, MessagePort copy/transfer, mmap, fd passing and resizable buffers refuse ADAPTER_CLASS_NOT_ADMITTED; no erase claim.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 1, 2, 8, 9; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "engine-specific relocating grow stale pages (row 3 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-12",
+      "binds": [
+        "44@1ff9f921",
+        "37",
+        "38",
+        "31"
+      ],
+      "rule": "Any byte handed across a native or foreign boundary is released at that point and is DELIVERY_UNKNOWN-only afterwards; engine indices are never stale-proof; .fungi mints generation-tagged handles and rejects stale generations; passed or inherited fds cannot be revoked; v1 adapters may not mmap or pass descriptors.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md row 32; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "Zircon handle generation (row 31 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-13",
+      "binds": [
+        "31"
+      ],
+      "rule": "The .fungi runtime boundary validates type and range itself through c-boundary.fungi; JavaScript ToInt32/ToBigInt64, typeof checks and captured-intrinsic rules belong only to an optional browser embedding adapter (CARRIED_UNKNOWN there); invoke ABI wrap of integers outside i32 stays CARRIED_UNKNOWN.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 4, 5, 6, 20; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-14",
+      "binds": [
+        "32",
+        "34",
+        "35",
+        "37"
+      ],
+      "rule": "Linear ownership is NEEDS_LANGUAGE; wipe is structural best-effort of the live region with one owner and no erase claim; pre-reserve memory so secrets are not relocated; no-swap, no-dump and complete zeroization are never claimed; custody claims hold against in-protocol readers only.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 2, 9; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e",
+      "direction_unverified": "engine relocating grow leaves stale pages (row 3 UNVERIFIABLE)."
+    },
+    {
+      "id": "MB-15",
+      "binds": [
+        "32",
+        "34",
+        "38"
+      ],
+      "rule": "Constant-time compare is a sealed, capability-gated intrinsic of the .fungi native runtime, implemented natively and verified outside any WebAssembly JIT; any compare compiled to WebAssembly is CT UNKNOWN; crypto.timingSafeEqual is not the ruling and is at most a CARRIED_UNKNOWN note for an optional browser embedding adapter.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 26, 27, 37; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-16",
+      "binds": [
+        "46@cba507d4",
+        "35",
+        "36",
+        "37",
+        "38"
+      ],
+      "rule": "A closed Point/Duration algebra: Point minus Point is Duration, Point plus Duration is Point, everything else refuses; a Point is minted only by a sealed clock port through c-boundary; unavailable, backwards or overflowing time is a typed UNKNOWN refusal; one deadline covers every stage; no busy-wait.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_unverified": "blockers-memory-20261019.md grok.com Q1 clock notes unmatched by a VERIFIED row in grokcom-verification-20261020.md."
+    },
+    {
+      "id": "MB-17",
+      "binds": [
+        "31",
+        "36",
+        "37",
+        "38"
+      ],
+      "rule": "Inside .fungi the runtime boundary validates type and range through c-boundary.fungi and has no prototype lookup; JavaScript captured-intrinsic, Reflect.apply, Symbol.species and instanceof rules belong only to an optional browser embedding adapter (CARRIED_UNKNOWN there).",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_unverified": "blockers-memory-20261019.md grok.com Q5 captured-intrinsic notes unmatched as a .fungi core mechanism; they stay browser-embedding only."
+    },
+    {
+      "id": "MB-18",
+      "binds": [
+        "38",
+        "35"
+      ],
+      "rule": "A suite id is required; PQ_SIGNATURE_UNAVAILABLE gives UNKNOWN, never ASSURED; never a silent classical-only seal.",
+      "status": "UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip",
+      "direction_verified": "grokcom-verification-20261020.md rows 22, 23, 24, 25; sha256 02d030c393717e3806e35d6f7c7621801055894d8ce75ed0c275f11b6323dc4e"
+    },
+    {
+      "id": "MB-19",
+      "binds": [
+        "36",
+        "35"
+      ],
+      "rule": "The .fungi idempotency port is reserve then commit or cancel; a refusal before dispatch cancels the reservation; once dispatch has begun the key stays RESERVED_UNKNOWN until TTL with DELIVERY_UNKNOWN, no retry and no unconditional delete.",
+      "status": "CARRIED_UNKNOWN",
+      "provenance": "Grok zero-trust default, pending Phillip"
+    }
+  ],
+  "astra_outcome_wording": {
+    "source": "addendum-20261020-rd0778-astra-mb15.md section 2",
+    "source_sha256": "e6f1ac021840f925b042c0d7c8101bb354717df05058b9f0ce294dfce0bdee92",
+    "astra_reply_sha256": "a2dea5a538fd0b1f3857ed702a9a1d4cd53fe7c11606853b728811f2d1306761",
+    "W1": "In the current profile COMMITTED is unreachable after begin (B) for every out-of-process release. This is a policy restriction, not a theorem. A signed recipient receipt is observation only and cannot change the current outcome.",
+    "W2": "Ordinary write or send completion does not establish durable recipient effect. fsync is stronger than plain write acceptance, but neither local persistence nor a successful close establishes recipient effect. None of this moves release from B to a later flush or changes post-B DELIVERY_UNKNOWN.",
+    "W3": "DELIVERY_UNKNOWN and any UNKNOWN is never success, never proof of zero effect, and never authority to retry or re-admit. Recovery runs before new claims and never promotes or reissues. Missing, stale or corrupt evidence stays UNKNOWN and closes admission.",
+    "W4": "Choose the profile from demonstrated exposure and custody topology, never from API names. B precedes the earliest usable exposure, including a capability handoff or a store into already shared memory. Unclear topology refuses before B; a missing profile never selects the in-process success table.",
+    "W5": "After DELIVERY_UNKNOWN an unproved retry can duplicate an effect, so automatic retry is prohibited. Keep effect retry and disclosure retry separate.",
+    "committed_after_B_out_of_process": "unreachable by policy, not as a theorem",
+    "ap_q07_1_to_4": "CARRIED_UNKNOWN per adapter",
+    "ffi_native_containment": "OPEN",
+    "cleanup_evidence_binding": "OPEN"
+  }
+}
