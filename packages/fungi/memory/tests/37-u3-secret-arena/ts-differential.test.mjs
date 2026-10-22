@@ -240,11 +240,17 @@ test("live TS has/use/epoch/put/dispose stay UNKNOWN without a built custodian",
   const fungiUse = runFlow("arenaUse", [
     0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1000, 0, 1, 0, 1000, 0, 5000, 0, 1, 0, 1,
   ]);
+  assert.equal(fungiUse.present, true, fungiUse.reason + " " + fungiUse.text);
   assert.equal(fungiUse.value, 100, "fungi use wiped-ok");
   const fungiEpoch = runFlow("arenaEpoch", [0, 0, 0, 0, 0, 8, 0, 1, 0, 1, 0, 2]);
+  assert.equal(fungiEpoch.present, true, fungiEpoch.reason + " " + fungiEpoch.text);
   assert.equal(fungiEpoch.value, 100, "fungi epoch current");
-  const fungiPut = runFlow("arenaPut", [0, 0, 0, 1, 0, 1, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0]);
+  // S2 X-N1: arenaPut takes exactly 14 args. The old 16-arg call only ran because the WebAssembly call
+  // dropped the 2 surplus zeros; the raw invoke now refuses wrong arity, so pass the exact 14.
+  const fungiPut = runFlow("arenaPut", [0, 0, 0, 1, 0, 1, 0, 64, 0, 0, 0, 0, 0, 0]);
+  assert.equal(fungiPut.present, true, fungiPut.reason + " " + fungiPut.text);
   assert.equal(fungiPut.value, 100, "fungi put ok");
   const fungiDispose = runFlow("arenaDispose", [0, 0, 0, 0, 0, 0, 0, 106]);
+  assert.equal(fungiDispose.present, true, fungiDispose.reason + " " + fungiDispose.text);
   assert.equal(fungiDispose.value, 106, "fungi dispose Unknown");
 });
