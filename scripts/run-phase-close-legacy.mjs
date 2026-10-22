@@ -685,6 +685,8 @@ run("audit:assurance-legacy-lifecycle", "node", ["scripts/audit-assurance-legacy
 run("code-index", "node", ["scripts/code-index.mjs", "--check"]);
 run("audit:canonical-test-counts", "node", ["scripts/audit-canonical-test-counts.mjs"]);
 run("code-registry", "node", ["scripts/gen-code-registry.mjs", "--check"]);
+run("flow-registry", "node", ["scripts/gen-flow-registry.mjs", "--check"]);
+run("code-history", "node", ["scripts/check-code-history.mjs", "--check"]);
 run("code-catalog-coverage:selftest", "node", ["scripts/audit-code-catalog-coverage.mjs", "--self-test"]);
 run("code-catalog-coverage", "node", ["scripts/audit-code-catalog-coverage.mjs"]);
 // FUNGI-TYPE twin-parity (RD-0412): the self-hosted type-checker twin must only emit codes the real

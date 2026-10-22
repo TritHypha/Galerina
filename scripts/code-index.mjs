@@ -11,7 +11,7 @@
 //   emit (push/throw/code: site), test, doc (.md), fungi (.fungi), ref (any other mention).
 import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { extractCodes, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
+import { extractCodes, extractMbAliases, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
 import { classifyDescriptiveDiagnosticIdentities } from "./lib/descriptive-diagnostic-identities.mjs";
 import { diagnosticObjectOccurrences } from "./lib/diagnostic-object-occurrences.mjs";
 import { parseRustRuntimeErrorDefinitions, rustLexicalMasks } from "./lib/rust-runtime-error-codes.mjs";
@@ -46,7 +46,7 @@ const CODE_INDEX_USAGE = [
   }
 }
 const CHECK = process.argv.includes("--check");
-const SCAN = ["packages-ts", "docs", "scripts", "governance"].map((d) => join(ROOT, d));
+const SCAN = ["packages-ts", "packages/fungi", "docs", "scripts", "governance"].map((d) => join(ROOT, d));
 const ROOT_SOURCES = [join(ROOT, "galerina.mjs")];
 const OUT = join(ROOT, "build", "code-index");
 const EXT = /\.(ts|mjs|cjs|fungi|md|rs)$/;
@@ -92,7 +92,7 @@ function emitOutput(path, content) {
 }
 
 const idx = new Map(); // code -> { occ:[{file,line,role}], names:Set, sevs:Set }
-const get = (c) => { if (!idx.has(c)) idx.set(c, { occ: [], names: new Set(), sevs: new Set() }); return idx.get(c); };
+const get = (c) => { if (!idx.has(c)) idx.set(c, { occ: [], names: new Set(), sevs: new Set(), aliases: new Set() }); return idx.get(c); };
 
 /**
  * Capture metadata from one diagnostic object without crossing into the next
@@ -334,6 +334,9 @@ for (const file of FILES) {
       }
     }
     const codes = extractCodes(line);
+    for (const row of extractMbAliases(line)) {
+      get(row.canonical).aliases.add(row.alias);
+    }
     if (!codes.length) continue;
     const hasNameSev = /name:\s*"[^"]+"/.test(line) && /severity:\s*"[^"]+"/.test(line);
     // A field line (code:/name:/severity:/message:) inside an `export const X = { … }` diagnostic-OBJECT
@@ -409,6 +412,7 @@ const codes = [...idx.entries()]
     refs: occ.filter((o) => o.role === "ref").length,
     docs: occ.filter((o) => o.role === "doc").length,
     names: [...e.names], severities: [...e.sevs],
+    aliases: [...(e.aliases || [])].sort(),
     allSites: occ.map((o) => `${o.role} ${o.file}:${o.line}`),
   };
 }).sort((a, b) => a.code.localeCompare(b.code));

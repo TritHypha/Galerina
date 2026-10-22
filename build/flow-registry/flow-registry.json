@@ -1,0 +1,854 @@
+{
+  "schema": "galerina.flow-registry.v1",
+  "generatedFrom": "packages/fungi/memory/src",
+  "total": 121,
+  "flows": [
+    {
+      "qualified": "adapter-profile.classifyAdapter",
+      "unit": "adapter-profile",
+      "flow": "classifyAdapter",
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "line": 57
+    },
+    {
+      "qualified": "adapter-profile.tableForClass",
+      "unit": "adapter-profile",
+      "flow": "tableForClass",
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "line": 33
+    },
+    {
+      "qualified": "auth-verify-route.admitIngress",
+      "unit": "auth-verify-route",
+      "flow": "admitIngress",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 47
+    },
+    {
+      "qualified": "auth-verify-route.applyClock",
+      "unit": "auth-verify-route",
+      "flow": "applyClock",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 334
+    },
+    {
+      "qualified": "auth-verify-route.applyConsume",
+      "unit": "auth-verify-route",
+      "flow": "applyConsume",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 704
+    },
+    {
+      "qualified": "auth-verify-route.applyPostConsume",
+      "unit": "auth-verify-route",
+      "flow": "applyPostConsume",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 817
+    },
+    {
+      "qualified": "auth-verify-route.applyPrePorts",
+      "unit": "auth-verify-route",
+      "flow": "applyPrePorts",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 429
+    },
+    {
+      "qualified": "auth-verify-route.httpStatusFor",
+      "unit": "auth-verify-route",
+      "flow": "httpStatusFor",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 1049
+    },
+    {
+      "qualified": "auth-verify-route.mintOperation",
+      "unit": "auth-verify-route",
+      "flow": "mintOperation",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 194
+    },
+    {
+      "qualified": "auth-verify-route.recoverLease",
+      "unit": "auth-verify-route",
+      "flow": "recoverLease",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 1000
+    },
+    {
+      "qualified": "auth-verify-route.sealReceipt",
+      "unit": "auth-verify-route",
+      "flow": "sealReceipt",
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "line": 1121
+    },
+    {
+      "qualified": "body-reader.finish",
+      "unit": "body-reader",
+      "flow": "finish",
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "line": 20
+    },
+    {
+      "qualified": "body-reader.rangesOverlap",
+      "unit": "body-reader",
+      "flow": "rangesOverlap",
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "line": 34
+    },
+    {
+      "qualified": "body-reader.readChunks",
+      "unit": "body-reader",
+      "flow": "readChunks",
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "line": 50
+    },
+    {
+      "qualified": "c-boundary.readForeignBool",
+      "unit": "c-boundary",
+      "flow": "readForeignBool",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 73
+    },
+    {
+      "qualified": "c-boundary.readForeignLength",
+      "unit": "c-boundary",
+      "flow": "readForeignLength",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 58
+    },
+    {
+      "qualified": "c-boundary.readForeignSafeInteger",
+      "unit": "c-boundary",
+      "flow": "readForeignSafeInteger",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 17
+    },
+    {
+      "qualified": "cleanup-evidence.admitCleanup",
+      "unit": "cleanup-evidence",
+      "flow": "admitCleanup",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 109
+    },
+    {
+      "qualified": "cleanup-evidence.afterBeginCleanup",
+      "unit": "cleanup-evidence",
+      "flow": "afterBeginCleanup",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 305
+    },
+    {
+      "qualified": "cleanup-evidence.digestEqual",
+      "unit": "cleanup-evidence",
+      "flow": "digestEqual",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 72
+    },
+    {
+      "qualified": "cleanup-evidence.emptyObligationClass",
+      "unit": "cleanup-evidence",
+      "flow": "emptyObligationClass",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 51
+    },
+    {
+      "qualified": "cleanup-evidence.finish",
+      "unit": "cleanup-evidence",
+      "flow": "finish",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 37
+    },
+    {
+      "qualified": "cleanup-evidence.freeStep",
+      "unit": "cleanup-evidence",
+      "flow": "freeStep",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 518
+    },
+    {
+      "qualified": "cleanup-evidence.mintCleanup",
+      "unit": "cleanup-evidence",
+      "flow": "mintCleanup",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 83
+    },
+    {
+      "qualified": "cleanup-evidence.resourceAfterBegin",
+      "unit": "cleanup-evidence",
+      "flow": "resourceAfterBegin",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 370
+    },
+    {
+      "qualified": "cleanup-evidence.resourceTransition",
+      "unit": "cleanup-evidence",
+      "flow": "resourceTransition",
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "line": 387
+    },
+    {
+      "qualified": "kernel-ports.reserveAudit",
+      "unit": "kernel-ports",
+      "flow": "reserveAudit",
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "line": 178
+    },
+    {
+      "qualified": "kernel-ports.reserveIdempotency",
+      "unit": "kernel-ports",
+      "flow": "reserveIdempotency",
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "line": 24
+    },
+    {
+      "qualified": "kernel-ports.settleAudit",
+      "unit": "kernel-ports",
+      "flow": "settleAudit",
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "line": 229
+    },
+    {
+      "qualified": "kernel-ports.settleIdempotency",
+      "unit": "kernel-ports",
+      "flow": "settleIdempotency",
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "line": 118
+    },
+    {
+      "qualified": "kernel.admitAuth",
+      "unit": "kernel",
+      "flow": "admitAuth",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 307
+    },
+    {
+      "qualified": "kernel.admitBody",
+      "unit": "kernel",
+      "flow": "admitBody",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 395
+    },
+    {
+      "qualified": "kernel.admitMatch",
+      "unit": "kernel",
+      "flow": "admitMatch",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 245
+    },
+    {
+      "qualified": "kernel.applyBudget",
+      "unit": "kernel",
+      "flow": "applyBudget",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 729
+    },
+    {
+      "qualified": "kernel.applyClock",
+      "unit": "kernel",
+      "flow": "applyClock",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 466
+    },
+    {
+      "qualified": "kernel.applyConcurrency",
+      "unit": "kernel",
+      "flow": "applyConcurrency",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 765
+    },
+    {
+      "qualified": "kernel.applyConsume",
+      "unit": "kernel",
+      "flow": "applyConsume",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1186
+    },
+    {
+      "qualified": "kernel.applyDecode",
+      "unit": "kernel",
+      "flow": "applyDecode",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 613
+    },
+    {
+      "qualified": "kernel.applyDispatch",
+      "unit": "kernel",
+      "flow": "applyDispatch",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1142
+    },
+    {
+      "qualified": "kernel.applyFinalize",
+      "unit": "kernel",
+      "flow": "applyFinalize",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1299
+    },
+    {
+      "qualified": "kernel.applyIdempotency",
+      "unit": "kernel",
+      "flow": "applyIdempotency",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1095
+    },
+    {
+      "qualified": "kernel.applyRate",
+      "unit": "kernel",
+      "flow": "applyRate",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 558
+    },
+    {
+      "qualified": "kernel.applySecrets",
+      "unit": "kernel",
+      "flow": "applySecrets",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 969
+    },
+    {
+      "qualified": "kernel.constructKernel",
+      "unit": "kernel",
+      "flow": "constructKernel",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 53
+    },
+    {
+      "qualified": "kernel.getSecretAccess",
+      "unit": "kernel",
+      "flow": "getSecretAccess",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1443
+    },
+    {
+      "qualified": "kernel.httpStatusFor",
+      "unit": "kernel",
+      "flow": "httpStatusFor",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1603
+    },
+    {
+      "qualified": "kernel.listedAuthPacked",
+      "unit": "kernel",
+      "flow": "listedAuthPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1745
+    },
+    {
+      "qualified": "kernel.listedBodyPacked",
+      "unit": "kernel",
+      "flow": "listedBodyPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1719
+    },
+    {
+      "qualified": "kernel.listedBudgetPacked",
+      "unit": "kernel",
+      "flow": "listedBudgetPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1829
+    },
+    {
+      "qualified": "kernel.listedConcurrencyPacked",
+      "unit": "kernel",
+      "flow": "listedConcurrencyPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1852
+    },
+    {
+      "qualified": "kernel.listedDecodePacked",
+      "unit": "kernel",
+      "flow": "listedDecodePacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1797
+    },
+    {
+      "qualified": "kernel.listedIdempPacked",
+      "unit": "kernel",
+      "flow": "listedIdempPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1936
+    },
+    {
+      "qualified": "kernel.listedMatchPacked",
+      "unit": "kernel",
+      "flow": "listedMatchPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1690
+    },
+    {
+      "qualified": "kernel.listedMintPacked",
+      "unit": "kernel",
+      "flow": "listedMintPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1907
+    },
+    {
+      "qualified": "kernel.listedRatePacked",
+      "unit": "kernel",
+      "flow": "listedRatePacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1771
+    },
+    {
+      "qualified": "kernel.listedSecretsPacked",
+      "unit": "kernel",
+      "flow": "listedSecretsPacked",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1881
+    },
+    {
+      "qualified": "kernel.mintOperation",
+      "unit": "kernel",
+      "flow": "mintOperation",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 835
+    },
+    {
+      "qualified": "kernel.recoverLease",
+      "unit": "kernel",
+      "flow": "recoverLease",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1554
+    },
+    {
+      "qualified": "kernel.runPostDispatch",
+      "unit": "kernel",
+      "flow": "runPostDispatch",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 2125
+    },
+    {
+      "qualified": "kernel.runPreDispatch",
+      "unit": "kernel",
+      "flow": "runPreDispatch",
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "line": 1968
+    },
+    {
+      "qualified": "monotonic-time.compareDurations",
+      "unit": "monotonic-time",
+      "flow": "compareDurations",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 211
+    },
+    {
+      "qualified": "monotonic-time.comparePoints",
+      "unit": "monotonic-time",
+      "flow": "comparePoints",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 184
+    },
+    {
+      "qualified": "monotonic-time.durationMinusPoint",
+      "unit": "monotonic-time",
+      "flow": "durationMinusPoint",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 167
+    },
+    {
+      "qualified": "monotonic-time.durationPlusDurationReason",
+      "unit": "monotonic-time",
+      "flow": "durationPlusDurationReason",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 117
+    },
+    {
+      "qualified": "monotonic-time.durationPlusDurationTicks",
+      "unit": "monotonic-time",
+      "flow": "durationPlusDurationTicks",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 136
+    },
+    {
+      "qualified": "monotonic-time.mintFromClock",
+      "unit": "monotonic-time",
+      "flow": "mintFromClock",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 21
+    },
+    {
+      "qualified": "monotonic-time.pointMinusPointReason",
+      "unit": "monotonic-time",
+      "flow": "pointMinusPointReason",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 50
+    },
+    {
+      "qualified": "monotonic-time.pointMinusPointTicks",
+      "unit": "monotonic-time",
+      "flow": "pointMinusPointTicks",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 70
+    },
+    {
+      "qualified": "monotonic-time.pointPlusDurationReason",
+      "unit": "monotonic-time",
+      "flow": "pointPlusDurationReason",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 82
+    },
+    {
+      "qualified": "monotonic-time.pointPlusDurationTicks",
+      "unit": "monotonic-time",
+      "flow": "pointPlusDurationTicks",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 102
+    },
+    {
+      "qualified": "monotonic-time.pointPlusPoint",
+      "unit": "monotonic-time",
+      "flow": "pointPlusPoint",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 148
+    },
+    {
+      "qualified": "monotonic-time.remainingReason",
+      "unit": "monotonic-time",
+      "flow": "remainingReason",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 234
+    },
+    {
+      "qualified": "monotonic-time.remainingTicks",
+      "unit": "monotonic-time",
+      "flow": "remainingTicks",
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "line": 255
+    },
+    {
+      "qualified": "release-commit-point.ackStep",
+      "unit": "release-commit-point",
+      "flow": "ackStep",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 328
+    },
+    {
+      "qualified": "release-commit-point.bytesEqualScan",
+      "unit": "release-commit-point",
+      "flow": "bytesEqualScan",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 637
+    },
+    {
+      "qualified": "release-commit-point.casBegin",
+      "unit": "release-commit-point",
+      "flow": "casBegin",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 447
+    },
+    {
+      "qualified": "release-commit-point.casCommit",
+      "unit": "release-commit-point",
+      "flow": "casCommit",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 494
+    },
+    {
+      "qualified": "release-commit-point.classifyRecovery",
+      "unit": "release-commit-point",
+      "flow": "classifyRecovery",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 42
+    },
+    {
+      "qualified": "release-commit-point.consumeStep",
+      "unit": "release-commit-point",
+      "flow": "consumeStep",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 222
+    },
+    {
+      "qualified": "release-commit-point.finish",
+      "unit": "release-commit-point",
+      "flow": "finish",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 28
+    },
+    {
+      "qualified": "release-commit-point.mintAdmit",
+      "unit": "release-commit-point",
+      "flow": "mintAdmit",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 110
+    },
+    {
+      "qualified": "release-commit-point.observationPoint",
+      "unit": "release-commit-point",
+      "flow": "observationPoint",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 565
+    },
+    {
+      "qualified": "release-commit-point.outcomeClass",
+      "unit": "release-commit-point",
+      "flow": "outcomeClass",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 756
+    },
+    {
+      "qualified": "release-commit-point.releaseGuard",
+      "unit": "release-commit-point",
+      "flow": "releaseGuard",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 679
+    },
+    {
+      "qualified": "release-commit-point.retryAfterUnknown",
+      "unit": "release-commit-point",
+      "flow": "retryAfterUnknown",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 668
+    },
+    {
+      "qualified": "release-commit-point.revokeDelivery",
+      "unit": "release-commit-point",
+      "flow": "revokeDelivery",
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "line": 413
+    },
+    {
+      "qualified": "secret-arena-custodian-port.decodeFrameStatus",
+      "unit": "secret-arena-custodian-port",
+      "flow": "decodeFrameStatus",
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "line": 38
+    },
+    {
+      "qualified": "secret-arena-custodian-port.decodePresence",
+      "unit": "secret-arena-custodian-port",
+      "flow": "decodePresence",
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "line": 92
+    },
+    {
+      "qualified": "secret-arena-custodian-port.decodeSpawn",
+      "unit": "secret-arena-custodian-port",
+      "flow": "decodeSpawn",
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "line": 14
+    },
+    {
+      "qualified": "secret-arena-custodian-port.decodeTerminate",
+      "unit": "secret-arena-custodian-port",
+      "flow": "decodeTerminate",
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "line": 65
+    },
+    {
+      "qualified": "secret-arena.applyArenaClock",
+      "unit": "secret-arena",
+      "flow": "applyArenaClock",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 131
+    },
+    {
+      "qualified": "secret-arena.arenaDispose",
+      "unit": "secret-arena",
+      "flow": "arenaDispose",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 865
+    },
+    {
+      "qualified": "secret-arena.arenaEpoch",
+      "unit": "secret-arena",
+      "flow": "arenaEpoch",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 455
+    },
+    {
+      "qualified": "secret-arena.arenaHas",
+      "unit": "secret-arena",
+      "flow": "arenaHas",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 317
+    },
+    {
+      "qualified": "secret-arena.arenaPut",
+      "unit": "secret-arena",
+      "flow": "arenaPut",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 726
+    },
+    {
+      "qualified": "secret-arena.arenaStatus",
+      "unit": "secret-arena",
+      "flow": "arenaStatus",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 389
+    },
+    {
+      "qualified": "secret-arena.arenaUse",
+      "unit": "secret-arena",
+      "flow": "arenaUse",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 568
+    },
+    {
+      "qualified": "secret-arena.constructArena",
+      "unit": "secret-arena",
+      "flow": "constructArena",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 221
+    },
+    {
+      "qualified": "secret-arena.listedCallback",
+      "unit": "secret-arena",
+      "flow": "listedCallback",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 98
+    },
+    {
+      "qualified": "secret-arena.listedState",
+      "unit": "secret-arena",
+      "flow": "listedState",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 28
+    },
+    {
+      "qualified": "secret-arena.listedWipe",
+      "unit": "secret-arena",
+      "flow": "listedWipe",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 55
+    },
+    {
+      "qualified": "secret-arena.mapHasToPresence",
+      "unit": "secret-arena",
+      "flow": "mapHasToPresence",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 928
+    },
+    {
+      "qualified": "secret-arena.wipeWins",
+      "unit": "secret-arena",
+      "flow": "wipeWins",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 82
+    },
+    {
+      "qualified": "secret-gate.admit",
+      "unit": "secret-gate",
+      "flow": "admit",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 29
+    },
+    {
+      "qualified": "secret-gate.deliverPostHandoff",
+      "unit": "secret-gate",
+      "flow": "deliverPostHandoff",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 257
+    },
+    {
+      "qualified": "secret-gate.deliverPreHandoff",
+      "unit": "secret-gate",
+      "flow": "deliverPreHandoff",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 125
+    },
+    {
+      "qualified": "secret-gate.gateAcknowledge",
+      "unit": "secret-gate",
+      "flow": "gateAcknowledge",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 506
+    },
+    {
+      "qualified": "secret-gate.gateNoteUndelivered",
+      "unit": "secret-gate",
+      "flow": "gateNoteUndelivered",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 625
+    },
+    {
+      "qualified": "secret-gate.gateStatus",
+      "unit": "secret-gate",
+      "flow": "gateStatus",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 579
+    },
+    {
+      "qualified": "serve-gate.classifyServeRoute",
+      "unit": "serve-gate",
+      "flow": "classifyServeRoute",
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "line": 164
+    },
+    {
+      "qualified": "serve-gate.effectSecretClass",
+      "unit": "serve-gate",
+      "flow": "effectSecretClass",
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "line": 79
+    },
+    {
+      "qualified": "serve-gate.finish",
+      "unit": "serve-gate",
+      "flow": "finish",
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "line": 27
+    },
+    {
+      "qualified": "serve-gate.pathProtection",
+      "unit": "serve-gate",
+      "flow": "pathProtection",
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "line": 41
+    },
+    {
+      "qualified": "serve-gate.reachSecretClass",
+      "unit": "serve-gate",
+      "flow": "reachSecretClass",
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "line": 122
+    },
+    {
+      "qualified": "signet-grant-seal.applyPostSink",
+      "unit": "signet-grant-seal",
+      "flow": "applyPostSink",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 853
+    },
+    {
+      "qualified": "signet-grant-seal.applyPreSink",
+      "unit": "signet-grant-seal",
+      "flow": "applyPreSink",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 487
+    },
+    {
+      "qualified": "signet-grant-seal.authenticateGrant",
+      "unit": "signet-grant-seal",
+      "flow": "authenticateGrant",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 255
+    },
+    {
+      "qualified": "signet-grant-seal.classifySeal",
+      "unit": "signet-grant-seal",
+      "flow": "classifySeal",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 999
+    },
+    {
+      "qualified": "signet-grant-seal.issueGrant",
+      "unit": "signet-grant-seal",
+      "flow": "issueGrant",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 50
+    },
+    {
+      "qualified": "signet-grant-seal.restartHost",
+      "unit": "signet-grant-seal",
+      "flow": "restartHost",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 1089
+    },
+    {
+      "qualified": "signet-grant-seal.validateVerifyRequest",
+      "unit": "signet-grant-seal",
+      "flow": "validateVerifyRequest",
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "line": 1113
+    }
+  ]
+}

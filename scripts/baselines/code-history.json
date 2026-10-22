@@ -1,0 +1,7535 @@
+{
+  "schema": "galerina.code-history.v1",
+  "records": [
+    {
+      "code": "ERR_ADDON_HASH_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_MISSING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_NOT_REGULAR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_SIZE_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_SYMLINK",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_TOO_LARGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ADDON_UNPINNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AI",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AI_CALL_BUDGET",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AI_MODEL_NOT_APPROVED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AI_MODEL_REQUIRED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AI_TOKEN_BUDGET",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AMOUNT_EXCEEDS_LIMIT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AMOUNT_TOO_LARGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ANONYMOUS_DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ARGUMENT_COUNT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ARTIFACT_HASH_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ASSERTION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_AUDIT_LEDGER_CORRUPT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRAND_AUDIT_SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRAND_AUDIT_SIZE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRIDGE_DISPATCH_FAULT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRIDGE_IDENTITY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRIDGE_NO_MANIFEST",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_BRIDGE_UNATTESTED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CAPABILITY_DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_HOST_NATIVE_OPEN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_INVALID_POLICY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_ALLOWLIST",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_ATTESTATION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_COST_CEILING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_EGRESS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_PQ_KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_NO_TOKEN_BUDGET",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CODE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_COMPUTE_BUDGET_EXCEEDED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CORRELATION_ID_ACTIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_CORRELATION_ID_INVALID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_DIV_BY_ZERO",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_CALLER",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_CONTRACT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_CONTRACT_HASH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_CURRENCY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_CUSTOMER_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_DATA",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_FLOW_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_OPERATION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_PAYLOAD",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_PLUGIN_ALIAS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_RECORD_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_SEAL",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_SOURCE_HASH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EMPTY_USER_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EXAMPLE_ALSO_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_EXAMPLE_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_FAKE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_FIRST",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_FORBIDDEN_OPERATION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_FX_THING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_FX_THROWN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_GIR_TYPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_GUEST_WRITE_DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_HOST_NATIVE_DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_I32_OVERFLOW",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_I32_RANGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_INSUFFICIENT_FUNDS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_INVALID_AMOUNT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_INVALID_ARG_TYPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_INVALID_ITERATIONS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_INVALID_N",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ITERATIONS_EXCEEDED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_K3_ARM_SET",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_K3_GIR_SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_K3_INVALID_VALUE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_K3_NON_TERMINAL",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_K3_SUBJECT_TYPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_LATENCY_INVARIANT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_MISSING_CORRELATION_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_MISSING_FLOW",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_MODULE_NOT_FOUND",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_AGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_AMOUNT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_INPUT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_SIZE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_X",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NEGATIVE_Y",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_NON_POSITIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_PAYLOAD_EXCEEDS_DWI_CEILING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_PAYLOAD_TOO_LARGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_PLAN_NOT_PREFLIGHTED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_PROFILE_CONTRADICTION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_PROFILE_PHOTONIC_FORBIDDEN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REAL",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REBRAND_PATH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_BAD_SIGNATURE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_KEY_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_MALFORMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_NOT_ACTIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_REVOKED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_ROLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_STALE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DELEGATION_UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_DUPLICATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_HASH_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_INDEX_BAD_SIGNATURE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_INDEX_MALFORMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_INDEX_NO_KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_INDEX_STALE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_INDEX_UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_KEYID_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_MANIFEST_BAD_SIGNATURE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_MANIFEST_KEY_MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_MANIFEST_MALFORMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_MANIFEST_NO_KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_MANIFEST_UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_PACKAGE_UNKNOWN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_POLICY_DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_RUNTIME_AUTHORITY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_RUNTIME_IO",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_RUNTIME_MALFORMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REGISTRY_VERSION_UNKNOWN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REORDERED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_REPEAT_THRESHOLD",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_COMPLETION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_CONCURRENCY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_EVENT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_PLAN_SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_PLAN_VERSION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_SCOPE_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_STATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TASKS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TASK_DUPLICATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TASK_ID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TASK_STATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TERMINAL_STATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TIMEOUT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_TIME_REGRESSION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_AWAIT_UNKNOWN_TASK",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_ISOLATED_CONFIG",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_ISOLATED_RECEIPT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_ISOLATED_SPEC",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_ISOLATED_UNCONFIRMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_CAPACITY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_CAUSE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_CONFIG",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_HMAC",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_MAC",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_REPLAY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_SEQUENCE_STORE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_RUNTIME_RECEIPT_VERSION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SCHEMA",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SCHEMA_UNSUPPORTED_INPUT_TYPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECOND",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_CLEANUP_FAILED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_CREATE_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_INVALID_LENGTH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_MAP_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_NOT_ACTIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_NOT_ALLOCATED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_PAGE_SIZE_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_QUARANTINED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_RESIZE_REFUSED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_GATE_WIPE_FAILED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SIZE_EXCEEDED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SOME_CODE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_STRING_TOO_LONG",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_TOO_SHORT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_TOWER_COMPOSITION_UNKNOWN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_TOXIC_NEGATIVE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_TOXIC_OVERFLOW",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_TRAP",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_UNREALISTIC_AGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_UNVERIFIED_METADATA",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_VALIDATION_FAILURE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_VALID_CODE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_X",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_X_Y",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ZERO",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ZERO_AMOUNT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ZERO_FUEL",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ZERO_ITERATIONS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_ZERO_PAYLOAD",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-A-1",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ACCESS-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ACCESS-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ADMIT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ADMIT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ADMIT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ADMIT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AFFINE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AFFINE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AFFINE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AFFINE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AFFINE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AMD-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ANTI-ABUSE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-APPK-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-APB-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-APB-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-APB-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-APB-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-APB-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-ASH-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-ASH-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-ASH-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-ASH-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-ASH-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-CRH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-APPK-CRH-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-CRH-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-CRH-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-CRH-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-HRC-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-HRC-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-APPK-HRC-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-HRC-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-IDR-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-IDR-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-IDR-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-IDR-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-IDR-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-QJC-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-QJC-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-QJC-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-QJC-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-QJC-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RAR-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RAR-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RAR-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RAR-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RAR-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RLW-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RLW-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RLW-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RLW-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RLW-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RPT-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RPT-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RPT-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RPT-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RPT-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RVP-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RVP-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RVP-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RVP-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-RVP-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SAW-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SAW-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SAW-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SAW-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SAW-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SRP-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SRP-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SRP-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SRP-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-APPK-SRP-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ARCH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ARCH-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSIMILATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSIMILATE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSIMILATE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSIMILATE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSUME-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSUME-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSUME-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSUME-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASSUME-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASYNC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ASYNC-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ASYNC-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ASYNC-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ASYNC-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ASYNC-006",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-ATTR-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ATTR-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AU-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-AUDIT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-B-2",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BACKEND-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-BOOL-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-BOOL-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-BOOL-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-BOOL-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-BOOL-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-RUN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-RUN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-RUN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CMP-RUN-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CPU-ARITH-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CPU-ARITH-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CPU-ARITH-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CPU-ARITH-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-CPU-ARITH-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSON-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSON-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSON-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSON-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSON-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONG-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONG-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONG-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONG-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONG-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONS-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONS-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONS-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONS-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-JSONS-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-MAT-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-MAT-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-MAT-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-MAT-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-MAT-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RO-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RO-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RO-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RO-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RO-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-RUN-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BENCH-SHA-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-SHA-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-SHA-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-SHA-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-SHA-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-TRI-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-TRI-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-TRI-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-TRI-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-TRI-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-VEC-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-VEC-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-VEC-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-VEC-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BENCH-VEC-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BF-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BF-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BINDING-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BLOCK-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOOL-BOUNDARY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOOL-BOUNDARY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOOL-BOUNDARY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOOL-BOUNDARY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOOL-BOUNDARY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BORDER-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BORDER-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BORDER-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BORDER-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BORDER-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BOUNDARY-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BUILD-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BUILD-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BUILD-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BUILD-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BUILD-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BYTE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BYTE-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BYTE-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-BYTE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-BYTE-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CACHE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CACHE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CAP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CAP-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CAPABILITY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CHAR-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CHAR-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CHAR-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CHAR-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CHECK-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CHECK-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-BUILD-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-BUILD-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-BUILD-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-BUILD-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-BUILD-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-DEPLOY-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-DEPLOY-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-DEPLOY-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-DEPLOY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-DEPLOY-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-ENV-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-ENV-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-ENV-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-EXPLAIN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-EXPLAIN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-EXPLAIN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-EXPLAIN-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-EXPLAIN-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-INIT-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-INIT-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-INIT-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-INIT-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-INIT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-PLAN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PLAN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PLAN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PLAN-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-PLAN-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PROMOTE-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PROMOTE-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PROMOTE-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-PROMOTE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-REDACT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-VDEPLOY-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VDEPLOY-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VDEPLOY-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VDEPLOY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-VDEPLOY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CLI-VERIFY-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VERIFY-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VERIFY-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VERIFY-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-CLI-VERIFY-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-COMMAND-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMMAND-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPAT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPAT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPAT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPAT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPAT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COMPUTE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-COND-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-026",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-027",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-028",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-029",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-031",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-032",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-033",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-034",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-035",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-036",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-037",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-038",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-039",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-040",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-041",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-042",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-043",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-GOV-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-GOV-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONFIG-GOV-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTEXT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CONTRACT-SCHEMA-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CPU-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CPU-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CPU-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CPU-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CRYPTO-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CRYPTO-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CRYPTO-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CRYPTO-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-CRYPTO-PQ-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DAG-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DAG-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DECISION-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DECISION-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DECISION-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DECISION-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DECISION-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DENIAL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DENIAL-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DENIAL-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DENIAL-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-DEPLOY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-DEPLOY-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DEPLOY-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DRCM-UNSUPPORTED",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-DRIFT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DRIFT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-DRIFT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EC-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ECON-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ECON-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ECON-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EFFECT-906",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EMIT-STUB",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVENT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVENT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVENT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVENT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVENT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVIDENCE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVIDENCE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVIDENCE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EVIDENCE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXAMPLE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPLAIN-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-EXPR-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FAULT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FAULT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FAULT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FAULT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FAULT-999",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FLOAT-NAN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FOO-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUEL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-ACL-UNDERDECLARED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-BAD-DESCRIPTOR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-BAD-PACKAGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-BAD-SIDECAR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HASH-MISMATCH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-ERROR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-INVALID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-PQ-KEY-MALFORMED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-PQ-KEY-MISSING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-UNVERIFIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-HYBRID-VERIFIER-UNAVAILABLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-COLLISION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-KIND",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-REENTRY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-KEY-REVOKED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-DESCRIPTOR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-EXPORT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-MANIFEST",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-PACKAGE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-PUBKEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-NO-WASM",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-PROVIDES-UNKNOWN",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REGISTRY-DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REGISTRY-REQUIRED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REVOCATION-REQUIRED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REVOCATION-UNTRUSTED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REVOCATION-UNVERIFIABLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SET-AMBIGUOUS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SET-CYCLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SET-DUPLICATE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SET-SELF",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SET-UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SIDECAR-DRIFT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SIG-ERROR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-SIG-INVALID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-STARTUP-EFFECT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-UNKNOWN-CAP",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-UNSIGNED-ALLOWED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-UNSIGNED-DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-VERSION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-005B",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-050",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FX-099",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GATE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GATE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GATELANG-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GATELANG-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GEN-TEST-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-3V",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-3VL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-3VL-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-3VL-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-902",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-999",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GOV-TPL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GPU-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GPU-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GPU-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GPU-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GPU-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-GRAPH-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HALLMARK-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HARDEN-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HINT-COMPUTE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HW-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HW-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HW-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-HW-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ID-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-000",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-IMPORT-TEST",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INHERIT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INHERIT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTEL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTEL-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTEL-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTENT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTENT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTENT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTENT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INTENT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INV-000",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INV-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INV-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INV-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-INV-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-026",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JS-027",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-JSON-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-JSON-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-K3-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-K3-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-K3-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-K3-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-K3-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KB-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KEY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KEY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KEY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KEY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-KEY-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LAYOUT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LEX-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LIMIT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-AUTO-SETTING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-COMMENT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-CONTRACT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-ERROR",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINT-INTENT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LOGIC-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-DEPTH",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-DUPLICATE-KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-INVALID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-LEGACY-FORMAT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-LENGTH-OVERFLOW",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-MISSING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-NONCANONICAL",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-PQ-REQUIRED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-PROFILE-UNRECOGNIZED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-PUBKEY-MISSING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-REVOKED-KEY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-TAMPER",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-VERSION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MANIFEST-VERSION-UNAVAILABLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MATCH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-03",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-04",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-05",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-06",
+      "meaning": "listed cleanup after admit-to-handoff; post never packed 100",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-07",
+      "meaning": "real adapter rows; pre-begin output paths",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-08",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-09",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-10",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-11",
+      "meaning": "LINEAR_SECRET; WebAssembly zeroing is best effort; no erase claim",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-12",
+      "meaning": "OUT_OF_PROCESS_UNBOUND; passed or inherited descriptors cannot be revoked",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-13",
+      "meaning": "invoke ToInt32 wrap; captured JS intrinsics",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-14",
+      "meaning": "WebAssembly zeroing is best effort; no erase claim",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-15",
+      "meaning": "compare compiled to WebAssembly is CT UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-16",
+      "meaning": ".fungi reads no clock; caller supplies typed reading",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-17",
+      "meaning": "live versus captured JS intrinsics",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-18",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-19",
+      "meaning": "reserve then commit or cancel; no retry after dispatch",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MEMORY-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MODULE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MONO-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MONO-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MONO-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MUTATION-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAME-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAME-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAME-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAMING-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAMING-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAMING-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAMING-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NAMING-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-001",
+      "meaning": "proposed mapping of Galerina_NATIVE_INPUT_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-002",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_FIELD_REQUIRED; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-003",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_TRIPLE_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-004",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_TRIPLE_ARCHITECTURE_MISMATCH; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-005",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_TRIPLE_OS_MISMATCH; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-006",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_ABI_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-007",
+      "meaning": "proposed mapping of Galerina_NATIVE_TARGET_EXECUTION_MODE_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-008",
+      "meaning": "proposed mapping of Galerina_NATIVE_SCHEMA_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-009",
+      "meaning": "proposed mapping of Galerina_NATIVE_ARTIFACT_PATH_REQUIRED; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-010",
+      "meaning": "proposed mapping of Galerina_NATIVE_ARTIFACT_PATH_ESCAPES; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-011",
+      "meaning": "proposed mapping of Galerina_NATIVE_ARTIFACT_FORMAT_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-012",
+      "meaning": "proposed mapping of Galerina_NATIVE_DIGEST_INVALID; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-013",
+      "meaning": "proposed mapping of Galerina_NATIVE_BYTES_REQUIRED; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-014",
+      "meaning": "proposed mapping of Galerina_NATIVE_DIGEST_MISMATCH; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-015",
+      "meaning": "proposed mapping of Galerina_NATIVE_VOK_RECEIPT_REQUIRED; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-016",
+      "meaning": "proposed mapping of Galerina_NATIVE_VOK_SUBJECT_MISMATCH; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-017",
+      "meaning": "proposed mapping of Galerina_NATIVE_ABI_MISMATCH; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-018",
+      "meaning": "proposed mapping of Galerina_NATIVE_PROFILE_PATH_COLLIDES; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-019",
+      "meaning": "proposed mapping of Galerina_NATIVE_DIGEST_DUPLICATE; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-020",
+      "meaning": "proposed mapping of Galerina_NATIVE_PROFILE_PATH_REQUIRED; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NATIVE-021",
+      "meaning": "proposed mapping of Galerina_NATIVE_PROFILE_PATH_ESCAPES; source status PROPOSED_NOT_ADMITTED",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NET-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NET-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NET-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NETWORK-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-NUMERIC-OP-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OBS-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OBS-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OMNI-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-OTHER-1",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PARSE-DEPTH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PASSPORT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PATTERN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PATTERN-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-000",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-G-000",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-G-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-G-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PCI-G-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PGRAPH-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHI-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-000",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PHOTONIC-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PII-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PIPELINE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PIPELINE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PIPELINE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PIPELINE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PIPELINE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKG-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PKGSTD-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PLAN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PLAN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PLAN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PLAN-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PLUGIN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-POISON-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-POLICY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PREFILTER-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PREFILTER-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PREFILTER-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PRIVACY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PRIVACY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PRIVACY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PRIVACY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROBE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROBE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-005B",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROFILE-UNRECOGNIZED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROMOTE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROMOTE-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PROMOTE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROMOTE-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PROMOTE-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-PROOF-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-CERT-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-CERT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROOF-CERT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROTECTED-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-PROV-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-QUERY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-QUERY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-QUERY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-QUERY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RAWPTR-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REPORT-FIELD-MISSING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REQUIREMENT-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RES-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RES-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RES-CB-PENDING",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RESOURCE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RETAIN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REVOCATION-REGISTRY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-REVOCATION-UNSIGNED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ROUTE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ROUTE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-ROUTE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-RUNTIME-GRANT-REQUIRED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SAFETY-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SBOM-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SCAN-UNANALYZABLE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-ASG-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-ASG-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-ASG-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-ASG-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-ASG-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CAP-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CAP-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CAP-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CAP-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CAP-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CIV-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CIV-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CIV-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CIV-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CIV-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CLA-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CLA-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CLA-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CLA-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-CLA-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-OWC-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-OWC-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-OWC-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-OWC-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-OWC-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-PATCH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-POL-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-POL-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-POL-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SEC-POL-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-POL-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-SRN-001",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-SRN-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-SRN-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-SRN-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SEC-SRN-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-SECRET-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-999",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SLOP-AI-ARTIFACT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SLOP-EMOJI",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SLOP-FILLER-COMMENT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SLOP-PLACEHOLDER-NAME",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SLOP-VACUOUS-INTENT",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SOURCE-ESCAPE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATIC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STATIC-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STDLIB-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STDLIB-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STEP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STORAGE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STRING-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STRING-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STRING-003",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-STRING-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-STYLE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STYLE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-STYLE-SEC-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SUBSTRATE-DEADZONE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-BRACE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-CONTRACT-IN-BODY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-LEGACY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-LEGACY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-LEGACY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-RLF-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-TAB",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SYNTAX-TRAILING-WS",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TAINT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TARGET-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TENANT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TENANT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TENANT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TERM-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TEST-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TEST-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TEST-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TEST-128",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TEST-999",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TIER-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRACE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRAP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRAP-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRI-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRI-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRI-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRI-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TRI-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-0",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-026",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-027",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-028",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-031",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-032",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-033",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-034",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-035",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-099",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-TYPE-903",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAL-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAL-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAL-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALIDATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUE-STATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VALUESTATE-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VAULT-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VDEPLOY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VDEPLOY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VDEPLOY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VDEPLOY-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VDEPLOY-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VER-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-00",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-002",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-004",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-005",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-006",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-007",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-008",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-010",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-011",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-012",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-013",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-014",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-015",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-016",
+      "meaning": "UNKNOWN",
+      "status": "retired"
+    },
+    {
+      "code": "FUNGI-VERIFY-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VERIFY-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VIS-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VIS-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VIS-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VIS-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-VIS-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-017",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-023",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-024",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-026",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-027",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-028",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-029",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-CLEANUP-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-GRANT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-HOST-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WASM-RET-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-BODY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-CHECKED-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-DECIMAL-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-EFFECT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-FLOAT32-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-HOF-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-INT64-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-METHOD-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-MONEY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-PATTERN-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-STMT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WAT-STUB",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-031",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-040",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-041",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-042",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WEB-050",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WORKFLOW-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WORKFLOW-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-WORKFLOW-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-ADMIT-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-AUTH-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-AUTH-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-EFFECT-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-EFFECT-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-EFFECT-101",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-EFFECT-102",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-LIVE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-LIVE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-018",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-019",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-020",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-021",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-022",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-025",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-026",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-028",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-029",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-030",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-031",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-032",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-033",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-PARSE-034",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-015",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-REGISTRY-016",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-1",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-101",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-102",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-103",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-104",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-105",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-106",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-107",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-108",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-109",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-110",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-111",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-RESOLVE-112",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-010",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-011",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-012",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-013",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-SEM-014",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-TERM-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-TERM-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-TERM-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-TERM-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-005",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-006",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-007",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-101",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-WIRE-102",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "GATE-X-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    }
+  ]
+}

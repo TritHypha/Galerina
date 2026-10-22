@@ -22,6 +22,7 @@ import {
 } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 import { measureCoverageGap } from "./audit-code-catalog-coverage.mjs"; // derives the coverage caveat below
 import { exitOnHelp } from "./lib/cli-help.mjs";
+import { buildAliasRows } from "./lib/code-aliases.mjs";
 
 exitOnHelp(import.meta.url, "usage: node scripts/gen-code-registry.mjs [--check]\n  (no arguments)  regenerate build/code-registry/ from build/code-index/code-index.json\n  --check         compare without writing\n  --help, -h  print this usage and exit 0 without reading or writing");
 
@@ -64,10 +65,19 @@ for (const e of entries) counts[e.status] = (counts[e.status] || 0) + 1;
 const byFamily = {};
 for (const e of entries) (byFamily[e.family] ??= []).push(e);
 
+let aliasRows;
+try {
+  aliasRows = buildAliasRows(arr);
+} catch (error) {
+  console.error("gen-code-registry: " + error.message);
+  process.exit(1);
+}
+
 const registry = {
   generatedFrom: "build/code-index/code-index.json",
   total: entries.length,
   counts,
+  aliases: aliasRows,
   entries,
 };
 

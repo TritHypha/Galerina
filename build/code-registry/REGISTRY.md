@@ -2,8 +2,8 @@
 
 The authoritative catalog of EVERY diagnostic/error code, GENERATED from the code-index (standard #10).
 Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-code-registry.mjs`.
-> **Coverage gate PASS:** 75 syntax-admitted descriptive identities are catalogued,
-> including 53 on the signing path; 0 are missing and 0 source tokens are ambiguous.
+> **Coverage gate PASS:** 81 syntax-admitted descriptive identities are catalogued,
+> including 59 on the signing path; 0 are missing and 0 source tokens are ambiguous.
 > Numeric-tail codes and descriptive identities share this catalog. Descriptive text only acquires identity
 > authority at a bounded diagnostic sink; comments, type positions, tests, and explicit
 > `code-catalog-reference` fixtures cannot mint entries. Counts are derived by
@@ -14,11 +14,11 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | status | count | meaning |
 |---|---|---|
 | live | 230 | emitted with an exported constant |
-| inline | 438 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 173 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| inline | 444 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 175 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 232 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 70 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 338 | referenced only (no def/emit) |
+| phantom | 76 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 349 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -927,7 +927,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-EMIT-STUB | inline | — | — |
 
-### ERR_* (189)
+### ERR_* (191)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1099,8 +1099,10 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | ERR_SECRET_ARENA_NOT_ACTIVE | live | SECRET_ARENA_NOT_ACTIVE | error |
 | ERR_SECRET_ARENA_NOT_ALLOCATED | live | SECRET_ARENA_NOT_ALLOCATED | error |
 | ERR_SECRET_ARENA_PAGE_SIZE_REFUSED | live | SECRET_ARENA_PAGE_SIZE_REFUSED | error |
+| ERR_SECRET_ARENA_QUARANTINED | referenced | — | — |
 | ERR_SECRET_ARENA_RESIZE_REFUSED | live | SECRET_ARENA_RESIZE_REFUSED | error |
 | ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM | live | SECRET_ARENA_UNSUPPORTED_PLATFORM | error |
+| ERR_SECRET_GATE_WIPE_FAILED | referenced | — | — |
 | ERR_SIZE_EXCEEDED | ref | — | — |
 | ERR_SOME_CODE | ref | — | — |
 | ERR_STRING_TOO_LONG | ref | — | — |
@@ -1195,7 +1197,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 |---|---|---|---|
 | FUNGI-FUEL-001 | ref | — | — |
 
-### FUSE (36)
+### FUSE (42)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1210,6 +1212,10 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-FUSE-HYBRID-PQ-KEY-MISSING | inline | — | — |
 | FUNGI-FUSE-HYBRID-UNVERIFIED | inline | — | — |
 | FUNGI-FUSE-HYBRID-VERIFIER-UNAVAILABLE | inline | — | — |
+| FUNGI-FUSE-IMPORT-COLLISION | inline | — | — |
+| FUNGI-FUSE-IMPORT-KIND | inline | — | — |
+| FUNGI-FUSE-IMPORT-REENTRY | inline | — | — |
+| FUNGI-FUSE-IMPORT-SHAPE | inline | — | — |
 | FUNGI-FUSE-KEY-REVOKED | inline | — | — |
 | FUNGI-FUSE-NO-DESCRIPTOR | inline | — | — |
 | FUNGI-FUSE-NO-EXPORT | inline | — | — |
@@ -1219,6 +1225,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-FUSE-NO-WASM | inline | — | — |
 | FUNGI-FUSE-PROVIDES-UNKNOWN | inline | — | — |
 | FUNGI-FUSE-REGISTRY-DENIED | inline | — | — |
+| FUNGI-FUSE-REGISTRY-REQUIRED | inline | — | — |
 | FUNGI-FUSE-REVOCATION-REQUIRED | inline | — | — |
 | FUNGI-FUSE-REVOCATION-UNTRUSTED | inline | — | — |
 | FUNGI-FUSE-REVOCATION-UNVERIFIABLE | inline | — | — |
@@ -1230,6 +1237,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-FUSE-SIDECAR-DRIFT | inline | — | — |
 | FUNGI-FUSE-SIG-ERROR | inline | — | — |
 | FUNGI-FUSE-SIG-INVALID | inline | — | — |
+| FUNGI-FUSE-STARTUP-EFFECT | inline | — | — |
 | FUNGI-FUSE-UNKNOWN-CAP | inline | — | — |
 | FUNGI-FUSE-UNSIGNED | inline | — | — |
 | FUNGI-FUSE-UNSIGNED-ALLOWED | inline | — | — |
@@ -1583,6 +1591,28 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-MATCH-001 | inline | MATCH_NON_EXHAUSTIVE | — |
+
+### MB (17)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-MB-03 | ref | — | — |
+| FUNGI-MB-04 | phantom | — | — |
+| FUNGI-MB-05 | phantom | — | — |
+| FUNGI-MB-06 | ref | — | — |
+| FUNGI-MB-07 | ref | — | — |
+| FUNGI-MB-08 | phantom | — | — |
+| FUNGI-MB-09 | phantom | — | — |
+| FUNGI-MB-10 | phantom | — | — |
+| FUNGI-MB-11 | ref | — | — |
+| FUNGI-MB-12 | ref | — | — |
+| FUNGI-MB-13 | ref | — | — |
+| FUNGI-MB-14 | ref | — | — |
+| FUNGI-MB-15 | ref | — | — |
+| FUNGI-MB-16 | ref | — | — |
+| FUNGI-MB-17 | ref | — | — |
+| FUNGI-MB-18 | phantom | — | — |
+| FUNGI-MB-19 | ref | — | — |
 
 ### MEMORY (8)
 
