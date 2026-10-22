@@ -22975,11 +22975,11 @@
     "code": "FUNGI-MB-03",
     "namespace": "FUNGI",
     "family": "MB",
-    "occurrences": 11,
+    "occurrences": 13,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 8,
+    "tests": 10,
     "refs": 1,
     "docs": 2,
     "names": [],
@@ -22998,7 +22998,9 @@
       "test scripts/tests/crr-01.test.mjs:216",
       "test scripts/tests/crr-01.test.mjs:220",
       "test scripts/tests/crr-01.test.mjs:221",
-      "test scripts/tests/crr-01.test.mjs:274"
+      "test scripts/tests/crr-01.test.mjs:274",
+      "test scripts/tests/crr-01.test.mjs:291",
+      "test scripts/tests/crr-01.test.mjs:292"
     ]
   },
   {

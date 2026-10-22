@@ -283,3 +283,22 @@ test("no git history means append-only is typed UNKNOWN (exit 2), never PASS", (
   const root = histTree({ ...base(), init: false });
   try { const r = hist(root); assert.equal(r.status, 2, r.stderr + r.stdout); assert.match(r.stderr, /UNKNOWN/); } finally { rmSync(root, { recursive: true, force: true }); }
 });
+test("a shallow clone cannot prove append-only: typed UNKNOWN (exit 2), never PASS", () => {
+  const b = base();
+  const root = histTree(b);
+  const shallow = mkdtempSync(join(tmpdir(), "crr-shallow-"));
+  try {
+    setHistory(root, b.records.map((r) => r.code === "FUNGI-MB-03" ? { ...r, meaning: "first meaning" } : r));
+    write(root, "scripts/lib/code-meanings.mjs", meaningsModule({ ...b.meanings, "FUNGI-MB-03": "first meaning" }));
+    commitAll(root);
+    rmSync(shallow, { recursive: true, force: true });
+    const c = spawnSync("git", ["clone", "-q", "--depth", "1", "file://" + root, shallow], { encoding: "utf8", env: CLEAN_ENV });
+    assert.equal(c.status, 0, c.stderr);
+    const r = hist(shallow);
+    assert.equal(r.status, 2, r.stderr + r.stdout);
+    assert.match(r.stderr, /shallow/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(shallow, { recursive: true, force: true });
+  }
+});
