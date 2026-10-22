@@ -24013,7 +24013,7 @@
       "fungi packages/fungi/memory/src/kernel.fungi:9",
       "fungi packages/fungi/memory/src/release-commit-point.fungi:7",
       "fungi packages/fungi/memory/src/secret-gate.fungi:6",
-      "fungi packages/fungi/memory/src/serve-gate.fungi:16",
+      "fungi packages/fungi/memory/src/serve-gate.fungi:18",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:7",
       "test packages/fungi/memory/tests/31-body-reader/body-reader.test.mjs:693",
       "test packages/fungi/memory/tests/32-release-commit-point/release-commit-point.test.mjs:483",
