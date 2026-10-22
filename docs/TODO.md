@@ -1,5 +1,30 @@
 # TODO
 
+## Fungi memory closure-path status — 2026-10-22
+
+Status sync only; it closes no RD. RD-1413/1414/1415 stay **[!] HOLD /
+NON_AUTHORIZING** (the HOLD boxes below are unchanged).
+
+- [x] Integration line `0e2f6d1c` (fungi-memory integration + ABI fix) merged
+  to main (`2583c07`).
+- [x] Code-registry refresh (crr, `a2155a67`) merged to main (`fc7c4bd`),
+  code-index regenerated (`c271b58`).
+- [x] Memory knowledge-gap fixes KG-01/KG-05/KG-06 (`ee0df0ee`) merged to main
+  (`05eb37a`); code-index regenerated (`1284a28d`).
+- [ ] S1 / brief 47b auth-verify end-to-end
+  (`grok/fungi-auth-verify-e2e-20261021`): MERGE CHECK **PASS-WITH-NOTES**;
+  awaiting merge (needs Phillip's yes).
+- [ ] S2 test harness (`grok/fungi-test-harness-s2-20261022`): **in progress**
+  (round 3 `e8edc306`, round check PASS-WITH-NOTES, trial merge with 47b green;
+  MERGE CHECK next). One branch rule: all S2 rounds stay on that branch.
+- [ ] **FUNGI-NAME-002 duplicate-flow rule (S2):** the kernel and
+  `auth-verify-route` both declare `mintOperation`. Owner ruling 2026-10-22:
+  red test first (synthetic closure importing `kernel.fungi` and
+  `auth-verify-route.fungi`), then register `mintOperation` as a declared shared
+  flow name with a body-equality check that ignores the contract intent line;
+  no renames.
+- [x] S3 done and merged.
+
 ## Current memory-review checkpoint — 2026-10-07
 
 Current Galerina review pin: `302230b33990ef452688b0c383a683c770e99e52` on
