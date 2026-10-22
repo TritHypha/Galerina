@@ -1,15 +1,16 @@
 // S2 X-DUP (closure path): duplicate flow names inside a real import closure.
 // The suites only run flattened copies, which strip one `finish` and bind every caller to the other.
 // Zero-trust choice: a clash inside one import closure is allowed only when it is registered here AND the
-// competing definitions are the same code (signature + body, intent text and comments ignored); and the
-// import-composed build must refuse fail-closed rather than pick one. Rejected: last-wins resolution
+// competing definitions are the same code (signature + body, intent text and comments ignored); and any
+// single program that carries two top-level flows of one name is refused by check AND build with the typed
+// FUNGI-NAME-002, before the backend (it used to pass check and fall to a wabt "redefinition" error). Rejected: last-wins resolution
 // (silent substitution), renaming now (flow renames wait on Phillip's naming decisions 2-4).
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { basename, dirname, join } from "node:path";
-import { readFileSync, readdirSync, mkdtempSync, rmSync, copyFileSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -83,26 +84,79 @@ test("S2-DUP-01 every flow-name clash inside an import closure is registered and
   assert.notEqual(seenClash, 0, "probe found no clash at all; the closure walk is broken");
 });
 
-test("S2-DUP-02 import-composed build of a clashing closure refuses fail-closed (no artifact)", () => {
-  const roots = UNITS.filter((u) => clashesOf(u).length > 0);
-  assert.notEqual(roots.length, 0);
-  for (const u of roots) {
-    const dir = mkdtempSync(join(tmpdir(), "s2-dup-"));
-    const tag = "s2dup" + basename(dir).replace(/[^A-Za-z0-9]/g, "x");
-    try {
-      for (const f of closure(u, new Set())) {
-        copyFileSync(f, join(dir, f === u ? tag + ".fungi" : basename(f)));
-      }
-      const r = spawnSync(process.execPath, [GALERINA, "build", join(dir, tag + ".fungi")], { encoding: "utf8", cwd: REPO });
-      const text = (r.stdout || "") + (r.stderr || "");
-      assert.notEqual(r.status, 0, basename(u) + " import-composed build must not succeed: " + text.slice(-400));
-      assert.match(text, /FAILED \(fail-closed\)|FUNGI-NAME-00[12]/, basename(u) + " must refuse with a typed code");
-      assert.equal(existsSync(join(REPO, "build", tag + ".wasm")), false, basename(u) + " left a WebAssembly artifact");
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-      for (const ext of [".wasm", ".wat", ".lmanifest", ".lmanifest.json"]) {
-        rmSync(join(REPO, "build", tag + ext), { force: true });
-      }
+const FLAT_STRIP = /^(?:@version\b|import\s)/;
+
+function flatten(root) {
+  const parts = ["@version 1"];
+  for (const f of closure(root, new Set())) {
+    parts.push(readFileSync(f, "utf8").split("\n").filter((l) => FLAT_STRIP.test(l) !== true).join("\n"));
+  }
+  return parts.join("\n\n");
+}
+
+function inTmp(name, text, fn) {
+  const dir = mkdtempSync(join(tmpdir(), "s2-dup-"));
+  const tag = name + basename(dir).replace(/[^A-Za-z0-9]/g, "x");
+  const file = join(dir, tag + ".fungi");
+  writeFileSync(file, text);
+  try {
+    return fn(file, tag);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    for (const ext of [".wasm", ".wat", ".lmanifest", ".lmanifest.json"]) {
+      rmSync(join(REPO, "build", tag + ext), { force: true });
     }
   }
+}
+
+function galerina(args) {
+  const r = spawnSync(process.execPath, [GALERINA, ...args], { encoding: "utf8", cwd: REPO });
+  return { status: r.status, text: (r.stdout || "") + (r.stderr || "") };
+}
+
+const CLASH_ROOTS = UNITS.filter((u) => clashesOf(u).length > 0);
+
+// Import-composed build does not resolve imports at all (it refuses on FUNGI-NAME-001 before any clash can
+// matter), so the real composition surface is the flattened copy the suites build. That copy, with EVERY
+// clashing definition kept, must refuse with the typed duplicate code naming the clash, before the backend.
+test("S2-DUP-02 flattened closure that keeps every clashing flow refuses build with FUNGI-NAME-002 (no artifact)", () => {
+  assert.notEqual(CLASH_ROOTS.length, 0);
+  for (const u of CLASH_ROOTS) {
+    const names = clashesOf(u).map(([n]) => n);
+    inTmp("s2dupb", flatten(u), (file, tag) => {
+      const r = galerina(["build", file]);
+      assert.notEqual(r.status, 0, basename(u) + " flattened build must not succeed: " + r.text.slice(-400));
+      for (const n of names) {
+        assert.match(r.text, new RegExp("FUNGI-NAME-002[^\\n]*'" + n + "'"), basename(u) + " must refuse clash '" + n + "' with FUNGI-NAME-002 before the backend: " + r.text.slice(-400));
+      }
+      assert.doesNotMatch(r.text, /wabt rejected/, basename(u) + " reached the backend; the clash was not refused by the front end");
+      assert.equal(existsSync(join(REPO, "build", tag + ".wasm")), false, basename(u) + " left a WebAssembly artifact");
+    });
+  }
+});
+
+test("S2-DUP-03 check refuses a duplicate top-level flow with FUNGI-NAME-002 (it used to print 0 errors)", () => {
+  assert.notEqual(CLASH_ROOTS.length, 0);
+  for (const u of CLASH_ROOTS) {
+    inTmp("s2dupc", flatten(u), (file) => {
+      const r = galerina(["check", file]);
+      assert.notEqual(r.status, 0, basename(u) + " flattened check must not pass: " + r.text.slice(-300));
+      assert.match(r.text, /FUNGI-NAME-002/, basename(u) + " check must name FUNGI-NAME-002");
+    });
+  }
+});
+
+const FLOW = (n) => "pure flow " + n + "(a: Int) -> Int\ncontract {\n  intent { \"s2 dup control\" }\n}\n{\n  return a\n}\n";
+
+test("S2-DUP-04 control: distinct names check clean; one renamed into a collision refuses", () => {
+  inTmp("s2dupk", "@version 1\n\n" + FLOW("alpha") + "\n" + FLOW("beta"), (file) => {
+    const r = galerina(["check", file]);
+    assert.equal(r.status, 0, "distinct flows must check clean: " + r.text.slice(-300));
+    assert.doesNotMatch(r.text, /FUNGI-NAME-002/);
+  });
+  inTmp("s2dupk", "@version 1\n\n" + FLOW("alpha") + "\n" + FLOW("alpha"), (file) => {
+    const r = galerina(["check", file]);
+    assert.notEqual(r.status, 0);
+    assert.match(r.text, /FUNGI-NAME-002[^\n]*'alpha'/);
+  });
 });
