@@ -23,22 +23,33 @@ export const CODE_TEST = new RegExp(`^(?:${CODE_SRC})$`);
 // A doc RANGE expression like `FUNGI-ACCESS-001-002` (two trailing numeric segments) is not a single code.
 const RANGE = /-[0-9]+-[0-9]+$/;
 
-/** Extract the real codes mentioned in `text`, de-duped in order, dropping doc-range tokens. */
+/**
+ * Closed MB alias table (crr-01/crr-02). ACK'd .fungi units use MB-03..MB-19 only; each maps to exactly one
+ * canonical FUNGI-MB-NN. Any other bare MB-NN is REFUSED (throws): an unknown alias must be registered here
+ * first, never minted silently. The canonical is assembled from a template so this file never carries a
+ * literal canonical token for the catalog classifier; the SET is closed by MB_NN, not by string splitting.
+ */
+const MB_NN = Object.freeze(["03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]);
+export const MB_ALIAS_TABLE = Object.freeze(Object.fromEntries(MB_NN.map((nn) => ["MB-" + nn, `FUNGI-MB-${nn}`])));
+
+/** Bare MB-NN aliases in `text`, de-duped in order; throws on an MB-NN outside MB_ALIAS_TABLE (fail-closed). */
 export function extractMbAliases(text) {
   const re = new RegExp(MB_ALIAS_SRC, "g");
   const out = [];
   const seen = new Set();
   for (const m of text.matchAll(re)) {
     const alias = m[0];
-    const nn = alias.slice(3);
-    const mbFamilyPrefix = "FUNGI-" + "MB-" + nn;
-    if (!seen.has(alias)) {
-      seen.add(alias);
-      out.push({ alias, canonical: mbFamilyPrefix });
+    if (seen.has(alias)) continue;
+    if (!Object.hasOwn(MB_ALIAS_TABLE, alias)) {
+      throw new Error(`codes: REFUSED unregistered MB alias ${alias} (typed UNKNOWN; register it in MB_ALIAS_TABLE first)`);
     }
+    seen.add(alias);
+    out.push({ alias, canonical: MB_ALIAS_TABLE[alias] });
   }
   return out;
 }
+
+/** Extract the real codes mentioned in `text`, de-duped in order, dropping doc-range tokens. */
 
 export function extractCodes(text) {
   const re = new RegExp(`(${CODE_SRC})`, "g"); // fresh regex each call — no shared lastIndex hazard

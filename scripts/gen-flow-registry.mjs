@@ -1,9 +1,15 @@
 #!/usr/bin/env node
-import { readdirSync, readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, mkdirSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { exitOnHelp } from "./lib/cli-help.mjs";
 
-exitOnHelp(import.meta.url, "usage: node scripts/gen-flow-registry.mjs [--check]\n  (no arguments)  regenerate build/flow-registry/flow-registry.json from packages/fungi/memory/src\n  --check         compare without writing; refuse unregistered flow, qualified collision, stale file\n  --help, -h  print this usage and exit 0");
+// crr-01 flow registry, fail-closed. Every `flow <name>(` declaration under packages/fungi/memory/src
+// (recursive) must be captured by the strict column-0 grammar; any other line that declares a flow
+// (indented, unknown modifier, export, etc.) is REFUSED rather than silently left unregistered.
+// Rejected option: widening the strict grammar to accept any indentation (would register flows the
+// .fungi parser may treat differently; the registry must not guess). Scope note: products/** is not
+// scanned (memory work only), recorded in docs/registry/crr-01-decision.md.
+exitOnHelp(import.meta.url, "usage: node scripts/gen-flow-registry.mjs [--check]\n  (no arguments)  regenerate build/flow-registry/flow-registry.json from packages/fungi/memory/src (recursive)\n  --check         compare without writing; refuse unregistered or unparsed flow, qualified collision, stale file\n  --help, -h  print this usage and exit 0");
 
 const ROOT = process.cwd();
 const args = process.argv.slice(2);
@@ -14,43 +20,55 @@ for (const [index, arg] of args.entries()) {
   }
 }
 const CHECK = args.includes("--check");
-const SRC = join(ROOT, "packages", "fungi", "memory", "src");
+const SRC_REL = "packages/fungi/memory/src";
+const SRC = join(ROOT, ...SRC_REL.split("/"));
 const OUT_DIR = join(ROOT, "build", "flow-registry");
 const OUT = join(OUT_DIR, "flow-registry.json");
-const FLOW_RE = /^(?:pure |effectful )?flow ([A-Za-z_][A-Za-z0-9_]*)\(/gm;
+const STRICT = /^(?:pure |effectful )?flow ([A-Za-z_][A-Za-z0-9_]*)\(/;
+const LOOSE = /(?:^|[^A-Za-z0-9_])flow\s+[A-Za-z_][A-Za-z0-9_]*\s*\(/;
+
+function listFungi(dir, rel) {
+  if (!existsSync(dir)) return null;
+  const out = [];
+  for (const name of readdirSync(dir).sort()) {
+    const abs = join(dir, name);
+    const r = rel ? rel + "/" + name : name;
+    if (statSync(abs).isDirectory()) out.push(...listFungi(abs, r));
+    else if (name.endsWith(".fungi")) out.push(r);
+  }
+  return out;
+}
 
 function scan() {
-  const files = readdirSync(SRC).filter((f) => f.endsWith(".fungi")).sort();
+  const files = listFungi(SRC, "");
+  if (files === null) return { error: "gen-flow-registry: REFUSED missing " + SRC_REL };
   const flows = [];
   const qualified = new Map();
   for (const file of files) {
     const unit = file.replace(/\.fungi$/, "");
-    const text = readFileSync(join(SRC, file), "utf8");
-    FLOW_RE.lastIndex = 0;
-    let m;
-    while ((m = FLOW_RE.exec(text))) {
+    const lines = readFileSync(join(SRC, ...file.split("/")), "utf8").split(/\r?\n/);
+    for (let i = 0; i < lines.length; i += 1) {
+      const raw = lines[i];
+      const code = raw.replace(/\/\/.*$/, "");
+      const m = STRICT.exec(code);
+      if (!m) {
+        if (LOOSE.test(code)) return { error: `gen-flow-registry: REFUSED unparsed flow declaration ${SRC_REL}/${file}:${i + 1} (not column-0 \`[pure |effectful ]flow name(\`); fail-closed, not registered` };
+        continue;
+      }
       const name = m[1];
       const q = unit + "." + name;
-      const line = text.slice(0, m.index).split(/\n/).length;
+      const line = i + 1;
       if (qualified.has(q)) {
         const prev = qualified.get(q);
-        const err = `gen-flow-registry: REFUSED qualified-name collision ${q} (${file}:${line} and ${prev.file}:${prev.line})`;
-        return { error: err };
+        return { error: `gen-flow-registry: REFUSED qualified-name collision ${q} (${file}:${line} and ${prev.file}:${prev.line})` };
       }
-      const row = { qualified: q, unit, flow: name, file: "packages/fungi/memory/src/" + file, line };
+      const row = { qualified: q, unit, flow: name, file: SRC_REL + "/" + file, line };
       qualified.set(q, row);
       flows.push(row);
     }
   }
   flows.sort((a, b) => a.qualified < b.qualified ? -1 : a.qualified > b.qualified ? 1 : 0);
-  return {
-    registry: {
-      schema: "galerina.flow-registry.v1",
-      generatedFrom: "packages/fungi/memory/src",
-      total: flows.length,
-      flows,
-    },
-  };
+  return { registry: { schema: "galerina.flow-registry.v1", generatedFrom: SRC_REL, total: flows.length, flows } };
 }
 
 const scanned = scan();
@@ -62,11 +80,10 @@ const generated = JSON.stringify(scanned.registry, null, 2) + "\n";
 
 if (CHECK) {
   if (!existsSync(OUT)) {
-    console.error("gen-flow-registry: REFUSED missing " + OUT.replace(/\\/g, "/") + " (unregistered / stale)");
+    console.error("gen-flow-registry: REFUSED missing build/flow-registry/flow-registry.json (unregistered / stale)");
     process.exit(1);
   }
-  const onDisk = readFileSync(OUT, "utf8");
-  if (onDisk !== generated) {
+  if (readFileSync(OUT, "utf8") !== generated) {
     console.error("gen-flow-registry: REFUSED stale generated file (unregistered flow or drift)");
     process.exit(1);
   }
@@ -76,4 +93,4 @@ if (CHECK) {
 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(OUT, generated);
-process.stdout.write("wrote " + OUT.replace(/\\/g, "/") + " total=" + scanned.registry.total + "\n");
+process.stdout.write("wrote build/flow-registry/flow-registry.json total=" + scanned.registry.total + "\n");

@@ -2,9 +2,9 @@
   "generatedFrom": "build/code-index/code-index.json",
   "total": 1506,
   "counts": {
-    "ref": 348,
+    "ref": 349,
     "inline": 444,
-    "phantom": 77,
+    "phantom": 76,
     "live": 230,
     "referenced": 175,
     "dead": 232
@@ -11146,12 +11146,12 @@
       "code": "FUNGI-MB-03",
       "family": "MB",
       "namespace": "FUNGI",
-      "status": "phantom",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 8,
       "docs": 2
     },
     {
@@ -11187,7 +11187,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 22,
+      "tests": 24,
       "docs": 10
     },
     {
@@ -11199,7 +11199,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 1,
+      "tests": 0,
       "docs": 3
     },
     {
@@ -11729,7 +11729,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 6,
+      "tests": 18,
       "docs": 2
     },
     {

@@ -22,6 +22,7 @@ import {
 } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 import { measureCoverageGap } from "./audit-code-catalog-coverage.mjs"; // derives the coverage caveat below
 import { exitOnHelp } from "./lib/cli-help.mjs";
+import { buildAliasRows } from "./lib/code-aliases.mjs";
 
 exitOnHelp(import.meta.url, "usage: node scripts/gen-code-registry.mjs [--check]\n  (no arguments)  regenerate build/code-registry/ from build/code-index/code-index.json\n  --check         compare without writing\n  --help, -h  print this usage and exit 0 without reading or writing");
 
@@ -64,20 +65,13 @@ for (const e of entries) counts[e.status] = (counts[e.status] || 0) + 1;
 const byFamily = {};
 for (const e of entries) (byFamily[e.family] ??= []).push(e);
 
-const aliasRows = [];
-const aliasToCanon = new Map();
-for (const item of arr) {
-  for (const alias of item.aliases || []) {
-    const canonical = item.code;
-    if (aliasToCanon.has(alias) && aliasToCanon.get(alias) !== canonical) {
-      console.error("gen-code-registry: REFUSED alias " + alias + " resolves to two canonicals");
-      process.exit(1);
-    }
-    aliasToCanon.set(alias, canonical);
-    aliasRows.push({ alias, canonical, status: "alias" });
-  }
+let aliasRows;
+try {
+  aliasRows = buildAliasRows(arr);
+} catch (error) {
+  console.error("gen-code-registry: " + error.message);
+  process.exit(1);
 }
-aliasRows.sort((a, b) => a.alias < b.alias ? -1 : a.alias > b.alias ? 1 : 0);
 
 const registry = {
   generatedFrom: "build/code-index/code-index.json",

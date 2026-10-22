@@ -17,8 +17,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | inline | 444 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 175 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 232 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 77 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 348 | referenced only (no def/emit) |
+| phantom | 76 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 349 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -1596,7 +1596,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-MB-03 | phantom | — | — |
+| FUNGI-MB-03 | ref | — | — |
 | FUNGI-MB-04 | phantom | — | — |
 | FUNGI-MB-05 | phantom | — | — |
 | FUNGI-MB-06 | ref | — | — |
