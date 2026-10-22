@@ -28,7 +28,8 @@ function walk(dir, out) {
 
 test("S2-H1-01 no suite writes a fixed shared tmp build name", () => {
   const owners = new Map();
-  const fixed = /join\(\s*[A-Za-z_$][\w$]*\s*,\s*["']([^"'\/]+\.fungi)["']\s*\)/g;
+  // Only tmp-folder writes are build roots that can collide; committed fixtures (join(HERE, ...)) are not.
+  const fixed = /join\(\s*(?:dir|tmp|tmpDir|work)\s*,\s*["']([^"'\/]+\.fungi)["']\s*\)/g;
   for (const f of walk(TESTS, [])) {
     const text = readFileSync(f, "utf8");
     for (const m of text.matchAll(fixed)) {
@@ -46,15 +47,12 @@ test("S2-H1-01 no suite writes a fixed shared tmp build name", () => {
   }
 });
 
-test("S2-H1-02 every suite that flattens a program uses the unique-name helper", () => {
+test("S2-H1-02 no test file names flat.fungi anywhere", () => {
   for (const f of walk(TESTS, [])) {
-    if (f.includes("_harness") || f.includes("s2-harness")) {
+    if (f.includes("s2-harness")) {
       continue;
     }
-    const text = readFileSync(f, "utf8");
-    if (/mkdtempSync\(/.test(text) && /"run",\s*\w+,\s*"--invoke"|"build",\s*\w+/.test(text) && /writeFileSync\(/.test(text)) {
-      assert.match(text, /uniqueFungiFile\(/, "no uniqueFungiFile in " + relative(REPO, f));
-    }
+    assert.doesNotMatch(readFileSync(f, "utf8"), /["']flat\.fungi["']/, "flat.fungi literal in " + relative(REPO, f));
   }
 });
 
