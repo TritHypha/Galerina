@@ -64,10 +64,26 @@ for (const e of entries) counts[e.status] = (counts[e.status] || 0) + 1;
 const byFamily = {};
 for (const e of entries) (byFamily[e.family] ??= []).push(e);
 
+const aliasRows = [];
+const aliasToCanon = new Map();
+for (const item of arr) {
+  for (const alias of item.aliases || []) {
+    const canonical = item.code;
+    if (aliasToCanon.has(alias) && aliasToCanon.get(alias) !== canonical) {
+      console.error("gen-code-registry: REFUSED alias " + alias + " resolves to two canonicals");
+      process.exit(1);
+    }
+    aliasToCanon.set(alias, canonical);
+    aliasRows.push({ alias, canonical, status: "alias" });
+  }
+}
+aliasRows.sort((a, b) => a.alias < b.alias ? -1 : a.alias > b.alias ? 1 : 0);
+
 const registry = {
   generatedFrom: "build/code-index/code-index.json",
   total: entries.length,
   counts,
+  aliases: aliasRows,
   entries,
 };
 

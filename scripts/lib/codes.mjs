@@ -14,6 +14,9 @@
 //   ERR: ERR_ then segments; must END on a non-underscore char (rejects ERR_AI_ wildcard prefixes).
 export const CODE_SRC = "(?:FUNGI|GATE)-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]+[A-Z]?|ERR_[A-Z0-9_]*[A-Z0-9]";
 
+/** Bare MB-NN literals in ACK'd .fungi. Canonical form is FUNGI-MB-NN. Do not match inside FUNGI-MB-NN. */
+export const MB_ALIAS_SRC = "(?<![A-Z0-9-])MB-[0-9]{2}(?![0-9A-Z-])";
+
 /** Anchored, non-global — test whether a whole token IS a code. */
 export const CODE_TEST = new RegExp(`^(?:${CODE_SRC})$`);
 
@@ -21,6 +24,22 @@ export const CODE_TEST = new RegExp(`^(?:${CODE_SRC})$`);
 const RANGE = /-[0-9]+-[0-9]+$/;
 
 /** Extract the real codes mentioned in `text`, de-duped in order, dropping doc-range tokens. */
+export function extractMbAliases(text) {
+  const re = new RegExp(MB_ALIAS_SRC, "g");
+  const out = [];
+  const seen = new Set();
+  for (const m of text.matchAll(re)) {
+    const alias = m[0];
+    const nn = alias.slice(3);
+    const canonical = "FUNGI-MB-" + nn;
+    if (!seen.has(alias)) {
+      seen.add(alias);
+      out.push({ alias, canonical });
+    }
+  }
+  return out;
+}
+
 export function extractCodes(text) {
   const re = new RegExp(`(${CODE_SRC})`, "g"); // fresh regex each call — no shared lastIndex hazard
   const out = [];
@@ -29,6 +48,9 @@ export function extractCodes(text) {
     const c = m[1];
     if (RANGE.test(c)) continue;            // skip NNN-NNN ranges (the individual codes index at their real sites)
     if (!seen.has(c)) { seen.add(c); out.push(c); }
+  }
+  for (const row of extractMbAliases(text)) {
+    if (!seen.has(row.canonical)) { seen.add(row.canonical); out.push(row.canonical); }
   }
   return out;
 }
