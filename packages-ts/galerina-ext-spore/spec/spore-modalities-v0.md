@@ -4,8 +4,8 @@
 codec note) into a full **codec registry** so a `.spore` section can carry images, audio, video, streamed media,
 mathematical equations, chemical structures, JSON and XML — without changing the integrity, authenticity, or
 confidentiality layers. Companion to [`spore-encryption-v0.md`](spore-encryption-v0.md) (the STREAM mode large
-media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Reference generator:
-[`_vectors/gen_modality_codecs.py`](_vectors/gen_modality_codecs.py).
+media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Upstream reference generator:
+`_vectors/gen_modality_codecs.py`.
 
 > **The one rule (codec-agnostic integrity).** TMX-256 hashes a section's **payload bytes opaquely** — it
 > never parses or interprets them. So *every* modality and codec is integrity-protected and signable

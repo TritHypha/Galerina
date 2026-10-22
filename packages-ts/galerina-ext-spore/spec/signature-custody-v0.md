@@ -6,7 +6,7 @@ vector reproduces (`gen_sig_block.py`, confirmed byte-for-byte); real signing/ve
 Galerina task #34** — see §2.1. This fully specifies the signature block from
 [`spore-container-v0.md`](spore-container-v0.md) §5 and the key-custody lifecycle, reusing the Galerina
 `BridgeManifest` / `BridgeAttestation` idiom. A **structural** golden vector (placeholder keys, real sizes)
-is in [`_vectors/gen_sig_block.py`](_vectors/gen_sig_block.py).
+is in the upstream authoring generator `_vectors/gen_sig_block.py`.
 
 > **The one rule:** **sign *over* the 32-byte integrity root; never replace the hash with a signature, and
 > never use a signature as an address/key.** Integrity (TMX-256) answers *"are these the exact bytes?"*;

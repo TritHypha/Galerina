@@ -2,8 +2,8 @@
 
 **Status:** Draft, buildable + **verified**. Makes [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md)
 §9 byte-precise: a self-contained proof that **one section is bound under the signed root**, without
-shipping the whole file (selective disclosure / streaming verification). The reference generator
-[`_vectors/gen_inclusion_proof.py`](_vectors/gen_inclusion_proof.py) reconstructs the **same published golden
+shipping the whole file (selective disclosure / streaming verification). The upstream reference generator
+`_vectors/gen_inclusion_proof.py` reconstructs the **same published golden
 root `43386e64…`** from `(leaf_hash + path)` — so this spec is cross-consistent with the TMX-256 and
 container vectors by construction.
 

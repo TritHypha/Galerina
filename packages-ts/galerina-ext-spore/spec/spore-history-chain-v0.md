@@ -5,8 +5,7 @@
 each append is its own AEAD-sealed, signed **segment** whose root binds the **previous segment's root** (a
 hash-linked chain) — tamper-evident order — with a per-epoch **key-erasure ratchet** and **crypto-erasure**
 (drop a segment key) for right-to-be-forgotten. Reuses the encryption layer's key schedule + AEAD **unchanged**
-(it only substitutes the secret input). Reference generator:
-[`_vectors/gen_tmf_history_chain.py`](_vectors/gen_tmf_history_chain.py).
+(it only substitutes the secret input). Upstream reference generator: `_vectors/gen_tmf_history_chain.py`.
 
 > **What the chain guarantees, precisely.** The links make the chain's **contents and interior order**
 > tamper-evident: insert, drop-from-the-middle, reorder, or splice ⇒ a root mismatch ⇒ fail closed.
@@ -208,7 +207,7 @@ signature either: `rₙ` commits only **backward to genesis**, never to table/re
 a real ML-DSA signature would still pass while attacker-injected payload rode along to step 7. Tampering any body
 changes its `rₖ` and breaks the next link; relabeling `chain_id` fails step 3 (it is in `header_core`). A
 **fork** (two segments at the same epoch) likewise leaves one branch off the head's walk ⇒ rejected by 6b.
-Reference encoder/decoder/verifier: [`bench/history-pack.mjs`](../../tri-encription/bench/history-pack.mjs) —
+Upstream reference encoder/decoder/verifier: `../../tri-encription/bench/history-pack.mjs` —
 **9/9** (round-trip, table-order independence, interior tamper, drop-middle, rollback-caught-by-§5-state + the §5
 caveat, `chain_id` relabel, erased-segment, **off-path insertion → orphan**). As in the other golden vectors, the head signature is format-normative but **Blocked on a vetted
 FIPS-204 lib** (unsigned reference).

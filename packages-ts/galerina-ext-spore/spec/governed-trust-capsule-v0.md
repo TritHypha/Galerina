@@ -199,8 +199,8 @@ not wired here.
 ---
 
 ## 11. Golden vectors + adversarial review
-- **Golden vectors** (generator: [`tri-encription/bench/gen-trust-capsule.mjs`](../../tri-encription/bench/gen-trust-capsule.mjs);
-  output: [`_vectors/trust_capsule_vectors.txt`](_vectors/trust_capsule_vectors.txt); real `@noble`,
+- **Golden vectors** (upstream generator: `../../tri-encription/bench/gen-trust-capsule.mjs`;
+  output: `_vectors/trust_capsule_vectors.txt`); real `@noble`,
   RFC-9964-conformant): a fixed CWT claims set → deterministic CBOR → `Sig_structure` → **signed directly** (no
   pre-hash; ML-DSA empty ctx) → a **real, byte-reproducible** Ed25519 signature (deterministic) + a real
   ML-DSA-65 (`-49`) verify round-trip. Confirmed bytes: `body_protected = a1677375726661636574746d662d74727573742d63617073756c652d7630`

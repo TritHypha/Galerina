@@ -4,7 +4,7 @@
 and decryption — so no single key (or single key-holder) is a single point of unlock. Generalizes
 [`signature-custody-v0.md`](signature-custody-v0.md) §5 (whose hybrid **AND** rule is exactly the `k = n`
 special case) and reuses [`spore-encryption-v0.md`](spore-encryption-v0.md) §3 (the symmetric key it shares).
-Reference: [`../../tri-encription/bench/threshold-custody.mjs`](../../tri-encription/bench/threshold-custody.mjs).
+Upstream reference: `../../tri-encription/bench/threshold-custody.mjs`.
 **No invented crypto:** standard signatures + Shamir Secret Sharing (1979) only; threshold *lattice* signatures
 are explicitly **out of scope** (§4).
 
