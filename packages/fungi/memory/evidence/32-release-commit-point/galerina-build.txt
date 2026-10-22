@@ -1,0 +1,15 @@
+node galerina.mjs build packages/fungi/memory/src/release-commit-point.fungi
+exit 0
+wasmBytes=3344
+watLines=1172
+Artefacts deleted after recording. Tracked build/ not wiped.
+   build/release-commit-point.lmanifest      (CBOR 3525B — round-trip ✅)
+   build/release-commit-point.lmanifest.json (human-readable)
+   🔐 Manifest signed (Ed25519, keyId: 5b35403f...) — CBOR + JSON authoritative
+   build/release-commit-point.governance-impact.json (security surface area)
+✅ Compiled packages/fungi/memory/src/release-commit-point.fungi
+   build/release-commit-point.wasm  (3344 bytes)
+   build/release-commit-point.wat   (1172 lines)
+
+Run with wasmtime:
+   wasmtime --invoke main build/release-commit-point.wasm

@@ -119,6 +119,7 @@ the implementation plan and discriminating tests for one loaded route. Windows
 10 is remote-only and may not fall back to local plaintext. RD-1413, RD-1414,
 and RD-1415 remain **HOLD / NON_AUTHORIZING** until the coupled route and
 independent owner adjudications pass.
+2026-10-18 (Phillip, 00:03 BST owner ruling): converting the memory files to .fungi is NOT blocked by the RD-1413/1414/1415 HOLD or by this gate. RD-1413/1414/1415 stay HOLD / NON_AUTHORIZING as RDs; converted .fungi units stay unmerged to main until Phillip's per-PR yes. See brief 31 / Addendum C A1.
 Package-side pin (SuperGrok 2026-10-08): `src/hold-pin.ts` refuses the
 TypeScript secret-authority and protected-memory acts. The `[HOLD]` rows
 above stay HOLD. Unique `bbeb067a` UNCHANGED.

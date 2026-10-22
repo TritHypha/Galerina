@@ -1,0 +1,25 @@
+compiler_commit=fc7db4db4ba1cb7aed691cfa205ec719746524d4
+package=packages-ts/galerina-core-compiler
+command=npm run build
+mode=full tsc -p tsconfig.json
+result=EXIT 1
+cause=src/globals.d.ts declares a narrow ambient process and Buffer. Full tsc then reports, among others:
+src/cli.ts(32,10) TS2305 randomUUID is not exported by the local node:crypto shim
+src/cli.ts(526,28) TS2339 Buffer.alloc
+src/cli.ts(1330,18) TS2339 process.platform
+src/cli.ts(1380,35) TS2339 process.chdir
+src/cli.ts(1383,19) TS2339 process.platform
+src/cli.ts(1399,37) TS2339 process.chdir
+src/cli.ts(1425,37) TS2339 process.chdir
+src/cli.ts(1490,39) TS2339 Buffer.alloc
+src/cli.ts(1504,35) TS7006 parameter byte implicit any
+src/cli.ts(1504,41) TS7006 parameter index implicit any
+src/cli.ts(1553,40) TS2339 Buffer.alloc
+src/cli.ts(1568,36) TS7006 parameter byte implicit any
+src/cli.ts(1568,42) TS7006 parameter index implicit any
+fallback=node node_modules/typescript/bin/tsc --noCheck -p tsconfig.json
+fallback_exit=0
+hallmark_script_exit=0
+build_evidence_script_exit=0
+compiler_source_edited=no
+live_dist_9a26c71e_used=no

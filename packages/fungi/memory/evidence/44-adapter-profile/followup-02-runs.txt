@@ -1,0 +1,17 @@
+WSL node v24.21.0
+suite: packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs
+run 1: 26 pass, 0 fail
+run 2: 26 pass, 0 fail, exit 0
+run 3: 26 pass, 0 fail, exit 0
+path-leak.test.mjs exit 0
+galerina build packages/fungi/memory/src/adapter-profile.fungi exit 1
+FUNGI-NAME-001 readForeignSafeInteger at three call sites:
+adapter-profile.fungi:38 tableForClass
+adapter-profile.fungi:67 classifyAdapter kind
+adapter-profile.fungi:74 classifyAdapter audit
+src/adapter-profile.fungi was not edited.
+New tests pin kind -1, -2147483648, 8 and 2147483647 with audit 0 to code 3.
+New tests pin audit -1 and -2147483648 with kind 0 and kind 7 to code 11.
+Mutant if kind == 0 widened to if kind <= 0 returns 0 for kind -1.
+Mutant if audit != 0 widened to if audit > 0 returns 1 for kind 0 audit -1.
+MB-13 invoke wrap is CARRIED_UNKNOWN in parity.md and is not a MUST.

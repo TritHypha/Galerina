@@ -1,0 +1,3 @@
+count=1
+packages/fungi/memory/src/c-boundary.fungi:17 pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
+serve-gate.fungi imports and calls the helper; it does not define it.

@@ -1,0 +1,2249 @@
+@version 1
+/// @file: kernel.fungi
+/// @purpose: APP_KERNEL fixed gate pipeline for POST /auth/verify path unit 6.
+///   Host maps construction request policy clock body secret handler audit
+///   and idempotency observations onto Int tags once (P20-N2). Body and
+///   secret packed codes are host-supplied. Bind minted operation id and
+///   lease epoch to the secret pre-code or refuse. Ack only after audit
+///   commit. Post-consume never packed 100. No clock source here.
+/// CN-1: CALL the frozen boundary helper. check admits; build FUNGI-NAME-001;
+///   tests flatten helper plus body-reader without its packer plus
+///   release-commit-point plus secret-gate plus kernel-ports plus this unit.
+/// postureToken: 0 off 1 auto 2 on else 11. envToken: 0 unknown 1 listed else 11
+/// closedTypeToken: 0 none 1 closed else 11. validatorToken: 0 present 1 missing else 11
+/// duplicateToken: 0 unique 1 duplicate else 11. rateToken: 0 ok 1 bad else 11
+/// secretRequiredToken: 0 none 1 required else 11. providerToken: 0 absent 1 present else 11
+/// intrinsicToken: 0 present 1 missing else 11
+/// pathToken: 0 found 1 missing else 11. methodToken: 0 found 1 missing else 11
+/// policyToken: 0 resolved 1 absent 2 unlisted else 11
+/// channelToken: 0 allow 1 deny 2 indeterminate 3 absent else 11
+/// authModeToken: 0 public 1 required else 11
+/// principalToken: 0 present 1 absent else 11. scopeToken: 0 ok 1 missing else 11
+/// contentToken: 0 ok 1 mismatch 2 absent-with-body else 11
+/// jumpToken: 0 none 1 forward 2 backward else 11
+/// malformedToken / jsonNullToken / dupKeysToken / unknownFieldToken: 0 absent 1 present else 11
+/// decodeValidatorToken: 0 ok 1 missing 2 invalid else 11
+/// handlerToken: 0 ok 1 throw 2 never-settles 3 unlisted-shape 4 missing else 11
+/// spentToken: 0 not-spent 1 spent else 11. originToken: 0 kernel 1 handler else 11
+/// packed construction: 12 posture 13 env 14 validator 15 duplicate 16 rate
+///   17 capacity 18 secret-no-provider 19 intrinsic
+/// packed match: 20 path 21 method 22 policy
+/// packed ingress: 23 body-over 24 content-type 25 unauthorized 26 forbidden
+/// packed rate/decode: 27 rate-over 28 rate-jump 29 malformed 30 json-null
+///   31 duplicate-keys 32 unknown-field 33 memory 34 concurrency
+/// packed secret/idemp: 35 secret-unavailable 36 mint-absent 37 caller-mint
+///   38 recovery-unlisted 39 missing-key 40 duplicate-key 41 full
+///   43 post-dispatch-delete 44 audit-failed-no-ack 45 audit-unavailable
+/// packed dispatch/clock: 21 clock-missing 22 backwards 23 epoch 51 overflow
+///   47 deadline 52 getSecret-deadline 53 spent 54 reentrant 55 failed
+///   56 undeclared 59 slot-held
+/// HTTP pins: 144 audit-failed-no-ack 503; 159 slot-held 503
+/// Shared: 0 Ok 6 UNKNOWN 10 foreign 11 unlisted. HTTP default 503.
+/// Secret or rcp non-success after consume including 106/110/111 is UNKNOWN
+///   never REFUSED never retry. No caller mint.
+/// packed +100 is a wipe construct. COMMITTED unreachable after begin.
+/// Sequential if-return. Nested if/else failed WAT emit.
+
+import "./c-boundary.fungi"
+import "./body-reader.fungi"
+import "./release-commit-point.fungi"
+import "./secret-gate.fungi"
+import "./kernel-ports.fungi"
+
+pure flow constructKernel(
+  postureClass: Int,
+  postureToken: Int,
+  envClass: Int,
+  envToken: Int,
+  closedClass: Int,
+  closedTypeToken: Int,
+  validatorClass: Int,
+  validatorToken: Int,
+  duplicateClass: Int,
+  duplicateToken: Int,
+  rateClass: Int,
+  rateToken: Int,
+  capacityClass: Int,
+  capacity: Int,
+  keyClass: Int,
+  keyLimit: Int,
+  ttlClass: Int,
+  ttl: Int,
+  secretReqClass: Int,
+  secretRequiredToken: Int,
+  providerClass: Int,
+  providerToken: Int,
+  intrinsicClass: Int,
+  intrinsicToken: Int
+) -> Int
+contract {
+  intent { "Typed construction. Unknown posture or env, missing validator, duplicate route, bad rate, non-positive capacity key-limit or TTL, secret route with no provider, and missing intrinsic refuse. Never throws." }
+}
+{
+  let postureReason: Int = readForeignSafeInteger(postureClass, postureToken)
+  if postureReason != 0 {
+    if postureReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let envReason: Int = readForeignSafeInteger(envClass, envToken)
+  if envReason != 0 {
+    if envReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let closedReason: Int = readForeignSafeInteger(closedClass, closedTypeToken)
+  if closedReason != 0 {
+    if closedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validatorReason: Int = readForeignSafeInteger(validatorClass, validatorToken)
+  if validatorReason != 0 {
+    if validatorReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let duplicateReason: Int = readForeignSafeInteger(duplicateClass, duplicateToken)
+  if duplicateReason != 0 {
+    if duplicateReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let rateReason: Int = readForeignSafeInteger(rateClass, rateToken)
+  if rateReason != 0 {
+    if rateReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let capacityReason: Int = readForeignSafeInteger(capacityClass, capacity)
+  if capacityReason != 0 {
+    if capacityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let keyReason: Int = readForeignSafeInteger(keyClass, keyLimit)
+  if keyReason != 0 {
+    if keyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let ttlReason: Int = readForeignSafeInteger(ttlClass, ttl)
+  if ttlReason != 0 {
+    if ttlReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretReqReason: Int = readForeignSafeInteger(secretReqClass, secretRequiredToken)
+  if secretReqReason != 0 {
+    if secretReqReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let providerReason: Int = readForeignSafeInteger(providerClass, providerToken)
+  if providerReason != 0 {
+    if providerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let intrinsicReason: Int = readForeignSafeInteger(intrinsicClass, intrinsicToken)
+  if intrinsicReason != 0 {
+    if intrinsicReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if postureToken != 0 {
+    if postureToken != 1 {
+      if postureToken != 2 {
+        return finish(12, true)
+      }
+    }
+  }
+  if envToken != 0 {
+    if envToken != 1 {
+      return finish(13, true)
+    }
+  }
+  if closedTypeToken != 0 {
+    if closedTypeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if validatorToken != 0 {
+    if validatorToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if duplicateToken != 0 {
+    if duplicateToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if rateToken != 0 {
+    if rateToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if secretRequiredToken != 0 {
+    if secretRequiredToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if providerToken != 0 {
+    if providerToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if intrinsicToken != 0 {
+    if intrinsicToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if closedTypeToken == 1 {
+    if validatorToken == 1 {
+      return finish(14, true)
+    }
+  }
+  if duplicateToken == 1 {
+    return finish(15, true)
+  }
+  if rateToken == 1 {
+    return finish(16, true)
+  }
+  if capacity < 1 {
+    return finish(17, true)
+  }
+  if keyLimit < 1 {
+    return finish(17, true)
+  }
+  if ttl < 1 {
+    return finish(17, true)
+  }
+  if secretRequiredToken == 1 {
+    if providerToken == 0 {
+      return finish(18, true)
+    }
+  }
+  if intrinsicToken == 1 {
+    return finish(19, true)
+  }
+  return finish(0, true)
+}
+
+pure flow admitMatch(
+  pathClass: Int,
+  pathToken: Int,
+  methodClass: Int,
+  methodToken: Int,
+  policyClass: Int,
+  policyToken: Int
+) -> Int
+contract {
+  intent { "Fixed match gate. Unknown path 404. Known path wrong method 405. Absent or unlisted policy refuses. Handler never reached." }
+}
+{
+  let pathReason: Int = readForeignSafeInteger(pathClass, pathToken)
+  if pathReason != 0 {
+    if pathReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let methodReason: Int = readForeignSafeInteger(methodClass, methodToken)
+  if methodReason != 0 {
+    if methodReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let policyReason: Int = readForeignSafeInteger(policyClass, policyToken)
+  if policyReason != 0 {
+    if policyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if pathToken != 0 {
+    if pathToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if methodToken != 0 {
+    if methodToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if policyToken != 0 {
+    if policyToken != 1 {
+      if policyToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if pathToken == 1 {
+    return finish(20, true)
+  }
+  if methodToken == 1 {
+    return finish(21, true)
+  }
+  if policyToken != 0 {
+    return finish(22, true)
+  }
+  return finish(0, true)
+}
+
+pure flow admitAuth(
+  channelClass: Int,
+  channelToken: Int,
+  modeClass: Int,
+  authModeToken: Int,
+  principalClass: Int,
+  principalToken: Int,
+  scopeClass: Int,
+  scopeToken: Int
+) -> Int
+contract {
+  intent { "Auth gate. Non-allow channel refuses every route. Required mode needs a channel verdict and a principal. Missing scope is forbidden." }
+}
+{
+  let channelReason: Int = readForeignSafeInteger(channelClass, channelToken)
+  if channelReason != 0 {
+    if channelReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let modeReason: Int = readForeignSafeInteger(modeClass, authModeToken)
+  if modeReason != 0 {
+    if modeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let principalReason: Int = readForeignSafeInteger(principalClass, principalToken)
+  if principalReason != 0 {
+    if principalReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let scopeReason: Int = readForeignSafeInteger(scopeClass, scopeToken)
+  if scopeReason != 0 {
+    if scopeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if channelToken != 0 {
+    if channelToken != 1 {
+      if channelToken != 2 {
+        if channelToken != 3 {
+          return finish(11, true)
+        }
+      }
+    }
+  }
+  if authModeToken != 0 {
+    if authModeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if principalToken != 0 {
+    if principalToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if scopeToken != 0 {
+    if scopeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if channelToken == 1 {
+    return finish(25, true)
+  }
+  if channelToken == 2 {
+    return finish(25, true)
+  }
+  if authModeToken == 1 {
+    if channelToken == 3 {
+      return finish(25, true)
+    }
+  }
+  if authModeToken == 1 {
+    if principalToken == 1 {
+      return finish(25, true)
+    }
+  }
+  if scopeToken == 1 {
+    return finish(26, true)
+  }
+  return finish(0, true)
+}
+
+pure flow admitBody(
+  bodyClass: Int,
+  bodyPacked: Int,
+  contentClass: Int,
+  contentToken: Int,
+  presentClass: Int,
+  bodyPresentToken: Int
+) -> Int
+contract {
+  intent { "Body size and content-type. Over-cap from the body reader is 413. Mismatch is 415. Body throw is UNKNOWN. Empty body skips content-type." }
+}
+{
+  let bodyReason: Int = readForeignSafeInteger(bodyClass, bodyPacked)
+  if bodyReason != 0 {
+    if bodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let contentReason: Int = readForeignSafeInteger(contentClass, contentToken)
+  if contentReason != 0 {
+    if contentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presentReason: Int = readForeignSafeInteger(presentClass, bodyPresentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if contentToken != 0 {
+    if contentToken != 1 {
+      if contentToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if bodyPresentToken != 0 {
+    if bodyPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if bodyPacked < 100 {
+    return finish(11, true)
+  }
+  if bodyPacked == 105 {
+    return finish(23, true)
+  }
+  if bodyPacked == 109 {
+    return finish(47, true)
+  }
+  if bodyPacked == 110 {
+    return finish(6, true)
+  }
+  if bodyPacked == 111 {
+    return finish(11, true)
+  }
+  if bodyPacked != 100 {
+    return finish(29, true)
+  }
+  if bodyPresentToken == 1 {
+    if contentToken != 0 {
+      return finish(24, true)
+    }
+  }
+  return finish(0, true)
+}
+
+pure flow applyClock(
+  clockClass: Int,
+  clock: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int
+) -> Int
+contract {
+  intent { "Typed foreign clock. Missing negative backwards epoch-mismatch and armedAt plus budget overflow refuse. One deadline covers every later stage." }
+}
+{
+  let clockReason: Int = readForeignSafeInteger(clockClass, clock)
+  if clockReason != 0 {
+    if clockReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presentReason: Int = readForeignSafeInteger(presentClass, clockPresent)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let armedReason: Int = readForeignSafeInteger(armedClass, armedAt)
+  if armedReason != 0 {
+    if armedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let budgetReason: Int = readForeignSafeInteger(budgetClass, budget)
+  if budgetReason != 0 {
+    if budgetReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let clockEpochReason: Int = readForeignSafeInteger(clockEpochClass, clockEpoch)
+  if clockEpochReason != 0 {
+    if clockEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let armedEpochReason: Int = readForeignSafeInteger(armedEpochClass, armedEpoch)
+  if armedEpochReason != 0 {
+    if armedEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if clockPresent != 0 {
+    if clockPresent != 1 {
+      return finish(11, true)
+    }
+  }
+  if clockPresent == 0 {
+    return finish(21, true)
+  }
+  if clock < 0 {
+    return finish(21, true)
+  }
+  if armedAt < 0 {
+    return finish(21, true)
+  }
+  if budget < 1 {
+    return finish(47, true)
+  }
+  if clockEpoch != armedEpoch {
+    return finish(23, true)
+  }
+  if clock < armedAt {
+    return finish(22, true)
+  }
+  if armedAt > 2147483647 - budget {
+    return finish(51, true)
+  }
+  if clock > armedAt + budget - 1 {
+    return finish(47, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyRate(
+  countClass: Int,
+  count: Int,
+  limitClass: Int,
+  limit: Int,
+  jumpClass: Int,
+  jumpToken: Int
+) -> Int
+contract {
+  intent { "Rate counted before decode. Over limit refuses. Forward or backward clock jump refuses and never resets or stretches a window." }
+}
+{
+  let countReason: Int = readForeignSafeInteger(countClass, count)
+  if countReason != 0 {
+    if countReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let limitReason: Int = readForeignSafeInteger(limitClass, limit)
+  if limitReason != 0 {
+    if limitReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let jumpReason: Int = readForeignSafeInteger(jumpClass, jumpToken)
+  if jumpReason != 0 {
+    if jumpReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if jumpToken != 0 {
+    if jumpToken != 1 {
+      if jumpToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if count < 0 {
+    return finish(11, true)
+  }
+  if limit < 1 {
+    return finish(17, true)
+  }
+  if jumpToken != 0 {
+    return finish(28, true)
+  }
+  if count >= limit {
+    return finish(27, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyDecode(
+  presentClass: Int,
+  bodyPresentToken: Int,
+  malformedClass: Int,
+  malformedToken: Int,
+  nullClass: Int,
+  jsonNullToken: Int,
+  dupClass: Int,
+  dupKeysToken: Int,
+  unknownClass: Int,
+  unknownFieldToken: Int,
+  validatorClass: Int,
+  decodeValidatorToken: Int
+) -> Int
+contract {
+  intent { "JSON decode. Null duplicate keys unknown field malformed and missing validator refuse. Empty body skips decode." }
+}
+{
+  let presentReason: Int = readForeignSafeInteger(presentClass, bodyPresentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let malformedReason: Int = readForeignSafeInteger(malformedClass, malformedToken)
+  if malformedReason != 0 {
+    if malformedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let nullReason: Int = readForeignSafeInteger(nullClass, jsonNullToken)
+  if nullReason != 0 {
+    if nullReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let dupReason: Int = readForeignSafeInteger(dupClass, dupKeysToken)
+  if dupReason != 0 {
+    if dupReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let unknownReason: Int = readForeignSafeInteger(unknownClass, unknownFieldToken)
+  if unknownReason != 0 {
+    if unknownReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validatorReason: Int = readForeignSafeInteger(validatorClass, decodeValidatorToken)
+  if validatorReason != 0 {
+    if validatorReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if bodyPresentToken != 0 {
+    if bodyPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if malformedToken != 0 {
+    if malformedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if jsonNullToken != 0 {
+    if jsonNullToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if dupKeysToken != 0 {
+    if dupKeysToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if unknownFieldToken != 0 {
+    if unknownFieldToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if decodeValidatorToken != 0 {
+    if decodeValidatorToken != 1 {
+      if decodeValidatorToken != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if bodyPresentToken == 0 {
+    return finish(0, true)
+  }
+  if malformedToken == 1 {
+    return finish(29, true)
+  }
+  if jsonNullToken == 1 {
+    return finish(30, true)
+  }
+  if dupKeysToken == 1 {
+    return finish(31, true)
+  }
+  if unknownFieldToken == 1 {
+    return finish(32, true)
+  }
+  if decodeValidatorToken == 1 {
+    return finish(14, true)
+  }
+  if decodeValidatorToken == 2 {
+    return finish(29, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyBudget(
+  bodyClass: Int,
+  bodyBytes: Int,
+  memoryClass: Int,
+  memoryBytes: Int
+) -> Int
+contract {
+  intent { "Memory budget. Body over memoryBytes refuses. Negative lengths refuse. Overflow before compare refuses." }
+}
+{
+  let bodyReason: Int = readForeignSafeInteger(bodyClass, bodyBytes)
+  if bodyReason != 0 {
+    if bodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let memoryReason: Int = readForeignSafeInteger(memoryClass, memoryBytes)
+  if memoryReason != 0 {
+    if memoryReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if bodyBytes < 0 {
+    return finish(11, true)
+  }
+  if memoryBytes < 1 {
+    return finish(17, true)
+  }
+  if bodyBytes > memoryBytes {
+    return finish(33, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyConcurrency(
+  currentClass: Int,
+  current: Int,
+  maxClass: Int,
+  maxConcurrent: Int,
+  releasedClass: Int,
+  releasedToken: Int,
+  zombieClass: Int,
+  handlerStillRunningToken: Int
+) -> Int
+contract {
+  intent { "Concurrency slot is linear. Over limit refuses. Slot released on every exit including a deadline with the handler still running. released 0 is never 100. Handler still running is held-slot 59." }
+}
+{
+  let currentReason: Int = readForeignSafeInteger(currentClass, current)
+  if currentReason != 0 {
+    if currentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let maxReason: Int = readForeignSafeInteger(maxClass, maxConcurrent)
+  if maxReason != 0 {
+    if maxReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let releasedReason: Int = readForeignSafeInteger(releasedClass, releasedToken)
+  if releasedReason != 0 {
+    if releasedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let zombieReason: Int = readForeignSafeInteger(zombieClass, handlerStillRunningToken)
+  if zombieReason != 0 {
+    if zombieReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if releasedToken != 0 {
+    if releasedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if handlerStillRunningToken != 0 {
+    if handlerStillRunningToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if current < 0 {
+    return finish(11, true)
+  }
+  if maxConcurrent < 1 {
+    return finish(17, true)
+  }
+  if current >= maxConcurrent {
+    return finish(34, true)
+  }
+  if handlerStillRunningToken == 1 {
+    return finish(59, true)
+  }
+  if releasedToken == 0 {
+    return finish(59, true)
+  }
+  return finish(0, true)
+}
+
+pure flow mintOperation(
+  randomClass: Int,
+  randomnessPresentToken: Int,
+  callerClass: Int,
+  callerMintToken: Int,
+  idClass: Int,
+  idPresentToken: Int,
+  epochClass: Int,
+  epoch: Int,
+  existingClass: Int,
+  existingPresentToken: Int,
+  leaseClass: Int,
+  existingLease: Int,
+  retiredClass: Int,
+  retiredToken: Int,
+  capClass: Int,
+  atCapToken: Int,
+  freshClass: Int,
+  issuedFreshToken: Int,
+  hereClass: Int,
+  issuedHereToken: Int
+) -> Int
+contract {
+  intent { "Kernel mint only. Absent randomness refuses. Caller-supplied mint refuses. Delegates listed mintAdmit." }
+}
+{
+  let randomReason: Int = readForeignSafeInteger(randomClass, randomnessPresentToken)
+  if randomReason != 0 {
+    if randomReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let callerReason: Int = readForeignSafeInteger(callerClass, callerMintToken)
+  if callerReason != 0 {
+    if callerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let idReason: Int = readForeignSafeInteger(idClass, idPresentToken)
+  if idReason != 0 {
+    if idReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochReason: Int = readForeignSafeInteger(epochClass, epoch)
+  if epochReason != 0 {
+    if epochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let existingReason: Int = readForeignSafeInteger(existingClass, existingPresentToken)
+  if existingReason != 0 {
+    if existingReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, existingLease)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  if retiredReason != 0 {
+    if retiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let capReason: Int = readForeignSafeInteger(capClass, atCapToken)
+  if capReason != 0 {
+    if capReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let freshReason: Int = readForeignSafeInteger(freshClass, issuedFreshToken)
+  if freshReason != 0 {
+    if freshReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let hereReason: Int = readForeignSafeInteger(hereClass, issuedHereToken)
+  if hereReason != 0 {
+    if hereReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if randomnessPresentToken != 0 {
+    if randomnessPresentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if callerMintToken != 0 {
+    if callerMintToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if epoch < 0 {
+    return finish(23, true)
+  }
+  if callerMintToken == 1 {
+    return finish(37, true)
+  }
+  if randomnessPresentToken == 0 {
+    return finish(36, true)
+  }
+  if idPresentToken == 0 {
+    return finish(36, true)
+  }
+  let minted: Int = mintAdmit(idPresentToken, 0, epoch, existingPresentToken, existingLease, retiredToken, randomnessPresentToken, atCapToken, issuedFreshToken, issuedHereToken)
+  if minted == 100 {
+    return minted
+  }
+  if minted == 102 {
+    return finish(36, true)
+  }
+  if minted == 105 {
+    return finish(36, true)
+  }
+  if minted == 111 {
+    return finish(11, true)
+  }
+  return minted
+}
+
+pure flow applySecrets(
+  requiredClass: Int,
+  requiredCount: Int,
+  providerClass: Int,
+  providerPresent: Int,
+  presenceClass: Int,
+  presenceStatus: Int,
+  epochClass: Int,
+  epoch: Int,
+  epochPresentClass: Int,
+  epochPresentToken: Int,
+  mintedOpClass: Int,
+  mintedOp: Int,
+  secretOpClass: Int,
+  secretOp: Int,
+  mintedEpochClass: Int,
+  mintedEpoch: Int,
+  secretEpochClass: Int,
+  secretEpoch: Int
+) -> Int
+contract {
+  intent { "Secret admit then bind minted operation and epoch. Non-success including 106 stays UNKNOWN. Empty require admits without a provider." }
+}
+{
+  let requiredReason: Int = readForeignSafeInteger(requiredClass, requiredCount)
+  if requiredReason != 0 {
+    if requiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let providerReason: Int = readForeignSafeInteger(providerClass, providerPresent)
+  if providerReason != 0 {
+    if providerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presenceReason: Int = readForeignSafeInteger(presenceClass, presenceStatus)
+  if presenceReason != 0 {
+    if presenceReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochReason: Int = readForeignSafeInteger(epochClass, epoch)
+  if epochReason != 0 {
+    if epochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochPresentReason: Int = readForeignSafeInteger(epochPresentClass, epochPresentToken)
+  if epochPresentReason != 0 {
+    if epochPresentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let mintedOpReason: Int = readForeignSafeInteger(mintedOpClass, mintedOp)
+  if mintedOpReason != 0 {
+    if mintedOpReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretOpReason: Int = readForeignSafeInteger(secretOpClass, secretOp)
+  if secretOpReason != 0 {
+    if secretOpReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let mintedEpochReason: Int = readForeignSafeInteger(mintedEpochClass, mintedEpoch)
+  if mintedEpochReason != 0 {
+    if mintedEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let secretEpochReason: Int = readForeignSafeInteger(secretEpochClass, secretEpoch)
+  if secretEpochReason != 0 {
+    if secretEpochReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if requiredCount < 0 {
+    return finish(11, true)
+  }
+  if mintedOp < 0 {
+    return finish(11, true)
+  }
+  if secretOp < 0 {
+    return finish(11, true)
+  }
+  if mintedEpoch < 0 {
+    return finish(23, true)
+  }
+  if secretEpoch < 0 {
+    return finish(23, true)
+  }
+  let admitted: Int = admit(requiredClass, requiredCount, providerClass, providerPresent, presenceClass, presenceStatus, epochClass, epoch, epochPresentClass, epochPresentToken)
+  if admitted == 106 {
+    return finish(6, true)
+  }
+  if admitted == 110 {
+    return finish(10, true)
+  }
+  if admitted == 111 {
+    return finish(11, true)
+  }
+  if admitted != 100 {
+    return finish(35, true)
+  }
+  if requiredCount > 0 {
+    if mintedOp != secretOp {
+      return finish(35, true)
+    }
+    if mintedEpoch != secretEpoch {
+      return finish(23, true)
+    }
+  }
+  return finish(0, true)
+}
+
+pure flow applyIdempotency(
+  enabledClass: Int,
+  enabledToken: Int,
+  claimClass: Int,
+  claimToken: Int,
+  reservedClass: Int,
+  alreadyReservedToken: Int,
+  dispatchClass: Int,
+  dispatchToken: Int,
+  ttlClass: Int,
+  ttl: Int,
+  settleClass: Int,
+  settleToken: Int
+) -> Int
+contract {
+  intent { "Enabled idempotency reserves then settles. Refusal before dispatch cancels. After dispatch crash is DELIVERY_UNKNOWN. Disabled is a no-op." }
+}
+{
+  let enabledReason: Int = readForeignSafeInteger(enabledClass, enabledToken)
+  if enabledReason != 0 {
+    if enabledReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if enabledToken != 0 {
+    if enabledToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if enabledToken == 0 {
+    return finish(0, true)
+  }
+  let reserved: Int = reserveIdempotency(claimClass, claimToken, reservedClass, alreadyReservedToken, dispatchClass, dispatchToken, ttlClass, ttl)
+  if reserved != 100 {
+    if dispatchToken == 0 {
+      let cancelled: Int = settleIdempotency(dispatchClass, 0, settleClass, 1)
+      if cancelled != 100 {
+        return cancelled
+      }
+    }
+    return reserved
+  }
+  let settled: Int = settleIdempotency(dispatchClass, dispatchToken, settleClass, settleToken)
+  return settled
+}
+
+pure flow applyDispatch(
+  handlerClass: Int,
+  handlerToken: Int
+) -> Int
+contract {
+  intent { "Dispatch only after every prior gate. Throw is UNKNOWN. Never-settles is deadline. Unlisted shape refuses. Missing handler is internal." }
+}
+{
+  let handlerReason: Int = readForeignSafeInteger(handlerClass, handlerToken)
+  if handlerReason != 0 {
+    if handlerReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if handlerToken != 0 {
+    if handlerToken != 1 {
+      if handlerToken != 2 {
+        if handlerToken != 3 {
+          if handlerToken != 4 {
+            return finish(11, true)
+          }
+        }
+      }
+    }
+  }
+  if handlerToken == 1 {
+    return finish(6, true)
+  }
+  if handlerToken == 2 {
+    return finish(47, true)
+  }
+  if handlerToken == 3 {
+    return finish(11, true)
+  }
+  if handlerToken == 4 {
+    return finish(19, true)
+  }
+  if handlerToken != 0 {
+    return finish(11, true)
+  }
+  return finish(0, true)
+}
+
+pure flow applyConsume(
+  presentClass: Int,
+  presentToken: Int,
+  matchClass: Int,
+  tokenMatchToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int,
+  revokeClass: Int,
+  revokeCommittedToken: Int,
+  cleanupClass: Int,
+  cleanupEvidence: Int,
+  authClass: Int,
+  independentAuthToken: Int,
+  custodyClass: Int,
+  preparedCustodyToken: Int,
+  emptyClass: Int,
+  emptyObligationSetToken: Int,
+  consumedAuthClass: Int,
+  consumedAuthorityToken: Int,
+  validityClass: Int,
+  currentValidityToken: Int
+) -> Int
+contract {
+  intent { "No local release. releaseGuard then consumeStep. Revocation first refuses. Listed cleanup pending failed unknown stay UNKNOWN." }
+}
+{
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let matchReason: Int = readForeignSafeInteger(matchClass, tokenMatchToken)
+  if matchReason != 0 {
+    if matchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochMatchReason: Int = readForeignSafeInteger(epochMatchClass, epochMatchToken)
+  if epochMatchReason != 0 {
+    if epochMatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let revokeReason: Int = readForeignSafeInteger(revokeClass, revokeCommittedToken)
+  if revokeReason != 0 {
+    if revokeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let cleanupReason: Int = readForeignSafeInteger(cleanupClass, cleanupEvidence)
+  if cleanupReason != 0 {
+    if cleanupReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let authReason: Int = readForeignSafeInteger(authClass, independentAuthToken)
+  if authReason != 0 {
+    if authReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let custodyReason: Int = readForeignSafeInteger(custodyClass, preparedCustodyToken)
+  if custodyReason != 0 {
+    if custodyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignSafeInteger(emptyClass, emptyObligationSetToken)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumedAuthReason: Int = readForeignSafeInteger(consumedAuthClass, consumedAuthorityToken)
+  if consumedAuthReason != 0 {
+    if consumedAuthReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let validityReason: Int = readForeignSafeInteger(validityClass, currentValidityToken)
+  if validityReason != 0 {
+    if validityReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let guardOutcome: Int = releaseGuard(independentAuthToken, preparedCustodyToken, cleanupEvidence, emptyObligationSetToken, consumedAuthorityToken, currentValidityToken)
+  if guardOutcome != 100 {
+    return guardOutcome
+  }
+  let consumed: Int = consumeStep(presentToken, tokenMatchToken, 0, epochMatchToken, leaseState, revokeCommittedToken, guardOutcome)
+  return consumed
+}
+
+pure flow applyFinalize(
+  spentClass: Int,
+  spentToken: Int,
+  dispatchClass: Int,
+  dispatchPacked: Int,
+  consumeClass: Int,
+  consumePacked: Int,
+  auditClass: Int,
+  auditPacked: Int,
+  presentClass: Int,
+  presentToken: Int,
+  matchClass: Int,
+  tokenMatchToken: Int,
+  epochPresentClass: Int,
+  epochPresentToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int
+) -> Int
+contract {
+  intent { "Ack only after audit commit. Unspent success needs listed dispatch, listed no-consumption consumePacked 0, and audit 100. Any other consumePacked is 106. Spent path never packed 100. Audit failed with ack not recorded is 44. Acked after audit is 106." }
+}
+{
+  let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
+  if spentReason != 0 {
+    if spentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let dispatchReason: Int = readForeignSafeInteger(dispatchClass, dispatchPacked)
+  if dispatchReason != 0 {
+    if dispatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let consumeReason: Int = readForeignSafeInteger(consumeClass, consumePacked)
+  if consumeReason != 0 {
+    if consumeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let auditReason: Int = readForeignSafeInteger(auditClass, auditPacked)
+  if auditReason != 0 {
+    if auditReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let matchReason: Int = readForeignSafeInteger(matchClass, tokenMatchToken)
+  if matchReason != 0 {
+    if matchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochPresentReason: Int = readForeignSafeInteger(epochPresentClass, epochPresentToken)
+  if epochPresentReason != 0 {
+    if epochPresentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let epochMatchReason: Int = readForeignSafeInteger(epochMatchClass, epochMatchToken)
+  if epochMatchReason != 0 {
+    if epochMatchReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if spentToken != 0 {
+    if spentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if spentToken == 0 {
+    if consumePacked != 0 {
+      return finish(6, true)
+    }
+    if auditPacked != 100 {
+      return finish(6, true)
+    }
+    if dispatchPacked == 100 {
+      return finish(0, true)
+    }
+    if dispatchPacked == 106 {
+      return finish(6, true)
+    }
+    if dispatchPacked == 110 {
+      return finish(10, true)
+    }
+    if dispatchPacked == 111 {
+      return finish(11, true)
+    }
+    if dispatchPacked == 119 {
+      return finish(19, true)
+    }
+    if dispatchPacked == 147 {
+      return finish(47, true)
+    }
+    return finish(6, true)
+  }
+  if consumePacked == 106 {
+    return finish(6, true)
+  }
+  if consumePacked == 110 {
+    return finish(6, true)
+  }
+  if consumePacked == 111 {
+    return finish(6, true)
+  }
+  if consumePacked != 100 {
+    return finish(6, true)
+  }
+  if auditPacked != 100 {
+    return finish(44, true)
+  }
+  let acked: Int = ackStep(presentToken, tokenMatchToken, epochPresentToken, 0, epochMatchToken, leaseState, 1)
+  if acked == 101 {
+    return finish(6, true)
+  }
+  if acked == 100 {
+    return finish(6, true)
+  }
+  return finish(6, true)
+}
+
+pure flow getSecretAccess(
+  activeClass: Int,
+  activeToken: Int,
+  deadlineClass: Int,
+  deadlineToken: Int,
+  spentClass: Int,
+  spentToken: Int,
+  reentrantClass: Int,
+  reentrantToken: Int,
+  failedClass: Int,
+  failedToken: Int,
+  declaredClass: Int,
+  declaredToken: Int
+) -> Int
+contract {
+  intent { "Closed getSecret outcome. After deadline spend re-entrant failure or undeclared is a typed refusal never an untyped value." }
+}
+{
+  let activeReason: Int = readForeignSafeInteger(activeClass, activeToken)
+  if activeReason != 0 {
+    if activeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let deadlineReason: Int = readForeignSafeInteger(deadlineClass, deadlineToken)
+  if deadlineReason != 0 {
+    if deadlineReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
+  if spentReason != 0 {
+    if spentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let reentrantReason: Int = readForeignSafeInteger(reentrantClass, reentrantToken)
+  if reentrantReason != 0 {
+    if reentrantReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let failedReason: Int = readForeignSafeInteger(failedClass, failedToken)
+  if failedReason != 0 {
+    if failedReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let declaredReason: Int = readForeignSafeInteger(declaredClass, declaredToken)
+  if declaredReason != 0 {
+    if declaredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if activeToken != 0 {
+    if activeToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if deadlineToken != 0 {
+    if deadlineToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if spentToken != 0 {
+    if spentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if reentrantToken != 0 {
+    if reentrantToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if failedToken != 0 {
+    if failedToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if declaredToken != 0 {
+    if declaredToken != 1 {
+      return finish(11, true)
+    }
+  }
+  if activeToken == 0 {
+    return finish(52, true)
+  }
+  if deadlineToken == 1 {
+    return finish(52, true)
+  }
+  if failedToken == 1 {
+    return finish(55, true)
+  }
+  if reentrantToken == 1 {
+    return finish(54, true)
+  }
+  if spentToken == 1 {
+    return finish(53, true)
+  }
+  if declaredToken == 0 {
+    return finish(56, true)
+  }
+  return finish(0, true)
+}
+
+pure flow recoverLease(
+  presentClass: Int,
+  presentToken: Int,
+  retiredClass: Int,
+  retiredToken: Int,
+  tombstoneClass: Int,
+  tombstoneDroppedToken: Int,
+  leaseClass: Int,
+  leaseState: Int
+) -> Int
+contract {
+  intent { "Status-only recovery. Canonical OperationRecoveryStatus unchanged. Unlisted hits 38. Never re-opens or re-consumes." }
+}
+{
+  let presentReason: Int = readForeignSafeInteger(presentClass, presentToken)
+  if presentReason != 0 {
+    if presentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let retiredReason: Int = readForeignSafeInteger(retiredClass, retiredToken)
+  if retiredReason != 0 {
+    if retiredReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let tombReason: Int = readForeignSafeInteger(tombstoneClass, tombstoneDroppedToken)
+  if tombReason != 0 {
+    if tombReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let leaseReason: Int = readForeignSafeInteger(leaseClass, leaseState)
+  if leaseReason != 0 {
+    if leaseReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let recovered: Int = classifyRecovery(presentToken, retiredToken, tombstoneDroppedToken, leaseState)
+  if recovered == 111 {
+    return finish(38, true)
+  }
+  return recovered
+}
+
+pure flow httpStatusFor(packedClass: Int, packedCode: Int) -> Int
+contract {
+  intent { "Total HTTP map over packed codes. Unlisted and foreign default 503. Deadline stays 504." }
+}
+{
+  let packedReason: Int = readForeignSafeInteger(packedClass, packedCode)
+  if packedReason != 0 {
+    return 503
+  }
+  if packedCode == 100 {
+    return 200
+  }
+  if packedCode == 120 {
+    return 404
+  }
+  if packedCode == 121 {
+    return 405
+  }
+  if packedCode == 123 {
+    return 413
+  }
+  if packedCode == 124 {
+    return 415
+  }
+  if packedCode == 125 {
+    return 401
+  }
+  if packedCode == 126 {
+    return 403
+  }
+  if packedCode == 127 {
+    return 429
+  }
+  if packedCode == 128 {
+    return 429
+  }
+  if packedCode == 129 {
+    return 422
+  }
+  if packedCode == 130 {
+    return 422
+  }
+  if packedCode == 131 {
+    return 422
+  }
+  if packedCode == 132 {
+    return 422
+  }
+  if packedCode == 133 {
+    return 503
+  }
+  if packedCode == 134 {
+    return 429
+  }
+  if packedCode == 135 {
+    return 503
+  }
+  if packedCode == 136 {
+    return 503
+  }
+  if packedCode == 139 {
+    return 409
+  }
+  if packedCode == 140 {
+    return 409
+  }
+  if packedCode == 141 {
+    return 409
+  }
+  if packedCode == 144 {
+    return 503
+  }
+  if packedCode == 145 {
+    return 503
+  }
+  if packedCode == 147 {
+    return 504
+  }
+  if packedCode == 151 {
+    return 503
+  }
+  if packedCode == 159 {
+    return 503
+  }
+  return 503
+}
+
+pure flow listedMatchPacked(packed: Int) -> Int
+contract {
+  intent { "Match packed is 100 or listed match refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 120 {
+    return packed
+  }
+  if packed == 121 {
+    return packed
+  }
+  if packed == 122 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedBodyPacked(packed: Int) -> Int
+contract {
+  intent { "Body packed is 100 or listed body refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 124 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedAuthPacked(packed: Int) -> Int
+contract {
+  intent { "Auth packed is 100 or listed auth refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 125 {
+    return packed
+  }
+  if packed == 126 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedRatePacked(packed: Int) -> Int
+contract {
+  intent { "Rate packed is 100 or listed rate refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 127 {
+    return packed
+  }
+  if packed == 128 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedDecodePacked(packed: Int) -> Int
+contract {
+  intent { "Decode packed is 100 or listed decode refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 129 {
+    return packed
+  }
+  if packed == 130 {
+    return packed
+  }
+  if packed == 131 {
+    return packed
+  }
+  if packed == 132 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedBudgetPacked(packed: Int) -> Int
+contract {
+  intent { "Budget packed is 100 or listed budget refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 133 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedConcurrencyPacked(packed: Int) -> Int
+contract {
+  intent { "Concurrency packed is 100 or listed concurrency refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 117 {
+    return packed
+  }
+  if packed == 134 {
+    return packed
+  }
+  if packed == 159 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedSecretsPacked(packed: Int) -> Int
+contract {
+  intent { "Secrets packed is 100 or listed secrets refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 135 {
+    return packed
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedMintPacked(packed: Int) -> Int
+contract {
+  intent { "Mint packed is 100 or listed mint refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 136 {
+    return packed
+  }
+  if packed == 137 {
+    return packed
+  }
+  if packed == 123 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow listedIdempPacked(packed: Int) -> Int
+contract {
+  intent { "Idempotency packed is 100 or listed idemp refusal else unlisted 111." }
+}
+{
+  if packed == 100 {
+    return finish(0, true)
+  }
+  if packed == 138 {
+    return packed
+  }
+  if packed == 139 {
+    return packed
+  }
+  if packed == 140 {
+    return packed
+  }
+  if packed == 143 {
+    return packed
+  }
+  if packed == 106 {
+    return packed
+  }
+  if packed == 110 {
+    return packed
+  }
+  if packed == 111 {
+    return packed
+  }
+  return finish(11, true)
+}
+
+pure flow runPreDispatch(
+  matchPacked: Int,
+  bodyPacked: Int,
+  authPacked: Int,
+  ratePacked: Int,
+  decodePacked: Int,
+  budgetPacked: Int,
+  concurrencyPacked: Int,
+  secretsPacked: Int,
+  mintPacked: Int,
+  idempPacked: Int,
+  clockClass: Int,
+  clock1: Int,
+  clock2: Int,
+  clock3: Int,
+  clock4: Int,
+  clock5: Int,
+  clock6: Int,
+  clock7: Int,
+  clock8: Int,
+  clock9: Int,
+  clock10: Int,
+  clock11: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int,
+  handlerClass: Int,
+  handlerToken: Int
+) -> Int
+contract {
+  intent { "Composed pre-dispatch in TS gate order. One class-tagged clock reading per stage, non-decreasing. Each gate packed is 100 or that gate listed refusal else unlisted 111. First non-100 returns. Dispatch never runs after a refusal." }
+}
+{
+  let clock1Out: Int = applyClock(clockClass, clock1, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock1Out != 100 {
+    return clock1Out
+  }
+  let matchListed: Int = listedMatchPacked(matchPacked)
+  if matchListed != 100 {
+    return matchListed
+  }
+  let clock2Out: Int = applyClock(clockClass, clock2, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock2Out != 100 {
+    return clock2Out
+  }
+  if clock2 < clock1 {
+    return finish(22, true)
+  }
+  let bodyListed: Int = listedBodyPacked(bodyPacked)
+  if bodyListed != 100 {
+    return bodyListed
+  }
+  let clock3Out: Int = applyClock(clockClass, clock3, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock3Out != 100 {
+    return clock3Out
+  }
+  if clock3 < clock2 {
+    return finish(22, true)
+  }
+  let authListed: Int = listedAuthPacked(authPacked)
+  if authListed != 100 {
+    return authListed
+  }
+  let clock4Out: Int = applyClock(clockClass, clock4, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock4Out != 100 {
+    return clock4Out
+  }
+  if clock4 < clock3 {
+    return finish(22, true)
+  }
+  let rateListed: Int = listedRatePacked(ratePacked)
+  if rateListed != 100 {
+    return rateListed
+  }
+  let clock5Out: Int = applyClock(clockClass, clock5, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock5Out != 100 {
+    return clock5Out
+  }
+  if clock5 < clock4 {
+    return finish(22, true)
+  }
+  let decodeListed: Int = listedDecodePacked(decodePacked)
+  if decodeListed != 100 {
+    return decodeListed
+  }
+  let clock6Out: Int = applyClock(clockClass, clock6, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock6Out != 100 {
+    return clock6Out
+  }
+  if clock6 < clock5 {
+    return finish(22, true)
+  }
+  let budgetListed: Int = listedBudgetPacked(budgetPacked)
+  if budgetListed != 100 {
+    return budgetListed
+  }
+  let clock7Out: Int = applyClock(clockClass, clock7, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock7Out != 100 {
+    return clock7Out
+  }
+  if clock7 < clock6 {
+    return finish(22, true)
+  }
+  let concurrencyListed: Int = listedConcurrencyPacked(concurrencyPacked)
+  if concurrencyListed != 100 {
+    return concurrencyListed
+  }
+  let clock8Out: Int = applyClock(clockClass, clock8, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock8Out != 100 {
+    return clock8Out
+  }
+  if clock8 < clock7 {
+    return finish(22, true)
+  }
+  let secretsListed: Int = listedSecretsPacked(secretsPacked)
+  if secretsListed != 100 {
+    return secretsListed
+  }
+  let clock9Out: Int = applyClock(clockClass, clock9, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock9Out != 100 {
+    return clock9Out
+  }
+  if clock9 < clock8 {
+    return finish(22, true)
+  }
+  let mintListed: Int = listedMintPacked(mintPacked)
+  if mintListed != 100 {
+    return mintListed
+  }
+  let clock10Out: Int = applyClock(clockClass, clock10, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock10Out != 100 {
+    return clock10Out
+  }
+  if clock10 < clock9 {
+    return finish(22, true)
+  }
+  let idempListed: Int = listedIdempPacked(idempPacked)
+  if idempListed != 100 {
+    return idempListed
+  }
+  let clock11Out: Int = applyClock(clockClass, clock11, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  if clock11Out != 100 {
+    return clock11Out
+  }
+  if clock11 < clock10 {
+    return finish(22, true)
+  }
+  return applyDispatch(handlerClass, handlerToken)
+}
+
+pure flow runPostDispatch(
+  clockClass: Int,
+  clockConsume: Int,
+  clockFinalize: Int,
+  clockAudit: Int,
+  presentClass: Int,
+  clockPresent: Int,
+  armedClass: Int,
+  armedAt: Int,
+  budgetClass: Int,
+  budget: Int,
+  clockEpochClass: Int,
+  clockEpoch: Int,
+  armedEpochClass: Int,
+  armedEpoch: Int,
+  spentClass: Int,
+  spentToken: Int,
+  dispatchClass: Int,
+  dispatchPacked: Int,
+  consumeClass: Int,
+  consumePacked: Int,
+  auditClass: Int,
+  auditPacked: Int,
+  ackPresentClass: Int,
+  presentToken: Int,
+  ackMatchClass: Int,
+  tokenMatchToken: Int,
+  epochPresentClass: Int,
+  epochPresentToken: Int,
+  epochMatchClass: Int,
+  epochMatchToken: Int,
+  leaseClass: Int,
+  leaseState: Int,
+  currentClass: Int,
+  current: Int,
+  maxClass: Int,
+  maxConcurrent: Int,
+  releasedClass: Int,
+  releasedToken: Int,
+  zombieClass: Int,
+  handlerStillRunningToken: Int
+) -> Int
+contract {
+  intent { "Composed post-dispatch. One class-tagged clock reading per consume finalize audit stage, non-decreasing. Slot released on every exit. Spent finalize UNKNOWN wins over slot-held. Spent deadline is 106. Unspent deadline keeps 147. 159 only on the unspent path." }
+}
+{
+  let spentReason: Int = readForeignSafeInteger(spentClass, spentToken)
+  if spentReason != 0 {
+    if spentReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if spentToken != 0 {
+    if spentToken != 1 {
+      return finish(11, true)
+    }
+  }
+  let clockConsumeOut: Int = applyClock(clockClass, clockConsume, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedConsume: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockConsumeOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedConsume != 100 {
+      return releasedConsume
+    }
+    return clockConsumeOut
+  }
+  let clockFinalizeOut: Int = applyClock(clockClass, clockFinalize, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedFinalize: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockFinalizeOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedFinalize != 100 {
+      return releasedFinalize
+    }
+    return clockFinalizeOut
+  }
+  if clockFinalize < clockConsume {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedFinalize != 100 {
+      return releasedFinalize
+    }
+    return finish(22, true)
+  }
+  let clockAuditOut: Int = applyClock(clockClass, clockAudit, presentClass, clockPresent, armedClass, armedAt, budgetClass, budget, clockEpochClass, clockEpoch, armedEpochClass, armedEpoch)
+  let releasedAudit: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if clockAuditOut != 100 {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedAudit != 100 {
+      return releasedAudit
+    }
+    return clockAuditOut
+  }
+  if clockAudit < clockFinalize {
+    if spentToken == 1 {
+      return finish(6, true)
+    }
+    if releasedAudit != 100 {
+      return releasedAudit
+    }
+    return finish(22, true)
+  }
+  let finalized: Int = applyFinalize(spentClass, spentToken, dispatchClass, dispatchPacked, consumeClass, consumePacked, auditClass, auditPacked, ackPresentClass, presentToken, ackMatchClass, tokenMatchToken, epochPresentClass, epochPresentToken, epochMatchClass, epochMatchToken, leaseClass, leaseState)
+  let releasedDone: Int = applyConcurrency(currentClass, current, maxClass, maxConcurrent, releasedClass, releasedToken, zombieClass, handlerStillRunningToken)
+  if spentToken == 1 {
+    if finalized == 144 {
+      return finalized
+    }
+    return finish(6, true)
+  }
+  if releasedDone != 100 {
+    return releasedDone
+  }
+  if finalized != 100 {
+    return finalized
+  }
+  return finish(0, true)
+}

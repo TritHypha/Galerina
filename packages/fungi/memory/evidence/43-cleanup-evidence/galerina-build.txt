@@ -1,0 +1,18 @@
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:88:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:133:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:141:25)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:151:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:161:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:171:28)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:181:29)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:191:31)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:200:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:207:23)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:315:27)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:322:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:399:25)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:406:26)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:413:23)
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (packages/fungi/memory/src/cleanup-evidence.fungi:523:27)
+
+❌ Build of 'packages/fungi/memory/src/cleanup-evidence.fungi' FAILED (fail-closed) — 16 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.

@@ -1,0 +1,1 @@
+✅ packages/fungi/memory/src/auth-verify-route.fungi: 0 errors, 0 governance warnings (9 flow(s), 13 top-level declaration(s))

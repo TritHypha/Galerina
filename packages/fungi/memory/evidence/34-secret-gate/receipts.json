@@ -1,0 +1,126 @@
+{
+  "schema": "galerina.fungi-obligation-receipt.v1",
+  "status": "DRAFT_NON_AUTHORIZING",
+  "unit": [
+    "SECRET_GATE"
+  ],
+  "registry_commit": "42bff43a3c5f9d1d8868cf34a5789f4bf3023ed8",
+  "closed_discharge_state": [
+    "DISCHARGED",
+    "CARRIED_UNKNOWN",
+    "NEEDS_LANGUAGE"
+  ],
+  "unlisted_state_refuses": true,
+  "ts_oracle": "dc0f9c8c:packages-ts/galerina-framework-app-kernel/src/secret-gate.ts",
+  "ts_oracle_sha256": "bfb6ccd88ef2cc47017dd8fc439d0d82386954949baaa81244a5471fc52855d8",
+  "c_boundary_blob": "cfec32c93d0cf611010042cb6843d5af5ba6a78a",
+  "release_commit_point_blob": "b38e774f8e2150a74fed5cc19fb092dcf640cdb3",
+  "outcome_class_mapping": {
+    "0": "Admit_or_preHandoff",
+    "1": "SecretUnavailable",
+    "2": "RevocationFirst",
+    "3": "LegacyEpoch",
+    "6": "DELIVERY_UNKNOWN_cleanup",
+    "10": "ForeignRaw",
+    "11": "Unlisted",
+    "12": "Undeclared",
+    "13": "CallbackNotCalled",
+    "14": "CallbackTwice",
+    "15": "CallbackReturnsValue",
+    "16": "CallbackThenable",
+    "17": "WipeFailed",
+    "18": "EpochMoved",
+    "19": "ProviderAbsent"
+  },
+  "rd_0778": {
+    "path": "ZTF-Knowledge-Bases/private/research/rd/RD-0778-atomic-hostcall-reply-adjudication-PRIVATE.md",
+    "sha256": "9a752d97a761b5b1e44aa620be7ea21ce3091a829fc9e7784d63a014e99dc61a",
+    "kbCommit": "f86212ce95db15451739c9c8eb8bc361c1a5d6d4"
+  },
+  "receipts": [
+    {
+      "obligation": "NO_NULL_NAN",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "every foreign tag through readForeignSafeInteger CALL; NaN class 110; unlisted 111; no null or NaN named",
+      "probe": "requiredCountClass 3 -> 110; epochMintClass 3 -> 110; currentValidityClass 3 -> 110"
+    },
+    {
+      "obligation": "EXHAUSTIVE_FAIL_CLOSED",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "sequential if-return terminal 11 on every table; unlisted presence/callback/wipe refuse; epoch required when provider present",
+      "probe": "presenceStatus 9 -> 111; empty+provider no epoch 103"
+    },
+    {
+      "obligation": "TOTAL_EFFECT_OUTCOME",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "callback/wipe/cleanup closed sums; throw-as-outcome replaced; listed cleanup after once-void and good wipe -> 106 never packed 100 (MB-06); pre-handoff before callback",
+      "probe": "callback 0/2/3/4 -> 113/114/115/116; cleanup 0/1/2/3/4 -> 106; mint 1 use 2 token 0 -> 118; revoke first pre 102"
+    },
+    {
+      "obligation": "LINEAR_SECRET",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "finish(code,true) packed +100; wipe best effort; no erase claim; CONSTANT_TIME_COMPARE missing native intrinsic",
+      "probe": "wipeResult 1 -> 117"
+    },
+    {
+      "obligation": "UNFORGEABLE_CAPABILITY",
+      "state": "DISCHARGED",
+      "how": "BY_CALL",
+      "fungi_construct": "gateAcknowledge CALLs ackStep; consumeStep is the result-sink commit point",
+      "probe": "ack released 101"
+    },
+    {
+      "obligation": "SEALED_INTRINSICS",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "callback outcomes are closed Int tags through the boundary; host introspection is not a .fungi mechanism",
+      "probe": "callback 3/4 typed 115/116"
+    },
+    {
+      "obligation": "NO_AMBIENT_AUTHORITY",
+      "state": "DISCHARGED",
+      "how": "BY_TOTALITY",
+      "fungi_construct": "status-only recovery never opens the provider; undeclared name refuses",
+      "probe": "gateStatus 100/101/103/104; undeclared 112"
+    },
+    {
+      "obligation": "BOUNDED_INPUT",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "listed closed sets for presence/callback/wipe/epochPresent; surplus tags 11",
+      "probe": "callback 9 -> 111"
+    },
+    {
+      "obligation": "DEADLINE_COVERS_ALL",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "no clock in this file; test deadlines are harness-only",
+      "probe": "no time construct"
+    },
+    {
+      "obligation": "MONOTONIC_TYPED_TIME",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "unit needs no clock; short-lived means callback scope",
+      "probe": "no time construct"
+    },
+    {
+      "obligation": "HOST_ADAPTER_PRESENCE",
+      "state": "CARRIED_UNKNOWN",
+      "carried_refusal": "NEEDS_LANGUAGE",
+      "fungi_construct": "host maps names, presence, callback outcomes and epochs onto Int tags once (P20-N2)",
+      "probe": "Q44 not on this base"
+    },
+    {
+      "obligation": "NO_OVERLAPPING_CHUNKS",
+      "state": "DISCHARGED",
+      "how": "BY_TYPE",
+      "fungi_construct": "no chunk algebra in this unit",
+      "probe": "n/a"
+    }
+  ]
+}

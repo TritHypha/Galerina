@@ -1,0 +1,7 @@
+frozen TS git show dc0f9c8c:packages-ts/galerina-framework-app-kernel/src/secret-arena-provider.ts
+sha256 e4b4315bea125218b0ed52f6013ba4e3e0ae4e0283befc012d4bd51ff956c2c1 MATCH
+release-commit-point.ts sha256 ab0080fb6efc20937f69f88e85da4d65d37d4e0da634e495753015a9fca9e5b3 MATCH
+createSecretArenaProvider executed: throws SecretArenaUnavailable (platform refuse or missing binary). Host-independent.
+constructArena platformToken 0 packed 112.
+has/use/epoch/put/dispose live TS methods: each recorded typed UNKNOWN CUSTODIAN_UNAVAILABLE (construction throw, methods unreachable; never present/absent/Active/ok). Fungi arenaHas 100, arenaUse 100, arenaEpoch 100, arenaPut 100, arenaDispose 106.
+Parked queue 24 93934967 unused.

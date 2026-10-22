@@ -1,0 +1,152 @@
+{
+  "schema": "agent-logic-request.v1",
+  "subject": {
+    "id": "subject:q43-cleanup-evidence",
+    "kind": "FILE",
+    "locator": "packages/fungi/memory/src/cleanup-evidence.fungi",
+    "digest": "c00d548d8c562dd0ed6498a5fefdfcd2666e2811fdbbd4faaf06b1bb5fb5c61a"
+  },
+  "evidence": {
+    "repositoryId": "repository:galerina-trit-hypha",
+    "expectedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d",
+    "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d",
+    "graphDigest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+    "decoder": {
+      "id": "decoder:unavailable",
+      "version": "none",
+      "available": false
+    },
+    "views": [
+      {
+        "kind": "HOST",
+        "locator": "graph/host-unavailable",
+        "digest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+        "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d"
+      },
+      {
+        "kind": "FUNGI",
+        "locator": "graph/fungi-unavailable",
+        "digest": "c348b54c11a941c6c8220ecc5bf69362782aba20f31e38f1a55927b899eb38d3",
+        "indexedHead": "a4054af93572d4caeaaa8ff9565ab47005b9599d"
+      }
+    ]
+  },
+  "invariants": [
+    {
+      "id": "invariant:one-helper",
+      "statementLocator": "parked-ts-findings-for-fungi.md#CN-1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "invariant:cleanup-binding",
+      "statementLocator": "task.md#Amendment-A1",
+      "verdict": 0,
+      "evidenceLocators": [
+        "packages/fungi/memory/src/cleanup-evidence.fungi"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "candidate:build-cleanup-evidence",
+      "tier": "BUILD",
+      "locator": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "verdict": 0
+    }
+  ],
+  "obligations": [
+    {
+      "id": "obligation:syntax",
+      "kind": "SYNTAX",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/language/fungi/04-types-and-values.md"
+      ]
+    },
+    {
+      "id": "obligation:symbols",
+      "kind": "SYMBOLS",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:types",
+      "kind": "TYPES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/cleanup-evidence.fungi"
+      ]
+    },
+    {
+      "id": "obligation:effects",
+      "kind": "EFFECTS",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/43-cleanup-evidence/receipts.json"
+      ]
+    },
+    {
+      "id": "obligation:value-states",
+      "kind": "VALUE_STATES",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:taint",
+      "kind": "TAINT",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/src/c-boundary.fungi"
+      ]
+    },
+    {
+      "id": "obligation:governance",
+      "kind": "GOVERNANCE",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "docs/superpowers/specs/2026-10-17-fungi-lowering-obligations.registry.json"
+      ]
+    },
+    {
+      "id": "obligation:gir",
+      "kind": "GIR",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/43-cleanup-evidence/workbench/command.txt"
+      ]
+    },
+    {
+      "id": "obligation:differential",
+      "kind": "DIFFERENTIAL",
+      "verdict": 0,
+      "reasonCode": "EVIDENCE_MISSING",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/43-cleanup-evidence/parity.md"
+      ]
+    },
+    {
+      "id": "obligation:admission",
+      "kind": "ADMISSION",
+      "verdict": -1,
+      "reasonCode": "EVIDENCE_REFUSED",
+      "evidenceLocators": [
+        "packages/fungi/memory/evidence/43-cleanup-evidence/receipts.json"
+      ]
+    }
+  ]
+}

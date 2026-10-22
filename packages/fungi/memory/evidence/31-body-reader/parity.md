@@ -1,0 +1,50 @@
+# Q31 parity: foreign-boundary.ts @ dc0f9c8c vs c-boundary.fungi + body-reader.fungi
+
+Input: `packages-ts/galerina-framework-app-kernel/src/foreign-boundary.ts` sha256 `11bb502b0a0080a9953cdc4b548666919662c4df9eabcfb898a43348db2286b5` at `dc0f9c8c4f1365f0228cda213b2ecd001400463e`.
+Workbench capsule status REFUSE (`evidence:DECODER_UNAVAILABLE`); EVB-Q31-1 frame CLI exit 2 `REFUSED_GIT_EXPORT` inner `SOURCE_ORIGIN_GIT_CONFIG`; EVB-Q31-2 `REFUSED_RESERVED_DECODER_ID`. HOST/FUNGI views typed UNKNOWN. C2 applied under Q31-05 ruling. PROPOSED never permission.
+Skills: translating-typescript-to-fungi core/binding/workflow 1,4-7,25; writing-fungi core/binding/workflow 1-5,8,14,33. Sequential if-return (secret-gate.fungi style) after nested if/else failed WAT emit.
+
+N10 replay of `readForeignSafeInteger` (foreign-boundary.ts:11-22 Number.isSafeInteger) on the same synthetic vectors:
+
+| vector | TS dc0f9c8c | fungi helper | verdict |
+|---|---|---|---|
+| SafeInteger 4 | ok value 4 | classTag 0 -> 0 | PRESERVED |
+| null | not ok | classTag 1 -> 1 | PRESERVED |
+| NaN | not ok | classTag 3 -> 3 | PRESERVED |
+| +Infinity | not ok | classTag 4 -> 4 | PRESERVED |
+| -Infinity | not ok | classTag 5 -> 5 | PRESERVED |
+| -0 | ok value 0 (Number.isSafeInteger(-0)) | classTag 6 -> 6 | INTENDED_DIVERGENCE |
+| 1.5 | not ok | classTag 7 -> 7 | PRESERVED |
+| 2^53 | not ok | classTag 8 -> 8 | PRESERVED |
+| -1 | ok value -1 | readForeignLength -> 9 | INTENDED_DIVERGENCE |
+| string "4" | not ok | classTag 10 -> 10 | PRESERVED |
+| undefined | not ok | classTag 2 -> 2 | PRESERVED |
+| stream null | readBodyCapped ok empty | streamPresent 0 -> 108 | INTENDED_DIVERGENCE |
+
+| ts_ref (path:line @dc0f9c8c) | fungi_ref | verdict | obligation id | probe |
+|---|---|---|---|---|
+| foreign-boundary.ts:11 readForeignSafeInteger | c-boundary.fungi readForeignSafeInteger | PRESERVED | NO_NULL_NAN | helper admits SafeInteger; helper refuses Null NaN Infinity NegZero NonInteger OutOfSafeRange NegativeLength WrongType Absent Unlisted |
+| foreign-boundary.ts:24 readDeclaredContentLength | c-boundary.fungi readForeignLength | PRESERVED | NO_NULL_NAN | helper length refuses negative integer |
+| foreign-boundary.ts:11 NaN/Infinity/-0/null | c-boundary.fungi classTag 1-10 + 11 | INTENDED_DIVERGENCE | NO_NULL_NAN | helper refuses; mutant accept NaN; TS admits -0 |
+| foreign-boundary.ts:362 readBodyCapped cap 16384 | body-reader.fungi readChunks cap | PRESERVED | BOUNDED_INPUT | MUST-REFUSE over cap by one byte; two chunks summing to cap plus one; mutant drop cap; mutant GM6 |
+| foreign-boundary.ts:362 stream null -> ok empty | body-reader.fungi streamPresent 0 -> 8 | INTENDED_DIVERGENCE | NO_NULL_NAN | MUST-REFUSE absent stream (P20-N3) |
+| foreign-boundary.ts chunks may alias | body-reader.fungi duplicate id/range/overlap refuse | INTENDED_DIVERGENCE | NO_OVERLAPPING_CHUNKS | MUST-REFUSE duplicate reference / overlapping views / duplicate range; MUST-ADMIT adjacent; G4 zero-length refuse |
+| foreign-boundary.ts zero-length dropped | body-reader.fungi ZeroLength 4 | INTENDED_DIVERGENCE | NO_OVERLAPPING_CHUNKS | MUST-REFUSE lone zero-length; zero-length at covered offset; mutant admit zero-length |
+| foreign-boundary.ts:65-261 intrinsic capture / live getters | body-reader.fungi no intrinsic probe | INTENDED_DIVERGENCE | SEALED_INTRINSICS | P20-F2/P20-R1: missing/unlisted refuses before first read (host classTag); no prototype lookup in .fungi |
+| foreign-boundary.ts finally wipe | body-reader.fungi finish(..., true) every exit | NEEDS_LANGUAGE | LINEAR_SECRET | packed +100 is a construct, not physical wipe evidence; mutant skip wipe |
+| foreign-boundary.ts timeout 5000 | body-reader.fungi deadlineExpiredToken | PRESERVED | DEADLINE_COVERS_ALL | MUST-REFUSE deadline expiry |
+| foreign-boundary.ts throw mid-read | body-reader.fungi foreignThrowToken | INTENDED_DIVERGENCE | NO_NULL_NAN | MUST-REFUSE foreign throw mid-read wipes (typed code 10, not throw) |
+| foreign-boundary.ts declared length mismatch | body-reader.fungi 6/7 | PRESERVED | BOUNDED_INPUT | MUST-REFUSE declared longer/shorter; two-chunk declared longer/shorter; mutant GM7 |
+| foreign-boundary.ts:11 Bool/truthy | c-boundary.fungi readForeignBool | INTENDED_DIVERGENCE | NO_NULL_NAN | helper Bool admits 0 and 1 and refuses unlisted token; MUST-REFUSE streamPresent 2 |
+| release-commit-point.ts:79 second helper | none in MEMDIR | INTENDED_DIVERGENCE | NO_NULL_NAN | CN-1: exactly one readForeignSafeInteger in packages/fungi/memory |
+| Deno adapter P20-N5 | none | UNKNOWN | HOST_ADAPTER_PRESENCE | CARRIED_UNKNOWN; UNKNOWN_IN_TS |
+| monotonic clock | deadlineExpiredToken from host | NEEDS_LANGUAGE | MONOTONIC_TYPED_TIME | host supplies Int token; .fungi has no typed monotonic time |
+| total effect COMMITTED/REFUSED/DELIVERY_UNKNOWN | packed Int code | NEEDS_LANGUAGE | TOTAL_EFFECT_OUTCOME | CARRIED_UNKNOWN |
+| live TypedArray/SAB views | identity Int + offset + length | NEEDS_LANGUAGE | LINEAR_SECRET | host-owned chunks as scalars; physical ByteArray ABI not in this unit |
+| off+len / len+len i32 add | remaining then code 14 | INTENDED_DIVERGENCE | BOUNDED_INPUT | MUST-REFUSE i32 length-sum without trap; offset plus length overflow; two-chunk off1/off2 2147483647+2 -> 114 |
+| fungi-planning HOST/FUNGI views | none | UNKNOWN | HOST_ADAPTER_PRESENCE | REFUSED_RESERVED_DECODER_ID; EVB-Q31-1-STILL-REFUSED:SOURCE_ORIGIN_GIT_CONFIG |
+| absent header declaredLenClass 2 with declaredPresentToken 0 | body-reader.fungi declaredLenClass != 0 -> 111 | INTENDED_DIVERGENCE | NO_NULL_NAN | Grok zero-trust default, pending Phillip: keep the refusal, no code change; MUST-REFUSE declaredLenClass 2 declaredPresent 0 |
+| invoke-ABI i32 wrap len1=4294967300 / 2^63-1 | host Number then WASM i32 | UNKNOWN | HOST_ADAPTER_PRESENCE | CARRIED_UNKNOWN documented current behaviour not a pass: 4294967300 admitted as 4 -> 100; 2^63-1 -> 104. Host map must classify \|x\| > 2147483647 as classTag 8 before the call |
+| import "./c-boundary.fungi" plus helper CALL | body-reader classTag gate | NEEDS_LANGUAGE | NO_NULL_NAN | A2: check admits; build FUNGI-NAME-001; run --invoke WAT undefined callee. ClassTag gate kept. import-refuse.txt |
+
+Counts: PRESERVED 5, INTENDED_DIVERGENCE 11, UNKNOWN 3, NEEDS_LANGUAGE 5. Unlisted verdict refuses.

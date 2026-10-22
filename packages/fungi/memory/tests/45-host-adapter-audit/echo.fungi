@@ -1,0 +1,12 @@
+@version 1
+/// @file: echo.fungi
+/// @purpose: Tiny synthetic identity flow for Queue #45 invoke-ABI wrap probes.
+/// Independent of memory units. Sequential return of the admitted Int.
+
+pure flow echo(x: Int) -> Int
+contract {
+  intent { "Identity for invoke-ABI wrap probes." }
+}
+{
+  return x
+}

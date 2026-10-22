@@ -1,0 +1,11 @@
+cwd: scratch clone
+node galerina.mjs build packages/fungi/memory/src/adapter-profile.fungi
+status: 1
+stdout:
+(empty)
+stderr:
+⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+  ⛔ FUNGI-NAME-001: 'readForeignSafeInteger' is not declared in the current scope. (<path>
+
+❌ Build of '<path>' FAILED (fail-closed) — 3 governance error(s) above. Declare the required tier/effects (or seal/gate boundary inputs) and rebuild.

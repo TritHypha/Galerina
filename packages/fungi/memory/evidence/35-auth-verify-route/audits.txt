@@ -1,0 +1,10 @@
+twins AFTER (working tree): fungi-twins 103/103 check-clean across 10 dir(s); execution 73 shadow · 1 differential · 29 authoritative. Same as Q34 at 999fbd79 (BEFORE). Counts unchanged. Memory .fungi are not twins.
+twins status 0
+audit:package-topology status 0
+flat-package topology: 101 canonical identities; 1 deferred nested native package(s); 0 pre-SLIDE node_modules tree(s)
+  DEFERRED until executable SLIDE integration: galerina-framework-example-app/packages/greeting/package.fungi.json
+flat-package topology: pre-SLIDE ratchet GREEN (deferred debt is not a completion claim)
+audit:product-boundaries --check status 1
+{"schema":"product-package-boundary-receipt.v1","status":"REFUSED","authorizing":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_GRAPH_MISSING"],"findings":[]}
+tests x3: run1 55/55; run2 55/55; run3 55/55 fail 0. Command: node --test --test-concurrency=1 --test-timeout=180000 packages/fungi/memory/tests/35-auth-verify-route/auth-verify-route.test.mjs packages/fungi/memory/tests/35-auth-verify-route/ts-differential.test.mjs packages/fungi/memory/tests/35-auth-verify-route/path-leak.test.mjs
+encoding-gate status 0

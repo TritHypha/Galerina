@@ -1,0 +1,2 @@
+count=1
+packages/fungi/memory/src/c-boundary.fungi:17 pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int

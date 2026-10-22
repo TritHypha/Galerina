@@ -1,0 +1,33 @@
+compiler_commit=fc7db4db4ba1cb7aed691cfa205ec719746524d4
+check_entry=galerina.mjs -> packages-ts/galerina-core-compiler/dist/index.js
+node=v24.21.0
+npm=11.19.0
+PACKAGE galerina-core-security mode=noCheck
+EXIT:0
+PACKAGE galerina-data-json mode=noCheck
+EXIT:0
+PACKAGE galerina-devtools-graph-algorithms mode=noCheck
+EXIT:0
+PACKAGE galerina-substrate-math mode=noCheck
+EXIT:0
+PACKAGE galerina-tri-regex mode=noCheck
+EXIT:0
+PACKAGE galerina-core-runtime mode=noCheck
+EXIT:0
+PACKAGE galerina-inference-bridge-contract mode=noCheck
+EXIT:0
+PACKAGE galerina-tower-citizen mode=noCheck
+EXIT:0
+PACKAGE galerina-core-network mode=noCheck
+EXIT:0
+PACKAGE galerina-core-runtime-wasm mode=noCheck
+EXIT:0
+PACKAGE galerina-core-compiler mode=noCheck-fallback
+TSC_EXIT:0
+Hallmark non-authorities: 10 entries generated.
+HALLMARK_EXIT:0
+compiler build evidence: 948 inputs -> <scratch>/packages-ts/galerina-core-compiler/dist/build-evidence.json
+EVIDENCE_SCRIPT_EXIT:0
+POST_NOCHECK check
+✅ packages/fungi/memory/src/monotonic-time.fungi: 0 errors, 0 governance warnings (13 flow(s), 14 top-level declaration(s))
+CHECK_EXIT:0

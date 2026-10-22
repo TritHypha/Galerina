@@ -1,0 +1,5 @@
+cwd: C:\Users\phill\Documents\GitHub\AGENTS
+AGENTS HEAD: 22011b305527218764ec3fd4cdf4beb2c18f2149
+workbench.mjs sha256: 87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b
+node tools/code-logic-workbench.mjs build <clone>/packages/fungi/memory/evidence/31-body-reader/workbench/request.json --profile skills/code-logic-workbench/references/fungi-profile.json --format json
+status: REFUSE (evidence:DECODER_UNAVAILABLE); authorizing false

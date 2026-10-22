@@ -1,0 +1,2 @@
+node tools/code-logic-workbench.mjs view <missing-project-graph>  (Q31-05 ruling: reserved decoder galerina-source-origin REFUSED; views typed UNKNOWN; never fabricated)
+workbench sha256 87ce8f7b83c43d88045b88f2b8db515a388ebbfca2660ecbaaec25343b78a90b

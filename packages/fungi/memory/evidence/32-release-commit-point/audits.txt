@@ -1,0 +1,13 @@
+twins: status=0 tail=core-sentinel-state/src/self-hosted/snapshot-version.fungi
+fungi-twins: 103/103 check-clean across 10 dir(s)
+execution column (RD-0361): 73 shadow · 1 differential (execute through #105) · 29 authoritative — #143 R4 flip LIVE (29 authoritative)
+frozen-reference column (RD-0361 S6, enforced): 13 frozen · 13 not-required (no same-stem .ts) · 3 deferred (unassessed named) · 0 RED of 29 authoritative
+
+topology: status=0 tail=101 canonical identities; 1 deferred nested native package(s); 0 pre-SLIDE node_modules tree(s)
+  DEFERRED until executable SLIDE integration: galerina-framework-example-app/packages/greeting/package.fungi.json
+flat-package topology: pre-SLIDE ratchet GREEN (deferred debt is not a completion claim)
+
+product-boundaries: status=2 tail=":false,"buildPoint":null,"registryDigest":null,"checkedPackageCount":0,"checkedEdgeCount":0,"findingCodes":["PRODUCT_ARGUMENT_REFUSED"],"findings":[]}
+npm notice run @galerina/cli@1.0.0-beta.2 audit:product-boundaries
+npm notice run node scripts/audit-product-package-boundaries.mjs --check --check
+
