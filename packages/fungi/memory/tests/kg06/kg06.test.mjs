@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -83,7 +84,7 @@ function flattenArena() {
   let portRest = splitOnce(port, CB_IMPORT, "port c-boundary");
   portRest = stripVersion(portRest);
   const dir = mkdtempSync(join(tmpdir(), "kg06-arena-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + stripVersion(rcp) + "\n" + portRest + "\n" + rest);
   return { dir, file };
 }
@@ -97,7 +98,7 @@ function flattenProfile() {
   let rest = parts[0] + parts[1];
   rest = stripVersion(rest);
   const dir = mkdtempSync(join(tmpdir(), "kg06-profile-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + rest);
   return { dir, file };
 }

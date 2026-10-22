@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -467,7 +468,7 @@ test("B5 import c-boundary: check admits, build and run --invoke refuse", () => 
       "  return reason\n" +
       "}\n";
     writeFileSync(join(tmp, "c-boundary.fungi"), boundarySrc);
-    const probePath = join(tmp, "probe.fungi");
+    const probePath = uniqueFungiFile(tmp);
     writeFileSync(probePath, probe);
     const check = spawnSync(process.execPath, [GALERINA, "check", probePath, "--strict-types", "--strict-governance"], {
       encoding: "utf8", cwd: REPO,
@@ -761,7 +762,12 @@ test("G1 MUST-REFUSE consumeStep unlisted guardOutcome", () => {
   expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 103]), 111, "guard 103");
   expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, -100]), 111, "guard -100");
   expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0, 200]), 111, "guard 200");
-  expectPacked(invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0]), 111, "6-arg no guard WebAssembly default 0");
+  // S2 X-N1: a 6-arg raw invoke used to run because the WebAssembly call padded the missing guard with 0.
+  // It is now refused before execution (exit 2, no value), never padded.
+  const short = invoke(RCP, "consumeStep", [1, 1, 0, 1, 0, 0]);
+  assert.equal(short.status, 2, "6-arg consumeStep must be refused, not padded: " + short.text);
+  assert.match(short.text, /REFUSED: raw invoke of 'consumeStep' expected 7 positional argument\(s\) but received 6/);
+  assert.equal(short.present, false, "no value for a refused 6-arg invoke: " + short.text);
 });
 
 test("mutant G1 guardOutcome range check dead goes RED then restore", () => {

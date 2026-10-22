@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -45,7 +46,7 @@ function parseInvoke(ran) {
 
 export function pins(profileText) {
   const dir = mkdtempSync(join(tmpdir(), "q46-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   try {
     writeFileSync(file, flattenText(profileText));
     const built = spawnSync(process.execPath, [GALERINA, "build", file], { encoding: "utf8", cwd: REPO });
