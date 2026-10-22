@@ -26,7 +26,7 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 
 /** SHA-256 of assets/secret-gate-admit.wasm (fresh `galerina build` of flattened secret-gate.fungi). */
-export const SECRET_GATE_ADMIT_SHA256 = "9e382d4d56faf3dbcab9a176836504b1062a94c192f18987e602c997a1d1af46";
+export const SECRET_GATE_ADMIT_SHA256 = "5b11c9d4e8ae92cdfdd930a112211c1996b791a2beaf24560699fb4416da37cd";
 
 export type SecretGateArtifactRefusalCode =
   | "APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH"

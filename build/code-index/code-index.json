@@ -23075,7 +23075,7 @@
       "fungi packages/fungi/memory/src/cleanup-evidence.fungi:3",
       "fungi packages/fungi/memory/src/secret-arena.fungi:15",
       "fungi packages/fungi/memory/src/secret-gate.fungi:20",
-      "fungi packages/fungi/memory/src/secret-gate.fungi:290",
+      "fungi packages/fungi/memory/src/secret-gate.fungi:293",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:35",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:39",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:1150",

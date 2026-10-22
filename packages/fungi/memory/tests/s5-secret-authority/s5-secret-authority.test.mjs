@@ -225,3 +225,103 @@ test("S5-R5 per-secret port: only a declared name with a present provider is rea
   assert.equal(invokePort([3, 1, 0, 1]), 110, "foreign class (NaN) on declared");
   assert.equal(invokePort([0, 1, 11, 1]), 111, "unlisted class on provider");
 });
+// ---------------- S5-R6: ack / noteUnknown / delivery verdicts must come from the WebAssembly ----------------
+// RED TESTS FIRST (gcw-s5d, 2026-10-22). Before kernel.ts can route ack, noteUnknown and
+// getSecret through the pinned Fungi secret-gate WebAssembly (and so drop createSecretGate,
+// S5-R1b), the shipped exports must reproduce the lease transitions the kernel has today
+// (ReleaseCommitAuthority, frozen TS reference). These differentials call the SHIPPED asset
+// directly; the TS reference is only the oracle of current kernel behaviour, never a decider.
+// lease: 0 unused 1 released 2 acknowledged 3 fenced 4 delivery-unknown (release-commit-point.fungi)
+// packed outcome = 100 + outcome: 1 acknowledged 2 fenced 3 replay 4 stale 5 missing 6 delivery-unknown 8 no-op
+const LEASE = ["unused", "released", "acknowledged", "fenced", "delivery-unknown"];
+const OUTCOME = { 101: "acknowledged", 102: "fenced", 103: "replay", 104: "stale", 105: "missing" };
+
+function shippedExports() {
+  const mod = new WebAssembly.Module(new Uint8Array(readFileSync(ASSET)));
+  assert.equal(WebAssembly.Module.imports(mod).length, 0, "asset must import nothing");
+  return new WebAssembly.Instance(mod, {}).exports;
+}
+
+async function referenceAuthority() {
+  const RCP_JS = join(AK, "dist", "release-commit-point.js");
+  assert.equal(existsSync(RCP_JS), true, "app-kernel not built: " + RCP_JS);
+  return (await import(pathToFileURL(RCP_JS).href)).ReleaseCommitAuthority;
+}
+
+// Drive a fresh reference authority to a lease state for opId (synthetic ids and epochs only).
+function leaseIn(Authority, state, opId) {
+  const a = new Authority();
+  const lease = a.mint(opId, 3);
+  if (state === "released" || state === "acknowledged" || state === "delivery-unknown") {
+    assert.equal(a.consume(lease.leaseId, lease.token, 3), "released");
+  }
+  if (state === "acknowledged") a.acknowledgeMinted(opId);
+  if (state === "delivery-unknown") a.markUnknown(opId);
+  if (state === "fenced") a.fence(lease.leaseId);
+  assert.equal(a.status(opId).state, state, "reference setup " + state);
+  return a;
+}
+
+// gcw-s5d finding: gateNoteUndelivered is revokeDelivery (acknowledged -> delivery-unknown, released no-op;
+// pinned by suite 34). The kernel noteUnknown is the opposite edge (released-but-unacked -> delivery-unknown,
+// acknowledged no-op), so it needs its own export, gateNoteUnknown. Reusing revokeDelivery would flip
+// kernel behaviour; changing revokeDelivery would break the suite-34 contract. Both are rejected.
+test("S5-R6a WebAssembly noteUnknown verdict reproduces the kernel lease transition", async () => {
+  const e = shippedExports();
+  const Authority = await referenceAuthority();
+  assert.equal(typeof e.gateNoteUnknown, "function", "gateNoteUnknown export (kernel noteUnknown edge)");
+  assert.equal(e.gateNoteUndelivered(0, 2), 106, "revokeDelivery edge unchanged (suite 34)");
+  assert.equal(e.gateNoteUndelivered(0, 1), 108, "revokeDelivery edge unchanged (suite 34)");
+  const diffs = [];
+  for (let s = 0; s < LEASE.length; s += 1) {
+    const ref = leaseIn(Authority, LEASE[s], "s5-r6a-" + s);
+    ref.markUnknown("s5-r6a-" + s);
+    const want = ref.status("s5-r6a-" + s).state;
+    const packed = e.gateNoteUnknown(0, s);
+    const got = packed === 106 ? "delivery-unknown" : packed === 108 ? LEASE[s] : "UNLISTED:" + String(packed);
+    if (got !== want) diffs.push(LEASE[s] + ": kernel->" + want + " wasm->" + got + " (" + String(packed) + ")");
+    // The kernel records a delivery-unknown audit event only on the released edge; every other
+    // listed lease must be the no-op 108 so the WebAssembly never reports a fresh transition.
+    if ((packed === 106) !== (LEASE[s] === "released")) diffs.push(LEASE[s] + ": transition reported " + String(packed));
+  }
+  assert.deepEqual(diffs, [], "noteUnknown parity");
+  assert.equal(e.gateNoteUnknown(0, 9), 111, "unlisted lease refuses 11");
+  assert.equal(e.gateNoteUnknown(0, -1), 111, "negative lease refuses 11");
+  assert.equal(e.gateNoteUnknown(3, 1), 110, "foreign class (NaN) refuses 10, never transitions");
+  assert.equal(e.gateNoteUnknown(11, 1), 111, "unlisted class refuses 11");
+});
+
+test("S5-R6b WebAssembly ack verdict reproduces the kernel acknowledgeMinted outcome", async () => {
+  const e = shippedExports();
+  const Authority = await referenceAuthority();
+  const diffs = [];
+  for (let s = 0; s < LEASE.length; s += 1) {
+    const ref = leaseIn(Authority, LEASE[s], "s5-r6b-" + s);
+    const want = ref.acknowledgeMinted("s5-r6b-" + s);
+    // present, token match, epoch present + match: the kernel acks with the token it minted.
+    // auditCommitted = 1: the kernel acks only after publication (rd1415 ack-after-publication).
+    const packed = e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, s, 0, 1);
+    const got = OUTCOME[packed] ?? "UNLISTED:" + String(packed);
+    if (got !== want) diffs.push(LEASE[s] + ": kernel->" + want + " wasm->" + got);
+  }
+  const missing = new Authority();
+  const wantMissing = missing.acknowledgeMinted("s5-r6b-none");
+  const gotMissing = OUTCOME[e.gateAcknowledge(0, 0, 0, 1, 0, 1, 0, 3, 0, 1, 0, 0, 0, 1)];
+  if (gotMissing !== wantMissing) diffs.push("missing: kernel->" + wantMissing + " wasm->" + gotMissing);
+  assert.deepEqual(diffs, [], "ack parity");
+  assert.notEqual(e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, 1, 0, 0), 101, "never acknowledged before audit commit");
+});
+
+test("S5-R6c WebAssembly delivery verdict lets a successful kernel delivery be acknowledged", () => {
+  // Kernel today: a successful getSecret leaves the lease released, and the kernel ACKs it after
+  // publication (status acknowledged). The Fungi post-handoff verdict must allow that sequence.
+  const e = shippedExports();
+  const pre = e.deliverPreHandoff(0, 1, 0, 1, 0, 1, 0, 3, 0, 3, 0, 0, 0, 0, 0, 1);
+  assert.equal(pre, 100, "pre-handoff admits a declared, present, epoch-stable secret");
+  // callback once-void, wipe ok, cleanup NotRequired, guard tokens 1, lease unused, no revoke, valid.
+  const post = e.deliverPostHandoff(0, pre, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1);
+  const leaseAfter = post === 100 ? 1 : post === 106 ? 4 : -1;
+  assert.notEqual(leaseAfter, -1, "post-handoff verdict is listed: " + String(post));
+  assert.equal(e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, leaseAfter, 0, 1), 101,
+    "success path then ack must reach acknowledged (post=" + String(post) + ")");
+});
