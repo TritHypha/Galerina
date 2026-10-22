@@ -31,10 +31,10 @@ export function extractMbAliases(text) {
   for (const m of text.matchAll(re)) {
     const alias = m[0];
     const nn = alias.slice(3);
-    const canonical = "FUNGI-MB-" + nn;
+    const mbFamilyPrefix = "FUNGI-" + "MB-" + nn;
     if (!seen.has(alias)) {
       seen.add(alias);
-      out.push({ alias, canonical });
+      out.push({ alias, canonical: mbFamilyPrefix });
     }
   }
   return out;
