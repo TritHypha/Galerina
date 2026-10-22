@@ -1,0 +1,8 @@
+TYPED_UNKNOWN AUTH_VERIFY_E2E
+No frozen TypeScript oracle for the POST /auth/verify end-to-end composition exists on base 0e2f6d1c. packages-ts/galerina-framework-app-kernel/src/auth-verify-e2e.ts is absent. Suite 47 records TS differential as typed UNKNOWN and does not execute a TS oracle.
+ONE_BAD_HALF_AND: signet-grant-seal.fungi authenticateGrant has no per-half (ML-DSA-65 vs Ed25519) verdict ABI. Hybrid is suiteId 0 AND pqAvailable 1; classical-only suiteId 1 refuses 114. Composition andHalves is host-mapped Int tags only; "one bad half refuses" at the Signet unit is typed UNKNOWN. Do not add crypto.
+COMPOSITION_NAME_COLLISION resolved in test flattening: finish kept from release-commit-point; recoverLease byte-identical so either copy is sound; mintOperation and applyConsume stripped (e2e does not call them); applyClock kept from kernel for runPreDispatch; httpStatusFor kept from auth-verify-route (e2e callee).
+validateVerifyRequest never packed 100 (MB-06); 106 continues. applyPostSink Success is 106 (MB-06).
+POST_DISPATCH_SPENT_SUCCESS_ABI: kernel runPostDispatch spent path never returns packed 100 (finish(6)=106 or 144). Composition does not admit post-dispatch 106 as Success. Honest spent happy path is 106 Indeterminate.
+H1_FIXED_FLAT_BUILD_NAME: suites 33/34/37/38/43/44/46 flatten to fixed name flat.fungi; re-running them in one checkout fails FUNGI-MANIFEST-TAMPER. Those files are outside 47b paths. Suite 47 keeps unique mkdtemp basename and deletes build/<stem>.* in finally.
+COMMITTED unreachable out-of-process (classifyAdapter 1 / casCommit adapter 1). Runner invoke arity N1 is covered by the harness guard. MB-15 CT UNKNOWN. No erase claim. NON_AUTHORIZING.
