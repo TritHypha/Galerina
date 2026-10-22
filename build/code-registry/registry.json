@@ -1,14 +1,101 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1481,
+  "total": 1506,
   "counts": {
-    "ref": 338,
-    "inline": 438,
-    "phantom": 70,
+    "ref": 348,
+    "inline": 444,
+    "phantom": 77,
     "live": 230,
-    "referenced": 173,
+    "referenced": 175,
     "dead": 232
   },
+  "aliases": [
+    {
+      "alias": "MB-03",
+      "canonical": "FUNGI-MB-03",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-04",
+      "canonical": "FUNGI-MB-04",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-05",
+      "canonical": "FUNGI-MB-05",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-06",
+      "canonical": "FUNGI-MB-06",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-07",
+      "canonical": "FUNGI-MB-07",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-08",
+      "canonical": "FUNGI-MB-08",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-09",
+      "canonical": "FUNGI-MB-09",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-10",
+      "canonical": "FUNGI-MB-10",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-11",
+      "canonical": "FUNGI-MB-11",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-12",
+      "canonical": "FUNGI-MB-12",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-13",
+      "canonical": "FUNGI-MB-13",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-14",
+      "canonical": "FUNGI-MB-14",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-15",
+      "canonical": "FUNGI-MB-15",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-16",
+      "canonical": "FUNGI-MB-16",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-17",
+      "canonical": "FUNGI-MB-17",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-18",
+      "canonical": "FUNGI-MB-18",
+      "status": "alias"
+    },
+    {
+      "alias": "MB-19",
+      "canonical": "FUNGI-MB-19",
+      "status": "alias"
+    }
+  ],
   "entries": [
     {
       "code": "ERR_ADDON_HASH_MISMATCH",
@@ -1015,7 +1102,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 3,
+      "tests": 5,
       "docs": 7
     },
     {
@@ -2055,6 +2142,18 @@
       "docs": 0
     },
     {
+      "code": "ERR_SECRET_ARENA_QUARANTINED",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 0
+    },
+    {
       "code": "ERR_SECRET_ARENA_RESIZE_REFUSED",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -2081,9 +2180,21 @@
       "severities": [
         "error"
       ],
-      "defs": 1,
+      "defs": 2,
       "emits": 1,
-      "tests": 0,
+      "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "ERR_SECRET_GATE_WIPE_FAILED",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
       "docs": 0
     },
     {
@@ -7331,7 +7442,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 57,
+      "tests": 58,
       "docs": 20
     },
     {
@@ -7942,6 +8053,54 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-FUSE-IMPORT-COLLISION",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-KIND",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 6,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-REENTRY",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-SHAPE",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 15,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-FUSE-KEY-REVOKED",
       "family": "FUSE",
       "namespace": "FUNGI",
@@ -8033,12 +8192,24 @@
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 2,
+      "emits": 1,
       "tests": 0,
       "docs": 0
     },
     {
       "code": "FUNGI-FUSE-REGISTRY-DENIED",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-REGISTRY-REQUIRED",
       "family": "FUSE",
       "namespace": "FUNGI",
       "status": "inline",
@@ -8178,6 +8349,18 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-FUSE-STARTUP-EFFECT",
+      "family": "FUSE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 4,
       "tests": 0,
       "docs": 0
     },
@@ -10960,6 +11143,210 @@
       "docs": 25
     },
     {
+      "code": "FUNGI-MB-03",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-MB-04",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-05",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-06",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 22,
+      "docs": 10
+    },
+    {
+      "code": "FUNGI-MB-07",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-MB-08",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-09",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-10",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-11",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 9
+    },
+    {
+      "code": "FUNGI-MB-12",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 4
+    },
+    {
+      "code": "FUNGI-MB-13",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 5
+    },
+    {
+      "code": "FUNGI-MB-14",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-MB-15",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 4
+    },
+    {
+      "code": "FUNGI-MB-16",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-MB-17",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 5
+    },
+    {
+      "code": "FUNGI-MB-18",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-MB-19",
+      "family": "MB",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 4
+    },
+    {
       "code": "FUNGI-MEMORY-001",
       "family": "MEMORY",
       "namespace": "FUNGI",
@@ -11222,8 +11609,8 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 52,
-      "docs": 8
+      "tests": 59,
+      "docs": 19
     },
     {
       "code": "FUNGI-NAME-002",
@@ -11342,8 +11729,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 3,
-      "docs": 1
+      "tests": 6,
+      "docs": 2
     },
     {
       "code": "FUNGI-NATIVE-002",
@@ -11980,8 +12367,8 @@
       ],
       "defs": 0,
       "emits": 11,
-      "tests": 37,
-      "docs": 13
+      "tests": 38,
+      "docs": 14
     },
     {
       "code": "FUNGI-PARSE-002",
@@ -16144,7 +16531,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 100,
-      "docs": 17
+      "docs": 18
     },
     {
       "code": "FUNGI-TYPE-010",
@@ -16812,7 +17199,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 11,
+      "tests": 12,
       "docs": 1
     },
     {
@@ -17841,7 +18228,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 15,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-WAT-MONEY-001",

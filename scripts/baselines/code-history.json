@@ -842,12 +842,22 @@
       "status": "active"
     },
     {
+      "code": "ERR_SECRET_ARENA_QUARANTINED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
       "code": "ERR_SECRET_ARENA_RESIZE_REFUSED",
       "meaning": "UNKNOWN",
       "status": "active"
     },
     {
       "code": "ERR_SECRET_ARENA_UNSUPPORTED_PLATFORM",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "ERR_SECRET_GATE_WIPE_FAILED",
       "meaning": "UNKNOWN",
       "status": "active"
     },
@@ -3137,6 +3147,26 @@
       "status": "active"
     },
     {
+      "code": "FUNGI-FUSE-IMPORT-COLLISION",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-KIND",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-REENTRY",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-IMPORT-SHAPE",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
       "code": "FUNGI-FUSE-KEY-REVOKED",
       "meaning": "UNKNOWN",
       "status": "active"
@@ -3178,6 +3208,11 @@
     },
     {
       "code": "FUNGI-FUSE-REGISTRY-DENIED",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-REGISTRY-REQUIRED",
       "meaning": "UNKNOWN",
       "status": "active"
     },
@@ -3233,6 +3268,11 @@
     },
     {
       "code": "FUNGI-FUSE-SIG-INVALID",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-FUSE-STARTUP-EFFECT",
       "meaning": "UNKNOWN",
       "status": "active"
     },
@@ -4239,6 +4279,91 @@
     {
       "code": "FUNGI-MATCH-001",
       "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-03",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-04",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-05",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-06",
+      "meaning": "listed cleanup after admit-to-handoff; post never packed 100",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-07",
+      "meaning": "real adapter rows; pre-begin output paths",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-08",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-09",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-10",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-11",
+      "meaning": "LINEAR_SECRET; WebAssembly zeroing is best effort; no erase claim",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-12",
+      "meaning": "OUT_OF_PROCESS_UNBOUND; passed or inherited descriptors cannot be revoked",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-13",
+      "meaning": "invoke ToInt32 wrap; captured JS intrinsics",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-14",
+      "meaning": "WebAssembly zeroing is best effort; no erase claim",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-15",
+      "meaning": "compare compiled to WebAssembly is CT UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-16",
+      "meaning": ".fungi reads no clock; caller supplies typed reading",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-17",
+      "meaning": "live versus captured JS intrinsics",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-18",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-MB-19",
+      "meaning": "reserve then commit or cancel; no retry after dispatch",
       "status": "active"
     },
     {
